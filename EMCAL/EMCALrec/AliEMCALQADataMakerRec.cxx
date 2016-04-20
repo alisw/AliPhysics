@@ -57,13 +57,14 @@
 using namespace std;
 
 /// \cond CLASSIMP
-ClassImp(AliEMCALQADataMakerRec)
+ClassImp(AliEMCALQADataMakerRec) ;
 /// \endcond
 
 //____________________________________________________________________________ 
-/// constructor.
+/// Constructor.
 ///
-/// \param an Integer value to specify the fitting Algorithm to be used 
+/// \param fitAlgo: an Integer value to specify the fitting Algorithm to be used
+///                 see EMCALUtils/AliCaloConstants.h enum fitAlgorithm
 /// 
 AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
   AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kEMCAL), "EMCAL Quality Assurance Data Maker"),
@@ -94,7 +95,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
 //  fLineCol(NULL),
 //  fLineRow(NULL)
 {
-  // ctor
   SetFittingAlgorithm(fitAlgo);
   
   fGeom = AliEMCALGeometry::GetInstance();
@@ -120,8 +120,9 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(Int_t fitAlgo) :
   //  }
 }
 
-//____________________________________________________________________________ 
-/// copy constructor
+//____________________________________________________________________________
+///
+/// Copy constructor.
 ///
 /// \param qadm: AliEMCALQADataMakerRec
 ///
@@ -154,7 +155,6 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
 //  fLineCol(NULL),
 //  fLineRow(NULL)
 {
-  //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
   SetFittingAlgorithm(qadm.GetFittingAlgorithm());
@@ -165,7 +165,8 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
 }
 
 //__________________________________________________________________
-/// operator=
+///
+/// Assignment operator.
 ///
 /// \param qadm: AliEMCALQADataMakerRec
 ///
@@ -181,8 +182,9 @@ AliEMCALQADataMakerRec& AliEMCALQADataMakerRec::operator = (const AliEMCALQAData
   return *this;
 }
  
- //____________________________________________________________________________ 
-///Detector specific actions at end of cycle
+//____________________________________________________________________________ 
+///
+/// Detector specific actions at end of cycle
 ///
 /// \param task
 /// \param list of histograms
@@ -272,7 +274,7 @@ void AliEMCALQADataMakerRec::GetCalibRefFromOCDB()
 
 //____________________________________________________________________________ 
 ///
-/// Create histograms to controll ESD
+/// Create histograms to controll ESD.
 /// Multiple paragraphs are split on multiple lines.
 ///
 void AliEMCALQADataMakerRec::InitESDs()
@@ -300,7 +302,7 @@ void AliEMCALQADataMakerRec::InitESDs()
 }
 
 //____________________________________________________________________________ 
-/// create Digits histograms in Digits subdir 
+/// Create Digits histograms in Digits subdir. 
 ///
 void AliEMCALQADataMakerRec::InitDigits()
 {
@@ -319,7 +321,7 @@ void AliEMCALQADataMakerRec::InitDigits()
 
 //____________________________________________________________________________ 
 ///
-/// create Reconstructed PoInt_ts histograms in RecPoints subdir
+/// Create Reconstructed PoInt_ts histograms in RecPoints subdir.
 ///
 void AliEMCALQADataMakerRec::InitRecPoints()
 {
@@ -343,7 +345,7 @@ void AliEMCALQADataMakerRec::InitRecPoints()
 
 //____________________________________________________________________________ 
 ///
-///  create Raws histograms in Raws subdir
+///  Create Raws histograms in Raws subdir.
 ///
 void AliEMCALQADataMakerRec::InitRaws()
 {
@@ -584,7 +586,7 @@ void AliEMCALQADataMakerRec::InitRaws()
 
 //____________________________________________________________________________
 ///
-/// make QA data from ESDs
+/// Make QA data from ESDs.
 ///
 /// \param esd: AliESDEvent
 ///
@@ -613,7 +615,8 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
 }
 
 //____________________________________________________________________________
-/// Makes the histograms for Raw data
+///
+/// Make the histograms for Raw data.
 ///
 /// \param rawReader: AliRawReader
 ///
@@ -1092,7 +1095,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 //____________________________________________________________________________
 ///
-/// makes data from Digits
+/// Make data from Digits.
 ///
 void AliEMCALQADataMakerRec::MakeDigits()
 {
@@ -1107,8 +1110,7 @@ void AliEMCALQADataMakerRec::MakeDigits()
 
 //____________________________________________________________________________
 ///
-/// makes data from Digit Tree
-///
+/// Make data from Digit Tree.
 ///
 /// \param digitTree: TTree
 ///
@@ -1135,8 +1137,7 @@ void AliEMCALQADataMakerRec::MakeDigits(TTree * digitTree)
 
 //____________________________________________________________________________
 ///
-/// makes data from RecPoints
-///
+/// Make data from RecPoints.
 ///
 /// \param clustersTree: TTree
 ///
@@ -1167,7 +1168,7 @@ void AliEMCALQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 
 //____________________________________________________________________________ 
 ///
-/// Detector specific actions at start of cycle
+/// Detector specific actions at start of cycle.
 /// 
 void AliEMCALQADataMakerRec::StartOfDetectorCycle()
 {
@@ -1194,7 +1195,7 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 
 //_____________________________________________________________________________________
 ///
-/// ConvertProfile2H 
+/// Convert TProfile to TH2  
 ///
 /// \param p: TProfile
 /// \param histo: TH2 histogram
@@ -1262,8 +1263,9 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
 } 
 
 /*
-//____________________________________________________________________________ 
-/// from local to global indices
+//____________________________________________________________________________
+///
+/// Transform local to global indices.
 ///
 /// \param globRow = global row index 
 /// \param globColumn = global column index
@@ -1315,7 +1317,8 @@ void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globC
 }
  
 // ____________________________________________________________________________ 
-/// Creates the RAWSTU histograms
+/// 
+/// Create the Raw STU histograms.
 /// 
 /// \param  AliRawReader
 ///
@@ -1463,8 +1466,9 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 }
 */
 
-// ____________________________________________________________________________ 
-/// Creates the RAWSTU histograms
+// ____________________________________________________________________________
+///
+/// Create the Raw STU histograms.
 /// 
 /// \param  rawReader: AliRawReaded
 ///

@@ -151,8 +151,12 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetSystematicErrorCluster(Double_t *systematic){ for (Int_t i=0; i<2;i++) fSystematicErrorCluster[i]=systematic[i];}
   Double_t GetUseDistortionFractionAsErrorY() const {return fDistortionFractionAsErrorYZ[0];}
   Double_t GetUseDistortionFractionAsErrorZ() const {return fDistortionFractionAsErrorYZ[1];}
+  Double_t GetUseDistDispFractionAsErrorY() const {return fDistDispFractionAsErrorYZ[0];}
+  Double_t GetUseDistDispFractionAsErrorZ() const {return fDistDispFractionAsErrorYZ[1];}
   void     SetUseDistortionFractionAsErrorY(double v) {fDistortionFractionAsErrorYZ[0] = v;}
   void     SetUseDistortionFractionAsErrorZ(double v) {fDistortionFractionAsErrorYZ[1] = v;}
+  void     SetUseDistDispFractionAsErrorY(double v) {fDistDispFractionAsErrorYZ[0] = v;}
+  void     SetUseDistDispFractionAsErrorZ(double v) {fDistDispFractionAsErrorYZ[1] = v;}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
   const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
@@ -258,6 +262,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   Double_t fSystematicErrorCluster[2];        ///< systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Double_t fDistortionFractionAsErrorYZ[2];   ///< use fraction of distortion as additional error
+  Double_t fDistDispFractionAsErrorYZ[2];   ///< use fraction of distortion dispersion as additional error
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
 
 
@@ -267,7 +272,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 26)
+  ClassDef(AliTPCRecoParam, 27)
   /// \endcond
 };
 

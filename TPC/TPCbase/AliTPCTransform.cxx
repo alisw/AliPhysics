@@ -72,6 +72,7 @@
 #include "AliTPCChebDist.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "TTreeStream.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
@@ -92,7 +93,8 @@ AliTPCTransform::AliTPCTransform():
   fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0),       //! current time stamp
-  fTimeDependentUpdated(kFALSE)
+  fTimeDependentUpdated(kFALSE),
+  fDebugStreamer(0)
 {
   //
   // Speed it up a bit!
@@ -105,8 +107,7 @@ AliTPCTransform::AliTPCTransform():
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
-  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
-  fLastCorrRef[0]=fLastCorrRef[1]=fLastCorrRef[2] = 0;
+  for (int i=0;i<4;i++) {fLastCorr[i] = fLastCorrRef[i] = 0.0f;}
 }
 
 AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
@@ -117,7 +118,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
-  fTimeDependentUpdated(transform.fTimeDependentUpdated)
+  fTimeDependentUpdated(transform.fTimeDependentUpdated),
+  fDebugStreamer(0)
 {
   /// Speed it up a bit!
 
@@ -129,9 +131,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fPrimVtx[0]=0;
   fPrimVtx[1]=0;
   fPrimVtx[2]=0;
-  fLastCorr[0]=fLastCorr[1]=fLastCorr[2] = 0;
-  fLastCorrRef[0]=fLastCorrRef[1]=fLastCorrRef[2] = 0;
-
+  for (int i=0;i<4;i++) {fLastCorr[i] = fLastCorrRef[i] = 0.0f;}
 }
 
 AliTPCTransform::~AliTPCTransform() {
@@ -328,6 +328,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t deltaZcorrTime=0;
   static time_t    lastStampT=-1;
   //
+  Bool_t isChange=(lastStampT!=(Int_t)fCurrentTimeStamp);
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
     if(fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
@@ -407,6 +408,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   // Z coordinate
   //
+  Double_t delay=0;
   if (AliTPCcalibDB::Instance()->IsTrgL0()){
     // by defualt we assume L1 trigger is used - make a correction in case of  L0
     AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
@@ -415,6 +417,21 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
       Double_t delay = ctp->GetDelayL1L0()*0.000000025;
       x[2]-=delay/param->GetTSample();
     }
+  }
+  if (isChange && fDebugStreamer!=NULL){
+    //
+    //
+    (*fDebugStreamer)<<"transformDump"<<
+      "fCurrentTimeStamp="<<lastStampT<<
+      "delay="<<delay<<
+      "driftCorr="<<driftCorr<<
+      "vdcorrectionTime="<<vdcorrectionTime<<
+      "time0corrTime="<<time0corrTime<<
+      "deltaZcorrTime="<<deltaZcorrTime<<
+      "vdcorrectionTimeG="<<vdcorrectionTimeGY<<
+      "\n";
+      
+      
   }
   x[2]-= param->GetNTBinsL1();
   x[2]*= zwidth;  // tranform time bin to the distance to the ROC
@@ -653,7 +670,7 @@ void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
 }
 
 //______________________________________________________
-void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3], Bool_t ref)
+void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], float *res, Bool_t ref)
 {
   // get correction from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
@@ -666,13 +683,13 @@ void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], f
   // 
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
-    float delta1[3];
+    float delta1[4]={0};
     fCorrMapCache1->Eval(roc,row,y2x,z2x,delta1);   
     UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
     UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
       // possible division by 0 is checked at upload of maps
     double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
-    for (int i=3;i--;) res[i] += (delta1[i]-res[i])*dtScale;
+    for (int i=4;i--;) res[i] += (delta1[i]-res[i])*dtScale;
   }
   //
 }
@@ -703,7 +720,7 @@ Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3]
 }
 
 //______________________________________________________
-void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], float res[3])
+void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], float *res)
 {
   // get distortions from the map for a point at given ROC
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
@@ -713,13 +730,13 @@ void AliTPCTransform::EvalDistortionMap(int roc, const double xyzSector[3], floa
   // 
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
-    float delta1[3];
+    float delta1[4] = {0.0f};
     ((AliTPCChebDist*)fCorrMapCache1)->Eval(roc,xyzSector[0],y2x,z2x,res);
     UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
     UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
       // possible division by 0 is checked at upload of maps
     double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
-    for (int i=3;i--;) res[i] += (delta1[i]-res[i])*dtScale;
+    for (int i=4;i--;) res[i] += (delta1[i]-res[i])*dtScale;
   }
   //
 }

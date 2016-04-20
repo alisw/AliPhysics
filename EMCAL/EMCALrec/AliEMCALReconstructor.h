@@ -7,7 +7,7 @@
 /// \class AliEMCALReconstructor
 /// \brief Wrapping class for EMCal reconstruction
 ///
-/// Wrapping class for reconstruction.
+/// Wrapping class for EMCal reconstruction.
 ///
 /// It steers
 ///   * Raw data fitting to create digits
@@ -19,6 +19,7 @@
 /// \author Yves Schutz (SUBATECH), originally 
 /// \author Dmitri Peressounko (SUBATECH & Kurchatov Institute), PHOS copy
 /// \author Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-Grenoble
+/// \author Rachid Guernane, <guernane@lpsc.in2p3.fr>, LPSC-Grenoble (Trigger stuff)
 /// \author plus others that have put their hands, list them ...
 /// 
 
@@ -146,7 +147,7 @@ class AliEMCALReconstructor : public AliReconstructor {
   TList                      * fMatches;          //!<! Collection of matches between tracks and clusters
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALReconstructor,14)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,14) ; // Reconstruction algorithm class (Base Class)
   /// \endcond
 
 }; 

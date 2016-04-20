@@ -87,20 +87,20 @@ AliEMCALTriggerPatchInfo::~AliEMCALTriggerPatchInfo()
 AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTriggerPatchInfo &p)
 {
   if (this != &p) {
-    fCenterGeo = p.fCenterGeo;
-    fCenterMass = p.fCenterMass;
-    fEdge1 = p.fEdge1;
-    fEdge2 = p.fEdge2;
-    fADCAmp = p.fADCAmp;
-    fADCOfflineAmp = p.fADCOfflineAmp;
-    fTriggerBits = p.fTriggerBits;
-    fDetectorType = p.fDetectorType;
-    fEdgeCell[0] = p.fEdgeCell[0];
-    fEdgeCell[1] = p.fEdgeCell[1];
+    new (this) AliEMCALTriggerPatchInfo(p);
   }
 
   return *this;
 }
+
+/**
+ * Reset all fields to the default values using the standard constructor
+ */
+void AliEMCALTriggerPatchInfo::Reset()
+{
+  new (this) AliEMCALTriggerPatchInfo();
+}
+
 void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
 {
   fCol0 = col0;

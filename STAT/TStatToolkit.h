@@ -66,6 +66,9 @@ namespace TStatToolkit
   void MedianFilter(TH1 * his1D, Int_t nmedian);
 
   template <typename T> Bool_t  LTMHisto(TH1 * his, TVectorT<T> &param , Float_t fraction=1);
+  template <typename T> Int_t*  LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep=1.0);
+
+  template <typename T> void Reorder(int np, T *arr, const int *idx);
   //
   template <typename T> 
   void LTM(TH1 * his, TVectorT<T> *param=0 , Float_t fraction=1,  Bool_t verbose=kFALSE);
@@ -609,5 +612,87 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
 
 }
 
+template <typename T> 
+Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Float_t keep)
+{
+  //
+  // LTM : Trimmed mean of unbinned array
+  // 
+  // Robust statistic to estimate properties of the distribution
+  // To handle binning error special treatment
+  // for definition of unbinned data see:
+  //     http://en.wikipedia.org/w/index.php?title=Trimmed_estimator&oldid=582847999
+  //
+  // Function parameters:
+  //     np      - number of points in the array
+  //     arr     - data array (unsorted)
+  //     params  - vector with parameters
+  //             - 0 - area
+  //             - 1 - mean
+  //             - 2 - rms 
+  //             - 3 - error estimate of mean
+  //             - 4 - error estimate of RMS
+  //             - 5 - first accepted element (of sorted array)
+  //             - 6 - last accepted  element (of sorted array)
+  //
+  // On success returns index of sorted events 
+  //
+  static int book = 0;
+  static int *index = 0;
+  static double* w = 0;
+  int keepN = np*keep;
+  if (keepN>np) keepN = np;
+  if (keepN<2) return 0;
+  params[0] = 0.0f;
+  if (book<np) {
+    delete[] index;
+    book = np;
+    index = new int[book];
+    delete[] w;
+    w = new double[book+book];
+  }
+  //
+  double *wx1 = w, *wx2 = wx1+np;
+  TMath::Sort(np,arr,index,kFALSE); // sort in increasing order
+  // build cumulants
+  double sum1=0.0,sum2=0.0;
+  for (int i=0;i<np;i++) {
+    double x = arr[index[i]];
+    wx1[i] = (sum1+=x);
+    wx2[i] = (sum2+=x*x);
+  }
+  double minRMS = sum2+1e6;
+  params[0] = keepN;
+  int limI = np - keepN+1;
+  for (int i=0;i<limI;i++) {
+    int limJ = i+keepN-1;
+    Double_t sum1 = wx1[limJ] - (i ? wx1[i-1] : 0.0);
+    Double_t sum2 = wx2[limJ] - (i ? wx2[i-1] : 0.0);
+    double mean = sum1/keepN;
+    double rms2 = sum2/keepN - mean*mean;
+    //    printf("%d : %d %e %e\n",i,limJ, mean, TMath::Sqrt(rms2));
+    if (rms2>minRMS) continue;
+    minRMS = rms2;
+    params[1] = mean;
+    params[2] = rms2;
+    params[5] = i;
+    params[6] = limJ;
+  }
+  //
+  if (!params[0]) return 0;
+  params[2] = TMath::Sqrt(params[2]);
+  params[3] = params[2]/TMath::Sqrt(params[0]); // error on mean
+  params[4] = params[3]/TMath::Sqrt(2.0); // error on RMS
+  return index;
+}
+
+template <typename T> 
+void TStatToolkit::Reorder(int np, T *arr, const int *idx)
+{
+  // rearange arr in order given by idx
+  T arrc[np];
+  memcpy(arrc,arr,np*sizeof(T));
+  for (int i=np;i--;) arr[i] = arrc[idx[i]];
+}
 
 #endif

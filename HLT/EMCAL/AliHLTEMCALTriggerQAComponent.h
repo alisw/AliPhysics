@@ -32,6 +32,7 @@ class AliEMCALGeometry;
 class AliEMCALTriggerFastOR;
 class AliHLTCaloTriggerPatchDataStruct;
 class AliHLTEMCALGeometry;
+class AliHLTEMCALCaloCells;
 
 /**
  * @class AliHLTEMCALTriggerQAComponent
@@ -39,6 +40,12 @@ class AliHLTEMCALGeometry;
  */
 class AliHLTEMCALTriggerQAComponent : public AliHLTCaloProcessor {
 public:
+
+  enum EBeamType_t {
+    kPP,
+    kPbPb
+  };
+
   AliHLTEMCALTriggerQAComponent();
   virtual ~AliHLTEMCALTriggerQAComponent();
 
@@ -76,6 +83,7 @@ public:
   bool CheckInputDataType(const AliHLTComponentDataType &datatype);
 
   void SetPbPb2015TriggerClasses();
+  void SetPP2016TriggerClasses();
 
 protected:
   /** interface function, see @ref AliHLTComponent for description */
@@ -87,20 +95,14 @@ protected:
    /** retrieve fired trigger classes for the current event **/
    int RetrieveFiredTriggerClasses();
 
-   /** fill trigger class histograms for a given trigger patch **/
-   void FillTrgClassHistograms(const AliEMCALTriggerPatchInfo& patch, const TString& trgClass, TString patchTag);
-
-   /** create trigger class histograms **/
-   void CreateTrgClassHistograms(const TString& trgClass, TString patchTag);
-
-   /** fill histograms for fired trigger classes **/
-   void ProcessTriggerClasses(const AliEMCALTriggerPatchInfo& patch);
+   /** process trigger patches contained in block **/
+   void ProcessCells(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells);
 
    /** process trigger patches contained in block **/
    void ProcessTriggerPatches(const AliHLTComponentBlockData* block);
 
    /** process trigger FastORs contained in block **/
-   void ProcessTriggerFastors(const AliHLTComponentBlockData* block);
+   void ProcessTriggerFastors(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells);
    
    /** converts the HLT trigger patch flat structure into an AliEMCALTriggerPatchInfo object */
    void HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const;
@@ -109,20 +111,18 @@ protected:
    void HLTFastor2Fastor(const AliHLTCaloTriggerDataStruct& htlfastor, AliEMCALTriggerFastOR& fastor) const;
 
    /** push histograms contained in the list */
-   void PushHistograms(THashList* list);
+   void PushHistograms(TCollection* list);
 
    /** initialise the geometry */
    void InitialiseGeometry();
 
-   const AliEMCALTriggerBitConfig       *fTriggerBitConfig   ;  ///< Trigger bit configuration, aliroot-dependent
-   Bool_t                                fHistoResetOnPush   ;  //   Reset histograms when data is pushed
-   TString                               fFilterTrgClass     ;  //   Space-separated trigger classes to be taken into consideration
-   int                                   fLocalEventCount    ;  //!  Event counter
-   AliHLTEMCALGeometry                  *fGeometry           ;  //!  EMCal geometry
-   THashList                            *fTrgClassHistos     ;  //!  Histograms by trigger classes
-   std::vector<TString>                  fFiredTriggerClasses;  //!  Trigger classes fired in the current event
-   Double_t                              fEMCalBkg[3]        ;  //!  Background in EMCal
-   Double_t                              fDCalBkg[3]         ;  //!  Background in DCal
+   const AliEMCALTriggerBitConfig       *fTriggerBitConfig   ;  ///<  Trigger bit configuration, aliroot-dependent
+   Bool_t                                fHistoResetOnPush   ;  ///<  Reset histograms when data is pushed
+   TString                               fFilterTrgClass     ;  ///<  Space-separated trigger classes to be taken into consideration
+   EBeamType_t                           fBeamType           ;  ///<  Beam type
+   int                                   fLocalEventCount    ;  //!<! Event counter
+   AliHLTEMCALGeometry                  *fGeometry           ;  //!<! EMCal geometry
+   std::vector<TString>                  fFiredTriggerClasses;  //!<! Trigger classes fired in the current event
 
 private:
    /** Pointer to the trigger QA class */

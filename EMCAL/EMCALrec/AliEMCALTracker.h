@@ -2,6 +2,8 @@
 // Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved.  
 // See cxx source for full Copyright notice                                
 //========================================================================  
+
+//=========================================================================
 ///                       
 /// \class AliEMCALTracker 
 /// \brief Steer EMCal-Track matching
@@ -16,7 +18,7 @@
 /// track which is matched to a cluster.
 /// In order to use method, one must launch PropagateBack().
 ///
-/// \author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+/// \author: A. Pulvirenti <alberto.pulvirenti@ct.infn.it>, Catania
 /// \author: Rong Rong Ma, Yale: Adapt to data analysis tools and other fixes.
 /// \author: Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, LPSC-IN2P3-CNRS, Run2 fixes
 ///
@@ -74,26 +76,34 @@ class AliEMCALTracker : public AliTracker
 
   enum {	kUnmatched = -99999 };
 	
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
   class  AliEMCALMatchCluster : public TObject
   {
    public:
+    
     AliEMCALMatchCluster(Int_t ID, AliEMCALRecPoint *recPoint);
     AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
     virtual ~AliEMCALMatchCluster() { }
-    //----------------------------------------------------------------------------
+    
     Int_t     Index() const {return fIndex;}
     Double_t  X() const {return fX;}
     Double_t  Y() const {return fY;} 
     Double_t  Z() const {return fZ;}
+    
    private:
     Int_t     fIndex;  ///< Index of cluster in its native container (ESD or TClonesArray)
     Double_t  fX;      ///< Global X position
     Double_t  fY;      ///< Global Y position
     Double_t  fZ;      ///< Global Z position
   };
-   
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
  private:
+  
   Int_t  FindMatchedCluster(AliESDtrack *track);
+  
   enum ETrackCorr { 
     kTrackCorrNone  = 0,        ///< Do not correct for energy loss
     kTrackCorrMMB   = 1,        ///< Use MeanMaterialBudget() function to evaluate correction

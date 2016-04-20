@@ -13,6 +13,7 @@
 ///  rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 
 class AliTPCRecoParam;
+class TTreeSRedirector;
 #include "AliTPCChebCorr.h"
 #include "AliTransform.h"
 #include <time.h>
@@ -51,7 +52,7 @@ public:
   Bool_t  UpdateTimeDependentCache();
   void    ApplyCorrectionMap(int roc, int row, double xyzSect[3]);
   void    ApplyDistortionMap(int roc, double xyzLab[3]);
-  void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3], Bool_t ref=kFALSE);
+  void    EvalCorrectionMap(int roc, int row, const double xyz[3], float *res, Bool_t ref=kFALSE);
   Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut, Bool_t ref=kFALSE);
   void    EvalDistortionMap(int roc, const double xyzSector[3], float res[3]);
   const   Float_t* GetLastMapCorrection() const {return fLastCorr;}
@@ -64,11 +65,14 @@ public:
   static int  SectorUp(int idROC);
   static int  SectorDown(int idROC);
   static double GetMaxY2X() {return fgkMaxY2X;}
+  void SetDebugStreamer(TTreeSRedirector * pcstream){fDebugStreamer=pcstream;}
+  TTreeSRedirector *GetDebugStreemer() const { return fDebugStreamer;}     //!debug streamer
+
   //
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
-  Float_t  fLastCorr[3]; ///!<! last correction from the map
-  Float_t  fLastCorrRef[3];  ///!<! last reference correction from the map
+  Float_t  fLastCorr[4]; ///!<! last correction from the map, 4th param is dispersion
+  Float_t  fLastCorrRef[4];  ///!<! last reference correction from the map, 4th param is dispersion
   Double_t fCoss[18];  ///< cache the transformation
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
@@ -83,6 +87,7 @@ private:
   static const Double_t fgkSin20;       // sin(20)
   static const Double_t fgkCos20;       // sin(20)
   static const Double_t fgkMaxY2X;      // tg(10)
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
   //
   ClassDef(AliTPCTransform,3)
   /// \endcond

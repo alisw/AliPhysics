@@ -26,10 +26,11 @@ void Config()
 
   // Load Geant4 + Geant4 VMC libraries
   //
+  std::string g4libmacro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
   if (gClassTable->GetID("TGeant4") == -1) {
     // Load Geant4 libraries 
-    if (!gInterpreter->IsLoaded("$ALICE/geant4_vmc/examples/macro/g4libs.C")) {
-      gROOT->LoadMacro("$ALICE/geant4_vmc/examples/macro/g4libs.C");
+    if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
+      gROOT->LoadMacro(g4libmacro.c_str());
       gInterpreter->ProcessLine("g4libs()");
     }
   }    

@@ -82,6 +82,7 @@ class AliTPCChebCorr : public TNamed
   Float_t  Eval(int sector, int row, float y2x, float z, int dimOut) const;
   Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
   void     Init();
+  Int_t    GetDimOut() const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   static const float* GetPadRowX()              {return fgkPadRowX;}
   //

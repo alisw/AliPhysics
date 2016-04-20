@@ -592,7 +592,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTTrigg
       case gkAliEventTypeCalibration: l1msg = (0x1 << 6) | 0x01; break;
       case gkAliEventTypeSoftware:    l1msg = 0x01; break;
       }
-      evtTrigData.fCommonHeader[1] = AliHLTUInt32_t(l1msg) << 14;
+      evtTrigData.fCommonHeader[1] = (AliHLTUInt32_t(l1msg) << 14) | (0x03000000); //We have to set a CDH version, use 3 because we support 100 trigger classes below (0x03000000)
       evtTrigData.fCommonHeader[3] = ((l1msg & 0x1) == 0x1) ? (participatingDetectors & 0xFFFFFF) : 0x0;
       evtTrigData.fCommonHeader[5] = (trgMask & AliHLTTriggerMask_t(0xffffffff)).to_ulong();
       evtTrigData.fCommonHeader[6] = ((trgMask>>32) & AliHLTTriggerMask_t(0x3ffff)).to_ulong();

@@ -1,4 +1,5 @@
 #include "zmq.h"
+#include <algorithm>
 #include <iostream>
 #include "AliHLTDataTypes.h"
 #include "AliHLTComponent.h"
@@ -33,9 +34,12 @@ class MySignalHandler;
 
 //methods
 int ProcessOptionString(TString arguments);
-int UpdatePad(TObject*);
+int GetData();
+int UpdateCanvas();
+int ProcessObject(TObject*);
 int DumpToFile(TObject* object);
 void* run(void* arg);
+Int_t countpads(TVirtualPad *pad);
 
 //configuration vars
 Bool_t fVerbose = kFALSE;
@@ -48,7 +52,7 @@ TString fFileName="";
 TFile* fFile=NULL;
 
 int fPollInterval = 0;
-int fPollTimeout = 1000; //1s
+int fPollTimeout = 100000; //100s
 Bool_t fSort = kTRUE;
 
 //internal state
@@ -57,7 +61,12 @@ void* fZMQin  = NULL;                 //the in socket - entry point for the data
 
 TApplication* gApp;
 TCanvas* fCanvas;
-TObjArray fDrawables;
+
+std::vector<TObject*> fDrawables;
+std::vector<TObject*> fIncomingObjects;
+
+int fNdrawables = 0;
+int fNpads = 0;
 
 TString fStatus = "";
 Int_t fRunNumber = 0;
@@ -75,33 +84,55 @@ Bool_t fAllowResetAtSOR = kTRUE;
 ULong64_t iterations=0;
 
 const char* fUSAGE = 
-    "ZMQhstViewer: Draw() all ROOT drawables in a message\n"
-    "options: \n"
-    " -in : data in\n"
-    " -sleep : how long to sleep in between requests for data in s (if applicable)\n"
-    " -timeout : how long to wait for the server to reply (s)\n"
-    " -Verbose : be verbose\n"
-    " -select : only show selected histograms (by regexp)\n"
-    " -unselect : as select, only inverted\n"
-    " -drawoptions : what draw option to use\n"
-    " -file : dump input to file and exit\n"
-    " -log[xyz] : use log scale on [xyz] dimension\n"
-    " -histstats : histogram stat box options (default 0)\n"
-    " -AllowResetAtSOR : 0/1 to reset at change of run\n"
-    ;
+"ZMQhstViewer: Draw() all ROOT drawables in a message\n"
+"options: \n"
+" -in : data in\n"
+" -sleep : how long to sleep in between requests for data in s (if applicable)\n"
+" -timeout : how long to wait for the server to reply (s)\n"
+" -Verbose : be verbose\n"
+" -select : only show selected histograms (by regexp)\n"
+" -unselect : as select, only inverted\n"
+" -drawoptions : what draw option to use\n"
+" -file : dump input to file and exit\n"
+" -log[xyz] : use log scale on [xyz] dimension\n"
+" -histstats : histogram stat box options (default 0)\n"
+" -AllowResetAtSOR : 0/1 to reset at change of run\n"
+" -sort : 0/1 sort by title, by default on\n"
+;
+
+struct TObjectTitleComparator {
+  bool operator()(const TObject* left, const string& right) {
+    return right.compare(left->GetTitle())>0;
+  }
+
+  bool operator()(const TObject* left, const TObject* right) {
+    return strcmp(left->GetTitle(),right->GetTitle())<0;
+  }
+};
+
+struct TObjectNameComparator {
+  bool operator()(const TObject* left, const string& right) {
+    return right.compare(left->GetTitle())>0;
+  }
+
+  bool operator()(const TObject* left, const TObject* right) {
+    return strcmp(left->GetTitle(),right->GetTitle())<0;
+  }
+};
+
 //_______________________________________________________________________________________
 class MySignalHandler : public TSignalHandler
 {
   public:
-	MySignalHandler(ESignals sig) : TSignalHandler(sig) {}
-	Bool_t Notify()
-	{
-    Printf("signal received, exiting");
-		fgTerminationSignaled = true;
-		return TSignalHandler::Notify();
-	}
-	static bool TerminationSignaled() { return fgTerminationSignaled; }
-	static bool fgTerminationSignaled;
+    MySignalHandler(ESignals sig) : TSignalHandler(sig) {}
+    Bool_t Notify()
+    {
+      Printf("signal received, exiting");
+      fgTerminationSignaled = true;
+      return TSignalHandler::Notify();
+    }
+    static bool TerminationSignaled() { return fgTerminationSignaled; }
+    static bool fgTerminationSignaled;
 };
 bool MySignalHandler::fgTerminationSignaled = false;
 
@@ -115,6 +146,9 @@ void sig_handler(int signo)
 //_______________________________________________________________________________________
 void* run(void* arg)
 {
+  fDrawables.reserve(1000);
+  fIncomingObjects.reserve(1000);
+
   //main loop
   while(!MySignalHandler::TerminationSignaled())
   {
@@ -123,7 +157,7 @@ void* run(void* arg)
     if (fZMQsocketModeIN==ZMQ_REQ)
     {
       string request;
-      
+
       if (fSelectionRegexp || fUnSelectionRegexp) 
       {
         if (fSelectionRegexp) request += " select="+fSelectionRegexp->GetPattern();
@@ -135,11 +169,11 @@ void* run(void* arg)
       if (fVerbose) Printf("sending request CONFIG %s", request.c_str());
       alizmq_msg_send("", "", fZMQin, 0);
     }
-    
+
     //wait for the data
     zmq_pollitem_t sockets[] = { 
-                                 { fZMQin, 0, ZMQ_POLLIN, 0 }, 
-                               };
+      { fZMQin, 0, ZMQ_POLLIN, 0 }, 
+    };
     int rc = zmq_poll(sockets, 1, (fZMQsocketModeIN==ZMQ_REQ)?fPollTimeout:-1);
 
     if (rc==-1 && errno==ETERM)
@@ -158,57 +192,72 @@ void* run(void* arg)
     }
     else
     {
-      //get all data (topic+body), possibly many of them
-      aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQin, 0);
-      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
-      {
-        if (alizmq_msg_iter_check(i, "INFO")==0)
-        {
-            //check if we have a runnumber in the string
-            string info;
-            alizmq_msg_iter_data(i,info);
-            if (fVerbose) Printf("processing INFO %s", info.c_str());
-            
-            fCanvas->SetTitle(info.c_str());
-            size_t runTagPos = info.find("run");
-            if (runTagPos != std::string::npos)
-            {
-              size_t runStartPos = info.find("=",runTagPos);
-              size_t runEndPos = info.find(" ");
-              string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
-              if (fVerbose) printf("received run=%s\n",runString.c_str());
-  
-              int runnumber = atoi(runString.c_str());
-  
-              if (runnumber!=fRunNumber && fAllowResetAtSOR) 
-              {
-                  if (fVerbose) printf("Run changed, resetting!\n");
-                  fDrawables.Delete();
-                  fCanvas->Clear();
-                  gSystem->ProcessEvents();
-              }
-              fRunNumber = runnumber; 
-            }
-            continue;
-        }
-
-        TObject* object;
-        alizmq_msg_iter_data(i, object);
-        if (object) UpdatePad(object);
-
-        if (!fFileName.IsNull()) 
-        {
-          if (object) DumpToFile(object);
-        }
-      }
-      alizmq_msg_close(&message);
+      GetData();
+      UpdateCanvas();
 
     }//socket 0
     gSystem->ProcessEvents();
     usleep(fPollInterval);
   }//main loop
   return NULL;
+}
+
+//_______________________________________________________________________________________
+int GetData()
+{
+  //get all data (topic+body), possibly many of them
+  fIncomingObjects.clear();
+  aliZMQmsg message;
+  alizmq_msg_recv(&message, fZMQin, 0);
+
+  //process message, deserialize objects, puth them in the container 
+  for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+  {
+    if (alizmq_msg_iter_check(i, "INFO")==0)
+    {
+      //check if we have a runnumber in the string
+      string info;
+      alizmq_msg_iter_data(i,info);
+      if (fVerbose) Printf("processing INFO %s", info.c_str());
+
+      fCanvas->SetTitle(info.c_str());
+      size_t runTagPos = info.find("run");
+      if (runTagPos != std::string::npos)
+      {
+        size_t runStartPos = info.find("=",runTagPos);
+        size_t runEndPos = info.find(" ");
+        string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
+        if (fVerbose) printf("received run=%s\n",runString.c_str());
+
+        int runnumber = atoi(runString.c_str());
+
+        if (runnumber!=fRunNumber && fAllowResetAtSOR) 
+        {
+          if (fVerbose) printf("Run changed, resetting!\n");
+          for (vector<TObject*>::iterator i=fDrawables.begin(); i!=fDrawables.end(); ++i)
+          {
+            delete *i;
+          }
+          fDrawables.clear();
+          fCanvas->Clear();
+          gSystem->ProcessEvents();
+        }
+        fRunNumber = runnumber; 
+      }
+      continue;
+    }
+
+    TObject* object;
+    alizmq_msg_iter_data(i, object);
+    ProcessObject(object);
+
+    if (!fFileName.IsNull()) 
+    {
+      if (object) DumpToFile(object);
+    }
+  } //for iterator i
+  alizmq_msg_close(&message);
+  return 0;
 }
 
 //_______________________________________________________________________________________
@@ -227,11 +276,11 @@ int main(int argc, char** argv)
   gApp = new TApplication("viewer", &argc, argv); 
   gApp->SetReturnFromRun(true);
   //gApp->Run();
-  
+
   gStyle->SetOptStat(fHistStats);
   fCanvas = new TCanvas();
   gSystem->ProcessEvents();
-  
+
   int mainReturnCode=0;
 
   //init stuff
@@ -250,9 +299,9 @@ int main(int argc, char** argv)
   //gSystem->AddSignalHandler(new MySignalHandler(kSigQuit));
   //gSystem->AddSignalHandler(new MySignalHandler(kSigInterrupt));
   //gSystem->AddSignalHandler(new MySignalHandler(kSigTermination));
- 
+
   if (signal(SIGINT, sig_handler) == SIG_ERR)
-  printf("\ncan't catch SIGINT\n");
+    printf("\ncan't catch SIGINT\n");
 
   run(NULL);
 
@@ -281,80 +330,165 @@ int DumpToFile(TObject* object)
 }
 
 //______________________________________________________________________________
-int UpdatePad(TObject* object)
+int ProcessObject(TObject* object)
 {
   if (!object) return -1;
-  const char* name = object->GetName();
-  
-  TObject* drawable = fDrawables.FindObject(name);
-  int padIndex = fDrawables.IndexOf(drawable);
+  string name = object->GetName();
+  string title = object->GetTitle();
 
-  if (fVerbose) Printf("in: %s (%s)", name, object->ClassName());
+  if (fVerbose) Printf("in: %s (%s)", name.c_str(), object->ClassName());
+
   Bool_t selected = kTRUE;
   Bool_t unselected = kFALSE;
   if (fSelectionRegexp) selected = fSelectionRegexp->Match(name);
   if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(name);
   if (!selected || unselected) 
   {
-      delete object;
-      return 0;
+    delete object;
+    return 0;
   }
- 
-  if (drawable)
+
+  fIncomingObjects.push_back(object);
+
+  return 0;
+}
+
+//______________________________________________________________________________
+Int_t countpads(TVirtualPad *pad) {
+  //count the number of pads in pad
+  if (!pad) return 0;
+  Int_t npads = 0;
+  TObject *obj;
+  TIter next(pad->GetListOfPrimitives());
+  while ((obj = next())) {
+    if (obj->InheritsFrom(TVirtualPad::Class())) npads++;
+  }
+  return npads;
+}
+
+//______________________________________________________________________________
+int UpdateCanvas()
+{
+  std::vector<TObject*> fOldDrawables; 
+  fOldDrawables.reserve(1000);
+
+  std::vector<int> oldPadNumbers(fIncomingObjects.size());
+
+  bool weHaveNewPlots = kFALSE;
+
+  int ipad = 0;
+  for (vector<TObject*>::iterator i=fIncomingObjects.begin();
+      i!=fIncomingObjects.end();
+      ++i)
   {
-    //only redraw the one thing
-    if (fVerbose) Printf("  redrawing %s in pad %i", name, padIndex);
-    fCanvas->cd(padIndex+1);
-    gPad->GetListOfPrimitives()->Remove(drawable);
-    gPad->Clear();
-    fDrawables.RemoveAt(padIndex);
-    delete drawable;
-    fDrawables.AddAt(object, padIndex);
-    object->Draw(fDrawOptions);
-    gPad->Modified(kTRUE);
+    TObject* newObj = *i;
+    TObject* oldObj = NULL;
+
+    const char* newObjName = newObj->GetName();
+
+    //check if it will replace something
+    bool found=false;
+    int jpad = 0;
+    for (vector<TObject*>::iterator j=fDrawables.begin();
+        j!=fDrawables.end();
+        ++j)
+    {
+      oldObj = *j;
+      const char* oldObjName = oldObj->GetName();
+      if (strcmp(newObjName,oldObjName)==0)
+      {
+        if (fVerbose) printf("found! %s\n",oldObjName);
+        found = true;
+        *j = *i;
+        fOldDrawables.push_back(oldObj); //tag for removal
+        oldPadNumbers[ipad]=jpad;
+        break;
+      }
+      jpad++;
+    }
+    if (!found)
+    {
+      if (fVerbose) printf("new object %s\n",newObjName);
+      fDrawables.push_back(newObj); //completely new one
+      weHaveNewPlots = true;
+    }
+    else
+    {
+      if (fVerbose) printf("found...\n");
+    }
+    ipad++;
+  }
+
+  //re-sort the new list if we have new plots
+  if (weHaveNewPlots && fSort) {
+    if (fVerbose) { printf("sorting\n");
+      printf("before\n");
+      for (vector<TObject*>::iterator i=fDrawables.begin(); i!=fDrawables.end(); ++i)
+      {printf("  %s",(*i)->GetTitle());}
+      printf("\n");
+    }
+
+    std::sort(fDrawables.begin(), fDrawables.end(), TObjectTitleComparator());
+    
+    if (fVerbose) {
+      printf("after\n");
+      for (vector<TObject*>::iterator i=fDrawables.begin(); i!=fDrawables.end(); ++i)
+      {printf("  %s",(*i)->GetTitle());}
+      printf("\n");
+    }
+  }
+
+  //after we clear the canvas, the pads are gone, clear the pad cache as well
+  fNdrawables = fDrawables.size();
+  fNpads = countpads(fCanvas);
+
+  if (fVerbose) printf("nDrawables: %i, nPads: %i\n", fNdrawables, fNpads);
+  if (fNdrawables > fNpads)
+  {
+    fCanvas->Clear();
+    fCanvas->DivideSquare(fNdrawables);
+    fNpads = countpads(fCanvas);
+    if (fVerbose) printf("reorganizing canvas, now %i pads\n",fNpads);
+  }
+
+  //if we have new plots we need to replot the whole thing as the old plots may have been
+  //moved
+  //if we have no new plots, we just draw the incoming ones at correct locations
+  int padIndex = 0;
+  if (weHaveNewPlots)
+  {
+    if (fVerbose) printf("have new plots(%lu), drawing\n", fDrawables.size());
+    for (vector<TObject*>::iterator i=fDrawables.begin(); i!=fDrawables.end(); ++i)
+    {
+      if (fVerbose) printf("plotting %s\n", (*i)->GetName());
+      fCanvas->cd(++padIndex);
+      gPad->GetListOfPrimitives()->Remove(*i);
+      gPad->Clear();
+      (*i)->Draw(fDrawOptions);
+      gPad->Modified(true);
+    }
   }
   else
   {
-    if (fVerbose) Printf("  new object %s", name);
-    //add the new object to the collection, restructure the canvas 
-    //and redraw everything
-    fDrawables.AddLast(object);
-
-    if (fSort)
+    if (fVerbose) printf("dont have new plots, redrawing %lu\n",fIncomingObjects.size());
+    for (vector<TObject*>::iterator i=fIncomingObjects.begin(); i!=fIncomingObjects.end(); ++i)
     {
-      TObjArray sortedTitles(fDrawables.GetEntries());
-      for (int i=0; i<fDrawables.GetEntries(); i++)
-      { sortedTitles.AddAt(new TNamed(fDrawables[i]->GetTitle(),fDrawables[i]->GetName()),i); }
-      sortedTitles.Sort();
-      TObjArray sortedDrawables(fDrawables.GetEntries());
-      for (int i=0; i<fDrawables.GetEntries(); i++)
-      {
-        const char* name = sortedTitles[i]->GetTitle();
-        TObject* tmp = fDrawables.FindObject(name);
-        int index = fDrawables.IndexOf(tmp);
-        sortedDrawables.AddAt(fDrawables[index],i); 
-      }
-      for (int i=0; i<sortedDrawables.GetEntries(); i++)
-      { fDrawables.AddAt(sortedDrawables[i],i); }
-      sortedTitles.Delete();
-    }
-    
-    //after we clear the canvas, the pads are gone, clear the pad cache as well
-    fCanvas->Clear();
-    fCanvas->DivideSquare(fDrawables.GetLast()+1);
-    
-    //redraw all objects at their old places and the new one as last
-    for (int i=0; i<fDrawables.GetLast()+1; i++)
-    {
-      TObject* obj = fDrawables[i];
-      fCanvas->cd(i+1);
-      if (fScaleLogX) gPad->SetLogx();
-      if (fScaleLogY) gPad->SetLogy();
-      if (fScaleLogZ) gPad->SetLogz();
-      if (fVerbose) Printf("  drawing %s in pad %i", obj->GetName(), i);
-      if (obj) obj->Draw(fDrawOptions);
+      if (fVerbose) printf("plotting %s at pad %i\n", (*i)->GetName(),oldPadNumbers[padIndex]);
+      fCanvas->cd(oldPadNumbers[padIndex++]+1);
+      gPad->GetListOfPrimitives()->Remove(*i);
+      gPad->Clear();
+      (*i)->Draw(fDrawOptions);
+      gPad->Modified(true);
     }
   }
+
+  //now we can delete old plots
+  for (vector<TObject*>::iterator i=fOldDrawables.begin(); i!=fOldDrawables.end(); ++i)
+  {
+    delete *i;
+  }
+  fOldDrawables.clear();
+
   gSystem->ProcessEvents();
   fCanvas->Update();
   return 0;

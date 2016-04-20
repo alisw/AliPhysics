@@ -68,6 +68,8 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fTimeRatioBBZoomMax(210),
   fTimeRatioBGZoomMin(50),
   fTimeRatioBGZoomMax(90),
+  fChargeTrendMin(0),
+  fChargeTrendMax(1000),
   fMaxNoTimeRate(10e-3),
   fMaxNoFlagRate(10e-2),
   fMaxBBVariation(5),
@@ -87,6 +89,8 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fTimeRatioBBZoomMax =  fQAParam->GetTdcTimeMaxBBFlag();
   fTimeRatioBGZoomMin =  fQAParam->GetTdcTimeMinBGFlag();
   fTimeRatioBGZoomMax =  fQAParam->GetTdcTimeMaxBGFlag();
+  fChargeTrendMin = fQAParam->GetChargeTrendMin();
+  fChargeTrendMax = fQAParam->GetChargeTrendMax();
   fMaxNoTimeRate = fQAParam->GetMaxNoTimeRate();
   fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
   fMaxBBVariation = fQAParam->GetMaxBBVariation();
@@ -1271,11 +1275,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	pad = pChargeTrend->cd();
 	histoBlue = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA);
 	histoRed = (TH1*)list[esIndex]->At(AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC);
-	max[0] = histoBlue->GetBinContent(histoBlue->GetMaximumBin());
-	max[1] = histoRed->GetBinContent(histoRed->GetMaximumBin());
-	min[0] = histoBlue->GetBinContent(histoBlue->GetMinimumBin());
-	min[1] = histoRed->GetBinContent(histoRed->GetMinimumBin());
-	histoBlue->GetYaxis()->SetRangeUser(0.8*TMath::MinElement(2,min),1.2*TMath::MaxElement(2,max));
+	histoBlue->GetYaxis()->SetRangeUser(fChargeTrendMin,fChargeTrendMax);
 	histoBlue->GetYaxis()->SetTitle("Quantile 0.9");
 	histoBlue->GetXaxis()->SetRange(1,histoBlue->GetNbinsX()-1);
 	histoBlue->DrawCopy();

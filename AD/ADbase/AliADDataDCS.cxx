@@ -218,7 +218,7 @@ void AliADDataDCS::Init(){
 		iAlias++;
   }
   
-  for(int iPM = 0; iPM<16 ; iPM++) fAliasNames[iAlias++] = Form("AD0/HV/I%d",iPM);
+  for(int iPM = 0; iPM<16 ; iPM++) fAliasNames[iAlias++] = Form("AD0/HV/Imon%d",iPM);
   
   // CCIU Parameters
 	

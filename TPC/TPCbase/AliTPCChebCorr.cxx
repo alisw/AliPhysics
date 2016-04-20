@@ -261,3 +261,11 @@ void AliTPCChebCorr::Init()
     }
   }
 }
+
+//____________________________________________________________________
+Int_t AliTPCChebCorr::GetDimOut() const
+{
+  // get number of output dimensions
+  const AliCheb2DStack* par = GetParam(0);
+  return par ? par->GetDimOut() : 0;
+}

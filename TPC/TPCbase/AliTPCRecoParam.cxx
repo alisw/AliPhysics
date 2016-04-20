@@ -130,6 +130,9 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   fDistortionFractionAsErrorYZ[0] = 0.1; // fraction of used distortion correction is used as an error
   fDistortionFractionAsErrorYZ[1] = 0.1; // fraction of used distortion correction is used as an error
+
+  fDistDispFractionAsErrorYZ[0] = 1.0; // fraction of used distortion correction is used as an error
+  fDistDispFractionAsErrorYZ[1] = 1.0; // fraction of used distortion correction is used as an error
   //
   fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
   fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track
@@ -156,12 +159,15 @@ AliTPCRecoParam::AliTPCRecoParam(const AliTPCRecoParam& src)
 AliTPCRecoParam& AliTPCRecoParam::operator=(const AliTPCRecoParam& src)
 {
   // assignment operator
-  if (fSystErrClInnerRegZ) delete fSystErrClInnerRegZ;
-  if (fSystErrClInnerRegZSigInv) delete fSystErrClInnerRegZSigInv;
-  memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
-  // now treat the pointers
-  if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
-  if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+  if (this!=&src) {
+    if (fSystErrClInnerRegZ) delete fSystErrClInnerRegZ;
+    if (fSystErrClInnerRegZSigInv) delete fSystErrClInnerRegZSigInv;
+    memcpy(this,&src,sizeof(AliTPCRecoParam)); // make 1st a shallow copy
+    // now treat the pointers
+    if (fSystErrClInnerRegZ)       fSystErrClInnerRegZ       = new TVectorF(*fSystErrClInnerRegZ);
+    if (fSystErrClInnerRegZSigInv) fSystErrClInnerRegZSigInv = new TVectorF(*fSystErrClInnerRegZSigInv);
+  }
+  return *this;
 }
 
 //_____________________________________________________________________________

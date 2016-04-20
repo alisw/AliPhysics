@@ -171,7 +171,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fSize = index;
   if(vars) vars->Delete();
  
-  fInstance = this;
 
 }
 

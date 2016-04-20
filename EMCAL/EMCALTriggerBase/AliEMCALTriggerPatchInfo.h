@@ -56,6 +56,8 @@ class AliEMCALTriggerPatchInfo: public TObject {
   AliEMCALTriggerPatchInfo &operator=(const AliEMCALTriggerPatchInfo &p);
   virtual ~AliEMCALTriggerPatchInfo();
 
+  void Reset();
+
   /**
    * Initialize patch
    * @param col0        Start column of the patch
@@ -219,10 +221,20 @@ class AliEMCALTriggerPatchInfo: public TObject {
    */
   Bool_t   IsGammaHigh() const { return TESTBIT(fTriggerBits, fOffSet + fTriggerBitConfig.GetGammaHighBit()); }
   /**
+    * No background patches from hardware
+    * @return Always false
+    */
+   Bool_t   IsBkg() const { return false; }
+  /**
    * No main trigger any more
    * @return Always false
    */
   Bool_t   IsMainTrigger() const { return false; }
+  /**
+   * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the simple offline trigger
+   * @return True if patch matches the trigger condition, false otherwise
+   */
+  Bool_t   IsLevel0Simple() const { return TESTBIT(fTriggerBits, kOfflineOffset + fTriggerBitConfig.GetLevel0Bit()); }
   /**
    * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the simple offline trigger
    * @return True if patch matches the trigger condition, false otherwise
@@ -244,6 +256,16 @@ class AliEMCALTriggerPatchInfo: public TObject {
    */
   Bool_t   IsGammaHighSimple() const { return TESTBIT(fTriggerBits, kOfflineOffset + fTriggerBitConfig.GetGammaHighBit()); }
   /**
+   * Check whether patch is an EMCAL background patch, found by the simple offline trigger
+   * @return True if patch matches the trigger condition, false otherwise
+   */
+  Bool_t   IsBkgSimple() const { return TESTBIT(fTriggerBits, kOfflineOffset + fTriggerBitConfig.GetBkgBit()); }
+  /**
+   * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the simple offline trigger
+   * @return True if patch matches the trigger condition, false otherwise
+   */
+  Bool_t   IsLevel0Recalc() const { return TESTBIT(fTriggerBits, kRecalcOffset + fTriggerBitConfig.GetLevel0Bit()); }
+  /**
    * Check whether patch is an EMCAL Level1 jet patch passing the low threshold, found by the simple offline trigger
    * @return True if patch matches the trigger condition, false otherwise
    */
@@ -263,6 +285,11 @@ class AliEMCALTriggerPatchInfo: public TObject {
    * @return True if patch matches the trigger condition, false otherwise
    */
   Bool_t   IsGammaHighRecalc() const { return TESTBIT(fTriggerBits, kRecalcOffset + fTriggerBitConfig.GetGammaHighBit()); }
+  /**
+   * Check whether patch is an EMCAL background patch, found by the simple offline trigger
+   * @return True if patch matches the trigger condition, false otherwise
+   */
+  Bool_t   IsBkgRecalc() const { return TESTBIT(fTriggerBits, kRecalcOffset + fTriggerBitConfig.GetBkgBit()); }
   /**
    * Now main trigger any more in the new definition
    * @return Always false

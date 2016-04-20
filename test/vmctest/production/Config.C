@@ -371,17 +371,17 @@ void Config()
     }
 
 
+
   // Load Geant4 + Geant4 VMC libraries
   //
+  std::string g4libmacro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
   if (gClassTable->GetID("TGeant4") == -1) {
-    TString g4libsMacro = "$G4INSTALL/macro/g4libs.C";
-    //TString g4libsMacro = "$ALICE/geant4_vmc/examples/macro/g4libs.C";
-    //Load Geant4 libraries 
-    if (!gInterpreter->IsLoaded(g4libsMacro.Data())) {
-      gROOT->LoadMacro(g4libsMacro.Data());
+    // Load Geant4 libraries
+    if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
+      gROOT->LoadMacro(g4libmacro.c_str());
       gInterpreter->ProcessLine("g4libs()");
     }
-  }    
+  }
 
 
   // Create Geant4 VMC

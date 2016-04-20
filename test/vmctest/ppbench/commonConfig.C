@@ -234,12 +234,18 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   }
   //=================== PHOS parameters ===========================
 
+  // THIS DOES NOT WORK
+  //  if (iPHOS)
+  //  {
+  //     if ( configVersion == kConfigV0 )
+  //       AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+  //     else if ( configVersion == kConfigV1 )
+  //       AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
+  //  }
+  // copied from ordinary gun test
   if (iPHOS)
   {
-     if ( configVersion == kConfigV0 ) 
-       AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
-     else if ( configVersion == kConfigV1 )  
-       AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123"); 
+      AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
   }
 
 

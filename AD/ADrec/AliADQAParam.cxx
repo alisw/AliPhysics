@@ -53,6 +53,8 @@ AliADQAParam::AliADQAParam():
   fNMeanTimeCorrBins(306), 
   fMeanTimeCorrMin(50.976562),
   fMeanTimeCorrMax(349.804688),
+  fChargeTrendMin(0),
+  fChargeTrendMax(1000),
   fSatMed(0.1),
   fSatHigh(0.3),
   fSatHuge(0.5),

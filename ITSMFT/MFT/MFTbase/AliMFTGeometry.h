@@ -81,13 +81,13 @@ public:
   void   Build();
   
   /// \brief Returns Object type based on Unique ID provided
-  Int_t GetObjectType(UInt_t uniqueID)  const {return ((uniqueID>>13)&0x7);};
+  Int_t GetObjectType(UInt_t uniqueID)  const {return ((uniqueID>>14)&0x7);};
   /// \brief Returns Half-MFT ID based on Unique ID provided
-  Int_t GetHalfMFTID(UInt_t uniqueID)   const {return ((uniqueID>>12)&0x1);};
+  Int_t GetHalfMFTID(UInt_t uniqueID)   const {return ((uniqueID>>13)&0x1);};
   /// \brief Returns Half-Disk ID based on Unique ID provided
-  Int_t GetHalfDiskID(UInt_t uniqueID)  const {return ((uniqueID>>9)&0x7);};
+  Int_t GetHalfDiskID(UInt_t uniqueID)  const {return ((uniqueID>>10)&0x7);};
   /// \brief Returns Ladder ID based on Unique ID provided
-  Int_t GetLadderID(UInt_t uniqueID)    const {return ((uniqueID>>4)&0x1F);};
+  Int_t GetLadderID(UInt_t uniqueID)    const {return ((uniqueID>>4)&0x3F);};
   /// \brief Returns Sensor ID based on Unique ID provided
   Int_t GetSensorID(UInt_t uniqueID)    const {return (uniqueID&0xF);};
   

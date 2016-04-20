@@ -184,9 +184,13 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 		  
 		  {
 		    if (fBeVerbose)
+        {
 		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not of channel or cluster type \n");
+        }
 		    else
+        {
 		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not of channel or cluster type \n");
+        }
 		    continue;
 		  }
 

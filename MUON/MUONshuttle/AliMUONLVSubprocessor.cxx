@@ -111,7 +111,8 @@ AliMUONLVSubprocessor::Process(TMap* dcsAliasMap)
   {
     Master()->Log("ERROR : no DCS values found");
     delete aliases;
-    return 1;
+    return 0;
+    // return 1; // while debugging this subprocessor, do not let a failure spoil the rest of our work ...;
   }
 
   if ( aliasesNotFound.GetEntries() )

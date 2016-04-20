@@ -157,7 +157,7 @@ void AliMFTGeometry::LoadSegmentation() {
 
 UInt_t AliMFTGeometry::GetObjectID(ObjectTypes type, Int_t half, Int_t disk, Int_t ladder, Int_t chip) const{
 
-  UInt_t uniqueID = (type<<13) +  (half<<12) + (disk<<9) + (ladder<<4) + chip;
+  UInt_t uniqueID = (type<<14) +  (half<<13) + (disk<<10) + (ladder<<4) + chip;
 
   return uniqueID;
 }

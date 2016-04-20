@@ -12,7 +12,7 @@ AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Dou
 
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight) {
     
-  gSystem->Load("libpythia6_4_25");
+  gSystem->Load("libpythia6_4_28");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6");
 
@@ -53,6 +53,11 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
     genP->SetTune(350);
     if(cr==0) genP->SetTune(354);
   }
+  if(tune == 3){ // tune Perugia2012 ('central' Perugia 2012)
+    genP->SetTune(370);
+    if(cr==0) genP->SetTune(375);
+  }
+
   genP->Print();
   return genP;
 }

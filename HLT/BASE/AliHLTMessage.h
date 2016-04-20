@@ -128,6 +128,7 @@ public:
    void     Forward();
    TClass  *GetClass() const { return fClass;}
    void     IncrementLevel(TVirtualStreamerInfo* info);
+   void     TagStreamerInfo(TVirtualStreamerInfo *info);
    void     Reset();
    void     Reset(UInt_t what) { SetWhat(what); Reset(); }
    UInt_t   What() const { return fWhat; }

@@ -992,7 +992,7 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
     fTimeStamp = fEventHeader->Get("Timestamp");
     fEventType = fEventHeader->Get("Type");
     AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-    if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
+    transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
     transform->SetCurrentTimeStamp(fTimeStamp);
     transform->SetCurrentRun(rawReader->GetRunNumber());
   }

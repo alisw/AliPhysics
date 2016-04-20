@@ -61,9 +61,11 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTCommonCDBEntries.h"
+#include "TList.h"
 
 /* Matthias Dec 2006
  * The names have been changed for Aliroot's coding conventions sake
@@ -88,6 +90,7 @@ class AliHLTMemoryFile;
 class AliHLTCTPData;
 class AliHLTReadoutList;
 class AliHLTCDHWrapper;
+class TStreamerInfo;
 
 using std::vector;
 
@@ -935,6 +938,18 @@ class AliHLTComponent : public AliHLTLogging {
   string GetComponentArgs() const { return fComponentArgs; }
 
  protected:
+
+  /** Get the schema map and get/set the use flag
+  */
+  TList* GetSchema() {return &fSchema;}
+  Bool_t GetUseSchema() const {return fUseSchema;}
+  void SetUseSchema(Bool_t s=kTRUE) {fUseSchema = s;}
+  int UpdateSchema(const TCollection* listOfStreamerInfos);
+  int UpdateSchema(TCollection* listOfStreamerInfos);
+  /** push back a schema evolution block (only when new streamer infos
+   * are added
+   */
+  int PushBackSchema();
 
   /**
    * Default method for the internal initialization.
@@ -1896,6 +1911,15 @@ class AliHLTComponent : public AliHLTLogging {
   
   /// Event modulo for down scaling the processing rate.
   int fEventModulo;                                                //! transient
+
+  /// A map of ROOT streamer infos
+  TList fSchema;                                                   //! transient
+
+  /// How many schema updates are left
+  Bool_t fUseSchema;                                               //! transient
+
+  /// signal a change in the schema list
+  Bool_t fSchemaUpdated;                                           //! transient
 
   ClassDef(AliHLTComponent, 0)
 };

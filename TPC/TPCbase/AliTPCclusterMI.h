@@ -57,9 +57,11 @@ public:
   //
   void    SetDistortions(float dx, float dy, float dz);
   void    GetDistortions(float& dx,float& dy, float& dz)  const;
+  void    SetDistortionDispersion(float d);
   Float_t GetDistortionX() const;
   Float_t GetDistortionY() const;
   Float_t GetDistortionZ() const;
+  Float_t GetDistortionDispersion() const;
 
   Bool_t  GetGlobalCov(Float_t cov[6]) const;
   //  AliTPCclusterInfo * GetInfo() const { return fInfo;}
@@ -71,9 +73,10 @@ public:
 
  protected:
   enum{ // constants for storing x,y,z distortion in AliCluster::fSigmaYZ 
-    kScaleDX=50,kScaleDY=100,kScaleDZ=100, // 1./kScale gives rounding in cm
+    kScaleDX=50,kScaleDY=100,kScaleDZ=100,kScaleDisp=85, // 1./kScale gives rounding in cm
     kNBitsDX=10, kNBitsDY=11,kNBitsDZ=11, 
     kMaxDX = (0x1<<(kNBitsDX-1))-1, kMaxDY = (0x1<<(kNBitsDY-1))-1,kMaxDZ = (0x1<<(kNBitsDZ-1))-1,
+    kMaxDisp = 0xff,
     kMaskDX = (0x1<<kNBitsDX)-1, kMaskDY = (0x1<<kNBitsDY)-1, kMaskDZ = (0x1<<kNBitsDZ)-1
   };
 
@@ -85,10 +88,11 @@ private:
   Short_t   fMax;      ///< maximal amplitude in cluster
   Char_t    fType;     ///< type of the cluster 0 means golden
   Char_t    fUsed;     ///< counter of usage
+  UChar_t   fDisp;     ///< dispersion of applied correction
   UChar_t   fDetector; ///< detector  number
   UChar_t   fRow;      ///< row number number
   /// \cond CLASSIMP
-  ClassDef(AliTPCclusterMI,6)  // Time Projection Chamber clusters
+  ClassDef(AliTPCclusterMI,7)  // Time Projection Chamber clusters
   /// \endcond
 };
 

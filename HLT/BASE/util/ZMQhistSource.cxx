@@ -9,6 +9,7 @@
 #include "TObjString.h"
 #include "TList.h"
 #include "TMessage.h"
+#include "AliHLTMessage.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include <cmath>
@@ -37,6 +38,9 @@ TString fHistDistribution = "exp(-0.5*((x-0.)/0.1)**2)";
 float fHistRangeLow = -0.5;
 float fHistRangeHigh = 0.5;
 int fHistNBins = 100;
+aliZMQTstreamerInfo* fSchema = NULL;
+bool fVerbose = false;
+int fCompression = 0;
     
 const char* fUSAGE = 
     "ZMQhstSource: send a randomly filled ROOT histogram\n"
@@ -50,6 +54,8 @@ const char* fUSAGE =
     " -count : how many histograms to send before quitting (0 is never quit)\n"
     " -entries : how many entries in the histogram before sending\n"
     " -histos : how many histograms per message\n"
+    " -schema : include the streamer infos in the message\n"
+    //" -compression : compression level (0|1)\n"
     ;
 
 int ProcessOptionString(TString arguments);
@@ -81,6 +87,12 @@ int main(int argc, char** argv)
     fHistograms.push_back(new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh));
   }
   
+  if (fSchema) {
+    if (fVerbose) printf("enabling schema for TMessage\n");
+    AliHLTMessage::EnableSchemaEvolutionForAll();
+    TMessage::EnableSchemaEvolutionForAll();
+      if (fVerbose && AliHLTMessage::UsesSchemaEvolutionForAll()) printf("enabled...\n");
+  }
 
   //main loop
   int iterations=0;
@@ -107,15 +119,19 @@ int main(int argc, char** argv)
       runInfo+=fRunNumber;
       rc=alizmq_msg_send("INFO",runInfo.Data(), fZMQout, ZMQ_SNDMORE);
     }
-    for (int i = 0; i < fNHistos - 1; i++) 
+
+    aliZMQmsg message;
+    for (int i = 0; i < fNHistos; i++) 
     {
-      rc = alizmq_msg_send(topic, fHistograms[i], fZMQout, ZMQ_SNDMORE, 0);
+      rc = alizmq_msg_add(&message, &topic, fHistograms[i], fCompression, fSchema);
       if (rc < 0)
         printf("unable to send\n");
     }
-    rc = alizmq_msg_send(topic, fHistograms[fHistograms.size() - 1], fZMQout, 0, 0);
 
-    if (rc<0) printf("unable to send\n");
+    if (fSchema) alizmq_msg_prepend_streamer_infos(&message,fSchema);
+    alizmq_msg_send(&message, fZMQout, 0);
+    alizmq_msg_close(&message);
+    if (fVerbose) printf("sent!\n");
 
     unsigned int microseconds;
     microseconds = fSleep;
@@ -179,6 +195,15 @@ int ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("histos")) {
       fNHistos = value.Atoi();
+    }
+    else if (option.EqualTo("schema")) {
+      fSchema = new aliZMQTstreamerInfo;
+    }
+    else if (option.EqualTo("Verbose")) {
+      fVerbose=true;
+    }
+    else if (option.EqualTo("compression")) {
+      fCompression=value.Atoi();
     }
     else
     {

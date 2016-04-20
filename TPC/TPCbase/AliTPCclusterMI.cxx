@@ -46,6 +46,7 @@ AliTPCclusterMI::AliTPCclusterMI():
   fMax(0),      //maximal amplitude in cluster
   fType(0),     //type of the cluster 0 means golden
   fUsed(0),     //counter of usage
+  fDisp(0),     /// dispersion of applied correction
   fDetector(0), //detector  number
   fRow(0)      //row number number
 {
@@ -63,6 +64,7 @@ AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   fMax(cluster.fMax),
   fType(cluster.fType),
   fUsed(cluster.fUsed),
+  fDisp(cluster.fDisp),
   fDetector(cluster.fDetector),
   fRow(cluster.fRow)
 {
@@ -86,6 +88,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   fType = cluster.fType;
   fMax  = cluster.fMax;
   fUsed = cluster.fUsed;
+  fDisp = cluster.fDisp;
   fDetector = cluster.fDetector;
   fRow  = cluster.fRow;
   fTimeBin = cluster.fTimeBin;
@@ -108,6 +111,7 @@ AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) :
   fMax(0),      //maximal amplitude in cluster
   fType(0),     //type of the cluster 0 means golden
   fUsed(0),     //counter of usage
+  fDisp(0),     // distortion dispersion
   fDetector(0), //detector  number
   fRow(0)      //row number number
 {
@@ -197,6 +201,23 @@ void AliTPCclusterMI::SetGlobalTrackPoint( const AliCluster &cl, AliTrackPoint &
   // voluem ID to add later ....
   point.SetXYZ(xyz);
   point.SetCov(cov);
+}
+
+//_____________________________________________________
+void AliTPCclusterMI::SetDistortionDispersion(float d)
+{
+  // set distortion dispersion
+  if (d<0) d = 0;
+  UInt_t di = d*kScaleDisp;
+  if (di>kMaxDisp) di = kMaxDisp;
+  fDisp = di;
+}
+
+//_____________________________________________________
+Float_t AliTPCclusterMI::GetDistortionDispersion() const
+{
+  // get distortion dispersion
+  return float(fDisp)/kScaleDisp;
 }
 
 //_____________________________________________________

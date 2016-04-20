@@ -12,10 +12,14 @@
 #include <TArrayI.h>
 #include <cstring>
 
+#include <AliEMCALTriggerConstants.h>
+
 class AliEMCALTriggerPatchInfo;
-class THashList;
+class TCollection;
 class TObjArray;
 class AliEMCALTriggerFastOR;
+class AliVCaloCells;
+class AliEMCALGeometry;
 
 /**
  * @class AliEMCALTriggerQA
@@ -28,81 +32,77 @@ public:
   typedef EMCALTrigger::EMCalTriggerType_t EMCalTriggerType_t;
 
   enum PatchTypes_t {
-    kOnlinePatch,
-    kRecalcPatch,
-    kOfflinePatch
+    kOnlinePatch  = 0,
+    kRecalcPatch  = 1,
+    kOfflinePatch = 2
+  };
+
+  struct AliEMCALCellInfo {
+    AliEMCALCellInfo() : fAbsId(-1), fEnergy(0.) {}
+    void Set(Int_t absId, Double_t e) { fAbsId = absId; fEnergy = e; }
+
+    Short_t  fAbsId;
+    Double_t fEnergy;
   };
 
   AliEMCALTriggerQA();
   AliEMCALTriggerQA(const char* name);
-  AliEMCALTriggerQA(const AliEMCALTriggerQA& triggerQA);
+  AliEMCALTriggerQA(const AliEMCALTriggerQA& ref);
   virtual ~AliEMCALTriggerQA();
 
   void   SetDebugLevel(Int_t l)       { fDebugLevel        = l; }
-  void   SetBkgPatchType(Int_t t)     { fBkgPatchType      = t; }
   void   SetADCperBin(Int_t i)        { fADCperBin         = i; }
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
-  Int_t  GetBkgPatchType()      const { return fBkgPatchType  ; }
 
   void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
+  void   EnableTriggerType(EMCalTriggerType_t type, Bool_t e = kTRUE);
+  void   EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
+  void   SetEMCALGeometry(const AliEMCALGeometry* geom) { fGeom = geom; }
 
-  void   Init();
-  void   ProcessPatch(AliEMCALTriggerPatchInfo* patch);
-  void   ProcessBkgPatch(AliEMCALTriggerPatchInfo* patch);
-  void   ProcessFastor(AliEMCALTriggerFastOR* fastor);
-  void   EventCompleted();
-  void   ComputeBackground();
+  // This is the minimum set of methods that must be implemented by derived classes
+  virtual void           Init() = 0;
+  virtual void           ProcessPatch(const AliEMCALTriggerPatchInfo* patch) = 0;
+  virtual void           ProcessFastor(const AliEMCALTriggerFastOR* fastor, AliVCaloCells* cells = 0) = 0;
+  virtual void           EventCompleted() = 0;
+  virtual TCollection*   GetListOfHistograms() = 0;
 
-  void   GetEMCalMedian(Double_t median[3]) const { memcpy(median, fMedianEMCal, sizeof(Double_t)*3); }
-  void   GetDCalMedian(Double_t median[3])  const { memcpy(median, fMedianDCal, sizeof(Double_t)*3) ; }
-  void   GetEMCalBkg(Double_t bkg[3])       const { memcpy(bkg, fBkgEMCal, sizeof(Double_t)*3)      ; }
-  void   GetDCalBkg(Double_t bkg[3])        const { memcpy(bkg, fBkgDCal, sizeof(Double_t)*3)       ; }
+  // Additional virtual methods that can optionally be overloaded
+  virtual void   ExecOnce();
+  virtual void   ProcessCell(const AliEMCALCellInfo& /*cell*/) {;}
+  virtual void   EventTimeStamp(UInt_t timeStamp);
 
-  THashList* GetListOfHistograms()  { return fHistos; }
+  // These virtual methods are implemented only for PbPb
+  virtual void   ProcessBkgPatch(const AliEMCALTriggerPatchInfo* /*patch*/) {;}
+  virtual void   ComputeBackground() {;}
+  virtual void   GetEMCalMedian(Double_t /*median*/[3]) const {;}
+  virtual void   GetDCalMedian(Double_t /*median*/[3])  const {;}
+  virtual void   GetEMCalBkg(Double_t /*bkg*/[3])       const {;}
+  virtual void   GetDCalBkg(Double_t /*bkg*/[3])        const {;}
+
+  static Int_t  GetAmplitude(const AliEMCALTriggerPatchInfo* patch, Int_t itype);
 
   static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
   static const TString    fgkPatchTypes[3];             ///< Patch type names
 
 protected:
-
   Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
+  Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
   Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
   Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
-  Int_t                   fBkgPatchType;                ///< Background patch type
   Int_t                   fADCperBin;                   ///< ADC counts per bin
   Int_t                   fDebugLevel;                  ///< Debug level
+  UInt_t                  fTimeStampBinWidth;           ///< Time stamp bin width
 
-  TArrayI                 fBkgADCAmpEMCal[3];           //!<! ADC EMCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
-  Int_t                   fNBkgPatchesEMCal[3];         //!<! Number of processed background patches (will be reset each event)
-  Int_t                   fMaxPatchEMCal[6][3];         //!<! EMCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  TArrayI                 fBkgADCAmpDCal[3];            //!<! ADC DCal amplitudes (0=online, 1=offline) of background patches (will be reset each event)
-  Int_t                   fNBkgPatchesDCal[3];          //!<! Number of processed background patches (will be reset each event)
-  Int_t                   fMaxPatchDCal[6][3];          //!<! DCal max ADC amplitude (0=online, 1=offline) (will be reset each event)
-  Int_t                   fPatchAreas[6];               //!<! Patch sizes retrieved directly during the patch processing
-  Double_t                fMedianEMCal[3];              //!<! Median of background patches in the EMCal
-  Double_t                fMedianDCal[3];               //!<! Median of background patches in the DCal
-  Double_t                fBkgEMCal[3];                 //!<! Background in the EMCal
-  Double_t                fBkgDCal[3];                  //!<! Background in the DCal
-  THashList              *fHistos;                      //!<! Histograms for QA
+  const AliEMCALGeometry *fGeom;                        //!<! Pointer to the EMCal geometry
+  UInt_t                  fEventTimeStamp;              //!<! Time stamp of the current event
+  UInt_t                  fEventTimeStampBin;           //!<! Time stamp bin
 
 private:
-  void CreateTProfile(const char *name, const char *title, int nbins, double xmin, double xmax);
-  void CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax);
-  void CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax);
-  void CreateTH3(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax);
-  void FillTProfile(const char *name, double x, double y, double weight = 1.);
-  void FillTH1(const char *hname, double x, double weight = 1.);
-  void FillTH2(const char *hname, double x, double y, double weight = 1.);
-  void FillTH3(const char *hname, double x, double y, double z, double weight = 1.);
-
-  TObject *FindObject(const char *name) const;
-  virtual TObject *FindObject(const TObject *obj) const;
-
-  AliEMCALTriggerQA &operator=(const AliEMCALTriggerQA &);
+  AliEMCALTriggerQA &operator=(const AliEMCALTriggerQA &); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerQA, 1);
+  ClassDef(AliEMCALTriggerQA, 2);
   /// \endcond
 };
 

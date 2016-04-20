@@ -36,6 +36,11 @@ public:
   Double_t GetSigmaY() const {return fSigmaY;}
   Double_t GetSigmaZ() const {return fSigmaZ;}
 
+  UInt_t   GetTimeStamp() const {return fTimeStamp;}
+  Int_t    GetRunNumber() const {return fRun;}
+  void     SetTimeStamp(UInt_t t) {fTimeStamp = t;}
+  void     SetRunNumber(int run)  {fRun = run;}
+
   static Double_t GetTrackPredictedChi2(AliExternalTrackParam *track,
                                         Double_t mass, Double_t step, 
 			          const AliExternalTrackParam *backup);
@@ -93,8 +98,10 @@ private:
   Double_t fSigmaX; // error of the primary vertex position in X
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z
-  
-  ClassDef(AliTrackerBase,1) //base tracker
+  UInt_t   fTimeStamp; // event time stamp
+  Int_t    fRun;       //  run number
+
+  ClassDef(AliTrackerBase,2) //base tracker
 };
 
 //__________________________________________________________________________

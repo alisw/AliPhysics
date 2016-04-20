@@ -44,6 +44,8 @@
 #pragma link C++ class AliESDTrackSelection+;
 #pragma link C++ class AliAODTrackSelection+;
 
+#pragma link C++ class AliAODITSsaTrackCuts+;
+
 // If ROOT was built with XML support
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;

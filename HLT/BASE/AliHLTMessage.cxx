@@ -193,6 +193,17 @@ void AliHLTMessage::Forward()
 }
 
 //______________________________________________________________________________
+void AliHLTMessage::TagStreamerInfo(TVirtualStreamerInfo *info)
+{
+   // Remember that the StreamerInfo is being used in writing.
+
+   if (fgEvolution || fEvolution) {
+      if (!fInfos) fInfos = new TList();
+      fInfos->Add(info);
+   }
+}
+
+//______________________________________________________________________________
 void AliHLTMessage::IncrementLevel(TVirtualStreamerInfo *info)
 {
    // Increment level.
@@ -229,6 +240,8 @@ void AliHLTMessage::Reset()
      delete [] fBufUncompressed;
      fBufUncompressed=NULL;
    }
+
+   delete fInfos; fInfos=NULL;
 }
 
 //______________________________________________________________________________

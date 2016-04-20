@@ -436,7 +436,7 @@ void AliITSUClusterizer::FillClusterTopology(const AliITSUClusterizerClusterCand
   //
   UShort_t mnCol=0xffff,mxCol=0,mnRow=0xffff,mxRow=0;
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-    AliITSdigit* dig = idigit->fDigit;
+    AliITSMFTDigitPix* dig = idigit->fDigit;
     if (mnCol>dig->GetCoord1()) mnCol = (UShort_t)dig->GetCoord1();
     if (mxCol<dig->GetCoord1()) mxCol = (UShort_t)dig->GetCoord1();
     if (mnRow>dig->GetCoord2()) mnRow = (UShort_t)dig->GetCoord2();
@@ -469,7 +469,7 @@ void AliITSUClusterizer::FillClusterTopology(const AliITSUClusterizerClusterCand
   cl->SetPatternMinCol(mnCol);
   //
   for (AliITSUClusterizerClusterDigit *idigit=cand->fFirstDigit;idigit;idigit=idigit->fNext) {
-    AliITSdigit* dig = idigit->fDigit;
+    AliITSMFTDigitPix* dig = idigit->fDigit;
     UInt_t ir = dig->GetCoord2()-mnRow;
     UInt_t ic = dig->GetCoord1()-mnCol;
     if (ir<nRowSpanW && ic<nColSpanW) cl->SetPixel(ir,ic);

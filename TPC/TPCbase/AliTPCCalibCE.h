@@ -283,7 +283,7 @@ private:
   TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCCalibCE,10)  //Implementation of the TPC Central Electrode calibration
+  ClassDef(AliTPCCalibCE,11)  //Implementation of the TPC Central Electrode calibration
   /// \endcond
 };
 

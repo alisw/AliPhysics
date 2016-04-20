@@ -23,8 +23,8 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 # Additional include directories
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
-                    ${CMAKE_BINARY_DIR}/version/
-                   )
+                    ${AliRoot_SOURCE_DIR}/STAT
+                    ${CMAKE_BINARY_DIR}/version/)
 
 
 # Sources - alphabetical order
@@ -51,8 +51,7 @@ set(SRCS
     AliOCDBtoolkit.cxx
     AliPreprocessor.cxx
     AliShuttleInterface.cxx
-    AliSplineFit.cxx
-   )
+    AliSplineFit.cxx)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -63,7 +62,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core GenVector Gpad Graf Gui Hist MathCore Matrix Minuit Net RIO Tree XMLParser)
-set(ALIROOT_DEPENDENCIES STEERBase)
+set(ALIROOT_DEPENDENCIES STEERBase STAT)
 
 # Generate the ROOT map
 # Dependecies

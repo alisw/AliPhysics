@@ -57,6 +57,7 @@ set(SRCS
     AliTPCcalibV0.cxx
     AliTPCCalPadRegion.cxx
     AliTPCCorrectionFit.cxx
+    AliTPCDcalibRes.cxx
     AliTPCFitPad.cxx
     AliTPCkalmanAlign.cxx
     AliTPCMisAligner.cxx

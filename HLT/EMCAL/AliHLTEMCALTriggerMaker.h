@@ -43,6 +43,8 @@ template<typename T> class AliEMCALTriggerPatchFinder;
  */
 class AliHLTEMCALTriggerMaker : public TObject, public AliHLTLogging {
 public:
+  enum ELevel0TriggerStatus_t { kNotLevel0, kLevel0Candidate, kLevel0Fired };
+
   enum ThresholdType_t{
 	  kHighThreshold = 0,
 	  kLowThreshold = 1,
@@ -90,6 +92,22 @@ public:
    */
   void SetADC(Int_t col, Int_t row, Float_t adc);
 
+  /**
+   * Set the L0 amplitude for a given col / row combination
+   * @param col Column
+   * @param row Row
+   * @param amp L0 Amplitude
+   */
+  void SetL0Amplitude(Int_t col, Int_t row, Float_t amp);
+
+  /**
+   * Set the L0 trigger time for a given col / row combination
+   * @param col Column
+   * @param row Row
+   * @param amp L0 trigger time
+   */
+  void SetL0Time(Int_t col, Int_t row, UChar_t time);
+
     /**
    * Set the bit mask from the STU for a given col / row combination
    * @param col Column
@@ -134,6 +152,19 @@ public:
   void SetBkgThresholds(Float_t onlineTh, Float_t offlineTh) { fBkgThresholdOnline = onlineTh; fBkgThresholdOffline = offlineTh; }
 
   /**
+   * Define whether we run the algorithm for background patches
+   * @param doRun Switch for the background algorithm
+   */
+  void SetRunBkgAlgorithm(Bool_t doRun) { fRunBkgAlgorithm = doRun; }
+
+  /**
+   * Set the thresholds for level0 trigger patches
+   * @param onlineTh Online Threshold to be applied
+   * @param offlineTh Offline Threshold to be applied
+   */
+  void SetLevel0Thresholds(Float_t onlineTh, Float_t offlineTh) { fLevel0ThresholdOnline = onlineTh; fLevel0ThresholdOffline = offlineTh; }
+
+  /**
    * Set the patch size/subregion for jet trigger patches
    * @param size Size of the patch in number of FastORs
    * @param subregion Subregion of the sliding window
@@ -160,16 +191,31 @@ protected:
    * @param inputpatch EMCAL raw patch to be converted into an EMCAL HLT patch
    * @param output HLT trigger patch obtaied using the information in the EMCAL raw patch
    */
-   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits) const;
+   void MakeHLTPatch(const AliEMCALTriggerRawPatch &inputpatch, AliHLTCaloTriggerPatchDataStruct &output, UInt_t offlinebits, UInt_t onlinebitmask, UInt_t level0bits) const;
 
   /**
-   * Initialise trigger patch finders in the EMCAL
+   * Initialise trigger patch finders in the EMCAL or DCAL at Level1
+   * @param isDCAL Switch distinguishing between DCAL (true) and EMCAL (false)
    */
-  void InitializeEMCALPatchFinders();
+  void InitializeLevel1PatchFinders(Bool_t isDCAL);
+
+  /** Initialize L0 Patch finders in EMCAL and DCAL */
+  void InitializeLevel0PatchFinders(Bool_t isDCAL);
+
   /**
-   * Initializse trigger patch finders in the DCAL
+   * Initialize the lookup tables used by the trigger maker
    */
-  void InitializeDCALPatchFinders();
+  void InitializeLookupTables();
+
+  /**
+   * Check whether all fastors are in the same TRU. This
+   * is a condition to accept the patch as valid Level0
+   * patch.
+   * @param patch Patch to check
+   * @return True if all fastors are in the same TRU, false
+   * otherwise
+   */
+  ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
 private:
   /** Pointer to the output buffer */
@@ -179,12 +225,20 @@ private:
 
   /** EMCAL trigger algorithms used to find trigger patches */
   AliEMCALTriggerPatchFinder<float>             *fPatchFinder;
+  /** EMCAL Level0 patch finder (operating on different data */
+  AliEMCALTriggerPatchFinder<float>				*fL0PatchFinder;
   /** Grid with ADC values used for the trigger patch finding */
   AliEMCALTriggerDataGrid<float>                *fADCValues;
   /** Grid with ADC values used for the trigger patch finding */
   AliEMCALTriggerDataGrid<float>                *fADCOfflineValues;
+  /** Grid with L0 Amplitude values used for L0 trigger patch finding */
+  AliEMCALTriggerDataGrid<float>				*fL0Amplitudes;
   /** Grid with trigger bit mask from STU */
   AliEMCALTriggerDataGrid<int>                  *fTriggerBitMasks;
+  /** Grid with L0 trigger time values used to retrieve L0 decision */
+  AliEMCALTriggerDataGrid<unsigned char>        *fLevel0TimeMap;
+  /** Lookup table with TRU indices */
+  AliEMCALTriggerDataGrid<int>                  *fTRUIndexMap;
   /** Trigger bit configurtion */
   AliEMCALTriggerBitConfig                      *fTriggerBitConfig;
   /** Jet patch size **/
@@ -199,6 +253,10 @@ private:
   Int_t                                         fBkgPatchSize;
   /** Background subregion size **/
   Int_t                                         fBkgSubregionSize;
+  /** Minimum time bin for a valid L0 trigger decision **/
+  Char_t                                        fL0MinTime;
+  /** Maximum time bin for a valid L0 trigger decision **/
+  Char_t                                        fL0MaxTime;
 
   /** Available space in buffer */
   AliHLTUInt32_t                                fBufferSize;
@@ -214,8 +272,14 @@ private:
   Float_t                                       fBkgThresholdOnline;
   /** offline threshold for bkg patches */
   Float_t                                       fBkgThresholdOffline;
+  /** Switch for running the background trigger algorithm */
+  Bool_t                                        fRunBkgAlgorithm;
+  /** Threshold for accepting level0 online patches */
+  Float_t                                       fLevel0ThresholdOnline;
+  /** Threshold for accepting level0 offline patches */
+  Float_t                                       fLevel0ThresholdOffline;
 
-  ClassDef(AliHLTEMCALTriggerMaker, 2);
+  ClassDef(AliHLTEMCALTriggerMaker, 3);
 };
 
 #endif

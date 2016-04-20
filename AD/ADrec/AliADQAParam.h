@@ -68,6 +68,9 @@ class AliADQAParam : public TNamed
   void SetNMeanTimeCorrBins(Int_t val) { fNMeanTimeCorrBins = val;}
   void SetMeanTimeCorrMin(Float_t val) { fMeanTimeCorrMin = val;}
   void SetMeanTimeCorrMax(Float_t val) { fMeanTimeCorrMax = val;} 
+  //Charge trends
+  void SetChargeTrendMin(Float_t val) {fChargeTrendMin = val;}
+  void SetChargeTrendMax(Float_t val) {fChargeTrendMax = val;}
   
   //QA checker limits
   void SetSatMed(Float_t val) {fSatMed = val;}
@@ -129,6 +132,9 @@ class AliADQAParam : public TNamed
   Int_t  GetNMeanTimeCorrBins() const { return fNMeanTimeCorrBins;}
   Float_t GetMeanTimeCorrMin() const { return fMeanTimeCorrMin;}
   Float_t GetMeanTimeCorrMax() const { return fMeanTimeCorrMax;}
+  //Charge trends
+  Float_t GetChargeTrendMin() const {return fChargeTrendMin;}
+  Float_t GetChargeTrendMax() const {return fChargeTrendMax;}
   
   //QA checker limits
   Float_t GetSatMed() const {return fSatMed;}
@@ -174,6 +180,8 @@ class AliADQAParam : public TNamed
   Int_t fNChargeCorrBins;
   Int_t fChargeCorrMin;
   Int_t fChargeCorrMax;
+  Float_t fChargeTrendMin;
+  Float_t fChargeTrendMax;
   
   Int_t   fNPairTimeCorrBins; 
   Float_t fPairTimeCorrMin;
@@ -204,6 +212,6 @@ class AliADQAParam : public TNamed
   Float_t fAsynchronBG;
   
 
-  ClassDef(AliADQAParam,4)
+  ClassDef(AliADQAParam,5)
 };
 #endif

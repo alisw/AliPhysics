@@ -175,6 +175,9 @@ set(ALIROOT_DEPENDENCIES STEERBase RAWDatabase RAWDatarec CDB ESD ANALYSIS HLTba
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
+
 set(LIBHLTSIM_VERSION "1")
 add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 

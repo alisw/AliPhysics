@@ -261,6 +261,12 @@ AliHLTEMCALRawAnalyzerComponentTRU::DoIt(const AliHLTComponentBlockData* iter, A
   HLTDebug("Number of TRU digits: %d",fTRUhandler->GetNumberOfRawDigits());
   tmpsize = fTRUhandler->WriteRawDigitsBuffer(digitDataPtr, availableSize);
 
+  /*
+  std::cout << "Found TRU  raw digits: " << std::endl;
+  for(Int_t idig = 0; idig < fTRUhandler->GetNumberOfRawDigits(); idig++){
+    PrintRawDigit(digitDataPtr[idig]);
+  }
+  */
   return  tmpsize;
 }
 

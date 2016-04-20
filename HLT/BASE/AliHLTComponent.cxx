@@ -48,9 +48,11 @@
 #include <cassert>
 #include <ctime>
 #include <stdint.h>
+#include "TStreamerInfo.h"
 
 #include <time.h>
 #include <sys/time.h>
+#include <map>
 #ifdef __MACH__
 #include <mach/clock.h>
 #include <mach/mach.h>
@@ -107,7 +109,10 @@ AliHLTComponent::AliHLTComponent()
   , fpCTPData(NULL)
   , fPushbackPeriod(0)
   , fLastPushBackTime(-1),
-  fEventModulo(-1)
+  fEventModulo(-1),
+  fSchema(),
+  fUseSchema(0),
+  fSchemaUpdated(0)
 {
   // see header file for class documentation
   // or
@@ -1529,8 +1534,17 @@ int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataT
   fLastObjectSize=0;
   if (pObject) {
     AliHLTMessage msg(kMESS_OBJECT);
+    msg.EnableSchemaEvolution(fUseSchema);
     msg.SetCompressionLevel(fCompressionLevel);
     msg.WriteObject(pObject);
+    
+    //chache the streamer infos during the first few times
+    //no need to do this every time as we mostly push the same objects
+    if (fUseSchema) {
+      const TList* schemaList = msg.GetStreamerInfos();
+      if (schemaList)  UpdateSchema(schemaList);
+    }
+
     Int_t iMsgLength=msg.Length();
     if (iMsgLength>0) {
       // Matthias Sep 2008
@@ -3081,3 +3095,47 @@ void AliHLTComponent::GetBxByBz(const Double_t r[3], Double_t b[3])
   // Returns Bx, By and Bz (kG) at the point "r" .
   AliHLTMisc::Instance().GetBxByBz(r, b);
 }
+
+int AliHLTComponent::UpdateSchema(TCollection* listOfStreamerInfos)
+{
+  //update the schema cache with the contents of the list from AliHLTMessage
+  TIter nextInfo(listOfStreamerInfos);
+  TStreamerInfo* info=NULL;
+  while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
+    const char* infoName = info->GetName();
+    if (!fSchema.FindObject(infoName)) {
+      fSchema.Add(info);
+      listOfStreamerInfos->Remove(info);
+      fSchemaUpdated=kTRUE;
+    }
+  }
+  return 0;
+}
+
+int AliHLTComponent::UpdateSchema(const TCollection* listOfStreamerInfos)
+{
+  //update the schema cache with the contents of the list from AliHLTMessage
+  TIter nextInfo(listOfStreamerInfos);
+  TStreamerInfo* info=NULL;
+  while ((info = static_cast<TStreamerInfo*>(nextInfo()))) {
+    const char* infoName = info->GetName();
+    if (!fSchema.FindObject(infoName)) {
+      fSchema.Add(info);
+      fSchemaUpdated=kTRUE;
+    }
+  }
+  return 0;
+}
+
+int AliHLTComponent::PushBackSchema()
+{
+  int rc = 0;
+  //this will push back the block with root streamers only if anything new was added
+  if (fSchemaUpdated)
+  {
+    rc = PushBack(&fSchema, kAliHLTDataTypeStreamerInfo|kAliHLTDataOriginHLT, 0);
+    fSchemaUpdated=kFALSE;
+  }
+  return rc;
+}
+

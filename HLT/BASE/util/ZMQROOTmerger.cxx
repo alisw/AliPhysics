@@ -25,20 +25,19 @@
 //easy access to payloads based on topic or so (a la HLT GetFirstInputObject() etc...)
 
 //methods
-TObject* UnpackMessage(zmq_msg_t* message);
 Int_t ProcessOptionString(TString arguments);
 Int_t InitZMQ();
 void* work(void* param);
 Int_t Run();
 
-Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* /*socket*/=NULL);
-Int_t HandleRequest(zmq_msg_t* /*topicMsg*/, zmq_msg_t* /*dataMsg*/, void* /*socket*/=NULL);
+Int_t HandleDataIn(aliZMQmsg::iterator block, void* /*socket*/=NULL);
+Int_t HandleRequest(aliZMQmsg::iterator block, void* /*socket*/=NULL);
 
-Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
+Int_t DoReceive(aliZMQmsg::iterator block, void* socket);
 Int_t DoSend(void* socket);
-Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
+Int_t DoReply(aliZMQmsg::iterator block, void* socket);
 Int_t DoRequest(void* /*socket*/);
-Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket);
+Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
@@ -78,6 +77,8 @@ Int_t fMaxObjects = 1;        //trigger merge after this many messages
 long fPushbackPeriod = -1;        //in seconds, -1 means never
 TTimeStamp fLastPushBackTime;
 Bool_t fCacheOnly = kFALSE;
+aliZMQTstreamerInfo* fSchema = NULL;
+int fCompression = 1;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -108,6 +109,7 @@ const char* fUSAGE =
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
     " -ZMQtimeout: when to timeout the sockets\n"
+    " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     ;
 
 void* work(void* /*param*/)
@@ -178,9 +180,9 @@ Int_t Run()
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQin)==ZMQ_REP) 
-        { HandleRequest(i->first, i->second, fZMQin); }
+        { HandleRequest(i, fZMQin); }
         else
-        { HandleDataIn(i->first, i->second, fZMQout); }
+        { HandleDataIn(i, fZMQout); }
       }
       alizmq_msg_close(&message);
     } //socket 0
@@ -193,9 +195,9 @@ Int_t Run()
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQout)==ZMQ_REP) 
-        { HandleRequest(i->first, i->second, fZMQout); }
+        { HandleRequest(i, fZMQout); }
         else
-        { HandleDataIn(i->first, i->second, fZMQin); }
+        { HandleDataIn(i, fZMQin); }
       }
       alizmq_msg_close(&message);
     }//socket 1
@@ -208,9 +210,9 @@ Int_t Run()
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQmon)==ZMQ_REP) 
-        { HandleRequest(i->first, i->second, fZMQmon); }
+        { HandleRequest(i, fZMQmon); }
         else
-        { HandleDataIn(i->first, i->second, fZMQmon); }
+        { HandleDataIn(i, fZMQmon); }
       }
       alizmq_msg_close(&message);
     }//socket 1
@@ -221,15 +223,26 @@ Int_t Run()
 }
 
 //_____________________________________________________________________
-Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoControl(aliZMQmsg::iterator block, void* socket)
 {
+  AliHLTDataTopic topic;
+  alizmq_msg_iter_topic(block, topic);
+
   string tmp;
-  tmp.assign((char*)zmq_msg_data(topicMsg),zmq_msg_size(topicMsg));
-  if (fAllowControlSequences && strncmp((char*)zmq_msg_data(topicMsg),"CONFIG",6)==0)
+  tmp.assign(kAliHLTDataTypeStreamerInfo.fID, kAliHLTComponentDataTypefIDsize);
+
+  if (topic.GetID().compare(0,kAliHLTComponentDataTypefIDsize,kAliHLTDataTypeStreamerInfo.fID,kAliHLTComponentDataTypefIDsize)==0)
+  {
+    //extract the streamer infos
+    if (fVerbose) printf("unpacking ROOT streamer infos... %s\n", topic.GetID().c_str());
+    alizmq_msg_iter_init_streamer_infos(block);
+    return 1;
+  }
+  else if (fAllowControlSequences && topic.GetID().compare(0,6,"CONFIG")==0)
   {
     //reconfigure (first send a reply to not cause problems on the other end)
     std::string requestBody;
-    requestBody.assign(static_cast<char*>(zmq_msg_data(dataMsg)), zmq_msg_size(dataMsg));
+    alizmq_msg_iter_data(block, requestBody);
 
     //std::string reply = "Reconfiguring...";
     //zmq_send(socket, "INFO", 4, ZMQ_SNDMORE);
@@ -237,10 +250,10 @@ Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
     ProcessOptionString(requestBody.c_str());
     return 1;
   }
-  else if (strncmp((char*)zmq_msg_data(topicMsg),"INFO",4)==0)
+  else if (topic.GetID().compare(0,4,"INFO")==0)
   {
     //check if we have a runnumber in the string
-    fInfo.assign((char*)zmq_msg_data(dataMsg),zmq_msg_size(dataMsg));
+    alizmq_msg_iter_data(block, fInfo);
     size_t runTagPos = fInfo.find("run");
     size_t runStartPos = fInfo.find("=",runTagPos);
     size_t runEndPos = fInfo.find(" ");
@@ -265,21 +278,21 @@ Int_t DoControl(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
 }
 
 //_____________________________________________________________________
-Int_t HandleRequest(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t HandleRequest(aliZMQmsg::iterator block, void* socket)
 {
-  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
-  return DoReply(topicMsg, dataMsg, socket);
+  if (DoControl(block, socket)>0) return 0;
+  return DoReply(block, socket);
 }
 
 //_____________________________________________________________________
-Int_t HandleDataIn(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t HandleDataIn(aliZMQmsg::iterator block, void* socket)
 {
-  if (DoControl(topicMsg, dataMsg, socket)>0) return 0;
-  return DoReceive(topicMsg, dataMsg, socket);
+  if (DoControl(block, socket)>0) return 0;
+  return DoReceive(block, socket);
 }
 
 //_____________________________________________________________________
-Int_t DoReply(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoReply(aliZMQmsg::iterator block, void* socket)
 {
   int rc = DoSend(socket);
 
@@ -325,15 +338,18 @@ int RemoveEntry(TPair* entry, TMap* map)
 }
 
 //_____________________________________________________________________
-Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
+Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 {
   //handle the message
   //add to the list of objects to merge for each object type (by name)
   //topic
   AliHLTDataTopic dataTopic;
-  memcpy(&dataTopic, zmq_msg_data(topicMsg),std::min(zmq_msg_size(topicMsg),sizeof(dataTopic)));
-  if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(), zmq_msg_size(dataMsg));
-  TObject* object = UnpackMessage(dataMsg );
+  alizmq_msg_iter_topic(block, dataTopic);
+
+  if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(), zmq_msg_size(block->second));
+  TObject* object = NULL;
+  alizmq_msg_iter_data(block, object);
+
   if (object)
   {
     const char* name = object->GetName();
@@ -370,7 +386,7 @@ Int_t DoReceive(zmq_msg_t* topicMsg, zmq_msg_t* dataMsg, void* socket)
           int rc = Merge(mergingObject, mergingList);
           if (rc<0)
           {
-            if (fVerbose) Printf("Merging failed, replacing with new object  %s's",name);
+            if (fVerbose) Printf("Merging failed, replacing with new object %s",name);
             RemoveEntry(entry, &fMergeObjectMap);
             mergingList->Remove(object);
             //if the merging list has more objects, flush the list to avoid problems
@@ -442,7 +458,7 @@ Int_t DoSend(void* socket)
       continue;
     }
 
-    rc = alizmq_msg_add(&message, &topic, object);
+    rc = alizmq_msg_add(&message, &topic, object, fCompression, fSchema);
     if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
     {
       TPair* pair = fMergeObjectMap.RemoveEntry(key);
@@ -451,6 +467,8 @@ Int_t DoSend(void* socket)
       delete pair;
     }
   }
+
+  if (fSchema) alizmq_msg_prepend_streamer_infos(&message, fSchema);
 
   //send
   int sentBytes = alizmq_msg_send(&message, socket, 0);
@@ -488,17 +506,6 @@ Int_t InitZMQ()
   rc = alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("mon: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigMON.Data());
   return 0;
-}
-
-//_______________________________________________________________________________________
-TObject* UnpackMessage(zmq_msg_t* message)
-{
-  size_t size = zmq_msg_size(message);
-  void* data = zmq_msg_data(message);
-
-  TObject* object = NULL;
-  object = AliHLTMessage::Extract(data, size);
-  return object;
 }
 
 //_______________________________________________________________________________________
@@ -546,7 +553,6 @@ Int_t ProcessOptionString(TString arguments)
   aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
   for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first; 
     const TString& value = i->second;
     if (option.EqualTo("reset")) 

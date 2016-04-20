@@ -52,6 +52,8 @@ set(SRCS
     AliITSUTrackerGlo.cxx
     AliITSUTrackHyp.cxx
     AliITSUVertexer.cxx
+    #   AliITSUVertexerFast.cxx
+    #   AliITSUVertexCandidate.cxx
    )
 
 # Headers from sources
@@ -81,8 +83,12 @@ target_link_libraries(${MODULE} ${LIBDEPS})
 
 # System dependent: Modify the way the library is build
 if(${CMAKE_SYSTEM} MATCHES Darwin)
-    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+  set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+#else(${CMAKE_SYSTEM} MATCHES Darwin) 
+#  set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "-fopenmp -std=c++11")
+#  set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-lgomp")
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
+
 
 # Installation
 install(TARGETS ${MODULE}
