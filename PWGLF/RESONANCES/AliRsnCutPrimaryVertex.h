@@ -29,6 +29,7 @@ public:
    Float_t        GetMaxZResolutionSPD(){return fMaxZResolutionSPD;}
    void           SetMaxZResolutionSPD(Float_t val=0.25){fMaxZResolutionSPD=val;}
    Bool_t         GoodZResolutionSPD(const AliESDVertex* v);
+   Bool_t         GoodZResolutionSPD(AliAODVertex* v);
    Bool_t         GoodZResolutionSPD();
 
    Bool_t         GetCheckDispersionSPD(){return fCheckDispersionSPD;}
@@ -43,6 +44,7 @@ public:
    Float_t        GetMaxZDifferenceSPDTrack(){return fMaxZDifferenceSPDTrack;}
    void           SetMaxZDifferenceSPDTrack(Float_t val=0.5){fMaxZDifferenceSPDTrack=val;}
    Bool_t         GoodZDifferenceSPDTrack(const AliESDVertex* vTrk, const AliESDVertex* vSPD);
+   Bool_t         GoodZDifferenceSPDTrack(AliAODVertex* vTrk, AliAODVertex* vSPD);
    Bool_t         GoodZDifferenceSPDTrack();
 
 protected:

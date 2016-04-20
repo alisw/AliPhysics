@@ -9,7 +9,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
-#include <TProfile.h>
+#include <THn.h>
+#include <TTree.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
@@ -22,17 +23,35 @@
 #include "AliPicoTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
-#include "AliEmcalJetFinder.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
 ClassImp(AliAnalysisTaskChargedJetsHadronCF)
+ClassImp(AliBasicJet)
+ClassImp(AliBasicJetConstituent)
+
+//________________________________________________________________________
+AliBasicJet::~AliBasicJet() 
+{
+// dummy destructor
+}
+
+//________________________________________________________________________
+AliBasicJetConstituent::~AliBasicJetConstituent() 
+{
+// dummy destructor
+}
 
 //________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronCF", kTRUE),
   fJetsCont(0),
   fTracksCont(0),
+  fJetsTree(0),
+  fJetsTreeBuffer(0),
+  fExtractionPercentage(0),
+  fExtractionMinPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -42,7 +61,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingArrayName(""),
   fRandom(0),
   fRejectionFunction(0),
-  fFakeFactorCutProfile(0),
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
@@ -67,6 +85,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetsCont(0),
   fTracksCont(0),
+  fJetsTree(0),
+  fJetsTreeBuffer(0),
+  fExtractionPercentage(0),
+  fExtractionMinPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -76,7 +98,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingArrayName(""),
   fRandom(0),
   fRejectionFunction(0),
-  fFakeFactorCutProfile(0),
   fJetOutputMode(0),
   fMinFakeFactorPercentage(0),
   fMaxFakeFactorPercentage(0),
@@ -154,9 +175,6 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_100", "Jet constituent count vs. jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_10", "Jet constituent count vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
 
-  AddHistogram3D<TH3D>("hJetConstituents_Cent0_100", "Jet constituent p_{T} distribution vs. jet p_T + track count (background subtracted)", "", 180, -30., 150., 100, 0., 100., 100, 0., 120., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "N constituents");
-  AddHistogram3D<TH3D>("hJetConstituents_Cent0_10", "Jet constituent p_{T} distribution vs. jet p_T + track count (background subtracted), 0-10 centrality", "", 180, -30., 150., 100, 0., 100., 100, 0., 120., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "N constituents");
-
   AddHistogram2D<TH2D>("hLeadingJetPtRaw", "Jets p_{T} distribution (no bgrd. corr.)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPt", "Jets p_{T} distribution (background subtracted)", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPhi", "Jet angular distribution #phi", "LEGO2", 180, 0., 2*TMath::Pi(), fNumberOfCentralityBins, 0, 100, "#phi", "Centrality", "dN^{Jets}/d#phi");
@@ -224,6 +242,14 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
       AliFatal(Form("Importing jets for matching failed! Array '%s' not found!", fJetMatchingArrayName.Data()));
   }
 
+  // ### Jets tree (optional)
+  if(fExtractionPercentage)
+  {
+    fJetsTree = new TTree("ExtractedJets", "ExtractedJets");
+    fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
+    fOutput->Add(fJetsTree);
+  }
+
 }
 
 //________________________________________________________________________
@@ -280,6 +306,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
       return kFALSE;
 
   // Fake jet rejection (0810.1219)
+/*
   if(fFakeFactorCutProfile)
   {
     Double_t fakeFactor = CalculateFakeFactor(jet);
@@ -287,6 +314,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
     if( (fakeFactor >= fMinFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
       return kFALSE;
   }
+*/
 
   // Poor man's fake jet rejection (according to jet const.)
   if(fRejectionFunction)
@@ -395,12 +423,8 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
 
     // Fill jet constituent plots
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-    FillHistogram3D("hJetConstituents_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), jet->GetNumberOfTracks()); 
     if( (fCent >= 0) && (fCent < 10) )
-    {
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-      FillHistogram3D("hJetConstituents_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), jet->GetNumberOfTracks());
-    }
   }
 
   FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
@@ -427,6 +451,30 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
+{
+  // Check pT threshold
+  if( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt )
+    return;
+
+  // Discard jets statistically
+  if(fRandom->Rndm() >= fExtractionPercentage)
+    return;
+
+  Long64_t eventID = InputEvent()->GetHeader()->GetEventIdAsLong();
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fJetsCont->GetRhoVal(), eventID, fCent);
+  // Add constituents
+  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  {
+    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
+    if(!particle) continue;
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+  }
+  fJetsTreeBuffer = &basicJet;
+  fJetsTree->Fill();
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
@@ -447,6 +495,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     FillHistogramsJetConstituents(jet);
 
     // Add jet to output array
+    if(fExtractionPercentage)
+      AddJetToTree(jet);
     AddJetToOutputArray(jet);
   }
 
@@ -572,6 +622,27 @@ AliEmcalJet* AliAnalysisTaskChargedJetsHadronCF::GetSubleadingJet(const char* op
   }
 
   return jetSubLeading;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::BinLogAxis(const THn *h, Int_t axisNumber)
+{
+  // Method for the correct logarithmic binning of histograms
+  TAxis *axis = h->GetAxis(axisNumber);
+  int bins = axis->GetNbins();
+
+  Double_t from = axis->GetXmin();
+  Double_t to = axis->GetXmax();
+  Double_t *newBins = new Double_t[bins + 1];
+   
+  newBins[0] = from;
+  Double_t factor = pow(to/from, 1./bins);
+  
+  for (int i = 1; i <= bins; i++) {
+   newBins[i] = factor * newBins[i-1];
+  }
+  axis->Set(bins, newBins);
+  delete [] newBins;
 }
 
 //________________________________________________________________________

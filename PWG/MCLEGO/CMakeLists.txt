@@ -47,3 +47,9 @@ install(DIRECTORY EPOS
   DESTINATION PWG/MCLEGO
   FILES_MATCHING PATTERN "*.optns"
   )
+
+# install TunedOnPbPb configurations
+install(DIRECTORY TunedOnPbPb
+  DESTINATION PWG/MCLEGO
+  FILES_MATCHING PATTERN "*.C"
+  )

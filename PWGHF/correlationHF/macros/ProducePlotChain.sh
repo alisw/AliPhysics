@@ -36,11 +36,11 @@ declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare -a Nmccase=( 5 5 )
-declare -a mccasePP=( 1 1 1 1 0 1 0 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09
-declare -a mccasePPb=( 1 1 1 1 0 0 1 )
-declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC")
+declare -a Nmccase=( 6 6 )
+declare -a mccasePP=( 1 1 1 1 0 1 0 1 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
+declare -a mccasePPb=( 1 1 1 1 0 0 1 1 )
+declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC"  "CorrelationPlotsEPOS3PtDzerofromC")
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsEPOS3PtDzerofromC")
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
@@ -102,10 +102,10 @@ declare doFitResultComparisonPPpPb=1
 declare dofitMC=1
 declare doFitResultComparisonPPtoMC=1
 declare doFitResultComparisonPPbtoMC=1
-declare doFitResultComparisonPPtoPPbtoMCPP=1
+declare doFitResultComparisonPPtoPPbtoMCPP=0
 declare doCompareWithMC=1
 declare doComparepppPb=1
-declare doOldPlots=1
+declare doOldPlots=0
 ### MODIFY THE PARAMETERS BELOW ONLY IF YOU WANT TO RUN ONLY OVER FEW KINE CASES, OTHERWISE DO NOT TOUCH THEM
 declare -i firstcollsyst=0   #default 0
 declare -i lastcollsyst=1    #default 1 
@@ -483,6 +483,7 @@ if [ ${dofit} = 1 ]; then
   DoNiceFitPlots()
   .q
 EOF
+ln -s ${baseDir}/AllPlots/Averages/FitResults/NiceStylePlots/cFitOutput_NiceStyle* $baseStartingDir/PaperFigures
 fi
 
 if [ ${doFitResultComparisonPPpPb} = 1 ];then
@@ -503,7 +504,6 @@ CompareFitResultsPPtoPPb()
 EOF
 ###### LINK PAPER FIGURE ####
 ln -s ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb/ComparePPtoPPbFitResults.* $baseStartingDir/PaperFigures
-ln -s ${baseDir}/AllPlots/Averages/FitResults/NiceStylePlots/cFitOutput_NiceStyle* $baseStartingDir/PaperFigures
 
 fi
 
@@ -530,6 +530,7 @@ IncludeModel(3,${mccasePP[3]})
 IncludeModel(4,${mccasePP[4]})
 IncludeModel(5,${mccasePP[5]})
 IncludeModel(6,${mccasePP[6]})
+IncludeModel(7,${mccasePP[7]})
 SetDrawSystMC(kFALSE)
 CompareFitResultsPPtoMCUniqueCanvas()
 EOF
@@ -547,6 +548,7 @@ IncludeModel(3,${mccasePP[3]}||${mccasePPb[3]})
 IncludeModel(4,${mccasePP[4]}||${mccasePPb[4]})
 IncludeModel(5,${mccasePP[5]}||${mccasePPb[5]})
 IncludeModel(6,${mccasePP[6]}||${mccasePPb[6]})
+IncludeModel(7,${mccasePP[7]}||${mccasePPb[7]})
 CompareFitResultsPPtoPpbAndMCUniqueCanvas();
 
 EOF
@@ -582,6 +584,7 @@ IncludeModel(3,${mccasePPb[3]})
 IncludeModel(4,${mccasePPb[4]})
 IncludeModel(5,${mccasePPb[5]})
 IncludeModel(6,${mccasePPb[6]})
+IncludeModel(7,${mccasePPb[7]})
 SetDrawSystMC(kFALSE)
 CompareFitResultsPPbtoMCUniqueCanvas()
 EOF
@@ -713,6 +716,9 @@ SetReflectTemplate($reflect)
 SetIsDataReflected($reflect)
 SetBaselineDirectory("${baseDir}/AllPlots/Averages/FitResults")
 SetAverageMode($averageOpt)
+SetSplitMClegendInTwoPanels(kTRUE)
+SetIncludeAllMCmodels(kTRUE)
+SetIncludeEPOS(kTRUE)
 DoComparison_ppVsMCallPanels()
 EOF
     

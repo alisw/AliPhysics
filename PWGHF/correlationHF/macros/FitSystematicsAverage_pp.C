@@ -375,6 +375,7 @@ void SystematicsMC_pp_highpthad(Bool_t useReflected,TString strTemplRootName){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;
@@ -494,6 +495,7 @@ void SystematicsMC_pp_lowpthad(Bool_t useReflected,TString strTemplRootName){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;
@@ -612,6 +614,7 @@ void SystematicsMC_pp_integrpthad(Bool_t useReflected,TString strTemplRootName){
       mcCase="POWHEG";
       strTemplRootName.Remove(0,2);
     }
+    else if(strTemplRootName.Contains("EPOS3"))mcCase="EPOS3";
     else {
       Printf("MC case not foreseen");
       return;
