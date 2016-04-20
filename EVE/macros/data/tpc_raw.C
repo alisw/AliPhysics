@@ -185,24 +185,31 @@ AliRecoParam* InitRecoParam()
 }
 
 
-void tpc_raw(int runNumber, Int_t mode = 3)
+void tpc_raw(Int_t mode = 3)
 {
     printf("*** RAW TPC ***");
     
     gStyle->SetPalette(1, 0);
     
     cout<<"1"<<endl;
-//    AliEveEventManager::Instance()->InitOCDB(runNumber);
     
-    AliCDBManager::Instance()->SetSpecificStorage("GRP/CTP/Config","local:///local/cdb/");
-    AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///local/cdb/");
+//    AliCDBManager::Instance()->SetSpecificStorage("GRP/CTP/Config","local:///local/cdb/");
+//    AliCDBManager::Instance()->SetSpecificStorage("GRP/GRP/Data","local:///local/cdb/");
+    
+    AliEveEventManager *eventManager = AliEveEventManager::Instance();
     
     cout<<"2"<<endl;
-    AliEveEventManager::Instance()->AssertGeometry();
+    eventManager->AssertGeometry();
     cout<<"3"<<endl;
     AliEveEventManager::AssertMagField();
     cout<<"4"<<endl;
-    AliRawReader *reader = AliEveEventManager::AssertRawReader();
+    AliRawReader *reader = eventManager->GetRawReader();
+    
+    if(!reader){
+        cout<"tpc_raw -- no raw reader"<<endl;
+        return;
+    }
+    
     cout<<"5"<<endl;
     reader->Reset();
     
@@ -311,11 +318,20 @@ const AliEventInfo* GetEventInfo()
             aCTP = AliEveEventManager::AssertRunLoader()->GetTrigger();
             fEventInfo.SetTriggerMask(aCTP->GetClassMask());
             // get inputs from actp - just get
-            AliESDHeader* esdheader = AliEveEventManager::AssertESD()->GetHeader();
-            esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
-            esdheader->SetL1TriggerInputs(aCTP->GetL1TriggerInputs());
-            esdheader->SetL2TriggerInputs(aCTP->GetL2TriggerInputs());
-            fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
+            AliESDEvent *esdEvent = AliEveEventManager::Instance()->GetESD();
+            
+            if(esdEvent)
+            {
+                AliESDHeader* esdheader = esdEvent->GetHeader();
+                esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
+                esdheader->SetL1TriggerInputs(aCTP->GetL1TriggerInputs());
+                esdheader->SetL2TriggerInputs(aCTP->GetL2TriggerInputs());
+                fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
+            }
+            else
+            {
+                cout<<"tpc_raw -- no ESD event"<<endl;
+            }
         }
         else
         {
@@ -442,7 +458,6 @@ TTree* readHLTClusters(AliRawReader *fRawReader)
     const THashTable* cosmicTriggers = manGRP->GetCosmicTriggers();
     cout<<"a.2:"<<cosmicTriggers<<endl;
     const AliEventInfo *eventinfo = GetEventInfo();
-    cout<<"a.3:"<<eventinfo<<endl;
     
     if(!eventinfo){
         cout<<"Event info couldn't be retrived."<<endl;

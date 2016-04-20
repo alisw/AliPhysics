@@ -144,7 +144,13 @@ void data_vis_AD0_esd()
     gStyle->SetPalette(1, 0);
     
     // get ESD from the Event Manager
-    AliESDAD *adESD = manager->GetESD()->GetADData();
+    AliESDEvent *esdEvent = manager->GetESD();
+    if(!esdEvent)
+    {
+        cout<<"data_vis_AD0_esd -- No ESD event"<<endl;
+        return;
+    }
+    AliESDAD *adESD = esdEvent->GetADData();
     
     // check if ESD exists
     if(!adESD)

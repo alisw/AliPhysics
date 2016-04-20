@@ -502,6 +502,10 @@ void AliEveEventManager::AfterNewEventLoaded()
       printf("CDB not OK! not executing AfterNewEventLoaded\n");
       return;
     }
+    else if(fCurrentData->fRawReader){
+        InitOCDB(fCurrentData->fRawReader->GetRunNumber());
+    }
+        
 
     cout<<"\n\n--------- AliEveEventManager::AfterNewEventLoaded ---------\n\n"<<endl;
     
