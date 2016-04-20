@@ -4143,28 +4143,28 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if  ( (deltaPhi > fDeltaPhiMinCut)   && (deltaPhi < fDeltaPhiMaxCut)   )
     {
       // Check track resolution
-      if(esdTrack && TMath::Abs(esdTrack->GetParameter()[4]) > 0 )
+      if ( esdTrack )
       {
-        fhTrackResolution->Fill(TMath::Abs(esdTrack->GetParameter()[4]), 
-                                TMath::Sqrt(esdTrack->GetCovariance()[14])/TMath::Abs(esdTrack->GetParameter()[4]), 
+        fhTrackResolution->Fill(pt, TMath::Sqrt(esdTrack->GetCovariance()[14])*pt, 
                                 GetEventWeight());
       }
 
       FillChargedMomentumImbalanceHistograms(ptTrig, pt, deltaPhi, cenbin, track->Charge(),
                                              assocBin, decayTag, outTOF, mcTag);
     }
+    
     //
     // Underlying event, right side, default case
     //
     if ( (deltaPhi > fUeDeltaPhiMinCut) && (deltaPhi < fUeDeltaPhiMaxCut) )
     {
       // Check track resolution
-      if(esdTrack && TMath::Abs(esdTrack->GetParameter()[4]) > 0 )
+      if ( esdTrack )
       {
-        fhTrackResolutionUE->Fill(TMath::Abs(esdTrack->GetParameter()[4]), 
-                                  TMath::Sqrt(esdTrack->GetCovariance()[14])/TMath::Abs(esdTrack->GetParameter()[4]), 
+        fhTrackResolutionUE->Fill(pt, TMath::Sqrt(esdTrack->GetCovariance()[14])*pt, 
                                   GetEventWeight());
       }
+      
       FillChargedUnderlyingEventHistograms(ptTrig, pt, deltaPhi, cenbin, outTOF,mcTag);
     }
     
