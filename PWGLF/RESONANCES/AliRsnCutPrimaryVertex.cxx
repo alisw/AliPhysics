@@ -112,24 +112,27 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       // stand-alone primary vertex, which is rejected
       
       if(fAcceptSPD){
-      	AliAODVertex *aodv = aod->GetPrimaryVertexSPD();
-      	if (!aodv) {
+      	AliAODVertex *aodv_SPD = aod->GetPrimaryVertexSPD();
+      	if (!aodv_SPD) {
          	AliDebugClass(1, "Not found SPD vertex --> TPC only available, skipped");
          	return kFALSE;
       	}
+
+	if(fCheckZResolutionSPD && !GoodZResolutionSPD(aodv_SPD)) return kFALSE;
+
       	// now check primary vertex
-      	aodv = (AliAODVertex *)aod->GetPrimaryVertex();
-      	if (CheckVertex(aodv)) {
+      	AliAODVertex *aodv_Trk = (AliAODVertex *)aod->GetPrimaryVertex();
+      	if (CheckVertex(aodv_Trk)) {
          	AliDebugClass(1, "Vertex TRK is OK");
-         	fCutValueD = aodv->GetZ();
-         	fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
+		if(fCheckZDifferenceSPDTrack && !GoodZDifferenceSPDTrack(aodv_Trk, aodv_SPD)) return kFALSE;
+         	fCutValueD = aodv_Trk->GetZ();
+         	fCutValueI = aodv_Trk->GetNDaughters(); //aodv->GetNContributors();
       	}
       	else {
-         	aodv = aod->GetPrimaryVertexSPD();
-         	if (CheckVertex(aodv)) {
+         	if (CheckVertex(aodv_SPD)) {
             	AliDebugClass(1, "Vertex TRK is BAD, but vertex SPD is OK");
-            	fCutValueD = aodv->GetZ();
-            	fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
+            	fCutValueD = aodv_SPD->GetZ();
+            	fCutValueI = aodv_SPD->GetNDaughters(); //aodv->GetNContributors();
          	} else {
             	AliDebugClass(1, "Vertex TRK is BAD, and vertex SPD is BAD");
             	return kFALSE;
@@ -194,19 +197,40 @@ Bool_t AliRsnCutPrimaryVertex::GoodZResolutionSPD(const AliESDVertex* v)
 }
 
 //__________________________________________________________________________________________________
+Bool_t AliRsnCutPrimaryVertex::GoodZResolutionSPD(AliAODVertex* v)
+{
+   if(!v) return kTRUE;
+   Double_t sigma[3];
+   v->GetSigmaXYZ(sigma);
+   if(sigma[2]<0.) return kFALSE;
+   if(TMath::Sqrt(sigma[2])>=fMaxZResolutionSPD) return kFALSE;
+   return kTRUE;
+}
+
+//__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodZResolutionSPD()
 {
    if(!fEvent) return kTRUE;
-   AliESDEvent* esd=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
-   if(!esd) return kTRUE;
 
-   const AliESDVertex* vSPD=esd->GetPrimaryVertexSPD();
-   return GoodZResolutionSPD(vSPD);
+   AliESDEvent* esd=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+   if(esd){
+     const AliESDVertex* vesd=esd->GetPrimaryVertexSPD();
+     return GoodZResolutionSPD(vesd);
+   }
+
+   AliAODEvent* aod=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
+   if(aod){
+     AliAODVertex* vaod=aod->GetPrimaryVertexSPD();
+     return GoodZResolutionSPD(vaod);
+   }
+
+   return kTRUE;
 }
 
 //__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodDispersionSPD(const AliESDVertex *v)
 {
+   //works for ESDs only
    if(!v) return kTRUE;
    if(v->IsFromVertexerZ() && v->GetDispersion()>=fMaxDispersionSPD) return kFALSE;
    return kTRUE;
@@ -215,6 +239,7 @@ Bool_t AliRsnCutPrimaryVertex::GoodDispersionSPD(const AliESDVertex *v)
 //__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodDispersionSPD()
 {
+   //works for ESDs only
    if(!fEvent) return kTRUE;
    AliESDEvent* esd=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
    if(!esd) return kTRUE;
@@ -234,13 +259,32 @@ Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack(const AliESDVertex *vTrk,
 }
 
 //__________________________________________________________________________________________________
+Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack(AliAODVertex *vTrk, AliAODVertex *vSPD)
+{
+   if(!vTrk || !vSPD) return kTRUE;
+   Double_t vzTrk = vTrk->GetZ();
+   Double_t vzSPD = vSPD->GetZ();
+   if(TMath::Abs(vzTrk - vzSPD)>fMaxZDifferenceSPDTrack) return kFALSE;
+   return kTRUE;
+}
+
+//__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack()
 {
    if(!fEvent) return kTRUE;
    AliESDEvent* esd=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
-   if(!esd) return kTRUE;
+   if(esd){
+     const AliESDVertex* vTrk_esd=esd->GetPrimaryVertexTracks();
+     const AliESDVertex* vSPD_esd=esd->GetPrimaryVertexSPD();
+     return GoodZDifferenceSPDTrack(vTrk_esd, vSPD_esd);
+   }
 
-   const AliESDVertex* vTrk=esd->GetPrimaryVertexTracks();
-   const AliESDVertex* vSPD=esd->GetPrimaryVertexSPD();
-   return GoodZDifferenceSPDTrack(vTrk, vSPD);
+   AliAODEvent* aod=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
+   if(aod){
+     AliAODVertex* vTrk_aod=aod->GetPrimaryVertex();
+     AliAODVertex* vSPD_aod=aod->GetPrimaryVertexSPD();
+     return GoodZDifferenceSPDTrack(vTrk_aod, vSPD_aod);
+   }
+
+   return kTRUE;
 }
