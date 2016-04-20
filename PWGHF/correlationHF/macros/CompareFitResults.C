@@ -53,13 +53,13 @@ Double_t leftMarginCanvas=0.17;
 Double_t rightMarginCanvas=0.055;
 Double_t bottomMarginCanvas=0.13;
 Double_t topMarginCanvas=0.07;
-const Int_t nmodels=7;
+const Int_t nmodels=8;
 Bool_t includemodel[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE};
-TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG"};
-TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09"};
-Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kViolet,kRed+2,kRed+2};
-Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE};// this is also used to split the legend in 2!!
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3};
+TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","HERWIG","POWHEG","POWHEG","EPOS3"};
+TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09","EPOS 3"};
+Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kViolet,kRed+2,kRed+2,kOrange};
+Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,33};
 TH1D **hMC;
 TGraphAsymmErrors **grMC;
 
@@ -93,6 +93,10 @@ void IncludePowhegEPS09(Bool_t incl){
 void IncludeHerwig(Bool_t incl){
   includemodel[5]=incl;
   includeinlegend[5]=incl;
+}
+void IncludeEPOS(Bool_t incl){
+  includemodel[7]=incl;
+  includeinlegend[7]=incl;
 }
 void IncludeModel(Int_t imod,Bool_t incl){
   includemodel[imod]=incl;
@@ -1690,8 +1694,8 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
     return;
   }  
 
-  Bool_t includeinlegendOrig[7];
-  for(Int_t k=0;k<7;k++)includeinlegendOrig[k]=includeinlegend[k];
+  Bool_t includeinlegendOrig[nmodels];
+  for(Int_t k=0;k<nmodels;k++)includeinlegendOrig[k]=includeinlegend[k];
   Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
 
@@ -1706,11 +1710,13 @@ void CompareFitResultsPPtoMCUniqueCanvas(){
       includeinlegend[4]=kFALSE;
       includeinlegend[5]=kFALSE;
       includeinlegend[6]=kFALSE;
+      includeinlegend[7]=kFALSE;
       CompareDatatoModels(0,orderAssoc[jp],0,pd,100000+needTitle+100,0,"Simulations, pp, #sqrt{#it{s}} = 7 TeV");    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
       includeinlegend[3]=includeinlegendOrig[3];
       includeinlegend[4]=includeinlegendOrig[4];
       includeinlegend[5]=includeinlegendOrig[5];
       includeinlegend[6]=includeinlegendOrig[6];
+      includeinlegend[7]=includeinlegendOrig[7];
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:
       CompareDatatoModels(0,orderAssoc[jp],0,pd,needTitle);//+1000000);    
@@ -1985,8 +1991,8 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
     return;
   }  
 
-  Bool_t includeinlegendOrig[7];
-  for(Int_t k=0;k<7;k++)includeinlegendOrig[k]=includeinlegend[k];
+  Bool_t includeinlegendOrig[nmodels];
+  for(Int_t k=0;k<nmodels;k++)includeinlegendOrig[k]=includeinlegend[k];
   Int_t orderAssoc[3]={2,0,1};  
   for(Int_t jp=0;jp<=2;jp++){
     Int_t needTitle=0;
@@ -2000,11 +2006,13 @@ void CompareFitResultsPPbtoMCUniqueCanvas(){
       includeinlegend[4]=kFALSE;
       includeinlegend[5]=kFALSE;
       includeinlegend[6]=kFALSE;
+      includeinlegend[7]=kFALSE;
       CompareDatatoModels(1,orderAssoc[jp],0,pd,100000+needTitle+100,0,"Simulations, pp, #sqrt{#it{s}} = 5.02 TeV, #it{y}_{cms} = 0.496");    // title + 10*asspt+100*legendDataMC+1000*ALICE+10000*side+100000*collSyst+1000000*Drap
       includeinlegend[3]=includeinlegendOrig[3];
       includeinlegend[4]=includeinlegendOrig[4];
       includeinlegend[5]=includeinlegendOrig[5];
       includeinlegend[6]=includeinlegendOrig[6];
+      includeinlegend[7]=includeinlegendOrig[7];
 
     }
     else if(jp==0){// identifier set as: 10*quantity+binass; NS:

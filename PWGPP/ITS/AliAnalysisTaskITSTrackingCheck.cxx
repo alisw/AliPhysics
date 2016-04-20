@@ -2280,6 +2280,16 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     Bool_t outInZ=kFALSE;
 
     for(Int_t layer=0; layer<fNITSLayers; layer++) {
+
+      if(TESTBIT(track->GetITSClusterMap(),layer)) {
+	if(tpcrefit) {
+	  fHistClusterMapITSMI->Fill(layer);
+	} else {
+	  fHistClusterMapITSSA->Fill(layer);
+	  if(!outInZ) fHistClusterMapITSSAInAcc->Fill(layer);
+	}
+      }
+
       if(layer>=(fNITSLayers-4) && track->HasPointOnITSLayer(layer)) nclsSDDSSD++;
       if(layer==0 && !track->HasPointOnITSLayer(1)) continue;
       if(layer==1 && !track->HasPointOnITSLayer(0)) continue;
@@ -2349,14 +2359,6 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 	    fHistzlocSDDok->Fill(zloc);
 
 	  } 	
-	}
-      }
-      if(TESTBIT(track->GetITSClusterMap(),layer)) {
-	if(tpcrefit) {
-	  fHistClusterMapITSMI->Fill(layer);
-	} else {
-	  fHistClusterMapITSSA->Fill(layer);
-	  if(!outInZ) fHistClusterMapITSSAInAcc->Fill(layer);
 	}
       }
     }  
@@ -2625,7 +2627,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       if(!outInZ) fHistNclsITSSAInAcc->Fill(nclsITS);
     }
 
-    
+  
     if((tpcrefit && fUseITSSAforNtuples) || // only ITS-SA for ntuples
        (!tpcrefit && !fUseITSSAforNtuples)) // only ITS-TPC for ntuples
       { delete trackTPC; trackTPC=0; continue; }
