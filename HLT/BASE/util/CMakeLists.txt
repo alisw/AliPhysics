@@ -137,8 +137,10 @@ if(ZEROMQ_FOUND)
   target_link_libraries(ZMQproxy HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   add_executable(ZMQHLTchain ZMQHLTchain.cxx)
   target_link_libraries(ZMQHLTchain HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQexample ZMQexample.cxx)
+  target_link_libraries(ZMQexample HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
   
   # Installation of 
-  install(TARGETS ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQHLTchain RUNTIME DESTINATION bin)
+  install(TARGETS ZMQexample ZMQfileProxy ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy ZMQHLTchain RUNTIME DESTINATION bin)
   install(PROGRAMS ZMQmonitor.py DESTINATION bin)
 endif(ZEROMQ_FOUND)
