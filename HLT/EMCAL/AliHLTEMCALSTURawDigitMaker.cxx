@@ -203,7 +203,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
           if (vx >= 0 && vy >= 0) {
             if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
-              HLTDebug("| STU => Add L1 jet patch at (%2d , %2d)\n", ix, iy);
+              HLTDebug("| STU => Add L1 jet patch at (%2d , %2d)\n", vx, vy);
               SetTriggerBit(GetRawDigit(idx), kL1JetHigh + ithr, 1);
             }
           }
