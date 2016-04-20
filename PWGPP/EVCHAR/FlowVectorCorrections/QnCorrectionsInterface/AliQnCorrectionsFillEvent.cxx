@@ -387,9 +387,9 @@ void AliQnCorrectionsFillEvent::FillVZERO(){
 
   for(Int_t ich=0; ich<64; ich++){
     weight=vzero->GetMultiplicity(ich);
-    if(weight<0.01) weight=0.;
-
-    fEventPlaneManager->AddDataVector(VAR::kVZERO, TMath::ATan2(kY[ich%8],kX[ich%8]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    if(weight>0.01) {
+      fEventPlaneManager->AddDataVector(VAR::kVZERO, TMath::ATan2(kY[ich%8],kX[ich%8]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    }
 
   }
 }
@@ -411,9 +411,9 @@ void AliQnCorrectionsFillEvent::FillTZERO(){
 
   for(Int_t ich=0; ich<24; ich++){
     weight=tzero->GetT0amplitude()[ich];
-    if(weight<0.01) weight=0.;
-
-    fEventPlaneManager->AddDataVector(VAR::kTZERO, TMath::ATan2(kY[ich%8],kX[ich%8]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    if(weight>0.01) {
+      fEventPlaneManager->AddDataVector(VAR::kTZERO, TMath::ATan2(kY[ich],kX[ich]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    }
 
   }
 }
@@ -442,9 +442,9 @@ void AliQnCorrectionsFillEvent::FillZDC(){
   for(Int_t ich=1; ich<10; ich++){
     if(ich==5) continue;
     weight=ZDCenergy[ich];
-    if(weight<100.) weight=0.;
-
-    fEventPlaneManager->AddDataVector(VAR::kZDC, TMath::ATan2(kY[ich%8],kX[ich%8]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    if(weight>100.) {
+      fEventPlaneManager->AddDataVector(VAR::kZDC, TMath::ATan2(kY[ich],kX[ich]), weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+    }
   }
 }
 

@@ -80,7 +80,7 @@ ForwardAODConfig2(AliForwardMultiplicityBase* task)
 
   // --- Event classifier --------------------------------------------
   // Enable/Disable centrality estimation from AliPPVsMultUtils
-  task->GetMultEventClassifier().SetUseCentrality(true);
+  //task->GetMultEventClassifier().SetUseCentrality(true);
   
   // --- ESD fixer ---------------------------------------------------
   // Sets the noise factor that was used during reconstruction.  If

@@ -46,6 +46,8 @@ class AliQnCorrectionsSteps  {
  //static void BuildQnVectors(AliQnCorrectionsQnVector* QvectorOut, TClonesArray* dataVectorArray, Int_t QnConfIndex, Int_t minHar, Int_t maxHar, Int_t EqualizationMethod=-1);
  static void CalibrateDataVector(TClonesArray* dataVectorArray, AliQnCorrectionsConfiguration* QnConf,  AliQnCorrectionsHistograms* inputHistos, Double_t* fillValues) ;
  static void RecenterQvec(AliQnCorrectionsQnVector* QvectorIn, AliQnCorrectionsQnVector* QvectorOut, AliQnCorrectionsHistograms* inputHistos, Int_t bin, Int_t useStep, Int_t minHar, Int_t maxHar) ;
+ static void TwistAndRescale2nQn(AliQnCorrectionsQnVector* QvectorIn, AliQnCorrectionsQnVector* QvectorTwist, AliQnCorrectionsQnVector* QvectorRescale, AliQnCorrectionsHistograms* inputHistos, Int_t bin, Int_t minHar, Int_t maxHar, Bool_t doTwist, Bool_t doRescaling);
+ static void TwistAndRescale3DetectorCorrelation(AliQnCorrectionsQnVector* QvectorIn, AliQnCorrectionsQnVector* QvectorTwist, AliQnCorrectionsQnVector* QvectorRescale, AliQnCorrectionsHistograms* inputHistos, Int_t bin, Int_t minHar, Int_t maxHar, Bool_t doTwist, Bool_t doRescaling, Int_t eventClassParameter);
 
 
 
@@ -61,8 +63,6 @@ class AliQnCorrectionsSteps  {
   //void 2nTwistQvec(Float_t* values, Int_t corpar);
   //void 2nRescalingQvec(Float_t* values, Int_t corpar);
   //void U2nTwistAndRescalingQvec(Float_t* values, Int_t corpar);
-  void RescaleQnVector(Int_t corpar);
-  void TwistQnVector();
 
 
  private:

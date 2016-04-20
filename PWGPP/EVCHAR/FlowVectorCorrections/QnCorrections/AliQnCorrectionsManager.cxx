@@ -39,13 +39,14 @@
 #include "AliQnCorrectionsHistograms.h"
 #include "AliQnCorrectionsSteps.h"
 #include <TMath.h>
-#include <TList.h>
+#include <THashList.h>
 #include <THashList.h>
 #include <TClonesArray.h>
 #include <TRandom3.h>
 //#include <TArrayS.h>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 using namespace std;
 
 ClassImp(AliQnCorrectionsManager)
@@ -84,7 +85,8 @@ AliQnCorrectionsManager::AliQnCorrectionsManager() :
   fListHistogramsQA(0x0),
   fOutputHistogramsQnCorrectionsFile(0x0),
   fHistogramsQAFile(0x0),
-  fTreeQnVectorsFile(0x0)
+  fTreeQnVectorsFile(0x0),
+  fRunList("")
 {
   //
   // default constructor
@@ -106,15 +108,15 @@ AliQnCorrectionsManager::AliQnCorrectionsManager() :
 
   for(Int_t i=0; i<AliQnCorrectionsConstants::nDataContainerVariables; i++) fDataContainer[i]=-999.;
 
-  fListOutputHistogramsQnCorrections   = new TList();
+  fListOutputHistogramsQnCorrections   = new THashList();
   fListOutputHistogramsQnCorrections->SetName("CalibrationHistograms");
-  fListHistogramsQA = new TList();
+  fListHistogramsQA = new THashList();
   fListHistogramsQA->SetName("CalibrationHistogramsQA");
 
   fListOutputHistogramsQnCorrections->SetOwner();
   fListHistogramsQA->SetOwner();
 
-  fListQnVectors = new TList();
+  fListQnVectors = new THashList();
 
 }
 
@@ -142,7 +144,8 @@ AliQnCorrectionsManager::AliQnCorrectionsManager(const AliQnCorrectionsManager &
   fListHistogramsQA(c.fListHistogramsQA),
   fOutputHistogramsQnCorrectionsFile(c.fOutputHistogramsQnCorrectionsFile),
   fHistogramsQAFile(c.fHistogramsQAFile),
-  fTreeQnVectorsFile(c.fTreeQnVectorsFile)
+  fTreeQnVectorsFile(c.fTreeQnVectorsFile),
+  fRunList(c.fRunList)
 {
   //
   // copy constructor
@@ -195,6 +198,7 @@ AliQnCorrectionsManager & AliQnCorrectionsManager::operator=(const AliQnCorrecti
     fOutputHistogramsQnCorrectionsFile=c.fOutputHistogramsQnCorrectionsFile;
     fHistogramsQAFile=c.fHistogramsQAFile;
     fTreeQnVectorsFile=c.fTreeQnVectorsFile;
+    fRunList=c.fRunList;
 
     for(Int_t i=0; i<AliQnCorrectionsConstants::nDataVectors; ++i) fNumberOfQnConfigurationsForDetector[i]=c.fNumberOfQnConfigurationsForDetector[i];
     for(Int_t i=0; i<AliQnCorrectionsConstants::nDataVectors; ++i) fDataVectors[i] = c.fDataVectors[i];
@@ -262,8 +266,8 @@ void AliQnCorrectionsManager::ClearEvent() {
 //Bool_t AliQnCorrectionsManager::SetCalibrationFile(TFile* inputFile){
 //    if(inputFile){
 //      if(inputFile->GetListOfKeys()->GetEntries()>0){
-//        //fListInputHistogramsQnCorrections = (TList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj(); return (fListInputHistogramsQnCorrections ? kTRUE : kFALSE);} //TODO make "CalibrationHistograms" name customizable
-//        TList* list = (TList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj();
+//        //fListInputHistogramsQnCorrections = (THashList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj(); return (fListInputHistogramsQnCorrections ? kTRUE : kFALSE);} //TODO make "CalibrationHistograms" name customizable
+//        THashList* list = (THashList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj();
 //        if(list){
 //          for(Int_t i=0; i<list->GetEntries(); i++){
 //            fListInputHistogramsQnCorrections->Add(new TObject(*(list->At(i)));
@@ -366,19 +370,24 @@ void AliQnCorrectionsManager::FillHistograms() {
     if(fSetFillHistogramsQnCorrections){
       if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kDataVectorEqualization)||QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)){
         FillHistogramsWeights(QnConf);
+        //cout<<"go into fill "<<QnConf->QnConfigurationName()<<"  "<<QnConf->IsFillHistogram(AliQnCorrectionsConstants::kRecentering)<<endl;
         if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kRecentering))    {FillHistogramsMeanQ(QnConf, (Int_t) AliQnCorrectionsConstants::kDataVectorEqualization);}
       }
-      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kRecentering))      FillHistogramsMeanQ(QnConf, (Int_t) AliQnCorrectionsConstants::kPass0); 
-      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kAlignment))        FillHistogramsQnAlignment(QnConf); 
-      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kTwist))            FillHistogramsU2n(QnConf); 
+      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kRecentering)&&!QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization))   
+                                                                            {FillHistogramsMeanQ(QnConf, (Int_t) AliQnCorrectionsConstants::kPass0);}
+      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kAlignment))       {FillHistogramsQnAlignment(QnConf);} 
+      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kTwist))           {FillHistogramsU2n(QnConf); FillHistogramsQnCorrelations(QnConf);}
     }
 
     // Fill QA correction histograms
 
     if(fSetFillHistogramsQA){
                                                                                               //FillHistogramsQnCorrelationsQA(QnConf);
-                                                                                              FillHistogramsMeanQ_QA(QnConf);
-       if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kAlignment))                          FillHistogramsQnAlignmentQA(QnConf); 
+                                                                                           FillHistogramsMeanQ_QA(QnConf);
+       if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kAlignment))                   FillHistogramsQnAlignmentQA(QnConf); 
+       if((QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2)
+         FillHistogramsQnCorrelationsQA(QnConf);
+                                                                                              
     }
 
   }
@@ -400,9 +409,9 @@ void AliQnCorrectionsManager::WriteQnVectorsToList() {
     }
     for(Int_t istep=0; istep<AliQnCorrectionsConstants::nCorrectionSteps; istep++) {
       TClonesArray* qvecAll = CorrectedQnVector(iconf,istep);
-      if(qvec) {
+      if(qvecAll) {
         qvecAll->SetName(Form("%s_%d",QnConf->QnConfigurationName().Data(),istep));
-        fListQnVectors->Add(qvec);
+        fListQnVectors->Add(qvecAll);
       }
 
     }
@@ -423,7 +432,6 @@ void AliQnCorrectionsManager::Initialize() {
   TString detStrCor1 = "";
   TString detStrCor2 = "";
   TString detStrCor3 = "";
-  Int_t cor1=-1, cor2=-1;
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
     if(!QnConf) continue;
@@ -443,16 +451,16 @@ void AliQnCorrectionsManager::Initialize() {
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
     if(!QnConf) continue;
-    //QnConf->SetCalibrationStep(QnConf->GetCorrectionStep(fCorrectionStep));
     fInputHistograms[iconf]  = new AliQnCorrectionsHistograms();
     fOutputHistograms[iconf] = new AliQnCorrectionsHistograms();
-    fOutputHistograms[iconf]->CreateCalibrationHistograms(QnConf,fCorrectionStep);
+    fOutputHistograms[iconf]->CreateCalibrationHistograms(QnConf);
     for(Int_t istep=0; istep<AliQnCorrectionsConstants::kNcorrectionSteps; istep++)
       {fCorrectedQvectors[iconf][istep] = new TClonesArray("AliQnCorrectionsQnVector", 10);
        TClonesArray& arr = *(fCorrectedQvectors[iconf][istep]);
        if(istep>1) continue;
        AliQnCorrectionsQnVector* q = new(arr[0]) AliQnCorrectionsQnVector();
-       q->SetMaximumHarmonic(QnConf->MaximumHarmonic());
+       if(QnConf->GetTwistAndRescalingMethod()==0) q->SetMaximumHarmonic(QnConf->MaximumHarmonic()*2);
+       else q->SetMaximumHarmonic(QnConf->MaximumHarmonic()*2);
       }
   }
 
@@ -466,7 +474,6 @@ void AliQnCorrectionsManager::Initialize() {
     fTreeQnVectors = new TTree("Qvectors","Qvector values");
     fTreeQnVectors->SetDirectory(0);
 
-    AliQnCorrectionsQnVector* treevectors[50];
     for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
       QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
       if(!QnConf) continue;
@@ -483,6 +490,23 @@ void AliQnCorrectionsManager::Initialize() {
 }
 
 
+//_______________________________________________________________________________
+void AliQnCorrectionsManager::SetFileRunLabels(TString path){
+  //
+  // Add runlist to the framework
+  //
+
+  ifstream inBuf;
+  inBuf.open(path);
+  Int_t index = 0;
+  while(inBuf.good()) {
+    Char_t str[512];
+    inBuf.getline(str,512,'\n');
+    AddRunLabel(str);
+  }
+
+}
+
 
 
 //_______________________________________________________________________________
@@ -492,7 +516,6 @@ void AliQnCorrectionsManager::AddDataVector( Int_t detectorId, Double_t phi, Dou
   //
 
   detectorId=fDetectorIdMap[detectorId]-1;
-  Bool_t keepData=kTRUE;
   Bool_t useForQn;
 
   AliQnCorrectionsConfiguration* QnConf;
@@ -544,7 +567,9 @@ Bool_t AliQnCorrectionsManager::BuildQnVectors(AliQnCorrectionsConfiguration* Qn
     return kTRUE;
   }
   else{
-    for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
+    Int_t maxHar = QnConf->MaximumHarmonic();
+    if(QnConf->GetTwistAndRescalingMethod()==0) maxHar*=2;
+    for(Int_t ih=QnConf->MinimumHarmonic(); ih<=maxHar; ++ih){
       if(!useEqualizedWeights)   QnVector->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kPass0);
       else                       QnVector->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kDataVectorEqualization);
     }
@@ -617,7 +642,7 @@ Bool_t AliQnCorrectionsManager::CallStepRecenterQnVector(AliQnCorrectionsConfigu
   AliQnCorrectionsQnVector* QvectorOut = new(arr[0]) AliQnCorrectionsQnVector(*QvectorIn);
 
   //AliQnCorrectionsQnVector* QvectorOut=static_cast<AliQnCorrectionsQnVector*>(fCorrectedQvectors[QnConf->GlobalIndex()][2]->At(0));
-  fLastStep[QnConf->GlobalIndex()]=2;
+  fLastStep[QnConf->GlobalIndex()]=AliQnCorrectionsConstants::kRecentering;
 
   AliQnCorrectionsSteps::RecenterQvec( QvectorIn, QvectorOut, fInputHistograms[QnConf->GlobalIndex()], bin, useStep, QnConf->MinimumHarmonic(), QnConf->MaximumHarmonic());
 
@@ -646,25 +671,26 @@ void AliQnCorrectionsManager::RotateQvec(AliQnCorrectionsConfiguration* QnConf) 
   for(Int_t iav=0; iav<dim; iav++) fillValues[iav] = fDataContainer[var[iav]];
 
   Int_t iconf=QnConf->GlobalIndex();
-  Int_t bin = fOutputHistograms[iconf]->GetRotationHistogramE(0)->GetBin(fillValues);
+  Int_t bin = fInputHistograms[iconf]->GetRotationHistogramE(0)->GetBin(fillValues);
 
 
-    Double_t XX = fOutputHistograms[iconf]->GetRotationHistogram(0,0)->GetBinContent(bin);
-    Double_t YY = fOutputHistograms[iconf]->GetRotationHistogram(0,1)->GetBinContent(bin);
-    Double_t XY = fOutputHistograms[iconf]->GetRotationHistogram(0,2)->GetBinContent(bin);
-    Double_t YX = fOutputHistograms[iconf]->GetRotationHistogram(0,3)->GetBinContent(bin);
-    Double_t eXX = fOutputHistograms[iconf]->GetRotationHistogram(0,0)->GetBinError(bin);
-    Double_t eYY = fOutputHistograms[iconf]->GetRotationHistogram(0,1)->GetBinError(bin);
-    Double_t eXY = fOutputHistograms[iconf]->GetRotationHistogram(0,2)->GetBinError(bin);
-    Double_t eYX = fOutputHistograms[iconf]->GetRotationHistogram(0,3)->GetBinError(bin);
-    Double_t n = fOutputHistograms[iconf]->GetRotationHistogramE(0)->GetBinContent(bin);
+
+    Double_t XX = fInputHistograms[iconf]->GetRotationHistogram(0,0)->GetBinContent(bin);
+    Double_t YY = fInputHistograms[iconf]->GetRotationHistogram(0,1)->GetBinContent(bin);
+    Double_t XY = fInputHistograms[iconf]->GetRotationHistogram(0,2)->GetBinContent(bin);
+    Double_t YX = fInputHistograms[iconf]->GetRotationHistogram(0,3)->GetBinContent(bin);
+    Double_t eXX = fInputHistograms[iconf]->GetRotationHistogram(0,0)->GetBinError(bin);
+    Double_t eYY = fInputHistograms[iconf]->GetRotationHistogram(0,1)->GetBinError(bin);
+    Double_t eXY = fInputHistograms[iconf]->GetRotationHistogram(0,2)->GetBinError(bin);
+    Double_t eYX = fInputHistograms[iconf]->GetRotationHistogram(0,3)->GetBinError(bin);
+    Double_t n = fInputHistograms[iconf]->GetRotationHistogramE(0)->GetBinContent(bin);
 
     eXX =  TMath::Sqrt((eXX*eXX/n-(XX/n*XX/n))/n);
     eYY =  TMath::Sqrt((eYY*eYY/n-(YY/n*YY/n))/n);
     eXY =  TMath::Sqrt((eXY*eXY/n-(XY/n*XY/n))/n);
     eYX =  TMath::Sqrt((eYX*eYX/n-(YX/n*YX/n))/n);
 
-    Double_t dphi = -TMath::ATan((XY-YX)/(XX+YY))/2.;
+    Double_t dphi = -TMath::ATan((XY-YX)/(XX+YY))/QnConf->AlignmentHarmonic();
     Double_t edenom2 = eXY*eXY+eYX*eYX;
     Double_t enumer2 = eXX*eXX+eYY*eYY;
 
@@ -672,8 +698,10 @@ void AliQnCorrectionsManager::RotateQvec(AliQnCorrectionsConfiguration* QnConf) 
     TClonesArray &arr = *(fCorrectedQvectors[QnConf->GlobalIndex()][AliQnCorrectionsConstants::kAlignment]);
     AliQnCorrectionsQnVector* QvectorRotated = new(arr[0]) AliQnCorrectionsQnVector(*QvectorIn);
 
+    for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih) {QvectorRotated->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kAlignment);}
+
     if(TMath::Sqrt((XY-YX)*(XY-YX)/edenom2)<2.) return;
-    if(!(dphi<1.)) return;
+    //if(!(dphi<1.)) return;
 
     Double_t equot  = TMath::Sqrt(enumer2/(XX+YY)/(XX+YY)+edenom2/(XY-YX)/(XY-YX))*((XY-YX)/(XX+YY));
     Double_t edphi = equot/(1.+(XY-YX)/(XX+YY)*(XY-YX)/(XX+YY));
@@ -697,6 +725,7 @@ void AliQnCorrectionsManager::RotateQvec(AliQnCorrectionsConfiguration* QnConf) 
         QvectorRotated->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kAlignment);
     }
 
+  fLastStep[QnConf->GlobalIndex()]=AliQnCorrectionsConstants::kAlignment;
   return;
 }
 
@@ -707,8 +736,6 @@ void AliQnCorrectionsManager::FillHistogramsWeights(AliQnCorrectionsConfiguratio
 
 
   Double_t fillValues[20];
-  Int_t bin=-1;
-  Int_t binGroup=-1;
 
 
   TClonesArray* dataVectorArray = GetConfDataVectors(QnConf->GlobalIndex());
@@ -717,7 +744,6 @@ void AliQnCorrectionsManager::FillHistogramsWeights(AliQnCorrectionsConfiguratio
   const Int_t  dim = QnConf->EqualizationBinning()->Dim();
   for(Int_t iav=0; iav<(dim-1); iav++) fillValues[iav] = fDataContainer[var[iav]];
 
-  Int_t localIndex=QnConf->LocalIndex();
   Int_t globalIndex=QnConf->GlobalIndex();
   AliQnCorrectionsDataVector* dataVector;
 
@@ -749,7 +775,6 @@ void AliQnCorrectionsManager::FillHistogramsWeights(AliQnCorrectionsConfiguratio
 //______________________________________
 void AliQnCorrectionsManager::FillHistogramsQnAlignment(AliQnCorrectionsConfiguration* QnConf){
 
-  Float_t value;
   Int_t iconf=QnConf->GlobalIndex();
 
   AliQnCorrectionsQnVector* Qvecs[2];
@@ -761,13 +786,16 @@ void AliQnCorrectionsManager::FillHistogramsQnAlignment(AliQnCorrectionsConfigur
   const Int_t  dim = QnConf->GetAlignmentAxes()->Dim();
   for(Int_t iav=0; iav<dim; iav++) fillValues[iav] = fDataContainer[var[iav]];
 
-
-  Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf)->At(0));
+  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kPass0))                  Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kPass0)->At(0));
+  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kDataVectorEqualization)->At(0));
+  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRecentering))            Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kRecentering)->At(0));
+  
   Qvecs[1] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(QnConf->QnConfigurationCorrelationIndex(2))->At(0));
 
   //cout<<QnConf->QnConfigurationName()<<"  "<<QnConf->QnConfigurationCorrelationIndex(2)<<"  "<<GetQnConfiguration(QnConf->QnConfigurationCorrelationIndex(2))->QnConfigurationName()<<endl;
 
-  Int_t bin=fOutputHistograms[iconf]->GetRotationHistogramE(0)->GetBin(fillValues);
+  THnF* entr = fOutputHistograms[iconf]->GetRotationHistogramE(0);
+  Int_t bin=entr->GetBin(fillValues);
 
   Double_t qx1,qx2,qy1,qy2;
 
@@ -782,7 +810,9 @@ void AliQnCorrectionsManager::FillHistogramsQnAlignment(AliQnCorrectionsConfigur
   fOutputHistograms[iconf]->GetRotationHistogram(0,1)->AddBinError2(bin,qy1*qy2*qy1*qy2);
   fOutputHistograms[iconf]->GetRotationHistogram(0,2)->AddBinError2(bin,qx1*qy2*qx1*qy2);
   fOutputHistograms[iconf]->GetRotationHistogram(0,3)->AddBinError2(bin,qy1*qx2*qy1*qx2);
-  fOutputHistograms[iconf]->GetRotationHistogramE(0)->AddBinContent(bin,1.0);
+  entr->AddBinContent(bin,1.0);
+  Int_t entries = entr->GetEntries();
+  entr->SetEntries(++entries);
 
 }
 
@@ -790,7 +820,6 @@ void AliQnCorrectionsManager::FillHistogramsQnAlignment(AliQnCorrectionsConfigur
 //______________________________________
 void AliQnCorrectionsManager::FillHistogramsQnAlignmentQA(AliQnCorrectionsConfiguration* QnConf){
 
-  Float_t value;
   Int_t iconf=QnConf->GlobalIndex();
 
   AliQnCorrectionsQnVector* Qvecs[2];
@@ -845,29 +874,41 @@ void AliQnCorrectionsManager::FillHistogramsQnCorrelations(AliQnCorrectionsConfi
   AliQnCorrectionsConfiguration* QnConf[3]={0x0};
   QnConf[0]=QnConfig;
 
-  Int_t dim=QnConf[0]->CalibrationBinning()->Dim();
-
+  Int_t dim=QnConf[0]->GetAlignmentAxes()->Dim();
 
   QnConf[1]=GetQnConfiguration(index1);
   QnConf[2]=GetQnConfiguration(index2);
 
+  Qvecs[1] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index1)->At(0));
+  
+  if(QnConf[0]->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment))
+           Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kAlignment)->At(0));
+  else if(QnConf[0]->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering))
+           Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kRecentering)->At(0));
+  else if(QnConf[0]->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization))
+           Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kDataVectorEqualization)->At(0));
+  else     Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,AliQnCorrectionsConstants::kPass0)->At(0));
 
+  if(QnConf[2]->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment))
+           Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2,AliQnCorrectionsConstants::kAlignment)->At(0));
+  else if(QnConf[2]->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering))
+           Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2,AliQnCorrectionsConstants::kRecentering)->At(0));
+  else if(QnConf[2]->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization))
+           Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2,AliQnCorrectionsConstants::kDataVectorEqualization)->At(0));
+  else     Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2,AliQnCorrectionsConstants::kPass0)->At(0));
 
-  //Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,  QnConf[0]->GetCorrectionStep(fCorrectionStep))->At(0));
-  //Qvecs[1] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index1, QnConf[1]->GetCorrectionStep(fCorrectionStep))->At(0));
-  //Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2, QnConf[2]->GetCorrectionStep(fCorrectionStep))->At(0));
 
 
   for(Int_t icomb=0; icomb<3; ++icomb){ 
     for(Int_t iaxis=0; iaxis<dim; iaxis++){
-    value=fDataContainer[QnConf[0]->CalibrationBinning()->Var(iaxis)];
+    value=fDataContainer[QnConf[0]->GetAlignmentAxes()->Var(iaxis)];
       for(Int_t ih=QnConf[icomb]->MinimumHarmonic(); ih<=QnConf[icomb]->MaximumHarmonic(); ++ih){ 
         if(ih>QnConf[(icomb+1)%3]->MaximumHarmonic()) continue;
         if(Qvecs[icomb]->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)||Qvecs[(icomb+1)%3]->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)) continue;
-        fOutputHistograms[iconf]->CorrelationProf(fCorrectionStep,icomb,ih,0,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
-        fOutputHistograms[iconf]->CorrelationProf(fCorrectionStep,icomb,ih,1,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
-        fOutputHistograms[iconf]->CorrelationProf(fCorrectionStep,icomb,ih,2,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
-        fOutputHistograms[iconf]->CorrelationProf(fCorrectionStep,icomb,ih,3,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
+        fOutputHistograms[iconf]->CorrelationProf(0,icomb,ih,0,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
+        fOutputHistograms[iconf]->CorrelationProf(0,icomb,ih,1,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
+        fOutputHistograms[iconf]->CorrelationProf(0,icomb,ih,2,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
+        fOutputHistograms[iconf]->CorrelationProf(0,icomb,ih,3,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
       }
     }
   }
@@ -884,45 +925,52 @@ void AliQnCorrectionsManager::FillHistogramsQnCorrelationsQA(AliQnCorrectionsCon
   if(index1==-1||index2==-1) return;
   Int_t iconf=QnConfig->GlobalIndex();
 
-
   AliQnCorrectionsQnVector* Qvecs[3];
   AliQnCorrectionsConfiguration* QnConf[3]={0x0};
   QnConf[0]=QnConfig;
-  Int_t dim=QnConf[0]->CalibrationBinning()->Dim();
 
-  for(Int_t istep=0; istep<AliQnCorrectionsConstants::nCorrectionSteps; istep++){
+  Int_t dim=QnConf[0]->GetAlignmentAxes()->Dim();
 
-    //if(QnConf[0]->GetCorrectionStep(fCorrectionStep)<istep) continue;
+  QnConf[1]=GetQnConfiguration(index1);
+  QnConf[2]=GetQnConfiguration(index2);
 
-    QnConf[1]=GetQnConfiguration(index1);
-    QnConf[2]=GetQnConfiguration(index2);
+  for(Int_t icor=0; icor<2; icor++){
 
-    //Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,  QnConf[0]->GetCorrectionStep(istep))->At(0));
-    //Qvecs[1] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index1, QnConf[1]->GetCorrectionStep(istep))->At(0));
-    //Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2, QnConf[2]->GetCorrectionStep(istep))->At(0));
+    Int_t correction;
+    if(icor==0) correction=AliQnCorrectionsConstants::kTwist;
+    if(icor==1) correction=AliQnCorrectionsConstants::kRescaling;
+  
+  if(QnConf[0]->IsRequestedCorrection(correction))
+           Qvecs[0] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,correction)->At(0));
+  if(QnConf[2]->IsRequestedCorrection(correction))
+           Qvecs[2] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index2,correction)->At(0));
 
-    for(Int_t icomb=0; icomb<3; ++icomb){ 
-      for(Int_t iaxis=0; iaxis<dim; iaxis++){
-      value=fDataContainer[QnConf[0]->CalibrationBinning()->Var(iaxis)];
+  Qvecs[1] = static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(index1)->At(0));
+  
+
+
+
+  for(Int_t icomb=0; icomb<3; ++icomb){ 
+    for(Int_t iaxis=0; iaxis<dim; iaxis++){
+    value=fDataContainer[QnConf[0]->GetAlignmentAxes()->Var(iaxis)];
       for(Int_t ih=QnConf[icomb]->MinimumHarmonic(); ih<=QnConf[icomb]->MaximumHarmonic(); ++ih){ 
         if(ih>QnConf[(icomb+1)%3]->MaximumHarmonic()) continue;
-        //cout<<istep<<"  "<<QnConf->QnConfigurationName()<<"   "<<QnConfB->QnConfigurationName()<<"   "<<QnConfC->QnConfigurationName()<<"  "<<Qvecs[icomb]->Qx(ih)<<"  "<<Qvecs[(icomb+1)%3]->Qx(ih)<<endl;
-
-        fOutputHistograms[iconf]->CorrelationEpProf(istep,icomb,ih,0,iaxis)->Fill(value,Qvecs[icomb]->QxNorm(ih)*Qvecs[(icomb+1)%3]->QxNorm(ih)); //TODO separate into different method which fills EP resolution histos
-        fOutputHistograms[iconf]->CorrelationEpProf(istep,icomb,ih,1,iaxis)->Fill(value,Qvecs[icomb]->QyNorm(ih)*Qvecs[(icomb+1)%3]->QxNorm(ih));
-        fOutputHistograms[iconf]->CorrelationEpProf(istep,icomb,ih,2,iaxis)->Fill(value,Qvecs[icomb]->QxNorm(ih)*Qvecs[(icomb+1)%3]->QyNorm(ih));
-        fOutputHistograms[iconf]->CorrelationEpProf(istep,icomb,ih,3,iaxis)->Fill(value,Qvecs[icomb]->QyNorm(ih)*Qvecs[(icomb+1)%3]->QyNorm(ih));
+        if(Qvecs[icomb]->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)||Qvecs[(icomb+1)%3]->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)) continue;
+        fOutputHistograms[iconf]->CorrelationProf(icor+1,icomb,ih,0,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
+        fOutputHistograms[iconf]->CorrelationProf(icor+1,icomb,ih,1,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qx(ih));
+        fOutputHistograms[iconf]->CorrelationProf(icor+1,icomb,ih,2,iaxis)->Fill(value,Qvecs[icomb]->Qx(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
+        fOutputHistograms[iconf]->CorrelationProf(icor+1,icomb,ih,3,iaxis)->Fill(value,Qvecs[icomb]->Qy(ih)*Qvecs[(icomb+1)%3]->Qy(ih));
       }
     }
-    }
-
   }
-}
+  }
 
+}
 
 
 //______________________________________
 void AliQnCorrectionsManager::FillHistogramsMeanQ(AliQnCorrectionsConfiguration* QnConf, Int_t step){
+        //cout<<"requested fill "<<QnConf->QnConfigurationName()<<"  "<<endl;
 
   Double_t fillValues[20];
   Int_t iconf=QnConf->GlobalIndex();
@@ -939,14 +987,25 @@ void AliQnCorrectionsManager::FillHistogramsMeanQ(AliQnCorrectionsConfiguration*
 
   Bool_t once=kTRUE;
 
-  for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
+  Int_t maxHar = QnConf->MaximumHarmonic();
+  if(QnConf->GetTwistAndRescalingMethod()==0) maxHar*=2;
+  for(Int_t ih=QnConf->MinimumHarmonic(); ih<=maxHar; ++ih){
+
+  Double_t weight=1.;
+  //if(QnConf->GetQnNormalizationMethod()==1) weight = Qvec->SumOfWeights();
 
     if(Qvec->CheckQnVectorStatus(ih, step)){
-      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,0)->AddBinContent(bin,Qvec->Qx(ih));
-      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,1)->AddBinContent(bin,Qvec->Qy(ih));
-      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,0)->AddBinError2(bin,Qvec->Qx(ih)*Qvec->Qx(ih));
-      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,1)->AddBinError2(bin,Qvec->Qy(ih)*Qvec->Qy(ih));
-      if(once) fOutputHistograms[iconf]->CalibrationHistogramE(step)->AddBinContent(bin); once=kFALSE;
+      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,0)->AddBinContent(bin,Qvec->Qx(ih)*weight);
+      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,1)->AddBinContent(bin,Qvec->Qy(ih)*weight);
+      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,0)->AddBinError2(bin,Qvec->Qx(ih)*weight*Qvec->Qx(ih)*weight);
+      fOutputHistograms[iconf]->CalibrationHistogramQ(step,ih,1)->AddBinError2(bin,Qvec->Qy(ih)*weight*Qvec->Qy(ih)*weight);
+      if(once) {
+        THnF* entr = fOutputHistograms[iconf]->CalibrationHistogramE(step);
+        entr->AddBinContent(bin,weight);
+        Int_t entries = entr->GetEntries();
+        entr->SetEntries(++entries);
+        once=kFALSE;
+      }
 
     }
   }
@@ -959,8 +1018,10 @@ void AliQnCorrectionsManager::FillHistogramsMeanQ(AliQnCorrectionsConfiguration*
 //______________________________________
 void AliQnCorrectionsManager::FillHistogramsMeanQ_QA(AliQnCorrectionsConfiguration* QnConf){
 
+
   Double_t fillValues[20];
   Int_t iconf=QnConf->GlobalIndex();
+
 
   const Int_t* var = QnConf->GetRecenteringAxes()->Var();
   const Int_t  dim = QnConf->GetRecenteringAxes()->Dim();
@@ -969,23 +1030,28 @@ void AliQnCorrectionsManager::FillHistogramsMeanQ_QA(AliQnCorrectionsConfigurati
   Int_t bin=fOutputHistograms[iconf]->CalibrationHistogramE(0)->GetBin(fillValues);
 
   for(Int_t istep=0; istep<=fCorrectionStep; istep++){
-    if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) {if(istep==1) continue;}
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) {if(istep==1) continue;}
     else if(istep==0) continue;
 
     AliQnCorrectionsQnVector* Qvec=static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(iconf,istep)->At(0));
     if(!Qvec) continue;
     if(Qvec->N()==0) continue;
 
+
     Bool_t once=kTRUE;
 
     for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
 
-
       if(Qvec->CheckQnVectorStatus(ih, istep)){
         fOutputHistograms[iconf]->CalibrationHistogramQ(istep,ih,0)->AddBinContent(bin,Qvec->Qx(ih));
         fOutputHistograms[iconf]->CalibrationHistogramQ(istep,ih,1)->AddBinContent(bin,Qvec->Qy(ih));
-        if(once) fOutputHistograms[iconf]->CalibrationHistogramE(istep)->AddBinContent(bin); once=kFALSE;
-
+        if(once) {
+          THnF* entr = fOutputHistograms[iconf]->CalibrationHistogramE(istep);
+          entr->AddBinContent(bin);
+          Int_t entries = entr->GetEntries();
+          entr->SetEntries(++entries);
+          once=kFALSE;
+        }
       }
     }
   }
@@ -999,6 +1065,7 @@ void AliQnCorrectionsManager::FillHistogramsMeanQ_QA(AliQnCorrectionsConfigurati
 //_________________________________________________________________
 void AliQnCorrectionsManager::FillHistogramsU2n(AliQnCorrectionsConfiguration* QnConf){
 
+  if(QnConf->GetTwistAndRescalingMethod()!=0) return;
   Double_t fillValues[20];
   const Int_t* var = QnConf->GetTwistAndRescalingAxes()->Var();
   const Int_t  dim = QnConf->GetTwistAndRescalingAxes()->Dim();
@@ -1012,6 +1079,7 @@ void AliQnCorrectionsManager::FillHistogramsU2n(AliQnCorrectionsConfiguration* Q
   //while((dataVector=static_cast<AliQnCorrectionsDataVector*>(nextEntry()))) {
   //  if(!dataVector) continue;
 
+  THnF* entr = fOutputHistograms[QnConf->GlobalIndex()]->U2nHistogramE();
   for(Int_t idata=0; idata<dataVectorArray->GetEntriesFast(); idata++){
     dataVector = static_cast<AliQnCorrectionsDataVector*>(dataVectorArray->At(idata));
     //if(!dataVector->CheckEventPlaneDetector(QnConf->LocalIndex())) continue;
@@ -1019,7 +1087,10 @@ void AliQnCorrectionsManager::FillHistogramsU2n(AliQnCorrectionsConfiguration* Q
       fOutputHistograms[QnConf->GlobalIndex()]->U2nHistogram(ih,0)->AddBinContent(bin,TMath::Cos(dataVector->Phi()*ih*2));
       fOutputHistograms[QnConf->GlobalIndex()]->U2nHistogram(ih,1)->AddBinContent(bin,TMath::Sin(dataVector->Phi()*ih*2));
     }
-    fOutputHistograms[QnConf->GlobalIndex()]->U2nHistogramE()->AddBinContent(bin,1.);
+    entr->AddBinContent(bin);
+    Int_t entries = entr->GetEntries();
+    entr->SetEntries(++entries);
+
   }
 }
 
@@ -1683,172 +1754,45 @@ void AliQnCorrectionsManager::CallStepTwistAndRescaleQnVector(AliQnCorrectionsCo
   // Recenter the detector event plane
   //
   
-
-
+  
   Int_t bin=0;
-  //Int_t* var;
   Int_t maxHarmonic;
-  //Int_t dim; 
   Double_t fillValues[20];
   const Int_t* var = QnConf->GetTwistAndRescalingAxes()->Var();
   const Int_t  dim = QnConf->GetTwistAndRescalingAxes()->Dim();
   for(Int_t iav=0; iav<dim; iav++) fillValues[iav] = fDataContainer[var[iav]];
 
-  Int_t lastStep=0;
-  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) lastStep=AliQnCorrectionsConstants::kDataVectorEqualization;
-  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRecentering))            lastStep=AliQnCorrectionsConstants::kRecentering;
-  
   AliQnCorrectionsQnVector* QvectorIn= static_cast<AliQnCorrectionsQnVector*>(CorrectedQnVector(QnConf->GlobalIndex())->At(0));
   TClonesArray& arr = *(fCorrectedQvectors[QnConf->GlobalIndex()][AliQnCorrectionsConstants::kTwist]);
   AliQnCorrectionsQnVector* QvectorTwist   = new(arr[0]) AliQnCorrectionsQnVector(*QvectorIn);
-  arr = *(fCorrectedQvectors[QnConf->GlobalIndex()][AliQnCorrectionsConstants::kRescaling]);
-  AliQnCorrectionsQnVector* QvectorRescale = new(arr[0]) AliQnCorrectionsQnVector(*QvectorIn);
+  TClonesArray& arr2 = *(fCorrectedQvectors[QnConf->GlobalIndex()][AliQnCorrectionsConstants::kRescaling]);
+  AliQnCorrectionsQnVector* QvectorRescale = new(arr2[0]) AliQnCorrectionsQnVector(*QvectorIn);
 
-  Double_t cos2n, sin2n, Lp, Ln, Ap, An, Qx, Qy, QxTwist, QyTwist, QxRescaling, QyRescaling, nentries;
+  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kTwist))     fLastStep[QnConf->GlobalIndex()]=AliQnCorrectionsConstants::kTwist;
+  if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRescaling)) fLastStep[QnConf->GlobalIndex()]=AliQnCorrectionsConstants::kRescaling;
 
-  bin=fInputHistograms[QnConf->GlobalIndex()]->U2nHistogramE()->GetBin(fillValues);
-  nentries=fInputHistograms[QnConf->GlobalIndex()]->U2nHistogramE()->GetBinContent(bin);
-  for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih) {
-    cos2n=fInputHistograms[QnConf->GlobalIndex()]->U2nHistogram(ih,0)->GetBinContent(bin)/nentries;
-    sin2n=fInputHistograms[QnConf->GlobalIndex()]->U2nHistogram(ih,1)->GetBinContent(bin)/nentries;
-
-    
-     Ap = 1+cos2n;
-     An = 1-cos2n;
-     Lp = sin2n/Ap;
-     Ln = sin2n/An;
- 
-
-    if(!(Lp>-99999999.&&Lp<99999999.)) continue;
-    if(!(Ln>-99999999.&&Ln<99999999.)) continue;
-    if(!(Ap>-99999999.&&Ap<99999999.)) continue;
-    if(!(An>-99999999.&&An<99999999.)) continue;
-
-
-    if(QvectorIn->CheckQnVectorStatus(ih, AliQnCorrectionsConstants::kUndefined)) continue;
+  //Double_t cos2n, sin2n, Lp, Ln, Ap, An, Qx, Qy, QxTwist, QyTwist, QxRescaling, QyRescaling, nentries;
 
 
 
-      Qx = QvectorIn->Qx(ih);
-      Qy = QvectorIn->Qy(ih);
-      QxTwist = Qx;
-      QyTwist = Qy;
-      if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kTwist)){
-        QxTwist = (Qx-Ln*Qy)/(1-Ln*Lp);
-        QyTwist = (Qy-Lp*Qx)/(1-Ln*Lp);
-        QvectorTwist->SetQx( ih, QxTwist);
-        QvectorTwist->SetQy( ih, QyTwist);
-        QvectorTwist->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kTwist);
-        QvectorRescale->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kTwist);
-      }
-      
+  if(QnConf->GetTwistAndRescalingMethod()==0){
 
-      if(QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRescaling)){
-        QxRescaling = QxTwist / Ap;
-        QyRescaling = QyTwist / An;
-        QvectorRescale->SetQx( ih, QxRescaling);
-        QvectorRescale->SetQy( ih, QyRescaling);
-        QvectorRescale->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kRescaling);
-      }
+  bin=fInputHistograms[QnConf->GlobalIndex()]->CalibrationHistogramE(0)->GetBin(fillValues);
 
-      //cout<<"Twist "<<QnConf->QnConfigurationName()<<endl;
-      //cout<<Qx<<"  "<<Qy<<"   "<<Lp<<"  "<<Ln<<"  "<<Ap<<"  "<<An<<endl;
-        //fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,0)->Fill(fillValues,QvectorIn->Qx(ih));
-        //fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,1)->Fill(fillValues,QvectorIn->Qy(ih));
-        //if(ih==QnConf->MinimumHarmonic()) fOutputHistograms[iconf]->CalibrationHistogramE(4)->Fill(fillValues);
+  AliQnCorrectionsSteps::TwistAndRescale2nQn(QvectorIn, QvectorTwist, QvectorRescale, fInputHistograms[QnConf->GlobalIndex()], bin, QnConf->MinimumHarmonic(), QnConf->MaximumHarmonic(),QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kTwist), QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRescaling));
 
-   
   }
 
+  if(QnConf->GetTwistAndRescalingMethod()==2){
 
-  //AliQnCorrectionsConfiguration* QnConf = 0x0;
-  //for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
-  //  AliQnCorrectionsConfiguration* QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
-  //  if(!QnConf) continue;
+    Int_t eventClassParameter=0; // for this method we use profiles and only do twist and rescaling corrections against one user defined axis (currently hardcoded as the first axis)
 
-  //  if( QnConf->CalibrationStep()<3) continue;
-  //  if(QnConf->GetTwistAndRescalingMethod()!=0&&QnConf->GetTwistAndRescalingMethod()!=1) continue;
-  //  if( !QnConf->doTwist()) continue;
-  //  maxHarmonic = QnConf->MaximumHarmonic();
+  bin=fInputHistograms[QnConf->GlobalIndex()]->CorrelationProf(0, 0, QnConf->MinimumHarmonic(), 0, eventClassParameter)->FindBin(fDataContainer[var[eventClassParameter]]);
 
+  AliQnCorrectionsSteps::TwistAndRescale3DetectorCorrelation(QvectorIn, QvectorTwist, QvectorRescale, fInputHistograms[QnConf->GlobalIndex()], bin, QnConf->MinimumHarmonic(), QnConf->MaximumHarmonic(),QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kTwist), QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kRescaling),eventClassParameter);
 
+  }
 
-  //  AliQnCorrectionsAxes EPbinning =  QnConf->CalibrationBinning();
-
-  //  const Int_t* var = EPbinning.Var();
-  //  const Int_t  dim = EPbinning.Dim();
-  //  for(Int_t iav=0; iav<dim; iav++) fillValues[iav] = fDataContainer[var[iav]]; 
-
-
-
-
-
-
-
-
-
-  //  //if(QnConf->GetTwistAndRescalingMethod()==1) maxHarmonic = QnConf->MaximumHarmonic();
-  //  //else maxHarmonic = 2*QnConf->MaximumHarmonic();
-
-  //  //TProfile * U2nProfiles[maxHarmonic][2];
-
-  //  //  for(Int_t ih=1; ih<=maxHarmonic; ++ih) 
-  //  //   for(Int_t ip=0; ip<2; ++ip) {
-  //  //  U2nProfiles[ih-1][ip] =  QnConf->U2nProfile(ih, ip);
-  //  //}
-
-  //  Double_t cos2n, sin2n, Lp, Ln, Ap, An, Qx, Qy, QxTwist, QyTwist, nentries;
-
-  //  for(Int_t ih=QnConf->MinimumHarmonic(); ih<=(Int_t) QnConf->MaximumHarmonic(); ++ih) {
-
-
-  //    sin2n = fInputHistograms[iconf]->U2nHistogram(ih,0)->GetBinContent(fInputHistograms[iconf]->U2nHistogram(ih,0)->GetBin(fillValues));
-  //    cos2n = fInputHistograms[iconf]->U2nHistogram(ih,1)->GetBinContent(fInputHistograms[iconf]->U2nHistogram(ih,1)->GetBin(fillValues));
-  //    nentries = fInputHistograms[iconf]->U2nHistogramE()->GetBinContent(fInputHistograms[iconf]->U2nHistogramE()->GetBin(fillValues));
-  //    sin2n/=nentries;
-  //    cos2n/=nentries;
-
-  //    Ap = 1+cos2n;
-  //    An = 1-cos2n;
-  //    Lp = sin2n/Ap;
-  //    Ln = sin2n/An;
-
-  //    if(!(Lp>-99999999.&&Lp<99999999.)) continue;
-  //    if(!(Ln>-99999999.&&Ln<99999999.)) continue;
-  //    if(!(Ap>-99999999.&&Ap<99999999.)) continue;
-  //    if(!(An>-99999999.&&An<99999999.)) continue;
-
-
-
-  //    AliQnCorrectionsQnVector* qVector=0x0;
-  //    //TClonesArray* qvecList = GetQvectors(QnConf->GlobalIndex());
-  //    TClonesArray* qvecList = CorrectedQnVector(iconf);
-  //    for(Int_t ibin=0; ibin<qvecList->GetEntriesFast(); ibin++){
-  //      qVector=static_cast<AliQnCorrectionsQnVector*>(qvecList->At(ibin));
-  //      //if(!qVector) break;
-
-  //      if(!qVector->CheckQnVectorStatus(ih, AliQnCorrectionsQnVector::kRecentered)) continue;
-
-  //      Qx = qVector->Qx(ih);
-  //      Qy = qVector->Qy(ih);
-
-  //      QxTwist = (Qx-Ln*Qy)/(1-Ln*Lp);
-  //      QyTwist = (Qy-Lp*Qx)/(1-Ln*Lp);
-
-  //      qVector->SetQx( ih, QxTwist);
-  //      qVector->SetQy( ih, QyTwist);
-
-  //      //cout<<"Twist "<<QnConf->QnConfigurationName()<<endl;
-  //      //cout<<Qx<<"  "<<Qy<<"   "<<Lp<<"  "<<Ln<<"  "<<Ap<<"  "<<An<<endl;
-  //      qVector->SetQnVectorStatus(ih, AliQnCorrectionsQnVector::kDiagonalized);
-  //      if(fUseEvent){
-  //        fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,0)->Fill(fillValues,qVector->Qx(ih));
-  //        fOutputHistograms[iconf]->CalibrationHistogramQ(4,ih,1)->Fill(fillValues,qVector->Qy(ih));
-  //        if(ih==QnConf->MinimumHarmonic()) fOutputHistograms[iconf]->CalibrationHistogramE(4)->Fill(fillValues);
-  //      }
-  //    }
-  //  }
-  //}
 
   return;
 }
@@ -1856,20 +1800,20 @@ void AliQnCorrectionsManager::CallStepTwistAndRescaleQnVector(AliQnCorrectionsCo
 
 
 //_____________________________________________________________________
-void AliQnCorrectionsManager::CallStepRescaleQnVector(Int_t u2npar) {
+//void AliQnCorrectionsManager::CallStepRescaleQnVector(Int_t u2npar) {
 
   //
   // Recenter the detector event plane
   //
 
 
-  Int_t bin=0;
-  //Int_t* var;
-  Int_t maxHarmonic;
-  //Int_t dim; 
+  // Int_t bin=0;
+  // Int_t* var;
+  // Int_t maxHarmonic;
+  // Int_t dim;
 
 
-  Double_t fillValues[20];
+  // Double_t fillValues[20];
 
   //AliQnCorrectionsConfiguration* QnConf = 0x0;
   //for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
@@ -1931,8 +1875,8 @@ void AliQnCorrectionsManager::CallStepRescaleQnVector(Int_t u2npar) {
   //  }
   //}
 
-  return;
-}
+  //return;
+//}
 
 
 //
@@ -2067,28 +2011,36 @@ void AliQnCorrectionsManager::InitializeCalibrationHistograms(){
   AliQnCorrectionsConfiguration* QnConf = 0x0;
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
-    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) if(fCorrectionStep<AliQnCorrectionsConstants::kDataVectorEqualization) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kDataVectorEqualization;
-    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering))            if(fCorrectionStep<AliQnCorrectionsConstants::kRecentering           ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kRecentering;
-    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment))              if(fCorrectionStep<AliQnCorrectionsConstants::kAlignment             ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kAlignment;
+    //if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) if(fCorrectionStep<AliQnCorrectionsConstants::kDataVectorEqualization) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kDataVectorEqualization;
+    //if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering))            if(fCorrectionStep<AliQnCorrectionsConstants::kRecentering           ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kRecentering;
+    //if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment))              if(fCorrectionStep<AliQnCorrectionsConstants::kAlignment             ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kAlignment;
+    //if(QnConf->GetTwistAndRescalingMethod()==2){                                                                                                   
+    //  if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist))                if(fCorrectionStep<AliQnCorrectionsConstants::kTwist                 ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kTwist;
+    //  if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))            if(fCorrectionStep<AliQnCorrectionsConstants::kRescaling             ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kRescaling;
+    //}
+    //fCorrectionStep=0;
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) if(fCorrectionStep<AliQnCorrectionsConstants::kDataVectorEqualization) {fCorrectionStep++;}
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering))            if(fCorrectionStep<AliQnCorrectionsConstants::kRecentering           ) {fCorrectionStep++;}
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment))              if(fCorrectionStep<AliQnCorrectionsConstants::kAlignment             ) {fCorrectionStep++;}
     if(QnConf->GetTwistAndRescalingMethod()==2){                                                                                                   
-      if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist))                if(fCorrectionStep<AliQnCorrectionsConstants::kTwist                 ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kTwist;
-      if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))            if(fCorrectionStep<AliQnCorrectionsConstants::kRescaling             ) fCorrectionStep=(Int_t) AliQnCorrectionsConstants::kRescaling;
+      if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist))                if(fCorrectionStep<AliQnCorrectionsConstants::kTwist                 ) fCorrectionStep++;
+      if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))            if(fCorrectionStep<AliQnCorrectionsConstants::kTwist                 ) fCorrectionStep++;
     }
   }
 
   fPassesRequired=fCorrectionStep;
 
 
+  //TString label="allData";
+  //if(QnConf->CorrectWithEventLabel()) label=fLabel;
+
+  THashList* list = GetInputListWithLabel(fLabel);
+  if(!list)  list = GetInputListWithLabel("allData");
+
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
 
-    TString label="allData";
-    if(QnConf->CorrectWithEventLabel()) label=fLabel;
-
-    TList* list = GetInputListWithLabel(label);
-
     //cout<<"LIST "<<fListInputHistogramsQnCorrections->GetEntries()<<endl;
-
 
     //if(!list) return;
 
@@ -2117,12 +2069,20 @@ void AliQnCorrectionsManager::InitializeCalibrationHistograms(){
 
     step=(Int_t)AliQnCorrectionsConstants::kTwist;
     if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)){
-      if(QnConf->GetTwistAndRescalingMethod()==0){
-        if(!fInputHistograms[iconf]->ConnectU2nQnCalibrationHistograms(list,QnConf)){
+      if(QnConf->GetTwistAndRescalingMethod()==0||QnConf->GetTwistAndRescalingMethod()==1){
+        //if(!fInputHistograms[iconf]->ConnectU2nQnCalibrationHistograms(list,QnConf)){
+        if(!fInputHistograms[iconf]->ConnectMeanQnCalibrationHistograms(list,QnConf)){
           DisableCorrections(AliQnCorrectionsConstants::kTwist);
+          DisableCorrections(AliQnCorrectionsConstants::kRescaling);
           if(fCorrectionStep>=step) fCorrectionStep=step-1;
         }
       }
+      if(QnConf->GetTwistAndRescalingMethod()==2){
+        if(!fInputHistograms[iconf]->ConnectCorrelationQnCalibrationHistograms(list,QnConf)){
+          QnConf->SetApplyCorrection(AliQnCorrectionsConstants::kTwist,kFALSE);
+          QnConf->SetApplyCorrection(AliQnCorrectionsConstants::kRescaling,kFALSE);
+          if(fCorrectionStep>=step) fCorrectionStep=step-1;
+      }}
     };
 
     
@@ -2131,6 +2091,10 @@ void AliQnCorrectionsManager::InitializeCalibrationHistograms(){
         if(!fInputHistograms[iconf]->ConnectRotationQnCalibrationHistograms(list,QnConf)){
           DisableCorrections(AliQnCorrectionsConstants::kAlignment);
           if(fCorrectionStep>=step) fCorrectionStep=step-1;
+          if(QnConf->GetTwistAndRescalingMethod()==2){
+            QnConf->SetFillHistogram(AliQnCorrectionsConstants::kTwist,kFALSE);
+            QnConf->SetFillHistogram(AliQnCorrectionsConstants::kRescaling,kFALSE);
+          }
         }
     };
   }
@@ -2145,14 +2109,12 @@ void AliQnCorrectionsManager::PrintFrameworkInformation(){
 
 
 
-  Int_t maxPasses=0;
-
 	const int widthEntry = 18;
 	const int widthBar = 3;
 
   Bool_t forCorrection=kTRUE;
   PrintFrameworkInformationLine(!forCorrection, "----------------", AliQnCorrectionsConstants::kNothing, widthEntry, widthBar);
-  PrintFrameworkInformationLine(forCorrection, Form("FLOW VECTOR FRAMEWORK - PASS %d/%d", fCorrectionStep, fPassesRequired), AliQnCorrectionsConstants::kNothing, widthEntry, widthBar);
+  PrintFrameworkInformationLine(forCorrection, Form("FLOW VECTOR FRAMEWORK - PASS %d/%d", fCorrectionStep+1, fPassesRequired+1), AliQnCorrectionsConstants::kNothing, widthEntry, widthBar);
   PrintFrameworkInformationLine(!forCorrection, " ", AliQnCorrectionsConstants::kNothing, widthEntry, widthBar);
   PrintFrameworkInformationLine(forCorrection, "--FLOW VECTORS--", AliQnCorrectionsConstants::kNothing, widthEntry, widthBar);
     
@@ -2237,7 +2199,6 @@ void AliQnCorrectionsManager::PrintFrameworkInformationLine(Bool_t HistOrCor,TSt
   if(!HistOrCor&&stepflag==AliQnCorrectionsConstants::kNothing){
     cout<<setw(widthEntry)<<correctionname<<setw(widthBar)<<"-";
     for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
-      AliQnCorrectionsConfiguration* QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
         for(Int_t i=0; i<widthEntry; i++) cout<<"-";
         for(Int_t i=0; i<widthBar; i++) cout<<"-";
     }
@@ -2257,37 +2218,64 @@ void AliQnCorrectionsManager::WriteCalibrationHistogramsToList()
   //
   // Finish Task 
   //
+  THashList* listall = new THashList();
+  TObjArray* runarr = fRunList.Tokenize(";");
+  Int_t nruns = runarr->GetEntries();
+  if(nruns==0){
+    if(fLabel.EqualTo("")) {
+      fRunList="allData;";
+      fLabel="allData";
+    } 
+    else {
+      fRunList=fLabel+";";
+    }
+    runarr=fRunList.Tokenize(";");
+  };
+  for(Int_t ir=0; ir<runarr->GetEntries(); ir++){
+    TString runlabel = runarr->At(ir)->GetName();
 
+    AliQnCorrectionsHistograms* histos;
 
-  TList* dataByRun = new TList();
-  //TList* dataByRun = fListOutputHistogramsQnCorrections;//new TList();
-  dataByRun->SetName(fLabel);
+  THashList* dataByRun = new THashList();
+  //THashList* dataByRun = fListOutputHistogramsQnCorrections;//new THashList();
+  dataByRun->SetName(runlabel);
+  dataByRun->SetOwner(kTRUE);
 
   AliQnCorrectionsConfiguration* QnConf = 0x0;
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
     if(!QnConf) continue;
 
-    TList* detector = new TList();
-    TList* detectorM = new TList();
-    TList* detectorC = new TList();
+    if(runlabel==fLabel) histos = fOutputHistograms[iconf];
+    else {histos = new AliQnCorrectionsHistograms();histos->CreateCalibrationHistograms(QnConf);}
 
-      if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kRecentering)){
-      for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih) {
-        for(Int_t ic=0; ic<2; ++ic){
-          detector->Add(fOutputHistograms[iconf]->CalibrationHistogramQ( (QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ,ih,ic));
+    THashList* detector = new THashList();
+    THashList* detectorM = new THashList();
+    THashList* detectorC = new THashList();
+    detector->SetOwner();
+    detectorM->SetOwner();
+    detectorC->SetOwner();
+
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering)||(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)&&QnConf->GetTwistAndRescalingMethod())==0){
+      Int_t maxHar = QnConf->MaximumHarmonic();
+      if(QnConf->GetTwistAndRescalingMethod()==0) maxHar*=2;
+        for(Int_t ih=QnConf->MinimumHarmonic(); ih<=maxHar; ++ih) {
+          for(Int_t ic=0; ic<2; ++ic){
+            detector->Add(histos->CalibrationHistogramQ( (QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ,ih,ic));
+          }
         }
-      }
-      detector->Add(fOutputHistograms[iconf]->CalibrationHistogramE((QnConf->IsApplyCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ));
+        detector->Add(histos->CalibrationHistogramE((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ));
     }
 
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)&&QnConf->GetTwistAndRescalingMethod()==1){
     for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
-      if(fOutputHistograms[iconf]->U2nHistogram(ih,0)){
-        detector->Add(fOutputHistograms[iconf]->U2nHistogram(ih,0));
-        detector->Add(fOutputHistograms[iconf]->U2nHistogram(ih,1));
+      if(histos->U2nHistogram(ih,0)){
+        detector->Add(histos->U2nHistogram(ih,0));
+        detector->Add(histos->U2nHistogram(ih,1));
       }
     }
-    if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kTwist)&&QnConf->GetTwistAndRescalingMethod()==0)  detector->Add(fOutputHistograms[iconf]->U2nHistogramE());
+    detector->Add(histos->U2nHistogramE());
+    }
 
     detector->SetName(Form("Qvec%s",QnConf->QnConfigurationName().Data()));
     if(detector->GetEntries()!=0){
@@ -2295,13 +2283,13 @@ void AliQnCorrectionsManager::WriteCalibrationHistogramsToList()
     }
 
 
-    if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kDataVectorEqualization)){
-      //for(Int_t idim=0; idim<10; idim++) if(fOutputHistograms[iconf]->EventHistogram(idim)) detectorM->Add(fOutputHistograms[iconf]->EventHistogram(idim));
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)){
+      //for(Int_t idim=0; idim<10; idim++) if(histos->EventHistogram(idim)) detectorM->Add(histos->EventHistogram(idim));
       for(Int_t is=0; is<1; ++is){
-        if(fOutputHistograms[iconf]->EqualizationHistogramM(is)) detectorM->Add(fOutputHistograms[iconf]->EqualizationHistogramM(is));
-        if(fOutputHistograms[iconf]->EqualizationHistogramE(is)) detectorM->Add(fOutputHistograms[iconf]->EqualizationHistogramE(is));
-        if(fOutputHistograms[iconf]->GroupEqualizationHistogramM(is)) detectorM->Add(fOutputHistograms[iconf]->GroupEqualizationHistogramM(is));
-        if(fOutputHistograms[iconf]->GroupEqualizationHistogramE(is)) detectorM->Add(fOutputHistograms[iconf]->GroupEqualizationHistogramE(is));
+        if(histos->EqualizationHistogramM(is)) detectorM->Add(histos->EqualizationHistogramM(is));
+        if(histos->EqualizationHistogramE(is)) detectorM->Add(histos->EqualizationHistogramE(is));
+        if(histos->GroupEqualizationHistogramM(is)) detectorM->Add(histos->GroupEqualizationHistogramM(is));
+        if(histos->GroupEqualizationHistogramE(is)) detectorM->Add(histos->GroupEqualizationHistogramE(is));
       }
       detectorM->SetName(Form("Mult%s",QnConf->QnConfigurationName().Data()));
       if(detectorM->GetEntries()!=0){
@@ -2309,45 +2297,168 @@ void AliQnCorrectionsManager::WriteCalibrationHistogramsToList()
       }
     }
 
-    
+  //  
 
-    if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kAlignment)){
-      for(Int_t is=0; is<4; ++is) if(fOutputHistograms[iconf]->GetRotationHistogram(0,is)) detectorC->Add(fOutputHistograms[iconf]->GetRotationHistogram(0,is));
-      if(fOutputHistograms[iconf]->GetRotationHistogramE(0)) detectorC->Add(fOutputHistograms[iconf]->GetRotationHistogramE(0));
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)){
+      for(Int_t is=0; is<4; ++is) if(histos->GetRotationHistogram(0,is)) detectorC->Add(histos->GetRotationHistogram(0,is));
+      if(histos->GetRotationHistogramE(0)) detectorC->Add(histos->GetRotationHistogramE(0));
+    }
+
+
+
+
+    if((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2){
+    for(Int_t icomb=0; icomb<3; ++icomb){ 
+      for(Int_t icomp=0; icomp<4; ++icomp){ 
+        for(Int_t iaxis=0; iaxis<=QnConf->GetAlignmentAxes()->Dim(); ++iaxis){ 
+          for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){ 
+            if(histos->CorrelationProf(0,icomb,ih,icomp,iaxis)) detectorC->Add(histos->CorrelationProf(0,icomb,ih,icomp,iaxis));
+      }}}}
+      detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
+    }
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)||((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2)){
       detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
       dataByRun->Add(detectorC);
     }
-
-
-
-
-    //for(Int_t is=0; is<; ++is){
-    //  for(Int_t icomb=0; icomb<3; ++icomb){ 
-    //    for(Int_t icomp=0; icomp<4; ++icomp){ 
-    //      for(Int_t iaxis=0; iaxis<=QnConf->CalibrationBinning()->Dim(); ++iaxis){ 
-    //      for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){ 
-    //        if(fOutputHistograms[iconf]->CorrelationProf(is,icomb,ih,icomp,iaxis)&&is<=2) detectorC->Add(fOutputHistograms[iconf]->CorrelationProf(is,icomb,ih,icomp,iaxis));
-    //      }}}}}
-    //detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
-    //dataByRun->Add(detectorC);
-    //dataAllRuns->Add(detectorC);
-
   }
 
-  fListOutputHistogramsQnCorrections->Add(dataByRun);
-  if(!(fLabel.EqualTo("allData"))){
-    TList* listall = new TList();
+  
+  if(runlabel==fLabel){
     listall->SetName("allData");
     for(Int_t i=0; i<dataByRun->GetEntries(); i++){
-      TList* l = (TList*) dataByRun->At(i);
-      listall->Add(l);
+      THashList* l = (THashList*) dataByRun->At(i);
+      l->SetOwner();
+      listall->Add(l->Clone());
     }
-    fListOutputHistogramsQnCorrections->Add(listall);
   }
 
+  if(!(runlabel.EqualTo("allData"))) fListOutputHistogramsQnCorrections->Add(dataByRun->Clone());
+  
+  }
+
+  fListOutputHistogramsQnCorrections->Add(listall);
   //fListOutputHistogramsQnCorrections->Add(dataAllRuns);
 
 }
+
+//__________________________________________________________________
+//void AliQnCorrectionsManager::WriteQaHistogramsToList()
+//{
+//  //
+//  // Finish Task 
+//  //
+//  THashList* listall = new THashList();
+//  TObjArray* runarr = fRunList.Tokenize(";");
+//  for(Int_t ir=0; ir<runarr->GetEntries(); ir++){
+//    TString runlabel = runarr->At(ir)->GetName();
+//
+//    AliQnCorrectionsHistograms* histos;
+//    histos = new AliQnCorrectionsHistograms();
+//
+//  THashList* dataByRun = new THashList();
+//  //THashList* dataByRun = fListOutputHistogramsQnCorrections;//new THashList();
+//  dataByRun->SetName(runlabel);
+//  dataByRun->SetOwner(kTRUE);
+//
+//  AliQnCorrectionsConfiguration* QnConf = 0x0;
+//  for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
+//    QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
+//    if(!QnConf) continue;
+//
+//    if(runlabel==fLabel) histos = fOutputHistograms[iconf];
+//    else histos->CreateCalibrationHistograms(QnConf);
+//
+//    THashList* detector = new THashList();
+//    THashList* detectorM = new THashList();
+//    THashList* detectorC = new THashList();
+//    detector->SetOwner();
+//    detectorM->SetOwner();
+//    detectorC->SetOwner();
+//
+//    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRecentering)||(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)&&QnConf->GetTwistAndRescalingMethod())==0){
+//      Int_t maxHar = QnConf->MaximumHarmonic();
+//      if(QnConf->GetTwistAndRescalingMethod()==0) maxHar*=2;
+//        for(Int_t ih=QnConf->MinimumHarmonic(); ih<=maxHar; ++ih) {
+//          for(Int_t ic=0; ic<2; ++ic){
+//            detector->Add(histos->CalibrationHistogramQ( (QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ,ih,ic));
+//          }
+//        }
+//        detector->Add(histos->CalibrationHistogramE((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization) ? 1 : 0) ));
+//    }
+//
+//    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)&&QnConf->GetTwistAndRescalingMethod()==1){
+//    for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
+//      if(histos->U2nHistogram(ih,0)){
+//        detector->Add(histos->U2nHistogram(ih,0));
+//        detector->Add(histos->U2nHistogram(ih,1));
+//      }
+//    }
+//    detector->Add(histos->U2nHistogramE());
+//    }
+//
+//    detector->SetName(Form("Qvec%s",QnConf->QnConfigurationName().Data()));
+//    if(detector->GetEntries()!=0){
+//      dataByRun->Add(detector);
+//    }
+//
+//
+//    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)){
+//      //for(Int_t idim=0; idim<10; idim++) if(histos->EventHistogram(idim)) detectorM->Add(histos->EventHistogram(idim));
+//      for(Int_t is=0; is<1; ++is){
+//        if(histos->EqualizationHistogramM(is)) detectorM->Add(histos->EqualizationHistogramM(is));
+//        if(histos->EqualizationHistogramE(is)) detectorM->Add(histos->EqualizationHistogramE(is));
+//        if(histos->GroupEqualizationHistogramM(is)) detectorM->Add(histos->GroupEqualizationHistogramM(is));
+//        if(histos->GroupEqualizationHistogramE(is)) detectorM->Add(histos->GroupEqualizationHistogramE(is));
+//      }
+//      detectorM->SetName(Form("Mult%s",QnConf->QnConfigurationName().Data()));
+//      if(detectorM->GetEntries()!=0){
+//        dataByRun->Add(detectorM);
+//      }
+//    }
+//
+//  //  
+//
+//    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)){
+//      for(Int_t is=0; is<4; ++is) if(histos->GetRotationHistogram(0,is)) detectorC->Add(histos->GetRotationHistogram(0,is));
+//      if(histos->GetRotationHistogramE(0)) detectorC->Add(histos->GetRotationHistogramE(0));
+//    }
+//
+//
+//
+//
+//    if((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2){
+//    for(Int_t icomb=0; icomb<3; ++icomb){ 
+//      for(Int_t icomp=0; icomp<4; ++icomp){ 
+//        for(Int_t iaxis=0; iaxis<=QnConf->GetAlignmentAxes()->Dim(); ++iaxis){ 
+//          for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){ 
+//            if(histos->CorrelationProf(0,icomb,ih,icomp,iaxis)) detectorC->Add(histos->CorrelationProf(0,icomb,ih,icomp,iaxis));
+//      }}}}
+//      detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
+//    }
+//    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)||((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2)){
+//      detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
+//      dataByRun->Add(detectorC);
+//    }
+//  }
+//  
+//  if(!(fLabel.EqualTo("allData"))&&runlabel==fLabel){
+//    listall->SetName("allData");
+//    for(Int_t i=0; i<dataByRun->GetEntries(); i++){
+//      THashList* l = (THashList*) dataByRun->At(i);
+//      l->SetOwner();
+//      listall->Add(l->Clone());
+//    }
+//  }
+//
+//  fListHistogramsQA->Add(dataByRun->Clone());
+//  
+//  }
+//
+//  fListHistogramsQA->Add(listall);
+//  //fListOutputHistogramsQnCorrections->Add(dataAllRuns);
+//
+//}
+
 
 
 
@@ -2360,7 +2471,22 @@ void AliQnCorrectionsManager::WriteQaHistogramsToList()
   // Finish Task 
   //
 
-  TList* dataByRunQA = new TList();
+  THashList* listall = new THashList();
+
+
+  //detector->SetOwner();
+  //detectorMqa->SetOwner();
+  //detectorC->SetOwner();
+  //dataByRunQA->SetOwner();
+
+
+  AliQnCorrectionsHistograms* histos;
+
+  THashList* dataByRunQA = new THashList();
+  dataByRunQA->SetOwner();
+    //dataByRunQA->Clear();
+
+
   dataByRunQA->SetName(fLabel);
 
 
@@ -2368,64 +2494,75 @@ void AliQnCorrectionsManager::WriteQaHistogramsToList()
   for(Int_t iconf=0; iconf<fNumberOfQnConfigurations; iconf++){
     QnConf = (AliQnCorrectionsConfiguration*) GetQnConfiguration(iconf);
     if(!QnConf) continue;
-
-
-    TList* detector = new TList();
-    TList* detectorM = new TList();
-    TList* detectorC = new TList();
-
+    THashList* detector    = new THashList();
+    THashList* detectorMqa = new THashList();
+    THashList* detectorC   = new THashList();
     detector->SetOwner();
-    detectorM->SetOwner();
+    detectorMqa->SetOwner();
     detectorC->SetOwner();
+    //detector->Clear();
+    //detectorMqa->Clear();
+    //detectorC->Clear();
 
-//     Int_t istep=0;
-    for(Int_t istep=0; istep<=fCorrectionStep; istep++){
-      if(istep>0&&!QnConf->IsApplyCorrection(istep)) continue;
+    histos = fOutputHistograms[iconf];
+
+     Int_t istep=0;
+    for(Int_t istep=0; istep<AliQnCorrectionsConstants::nCorrectionSteps; istep++){
+      if(istep==0) if(!QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)) continue;
+      if(istep==1) continue;
+      if(istep>1)  if(!QnConf->IsRequestedCorrection(istep)) continue;
       
-      for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih) {
+
+    Int_t maxHar = QnConf->MaximumHarmonic();
+      for(Int_t ih=QnConf->MinimumHarmonic(); ih<=maxHar; ++ih) {
         for(Int_t ic=0; ic<2; ++ic){
-          detector->Add(fOutputHistograms[iconf]->CalibrationHistogramQ(istep,ih,ic));
+          detector->Add(histos->CalibrationHistogramQ(istep,ih,ic));
         }
       }
-      detector->Add(fOutputHistograms[iconf]->CalibrationHistogramE(istep));
+      detector->Add(histos->CalibrationHistogramE(istep));
     }
 
     for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){
-      if(fOutputHistograms[iconf]->U2nHistogram(ih,0)){
-        detector->Add(fOutputHistograms[iconf]->U2nHistogram(ih,0));
-        detector->Add(fOutputHistograms[iconf]->U2nHistogram(ih,1));
+      if(histos->U2nHistogram(ih,0)){
+        detector->Add(histos->U2nHistogram(ih,0));
+        detector->Add(histos->U2nHistogram(ih,1));
       }
     }
-    if(fOutputHistograms[iconf]->U2nHistogramE()) detector->Add(fOutputHistograms[iconf]->U2nHistogramE());
+    if(histos->U2nHistogramE()) detector->Add(histos->U2nHistogramE());
 
     detector->SetName(Form("Qvec%s",QnConf->QnConfigurationName().Data()));
     dataByRunQA->Add(detector);
 
 
-    TList* detectorMqa = new TList();
-    TList* detectorCqa = new TList();
-
-    detectorMqa->SetOwner();
-    detectorCqa->SetOwner();
-
-    if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kDataVectorEqualization)){
-      for(Int_t is=0; is<3; ++is){
-        if(fOutputHistograms[iconf]->EqualizationHistogramM(is)&&is!=0) detectorMqa->Add(fOutputHistograms[iconf]->EqualizationHistogramM(is));
-        if(fOutputHistograms[iconf]->EqualizationHistogramE(is)&&is!=0) detectorMqa->Add(fOutputHistograms[iconf]->EqualizationHistogramE(is));
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kDataVectorEqualization)){
+      for(Int_t is=1; is<3; ++is){
+        if(histos->EqualizationHistogramM(is)) detectorMqa->Add(histos->EqualizationHistogramM(is));
+        if(histos->EqualizationHistogramE(is)) detectorMqa->Add(histos->EqualizationHistogramE(is));
       }
       detectorMqa->SetName(Form("Mult%s",QnConf->QnConfigurationName().Data()));
       dataByRunQA->Add(detectorMqa);
     }
 
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)){
+      for(Int_t is=0; is<4; ++is) if(histos->GetRotationHistogram(1,is)) detectorC->Add(histos->GetRotationHistogram(1,is));
+      if(histos->GetRotationHistogramE(1)) detectorC->Add(histos->GetRotationHistogramE(1));
+    }
+
     
-    if(QnConf->IsFillHistogram(AliQnCorrectionsConstants::kAlignment)){
-      for(Int_t is=0; is<4; ++is) if(fOutputHistograms[iconf]->GetRotationHistogram(1,is)) detectorC->Add(fOutputHistograms[iconf]->GetRotationHistogram(1,is));
-      if(fOutputHistograms[iconf]->GetRotationHistogramE(1)) detectorC->Add(fOutputHistograms[iconf]->GetRotationHistogramE(1));
+    if((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2){
+    for(Int_t icomb=0; icomb<3; ++icomb){ 
+      for(Int_t icomp=0; icomp<4; ++icomp){ 
+        for(Int_t iaxis=0; iaxis<=QnConf->GetAlignmentAxes()->Dim(); ++iaxis){ 
+          for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){ 
+            if(histos->CorrelationProf(1,icomb,ih,icomp,iaxis)) detectorC->Add(histos->CorrelationProf(1,icomb,ih,icomp,iaxis));
+            if(histos->CorrelationProf(2,icomb,ih,icomp,iaxis)) detectorC->Add(histos->CorrelationProf(2,icomb,ih,icomp,iaxis));
+      }}}}
+    }
+
+    if(QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kAlignment)||((QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kTwist)||QnConf->IsRequestedCorrection(AliQnCorrectionsConstants::kRescaling))&&QnConf->GetTwistAndRescalingMethod()==2)){
       detectorC->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
       dataByRunQA->Add(detectorC);
     }
-
-
 
 
     //for(Int_t istep=0; istep<=AliQnCorrectionsConstants::kNcorrectionSteps; istep++){
@@ -2433,25 +2570,28 @@ void AliQnCorrectionsManager::WriteQaHistogramsToList()
     //    for(Int_t icomp=0; icomp<4; ++icomp){ 
     //      for(Int_t iaxis=0; iaxis<=QnConf->CalibrationBinning()->Dim(); ++iaxis){ 
     //      for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih){ 
-    //        //if(fOutputHistograms[iconf]->CorrelationProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis)&&QnConf->GetCorrectionStep(istep)>2) detectorCqa->Add(fOutputHistograms[iconf]->CorrelationProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis));
-    //        //if(fOutputHistograms[iconf]->CorrelationEpProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis)) detectorCqa->Add(fOutputHistograms[iconf]->CorrelationEpProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis));
+    //        //if(histos->CorrelationProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis)&&QnConf->GetCorrectionStep(istep)>2) detectorCqa->Add(histos->CorrelationProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis));
+    //        //if(histos->CorrelationEpProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis)) detectorCqa->Add(histos->CorrelationEpProf(QnConf->GetCorrectionStep(istep),icomb,ih,icomp,iaxis));
     //      }}}}}
     //detectorCqa->SetName(Form("Correlations%s",QnConf->QnConfigurationName().Data()));
     //dataByRunQA->Add(detectorCqa);
     //dataAllRunsQA->Add(detectorCqa);
 
-  fListHistogramsQA->Add(dataByRunQA);
-  if(!(fLabel.EqualTo("allData"))){
-    TList* listall = new TList();
-    listall->SetName("allData");
-    for(Int_t i=0; i<dataByRunQA->GetEntries(); i++){
-      TList* l = (TList*) dataByRunQA->At(i);
-      listall->Add(l);
-    }
-    fListHistogramsQA->Add(listall);
   }
-  }
+  //if(!(fLabel.EqualTo("allData"))){
+  //  listall = (THashList*) dataByRunQA->Clone("allData");
+  //  //listall->SetName("allData");
+  //  //for(Int_t i=0; i<dataByRunQA->GetEntries(); i++){
+  //  //  THashList* l = (THashList*) dataByRunQA->At(i);
+  //  //  l->SetOwner();
+  //  //  listall->Add(l->Clone());
+  //  //}
+  //}
 
+  fListHistogramsQA->Add(dataByRunQA->Clone());
+
+
+  //fListHistogramsQA->Add(listall);
 
 
 }
