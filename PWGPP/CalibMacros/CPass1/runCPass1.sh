@@ -61,7 +61,7 @@ export TPC_CPass1_GainCalibType=3
 
 # ===| TPC JDL overwrites |===================================================
 #
-export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPass1_GainCalibType-$TPC_CPass1_GainCalibType}
+export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPASS1_GAINCALIBTYPE-$TPC_CPass1_GainCalibType}
 
 echo "TPC_CPass1_GainCalibType=${TPC_CPass1_GainCalibType}" | tee -a calib.log
 
@@ -189,12 +189,22 @@ fi
 
 mv syswatch.log ../syswatch_calib.log
 
-
+if [ -f ResidualHistos.root ]; then
+    mv ResidualHistos.root ../ResidualTrees.root
+fi
+ 
 echo "*  Running filtering task for barrel *"
-echo AliESDs.root > esd.list
-aliroot -l -b -q "${ALICE_PHYSICS}/PWGPP/macros/runFilteringTask.C(\"esd.list\",10000,1000,\"${ocdbPath}\")" &> filtering.log
-
-
+filtMacro=$ALICE_PHYSICS/PWGPP/macros/runFilteringTask.C
+if [ -f $filtMacro ]; then
+    echo AliESDs.root > esd.list
+    aliroot -l -b -q "${filtMacro}(\"esd.list\",10000,1000,\"${ocdbPath}\")" &> filtering.log
+else
+    echo "no ${filtMacro} ..."
+fi
+if [-f filtering.log ]; then
+    mv filtering.log ../filtering.log
+fi
+#
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 
@@ -238,7 +248,7 @@ fi
 mv AliESDs.root ../AliESDs_Barrel.root
 mv AliESDfriends.root ../AliESDfriends_Barrel.root
 
-for file in CalibObjects.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root; do
+for file in FilterEvents_Trees.root AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root CalibObjects.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
