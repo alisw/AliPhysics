@@ -359,7 +359,23 @@ void AliAnalysisTaskPi0Conversion::UserExec(Option_t *)
                 case 111: FillHistogram("hInvMassP0",m,pt); break; 
                 case 22: FillHistogram("hInvMassGamma",m,pt); break;
                 case 11:
-                case -11: FillHistogram("hInvMassEl",m,pt); break;
+                case -11: 
+{ 
+                    FillHistogram("hInvMassEl",m,pt);
+                    Int_t wpdg = pdg;
+                    Int_t wlabel = mlabel;
+                    AliAODMCParticle  * wprim = mprim;
+                    while ((wpdg != 111) && (wlabel>-1)) {
+        
+                     Int_t wlabel = wprim -> GetMother();
+                      if (wlabel < 0) break; 
+                      wprim = (AliAODMCParticle*)fStack->At(wlabel) ;
+                      wpdg = wprim -> GetPdgCode(); }      
+                    if (wpdg == 111) {
+                        Double_t r3=TMath::Sqrt (mprim->Xv()*mprim->Xv()+mprim->Yv()*mprim->Yv());    
+                        FillHistogram("hConversion",m,pt,r3); 
+                        };
+}; break;
                 case 221: FillHistogram("hInvMassEt",m,pt); break;
                 case 130: FillHistogram("hInvMassK0s",m,pt); break;
                 case 310: FillHistogram("hInvMassK0l",m,pt); break;
