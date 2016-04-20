@@ -91,8 +91,8 @@ main()
 
   # ===| TPC JDL overwrites |===================================================
   #
-  export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPass0_GainCalibType-$TPC_CPass0_GainCalibType}
-  export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPass1_GainCalibType-$TPC_CPass1_GainCalibType}
+  export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPASS0_GAINCALIBTYPE-$TPC_CPass0_GainCalibType}
+  export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPASS1_GAINCALIBTYPE-$TPC_CPass1_GainCalibType}
 
   # take the path to the reference storage (used by TPC) from the JDL
   export targetStorageResidual=${ALIEN_JDL_TARGETSTORAGERESIDUAL}
