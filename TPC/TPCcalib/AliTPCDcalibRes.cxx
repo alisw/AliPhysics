@@ -219,7 +219,8 @@ void AliTPCDcalibRes::Save(const char* name)
   // save itself
   TString names = name;
   if (names.IsNull()) {
-    names = Form("%s_run%d_%lld_%lld.root",IsA()->GetName(),fRun,fTMin,fTMax);
+    //    names = Form("%s_run%d_%lld_%lld.root",IsA()->GetName(),fRun,fTMin,fTMax);
+    names = Form("%s.root",IsA()->GetName());
     names.ToLower();
   }
   TFile* flout = TFile::Open(names.Data(),"recreate");
