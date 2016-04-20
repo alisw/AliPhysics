@@ -879,16 +879,13 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     
     AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(track);
     AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(track);
-    
-    if(esdTrack && TMath::Abs(esdTrack->GetParameter()[4]) > 0 )
+        
+    if ( esdTrack ) 
     {
-      fhTrackResolution->Fill(TMath::Abs(esdTrack->GetParameter()[4]), 
-                              TMath::Sqrt(esdTrack->GetCovariance()[14])/TMath::Abs(esdTrack->GetParameter()[4]), 
-                              GetEventWeight());
+      fhTrackResolution->Fill(pt, TMath::Sqrt(esdTrack->GetCovariance()[14])*pt, GetEventWeight());
     }
 
-
-    if(aodTrack)
+    if ( aodTrack )
     {
       Double_t frac = Double_t(aodTrack->GetTPCnclsS()) / Double_t(aodTrack->GetTPCncls());
       
