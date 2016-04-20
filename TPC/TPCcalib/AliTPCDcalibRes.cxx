@@ -598,7 +598,7 @@ void AliTPCDcalibRes::FillCorrectedResiduals()
     fDTC.dzR = fArrDZ[icl];
 
     fDTC.dyC = fArrDY[icl] - (corr[kResY]-corr[kResX]*fArrTgSlp[icl]);
-    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]/*+corr[kResX]*fTgLam*/); // we evaluate at pad-row
+    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]+corr[kResX]*fTgLam); // we evaluate at pad-row
 
     fDTC.q2pt   = fQ2Pt;
     fDTC.tgLam  = fTgLam;
@@ -2215,7 +2215,9 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 	Bool_t res = GetSmoothEstimate(vox->bsec,vox->stat[kVoxX],vox->stat[kVoxF],vox->stat[kVoxZ],
 				       BIT(kResX)|BIT(kResY)|BIT(kResZ), // at this moment we cannot smooth dispersion
 				       vox->DS);
-	if (res) {
+	if (res) { 
+	  vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
+	  vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX];
 	  vox->flags |= kSmoothDone;
 	  cnt++;
 	}
