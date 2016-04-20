@@ -59,7 +59,7 @@ TString strModelDir[nmodels]={"Perugia0","Perugia2010","Perugia2011","PYTHIA8","
 TString strModelDirLeg[nmodels]={"PYTHIA6, Perugia 0","PYTHIA6, Perugia 2010","PYTHIA6, Perugia 2011","PYTHIA8, Tune 4C","HERWIG","POWHEG+PYTHIA6","POWHEG+PYTHIA6 EPS09","EPOS 3"};
 Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kViolet,kRed+2,kRed+2,kOrange};
 Bool_t includeinlegend[nmodels]={kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE};// this is also used to split the legend in 2!!
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,22};
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,28,26,3,3,33};
 TH1D **hMC;
 TGraphAsymmErrors **grMC;
 
