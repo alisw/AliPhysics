@@ -1594,7 +1594,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   AliAODTrack *eTrack = 0x0;
   
 //  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
-  while(eTrack = static_cast<AliAODTrack*>(tracks->GetNextAcceptParticle())){
+  while((eTrack = static_cast<AliAODTrack*>(tracks->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
