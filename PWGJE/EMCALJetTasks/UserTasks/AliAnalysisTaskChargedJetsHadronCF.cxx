@@ -175,22 +175,6 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_100", "Jet constituent count vs. jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_10", "Jet constituent count vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
 
-  // Add THn for the jet constituent distributions
-  //                        jet pt,  const pT,  const count,          eta,            area,         event rho
-  Int_t    bins [6]     = {  30,           30,           50,                 24,          8,        8};
-  Double_t minEdges[6]  = {  10.,         0.1,            0,               -0.9,         0.,        0};
-  Double_t maxEdges[6]  = { 100,          100,          100,                0.9,        0.4,      160};
-  TString axisName[6]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","Eta","Area","Event rho"};
-  TString axisTitle[6]  = {"jet p_{T}","Constituent p_{T}", "Constituent count","Eta","Area","Event rho"};
-  THnF* histJetConstituents010   = new THnF("hJetConstituents_Cent0_10", "Jet constituent count/p_{T}, centrality 0-10", 6, bins, minEdges, maxEdges);
-  BinLogAxis(histJetConstituents010,0);
-  BinLogAxis(histJetConstituents010,1);
-  for (Int_t iaxis=0; iaxis<6;iaxis++){
-    histJetConstituents010->GetAxis(iaxis)->SetName(axisName[iaxis]);
-    histJetConstituents010->GetAxis(iaxis)->SetTitle(axisTitle[iaxis]);
-  }
-  fOutput->Add(histJetConstituents010);
-
   AddHistogram2D<TH2D>("hLeadingJetPtRaw", "Jets p_{T} distribution (no bgrd. corr.)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPt", "Jets p_{T} distribution (background subtracted)", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPhi", "Jet angular distribution #phi", "LEGO2", 180, 0., 2*TMath::Pi(), fNumberOfCentralityBins, 0, 100, "#phi", "Centrality", "dN^{Jets}/d#phi");
@@ -440,12 +424,7 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
     // Fill jet constituent plots
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
     if( (fCent >= 0) && (fCent < 10) )
-    {
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
-      THnF* tmpConstituentHist = static_cast<THnF*>(fOutput->FindObject("hJetConstituents_Cent0_10"));
-      Double_t tmpVec2[6] = {jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt(), static_cast<Double_t>(jet->GetNumberOfTracks()), jet->Eta(), jet->Area(), fJetsCont->GetRhoVal()};
-      tmpConstituentHist->Fill(tmpVec2);
-    }
   }
 
   FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 

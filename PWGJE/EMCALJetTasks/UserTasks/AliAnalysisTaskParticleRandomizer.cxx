@@ -89,15 +89,16 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
   if(!fInitialized)
     ExecOnce();
 
+  Int_t accTracks = 0;
   for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
   {
-    if(fJetRemovalArray && IsParticleInJet((AliAODTrack*)fInputArray->At(iPart)))
+    if(fJetRemovalArray && IsParticleInJet(iPart))
       continue;
 
-    new ((*fOutputArray)[iPart]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
+    new ((*fOutputArray)[accTracks]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
 
     // Randomize on demand
-    AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(iPart));
+    AliAODTrack* particle = static_cast<AliAODTrack*>(fOutputArray->At(accTracks));
 
     if(fRandomizeInPhi)
       particle->SetPhi(fMinPhi + fRandom->Rndm()*(fMaxPhi-fMinPhi));
@@ -116,11 +117,14 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
 
     if(fRandomizeInPt)
       particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
+
+    accTracks++;
   }
+//  std::cout << Form("%i particles from jets removed out of %i tracks. ", fInputArray->GetEntries()-accTracks, fInputArray->GetEntries()) << std::endl;
 }
 
 //_____________________________________________________________________________________________________
-Bool_t AliAnalysisTaskParticleRandomizer::IsParticleInJet(AliVParticle* part)
+Bool_t AliAnalysisTaskParticleRandomizer::IsParticleInJet(Int_t part)
 {
   for(Int_t i=0; i<fJetRemovalArray->GetEntries(); i++)
   {
@@ -128,7 +132,7 @@ Bool_t AliAnalysisTaskParticleRandomizer::IsParticleInJet(AliVParticle* part)
     Double_t tmpPt = tmpJet->Pt() - tmpJet->Area()*GetExternalRho();
 
     if(tmpPt >= fJetRemovalPtThreshold)
-      if(tmpJet->ContainsTrack(part, fInputArray))
+      if(tmpJet->ContainsTrack(part)>=0)
         return kTRUE;
   }
 
