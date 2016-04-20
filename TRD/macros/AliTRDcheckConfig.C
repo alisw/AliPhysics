@@ -45,16 +45,17 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TEnv.h>
-#include "../../STEER/CDB/AliCDBEntry.h"
-#include "../../STEER/CDB/AliCDBManager.h"
-#include "../Cal/AliTRDCalDCS.h"
-#include "../Cal/AliTRDCalDCSv2.h"
-#include "../Cal/AliTRDCalDCSFEE.h"
-#include "../Cal/AliTRDCalDCSFEEv2.h"
 
-// Not sure where to put it?
-using namespace std;
+#include <AliCDBEntry.h>
+#include <AliCDBManager.h>
+#include <AliTRDCalDCS.h>
+#include <AliTRDCalDCSv2.h>
+#include <AliTRDCalDCSFEE.h>
+#include <AliTRDCalDCSFEEv2.h>
+
 #endif
+using std::cout;
+using std::endl;
 
 const Int_t nROC = 540;
 const Int_t nROB = 8;
@@ -122,8 +123,8 @@ void GetMajoritys(TObject* calDCSObj) {
 	feeArrSiz = ((AliTRDCalDCSv2*)calDCSObj)->GetFEEArr()->GetSize();
     }
 
-    TObject* idcsfee;
     for (Int_t i=0; i<nROC && i<feeArrSiz; i++) {
+      TObject* idcsfee = 0;
       if (calVer == 1) idcsfee = ((AliTRDCalDCS*)calDCSObj)->GetCalDCSFEEObj(i);
       else if (calVer == 2) idcsfee = ((AliTRDCalDCSv2*)calDCSObj)->GetCalDCSFEEObj(i);
       
@@ -197,6 +198,9 @@ void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
 	feeArrSiz1 = ((AliTRDCalDCSv2*)calDCSObj)->GetFEEArr()->GetSize();
       if(((AliTRDCalDCSv2*)calDCSObj2)->GetFEEArr())
 	feeArrSiz2 = ((AliTRDCalDCSv2*)calDCSObj2)->GetFEEArr()->GetSize();
+    } else{
+      cout << "E - calVer neither 1 nor 2?! Exiting.\n";
+      return;
     }
 
     TObject* idcsfee;
@@ -209,6 +213,10 @@ void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
       else if (calVer == 2) {
 	idcsfee  = ((AliTRDCalDCSv2*)calDCSObj)->GetCalDCSFEEObj(i);
 	idcsfee2 = ((AliTRDCalDCSv2*)calDCSObj2)->GetCalDCSFEEObj(i);
+      }
+      else{
+	cout << "E - calVer neither 1 nor 2?! Exiting.\n";
+	return;
       }
       if ((idcsfee == NULL) || (idcsfee2 == NULL)) continue;
       
@@ -239,6 +247,10 @@ void GetMajorityDifferences(TObject* calDCSObj, TObject* calDCSObj2) {
 	    inim2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMStateNI(j,k);
 	    inev2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMEventCnt(j,k);
 	    inpt2 = ((AliTRDCalDCSFEEv2*)idcsfee2)->GetMCMPtCnt(j,k);
+	  }
+	  else{
+	    cout << "E - calVer neither 1 nor 2?! Exiting.\n";
+	    return;
 	  }
 	  
 	  igsm = igsm1 - igsm2;
@@ -392,16 +404,20 @@ void WrappedAliTRDcheckConfig(Int_t runNr, const char *pathfile,TFile *f){
     }
 
     // Check the status/error bist for each ROC
-    TObject* idcsfee;
-    TObject* idcsfee2;
+    TObject* idcsfee = 0;
+    TObject* idcsfee2 = 0;
     // Loop over the ROCs / the array
     for (Int_t i=0; i<nROC && i<feeArrSiz; i++) {
       if (calVer == 1) idcsfee = ((AliTRDCalDCS*)caldcs)->GetCalDCSFEEObj(i);
       else if (calVer == 2) idcsfee = ((AliTRDCalDCSv2*)caldcs)->GetCalDCSFEEObj(i);
+      else{cout << "E - calVer neither 1 nor 2?! Exiting.\n";return;}
+
       if (idcsfee != NULL) {
 	Int_t sb;
 	if (calVer == 1) sb = ((AliTRDCalDCSFEE*)idcsfee)->GetStatusBit();
 	else if (calVer == 2) sb = ((AliTRDCalDCSFEEv2*)idcsfee)->GetStatusBit();
+	else{cout << "E - calVer neither 1 nor 2?! Exiting.\n";return;}
+
 	if (sb == 5) { bitfivestr  += i; bitfivestr  += "  "; nSB5++; }
 	else if (sb == 4) { bitfourstr  += i; bitfourstr  += "  "; nSB4++; errors = true; }
 	else if (sb == 3) { bitthreestr += i; bitthreestr += "  "; nSB3++; errors = true; }
@@ -512,7 +528,10 @@ void WrappedAliTRDcheckConfig(Int_t runNr, const char *pathfile,TFile *f){
     gts = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTriggerSetup();
     gao = ((AliTRDCalDCSv2*)caldcs)->GetGlobalAddOptions();
   }
-
+  else{
+    cout << "E - calVer neither 1 nor 2?! Exiting.\n";
+    return;
+  }
 
   if (gtb != -1) cout<<"Global number of time bins.........................: "<< gtb << endl;
   if (gct != -1) cout<<"Global configuration tag...........................: "<< gct << endl;
