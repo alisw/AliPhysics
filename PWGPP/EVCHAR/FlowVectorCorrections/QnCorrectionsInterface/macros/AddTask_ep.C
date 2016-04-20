@@ -49,14 +49,6 @@ void AddSPD(AliQnCorrectionsManager* QnManager);
 
 
 AliAnalysisDataContainer* AddTask_ep() {
-  //gSystem->Load("libESD");
-  //gSystem->Load("libPWGPPevcharEp.so");
-
-  //TChain* chain = CreateESDChain("/u/jonderw/files.txt", 1, 0);
-  //AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
-  //
-
-
   /* temporal flag to use multiplicity instead of centrality and to inhibit detectors for 2015 dataset */
   Bool_t bUseMultiplicity = kFALSE;
   Bool_t b2015DataSet = kFALSE;
@@ -66,13 +58,14 @@ AliAnalysisDataContainer* AddTask_ep() {
   if (!mgr) {
     mgr = new AliAnalysisManager("AnalysisManagerQcorrections");
 
-    Error("AddTask_jonderw_ep", "No analysis manager found.");
+    Error("AddTask_ep", "No analysis manager found.");
     return 0;
   }
 
 
   AliQnCorrectionsManager* QnManager = new AliQnCorrectionsManager();
   AliAnalysisTaskFlowVectorCorrections* taskEP = new AliAnalysisTaskFlowVectorCorrections("FlowVectorCorrections");
+  taskEP->SetRunListPath("$(ALICE_PHYSICS)/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runsLHC10h.txt");
 
   AliQnCorrectionsCuts *eventCuts = new AliQnCorrectionsCuts();
   eventCuts->AddCut(AliQnCorrectionsVarManager::kVtxZ,-10.0,10.0);
@@ -92,11 +85,14 @@ AliAnalysisDataContainer* AddTask_ep() {
   else
     taskEP->SelectCollisionCandidates(AliVEvent::kMB|AliVEvent::kINT7);  // Events passing trigger and physics selection for analysis
 
-  //TGrid::Connect("alien://");
-  //TFile* inputfile = TFile::Open("alien:///alice/cern.ch/user/j/jonderwa/CalibrationFiles/CalibrationHistograms_0.root");
-  //TFile* inputfile = new TFile("/mnt/home/jonderw/alicesoftware/aliphysics/master/src/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/CalibrationHistograms_0.root","READ");
-  //Bool_t foundInput = QnManager->SetCalibrationFile(inputfile);      //    <---- set path to calibration output from previous iteration
-  //if(!foundInput) cout<<"Warning: Input list for FlowVectorCorrections not found."<<endl;
+  if(kFALSE){  // attach calibration file directly to correction framework here in the AddTask
+    TGrid::Connect("alien://");
+    TFile* inputfile = TFile::Open("alien:///alice/cern.ch/user/j/jonderwa/CalibrationFiles/LHC10h.root");
+    Bool_t foundInput = QnManager->SetCalibrationFile(inputfile); 
+  }
+  else {      // access calibration file from job site in the analysis task
+    taskEP->SetCalibrationFilePath("alien:///alice/cern.ch/user/j/jonderwa/CalibrationFiles/LHC10h.root");
+  }
 
   taskEP->GetFillEvent()->SetUseTPCStandaloneTracks(kFALSE);  // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
 
@@ -113,17 +109,17 @@ AliAnalysisDataContainer* AddTask_ep() {
     AddTPC(QnManager);
     AddTZERO(QnManager);
     AddZDC(QnManager);
-    //AddFMD(mgr,QnManager);
-    AddRawFMD(QnManager);
-    AddSPD(QnManager);
+    AddFMD(mgr,QnManager);
+    //AddRawFMD(QnManager);
+    //AddSPD(QnManager);
   }
 
 
-  QnManager->SetFillTreeQnVectors();
+  //QnManager->SetFillTreeQnVectors();
   QnManager->SetFillHistogramsQA();
   QnManager->SetFillHistogramsQnCorrections();
 
-  taskEP->FillExchangeContainerWithQvectors(kFALSE);
+  taskEP->FillExchangeContainerWithQvectors(kTRUE);
 
   taskEP->SetEventPlaneManager(QnManager);
   taskEP->DefineInOutput();
@@ -137,35 +133,46 @@ AliAnalysisDataContainer* AddTask_ep() {
   mgr->AddTask(taskEP);
 
   //create output container
-  AliAnalysisDataContainer *cOutputHist =
-    mgr->CreateContainer("CalibrationHistos",
+  AliAnalysisDataContainer *cOutputHist;
+  if(QnManager->ShouldFillHistogramsQnCorrections()){
+    cOutputHist = mgr->CreateContainer("CalibrationHistos",
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         "CalibrationHistograms.root");
+  }
   
-  AliAnalysisDataContainer *cOutputQvec =
-    mgr->CreateContainer("CalibratedQvector",
+  AliAnalysisDataContainer *cOutputQvec;
+  if(QnManager->ShouldFillTreeQnVectors()){
+     cOutputQvec = mgr->CreateContainer("CalibratedQvector",
         TTree::Class(),
         AliAnalysisManager::kOutputContainer,
         "QvectorsTree.root");
+  }
   
-  AliAnalysisDataContainer *cOutputQvecList =
+  AliAnalysisDataContainer *cOutputQvecList;
+  if(taskEP->IsFillExchangeContainerWithQvectors()){
+    cOutputQvecList =
     mgr->CreateContainer("CalibratedQvectorList",
         TList::Class(),
         AliAnalysisManager::kExchangeContainer,
         "QvectorsList.root");
+  }
   
-  AliAnalysisDataContainer *cOutputHistQA =
-    mgr->CreateContainer("CalibrationQA",
+  AliAnalysisDataContainer *cOutputHistQA;
+  if(QnManager->ShouldFillHistogramsQA()){
+    cOutputHistQA = mgr->CreateContainer("CalibrationQA",
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         "CalibrationQA.root");
+  }
 
-  AliAnalysisDataContainer *cOutputQnEventQA =
-    mgr->CreateContainer("QnEventQA",
+  AliAnalysisDataContainer *cOutputQnEventQA;
+  if(taskEP->IsFillEventQA()){
+    cOutputQnEventQA = mgr->CreateContainer("QnEventQA",
         TList::Class(),
         AliAnalysisManager::kOutputContainer,
         "QnEventQA.root");
+  }
 
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
@@ -203,13 +210,13 @@ void AddVZERO(AliQnCorrectionsManager* QnManager){
   AliQnCorrectionsAxes * VZERObinning = new AliQnCorrectionsAxes(nVZEROdim);  //  declare binning object with number of calibration dimensions
   TAxis VZERObinningAxis[nVZEROdim+1];
 
-  Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};  // array of pairs, where the 1st element of each pair is the lower edge of a coarse bin, and the 2nd element is the number of fine bins inside the coarse bin. The 2nd element of the first` pair is the number of coarse bins plus one (i.e. total number of pairs).
-  VZERObinningAxis[0] = VZERObinning->MakeAxis(VtxZbinning);
-
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }}; 
-  VZERObinningAxis[1] = VZERObinning->MakeAxis(Ctbinning);
+  VZERObinningAxis[0] = VZERObinning->MakeAxis(Ctbinning);
 
-  Double_t VarIdMap[nVZEROdim] = {AliQnCorrectionsVarManager::kVtxZ , AliQnCorrectionsVarManager::kCentVZERO };
+  Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};  // array of pairs, where the 1st element of each pair is the lower edge of a coarse bin, and the 2nd element is the number of fine bins inside the coarse bin. The 2nd element of the first` pair is the number of coarse bins plus one (i.e. total number of pairs).
+  VZERObinningAxis[1] = VZERObinning->MakeAxis(VtxZbinning);
+
+  Double_t VarIdMap[nVZEROdim] = { AliQnCorrectionsVarManager::kCentVZERO , AliQnCorrectionsVarManager::kVtxZ};
 
   for(Int_t idim=0; idim<nVZEROdim; idim++) VZERObinning->SetAxis(idim, VarIdMap[idim], VZERObinningAxis[idim], AliQnCorrectionsVarManager::VarName(VarIdMap[idim]));
   
@@ -228,7 +235,7 @@ void AddVZERO(AliQnCorrectionsManager* QnManager){
   VZEROAconf->SetQnNormalization(1);
   VZEROAconf->SetQnHarmonicsRange(1,4);
   VZEROAconf->SetHarmonicForAlignment(2);
-  VZEROAconf->SetDataVectorEqualizationMethod(1);
+  VZEROAconf->SetDataVectorEqualizationMethod(0);
   VZEROAconf->SetTwistAndRescalingMethod(2);
   VZEROAconf->SetDataVectorIdList(new TArrayS(64, VZEROchannels[0]));
   VZEROAconf->SetDataVectorEqualizationGroups(channelGroups);
@@ -252,7 +259,7 @@ void AddVZERO(AliQnCorrectionsManager* QnManager){
   VZEROCconf->SetQnNormalization(1);
   VZEROCconf->SetQnHarmonicsRange(1,4);
   VZEROCconf->SetHarmonicForAlignment(2);
-  VZEROCconf->SetDataVectorEqualizationMethod(1);
+  VZEROCconf->SetDataVectorEqualizationMethod(0);
   VZEROCconf->SetTwistAndRescalingMethod(2);
   VZEROCconf->SetDataVectorIdList(new TArrayS(64, VZEROchannels[1]));
   VZEROCconf->SetDataVectorEqualizationGroups(channelGroups);
@@ -386,9 +393,6 @@ void AddTZERO(AliQnCorrectionsManager* QnManager){
   for(Int_t ich=0; ich<12; ich++) TZEROchannels[1][ich] = 1;
 
 
-  TArrayS* channelGroups=new TArrayS(24);
-  for(Int_t ich=0; ich<24; ich++) channelGroups->SetAt((Int_t) ich/6, ich);
-
   //-----------------------------------------------------------
   // Binning for Q-vector calibration
   //
@@ -424,7 +428,6 @@ void AddTZERO(AliQnCorrectionsManager* QnManager){
   TZEROAconf->SetDataVectorEqualizationMethod(0);
   TZEROAconf->SetTwistAndRescalingMethod(2);
   TZEROAconf->SetDataVectorIdList(new TArrayS(24, TZEROchannels[0]));
-  TZEROAconf->SetDataVectorEqualizationGroups(channelGroups);
   TZEROAconf->SetQnConfigurationName("TZEROA");
   TZEROAconf->SetReferenceQnForAlignment("TPC");
   TZEROAconf->SetReferenceQnForTwistAndRescaling("TZEROC","TPC");
@@ -448,7 +451,6 @@ void AddTZERO(AliQnCorrectionsManager* QnManager){
   TZEROCconf->SetDataVectorEqualizationMethod(0);
   TZEROCconf->SetTwistAndRescalingMethod(2);
   TZEROCconf->SetDataVectorIdList(new TArrayS(24, TZEROchannels[1]));
-  TZEROCconf->SetDataVectorEqualizationGroups(channelGroups);
   TZEROCconf->SetQnConfigurationName("TZEROC");
   TZEROCconf->SetReferenceQnForAlignment("TPC");
   TZEROCconf->SetReferenceQnForTwistAndRescaling("TZEROA","TPC");
@@ -610,27 +612,25 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   AliQnCorrectionsAxes * FMDbinning = new AliQnCorrectionsAxes(FMDdim);
 
 
-  // centrality bins
-  const Int_t nCtwidths = 1;   
-  Double_t Ctedges[nCtwidths+1] = {0.0, 100.0};
-  Int_t Ctbins[nCtwidths] = {100};
-
-  FMDbinning->SetAxis(0, AliQnCorrectionsVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kCentVZERO));
-
-
   // vertex Z bins
   const Int_t nVtxZwidths = 3;   
   Double_t VtxZedges[nVtxZwidths+1] = {-10.0, -7.0, 7.0, 10.0};
   Int_t VtxZbins[nVtxZwidths] = {1,8,1};
 
-  FMDbinning->SetAxis(1, AliQnCorrectionsVarManager::kVtxZ, nVtxZwidths, VtxZbins, VtxZedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kVtxZ));
+  FMDbinning->SetAxis(0, AliQnCorrectionsVarManager::kVtxZ, nVtxZwidths, VtxZbins, VtxZedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kVtxZ));
+  // centrality bins
+  const Int_t nCtwidths = 1;   
+  Double_t Ctedges[nCtwidths+1] = {0.0, 100.0};
+  Int_t Ctbins[nCtwidths] = {100};
+
+  FMDbinning->SetAxis(1, AliQnCorrectionsVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kCentVZERO));
 
   //-----------------------------------------------------------
   // Binning for channel equalization
   AliQnCorrectionsAxes * FMDchannelbinning = new AliQnCorrectionsAxes(FMDdim+1); // +1 is for channel axis
-  FMDchannelbinning->SetAxis(0, AliQnCorrectionsVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kCentVZERO));
-  FMDchannelbinning->SetAxis(1, AliQnCorrectionsVarManager::kVtxZ, nVtxZwidths, VtxZbins, VtxZedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kVtxZ));
-  FMDchannelbinning->SetNchannels(4000);
+  FMDchannelbinning->SetAxis(0, AliQnCorrectionsVarManager::kVtxZ, nVtxZwidths, VtxZbins, VtxZedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kVtxZ));
+  FMDchannelbinning->SetAxis(1, AliQnCorrectionsVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kCentVZERO));
+  FMDchannelbinning->SetNchannels(5500);
 
   ////////// end of binning
 
@@ -638,27 +638,33 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   AliQnCorrectionsConfiguration * FMDAconf = new AliQnCorrectionsConfiguration();
   FMDAconf->SetQnNormalization(1);
   FMDAconf->SetQnHarmonicsRange(1,4);
+  FMDAconf->SetHarmonicForAlignment(2);
   //FMDAconf->SetDataVectorEqualizationMethod(1);
-  FMDAconf->SetDataVectorIdList(new TArrayS(4000, FMDchannels[0]));
+  FMDAconf->SetDataVectorIdList(new TArrayS(5500, FMDchannels[0]));
   FMDAconf->SetQnConfigurationName("FMDA");
+  FMDAconf->SetReferenceQnForAlignment("TPC");
   FMDAconf->SetQnCorrectionsCommonAxes(FMDbinning);
   FMDAconf->SetDataVectorEqualizationAxes(FMDchannelbinning);
   FMDAconf->UseCalibrationDirectoryNameAllEvents(kFALSE);   // in the current analysis task, label is run number, so with this setting corrections are made run-by-run
 
   FMDAconf->SetQnCorrectionRecentering();
+  FMDAconf->SetQnCorrectionAlignment();
   QnManager->AddQnConfiguration(FMDAconf, AliQnCorrectionsVarManager::kFMD);
 
   AliQnCorrectionsConfiguration * FMDCconf = new AliQnCorrectionsConfiguration();
   FMDCconf->SetQnNormalization(1);
   FMDCconf->SetQnHarmonicsRange(1,4);
+  FMDCconf->SetHarmonicForAlignment(2);
   //FMDCconf->SetDataVectorEqualizationMethod(1);
-  FMDCconf->SetDataVectorIdList(new TArrayS(4000, FMDchannels[0]));
+  FMDCconf->SetDataVectorIdList(new TArrayS(5500, FMDchannels[0]));
   FMDCconf->SetQnConfigurationName("FMDC");
+  FMDCconf->SetReferenceQnForAlignment("TPC");
   FMDCconf->SetQnCorrectionsCommonAxes(FMDbinning);
   FMDCconf->SetDataVectorEqualizationAxes(FMDchannelbinning);
   FMDCconf->UseCalibrationDirectoryNameAllEvents(kFALSE);   // in the current analysis task, label is run number, so with this setting corrections are made run-by-run
 
   FMDCconf->SetQnCorrectionRecentering();
+  FMDCconf->SetQnCorrectionAlignment();
   QnManager->AddQnConfiguration(FMDCconf, AliQnCorrectionsVarManager::kFMD);
 
 
