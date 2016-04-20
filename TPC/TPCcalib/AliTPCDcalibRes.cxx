@@ -598,7 +598,7 @@ void AliTPCDcalibRes::FillCorrectedResiduals()
     fDTC.dzR = fArrDZ[icl];
 
     fDTC.dyC = fArrDY[icl] - (corr[kResY]-corr[kResX]*fArrTgSlp[icl]);
-    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]+corr[kResX]*fTgLam);
+    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]/*+corr[kResX]*fTgLam*/); // we evaluate at pad-row
 
     fDTC.q2pt   = fQ2Pt;
     fDTC.tgLam  = fTgLam;
