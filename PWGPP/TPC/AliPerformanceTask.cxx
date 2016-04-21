@@ -73,7 +73,7 @@ ClassImp(AliPerformanceTask)
 
 //_____________________________________________________________________________
 AliPerformanceTask::AliPerformanceTask() 
-  : AliAnalysisTaskSE("TPCqa")
+  : AliAnalysisTask()
   , fVEvent(0)
   , fVfriendEvent(0)
   , fMC(0)
@@ -96,8 +96,8 @@ AliPerformanceTask::AliPerformanceTask()
 }
 
 //_____________________________________________________________________________
-AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
-  : AliAnalysisTaskSE(name)
+AliPerformanceTask::AliPerformanceTask(const char *name)
+  : AliAnalysisTask(name, "")
   , fVEvent(0)
   , fVfriendEvent(0)
   , fMC(0)
@@ -152,7 +152,7 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::UserCreateOutputObjects()
+void AliPerformanceTask::CreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -181,7 +181,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::UserExec(Option_t *) 
+void AliPerformanceTask::Exec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -235,7 +235,7 @@ void AliPerformanceTask::UserExec(Option_t *)
   } // end if fUseVfriend
   
   if(fUseMCInfo) {
-      fMC = MCEvent();
+      //fMC = MCEvent();
   }  
 
   if (fUseMCInfo && !fMC) {
@@ -270,7 +270,8 @@ void AliPerformanceTask::UserExec(Option_t *)
         AliSysInfo::AddStamp("memleak",fEvents,tempMem.Length()/1024.);
     }
   // Post output data.
-  PostData(1, fOutput);
+   // PostData(0, fOutputSummary);
+   // PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________
@@ -350,7 +351,7 @@ void AliPerformanceTask::FinishTaskOutput()
       TIterator* itOut = fOutput->MakeIterator();  
       itOut->Reset();
       while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) {
-          pObj->SetRunNumber(fCurrentRunNumber);
+          //pObj->SetRunNumber(fCurrentRunNumber);
           pObj->Analyse();
       }
     
@@ -362,7 +363,9 @@ void AliPerformanceTask::FinishTaskOutput()
 
     
      // Post output data.
-     PostData(1, fOutput);
+     //PostData(1, fOutput);
+     //PostData(0, fOutputSummary);
+
 }
 
 //_____________________________________________________________________________
