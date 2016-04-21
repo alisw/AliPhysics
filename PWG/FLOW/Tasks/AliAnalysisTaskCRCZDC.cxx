@@ -712,7 +712,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
   fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
-  fFlowEvent->SetCentralityVar(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
+  fFlowEvent->SetCentralityVar(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
+   
+   Double_t vtxpos[3]={0.,0.,0.};
+   vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
+   vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
+   vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+   fFlowEvent->SetVertexPosition(vtxpos);
+   
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   
  }
