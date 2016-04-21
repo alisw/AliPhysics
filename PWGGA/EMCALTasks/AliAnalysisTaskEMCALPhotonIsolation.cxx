@@ -1506,7 +1506,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     
     if(!eTrack){
       AliError(Form("No tracks in collection"));
-      iTracks++;
       continue;
     }
       //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
@@ -1604,7 +1603,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
   tracks->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
-  Double_t phiTrack, etaTrack;
+  Double_t phiTrack, etaTrack,radius;
   
     //  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
   while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
