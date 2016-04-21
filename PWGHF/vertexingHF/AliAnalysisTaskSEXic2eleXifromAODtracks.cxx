@@ -283,8 +283,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
+  fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
+  fHistoEtaMCGen(0),
   fHistoElectronEtaTotal(0),
   fHistoElectronEtaTag(0),
 	fCounter(0),
@@ -537,8 +539,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
+  fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
+  fHistoEtaMCGen(0),
   fHistoElectronEtaTotal(0),
   fHistoElectronEtaTag(0),
 	fCounter(0),
@@ -1955,7 +1959,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<11;iv++){
+  for(Int_t iv=0;iv<12;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -1975,6 +1979,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   }
   fCorrelationVariables[8] = (Int_t)isconv + 2 * (Int_t)isconv_like;
   fCorrelationVariables[10] = fCentrality;
+  fCorrelationVariables[11] = exobj->Pt();
 
   if(fUseMCInfo && FromSemileptonicDecays(mcpdgele_array)>0){
     if(mcxic){
@@ -2002,10 +2007,16 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
         if(lam_from_bottom) fCorrelationVariables[9] = 1011;
         else if(lam_from_charm) fCorrelationVariables[9] = 1012;
         else  fCorrelationVariables[9] = 1013;
-      }else if(FromSemileptonicDecays(mcpdgele_array)==2){
+      }
+      if(FromSemileptonicDecays(mcpdgele_array)==2){
         if(lam_from_bottom) fCorrelationVariables[9] = 1014;
         else if(lam_from_charm) fCorrelationVariables[9] = 1015;
         else  fCorrelationVariables[9] = 1016;
+      }
+      if(FromSemileptonicDecays(mcpdgele_array)==1 && HaveBottomInHistory(mcpdgele_array)){
+        if(lam_from_bottom) fCorrelationVariables[9] = 1017;
+        else if(lam_from_charm) fCorrelationVariables[9] = 1018;
+        else  fCorrelationVariables[9] = 1019;
       }
     }
   }
@@ -2216,7 +2227,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<11;iv++){
+  for(Int_t iv=0;iv<12;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -2234,6 +2245,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
     else fCorrelationVariables[7] = 3;
   }
   fCorrelationVariables[10] = fCentrality;
+  fCorrelationVariables[11] = sqrt(pxsum*pxsum+pysum*pysum);
 
   if(fAnalCuts->IsSelected(trke,casc,rdhfcutvars,AliRDHFCuts::kCandidate) &&  fAnalCuts->IsPeakRegion(casc))
   {
@@ -2800,16 +2812,21 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCEleROOTObjects(AliAODMCParti
   GetMCDecayHistory(mcepart,mcArray,pdgarray_ele,labelarray_ele,ngen_ele);
   Bool_t ele_from_bottom = HaveBottomInHistory(pdgarray_ele);
   Bool_t ele_from_charm = HaveCharmInHistory(pdgarray_ele);
+  Int_t semi_flag = FromSemileptonicDecays(pdgarray_ele);
 
   Double_t contmc[3];
   contmc[0] = mcepart->Pt();
   contmc[1] = mcepart->Eta();
   contmc[2] = fCentrality;
 
-  if(ele_from_bottom){
-    fHistoBottomElectronMCGen->Fill(contmc);
-  }else if(ele_from_charm){
+  if(semi_flag==1 && !ele_from_bottom){
     fHistoCharmElectronMCGen->Fill(contmc);
+  }
+  if(semi_flag==1 && ele_from_bottom){
+    fHistoBottomElectronMCGen->Fill(contmc);
+  }
+  if(semi_flag==2 ){
+    fHistoBottomElectronMCGen->Fill(contmc);
   }
 
 
@@ -3478,6 +3495,10 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoElectronEtaTag = new THnSparseF("fHistoElectronEtaTag","",3,bins_eletag,xmin_eletag,xmax_eletag);
   fOutputAll->Add(fHistoElectronEtaTag);
 
+  fHistoPi0MCGen = new TH1F("fHistoPi0MCGen","",100,0.,20.);
+  fOutputAll->Add(fHistoPi0MCGen);
+  fHistoEtaMCGen = new TH1F("fHistoEtaMCGen","",100,0.,20.);
+  fOutputAll->Add(fHistoEtaMCGen);
 
   return;
 }
@@ -4388,6 +4409,17 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			}
 			FillMCCascROOTObjects(mcpart, mcArray);
 		}
+
+		if(TMath::Abs(mcpart->GetPdgCode())==111){
+      if(fabs(mcpart->Y())<0.5){
+        fHistoPi0MCGen->Fill(mcpart->Pt());
+      }
+    }
+		if(TMath::Abs(mcpart->GetPdgCode())==221){
+      if(fabs(mcpart->Y())<0.5){
+        fHistoEtaMCGen->Fill(mcpart->Pt());
+      }
+    }
 	}
 
 	if(fMCDoPairAnalysis)
@@ -4562,7 +4594,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
   const char* nameoutput = GetOutputSlot(12)->GetContainer()->GetName();
   fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
-  Int_t nVar = 11;
+  Int_t nVar = 12;
   fCorrelationVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -4577,6 +4609,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
   fCandidateVariableNames[8] = "Convtype";
   fCandidateVariableNames[9] = "MCType";
   fCandidateVariableNames[10] = "Centrality";
+  fCandidateVariableNames[11] = "EleXiPt";
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
