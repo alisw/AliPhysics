@@ -18,6 +18,10 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
     gSystem->ResetSignal(kSigSegmentationViolation);
   }
 
+  // removing apparently pile-up clusters to speadup reconstruction
+  const double kZOutSectorCut = 3.; // cut on clusters on wrong side of CE (added to extendedRoadZ)
+  AliTPCReconstructor::SetZOutSectorCut(kZOutSectorCut);
+
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
