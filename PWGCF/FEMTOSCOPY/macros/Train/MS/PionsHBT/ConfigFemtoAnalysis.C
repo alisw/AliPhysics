@@ -52,7 +52,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) {
+AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRangeL=4, int kTRangeH=4, int ChargeN=3) {
     
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
@@ -60,7 +60,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
     
     
     int runmults[6] = {1, 0, 0, 0, 0, 0};
-
+    
     if (CentL==0 && CentH==5) {
         int runmults[6] = {1, 0, 0, 0, 0, 0};
     }
@@ -82,21 +82,16 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
     
     
     
-    int runktdeprange[4]={1,1,1,1};
+    int runktdeprange[4]={0,1,1,0};
     
     
-    if(kTRange==1){
-        int runktdeprange[4]={1,0,0,0};
-    }
-    if(kTRange==2){
+    if(kTRangeL==1 && kTRangeH==2){
         int runktdeprange[4]={1,1,0,0};
     }
-    if(kTRange==3){
-        int runktdeprange[4]={1,1,1,0};
+    if(kTRangeL==2 && kTRangeH==4){
+        int runktdeprange[4]={0,0,1,1};
     }
-    if(kTRange==4){
-        int runktdeprange[4]={1,1,1,1};
-    }
+    
     char *nametest="sysstudy";
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
@@ -104,9 +99,20 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
     int multbins[7] = {0, 50, 100, 200, 300, 400, 500};
     
     int runch[2] = {1, 1};
+    
+    if(ChargeN==1){
+        runch[2] = {1, 0};
+        
+    }
+    if(ChargeN==2){
+        runch[2] = {0, 1};
+        
+    }
+    
+    
     const char *chrgs[2] = { "pip", "pim" };
-
-
+    
+    
     int runktdep = 1;
     double ktrng[5] = {0.2, 0.3, 0.4, 0.5, 0.7};
     //int phirange[7] = {-15, 15, 45, 75, 105, 135, 165};
@@ -223,7 +229,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int CentL=20, int CentH=30, int kTRange=4) 
                                 ktpaircut[ichg][imult][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
                                 ktpaircut[ichg][imult][ikt][iphi]->SetPhiRange(phirange2[iphi],phirange2[iphi+1]);
                                 
-                                cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i", nametest,ichg, imult, ikt, iphi),72,-0.18,0.18);//was 30 bins
+                                cq3dlcmskttpc[ichg][imult][ikt][iphi] = new AliFemtoBPLCMS3DCorrFctn(Form("%s_cq3d%imult%ikT%iRP%i", nametest,ichg, imult, ikt, iphi),48,-0.12,0.12);//was 30 bins
                                 cq3dlcmskttpc[ichg][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][ikt][iphi]);
                                 ana[ichg][imult]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][ikt][iphi]);
                                 

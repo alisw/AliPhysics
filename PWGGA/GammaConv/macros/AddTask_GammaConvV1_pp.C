@@ -549,6 +549,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 70) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
     cuts.AddCut("00000123", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
+    cuts.AddCut("00000113", "00200008386302001200400000", "0152103500000000"); //Old standard cut for 7TeV analysis
   } else if (trainConfig == 71) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
     cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent

@@ -906,8 +906,8 @@ public:
  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
  void SetFlowQCFinalPtIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowQCFinalPtIntHist[c][eg] = TH;};
  TH1D* GetFlowQCFinalPtIntHist(Int_t const c, Int_t const eg) const {return this->fFlowQCFinalPtIntHist[c][eg];};
- void SetFlowQCSpectra(TProfile* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
- TProfile* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
+ void SetFlowQCSpectra(TH1D* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
+ TH1D* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
  
  // Flow SP ZDC
  void SetFlowSPZDCList(TList* const TL) {this->fFlowSPZDCList = TL;};
@@ -925,8 +925,8 @@ public:
  TH1D* GetFlowSPZDCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCFinalPtDifHist[c][eg][h];};
  void SetFlowSPZDCIntHist(TH1D* const TH, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntHist[c][eg] = TH;};
  TH1D* GetFlowSPZDCIntHist(Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntHist[c][eg];};
- void SetFlowSPZDCSpectra(TProfile* const TH, Int_t const c) {this->fFlowSPZDCSpectra[c] = TH;};
- TProfile* GetFlowSPZDCSpectra(Int_t const c) const {return this->fFlowSPZDCSpectra[c];};
+ void SetFlowSPZDCSpectra(TH2F* const TH) {this->fFlowSPZDCSpectra = TH;};
+ TH2F* GetFlowSPZDCSpectra() const {return this->fFlowSPZDCSpectra;};
  void SetFlowSPZDCIntPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg) {this->fFlowSPZDCIntPro[r][c][eg] = TP;};
  TProfile* GetFlowSPZDCIntPro(Int_t const r, Int_t const c, Int_t const eg) const {return this->fFlowSPZDCIntPro[r][c][eg];};
   void SetFlowSPZDCIntNUA(TProfile* const TP, Int_t const r, Int_t const eg) {this->fFlowSPZDCIntNUA[r][eg] = TP;};
@@ -1517,28 +1517,32 @@ private:
  TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov hist
  
  // Flow all
- const static Int_t fFlowNHarm = 4;
+ const static Int_t fFlowNHarm = 1;
  const static Int_t fFlowNHarmMax = 9;
  Int_t fPtDiffNBins;
+ Int_t fEtaDiffNBins;
  Double_t fPtDiffMinPt;
  Double_t fPtDiffMaxPt;
  TH1D *fPtDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fPtDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fPtDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fEtaDiffQRe[fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
+  TH1D *fEtaDiffQIm[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
+  TH1D *fEtaDiffMul[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
  
  // Flow SP ZDC
  TList *fFlowSPZDCList;    //! SPZDC List
  TList *fFlowSPZDCRbRList; //! CRC list of histograms RbR
  TList *fFlowSPZDCRunsList[fCRCMaxnRun]; //! list of runs
- const static Int_t fFlowNPro = 18;
- const static Int_t fFlowNNUA = 6;
+ const static Int_t fFlowNPro = 14;
+ const static Int_t fFlowNNUA = 4;
  TProfile *fFlowSPZDCCorPro[fCRCMaxnRun][fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCCorNUA[fCRCMaxnRun][fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! <<2'>>, [CRCBin][eg]
  TProfile *fFlowSPZDCIntPro[fCRCMaxnRun][fFlowNHarm][fFlowNPro]; //! reference flow
  TH1D *fFlowSPZDCIntHist[fFlowNHarm][fFlowNPro]; //!
  TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
- TProfile *fFlowSPZDCSpectra[fCRCMaxnCen]; //!
+ TH2F *fFlowSPZDCSpectra; //!
  TProfile *fFlowSPZDCIntNUA[fCRCMaxnRun][fFlowNNUA]; //!
  
  // Flow QC
@@ -1551,7 +1555,7 @@ private:
  
  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][5]; //!
  TH1D *fFlowQCFinalPtIntHist[fCRCMaxnCen][5]; //!
- TProfile *fFlowQCSpectra[fCRCMaxnCen]; //!
+ TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
  
  // Flow SP VZ
  TList *fFlowSPVZList;    //! SPVZ List
@@ -1569,6 +1573,7 @@ private:
  TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights
  TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
  Double_t *fCRCPtBins; //!
+ Double_t *fCorrMap; //!
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
  TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra
@@ -1590,7 +1595,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 5);
+ ClassDef(AliFlowAnalysisCRC, 6);
  
 };
 

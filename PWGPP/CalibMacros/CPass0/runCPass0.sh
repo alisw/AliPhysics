@@ -61,7 +61,7 @@ export TPC_CPass0_GainCalibType=1
 
 # ===| TPC JDL overwrites |===================================================
 #
-export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPass0_GainCalibType-$TPC_CPass0_GainCalibType}
+export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPASS0_GAINCALIBTYPE-$TPC_CPass0_GainCalibType}
 
 echo "TPC_CPass0_GainCalibType=${TPC_CPass0_GainCalibType}" | tee -a calib.log
 
@@ -144,6 +144,19 @@ time aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\"
 exitcode=$?
 
 echo "*! Exit code of runCalibTrain.C: $exitcode"
+
+if [ -f ResidualHistos.root ]; then
+    mv ResidualHistos.root ResidualTrees.root
+fi
+
+echo "*  Running filtering task *"
+filtMacro=$ALICE_PHYSICS/PWGPP/macros/runFilteringTask.C
+if [ -f $filtMacro ]; then
+    echo AliESDs.root > esd.list
+    aliroot -l -b -q "${filtMacro}(\"esd.list\",1000,100,\"${ocdbPath}\")" &> filtering.log
+else
+    echo "no ${filtMacro} ..."
+fi
 
 if [ $exitcode -ne 0 ]; then
     echo "runCalibTrain.C exited with code $exitcode" > validation_error.message

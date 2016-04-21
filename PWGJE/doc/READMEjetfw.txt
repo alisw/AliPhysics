@@ -117,6 +117,13 @@ Currently the embedding framework uses an older version of the framework that re
 
 The embedding classes are described here \subpage READMEembedding
 
+# Jet tagger
+The task AliAnalysisTaskEmcalJetTagger allows to tag a jets as "close" and/or sharing a minimun fraction of constituent p<sub>T</sub>. This is useful for:
+-# Matching PYTHIA jet before and after embedding
+-# Match jets with "signal" jets. A signal jet can be defined e.g. as a jet with a minimum cut p<sub>T</sub> > 4 GeV/c on the constituents
+
+See \subpage READMEtagging for more details.
+
 # Unfolding
 \subpage READMEunfolding
 

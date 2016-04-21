@@ -7,7 +7,7 @@ __Page under construction__
 The basic functionalities are in the class AliJetModelBaseTask, in particular the methods to add tracks, clusters, or MC particles to the corresponding track or clusters array. Those methods are AliJetModelBaseTask::AddTrack, AliJetModelBaseTask::AddCluster, AliJetModelBaseTask::AddMCParticle. The embedded objects can be added to the original array or into a copy of it (`SetCopyArray(kTRUE)` and `SetSuffix(newName)`).
 
 There are currently few types of embedding available:
--# Embedding of AOD events (AliJetEmbeddingFromAODTask and AliJetEmbeddingFromPYTHIATask with additional functionalities for our general productions, e.g. pT hard bins)
+-# Embedding of AOD events (AliJetEmbeddingFromAODTask and AliJetEmbeddingFromPYTHIATask with additional functionalities for our general productions, e.g. p<sub>T</sub> hard bins)
 -# Embedding of generated PYTHIA events (AliJetEmbeddingFromGenTask)
 -# Embedding of single particles (AliJetEmbeddingTask)
 
@@ -17,70 +17,65 @@ _More info_: JIRA ticket for the new embedding development [ALPHY-53](https://al
 
 ## Embedding of reconstructed (detector level) PYTHIA
 
- To do embedding, you should add AddTaskJetEmbeddingFromPYTHIA right after the jet preparation macro in runEMCalJetAnalysis.C. The task will embed detector level objects (currently only tracks and EMCal cells) and merge with the current event. Also particle level objects will be available. You can tell the embedded objects from the non-embedded ones because the former will have a label!=0 (tack->GetLabel()). If you need to use the EMCal you have to run the clusterizer after embedding.
+Use the AddTaskJetEmbeddingFromPYTHIA.C macro that runs the task AliJetEmbeddingFromPYTHIATask. Also particle level objects will be available. To distinguish the the embedded objects get the label of the track (`track->GetLabel()`), it'll be !=0, differently from data tracks. If you need to use the EMCal you have to run the clusterizer after embedding.
 
-After embedding you'll need to run the jet finders. If you want the total pt and PYTHIA-only pt jet-by-jet you should do the following:
+To perform the analysis of the embedded event proceed normally by running the jet finder(s). You probably want to run one on the total event and one on the PYTHIA only event:
 
--#  Add a jet finder for PYTHIA-only jet. Use PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C
-
-~~~{.cxx}
-AliEmcalJetTask *jetTaskMC= AddTaskEmcalJet("PicoTracks","", 1, 0.2, 1, 0.15, 0.30, 0.005, "JetMConly");
-~~~
-
-then set:
-
-~~~{.cxx}
-jetTaskMC->SelectConstituents(TObject::kBitMask, 0);
-~~~
-
-to have PYTHIA-only jets (embedded jets).
-
--# Add a second jet finder for PYTHIA+PbPb jets using the same macro. This time you need not to add extra settings.
+- PYTHIA+data jets:
 
 ~~~{.cxx}
 AliEmcalJetTask *jetTask= AddTaskEmcalJet("PicoTracks","", 1, 0.2, 1, 0.15, 0.30, 0.005, "Jet");
 ~~~
 
+- PYTHIA-only jets:
+~~~{.cxx}
+AliEmcalJetTask *jetTaskMC= AddTaskEmcalJet("PicoTracks","", 1, 0.2, 1, 0.15, 0.30, 0.005, "JetMConly");
+jetTaskMC->SelectConstituents(TObject::kBitMask, 0);
+~~~
+
 ## Embedding of generated (particle level) PYTHIA
 
- It is possible also to embed PYTHIA events from a generator. e.g.:
+It is possible also to embed PYTHIA events from a generator. The relevant task is AliJetEmbeddingFromGenTask.
+
+- Generate Pythia events on-the-fly
+~~~{.cxx}
+gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenPythia.C");
+Double_t e_cms = 5020.;
+Double_t ptminHard = 30.;
+Double_t ptmaxHard = 100.;
+AliGenPythia *generPythia = AddMCGenPythia(e_cms,ptminHard,ptmaxHard,2);
+~~~
+
+- Emded the tracks into the data event
 
 ~~~{.cxx}
-// Generate Pythia events on-the-fly
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCGenPythia.C");
-    Double_t e_cms = 5020.;
-    Double_t ptminHard = 30.;
-    Double_t ptmaxHard = 100.;
-   AliGenPythia *generPythia = AddMCGenPythia(e_cms,ptminHard,ptmaxHard,2);
-
-//Emded the tracks
-   Int_t labPythia = 99999.; // a large number, to give the tracks a label that is larger than that of the tracks already present in the event
-   TString kTracksName = "PicoTracks";
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
-   AliJetEmbeddingFromGenTask *genTask = AddTaskJetEmbeddingFromGen(generPythia,
+Int_t labPythia = 99999.; // a large number, to give the tracks a label that is larger than that of the tracks already present in the event
+TString kTracksName = "PicoTracks";
+gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
+AliJetEmbeddingFromGenTask *genTask = AddTaskJetEmbeddingFromGen(generPythia,
                              kTracksName,
                              "EmbFromGenTask",
                              0.15, 1e6,
                              -0.9,0.9,
                              0., TMath::TwoPi(),
                              kTRUE,kTRUE);
-    genTask->SetSuffix("");  //this will change the name of the track array
-    genTask->SetChargedOnly(kTRUE);
-    genTask->SetMarkMC(labPythia);
-    genTask->SetGeometryName("EMCAL_COMPLETE12SMV1");  //need to set the Geometry name, not so important which one at generated level
-
+genTask->SetSuffix("");  //this will change the name of the track array
+genTask->SetChargedOnly(kTRUE);
+genTask->SetMarkMC(labPythia);
+genTask->SetGeometryName("EMCAL_COMPLETE12SMV1");  //need to set the Geometry name, not so important which one at generated level
 ~~~
+
 <strong>Important!</strong>
- The embedding of on-the-fly generated PYTHIA events needs an empty ESD event. You need to create a list (e.g. `TString localFiles("AliESDs.list")`) that contains the path to the `esdempty.root` file that can be downloaded here: [AliESDs.list](https://twiki.cern.ch/twiki/pub/ALICE/EMCalJetEmbedding/AliESDs.list), [esdempty.root](https://twiki.cern.ch/twiki/pub/ALICE/EMCalJetEmbedding/esdempty.root)
+The embedding of on-the-fly generated PYTHIA events needs an empty ESD event. You need to create a list (e.g. `TString localFiles("AliESDs.list")`) that contains the path to the `esdempty.root` file that can be downloaded here: [AliESDs.list](https://twiki.cern.ch/twiki/pub/ALICE/EMCalJetEmbedding/AliESDs.list), [esdempty.root](https://twiki.cern.ch/twiki/pub/ALICE/EMCalJetEmbedding/esdempty.root)
 
 ## Embedding of single track
 
-The task providing this functionality is AliJetEmbeddingTask and the corresponding AddTaskJetEmbedding.C inheriting from
+The task providing this functionality is AliJetEmbeddingTask and the corresponding AddTaskJetEmbedding.C.
 
-The pT (and mass) of the tracks to be embedded can be drawn randomly
+The p<sub>T</sub> (and mass) of the tracks to be embedded can be drawn randomly
    - From a flat distribution
    - From a function or histogram given as input
-   - From a TTree: in this case the tracks are taken in order from the tree
+   - From a TTree: in this case the tracks are taken in order from the tree (it is suggested to randomize the tree entries first)
 
 
 For the following examples these variable are used:
@@ -92,7 +87,7 @@ Int_t NClEmb = 0; // number of clusters to be embedded per event
 Int_t labEmb = 99999; // a large number that will be the label of the first embedded track/event
 ~~~
 
-Example 1: embedding of massless tracks with flat pT distribution
+- Example 1: embedding of massless tracks with flat p<sub>T</sub> distribution
 ~~~{.cxx}
 AliJetEmbeddingTask *taskEmb = AddTaskJetEmbedding(tracksName.Data(),"","SingleTrackEmbedding",40.,120.,-0.5,0.5,0., TMath::TwoPi(), NTrEmb, NClEmb, copyTracks);
   taskEmb->SelectCollisionCandidates(pSel);
@@ -101,18 +96,17 @@ AliJetEmbeddingTask *taskEmb = AddTaskJetEmbedding(tracksName.Data(),"","SingleT
   taskEmb->SetSuffix(newName);
   TString trackEmb = taskEmb->GetOutTrackName();
 ~~~
-Example 2: embedding of massive tracks with flat pT distribution
+
+- Example 2: embedding of massive tracks with flat p<sub>T</sub> distribution. As Example 1 substituting `taskEmb->SetMasslessParticles(kTRUE);` with
+
 ~~~{.cxx}
-Int_t mass = 8; //GeV
-AliJetEmbeddingTask *taskEmbM = AddTaskJetEmbedding(tracksName.Data(),"","SingleTrackEmbedding",40.,120.,-0.5,0.5,0., TMath::TwoPi(), NTrEmb, NClEmb, copyTracks);
-  taskEmbM->SelectCollisionCandidates(pSel);
-  taskEmbM->SetMarkMC(labEmb);
+  Int_t mass = 8; //GeV
   taskEmbM->SetMasslessParticles(kFALSE);
-  taskEmbM->SetSuffix(newName);
   taskEmbM->SetMass(mass);
-  TString trackEmbM = taskEmbM->GetOutTrackName();
 ~~~
-Example 3: embedding of tracks from a pT and a mass distribution
+
+- Example 3: embedding of tracks from a p<sub>T</sub> and a mass distribution
+
 ~~~{.cxx}
 TString pathFileMass, pathFilepT, histonameM, histonamepT; //set appropriately
 AliJetEmbeddingTask *taskEmbM = AddTaskJetEmbedding(tracksName.Data(),"","SingleTrackEmbedding",0.,0.,-0.5,0.5,0., TMath::TwoPi(), NTrEmb, NClEmb, copyTracks);
@@ -124,14 +118,17 @@ AliJetEmbeddingTask *taskEmbM = AddTaskJetEmbedding(tracksName.Data(),"","Single
   TString trackEmbDistr = taskEmbDistr->GetOutTrackName();
 ~~~
 
-Example 4: embedding with input tree (see e.g. task PWGJE/EMCALJetTasks/UsersTasks/AliAnalysisTaskPrepareInputForEmbedding)
+Several methods avaiable to give the input distributions, check AliJetModelBaseTask and AliJetEmbeddingTask.
+
+- Example 4: embedding with input TTree containing TLorentzVector of the tracks to be embedded. This allows e.g. to keep track of the particle level TLorentzVector of each track in another TTree. The TTree can be prepared with a task like AliAnalysisTaskPrepareInputForEmbedding.
+
+By default, the embedding is performed using detector level tracks, but applying a cut at particle level p<sub>T</sub>.
 
 ~~~{.cxx}
 TString pathFileTree, treeName, branchName; //set appropriately
 AliJetEmbeddingTask *taskEmb4Vect = AddTaskJetEmbedding(tracksName.Data(),"","SingleTrackEmbedding",0.,0.,0,0,0., TMath::TwoPi(), NTrEmb, NClEmb, copyTracks);
   taskEmb4Vect->SelectCollisionCandidates(pSel);
   taskEmb4Vect->SetMarkMC(labEmb);
-  //taskEmb4VectDeriv->SetMasslessParticles(kFALSE);
   taskEmb4Vect->SetNamesForTree(pathFileTree, treeName, branchName);
   taskEmb4Vect->SetSuffix(newName);
   TString trackEmb4Vect = taskEmb4Vect->GetOutTrackName(); // gives the final name of the track array with embedded track

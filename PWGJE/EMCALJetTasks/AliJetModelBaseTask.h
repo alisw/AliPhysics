@@ -49,9 +49,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
                                                                  fDensitySpectrum->Add(f); }
   void                   SetMassDistribution(TH1F *hM);
   void                   SetMassDistributionFromFile(TString filename, TString histoname);
-  void           	       SetpTDistributionFromFile(TString filename, TString histoname);
+  void           	SetpTDistributionFromFile(TString filename, TString histoname);
   void                   SetMassVsPtDistributionFromFile(TString filename, TString histoname);
-  void                	 SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
+  void                	SetMassAndPtDistributionFromFile(TString filenameM, TString filenamepT, TString histonameM, TString histonamepT);
   void                   SetMassVsPtDistribution(TH2F *hmasspt);
   void                   SetDistributionFromFile(TString filename, TString histoname, Int_t type);
   

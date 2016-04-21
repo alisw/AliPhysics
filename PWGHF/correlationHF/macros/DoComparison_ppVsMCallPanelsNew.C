@@ -9,7 +9,7 @@ Bool_t reflTempl=kTRUE;//***elena****
 Bool_t skip3to5=kFALSE;//***elena****
 const Int_t nbinDpt=3;
 const Int_t nbinAssocpt=3;
-const Int_t nSets=6;
+const Int_t nSets=7;
 Int_t firstDpt=0;
 Bool_t isReflectedData=kTRUE;
 Double_t canvasheight=900;
@@ -19,10 +19,35 @@ Double_t innerPadHeight;// not touch, set internally
 Double_t innerPadWidth;// not touch, set internally
 Double_t referencePadHeight=0.44; 
 TString strsyst="pp";
-TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","POWHEG","PYTHIA8"};
-const Int_t nmodels=6;
-Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kRed+2,kCyan,kViolet};
-Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26};
+TString sets[nSets]={"pp","Perugia0","Perugia2010","Perugia2011","PYTHIA8","POWHEG","EPOS3"};
+Bool_t includeset[nSets]={kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE};
+void SetIncludePerugia0(Bool_t incl){
+  includeset[1]=incl;
+}
+void SetIncludePerugia2010(Bool_t incl){
+  includeset[2]=incl;
+}
+void SetIncludePerugia2011(Bool_t incl){
+  includeset[3]=incl;
+}
+void SetIncludePYTHIA8(Bool_t incl){
+  includeset[4]=incl;
+}
+void SetIncludePOWHEG(Bool_t incl){
+  includeset[5]=incl;
+}
+void SetIncludeEPOS(Bool_t incl){
+  includeset[6]=incl;
+}
+void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
+  for(Int_t j=1;j<nSets;j++){
+    includeset[j]=incl;
+  }
+}
+const Int_t nmodels=7;// does not matter that they are 6 maximum now; this is used only to define the 2 arrays modelColors and modelMarkerStyle
+Bool_t splitLegendMC=kFALSE;
+Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kRed+2,kOrange,kViolet};
+Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,33};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16"};
 TString strmesonMCpt[nbinDpt]={"3To5","5To8","8To16"};
@@ -87,6 +112,7 @@ void SetAverageMode(Int_t avmode){
   else if(avmode==1)avType="Arithmetic";
   else Printf("DO COMPARISON WITH MC: WRONGE AVERAGE METHOD SET");
 }
+void SetSplitMClegendInTwoPanels(Bool_t split=kTRUE){splitLegendMC=split;}
 
 void SetPaveStyle(TPaveText *pv){
   pv->SetFillColor(0);
@@ -434,11 +460,14 @@ void DoComparison_ppVsMCallPanels(){
   Init();
   LoadFileNamesAll();
   
-  
+  if(!includeset[0]){
+    Printf("The pp dataset is expected to be included! Cannot proceed"); return;
+  }
   
   TH1D *h;
   // for(Int_t iset=0;iset<1;iset++){
   for(Int_t iset=0;iset<nSets;iset++){
+    if(!includeset[iset])continue;
     for(Int_t kassoc=0;kassoc<nbinAssocpt;kassoc++){
       for(Int_t jmes=firstDpt;jmes<nbinDpt;jmes++){
 
@@ -598,16 +627,21 @@ void DoComparison_ppVsMCallPanels(){
       //ltscale[0][iassoc][jDpt]->SetY(0.11/gPad->GetHNDC()+gPad->GetBottomMargin());
       //}
       ltscale[0][iassoc][jDpt]->Draw();
-      
-      subtractedhisto[1][iassoc][jDpt]->Draw("hist same c");//Perugia0
-      subtractedhisto[2][iassoc][jDpt]->Draw("hist same c");//Perugia2010
-      subtractedhisto[3][iassoc][jDpt]->Draw("hist same c");//Perugia2011
-      subtractedhisto[4][iassoc][jDpt]->Draw("hist same c");//POWHEG
-      subtractedhisto[5][iassoc][jDpt]->Draw("hist same c");//PYTHIA8
+      for(Int_t kmod=1;kmod<nSets;kmod++){
+	if(includeset[kmod])subtractedhisto[kmod][iassoc][jDpt]->Draw("hist same c");
+      }
+//       subtractedhisto[1][iassoc][jDpt]->Draw("hist same c");//Perugia0
+//       subtractedhisto[2][iassoc][jDpt]->Draw("hist same c");//Perugia2010
+//       subtractedhisto[3][iassoc][jDpt]->Draw("hist same c");//Perugia2011
+//       subtractedhisto[4][iassoc][jDpt]->Draw("hist same c");//PYTHIA8
+//       subtractedhisto[5][iassoc][jDpt]->Draw("hist same c");//POWHEG
+//       subtractedhisto[6][iassoc][jDpt]->Draw("hist same c");//EPOS3
+
      // subtractedhisto[1][iassoc][jDpt]->Draw("same");//Perugia0
      //  subtractedhisto[2][iassoc][jDpt]->Draw("same");//Perugia2010
      //  subtractedhisto[3][iassoc][jDpt]->Draw("same");//Perugia2011
-     //  subtractedhisto[4][iassoc][jDpt]->Draw("same");//POWHEG
+     //  subtractedhisto[4][iassoc][jDpt]->Draw("same");//PYTHIA8
+     //  subtractedhisto[5][iassoc][jDpt]->Draw("same");//POWHEG
       subtractedhisto[0][iassoc][jDpt]->Draw("same");//pp DATA
      
       TPaveText *pvAverage=GetAveragepavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
@@ -624,13 +658,26 @@ void DoComparison_ppVsMCallPanels(){
       //if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1)pvKineInfo2->Draw("same");
       if(jDpt==0 && iassoc==0)pvKineInfo2->Draw("same");
       //   if(jDpt==1 && iassoc==0)pvKineInfo2->Draw("same");
+
+      // N.B. GetLegendData does not assume that the pointers to histograms that are passed are not null --> no need to check which model is included 
       if(jDpt==0 && iassoc==0){
 	TLegend *legendData=GetLegendData(subtractedhisto[0][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
 	legendData->Draw();
 	
       }
       if(jDpt==1 && iassoc==0){
-	TLegend *legendMC=GetLegendMC(subtractedhisto[1][iassoc][jDpt],subtractedhisto[2][iassoc][jDpt],subtractedhisto[3][iassoc][jDpt],subtractedhisto[4][iassoc][jDpt],subtractedhisto[5][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+	TLegend *legendMC;
+	if(splitLegendMC){
+	  legendMC=GetLegendMC(subtractedhisto[1][iassoc][jDpt],subtractedhisto[2][iassoc][jDpt],subtractedhisto[3][iassoc][jDpt],0x0,0x0,0x0,(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+	}
+	else{
+	  legendMC=GetLegendMC(subtractedhisto[1][iassoc][jDpt],subtractedhisto[2][iassoc][jDpt],subtractedhisto[3][iassoc][jDpt],subtractedhisto[4][iassoc][jDpt],subtractedhisto[5][iassoc][jDpt],subtractedhisto[6][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+	}
+	legendMC->Draw();
+      }
+      if(jDpt==2 && iassoc==0 && splitLegendMC){
+	
+	TLegend *legendMC=GetLegendMC(0x0,0x0,0x0,subtractedhisto[4][iassoc][jDpt],subtractedhisto[5][iassoc][jDpt],subtractedhisto[6][iassoc][jDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
 	
 	legendMC->Draw();
       }
@@ -796,7 +843,7 @@ void Set3x3PadPositions(TCanvas* c){
     pd3->SetTopMargin(marginTop/(innerPadHeight+marginTop));
     pd3->SetFillStyle(0);
  
-scaleHeightPads=pd1->GetHNDC();
+    scaleHeightPads=pd1->GetHNDC();
     scaleWidthPads=pd1->GetWNDC();
 
 }
@@ -807,29 +854,32 @@ void LoadFileNamesAll(){
     
   
     for(Int_t iset=0;iset<nSets;iset++){
-    for(Int_t kassoc=0;kassoc<nbinAssocpt;kassoc++){
-      for(Int_t jmes=0;jmes<nbinDpt;jmes++){
-	if(iset==0)
-	  filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
-
-	else
-	  if (iset==4)filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
-	  else
+      if(!includeset[iset])continue;
+      for(Int_t kassoc=0;kassoc<nbinAssocpt;kassoc++){
+	for(Int_t jmes=0;jmes<nbinDpt;jmes++){
+	  
+	  if(iset==0){
+	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
+	  }
+	  else if(iset==5){
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
+	  }
+	  else{
 	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
-
-	cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
-	cout<<filenames[iset][kassoc][jmes]<<endl;
-
+	  }
+	  cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
+	  cout<<filenames[iset][kassoc][jmes]<<endl;
+	  
       }
-
-      
-      if(iset==0)  pedestalfilenames[iset][kassoc]=Form("%s/Trends_%s/CanvasBaselineVariationTrendPedestal_pthad%s.root",baselinedirectory.Data(),strsyst.Data(),pthadron[kassoc].Data());
-      else  pedestalfilenames[iset][kassoc]=Form("%s/FitResults/Trends_%s/%s/CanvasBaselineVariationTrendPedestal_pthad%s.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),pthadron[kassoc].Data());
-      cout<<"pedestal -> "<<pedestalfilenames[iset][kassoc]<<endl<<endl<<endl;
-
+	
+	
+	if(iset==0)  pedestalfilenames[iset][kassoc]=Form("%s/Trends_%s/CanvasBaselineVariationTrendPedestal_pthad%s.root",baselinedirectory.Data(),strsyst.Data(),pthadron[kassoc].Data());
+	else  pedestalfilenames[iset][kassoc]=Form("%s/FitResults/Trends_%s/%s/CanvasBaselineVariationTrendPedestal_pthad%s.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),pthadron[kassoc].Data());
+	cout<<"pedestal -> "<<pedestalfilenames[iset][kassoc]<<endl<<endl<<endl;
+	
+      }
     }
-  }
-
+    
 }
 
 void SetScaleUncertaintyPositionAndSize(TLatex *tlpp,Float_t xx,Float_t yy,Float_t size){
@@ -999,24 +1049,58 @@ TLegend *GetLegendData(TH1D *hpp,Int_t identifier){
     legend->SetName(Form("LegendDataPP_%d",identifier));
     return legend;
   }
-TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=0x0,Int_t identifier=0){
+TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=0x0,TH1D *hMC6=0x0,Int_t identifier=0){
     
   // TLegend * legend = new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.1/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.13/gPad->GetHNDC()+gPad->GetBottomMargin());
-   TLegend * legend = new TLegend(0.1,0.4,0.7,0.75,NULL,"brNDC");
+  Int_t nEffectiveModels=0;
+  if(hMC1)nEffectiveModels++;
+  if(hMC2)nEffectiveModels++;
+  if(hMC3)nEffectiveModels++;
+  if(hMC4)nEffectiveModels++;
+  if(hMC5)nEffectiveModels++;
+  if(hMC6)nEffectiveModels++;
+  
+  Double_t ylegMin=0.4,ylegMax=0.75;
+  if(hMC1==0x0 || nEffectiveModels>=6)ylegMax=0.68; // no header in TLegend
+  if(nEffectiveModels>=6){
+    ylegMin=0.37;
+  }
+  else if(nEffectiveModels<=4){
+    ylegMin=0.46;
+  }
+  TLegend * legend= new TLegend(0.1,ylegMin,0.7,ylegMax,NULL,"brNDC");
+//   if(nEffectiveModels<6){
+//     if(hMC1!=0x0) legend= new TLegend(0.1,0.4,0.7,0.75,NULL,"brNDC");
+//     else legend= new TLegend(0.1,0.4,0.7,0.68,NULL,"brNDC");
+//   }
+//   else legend= new TLegend(0.1,0.37,0.7,0.68,NULL,"brNDC");
+
    //  TLegend * legend = new TLegend(0.25,0.44,0.79,0.84,NULL,"brNDC");
     legend->SetFillColor(0);
     legend->SetFillStyle(0);
     legend->SetBorderSize(0);
     legend->SetTextFont(43);
     //legend->SetTextSize(0.06/(gPad->GetHNDC())*scaleHeightPads);
-    legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
- 
-    legend->SetHeader("Simulations, pp, #sqrt{#it{s}} = 7 TeV");
+    if(nEffectiveModels<6)legend->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
+    else legend->SetTextSize(18.1*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
+    // Draft 5,6: 22.1
+    //   with EPOS: 21.5
+
+    if(nEffectiveModels<6){if(hMC1!=0x0)legend->SetHeader("Simulations, pp, #sqrt{#it{s}} = 7 TeV");}
+    else {
+      TLatex *tlatHeader=new TLatex(0.115,0.71,"Simulations, pp, #sqrt{#it{s}} = 7 TeV");// the legend is 0.115, 71 with standard size
+      tlatHeader->SetNDC();
+      tlatHeader->SetTextFont(43);
+      tlatHeader->SetTextSize(22.1*innerPadHeight/referencePadHeight*resizeTextFactor);
+      tlatHeader->Draw();
+    }
     if(hMC1)legend->AddEntry(hMC1,"PYTHIA6, Perugia 0","l");
     if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia 2010","l");
     if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
-    if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
-    if(hMC5)legend->AddEntry(hMC5,"PYTHIA8, Tune 4C","l");
+    if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
+    if(hMC5)legend->AddEntry(hMC5,"POWHEG+PYTHIA6","l");
+    if(hMC6)legend->AddEntry(hMC6,"EPOS 3","l");
+    
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
     //legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","lep");

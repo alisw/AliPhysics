@@ -203,6 +203,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //--
   TRandom3* fRandom;          // TRandom3 for background estimation 
   Int_t fMatchMode;
+  Bool_t fIsNJEventEmb;
   Bool_t   fAnalysisMC;
   Double_t fDeltaVertexZ;
   Double_t fCutjetEta;
@@ -479,6 +480,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1MCC;
   TH1F* fh1OC;
   TH1F* fh1NJ;
+  TH1F* fh1NJEmbEvt;
+  TH1F* fh1BckgJets;
+  TH1F* fh1BckgJetsPtBias;
   THnSparse* fhnInvMassEtaTrackPtK0s;
   THnSparse* fhnInvMassEtaTrackPtLa;
   THnSparse* fhnInvMassEtaTrackPtALa;
@@ -487,11 +491,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnNJK0;
   THnSparse* fhnNJLa;
   THnSparse* fhnNJALa;
-  TH2F* fh2ChTracksNJ;
-  TH2F* fh2ChTracksRC;
+  //TH2F* fh2ChTracksNJ;
+  //TH2F* fh2ChTracksRC;
   // TH2F* fh2ChTracksOC;
-  TH2F* fh2ChTracksMCC;
-  TH2F* fh2ChTracksPC;
+  //TH2F* fh2ChTracksMCC;
+  //TH2F* fh2ChTracksPC;
   //  TH2F* fh2MCgenK0Cone;
   //  TH2F* fh2MCgenLaCone;
   //  TH2F* fh2MCgenALaCone;

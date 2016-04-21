@@ -3,12 +3,7 @@
 
 // $Id$
 
-class TH1;
-class TH2;
-class TH3;
-class AliJetContainer;
-
-#include "AliAnalysisTaskEmcalJet.h"
+class THn;
 
 class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
  public:
@@ -25,23 +20,23 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
 
-
-  void                        ActivateFakejetRejection(Double_t minFakeFactorPercentage, Double_t maxFakeFactorPercentage, TProfile* cutProfile)
-                                { fMinFakeFactorPercentage = minFakeFactorPercentage; fMaxFakeFactorPercentage = maxFakeFactorPercentage; hFakeFactorCutProfile = cutProfile; fUseFakejetRejection = kTRUE; }
-  void                        SetMinFakeFactorPercentage(Double_t value)  { fMinFakeFactorPercentage = value; }
-  void                        SetMaxFakeFactorPercentage(Double_t value)  { fMaxFakeFactorPercentage = value; }
-  void                        SetUseFakejetRejection(Bool_t value)  { fUseFakejetRejection = value; }
+  void                        ActivateRejectionJetConstituents(TF1* rejectionFunction)
+                                { fRejectionFunction = rejectionFunction; }
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
 
   void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading;}
   void                        SetEventCriteriumSelection(Int_t type);
 
+  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt;}
+
  protected:
   void                        ExecOnce();
   Bool_t                      Run();
 
   // ######### META FUNCTIONS
+  void                        BinLogAxis(const THn *h, Int_t axisNumber);
+  void                        AddJetToTree(AliEmcalJet* jet);
   void                        AddJetToOutputArray(AliEmcalJet* jet);
   void                        AddTrackToOutputArray(AliVTrack* track);
   void                        FillHistogramsTracks(AliVTrack* track);
@@ -50,9 +45,12 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
   Bool_t                      IsEventSelected();
 
-
   AliJetContainer            *fJetsCont;                                //!Jets
   AliTrackContainer          *fTracksCont;                              //!Tracks
+  TTree*                      fJetsTree;                                //!Jets that will be saved to a tree (optionally)
+  void*                       fJetsTreeBuffer;                          //! buffer for one jet (that will be saved to the tree)
+  Double_t                    fExtractionPercentage;                    // percentage that is recorded
+  Double_t                    fExtractionMinPt;                         // minimum pt of recorded jets
   Int_t                       fNumberOfCentralityBins;                  // Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!Array of basic correlation particles attached to the event (tracks)
@@ -63,9 +61,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TRandom3*                   fRandom;                                  // random number generator
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TProfile*                   hFakeFactorCutProfile;                    // profile of the fake factor cut distribution
+  TF1*                        fRejectionFunction;                       // Function describing the cut applied to jet const.
   Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Bool_t                      fUseFakejetRejection;                     // Use fakejet rejection (a la ATLAS)
   Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
   Double_t                    fMaxFakeFactorPercentage;                 // max fake factor (percentage relative to cut profile)
   Int_t                       fEventCriteriumMode;                      // Mode of event selection
@@ -84,8 +81,11 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        FillHistogram(const char * key, Double_t x);
   void                        FillHistogram(const char * key, Double_t x, Double_t y);
   void                        FillHistogram(const char * key, Double_t x, Double_t y, Double_t add);
+  void                        FillHistogram3D(const char * key, Double_t x, Double_t y, Double_t z, Double_t add = 0);
+
   template <class T> T*       AddHistogram1D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis");
   template <class T> T*       AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0,  const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
+  template <class T> T*       AddHistogram3D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, Int_t zBins = 100, Double_t zMin = 0.0, Double_t zMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### HELPER FUNCTIONS
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
@@ -97,6 +97,85 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF(const AliAnalysisTaskChargedJetsHadronCF&);            // not implemented
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 4) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 6) // Charged jet+h analysis support task
+};
+
+
+//###############################################################################################################################################3
+
+class AliBasicJetConstituent : public TObject
+{
+  public:
+    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0) {}
+    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliBasicJetConstituent();
+
+    Bool_t   IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
+    Double_t Pt()       { return fpT; }
+    Double_t Phi()      { return fPhi; }
+    Double_t Eta()      { return fEta; }
+    Short_t  Charge()   { return fCharge; }
+
+  private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
+
+    ClassDef( AliBasicJetConstituent, 1); // very basic jet constituent object
+};
+
+//###############################################################################################################################################3
+
+class AliBasicJet : public TObject
+{
+  public:
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fCharge(0), fRadius(0), fArea(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t bgrd, Long64_t id, Short_t cent)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
+    {
+    }
+    ~AliBasicJet();
+
+    // Basic jet properties
+    Bool_t                    IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
+    Double_t                  Pt()       { return fpT; }
+    Double_t                  Phi()      { return fPhi; }
+    Double_t                  Eta()      { return fEta; }
+    Short_t                   Charge()   { return fCharge; }
+    Double_t                  Radius() { return fRadius; }
+    Double_t                  Area() { return fArea; }
+    Double_t                  BackgroundDensity() { return fBackgroundDensity; }
+    Long64_t                  EventID() { return fEventID; }
+    Short_t                   Centrality() { return fCentrality; }
+    Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
+
+    // Basic constituent functions
+    AliBasicJetConstituent*   GetJetConstituent(Int_t index) { return &fConstituents[index]; }
+    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+    {
+      AliBasicJetConstituent c (eta, phi, pt, charge);
+      AddJetConstituent(&c);
+    }
+    void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }
+
+
+  private:
+    Float_t   fEta;      // eta
+    Float_t   fPhi;      // phi
+    Float_t   fpT;       // pT
+    Short_t   fCharge;   // charge
+    Float_t   fRadius;   // jet radius
+    Float_t   fArea;     // jet area
+    Float_t   fBackgroundDensity; // background
+    Long64_t  fEventID;  // Unique event id
+    Short_t   fCentrality; // centrality
+
+    std::vector<AliBasicJetConstituent> fConstituents; // vector of constituents
+
+    ClassDef( AliBasicJet, 2); // very basic jet object
 };
 #endif

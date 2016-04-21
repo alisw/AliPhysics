@@ -2006,6 +2006,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Boo
     //
     // TPC
     //
+    TString tag = "Study of systematic uncertanties + Geomtrical cut";
+    
     esdTrackCuts->SetRequireTPCRefit(kTRUE); 
     //esdTrackCuts->SetMinNCrossedRowsTPC(120); 
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
@@ -2044,12 +2046,12 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Boo
     if(cutMode==5007){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}
     if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}
     if(cutMode==5009){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*25.);
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*25.); tag+= " Modified for Data";}
     }
     if(cutMode==5010){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*49.);
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*49.); tag+= " Modified for Data";}
     }
     if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
     if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
@@ -2064,9 +2066,17 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Boo
     
     if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
     if(cutMode==5021){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.9,0.75);}   //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+    
+    if(cutMode==5022){
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.4*25.); tag+= " Modified for Data";}
+    }
+    if(cutMode==5023){
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.4*49.); tag+= " Modified for Data";}
+    }
 
  
-    TString tag = "Study of systematic uncertanties + Geomtrical cut";
 }
 
 

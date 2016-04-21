@@ -40,8 +40,7 @@ set(SRCS
   AliEmcalTriggerSelectionCuts.cxx
   AliEmcalTriggerSelection.cxx
   AliEmcalTriggerQATask.cxx
-  AliEmcalTriggerQAPP.cxx
-  AliEmcalTriggerQATaskPP.cxx
+  AliEMCALTriggerOfflineQAPP.cxx
   )
 
 # Headers from sources

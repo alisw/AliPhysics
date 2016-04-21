@@ -227,6 +227,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "00000009366320005804400000");
     cuts.AddCut("00000103", "00000009366300005804400000");
     cuts.AddCut("00000103", "00000009366300005854400000");
+ } else if (trainConfig == 6) {
+    cuts.AddCut("00010103", "00000009247602008250404000"); // INT7
+
     // Offline V0Finder is used
 
   } else  if(trainConfig == 101){

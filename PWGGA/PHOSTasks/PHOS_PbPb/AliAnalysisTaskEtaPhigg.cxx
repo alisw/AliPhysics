@@ -160,6 +160,8 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH2F("hCenPCM","Centrality vs PCM photons", 100,0.,100.,200,0.,200.)) ;
   
+  fOutputContainer->Add(new TH2F("hHadr","Hadron pT, phi distribution",100,0.,5.,100,0.,TMath::TwoPi())) ;
+  
   //PHOS QA 			
   
   //Bad Map
@@ -210,8 +212,9 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH3F(Form("hPCMv2"),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
   fOutputContainer->Add(new TH3F(Form("hmiPCMv2"),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
 
-  fOutputContainer->Add(new TH3F("hGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,TMath::Pi()/2.,10,0.,2.));
-  fOutputContainer->Add(new TH3F("hmiGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,TMath::Pi()/2.,10,0.,2.));
+  fOutputContainer->Add(new TH3F("hGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,3.*TMath::Pi()/2.,10,0.,2.));
+  fOutputContainer->Add(new TH3F("hmiGammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,3.*TMath::Pi()/2.,10,0.,2.));
+  fOutputContainer->Add(new TH3F("hmi2GammaHadr","Gamma-Hadron correlation",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi()/2,3.*TMath::Pi()/2.,10,0.,2.));
   
   for(Int_t iCut=0; iCut<nCuts; iCut++){
     //Photon flow
@@ -221,6 +224,20 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH3F(Form("hPHOSPCMv2_%s",cut[iCut]),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
     fOutputContainer->Add(new TH3F(Form("hmiPHOSPCMv2_%s",cut[iCut]),"Two-photon",100,-TMath::Pi()/2,TMath::Pi()/2.,100,0.,10.,100,0.,10.));
 
+    fOutputContainer->Add(new TH3F(Form("hdphiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
+    fOutputContainer->Add(new TH3F(Form("hmidphiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
+
+    
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOS_%s_dist1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_dist1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+    
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOS_%s_dist2",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_dist2",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+
+    fOutputContainer->Add(new TH3F(Form("hetaphiPHOS_%s_dist3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_dist3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
+
+    
     fOutputContainer->Add(new TH3F(Form("hetaphiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
     fOutputContainer->Add(new TH3F(Form("hmietaphiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,0.,10.));
 
@@ -247,8 +264,8 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hetaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,3.*TMath::Pi()/2.));
     fOutputContainer->Add(new TH2F(Form("hmietaphiPCMRP_%s",kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,3.*TMath::Pi()/2.));
 
-    fOutputContainer->Add(new TH3F(Form("hetaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-    fOutputContainer->Add(new TH3F(Form("hmietaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
+    fOutputContainer->Add(new TH3F(Form("hetaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,20,-1.,1.));
+    fOutputContainer->Add(new TH3F(Form("hmietaphiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,20,-1.,1.));
     
     for(Int_t iCut=0; iCut<nCuts; iCut++){
 
@@ -487,12 +504,10 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     fPCMEvents[zvtx][fCenBin][irp]=new TList() ;
   TList * prevPCM =  fPCMEvents[zvtx][fCenBin][irp] ;
 
-  if(!fHadrEvents[zvtx][fCenBin][irp]) 
-    fHadrEvents[zvtx][fCenBin][irp]=new TList() ;
-  TList * prevHadr = fHadrEvents[zvtx][fCenBin][irp] ;
-  TClonesArray * prevHadrEvent = (TClonesArray*)prevHadr->At(0) ;
+  TClonesArray * prevHadrEvent = fHadrEvents[zvtx][fCenBin][irp] ;
   Int_t nPrevHadr= 0; 
   if(prevHadrEvent)nPrevHadr=prevHadrEvent->GetEntriesFast() ;
+//  printf("prevHadrEvent=%p, nPrevHadr=%d \n",prevHadrEvent,nPrevHadr) ;
   
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
@@ -503,6 +518,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     fGammaCandidates->Clear() ;
   else
     fGammaCandidates = new TClonesArray("AliAODConversionPhoton",200) ;
+  
   
   if(fHadrEvent)
     fHadrEvent->Clear() ;
@@ -534,6 +550,8 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     Int_t mod  = relId[0] ;
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
+    TVector3 local ;
+    fPHOSGeo->Global2Local(local,global,mod);
     
     //Remove 6 noisy channels in run 139036
     if(fEvent->GetRunNumber()==139036 && mod==1 && 
@@ -586,8 +604,8 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     ph->SetCPV2Bit(clu->GetEmcCpvDistance()>4.) ;
     
     ph->SetPrimary(clu->GetLabelAt(0)) ;
-    ph->SetEMCx(position[0]) ;
-    ph->SetEMCz(position[2]) ;
+    ph->SetEMCx(local.X()) ;
+    ph->SetEMCz(local.Z()) ;
     ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolded          
     inPHOS++ ;
@@ -614,11 +632,22 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(fabs(curTrack->Eta())>0.5) continue;
-      if(curTrack->Pt()<1.) continue;
-      new((*fHadrEvent)[nHadr++]) TVector3(curTrack->Px(),curTrack->Py(),curTrack->Pz()) ;     
+      if(fabs(curTrack->Eta())<0.2 || fabs(curTrack->Eta())>0.8) continue;
+      if(curTrack->Pt()<0.5) continue;
+      if(nHadr>=fHadrEvent->GetSize())
+	fHadrEvent->Expand(1.2*fHadrEvent->GetSize()) ;
+      new((*fHadrEvent)[nHadr++]) TVector3(curTrack->Px(),curTrack->Py(),curTrack->Pz()) ;   
+      FillHistogram("hHadr",curTrack->Pt(),curTrack->Phi()) ; //track::Phi() is in the range 0...2pi
   }
 
+  
+  //Cuts
+  const Double_t kEtaHBTcut=0.02; //Minimal eta gap to exclude HBT correlations
+  const Double_t kEtaPCMcut=0.05; //Minimal eta gap to exclude HBT correlations
+  const Double_t distCut1=5. ;    //First (minimal) distance cut
+  const Double_t distCut2=10. ;    //Second (medium) distance cut
+  const Double_t distCut3=20. ;    //Third (strongest) distance cut
+  
   
   
   const Double_t kgMass=0. ;
@@ -641,13 +670,22 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       Double_t e1=ph1->E() ;
       Double_t e2=ph2->E() ;
+      //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
       Double_t dPhi=ph1->Phi()-ph2->Phi() ;
+      Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
+      if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
+      if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
       Double_t dEta=ph1->Eta()-ph2->Eta() ;
       Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
       Double_t kT=0.5*(*ph1 + *ph2).Pt() ;
-      Double_t dPsi=0.5*(ph1->Phi()+ph2->Phi()-2.*fRP) ;
+      Double_t dPsi=avPhi-fRP ;
       while(dPsi<0)dPsi+=TMath::Pi() ;
       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+      
+      Double_t dist=999. ; //distance between clusters in PHOS
+      if(ph1->Module()==ph2->Module()){
+	dist=TMath::Sqrt(TMath::Power(ph1->EMCx()-ph2->EMCx(),2)+TMath::Power(ph1->EMCz()-ph2->EMCz(),2)) ;
+      }
       
       if(gRandom->Uniform()>0.5){
 	dPhi=-dPhi ;
@@ -669,24 +707,44 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
    	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-	FillHistogram(Form("hPHOSv2_%s",cut[iCut]),dPhi,e1,e2) ;
+	if(TMath::Abs(dEta)>kEtaHBTcut)
+	  FillHistogram(Form("hPHOSv2_%s",cut[iCut]),dPhi,e1,e2) ;
 	if(ph1->Module()==ph2->Module())
           FillHistogram(Form("hetaphiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
+	//Distance cuts
+	if(dist>distCut1){
+          FillHistogram(Form("hetaphiPHOS_%s_dist1",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	  if(dist>distCut2){
+            FillHistogram(Form("hetaphiPHOS_%s_dist2",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	    if(dist>distCut3){
+              FillHistogram(Form("hetaphiPHOS_%s_dist3",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	    }
+	  }
+	}
+	      
 	FillHistogram(Form("hetaphiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	if(TMath::Abs(dEta)>kEtaHBTcut)
+	  FillHistogram(Form("hetaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+
+	FillHistogram(Form("hdphiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
 	
 	//gamma-hadron
 	if(iCut==3){ // both
 	  for(Int_t ih=0; ih<nHadr; ih++){
 	    TVector3 *v = (TVector3*)fHadrEvent->At(ih) ;
-	    Double_t dPhiHadr=TVector2::Phi_mpi_pi(v->Phi()-ph1->Phi()) ;
-	    FillHistogram("hGammaHadr",dPhi,dPhiHadr) ;
+	    //TVector3::Phi() returns phi in the range -pi...pi
+	    Double_t dPhiHadr=v->Phi()-0.5*(ph1->Phi()+ph2->Phi()) ;
+            while(dPhiHadr<-TMath::Pi()/2.)dPhiHadr+=TMath::TwoPi() ;
+            while(dPhiHadr>3.*TMath::Pi()/2.)dPhiHadr-=TMath::TwoPi() ;      
+	    FillHistogram("hGammaHadr",dPhi,dPhiHadr,0.5*(e1+e2)) ;
 	  }
 	  for(Int_t ih=0; ih<nPrevHadr; ih++){
 	    TVector3 *v = (TVector3*)prevHadrEvent->At(ih) ;
-	    Double_t dPhiHadr=TVector2::Phi_mpi_pi(v->Phi()-ph1->Phi()) ;
-	    FillHistogram("mihGammaHadr",dPhi,dPhiHadr) ;
+	    Double_t dPhiHadr=v->Phi()-0.5*(ph1->Phi()+ph2->Phi()) ;
+            while(dPhiHadr<-TMath::Pi()/2.)dPhiHadr+=TMath::TwoPi() ;
+            while(dPhiHadr>3.*TMath::Pi()/2.)dPhiHadr-=TMath::TwoPi() ;      
+	    FillHistogram("hmiGammaHadr",dPhi,dPhiHadr,0.5*(e1+e2)) ;
 	  }
 	  
 	}
@@ -729,11 +787,13 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
    	if(!PHOSCut(ph1,iCut))
 	    continue ;
 	
-	FillHistogram(Form("hPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
+        if(TMath::Abs(dEta)>kEtaPCMcut)
+	  FillHistogram(Form("hPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
         FillHistogram(Form("hetaphiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	FillHistogram(Form("hetaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	if(TMath::Abs(dEta)>kEtaPCMcut)
+	  FillHistogram(Form("hetaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
       }
     }
   }
@@ -767,10 +827,12 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       else if(kT<2.0) kTbin="Kt13-20";
       else kTbin="Kt20-100";
 	
-      FillHistogram(Form("hPCMv2"),dPhi2,e1,e2) ;
+      if(TMath::Abs(dEta)>kEtaPCMcut)
+        FillHistogram(Form("hPCMv2"),dPhi2,e1,e2) ;
 	
       FillHistogram(Form("hetaphiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;
-      FillHistogram(Form("hetaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
+      if(TMath::Abs(dEta)>kEtaPCMcut)
+        FillHistogram(Form("hetaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
      
     }
   }
@@ -787,10 +849,13 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
         Double_t e1=ph1->E() ;
         Double_t e2=ph2->E() ;
         Double_t dPhi=ph1->Phi()-ph2->Phi() ;
+        Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
+        if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
+        if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
         Double_t dEta=ph1->Eta()-ph2->Eta() ;
         Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
         Double_t kT=0.5*(*ph1 + *ph2).Pt() ;
-        Double_t dPsi=0.5*(ph1->Phi()+ph2->Phi()-2.*fRP) ;
+        Double_t dPsi=avPhi-fRP ;
         while(dPsi<0)dPsi+=TMath::Pi() ;
         while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
         TString kTbin ;
@@ -802,16 +867,48 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
         else if(kT<2.0) kTbin="Kt13-20";
         else kTbin="Kt20-100";
 
-        for(Int_t iCut=0; iCut<7; iCut++){
+        Double_t dist=999. ; //distance between clusters in PHOS
+        if(ph1->Module()==ph2->Module()){
+	  dist=TMath::Sqrt(TMath::Power(ph1->EMCx()-ph2->EMCx(),2)+TMath::Power(ph1->EMCz()-ph2->EMCz(),2)) ;
+        }
+
+	for(Int_t iCut=0; iCut<7; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-	  FillHistogram(Form("hmiPHOSv2_%s",cut[iCut]),dPhi,e1,e2) ;
+	  if(TMath::Abs(dEta)>kEtaHBTcut)
+	    FillHistogram(Form("hmiPHOSv2_%s",cut[iCut]),dPhi,e1,e2) ;
 	  if(ph1->Module()==ph2->Module())
             FillHistogram(Form("hmietaphiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-	
+	  
+	  //Distance cuts
+	  if(dist>distCut1){
+            FillHistogram(Form("hmietaphiPHOS_%s_dist1",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	    if(dist>distCut2){
+              FillHistogram(Form("hmietaphiPHOS_%s_dist2",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	      if(dist>distCut3){
+                FillHistogram(Form("hmietaphiPHOS_%s_dist3",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
+	      }
+	    }
+	  }
+	  
+
+	  FillHistogram(Form("hmidphiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
+	  
 	  FillHistogram(Form("hmietaphiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	  if(TMath::Abs(dEta)>kEtaHBTcut)
+	    FillHistogram(Form("hmietaphiPHOSRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	  
+	  
+	  if(iCut==3 && ev==1){ // both, photons not from the same event as H
+	    for(Int_t ih=0; ih<nPrevHadr; ih++){
+	      TVector3 *v = (TVector3*)prevHadrEvent->At(ih) ;
+	      Double_t dPhiHadr=v->Phi()-0.5*(ph1->Phi()+ph2->Phi()) ;
+              while(dPhiHadr<-TMath::Pi()/2.)dPhiHadr+=TMath::TwoPi() ;
+              while(dPhiHadr>3.*TMath::Pi()/2.)dPhiHadr-=TMath::TwoPi() ;      
+	      FillHistogram("hmi2GammaHadr",dPhi,dPhiHadr,0.5*(e1+e2)) ;
+	    }
+	  }
 	  
 	}
       }
@@ -854,11 +951,13 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
    	  if(!PHOSCut(ph1,iCut))
 	    continue ;
 	
-	  FillHistogram(Form("hmiPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
+          if(TMath::Abs(dEta)>kEtaPCMcut)
+	    FillHistogram(Form("hmiPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
           FillHistogram(Form("hmietaphiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	  FillHistogram(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	  if(TMath::Abs(dEta)>kEtaPCMcut)
+	    FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
 	}
       } // end of loop i2
     }
@@ -866,11 +965,11 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
   
   
   for (Int_t i1=0; i1<inPCM; i1++) {
-    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;    
+    AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;    
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
-        AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
+        AliCaloPhoton * ph1=(AliCaloPhoton*)mixPHOS->At(i2) ;
 	
         Double_t e1=ph1->E() ;
         Double_t e2=ph2->E() ;
@@ -896,14 +995,16 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
         else kTbin="Kt20-100";
 
         for(Int_t iCut=0; iCut<7; iCut++){
-   	  if(!PHOSCut(ph2,iCut))
+   	  if(!PHOSCut(ph1,iCut))
 	    continue ;
 	
-	  FillHistogram(Form("hmiPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
-          FillHistogram(Form("hmietaphiPHOSPCM_%s_mod%d",cut[iCut],ph2->Module()),dEta,dPhi,0.5*(e1+e2)) ;
+          if(TMath::Abs(dEta)>kEtaPCMcut)
+	    FillHistogram(Form("hmiPHOSPCMv2_%s",cut[iCut]),dPhi2,e1,e2) ;
+          FillHistogram(Form("hmietaphiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
 	
 	  FillHistogram(Form("hmietaphiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
+	  if(TMath::Abs(dEta)>kEtaPCMcut)
+	    FillHistogram(Form("hmietaphiPHOSPCMRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi);
 	}
       } // end of loop i2
     }
@@ -940,10 +1041,12 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
         else kTbin="Kt20-100";
 
 	
-	FillHistogram(Form("hmiPCMv2"),dPhi2,e1,e2) ;
+        if(TMath::Abs(dEta)>kEtaPCMcut)
+	  FillHistogram(Form("hmiPCMv2"),dPhi2,e1,e2) ;
 	
 	FillHistogram(Form("hmietaphiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;
-	FillHistogram(Form("hmietaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
+        if(TMath::Abs(dEta)>kEtaPCMcut)
+	  FillHistogram(Form("hmietaphiPCMRP_%s",kTbin.Data()),dPsi,dPhi);
       } // end of loop i2
     }
   } // end of loop i1
@@ -974,10 +1077,12 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
   }
 
   //Hadrons
-  prevHadr->AddFirst(fHadrEvent);
-  TClonesArray * tmp = static_cast<TClonesArray*>(prevHadr->Last()) ;
-  prevHadr->RemoveLast() ;
-  delete tmp ;
+  TClonesArray * tmp = fHadrEvents[zvtx][fCenBin][irp] ;
+  if(tmp){
+    delete tmp ;
+  }
+  fHadrEvents[zvtx][fCenBin][irp]=fHadrEvent;
+  fHadrEvent=0x0 ;
     
   // Post output data.
   PostData(1, fOutputContainer);
@@ -1068,6 +1173,189 @@ void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,Double_t x,Double_t
 Int_t AliAnalysisTaskEtaPhigg::ConvertRunNumber(Int_t run){
 
   switch(run){	
+    //LHC11h
+    case  170593 : return 179 ;
+    case  170572 : return 178 ;
+    case  170556 : return 177 ;
+    case  170552 : return 176 ;
+    case  170546 : return 175 ;
+    case  170390 : return 174 ;
+    case  170389 : return 173 ;
+    case  170388 : return 172 ;
+    case  170387 : return 171 ;
+    case  170315 : return 170 ;
+    case  170313 : return 169 ;
+    case  170312 : return 168 ;
+    case  170311 : return 167 ;
+    case  170309 : return 166 ;
+    case  170308 : return 165 ;
+    case  170306 : return 164 ;
+    case  170270 : return 163 ;
+    case  170269 : return 162 ;
+    case  170268 : return 161 ;
+    case  170267 : return 160 ;
+    case  170264 : return 159 ;
+    case  170230 : return 158 ;
+    case  170228 : return 157 ;
+    case  170208 : return 156 ;
+    case  170207 : return 155 ;
+    case  170205 : return 154 ;
+    case  170204 : return 153 ;
+    case  170203 : return 152 ;
+    case  170195 : return 151 ;
+    case  170193 : return 150 ;
+    case  170163 : return 149 ;
+    case  170162 : return 148 ;
+    case  170159 : return 147 ;
+    case  170155 : return 146 ;
+    case  170152 : return 145 ;
+    case  170091 : return 144 ;
+    case  170089 : return 143 ;
+    case  170088 : return 142 ;
+    case  170085 : return 141 ;
+    case  170084 : return 140 ;
+    case  170083 : return 139 ;
+    case  170081 : return 138 ;
+    case  170040 : return 137 ;
+    case  170038 : return 136 ;
+    case  170036 : return 135 ;
+    case  170027 : return 134 ;
+    case  169981 : return 133 ;
+    case  169975 : return 132 ;
+    case  169969 : return 131 ;
+    case  169965 : return 130 ;
+    case  169961 : return 129 ;
+    case  169956 : return 128 ;
+    case  169926 : return 127 ;
+    case  169924 : return 126 ;
+    case  169923 : return 125 ;
+    case  169922 : return 124 ;
+    case  169919 : return 123 ;
+    case  169918 : return 122 ;
+    case  169914 : return 121 ;
+    case  169859 : return 120 ;
+    case  169858 : return 119 ;
+    case  169855 : return 118 ;
+    case  169846 : return 117 ;
+    case  169838 : return 116 ;
+    case  169837 : return 115 ;
+    case  169835 : return 114 ;
+    case  169683 : return 113 ;
+    case  169628 : return 112 ;
+    case  169591 : return 111 ;
+    case  169590 : return 110 ;
+    case  169588 : return 109 ;
+    case  169587 : return 108 ;
+    case  169586 : return 107 ;
+    case  169584 : return 106 ;
+    case  169557 : return 105 ;
+    case  169555 : return 104 ;
+    case  169554 : return 103 ;
+    case  169553 : return 102 ;
+    case  169550 : return 101 ;
+    case  169515 : return 100 ;
+    case  169512 : return 99 ;
+    case  169506 : return 98 ;
+    case  169504 : return 97 ;
+    case  169498 : return 96 ;
+    case  169475 : return 95 ;
+    case  169420 : return 94 ;
+    case  169419 : return 93 ;
+    case  169418 : return 92 ;
+    case  169417 : return 91 ;
+    case  169415 : return 90 ;
+    case  169411 : return 89 ;
+    case  169238 : return 88 ;
+    case  169236 : return 87 ;
+    case  169167 : return 86 ;
+    case  169160 : return 85 ;
+    case  169156 : return 84 ;
+    case  169148 : return 83 ;
+    case  169145 : return 82 ;
+    case  169144 : return 81 ;
+    case  169143 : return 80 ;
+    case  169138 : return 79 ;
+    case  169099 : return 78 ;
+    case  169094 : return 77 ;
+    case  169091 : return 76 ;
+    case  169045 : return 75 ;
+    case  169044 : return 74 ;
+    case  169040 : return 73 ;
+    case  169035 : return 72 ;
+    case  168992 : return 71 ;
+    case  168988 : return 70 ;
+    case  168984 : return 69 ;
+    case  168826 : return 68 ;
+    case  168777 : return 67 ;
+    case  168514 : return 66 ;
+    case  168512 : return 65 ;
+    case  168511 : return 64 ;
+    case  168467 : return 63 ;
+    case  168464 : return 62 ;
+    case  168461 : return 61 ;
+    case  168460 : return 60 ;
+    case  168458 : return 59 ;
+    case  168362 : return 58 ;
+    case  168361 : return 57 ;
+    case  168356 : return 56 ;
+    case  168342 : return 55 ;
+    case  168341 : return 54 ;
+    case  168325 : return 53 ;
+    case  168322 : return 52 ;
+    case  168318 : return 51 ;
+    case  168311 : return 50 ;
+    case  168310 : return 49 ;
+    case  168213 : return 48 ;
+    case  168212 : return 47 ;
+    case  168208 : return 46 ;
+    case  168207 : return 45 ;
+    case  168206 : return 44 ;
+    case  168205 : return 43 ;
+    case  168204 : return 42 ;
+    case  168203 : return 41 ;
+    case  168181 : return 40 ;
+    case  168177 : return 39 ;
+    case  168175 : return 38 ;
+    case  168173 : return 37 ;
+    case  168172 : return 36 ;
+    case  168171 : return 35 ;
+    case  168115 : return 34 ;
+    case  168108 : return 33 ;
+    case  168107 : return 32 ;
+    case  168105 : return 31 ;
+    case  168104 : return 30 ;
+    case  168103 : return 29 ;
+    case  168076 : return 28 ;
+    case  168069 : return 27 ;
+    case  168068 : return 26 ;
+    case  168066 : return 25 ;
+    case  167988 : return 24 ;
+    case  167987 : return 23 ;
+    case  167986 : return 22 ;
+    case  167985 : return 21 ;
+    case  167921 : return 20 ;
+    case  167920 : return 19 ;
+    case  167915 : return 18 ;
+    case  167909 : return 17 ;
+    case  167903 : return 16 ;
+    case  167902 : return 15 ;
+    case  167818 : return 14 ;
+    case  167814 : return 13 ;
+    case  167813 : return 12 ;
+    case  167808 : return 11 ;
+    case  167807 : return 10 ;
+    case  167806 : return 9 ;
+    case  167713 : return 8 ;
+    case  167712 : return 7 ;
+    case  167711 : return 6 ;
+    case  167706 : return 5 ;
+    case  167693 : return 4 ;
+    case  166532 : return 3 ;
+    case  166530 : return 2 ;
+    case  166529 : return 1 ;
+    
+    
+  //LHC10h  
   case  139517 : return 137; 
   case  139514 : return 136; 
   case  139513 : return 135; 
