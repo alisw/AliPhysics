@@ -875,7 +875,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
     
   // ************************************* EMCAL cuts ****************************************************  
-    // 13 TeV
+    // 13 TeV & 5 TeV
   } else if (trainConfig == 401){ // EMCAL clusters pp 13 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103100000010"); // 1000ns timing cut, std NL INT7
     cuts.AddCut("00052013","00200009327000008250400000","1111111013032230000","0163103100000010"); // 1000ns timing cut, std NL EMC7
