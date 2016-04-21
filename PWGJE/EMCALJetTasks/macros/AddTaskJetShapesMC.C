@@ -37,7 +37,7 @@ AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(const char * njetsBase,
   TString wagonName2 = Form("JetShapesMC_%s_Tree%s%s",njetsBase,trigClass.Data(),tag.Data());
 
   //Configure jet tagger task
-  AliAnalysisTaskEmcalJetShapesMC *task = new AliAnalysisTaskEmcalJetShapesMC(wagonName1.Data());
+  AliAnalysisTaskEmcalJetShapesMC *task = new AliAnalysisTaskEmcalJetShapesMC(Form("JetShapesMC_%s", njetsBase));
 
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
@@ -121,9 +121,10 @@ AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(const char * njetsBase,
 
   
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
+ 
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     
   mgr->ConnectOutput(task,1,coutput1);
   mgr->ConnectOutput(task,2,coutput2);
