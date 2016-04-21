@@ -95,8 +95,11 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
       if (fGeneratorMacroPath.Length() == 0)
 	AliFatal("fGeneratorMacroPath empty!");
       
-      TString macroPath;
-      macroPath.Form("$ALICE_ROOT/%s", fGeneratorMacroPath.Data());
+      TString macroPath(fGeneratorMacroPath);
+      
+      if (!fGeneratorMacroPath.BeginsWith("$"))
+        macroPath.Form("$ALICE_ROOT/%s", fGeneratorMacroPath.Data());
+      
       macroPath = gSystem->ExpandPathName(macroPath.Data());
 
       if (gSystem->AccessPathName(macroPath))
