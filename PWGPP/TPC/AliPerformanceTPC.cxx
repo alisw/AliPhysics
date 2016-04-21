@@ -161,6 +161,7 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
+
   Init();
 }
 

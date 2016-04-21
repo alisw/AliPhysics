@@ -200,12 +200,13 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
         AnalyzeQAPosNegDpT(pTPC,pcstream);
         AnalyzeQADCAFitParameter(pTPC,pcstream);
         AnalyzeOcc(pTPC,pcstream);
+
     }
     AnalyzeGain(pTPCgain, pcstream);
     AnalyzeMatch(pTPCMatch, pcstream);
     AnalyzePull(pTPCPull, pcstream);
     AnalyzeConstrain(pConstrain, pcstream);
-
+    
     (*pcstream)<<"tpcQA"<<"\n";
     TTree * tree = ((*pcstream)<<"tpcQA").GetTree();
     tree->SetAlias("nEvents","entriesMult");
