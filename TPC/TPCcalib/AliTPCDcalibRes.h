@@ -32,9 +32,6 @@
 #include "AliTPCChebCorr.h"
 
 
-#define kMaxResid  10.0f    
-#define kMaxTgSlp  2.0f
-
 class AliTPCDcalibRes: public TNamed
 {
  public:
@@ -54,9 +51,9 @@ class AliTPCDcalibRes: public TNamed
   enum {kResX,kResY,kResZ,kResD,kResDim,kResDimG=kResDim-1}; // output dimensions
   //
   struct dts_t {  // struct for basic local residual
-    Double32_t dy; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dz; //[-kMaxResid,kMaxResid,16]
-    Double32_t tgSlp; //[kMaxTgSlp,kMaxTgSlp,16]
+    Double32_t dy; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
+    Double32_t dz; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
+    Double32_t tgSlp; //[-2,2,14]  //[kMaxTgSlp,kMaxTgSlp,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: VoxF,kVoxX,kVoxZ
   };
 
@@ -64,16 +61,16 @@ class AliTPCDcalibRes: public TNamed
   struct dtc_t
   {
     Int_t t;        // time stamp
-    Double32_t dyR; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dzR; //[-kMaxResid,kMaxResid,16]
-    Double32_t dyC; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dzC; //[-kMaxResid,kMaxResid,16]
-    Double32_t q2pt;//[-kMaxQ2Pt,kMaxQ2Pt,16]
-    Double32_t tgLam;//[-2.,2.,16]
-    Double32_t tgSlp;//kMaxTgSlp,kMaxTgSlp,16]
-    Float_t x;
-    Float_t y;
-    Float_t z;
+    Double32_t dyR; //[-10.,10.,14] 
+    Double32_t dzR; //[-10.,10.,14]
+    Double32_t dyC; //[-10.,10.,14] 
+    Double32_t dzC; //[-10.,10.,14]
+    Double32_t q2pt;//[-3,3,14]
+    Double32_t tgLam;//[-2.,2.,14]
+    Double32_t tgSlp;//[-2,2,14] 
+    Float_t x;  //[80,160,14]
+    Float_t y; //[-50,50,14]
+    Float_t z; //[-250,250,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: kVoxQ,kVoxF,kVoxX,kVoxZ
     //
     dtc_t() {memset(this,0,sizeof(dtc_t));}
@@ -382,6 +379,8 @@ protected:
   //
   static AliTPCDcalibRes* fgUsedInstance; //! interface instance to use for parameterization
   //
+  static const float kMaxResid;  // max range of distortions, must be <= than the double32_t range of dst_t
+  static const float kMaxTgSlp;  // max range of tgSlope, must be <= than the double32_t range of dst_t
   static const float kSecDPhi;
   static const float kMaxQ2Pt;
   //  static const float kMaxTgSlp;

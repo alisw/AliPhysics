@@ -8,6 +8,8 @@ void trainCorr(int row, float* tzLoc, float* corrLoc);
 
 const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
+const float  AliTPCDcalibRes::kMaxResid=10.0;   
+const float  AliTPCDcalibRes::kMaxTgSlp=2.0;
 
 const float AliTPCDcalibRes::kSecDPhi = 20.f*TMath::DegToRad();
 const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
