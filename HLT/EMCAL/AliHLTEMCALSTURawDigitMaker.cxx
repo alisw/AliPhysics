@@ -173,8 +173,8 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
             lphi = 64;
             if (vx >= 0 && vy < lphi) {
               if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
-            	HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy, index);
-            	SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
+                HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
+                SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
               }
             }
           } else {
