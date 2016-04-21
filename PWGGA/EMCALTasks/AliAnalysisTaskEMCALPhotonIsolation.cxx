@@ -26,7 +26,7 @@
 #include "AliVParticle.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliEmcalParticle.h"
 #include "AliParticleContainer.h"
 #include "AliAODCaloCluster.h"
@@ -916,7 +916,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       //whatever is a RETURN in LCAnalysis here is a CONTINUE,
       //since there are more than 1 Cluster per Event
       //       AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
-//    Printf("Starting loop on clusters in RUN method");
+      //    Printf("Starting loop on clusters in RUN method");
     for (AliClusterContainer::accept_iterator it=clusters->accept_begin(); it!=clusters->accept_end(); ++it){
         //Printf("Index of cluster: %d",(*it)->GetID());
         // AliVCluster *coi = emccluster->GetCluster();
@@ -972,14 +972,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       if(fTMClusterRejected)
       {
-//        Printf("CT Matching from Run");
+          //        Printf("CT Matching from Run");
         if(ClustTrackMatching((*it))){
             //Printf("Cluster Matched with a Track");
           continue;
         }
         fPtaftTM->Fill(vecCOI.Pt());
       }
-//      Printf("cluster with eta %lf\t and phi %lf",vecCOI.Eta(),vecCOI.Phi());
+        //      Printf("cluster with eta %lf\t and phi %lf",vecCOI.Eta(),vecCOI.Phi());
       if(!CheckBoundaries(vecCOI)){
           //Printf("Outside the boundaries");
         continue;
@@ -989,7 +989,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       fTestIndexE->Fill(vecCOI.Pt(),index);
       
-//      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with Index: %d",index);
+        //      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with Index: %d",index);
       FillGeneralHistograms((*it),vecCOI,index);
     }
     
@@ -1062,7 +1062,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   
     // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
   AliTrackContainer* tracks = GetTrackContainer(0);
-  AliAODTrack* mt = 0;
+  AliVTrack* mt = 0;
     // AliVCluster *clust = partC -> GetCluster();
   
     //  Int_t nbMObj =  -> GetNumberOfMatchedObj();
@@ -1075,10 +1075,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     
     if (fIsEsd) {
       Int_t imt = clust->GetTrackMatchedIndex(0);
-      if (imt >= 0) mt = static_cast<AliAODTrack*>(tracks->GetAcceptParticle(imt));
+      if (imt >= 0) mt = static_cast<AliVTrack*>(tracks->GetAcceptParticle(imt));
     }
     else {
-      mt = static_cast<AliAODTrack*>(clust->GetTrackMatched(0));
+      mt = static_cast<AliVTrack*>(clust->GetTrackMatched(0));
       UInt_t rejectionReason = 0;
       if (!tracks->AcceptParticle(mt, rejectionReason)) mt = 0;
     }
@@ -1174,7 +1174,7 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
         if ( AreNeighbours(absId1, absId2) ){
           if ( en1 > en2 ){
             absIdList[iDigitN] = -1 ;
-             // but may be digit too is not local max ?
+              // but may be digit too is not local max ?
             if(en1 < en2 + fLocMaxCutEDiff)
               absIdList[iDigit] = -1 ;
           }
@@ -1352,7 +1352,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellEtaBand(TLorentzVector c, Dou
   AliEMCALGeometry* emcalGeom = AliEMCALGeometry::GetInstance();
   
   Double_t sumEnergyEtaBandCells=0., sumEnergyConeCells=0.;
-
+  
     // check the cell corresponding to the leading cluster
   Int_t absId = 999;
     //maybe best to call it LeadingCellIdinClus or better maxId since it won't be used anywhere else ???
@@ -1436,7 +1436,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellEtaBand(TLorentzVector c, Dou
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Double_t &ptIso, Double_t &phiBandclus, Int_t index){
     // Underlying events study with clusters in phi band
   
-  Double_t sumEnergyPhiBandClus=0., sumEnergyConeClus=0., sumpTConeCharged=0.;
+  Double_t sumEnergyPhiBandClus=0., sumEnergyConeClus=0., sumpTConeCharged=0., sumpTPhiBandCharged=0.;
+  Double_t clustTOF,phiClust,etaClust;
+  Double_t minPhi = 1.4;
+  Double_t maxPhi = TMath::Pi();
   
     //needs a check on the same cluster
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
@@ -1449,78 +1452,91 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     localIndex=(*it)->GetID();
     
     if(localIndex==index) continue;
-    else{
+    
+    phiClust = etaClust = clustTOF = 0.;
+    TLorentzVector nClust; //STILL NOT INITIALIZED
+    (*it)->GetMomentum(nClust,fVertex);
+    phiClust =nClust.Phi();
+    etaClust= nClust.Eta();
+    
+    clustTOF = (*it)->GetTOF()*1e9;
+    
+    if(!fIsMC)
+      if(clustTOF<-30 || clustTOF>30) continue;
+    
+    if(fTMClusterInConeRejected)
+      if(ClustTrackMatching((*it))) continue;
+    
+    if(nClust.E()<0.3) continue;
+      //redefine phi/c.Eta() from the cluster we passed to the function
+    
+    Double_t  radius = TMath::Sqrt(TMath::Power(phiClust- c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
+    
+    if(radius>fIsoConeRadius){ // the cluster is outside the isolation cone in this case study UE
+                               // actually phi band here
+      if(TMath::Abs(phiClust - c.Phi()) < fIsoConeRadius)
+        sumEnergyPhiBandClus += nClust.Pt();
+    }
+    else if(radius<fIsoConeRadius && radius!=0.){  // if the cluster is in the isolation cone, add the cluster pT
+                                                   //Printf("Cluster Not Matched, Inside the Cone, with Energy %.4lf",eTcluster);
+      sumEnergyConeClus += nClust.Pt();
+      fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
+      fTestIndex->Fill(index,localIndex);
       
-      TLorentzVector nClust; //STILL NOT INITIALIZED
-      (*it)->GetMomentum(nClust,fVertex);
-      Double_t phiClust =nClust.Phi();
-      Double_t etaClust= nClust.Eta();
-      
-      Double_t clustTOF = (*it)->GetTOF()*1e9;
-      
-      if(!fIsMC)
-        if(clustTOF<-30 || clustTOF>30) continue;
-      
-      if(fTMClusterInConeRejected)
-        if(ClustTrackMatching((*it))) continue;
-      
-      if(nClust.E()<0.3) continue;
-        //redefine phi/c.Eta() from the cluster we passed to the function
-      
-      Double_t  radius = TMath::Sqrt(TMath::Power(phiClust- c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
-      
-      if(radius>fIsoConeRadius){ // the cluster is outside the isolation cone in this case study UE
-        
-          // actually phi band here
-        if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
-          sumEnergyPhiBandClus += nClust.Pt();
-      }
-      else // if the cluster is in the isolation cone, add the cluster pT
-        sumEnergyConeClus += nClust.Et();
+      fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
     }
   }
-  
-  fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
+  AliTrackContainer *tracks = GetTrackContainer(0);
+    //fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
     // name hard coded to use the defined tracks for analysis
   
-  if (!fTracksAna) {
+    //if (!fTracksAna) {
+  if(!tracks){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-  const Int_t nbTracks = fTracksAna->GetEntries();
-  Int_t iTracks = 0;
+    //  const Int_t nbTracks = fTracksAna->GetEntries();
+    //  Int_t iTracks = 0;
   
-    //
-  while(iTracks<nbTracks){
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksAna->At(iTracks));
-    if(!track){
+  tracks->ResetCurrentID();
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack, etaTrack;
+  
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+    
+    if(!eTrack){
       AliError(Form("No tracks in collection"));
       iTracks++;
       continue;
     }
-    if(!(track->TestFilterBit(768))) continue;
-    if((track->Pt())<0.2)
-    {
-      iTracks++;
+      //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
+    
+    if((eTrack->Pt())<0.2)
       continue;
-    }
+    
       //CHECK IF TRACK IS IN BOUNDARIES
-    Double_t phiTrack = track->Phi();
-    Double_t etaTrack = track->Eta();
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
     
     Double_t  radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
     
-    if(radius<fIsoConeRadius){ // if tracks are outside the isolation cone study
-      sumpTConeCharged+=track->Pt(); // should not double count if the track matching is already done
+    if(radius<fIsoConeRadius ){ // if tracks are outside the isolation cone study
+      sumpTConeCharged+=eTrack->Pt(); // should not double count if the track matching is already done
     }
-    iTracks++;
+    else{
+        // actually phi band here for Tracks also
+      if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius){
+          //        Printf("but phi similar, so UE EtaBand!!");
+        sumpTPhiBandCharged += eTrack->Pt();
+      }
+    }
   } // end of tracks loop
   
   fTestEnergyCone->Fill(sumEnergyConeClus,sumpTConeCharged);
   
   
   ptIso = sumEnergyConeClus + sumpTConeCharged;
-  phiBandclus = sumEnergyPhiBandClus;
+  phiBandclus = sumEnergyPhiBandClus + sumpTPhiBandCharged;
 }
 
 
@@ -1528,8 +1544,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Double_t &ptIso, Double_t &etaBandclus, Int_t index){
     // Underlying events study with clusters in eta band
   
-  Double_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0;
+  Double_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandCharged=0.;
   Double_t clustTOF=0;
+  Double_t minEta = -0.7, maxEta = 0.7;
   
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
@@ -1541,47 +1558,42 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       //  AliError(Form("Tourne bien sur les clusters"));
     if(localIndex==index) continue;
     
-    else{
-      TLorentzVector nClust; //STILL NOT INITIALIZED
-      (*it)->GetMomentum(nClust,fVertex);
+    TLorentzVector nClust; //STILL NOT INITIALIZED
+    (*it)->GetMomentum(nClust,fVertex);
+    
+    Double_t phiClust =nClust.Phi();
+    Double_t etaClust= nClust.Eta();
+    Double_t eTcluster=0, radius;
+    
+    
+    clustTOF = (*it)->GetTOF()*1e9;
+    if(!fIsMC)
+      if(clustTOF<-30 || clustTOF>30) continue;
+    
+    if(fTMClusterInConeRejected)//{Printf("CT Matching from EtIsoClusEtaBand");
+      if(ClustTrackMatching((*it))) continue;
+    
+    if(nClust.E()<0.3) continue;
+      //redefine phi/c.Eta() from the cluster we passed to the function
+    
+      // define the radius between the leading cluster and the considered cluster
+    radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2));
+    
+    if(radius>fIsoConeRadius){ // the cluster is outside the isolation cone in this case study UE
+                               // actually eta band here
+      if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
+        sumEnergyEtaBandClus += nClust.Pt();
+    }
+    else if(radius<fIsoConeRadius && radius!=0.){  // if the cluster is in the isolation cone, add the cluster pT
+                                                   //Printf("Cluster Not Matched, Inside the Cone, with Energy %.4lf",eTcluster);
+      sumEnergyConeClus += nClust.Pt();
+      fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
+      fTestIndex->Fill(index,localIndex);
       
-      Double_t phiClust =nClust.Phi();
-      Double_t etaClust= nClust.Eta();
-      Double_t eTcluster=0;
-      
-      
-      clustTOF = (*it)->GetTOF()*1e9;
-      if(!fIsMC)
-        if(clustTOF<-30 || clustTOF>30) continue;
-      
-      if(fTMClusterInConeRejected)//{Printf("CT Matching from EtIsoClusEtaBand");
-        if(ClustTrackMatching((*it))) continue;
-      
-      if(nClust.E()<0.3) continue;
-        //redefine phi/c.Eta() from the cluster we passed to the function
-      
-        // define the radius between the leading cluster and the considered cluster
-      Double_t  radius = TMath::Sqrt(TMath::Power(phiClust-c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2));
-      
-      if(radius>fIsoConeRadius){ // the cluster is outside the isolation cone in this case study UE
-        
-          // actually eta band here
-        if(TMath::Abs(etaClust - c.Eta()) < fIsoConeRadius)
-          sumEnergyEtaBandClus += nClust.Et();
-      }
-      else if(radius<fIsoConeRadius && radius!=0.){  // if the cluster is in the isolation cone, add the cluster pT
-        eTcluster=nClust.Pt();
-        
-          //Printf("Cluster Not Matched, Inside the Cone, with Energy %.4lf",eTcluster);
-        sumEnergyConeClus += nClust.Pt();
-        fTestEtaPhiCone->Fill(c.Eta(),c.Phi());
-        fTestIndex->Fill(index,localIndex);
-        
-        fTestLocalIndexE->Fill(eTcluster,localIndex);
-      }
+      fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
     }
   } // end of clusters loop
-//  Printf("Total Energy inside IsoCone from Clusters %.4lf",sumEnergyConeClus);
+    //  Printf("Total Energy inside IsoCone from Clusters %.4lf",sumEnergyConeClus);
   AliTrackContainer *tracks = GetTrackContainer(0);
   
   if(!tracks){
@@ -1589,44 +1601,45 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     return;
   }
   
-//  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
   tracks->ResetCurrentID();
-  AliAODTrack *eTrack = 0x0;
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack, etaTrack;
   
-//  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
-  while((eTrack = static_cast<AliAODTrack*>(tracks->GetNextAcceptParticle()))){
+    //  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
-//    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
+      //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
     
     if((eTrack->Pt())<0.2)
       continue;
     
       //CHECK IF TRACK IS IN BOUNDARIES
-    Double_t phiTrack = eTrack->Phi();
-    Double_t etaTrack = eTrack->Eta();
-//    Printf("Track with energy: %.4lf\t\t Eta: %.4lf \t Phi: %.4lf", eTrack->Pt(),etaTrack,phiTrack);
-    Double_t  radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
-//    Printf("Distance C-T: %.4lf",radius);
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
+      //    Printf("Track with energy: %.4lf\t\t Eta: %.4lf \t Phi: %.4lf", eTrack->Pt(),etaTrack,phiTrack);
+    radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
+      //    Printf("Distance C-T: %.4lf",radius);
     if(radius<fIsoConeRadius){ // if tracks are outside the isolation cone study
-      sumpTConeCharged+=eTrack->Pt(); // should not double count if the track matching is already done
-                                      //	AliError(Form("Tourne bien aussi sur les traces %f",sumpTConeCharged));
+      sumpTConeCharged += eTrack->Pt(); // should not double count if the track matching is already done
+                                        //	AliError(Form("Tourne bien aussi sur les traces %f",sumpTConeCharged));
     }
     else{
         // actually eta band here for Tracks also
       if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius){
-//        Printf("but phi similar, so UE EtaBand!!");
-        sumEnergyEtaBandClus += eTrack->Pt();
+          //        Printf("but phi similar, so UE EtaBand!!");
+        sumpTEtaBandCharged += eTrack->Pt();
       }
     }
   } // end of tracks loop
-//  Printf("Total Energy inside IsoCone from Tracks %.4lf",sumpTConeCharged);
+    //  Printf("Total Energy inside IsoCone from Tracks %.4lf",sumpTConeCharged);
   fTestEnergyCone->Fill(sumEnergyConeClus,sumpTConeCharged);
   
   ptIso = sumEnergyConeClus + sumpTConeCharged;
-  etaBandclus = sumEnergyEtaBandClus;
+  etaBandclus = sumEnergyEtaBandClus +sumpTEtaBandCharged;
 }
 
 
@@ -1644,47 +1657,43 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     minPhi = 1.4;
     maxPhi = TMath::Pi();
   }
-
-  fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
   
-  if (!fTracksAna){
+  AliTrackContainer *tracks = GetTrackContainer(0);
+  
+  if(!tracks){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-  const Int_t nbTracks = fTracksAna->GetEntries();
-  Int_t iTracks = 0;
   
-  
-  while(iTracks<nbTracks){
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksAna->At(iTracks));
-    if(!track){
+    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+  tracks->ResetCurrentID();
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack,etaTrack,radius;
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+    if(!eTrack){
       AliError(Form("No tracks in collection"));
-      iTracks++;
       continue;
     }
+    if((eTrack->Pt())<0.2)
+      continue;
     
-    if((track->Pt())<0.2){
-      iTracks++;
-      continue;
-    }
       //CHECK IF TRACK IS IN BOUNDARIES
-    Double_t phiTrack = track->Phi();
-    Double_t etaTrack = track->Eta();
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
       // define the radius between the leading cluster and the considered cluster
       //redefine phi/c.Eta() from the cluster we passed to the function
-    if(phiTrack < maxPhi && phiTrack > minPhi && etaTrack < maxEta && etaTrack > minEta){
-      Double_t  radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
+    if( (phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+      radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
       
       if(radius>fIsoConeRadius){ // if tracks are outside the isolation cone study
         
           // actually phi band here --- ADD Boundaries conditions
         if(TMath::Abs(etaTrack - c.Eta()) < fIsoConeRadius)
-          sumpTPhiBandTrack += track->Pt();
+          sumpTPhiBandTrack += eTrack->Pt();
       }
       else
-        sumpTConeCharged+=track->Pt(); // should not double count if the track matching is already done
+        sumpTConeCharged += eTrack->Pt(); // should not double count if the track matching is already done
     }
-    iTracks++;
   }
   ptIso = sumpTConeCharged;
   phiBandtrack = sumpTPhiBandTrack;
@@ -1705,45 +1714,42 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     minPhi = 1.4;
     maxPhi = TMath::Pi();
   }
+  AliTrackContainer *tracks = GetTrackContainer(0);
   
-  fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
-  
-  if (!fTracksAna){
+  if(!tracks){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-  const Int_t nbTracks = fTracksAna->GetEntries();
-  Int_t iTracks = 0;
   
-  
-  while(iTracks<nbTracks){
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksAna->At(iTracks));
-    
-    if(!track){
+    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+  tracks->ResetCurrentID();
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack,etaTrack,radius;
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+    if(!eTrack){
       AliError(Form("No tracks in collection"));
-      iTracks++;
       continue;
     }
+    if((eTrack->Pt())<0.2)
+      continue;
     
-    if((track->Pt())<0.2){
-      iTracks++;
-      continue;
-    }
-    Double_t phiTrack = track->Phi();
-    Double_t etaTrack = track->Eta();
+      //CHECK IF TRACK IS IN BOUNDARIES
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
+      // define the radius between the leading cluster and the considered cluster
       //redefine phi/c.Eta() from the cluster we passed to the function
-    if(phiTrack < maxPhi && phiTrack > minPhi && etaTrack < maxEta && etaTrack > minEta){
-      Double_t  radius = TMath::Sqrt(TMath::Power(phiTrack-c.Phi(),2)+TMath::Power(etaTrack-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
+    if( (phiTrack < maxPhi) && (phiTrack > minPhi) && (etaTrack < maxEta) && (etaTrack > minEta)){
+      radius = TMath::Sqrt(TMath::Power(phiTrack - c.Phi(),2)+TMath::Power(etaTrack - c.Eta(),2));
       
-      if(radius>fIsoConeRadius){ // if tracks are outside the isolation cone study UE
+      if(radius>fIsoConeRadius){ // if tracks are outside the isolation cone study
         
-          // actually eta band here --- ADD Boundaries conditions
+          // actually phi band here --- ADD Boundaries conditions
         if(TMath::Abs(phiTrack - c.Phi()) < fIsoConeRadius)
-          sumpTEtaBandTrack += track->Pt();
+          sumpTEtaBandTrack += eTrack->Pt();
       }
-      else sumpTConeCharged += track->Pt(); // should not double count if the track matching is already done
+      else
+        sumpTConeCharged += eTrack->Pt(); // should not double count if the track matching is already done
     }
-    iTracks++;
   }
   
   ptIso = sumpTConeCharged;
@@ -1764,46 +1770,39 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
   
   if (phiCone1 < 0.) phiCone1 += 2*TMath::Pi();
   
-  fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
+  AliTrackContainer *tracks = GetTrackContainer(0);
   
-  if (!fTracksAna){
+  if(!tracks){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   
-  const Int_t nbTracks = fTracksAna->GetEntries();
-  Int_t iTracks = 0;
-  
-  while(iTracks<nbTracks){
-    
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksAna->At(iTracks));
-    
-    if(!track){
+    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+  tracks->ResetCurrentID();
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack,etaTrack,dist2Clust,dist2Cone1,dist2Cone2;
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+    if(!eTrack){
       AliError(Form("No tracks in collection"));
-      iTracks++;
       continue;
     }
-    
-    if((track->Pt())<0.2){
-      iTracks++;
+    if((eTrack->Pt())<0.2)
       continue;
-    }
     
-    Double_t phiTrack = track->Phi();
-    Double_t etaTrack = track->Eta();
-    Double_t dist2Clust = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiClus, 2));
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
+    dist2Clust = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiClus, 2));
     
-    if (dist2Clust<fIsoConeRadius) sumpTConeCharged += track->Pt(); // tracks are inside the isolation cone
+    if (dist2Clust<fIsoConeRadius) sumpTConeCharged += eTrack->Pt(); // tracks are inside the isolation cone
     
     else{//tracks outside the IsoCone
-     //Distances from the centres of the two Orthogonal Cones
-      Double_t dist2Cone1 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone1, 2));
-      Double_t dist2Cone2 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone2, 2));
+         //Distances from the centres of the two Orthogonal Cones
+      dist2Cone1 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone1, 2));
+      dist2Cone2 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone2, 2));
       
         //Is the Track Inside one of the two Cones ->Add to UE
-      if((dist2Cone1 < fIsoConeRadius) || (dist2Cone2 < fIsoConeRadius)) sumpTPerpConeTrack += track->Pt();
+      if((dist2Cone1 < fIsoConeRadius) || (dist2Cone2 < fIsoConeRadius)) sumpTPerpConeTrack += eTrack->Pt();
     }
-    iTracks++;
   }
   
   ptIso = sumpTConeCharged;
@@ -1816,46 +1815,38 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
   
   Double_t sumpTConeCharged=0., sumpTTPCexceptB2B=0.;
   
-  fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
+  AliTrackContainer *tracks = GetTrackContainer(0);
   
-  if (!fTracksAna){
+  if(!tracks){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   
-  const Int_t nbTracks = fTracksAna->GetEntries();
-  Int_t iTracks = 0;
-  
-  while(iTracks<nbTracks){
-    
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksAna->At(iTracks));
-    
-    if(!track){
+    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
+  tracks->ResetCurrentID();
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack,etaTrack,radius, dphiUp, dphiDown;
+  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+    if(!eTrack){
       AliError(Form("No tracks in collection"));
-      iTracks++;
       continue;
     }
-    
-    if((track->Pt())<0.2){
-      iTracks++;
+    if((eTrack->Pt())<0.2)
       continue;
-    }
     
-    Double_t phiTrack = track->Phi();
-    Double_t etaTrack = track->Eta();
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
       //redefine phi/c.Eta() from the cluster we passed to the function
-    Double_t  radius = TMath::Sqrt(TMath::Power(phiTrack-c.Phi(),2)+TMath::Power(etaTrack-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
+    radius = TMath::Sqrt(TMath::Power(phiTrack-c.Phi(),2)+TMath::Power(etaTrack-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
     
     if(radius>fIsoConeRadius){ // if tracks are outside the isolation cone study UE
-      Double_t dphiUp = c.Phi() + TMath::Pi() - fIsoConeRadius;
-      Double_t dphiDown = c.Phi() + TMath::Pi() + fIsoConeRadius;
+      dphiUp = c.Phi() + TMath::Pi() - fIsoConeRadius;
+      dphiDown = c.Phi() + TMath::Pi() + fIsoConeRadius;
         // TPC except B2B
-      if(phiTrack < dphiDown && phiTrack> dphiUp) sumpTTPCexceptB2B += track->Pt();
+      if(phiTrack < dphiDown && phiTrack> dphiUp) sumpTTPCexceptB2B += eTrack->Pt();
     }
+    else sumpTConeCharged += eTrack->Pt(); // should not double count if the track matching is already done
     
-    else sumpTConeCharged += track->Pt(); // should not double count if the track matching is already done
-    
-    iTracks++;
   }
   
   ptIso = sumpTConeCharged;
@@ -2096,7 +2087,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *coi, TLorentzVector vecCOI, Int_t index){
     //AliInfo("Inside FillGeneralHistograms\n");
-//    Printf("Inside FillGeneralHistograms\n");
+    //    Printf("Inside FillGeneralHistograms\n");
     // Fill the histograms for underlying events and isolation studies
     // AliError(Form("Arrive bien dans fill general histograms"));
   
@@ -2105,7 +2096,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   AliTrackContainer *tracks = GetTrackContainer(0);
     //Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
   tracks->ResetCurrentID();
-  AliAODTrack *emcTrack = static_cast<AliAODTrack*>(tracks->GetNextAcceptParticle());
+  AliVTrack *emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
     //
   int nTracks=0;
     // tracks->ResetCurrentID();
@@ -2114,13 +2105,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       //  if(!track) continue;
       // if(!(track->TestFilterBit("kHybrid"))) continue;
     nTracks++;
-    emcTrack = static_cast<AliAODTrack*>(tracks->GetNextAcceptParticle());
+    emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
   }
-//  Printf("Ntracks for the event with this cluster: %d", nTracks);
+    //  Printf("Ntracks for the event with this cluster: %d", nTracks);
   fTrackMult->Fill(nTracks);
   
   AliError(Form("On est après la boucle de traces"));
-//  Printf("After Loop on Tracks");
+    //  Printf("After Loop on Tracks");
   Double_t eTCOI = 0., m02COI = 0.;
   
     //Definition of the Array for Davide's Output
@@ -2454,7 +2445,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       
       fOutputTHnS -> Fill(outputValues);
       break;
-
+      
   }
   return kTRUE;
 }
