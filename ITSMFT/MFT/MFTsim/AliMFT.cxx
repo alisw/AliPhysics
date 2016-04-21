@@ -223,13 +223,13 @@ void AliMFT::CreateMaterials() {
   Float_t wPolyimide[nPolyimide] = {0.00942, 0.56089, 0.13082, 0.29887};
   Float_t dPolyimide = 1.4;   
 
-	// PEEK mixture (Polyether Ether Ketone)
-	const Int_t nPEEK = 3;
-	Float_t   aPEEK[nPEEK] = {1.00794, 12.0107, 15.9994} ;
-	Float_t   zPEEK[nPEEK] = {1,       6,        8} ;
-	Float_t   wPEEK[nPEEK] = {0.06713, 0.40001,  0.53285} ;
-	Float_t   dPEEK = 1.32;
-
+  // PEEK mixture (Polyether Ether Ketone)
+  const Int_t nPEEK = 3;
+  Float_t   aPEEK[nPEEK] = {1.00794, 12.0107, 15.9994} ;
+  Float_t   zPEEK[nPEEK] = {1,       6,        8} ;
+  Float_t   wPEEK[nPEEK] = {0.06713, 0.40001,  0.53285} ;
+  Float_t   dPEEK = 1.32;
+  
   // (Printed Circuit Board), material type FR4
   const Int_t nFR4 = 5;
   Float_t   aFR4[nFR4] = {1.00794,    12.0107, 15.9994, 28.0855,   79.904} ;
@@ -237,6 +237,25 @@ void AliMFT::CreateMaterials() {
   Float_t   wFR4[nFR4] = {0.0684428,  0.278042,0.405633, 0.180774,    0.0671091} ;
   Float_t   dFR4 = 1.7; //Density FR4= 1.7 Cu=8.96
 
+
+  //======================== From ITS code ===================================
+  //X7R capacitors - updated from F.Tosello's web page - M.S. 18 Oct 10
+  // 58.6928 --> innner electrodes (mainly Ni)
+  // 63.5460 --> terminaisons (Cu) 
+  // 118.710 --> terminaisons (Sn)
+  // 137.327 Ba, 47.867 Ti, 15.9994 O  (mainly BaTiO3)
+  Float_t aX7R[6]={137.327,47.867,15.9994,58.6928,63.5460,118.710};
+  Float_t zX7R[6]={56.,22.,8.,28.,29.,50.};
+  Float_t wX7R[6]={0.524732,0.176736,0.179282,0.079750,0.019750,0.019750};
+  Float_t dX7R = 6.07914;
+  
+  //X7R weld, i.e. Sn 60% Pb 40% (from F.Tosello's web page - M.S. 15 Oct 10)
+  
+  Float_t aX7Rweld[2]={118.71 , 207.20};
+  Float_t zX7Rweld[2]={ 50.   ,  82.  };
+  Float_t wX7Rweld[2]={  0.60 ,   0.40};
+  Float_t dX7Rweld   = 8.52358;
+  //==========================================================================
   
   Int_t   matId  = 0;                        // tmp material id number
   Int_t   unsens = 0, sens=1;                // sensitive or unsensitive medium
@@ -327,14 +346,22 @@ void AliMFT::CreateMaterials() {
   AliMixture(++matId,  "Polyimide", aPolyimide, zPolyimide, dPolyimide, nPolyimide, wPolyimide);
   AliMedium(kPolyimide, "Polyimide", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 	
-	AliMixture(++matId, "PEEK$", aPEEK, zPEEK, dPEEK, nPEEK, wPEEK);
-	AliMedium(kPEEK,    "PEEK$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMixture(++matId, "PEEK$", aPEEK, zPEEK, dPEEK, nPEEK, wPEEK);
+  AliMedium(kPEEK,    "PEEK$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMixture(++matId, "FR4$", aFR4, zFR4, dFR4, nFR4, wFR4);
   AliMedium(kFR4,    "FR4$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
   AliMaterial(++matId, "Cu$", aCu, zCu, dCu, radCu, absCu);
   AliMedium(kCu,       "Cu$", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+ 
+  AliMixture(++matId, "X7Rcapacitors$",aX7R,zX7R,dX7R,6,wX7R);
+  AliMedium(kX7R,     "X7Rcapacitors$",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+
+  AliMixture(++matId, "X7Rweld$",aX7Rweld,zX7Rweld,dX7Rweld,2,wX7Rweld);
+  AliMedium(kX7Rw,    "X7Rweld$",matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+
+
 
   AliDebug(1,"End MFT materials");
   
