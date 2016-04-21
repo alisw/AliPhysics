@@ -1,6 +1,18 @@
 #ifndef ALIANALYSISTASKEMCALJETSHAPESMC_H
 #define ALIANALYSISTASKEMCALJETSHAPESMC_H
 
+
+/// \class AliAnalysisTaskEmcalJetShapesMC
+/// \brief Task to store and correlate the MC shapes
+///
+/// Task to store in a tree a certain number of jet shapes at generated level.
+/// This can be used both for MC studies and as input for TMVA analysis.
+/// No subtraction is implemented for the moment even the fglag are in place.
+///
+/// \author Alice Davide Caffarri <davide.caffarri@cern.ch>, CERN
+/// \author Alice Leticia Cunqueiro Mendez <leticia.cunqueiro.mendez@cern.ch>, Westfaelische Wilhelms-Universitaet Muenster (DE)
+/// \date Apr 21, 2016
+
 class TH1;
 class TH2;
 class TH3;
@@ -108,7 +120,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                            *fShapesVar;                  // jet shapes used for the tagging
+  Float_t                            *fShapesVar;//!<!      jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
@@ -127,24 +139,24 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fDerivSubtrOrder;
 
   
-  TH2F                                *fPhiJetCorr6;
-  TH2F                                *fPhiJetCorr7;
-  TH2F                                *fEtaJetCorr6;
-  TH2F                                *fEtaJetCorr7;
-  TH2F                                *fPtJetCorr;
-  TH1F                                *fPtJet;
-  TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
-  TH1F                                *fhPt;
-  TH1F                                *fhPhi;
-  TH2F                                *fNbOfConstvspT;
+  TH2F                                *fPhiJetCorr6;//!<!
+  TH2F                                *fPhiJetCorr7;//!<!
+  TH2F                                *fEtaJetCorr6;//!<!
+  TH2F                                *fEtaJetCorr7;//!<!
+  TH2F                                *fPtJetCorr;//!<!
+  TH1F                                *fPtJet;//!<!
+  TH2F                                *fhpTjetpT; //!<! control plot fo the recoil analysis
+  TH1F                                *fhPt;//!<!
+  TH1F                                *fhPhi;//!<!
+  TH2F                                *fNbOfConstvspT;//!<!
 
-  TTree           *fTreeObservableTagging;  //Tree with tagging variables subtracted MC or true MC or raw 
+  TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
 
  private:
   AliAnalysisTaskEmcalJetShapesMC(const AliAnalysisTaskEmcalJetShapesMC&);            // not implemented
   AliAnalysisTaskEmcalJetShapesMC &operator=(const AliAnalysisTaskEmcalJetShapesMC&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetShapesMC, 6)
+  ClassDef(AliAnalysisTaskEmcalJetShapesMC, 1);
 };
 #endif
 
