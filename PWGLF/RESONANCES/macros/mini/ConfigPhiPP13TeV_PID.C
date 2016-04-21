@@ -106,7 +106,7 @@ Bool_t ConfigPhiPP13TeV_PID
 
     //axis X: invmass (or resolution)
     if(useIM[i]==1) out->AddAxis(imID,215,0.985,1.2);
-    if(useIM[i]==2) out->AddAxis(mmID,75,0.985,1.06);
+    else if(useIM[i]==2) out->AddAxis(mmID,75,0.985,1.06);
     else out->AddAxis(diffID,200,-0.02,0.02);
 
     //axis Y: transverse momentum of pair as default - else chosen value
