@@ -40,7 +40,7 @@
 #include "AliESDEvent.h"
 #include "AliVertexerTracks.h"
 
-#include "../STEER/AliSymMatrix.h"
+#include "AliSymMatrix.h"
 #include <iostream>
 
 using namespace std;

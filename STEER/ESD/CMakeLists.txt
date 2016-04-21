@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 # Additional include directories - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
 		    ${AliRoot_SOURCE_DIR}/RAW/dateStream)
 
 # Sources - alphabetical order
