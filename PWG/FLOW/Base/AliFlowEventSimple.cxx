@@ -87,6 +87,9 @@ AliFlowEventSimple::AliFlowEventSimple():
    fZNCQ[i] = 0.;
    fZNAQ[i] = 0.;
   }
+  for(Int_t i(0); i < 3; i++) {
+    fVtxPos[i] = 0.;
+  }
   cout << "AliFlowEventSimple: Default constructor to be used only by root for io" << endl;
 }
 
@@ -142,6 +145,9 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
    fZNCQ[i] = 0.;
    fZNAQ[i] = 0.;
   }
+  for(Int_t i(0); i < 3; i++) {
+    fVtxPos[i] = 0.;
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -184,6 +190,9 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   for(Int_t i(0); i < 2; i++) {
    fZNCQ[i] = anEvent.fZNCQ[i];
    fZNAQ[i] = anEvent.fZNAQ[i];
+  }
+  for(Int_t i(0); i < 3; i++) {
+    fVtxPos[i] = anEvent.fVtxPos[i];
   }
 }
 
@@ -256,6 +265,9 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   for(Int_t i(0); i < 2; i++) {
    fZNCQ[i] = anEvent.fZNCQ[i];
    fZNAQ[i] = anEvent.fZNAQ[i];
+  }
+  for(Int_t i(0); i < 3; i++) {
+    fVtxPos[i] = anEvent.fVtxPos[i];
   }
   delete [] fShuffledIndexes;
   return *this;
@@ -722,6 +734,22 @@ void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, 
  fZNAM = MA;
 }
 //-----------------------------------------------------------------------
+void AliFlowEventSimple::GetVertexPosition(Double_t* pos)
+{
+  pos[0] = fVtxPos[0];
+  pos[1] = fVtxPos[1];
+  pos[2] = fVtxPos[2];
+}
+
+//-----------------------------------------------------------------------------
+
+void AliFlowEventSimple::SetVertexPosition(Double_t* pos)
+{
+  fVtxPos[0] = pos[0];
+  fVtxPos[1] = pos[1];
+  fVtxPos[2] = pos[2];
+}
+//-----------------------------------------------------------------------
 
 void AliFlowEventSimple::Print(Option_t *option) const
 {
@@ -852,6 +880,9 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   for(Int_t i(0); i < 2; i++) {
    fZNCQ[i] = 0.;
    fZNAQ[i] = 0.;
+  }
+  for(Int_t i(0); i < 3; i++) {
+    fVtxPos[i] = 0.;
   }
 }
 
