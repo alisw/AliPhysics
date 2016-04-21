@@ -189,15 +189,25 @@ Bool_t AliJJetTask::FillHistograms()
     if(debug > 0){
       cout << "mcTracksCont->GetNParticles(): " << mcTracksCont->GetNParticles() << endl;
     }
+    int tracks = 0;
     for (int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
       AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
+      if(!(track->IsPhysicalPrimary())) continue;
+      if(TMath::Abs(track->Eta())>1.0) continue;
+      if(track->Charge() == 0) continue;
       new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
+      tracks++;
       if(debug > 0){
         cout << "Track " << itrack << " Px: " << track->Px() << " Py: " << track->Py() << " Pz: " << track->Pz() << " charge: " << track->Charge() << endl;
+        track->Print();
+        cout << "pT " << track->Pt() << " eta: " << track->Eta() << endl;
       }
       AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
       particle->SetPdgCode(track->GetPdgCode());
     }     
+    if(debug > 0){
+      cout << "Number of accepted tracks: " << tracks << endl;
+    }
   }
 
   AliClusterContainer *clusterCont = GetClusterContainer(0);
