@@ -161,8 +161,6 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
-  rtime = 0;
-  revent = 0;
   Init();
 }
 
@@ -581,10 +579,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     Error("Exec","vEvent not available");
     return;
   }
-
-    TStopwatch Watch;
-    Watch.Start();
-
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
@@ -744,18 +738,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
   if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
   else FillEventHistogram(vTPCEvent);
-  
-    rtime +=Watch.RealTime()*1000;
-    revent++;
-    cout<<"For event "<<revent<<"TPC Event processing time "<<rtime/revent<<endl;
-    Watch.Stop();
-
-    Double_t vtxPosition[3]= {0.,0.,0.};
-  vVertex->GetXYZ(vtxPosition);
-  Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
-  if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
-  else FillEventHistogram(vTPCEvent);
-  
 }
 
 
