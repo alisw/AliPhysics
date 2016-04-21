@@ -220,7 +220,7 @@ void AliPerformanceMatch::Init(){
       }
       else{
           h_tpc_match_trackingeff_all_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
-          h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
+          h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_tpc_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
           fFolderObj->Add(h_tpc_match_trackingeff_all_2_3);
           fFolderObj->Add(h_tpc_match_trackingeff_tpc_2_3);
       }
