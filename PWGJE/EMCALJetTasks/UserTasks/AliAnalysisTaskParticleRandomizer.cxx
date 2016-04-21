@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <iostream>
 
+#include <iostream>
 #include <TRandom3.h>
 #include <AliLog.h>
 #include <TString.h>
@@ -24,8 +24,9 @@
 #include <AliRhoParameter.h>
 #include "AliAnalysisTaskParticleRandomizer.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskParticleRandomizer)
+/// \endcond
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
