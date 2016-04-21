@@ -47,6 +47,7 @@ AliJXtAnalysis::AliJXtAnalysis()
 	fzvertexRange(10.0),
 	fMinIsolPt(2.0),
 	fEfficiency(0x0),
+	fEfficiencyIsolated(0x0),
 	fEffMode(1),
 	fTrackFilterBit(0),
 	fEffFilterBit(0),
@@ -56,7 +57,8 @@ AliJXtAnalysis::AliJXtAnalysis()
  	fh_cent(),
 	fh_ntracks(),
 	fh_effCorr(),
- 	fh_vertex(),
+ 	fh_effCorrIsolated(),
+	fh_vertex(),
  	fh_ptJacek(),
  	fh_charPt(),
 	fh_invCharPt(),
@@ -129,6 +131,7 @@ AliJXtAnalysis::AliJXtAnalysis(const char *name)
 	fzvertexRange(10.0),
 	fMinIsolPt(2.0),
         fEfficiency(0x0),
+	fEfficiencyIsolated(0x0),
 	fEffMode(1),
 	fTrackFilterBit(0),
 	fEffFilterBit(0),
@@ -138,6 +141,7 @@ AliJXtAnalysis::AliJXtAnalysis(const char *name)
 	fh_cent(),
 	fh_ntracks(),
 	fh_effCorr(),
+	fh_effCorrIsolated(),
 	fh_vertex(),
 	fh_ptJacek(),
 	fh_charPt(),
@@ -215,6 +219,7 @@ AliJXtAnalysis::AliJXtAnalysis(const AliJXtAnalysis& a):
 	fzvertexRange(a.fzvertexRange),
 	fMinIsolPt(a.fMinIsolPt),
 	fEfficiency(a.fEfficiency),
+	fEfficiencyIsolated(a.fEfficiencyIsolated),
 	fEffMode(a.fEffMode),
 	fTrackFilterBit(a.fTrackFilterBit),
 	fEffFilterBit(a.fEffFilterBit),
@@ -224,6 +229,7 @@ AliJXtAnalysis::AliJXtAnalysis(const AliJXtAnalysis& a):
 	fh_cent(a.fh_cent),
 	fh_ntracks(a.fh_ntracks),
 	fh_effCorr(a.fh_effCorr),
+	fh_effCorrIsolated(a.fh_effCorrIsolated),
 	fh_vertex(a.fh_vertex),
 	fh_ptJacek(a.fh_ptJacek),
 	fh_charPt(a.fh_charPt),
@@ -368,6 +374,10 @@ void AliJXtAnalysis::UserCreateOutputObjects(){
 		<< TProfile("pEffCorr", "pEffCorr", fnBinsPt, fLogBinsPt)
 		<< "END" ;
 	
+	fh_effCorrIsolated
+		<< TProfile("pEffCorrIsolated", "pEffCorrIsolated", fnBinsPt, fLogBinsPt)
+		<< "END" ;
+	
 	fh_coneActivity
 		<< TProfile("pConeActivity", "pConeActivity", fnBinsPt, fLogBinsPt)
 		<< "END" ;
@@ -433,15 +443,15 @@ void AliJXtAnalysis::UserExec(Option_t *) {
 		double effCorr = 1./fEfficiency->GetCorrection(pT, fEffFilterBit, inputCent);
 		FillEfficiencyCheckHistogram(pT,effCorr);
 		
-		// Fill controll histograms
+		// Fill controll histograms. Note: still in full ALICE acceptance
 		FillControlHistograms(pT, effCorr, fCBin);
 		
-		// Fill inclusive histograms
+		// Restric to fiducial acceptance and fill inclusive histograms
+		if( eta < -fetaRange + fisolR || eta > fetaRange - fisolR ) continue; // Fiducial eta cut
 		FillInclusiveHistograms(pT, xT, eta, phi, effCorr, fCBin);
 		
 		// BEGIN ISOLATION:
 		if( pT < fMinIsolPt ) continue; // minimum pT cut
-		if( eta < -fetaRange + fisolR || eta > fetaRange - fisolR ) continue; // Fiducial eta cut
 		
 		double sum = 0.0;
 		TLorentzVector lvTrack = TLorentzVector( track->Px(), track->Py(), track->Pz(), track->P() );
@@ -453,7 +463,7 @@ void AliJXtAnalysis::UserExec(Option_t *) {
 		}
 		
 		// Cone activity
-		FillInclusiveConeActivities(pT,sum);  // efficiency correction?
+		FillInclusiveConeActivities(pT,sum);
 		
 		// TODO: final criteria will come from isolation efficiency class
 		double isolThreshold = 0.1 * pT;
@@ -464,10 +474,11 @@ void AliJXtAnalysis::UserExec(Option_t *) {
 				cout << "fCentBin = " << fCentBin << ", pT = " << pT << ", xT = " << xT << " and eta = " << eta << endl;
 			}
 			
-			FillIsolatedConeActivities(pT, sum);  // efficiency correction?
+			FillIsolatedConeActivities(pT, sum);
 
-			// TODO:
-			double effCorr = 1.0;
+			// isolated efficiency
+			double effCorr = 1./fEfficiencyIsolated->GetCorrection(pT, fEffFilterBit, inputCent);
+			FillIsolatedEfficiencyCheckHistogram(pT, effCorr);
 			
 			// Fill histos
 			FillIsolatedHistograms(pT, xT, eta, phi, effCorr, fCBin);
@@ -483,10 +494,14 @@ void AliJXtAnalysis::FillEfficiencyCheckHistogram(double pT, double effCorr){
 	fh_effCorr->Fill(pT,1./effCorr);
 }
 //________________________________________________________________________
+void AliJXtAnalysis::FillIsolatedEfficiencyCheckHistogram(double pT, double effCorr){
+	// to check the efficiency
+	fh_effCorrIsolated->Fill(pT,1./effCorr);
+}
+//________________________________________________________________________
 void AliJXtAnalysis::FillControlHistograms(double pT, double effCorr, int centBin){
-	// For checks
+	// To compare with the published data, here the same binning as compared published
 	fh_ptJacek[centBin]->Fill(pT, effCorr);
-	fh_charPtNoEff[centBin]->Fill(pT);
 }
 //________________________________________________________________________
 void AliJXtAnalysis::FillInclusiveHistograms(double pT, double xT, double eta, double phi, double effCorr, int centBin){
@@ -494,6 +509,7 @@ void AliJXtAnalysis::FillInclusiveHistograms(double pT, double xT, double eta, d
 	fh_charEta[centBin]->Fill(eta, effCorr);
 	fh_charPhi[centBin]->Fill(phi, effCorr);
 	fh_charPt[centBin]->Fill(pT, effCorr);
+	fh_charPtNoEff[centBin]->Fill(pT);
 	fh_charXt[centBin]->Fill(xT, effCorr);
 	fh_invCharPt[centBin]->Fill(pT, pT > 0. ? effCorr/pT : 0.); // Can you do 1/pT here???
 	fh_invCharXt[centBin]->Fill(xT, xT > 0. ? effCorr/xT : 0.); // Can you do 1/xT here???
@@ -504,6 +520,7 @@ void AliJXtAnalysis::FillIsolatedHistograms(double pT, double xT, double eta, do
 	fh_isolCharEta[centBin]->Fill(eta, effCorr);
 	fh_isolCharPhi[centBin]->Fill(phi, effCorr);
 	fh_isolCharPt[centBin]->Fill(pT, effCorr);
+	fh_isolCharPtNoEff[centBin]->Fill(pT);
 	fh_isolCharXt[centBin]->Fill(xT, effCorr);
 	fh_isolInvCharPt[centBin]->Fill(pT, pT > 0. ? effCorr/pT : 0.); // Can you do 1/pT here???
 	fh_isolInvCharXt[centBin]->Fill(xT, xT > 0. ? effCorr/xT : 0.); // Can you do 1/xT here???
@@ -522,4 +539,4 @@ void AliJXtAnalysis::Terminate(Option_t *)
 	cout<<"Successfully Finished"<<endl;
 }
 //________________________________________________________________________
-
+;
