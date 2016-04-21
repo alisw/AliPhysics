@@ -161,8 +161,6 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
-  rtime = 0;
-  revent = 0;
   Init();
 }
 
@@ -581,12 +579,15 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     Error("Exec","vEvent not available");
     return;
   }
+<<<<<<< fd68ec09a01a192fc1345a17883bfea34d06fede
 
     TStopwatch Watch;
     Watch.Start();
 
 <<<<<<< 78b6a213d3cdaea9af86d895edd1f71d8c99ff7a
 =======
+=======
+>>>>>>> Removed test couts and made sure AliPerformanceTask uses AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetEvent()
     
 >>>>>>> More pointer protection
   AliHeader* header = 0;
@@ -748,18 +749,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
   if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
   else FillEventHistogram(vTPCEvent);
-  
-    rtime +=Watch.RealTime()*1000;
-    revent++;
-    cout<<"For event "<<revent<<"TPC Event processing time "<<rtime/revent<<endl;
-    Watch.Stop();
-
-    Double_t vtxPosition[3]= {0.,0.,0.};
-  vVertex->GetXYZ(vtxPosition);
-  Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
-  if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
-  else FillEventHistogram(vTPCEvent);
-  
 }
 
 
