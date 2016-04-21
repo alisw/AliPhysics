@@ -270,6 +270,7 @@ void AliPerformanceTPC::Init()
         h_tpc_clust_0_1_2->GetXaxis()->SetTitle("padRow");
         h_tpc_clust_0_1_2->GetYaxis()->SetTitle("phi (rad)");
         h_tpc_clust_0_1_2->GetZaxis()->SetTitle("TPCSide");
+        fFolderObj->Add(h_tpc_clust_0_1_2);
     }
     
   Float_t scaleVxy = 1.0;
@@ -969,29 +970,32 @@ TTree* AliPerformanceTPC::CreateSummary()
 
 void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
 
-    h_tpc_event_6->Fill(vTPCEvent[6]);
+    if(!vTPCEvent) return;
+    
+    if(h_tpc_event_6) h_tpc_event_6->Fill(vTPCEvent[6]);
     if(vTPCEvent[6]>0.001){
-        h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
-        h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
-        h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
-        h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
-        h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
-        h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
+        if (h_tpc_event_recvertex_0) h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
+        if (h_tpc_event_recvertex_1) h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
+        if (h_tpc_event_recvertex_2) h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
+        if (h_tpc_event_recvertex_3) h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
+        if (h_tpc_event_recvertex_4) h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
+        if (h_tpc_event_recvertex_5) h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
     }
 
 }
 
 void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
 
-    h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
-    h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(!vTPCTrackHisto) return;
+    if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
+    if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     
     double q = vTPCTrackHisto[8];
     
-    h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    if(q > 0) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    else h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if (h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    if(q > 0 && h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+    else if (h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     
     h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     if(q > 0) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
