@@ -315,11 +315,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
      // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0) 
   //,fh2ChTracksPC(0)  
-  // ,fh2MCgenK0Cone(0)
-  // ,fh2MCgenLaCone(0)
+  ,fh2MCgenK0Cone(0)
+  ,fh2MCgenLaCone(0)
   // ,fh2MCgenALaCone(0) 
-  // ,fh2MCEtagenK0Cone(0)
-  // ,fh2MCEtagenLaCone(0)
+  ,fh2MCEtagenK0Cone(0)
+  ,fh2MCEtagenLaCone(0)
   // ,fh2MCEtagenALaCone(0)
   /*  ,fh2CorrHijingLaProton(0)
    ,fh2CorrInjectLaProton(0)
@@ -652,11 +652,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
     // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0)
   //,fh2ChTracksPC(0)
-    //,fh2MCgenK0Cone(0)
-    //,fh2MCgenLaCone(0)
+   ,fh2MCgenK0Cone(0)
+   ,fh2MCgenLaCone(0)
     //,fh2MCgenALaCone(0)
-    //,fh2MCEtagenK0Cone(0)
-    //,fh2MCEtagenLaCone(0)
+   ,fh2MCEtagenK0Cone(0)
+   ,fh2MCEtagenLaCone(0)
     //,fh2MCEtagenALaCone(0)
   /* ,fh2CorrHijingLaProton(0)
   ,fh2CorrInjectLaProton(0)
@@ -992,11 +992,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
     // ,fh2ChTracksOC(copy.fh2ChTracksOC)
   //,fh2ChTracksMCC(copy.fh2ChTracksMCC)
   //,fh2ChTracksPC(copy.fh2ChTracksPC)
-    //,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
-    //,fh2MCgenLaCone(copy.fh2MCgenLaCone)
+   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
+   ,fh2MCgenLaCone(copy.fh2MCgenLaCone)
     //,fh2MCgenALaCone(copy.fh2MCgenALaCone)
-    //,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
-    //,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
+   ,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
+   ,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
     //,fh2MCEtagenALaCone(copy.fh2MCEtagenALaCone)
   /* ,fh2CorrHijingLaProton(copy.fh2CorrHijingLaProton)
   ,fh2CorrInjectLaProton(copy.fh2CorrInjectLaProton)
@@ -1331,11 +1331,11 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     //   fh2ChTracksOC                   = o.fh2ChTracksOC;
     //fh2ChTracksMCC                  = o.fh2ChTracksMCC;
     //fh2ChTracksPC                   = o.fh2ChTracksPC;
-    //fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
-    //fh2MCgenLaCone                  = o.fh2MCgenLaCone;
+    fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
+    fh2MCgenLaCone                  = o.fh2MCgenLaCone;
     //fh2MCgenALaCone                 = o.fh2MCgenALaCone; 
-    //fh2MCEtagenK0Cone               = o.fh2MCEtagenK0Cone;
-    //fh2MCEtagenLaCone               = o.fh2MCEtagenLaCone;
+    fh2MCEtagenK0Cone               = o.fh2MCEtagenK0Cone;
+    fh2MCEtagenLaCone               = o.fh2MCEtagenLaCone;
     //fh2MCEtagenALaCone              = o.fh2MCEtagenALaCone;
     fh1IMK0ConeSmear                = o.fh1IMK0ConeSmear;
     fh1IMLaConeSmear                = o.fh1IMLaConeSmear;
@@ -2055,16 +2055,16 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   // MC histograms
   //***************
 
-  //fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
-  //fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
   //fh2MCgenALaCone               = new TH2F("fh2MCgenALaCone", "MC gen #Antilambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
 
-  //fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
-  //fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
+  fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
+  fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
   //fh2MCgenALaCone->GetYaxis()->SetTitle("MC gen #Antilambda #it{p}_{T}");
 
-  //fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
-  //fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
   //fh2MCEtagenALaCone            = new TH2F("fh2MCEtagenALaCone","MC gen #Antilambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
   
   fh1IMK0ConeSmear                = new TH1F("fh1IMK0ConeSmear","Smeared jet pt study for K0s-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
@@ -2432,11 +2432,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     //    fCommonHistList->Add(fh2ChTracksOC);
     //fCommonHistList->Add(fh2ChTracksMCC);
     //fCommonHistList->Add(fh2ChTracksPC);
-    //fCommonHistList->Add(fh2MCgenK0Cone);
-    //fCommonHistList->Add(fh2MCgenLaCone);
+    fCommonHistList->Add(fh2MCgenK0Cone);
+    fCommonHistList->Add(fh2MCgenLaCone);
     //fCommonHistList->Add(fh2MCgenALaCone);
-    //fCommonHistList->Add(fh2MCEtagenK0Cone);
-    //fCommonHistList->Add(fh2MCEtagenLaCone);
+    fCommonHistList->Add(fh2MCEtagenK0Cone);
+    fCommonHistList->Add(fh2MCEtagenLaCone);
     //fCommonHistList->Add(fh2MCEtagenALaCone);
     /* fCommonHistList->Add(fh2CorrHijingLaProton);
     fCommonHistList->Add(fh2CorrInjectLaProton);
@@ -4839,7 +4839,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(fDebug>2)Printf("%s:%d nMCgenK0s in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,fListMCgenK0sCone->GetEntries(),GetFFRadius());
 	
 	
-	/*	for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){ // loop MC generated K0s in cone around jet axis
+        for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){ // loop MC generated K0s in cone around jet axis
 	  
 	  AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0sCone->At(it));
 	  if(!mcp0) continue;
@@ -4848,17 +4848,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenK0s   = mcp0->Eta();
 	  Double_t fPtMCgenK0s    = mcp0->Pt();
 	  
-	  //fh2MCgenK0Cone->Fill(jetPt,fPtMCgenK0s); 
-	  // fh2MCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
+	  fh2MCgenK0Cone->Fill(jetPt,fPtMCgenK0s); 
+	  fh2MCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
 	  
 	  }
 	
 	//check whether the reconstructed K0s in jet cone are stemming from MC gen K0s (on MCgenK0s list):__________________________________________________
-       
+	/*
 	for(Int_t ic=0; ic<jetConeK0list->GetSize(); ++ic){    //loop over all reconstructed K0s in jet cone
- 
-	//for(Int_t ic=0; ic<fListK0s->GetSize(); ++ic){     //loop over all reconstructed K0s -> previous definition of reconstruction efficiency, not sure what is the better one to choose
-	   
+ 	   
 	  Int_t negDaughterpdg;
 	  Int_t posDaughterpdg;
 	  Int_t motherType;
@@ -4873,8 +4871,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t jetPtSmear = -1;
 
 	  AliAODv0* v0c = dynamic_cast<AliAODv0*>(jetConeK0list->At(ic));//pointer to reconstructed K0s inside jet cone (cone is placed around reconstructed jet axis)
-	  
-	  //AliAODv0* v0c = dynamic_cast<AliAODv0*>(fListK0s->At(ic));//pointer to reconstructed K0s
+
 	  if(!v0c) continue;
 	  
 	  Bool_t daughtercheck = DaughterTrackCheck(v0c, nnum, pnum);//check daughter tracks have proper sign
@@ -4893,8 +4890,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	  for(Int_t it=0; it<fListMCgenK0s->GetSize(); ++it){                                    // loop over MC generated K0s in event, check whether associated MC particle is part of it
 	  
-	  //for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){//belongs to previous definition of rec. eff. of V0s within jet cone  
-
 	    //Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    //AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0sCone->At(it));
 	    AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0s->At(it));
@@ -4902,7 +4897,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Bool_t particleMatching = IsParticleMatching(mcp0, v0Label);
 	    
-	    if(particleMatching == kFALSE)continue;                                              //if reconstructed V0 particle doesn't match to the associated MC particle go to next stack entry	    
+	    if(particleMatching == kFALSE)continue;    //if reconstructed V0 particle doesn't match to the associated MC particle go to next stack entry	    
 	    CalculateInvMass(v0c, kK0, invMK0Match, fPtMCrecK0Match);
 	    Double_t fEta = v0c->Eta();
 	    Double_t fPtMCgenK0s    = mcp0->Pt();//pt has to be always MC truth value!
@@ -4910,10 +4905,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    Double_t vMCrecK0Cone[4] = {jetPt, invMK0Match,fPtMCgenK0s,fEta};
 	    fhnMCrecK0Cone->Fill(vMCrecK0Cone);             //fill matching rec. K0s in 3D histogram
 
-	    SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);       //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear 
+	    //SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);       //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear 
   	 
-	    Double_t vMCrecK0ConeSmear[4] = {jetPtSmear, invMK0Match,fPtMCgenK0s,fEta};
-	    fhnMCrecK0ConeSmear->Fill(vMCrecK0ConeSmear); 
+	    //Double_t vMCrecK0ConeSmear[4] = {jetPtSmear, invMK0Match,fPtMCgenK0s,fEta};
+	    //fhnMCrecK0ConeSmear->Fill(vMCrecK0ConeSmear); 
 
 	    //fill matching rec. K0s in 3D histogram, jet pT smeared according to deltaptjet distribution width  
   
@@ -5152,7 +5147,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(fDebug>2)Printf("%s:%d nMCgenLa in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,fListMCgenLaCone->GetEntries(),GetFFRadius());
 	
-	/*	for(Int_t it=0; it<fListMCgenLaCone->GetSize(); ++it){ // loop MC generated La in cone around jet axis
+	for(Int_t it=0; it<fListMCgenLaCone->GetSize(); ++it){ // loop MC generated La in cone around jet axis
 	  
 	  AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenLaCone->At(it));
 	  if(!mcp0) continue;
@@ -5161,11 +5156,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenLa   = mcp0->Eta();
 	  Double_t fPtMCgenLa    = mcp0->Pt();
     
-	  // fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
-	  //fh2MCEtagenLaCone->Fill(jetPt,fEtaMCgenLa);
+	  fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
+	  fh2MCEtagenLaCone->Fill(jetPt,fEtaMCgenLa);
 	  }
 	
-	
+	/*
 	//check whether the reconstructed La are stemming from MC gen La on fListMCgenLa List:__________________________________________________
 	
 	for(Int_t ic=0; ic<jetConeLalist->GetSize(); ++ic){//loop over all reconstructed La within jet cone, new definition
