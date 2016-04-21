@@ -59,6 +59,7 @@ AliJXtTask::AliJXtTask():
 	fIsPP(kTRUE),
 	fRunTable(0x0),
 	fEfficiency(0x0),
+	fEfficiencyIsolated(0x0),
 	fInputList(0x0),
 	fXtAna(0x0),
 	fOutput()
@@ -81,6 +82,7 @@ AliJXtTask::AliJXtTask(const char *name, int CollisionCandidates, Bool_t IsMC):
 	fIsPP(kTRUE),
 	fRunTable(0x0),
 	fEfficiency(0x0),
+	fEfficiencyIsolated(0x0),
 	fInputList(0),
 	AliAnalysisTaskSE(name), 
 	fXtAna(0x0),
@@ -109,7 +111,8 @@ AliJXtTask::AliJXtTask(const AliJXtTask& ap) :
 	fIsPP(ap.fIsPP),
 	fRunTable(ap.fRunTable),
 	fEfficiency(ap.fEfficiency),
-        fInputList(ap.fInputList),
+        fEfficiencyIsolated(ap.fEfficiencyIsolated),
+	fInputList(ap.fInputList),
 	AliAnalysisTaskSE(ap.GetName()),
 	fXtAna(ap.fXtAna),
 	fOutput(ap.fOutput)
@@ -136,6 +139,7 @@ AliJXtTask::~AliJXtTask()
 	delete fOutput;
 	delete fRunTable;
 	delete fEfficiency;
+	delete fEfficiencyIsolated;
 }
 
 //________________________________________________________________________
@@ -176,15 +180,22 @@ void AliJXtTask::UserExec(Option_t* /*option*/)
 	  fRunTable->SetRunNumber( frunNumber );
 	  fSQRTS = fRunTable->GetBeamEnergy(fRunTable->GetPeriod());
 	  fIsPP = fRunTable->IsPP();
-	  // Efficiency
+	  // Efficiency - no isolation
 	  fEffMode = 1;
 	  fEfficiency = new AliJEfficiency();
 	  fEfficiency->SetMode( fEffMode ) ; // 0:NoEff 1:Period 2:RunNum 3:Auto
 	  fEfficiency->SetRunNumber( frunNumber );
 	  fEfficiency->SetDataPath( "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data" );
 	  fEfficiency->Load();
+	  // Efficiency - isolated
+	  fEfficiencyIsolated = new AliJEfficiency();
+	  fEfficiencyIsolated->SetMode( fEffMode );
+	  fEfficiencyIsolated->SetRunNumber( frunNumber );
+	  fEfficiencyIsolated->SetDataPath( "/Users/ssrasane/Work/Analysis/DataAnalysis/LegoTrainResults/efficiency/eff/TEST" );
+	  fEfficiencyIsolated->Load();
 	  // update analysis
 	  fXtAna->SetEfficiency( fEfficiency );
+	  fXtAna->SetEfficiencyIsolated( fEfficiencyIsolated );
 	  fXtAna->SetTrackFilterBit( fTrackFilterBit );
 	  GetEfficiencyFilterBit( fTrackFilterBit );
 	  fXtAna->SetEfficiencyFilterBit( fEffFilterBit );
@@ -321,9 +332,11 @@ void AliJXtTask::GetEfficiencyFilterBit(int inputTrackCut ){
 	fEffFilterBit = 0; // default - corresponds to TPConly
 	if( inputTrackCut == 128  ) fEffFilterBit = 0; // TPConly
 	if( inputTrackCut == 1024 ) fEffFilterBit = 1; // RAA
-	if( inputTrackCut == 32   ) fEffFilterBit = 2; // tight DCA
+	if( inputTrackCut == 32   ) fEffFilterBit = 2; // Global tight DCA
+	if( inputTrackCut == 16   ) fEffFilterBit = 3; // Global DCA
 	if( inputTrackCut == 96   ) fEffFilterBit = 4; // Global SDD
-	if( inputTrackCut == 768  ) fEffFilterBit = 5; // hybrid
+	if( inputTrackCut == 768  ) fEffFilterBit = 5; // Hybrid
+	if( inputTrackCut == 272  ) fEffFilterBit = 6; // Hybrid at AOD86
 	return;
 }
 //______________________________________________________________________________

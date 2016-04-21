@@ -56,7 +56,8 @@ class AliJXtTask : public AliAnalysisTaskSE {
 
  public:
   double GetInclusiveEfficiency(double pT){ return fEfficiency->GetCorrection(pT, fTrackFilterBit, fCent ); };
-
+  double GetIsolatedEfficiency(double pT){ return fEfficiencyIsolated->GetCorrection(pT, fTrackFilterBit, fCent ); };
+  
   //msong added member
   void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
   void SetDebugLevel(int debuglevel){fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;};
@@ -96,6 +97,7 @@ class AliJXtTask : public AliAnalysisTaskSE {
   Bool_t fIsPP;		// is proton-proton? If yes, no centrality
   AliJRunTable * fRunTable;	//! run information
   AliJEfficiency * fEfficiency; //! efficiency
+  AliJEfficiency * fEfficiencyIsolated; //! isolated efficiency
   TClonesArray * fInputList;	//! tracklist  
   AliJXtAnalysis *fXtAna;	//! analysis code
   TDirectory *fOutput;		//! output
