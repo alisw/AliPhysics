@@ -119,7 +119,7 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   DefineOutput(0, TTree::Class());
   DefineOutput(1, TList::Class());
 
-  // create the list for comparison objects
+    // create the list for comparison objects
   fCompList = new TList;
   fEvents = 0;
   fDebug = 0;
@@ -138,7 +138,8 @@ AliPerformanceTask::~AliPerformanceTask()
 //_____________________________________________________________________________
 Bool_t AliPerformanceTask::AddPerformanceObject(AliPerformanceObject *pObj) 
 {
-  // add comparison object to the list
+
+    // add comparison object to the list
   if(pObj == 0) {
     Printf("ERROR: Could not add comparison object");
     return kFALSE;
@@ -156,7 +157,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  // create output list
+    // create output list
   fOutput = new TList;
   fOutput->SetOwner();
   fPitList = fOutput->MakeIterator();
@@ -173,7 +174,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
     fOutput->Add(pObj);
     count++;
   }
-  Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
+    Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
   
   PostData(1, fOutput);  
   PostData(0, fOutputSummary);  
@@ -184,10 +185,10 @@ void AliPerformanceTask::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-
+   
   // Decide whether to use HLT or Offline events
   fEvents++;
-  //cout <<"Event number "<<fEvents<<endl;
+  cout <<"Event number "<<fEvents<<endl;
   //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
   
 // Decide whether to use HLT ESD or Offline ESD/AOD
@@ -206,16 +207,23 @@ void AliPerformanceTask::UserExec(Option_t *)
   }// end if fUseHLT
   else {
     // Get an offline event
-    fVEvent = (AliVEvent*) (InputEvent());
-    if(!fVEvent) Printf("ERROR: Event not available!");
+      AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+      if (!vH) {
+          Printf("ERROR: Could not get VEventHandler");
+          return;
+      }
+      fVEvent = vH->GetEvent();
+      if(!fVEvent) { Printf("ERROR: Event not available!"); return;}
   }
-  if(fUseVfriend) {
+  
+    if(fUseVfriend) {
     if (fUseHLT)
     {
-      AliVEvent *offlineVEvent = (AliVEvent*) (InputEvent());
-      if(!offlineVEvent) {
-	Printf("ERROR: Could not get offline event");
-	return;
+        AliVEventHandler *vH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+        AliVEvent *offlineVEvent = vH->GetEvent();
+        if(!offlineVEvent) {
+            Printf("ERROR: Could not get offline event");
+            return;
       }
     }
     else
