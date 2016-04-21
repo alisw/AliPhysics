@@ -3,7 +3,7 @@
 ///
 /// Reads the reconstructed jet container (no background subtraction since it's thought to run on PYTHIA)
 /// The correspondent particle level jet is also stored. 
-/// The task requires the JetTagger for PYTHIA matching to be run first
+/// The task requires the AliAnalysisTaskEmcalJetTagger for PYTHIA matching to be run first
 /// The output tree is thought as an input to the single track embedding
 ///
 /// \author Chiara Bianchin

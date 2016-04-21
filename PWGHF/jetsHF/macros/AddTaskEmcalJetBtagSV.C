@@ -2,7 +2,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
                                                      const char *jetcontname   = "Jets",
                                                      const char *mctrkcontname = "mcparticles",
                                                      const char *mcjetcontname = "MCJets",
-                                                     Double_t jetRadius = 0.4,
+                                                     Double_t jetRadius = 0.2,
                                                      const char *type  = "TPC",
                                                      TString fileout   = "standard",
                                                      Bool_t corrMode   =  kFALSE,
@@ -34,7 +34,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   }
   TString name(taskname);
   // Configure analysis task
-  AliAnalysisTaskEmcalJetBtagSV2 *hfTask = new AliAnalysisTaskEmcalJetBtagSV2(name);
+  AliAnalysisTaskEmcalJetBtagSV *hfTask = new AliAnalysisTaskEmcalJetBtagSV(name);
  
   AliParticleContainer *trkCont  = hfTask->AddTrackContainer(trkcontname);//for data, and reco MC
 
@@ -57,8 +57,8 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
   hfTask->SetCheckMCCrossSection(checkXsec);
   if (useWeight) hfTask->SetUseWeightOn();
   hfTask->SetGenNamePattern(patt);
-  //  hfTask->SetDebugLevel(10);
-  hfTask->SetDebugLevel(debug);
+  hfTask->SetDebugLevel(10);
+  //hfTask->SetDebugLevel(debug);
 
   hfTask->SetJetContName(jetcontname);
   hfTask->SetTrkContName(trkcontname);
@@ -117,7 +117,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trkcontname   =
 }
 
 //------------------------------------------------------
-Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV2 *task, 
+Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, 
                       Float_t minC, Float_t maxC, Bool_t corrMode) 
 {
 
@@ -126,7 +126,7 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV2 *task,
     // jets
     cuts->SetJetRadius(0.4); // this cut does nothing
     cuts->SetMaxEtaJet(0.5);//0.9-R
-    cuts->SetMinPtJet(5.);//
+    cuts->SetMinPtJet(5.);
     cuts->SetMaxPtJet(100.);
     // Set centrality
     cuts->SetMinCentrality(minC);

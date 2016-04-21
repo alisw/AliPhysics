@@ -381,8 +381,17 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
       selected = IsSelectedTPC(part,icut,values);
       break;
     case kTRD:
-      selected = IsSelectedTRD(part,icut);
+	  selected = IsSelectedTRD(part,icut,AliTRDPIDResponse::kLQ1D);
       break;
+	case kTRD2D:
+	  selected = IsSelectedTRD(part,icut,AliTRDPIDResponse::kLQ2D);
+	  break;
+	case kTRD3D:
+	  selected = IsSelectedTRD(part,icut,AliTRDPIDResponse::kLQ3D);
+	  break;
+	case kTRD7D:
+	  selected = IsSelectedTRD(part,icut,AliTRDPIDResponse::kLQ7D);
+	  break;
     case kTRDeleEff:
       selected = IsSelectedTRDeleEff(part,icut);
       break;
@@ -505,7 +514,7 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut)
+Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod)
 {
   //   
   // TRD part of the pid check
@@ -519,7 +528,7 @@ Bool_t AliDielectronPID::IsSelectedTRD(AliVTrack * const part, Int_t icut)
   if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable && (part->GetTRDntrackletsPID()<4)) return kTRUE;
 
   Double_t p[AliPID::kSPECIES]={0.};
-  fPIDResponse->ComputeTRDProbability(part,AliPID::kSPECIES,p);
+  fPIDResponse->ComputeTRDProbability(part,AliPID::kSPECIES,p,PIDmethod);
   Float_t particleProb=p[fPartType[icut]];
 
   Bool_t selected=((particleProb>=fNsigmaLow[icut])&&(particleProb<=fNsigmaUp[icut]))^fExclude[icut];

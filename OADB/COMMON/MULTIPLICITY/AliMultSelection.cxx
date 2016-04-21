@@ -219,6 +219,16 @@ Float_t AliMultSelection::GetMultiplicityPercentile(TString lName, Bool_t lEmbed
     }
     return lReturnValue;
 }
+
+//________________________________________________________________
+Bool_t AliMultSelection::IsEventSelected()
+//Function to determine if event has been selected: simple boolean output 
+{
+    Bool_t lReturnValue = kFALSE ; 
+    if ( fEvSelCode == 0 ) lReturnValue = kTRUE; 
+    return lReturnValue ;
+}
+
 //________________________________________________________________
 void AliMultSelection::Evaluate( AliMultInput *lInput )
 //Master function to evaluate all existing estimators based on

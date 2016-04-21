@@ -69,7 +69,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
 
   Double_t position[3];
   Bool_t isPosAvailable = aodTrack->GetPosition(position);
-  new AliNanoAODTrackMapping(vars);
+  AliNanoAODTrackMapping::GetInstance(vars);
 
   // Create internal structure
   AllocateInternalStorage(AliNanoAODTrackMapping::GetInstance()->GetSize());
@@ -148,7 +148,7 @@ AliNanoAODTrack::AliNanoAODTrack(const char * vars) :
   fAODEvent(NULL)
 {
    // ctor: Creates a special track simply allocating the required variables
-  new AliNanoAODTrackMapping(vars);
+  AliNanoAODTrackMapping::GetInstance(vars);
 
   // Create internal structure
   AllocateInternalStorage(AliNanoAODTrackMapping::GetInstance()->GetSize());

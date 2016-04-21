@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliJAcceptanceCorrection.cxx
   AliJCORRAN.cxx
   AliJTrackCounter.cxx
   AliJCORRANTask.cxx

@@ -23,6 +23,7 @@ class AliJHistos;
 class AliJRunHeader;
 class AliJEfficiency;
 class AliJTrackCounter;
+class AliJAcceptanceCorrection;
 
 class TClonesArray;
 class TF1;
@@ -92,6 +93,7 @@ class AliJCORRAN : public TObject
 	Int_t fevt; // event number
 	AliJHistos *fhistos; //!
 	AliJCorrelations *fcorrelations; //!
+  AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
 	AliJEventPool *fphotonPool; //!
 	AliJEventPool *fassocPool; //! 
 	TClonesArray *fphotonList; //! 

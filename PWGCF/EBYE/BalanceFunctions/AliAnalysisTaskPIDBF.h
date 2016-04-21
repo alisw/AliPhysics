@@ -241,6 +241,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 // Add By N.Alam on 13/12/2015
    void IsTOF(AliAODTrack *track); // Here we use TOF Track Pt .6 to 2.0 GeV
    void IsTPC(AliAODTrack *track);  // For TPC Track Pt .2 to .6 GeV
+   Double_t Beta(AliAODTrack *track); // Particle v/c=Beta calculation
 
 
  
@@ -322,6 +323,12 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2D *fHistBetaVsdEdXafterPID;//TPCTOF  before PID cuts (QA histogram)
   TH2D *fHistNSigmaTPCTOFvsPtafterPID;//TPCTOF  before PID cuts (QA histogram)
   TH3D *fHistNSigmaTPCTOFPafterPID; //++++++++++++++++++
+
+  // Beta and dEdX plot ------------
+  TH2F *fHistdEdxTPC;
+  TH2F *fHistBetaTOF;
+
+   
 
   TH2D *fHistdEdxVsPTPCbeforePIDelectron; //!
   TH2D *fHistNSigmaTPCvsPtbeforePIDelectron; //!

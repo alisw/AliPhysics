@@ -96,7 +96,7 @@ fRecTrkArray(NULL),
 fMCJetArray(NULL),
 fMCPartArray(NULL),
 fHFvertexing(NULL),
-fAODgTrkMap(NULL)
+fV0gTrkMap(NULL)
 {
   // default constructor
 }
@@ -145,7 +145,7 @@ fRecTrkArray(NULL),
 fMCJetArray(NULL),
 fMCPartArray(NULL),
 fHFvertexing(NULL),
-fAODgTrkMap(NULL)
+fV0gTrkMap(NULL)
 {
   // standard constructor
   AliInfo(MSGINFO("+++ Executing Constructor +++"));
@@ -167,7 +167,7 @@ AliAnalysisTaskEmcalJetBtagSV::~AliAnalysisTaskEmcalJetBtagSV() {
     if (fhJetVtxData) delete fhJetVtxData;
     if (fhQaVtx)      delete fhQaVtx;
     if (fHFvertexing) delete fHFvertexing;
-    if (fAODgTrkMap)  delete fAODgTrkMap;
+    if (fV0gTrkMap)   delete fV0gTrkMap;
   }
   
   if (fTagger)     delete fTagger;
@@ -303,10 +303,8 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t */*option*/) {
   fHFvertexing = (!fHFvertexing) ? new TClonesArray("AliAODVertex", 0) : fHFvertexing;
   fHFvertexing->SetOwner(kTRUE);
   
-  fAODgTrkMap = (!fAODgTrkMap) ? new map_AliAODTrk() : fAODgTrkMap;  //  Map of AOD trks (std::map<Int_t, AliAODTrack * >)
-  if (!FillMapWithAODtracks(fAODgTrkMap)) {
-    
-    AliError(MSGERROR("Error filling aod tracks info"));
+  if (fDoFillV0Trks && !FillMapOfV0gTrkIDs()) {
+    AliError(MSGERROR("Error filling V0 tracks info"));
     return;
   }
 
@@ -316,7 +314,6 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t */*option*/) {
   else
     AnalyseDataMode();        // can also be MC, only step kCFStepReco is filled also for kBJets
   
-  fAODgTrkMap->clear();
   PostData(1, fOutputList);
   return;
 }
@@ -358,12 +355,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
     
     // Run b-tagger
     Int_t nVtx = fTagger->FindVertices(jet,
-                                       fAODgTrkMap,
                                        fRecTrkArray,
                                        (AliAODEvent *)fEvent,
                                        esdVtx,
                                        magzkG,
                                        fHFvertexing,
+                                       fV0gTrkMap,
                                        aVtxDisp);
     
     fhJetVtxData->FillStepJetVtxData(AliHFJetsContainer::kCFStepReco,
@@ -465,12 +462,12 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
     
     // // Run vertex tagging
     Int_t nVtx = fTagger->FindVertices(jet,
-                                       fAODgTrkMap,
                                        fRecTrkArray,
                                        (AliAODEvent *)fEvent,
                                        esdVtx,
                                        magzkG,
                                        fHFvertexing,
+                                       fV0gTrkMap,
                                        aVtxDisp);
 
      // Fill jet-with-vertex container
@@ -783,18 +780,15 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::GetArrays() {
 }
 
 //-------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskEmcalJetBtagSV::FillMapWithAODtracks(map_AliAODTrk *fAODgTrkMap) {
+Bool_t AliAnalysisTaskEmcalJetBtagSV::FillMapOfV0gTrkIDs() {
   
-  if (fAODgTrkMap) fAODgTrkMap->clear();
-  else {
-    
-    AliWarning(MSGWARNING("Map not found"));
-    return kFALSE;
-  }
+  fV0gTrkMap = (!fV0gTrkMap) ? new map_int_bool() : fV0gTrkMap;  //  Map of V0 trks (std::map< Int_t, Bool_t >              map_int_bool;)
+  fV0gTrkMap->clear();
+  
   //Fill V0 tracks AODTrack map array
   
   std::vector<Int_t> TrkIDs;
-  if (fDoFillV0Trks) FillV0trks(TrkIDs);
+  FillVecOfV0gTrkIDs(TrkIDs);
   
   for (Int_t iTrk = 0; iTrk < fEvent->GetNumberOfTracks(); ++iTrk) {
     
@@ -802,50 +796,53 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::FillMapWithAODtracks(map_AliAODTrk *fAODgT
     
     Int_t trkID = track->GetID();
     
+    //IMPORTANT:
+    //Use same good track selection as it's implemented
+    //in AliHFJetsTaggingVertex::FindVertex
     if (trkID < 0) continue;
     if (!track->GetFilterMap() && !track->GetTPCNcls()) continue;
     
-    Bool_t trkBelongToV0 = (fDoFillV0Trks) ? IsV0(trkID, TrkIDs) : kFALSE;
-    fAODgTrkMap->insert(std::pair<Int_t, std::pair<AliAODTrack *, Bool_t> >(trkID, make_pair(track, trkBelongToV0)));
+    Bool_t trkBelongToV0 = IsAODtrkBelongToV0(TrkIDs, trkID);
+    fV0gTrkMap->insert(std::pair<Int_t, Bool_t> (trkID, trkBelongToV0));
   }
   
   return kTRUE;
 }
 
 //_____________________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJetBtagSV::FillV0trks(std::vector<Int_t> &TrkIDs) {
+Bool_t AliAnalysisTaskEmcalJetBtagSV::FillVecOfV0gTrkIDs(std::vector<Int_t> &vctrTrkIDs) {
   
   //Fill V0 tracks AODTrack map array
   if (!fEvent)
     return kFALSE;
   
-  AliAODEvent *aod = (AliAODEvent *)fEvent;
+  AliAODEvent *aodEvent = (AliAODEvent *)fEvent;
   
-  Int_t nV0s = aod->GetNumberOfV0s();
+  Int_t nV0s = aodEvent->GetNumberOfV0s();
   
-  TrkIDs.clear();
-  TrkIDs.reserve(nV0s);
+  vctrTrkIDs.clear();
+  vctrTrkIDs.reserve(nV0s);
   
   for (Int_t iV0 = 0; iV0 < nV0s; ++iV0) {
     
-    AliAODv0 *aodV0 = (AliAODv0 *)aod->GetV0(iV0);
+    AliAODv0 *aodV0 = (AliAODv0 *)aodEvent->GetV0(iV0);
     if (!aodV0) continue;
     
     AliAODTrack *pTrack = (AliAODTrack *)aodV0->GetDaughter(0);
     AliAODTrack *nTrack = (AliAODTrack *)aodV0->GetDaughter(1);
     
-    TrkIDs.push_back(pTrack->GetID());
-    TrkIDs.push_back(nTrack->GetID());
+    vctrTrkIDs.push_back(pTrack->GetID());
+    vctrTrkIDs.push_back(nTrack->GetID());
   }
   
   return kTRUE;
 }
 
 //_____________________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJetBtagSV::IsV0(Int_t trkId, std::vector<Int_t> &vTrks) {
+Bool_t AliAnalysisTaskEmcalJetBtagSV::IsAODtrkBelongToV0(std::vector<Int_t> &vctrTrkIDs, Int_t trkID){
   
-  vector<Int_t>::iterator it = std::find(vTrks.begin(), vTrks.end(), trkId);
-  if (it != vTrks.end())
+  vector<Int_t>::iterator it = std::find(vctrTrkIDs.begin(), vctrTrkIDs.end(), trkID);
+  if (it != vctrTrkIDs.end())
     return kTRUE;
   
   return kFALSE;
@@ -876,3 +873,4 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetExternalRho(Bool_t isMC) {
   
   return rho->GetVal();
 }
+

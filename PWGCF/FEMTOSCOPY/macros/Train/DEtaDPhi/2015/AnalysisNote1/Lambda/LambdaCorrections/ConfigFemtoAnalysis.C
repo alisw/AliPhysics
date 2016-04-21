@@ -148,7 +148,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 	
-	int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+	int runch[numOfChTypes] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
 	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
@@ -386,7 +386,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.05, 0.05); //0.3, 0.1
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
 					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0034,LambdaMass+0.0034);
+					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 
 					

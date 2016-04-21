@@ -66,7 +66,7 @@ private:
 
   TRandom3*           fRandom;                    //! random number generator
 
-  Bool_t              IsParticleInJet(AliVParticle* part);
+  Bool_t              IsParticleInJet(Int_t part);
   Double_t            GetExternalRho();
 
   ClassDef(AliAnalysisTaskParticleRandomizer, 3);

@@ -761,6 +761,7 @@ WARN_LOGFILE           =
 INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
+                         @CMAKE_SOURCE_DIR@/PWGJE/doc \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/Tracks \
                          @CMAKE_SOURCE_DIR@/PWGJE/EMCALJetTasks/UserTasks \

@@ -4931,17 +4931,17 @@ AliAnalysisTaskProtonLambda2d::FemtoBuffer::~FemtoBuffer(){
 	}
       }
       if(fEC[iZBin][iCentBin]){
-	delete fEC[iZBin][iCentBin];
+	delete[] fEC[iZBin][iCentBin];
 	fEC[iZBin][iCentBin]=0;
       }
     }
     if(fEC[iZBin]){
-      delete fEC[iZBin];
+      delete[] fEC[iZBin];
       fEC[iZBin]=0;
     }
   }
   if(fEC){
-    delete fEC;
+    delete[] fEC;
     fEC=0;
   }
 }

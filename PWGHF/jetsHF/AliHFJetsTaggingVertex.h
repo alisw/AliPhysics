@@ -44,13 +44,13 @@ public:
   AliHFJetsTaggingVertex &operator=(const AliHFJetsTaggingVertex &corr);
   
   Int_t FindVertices(const AliEmcalJet *jet,
-                     map_AliAODTrk     *fAODTrackInfo,
                      TClonesArray      *fTrackArrayIn,
-                     AliAODEvent       *aod,
-                     AliESDVertex      *v1,
-                     Double_t           magzkG,
-                     TClonesArray      *arrVtxHF,
-                     vctr_pair_dbl_int &arrVtxDisp);
+                     AliAODEvent       *aodEvent,
+                     AliESDVertex      *primaryESDVertex,
+                     Double_t           magZkG,
+                     TClonesArray      *arrayVtxHF,
+                     map_int_bool      *mapV0gTrks,
+                     vctr_pair_dbl_int &vecVtxDisp);
   
   AliAODVertex *ReconstructSecondaryVertex(TObjArray     *trkArray,
                                            AliESDVertex  *v1,

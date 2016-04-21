@@ -74,6 +74,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
+        hESDConversionRInBins(NULL),
+        hESDConversionPhiInBins(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
 	hESDConversionEta(NULL),
@@ -167,6 +169,8 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
+        hESDConversionRInBins(NULL),
+        hESDConversionPhiInBins(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
 	hESDConversionEta(NULL),
@@ -260,6 +264,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hESDConversionMappingRPhi      = new TH2F*[fnCuts];
 	hESDConversionMappingRZ        = new TH2F*[fnCuts];
 	hESDConversionR                = new TH1F*[fnCuts];
+        hESDConversionRInBins          = new TH3F*[fnCuts];
+        hESDConversionPhiInBins        = new TH3F*[fnCuts];
 	hESDConversionAsymP            = new TH2F*[fnCuts];
 	hESDConversionMidPtR           = new TH1F*[fnCuts];
 	hESDConversionEta              = new TH1F*[fnCuts];
@@ -381,11 +387,18 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 			fESDList[iCut]->Add(hESDConversionMappingRZ[iCut]);
 			hESDConversionR[iCut]               = new TH1F("ESD_ConversionMapping_R","ESD_ConversionMapping_R",nBinsR,0.,200.);
 			fESDList[iCut]->Add(hESDConversionR[iCut]);
+
+			hESDConversionRInBins[iCut]  = new TH3F("ESD_ConversionMapping_RInBins","ESD_ConversionMapping_RInBins",100,0.,20.,8,0.,4000,nBinsR,0.,200.);
+                        fESDList[iCut]->Add(hESDConversionRInBins[iCut]);
+		        hESDConversionPhiInBins[iCut]  = new TH3F("ESD_ConversionMapping_PhiInBins","ESD_ConversionMapping_PhiInBins",100,0.,200.,8,0.,4000,nBinsPhi,0.,2*TMath::Pi());
+                        fESDList[iCut]->Add(hESDConversionPhiInBins[iCut]);
+
 			hESDConversionAsymP[iCut]               = new TH2F("ESD_ConversionMapping_AsymP","ESD_ConversionMapping_AsymP",nBinsPt,0.01,20.,500,0.,1.);
 			fESDList[iCut]->Add(hESDConversionAsymP[iCut]);
 
 			hESDConversionMidPtR[iCut]          = new TH1F("ESD_ConversionMappingMidPt_R","ESD_ConversionMappingMidPt_R",nBinsR,0.,200.);
 			fESDList[iCut]->Add(hESDConversionMidPtR[iCut]);	
+
 			hESDConversionEta[iCut]               = new TH1F("ESD_ConversionMapping_Eta","ESD_ConversionMapping_Eta",nBinsEta,-2.,2.);
 			fESDList[iCut]->Add(hESDConversionEta[iCut]);
 			hESDConversionMidPtEta[iCut]          = new TH1F("ESD_ConversionMappingMidPt_Eta","ESD_ConversionMappingMidPt_Eta",nBinsEta,-2.,2.);
@@ -860,11 +873,11 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 			hESDConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());  
 			hESDConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());  
 			hESDConversionEta[fiCut]->Fill(gamma->GetPhotonEta());              
-			hESDConversionPt[fiCut]->Fill(gamma->GetPhotonPt());              
-			if(gamma->GetConversionRadius()>5){
+			hESDConversionPt[fiCut]->Fill(gamma->GetPhotonPt());
+		        if(gamma->GetConversionRadius()>5){
 			  hESDConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
 			}
-			hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());      
+			hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());
 			hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
 
 			if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -886,8 +899,12 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
      
 			if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
 				hESDConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());         
-				hESDConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
+				hESDConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());
 			}
+
+			Double_t convR = gamma->GetConversionRadius();
+			hESDConversionRInBins[fiCut]->Fill(fGammaPt,fNESDtracksEta09,convR);
+			hESDConversionPhiInBins[fiCut]->Fill(convR,fNESDtracksEta09,gamma->GetPhotonPhi());
 
 			if(fIsMC>0){
 				if(fKind==0 || fKind==5){
@@ -969,7 +986,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
 		}	
 				
 		Bool_t selectPrimaries=kTRUE;
-		AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+               AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 		EsdTrackCuts->SetMaxDCAToVertexZ(2);
 		EsdTrackCuts->SetEtaRange(-0.9, 0.9);
 		EsdTrackCuts->SetPtRange(0.15);

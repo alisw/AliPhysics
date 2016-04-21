@@ -155,6 +155,9 @@ public:
   void     SwitchOnCalibrateTime()                        { fCalibrateTime = kTRUE           ;} 
   void     SwitchOffCalibrateTime()                       { fCalibrateTime = kFALSE          ;}  
 
+  void     SwitchOnCalibrateTimeL1Phase()                 { fCalibrateTimeL1Phase = kTRUE    ;} 
+  void     SwitchOffCalibrateTimeL1Phase()                { fCalibrateTimeL1Phase = kFALSE   ;}  
+
   void     SwitchOnUpdateCellOnly()                       { fDoUpdateOnly = kTRUE            ;} 
   void     SwitchOffUpdateCellOnly()                      { fDoUpdateOnly = kFALSE           ;}  
  
@@ -201,6 +204,7 @@ private:
   Int_t      InitRecalib();
   Int_t      InitRunDepRecalib();
   Int_t      InitTimeCalibration();
+  Int_t      InitTimeCalibrationL1Phase();
   void       Clusterize();
   void       FillDigitsArray();
   void       GetPass();
@@ -223,6 +227,7 @@ private:
   Bool_t                 fCalibrateEnergy;        // flag cell energy calibration
   Bool_t                 fCalibrateTime;          // flag cell time calibration
   Bool_t                 fCalibrateTimeParamAvailable; // Check if time calib param are available to set properly time cuts
+  Bool_t                 fCalibrateTimeL1Phase;   // flag cell time calibration with L1phase shift
   Bool_t                 fDoNonLinearity;         // nNon linearity correction flag
   Bool_t                 fBadCellRemove;          // zero bad cells
   Bool_t                 fRejectExoticCells;      // reject exotic cells

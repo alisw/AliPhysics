@@ -55,10 +55,13 @@ public :
 
   void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
   TString GetCentralityEstimator() const {return fCentralityEstimator; }
+  
+  void SetSigmaScale(Double_t scale = 0){ fSigmaScale = scale;}
 
 private:
 
   // analysis folder 
+  Double_t fSigmaScale;         // Scale for sigma(1/pt)
   TFolder *fAnalysisFolder;     // folder for analysed histograms
   THnSparseF *fTrackParamHist;  //-> sigma(1/pT):1/pT:centr
   THnSparseF *fTrackParamHist2; //-> sigma(1/pT)*pT:pT:centr
@@ -68,7 +71,7 @@ private:
   AliPtResolAnalysisPbPb(const AliPtResolAnalysisPbPb&); // not implemented
   AliPtResolAnalysisPbPb& operator=(const AliPtResolAnalysisPbPb&); // not implemented
 
-  ClassDef(AliPtResolAnalysisPbPb,2);
+  ClassDef(AliPtResolAnalysisPbPb,3);
 };
 
 #endif

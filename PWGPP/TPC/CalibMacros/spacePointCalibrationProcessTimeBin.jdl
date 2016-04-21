@@ -1,0 +1,44 @@
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/processTimeBin.sh";
+
+Packages = {
+"VO_ALICE@AliPhysics::v5-08-02-01-1",
+"VO_ALICE@jemalloc::v3.6.0"
+};
+
+Jobtag={
+    "comment:extraction of TPC SP distortion maps - processing of one time bin"
+};
+
+LegoResubmitZombies="1";
+
+TTL="86000";
+Price="20";
+
+Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/validationProcessTimeBin.sh";
+
+JDLVariables={
+    "Packages", 
+    "OutputDir",
+    "HistoList"
+};
+
+Workdirectorysize={"10000MB"}; 
+
+Arguments="$1 $2 $3";
+
+InputFile={
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/residualInfo.root",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/fitDrift.root",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/residualFilesList.log"
+};
+
+Output={
+    "log_archive.zip:*.log@disk=1",
+    "root_archive.zip:*.root@disk=1"
+};
+
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/$3/$1_$2";
+
+OutputErrorE={"log_archive.zip:*.log@disk=1","root_archive.zip:*.root@disk=1"};
+
+HistoList="1 4";

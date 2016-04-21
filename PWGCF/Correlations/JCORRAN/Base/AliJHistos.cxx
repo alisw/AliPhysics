@@ -49,22 +49,27 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhDphiAssocXEbin(),
   fhDphiAssoc2DIAA(),
   fhDphiAssoc2D(),
-  fhDphiDetaKlong(),
-  fhDphiDetaKlongR(),
-  fhDphiDetaKlongPhi(),
-  fhDphiDetaXe(),
-  fhDphiDetaXeR(),
-  fhDphiDetaXePhi(),
+//fhDphiDetaKlong(),   // Klong bins currently not used, histogram commented out
+  fhDphiDetaXlong(),
   fhDphiDetaPta(),
-  fhDphiDetaPtaR(),
-  fhDphiDetaPtaPhi(),
-  fhBgAssocKlong(),
+  fhDetaNearMixAcceptance(),
+  fhDeta3DNearMixAcceptance(),
+  fhDphiDetaBgKlongEta(),
+  fhDphiDetaBgKlongR(),
+  fhDphiDetaBgKlongPhi(),
+  fhDphiDetaBgXlongEta(),
+  fhDphiDetaBgXlongR(),
+  fhDphiDetaBgXlongPhi(),
+  fhDphiDetaBgPtaEta(),
+  fhDphiDetaBgPtaR(),
+  fhDphiDetaBgPtaPhi(),
+  fhBgAssocKlongEta(),
   fhBgAssocKlongR(),
   fhBgAssocKlongPhi(),
-  fhBgAssocXe(),
-  fhBgAssocXeR(),
-  fhBgAssocXePhi(),
-  fhBgAssocPta(),
+  fhBgAssocXlongEta(),
+  fhBgAssocXlongR(),
+  fhBgAssocXlongPhi(),
+  fhBgAssocPtaEta(),
   fhBgAssocPtaR(),
   fhBgAssocPtaPhi(),
   fhInvariantMassXe(),
@@ -161,6 +166,8 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhIphiTriggFromFile(),
   fhIphiAssocFromFile(),
   fhDphiAssocMixFromFile(),
+  fhDEtaNearMixFromFile(),
+  fhDEta3DNearMixFromFile(),
   fhLPpt(),
   fhLPpairPt(),
   fhChargedPt(),
@@ -343,22 +350,27 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhDphiAssocXEbin(obj.fhDphiAssocXEbin),
   fhDphiAssoc2DIAA(obj.fhDphiAssoc2DIAA),
   fhDphiAssoc2D(obj.fhDphiAssoc2D),
-  fhDphiDetaKlong(obj.fhDphiDetaKlong),
-  fhDphiDetaKlongR(obj.fhDphiDetaKlongR),
-  fhDphiDetaKlongPhi(obj.fhDphiDetaKlongPhi),
-  fhDphiDetaXe(obj.fhDphiDetaXe),
-  fhDphiDetaXeR(obj.fhDphiDetaXeR),
-  fhDphiDetaXePhi(obj.fhDphiDetaXePhi),
+//fhDphiDetaKlong(obj.fhDphiDetaKlong),  // Klong bins currently not used, histogram commented out
+  fhDphiDetaXlong(obj.fhDphiDetaXlong),
   fhDphiDetaPta(obj.fhDphiDetaPta),
-  fhDphiDetaPtaR(obj.fhDphiDetaPtaR),
-  fhDphiDetaPtaPhi(obj.fhDphiDetaPtaPhi),
-  fhBgAssocKlong(obj.fhBgAssocKlong),
+  fhDetaNearMixAcceptance(obj.fhDetaNearMixAcceptance),
+  fhDeta3DNearMixAcceptance(obj.fhDeta3DNearMixAcceptance),
+  fhDphiDetaBgKlongEta(obj.fhDphiDetaBgKlongEta),
+  fhDphiDetaBgKlongR(obj.fhDphiDetaBgKlongR),
+  fhDphiDetaBgKlongPhi(obj.fhDphiDetaBgKlongPhi),
+  fhDphiDetaBgXlongEta(obj.fhDphiDetaBgXlongEta),
+  fhDphiDetaBgXlongR(obj.fhDphiDetaBgXlongR),
+  fhDphiDetaBgXlongPhi(obj.fhDphiDetaBgXlongPhi),
+  fhDphiDetaBgPtaEta(obj.fhDphiDetaBgPtaEta),
+  fhDphiDetaBgPtaR(obj.fhDphiDetaBgPtaR),
+  fhDphiDetaBgPtaPhi(obj.fhDphiDetaBgPtaPhi),
+  fhBgAssocKlongEta(obj.fhBgAssocKlongEta),
   fhBgAssocKlongR(obj.fhBgAssocKlongR),
   fhBgAssocKlongPhi(obj.fhBgAssocKlongPhi),
-  fhBgAssocXe(obj.fhBgAssocXe),
-  fhBgAssocXeR(obj.fhBgAssocXeR),
-  fhBgAssocXePhi(obj.fhBgAssocXePhi),
-  fhBgAssocPta(obj.fhBgAssocPta),
+  fhBgAssocXlongEta(obj.fhBgAssocXlongEta),
+  fhBgAssocXlongR(obj.fhBgAssocXlongR),
+  fhBgAssocXlongPhi(obj.fhBgAssocXlongPhi),
+  fhBgAssocPtaEta(obj.fhBgAssocPtaEta),
   fhBgAssocPtaR(obj.fhBgAssocPtaR),
   fhBgAssocPtaPhi(obj.fhBgAssocPtaPhi),
   fhInvariantMassXe(obj.fhInvariantMassXe),
@@ -450,11 +462,13 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhJTPtaBgRUnlikeSign(obj.fhJTPtaBgRUnlikeSign),
   fhJTPtaBgPhiUnlikeSign(obj.fhJTPtaBgPhiUnlikeSign),
   fHmgInclusive(obj.fHmgInclusive),
-  fhIetaTriggFromFile(),
-  fhIetaAssocFromFile(),
-  fhIphiTriggFromFile(),
-  fhIphiAssocFromFile(),
-  fhDphiAssocMixFromFile(),
+  fhIetaTriggFromFile(obj.fhIetaTriggFromFile),
+  fhIetaAssocFromFile(obj.fhIetaAssocFromFile),
+  fhIphiTriggFromFile(obj.fhIphiTriggFromFile),
+  fhIphiAssocFromFile(obj.fhIphiAssocFromFile),
+  fhDphiAssocMixFromFile(obj.fhDphiAssocMixFromFile),
+  fhDEtaNearMixFromFile(obj.fhDEtaNearMixFromFile),
+  fhDEta3DNearMixFromFile(obj.fhDEta3DNearMixFromFile),
   fhLPpt(obj.fhLPpt),
   fhLPpairPt(obj.fhLPpairPt),
   fhChargedPt(obj.fhChargedPt),
@@ -749,6 +763,26 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D("hInvariantMassPtaUnlikeSign","",1500,0,3)
         <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
+    //======================================
+    // Histograms for acceptance correction
+    //======================================
+  
+    fhDetaNearMixAcceptance
+        << TH1D( "hDEtaNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+        <<  fCentBin << fPTtBin << fPTaBin  << "END";
+  
+    fhDeta3DNearMixAcceptance
+        << TH1D( "hDEta3DNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+        <<  fCentBin << fPTtBin << fXEBin  << "END";
+  
+    fhDEtaNearMixFromFile
+        << TH1D( "hDEtaNearMixFromFile", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+        <<  fCentBin << fPTtBin << fPTaBin  << "END";
+  
+    fhDEta3DNearMixFromFile
+        << TH1D( "hDEta3DNearMixFromFile", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
+        <<  fCentBin << fPTtBin << fXEBin  << "END";
+  
     //=======================
     //jT fhistos
     //=======================
@@ -763,7 +797,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
     fhPoutF
         << TH1D( "hPoutF", "",  300, 0, 15) 
         <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";//FK//
-    
+  
     // Histograms in xlong bins
     
     fhJT
@@ -814,30 +848,34 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D( "hJTBgPhiUnlikeSign", "",  nJT, logBinsJt)
         <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
-    fhBgAssocXe
-        << TH1D( "hBgAssocXe", "",  fnUE, fUEBinsx) 
+    fhBgAssocXlongEta
+        << TH1D( "hBgAssocXlongEta", "",  fnUE, fUEBinsx)
         <<  fCentBin << fEtaGapBin << fPTtBin << fXEBin  << "END";
 
-    fhBgAssocXeR
-        << TH1D( "hBgAssocXeR", "",  fnUE, fUEBinsx) 
+    fhBgAssocXlongR
+        << TH1D( "hBgAssocXlongR", "",  fnUE, fUEBinsx)
         <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
   
-    fhBgAssocXePhi
-        << TH1D( "hBgAssocXePhi", "",  fnUE, fUEBinsx)
+    fhBgAssocXlongPhi
+        << TH1D( "hBgAssocXlongPhi", "",  fnUE, fUEBinsx)
         <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
+    fhDphiDetaXlong
+        << TH2D( "hDphiDetaXlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 200, -kJPi, kJPi)
+        <<  fTypBin <<  fCentBin << fPTtBin << fXEBin  << "END";
+  
     if(fenable2DHistos){
       
-      fhDphiDetaXe
-          << TH2D( "hDphiDetaXe", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgXlongEta
+          << TH2D( "hDphiDetaBgXlongEta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 200, -kJPi, kJPi)
           <<  fCentBin << fEtaGapBin << fPTtBin << fXEBin  << "END";
 
-      fhDphiDetaXeR
-          << TH2D( "hDphiDetaXeR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgXlongR
+          << TH2D( "hDphiDetaBgXlongR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 200, -kJPi, kJPi)
           <<  fCentBin << fRGapBin << fPTtBin << fXEBin  << "END";
   
-      fhDphiDetaXePhi
-          << TH2D( "hDphiDetaXePhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgXlongPhi
+          << TH2D( "hDphiDetaBgXlongPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 200, -kJPi, kJPi)
           <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
     }
@@ -892,8 +930,8 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D( "hJTKlongBgPhiUnlikeSign", "",  nJT, logBinsJt)
         <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-    fhBgAssocKlong
-        << TH1D( "hBgAssocKlong", "",  fnUE, fUEBinsx) 
+    fhBgAssocKlongEta
+        << TH1D( "hBgAssocKlongEta", "",  fnUE, fUEBinsx)
         <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
     fhBgAssocKlongR
@@ -904,18 +942,22 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D( "hBgAssocKlongPhi", "",  fnUE, fUEBinsx)
         <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-    if(fenable2DHistos){
-  
-      fhDphiDetaKlong
+    /*fhDphiDetaKlong
           << TH2D( "hDphiDetaKlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+          <<  fTypBin <<  fCentBin << fPTtBin << fKLongBin  << "END";*/
+  
+    if(fenable2DHistos){
+      
+      fhDphiDetaBgKlongEta
+          << TH2D( "hDphiDetaBgKlongEta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fEtaGapBin << fPTtBin << fKLongBin  << "END";
 
-      fhDphiDetaKlongR
-          << TH2D( "hDphiDetaKlongR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgKlongR
+          << TH2D( "hDphiDetaBgKlongR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fRGapBin << fPTtBin << fKLongBin  << "END";
   
-      fhDphiDetaKlongPhi
-          << TH2D( "hDphiDetaKlongPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgKlongPhi
+          << TH2D( "hDphiDetaBgKlongPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
     }
@@ -970,8 +1012,8 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D( "hJTPtaBgPhiUnlikeSign", "",  nJT, logBinsJt)
         <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-    fhBgAssocPta
-        << TH1D( "hBgAssocPta", "",  fnUE, fUEBinsx) 
+    fhBgAssocPtaEta
+        << TH1D( "hBgAssocPtaEta", "",  fnUE, fUEBinsx)
         <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
     fhBgAssocPtaR
@@ -982,18 +1024,22 @@ void AliJHistos::CreateAzimuthCorrHistos()
         << TH1D( "hBgAssocPtaPhi", "",  fnUE, fUEBinsx)
         <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-    if(fenable2DHistos){
+    fhDphiDetaPta
+        << TH2D( "hDphiDetaPta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+        <<  fTypBin <<  fCentBin << fPTtBin << fPTaBin  << "END";
   
-      fhDphiDetaPta
-          << TH2D( "hDphiDetaPta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+    if(fenable2DHistos){
+      
+      fhDphiDetaBgPtaEta
+          << TH2D( "hDphiDetaBgPtaEta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-      fhDphiDetaPtaR
-          << TH2D( "hDphiDetaPtaR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgPtaR
+          << TH2D( "hDphiDetaBgPtaR", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
   
-      fhDphiDetaPtaPhi
-          << TH2D( "hDphiDetaPtaPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+      fhDphiDetaBgPtaPhi
+          << TH2D( "hDphiDetaBgPtaPhi", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
           <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
       
     }
@@ -1368,77 +1414,58 @@ void AliJHistos::ReadInclusiveHistos(const char *inclusFileName){
   fhIetaTriggFromFile.Print();
   fhIetaTriggFromFile[0][0]->Print();
   
-  fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg"); // TODO
+  fhIphiTriggFromFile = fHmgInclusive->GetTH1D("fhIphiTrigg");
   fhIphiTriggFromFile.Print();
   fhIetaAssocFromFile = fHmgInclusive->GetTH1D("hIetaAssoc");
   fhIetaAssocFromFile.Print();
   fhIphiAssocFromFile = fHmgInclusive->GetTH1D("fhIphiAssoc");
   fhIphiAssocFromFile.Print();
   
-  int numCent = fCard->GetNoOfBins(kCentrType);
-  int numPtt  = fCard->GetNoOfBins(kTriggType);
-  int numPta  = fCard->GetNoOfBins(kAssocType);
-  int numEtaGaps = fCard->GetNoOfBins(kEtaGapType);
-  int numZvtx = fCard->GetNoOfBins(kZVertType);
-  int numXlong = fCard->GetNoOfBins(kXeType);
+  // Check if the new acceptance histogram exists in the inclusive file.
+  // This check is done for backwards compatibility. If the histogram does not exist,
+  // histogram manager will return an empty histogram for the acceptance correction.
+  // In AliJCorrelations.cxx, it is required that the histogram has at least 1000 entries,
+  // otherwise a simple triangle is used for the acceptance correction. Thus the inclusive
+  // code will still work with old data files missing the acceptance histograms.
+  if(fHmgInclusive->HistogramExists("hDEtaNearMixAcceptance")){
+    fhDEtaNearMixFromFile = fHmgInclusive->GetTH1D("hDEtaNearMixAcceptance");
+    fhDEtaNearMixFromFile.Print();
+    NormalizeAcceptanceHistos(fhDEtaNearMixFromFile, kAssocType);
+  }
   
-  //------------ R e a d   mixed  D a t a ------------
-  const int zFirstBin = 0 ;
-  const int etaGapFirstBin = 0 ;
-  AliJTH1D hDEtaNearTmp = fHmgInclusive->GetTH1D("hDEtaNear");
-  AliJTH1D hDEta3DNearTmp = fHmgInclusive->GetTH1D("hDEtaNearXEbin");
-  for (int hic = 0;hic < numCent; hic++) {
-    for (int hit = 0; hit < numPtt;hit++){
-      for (int hia = 0; hia < numPta; hia++){
-        fhDEtaNearMixFromFile[hic][hit][hia]= hDEtaNearTmp[hic][zFirstBin][etaGapFirstBin][hit][hia];
-        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
-          for (int hiz = 0; hiz < numZvtx; hiz++) {
-            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
-            TH1D *hid = hDEtaNearTmp[hic][hiz][iEtaGap][hit][hia];
-            fhDEtaNearMixFromFile[hic][hit][hia]->Add(hid);
-          }
-        }
-        //normalize to triangle
-        double counts  = fhDEtaNearMixFromFile[hic][hit][hia]->Integral();
-        double bw      = fhDEtaNearMixFromFile[hic][hit][hia]->GetBinWidth(1);
-        int rebin = 4;
-        if(counts<5000) rebin=8;
-        if(counts<3000) rebin=10;
-        if(counts<1000) rebin=16;
-        fhDEtaNearMixFromFile[hic][hit][hia]->Rebin(rebin);
-        if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
-        //if(counts>0)  fhDEtaNearMixFromFile[hic][hit][hia]->Scale(2.*fmaxEtaRange/counts/bw);
-        //cout<<"c=" << hic <<" as="<< hia <<" entries="<< fhDEtaNearMixFromFile[hic][hit][hia]->GetEntries() <<endl;
+  if(fHmgInclusive->HistogramExists("hDEta3DNearMixAcceptance")){
+    fhDEta3DNearMixFromFile = fHmgInclusive->GetTH1D("hDEta3DNearMixAcceptance");
+    fhDEta3DNearMixFromFile.Print();
+    NormalizeAcceptanceHistos(fhDEta3DNearMixFromFile, kXeType);
+  }
+
+}
+
+void AliJHistos::NormalizeAcceptanceHistos(AliJTH1D &acceptanceHisto, corrType assocType){
+  // Method for normalizing and rebinning the inclusive acceptance histograms
+  
+  // Find the correct binning
+  int numCent  = fCard->GetNoOfBins(kCentrType);
+  int numPtt   = fCard->GetNoOfBins(kTriggType);
+  int numAssoc = fCard->GetNoOfBins(assocType);
+  
+  // Loop over the input histograms and find the correct normalization
+  for (int iCent = 0; iCent < numCent; iCent++) {
+    for (int iPtt = 0; iPtt < numPtt; iPtt++){
+      for (int iAssoc = 0; iAssoc < numAssoc; iAssoc++){
         
-      }
-      for(int iXlong = 0; iXlong < numXlong; iXlong++){
-        fhDEta3DNearMixFromFile[hic][hit][iXlong] = hDEta3DNearTmp[hic][zFirstBin][etaGapFirstBin][hit][iXlong];
-        for (int iEtaGap=0; iEtaGap < numEtaGaps; iEtaGap++){//fdphi slices
-          for (int hiz = 0; hiz < numZvtx; hiz++) {
-            if( iEtaGap==etaGapFirstBin && hiz==zFirstBin ) continue;
-            TH1D *hid = hDEta3DNearTmp[hic][hiz][iEtaGap][hit][iXlong];
-            fhDEta3DNearMixFromFile[hic][hit][iXlong]->Add(hid);
-          }
-        }
-        //normalize to triangle
-        double counts  = fhDEta3DNearMixFromFile[hic][hit][iXlong]->Integral();
-        double bw      = fhDEta3DNearMixFromFile[hic][hit][iXlong]->GetBinWidth(1);
+        // Rebin and normalize to the interval [0,1]
+        double counts  = acceptanceHisto[iCent][iPtt][iAssoc]->Integral();
         int rebin = 4;
         if(counts<5000) rebin=8;
         if(counts<3000) rebin=10;
         if(counts<1000) rebin=16;
-        fhDEta3DNearMixFromFile[hic][hit][iXlong]->Rebin(rebin);
-        if(counts>0)  fhDEta3DNearMixFromFile[hic][hit][iXlong]->Scale(2.*fmaxEtaRange/counts/bw/rebin);//triangle  f(0)=1, f(1.6)=0
+        acceptanceHisto[iCent][iPtt][iAssoc]->Rebin(rebin);
+        double maxValue = acceptanceHisto[iCent][iPtt][iAssoc]->GetMaximum();
+        if(maxValue > 0) acceptanceHisto[iCent][iPtt][iAssoc]->Scale(1.0/maxValue);
+        
       }
     }
   }
   
-  
-  //for (int hic = 0;hic < fCard->GetNoOfBins(kCentrType);hic++) {
-  //   for (int hit = 0; hit < fCard->GetNoOfBins(kTriggType);hit++){
-  //      for (int hia = 0; hia < fCard->GetNoOfBins(kAssocType); hia++){
-  //         hDphiAssocMixSpectraFile[hic][hit][hia]= (TH1D*) inclusFile->Get(Form("xhDphiAssoc%02dC%02dE00T%02dA%02d",1, hic, hit, hia));//FK//mix2
-  //      }
-  //   }
-  //}
 }
