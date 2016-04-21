@@ -496,11 +496,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   // TH2F* fh2ChTracksOC;
   //TH2F* fh2ChTracksMCC;
   //TH2F* fh2ChTracksPC;
-  //  TH2F* fh2MCgenK0Cone;
-  //  TH2F* fh2MCgenLaCone;
+  TH2F* fh2MCgenK0Cone;
+  TH2F* fh2MCgenLaCone;
   //  TH2F* fh2MCgenALaCone;
-  //  TH2F* fh2MCEtagenK0Cone;
-  //  TH2F* fh2MCEtagenLaCone;
+  TH2F* fh2MCEtagenK0Cone;
+  TH2F* fh2MCEtagenLaCone;
   //  TH2F* fh2MCEtagenALaCone;
   /* TH2F* fh2CorrHijingLaProton;
   TH2F* fh2CorrInjectLaProton;
