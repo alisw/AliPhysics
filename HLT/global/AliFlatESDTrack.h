@@ -128,6 +128,7 @@ class AliFlatESDTrack :public AliVTrack {
 
   UShort_t GetTPCNcls() const {return GetNumberOfTPCClusters(); }
   Float_t GetTPCCrossedRows() const {return GetNumberOfTPCClusters();}
+  UShort_t GetTPCNclsF() const { return GetNumberOfTPCClusters();}
 
   Double_t GetPt() const {
     const AliFlatExternalTrackParam *f = GetFlatTrackParam();
