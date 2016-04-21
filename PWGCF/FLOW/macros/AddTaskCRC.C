@@ -1,5 +1,4 @@
-AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
-                             Double_t ptMin=0.2,
+AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t ptMax=5.0,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
@@ -27,6 +26,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
                              Bool_t bCalculateFlow=kFALSE,
+                             Int_t NumCenBins=100,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              Bool_t bUseEtaWeights=kFALSE,
@@ -70,13 +70,14 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   return NULL;
  }
  
+ Int_t nCenBin = 10;
  Double_t centrMin=0.;
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
-  Float_t MaxDevZN=10.;
-  Bool_t bCalculateCME=kFALSE;
+ Float_t MaxDevZN=10.;
+ Bool_t bCalculateCME=kFALSE;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -310,6 +311,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
+  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
  taskQC->SetRecenterZDC(bUseZDC);
