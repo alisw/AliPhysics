@@ -505,7 +505,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00082113","1111111063032200000","1111111063022110002","0163302200000000"); // EMC8EGA,
 
  
-    // 13 TeV
+    // 13 TeV & 5 TeV
   } else if (trainConfig == 401){ // EMCAL clusters pp 13 TeV
     cuts.AddCut("00000113","1111101013032200000","1111101013022210002","0163302200000000"); //INT7 1000ns timing cut, std NL NLM2
     cuts.AddCut("00000113","1111101013032200000","1111101013022210002","0163302200000000"); //INT7 1000ns timing cut, std NL NLM2
