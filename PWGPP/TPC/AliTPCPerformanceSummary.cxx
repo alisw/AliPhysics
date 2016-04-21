@@ -1766,7 +1766,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     if (vertAll>=1) {
             vertStatus = vertOK / vertAll;
     }
-    
     delete his1D;
     
     if(fgForceTHnSparse) pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(2,2);
@@ -1781,9 +1780,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
     delete his1D;
-    
-    
-    
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_1") && !fgForceTHnSparse) {    
         his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_1")->Clone());
@@ -1800,10 +1796,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2") && !fgForceTHnSparse) {    
         hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2"));
-	if(!hc) return 1;
-        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2")->Clone());
+        if(!hc) return 1;
         his1D = (TH1*)hc->Clone();
-    } else {
+    }
+    else {
        his1D = pTPC->GetTPCEventHisto()->Projection(2);
     }    
     if(!his1D) return 1;
@@ -1817,9 +1813,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3") && !fgForceTHnSparse) {    
         hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3"));
 	if(!hc) return 1;
-        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3")->Clone());
         his1D = (TH1*)hc->Clone();
-    } else {
+    }
+    else {
        his1D = pTPC->GetTPCEventHisto()->Projection(3);
     }
     if(!his1D) return 1;
@@ -1887,8 +1883,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
       "meanMultNeg="<<meanMultNeg<<
       "rmsMultNeg="<<rmsMultNeg<<          
       "errorMultNeg="<<errorMultNeg;
-
-    delete his1D;
     
     if(fgForceTHnSparse) pTPC->GetTPCEventHisto()->GetAxis(6)->SetRange(1,2);
     //
@@ -2809,15 +2803,15 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
   static TVectorF meanOccArray_iroc(36);
   static TVectorF meanOccArray_oroc(36);
 
- if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {  
-    h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
+  if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {
+      h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
   }
+  else h3D_1 = pTPC->GetTPCClustHisto()->Projection(0,1,2);
   if(!h3D_1) {
     printf("E-AliTPCPerformanceSummary::AnalyzeOcc: h_tpc_clust_0_1_2 not found");
     return 4;
   }
 
-  if(!h3D_1) return 4;
   //////////////////////////////////////////
   // normalization
   h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A side
