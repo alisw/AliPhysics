@@ -95,6 +95,13 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
     if(fJetRemovalArray && IsParticleInJet(iPart))
       continue;
 
+    // Take only particles from the randomization acceptance
+    AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
+    if(fRandomizeInPhi && (inputParticle->Phi() < fMinPhi  || inputParticle->Phi() >= fMaxPhi) )
+      continue;
+    if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
+      continue;
+
     new ((*fOutputArray)[accTracks]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
 
     // Randomize on demand
