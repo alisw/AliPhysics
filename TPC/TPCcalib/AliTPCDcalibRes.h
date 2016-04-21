@@ -81,6 +81,7 @@ class AliTPCDcalibRes: public TNamed
     Float_t E[kResDim];      // their errors
     Float_t DS[kResDim];     // smoothed residual
     Float_t DC[kResDim];     // Cheb parameterized residual
+    Float_t EXYCorr;         // correlation between extracted X and Y
     Float_t stat[kVoxHDim];  // statistics: averages of each voxel dimension + entries
     UChar_t bvox[kVoxDim];   // voxel identifier, here the bvox[0] shows number of Q bins used for Y
     UChar_t bsec;            // sector ID (0-35)
@@ -217,10 +218,14 @@ class AliTPCDcalibRes: public TNamed
   void     SetFilterOutliers(Bool_t v=kTRUE)     {fFilterOutliers = v;}
 
   void     SetMaxFitYErr2(float v=1.0)           {fMaxFitYErr2 = v;}
-  void     SetMaxFitXErr2(float v=1.5)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXErr2(float v=1.2)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXYCorr(float v=0.95)         {fMaxFitXYCorr = v;}
+  void     SetLTMCut(float v=0.75)               {fLTMCut = v;}
 
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
+  Float_t  GetMaxFitXYCorr()                const {return fMaxFitXYCorr;}
+  Float_t  GetLTMCut()                      const {return fLTMCut;}
 
   Int_t    GetRun()                         const {return fRun;}
   Long64_t GetTMin()                        const {return fTMin;}
@@ -300,6 +305,8 @@ protected:
 
   Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
+  Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
+  Float_t  fLTMCut;                  // LTM cut for outliers suppression
 
   // -------------------------------Binning
   Int_t    fNY2XBins;    // y/x bins per sector
@@ -406,7 +413,7 @@ protected:
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,1);
+  ClassDef(AliTPCDcalibRes,2);
 };
 
 //________________________________________________________________
