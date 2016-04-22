@@ -3022,7 +3022,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fBranchRecBckgClusters.Length() != 0){
 
-    Int_t nBJ = GetListOfBckgJets(fBckgJetsRec, kJetsRecAcceptance);
+    Int_t nBJ = 0;//number of reconstructed background jets or: number of standard jets (ANTIKT B2) in Embedding mode  
+
+    if(fUseExtraTracks == 0){//for standard data analysis
+    nBJ = GetListOfBckgJets(fBckgJetsRec, kJetsRecAcceptance);
+    }
+  
+    if(!(fUseExtraTracks == 0)){//for Embedding study only
+    nBJ = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);
+    }
 
     if(fDebug>2)std::cout<<" fBranchRecBckgClusters: "<<fBranchRecBckgClusters.Length()<<std::endl;
     
@@ -3059,7 +3067,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  if(nRemainingBckgJets == 0){fIsNJEventEmb = kTRUE;fh1NJEmbEvt->Fill(1.);}//set switch for Embedding into NJ events
 	}
 
-	fh1BckgJetsPtBias->Fill(jetPt);
+	if(!isBadBckgJet)fh1BckgJetsPtBias->Fill(jetPt);
 	
       }
     }
