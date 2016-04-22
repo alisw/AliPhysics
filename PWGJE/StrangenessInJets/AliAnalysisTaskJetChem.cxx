@@ -3021,17 +3021,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   //____ fetch background clusters ___________(for data analysis these are the kt04 background clusters, for Embedding study these are the standard antikt jets of the data event (in which the PYTHIA jets are embedded into))___________
 
   if(fBranchRecBckgClusters.Length() != 0){
-
-    Int_t nBJ = 0;//number of reconstructed background jets or: number of standard jets (ANTIKT B2) in Embedding mode  
-
-    if(fUseExtraTracks == 0){//for standard data analysis
-    nBJ = GetListOfBckgJets(fBckgJetsRec, kJetsRecAcceptance);
-    }
-  
-    if(!(fUseExtraTracks == 0)){//for Embedding study only
-    nBJ = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);
-    }
-
+    
+    Int_t nBJ = GetListOfBckgJets(fBckgJetsRec, kJetsRecAcceptance);
+    
     if(fDebug>2)std::cout<<" fBranchRecBckgClusters: "<<fBranchRecBckgClusters.Length()<<std::endl;
     
     Int_t nRecBckgJets = 0;
