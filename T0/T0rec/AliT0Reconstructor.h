@@ -34,8 +34,8 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual Bool_t   HasDigitConversion() const {return kFALSE;}
   static const AliT0RecoParam* GetRecoParam()
     { return dynamic_cast<const AliT0RecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj
-  void  ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26]) const;
-  void ReadOldQTC( Int_t alldata[220][5], Int_t amplitude[26]) const;
+  void  ReadNewQTC(Int_t alldata[250][5], Int_t amplitude[26]) const;
+  void ReadOldQTC( Int_t alldata[250][5], Int_t amplitude[26]) const;
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!
   TBits  SetPileupBits() const;
