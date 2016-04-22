@@ -79,8 +79,8 @@ namespace AliFemtoCutMonitorPionPion {
   protected:
 
     TH2F *fCentMult;
-    TH1F *_vertex_z;
-    TH2F *_vertex_xy;
+    TH1F *fVertexZ;
+    TH2F *fVertexXY;
 
     TH2I *_collection_size_pass;
     TH2I *_collection_size_fail;
