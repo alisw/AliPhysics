@@ -9,6 +9,9 @@
 
 #include "AliESDtrackCuts.h"
 
+class AliVTrack;
+class AliVEvent;
+
 class AliRecInfoCuts : public AliESDtrackCuts
 {
 public:
@@ -36,7 +39,8 @@ public:
   Int_t GetMinNTrackletsTRD()  const {return fMinNTrackletsTRD;}
   Float_t GetTPCITSMatchingRadius()  const {return fTPCITSMatchingRadius;}
   Float_t GetTPCTRDMatchingRadius()  const {return fTPCTRDMatchingRadius;}
-
+  Bool_t AcceptFTrack(AliVTrack *const vTrack, AliVEvent *const vEvent);
+    
   // cuts init function
   void InitME();
 
