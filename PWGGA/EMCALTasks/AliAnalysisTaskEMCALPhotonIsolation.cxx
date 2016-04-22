@@ -1068,6 +1068,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     //  Int_t nbMObj =  -> GetNumberOfMatchedObj();
   Int_t nbMObj = clust -> GetNTracksMatched();
   
+  //if(tracks->GetTrackFilterType()==AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("TPC only tracks"));
   
   if (nbMObj == 0) return kFALSE;
   
@@ -1484,23 +1485,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
     }
   }
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
     //fTracksAna = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("FilterTracksAna"));
     // name hard coded to use the defined tracks for analysis
   
     //if (!fTracksAna) {
-  if(!tracks){
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
     //  const Int_t nbTracks = fTracksAna->GetEntries();
     //  Int_t iTracks = 0;
   
-  tracks->ResetCurrentID();
+  tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack, etaTrack;
   
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     
     if(!eTrack){
       AliError(Form("No tracks in collection"));
@@ -1593,24 +1594,26 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
   } // end of clusters loop
     //  Printf("Total Energy inside IsoCone from Clusters %.4lf",sumEnergyConeClus);
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
   
-  if(!tracks){
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-  
-    //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
-  tracks->ResetCurrentID();
+  //   if(tracksAna->GetTrackFilterType()==AliEmcalTrackSelection::kHybridTracks)  AliError(Form("Hybrid Tracks"));
+  //      Printf("Name of the tracks used for Isolation: %s",(tracksAna->GetClassName()).Data());
+  tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack, etaTrack,radius;
   
     //  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
+
+    //AliError("On a bien des traces pour l'analysos");
       //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
     
     if((eTrack->Pt())<0.2)
@@ -1659,18 +1662,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     maxPhi = TMath::Pi();
   }
   
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
   
-  if(!tracks){
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   
     //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
-  tracks->ResetCurrentID();
+  tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius;
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
@@ -1715,18 +1718,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     minPhi = 1.4;
     maxPhi = TMath::Pi();
   }
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
   
-  if(!tracks){
+  if(!tracksAna){
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
   
     //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
-  tracks->ResetCurrentID();
+  tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius;
-  while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
@@ -2083,7 +2086,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
       
     }
   } // end of clusters loop
-  
+  return;
 }
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *coi, TLorentzVector vecCOI, Int_t index){
@@ -2094,10 +2097,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
     // I would like to remove this part and fill the tracks multiplicity histogram in FillQAHistograms, is that ok for thnSparses? (especially cause here the histogram is filled several times per event)
     // AliParticleContainer *tracks = static_cast<AliParticleContainer*>(fParticleCollArray.At(0));
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
     //Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
-  tracks->ResetCurrentID();
-  AliVTrack *emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
+  tracksAna->ResetCurrentID();
+  AliVTrack *emcTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle());
     //
   int nTracks=0;
     // tracks->ResetCurrentID();
@@ -2106,12 +2109,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       //  if(!track) continue;
       // if(!(track->TestFilterBit("kHybrid"))) continue;
     nTracks++;
-    emcTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle());
+    emcTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle());
   }
     //  Printf("Ntracks for the event with this cluster: %d", nTracks);
   fTrackMult->Fill(nTracks);
   
-  AliError(Form("On est après la boucle de traces"));
+
     //  Printf("After Loop on Tracks");
   Double_t eTCOI = 0., m02COI = 0.;
   
