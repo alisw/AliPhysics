@@ -465,7 +465,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
   if (task->GetUseWeight()) {
     Printf("User-defined Weight function:");
-    task->GetWeightFunction(funcWeight)->Print();
+    task->GetWeightFunction()->Print();
   }
   else {
     Printf("FONLL will be used for the weights");
