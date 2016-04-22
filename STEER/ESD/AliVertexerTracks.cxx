@@ -40,7 +40,7 @@
 #include "AliESDEvent.h"
 #include "AliVertexerTracks.h"
 
-#include "AliSymMatrix.h"
+//#include "AliSymMatrix.h"
 #include <iostream>
 
 using namespace std;
@@ -1699,18 +1699,18 @@ void AliVertexerTracks::VertexFitterNew(Bool_t vfit, Bool_t chiCalc,Int_t useWei
         if (ntAcc<2) break;   // failed
         //
         double vec[3] = {cx0,cy0,cz0};
-        AliSymMatrix mat(3);
-        mat(0,0) = cxx;
-        mat(0,1) = cxy;
-        mat(0,2) = cxz;
-        mat(1,1) = cyy;
-        mat(1,2) = cyz;
-        mat(2,2) = czz;
-        
-        if (!mat.SolveChol(vec,kTRUE)) return;
+//        AliSymMatrix mat(3);
+//        mat(0,0) = cxx;
+//        mat(0,1) = cxy;
+//        mat(0,2) = cxz;
+//        mat(1,1) = cyy;
+//        mat(1,2) = cyz;
+//        mat(2,2) = czz;
+//        
+//        if (!mat.SolveChol(vec,kTRUE)) return;
         //
         double scaleSigma2New = wghChi2/wghSum;
-        double vtCov[6] = {mat(0,0),mat(0,1),mat(1,1),mat(0,2),mat(1,2),mat(2,2)};
+        double vtCov[6] = {0,0,0,0,0,0};//{mat(0,0),mat(0,1),mat(1,1),mat(0,2),mat(1,2),mat(2,2)};
         fVert.SetXYZ(vec);
         fVert.SetCovarianceMatrix(vtCov);
         fVert.SetNContributors(ntAcc);
