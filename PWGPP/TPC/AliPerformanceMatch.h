@@ -55,8 +55,8 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process matching
-  void ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack);
-  //void ProcessTPCTRD(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVfriendTrack *const friendTrack);
+  void ProcessTPCITS(AliMCEvent* const mcev, AliVEvent *const vEvent, AliVTrack *const vTrack);
+  void ProcessTPCTRD(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVfriendTrack *const friendTrack);
   void ProcessITSTPC(Int_t trackIdx, AliVEvent* const vEvent, AliMCEvent* const mcev, AliVTrack *const vTrack);
   void ProcessTPCConstrain(AliMCEvent* const mcev, AliVEvent *const vEvent, AliVTrack *const vTrack); // - 01.11.2011
 
