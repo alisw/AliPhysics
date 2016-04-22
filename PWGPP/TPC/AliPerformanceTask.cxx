@@ -186,6 +186,8 @@ void AliPerformanceTask::Exec(Option_t *)
   // Main loop
   // Called for each event
 
+   // cout<<"Ex start "<<endl;
+    
   // Decide whether to use HLT or Offline events
   fEvents++;
   //if(fDebug) AliSysInfo::AddStamp("memleak",fEvents);
@@ -269,9 +271,7 @@ void AliPerformanceTask::Exec(Option_t *)
         tempMem.WriteObject(fOutput);
         AliSysInfo::AddStamp("memleak",fEvents,tempMem.Length()/1024.);
     }
-  // Post output data.
-   // PostData(0, fOutputSummary);
-   // PostData(1, fOutput);
+
 }
 
 //_____________________________________________________________________________

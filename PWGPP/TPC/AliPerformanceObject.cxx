@@ -52,7 +52,7 @@ AliPerformanceObject::AliPerformanceObject():
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE),
+  fUseTOFBunchCrossing(kFALSE),
   fUseSparse(1)
 {
   // constructor
@@ -70,7 +70,7 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE),
+  fUseTOFBunchCrossing(kFALSE),
   fUseSparse(1)
 {
 
