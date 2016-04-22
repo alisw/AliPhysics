@@ -48,6 +48,7 @@
 #include "AliPerformanceMatch.h" 
 #include "AliVEvent.h"
 #include "AliVVertex.h"
+#include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliVfriendEvent.h"
 #include "AliLog.h" 
@@ -61,6 +62,7 @@
 #include "AliTracker.h" 
 #include "AliTRDtrackV1.h" 
 #include "AliTreeDraw.h" 
+#include "AliFlatESDTrack.h"
 
 using namespace std;
 
@@ -236,7 +238,6 @@ void AliPerformanceMatch::Init(){
     Double_t maxTPCConstrain[4] = {5,  2*TMath::Pi(), ptMax,  1.5};
     
     if(fUseSparse){
-      
         fTPCConstrain = new THnSparseF("fTPCConstrain","pull_phi:phi:pt:eta",4, binsTPCConstrain,minTPCConstrain,maxTPCConstrain);
         fTPCConstrain->SetBinEdges(2,binsPt);
         fTPCConstrain->GetAxis(0)->SetTitle("(#phi-#phi_{ref})/#sigma");
@@ -314,29 +315,40 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliVEvent *const vEvent, A
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliVTrack *const vTrack)
+void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliVEvent *const vEvent,AliVTrack *const vTrack)
 {
+  
   //
   // Match TPC and ITS min-bias tracks
   // at radius between detectors
   //
   if(!vTrack) return;
-   
+  if(!vEvent) return;
+  AliFlatESDTrack *flatTrack = dynamic_cast<AliFlatESDTrack*>(vTrack);
+
   Bool_t isTPC = kFALSE;
   Bool_t isMatch = kFALSE;
 
-  if(vTrack->Charge()==0) return;
-  if(!vTrack->GetTPCInnerParam()) return;
+  if(!flatTrack){
+      if(vTrack->Charge()==0) return;
+      if(!vTrack->GetTPCInnerParam()) return;
+      if(!fCutsRC->AcceptVTrack(vTrack)) return;
+  }
+  else{
+      if(!fCutsRC->AcceptFTrack(vTrack,vEvent)) return;
+  }
   if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
-  if(!fCutsRC->AcceptVTrack(vTrack)) return;
 
   isTPC = kTRUE;
-  
   if( (vTrack->GetStatus()&AliVTrack::kITSrefit))
     isMatch = kTRUE;
-  
+    
+    AliExternalTrackParam trackParams;
+    vTrack->GetTrackParam(trackParams);
+    AliExternalTrackParam *etpTrack = &trackParams;
+    
   if(isTPC){
-    Double_t vecTrackingEff[5] = { static_cast<Double_t>(isMatch),vTrack->Phi(), vTrack->Pt(),vTrack->Eta(),static_cast<Double_t>(vTrack->GetITSclusters(0)) };
+    Double_t vecTrackingEff[5] = { static_cast<Double_t>(isMatch),etpTrack->Phi(), etpTrack->Pt(),etpTrack->Eta(),static_cast<Double_t>(vTrack->GetITSclusters(0)) };
     if(fUseSparse) fTrackingEffHisto->Fill(vecTrackingEff);
     else{
         if(vecTrackingEff[0] > -0.5) h_tpc_match_trackingeff_all_2_3->Fill(vecTrackingEff[2],vecTrackingEff[3]);
@@ -351,50 +363,57 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliVEve
   // Contrain TPC inner track to the vertex
   // then compare to the global tracks
   //
-  if(!vEvent && !vTrack) return;
-  if(vTrack->Charge()==0) return;
-  if(!vTrack->GetTPCInnerParam()) return;
-  if(!(vTrack->GetStatus()&AliVTrack::kITSrefit)) return;
-  if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
-  if(!fCutsRC->AcceptVTrack(vTrack)) return;
-
-  Double_t x[3]; vTrack->GetXYZ(x);
-  Double_t b[3]; AliTracker::GetBxByBz(x,b);
-  Bool_t isOK = kFALSE;
-
-  const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    if(!vEvent && !vTrack) return;
+    if(!vTrack->GetTPCInnerParam()) return;
   
-  AliExternalTrackParam * TPCinner = (AliExternalTrackParam *)vTrack->GetTPCInnerParam();
-  if(!TPCinner) return;
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    AliFlatESDTrack *flatTrack = dynamic_cast<AliFlatESDTrack*>(vTrack);
+
+    if(!flatTrack){
+        if(vTrack->Charge()==0) return;
+        if(!fCutsRC->AcceptVTrack(vTrack)) return;
+    }
+    else{
+        if(!fCutsRC->AcceptFTrack(vTrack,vEvent)) return;
+    }
+    if(!(vTrack->GetStatus()&AliVTrack::kITSrefit)) return;
+    if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
+
+    AliExternalTrackParam trackParams;
+    vTrack->GetTrackParam(trackParams);
+    AliExternalTrackParam *etpTrack = &trackParams;
+    Double_t x[3]; etpTrack->GetXYZ(x);
+    Double_t b[3]; AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = kFALSE;
+
+    AliExternalTrackParam * TPCinner = (AliExternalTrackParam *)vTrack->GetTPCInnerParam();
+    if(!TPCinner) return;
   
-  //  isOK = TPCinner->Rotate(esdTrack->GetAlpha());
-  //isOK = TPCinner->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+    AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
+    if (TPCinnerC) {
+        isOK = TPCinnerC->ConstrainToVertex(vVertex, b);
 
-  AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
-  if (TPCinnerC) {
-    isOK = TPCinnerC->ConstrainToVertex(vVertex, b);
+        // transform to the track reference frame 
+        isOK = TPCinnerC->Rotate(etpTrack->GetAlpha());
+        isOK = TPCinnerC->PropagateTo(etpTrack->GetX(),vEvent->GetMagneticField());
+    }
+    if(!isOK) return;
 
-    // transform to the track reference frame 
-    isOK = TPCinnerC->Rotate(vTrack->GetAlpha());
-    isOK = TPCinnerC->PropagateTo(vTrack->GetX(),vEvent->GetMagneticField());
-  }
-  if(!isOK) return;
-
-  Double_t sigmaPhi=0,deltaPhi=0,pullPhi=0;
-  deltaPhi = TPCinnerC->GetSnp() - vTrack->GetSnp();
-  sigmaPhi = TMath::Sqrt(vTrack->GetSigmaSnp2()+TPCinnerC->GetSigmaSnp2());
-  if(sigmaPhi!=0)
+    Double_t sigmaPhi=0,deltaPhi=0,pullPhi=0;
+    deltaPhi = TPCinnerC->GetSnp() - etpTrack->GetSnp();
+    sigmaPhi = TMath::Sqrt(vTrack->GetSigmaSnp2()+TPCinnerC->GetSigmaSnp2());
+    if(sigmaPhi!=0)
     pullPhi = deltaPhi/sigmaPhi;
 
-  Double_t vTPCConstrain[4] = {pullPhi,vTrack->Phi(),vTrack->Pt(),vTrack->Eta()};
-  if(fUseSparse) fTPCConstrain->Fill(vTPCConstrain);
-  else {
-      h_tpc_constrain_tpc_0_2_3->Fill(vTPCConstrain[0],vTPCConstrain[2],vTPCConstrain[3]);
-  }
-  if(TPCinnerC)
+    Double_t vTPCConstrain[4] = {pullPhi,etpTrack->Phi(),etpTrack->Pt(),etpTrack->Eta()};
+    if(fUseSparse) fTPCConstrain->Fill(vTPCConstrain);
+    else {
+        h_tpc_constrain_tpc_0_2_3->Fill(vTPCConstrain[0],vTPCConstrain[2],vTPCConstrain[3]);
+    }
+    if(TPCinnerC)
     delete TPCinnerC;
 
-  return;
+    return;
 }
 //_____________________________________________________________________________
 void AliPerformanceMatch::FillHistograms(AliVTrack *const refParamVTrack, AliVTrack *const paramVTrack, Bool_t isRec) 
@@ -456,11 +475,11 @@ void AliPerformanceMatch::FillHistograms(AliVTrack *const refParamVTrack, AliVTr
             if(vPullHisto[6] > 0. && vPullHisto[6] < 1.49)
             if(vPullHisto[7] > 0.01 && vPullHisto[7] < 10)
             if(vPullHisto[8] > 1.0 && vPullHisto[8] < 2.0){
-                h_tpc_match_pull_2_7->Fill(vPullHisto[2],vPullHisto[7]);
-                h_tpc_match_pull_4_7->Fill(vPullHisto[4],vPullHisto[7]);
-                h_tpc_match_pull_0_7->Fill(vPullHisto[0],vPullHisto[7]);
-                h_tpc_match_pull_1_7->Fill(vPullHisto[1],vPullHisto[7]);
-                h_tpc_match_pull_3_7->Fill(vPullHisto[3],vPullHisto[7]);
+                if (h_tpc_match_pull_2_7) h_tpc_match_pull_2_7->Fill(vPullHisto[2],vPullHisto[7]);
+                if (h_tpc_match_pull_4_7) h_tpc_match_pull_4_7->Fill(vPullHisto[4],vPullHisto[7]);
+                if (h_tpc_match_pull_0_7) h_tpc_match_pull_0_7->Fill(vPullHisto[0],vPullHisto[7]);
+                if (h_tpc_match_pull_1_7) h_tpc_match_pull_1_7->Fill(vPullHisto[1],vPullHisto[7]);
+                if (h_tpc_match_pull_3_7) h_tpc_match_pull_3_7->Fill(vPullHisto[3],vPullHisto[7]);
             }
             
         }
@@ -515,8 +534,9 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEven
   }
 
   // get TPC event vertex
-  const AliVVertex *vVertex = vEvent->GetPrimaryVertexTPC();
-  if(vVertex && (vVertex->GetStatus()<=0)) return;
+    AliESDVertex vertex;
+    vEvent->GetPrimaryVertex(vertex);
+    if(!(vertex.GetStatus())) return;
 
   //  Process events
   for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
@@ -532,11 +552,11 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEven
 
     if(GetAnalysisMode() == 0){
       if(!IsUseTOFBunchCrossing()){
-	ProcessTPCITS(stack,track);
+	ProcessTPCITS(stack,vEvent,track);
       }
       else
 	if( track->GetTOFBunchCrossing(vEvent->GetMagneticField())==0) {
-	  ProcessTPCITS(stack,track);
+	  ProcessTPCITS(stack,vEvent,track);
 	}
     }
     else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,vEvent,stack,track);}
