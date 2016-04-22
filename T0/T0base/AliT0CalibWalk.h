@@ -33,6 +33,7 @@ class AliT0CalibWalk: public TNamed {
   void SetCalibByData(Bool_t calib) {fCalibByData=calib;}
   void SetWalk2015(TString filename);
   void SetWalkDima(TString filename);
+  void SetWalkZero();
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
