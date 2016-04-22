@@ -647,6 +647,7 @@ TTree* AliPerformanceDEdx::CreateSummary()
 
 void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     
+    if(!vDeDxHisto) return;
     if(vDeDxHisto[0] >= 35 && vDeDxHisto[0] < 60)
     if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 20)
     if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 250)
@@ -657,13 +658,12 @@ void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.){
         if(vDeDxHisto[5] > -1 && vDeDxHisto[5] < 1) h_tpc_dedx_mips_0->Fill(vDeDxHisto[0]);
         if(vDeDxHisto[5] > -3 && vDeDxHisto[5] < 0){
-            
-           h_tpc_dedx_mips_c_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
-           h_tpc_dedx_mips_c_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
+           if(h_tpc_dedx_mips_c_0_5) h_tpc_dedx_mips_c_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
+           if(h_tpc_dedx_mips_c_0_1) h_tpc_dedx_mips_c_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
         }
         else if(vDeDxHisto[5] > 0 && vDeDxHisto[5] < 3){
-            h_tpc_dedx_mips_a_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
-            h_tpc_dedx_mips_a_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
+            if(h_tpc_dedx_mips_a_0_5) h_tpc_dedx_mips_a_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
+            if(h_tpc_dedx_mips_a_0_1) h_tpc_dedx_mips_a_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
 
         }
     }
@@ -676,6 +676,6 @@ void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     if(vDeDxHisto[7] >= 0.32 && vDeDxHisto[7] < 0.38)  /*momenta for electrons*/
     if(vDeDxHisto[8] >= 80 && vDeDxHisto[8] < 160)
     if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.)
-    h_tpc_dedx_mipsele_0->Fill(vDeDxHisto[0]);
+    if(h_tpc_dedx_mipsele_0) h_tpc_dedx_mipsele_0->Fill(vDeDxHisto[0]);
 
 }
