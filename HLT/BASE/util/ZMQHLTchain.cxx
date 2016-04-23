@@ -107,7 +107,7 @@ Int_t InitZMQ()
   rc = alizmq_socket_init(fZMQin,  fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("in:  (%s) %s\n", alizmq_socket_name(rc), fZMQconfigIN.Data());
   rc = alizmq_socket_init(fZMQforward, fZMQcontext, fZMQconfigForward.Data(), fZMQtimeout, fZMQmaxQueueSize);
-  printf("out: (%s) %s\n", alizmq_socket_name(rc), fZMQconfigForward.Data());
+  printf("forward: (%s) %s\n", alizmq_socket_name(rc), fZMQconfigForward.Data());
   return 0;
 }
 
@@ -243,6 +243,7 @@ int Run()
           TObject* obj = NULL;
           alizmq_msg_iter_data(i, obj);
           if (obj) { trgMask = GetTriggerClasses(obj); }
+          delete obj;
           if (fVerbose) printf("block kAliHLTDataTypeGlobalTrigger found\n");
         }
         //get the ECS param string
@@ -272,7 +273,7 @@ int Run()
           AliCDBManager::Instance()->SetRun(fRunNumber);
         }
         //get the GRP
-        if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
+        else if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
         {
           alizmq_msg_iter_data(i, fGRPobject);
           AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(fGRPobject);
@@ -338,6 +339,9 @@ int Run()
       }
       AliHLTUInt32_t timestamp = AliHLTUInt32_t( TTimeStamp().AsDouble() );
       system->Run(nEvents, stop, trgMask, timestamp, eventType, fParticipatingDetectors);
+      if (fVerbose) {
+        printf("done running chain\n");
+      }
     }
 
     double endTime = TTimeStamp().AsDouble();
