@@ -373,7 +373,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //only send the INFO block if there is some data to send
     if (fSendRunNumber && nSelectedBlocks>0)
     {
-      rc = alizmq_msg_add(&message, "INFO", fInfoString);
+      AliHLTDataTopic topic = kAliHLTDataTypeInfo;
+      rc = alizmq_msg_add(&message, &topic, fInfoString);
       if (rc<0) {
         HLTWarning("ZMQ error adding INFO");
       }
