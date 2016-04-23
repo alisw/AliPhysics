@@ -377,8 +377,6 @@ int main(int argc, char** argv)
   int mainReturnCode=0;
 
   //init stuff
-  //globally enable schema evolution for serializing ROOT objects
-  TMessage::EnableSchemaEvolutionForAll(kTRUE);
   TDirectory::AddDirectory(kFALSE);
   //ZMQ init
   fZMQcontext = zmq_ctx_new();

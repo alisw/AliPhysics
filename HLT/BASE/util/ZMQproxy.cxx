@@ -148,8 +148,6 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  //globally enable schema evolution for serializing ROOT objects
-  TMessage::EnableSchemaEvolutionForAll(kTRUE);
   //the context
   fZMQcontext = zmq_ctx_new();
 
