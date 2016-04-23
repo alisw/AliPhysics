@@ -40,6 +40,7 @@
 #include <iostream>
 #include <sys/ioctl.h>
 #include "AliCDBEntry.h"
+#include "TString.h"
 
 using namespace std;
 
@@ -49,7 +50,7 @@ TString fZMQconfigIN  = "PULL";
 TString fZMQsubscriptionIN = "";
 TString fZMQconfigForward  = "PUSH@inproc://source";
 Int_t   fZMQmaxQueueSize = 100;
-Int_t   fZMQtimeout = -1;
+Int_t   fZMQtimeout = 100000;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -57,7 +58,7 @@ void* fZMQforward = NULL;        //the monitoring socket, here we publish a copy
 void* fZMQin  = NULL;        //the in socket - entry point for the data to be merged.
 
 double fSleep = 1;  // seconds
-const char* fCDBpath = "local://$ALICE_ROOT/OCDB";
+TString fCDBpath = "local://$ALICE_ROOT/OCDB";
 
 string fECSstring;
 string fINFOstring;
@@ -81,6 +82,7 @@ const char* fUSAGE =
     " -ZMQmaxQueueSize : max size of the input queue\n"
     " -ExitOnSOR : quit on change of run\n"
     " -requestGRP : request an on-the-fly GRP from upstream\n"
+    " -cdbPath : the path to the default CDB storage\n"
     " -config : ROOT macro defining the HLT chain.\n"
     "           a \"source\" component is provided, use as first parent\n"
     "           a \"sink\" component needs to be defined (last in chain)\n"
@@ -160,7 +162,8 @@ void DoRequest(void* socket)
 
 int Run()
 {
-  AliCDBManager::Instance()->SetDefaultStorage(fCDBpath);
+  printf("setting CDB to: %s\n", fCDBpath.Data());
+  AliCDBManager::Instance()->SetDefaultStorage(fCDBpath.Data());
 
   //make the source configuration
   AliHLTSystem* system = AliHLTPluginBase::GetInstance();  
@@ -213,6 +216,7 @@ int Run()
             fZMQconfigIN.Data(), fZMQtimeout);
         rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), 
             fZMQtimeout, fZMQmaxQueueSize);
+        continue;
       }
     }
 
@@ -226,6 +230,8 @@ int Run()
       //get the incoming data
       alizmq_msg_recv(&message, fZMQin, 0);
 
+      int infoRunNumber = 0;
+      int ecsRunNumber = 0;
       bool isNewRun = false;
 
       //extract infromation from message
@@ -266,11 +272,11 @@ int Run()
           opt += fECSstring;
           system->ScanOptions(opt.Data());
 
-          fRunNumber = atoi(ecsParamMap["RUN_NUMBER"].c_str());
-          if (fVerbose) printf("ECS string RUN_NUMBER: %i\n", fRunNumber);
-
+          ecsRunNumber = atoi(ecsParamMap["RUN_NUMBER"].c_str());
+          if (fVerbose) printf("ECS string RUN_NUMBER: %i\n", ecsRunNumber);
           printf("--set run number in CDB manager\n");
-          AliCDBManager::Instance()->SetRun(fRunNumber);
+          AliCDBManager::Instance()->SetRun(ecsRunNumber);
+          fRunNumber = ecsRunNumber;
         }
         //get the GRP
         else if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
@@ -286,20 +292,15 @@ int Run()
           }
         }
         //get the INFO block
-        else if (alizmq_msg_iter_check(i, kAliHLTDataTypeInfo)==0)
+        else if (alizmq_msg_iter_check(i, "INFO")==0)
         {
-          if (fVerbose) printf("block kAliHLTDataTypeInfo found\n");
           alizmq_msg_iter_data(i, fINFOstring);
           stringMap infoParams = ParseParamString(fINFOstring);
-          int runNumber = atoi(infoParams["run"].c_str());
-          if (runNumber!=fRunNumber && fRunNumber>0)
+          infoRunNumber = atoi(infoParams["run"].c_str());
+          if (fVerbose) printf("block kAliHLTDataTypeInfo found with run=%i\n",infoRunNumber);
+          if (infoRunNumber!=fRunNumber && fRunNumber>0)
           {
-            //if run changes, invalidate all params, new ones will be requested
-            fRunNumber = runNumber;
-            fECSstring.erase();
-            fMagfieldIsSet=kFALSE;
-            if (fVerbose) printf("run changed! old: %i, new: %i\n", fRunNumber, runNumber);
-            isNewRun=true;
+            isNewRun = true;
           }
         }
         //get the event info
@@ -312,11 +313,21 @@ int Run()
         }
       }
 
+      //if run changes, invalidate all params, new ones will be requested
       //if we change run number, we skip processing, reset stuff and go back
       //to request new ECS, GRP etc.
-      if (isNewRun) {
+      if (isNewRun)
+      {
+        if (fVerbose) printf("run changed! old: %i, new: %i\n", fRunNumber, infoRunNumber);
+        fRunNumber = infoRunNumber;
+        fECSstring.erase();
+        fMagfieldIsSet=kFALSE;
+        
         alizmq_msg_close(&message);
-        if (fInterruptOnSOR) interrupted=kTRUE;
+        if (fInterruptOnSOR) {
+          printf("exiting on run change! old run: %i, new run: %i\n",fRunNumber,infoRunNumber);
+          interrupted=kTRUE;
+        }
         continue;
       }
 
@@ -350,6 +361,7 @@ int Run()
       gSystem->Sleep(int((fSleep - timeDiff)*1000));
     }
   }
+  printf("done\n");
   return 0;
 }
 
@@ -391,6 +403,14 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("requestGRP"))
     {
       fRequestGRP = true;
+    }
+    else if (option.EqualTo("cdbPath"))
+    {
+      fCDBpath=value.Data();
+    }
+    else if (option.EqualTo("ExitOnSOR"))
+    {
+      fInterruptOnSOR = value.Contains(0)?kFALSE:kTRUE;
     }
     else
     {
