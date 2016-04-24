@@ -757,55 +757,52 @@ Double_t* AliAnalysisTaskEMCALPhotonIsolation::GenerateFixedBinArray(Int_t n, Do
   return bins;
 }
 
+
   //________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 {
     //   Init the analysis.
-  
+    //tracks for CT Matching
   AliTrackContainer *tracks = GetTrackContainer(0);
   if (!tracks) {
     AliError(Form("%s: This task needs a particle container!", GetName()));
     return;
   }
-  
-    //  TClass trackClass(tracks->GetClassName());
-    //  if (!trackClass.InheritsFrom("AliVTrack")) {
-    //    tracks->SetClassName("AliVTrack"); // enforce only AliVTrack and derived classes
-    //  }
-  
+    //tracks for Isolation
+  AliTrackContainer *tracksANA = GetTrackContainer(1);
+  if (!tracksANA) {
+    AliError(Form("%s: This task needs a particle container!", GetName()));
+    return;
+  }
+    //clusters
   AliClusterContainer *clusters = GetClusterContainer(0);
   if (!clusters) {
     AliError(Form("%s: This task needs a cluster container!", GetName()));
     return;
   }
-  
-    //  TClass clusterClass(clusters->GetClassName());
-    //  if (!clusterClass.InheritsFrom("AliVCluster")) {
-    //    clusters->SetClassName("AliVCluster"); // enforce only AliVCluster and derived classes
-    //  }
-  
-    //  if (fParticleCollArray.GetEntriesFast()<2) {
-    //   AliError(Form("Wrong number of particle collections (%d), required 2",fParticleCollArray.GetEntriesFast()));
-    //   return;
-    // }
-  
-  
-    //    for (Int_t i = 0; i < 2; i++) {
-    //       AliParticleContainer *contain = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
-    //       contain->SetClassName("AliEmcalParticle");
-    //    }
-  
-  
-  
+  if(tracks->GetClassName()!= "tpconlyMatch"){
+    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is CT Matching performed with CT Only Tracks?\n\n\n\n"));
+    if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kTPCOnlyTracks){
+      AliError(Form("CT matching NOT performed with TPCOnly Tracks"));
+      AliError(Form("This Will NOT let you continue the analysis: \nbetter modify here IF you are sure of what you are doing"));
+      return;
+    }
+  }
+  if(tracksANA->GetClassName()!= "filterTracksAna"){
+    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
+    if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kHybridTracks){
+      AliError(Form("Isolation NOT calculated with HybridTracks"));
+      AliError(Form("This Will NOT let you continue the analysis: \nbetter modify here IF you are sure of what you are doing"));
+      return;
+    }
+  }
+    //Init the EMCAL Framework
   AliAnalysisTaskEmcal::ExecOnce();
   if (!fInitialized) {
     
     AliError(Form("AliAnalysisTask not initialized"));
     return;
   }
-  
-  
-  
 }
 
   //______________________________________________________________________________________
