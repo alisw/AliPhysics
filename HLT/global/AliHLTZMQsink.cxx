@@ -438,7 +438,9 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         HLTWarning("ZMQ error adding dummy rep data");
       }
     }
-    rc = alizmq_msg_send(&message, fZMQout, 0);
+    int flags = 0;
+    if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
+    rc = alizmq_msg_send(&message, fZMQout, flags);
     HLTMessage(Form("sent data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     alizmq_msg_close(&message);
   }
