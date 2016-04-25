@@ -24,7 +24,7 @@ void* AliZMQhelpers::gZMQcontext = NULL;
 
 //_______________________________________________________________________________________
 void* alizmq_context()
-{ 
+{
   if (!AliZMQhelpers::gZMQcontext) AliZMQhelpers::gZMQcontext=zmq_ctx_new();
   return AliZMQhelpers::gZMQcontext;
 }
@@ -168,11 +168,13 @@ const char* alizmq_socket_name(int socketType)
 }
 
 //_______________________________________________________________________________________
-int alizmq_socket_close(void* socket)
+int alizmq_socket_close(void*& socket)
 {
   int linger=0;
   zmq_setsockopt(socket, ZMQ_LINGER, &linger, sizeof(linger));
-  return zmq_close(socket);
+  int rc = zmq_close(socket);
+  if (rc>=0) socket = NULL;
+  return rc;
 }
 
 //_______________________________________________________________________________________
