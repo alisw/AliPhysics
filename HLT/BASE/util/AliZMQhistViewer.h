@@ -76,6 +76,9 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
   TPRegexp* GetUnSelection(std::string* in=NULL);
 
   private:
+  AliZMQhistViewer(const AliZMQhistViewer&);
+  AliZMQhistViewer& operator=(const AliZMQhistViewer&);
+
   //internal stuff
   static Int_t CountPads(TVirtualPad* pad);
 

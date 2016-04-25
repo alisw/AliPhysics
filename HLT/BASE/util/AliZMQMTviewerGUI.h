@@ -48,6 +48,8 @@ private:
    TPRegexp*            fSelection;
    TPRegexp*            fUnSelection;
 
+   AliZMQMTviewerGUI(const AliZMQMTviewerGUI&);
+   AliZMQMTviewerGUI& operator=(const AliZMQMTviewerGUI&);
 public:
    AliZMQMTviewerGUI(const TGWindow *p, UInt_t w, UInt_t h, int argc, char** argv);
    virtual ~AliZMQMTviewerGUI() { }
