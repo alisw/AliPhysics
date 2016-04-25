@@ -96,7 +96,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // create the task and configure 
   TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  //task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
+  task->SkipTriggerMask(AliVEvent::kFastOnly);
   task->SelectCollisionCandidates(triggerMask); //AOD
 
   if(isPP) task->UseMultiplicity("QUALITY");
