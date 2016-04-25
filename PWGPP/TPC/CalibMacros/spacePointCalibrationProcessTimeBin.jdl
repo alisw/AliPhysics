@@ -1,8 +1,8 @@
-Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/processTimeBin.sh";
+Executable="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/processTimeBin.sh";
 
 Packages = {
-"VO_ALICE@AliPhysics::v5-08-02-01-1",
-"VO_ALICE@jemalloc::v3.6.0"
+"VO_ALICE@jemalloc::v3.6.0",
+"VO_ALICE@AliPhysics::v5-08-05-01-1"
 };
 
 Jobtag={
@@ -14,7 +14,7 @@ LegoResubmitZombies="1";
 TTL="86000";
 Price="20";
 
-Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/validationProcessTimeBin.sh";
+Validationcommand="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/validationProcessTimeBin.sh";
 
 JDLVariables={
     "Packages", 
@@ -27,9 +27,9 @@ Workdirectorysize={"10000MB"};
 Arguments="$1 $2 $3";
 
 InputFile={
-    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/residualInfo.root",
-    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/fitDrift.root",
-    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01/$3/residualFilesList.log"
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$3/residualInfo.root",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$3/fitDrift.root",
+    "LF:/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$3/residualFilesList.log"
 };
 
 Output={
@@ -37,7 +37,7 @@ Output={
     "root_archive.zip:*.root@disk=1"
 };
 
-OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-02-01_20160316/$3/$1_$2";
+OutputDir="/alice/cern.ch/user/p/pwg_pp/TPCSPcalibration_v5-08-05-01_20160421/$3/$1_$2";
 
 OutputErrorE={"log_archive.zip:*.log@disk=1","root_archive.zip:*.root@disk=1"};
 
