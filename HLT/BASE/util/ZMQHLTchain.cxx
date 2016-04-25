@@ -70,7 +70,7 @@ TObject* fGRPobject = NULL;
 Bool_t fInterruptOnSOR = kFALSE;
 
 AliHLTUInt32_t fParticipatingDetectors = 0;
-int fRunNumber = 0;
+int fRunNumber = -1;
 bool fMagfieldIsSet = kFALSE;
 
 const char* fUSAGE = 
@@ -230,8 +230,8 @@ int Run()
       //get the incoming data
       alizmq_msg_recv(&message, fZMQin, 0);
 
-      int infoRunNumber = 0;
-      int ecsRunNumber = 0;
+      int infoRunNumber = -1;
+      int ecsRunNumber = -1;
       bool isNewRun = false;
 
       //extract infromation from message
@@ -275,7 +275,6 @@ int Run()
           ecsRunNumber = atoi(ecsParamMap["RUN_NUMBER"].c_str());
           if (fVerbose) printf("ECS string RUN_NUMBER: %i\n", ecsRunNumber);
           printf("--set run number in CDB manager\n");
-          AliCDBManager::Instance()->SetRun(ecsRunNumber);
           fRunNumber = ecsRunNumber;
         }
         //get the GRP
@@ -287,8 +286,6 @@ int Run()
             printf("--putting the on-the-fly GRP into the CDB manager\n");
             AliCDBManager::Instance()->PromptCacheEntry("GRP/GRP/Data",entry);
             printf("--init mag field\n");
-            AliHLTMisc::Instance().InitMagneticField();		
-            fMagfieldIsSet=kTRUE;
           }
         }
         //get the INFO block
@@ -313,6 +310,11 @@ int Run()
         }
       }
 
+      //if run number not set from ECS string, set it from the info string
+      if (infoRunNumber>=0 && fRunNumber==-1) {
+        fRunNumber = infoRunNumber;
+      }
+
       //if run changes, invalidate all params, new ones will be requested
       //if we change run number, we skip processing, reset stuff and go back
       //to request new ECS, GRP etc.
@@ -327,8 +329,16 @@ int Run()
         if (fInterruptOnSOR) {
           printf("exiting on run change! old run: %i, new run: %i\n",fRunNumber,infoRunNumber);
           interrupted=kTRUE;
+          break;
         }
         continue;
+      }
+
+      //init the OCDB stuff
+      AliCDBManager::Instance()->SetRun(fRunNumber);
+      if (!fMagfieldIsSet) {
+        AliHLTMisc::Instance().InitMagneticField();		
+        fMagfieldIsSet=kTRUE;
       }
 
       //forward the data to the chain, force non blocking mode
@@ -357,11 +367,13 @@ int Run()
 
     double endTime = TTimeStamp().AsDouble();
     double timeDiff = endTime - startTime;
-    if (timeDiff < 1.0 and timeDiff < fSleep) {
+    if (timeDiff < 1.0 and timeDiff < fSleep && inType==ZMQ_REQ) {
       gSystem->Sleep(int((fSleep - timeDiff)*1000));
     }
   }
-  printf("done\n");
+  system->StopTasks();
+  system->DeinitTasks();
+  printf("done, exiting Run()\n");
   return 0;
 }
 
@@ -410,7 +422,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("ExitOnSOR"))
     {
-      fInterruptOnSOR = value.Contains(0)?kFALSE:kTRUE;
+      fInterruptOnSOR = (value.Contains("0"))?kFALSE:kTRUE;
     }
     else
     {
@@ -450,8 +462,8 @@ int main(Int_t argc, char** argv)
   Run();
 
   //destroy ZMQ sockets
-  zmq_close(fZMQin);
-  zmq_close(fZMQforward);
+  alizmq_socket_close(fZMQin);
+  alizmq_socket_close(fZMQforward);
   zmq_ctx_destroy(fZMQcontext);
   return mainReturnCode;
 }
