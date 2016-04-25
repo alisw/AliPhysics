@@ -13,7 +13,7 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-# HMPID libraries
+# EMCAL libraries
 add_subdirectory(EMCALbase)
 add_subdirectory(EMCALUtils)
 add_subdirectory(EMCALraw)
