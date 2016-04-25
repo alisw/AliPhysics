@@ -38,6 +38,7 @@ class AliESDVertex;
 class AliAODVertex;
 class AliAODTrack;
 class AliESDtrack;
+class AliAnalysisUtils;
 
 class AliGenPythiaEventHeader;
 class AliMCEvent;
@@ -79,6 +80,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetFilterMask(UInt_t filterMask)    {fFilterMask    = filterMask ;}
   void SetIncludeNoITS(Bool_t f)           {fIncludeNoITS  = f          ; }
+  void SetUseSPDTrackletVsClusterBG(Bool_t b)                { fTklVsClusSPDCut   = b                              ; }
+  void SetZvertexDiffValue(Double_t cut)                     { fZvertexDiff  = cut                            ; }
 
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
@@ -123,6 +126,14 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Bool_t   fIsPbPb;               // kTRUE if PbPb
   Int_t fCentClass;               // Select only events from predefined centrality class
   Bool_t   fInit;                 // true after initialization (relevant for ESD analysis)
+  AliAnalysisUtils                *fAliAnalysisUtils;           //!<!vertex selection (optional)
+  Double_t                        fVertex[3];                  //!<!event vertex
+  Double_t                        fVertexSPD[3];               //!<!event Svertex
+  Int_t                           fNVertCont;                  //!<!event vertex number of contributors
+  Int_t                           fNVertSPDCont;               //!<!event SPD vertex number of contributors
+
+  Bool_t                           fTklVsClusSPDCut;            ///< Apply tracklet-vs-cluster SPD cut to reject background events in pp
+  Double_t                         fZvertexDiff;                ///< upper limit for distance between primary and SPD vertex
 
   /*
     QA variables stored in TArrayF *fVariables
@@ -163,7 +174,9 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH1F *fNEventAll;                            //! Event counter
   TH1F *fNEventSel;                            //! Event counter
   TH1F *fNEventReject;                         //! Book keeping of reason of rejecting events
- 
+  TH1F *fhEvMult;                              //!<! histo for event multplicity
+  TH1F *fhTrackletsMult;                       //!<! histo for tracklets multplicity
+  
   TH1F *fh1Centrality;                         //! Centrality
 
   TProfile*     fh1Xsec;                       //! pythia cross section and trials
@@ -248,6 +261,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,9)
+  ClassDef(AliPWG4HighPtTrackQA,10)
 };
 #endif
