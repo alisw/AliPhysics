@@ -150,7 +150,9 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
 Int_t AliHLTZMQsink::DoDeinit()
 {
   // see header file for class documentation
-  return 0;
+  int retCode = 0;
+  retCode = alizmq_socket_close(fZMQout);
+  return retCode;
 }
 
 //______________________________________________________________________________

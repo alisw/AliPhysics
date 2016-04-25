@@ -142,6 +142,7 @@ int AliHLTZMQsource::DoDeinit()
 {
   // overloaded from AliHLTComponent: cleanup
   int retCode=0;
+  retCode = alizmq_socket_close(fZMQin);
   return retCode;
 }
 
