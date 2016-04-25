@@ -51,6 +51,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fUseMC(kFALSE),
    fEvNum(0),
    fTriggerMask(0),
+   fSkipTriggerMask(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fRefMultiType("GLOBAL"),
@@ -102,6 +103,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fUseMC(useMC),
    fEvNum(0),
    fTriggerMask(AliVEvent::kMB),
+   fSkipTriggerMask(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fRefMultiType("GLOBAL"),
@@ -158,6 +160,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fUseMC(copy.fUseMC),
    fEvNum(0),
    fTriggerMask(copy.fTriggerMask),
+   fSkipTriggerMask(copy.fSkipTriggerMask),
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
    fRefMultiType(copy.fRefMultiType),
@@ -220,6 +223,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fUseMC = copy.fUseMC;
    fEvNum = copy.fEvNum;
    fTriggerMask = copy.fTriggerMask;
+   fSkipTriggerMask = copy.fSkipTriggerMask;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
    fRefMultiType = copy.fRefMultiType;
@@ -687,6 +691,10 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       // ESD specific check: Physics Selection
       // --> if this is failed, the event is rejected
       isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+
+      if(isSelected && fSkipTriggerMask){
+	if( (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSkipTriggerMask) == fSkipTriggerMask) isSelected=kFALSE;
+      }
 
       if (!isSelected) {
          AliDebugClass(2, "Event does not pass physics selections");
