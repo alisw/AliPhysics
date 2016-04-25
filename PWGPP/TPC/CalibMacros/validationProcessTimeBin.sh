@@ -73,6 +73,7 @@ Cannot Build the PAR Archive
 E-AliCDBGrid::PutEntry:
 F-AliCDBGrid::
 E-TAlienFile::ReadBuffer: The remote (removed) file is not open
+Compilation failed
 EOF
 
 found=`grep -f grep.cnf -i -n $fullLogList`
