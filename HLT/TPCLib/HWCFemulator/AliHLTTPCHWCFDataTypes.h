@@ -61,7 +61,7 @@ struct AliHLTTPCHWCFClusterFragment
 {
   //* constructor **/
   AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fSlope(0), fIsDeconvoluted(0), fMC()
+    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fSlope(0), fIsDeconvolutedTime(0), fIsDeconvolutedPad(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -80,7 +80,8 @@ struct AliHLTTPCHWCFClusterFragment
                          //    fragment bein merged, needed for deconvolution
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
                          //   ( needed for deconvolution )
-  bool fIsDeconvoluted; // tag shows if the cluster has been split in several clusters
+  bool fIsDeconvolutedTime; // tag shows if the cluster has been split in several clusters in Time direction
+  bool fIsDeconvolutedPad; // tag shows if the cluster has been split in several clusters in Pad direction
   std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
 typedef struct AliHLTTPCHWCFClusterFragment AliHLTTPCHWCFClusterFragment;
@@ -94,10 +95,12 @@ AliHLTTPCHWCFCluster(): fFlag(0), fRowQ(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0),
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
   AliHLTUInt32_t fRowQ; // bits 30-31 = 0x3
                         // bits 24-29 = row number
-                        // bit  23    = is the cluster deconvoluted
+                        // bit  23    = 0 (not used) 
                         // bits 0 -22 = max adc value as fixed point integer,
                         //              with 12 bits after the point
-  AliHLTUInt32_t fQ;    // total charge as fixed point integer, 12 bits after the point
+  AliHLTUInt32_t fQ;    // 0-29 total charge as fixed point integer, 12 bits after the point
+                        // 30   flag: is the cluster deconvoluted in Time
+                        // 31   flag: is the cluster deconvoluted in Pad
   AliHLTUInt32_t fT;    // mean time, 32-bit float stored as 32-bit integer
   AliHLTUInt32_t fP;    // mean pad,  32-bit float stored as 32-bit integer
   AliHLTUInt32_t fT2;   // mean time^2, 32-bit float stored as 32-bit integer

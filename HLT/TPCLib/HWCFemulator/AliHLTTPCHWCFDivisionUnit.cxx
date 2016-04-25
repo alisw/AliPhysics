@@ -121,8 +121,8 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   // set is_deconvoluted flag at bit 31 for pad direction, at bit 30 for time direction
 
   if( fTagDeconvolutedClusters ){
-    //if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1) << 31;
-    //if( fkInput->fIsDeconvolutedTime ) fOutput.fQ += (0x1) << 30;
+    if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
+    if( fkInput->fIsDeconvolutedTime ) fOutput.fQ += (0x1 << 30 );
   }
 
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;

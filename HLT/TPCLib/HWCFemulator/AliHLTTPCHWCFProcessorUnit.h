@@ -67,7 +67,7 @@ class AliHLTTPCHWCFProcessorUnit
   AliHLTTPCHWCFClusterFragment fOutput; // current output
   const AliHLTTPCHWCFBunch *fkBunch; // current input
   AliHLTUInt32_t fBunchIndex; // index in bunch
-  bool fIsDeconvoluted; // tag shows if the current bunch has been split in several clusters
+  bool fWasDeconvoluted; // tag shows if the current bunch has been split in several clusters
   bool fDeconvolute;    // do deconvolution in time direction
   AliHLTUInt64_t fSingleSeqLimit; // lower charge limit for isolated signals
   bool fUseTimeBinWindow; // set max. size of the cluster to 5 time bins   
