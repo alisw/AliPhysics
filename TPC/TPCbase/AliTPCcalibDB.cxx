@@ -1864,7 +1864,8 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       Int_t pointGraph=0;
 
       //initialise graph information
-      Int_t timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
+      Int_t timeGraph=stopTimeGRP;
+      if (gr->GetN()>1) timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
       Double_t sampledHV=gr->GetY()[pointGraph++];
 
       while (time<stopTimeGRP){
