@@ -873,6 +873,10 @@ public:
   TH2F* GetCenvsDif(Int_t const h) const {return this->fhCenvsDif[h];};
   void SetZNvsMul(TH2F* const n, Int_t const h) {this->fhZNvsMul[h] = n;};
   TH2F* GetZNvsMul(Int_t const h) const {return this->fhZNvsMul[h];};
+  
+  void SetImpvsNcol(TH2F* const n, Int_t const h) {this->fhImpvsNcol[h] = n;};
+  TH2F* GetImpvsNcol(Int_t const h) const {return this->fhImpvsNcol[h];};
+  
  void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
  TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
  void SetZNResvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNResvsMul[eg][h] = n;};
@@ -1408,6 +1412,7 @@ private:
  TProfile *fZDCQHist[4];               //! Run-by-run ZDCQvecHist
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!
+ TH1D *fZDCESEAvHist[2]; //!
  
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
@@ -1522,8 +1527,8 @@ private:
  TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov hist
  
  // Flow all
- const static Int_t fFlowNHarm = 1;
- const static Int_t fFlowNHarmMax = 9;
+ const static Int_t fFlowNHarm = 2;
+ const static Int_t fFlowNHarmMax = 9; // WARNING: MIN 2
  Int_t fPtDiffNBins;
  Int_t fEtaDiffNBins;
  TH1D *fPtDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
@@ -1581,6 +1586,9 @@ private:
  TH1D* fEtaWeightsHist[10][21][2]; //! Eta weights
  TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
  Double_t *fCRCPtBins; //!
+ Int_t fZDCESENBins;
+ Double_t fZDCESELCtot;
+  Double_t fZDCESELAtot;
  Double_t *fCorrMap; //!
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
@@ -1594,7 +1602,14 @@ private:
   TH2F* fhCenvsMul[2]; //! cen vs mul
   TH2F* fhCenvsDif[2]; //! cen vs mul
   TH2F* fhZNvsMul[2]; //! cen vs mul
+  TH2F* fhImpvsNcol[2]; //! cen vs mul
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
+  TF1 *fPolMin[2]; //!
+  TF1 *fPolMax[2]; //!
+  TF1 *fPolAv[2]; //!
+  TF1 *fPolDer[2]; //!
+  TF1 *fPolInt[2]; //!
+  TF1 *fPolDist[2]; //!
   
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE

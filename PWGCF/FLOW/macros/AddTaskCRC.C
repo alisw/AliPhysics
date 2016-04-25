@@ -151,6 +151,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // method used for centrality determination
   if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
   if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  if(sCentrEstimator=="CL1") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1clusters);
   AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
   RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   RefMultCuts->SetAODfilterBit(AODfilterBit);
