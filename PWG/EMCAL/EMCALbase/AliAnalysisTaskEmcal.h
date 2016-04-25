@@ -34,7 +34,7 @@ class AliEmcalPythiaInfo;
  * @class AliAnalysisTaskEmcal
  * @brief Base task in the EMCAL framework
  * @ingroup EMCALCOREFW
- * @author Martha Verweij
+ * @author Marta Verweij
  * @author Salvatore Aiola
  *
  * This class is hte base class for Analysis Tasks using the
