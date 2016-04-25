@@ -63,7 +63,7 @@ void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const
   int nmap = arrMap->GetEntriesFast();
   if (nmap<1) return;
   if (nmap==1) {
-    CreateCorrMapObj((AliTPCChebCorr*)arrMap->At(0),firstrun,lastrun);
+    CreateCorrMapObj((AliTPCChebCorr*)arrMap->At(0),firstrun,lastrun,dest);
     return;
   }
   //
