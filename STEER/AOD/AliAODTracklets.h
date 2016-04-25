@@ -61,6 +61,9 @@ class AliAODTracklets : public AliVMultiplicity
   //
   virtual void Print(Option_t *opt="") const;
 
+  virtual UInt_t GetNumberOfITSClusters(Int_t layer) const { return fITSClusters[layer];}
+  virtual void   SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
+
  protected:
   Int_t      fNTracks;       // Number of tracklets
   Double32_t *fTheta;        //[fNTracks] array with theta values
