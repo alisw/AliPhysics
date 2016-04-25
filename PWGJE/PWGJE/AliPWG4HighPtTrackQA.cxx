@@ -52,6 +52,7 @@
 #include "AliCentrality.h"
 #include "AliAODVertex.h"
 #include "AliAODEvent.h"
+#include "AliAnalysisUtils.h"
 
 using namespace std; //required for resolving the 'cout' symbol
 
@@ -75,6 +76,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fIsPbPb(0),
   fCentClass(10),
   fInit(0),
+  fAliAnalysisUtils(0x0),
+  fNVertCont(0),
+  fNVertSPDCont(0),
+  fTklVsClusSPDCut(kFALSE),
+  fZvertexDiff(0.5),
   fNVariables(27),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -82,6 +88,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fNEventAll(0),
   fNEventSel(0),
   fNEventReject(0),
+  fhEvMult(0),
+  fhTrackletsMult(0),
   fh1Centrality(0x0),
   fh1Xsec(0),
   fh1Trials(0),
@@ -163,6 +171,13 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
 
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
+  fVertexSPD[0] = 0;
+  fVertexSPD[1] = 0;
+  fVertexSPD[2] = 0;
+  
 }
 //________________________________________________________________________
 AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name): 
@@ -183,6 +198,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fIsPbPb(0),
   fCentClass(10),
   fInit(0),
+  fAliAnalysisUtils(0x0),
+  fNVertCont(0),
+  fNVertSPDCont(0),
+  fTklVsClusSPDCut(kFALSE),
+  fZvertexDiff(0.5),
   fNVariables(27),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -190,6 +210,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fNEventAll(0),
   fNEventSel(0),
   fNEventReject(0),
+  fhEvMult(0),
+  fhTrackletsMult(0),
   fh1Centrality(0x0),
   fh1Xsec(0),
   fh1Trials(0),
@@ -272,6 +294,14 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtBinEdges[1][1] = 2.;
   fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
+  
+  fVertex[0] = 0;
+  fVertex[1] = 0;
+  fVertex[2] = 0;
+  fVertexSPD[0] = 0;
+  fVertexSPD[1] = 0;
+  fVertexSPD[2] = 0;
+
 
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
@@ -506,9 +536,19 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   fNEventReject->Fill("VtxStatus",0);
   fNEventReject->Fill("NCont<2",0);
   fNEventReject->Fill("ZVTX>10",0);
+  fNEventReject->Fill("PileupEvent",0);
+  fNEventReject->Fill("Bkg evt",0);
+  fNEventReject->Fill("VzSPD",0);
   fNEventReject->Fill("cent",0);
   fNEventReject->Fill("cent>90",0);
   fHistList->Add(fNEventReject);
+  
+  
+  fhTrackletsMult = new TH1F("fhTrackletsMult","fhTrackletsMult;Tracklets Mult;#events)",300,0,600);
+  fHistList->Add(fhTrackletsMult);
+  
+  fhEvMult = new TH1F("fhEvMult","fhEvMult;Ref Mult;#events)",300,0,600);
+  fHistList->Add(fhEvMult);
 
   fh1Centrality = new TH1F("fh1Centrality","fh1Centrality; Centrality %",100,0,100);
   fHistList->Add(fh1Centrality);
@@ -720,6 +760,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
 
   fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt","fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})",fgkNPtBins,binsPt);
   fHistList->Add(fProfPtPtSigma1Pt);
+
   
 
 
@@ -841,14 +882,58 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent()
       selectEvent = kFALSE;
       return selectEvent;
     }
+    
+    fAliAnalysisUtils = new AliAnalysisUtils();
+    fAliAnalysisUtils->SetMinVtxContr(2);
 
+    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+      fNEventReject->Fill("PileupEvent",1);
+      return selectEvent;
+    }
+    
+
+    if(fTklVsClusSPDCut && fAliAnalysisUtils->IsSPDClusterVsTrackletBG(InputEvent())) {
+      fNEventReject->Fill("Bkg evt",1);
+      return selectEvent;
+    }
+    
+    const AliVVertex *vertSPD = InputEvent()->GetPrimaryVertexSPD();
+    if (vertSPD) {
+      vertSPD->GetXYZ(fVertexSPD);
+      fNVertSPDCont = vertSPD->GetNContributors();
+    }
+
+    if (fNVertSPDCont > 0 && fZvertexDiff < 999) {
+      Double_t vzSPD = fVertexSPD[2];
+      Double_t dvertex = TMath::Abs(primVtx[2]-vzSPD);
+      //if difference larger than fZvertexDiff
+      if (dvertex > fZvertexDiff) {
+        fNEventReject->Fill("VzSPD",1);
+        return selectEvent;
+      }
+    }
+    
+    
+    AliVMultiplicity *multiplicity = (AliVMultiplicity*)InputEvent()->GetMultiplicity();
+    if(!multiplicity) return selectEvent;
+    
+    Int_t trackletsMult = multiplicity->GetNumberOfTracklets();
+    fhTrackletsMult->Fill(trackletsMult);
+    
+    Double_t refMult=0.;
+    if(fDataType==kAOD) {
+      if(((AliVAODHeader*)dynamic_cast<AliAODEvent*>(fEvent)->GetHeader())->GetRefMultiplicity())
+        refMult = ((AliVAODHeader*)dynamic_cast<AliAODEvent*>(fEvent)->GetHeader())->GetRefMultiplicity();
+    }
+    else (refMult = 0. );
+    fhEvMult->Fill(refMult);
+    
   }
-
   //Centrality selection should only be done in case of PbPb
-  if(IsPbPb()) {
-    Float_t cent = 0.;
-    if(fCentClass!=CalculateCentrality(fEvent) && fCentClass!=10) {
-      fNEventReject->Fill("cent",1);
+    if(IsPbPb()) {
+      Float_t cent = 0.;
+      if(fCentClass!=CalculateCentrality(fEvent) && fCentClass!=10) {
+        fNEventReject->Fill("cent",1);
       selectEvent = kFALSE;
       return selectEvent;
     }
