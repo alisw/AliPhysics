@@ -115,6 +115,15 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
 }
 
 //_______________________________________________________________________________________
+int alizmq_socket_state(void* socket)
+{
+  int events=0;
+  size_t len = sizeof(events);
+  zmq_getsockopt(socket, ZMQ_EVENTS, &events, &len);
+  return events;
+}
+
+//_______________________________________________________________________________________
 int alizmq_socket_type(void* socket)
 {
   //get the type of the socket
