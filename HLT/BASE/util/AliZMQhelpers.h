@@ -29,6 +29,7 @@ typedef std::vector<TVirtualStreamerInfo*> aliZMQrootStreamerInfo;
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
+int alizmq_socket_close(void* socket);
 
 //get the global context
 void* alizmq_context();

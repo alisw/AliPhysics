@@ -168,6 +168,14 @@ const char* alizmq_socket_name(int socketType)
 }
 
 //_______________________________________________________________________________________
+int alizmq_socket_close(void* socket)
+{
+  int linger=0;
+  zmq_setsockopt(socket, ZMQ_LINGER, &linger, sizeof(linger));
+  return zmq_close(socket);
+}
+
+//_______________________________________________________________________________________
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout, int highWaterMark)
 {
   int rc = 0;
