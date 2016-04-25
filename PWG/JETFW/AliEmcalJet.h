@@ -255,6 +255,46 @@ class AliEmcalJet : public AliVParticle
   Double_t          GetFirstOrderSubtractedLeSub()            const { return fJetShapeLeSubFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedLeSub()           const { return fJetShapeLeSubSecondSub                  ; }
 
+  //1subjettiness_kt
+  void              SetFirstDerivative1subjettiness_kt(Double_t d)             { fJetShape1subjettinessktFirstDer = d                      ; }
+  void              SetSecondDerivative1subjettiness_kt(Double_t d)            { fJetShape1subjettinessktSecondDer = d                     ; }
+  void              SetFirstOrderSubtracted1subjettiness_kt(Double_t d)        { fJetShape1subjettinessktFirstSub = d                      ; }
+  void              SetSecondOrderSubtracted1subjettiness_kt(Double_t d)       { fJetShape1subjettinessktSecondSub = d                     ; }
+  Double_t          GetFirstDerivative1subjettiness_kt()                 const { return fJetShape1subjettinessktFirstDer                   ; }
+  Double_t          GetSecondDerivative1subjettiness_kt()                const { return fJetShape1subjettinessktSecondDer                  ; }
+  Double_t          GetFirstOrderSubtracted1subjettiness_kt()            const { return fJetShape1subjettinessktFirstSub                   ; }
+  Double_t          GetSecondOrderSubtracted1subjettiness_kt()           const { return fJetShape1subjettinessktSecondSub                  ; }
+
+  //2subjettiness_kt
+  void              SetFirstDerivative2subjettiness_kt(Double_t d)             { fJetShape2subjettinessktFirstDer = d                      ; }
+  void              SetSecondDerivative2subjettiness_kt(Double_t d)            { fJetShape2subjettinessktSecondDer = d                     ; }
+  void              SetFirstOrderSubtracted2subjettiness_kt(Double_t d)        { fJetShape2subjettinessktFirstSub = d                      ; }
+  void              SetSecondOrderSubtracted2subjettiness_kt(Double_t d)       { fJetShape2subjettinessktSecondSub = d                     ; }
+  Double_t          GetFirstDerivative2subjettiness_kt()                 const { return fJetShape2subjettinessktFirstDer                   ; }
+  Double_t          GetSecondDerivative2subjettiness_kt()                const { return fJetShape2subjettinessktSecondDer                  ; }
+  Double_t          GetFirstOrderSubtracted2subjettiness_kt()            const { return fJetShape2subjettinessktFirstSub                   ; }
+  Double_t          GetSecondOrderSubtracted2subjettiness_kt()           const { return fJetShape2subjettinessktSecondSub                  ; }
+
+  //3subjettiness_kt
+  void              SetFirstDerivative3subjettiness_kt(Double_t d)             { fJetShape3subjettinessktFirstDer = d                      ; }
+  void              SetSecondDerivative3subjettiness_kt(Double_t d)            { fJetShape3subjettinessktSecondDer = d                     ; }
+  void              SetFirstOrderSubtracted3subjettiness_kt(Double_t d)        { fJetShape3subjettinessktFirstSub = d                      ; }
+  void              SetSecondOrderSubtracted3subjettiness_kt(Double_t d)       { fJetShape3subjettinessktSecondSub = d                     ; }
+  Double_t          GetFirstDerivative3subjettiness_kt()                 const { return fJetShape3subjettinessktFirstDer                   ; }
+  Double_t          GetSecondDerivative3subjettiness_kt()                const { return fJetShape3subjettinessktSecondDer                  ; }
+  Double_t          GetFirstOrderSubtracted3subjettiness_kt()            const { return fJetShape3subjettinessktFirstSub                   ; }
+  Double_t          GetSecondOrderSubtracted3subjettiness_kt()           const { return fJetShape3subjettinessktSecondSub                  ; }
+
+  //OpeningAngle_kt
+  void              SetFirstDerivativeOpeningAngle_kt(Double_t d)             { fJetShapeOpeningAnglektFirstDer = d                      ; }
+  void              SetSecondDerivativeOpeningAngle_kt(Double_t d)            { fJetShapeOpeningAnglektSecondDer = d                     ; }
+  void              SetFirstOrderSubtractedOpeningAngle_kt(Double_t d)        { fJetShapeOpeningAnglektFirstSub = d                      ; }
+  void              SetSecondOrderSubtractedOpeningAngle_kt(Double_t d)       { fJetShapeOpeningAnglektSecondSub = d                     ; }
+  Double_t          GetFirstDerivativeOpeningAngle_kt()                 const { return fJetShapeOpeningAnglektFirstDer                   ; }
+  Double_t          GetSecondDerivativeOpeningAngle_kt()                const { return fJetShapeOpeningAnglektSecondDer                  ; }
+  Double_t          GetFirstOrderSubtractedOpeningAngle_kt()            const { return fJetShapeOpeningAnglektFirstSub                   ; }
+  Double_t          GetSecondOrderSubtractedOpeningAngle_kt()           const { return fJetShapeOpeningAnglektSecondSub                  ; }
+
   //heavy-flavor jets
   Int_t             GetFlavour()                 const { return fFlavourTagging;                       }
   void              AddFlavourTag(Int_t tag)           { fFlavourTagging |= tag;                       }
@@ -353,6 +393,29 @@ class AliEmcalJet : public AliVParticle
   Double_t          fJetShapeLeSubFirstSub;        //!   result from shape derivatives for jet LeSub: 1st order subtracted
   Double_t          fJetShapeLeSubSecondSub;       //!   result from shape derivatives for jet LeSub: 2nd order subtracted
 
+  Double_t          fJetShape1subjettinessktFirstDer;        //!   result from shape derivatives for jet 1subjettiness_kt: 1st derivative
+  Double_t          fJetShape1subjettinessktSecondDer;       //!   result from shape derivatives for jet 1subjettiness_kt: 2nd derivative
+  Double_t          fJetShape1subjettinessktFirstSub;        //!   result from shape derivatives for jet 1subjettiness_kt: 1st order subtracted
+  Double_t          fJetShape1subjettinessktSecondSub;       //!   result from shape derivatives for jet 1subjettiness_kt: 2nd order subtracted
+  
+  Double_t          fJetShape2subjettinessktFirstDer;        //!   result from shape derivatives for jet 2subjettiness_kt: 1st derivative
+  Double_t          fJetShape2subjettinessktSecondDer;       //!   result from shape derivatives for jet 2subjettiness_kt: 2nd derivative
+  Double_t          fJetShape2subjettinessktFirstSub;        //!   result from shape derivatives for jet 2subjettiness_kt: 1st order subtracted
+  Double_t          fJetShape2subjettinessktSecondSub;       //!   result from shape derivatives for jet 2subjettiness_kt: 2nd order subtracted
+
+  Double_t          fJetShape3subjettinessktFirstDer;        //!   result from shape derivatives for jet 3subjettiness_kt: 1st derivative
+  Double_t          fJetShape3subjettinessktSecondDer;       //!   result from shape derivatives for jet 3subjettiness_kt: 2nd derivative
+  Double_t          fJetShape3subjettinessktFirstSub;        //!   result from shape derivatives for jet 3subjettiness_kt: 1st order subtracted
+  Double_t          fJetShape3subjettinessktSecondSub;       //!   result from shape derivatives for jet 3subjettiness_kt: 2nd order subtracted
+
+  Double_t          fJetShapeOpeningAnglektFirstDer;        //!   result from shape derivatives for jet OpeningAngle_kt: 1st derivative
+  Double_t          fJetShapeOpeningAnglektSecondDer;       //!   result from shape derivatives for jet OpeningAngle_kt: 2nd derivative
+  Double_t          fJetShapeOpeningAnglektFirstSub;        //!   result from shape derivatives for jet OpeningAngle_kt: 1st order subtracted
+  Double_t          fJetShapeOpeningAnglektSecondSub;       //!   result from shape derivatives for jet OpeningAngle_kt: 2nd order subtracted
+
+
+
+  
   Bool_t fHasGhost;
   std::vector<TLorentzVector> fGhosts;
 
