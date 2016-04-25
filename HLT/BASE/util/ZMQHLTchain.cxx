@@ -41,6 +41,8 @@
 #include <sys/ioctl.h>
 #include "AliCDBEntry.h"
 #include "TString.h"
+#include "AliGRPObject.h"
+#include "AliGRPManager.h"
 
 using namespace std;
 
@@ -65,7 +67,6 @@ string fINFOstring;
 string fConfigMacro;
 
 bool fRequestGRP = false;
-TObject* fGRPobject = NULL;
 
 Bool_t fInterruptOnSOR = kFALSE;
 
@@ -171,7 +172,7 @@ int Run()
 
   //make a source component
   AliHLTConfiguration reader("source","ZMQsource","",
-      "in=PULL+inproc://source ZMQneverBlock=0 ZMQrequestTimeout=1000000 OutputBufferSize=300000000");
+      "in=PULL>inproc://source ZMQneverBlock=0 ZMQrequestTimeout=1000000 OutputBufferSize=300000000");
 
   //load the chain definition
   gROOT->Macro(fConfigMacro.c_str());
@@ -233,6 +234,7 @@ int Run()
       int infoRunNumber = -1;
       int ecsRunNumber = -1;
       bool isNewRun = false;
+      TObject* grpEntry = NULL;
 
       //extract infromation from message
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
@@ -241,7 +243,7 @@ int Run()
           AliHLTDataTopic topic;
           alizmq_msg_iter_topic(i, topic);
           string topicstr = topic.Description();
-          if (fVerbose) printf("in block type: %s\n",topicstr.c_str());
+          //if (fVerbose) printf("in block type: %s\n",topicstr.c_str());
         }
         //get the trigger mask
         if (alizmq_msg_iter_check(i, kAliHLTDataTypeGlobalTrigger)==0)
@@ -280,13 +282,7 @@ int Run()
         //get the GRP
         else if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
         {
-          alizmq_msg_iter_data(i, fGRPobject);
-          AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(fGRPobject);
-          if (entry) {
-            printf("--putting the on-the-fly GRP into the CDB manager\n");
-            AliCDBManager::Instance()->PromptCacheEntry("GRP/GRP/Data",entry);
-            printf("--init mag field\n");
-          }
+          alizmq_msg_iter_data(i, grpEntry);
         }
         //get the INFO block
         else if (alizmq_msg_iter_check(i, "INFO")==0)
@@ -336,21 +332,42 @@ int Run()
 
       //init the OCDB stuff
       AliCDBManager::Instance()->SetRun(fRunNumber);
+      AliGRPObject* grp = NULL;
+      if (grpEntry) {
+        AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(grpEntry);
+        if (entry) {
+          printf("--putting the on-the-fly GRP into the CDB manager\n");
+          AliCDBManager::Instance()->PromptCacheEntry("GRP/GRP/Data",entry);
+          if (fVerbose) {
+            printf("some info from the GRP entry: %p, object: %p\n",entry,entry->GetObject());
+            grp = dynamic_cast<AliGRPObject*>(entry->GetObject());
+            if (grp) {
+              printf("BeamEnergy %f\n",grp->GetBeamEnergy());
+              printf("BeamType %s\n",grp->GetBeamType().Data());
+              printf("DetectorMask %ui\n",grp->GetDetectorMask());
+              printf("LHCperiod %s\n",grp->GetLHCPeriod().Data());
+              printf("LHCstate %s\n",grp->GetLHCState().Data());
+              Int_t activeDetectors = grp->GetDetectorMask();
+              TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+              printf("DetectorMask: %s\n", detStr.Data());
+            }
+          }
+        }
+      }
       if (!fMagfieldIsSet) {
-        AliHLTMisc::Instance().InitMagneticField();		
+        printf("--init mag field\n");
+        AliGRPManager grpMan;
+        grpMan.SetGRPEntry(grp);
+        grpMan.SetMagField();
         fMagfieldIsSet=kTRUE;
       }
-
+      
       //forward the data to the chain, force non blocking mode
       if (fVerbose) printf("forwarding message to %s\n", fZMQconfigForward.Data());
       int rc = alizmq_msg_send(&message, fZMQforward, ZMQ_DONTWAIT);
       if (fVerbose) printf("...forwarded, rc=%i\n",rc);
       //close the message
       alizmq_msg_close(&message);
-
-      if (!fMagfieldIsSet) {
-        AliHLTMisc::Instance().InitMagneticField();		
-      }
 
       int nEvents = 1;
       int stop = 0;
