@@ -462,8 +462,12 @@ void printCalibStat(Int_t run, const char * fname,  TTreeSRedirector * pcstream)
   if (adDir) {
     TList  *adList = (TList*) adDir->Get("ADCalibListHist");
     if (adList) {
-      TH2* adHist = (TH2*) adList->At(0);
-      adEvents = TMath::Nint(adHist->GetEntries());
+      TH2* adHistInt0 = (TH2*) adList->FindObject("hCh00_bc10_int0");
+      if (adHistInt0)
+       adEvents += TMath::Nint(adHistInt0->GetEntries());
+      TH2* adHistInt1 = (TH2*) adList->FindObject("hCh00_bc10_int1");
+      if (adHistInt1)
+       adEvents += TMath::Nint(adHistInt1->GetEntries());
       delete adList;
     }
   }
