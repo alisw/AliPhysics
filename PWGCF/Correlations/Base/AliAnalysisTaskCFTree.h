@@ -8,8 +8,11 @@
 // evgeny.kryshen@cern.ch
 // lmilano@cern.ch
 // alice.ohlson@cern.ch
+// igor.lakomov@cern.ch
 
 #include "AliAnalysisTaskSE.h"
+#include "AliAODITSsaTrackCuts.h"
+#include "AliCFTreeMapping.h"
 class TList;
 class TH1I;
 class TH1F;
@@ -56,6 +59,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   void SetStoreMcMuons(Bool_t val=kTRUE)     { fStoreMcMuons     = val; }
   void SetStoreTrackInfo(Bool_t val=kTRUE)   { fStoreTrackInfo   = val; }
   void SetStorePidInfo(Bool_t val=kTRUE)     { fStorePidInfo     = val; }
+  void SetStoreAodDCAInfo(Bool_t val=kTRUE)  { fStoreAodDCAInfo  = val; }
   void SetStoreMuonOrigin(Bool_t val=kTRUE)  { fStoreMuonOrigin  = val; }
   void SetIs13TeV(Bool_t val=kTRUE)          { fIs13TeV          = val; }
 
@@ -74,12 +78,14 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   UInt_t fTPConlyConstrainedMask;      // Filter mask for TPConly constrained tracks (ESD analysis)
   AliMuonTrackCuts* fMuonTrackCuts; // muon track cuts used to extract pxDCA decision
   AliAnalysisUtils* fUtils;   //! analysis utils to detect pileup
+  AliAODITSsaTrackCuts* fitssatrackcuts; // ITS standalone track cuts (AOD analysis) used for DCAXY calculation and for MuonCalo pass2 2015 data analysis
   TList* fListOfHistos;       //! list of output histograms
   TH1I*  fEventStatistics;    //! cut-by-cut counter of events
   TH1D*  fClassStatistics;          //! statistics on trigger classes
   TH1F* fV0chan;              //! V0 channel signals (test for Michele F.)
   TTree* fTree;               //! output tree
   // Tree variables
+  AliCFTreeMapping* fMapping; //  global tree var: Mapping of the tree for additional AliCFParticle parameters
   TClonesArray* fTracks;      //! tree var: selected AliCFParticles
   TClonesArray* fTracklets;   //! tree var: selected tracklets (stored if fStoreTracklets=kTRUE)
   TClonesArray* fMuons;       //! tree var: selected muons (stored if fStoreMuons=kTRUE)
@@ -156,6 +162,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Bool_t fStoreMcTracklets;   // if kTRUE - Store Monte-Carlo info for tracklets
   Bool_t fStoreMcMuons;       // if kTRUE - Store Monte-Carlo info for muons
   Bool_t fStoreTrackInfo;     // if kTRUE - Store additional track info on tracks
+  Bool_t fStoreAodDCAInfo;    // if kTRUE - Store dca track info on AOD tracks
   Bool_t fStorePidInfo;       // if kTRUE - Store PID info for tracks
   Bool_t fStoreMuonOrigin;    // if kTRUE - Store muon origin in a TClonesArray of TObjStrings
   Bool_t fApplyPhysicsSelectionCut; // skip events not passing fSelectionBit mask
@@ -164,7 +171,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   TClonesArray* fDecayArray;
   TPythia6Decayer* fDecayer;
 
-  ClassDef(AliAnalysisTaskCFTree,7);
+  ClassDef(AliAnalysisTaskCFTree,8);
 };
 #endif
 
