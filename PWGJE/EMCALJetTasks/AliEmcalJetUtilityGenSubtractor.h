@@ -33,6 +33,7 @@ class AliEmcalJetUtilityGenSubtractor : public AliEmcalJetUtility
   void                   SetGenericSubtractionGR(Bool_t b, Double_t rmax = 2., 
                                                  Double_t dr = 0.04, Double_t ptmin = 0.) { fDoGenericSubtractionGR             = b; fRMax = rmax; fDRStep = dr; fPtMinGR = ptmin;}
   void                   SetGenericSubtractionExtraJetShapes(Bool_t b)                    { fDoGenericSubtractionExtraJetShapes = b; }
+  void                   SetGenericSubtractionNsubjettiness(Bool_t b)                     { fDoGenericSubtractionNsubjettiness = b; }
   void                   SetUseExternalBkg(Bool_t b)                                      { fUseExternalBkg                     = b; }
 
  protected:
@@ -40,6 +41,7 @@ class AliEmcalJetUtilityGenSubtractor : public AliEmcalJetUtility
   Bool_t                 fDoGenericSubtractionJetMass;        // calculate generic subtraction
   Bool_t                 fDoGenericSubtractionGR;             // calculate generic subtraction for angular structure function GR
   Bool_t                 fDoGenericSubtractionExtraJetShapes; // calculate generic subtraction for other jet shapes like radialmoment,pTD etc
+  Bool_t                 fDoGenericSubtractionNsubjettiness; // calculate generic subtraction for 1subjettiness, 2subjettiness and the opening Angle between subjets
   Bool_t                 fUseExternalBkg;                     // use external background for generic subtractor
   TString                fRhoName;                            // name of rho
   TString                fRhomName;                           // name of rhom
