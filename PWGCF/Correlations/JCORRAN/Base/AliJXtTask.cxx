@@ -191,7 +191,7 @@ void AliJXtTask::UserExec(Option_t* /*option*/)
 	  fEfficiencyIsolated = new AliJEfficiency();
 	  fEfficiencyIsolated->SetMode( fEffMode );
 	  fEfficiencyIsolated->SetRunNumber( frunNumber );
-	  fEfficiencyIsolated->SetDataPath( "/Users/ssrasane/Work/Analysis/DataAnalysis/LegoTrainResults/efficiency/eff/TEST" );
+	  fEfficiencyIsolated->SetDataPath( "alien:///alice/cern.ch/user/s/srasanen/efficiency/isol-rel10-cone04/" );
 	  fEfficiencyIsolated->Load();
 	  // update analysis
 	  fXtAna->SetEfficiency( fEfficiency );
