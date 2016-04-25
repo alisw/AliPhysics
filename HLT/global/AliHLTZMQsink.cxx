@@ -62,7 +62,6 @@ AliHLTZMQsink::~AliHLTZMQsink()
 {
   //dtor
   zmq_close(fZMQout);
-  zmq_ctx_destroy(fZMQcontext);
 }
 
 //______________________________________________________________________________

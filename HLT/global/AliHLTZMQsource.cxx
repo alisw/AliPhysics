@@ -54,7 +54,6 @@ AliHLTZMQsource::~AliHLTZMQsource()
 {
   //dtor
   zmq_close(fZMQin);
-  zmq_ctx_destroy(fZMQcontext);
 }
 
 //______________________________________________________________________________
