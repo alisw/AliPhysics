@@ -643,14 +643,14 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       				hClockSlice = hBBFlagVsClock_ADOR->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
 				Double_t flagArray[19];
-				for(Int_t iClock = 1; iClock<20; iClock++)flagArray[iClock] = hClockSlice->GetBinContent(iClock+1);
+				for(Int_t iClock = 1; iClock<20; iClock++)flagArray[iClock-1] = hClockSlice->GetBinContent(iClock+1);
 				Int_t maxClock = TMath::LocMax(19,flagArray);
 				if(center == 0){
 					if(i>7)notConfgADA = kTRUE;
 					if(i<8)notConfgADC = kTRUE;
 					continue;
 					} 
-				if(maxClock != 10) {
+				if(maxClock != 9) {
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
 					}
