@@ -1,6 +1,7 @@
 /// \class AliAnalysisTaskJetShapeConst
 /// \brief Background fluctuation studies: dMdpT spectrum for PYTHIA and single track embedding for Constituent subtraction method
 ///
+/// \ingroup PWGJETASKS
 /// Most of the methods are in the class AliAnalysisTaskJetShapeBase
 /// The Run() method is adapted to the Constituent subtracted jets
 /// 
