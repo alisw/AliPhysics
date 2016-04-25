@@ -268,9 +268,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			TPaveText *QAbox = (TPaveText*)hChargeADA->GetListOfFunctions()->At(i);
       			
 			TString meanChargeADA = " Mean charge ADA = ";
-			Char_t meanValue[6];
-			sprintf(meanValue, "%4.1f", hChargeADA->GetMean());
-			meanChargeADA += meanValue;
+			meanChargeADA += TString::Format("%4.1f ", hChargeADA->GetMean());
 			
 			QAbox->Clear();
 			QAbox->SetFillColor(kWhite);
@@ -292,9 +290,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			TPaveText *QAbox = (TPaveText*)hChargeADC->GetListOfFunctions()->At(i);
       			
 			TString meanChargeADC = " Mean charge ADC = ";
-			Char_t meanValue[6];
-			sprintf(meanValue, "%4.1f", hChargeADC->GetMean());
-			meanChargeADC += meanValue;
+			meanChargeADC += TString::Format("%4.1f ", hChargeADC->GetMean());
 			
 			QAbox->Clear();
 			QAbox->SetFillColor(kWhite);
@@ -315,9 +311,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       			TPaveText *QAbox = (TPaveText*)hTriggers->GetListOfFunctions()->At(i);
       			
 			TString nEventsText = " Number of events = ";
-			Char_t eventsValue[10];
-			sprintf(eventsValue, "%.0f", nEvents);
-			nEventsText += eventsValue;
+			nEventsText += TString::Format("%.0f ", nEvents);
 			
 			QAbox->Clear();
 			QAbox->SetFillColor(kWhite);
@@ -515,8 +509,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
       				hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",i+1,i+1);
 				Double_t saturation;
 				if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
-				sprintf(satValue, "%1.3f", saturation);
-				satText +=satValue; 
+				satText += TString::Format("%1.3f ", saturation);
 				satText +=" "; 
 				if(saturation > fSatMed && saturation < fSatHigh){
 					test = 0.7;
