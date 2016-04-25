@@ -55,7 +55,6 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TTimeStamp.h"
-#include "THnSparse.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
