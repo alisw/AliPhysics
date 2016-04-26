@@ -23,7 +23,7 @@ class AliVVZERO;
 
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalLight.h"
 
 /**
  * \class AliAnalysisTaskEmcalJetQA
@@ -32,7 +32,7 @@ class AliVVZERO;
  * Implementation of a task that performs basic QA on tracks and clusters
  * for EMCal jet analysis.
  */
-class AliAnalysisTaskEmcalJetQA : public AliAnalysisTaskEmcal {
+class AliAnalysisTaskEmcalJetQA : public AliAnalysisTaskEmcalLight {
 
 public:
 
@@ -69,6 +69,8 @@ public:
   void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b          ; }
   void                        SetDoLeadingObjectPosition(Int_t b)                  { fDoLeadingObjectPosition = b     ; }
   void                        SetSeparateEMCalDCal(Bool_t b)                       { fSeparateEMCalDCal = b           ; }
+  void                        SetPtBin(Float_t w, Float_t max)                     { fPtBinWidth        = w; fMaxPt = max ; }
+  void                        SetIsEmbedded(Bool_t i)                              { fIsEmbedded        = i           ; }
 
 protected:
 
@@ -90,16 +92,19 @@ protected:
   Int_t                       fDoEPQA;                   ///< Add event plane QA histograms
   Int_t                       fDoLeadingObjectPosition;  ///< Add axis for leading object position (eta-phi)
   Int_t                       fMaxCellsInCluster;        ///< Maximum number (approx) of cells in a cluster
+  Float_t                     fPtBinWidth;               ///< Histogram pt bin width
+  Float_t                     fMaxPt;                    ///< Histogram pt limit
   Bool_t                      fSeparateEMCalDCal;        ///< Separate EMCal from DCal in QA plots
-  Double_t                    fCent2;                    //!< Event centrality with method 2
-  Double_t                    fCent3;                    //!< Event centrality with method 3
-  AliVVZERO                  *fVZERO;                    //!< Event V0 object
-  Double_t                    fV0ATotMult;               //!< Event V0A total multiplicity
-  Double_t                    fV0CTotMult;               //!< Event V0C total multiplicity
-  Int_t                       fNTotClusters[2];          //!< Total number of accepted clusters in current event (DCal/EMCal)
-  AliVCluster                *fLeadingCluster[2];        //!< Leading cluster in current event (EMCal/DCal)
-  Int_t                       fNTotTracks;               //!< Total number of accepted tracks in current event
-  AliTLorentzVector           fLeadingTrack;             //!< Leading track in current event
+  Bool_t                      fIsEmbedded;               ///< Embedded data present
+  Double_t                    fCent2;                    //!<!Event centrality with method 2
+  Double_t                    fCent3;                    //!<!Event centrality with method 3
+  AliVVZERO                  *fVZERO;                    //!<!Event V0 object
+  Double_t                    fV0ATotMult;               //!<!Event V0A total multiplicity
+  Double_t                    fV0CTotMult;               //!<!Event V0C total multiplicity
+  Int_t                       fNTotClusters[2];          //!<!Total number of accepted clusters in current event (DCal/EMCal)
+  AliVCluster                *fLeadingCluster[2];        //!<!Leading cluster in current event (EMCal/DCal)
+  Int_t                       fNTotTracks;               //!<!Total number of accepted tracks in current event
+  AliTLorentzVector           fLeadingTrack;             //!<!Leading track in current event
 
   THistManager                fHistManager;              //!< Histogram manager
 
@@ -108,7 +113,7 @@ private:
   AliAnalysisTaskEmcalJetQA &operator=(const AliAnalysisTaskEmcalJetQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetQA, 1)
+  ClassDef(AliAnalysisTaskEmcalJetQA, 2)
   /// \endcond
 };
 #endif
