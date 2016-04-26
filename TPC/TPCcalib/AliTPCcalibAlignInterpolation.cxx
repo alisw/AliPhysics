@@ -1795,7 +1795,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   float bz = fixAlignmentBugForFile ? InitForAlignmentBugFix(runNumber) : 0;
 
   chainDelta->SetEstimate(maxEntries*160/5.);
-  TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC";
+  TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC:its1.fElements";
   //
   if (fixAlignmentBugForFile) toRead += ":tof0.fElements:trd0.fElements:track.fP[4]"; // needed only in case we need to fix alignment bug
   //
@@ -1816,6 +1816,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   TVectorD * vecPhi    = new TVectorD(entriesFit); //
   TVectorD * vecTime   = new TVectorD(entriesFit); //
   TVectorD * vecTOFBC   = new TVectorD(entriesFit); //
+  TVectorD * deltaZITS  = new TVectorD(entriesFit); //
   
   for (Int_t i=0; i<entriesFit; i++){
     Int_t index=gRandom->Rndm()*entriesFit0;
@@ -1826,19 +1827,21 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     (*vecSec)[i]= chainDelta->GetVal(4)[index];
     (*vecPhi)[i]= chainDelta->GetVal(5)[index];
     (*vecTime)[i]= chainDelta->GetVal(6)[index];    
-    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];
+    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];    
+    (*deltaZITS)[i]= chainDelta->GetVal(8)[index];
     //
     if ( (*vecR)[i] < kInvalidR ) continue; // there was no cluster at this point
-    // if needed, fix alignment bug
+    // if needed, fix alignment bug 
     if (fixAlignmentBugForFile) {
-      float dyTOF = chainDelta->GetVal(8)[index];
-      float dyTRD = chainDelta->GetVal(9)[index];
-      float q2pt = chainDelta->GetVal(10)[index];
+      float dyTOF = chainDelta->GetVal(9)[index];
+      float dyTRD = chainDelta->GetVal(10)[index];
+      float q2pt = chainDelta->GetVal(11)[index];
       //
+      float dzITS = (*deltaZITS)[i];
       float dzTOF = (*deltaZTOF)[i];
       float dzTRD = (*deltaZTRD)[i];
       float rTOF  = (*vecR)[i], rTRD = rTOF;
-      float zTOF  = (*vecZ)[i], zTRD = zTOF;
+      float zTOF  = (*vecZ)[i] + dzTOF-dzITS , zTRD = (*vecZ)[i] + dzTRD-dzITS;
       float phiTOF= (*vecPhi)[i], phiTRD = phiTOF;
       
       int rocID = TMath::Nint((*vecSec)[i]);
