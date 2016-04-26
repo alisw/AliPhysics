@@ -217,6 +217,14 @@ protected:
    */
   ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
+  /**
+   * Check if the patch has overlap in channles with the PHOS
+   * region.
+   * @param Patch to check
+   * @return True if the patch has overlap with PHOS
+   */
+  bool HasPHOSOverlap(const AliEMCALTriggerRawPatch & patch) const;
+
 private:
   /** Pointer to the output buffer */
   AliHLTCaloTriggerPatchDataStruct              *fTriggerPatchDataPtr;

@@ -133,6 +133,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
       HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
       break;
     }
+    if(HasPHOSOverlap(*patchiter)) continue;
     next = fTriggerPatchDataPtr + 1;
     // Set offline bits
     // Note: trigger patch can contain more than one patch type
@@ -168,6 +169,7 @@ Int_t AliHLTEMCALTriggerMaker::FindPatches(){
       HLTWarning("Buffer exceeded after %d trigger patches", patchcount);
       break;
     }
+    if(HasPHOSOverlap(*patchit)) continue;
     ELevel0TriggerStatus_t L0trigger = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
     // Check that it is a valid L0 patch candidate, i.e. all FastORs in the same TRU
     if (L0trigger == kNotLevel0) continue;
@@ -301,4 +303,13 @@ AliHLTEMCALTriggerMaker::ELevel0TriggerStatus_t AliHLTEMCALTriggerMaker::CheckFo
     if(l0times > fL0MinTime && l0times < fL0MaxTime) result = kLevel0Fired;
   }
   return result;
+}
+
+bool AliHLTEMCALTriggerMaker::HasPHOSOverlap(const AliEMCALTriggerRawPatch &patch) const {
+  const int kEtaMinPhos = 16, kEtaMaxPhos = 31, kPhiMinPhos = 64, kPhiMaxPhos = 99;
+  if(patch.GetRowStart() + patch.GetPatchSize() -1 < kPhiMinPhos) return false; 	// EMCAL Patch
+  if(patch.GetRowStart() > kPhiMaxPhos) return false;					// DCAL 1/3 supermodule
+  if(patch.GetColStart() + patch.GetPatchSize() -1 < kEtaMinPhos) return false;
+  if(patch.GetColStart() > kEtaMaxPhos) return false;
+  return true;
 }
