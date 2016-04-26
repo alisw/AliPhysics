@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
       return -1;
     }
   }
-  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk/Run0,999999999_v0_s0.root","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
+  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
   if (status) {
     printf("Failed to get  file T0/Calib/Slewing_Walk() from DAQdetDB, status=%d\n", status);
     return -1;
