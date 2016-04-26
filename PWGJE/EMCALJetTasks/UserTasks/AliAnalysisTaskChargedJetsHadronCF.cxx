@@ -271,7 +271,7 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventSelected()
+Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventCriteriumFulfilled()
 {
 
     // In case of special selection criteria, trigger on certain events
@@ -504,7 +504,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
 
-  if(!IsEventSelected())
+  if(!IsEventCriteriumFulfilled())
     return kFALSE;
 
   // ####### Jet loop
