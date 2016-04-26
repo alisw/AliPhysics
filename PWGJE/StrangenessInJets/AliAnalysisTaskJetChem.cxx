@@ -316,11 +316,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
      // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0) 
   //,fh2ChTracksPC(0)  
-  ,fh2MCgenK0Cone(0)
-  ,fh2MCgenLaCone(0)
+  ,fhnMCgenK0Cone(0)
+  ,fhnMCgenLaCone(0)
   // ,fh2MCgenALaCone(0) 
-  ,fh2MCEtagenK0Cone(0)
-  ,fh2MCEtagenLaCone(0)
+  //,fh2MCEtagenK0Cone(0)
+  //,fh2MCEtagenLaCone(0)
   // ,fh2MCEtagenALaCone(0)
   /*  ,fh2CorrHijingLaProton(0)
    ,fh2CorrInjectLaProton(0)
@@ -654,11 +654,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
     // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0)
   //,fh2ChTracksPC(0)
-   ,fh2MCgenK0Cone(0)
-   ,fh2MCgenLaCone(0)
+   ,fhnMCgenK0Cone(0)
+   ,fhnMCgenLaCone(0)
     //,fh2MCgenALaCone(0)
-   ,fh2MCEtagenK0Cone(0)
-   ,fh2MCEtagenLaCone(0)
+  //,fh2MCEtagenK0Cone(0)
+  //,fh2MCEtagenLaCone(0)
     //,fh2MCEtagenALaCone(0)
   /* ,fh2CorrHijingLaProton(0)
   ,fh2CorrInjectLaProton(0)
@@ -995,11 +995,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
     // ,fh2ChTracksOC(copy.fh2ChTracksOC)
   //,fh2ChTracksMCC(copy.fh2ChTracksMCC)
   //,fh2ChTracksPC(copy.fh2ChTracksPC)
-   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
-   ,fh2MCgenLaCone(copy.fh2MCgenLaCone)
+   ,fhnMCgenK0Cone(copy.fhnMCgenK0Cone)
+   ,fhnMCgenLaCone(copy.fhnMCgenLaCone)
     //,fh2MCgenALaCone(copy.fh2MCgenALaCone)
-   ,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
-   ,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
+  //,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
+  // ,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
     //,fh2MCEtagenALaCone(copy.fh2MCEtagenALaCone)
   /* ,fh2CorrHijingLaProton(copy.fh2CorrHijingLaProton)
   ,fh2CorrInjectLaProton(copy.fh2CorrInjectLaProton)
@@ -1335,11 +1335,11 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     //   fh2ChTracksOC                   = o.fh2ChTracksOC;
     //fh2ChTracksMCC                  = o.fh2ChTracksMCC;
     //fh2ChTracksPC                   = o.fh2ChTracksPC;
-    fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
-    fh2MCgenLaCone                  = o.fh2MCgenLaCone;
+    fhnMCgenK0Cone                  = o.fhnMCgenK0Cone;
+    fhnMCgenLaCone                  = o.fhnMCgenLaCone;
     //fh2MCgenALaCone                 = o.fh2MCgenALaCone; 
-    fh2MCEtagenK0Cone               = o.fh2MCEtagenK0Cone;
-    fh2MCEtagenLaCone               = o.fh2MCEtagenLaCone;
+    //fh2MCEtagenK0Cone               = o.fh2MCEtagenK0Cone;
+    //fh2MCEtagenLaCone               = o.fh2MCEtagenLaCone;
     //fh2MCEtagenALaCone              = o.fh2MCEtagenALaCone;
     fh1IMK0ConeSmear                = o.fh1IMK0ConeSmear;
     fh1IMLaConeSmear                = o.fh1IMLaConeSmear;
@@ -2057,21 +2057,32 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
 						      fFFNBinsZ , fFFZMin , fFFZMax);
  
-
   //***************
   // MC histograms
   //***************
 
-  fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
-  fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  //fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  //fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
   //fh2MCgenALaCone               = new TH2F("fh2MCgenALaCone", "MC gen #Antilambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
 
-  fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
-  fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
+  Int_t binsMCgenK0Cone[4] = {19, 120, 200};
+  Double_t xminMCgenK0Cone[4] = {5., 0., -1.};
+  Double_t xmaxMCgenK0Cone[4] = {100., 12., 1.};
+  fhnMCgenK0Cone                = new THnSparseF("fhnMCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around jet axis",3,binsMCgenK0Cone,xminMCgenK0Cone,xmaxMCgenK0Cone);  
+
+
+  Int_t binsMCgenLaCone[4] = {19, 120, 200};
+  Double_t xminMCgenLaCone[4] = {5., 0., -1.};
+  Double_t xmaxMCgenLaCone[4] = {100., 12., 1.};
+  fhnMCgenLaCone                = new THnSparseF("fhnMCgenLaCone", "MC gen #Lambda #it{p}_{T}  in cone around jet axis",3,binsMCgenLaCone,xminMCgenLaCone,xmaxMCgenLaCone);  
+
+
+  //fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
+  //fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
   //fh2MCgenALaCone->GetYaxis()->SetTitle("MC gen #Antilambda #it{p}_{T}");
 
-  fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
-  fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  //fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  //fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
   //fh2MCEtagenALaCone            = new TH2F("fh2MCEtagenALaCone","MC gen #Antilambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
   
   fh1IMK0ConeSmear                = new TH1F("fh1IMK0ConeSmear","Smeared jet pt study for K0s-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
@@ -2439,11 +2450,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     //    fCommonHistList->Add(fh2ChTracksOC);
     //fCommonHistList->Add(fh2ChTracksMCC);
     //fCommonHistList->Add(fh2ChTracksPC);
-    fCommonHistList->Add(fh2MCgenK0Cone);
-    fCommonHistList->Add(fh2MCgenLaCone);
+    fCommonHistList->Add(fhnMCgenK0Cone);
+    fCommonHistList->Add(fhnMCgenLaCone);
     //fCommonHistList->Add(fh2MCgenALaCone);
-    fCommonHistList->Add(fh2MCEtagenK0Cone);
-    fCommonHistList->Add(fh2MCEtagenLaCone);
+    //fCommonHistList->Add(fh2MCEtagenK0Cone);
+    //fCommonHistList->Add(fh2MCEtagenLaCone);
     //fCommonHistList->Add(fh2MCEtagenALaCone);
     /* fCommonHistList->Add(fh2CorrHijingLaProton);
     fCommonHistList->Add(fh2CorrInjectLaProton);
@@ -4867,8 +4878,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenK0s   = mcp0->Eta();
 	  Double_t fPtMCgenK0s    = mcp0->Pt();
 	  
-	  fh2MCgenK0Cone->Fill(jetPt,fPtMCgenK0s); 
-	  fh2MCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
+	  Double_t vMCgenK0Cone[3] = {jetPt,fPtMCgenK0s,fEtaMCgenK0s};
+
+	  fhnMCgenK0Cone->Fill(vMCgenK0Cone); 
+	  //fhnMCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
 	  
 	  }
 	
@@ -5175,8 +5188,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenLa   = mcp0->Eta();
 	  Double_t fPtMCgenLa    = mcp0->Pt();
     
-	  fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
-	  fh2MCEtagenLaCone->Fill(jetPt,fEtaMCgenLa);
+	  Double_t vMCgenLaCone[3] = {jetPt,fPtMCgenLa,fEtaMCgenLa};
+
+	  fhnMCgenLaCone->Fill(vMCgenLaCone); 
+
+	  //fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
+	  //fh2MCEtagenLaCone->Fill(jetPt,fEtaMCgenLa);
 	  }
 	
 	/*
