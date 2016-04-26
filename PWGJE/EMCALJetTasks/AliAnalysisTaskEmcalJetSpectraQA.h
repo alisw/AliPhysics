@@ -17,7 +17,7 @@
 
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalJetLight.h"
 
 /**
  * \class AliAnalysisTaskEmcalJetSpectraQA
@@ -26,7 +26,7 @@
  * Implementation of a task that performs QA on jet spectra
  * for EMCal jet analysis.
  */
-class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJetLight {
  public:
 
   /**
@@ -66,6 +66,8 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
   void                        SetHistoType(EHistoType_t t)        { fHistoType             = t; }
   void                        SetJetEPaxis(Bool_t b)              { fJetEPaxis             = b; }
   void                        SetAreaAxis(Bool_t b)               { fAreaAxis              = b; }
+  void                        SetPtBin(Float_t w, Float_t max)    { fPtBinWidth            = w; fMaxPt = max ; }
+  void                        SetIsEmbedded(Bool_t i)             { fIsEmbedded            = i; }
 
  protected:
   virtual void                AllocateTHX(const AliJetContainer* jets);
@@ -82,6 +84,9 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
   EHistoType_t                fHistoType;                   ///< histogram type
   Bool_t                      fJetEPaxis;                   ///< whether a EP-jet axis should be included in the THnSparse
   Bool_t                      fAreaAxis;                    ///< whether the area axis should be included
+  Float_t                     fPtBinWidth;                  ///< Histogram pt bin width
+  Float_t                     fMaxPt;                       ///< Histogram pt limit
+  Bool_t                      fIsEmbedded;                  ///< Embedded data present
   THistManager                fHistManager;                 ///< Histogram manager
 
  private:
@@ -89,7 +94,7 @@ class AliAnalysisTaskEmcalJetSpectraQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSpectraQA &operator=(const AliAnalysisTaskEmcalJetSpectraQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 4)
+  ClassDef(AliAnalysisTaskEmcalJetSpectraQA, 5)
   /// \endcond
 };
 #endif
