@@ -1377,8 +1377,7 @@ void AliTPCDcalibRes::FixAlignmentBug(int sect, float q2pt, float bz, float& alp
 {
   // fix alignment bug: https://alice.its.cern.ch/jira/browse/ATO-339?focusedCommentId=170850&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-170850
   //
-  // alp, x, z correspond to 
-  //
+  // NOTE: deltaZ in the buggy code is calculated as Ztrack_with_bug - Zcluster_w/o_bug
   static TGeoHMatrix *mCache[72] = {0};
   if (sect<0||sect>=72) {
     AliErrorF("Invalid sector %d",sect);
@@ -1395,18 +1394,20 @@ void AliTPCDcalibRes::FixAlignmentBug(int sect, float q2pt, float bz, float& alp
   }  
   double alpSect = ((sect%18)+0.5)*20.*TMath::DegToRad();
 
-  // cluster in its proper alpha frame with alignment bug, Z trackITS is used !!! 
-  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree, ITS Z only is stored
+  // cluster in its proper alpha frame with alignment bug
+  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree
   double xyzTrUse[3] = {x, deltaY, z}; // track in bad cluster frame
   //
-  // recover cluster Z position by adding deltaZ, this is approximate, since ITS track Z was used...
-  xyzClUse[2] -= deltaZ;
+  // recover cluster Z position by adding deltaZ
+  double zClSave = xyzClUse[2] -= deltaZ;  // here the cluster is not affected by Z alignment component of the bug!
   static AliExternalTrackParam trDummy;
   trDummy.Local2GlobalPosition(xyzClUse,alp); // misaligned cluster in global frame
   double xyz0[3]={xyzClUse[0],xyzClUse[1],xyzClUse[2]};
   mgt->MasterToLocal(xyz0,xyzClUse);
-  // we got ideal cluster in the sector tracking frame, 
+  // we got ideal cluster in the sector tracking frame, but now the Z is wrong, since it was not affected by the bug!!!
   //
+  xyzClUse[2] = zClSave;
+
   // go to ideal cluster frame
   trDummy.Local2GlobalPosition(xyzClUse,alpSect); // ideal global
   double alpFix = TMath::ATan2(xyzClUse[1],xyzClUse[0]);    // fixed cluster phi
