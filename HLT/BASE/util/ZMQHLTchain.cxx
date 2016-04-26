@@ -172,7 +172,7 @@ int Run()
 
   //make a source component
   AliHLTConfiguration reader("source","ZMQsource","",
-      "in=PULL>inproc://source ZMQneverBlock=0 ZMQrequestTimeout=1000000 OutputBufferSize=300000000");
+      "in=PULL+inproc://source ZMQneverBlock=0 ZMQrequestTimeout=1000000 OutputBufferSize=300000000");
 
   //load the chain definition
   gROOT->Macro(fConfigMacro.c_str());
@@ -304,7 +304,7 @@ int Run()
           eventType = topic.fSpecification;
           if (fVerbose) printf("block kAliHLTDataTypeEvent found, event type = %i\n",eventType);
         }
-      }
+      }//for message::iterator
 
       //if run number not set from ECS string, set it from the info string
       if (infoRunNumber>=0 && fRunNumber==-1) {
@@ -331,6 +331,7 @@ int Run()
       }
 
       //init the OCDB stuff
+      printf("setting run=%i in the CDB manager\n",fRunNumber);
       AliCDBManager::Instance()->SetRun(fRunNumber);
       AliGRPObject* grp = NULL;
       if (grpEntry) {
@@ -350,6 +351,8 @@ int Run()
               Int_t activeDetectors = grp->GetDetectorMask();
               TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
               printf("DetectorMask: %s\n", detStr.Data());
+              AliGRPObject* clone = dynamic_cast<AliGRPObject*>(grp->Clone());
+              printf("cloned: %p\n",clone);
             }
           }
         }
@@ -357,7 +360,14 @@ int Run()
       if (!fMagfieldIsSet) {
         printf("--init mag field\n");
         AliGRPManager grpMan;
-        grpMan.SetGRPEntry(grp);
+        if (grp) {
+          grpMan.SetGRPEntry(grp);
+        } else {
+          AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("GRP/GRP/Data"));
+          grp = dynamic_cast<AliGRPObject*>(entry->GetObject());
+          printf("getting GRP %p from the default OCDB\n",grp);
+          grpMan.SetGRPEntry(grp);
+        }
         grpMan.SetMagField();
         fMagfieldIsSet=kTRUE;
       }
