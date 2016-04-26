@@ -25,7 +25,7 @@ private:
 	void StartOfRun();
 	void EndOfRun();
 	void FillRunsFromDatabase();
-	int RetrieveGRP(TString &gdc);
+	int  RetrieveGRP(TString &gdc);
 	void SetupReco();
 	void ReconstructionLoop();
 

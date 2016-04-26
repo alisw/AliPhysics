@@ -49,12 +49,6 @@ fCDBmanager(AliCDBManager::Instance())
 AliOnlineReconstruction::~AliOnlineReconstruction()
 {
     cout<<"AliOnlineReconstruction -- destructor called...";
-    if(fAliReco)
-    {
-        //	fAliReco->SlaveTerminate();
-        //	fAliReco->Terminate();
-        //	delete fAliReco;fAliReco=0;
-    }
     if(fCDBmanager){fCDBmanager->Destroy();fCDBmanager=0;}
     cout<<"OK"<<endl;
 }
@@ -106,7 +100,7 @@ int AliOnlineReconstruction::RetrieveGRP(TString &gdc)
     TString dbName =  fSettings.GetValue("logbook.db", DEFAULT_LOGBOOK_DB);
     TString user =  fSettings.GetValue("logbook.user", DEFAULT_LOGBOOK_USER);
     TString password = fSettings.GetValue("logbook.pass", DEFAULT_LOGBOOK_PASS);
-    TString cdbPath;// = fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE);
+    TString cdbPath;
     
     cdbPath = Form("local://%s",gSystem->pwd());
     gSystem->Exec(Form("rm -fr %s/GRP",cdbPath.Data()));
@@ -130,7 +124,7 @@ void AliOnlineReconstruction::SetupReco()
     
     /* Settings CDB */
     cout<<"\n\nSetting CDB manager parameters\n\n"<<endl;
-    //fCDBmanager->SetRun(fRun);
+    
     cout<<"Set default storage"<<endl;
     
     fCDBmanager->SetDefaultStorage(fSettings.GetValue("cdb.defaultStorage", DEFAULT_CDB_STORAGE));
@@ -195,68 +189,22 @@ void AliOnlineReconstruction::ReconstructionLoop()
     Int_t iEvent = 0;
     AliESDEvent* event;
     struct recPointsStruct *files;
-    //	while (fAliReco->HasNextEventAfter(iEvent) && !gQuit)
+
     while (!gQuit)
     {
         if(fAliReco->HasNextEventAfter(iEvent))
         {
-            // remove files for previous event: (needed to send RecPoints:
-            /*
-             gSystem->cd(recoBaseDir.Data());
-             gSystem->Exec(Form("rm -fr run%d;mkdir run%d",fRun,fRun));
-             gSystem->cd(Form("run%d",fRun));
-             */
-            
             if (!fAliReco->HasEnoughResources(iEvent)) break;
             cout<<"\n\nProcessing event:"<<iEvent<<endl<<endl;
             Bool_t status = fAliReco->ProcessEvent(iEvent);
             
-            if (status){
+            if (status)
+            {
                 event = fAliReco->GetESDEvent();
                 eventManager->Send(event,EVENTS_SERVER_PUB);
-                //eventManager->SendAsXml(event,XML_PUB);
-                
-                // sending RecPoints:
-                /*
-                 cout<<"loading file"<<endl;
-                 files->files[0] = TFile::Open("./ITS.RecPoints.root");
-                 files->files[1] = TFile::Open("./TOF.RecPoints.root");
-                 files->files[2] = TFile::Open("./galice.root");
-                 files->files[3] = NULL;
-                 files->files[4] = NULL;
-                 files->files[5] = NULL;
-                 files->files[6] = NULL;
-                 files->files[7] = NULL;
-                 files->files[8] = NULL;
-                 files->files[9] = NULL;
-                 
-                 
-                 cout<<"sending files"<<endl;
-                 eventManager->Send(files,ITS_POINTS_PUB);
-                 cout<<"files sent"<<endl;
-                 
-                 for(int i=0;i<10;i++)
-                 {
-                 if(files->files[i])
-                 {
-                 files->files[i]->Close();
-                 delete files->files[i];files->files[i]=0;
-                 cout<<"file deleted"<<endl;
-                 }
-                 }
-                 */
-                
-                //Saving ESD to file:
-                /*
-                 TFile *file = new TFile(Form("/local/storedFiles/AliESDs.root_%d",iEvent),"recreate");
-                 TTree* tree= new TTree("esdTree", "esdTree");
-                 event->WriteToTree(tree);
-                 tree-> Fill();
-                 tree->Write();
-                 file->Close();
-                 */
             }
-            else{
+            else
+            {
                 cout<<"Event server -- aborting"<<endl;
                 fAliReco->Abort("ProcessEvent",TSelector::kAbortFile);
             }
@@ -271,9 +219,4 @@ void AliOnlineReconstruction::ReconstructionLoop()
             gQuit=true;
         }
     }
-    cout<<"after while"<<endl;
-    //	fAliReco->SlaveTerminate();
-    //if (fAliReco->GetAbort() != TSelector::kContinue) return;
-    //fAliReco->Terminate();
-    //if (fAliReco->GetAbort() != TSelector::kContinue) return; 
 }
