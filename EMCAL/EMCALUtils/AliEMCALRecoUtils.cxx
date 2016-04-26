@@ -3363,38 +3363,41 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
 ///
 //___________________________________________________
 void AliEMCALRecoUtils::Print(const Option_t *) const 
-{  
+{ 
+  printf("-------------------------------------------------------------------------------------------------------------------------------------- \n");
   printf("AliEMCALRecoUtils Settings: \n");
-  printf("Misalignment shifts\n");
-  for (Int_t i=0; i<5; i++) printf("\t sector %d, traslation (x,y,z)=(%f,%f,%f), rotation (x,y,z)=(%f,%f,%f)\n",i, 
+  printf("\tMisalignment shifts\n");
+  for (Int_t i=0; i<5; i++) printf("\t\t sector %d, traslation (x,y,z)=(%f,%f,%f), rotation (x,y,z)=(%f,%f,%f)\n",i, 
                                   fMisalTransShift[i*3],fMisalTransShift[i*3+1],fMisalTransShift[i*3+2],
                                   fMisalRotShift[i*3],  fMisalRotShift[i*3+1],  fMisalRotShift[i*3+2]   );
-  printf("Non linearity function %d, parameters:\n", fNonLinearityFunction);
-  for (Int_t i=0; i<6; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
+  printf("\tNon linearity function %d, parameters:\n", fNonLinearityFunction);
+  if (fNonLinearityFunction != 3) // print only if not kNoCorrection
+    for (Int_t i=0; i<6; i++) printf("param[%d]=%f\n",i, fNonLinearityParams[i]);
   
-  printf("Position Recalculation option %d, Particle Type %d, fW0 %2.2f, Recalibrate Data %d \n",fPosAlgo,fParticleType,fW0, fRecalibration);
+  printf("\tPosition Recalculation option %d, Particle Type %d, fW0 %2.2f, Recalibrate Data %d \n",fPosAlgo,fParticleType,fW0, fRecalibration);
 
-  printf("Matching criteria: ");
+  printf("\tMatching criteria: ");
   if (fCutEtaPhiSum) {
-    printf("sqrt(dEta^2+dPhi^2)<%4.3f\n",fCutR);
+    printf("\t\tsqrt(dEta^2+dPhi^2)<%4.3f\n",fCutR);
   } else if (fCutEtaPhiSeparate) {
-    printf("dEta<%4.3f, dPhi<%4.3f\n",fCutEta,fCutPhi);
+    printf("\t\tdEta<%4.3f, dPhi<%4.3f\n",fCutEta,fCutPhi);
   } else {
-    printf("Error\n");
-    printf("please specify your cut criteria\n");
-    printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-    printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+    printf("\t\tError\n");
+    printf("\t\tplease specify your cut criteria\n");
+    printf("\t\tTo cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
+    printf("\t\tTo cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
   }
 
-  printf("Mass hypothesis = %2.3f [GeV/c^2], extrapolation step to surface = %2.2f[cm], step to cluster = %2.2f[cm]\n",fMass,fStepSurface, fStepCluster);
-  printf("Cluster selection window: dR < %2.0f\n",fClusterWindow);
+  printf("\tMass hypothesis = %2.3f [GeV/c^2], extrapolation step to surface = %2.2f[cm], step to cluster = %2.2f[cm]\n",fMass,fStepSurface, fStepCluster);
+  printf("\tCluster selection window: dR < %2.0f\n",fClusterWindow);
 
-  printf("Track cuts: \n");
-  printf("Minimum track pT: %1.2f\n",fCutMinTrackPt);
-  printf("AOD track selection: tpc only %d, or hybrid %d, or mask: %d\n",fAODTPCOnlyTracks,fAODHybridTracks, fAODFilterMask);
-  printf("TPCRefit = %d, ITSRefit = %d\n",fCutRequireTPCRefit,fCutRequireITSRefit);
-  printf("AcceptKinks = %d\n",fCutAcceptKinkDaughters);
-  printf("MinNCulsterTPC = %d, MinNClusterITS = %d\n",fCutMinNClusterTPC,fCutMinNClusterITS);
-  printf("MaxChi2TPC = %2.2f, MaxChi2ITS = %2.2f\n",fCutMaxChi2PerClusterTPC,fCutMaxChi2PerClusterITS);
-  printf("DCSToVertex2D = %d, MaxDCAToVertexXY = %2.2f, MaxDCAToVertexZ = %2.2f\n",fCutDCAToVertex2D,fCutMaxDCAToVertexXY,fCutMaxDCAToVertexZ);
+  printf("\tTrack cuts: \n");
+  printf("\t\tMinimum track pT: %1.2f\n",fCutMinTrackPt);
+  printf("\t\tAOD track selection: tpc only %d, or hybrid %d, or mask: %d\n",fAODTPCOnlyTracks,fAODHybridTracks, fAODFilterMask);
+  printf("\t\tTPCRefit = %d, ITSRefit = %d\n",fCutRequireTPCRefit,fCutRequireITSRefit);
+  printf("\t\tAcceptKinks = %d\n",fCutAcceptKinkDaughters);
+  printf("\t\tMinNCulsterTPC = %d, MinNClusterITS = %d\n",fCutMinNClusterTPC,fCutMinNClusterITS);
+  printf("\t\tMaxChi2TPC = %2.2f, MaxChi2ITS = %2.2f\n",fCutMaxChi2PerClusterTPC,fCutMaxChi2PerClusterITS);
+  printf("\t\tDCSToVertex2D = %d, MaxDCAToVertexXY = %2.2f, MaxDCAToVertexZ = %2.2f\n",fCutDCAToVertex2D,fCutMaxDCAToVertexXY,fCutMaxDCAToVertexZ);
+  printf("-------------------------------------------------------------------------------------------------------------------------------------- \n");
 }
