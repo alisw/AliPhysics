@@ -34,29 +34,29 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iIsoConeRadius            = 0.4
                                                                  )
 {
-
+  
   Printf("Preparing neutral cluster analysis\n");
-
+  
     // #### Define manager and data container names
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager) {
     ::Error("AddTaskEMCALPhotonIsolation", "No analysis manager to connect to.");
     return NULL;
   }
-
-
+  
+  
   printf("Creating container names for cluster analysis\n");
   TString myContName("");
   if(bIsMC)
     myContName = Form("Analysis_Neutrals_MC");
   else
     myContName = Form("Analysis_Neutrals");
-
+  
   myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
-
+  
     // #### Task preferences
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(kFALSE);
@@ -71,40 +71,46 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetUSEofTPC(bUseofTPC);
   task->SetMC(bIsMC);
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
-
+  
   task->SetNLMCut(bNLMCut,NLMCut);
-
-
-
- TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
- cout<<"name of the containers  "<<name.Data()<<endl;
-
- // tracks to be used for the track matching (already used in TM task, TPC only tracks)
- AliTrackContainer *trackCont  = task->AddTrackContainer(ntracks);
-trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
- // clusters to be used in the analysis already filtered
+  
+  
+  
+  TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
+  cout<<"name of the containers  "<<name.Data()<<endl;
+  
+    // tracks to be used for the track matching (already used in TM task, TPC only tracks)
+  AliTrackContainer *trackCont  = task->AddTrackContainer("tracks");
+  if(!trackCont)
+    Printf("Error with TPCOnly!!");
+  trackCont->SetName("tpconlyMatch");
+  trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);
+    // clusters to be used in the analysis already filtered
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
-
-  // tracks to be used in the analysis (Hybrid tracks)
-AliTrackContainer * tracksForAnalysis = new AliTrackContainer("tracks");
-    tracksForAnalysis->SetName("filterTracksAna");
-    tracksForAnalysis->SetFilterHybridTracks(kTRUE);
-    tracksForAnalysis->SetTrackCutsPeriod(periodstr);
-    tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
-    task->AdoptParticleContainer(tracksForAnalysis);
-
+  
+    // tracks to be used in the analysis (Hybrid tracks)
+  AliTrackContainer * tracksForAnalysis = task->AddTrackContainer("tracks");
+  if(!tracksForAnalysis)
+    Printf("Error with Hybrids!!");
+  tracksForAnalysis->SetName("filterTracksAna");
+  tracksForAnalysis->SetFilterHybridTracks(kTRUE);
+  tracksForAnalysis->SetTrackCutsPeriod(periodstr);
+  tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
+  
+  
+  Printf("Name of Tracks for matching: %s \n Name for Tracks for Isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
   
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
   manager->AddTask(task);
-
-
+  
+  
   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
-
- 
-
+  
+  
+  
   return task;
 }
