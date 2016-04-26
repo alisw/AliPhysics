@@ -57,7 +57,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        FillHistogramsJets(AliEmcalJet* jet);
   void                        FillHistogramsJetConstituents(AliEmcalJet* jet);
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
-  Bool_t                      IsEventSelected();
+  Bool_t                      IsEventCriteriumFulfilled();
 
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliTrackContainer          *fTracksCont;                              //!<! Tracks
