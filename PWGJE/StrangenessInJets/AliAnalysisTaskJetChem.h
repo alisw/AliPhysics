@@ -299,6 +299,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fListLaRC;
   TList* fListALaRC;
   TList* fTracksRecCutsRC;
+  TList* fTracksRecBckgCuts;     //list of charged tracks for Embedding study, filled with standard tracks from data event, serves for no-jet event selection
+
   TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
