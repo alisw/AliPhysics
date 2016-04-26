@@ -23,9 +23,9 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TProfile.h"
+#include "AliTOFcalibHisto.h"
 #include "AliTOFChannelOnlineStatusArray.h"
 */
-#include "AliTOFcalibHisto.h"
 
 ///Functions with default parameters
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
