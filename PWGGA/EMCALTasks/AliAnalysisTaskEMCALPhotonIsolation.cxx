@@ -526,7 +526,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   }
     //   Initialize only the Common THistos for the Three different output
   
-  fVz = new TH1D("hVz_NC","Vertex Z distribution",100,-50.,50.);
+  fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
   fVz->Sumw2();
   fOutput->Add(fVz);
   
@@ -763,15 +763,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
 {
     //   Init the analysis.
     //tracks for CT Matching
-  AliTrackContainer *tracks = GetTrackContainer(0);
+  AliTrackContainer *tracks = GetTrackContainer("tpconlyMatch");
+    //  Printf("name of the first track container: %s", tracks->GetClassName().Data());
   if (!tracks) {
-    AliError(Form("%s: This task needs a particle container!", GetName()));
+    AliError(Form("%s: This task needs a 1particle container!", GetName()));
     return;
   }
     //tracks for Isolation
-  AliTrackContainer *tracksANA = GetTrackContainer(1);
+  AliTrackContainer *tracksANA = GetTrackContainer("filterTracksAna");
+    //  Printf("name of the second track container: %s", tracksANA->GetClassName().Data());
+  
   if (!tracksANA) {
-    AliError(Form("%s: This task needs a particle container!", GetName()));
+    AliError(Form("%s: This task needs a 2particle container!", GetName()));
     return;
   }
     //clusters
@@ -780,22 +783,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
     AliError(Form("%s: This task needs a cluster container!", GetName()));
     return;
   }
-  if(tracks->GetClassName()!= "tpconlyMatch"){
-    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is CT Matching performed with CT Only Tracks?\n\n\n\n"));
-    if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kTPCOnlyTracks){
-      AliError(Form("CT matching NOT performed with TPCOnly Tracks"));
-      AliError(Form("This Will NOT let you continue the analysis: \nbetter modify here IF you are sure of what you are doing"));
-      return;
-    }
-  }
-  if(tracksANA->GetClassName()!= "filterTracksAna"){
-    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
-    if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kHybridTracks){
-      AliError(Form("Isolation NOT calculated with HybridTracks"));
-      AliError(Form("This Will NOT let you continue the analysis: \nbetter modify here IF you are sure of what you are doing"));
-      return;
-    }
-  }
+  
     //Init the EMCAL Framework
   AliAnalysisTaskEmcal::ExecOnce();
   if (!fInitialized) {
@@ -808,10 +796,41 @@ void AliAnalysisTaskEMCALPhotonIsolation::ExecOnce()
   //______________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 {
-    // Run the analysis
+    // Run the analysis.
     //fTest1+=1;
     //vertex cuts
-  if (fVertex[2]>10 || fVertex[2]<-10) return kFALSE;
+  AliTrackContainer *tracks = GetTrackContainer("tpconlyMatch");
+  if(!tracks){
+    Printf("Cannot find the tracks for CT Matching");
+    return kFALSE;
+  }
+  
+  if(tracks->GetTrackFilterType()!= AliEmcalTrackSelection::kTPCOnlyTracks){
+    AliWarning(Form("CT matching NOT performed with TPCOnly Tracks"));
+    AliWarning(Form("You better be sure of what you are doing"));
+  }
+  
+  AliTrackContainer *tracksANA = GetTrackContainer("filterTracksAna");
+  if(!tracksANA){
+    Printf("Cannot find the tracks for Isolation");
+    return kFALSE;
+  }
+  
+    //  Printf("FilterType of the tracks for Analysis: %d \t(should be %d)", tracksANA->GetTrackFilterType(),AliEmcalTrackSelection::kHybridTracks);
+  
+    //    AliError(Form("\n\n\n\nGO CHECK the Settings!!!! Is Isolation calculated with filteredTracks?\n\n\n\n"));
+  if(tracksANA->GetTrackFilterType()!= AliEmcalTrackSelection::kHybridTracks){
+    AliWarning(Form("Isolation NOT calculated with HybridTracks"));
+    AliWarning(Form("You better be sure of what you are doing"));
+  }
+  
+  
+  fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+  
+    //  Printf("Vertex Z coordinate for M2: %f", fVertex[2]);
+    //  Printf("Vertex Z coordinate for NF: %lf", fVertex[2]);
+  
+  if (fVertex[2]>10. || fVertex[2]<-10.) return kFALSE;
     //  AliError(Form("La task tourne bien"));
   
   AliClusterContainer* clusters = GetClusterContainer(0);
@@ -819,7 +838,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   
   Int_t nbTracksEvent;
   nbTracksEvent =InputEvent()->GetNumberOfTracks();
-  if(nbTracksEvent==0) return kFALSE;
+    //  if(nbTracksEvent==0) return kFALSE;
   
     // Fill events number histogram
   fEvents->Fill(0);
@@ -839,8 +858,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
   
     //Double_t ETleadingclust = 0., M02leadingcluster = 0., lambda0cluster = 0., phileadingclust = 0., etaleadingclust = 0., ptmc = 0.,mcptsum = 0.;
     //Int_t Ntracks;
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    //fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+    //  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   
   if(fIsMC){
     
@@ -1065,7 +1083,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     //  Int_t nbMObj =  -> GetNumberOfMatchedObj();
   Int_t nbMObj = clust -> GetNTracksMatched();
   
-  //if(tracks->GetTrackFilterType()==AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("TPC only tracks"));
+    //if(tracks->GetTrackFilterType()==AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("TPC only tracks"));
   
   if (nbMObj == 0) return kFALSE;
   
@@ -1597,8 +1615,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     AliError(Form("Could not retrieve tracks !"));
     return;
   }
-  //   if(tracksAna->GetTrackFilterType()==AliEmcalTrackSelection::kHybridTracks)  AliError(Form("Hybrid Tracks"));
-  //      Printf("Name of the tracks used for Isolation: %s",(tracksAna->GetClassName()).Data());
+    //   if(tracksAna->GetTrackFilterType()==AliEmcalTrackSelection::kHybridTracks)  AliError(Form("Hybrid Tracks"));
+    //      Printf("Name of the tracks used for Isolation: %s",(tracksAna->GetClassName()).Data());
   tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack, etaTrack,radius;
@@ -1609,8 +1627,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       AliError(Form("No tracks in collection"));
       continue;
     }
-
-    //AliError("On a bien des traces pour l'analysos");
+    
+      //AliError("On a bien des traces pour l'analysos");
       //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
     
     if((eTrack->Pt())<0.2)
@@ -2111,7 +2129,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     //  Printf("Ntracks for the event with this cluster: %d", nTracks);
   fTrackMult->Fill(nTracks);
   
-
+  
     //  Printf("After Loop on Tracks");
   Double_t eTCOI = 0., m02COI = 0.;
   

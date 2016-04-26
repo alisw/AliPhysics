@@ -141,7 +141,7 @@ protected:
     TH2D        *fEtaPhiCell;                     //!EMCAL Active Cells Distribution EtaPhi ---QA
     TH2D        *fEtaPhiClus;                     //!EMCAL Cluster Distribution EtaPhi ---QA
     TH2D        *fClusEvsClusT;                   //!Cluster Energy vs Cluster Time ---QA
-    TH1D        *fVz;                             //! Veretex Z distribution
+    TH1F        *fVz;                             //! Veretex Z distribution
     TH1D        *fEvents;                         //! Number of Events
     TH1D        *fPT;                             //!Pt distribution
     TH1D        *fE;                              //!E distribution
