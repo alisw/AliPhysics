@@ -96,8 +96,9 @@ Int_t AliEMCALClusterizerv2::AreNeighbours(AliEMCALDigit* d1, AliEMCALDigit* d2,
   //                                      which is compared to a digit (d2)  not yet in a cluster  
   
   if (fDoEnGradCut) {
-    if (d2->GetCalibAmp()>d1->GetCalibAmp())
+    if (d2->GetCalibAmp()>d1->GetCalibAmp()+fECALocMaxCut){
       return 3; // energy of neighboring cell should be smaller in order to become a neighbor
+    }  
   }
   return AliEMCALClusterizerv1::AreNeighbours(d1,d2,shared);
 }
