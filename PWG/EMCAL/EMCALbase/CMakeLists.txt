@@ -32,6 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskEmcal.cxx
+  AliAnalysisTaskEmcalLight.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
   AliEmcalIterableContainer.cxx
