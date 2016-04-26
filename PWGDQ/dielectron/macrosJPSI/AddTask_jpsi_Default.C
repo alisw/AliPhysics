@@ -67,6 +67,11 @@ AliAnalysisTask* AddTask_jpsi_Default(
   
   // add special triggers
   switch(iPeriod) {
+
+  case k10b: task->SetTriggerMask(AliVEvent::kMB); break;
+  case k10c: task->SetTriggerMask(AliVEvent::kMB); break;
+  case k10d: task->SetTriggerMask(AliVEvent::kMB); break;
+  case k10e: task->SetTriggerMask(AliVEvent::kMB); break;
   case k11d: task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);     break;
   case k11h: task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral); break;
   case k12h: task->SetTriggerMask(AliVEvent::kAnyINT); break;                                      
@@ -75,6 +80,10 @@ AliAnalysisTask* AddTask_jpsi_Default(
   case k13d: task->SetTriggerMask(AliVEvent::kAnyINT); break;
   case k13e: task->SetTriggerMask(AliVEvent::kAnyINT); break;
   case k13f: task->SetTriggerMask(AliVEvent::kAnyINT); break;
+  case k15f: task->SetTriggerMask(AliVEvent::kINT7); break;
+  case k15n: task->SetTriggerMask(AliVEvent::kINT7); break;
+
+
   }
   mgr->AddTask(task);
   
@@ -84,7 +93,7 @@ AliAnalysisTask* AddTask_jpsi_Default(
   eventCuts->SetVertexZ(-10.,10.); 
   //  task->SetTriggerOnV0AND();
   task->SetEventFilter(eventCuts);
-  task->SetRejectPileup();
+  // task->SetRejectPileup();
 	
 	
 		  //set config file name
