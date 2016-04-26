@@ -79,8 +79,8 @@ const char* AliMpDCSNamer::fgkDCSChamberPattern[] =
 
 const char* AliMpDCSNamer::fgkDCSMCHLVGroupPattern[] =
 {
- "MchHvLvLeft/Chamber%02dLeft/Group%d%s.MeasurementSenseValue",
- "MchHvLvRight/Chamber%02dRight/Group%d%s.MeasurementSenseValue",
+ "MchHvLvLeft/Chamber%02dLeft/Group%d%s.MeasurementSenseVoltage",
+ "MchHvLvRight/Chamber%02dRight/Group%d%s.MeasurementSenseVoltage"
 };
 
 const char* AliMpDCSNamer::fgkDCSSideTrackerName[] = { "Left", "Right" };
@@ -204,29 +204,29 @@ AliMpDCSNamer::CompactAliases() const
 
     // St12 have 4 LV groups
 
-    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]anp.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]anp.MeasurementSenseValue"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[01..10]Left/Group[1..4]anp.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[01..10]Right/Group[1..4]anp.MeasurementSenseVoltage"));
 
     // St3 has 5 LV groups
 
-    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]anp.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]anp.MeasurementSenseValue"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[05..06]Left/Group[5..5]anp.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[05..06]Right/Group[5..5]anp.MeasurementSenseVoltage"));
 
     // St4-5 have 7 LV groups
-    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]anp.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]dig.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]ann.MeasurementSenseValue"));
-    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]anp.MeasurementSenseValue"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvLeft/Chamber[07..10]Left/Group[5..7]anp.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]dig.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]ann.MeasurementSenseVoltage"));
+    a->Add(new TObjString("MchHvLvRight/Chamber[07..10]Right/Group[5..7]anp.MeasurementSenseVoltage"));
 
     break;
 
