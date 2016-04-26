@@ -7,7 +7,7 @@
   The macro produces a file containing the tree of trending variables and the main plots.
   A feature that displays the plots in canvases must be enable when needed.
 */
-
+/*
 #include "TCanvas.h"
 #include "TStyle.h"
 #include "TLegend.h"
@@ -19,12 +19,13 @@
 #include "TH2.h"
 #include "TF1.h"
 #include "TPaveText.h"
-#include "AliTOFcalibHisto.h"
 #include "AliTOFcalib.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TProfile.h"
 #include "AliTOFChannelOnlineStatusArray.h"
+*/
+#include "AliTOFcalibHisto.h"
 
 ///Functions with default parameters
 Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
@@ -78,6 +79,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
       if (!isMC) sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults%s.root",year,period.Data(),runNumber,pass.Data(),trainId,nameSuffix.Data());
       else sprintf(infile,"alien:///alice/sim/%i/%s/%d/QA%i/QAresults%s.root",year,period.Data(),runNumber,trainId,nameSuffix.Data());
     }
+    
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
@@ -172,20 +174,16 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   
   Printf(":::: Getting post-analysis info for run %i",runNumber);
   TFile * trendFile = new TFile(treePostFileName.Data(),"recreate");
-  
   Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
     avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
     orphansRatio=-9999., avL=-9999., negLratio=-9999.,
-    effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
-  
+    effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.; 
   Double_t avPiDiffTime=-9999.,peakPiDiffTime=-9999., spreadPiDiffTime=-9999.,peakPiDiffTimeErr=-9999., spreadPiDiffTimeErr=-9999.;
-  
   Double_t avT0A=-9999.,peakT0A=-9999., spreadT0A=-9999.,peakT0AErr=-9999., spreadT0AErr=-9999.;
   Double_t avT0C=-9999.,peakT0C=-9999., spreadT0C=-9999.,peakT0CErr=-9999., spreadT0CErr=-9999.;
   Double_t avT0AC=-9999.,peakT0AC=-9999., spreadT0AC=-9999.,peakT0ACErr=-9999., spreadT0ACErr=-9999.;
   Double_t avT0res=-9999.,peakT0res=-9999., spreadT0res=-9999.,peakT0resErr=-9999., spreadT0resErr=-9999.;
-  Double_t avT0fillRes=-9999.;
-
+  Double_t avT0fillRes=-9999., avT0T0Res=-9999.;
   Float_t avMulti=0;
   Float_t fractionEventsWHits=-9999.;
   /*number of good (HW ok && efficient && !noisy) TOF channels from OCDB*/
@@ -249,13 +247,14 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   ttree->Branch("spreadT0AC",&spreadT0AC,"spreadT0AC/D"); //spread of main peak of t0AC after fit
   ttree->Branch("peakT0ACErr",&peakT0ACErr,"peakT0ACErr/D"); // main peak of t0AC after fit
   ttree->Branch("spreadT0ACErr",&spreadT0ACErr,"spreadT0ACErr/D"); //spread of main peak of t0AC after fit
- 
+
   ttree->Branch("avT0res",&avT0res,"avT0res/D"); //main peak t0AC
   ttree->Branch("peakT0res",&peakT0res,"peakT0res/D"); // main peak of t0AC after fit
   ttree->Branch("spreadT0res",&spreadT0res,"spreadT0res/D"); //spread of main peak of t0AC after fit
   ttree->Branch("peakT0resErr",&peakT0resErr,"peakT0resErr/D"); // main peak of t0AC after fit
   ttree->Branch("spreadT0resErr",&spreadT0resErr,"spreadT0resErr/D"); //spread of main peak of t0AC after fit
   ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
+  ttree->Branch("avT0T0Res",&avT0T0Res,"avT0T0Res/D"); //t0 T0 res
 
   //save quantities for trending
   goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kFALSE);
@@ -394,7 +393,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hDenom->Sumw2();
     hMatchingVsEta=(TH1F*) generalList->FindObject("hMatchedEta_all")->Clone(); 
     hMatchingVsEta->Sumw2();
-      // hMatchingVsEta->Rebin(5);
+    // hMatchingVsEta->Rebin(5);
     // hDenom->Rebin(5);
     hMatchingVsEta->Divide(hDenom);
     hMatchingVsEta->GetXaxis()->SetRangeUser(-1,1);
@@ -421,7 +420,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   }
   MakeUpHisto(hMatchingVsPhi, "efficiency", 1, kBlue+2);
 
-   if (saveHisto) {
+  if (saveHisto) {
     trendFile->cd();
     hMulti->Write();
     hTime->Write();
@@ -434,10 +433,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hMatchingVsEta->Write();
     hMatchingVsPhi->Write();
   }  
-
-  
-
-  //--------------------------------- t-texp ----------------------------------//
+   
+//--------------------------------- t-texp ----------------------------------//
   TH2F * hBetaP=(TH2F*)pidList->FindObject("hMatchedBetaVsP_all");
   if (hBetaP) hBetaP->GetYaxis()->SetRangeUser(0.,1.2);
   
@@ -457,8 +454,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadPiDiffTime=(hPionDiff->GetFunction("gaus"))->GetParameter(2);
       peakPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(1);
       spreadPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(2);
-      // printf("Main peak t-t_exp (gaus): mean = %f +- %f\n",peakPiDiffTime,peakPiDiffTimeErr );
-      // printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
     }
   }
  
@@ -466,17 +461,14 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH1F * hDiffTimeT0TOFPion1GeV=(TH1F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");  
   TH2F * hDiffTimePi=(TH2F*)pidList->FindObject("hExpTimePiVsP_all"); 
   hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
-  //hDiffTimePi->GetYaxis()->SetRangeUser(-5000.,5000.);
 
   //Kaon
   TH2F * hDiffTimeKa=(TH2F*)pidList->FindObject("hExpTimeKaVsP_all");  
   hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
-  //hDiffTimeKa->GetYaxis()->SetRangeUser(-5000.,5000.);
 
   //Protons
   TH2F * hDiffTimePro=(TH2F*)pidList->FindObject("hExpTimeProVsP_all"); 
   hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
-  //hDiffTimePro->GetYaxis()->SetRangeUser(-5000.,5000.);
   
   if (saveHisto) {
     trendFile->cd();
@@ -488,6 +480,114 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hDiffTimePi->Write();
     hDiffTimeKa->Write();
     hDiffTimePro->Write();
+  }
+
+  //--------------------------------- T0 vs multiplicity plots ----------------------------------//
+  TH2F * hT0TOFvsNtracks=(TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
+  Int_t binmin1 = hT0TOFvsNtracks->GetYaxis()->FindBin(-50.);
+  Int_t binmax1 = hT0TOFvsNtracks->GetYaxis()->FindBin(50.);
+  TProfile* hT0TOFProfile = (TProfile*)hT0TOFvsNtracks->ProfileX("hT0TOFProfile",binmin1,binmax1);
+  hT0TOFProfile->SetLineWidth(3);
+  hT0TOFProfile->SetLineColor(1);
+
+  TH2F * hT0ACvsNtracks=(TH2F*)timeZeroList->FindObject("hT0ACvsNtrk");
+  Int_t binmin2 = hT0ACvsNtracks->GetYaxis()->FindBin(-50.);
+  Int_t binmax2 = hT0ACvsNtracks->GetYaxis()->FindBin(50.);
+  TProfile* hT0ACProfile = (TProfile*)hT0ACvsNtracks->ProfileX("hT0ACProfile",binmin2,binmax2);
+  hT0ACProfile->SetLineWidth(3);
+  hT0ACProfile->SetLineColor(1);
+
+  TH2F * hT0AvsNtracks=(TH2F*)timeZeroList->FindObject("hT0AvsNtrk");
+  Int_t binmin3 = hT0AvsNtracks->GetYaxis()->FindBin(-50.);
+  Int_t binmax3 = hT0AvsNtracks->GetYaxis()->FindBin(50.);
+  TProfile* hT0AProfile = (TProfile*)hT0AvsNtracks->ProfileX("hT0AProfile",binmin3,binmax3);
+  hT0AProfile->SetLineWidth(3);
+  hT0AProfile->SetLineColor(1);
+
+  TH2F * hT0CvsNtracks=(TH2F*)timeZeroList->FindObject("hT0CvsNtrk");
+  Int_t binmin4 = hT0CvsNtracks->GetYaxis()->FindBin(-50.);
+  Int_t binmax4 = hT0CvsNtracks->GetYaxis()->FindBin(50.);
+  TProfile* hT0CProfile = (TProfile*)hT0CvsNtracks->ProfileX("hT0CProfile",binmin4,binmax4);
+  hT0CProfile->SetLineWidth(3);
+  hT0CProfile->SetLineColor(1);
+
+  TH2F * hStartTime=(TH2F*)timeZeroList->FindObject("hStartTime");
+  TH2F * hStartTimeRes=(TH2F*)timeZeroList->FindObject("hStartTimeRes");
+
+  Int_t binminst = hStartTime->GetXaxis()->FindBin(-600.);
+  Int_t binmaxst = hStartTime->GetXaxis()->FindBin(600.);
+
+  TProfile* hStartTimeProfile = (TProfile*) hStartTime->ProfileY("hStartTimeProfile",binminst,binmaxst);
+  hStartTimeProfile->SetFillStyle(0);
+  hStartTimeProfile->SetLineWidth(3);
+  hStartTimeProfile->SetLineColor(1);  
+
+  TCanvas *cT0vsMultiplicty = new TCanvas("cT0vsMultiplicity","T0TOF,T0C,T0A,TOAC vs N_TOF,",1200,800);
+  cT0vsMultiplicity->Divide(2,2);
+  cT0vsMultiplicity->cd(1);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hT0TOFvsNtracks->Draw("colz");
+  hT0TOFProfile->Draw("same");
+
+  cT0vsMultiplicity->cd(2);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hT0ACvsNtracks->Draw("colz");
+  hT0ACProfile->Draw("same");
+
+  cT0vsMultiplicity->cd(3);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hT0AvsNtracks->Draw("colz");
+  hT0AProfile->Draw("same");
+
+  cT0vsMultiplicity->cd(4);
+  gPad->SetLogz();
+  gPad->SetLogx();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hT0CvsNtracks->Draw("colz");
+  hT0CProfile->Draw("same");
+
+  TCanvas *cStartTimeRes = new TCanvas("cStartTimeRes","Resolution of start time methods",1200,800);
+  gPad->SetLogz();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hStartTimeRes->Draw("colz");
+
+  TCanvas *cStartTime = new TCanvas("cStartTime","start time with different methods",1200,800);
+  gPad->SetLogz();
+  gPad->SetGridx();
+  gPad->SetGridy();
+  hStartTime->Draw("colz");
+
+  TString plotDir(".");
+
+  if (savePng) {
+    cT0vsMultiplicity->Print(Form("%s/%i_T0vsMultiplicity.png", plotDir.Data(), runNumber));
+    cStartTime->Print(Form("%s/%i_StartTimeMethods.png", plotDir.Data(), runNumber));
+    cStartTimeRes->Print(Form("%s/%i_StartTimeResolution.png", plotDir.Data(), runNumber));
+  }
+  if (saveHisto) {
+    trendFile->cd();
+    hT0TOFvsNtracks->Write();
+    hT0TOFProfile->Write();
+    hT0ACvsNtracks->Write();
+    hT0ACProfile->Write();
+    hT0CvsNtracks->Write();
+    hT0CProfile->Write();
+    hT0AvsNtracks->Write();
+    hT0AProfile->Write();
+    hStartTime->Write();
+    hStartTimeRes->Write();
+    hStartTimeProfile->Write();
   }
 
   //--------------------------------- NSigma PID from TOF QA ----------------------------------//
@@ -528,7 +628,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hSigmaPro_2->SetLineColor(2);
   hSigmaPro_2->SetLineWidth(2);
 
-  TString plotDir(".");
+  //TString plotDir(".");
  
   TCanvas *cPidPerformance3= new TCanvas("cPidPerformance3","summary of pid performance - sigmas",1200,500);
   cPidPerformance3->Divide(3,1);
@@ -729,7 +829,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH1F*hT0res=(TH1F*)timeZeroList->FindObject("hT0DetRes");
   if ((hT0res)&&(hT0res->GetEntries()>0)) {
     avT0res=hT0res->GetMean();
-    hT0res->Fit("gaus");
+    hT0res->Fit("gaus","Q0","");
     if (hT0res->GetFunction("gaus")) {
       peakT0res=(hT0res->GetFunction("gaus"))->GetParameter(1);
       spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
@@ -743,7 +843,11 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH1F*hT0fillRes=(TH1F*)timeZeroList->FindObject("hT0fillRes");
   if ((hT0fillRes)&&(hT0fillRes->GetEntries()>0)) {
     avT0fillRes=hT0fillRes->GetMean();
-  }
+    }
+  TH1F*hT0T0Res=(TH1F*)timeZeroList->FindObject("hT0T0Res");
+    if ((hT0T0Res)&&(hT0T0Res->GetEntries()>0)) {
+      avT0T0Res=hT0T0Res->GetMean();
+    }
   
   if (saveHisto) {
     trendFile->cd(); 
@@ -751,7 +855,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hT0A->Write();
     hT0C->Write();
     hT0res->Write();
-    hT0fillRes->Write();
+    //hT0fillRes->Write();
+    //hT0T0Res->Write();
   }	
   //Fill tree and save to file
   ttree->Fill();
@@ -862,7 +967,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
    
   if (savePng) {
     cProfile->Print(Form("%s/%i_ProfileDZvsStripNumber.png",plotDir.Data(), runNumber));
-    cMatchingPerformance->Print(Form("%s/%i_Matching.png",plotDir.Data(), runNumber));
+    //cMatchingPerformance->Print(Form("%s/%i_Matching.png",plotDir.Data(), runNumber));
     cPidPerformance2->Print(Form("%s/%i_PID_ExpTimes.png",plotDir.Data(), runNumber));
   }
   return  0;
