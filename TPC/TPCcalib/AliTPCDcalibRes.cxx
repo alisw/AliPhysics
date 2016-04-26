@@ -18,7 +18,7 @@ const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
 const float AliTPCDcalibRes::kMinX = 85.0f;
 const float AliTPCDcalibRes::kMaxX = 246.0f;
 const float AliTPCDcalibRes::kMaxZ2X = 1.0f;
-const float AliTPCDcalibRes::kZLim = 2.49725e2;
+const float AliTPCDcalibRes::kZLim[2] = {2.49725e+02,2.49698e+02};
 const char* AliTPCDcalibRes::kLocalResFileName  = "tmpDeltaSect";
 const char* AliTPCDcalibRes::kClosureTestFileName  = "closureTestSect";
 const char* AliTPCDcalibRes::kStatOut      = "voxelStat";
@@ -448,7 +448,7 @@ void AliTPCDcalibRes::CollectData(int mode)
       int nc0 = fNCl; 
       fNCl = 0;
       for (int ip=0;ip<nc0;ip++) {
-	
+	int side = ((fArrSectID[ip] /kNSect)&0x1);
 	float sna = TMath::Sin(fArrPhi[ip]-(0.5f +fArrSectID[ip]%kNSect)*kSecDPhi);
 	float csa = TMath::Sqrt((1.f-sna)*(1.f+sna));
 	//
@@ -486,7 +486,7 @@ void AliTPCDcalibRes::CollectData(int mode)
 	if (TMath::Abs(fArrDZ[fNCl])>kMaxResid-kEps) continue;
 	//
 	if (fArrX[fNCl]<kMinX || fArrX[fNCl]>kMaxX) continue;
-	if (TMath::Abs(fArrZCl[fNCl])>kZLim) continue;;
+	if (TMath::Abs(fArrZCl[fNCl])>kZLim[side]) continue;;
 	//
 	// End of manipulations to go to the sector frame
 	//
@@ -1980,11 +1980,11 @@ float AliTPCDcalibRes::GetDriftCorrection(float z, float x, float phi, int rocID
 {
   // apply vdrift correction
   int side = ((rocID/kNSect)&0x1) ? -1:1; // C:A
-  float drift = side>0 ? kZLim-z : z+kZLim;
+  float drift = side>0 ? kZLim[side]-z : z+kZLim[side];
   float gy    = TMath::Sin(phi)*x;
   Double_t pvecFit[3];
   pvecFit[0]= side;             // z shift (cm)
-  pvecFit[1]= drift*gy/kZLim;   // global y gradient
+  pvecFit[1]= drift*gy/kZLim[side];   // global y gradient
   pvecFit[2]= drift;            // drift length
   float expected = (fVDriftParam==NULL) ? 0:
     (*fVDriftParam)[0]+

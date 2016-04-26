@@ -395,7 +395,7 @@ protected:
   static const float kMinX;   // min X to cover
   static const float kMaxX;   // max X to cover
   static const float kMaxZ2X;   // max z/x
-  static const float kZLim;   // endcap position
+  static const float kZLim[2];   // endcap positions
   static const char* kLocalResFileName;
   static const char* kClosureTestFileName;
   static const char* kStatOut;

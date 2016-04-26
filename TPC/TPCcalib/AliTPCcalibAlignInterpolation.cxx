@@ -878,7 +878,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   // 0.) Load current information file and bookd variables
   // 
   const Int_t nSec=81;         // 72 sector +5 sumarry info+ 4 medians +
-  const Double_t kMaxZ=250;
+  const Double_t kMaxZSect[2]={2.49725e+02,2.49698e+02};
   TVectorF meanNcl(nSec);      // mean current estator ncl per sector
   TVectorF meanNclUsed(nSec);  // mean current estator ncl per sector
   Double_t meanTime=0, maxTime=startTime, minTime=stopTime;
@@ -1145,15 +1145,16 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  xxx[kSect] = sector;
 	  xxx[kLocX] = localX;
 	  Double_t side=-1.+2.*((rocID%36)<18);
+	  double maxZ = kMaxZSect[side<0];
 	  xxx[kZ2X] = (zUse*side)<-1 ? side*0.001 : zUse/localX; // do not mix z on A side and C side ?? RS
 	  // apply drift velocity calibration if available
 	  
 	  if (ihis>2){  // if z residuals and vdrift calibration existing
-	    Double_t drift = (side>0) ? kMaxZ-zUse : zUse+kMaxZ;
+	    Double_t drift = (side>0) ? maxZ-zUse : zUse+maxZ;
 	    Double_t gy    = TMath::Sin(phiUse)*localX;
 	    Double_t pvecFit[3];
 	    pvecFit[0]= side;             // z shift (cm)
-	    pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+	    pvecFit[1]= drift*gy/maxZ;   // global y gradient
 	    pvecFit[2]= drift;            // drift length
 	    Double_t expected = (vdriftParam!=NULL) ? (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2]:0;
 	    deltaRefUse= side*(deltaRefUse*side-(expected+corrTime*drift));
@@ -1710,7 +1711,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   Int_t maxEntries=1000000;
   Int_t maxPointsRobust=4000000;
   //
-  const Double_t kMaxZ=250;
+  const Double_t kMaxZSect[2]={2.49725e+02,2.49698e+02};
   TCut  selection="";
   Int_t entriesAll=0;
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
@@ -1901,13 +1902,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
 	Double_t side  = -1.+((sector%36)<18)*2.;
 	Double_t z= (*vecZ)[ipoint];
-	Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
-	if (drift>kMaxZ) continue;
+	double maxZ = kMaxZSect[side<0];
+	Double_t drift = (side>0) ? maxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+maxZ;
+	if (drift>maxZ) continue;
 	Double_t phi   = (*vecPhi)[ipoint];
 	Double_t gy    = TMath::Sin(phi)*radius;
 	Float_t tofBC=(*vecTOFBC)[ipoint];
 	pvecFit[0]= side;             // z shift (cm)
-	pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+	pvecFit[1]= drift*gy/maxZ;   // global y gradient
 	pvecFit[2]= drift;            // drift length
 	Double_t dZTOF=(*deltaZTOF)[ipoint];
 	Double_t dZTRD=(*deltaZTRD)[ipoint];
@@ -2093,12 +2095,13 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
       Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
       Double_t side  = -1.+((sector%36)<18)*2.;
       Double_t z= (*vecZ)[ipoint];
-      Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
-      if (drift>kMaxZ) continue;
+      double maxZ = kMaxZSect[side<0];
+      Double_t drift = (side>0) ? maxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+maxZ;
+      if (drift>maxZ) continue;
       Double_t phi   = (*vecPhi)[ipoint];
       Double_t gy    = TMath::Sin(phi)*radius;
       pvecFit[0]= side;             // z shift (cm)
-      pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+      pvecFit[1]= drift*gy/maxZ;   // global y gradient
       pvecFit[2]= drift;            // drift length
       Double_t expected = paramRobust[0]+paramRobust[1]*pvecFit[0]+paramRobust[2]*pvecFit[1]+paramRobust[3]*pvecFit[2];
       Int_t time=(*vecTime)[ipoint];
@@ -2108,14 +2111,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	if (TMath::Abs(dZTOF-expected)<kMaxDist1) {
 	  dZTOF *= side;
 	  //      fitterTOF->AddPoint(pvecFit,dZTOF,1);
-	  hisTOF.Fill(time,(dZTOF-expected)/drift,drift/kMaxZ); 
+	  hisTOF.Fill(time,(dZTOF-expected)/drift,drift/maxZ); 
 	}
       }
       Double_t dZTRD=(*deltaZTRD)[ipoint];
       if ( dZTRD>kInvalidRes) {
 	if (TMath::Abs(dZTRD-expected)<kMaxDist1) {
 	  //fitterTOF->AddPoint(pvecFit,dZTRD,1);	
-	  hisTRD.Fill(time,(dZTRD-expected)/drift,drift/kMaxZ); 
+	  hisTRD.Fill(time,(dZTRD-expected)/drift,drift/maxZ); 
 	}
       }  
 
