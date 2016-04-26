@@ -20,7 +20,7 @@
 // igor.lakomov@cern.ch
 
 // aliroot
-#include "AliAnalysisTaskCFTree.h"§
+#include "AliAnalysisTaskCFTree.h"
 #include "AliCFParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
