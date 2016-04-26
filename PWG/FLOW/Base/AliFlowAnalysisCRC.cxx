@@ -294,6 +294,7 @@ fFlowQCList(NULL),
 fFlowQCCenBin(100),
 fFlowSPVZList(NULL),
 fVariousList(NULL),
+fCenWeightEbE(0.),
 fQAZDCCuts(kFALSE),
 fQAZDCCutsFlag(kTRUE),
 fMinMulZN(0),
@@ -800,13 +801,13 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         } // end of for (Int_t h=0;h<fCRCnHar;h++)
         
         // Flow SP ZDC
-        Int_t subev = (dEta<0. ? 0:1);
-        for (Int_t h=0;h<fFlowNHarmMax;h++) {
-          fPtDiffQRe[subev][h]->Fill(dPt,wPhiEta*TMath::Cos((h+1.)*dPhi));
-          fPtDiffQIm[subev][h]->Fill(dPt,wPhiEta*TMath::Sin((h+1.)*dPhi));
+        for (Int_t k=0; k<fQVecPower; k++) {
+          for (Int_t h=0;h<fFlowNHarmMax;h++) {
+            fPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+            fPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+            fPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
+          }
         }
-        fPtDiffMul[subev][0]->Fill(dPt,1);
-        fPtDiffMul[subev][1]->Fill(dPt,wPhiEta);
         
         for (Int_t h=0;h<fFlowNHarmMax;h++) {
           fEtaDiffQRe[h]->Fill(dEta,wPhiEta*TMath::Cos((h+1.)*dPhi));
@@ -15930,6 +15931,8 @@ void AliFlowAnalysisCRC::InitializeCostantsForCRC()
   }
   
   fZDCESENBins = 90;
+  fZDCESELCtot = 1.113523e+02;
+  fZDCESELCtot = 1.078432e+02;
   
 } // end of AliFlowAnalysisCRC::InitializeCostantsForCRC()
 
@@ -16300,7 +16303,7 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
 
 void AliFlowAnalysisCRC::InitializeArraysForFlowEbE()
 {
-  for (Int_t c=0;c<2;c++) {
+  for (Int_t c=0;c<fQVecPower;c++) {
     for (Int_t h=0;h<fFlowNHarmMax;h++) {
       fPtDiffQRe[c][h] = NULL;
       fPtDiffQIm[c][h] = NULL;
@@ -17926,13 +17929,13 @@ void AliFlowAnalysisCRC::RecenterCRCQVec()
 {
   // fill profiles uncorrected q-vectors
   Double_t Q2Re=0., Q2Im=0., QM=0.;
-  for (Int_t c=0;c<2;c++) {
+
     for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
-      Q2Re += fPtDiffQRe[c][1]->GetBinContent(pt);
-      Q2Im += fPtDiffQIm[c][1]->GetBinContent(pt);
-      QM   += fPtDiffMul[c][0]->GetBinContent(pt);
+      Q2Re += fPtDiffQRe[1][1]->GetBinContent(pt);
+      Q2Im += fPtDiffQIm[1][1]->GetBinContent(pt);
+      QM   += fPtDiffMul[1][0]->GetBinContent(pt);
     }
-  }
+  
   if(QM>0) {
     fCRCQ2Re[fRunBin]->Fill(fCentralityEBE,Q2Re/QM);
     fCRCQ2Im[fRunBin]->Fill(fCentralityEBE,Q2Im/QM);
@@ -18097,20 +18100,16 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   
   Double_t DC=0.,LC=0.,DA=0.,LA=0.;
   if(fMinMulZN==5) {
-    if(fCentralityEBE<45.) {
-      fPolDist[0]->SetParameter(0,fCentralityEBE);
-      fPolDist[0]->SetParameter(1,ZCM);
-      DC = fPolDist[0]->GetMinimum(0.,45.);
-      DC *= (ZCM<fPolAv[0]->Eval(fCentralityEBE)?-1.:1.);
-      LC = fPolInt[0]->Integral(0.,fPolDist[0]->GetMinimumX(0.,45.));
-      fPolDist[1]->SetParameter(0,fCentralityEBE);
-      fPolDist[1]->SetParameter(1,ZAM);
-      DA = fPolDist[1]->GetMinimum(0.,45.);
-      DA *= (ZAM<fPolAv[1]->Eval(fCentralityEBE)?-1.:1.);
-      LA = fPolInt[1]->Integral(0.,fPolDist[1]->GetMinimumX(0.,45.));
-    } else {
-     PassZDCcuts = kFALSE;
-    }
+    fPolDist[0]->SetParameter(0,fCentralityEBE);
+    fPolDist[0]->SetParameter(1,ZCM);
+    DC = fPolDist[0]->GetMinimum(0.,45.);
+    DC *= (ZCM<fPolAv[0]->Eval(fCentralityEBE)?-1.:1.);
+    LC = fPolInt[0]->Integral(0.,fPolDist[0]->GetMinimumX(0.,45.));
+    fPolDist[1]->SetParameter(0,fCentralityEBE);
+    fPolDist[1]->SetParameter(1,ZAM);
+    DA = fPolDist[1]->GetMinimum(0.,45.);
+    DA *= (ZAM<fPolAv[1]->Eval(fCentralityEBE)?-1.:1.);
+    LA = fPolInt[1]->Integral(0.,fPolDist[1]->GetMinimumX(0.,45.));
   }
   
   // cut on centroid position
@@ -18134,8 +18133,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhCenvsMul[1]->Fill(fNumberOfPOIsEBE,fCentralityVarEBE);
     fhZNvsMul[0]->Fill(fNumberOfPOIsEBE,ZCM);
     fhZNvsMul[1]->Fill(fNumberOfPOIsEBE,ZAM);
-    fhImpvsNcol[0]->Fill(LC,DC);
-    fhImpvsNcol[1]->Fill(LA,DA);
+    if(fhImpvsNcol[0]->GetXaxis()->FindBin(LC)<=fZDCESENBins/2) fhImpvsNcol[0]->Fill(LC,DC);
+    if(fhImpvsNcol[1]->GetXaxis()->FindBin(LA)<=fZDCESENBins/2) fhImpvsNcol[1]->Fill(LA,DA);
     fhZNQVecCov[0]->Fill(fCentralityEBE,ZCRe*ZARe);
     fhZNQVecCov[1]->Fill(fCentralityEBE,ZCIm*ZAIm);
     fhZNQVecCov[2]->Fill(fCentralityEBE,ZCRe*ZAIm);
@@ -19255,20 +19254,16 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
     
     // reference flow
     Double_t QRe=0., QIm=0., QMraw=0., QM=0.;
-    for (Int_t c=0;c<2;c++) {
-      for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
-        QRe += fPtDiffQRe[c][0]->GetBinContent(pt);
-        QIm += fPtDiffQIm[c][0]->GetBinContent(pt);
-        QMraw += fPtDiffMul[c][0]->GetBinContent(pt);
-        QM  += fPtDiffMul[c][1]->GetBinContent(pt);
-      }
+    for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
+      QRe += fPtDiffQRe[1][0]->GetBinContent(pt);
+      QIm += fPtDiffQIm[1][0]->GetBinContent(pt);
+      QMraw += fPtDiffMul[0][0]->GetBinContent(pt);
+      QM  += fPtDiffMul[1][0]->GetBinContent(pt);
     }
     Double_t Q2Re=0., Q2Im=0.;
-    for (Int_t c=0;c<2;c++) {
-      for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
-        Q2Re += fPtDiffQRe[c][1]->GetBinContent(pt);
-        Q2Im += fPtDiffQIm[c][1]->GetBinContent(pt);
-      }
+    for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
+      Q2Re += fPtDiffQRe[1][1]->GetBinContent(pt);
+      Q2Im += fPtDiffQIm[1][1]->GetBinContent(pt);
     }
     //   Double_t Q2ARe=0., Q2AIm=0., QMA=0., Q2CRe=0., Q2CIm=0., QMC=0.;
     //   for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
@@ -19373,10 +19368,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
       FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(pt+1);
       Double_t qpRe=0.,qpIm=0.,qpMraw=0.,qpM=0.;
       for (Int_t c=0;c<2;c++) {
-        qpRe += fPtDiffQRe[c][hr+1]->GetBinContent(pt+1);
-        qpIm += fPtDiffQIm[c][hr+1]->GetBinContent(pt+1);
-        qpMraw += fPtDiffMul[c][0]->GetBinContent(pt+1);
-        qpM  += fPtDiffMul[c][1]->GetBinContent(pt+1);
+        qpRe += fPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
+        qpIm += fPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
+        qpMraw += fPtDiffMul[0][0]->GetBinContent(pt+1);
+        qpM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
       }
       
       if(qpMraw>0) {
@@ -19485,31 +19480,41 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     
-    Double_t QRe=0., QIm=0., QMraw=0., QM=0., Q2Re=0., Q2Im=0.;
-    for (Int_t c=0;c<2;c++) {
-      for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-        QRe += fPtDiffQRe[c][hr+1]->GetBinContent(pt+1);
-        QIm += fPtDiffQIm[c][hr+1]->GetBinContent(pt+1);
-        QMraw += fPtDiffMul[c][0]->GetBinContent(pt+1);
-        QM  += fPtDiffMul[c][1]->GetBinContent(pt+1);
-        Q2Re += fPtDiffQRe[c][2*(hr+1)]->GetBinContent(pt+1);
-        Q2Im += fPtDiffQIm[c][2*(hr+1)]->GetBinContent(pt+1);
-      }
-    }
+    Double_t QRe=0., QIm=0., Q2Re2=0., Q2Im2=0., QRe3=0., QIm3=0., QMraw=0., QM0=0., QM=0., QM2=0., QM3=0., QM4=0.;
     
-    Double_t IQM2 = QM*(QM-1);
-    if(QMraw>1) {
-      Double_t IQC2 = (QRe*QRe+QIm*QIm-QM)/(QM*(QM-1.));
+      for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
+        QRe += fPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
+        QIm += fPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
+        Q2Re2 += fPtDiffQRe[2][2*hr+3]->GetBinContent(pt+1);
+        Q2Im2 += fPtDiffQIm[2][2*hr+3]->GetBinContent(pt+1);
+        QRe3 += fPtDiffQRe[3][hr+1]->GetBinContent(pt+1);
+        QIm3 += fPtDiffQIm[3][hr+1]->GetBinContent(pt+1);
+        
+        QM0 += fPtDiffMul[0][0]->GetBinContent(pt+1);
+        QM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
+        QM2  += fPtDiffMul[2][0]->GetBinContent(pt+1);
+        QM3  += fPtDiffMul[3][0]->GetBinContent(pt+1);
+        QM4  += fPtDiffMul[4][0]->GetBinContent(pt+1);
+      }
+    
+    Double_t IQM2 = QM*QM-QM2;
+    if(QM0>1) {
+      Double_t IQC2 = (QRe*QRe+QIm*QIm-QM2)/IQM2;
       fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(1),IQC2,IQM2*fCenWeightEbE);
       fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2,IQM2);
       fFlowQCMulCorPro[hr][0]->Fill(fNumberOfPOIsEBE,IQC2,IQM2);
     }
     
-    Double_t IQM4 = QM*(QM-1)*(QM-2)*(QM-3);
-    if(QMraw>3) {
-      Double_t reQ2nQ1nstarQ1nstar = pow(QRe,2.)*Q2Re+2.*QRe*QIm*Q2Im-pow(QIm,2.)*Q2Re;
-      Double_t IQC4 = (2.*QM*(QM-3.)+pow((pow(QRe,2.)+pow(QIm,2.)),2.)-4.*(QM-2.)*(pow(QRe,2.)
-                                                                                   + pow(QIm,2.))-2.*reQ2nQ1nstarQ1nstar+(pow(Q2Re,2.)+pow(Q2Im,2.))) / IQM4;
+    Double_t IQM4 = pow(QM,4.)-6.*QM2*QM*QM+8.*QM3*QM+3.*QM2*QM2-6.*QM4;
+    
+    if(QM0>3) {
+      Double_t IQC4 = (pow(pow(QRe,2.)+pow(QIm,2.),2)
+                       - 2.*(pow(QRe,2.)*Q2Re2+2.*QRe*QIm*Q2Im2-pow(QIm,2.)*Q2Re2)
+                       + 8.*(QRe3*QRe+QIm3*QIm)
+                       + (pow(Q2Re2,2)+pow(Q2Im2,2))
+                       - 4.*QM2*(pow(QRe,2)+pow(QIm,2))
+                       - 6.*QM4 + 2.*QM2*QM2) / IQM4;
+      
       fFlowQCCorPro[fCenBin][hr][0]->Fill(fPtDiffQRe[0][0]->GetBinCenter(2),IQC4,IQM4*fCenWeightEbE);
       fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4,IQM4);
       fFlowQCMulCorPro[hr][1]->Fill(fNumberOfPOIsEBE,IQC4,IQM4);
@@ -19518,36 +19523,41 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
       
       FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(pt+1);
-      Double_t qpRe=0., qpIm=0., qpMraw=0., qpM=0., qp2Re=0., qp2Im=0.;
-      for (Int_t c=0;c<2;c++) {
-        qpRe += fPtDiffQRe[c][hr+1]->GetBinContent(pt+1);
-        qpIm += fPtDiffQIm[c][hr+1]->GetBinContent(pt+1);
-        qpMraw += fPtDiffMul[c][0]->GetBinContent(pt+1);
-        qpM  += fPtDiffMul[c][1]->GetBinContent(pt+1);
-        qp2Re += fPtDiffQRe[c][2*(hr+1)]->GetBinContent(pt+1);
-        qp2Im += fPtDiffQIm[c][2*(hr+1)]->GetBinContent(pt+1);
-      }
+      Double_t qpRe0=0., qpIm0=0., qpRe2=0., qpIm2=0., qp2Re=0., qp2Im=0., qpM0=0., qpM=0., qpM2=0., qpM3=0.;
       
-      Double_t dQM2 = qpM*(QM-1.);
-      if(qpMraw>1 && QMraw>1) {
-        Double_t dQC2 = (qpRe*QRe+qpIm*QIm-qpM)/dQM2;
+      qpRe0 += fPtDiffQRe[0][hr+1]->GetBinContent(pt+1);
+      qpIm0 += fPtDiffQIm[0][hr+1]->GetBinContent(pt+1);
+      qpRe2 += fPtDiffQRe[2][hr+1]->GetBinContent(pt+1);
+      qpIm2 += fPtDiffQIm[2][hr+1]->GetBinContent(pt+1);
+      qp2Re += fPtDiffQRe[1][2*hr+3]->GetBinContent(pt+1);
+      qp2Im += fPtDiffQIm[1][2*hr+3]->GetBinContent(pt+1);
+      
+      qpM0 += fPtDiffMul[0][0]->GetBinContent(pt+1);
+      qpM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
+      qpM2 += fPtDiffMul[2][0]->GetBinContent(pt+1);
+      qpM3 += fPtDiffMul[3][0]->GetBinContent(pt+1);
+      
+      Double_t dQM2 = qpM0*QM-qpM;
+      if(qpM0>1 && QM0>1) {
+        Double_t dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
         fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
       }
       
-      Double_t dQM4 = qpM*(QM-1.)*(QM-2.)*(QM-3.);
-      if(qpMraw>1 && QMraw>3) {
-        Double_t dQC4 = ((QRe*QRe+QIm*QIm)*(qpRe*QRe+qpIm*QIm)
-                         - qp2Re*(QRe*QRe-QIm*QIm)
+      Double_t dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
+      
+      if(qpM0>1 && QM0>3) {
+        Double_t dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
+                         - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
                          - 2.*qp2Im*QRe*QIm
-                         - qpRe*(QRe*Q2Re+QIm*Q2Im)
-                         + qpIm*(QIm*Q2Re-QRe*Q2Im)
-                         - 2.*QM*(qpRe*QRe+qpIm*QIm)
-                         - 2.*(QRe*QRe+QIm*QIm)*qpM
-                         + 6.*(qpRe*QRe+qpIm*QIm)
-                         + 1.*(qp2Re*Q2Re+qp2Im*Q2Im)
-                         + 2.*(qpRe*QRe+qpIm*QIm)
-                         + 2.*qpM*QM
-                         - 6.*qpM) / dQM4;
+                         - qpRe0*(QRe*Q2Re2+QIm*Q2Im2)
+                         + qpIm0*(QIm*Q2Re2-QRe*Q2Im2)
+                         - 2.*QM2*(qpRe0*QRe+qpIm0*QIm)
+                         - 2.*(pow(QRe,2.)+pow(QIm,2.))*qpM
+                         + 6.*(qpRe2*QRe+qpIm2*QIm)
+                         + 1.*(qp2Re*Q2Re2+qp2Im*Q2Im2)
+                         + 2.*(qpRe0*QRe3+qpIm0*QIm3)
+                         + 2.*qpM*QM2
+                         - 6.*qpM3) / dQM4;
         fFlowQCCorPro[fCenBin][hr][2]->Fill(FillPtBin,dQC4,dQM4*fCenWeightEbE);
       }
       
@@ -19602,14 +19612,13 @@ void AliFlowAnalysisCRC::CalculateFlowSPVZ()
     Double_t FillPtBin = 0.;
     
     Double_t QRe=0., QIm=0., QMraw=0., QM=0.;
-    for (Int_t c=0;c<2;c++) {
+    
       for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-        QRe += fPtDiffQRe[c][hr+1]->GetBinContent(pt+1);
-        QIm += fPtDiffQIm[c][hr+1]->GetBinContent(pt+1);
-        QMraw += fPtDiffMul[c][0]->GetBinContent(pt+1);
-        QM  += fPtDiffMul[c][1]->GetBinContent(pt+1);
+        QRe += fPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
+        QIm += fPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
+        QMraw += fPtDiffMul[0][0]->GetBinContent(pt+1);
+        QM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
       }
-    }
     
     if(QMraw>0) {
       FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(1);
@@ -19636,12 +19645,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPVZ()
       
       FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(pt+1);
       Double_t qpRe=0., qpIm=0., qpM=0., qpMraw=0.;
-      for (Int_t c=0;c<2;c++) {
-        qpRe += fPtDiffQRe[c][hr+1]->GetBinContent(pt+1);
-        qpIm += fPtDiffQIm[c][hr+1]->GetBinContent(pt+1);
-        qpMraw  += fPtDiffMul[c][0]->GetBinContent(pt+1);
-        qpM  += fPtDiffMul[c][1]->GetBinContent(pt+1);
-      }
+        qpRe += fPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
+        qpIm += fPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
+        qpMraw  += fPtDiffMul[0][0]->GetBinContent(pt+1);
+        qpM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
       
       if(qpMraw>0) {
         // Normalize TPC Q-vector
@@ -19679,12 +19686,11 @@ void AliFlowAnalysisCRC::FillVarious()
   fVtxHist[1]->Fill(fCentralityEBE,fVtxPos[1]);
   fVtxHist[2]->Fill(fCentralityEBE,fVtxPos[2]);
   
-  if(fUseZDC) {
+  if(fUseZDC && fUseVZERO) {
     
     Double_t VCRe, VCIm, VCM;
     Double_t VARe, VAIm, VAM;
-    
-    if (fUseVZERO) {
+
       // VZ-C eta < 0
       VCRe = fVZFlowVect[0][1].X();
       VCIm = fVZFlowVect[0][1].Y();
@@ -19693,18 +19699,6 @@ void AliFlowAnalysisCRC::FillVarious()
       VARe = fVZFlowVect[1][1].X();
       VAIm = fVZFlowVect[1][1].Y();
       VAM  = fVZFlowVect[1][1].GetMult();
-    } else {
-      for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
-        VARe += fPtDiffQRe[1][1]->GetBinContent(pt);
-        VAIm += fPtDiffQIm[1][1]->GetBinContent(pt);
-        VAM  += fPtDiffMul[1][1]->GetBinContent(pt);
-      }
-      for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
-        VCRe += fPtDiffQRe[0][1]->GetBinContent(pt);
-        VCIm += fPtDiffQIm[0][1]->GetBinContent(pt);
-        VCM  += fPtDiffMul[0][1]->GetBinContent(pt);
-      }
-    }
     
     // ZDC-C (eta < -8.8)
     Double_t ZCRe = fZDCFlowVect[0].X();
@@ -25698,15 +25692,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
         for (Int_t p=0; p<=9; p++) {
           fPolDist[k]->SetParameter(p+2,fPolAv[k]->GetParameter(p));
         }
-        
-        if(k==0) fZDCESELCtot = fPolInt[k]->Integral(0.,90.);
-        if(k==1) fZDCESELAtot = fPolInt[k]->Integral(0.,90.);
       }
       fVariousList->Add(fPolAv[k]);
       fVariousList->Add(fPolDer[k]);
       fVariousList->Add(fPolInt[k]);
       fVariousList->Add(fPolDist[k]);
-      
     }
   }
   
@@ -25993,7 +25983,7 @@ void AliFlowAnalysisCRC::BookEverythingForFlowSPZDC()
 void AliFlowAnalysisCRC::BookEverythingForFlowEbE()
 {
   // EbE quantities
-  for (Int_t c=0;c<2;c++) {
+  for (Int_t c=0;c<fQVecPower;c++) {
     for (Int_t h=0;h<fFlowNHarmMax;h++) {
       fPtDiffQRe[c][h] = new TH1D(Form("fPtDiffQRe[%d][%d]",c,h),Form("fPtDiffQRe[%d][%d]",c,h),fPtDiffNBins,fCRCPtBins);
       fTempList->Add(fPtDiffQRe[c][h]);
@@ -27501,7 +27491,7 @@ void AliFlowAnalysisCRC::ResetEventByEventQuantities()
     }
   }
   // FlowSPZDC
-  for(Int_t c=0;c<2;c++) {
+  for(Int_t c=0;c<fQVecPower;c++) {
     for (Int_t h=0;h<fFlowNHarmMax;h++) {
       if(fPtDiffQRe[c][h]) fPtDiffQRe[c][h]->Reset();
       if(fPtDiffQIm[c][h]) fPtDiffQIm[c][h]->Reset();
