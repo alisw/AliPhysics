@@ -23,12 +23,12 @@ public:
     AliMESevShape();
     AliMESevShape(const char* name, const char* title);
     ~AliMESevShape() {};
-    
+
     Double_t  GetDirectivity(Bool_t dp) const { return dp?fDir[0]:fDir[1]; }
-    Double_t  GetSphericity() const           { return fSphericity; }  
-    Double_t  GetThrust(Double_t &phi) const  { phi=fThrust[1]; return fThrust[0]; }  
-    Double_t  GetRecoil() const               { return fRecoil; }  
-    const Double_t* GetFW() const             { return fFW; }  
+    Double_t  GetSphericity() const           { return fSphericity; }
+    Double_t  GetThrust(Double_t &phi) const  { phi=fThrust[1]; return fThrust[0]; }
+    Double_t  GetRecoil() const               { return fRecoil; }
+    const Double_t* GetFW() const             { return fFW; }
     Double_t  GetFW(Int_t mom) const          { return mom>=0&&mom<FW_MAX_ORDER?fFW[mom]:0.; }
     Double_t  GetMomLeading(Bool_t px=kTRUE) const { return px?fPxyLead[0]:fPxyLead[1]; }
   protected:
@@ -43,12 +43,12 @@ public:
     Double_t  fPxyLead[2];           // px & py of the leading particle
   private:
     AliMESevShape &operator=(const AliMESevShape &evs);
-    ClassDef(AliMESevShape, 1)       // Event shape descriptor for MES 
+    ClassDef(AliMESevShape, 1)       // Event shape descriptor for MES
   };
 //   enum EMESevStat{
 //      kPileUp=BIT(14)   // PileUp flag
-//     ,kAny=BIT(15)      // any other flag TODO    
-//   };  
+//     ,kAny=BIT(15)      // any other flag TODO
+//   };
   enum EMESmultId{
      kGlob08=0    // Global multiplicity for eta in (-0.8,0.8)
     ,kComb        // Combined multiplicity
@@ -73,16 +73,22 @@ public:
   Int_t           GetQuality() const               { return fQuality; }
   Double_t        GetVertexZ() const               { return fVertexZ;}
 
-  Bool_t          IsPileUp() const                 { return TESTBIT(fQuality, kPileUp); }  
-  Bool_t          HasTriggerMB() const             { return TESTBIT(fQuality, kMBtrigger);}  
-  Bool_t          HasTriggerHM() const             { return TESTBIT(fQuality, kHMtrigger);}  
-  Bool_t          HasVertex() const                { return TESTBIT(fQuality, kVertex);}  
-  Bool_t          HasVertexGlobal() const          { return TESTBIT(fQuality, kVertexType);}  
-  Bool_t          HasVertexITS() const             { return !HasVertexGlobal();}  
+  Bool_t          IsPileUp() const                 { return TESTBIT(fQuality, kPileUp); }
+  Bool_t          HasTriggerMB() const             { return TESTBIT(fQuality, kMBtrigger);}
+  Bool_t          HasTriggerHM() const             { return TESTBIT(fQuality, kHMtrigger);}
+  Bool_t          HasVertex() const                { return TESTBIT(fQuality, kVertex);}
+  Bool_t          HasVertexGlobal() const          { return TESTBIT(fQuality, kVertexType);}
+  Bool_t          HasVertexITS() const             { return !HasVertexGlobal();}
 
   void            Print(Option_t *o = "") const;         // *MENU*
-  Bool_t          MakeShape(TObjArray* tracks);
-  
+  // Bool_t          MakeShape(TObjArray* tracks);
+  Bool_t          MakeDirectivity(TObjArray* tracks);
+  Bool_t          MakeThrust(TObjArray* tracks);
+  Bool_t          MakeSphericity(TObjArray* tracks);
+  Bool_t          MakeRecoil(TObjArray* tracks);
+  Bool_t          MakeFoxWolframMoments(TObjArray* tracks);
+  Bool_t          FindLeadingParticle(TObjArray* tracks);
+
   static Double_t Directivity(TObjArray* tracks, Bool_t etaSign);
   static Bool_t   LeadingParticleDirection(TObjArray* tracks, Double_t pxy[2]);
   static Bool_t   Thrust(TObjArray* tracks, Double_t t[2]);
@@ -101,11 +107,11 @@ public:
   void            SetVertex()                      { SETBIT(fQuality, kVertex);}
   void            SetVertexGlob()                  { SETBIT(fQuality, kVertexType);}
   void            SetVertexZ(Double_t z)           { fVertexZ = z; }
-private:  
+private:
   AliMESeventInfo(const AliMESeventInfo &event);
   AliMESeventInfo &operator=(const AliMESeventInfo &event);
 
-  UChar_t        fQuality;              // 
+  UChar_t        fQuality;              //
   Double_t       fMultiplicity[kNmult]; // multiplicity estimators
   Double_t       fVertexZ;              // z coordinate of vertex
   AliMESevShape  fEvShape;              // event shape descriptor
