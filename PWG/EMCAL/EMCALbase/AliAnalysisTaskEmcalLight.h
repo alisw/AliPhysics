@@ -132,6 +132,10 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   void                        SetPtHardBin(Int_t pt)                                { fSelectPtHardBin   = pt                             ; }
+  void                        AddAcceptedTriggerClass(const char* trigClass)        { fAcceptedTriggerClasses.Add(new TObjString(trigClass)); }
+  void                        AddRejectedTriggerClass(const char* trigClass)        { fRejectedTriggerClasses.Add(new TObjString(trigClass)); }
+  void                        ClearAcceptedTriggerClasses()                         { fAcceptedTriggerClasses.Clear()                     ; }
+  void                        ClearRejectedTriggerClasses()                         { fRejectedTriggerClasses.Clear()                     ; }
 
  protected:  
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -207,6 +211,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Int_t                       fMinNTrack;                  ///< minimum nr of tracks in event with pT>fTrackPtCut
   Double_t                    fMinPtTrackInEmcal;          ///< min pt track in emcal
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
+  TObjArray                   fAcceptedTriggerClasses;     ///< list of accepted trigger classes
+  TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
 
   // Service fields
   Bool_t                      fInitialized;                //!<!whether or not the task has been already initialized
@@ -225,6 +231,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Int_t                       fNVertCont;                  //!<!event vertex number of contributors
   Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
   ULong_t                     fFiredTriggerBitMap;         //!<!bit map of fired triggers
+  TString                     fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Double_t                    fPtHard;                     //!<!event pt hard

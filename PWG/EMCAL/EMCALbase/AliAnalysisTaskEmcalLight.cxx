@@ -82,6 +82,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fMinNTrack(0),
   fMinPtTrackInEmcal(0),
   fSelectPtHardBin(-999),
+  fAcceptedTriggerClasses(),
+  fRejectedTriggerClasses(),
   fInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -96,6 +98,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fNVertCont(0),
   fNVertSPDCont(0),
   fFiredTriggerBitMap(0),
+  fFiredTriggerClasses(),
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
@@ -163,6 +166,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fMinNTrack(0),
   fMinPtTrackInEmcal(0),
   fSelectPtHardBin(-999),
+  fAcceptedTriggerClasses(),
+  fRejectedTriggerClasses(),
   fInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
@@ -177,6 +182,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fNVertCont(0),
   fNVertSPDCont(0),
   fFiredTriggerBitMap(0),
+  fFiredTriggerClasses(),
   fBeamType(kNA),
   fPythiaHeader(0),
   fPtHard(0),
@@ -739,6 +745,34 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
     return kFALSE;
   }
 
+  Bool_t acceptedTrgClassFound = kFALSE;
+  if (fAcceptedTriggerClasses.GetEntriesFast() > 0) {
+    TIter acceptedTrigger(&fAcceptedTriggerClasses);
+    TObject* obj = 0;
+    while ((obj = acceptedTrigger())) {
+      if (fFiredTriggerClasses.Contains(obj->GetName())) {
+        acceptedTrgClassFound = kTRUE;
+        break;
+      }
+    }
+  }
+
+  if (!acceptedTrgClassFound) {
+    if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (acc)",1);
+    return kFALSE;
+  }
+
+  if (fRejectedTriggerClasses.GetEntriesFast() > 0) {
+    TIter rejectedTrigger(&fRejectedTriggerClasses);
+    TObject* obj = 0;
+    while ((obj = rejectedTrigger())) {
+      if (fFiredTriggerClasses.Contains(obj->GetName())) {
+        if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (rej)",1);
+        return kFALSE;
+      }
+    }
+  }
+
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent < fMinCent || fCent > fMaxCent) {
       if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1);
@@ -875,14 +909,13 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
   fVertexSPD[2] = 0;
   fNVertSPDCont = 0;
 
-  const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
-  if (eev) {
-    fFiredTriggerBitMap = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  } else {
-    const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
-    if (aev) {
-      fFiredTriggerBitMap = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
-    }
+  fFiredTriggerClasses = InputEvent()->GetFiredTriggerClasses();
+
+  if (fDataType == kESD) {
+    fFiredTriggerBitMap = static_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();
+  }
+  else {
+    fFiredTriggerBitMap = static_cast<AliVAODHeader*>(InputEvent()->GetHeader())->GetOfflineTrigger();
   }
 
   const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
