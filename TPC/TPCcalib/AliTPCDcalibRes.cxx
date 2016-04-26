@@ -1981,11 +1981,11 @@ float AliTPCDcalibRes::GetDriftCorrection(float z, float x, float phi, int rocID
 {
   // apply vdrift correction
   int side = ((rocID/kNSect)&0x1) ? -1:1; // C:A
-  float drift = side>0 ? kZLim[side]-z : z+kZLim[side];
+  float drift = side>0 ? kZLim[0]-z : z+kZLim[1];
   float gy    = TMath::Sin(phi)*x;
   Double_t pvecFit[3];
   pvecFit[0]= side;             // z shift (cm)
-  pvecFit[1]= drift*gy/kZLim[side];   // global y gradient
+  pvecFit[1]= drift*gy/kZLim[side<0];   // global y gradient
   pvecFit[2]= drift;            // drift length
   float expected = (fVDriftParam==NULL) ? 0:
     (*fVDriftParam)[0]+
