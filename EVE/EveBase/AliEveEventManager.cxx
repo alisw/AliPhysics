@@ -505,7 +505,9 @@ void AliEveEventManager::AfterNewEventLoaded()
     else if(fCurrentData->fRawReader){
         InitOCDB(fCurrentData->fRawReader->GetRunNumber());
     }
-        
+    AliEveMultiView *mv = AliEveMultiView::Instance();
+    mv->DestroyAllEvents();
+    
 
     cout<<"\n\n--------- AliEveEventManager::AfterNewEventLoaded ---------\n\n"<<endl;
     
@@ -578,7 +580,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         Double_t x[3] = { 0, 0, 0 };
         
         AliESDEvent *esd = fCurrentData->fESD;
-        
         esd->GetPrimaryVertex()->GetXYZ(x);
         
         TTimeStamp ts(esd->GetTimeStamp());
@@ -589,25 +590,6 @@ void AliEveEventManager::AfterNewEventLoaded()
         win_title += "; Run: ";
         win_title += esd->GetRunNumber();
         gEve->GetBrowser()->SetWindowName(win_title);
-        
-        TEveElement* top = gEve->GetCurrentEvent();
-        
-        AliEveMultiView *mv = AliEveMultiView::Instance();
-        
-        mv->ImportEventRPhi(top);
-        mv->ImportEventRhoZ(top);
-        
-        gEve->GetBrowser()->RaiseWindow();
-        gEve->FullRedraw3D();
-        gSystem->ProcessEvents();
-        
-        bool saveViews = settings.GetValue("ALICE_LIVE.send",false);
-        
-        if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
-        {
-            fViewsSaver->SaveForAmore();
-            fViewsSaver->SendToAmore();
-        }
     }
     if(fCurrentData->fAOD)
     {
@@ -627,18 +609,23 @@ void AliEveEventManager::AfterNewEventLoaded()
         win_title += "; Run: ";
         win_title += aod->GetRunNumber();
         gEve->GetBrowser()->SetWindowName(win_title);
-        
-        TEveElement* top = gEve->GetCurrentEvent();
-        
-        AliEveMultiView *mv = AliEveMultiView::Instance();
-        
-        mv->ImportEventRPhi(top);
-        mv->ImportEventRhoZ(top);
-        
-        gEve->GetBrowser()->RaiseWindow();
-        gEve->FullRedraw3D();
-        gSystem->ProcessEvents();
     }
+    
+    TEveElement* top = gEve->GetCurrentEvent();
+    mv->ImportEvent(top);
+    
+    gEve->GetBrowser()->RaiseWindow();
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    
+    bool saveViews = settings.GetValue("ALICE_LIVE.send",false);
+    
+    if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+    {
+        fViewsSaver->SaveForAmore();
+        fViewsSaver->SendToAmore();
+    }
+    
 }
 
 void AliEveEventManager::Timeout()

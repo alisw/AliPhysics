@@ -37,15 +37,11 @@ TEveGeoShape* AliEveGeomGentle::GetSimpleGeom(char* detector)
     f->Close();
     
     // tricks for different R-Phi geom of TPC:
-    if(strcmp(detector,"RPH")!=0) // don't add RPhi TPC geom to the 3D view
-    {
-        gEve->AddGlobalElement(gsre);
-    }
-    else // but use all other parameters of regular TPC geom
+    if(strcmp(detector,"RPH")==0) // use all other parameters of regular TPC geom
     {
         detector = "TPC";
     }
-
+    
     DrawDeep(gsre,
              settings.GetValue(Form("%s.color",detector),-1),
              settings.GetValue(Form("%s.trans",detector),-1),

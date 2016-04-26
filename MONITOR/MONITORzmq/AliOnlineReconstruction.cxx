@@ -10,6 +10,8 @@
 #include "AliOnlineReconstructionUtil.h"
 #include "AliZMQManager.h"
 
+#include "AliTPCReconstructor.h"
+
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
@@ -186,6 +188,8 @@ void AliOnlineReconstruction::ReconstructionLoop()
     
     TString recoBaseDir = fSettings.GetValue("server.saveRecoDir",DEFAULT_SERVER_SAVE_RECO_DIR);
     
+    const double kZOutSectorCut = 3.; // cut on clusters on wrong side of CE (added to extendedRoadZ)
+    AliTPCReconstructor::SetZOutSectorCut(kZOutSectorCut);
     
     //******* The loop over events
     Int_t iEvent = 0;

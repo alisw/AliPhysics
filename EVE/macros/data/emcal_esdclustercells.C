@@ -81,7 +81,6 @@ TEveCaloLegoOverlay* g_histo2d_lego_overlay = 0;
 
 TEveCaloLego* CreateHistoLego(TEveCaloData* data);
 TEveCalo3D* Create3DView(TEveCaloData* data);
-AliEveMultiView* CreateProjections(TEveCalo3D *calo3d);
 //
 
 //
@@ -311,11 +310,8 @@ void emcal_esdclustercells()
     // Plotting the lego histogram in a new tab
 //    CreateHistoLego(data); // this function breaks Event Display closing
 
-    // Plotting the 3D histogram
+    // Plotting the 3D histogram and projections RPhi and RhoZ
     TEveCalo3D *calo3d = Create3DView(data);
-    
-    // Plotting projections RPhi and RhoZ
-    CreateProjections(calo3d);
     
     //-----------------
     // Send to EVE
@@ -1280,16 +1276,8 @@ TEveCalo3D* Create3DView(TEveCaloData* data)
     calo3d->SetFrameTransparency(100);
     g_histo2d_s2->AddElement(calo3d);
     
-    return calo3d;
-}
-
-//______________________________________________________________________________
-AliEveMultiView* CreateProjections(TEveCalo3D *calo3d)
-{
-    AliEveMultiView *al = AliEveMultiView::Instance();
-    al->ImportEventRPhi(calo3d);
-    al->ImportEventRhoZ(calo3d);
+    AliEveMultiView::Instance()->ImportEvent(calo3d);
     
-    return al;
+    return calo3d;
 }
 

@@ -25,15 +25,19 @@ public:
     AliEveMultiView();
     ~AliEveMultiView();
     
-    void InitSimpleGeom(TEveGeoShape* geom, bool rPhi=true, bool rhoZ=true);
+    void InitSimpleGeom(TEveGeoShape* geom,bool threeD=true, bool rPhi=true, bool rhoZ=true);
     
+    void ImportEvent(TEveElement *el);
+    void DestroyAllEvents();
+    void DestroyAllGeometries();
+    
+    void ImportEvent3D(TEveElement* el);
     void ImportEventRPhi(TEveElement* el);
     void ImportEventRhoZ(TEveElement* el);
     
+    void DestroyEvent3D();
     void DestroyEventRPhi();
     void DestroyEventRhoZ();
-    
-    void DestroyAllGeometries();
     
     TEveViewer* Get3DView()   { return f3DView; }
     TEveViewer* GetRPhiView() { return fRPhiView; }
@@ -52,8 +56,10 @@ private:
     TEveViewer            *fRPhiView; // R-Phi view
     TEveViewer            *fRhoZView; // Pho-Z view
     
+    TEveScene             *f3DGeomScene;    // 3D geometry scene
     TEveScene             *fRPhiGeomScene;  // R-Phi geometry scene
     TEveScene             *fRhoZGeomScene;  // Rho-Z geometry scene
+    TEveScene             *f3DEventScene;   // 3D event scene
     TEveScene             *fRPhiEventScene; // R-Phi event scene
     TEveScene             *fRhoZEventScene; // Rho-Z event scene
     

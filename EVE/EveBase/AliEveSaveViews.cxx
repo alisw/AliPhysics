@@ -254,6 +254,7 @@ void AliEveSaveViews::SaveForAmore()
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(200, 0.2*fHeight-100, "PRELIMINARY", 200, "#80FF0000", "Arial.ttf",TImage::kPlain,0,30.);
     compositeImg->EndPaint();
     // put clusters description in green bar on the bottom:
     compositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, fHeight-0.33*fHeightInfoBar, fWidth, 0.33*fHeightInfoBar);
@@ -327,10 +328,18 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
-    for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
+    for(TEveElement::List_i i = viewers->BeginChildren(); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
+        
+        if((strcmp(view->GetName(),"3D View MV")!=0) &&
+           (strcmp(view->GetName(),"RPhi View")!=0) &&
+           (strcmp(view->GetName(),"RhoZ View")!=0)){
+            continue;
+        }
+        
         viewFilename = Form("view-%d.png", index);
+        
         
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
         //        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
@@ -434,6 +443,8 @@ void AliEveSaveViews::Save(bool withDialog,char* filename)
         {
             system = systemLabel;
         }
+        
+        system = "Colliding system:p-p";
         
         const char *energy;
         if(fESDEvent->GetBeamEnergy()>=0.0000001)

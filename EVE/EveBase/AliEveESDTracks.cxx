@@ -749,9 +749,12 @@ TEveElementList* AliEveESDTracks::ByType()
     {
         at = esd->GetTrack(n);
         
-        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+//        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+        bool good_cont = at->IsOn(AliESDtrack::kTPCrefit) && at->IsOn(AliESDtrack::kITSrefit);
+
         
-        if(good_cont || fDrawNoRefit)
+        
+        if(good_cont)// || fDrawNoRefit)
         {
             pid = at->GetPID();
  

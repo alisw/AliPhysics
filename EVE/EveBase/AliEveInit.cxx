@@ -132,12 +132,12 @@ fPath(path)
             if(detectorsList[i]=="TPC" || detectorsList[i]=="MCH")
             {
                 // don't load MUON and standard TPC to R-Phi view
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),false);
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),true,false);
             }
             else if(detectorsList[i]=="RPH")
             {
                 // special TPC geom from R-Phi view
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false);
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),false,true,false);
             }
             else
             {

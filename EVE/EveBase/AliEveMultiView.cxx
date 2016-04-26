@@ -25,8 +25,8 @@ AliEveMultiView* AliEveMultiView::fgInstance = 0;
 AliEveMultiView::AliEveMultiView() :
 fRPhiMgr(0), fRhoZMgr(0),
 f3DView(0), fRPhiView(0), fRhoZView(0),
-fRPhiGeomScene(0), fRhoZGeomScene(0),
-fRPhiEventScene(0), fRhoZEventScene(0)
+f3DGeomScene(0), fRPhiGeomScene(0), fRhoZGeomScene(0),
+f3DEventScene(0),fRPhiEventScene(0), fRhoZEventScene(0)
 {
     // Constructor --- creates required scenes, projection managers and GL viewers
     
@@ -36,10 +36,13 @@ fRPhiEventScene(0), fRhoZEventScene(0)
     fgInstance = this;
     
     // Scenes
+    f3DGeomScene  = gEve->SpawnNewScene("3D Geometry","Scene holding 3D geometry.");
     fRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry",
                                           "Scene holding projected geometry for the RPhi view.");
     fRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry",
                                           "Scene holding projected geometry for the RhoZ view.");
+    
+    f3DEventScene = gEve->SpawnNewScene("3D Event Data","Scene holding 3D event-data.");
     fRPhiEventScene = gEve->SpawnNewScene("RPhi Event Data",
                                           "Scene holding projected event-data for the RPhi view.");
     fRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
@@ -94,8 +97,8 @@ fRPhiEventScene(0), fRhoZEventScene(0)
     
     pack->NewSlotWithWeight(2)->MakeCurrent(); // new slot is created from pack
     f3DView = gEve->SpawnNewViewer("3D View MV", "");
-    f3DView->AddScene(gEve->GetGlobalScene());
-    f3DView->AddScene(gEve->GetEventScene());
+    f3DView->AddScene(f3DGeomScene);
+    f3DView->AddScene(f3DEventScene);
     
     pack = pack->NewSlot()->MakePack(); // new slot created from pack, then slot is destroyed and new pack returned
     pack->SetShowTitleBar(kFALSE);
@@ -119,7 +122,7 @@ AliEveMultiView::~AliEveMultiView()
     delete fRhoZMgr;
 }
 
-void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool rPhi, bool rhoZ)
+void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool threeD, bool rPhi, bool rhoZ)
 {
     if(!geom)
     {
@@ -129,6 +132,9 @@ void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool rPhi, bool rhoZ)
     
     fGeomVector.push_back(geom);
     
+    if(threeD){
+        gEve->AddElement(geom,f3DGeomScene);
+    }
     if(rPhi){
         fRPhiMgr->SetCurrentDepth(-10);
         fRPhiMgr->ImportElements(geom, fRPhiGeomScene);
@@ -141,6 +147,18 @@ void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool rPhi, bool rhoZ)
     }
 }
 
+void AliEveMultiView::ImportEvent(TEveElement* el)
+{
+    gEve->AddElement(el,f3DEventScene);
+    fRPhiMgr->ImportElements(el, fRPhiEventScene);
+    fRhoZMgr->ImportElements(el, fRhoZEventScene);
+}
+
+void AliEveMultiView::ImportEvent3D(TEveElement* el)
+{
+    gEve->AddElement(el, f3DEventScene);
+}
+
 void AliEveMultiView::ImportEventRPhi(TEveElement* el)
 {
     fRPhiMgr->ImportElements(el, fRPhiEventScene);
@@ -149,6 +167,11 @@ void AliEveMultiView::ImportEventRPhi(TEveElement* el)
 void AliEveMultiView::ImportEventRhoZ(TEveElement* el)
 {
     fRhoZMgr->ImportElements(el, fRhoZEventScene);
+}
+
+void AliEveMultiView::DestroyEvent3D()
+{
+    f3DEventScene->DestroyElements();
 }
 
 void AliEveMultiView::DestroyEventRPhi()
@@ -161,6 +184,13 @@ void AliEveMultiView::DestroyEventRhoZ()
     fRhoZEventScene->DestroyElements();
 }
 
+void AliEveMultiView::DestroyAllEvents()
+{
+    f3DEventScene->DestroyElements();
+    fRPhiEventScene->DestroyElements();
+    fRhoZEventScene->DestroyElements();
+}
+
 void AliEveMultiView::DestroyAllGeometries()
 {
     for(int i=0;i<fGeomVector.size();i++)
@@ -168,7 +198,7 @@ void AliEveMultiView::DestroyAllGeometries()
         if(fGeomVector[i])
         {
             fGeomVector[i]->DestroyElements();
-            gEve->RemoveElement(fGeomVector[i],gEve->GetGlobalScene());
+            gEve->RemoveElement(fGeomVector[i],f3DGeomScene);
             fGeomVector[i] = 0;
         }
     }
