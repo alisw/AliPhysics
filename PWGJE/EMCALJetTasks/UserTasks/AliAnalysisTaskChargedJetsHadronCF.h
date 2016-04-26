@@ -29,6 +29,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
+  void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
@@ -62,27 +63,27 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliTrackContainer          *fTracksCont;                              //!<! Tracks
   TTree*                      fJetsTree;                                //!<! Jets that will be saved to a tree (optionally)
   void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
-  Double_t                    fExtractionPercentage;                    /// percentage that is recorded
-  Double_t                    fExtractionMinPt;                         /// minimum pt of recorded jets
-  Int_t                       fNumberOfCentralityBins;                  /// Number of centrality bins
+  Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
+  Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
+  Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
   TClonesArray               *fJetsInput;                               //!<! Array of generated jets imported into task (toy model)
-  TString                     fJetParticleArrayName;                    /// Name of fJetsOutput array
-  TString                     fTrackParticleArrayName;                  /// Name of fTracksOutput array
-  TString                     fJetMatchingArrayName;                    /// Name of array used to match jets
-  TRandom3*                   fRandom;                                  /// random number generator
+  TString                     fJetParticleArrayName;                    ///< Name of fJetsOutput array
+  TString                     fTrackParticleArrayName;                  ///< Name of fTracksOutput array
+  TString                     fJetMatchingArrayName;                    ///< Name of array used to match jets
+  TRandom3*                   fRandom;                                  ///< random number generator
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TF1*                        fRejectionFunction;                       /// Function describing the cut applied to jet const.
-  Int_t                       fJetOutputMode;                           /// mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Double_t                    fMinFakeFactorPercentage;                 /// min fake factor (percentage relative to cut profile)
-  Double_t                    fMaxFakeFactorPercentage;                 /// max fake factor (percentage relative to cut profile)
-  Int_t                       fEventCriteriumMode;                      /// Mode of event selection
-  Double_t                    fEventCriteriumMinBackground;             /// Minimum background
-  Double_t                    fEventCriteriumMaxBackground;             /// Maximum background
-  Double_t                    fEventCriteriumMinLeadingJetPt;           /// Min leading jet
-  Double_t                    fEventCriteriumMinSubleadingJetPt;        /// Min subleading jet
+  TF1*                        fRejectionFunction;                       ///< Function describing the cut applied to jet const.
+  Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
+  Double_t                    fMinFakeFactorPercentage;                 ///< min fake factor (percentage relative to cut profile)
+  Double_t                    fMaxFakeFactorPercentage;                 ///< max fake factor (percentage relative to cut profile)
+  Int_t                       fEventCriteriumMode;                      ///< Mode of event selection
+  Double_t                    fEventCriteriumMinBackground;             ///< Minimum background
+  Double_t                    fEventCriteriumMaxBackground;             ///< Maximum background
+  Double_t                    fEventCriteriumMinLeadingJetPt;           ///< Min leading jet
+  Double_t                    fEventCriteriumMinSubleadingJetPt;        ///< Min subleading jet
 
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
@@ -145,10 +146,10 @@ class AliBasicJetConstituent : public TObject
     Short_t  Charge()   { return fCharge; }
 
   private:
-    Float_t fEta;      /// eta
-    Float_t fPhi;      /// phi
-    Float_t fpT;       /// pT
-    Short_t fCharge;   /// charge
+    Float_t fEta;      ///< eta
+    Float_t fPhi;      ///< phi
+    Float_t fpT;       ///< pT
+    Short_t fCharge;   ///< charge
 
   /// \cond CLASSIMP
   ClassDef( AliBasicJetConstituent, 1); // very basic jet constituent object
@@ -201,17 +202,17 @@ class AliBasicJet : public TObject
 
 
   private:
-    Float_t   fEta;      /// eta
-    Float_t   fPhi;      /// phi
-    Float_t   fpT;       /// pT
-    Short_t   fCharge;   /// charge
-    Float_t   fRadius;   /// jet radius
-    Float_t   fArea;     /// jet area
-    Float_t   fBackgroundDensity; /// background
-    Long64_t  fEventID;  /// Unique event id
-    Short_t   fCentrality; /// centrality
+    Float_t   fEta;      ///< eta
+    Float_t   fPhi;      ///< phi
+    Float_t   fpT;       ///< pT
+    Short_t   fCharge;   ///< charge
+    Float_t   fRadius;   ///< jet radius
+    Float_t   fArea;     ///< jet area
+    Float_t   fBackgroundDensity; ///< background
+    Long64_t  fEventID;  ///< Unique event id
+    Short_t   fCentrality; ///< centrality
 
-    std::vector<AliBasicJetConstituent> fConstituents; /// vector of constituents
+    std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
   /// \cond CLASSIMP
   ClassDef( AliBasicJet, 2); // very basic jet object
