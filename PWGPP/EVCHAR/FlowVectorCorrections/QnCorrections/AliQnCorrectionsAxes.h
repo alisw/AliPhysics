@@ -17,13 +17,10 @@
 //#include <TList.h>
 //#include <iostream>
 //#include <Rtypes.h>
-//#include <TArrayS.h>
 //#include <THn.h>
 //#include <TVector.h>
 #include "AliQnCorrectionsConstants.h"
 #include <TObject.h>
-#include <TArrayI.h>
-#include <TArrayD.h>
 #include <TAxis.h>
 //#include <TProfile.h>
 

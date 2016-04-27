@@ -154,6 +154,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fListLaRC(0)
    ,fListALaRC(0)
    ,fTracksRecCutsRC(0)
+   ,fTracksRecBckgCuts(0) 
    ,fTracksPerpCone(0)
    ,fListK0s(0)
    ,fListK0sMC(0)
@@ -315,11 +316,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
      // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0) 
   //,fh2ChTracksPC(0)  
-  // ,fh2MCgenK0Cone(0)
-  // ,fh2MCgenLaCone(0)
+  ,fhnMCgenK0Cone(0)
+  ,fhnMCgenLaCone(0)
   // ,fh2MCgenALaCone(0) 
-  // ,fh2MCEtagenK0Cone(0)
-  // ,fh2MCEtagenLaCone(0)
+  //,fh2MCEtagenK0Cone(0)
+  //,fh2MCEtagenLaCone(0)
   // ,fh2MCEtagenALaCone(0)
   /*  ,fh2CorrHijingLaProton(0)
    ,fh2CorrInjectLaProton(0)
@@ -491,6 +492,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fListLaRC(0)
   ,fListALaRC(0)
   ,fTracksRecCutsRC(0)
+  ,fTracksRecBckgCuts(0)
   ,fTracksPerpCone(0)
   ,fListK0s(0)
   ,fListK0sMC(0)
@@ -652,11 +654,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
     // ,fh2ChTracksOC(0)
   //,fh2ChTracksMCC(0)
   //,fh2ChTracksPC(0)
-    //,fh2MCgenK0Cone(0)
-    //,fh2MCgenLaCone(0)
+   ,fhnMCgenK0Cone(0)
+   ,fhnMCgenLaCone(0)
     //,fh2MCgenALaCone(0)
-    //,fh2MCEtagenK0Cone(0)
-    //,fh2MCEtagenLaCone(0)
+  //,fh2MCEtagenK0Cone(0)
+  //,fh2MCEtagenLaCone(0)
     //,fh2MCEtagenALaCone(0)
   /* ,fh2CorrHijingLaProton(0)
   ,fh2CorrInjectLaProton(0)
@@ -831,6 +833,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fListLaRC(copy.fListLaRC)
   ,fListALaRC(copy.fListALaRC)
   ,fTracksRecCutsRC(copy.fTracksRecCutsRC) 
+  ,fTracksRecBckgCuts(copy.fTracksRecBckgCuts) 
   ,fTracksPerpCone(copy.fTracksPerpCone)
   ,fListK0s(copy.fListK0s)
   ,fListK0sMC(copy.fListK0sMC)
@@ -992,11 +995,11 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
     // ,fh2ChTracksOC(copy.fh2ChTracksOC)
   //,fh2ChTracksMCC(copy.fh2ChTracksMCC)
   //,fh2ChTracksPC(copy.fh2ChTracksPC)
-    //,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
-    //,fh2MCgenLaCone(copy.fh2MCgenLaCone)
+   ,fhnMCgenK0Cone(copy.fhnMCgenK0Cone)
+   ,fhnMCgenLaCone(copy.fhnMCgenLaCone)
     //,fh2MCgenALaCone(copy.fh2MCgenALaCone)
-    //,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
-    //,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
+  //,fh2MCEtagenK0Cone(copy.fh2MCEtagenK0Cone)
+  // ,fh2MCEtagenLaCone(copy.fh2MCEtagenLaCone)
     //,fh2MCEtagenALaCone(copy.fh2MCEtagenALaCone)
   /* ,fh2CorrHijingLaProton(copy.fh2CorrHijingLaProton)
   ,fh2CorrInjectLaProton(copy.fh2CorrInjectLaProton)
@@ -1175,7 +1178,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fListK0sRC                      = o.fListK0sRC;
     fListLaRC                       = o.fListLaRC;
     fListALaRC                      = o.fListALaRC;
-    fTracksRecCutsRC                = o.fTracksRecCutsRC;  
+    fTracksRecCutsRC                = o.fTracksRecCutsRC;
+    fTracksRecBckgCuts              = o.fTracksRecBckgCuts;
     fTracksPerpCone                 = o.fTracksPerpCone;
     fListK0s                        = o.fListK0s;
     fListK0sMC                      = o.fListK0sMC;
@@ -1331,8 +1335,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     //   fh2ChTracksOC                   = o.fh2ChTracksOC;
     //fh2ChTracksMCC                  = o.fh2ChTracksMCC;
     //fh2ChTracksPC                   = o.fh2ChTracksPC;
-    //fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
-    //fh2MCgenLaCone                  = o.fh2MCgenLaCone;
+    fhnMCgenK0Cone                  = o.fhnMCgenK0Cone;
+    fhnMCgenLaCone                  = o.fhnMCgenLaCone;
     //fh2MCgenALaCone                 = o.fh2MCgenALaCone; 
     //fh2MCEtagenK0Cone               = o.fh2MCEtagenK0Cone;
     //fh2MCEtagenLaCone               = o.fh2MCEtagenLaCone;
@@ -1470,6 +1474,7 @@ AliAnalysisTaskJetChem::~AliAnalysisTaskJetChem()
   if(fListLaRC) delete fListLaRC;
   if(fListALaRC) delete fListALaRC;
   if(fTracksRecCutsRC) delete fTracksRecCutsRC;
+  if(fTracksRecBckgCuts) delete fTracksRecBckgCuts;
   if(fTracksPerpCone) delete fTracksPerpCone;
   if(fListK0s) delete fListK0s;
   if(fListK0sMC) delete fListK0sMC;
@@ -1711,6 +1716,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fListALaRC->SetOwner(kFALSE);
   fTracksRecCutsRC = new TList();
   fTracksRecCutsRC->SetOwner(kFALSE);
+  fTracksRecBckgCuts = new TList();
+  fTracksRecBckgCuts->SetOwner(kFALSE);
   fTracksRecCuts = new TList();
   fTracksRecCuts->SetOwner(kFALSE); //objects in TList wont be deleted when TList is deleted 
   fTracksGen = new TList();
@@ -2050,7 +2057,6 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 						      fFFNBinsXi, fFFXiMin, fFFXiMax,  
 						      fFFNBinsZ , fFFZMin , fFFZMax);
  
-
   //***************
   // MC histograms
   //***************
@@ -2058,6 +2064,18 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   //fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
   //fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
   //fh2MCgenALaCone               = new TH2F("fh2MCgenALaCone", "MC gen #Antilambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+
+  Int_t binsMCgenK0Cone[4] = {19, 120, 200};
+  Double_t xminMCgenK0Cone[4] = {5., 0., -1.};
+  Double_t xmaxMCgenK0Cone[4] = {100., 12., 1.};
+  fhnMCgenK0Cone                = new THnSparseF("fhnMCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around jet axis",3,binsMCgenK0Cone,xminMCgenK0Cone,xmaxMCgenK0Cone);  
+
+
+  Int_t binsMCgenLaCone[4] = {19, 120, 200};
+  Double_t xminMCgenLaCone[4] = {5., 0., -1.};
+  Double_t xmaxMCgenLaCone[4] = {100., 12., 1.};
+  fhnMCgenLaCone                = new THnSparseF("fhnMCgenLaCone", "MC gen #Lambda #it{p}_{T}  in cone around jet axis",3,binsMCgenLaCone,xminMCgenLaCone,xmaxMCgenLaCone);  
+
 
   //fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
   //fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
@@ -2432,8 +2450,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     //    fCommonHistList->Add(fh2ChTracksOC);
     //fCommonHistList->Add(fh2ChTracksMCC);
     //fCommonHistList->Add(fh2ChTracksPC);
-    //fCommonHistList->Add(fh2MCgenK0Cone);
-    //fCommonHistList->Add(fh2MCgenLaCone);
+    fCommonHistList->Add(fhnMCgenK0Cone);
+    fCommonHistList->Add(fhnMCgenLaCone);
     //fCommonHistList->Add(fh2MCgenALaCone);
     //fCommonHistList->Add(fh2MCEtagenK0Cone);
     //fCommonHistList->Add(fh2MCEtagenLaCone);
@@ -2879,7 +2897,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(fDebug>2)std::cout<<" nJCuts: "<<nJCuts<<std::endl;
 
-  if(fDebug>2)std::cout<<" fBranchRecJets: "<<fBranchRecJets.Length()<<std::endl;
+  if(fDebug>2)std::cout<<" fBranchRecJets: "<<fBranchRecJets<<std::endl;
   
   Int_t nRecJetsCuts = 0;                                        //number of reconstructed jets after jet cuts
   if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries(); 
@@ -2914,7 +2932,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
     }
   
-    if(fDebug>2)std::cout<<"fBranchEmbeddedJets for matching: "<<fBranchEmbeddedJets.Length()<<std::endl;
+    if(fDebug>2)std::cout<<"fBranchEmbeddedJets for matching: "<<fBranchEmbeddedJets<<std::endl;
 
 
     if(fBranchEmbeddedJets.Length()){ 
@@ -3021,10 +3039,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   //____ fetch background clusters ___________(for data analysis these are the kt04 background clusters, for Embedding study these are the standard antikt jets of the data event (in which the PYTHIA jets are embedded into))___________
 
   if(fBranchRecBckgClusters.Length() != 0){
-
+    
     Int_t nBJ = GetListOfBckgJets(fBckgJetsRec, kJetsRecAcceptance);
-
-    if(fDebug>2)std::cout<<" fBranchRecBckgClusters: "<<fBranchRecBckgClusters.Length()<<std::endl;
+    
+    if(fDebug>2)std::cout<<" fBranchRecBckgClusters: "<<fBranchRecBckgClusters<<std::endl;
     
     Int_t nRecBckgJets = 0;
     if(nBJ>=0) nRecBckgJets = fBckgJetsRec->GetEntries();
@@ -3032,35 +3050,46 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(nBJ != nRecBckgJets) Printf("%s:%d Mismatch Selected Rec background jets: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
     
     if(!(fUseExtraTracks == 0)){//for Embedding study only
+      fTracksRecBckgCuts->Clear();
+      Int_t nTBckgCuts = GetListOfTracks(fTracksRecBckgCuts, kTrackAODCuts);//all standard tracks of data event, no embedded tracks
+
+      if(fDebug>2)Printf("%s:%d selected reconstructed standard Bckg tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nTBckgCuts,fTracksRecBckgCuts->GetEntries());
 
       fIsNJEventEmb = kFALSE;//initialize boolean flag
-
+      
       Int_t nRemainingBckgJets = nRecBckgJets; //init value for NJ events for embedding study 
       for(Int_t ij=0; ij<nRecBckgJets; ++ij){ // loop over all jets in event 
 	
 	AliAODJet* jetBckg = (AliAODJet*) (fBckgJetsRec->At(ij));
-	jettracklist->Clear();
 	Double_t sumBckgPt      = 0.;
 	Bool_t isBadBckgJet     = kFALSE;
 	
-	Double_t jetPt = jetBckg->Pt();
-	fh1BckgJets->Fill(jetPt);
+	//apply some further jet cuts since they are not carried out in GetListOfBckgJets()
+	if( jetBckg->Pt() < fJetPtCut ) isBadBckgJet=kTRUE;
+	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) isBadBckgJet=kTRUE;
 
-	if(GetFFRadius()<=0){
-	  GetJetTracksTrackrefs(jettracklist, jetBckg, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);// list of jet tracks from trackrefs
+	Double_t jetPt = jetBckg->Pt();
+	if(isBadBckgJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
+
+	if((GetFFRadius()<=0)&&(isBadBckgJet == kFALSE)){
+	  GetJetTracksTrackrefs(jettracklist, jetBckg, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);// list of jet tracks from trackrefs, normally not used here
 	} else {
-	  GetJetTracksPointing(fTracksRecCuts, jettracklist, jetBckg, GetFFRadius(), sumBckgPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+	  if(isBadBckgJet == kFALSE){GetJetTracksPointing(fTracksRecBckgCuts, jettracklist, jetBckg, GetFFRadius(), sumBckgPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+	  }
 	}
-	
+
 	//APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..):
-	if(isBadBckgJet){
+	if(isBadBckgJet == kTRUE){
 	  nRemainingBckgJets = nRemainingBckgJets-1;//remove one jet from nRemainingJets (was initialized with nRecJetsCuts) continue;//all bad jets are rejected
 	  
 	  if(nRemainingBckgJets == 0){fIsNJEventEmb = kTRUE;fh1NJEmbEvt->Fill(1.);}//set switch for Embedding into NJ events
 	}
 
-	fh1BckgJetsPtBias->Fill(jetPt);
-	
+	if(isBadBckgJet == kFALSE)fh1BckgJetsPtBias->Fill(jetPt);//good jets are filled here
+	if(fDebug>3)std::cout<<"isBadBckgJet: "<<isBadBckgJet<<std::endl;
+
+	jettracklist->Clear();
+	fTracksRecBckgCuts->Clear();
       }
     }
     
@@ -3359,7 +3388,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //leading track pt bias on jets inside this small jet loop
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..):
       if(isBadJet){
-	nRemainingJets = nRemainingJets-1;//remove one jet from nRemainingJets (was initialized with nRecJetsCuts) continue;//all bad jets are rejected
+	nRemainingJets = nRemainingJets-1;//remove one jet from nRemainingJets (was initialized with nRecJetsCuts) //all bad jets are rejected
 	continue;
       }
 
@@ -4129,6 +4158,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fListALaRC->Clear();
 	fTracksRecCutsRC->Clear();
 
+
 	Double_t sumPtK0sRC = 0;
 	Double_t sumPtLaRC = 0;
 	Double_t sumPtALaRC = 0;
@@ -4839,7 +4869,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(fDebug>2)Printf("%s:%d nMCgenK0s in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,fListMCgenK0sCone->GetEntries(),GetFFRadius());
 	
 	
-	/*	for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){ // loop MC generated K0s in cone around jet axis
+        for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){ // loop MC generated K0s in cone around jet axis
 	  
 	  AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0sCone->At(it));
 	  if(!mcp0) continue;
@@ -4848,17 +4878,17 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenK0s   = mcp0->Eta();
 	  Double_t fPtMCgenK0s    = mcp0->Pt();
 	  
-	  //fh2MCgenK0Cone->Fill(jetPt,fPtMCgenK0s); 
-	  // fh2MCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
+	  Double_t vMCgenK0Cone[3] = {jetPt,fPtMCgenK0s,fEtaMCgenK0s};
+
+	  fhnMCgenK0Cone->Fill(vMCgenK0Cone); 
+	  //fhnMCEtagenK0Cone->Fill(jetPt,fEtaMCgenK0s);
 	  
 	  }
 	
 	//check whether the reconstructed K0s in jet cone are stemming from MC gen K0s (on MCgenK0s list):__________________________________________________
-       
+	/*
 	for(Int_t ic=0; ic<jetConeK0list->GetSize(); ++ic){    //loop over all reconstructed K0s in jet cone
- 
-	//for(Int_t ic=0; ic<fListK0s->GetSize(); ++ic){     //loop over all reconstructed K0s -> previous definition of reconstruction efficiency, not sure what is the better one to choose
-	   
+ 	   
 	  Int_t negDaughterpdg;
 	  Int_t posDaughterpdg;
 	  Int_t motherType;
@@ -4873,8 +4903,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t jetPtSmear = -1;
 
 	  AliAODv0* v0c = dynamic_cast<AliAODv0*>(jetConeK0list->At(ic));//pointer to reconstructed K0s inside jet cone (cone is placed around reconstructed jet axis)
-	  
-	  //AliAODv0* v0c = dynamic_cast<AliAODv0*>(fListK0s->At(ic));//pointer to reconstructed K0s
+
 	  if(!v0c) continue;
 	  
 	  Bool_t daughtercheck = DaughterTrackCheck(v0c, nnum, pnum);//check daughter tracks have proper sign
@@ -4893,8 +4922,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	  for(Int_t it=0; it<fListMCgenK0s->GetSize(); ++it){                                    // loop over MC generated K0s in event, check whether associated MC particle is part of it
 	  
-	  //for(Int_t it=0; it<fListMCgenK0sCone->GetSize(); ++it){//belongs to previous definition of rec. eff. of V0s within jet cone  
-
 	    //Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    //AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0sCone->At(it));
 	    AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenK0s->At(it));
@@ -4902,7 +4929,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Bool_t particleMatching = IsParticleMatching(mcp0, v0Label);
 	    
-	    if(particleMatching == kFALSE)continue;                                              //if reconstructed V0 particle doesn't match to the associated MC particle go to next stack entry	    
+	    if(particleMatching == kFALSE)continue;    //if reconstructed V0 particle doesn't match to the associated MC particle go to next stack entry	    
 	    CalculateInvMass(v0c, kK0, invMK0Match, fPtMCrecK0Match);
 	    Double_t fEta = v0c->Eta();
 	    Double_t fPtMCgenK0s    = mcp0->Pt();//pt has to be always MC truth value!
@@ -4910,10 +4937,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    Double_t vMCrecK0Cone[4] = {jetPt, invMK0Match,fPtMCgenK0s,fEta};
 	    fhnMCrecK0Cone->Fill(vMCrecK0Cone);             //fill matching rec. K0s in 3D histogram
 
-	    SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);       //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear 
+	    //SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);       //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear 
   	 
-	    Double_t vMCrecK0ConeSmear[4] = {jetPtSmear, invMK0Match,fPtMCgenK0s,fEta};
-	    fhnMCrecK0ConeSmear->Fill(vMCrecK0ConeSmear); 
+	    //Double_t vMCrecK0ConeSmear[4] = {jetPtSmear, invMK0Match,fPtMCgenK0s,fEta};
+	    //fhnMCrecK0ConeSmear->Fill(vMCrecK0ConeSmear); 
 
 	    //fill matching rec. K0s in 3D histogram, jet pT smeared according to deltaptjet distribution width  
   
@@ -5152,7 +5179,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(fDebug>2)Printf("%s:%d nMCgenLa in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,fListMCgenLaCone->GetEntries(),GetFFRadius());
 	
-	/*	for(Int_t it=0; it<fListMCgenLaCone->GetSize(); ++it){ // loop MC generated La in cone around jet axis
+	for(Int_t it=0; it<fListMCgenLaCone->GetSize(); ++it){ // loop MC generated La in cone around jet axis
 	  
 	  AliAODMCParticle* mcp0 = dynamic_cast<AliAODMCParticle*>(fListMCgenLaCone->At(it));
 	  if(!mcp0) continue;
@@ -5161,11 +5188,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  Double_t fEtaMCgenLa   = mcp0->Eta();
 	  Double_t fPtMCgenLa    = mcp0->Pt();
     
-	  // fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
+	  Double_t vMCgenLaCone[3] = {jetPt,fPtMCgenLa,fEtaMCgenLa};
+
+	  fhnMCgenLaCone->Fill(vMCgenLaCone); 
+
+	  //fh2MCgenLaCone->Fill(jetPt,fPtMCgenLa);
 	  //fh2MCEtagenLaCone->Fill(jetPt,fEtaMCgenLa);
 	  }
 	
-	
+	/*
 	//check whether the reconstructed La are stemming from MC gen La on fListMCgenLa List:__________________________________________________
 	
 	for(Int_t ic=0; ic<jetConeLalist->GetSize(); ++ic){//loop over all reconstructed La within jet cone, new definition
@@ -6041,7 +6072,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
      
       Int_t pdgCode = part->GetPdgCode();
 
-     if(fDebug > 3)std::cout<<"MC stack extra particles pdgCode: "<<pdgCode<<std::endl;
+     if(fDebug > 5)std::cout<<"MC stack extra particles pdgCode: "<<pdgCode<<std::endl;
 
       //keep only true primary particles from PYTHIA particle level
       if((particletype == kK0)&&(pdgCode != 310))continue;

@@ -42,6 +42,7 @@ public:
 
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}
    void                UseESDTriggerMask(UInt_t trgMask)     {fTriggerMask = trgMask;}
+   void                SkipTriggerMask(UInt_t skip)    {fSkipTriggerMask = skip;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseReferenceMultiplicity(const char *type)    {fRefMultiType = type; fRefMultiType.ToUpper();}
    void                SetUseCentralityPatch(Bool_t isAOD049) {fUseAOD049CentralityPatch = isAOD049;}
@@ -99,6 +100,7 @@ private:
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
    UInt_t               fTriggerMask;   //trigger mask
+   UInt_t               fSkipTriggerMask; // skip events with this trigger mask, even if they are consistent with fTriggerMask
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
    TString              fRefMultiType;    //reference multiplicity to use, TRACKLETS (SPD only) or GLOBAL (ITS+TPC)

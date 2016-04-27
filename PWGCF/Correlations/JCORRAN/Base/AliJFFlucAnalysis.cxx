@@ -314,6 +314,12 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fBin_h 
 		<< fHistCentBin 
 		<< "END" ; 
+	fh_SC_with_QC_2corr_eta10
+		<< TH1D("hQC_SC2p_eta10", "hQC_SC2p", 1024, -1.5, 1.5)
+		<< fBin_h 
+		<< fHistCentBin 
+		<< "END" ; 
+
 
 	fh_QvectorQC
 		<< TH2D("hQvecQC", "hQvecQC", 1024, -1.1 , 1.1, 1024, -1.1, 1.1 ) 
@@ -583,6 +589,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		// (a) calculate QC q-vecotr 
 		// (b) calculate 4p correaltion
 		// (c) calculate 2p correaltion
+		// (d) calculate 2p corrleaion with |dEta|>1.0 (for normalized SC)
 	
 		//(a)
 		CalculateQvectorsQC(); 
@@ -606,6 +613,15 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			TComplex two = Two(ih, -1*ih) / Two(0,0).Re() ;
 			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re(), event_weight );
 		}  	
+		//(d)
+		for(int ih=2; ih<=5; ih++){
+			double event_weight = 1;
+			if( IsEbEWeighted == kTRUE) event_weight = (QvectorQCeta10[0][1] * QvectorQCeta10[0][1] - QvectorQCeta10[0][2]).Re(); // M*M - M
+			TComplex two = ( QvectorQCeta10[ih][1] * TComplex::Conjugate( QvectorQCeta10[ih][1] ) - QvectorQCeta10[0][2] ) /  (QvectorQCeta10[0][1] * QvectorQCeta10[0][1] - QvectorQCeta10[0][2]).Re();
+			fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( two.Re(), event_weight ); 
+			
+		}
+
 	} // QC method done.
 
 	//1 evt is done...
@@ -774,7 +790,8 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	//init
 	for(int ih=0; ih<kNH; ih++){
 		for(int ik=0; ik<nKL; ik++){
-			QvectorQC[ih][ik] = TComplex(0, 0);		
+			QvectorQC[ih][ik] = TComplex(0, 0);	
+			QvectorQCeta10[ih][ik] = TComplex(0, 0);	
 		} // for max power
 	} // for max harmonics
 	//Calculate Q-vector with particle loop
@@ -788,9 +805,12 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 		for(int ih=0; ih<kNH; ih++){
 			for(int ik=0; ik<nKL; ik++){
 				QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+				if( TMath::Abs(eta) > 0.5 ) QvectorQCeta10[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 			}
 		}
 	 } // track loop done.
+	
+
 	// Q-vector[ih][ik] calculated doen. //(need ik??)
 
 	// Save QA plot

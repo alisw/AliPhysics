@@ -16,7 +16,7 @@
 #ifndef ALIANALYSISTASKJETCHEM_H
 #define ALIANALYSISTASKJETCHEM_H
 
-/* Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
@@ -299,6 +299,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fListLaRC;
   TList* fListALaRC;
   TList* fTracksRecCutsRC;
+  TList* fTracksRecBckgCuts;     //list of charged tracks for Embedding study, filled with standard tracks from data event, serves for no-jet event selection
+
   TList* fTracksPerpCone;
                                   //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
@@ -496,11 +498,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   // TH2F* fh2ChTracksOC;
   //TH2F* fh2ChTracksMCC;
   //TH2F* fh2ChTracksPC;
-  //  TH2F* fh2MCgenK0Cone;
-  //  TH2F* fh2MCgenLaCone;
+  THnSparse* fhnMCgenK0Cone;
+  THnSparse* fhnMCgenLaCone;
   //  TH2F* fh2MCgenALaCone;
-  //  TH2F* fh2MCEtagenK0Cone;
-  //  TH2F* fh2MCEtagenLaCone;
+  //TH2F* fh2MCEtagenK0Cone;
+  //TH2F* fh2MCEtagenLaCone;
   //  TH2F* fh2MCEtagenALaCone;
   /* TH2F* fh2CorrHijingLaProton;
   TH2F* fh2CorrInjectLaProton;

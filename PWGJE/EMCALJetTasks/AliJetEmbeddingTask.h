@@ -1,6 +1,7 @@
 /// \class AliJetEmbeddingTask
 /// \brief Class for track embedding into an event
 ///
+/// \ingroup EMCALJETFW
 /// The class inherits from AliJetModelBaseTask and takes care of the implemetation of the track embedding into the original or a copy of the track array using the method AddTrack (see AliJetModelBaseTask)
 /// Several choices on the track mass are possible: 
 /// 1) pion mass

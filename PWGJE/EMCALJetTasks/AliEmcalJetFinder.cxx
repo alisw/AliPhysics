@@ -279,3 +279,61 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
     histogram->Fill(fJetArray[i]->Eta());
   }
 }
+
+
+
+//________________________________________________________________________
+Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets,  Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option){
+  
+  fJetCount = 0;
+  for (UInt_t j=0; j<fJetArray.size(); j++) {
+    if (fJetArray[j]) { delete fJetArray[j]; fJetArray[j] = 0; }
+  } fJetArray.clear();
+//=============================================================================
+
+  if ((!pJet) || (!pContJets)) return kFALSE;
+//=============================================================================
+
+  AliParticleContainer *pContTrks = pContJets->GetParticleContainer();
+  if (pContTrks) for (Int_t i=0; i<pJet->GetNumberOfTracks(); i++) {
+    AliVParticle *pTrk = pJet->TrackAt(i, pContTrks->GetArray()); if (!pTrk) continue;
+    AddInputVector(pTrk->Px(), pTrk->Py(), pTrk->Pz(), pTrk->E(), pJet->TrackAt(i)+100);
+  }
+    AliClusterContainer *pContClus = pContJets->GetClusterContainer();
+  if (pContClus) for (Int_t i=0; i<pJet->GetNumberOfClusters(); i++) {
+      AliVCluster *pClu = pJet->ClusterAt(i, pContClus->GetArray()); if (!pClu) continue;
+
+      TLorentzVector vClu; pClu->GetMomentum(vClu, dVtx);
+      AddInputVector(vClu.Px(), vClu.Py(), vClu.Pz(), vClu.P(), -1*pJet->ClusterAt(i)-100);
+      }
+//=============================================================================
+
+  if(!fInputVectorIndex) {
+    AliError("No input vectors added to jet finder!");
+  }
+
+//=============================================================================
+
+  if (pJet->HasGhost()) {
+    const std::vector<TLorentzVector> aGhosts = pJet->GetGhosts();
+    for (UInt_t i=0; i<aGhosts.size(); i++) AddInputGhost(aGhosts[i].Px(),
+                                                          aGhosts[i].Py(),
+                                                          aGhosts[i].Pz(),
+                                                          aGhosts[i].E());
+  }
+  //these are all for the jet not subjets
+  fFastjetWrapper->SetR(fRadius);
+  fFastjetWrapper->SetMaxRap(fTrackMaxEta);
+  fFastjetWrapper->SetGhostArea(fGhostArea);
+  fFastjetWrapper->SetMinJetPt(fJetMinPt);
+  if(fJetAlgorithm==0) fFastjetWrapper->SetAlgorithm(fastjet::antikt_algorithm);  //this is for the jet clustering not the subjet reclustering. 
+  // if(fJetAlgorithm==1) fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
+  if(fRecombScheme>=0) fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
+  return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option);
+
+}
+
+
+
+
+

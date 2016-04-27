@@ -9,7 +9,7 @@
    aliroot -b -q 'recCPass1.C("raw.root",100)'
 */
 
-void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrel")
+void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrelMB")
 {
   if (gSystem->Getenv("ALIROOT_FORCE_COREDUMP"))
   {
@@ -18,6 +18,10 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
     gSystem->ResetSignal(kSigSegmentationViolation);
   }
 
+  // removing apparently pile-up clusters to speadup reconstruction
+  const double kZOutSectorCut = 3.; // cut on clusters on wrong side of CE (added to extendedRoadZ)
+  AliTPCReconstructor::SetZOutSectorCut(kZOutSectorCut);
+
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
@@ -25,13 +29,29 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   
   // Reconstruction settings
   AliReconstruction rec;
-  if (gSystem->Getenv("disableOuter")){
-    rec.SetRunLocalReconstruction("ITS TPC TRD TOF T0");
-    rec.SetRunReconstruction("ITS TPC TRD TOF T0");
-    rec.SetRunTracking("ITS TPC TRD TOF T0");
-  } else {
-    rec.SetRunReconstruction("ALL");
+  //
+  // do we extract the TPC recpoints in advance
+  Bool_t noTPCLocalRec = gSystem->Getenv("preclusterizeTPC")!=NULL;
+  if (noTPCLocalRec) printf("TPC local reconstruction assumed to be already done\n");
+  //
+  if (gSystem->Getenv("disableOuter")!=NULL){
+    TString disOuter = gSystem->Getenv("disableOuter");
+    TString disOuterLoc = disOuter;
+    if (noTPCLocalRec) {
+      disOuterLoc.ReplaceAll("TPC","");
+      disOuterLoc.ReplaceAll("HLT","");
+    }
+    rec.SetRunReconstruction(disOuter.Data());
+    rec.SetRunLocalReconstruction(disOuterLoc.Data());
+  } 
+  else if (noTPCLocalRec) {
+    rec.SetRunReconstruction("ALL -HLT");
+    rec.SetRunLocalReconstruction("ALL -TPC -HLT");
   }
+  else {
+    rec.SetRunLocalReconstruction("ALL");
+  }
+
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
     rec.SetCDBSnapshotMode("OCDB.root");
@@ -55,8 +75,10 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("TPC TRD ITS");
-
+  TString delRecPoints="TPC TRD ITS";
+  if (noTPCLocalRec) delRecPoints.ReplaceAll("TPC","");
+  rec.SetDeleteRecPoints(delRecPoints.Data()); 
+  //
 
   // Switch off the V0 finder - saves time!
   rec.SetRunMultFinder(kTRUE);

@@ -2,7 +2,7 @@
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
-  Bool_t      InputSameEventAnalysis = 1,      //same event=1 mixed event =0
+  Bool_t      InputSameEventAnalysis = 1,      //same event=1 mixed event =0 (currently only used to throw out event in  Run() function)
   const char *tracksName             = "Tracks",
   const char *clustersName           = "CaloClusters",
   const char *ncells                 = "EMCALCells",   //probably delete this this is nowhere used
@@ -43,7 +43,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  GammaPi0Name += "Pi0H";
   }
   TString SameMixName;
-  if(InputSameEventAnalysis == 0)
+  if(InputSameEventAnalysis == 1)
   {
 	  SameMixName += "SE";
   }

@@ -164,6 +164,10 @@ class AliJJetJtAnalysis{
     TVector *fTrackJt;
     TVector *fTrackPt;
     TVector *fJetPt;
+    TVector *fBin2;
+    TVector *fBin3;
+    TVector *fpta;
+    TVector *fptt;
     int Nrandom;
     int moveJet;
     int fDoMC;

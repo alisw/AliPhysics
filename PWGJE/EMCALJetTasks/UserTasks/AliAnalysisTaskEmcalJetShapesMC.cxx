@@ -82,7 +82,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fhPt(0x0),
   fhPhi(0x0),
   fNbOfConstvspT(0x0),
-  fTreeObservableTagging(0)
+  fTreeObservableTagging(0x0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -121,7 +121,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fhPt(0x0),
   fhPhi(0x0),
   fNbOfConstvspT(0x0),
-  fTreeObservableTagging(0)
+  fTreeObservableTagging(0x0)
   
 {
   // Standard constructor.

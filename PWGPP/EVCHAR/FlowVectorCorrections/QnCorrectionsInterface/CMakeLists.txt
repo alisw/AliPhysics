@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskFlowVectorCorrections.cxx 
+  AliAnalysisTaskQnAnalysis.cxx
   AliQnCorrectionsHistos.cxx 
   AliQnCorrectionsFillEvent.cxx 
   AliQnCorrectionsVarManager.cxx 
@@ -83,3 +84,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY macros/ DESTINATION PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/ FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY macros/ DESTINATION PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/ FILES_MATCHING PATTERN "*.txt")

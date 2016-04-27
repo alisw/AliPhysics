@@ -174,7 +174,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   Int_t multClu = event->GetNumberOfCaloClusters();
   AliESDCaloCells *phsCells = event->GetPHOSCells();
  
-  Int_t inPHOS[3] = {};
+  Int_t inPHOS[4] = {};
   Int_t ntr = 0;
 
   Int_t kUsedCluster[] = {multClu*0};
@@ -246,7 +246,7 @@ void AliAnalysisTaskPHOSTriggerQA::UserExec(Option_t *)
   
   FillHistogram("hNtr",ntr); // number of selected triggers per event
   
-  for(Int_t sm=1; sm<4; sm++) {
+  for(Int_t sm=1; sm<5; sm++) {
     snprintf(key,55,"hNtrSM%d",sm);
     if(inPHOS[sm-1]) FillHistogram(key,inPHOS[sm-1]);    
   }

@@ -51,6 +51,8 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   void AddHistogramClass(TString hist) {fQAhistograms+=hist+";";}
   void DefineInOutput();
   void FillExchangeContainerWithQvectors(Bool_t b=kTRUE) {fProvideQnVectorsList=b;}
+  void SetRunListPath(TString path) {fRunListPath=path;}
+  void SetCalibrationFilePath(TString path) {fCalibrationFilePath=path;}
 
   AliQnCorrectionsManager* EventPlaneManager() {return fEventPlaneManager;}
   AliQnCorrectionsHistos* GetHistograms() {return fEventPlaneHistos;}
@@ -87,6 +89,8 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   Int_t fOutputSlotHistQn;
   Int_t fOutputSlotQnVectorsList;
   Int_t fOutputSlotTree;
+  TString fRunListPath;
+  TString fCalibrationFilePath;
   
   AliAnalysisTaskFlowVectorCorrections(const AliAnalysisTaskFlowVectorCorrections &c);
   AliAnalysisTaskFlowVectorCorrections& operator= (const AliAnalysisTaskFlowVectorCorrections &c);

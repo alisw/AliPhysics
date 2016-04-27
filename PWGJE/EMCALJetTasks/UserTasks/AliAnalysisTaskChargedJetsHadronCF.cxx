@@ -1,8 +1,17 @@
-// $Id$
-//
-// Jet+h correlation task
-//
-// Author: R. Haake
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: R. Haake.                                                      *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include <TClonesArray.h>
 #include <TF1.h>
@@ -27,22 +36,27 @@
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
-ClassImp(AliAnalysisTaskChargedJetsHadronCF)
+/// \cond CLASSIMP
 ClassImp(AliBasicJet)
-ClassImp(AliBasicJetConstituent)
-
+/// \endcond
 //________________________________________________________________________
 AliBasicJet::~AliBasicJet() 
 {
 // dummy destructor
 }
 
+/// \cond CLASSIMP
+ClassImp(AliBasicJetConstituent)
+/// \endcond
 //________________________________________________________________________
 AliBasicJetConstituent::~AliBasicJetConstituent() 
 {
 // dummy destructor
 }
 
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskChargedJetsHadronCF)
+/// \endcond
 //________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronCF", kTRUE),
@@ -257,7 +271,7 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventSelected()
+Bool_t AliAnalysisTaskChargedJetsHadronCF::IsEventCriteriumFulfilled()
 {
 
     // In case of special selection criteria, trigger on certain events
@@ -490,7 +504,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
 
-  if(!IsEventSelected())
+  if(!IsEventCriteriumFulfilled())
     return kFALSE;
 
   // ####### Jet loop

@@ -71,25 +71,25 @@ bool AliJTrackCut::IsSelected ( AliJTrack *track, int icut )const{
         switch ( icut ){
 
             case AliJTrackCut::kJTPCOnly :
-                return track->IsFiltered( 7 );
+                return track->IsFiltered( 7 );  // 128
 
             case AliJTrackCut::kJRaa :
-                return track->IsFiltered( 10 ); //TODO
+                return track->IsFiltered( 10 ); // 1024
 
             case AliJTrackCut::kJHybrid :
-                return track->IsFiltered(8) || track->IsFiltered(9) ;
+                return track->IsFiltered(8) || track->IsFiltered(9) ; // 768
 
             case AliJTrackCut::kJHybridAOD86 :
-                return track->IsFiltered(4) || track->IsFiltered(8) ;
+                return track->IsFiltered(4) || track->IsFiltered(8) ; // 272
 
             case AliJTrackCut::kJGlobalTightDCA :
                 return track->IsFiltered( 5 ); // 32
 
             case AliJTrackCut::kJGlobalDCA :
-                return track->IsFiltered( 4 ); // 32
+                return track->IsFiltered( 4 ); // 16
 
             case AliJTrackCut::kJGlobalSDD :
-                return track->IsFiltered( 5 ) || track->IsFiltered( 6 );
+                return track->IsFiltered( 5 ) || track->IsFiltered( 6 ); // 96
         }
     }
     return false;

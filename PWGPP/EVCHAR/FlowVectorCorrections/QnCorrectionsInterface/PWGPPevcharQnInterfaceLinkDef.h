@@ -8,5 +8,6 @@
 #pragma link C++ class AliQnCorrectionsFillEvent+;
 #pragma link C++ class AliQnCorrectionsVarManager+;
 #pragma link C++ class AliAnalysisTaskFlowVectorCorrections+;
+#pragma link C++ class AliAnalysisTaskQnAnalysis+;
 
 #endif
