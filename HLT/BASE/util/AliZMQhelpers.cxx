@@ -199,6 +199,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 
   if (config.empty()) {
     alizmq_socket_close(socket);
+    socket = NULL;
     return 999999;
   }
 
