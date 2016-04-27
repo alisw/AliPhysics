@@ -669,6 +669,8 @@ INPUT                  = ../analysis2 \
                          ../analysis2/corrs \
                          ../analysis2/qa \
                          ../analysis2/trains \
+		         ../analysis2/dndeta/tracklets \
+                         ../analysis2/dndeta/tracklets3 \
                          ../trains \
                          ../analysis2/doc
 
