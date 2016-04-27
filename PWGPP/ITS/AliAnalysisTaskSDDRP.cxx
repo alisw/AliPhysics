@@ -92,7 +92,8 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
   fMinPfordEdx(0.5),
   fTriggerClass(""),
   fOnlyEventsWithSDD(kTRUE),
-  fExcludeBadMod(kFALSE)
+  fExcludeBadMod(kFALSE),
+  fInitCalib(kFALSE)
 {
   //
   DefineOutput(1, TList::Class());
@@ -333,7 +334,6 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
 void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 {
   //
-  static Bool_t initCalib = kFALSE;
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
   if(!esd) {
     printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
@@ -350,7 +350,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
 // be yet properly set. Make sure this is called only once. (A.G. 14/10/2011)
 
 /************/
-  if (!initCalib) {
+  if (!fInitCalib) {
     AliCDBManager* man = AliCDBManager::Instance();
     if (!man) {
        AliFatal("CDB not set but needed by AliAnalysisTaskSDDRP");
@@ -410,7 +410,7 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
     fGoodAnLadLay3->SetMinimum(0);    
     for(Int_t ilad=0;ilad<22;ilad++) fGoodAnLadLay4->SetBinContent(ilad+1,countGood4[ilad]);
     fGoodAnLadLay4->SetMinimum(0);
-    initCalib = kTRUE;
+    fInitCalib = kTRUE;
   }  
 /************/
   
@@ -590,51 +590,7 @@ void AliAnalysisTaskSDDRP::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  fHistCluInLay= dynamic_cast<TH1F*>(fOutput->FindObject("hCluInLay"));
-
-  fHistAllPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPMod"));
-  fHistGoodPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPMod"));
-  fHistBadRegMod= dynamic_cast<TH1F*>(fOutput->FindObject("hBadRegMod"));
-  fHistMissPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hMissPMod"));
-  fHistSkippedMod= dynamic_cast<TH1F*>(fOutput->FindObject("hSkippedMod"));
-  fHistOutAccMod= dynamic_cast<TH1F*>(fOutput->FindObject("hOutAccMod"));
-  fHistNoRefitMod= dynamic_cast<TH1F*>(fOutput->FindObject("hNoRefitMod"));
-
-  fHistAllPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPxloc"));
-  fHistGoodPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPxloc"));
-  fHistBadRegXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hBadRegxloc"));
-  fHistMissPXloc= dynamic_cast<TH1F*>(fOutput->FindObject("hMissPxloc"));
-  fHistAllPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hAllPzloc"));
-  fHistGoodPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hGoodPzloc"));
-  fHistBadRegZloc= dynamic_cast<TH1F*>(fOutput->FindObject("fHistBadRegZloc"));
-  fHistMissPZloc= dynamic_cast<TH1F*>(fOutput->FindObject("hMissPzloc"));
-
-  fHistdEdxL3VsP= dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxL3VsP"));
-  fHistdEdxL4VsP= dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxL4VsP"));
-  fHistdEdxVsMod= dynamic_cast<TH2F*>(fOutput->FindObject("hdEdxVsMod"));
-
-  fRecPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hRPMod"));
-  fTrackPMod= dynamic_cast<TH1F*>(fOutput->FindObject("hTPMod"));
-  fGoodAnMod= dynamic_cast<TH1F*>(fOutput->FindObject("hGAMod"));
-
-  fRecPLadLay3= dynamic_cast<TH1F*>(fOutput->FindObject("hRPLad3"));
-  fRecPLadLay4= dynamic_cast<TH1F*>(fOutput->FindObject("hRPLad4"));
-  fTrackPLadLay3= dynamic_cast<TH1F*>(fOutput->FindObject("hTPLad3"));
-  fTrackPLadLay4= dynamic_cast<TH1F*>(fOutput->FindObject("hTPLad4"));
-  fGoodAnLadLay3= dynamic_cast<TH1F*>(fOutput->FindObject("hGALad3"));
-  fGoodAnLadLay4= dynamic_cast<TH1F*>(fOutput->FindObject("hGALad4"));
-
-  fDriftTimeRP= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimRP"));
-  fDriftTimeTPAll= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimTPAll"));
-  fDriftTimeTPNoExtra= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimTPNoExtra"));
-  fDriftTimeTPExtra= dynamic_cast<TH1F*>(fOutput->FindObject("hDrTimTPExtra"));
-
-  for(Int_t it=0; it<8; it++){
-    fSignalTime[it]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hSigTimeInt%d",it)));
-  }
-  fCluSizAnVsTime= dynamic_cast<TH2F*>(fOutput->FindObject("hCluSizAn"));
-  fCluSizTbVsTime= dynamic_cast<TH2F*>(fOutput->FindObject("hCluSizTb"));
-
+  printf("Number of analyzed events = %.0f\n",fHistNEvents->GetBinContent(1));
   return;
 }
 
