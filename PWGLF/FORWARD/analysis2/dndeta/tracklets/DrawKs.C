@@ -30,9 +30,9 @@ TH1* GetCentK(TDirectory* top, Double_t c1, Double_t c2, Int_t s,
     return;
   }
 
-  TObject* o = det->Get("deltaInt");
+  TObject* o = det->Get("scalar");
   if (!o) {
-    Warning("GetCetnK", "Object deltas not found in %s",
+    Warning("GetCetnK", "Object scalar not found in %s",
 	    det->GetName());
     return;
   }
@@ -74,19 +74,19 @@ TH1* GetCentK(TDirectory* top, Double_t c1, Double_t c2, Int_t s,
   return h;
 }
 
-void DrawKs(const char* filename)
+TCanvas* DrawKs(const char* filename)
 {
 
   TFile* file = TFile::Open(filename, "READ");
   if (!file) {
     Warning("DrawKs", "File %s couldn't be opened", filename);
-    return;
+    return 0;
   }
 
   TH1* cent = static_cast<TH1*>(file->Get("cent"));
   if (!cent) {
     Warning("DrawKs", "Failed to find cent in %s", file->GetName());
-    return;
+    return 0;
   }
 
   TString t(filename);
@@ -102,7 +102,9 @@ void DrawKs(const char* filename)
   else
     t.Append(" weights");
   
-  TCanvas* c = new TCanvas(nm,t,1000, 800);
+  Int_t cW = 1200;
+  Int_t cH =  800;
+  TCanvas* c = new TCanvas(nm,t,cW, cH);
   c->SetTopMargin(0.07);
   c->SetRightMargin(0.20);
   c->SetTicks();
@@ -124,11 +126,13 @@ void DrawKs(const char* filename)
     if (!h) continue;
 
     s->Add(h);
-  }  
+  }
   s->Draw("nostack");
   TH1* f = s->GetHistogram();
-  f->SetXTitle("#eta");
-  f->SetYTitle("#it{k}(#eta)");
+  if (f) {
+    f->SetXTitle("#eta");
+    f->SetYTitle("#it{k}(#eta)");
+  }
   
   TLatex* tit = new TLatex(0.55, 0.99, t);
   tit->SetTextFont(42);
@@ -138,7 +142,16 @@ void DrawKs(const char* filename)
   tit->Draw();
   l->SetBorderSize(0);
   l->Draw();
-  
-  // Printf("Save to %s.png", c->GetName());
-  c->SaveAs(Form("%s.png", c->GetName()));
+
+  c->Modified();
+  c->Update();
+  c->cd();
+
+  return c;
+}
+
+void DrawKs(UShort_t flags, const char* var)
+{
+  TCanvas* c = DrawKs(Form("results/combine_%s_0x%x.root", var, flags));
+  c->SaveAs(Form("plots/ks_%s_0x%x.png", var, flags));
 }

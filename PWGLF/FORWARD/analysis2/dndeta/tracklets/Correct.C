@@ -8,15 +8,16 @@ void SimpleCorrect(UShort_t,UShort_t,const char*,const char*,Int_t,const char*);
 class TCanvas;
 #endif
 const Bool_t kCorrectLoaded = true;
-void
-AddPath(const TString& dir, Bool_t prepend=true)
-{
-  TString d(gSystem->ExpandPathName(dir.Data()));
-  gSystem->AddIncludePath("-I%s", d.Data());
-  const char* oldPath = gROOT->GetMacroPath();
-  gROOT->SetMacroPath(Form(".:%s:%s",
-			   prepend ? d.Data() : oldPath,
-			   prepend ? oldPath  : d.Data()));
+namespace CorrectNS {
+  void AddPath(const TString& dir, Bool_t prepend=true)
+  {
+    TString d(gSystem->ExpandPathName(dir.Data()));
+    gSystem->AddIncludePath(Form("-I%s", d.Data()));
+    const char* oldPath = gROOT->GetMacroPath();
+    gROOT->SetMacroPath(Form(".:%s:%s",
+			     prepend ? d.Data() : oldPath,
+			     prepend ? oldPath  : d.Data()));
+  }
 }
 
 void
@@ -25,13 +26,18 @@ Correct(UShort_t    flags=0x3,
 	const char* var="none",
 	Bool_t      forceK=false)
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  AddPath(TString::Format("%s/dndeta/tracklets", fwd));
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  if (gSystem->Getenv("ANA_SRC")) fwd = gSystem->Getenv("ANA_SRC");
+  CorrectNS::AddPath(TString::Format("%s/dndeta/tracklets", fwd));
   if (!gROOT->GetListOfGlobals()->FindObject("kSimpleCorrectLoaded"))
     gROOT->LoadMacro("SimpleCorrect.C");
+  TString v(var);
+  if (v.EqualTo("PtPidStrK")) { forceK = true; v = "PtPidStr"; }
+  Printf("Processing dt_%s_%s/trdt.root and mc_%s_%s/trmc.root",
+	 side, "none", side, v.Data());
   SimpleCorrect(flags, TString(var).EqualTo("none") || forceK ? 2 : 3,
 		Form("dt_%s_%s/trdt.root", side, "none"),
-		Form("mc_%s_%s/trmc.root", side, var),
+		Form("mc_%s_%s/trmc.root", side, v.Data()),
 		9,
 		"");
   TString resFile;

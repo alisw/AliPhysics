@@ -19,6 +19,25 @@ Int_t cW = 1200;
 Int_t cH =  800;
 const char* obs = "\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta";
 
+//____________________________________________________________________
+/** 
+ * Print a histogram 
+ * 
+ * @param h    Histgram to print 
+ * @param prec Precision to use 
+ */
+void PrintH(TH1* h, Int_t prec=2)
+{
+  Printf("Content of %s - %s", h->GetName(), h->GetTitle());
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) {
+    if (h->GetBinContent(i) <= 1e-6) continue;
+    printf("%3d (%+6.3f): %.*f+/-%.*f\n", i,
+	   h->GetXaxis()->GetBinCenter(i),
+	   prec, h->GetBinContent(i),
+	   prec, h->GetBinError(i));
+  }
+}
+
 TObject* GetO(TDirectory* dir, const char* name="result", TClass* cls=0)
 {
   if (!dir) {
@@ -104,7 +123,7 @@ void AddLine(TH1* h)
   
 TH1* Compare(TH1* def, TH1* oth) 
 {
-  Printf("dividing %s by %s", oth->GetName(), def->GetName());
+  // Printf("dividing %s by %s", oth->GetName(), def->GetName());  
   TH1* r    = static_cast<TH1*>(oth->Clone());
   r->SetDirectory(0);
   r->Divide(def);
@@ -171,40 +190,96 @@ void CompareVars(UShort_t    flags,
   c->Print(Form("plots/%s.png", result->GetName()));
 }
 
+TH1* GetPubl()
+{
+  Int_t    nbin   = 9;
+  Double_t bins[] = { 0., 5., 10., 20., 30., 40., 50., 60., 70., 80.,  };
+  Double_t vals[] = { 1948, 1590, 1180, 786, 512, 318, 183, 96.3, 44.9, };
+  Double_t errs[] = {   38,   32,   31,  20,  15,  12,   8,  5.8,  3.4, };
+  TH1* ret = new TH1D("published", "dNch/deta in |eta|<0.5",
+		      nbin, bins);
+  for (Int_t i = 0; i < nbin; i++) {
+    ret->SetBinContent(i+1, vals[i]);
+    ret->SetBinError  (i+1, errs[i]);
+  }
+  return ret;
+}
+void PrintAxis(TAxis* axis)
+{
+  printf("%3d bins: ");
+  for (Int_t i = 1; i <= axis->GetNbins(); i++)
+    printf("%6.3f-", axis->GetBinLowEdge(i));
+  Printf("%6.3f", axis->GetBinUpEdge(i));
+}
 void CompareMids(UShort_t    flags,
 		 const char* var)
 {
-  TH1* def   = GetMid(flags, "none");
+  TH1* def   = GetPubl(); // GetMid(flags, "none");
   TH1* other = GetMid(flags, var);
   if (!def || !other) return;
-
+  // PrintAxis(def->GetXaxis());
+  // PrintAxis(other->GetXaxis());
+  
   def->SetName("default");
   other->SetName(var);
-  TH1* h = Compare(def,other);
-  h->SetYTitle(Form("%s / default", var));
-  h->SetStats(0);
-  h->SetMarkerStyle(20);
-  h->SetMarkerColor(kBlack);
-  h->SetLineColor(kBlack);
-  h->SetFillColor(kBlue-9);
-  h->SetFillStyle(1001);
-  h->SetName(Form("compare_%s_0x%xmid",var, flags));
-  h->SetTitle(Form("\\hbox{%s vs. default }%s\\hbox{ %s}",
-		   var, obs, (flags & 0x3) == 0x3 ?
-		   "combinatorics" : "injection"));
+  TH1* hs = static_cast<TH1*>(def->Clone("ratioSys"));
+  TH1* ht = static_cast<TH1*>(def->Clone("ratioStat"));
+  hs->SetTitle("Syst.uncer.");
+  ht->SetTitle("Stat.error");
+  hs->SetStats(0);
+  ht->SetStats(0);
+  ht->SetMarkerStyle(20);
+  ht->SetMarkerSize(2);
+  ht->SetMarkerColor(kBlack);
+  ht->SetLineColor(kBlack);
+  ht->SetLineWidth(2);
+  hs->SetFillColor(kBlue-10);
+  hs->SetFillStyle(1001);
+  hs->SetYTitle(Form("%s / published", var));
+  ht->SetYTitle(Form("%s / published", var));
+  hs->Reset();
+  ht->Reset();
+  for (Int_t i = 1; i <= def->GetNbinsX(); i++) {
+    Double_t oc = other->GetBinContent(i);
+    Double_t oe = other->GetBinError  (i);
+    Double_t dc = def  ->GetBinContent(i);
+    Double_t de = def  ->GetBinError  (i);
+    Double_t y  = oc / dc;
+    Double_t st = oe/oc*y;
+    Double_t sy = de/dc*y;
+    hs->SetBinContent(i, y);
+    ht->SetBinContent(i, y);
+    hs->SetBinError  (i, sy);
+    ht->SetBinError  (i, st);
+  }
+  THStack* stack = new THStack(Form("mid_%s_0x%x", var, flags), "");
+  stack->Add(hs, "e2");
+  stack->Add(ht);
+  AddLine(ht);
+  // PrintH(def);
+  // PrintH(other);
+  // PrintH(h);
   
-  TCanvas* c = new TCanvas(h->GetName(),h->GetTitle(), cW, cH);
+  TCanvas* c = new TCanvas(ht->GetName(),hs->GetTitle(), cW, cH);
   c->SetTopMargin(0.01);
   c->SetRightMargin(0.01);
   c->SetTicks();
-  h->Draw("e2");
-  h->SetMinimum(0.96);
-  h->SetMaximum(1.04);
+  stack->SetMinimum(0.9);
+  stack->SetMaximum(1.1);
+  stack->Draw("nostack");
+  TH1* h = stack->GetHistogram();
+  // h->SetMinimum(0.9);
+  // h->SetMaximum(1.1);
   h->GetYaxis()->SetTitleOffset(1.5);
   h->SetXTitle("Centrality [%]");
-  h->SetYTitle(Form("%s / default", var));
-  AddLine(h);
-  
+  h->SetYTitle(Form("%s / published", var));
+
+  TLegend* l = c->BuildLegend(c->GetLeftMargin(),
+			      c->GetBottomMargin(),
+			      .7,
+			      .3);
+  l->SetFillStyle(0);
+  l->SetBorderSize(0);
   c->Modified();
   c->Print(Form("plots/%s.png", h->GetName()));  
 }
@@ -348,11 +423,12 @@ Compare(const char* var)
   if (!gROOT->GetClass("GraphSysErr"))
     gROOT->LoadMacro("$HOME/GraphSysErr/GraphSysErr.C+g");
   gSystem->mkdir("plots",1);
-  CompareVars(0x0,var);
-  CompareVars(0x3,var);
-  CompareFlgs(0x0,0x3,var);
-  CompareMids(0x0,var);
+  TString w(var);
+  // CompareVars(0x0,var);
+  if (!w.EqualTo("none")) CompareVars(0x3,var);
+  // CompareFlgs(0x0,0x3,var);
+  // CompareMids(0x0,var);
   CompareMids(0x3,var);
-  CentPlot(0x0);
+  if (w.EqualTo("none")) CentPlot(0x3);
   // CompareSubs(0x3,var);
 }
