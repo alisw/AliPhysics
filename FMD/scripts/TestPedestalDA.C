@@ -44,11 +44,12 @@ void TestPedestalDA(Char_t* fileName="data.raw", Int_t runNumber=1,
   // Set-up timer 
   TStopwatch timer;
   timer.Start();
-  
+
+  Bool_t append = false;
   // Make and run DA
   AliFMDPedestalDA pedestalDA;
   pedestalDA.SetSaveDiagnostics(diagnostics);
-  pedestalDA.Run(reader);
+  pedestalDA.Run(reader, append);
 
   // Stop and print summary
   timer.Stop();
