@@ -78,6 +78,7 @@ private:
   Double_t fNonlinearityParams[10] ;         // Parameters for non-linearity calculation
   TH2I * fPHOSBadMap[6] ;                    // Bad channels map
   Int_t fRecoPass ;                          // Reconstruction pass
+  Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations

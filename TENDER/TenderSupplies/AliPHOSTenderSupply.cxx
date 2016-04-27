@@ -78,6 +78,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
@@ -121,19 +122,18 @@ void AliPHOSTenderSupply::InitTender()
     }
   }     
   
-  Int_t runNumber = 0;
   if(fTender)
-    runNumber = fTender->GetRun();
+    fRunNumber = fTender->GetRun();
   else{
     if(!fTask){
       AliError("Neither Tender not Taks was not set") ;
       return ;
     }
     if(aod)
-      runNumber = aod->GetRunNumber() ;
+      fRunNumber = aod->GetRunNumber() ;
     else{
       if(esd)
-        runNumber = esd->GetRunNumber() ;
+        fRunNumber = esd->GetRunNumber() ;
       else{
         AliError("Taks does not contain neither ESD nor AOD") ;
         return ;
@@ -173,7 +173,10 @@ void AliPHOSTenderSupply::InitTender()
    
   //Init geometry 
   if(!fPHOSGeo){
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    if(fRunNumber<209122) //Run1
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2") ;      
     AliOADBContainer geomContainer("phosGeo");
     if(fIsMC){ //use excatly the same geometry as in simulation, stored in esd
       if(esd){
@@ -188,7 +191,7 @@ void AliPHOSTenderSupply::InitTender()
       } 
       if(aod){ //To be fixed
         geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
-        TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+        TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
         for(Int_t mod=0; mod<6; mod++) {
           if(!matrixes->At(mod)) continue;
           fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
@@ -199,7 +202,7 @@ void AliPHOSTenderSupply::InitTender()
     }
     else{ //Use best approaximation to real geometry
       geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-      TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+      TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
       for(Int_t mod=0; mod<6; mod++) {
         if(!matrixes->At(mod)) continue;
         fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
@@ -213,9 +216,9 @@ void AliPHOSTenderSupply::InitTender()
   if(!fUsePrivateBadMap){
    AliOADBContainer badmapContainer(Form("phosBadMap"));
     badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosBadMap");
+    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
     if(!maps){
-      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",runNumber)) ;    
+      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;    
     }
     else{
       AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
@@ -235,10 +238,10 @@ void AliPHOSTenderSupply::InitTender()
       AliOADBContainer calibContainer("phosRecalibration");
       calibContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCCalibrations.root","phosRecalibration");
 
-      AliInfo(Form("Reading PHOS MC recalibration object for production %s, run=%d", fMCProduction.Data(),runNumber)) ;      
-      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration",fMCProduction.Data());
+      AliInfo(Form("Reading PHOS MC recalibration object for production %s, run=%d", fMCProduction.Data(),fRunNumber)) ;      
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(fRunNumber,"PHOSRecalibration",fMCProduction.Data());
       if(!recalib){
-        AliFatal(Form("Can not read calibrations for run %d and name >%s<\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber,fMCProduction.Data())) ;
+        AliFatal(Form("Can not read calibrations for run %d and name >%s<\n. You may choose your specific calibration with ForceUsingCalibration()\n",fRunNumber,fMCProduction.Data())) ;
       }
       else{
 	//Now try to find object with proper name
@@ -250,7 +253,7 @@ void AliPHOSTenderSupply::InitTender()
 	  }
 	}
         if(!fPHOSCalibData) {
-          AliFatal(Form("Can not find calibration for run %d, and name %s \n",runNumber, fMCProduction.Data())) ;
+          AliFatal(Form("Can not find calibration for run %d, and name %s \n",fRunNumber, fMCProduction.Data())) ;
         }
       }
       
@@ -260,14 +263,14 @@ void AliPHOSTenderSupply::InitTender()
       //Check the pass1-pass2-pass3 reconstruction
       AliOADBContainer calibContainer("phosRecalibration");
       calibContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
-      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(runNumber,"PHOSRecalibration");
+      TObjArray *recalib = (TObjArray*)calibContainer.GetObject(fRunNumber,"PHOSRecalibration");
       if(!recalib){
-        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",runNumber)) ;
+        AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",fRunNumber)) ;
       }
       else{
         fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
         if(!fPHOSCalibData) {
-          AliFatal(Form("Can not find calibration for run %d, pass %d \n",runNumber, fRecoPass)) ;
+          AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
         }
       }
     }
@@ -320,6 +323,12 @@ void AliPHOSTenderSupply::ProcessEvent()
 
   //For re-calibration
   const Double_t logWeight=4.5 ;  
+  
+  Int_t phosCluSelection =  AliVCluster::kPHOSNeutral ;  
+//   if(fRunNumber>=209122) //Run2
+//      phosCluSelection
+//      
+//   (fClusterType == kPHOSNeutral || fClusterType == kPHOSCharged)     
 
   if(esd){ //To avoid multiple if in loops we made 
            //almost identical pecies of code. Please apply changes to both!!!
@@ -342,7 +351,7 @@ void AliPHOSTenderSupply::ProcessEvent()
  
     for (Int_t i=0; i<multClust; i++) {
       AliESDCaloCluster *clu = esd->GetCaloCluster(i);    
-      if ( !clu->IsPHOS()) continue;
+      if (clu->GetType()!=phosCluSelection) continue;
       
       //remove clusters from bad modules without re-calibration
       Int_t relid[4] ;
@@ -433,7 +442,8 @@ void AliPHOSTenderSupply::ProcessEvent()
   
     for (Int_t i=0; i<multClust; i++) {
       AliAODCaloCluster *clu = aod->GetCaloCluster(i);    
-      if ( !clu->IsPHOS()) continue;
+//      if ( !clu->IsPHOS()) continue;
+      if (clu->GetType()!=phosCluSelection) continue;
       
     
       //Apply re-Calibreation
