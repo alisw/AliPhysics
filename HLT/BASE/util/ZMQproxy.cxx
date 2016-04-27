@@ -53,6 +53,9 @@ bool fVerbose = false;
 
 const char* fUSAGE =
   "ZMQproxy: a simple monitored ZMQ proxy\n"
+  "caveat: using a REQ socket causes a custom request to be sent;\n"
+  "        only the reply is forwardedto the backend.\n"
+  "        For request forwarding use DEALER-ROUTER.\n"
   "options:\n"
   " -in : socket in\n"
   " -out : socket out\n"
