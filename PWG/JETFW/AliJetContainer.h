@@ -104,6 +104,10 @@ class AliJetContainer : public AliParticleContainer {
   void                        SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        SetRhoMassName(const char *n)                        { fRhoMassName    = n                ; }
     
+  void                        SetTpcHolePos(Double_t b)                                {fTpcHolePos       =   b     ;}
+  void                        SetTpcHoleWidth(Double_t b)                             {fTpcHoleWidth    =   b     ;} 
+
+
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
 
@@ -125,6 +129,8 @@ class AliJetContainer : public AliParticleContainer {
   virtual Bool_t              AcceptJet(Int_t i, UInt_t &rejectionReason) const;
   virtual Bool_t              AcceptJet(const AliEmcalJet* jet, UInt_t &rejectionReason) const;
   virtual Bool_t              ApplyJetCuts(const AliEmcalJet* clus, UInt_t &rejectionReason) const;
+  virtual Bool_t              CheckTpcHolesOverlap(const AliEmcalJet* clus,UInt_t &rejectionReason) const;
+  Double_t                    RelativePhi(Double_t ang1, Double_t ang2) const ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Int_t                       GetNAcceptedJets()                         ;
@@ -193,7 +199,8 @@ class AliJetContainer : public AliParticleContainer {
   AliRhoParameter            *fRhoMass;              //!<! event rho mass for these jets
   AliEMCALGeometry           *fGeom;                 //!<! emcal geometry
   Int_t                       fRunNumber;            //!<! run number
-
+  Double_t                fTpcHolePos;             //position(in radians) of the malfunctioning TPC sector
+  Double_t                fTpcHoleWidth;          //width of the malfunctioning TPC area
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment

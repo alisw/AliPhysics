@@ -106,7 +106,8 @@ class AliEmcalContainer : public TObject {
     kMaxClusterPtCut = 1<<25,            ///< Cut on the maximum cluster \f$ p_{t} \f$
     kFlavourCut = 1<<26,                 ///< Cut on flavour content in the jet
     kTagStatus = 1<<27,                  ///< Cut on jet tag status
-    kMinNConstituents = 1<<28            ///< Cut on the minimum number of constituents
+    kMinNConstituents = 1<<28,            ///< Cut on the minimum number of constituents
+    kOverlapTpcHole = 1<<29             ///<Cut  on the regions of acceptance with bad sectors 
   };
 
   AliEmcalContainer();
