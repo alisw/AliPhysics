@@ -89,13 +89,15 @@ public:
      * @param dndetaCentral   Central observations 
      * @param normForward     Acceptance 
      * @param normCentral     Acceptance 
-     * @param mc              Primary "observations"
+     * @param dndetaMC        MC-truth distribution 
      * @param ipZ             Interaction point 
      * @param pileup          True if flagged as pile-up
      * @param selectedTrigger Is event selected
      * @param isMCClass       Is event MC NSD 
      * @param isESDClass      Is event real NSD 
      * @param aodevent        Full event 
+     * @param minIPz          Least Z coordinate of IP 
+     * @param maxIPz          Largest Z coordinate of IP 
      */
     virtual void Process(TH1D*              dndetaForward,
 			 TH1D*              dndetaCentral,

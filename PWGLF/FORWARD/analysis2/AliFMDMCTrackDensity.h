@@ -74,8 +74,8 @@ public:
    */
 
 
- void SetLowCutvalue(Double_t v) { fLowCutvalue = v; }
- /** 
+  void SetLowCutvalue(Double_t v) { fLowCutvalue = v; }
+  /** 
    * Loops over all the particles in the passed event.  If @a primary
    * is not null, then that histogram is filled with the primary
    * particle information - irrespective of whether the particle
@@ -88,7 +88,7 @@ public:
    * 
    * @param esd      FMD ESD structure 
    * @param event    MC event 
-   * @param vz       IP z-coordinate
+   * @param ip       IP coordinates
    * @param output   Output of FMD hits
    * @param primary  Primary information, if available. 
    * 

@@ -428,6 +428,7 @@ struct dNdetaDrawer
    * Try to get empirical correction from a path or prefix path 
    * 
    * @param prx     Path or prefix 
+   * @param useCen  Whether to use centrality 
    * @param fwdEmp  On return, pounter to the objects or null 
    * @param cenEmp  On return, pounter to the objects or null 
    * @param empName On return, the full path
@@ -3500,16 +3501,11 @@ Usage()
  * @param rebin     Rebinning factor 
  * @param others    What other data to show 
  * @param flags     Flags 
- * @param sNN       (optional) Collision energy [GeV]
- * @param sys       (optional) Collision system (1: pp, 2: PbPb)
- * @param trg       (optional) Trigger (1: INEL, 2: INEL>0, 4: NSD)   
+ * @param meanIpX   Mean off-set in X direction of IP
+ * @param meanIpY   Mean off-set in Y direction of IP
  * @param eff       (optional) Trigger efficiency 
- * @param vzMin     Least @f$ v_z@f$
- * @param vzMax     Largest @f$ v_z@f$
  * @param base      Base name 
  * @param outflg    Output flags 
- * @param centMin   Least centrality 
- * @param centMax   Largest centrality 
  *
  * @ingroup pwglf_forward_dndeta
  * @deprecated Use new GSE based drawing 

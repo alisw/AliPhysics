@@ -1195,6 +1195,7 @@ public:
    * 
    * @param parent Parent list 
    * @param name   Name of sub-list 
+   * @param verbose Whether to be verbose 
    * 
    * @return Pointer to the list 
    */
@@ -1260,6 +1261,7 @@ public:
    * 
    * @param list List to look in
    * @param name Name of object 
+   * @param verbose Whether to be verbose 
    * 
    * @return Pointer to object or null
    */
@@ -1282,6 +1284,7 @@ public:
    * 
    * @param list List 
    * @param name Name of histogram
+   * @param verbose Whether to be verbose 
    * 
    * @return Pointer to object or null
    */

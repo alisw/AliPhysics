@@ -32,6 +32,7 @@
  * @param field   L3 field setting.
  * @param config  Configuration file to use
  * @param corrs   Corrections to use
+ * @param dead    (Optional) file with extra dead scripts 
  *
  * @return newly allocated analysis task
  *
