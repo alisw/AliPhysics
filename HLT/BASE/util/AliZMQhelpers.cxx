@@ -615,6 +615,7 @@ int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket,
   rc = zmq_send( socket, &topic, sizeof(topic), ZMQ_SNDMORE );
   if (rc<0) 
   {
+    zmq_msg_close(&dataMsg);
     //printf("unable to send topic: %s %s\n", topic.Description().c_str(), zmq_strerror(errno));
     return rc;
   }
