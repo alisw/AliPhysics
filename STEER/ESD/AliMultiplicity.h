@@ -113,7 +113,7 @@ class AliMultiplicity : public AliVMultiplicity {
 
   UInt_t GetNumberOfITSClusters(Int_t layer) const { return layer<6 ? fITSClusters[layer] : 0; }
   UInt_t GetNumberOfITSClusters(Int_t layMin, Int_t layMax) const ;
-  void SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
+  virtual void SetITSClusters(Int_t layer, UInt_t clusters) { fITSClusters[layer] = clusters; }
   //
   virtual Short_t GetNumberOfFiredChips(Int_t layer) const { return fFiredChips[layer]; }
   virtual void SetFiredChips(Int_t layer, Short_t firedChips) { fFiredChips[layer] = firedChips; }

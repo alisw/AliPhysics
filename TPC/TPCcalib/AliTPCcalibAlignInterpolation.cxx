@@ -878,7 +878,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   // 0.) Load current information file and bookd variables
   // 
   const Int_t nSec=81;         // 72 sector +5 sumarry info+ 4 medians +
-  const Double_t kMaxZ=250;
+  const Double_t kMaxZSect[2]={2.49725e+02,2.49698e+02};
   TVectorF meanNcl(nSec);      // mean current estator ncl per sector
   TVectorF meanNclUsed(nSec);  // mean current estator ncl per sector
   Double_t meanTime=0, maxTime=startTime, minTime=stopTime;
@@ -1145,15 +1145,16 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  xxx[kSect] = sector;
 	  xxx[kLocX] = localX;
 	  Double_t side=-1.+2.*((rocID%36)<18);
+	  double maxZ = kMaxZSect[side<0];
 	  xxx[kZ2X] = (zUse*side)<-1 ? side*0.001 : zUse/localX; // do not mix z on A side and C side ?? RS
 	  // apply drift velocity calibration if available
 	  
 	  if (ihis>2){  // if z residuals and vdrift calibration existing
-	    Double_t drift = (side>0) ? kMaxZ-zUse : zUse+kMaxZ;
+	    Double_t drift = (side>0) ? maxZ-zUse : zUse+maxZ;
 	    Double_t gy    = TMath::Sin(phiUse)*localX;
 	    Double_t pvecFit[3];
 	    pvecFit[0]= side;             // z shift (cm)
-	    pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+	    pvecFit[1]= drift*gy/maxZ;   // global y gradient
 	    pvecFit[2]= drift;            // drift length
 	    Double_t expected = (vdriftParam!=NULL) ? (*vdriftParam)[0]+(*vdriftParam)[1]*pvecFit[0]+(*vdriftParam)[2]*pvecFit[1]+(*vdriftParam)[3]*pvecFit[2]:0;
 	    deltaRefUse= side*(deltaRefUse*side-(expected+corrTime*drift));
@@ -1710,7 +1711,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   Int_t maxEntries=1000000;
   Int_t maxPointsRobust=4000000;
   //
-  const Double_t kMaxZ=250;
+  const Double_t kMaxZSect[2]={2.49725e+02,2.49698e+02};
   TCut  selection="";
   Int_t entriesAll=0;
   Int_t runNumber=TString(gSystem->Getenv("runNumber")).Atoi();
@@ -1794,7 +1795,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   float bz = fixAlignmentBugForFile ? InitForAlignmentBugFix(runNumber) : 0;
 
   chainDelta->SetEstimate(maxEntries*160/5.);
-  TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC";
+  TString toRead = "tof1.fElements:trd1.fElements:vecZ.fElements:vecR.fElements:vecSec.fElements:vecPhi.fElements:timeStamp:tofBC:its1.fElements";
   //
   if (fixAlignmentBugForFile) toRead += ":tof0.fElements:trd0.fElements:track.fP[4]"; // needed only in case we need to fix alignment bug
   //
@@ -1815,6 +1816,7 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   TVectorD * vecPhi    = new TVectorD(entriesFit); //
   TVectorD * vecTime   = new TVectorD(entriesFit); //
   TVectorD * vecTOFBC   = new TVectorD(entriesFit); //
+  TVectorD * deltaZITS  = new TVectorD(entriesFit); //
   
   for (Int_t i=0; i<entriesFit; i++){
     Int_t index=gRandom->Rndm()*entriesFit0;
@@ -1825,19 +1827,21 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
     (*vecSec)[i]= chainDelta->GetVal(4)[index];
     (*vecPhi)[i]= chainDelta->GetVal(5)[index];
     (*vecTime)[i]= chainDelta->GetVal(6)[index];    
-    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];
+    (*vecTOFBC)[i]= chainDelta->GetVal(7)[index];    
+    (*deltaZITS)[i]= chainDelta->GetVal(8)[index];
     //
     if ( (*vecR)[i] < kInvalidR ) continue; // there was no cluster at this point
-    // if needed, fix alignment bug
+    // if needed, fix alignment bug 
     if (fixAlignmentBugForFile) {
-      float dyTOF = chainDelta->GetVal(8)[index];
-      float dyTRD = chainDelta->GetVal(9)[index];
-      float q2pt = chainDelta->GetVal(10)[index];
+      float dyTOF = chainDelta->GetVal(9)[index];
+      float dyTRD = chainDelta->GetVal(10)[index];
+      float q2pt = chainDelta->GetVal(11)[index];
       //
+      float dzITS = (*deltaZITS)[i];
       float dzTOF = (*deltaZTOF)[i];
       float dzTRD = (*deltaZTRD)[i];
       float rTOF  = (*vecR)[i], rTRD = rTOF;
-      float zTOF  = (*vecZ)[i], zTRD = zTOF;
+      float zTOF  = (*vecZ)[i] + dzTOF-dzITS , zTRD = (*vecZ)[i] + dzTRD-dzITS;
       float phiTOF= (*vecPhi)[i], phiTRD = phiTOF;
       
       int rocID = TMath::Nint((*vecSec)[i]);
@@ -1901,13 +1905,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
 	Double_t side  = -1.+((sector%36)<18)*2.;
 	Double_t z= (*vecZ)[ipoint];
-	Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
-	if (drift>kMaxZ) continue;
+	double maxZ = kMaxZSect[side<0];
+	Double_t drift = (side>0) ? maxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+maxZ;
+	if (drift>maxZ) continue;
 	Double_t phi   = (*vecPhi)[ipoint];
 	Double_t gy    = TMath::Sin(phi)*radius;
 	Float_t tofBC=(*vecTOFBC)[ipoint];
 	pvecFit[0]= side;             // z shift (cm)
-	pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+	pvecFit[1]= drift*gy/maxZ;   // global y gradient
 	pvecFit[2]= drift;            // drift length
 	Double_t dZTOF=(*deltaZTOF)[ipoint];
 	Double_t dZTRD=(*deltaZTRD)[ipoint];
@@ -2093,12 +2098,13 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
       Int_t sector   = TMath::Nint((*vecSec)[ipoint]);
       Double_t side  = -1.+((sector%36)<18)*2.;
       Double_t z= (*vecZ)[ipoint];
-      Double_t drift = (side>0) ? kMaxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+kMaxZ;
-      if (drift>kMaxZ) continue;
+      double maxZ = kMaxZSect[side<0];
+      Double_t drift = (side>0) ? maxZ-(*vecZ)[ipoint] : (*vecZ)[ipoint]+maxZ;
+      if (drift>maxZ) continue;
       Double_t phi   = (*vecPhi)[ipoint];
       Double_t gy    = TMath::Sin(phi)*radius;
       pvecFit[0]= side;             // z shift (cm)
-      pvecFit[1]= drift*gy/kMaxZ;   // global y gradient
+      pvecFit[1]= drift*gy/maxZ;   // global y gradient
       pvecFit[2]= drift;            // drift length
       Double_t expected = paramRobust[0]+paramRobust[1]*pvecFit[0]+paramRobust[2]*pvecFit[1]+paramRobust[3]*pvecFit[2];
       Int_t time=(*vecTime)[ipoint];
@@ -2108,14 +2114,14 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	if (TMath::Abs(dZTOF-expected)<kMaxDist1) {
 	  dZTOF *= side;
 	  //      fitterTOF->AddPoint(pvecFit,dZTOF,1);
-	  hisTOF.Fill(time,(dZTOF-expected)/drift,drift/kMaxZ); 
+	  hisTOF.Fill(time,(dZTOF-expected)/drift,drift/maxZ); 
 	}
       }
       Double_t dZTRD=(*deltaZTRD)[ipoint];
       if ( dZTRD>kInvalidRes) {
 	if (TMath::Abs(dZTRD-expected)<kMaxDist1) {
 	  //fitterTOF->AddPoint(pvecFit,dZTRD,1);	
-	  hisTRD.Fill(time,(dZTRD-expected)/drift,drift/kMaxZ); 
+	  hisTRD.Fill(time,(dZTRD-expected)/drift,drift/maxZ); 
 	}
       }  
 
@@ -2881,6 +2887,7 @@ void AliTPCcalibAlignInterpolation::FixAlignmentBug(int sect, float q2pt, float 
 {
   // fix alignment bug: https://alice.its.cern.ch/jira/browse/ATO-339?focusedCommentId=170850&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-170850
   //
+  // NOTE: deltaZ in the buggy code is calculated as Ztrack_with_bug - Zcluster_w/o_bug
   static TGeoHMatrix *mCache[72] = {0};
   if (sect<0||sect>=72) {
     AliErrorClassF("Invalid sector %d",sect);
@@ -2897,18 +2904,20 @@ void AliTPCcalibAlignInterpolation::FixAlignmentBug(int sect, float q2pt, float 
   }  
   double alpSect = ((sect%18)+0.5)*20.*TMath::DegToRad();
 
-  // cluster in its proper alpha frame with alignment bug, Z trackITS is used !!! 
-  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree, ITS Z only is stored
+  // cluster in its proper alpha frame with alignment bug
+  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree
   double xyzTrUse[3] = {x, deltaY, z}; // track in bad cluster frame
   //
-  // recover cluster Z position by adding deltaZ, this is approximate, since ITS track Z was used...
-  xyzClUse[2] -= deltaZ;
+  // recover cluster Z position by adding deltaZ
+  double zClSave = xyzClUse[2] -= deltaZ;  // here the cluster is not affected by Z alignment component of the bug!
   static AliExternalTrackParam trDummy;
   trDummy.Local2GlobalPosition(xyzClUse,alp); // misaligned cluster in global frame
   double xyz0[3]={xyzClUse[0],xyzClUse[1],xyzClUse[2]};
   mgt->MasterToLocal(xyz0,xyzClUse);
-  // we got ideal cluster in the sector tracking frame, 
+  // we got ideal cluster in the sector tracking frame,  but now the Z is wrong, since it was not affected by the bug!!!
   //
+  xyzClUse[2] = zClSave;
+
   // go to ideal cluster frame
   trDummy.Local2GlobalPosition(xyzClUse,alpSect); // ideal global
   double alpFix = TMath::ATan2(xyzClUse[1],xyzClUse[0]);    // fixed cluster phi

@@ -32,9 +32,6 @@
 #include "AliTPCChebCorr.h"
 
 
-#define kMaxResid  10.0f    
-#define kMaxTgSlp  2.0f
-
 class AliTPCDcalibRes: public TNamed
 {
  public:
@@ -54,9 +51,9 @@ class AliTPCDcalibRes: public TNamed
   enum {kResX,kResY,kResZ,kResD,kResDim,kResDimG=kResDim-1}; // output dimensions
   //
   struct dts_t {  // struct for basic local residual
-    Double32_t dy; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dz; //[-kMaxResid,kMaxResid,16]
-    Double32_t tgSlp; //[kMaxTgSlp,kMaxTgSlp,16]
+    Double32_t dy; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
+    Double32_t dz; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
+    Double32_t tgSlp; //[-2,2,14]  //[kMaxTgSlp,kMaxTgSlp,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: VoxF,kVoxX,kVoxZ
   };
 
@@ -64,16 +61,16 @@ class AliTPCDcalibRes: public TNamed
   struct dtc_t
   {
     Int_t t;        // time stamp
-    Double32_t dyR; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dzR; //[-kMaxResid,kMaxResid,16]
-    Double32_t dyC; //[-kMaxResid,kMaxResid,16] 
-    Double32_t dzC; //[-kMaxResid,kMaxResid,16]
-    Double32_t q2pt;//[-kMaxQ2Pt,kMaxQ2Pt,16]
-    Double32_t tgLam;//[-2.,2.,16]
-    Double32_t tgSlp;//kMaxTgSlp,kMaxTgSlp,16]
-    Float_t x;
-    Float_t y;
-    Float_t z;
+    Double32_t dyR; //[-10.,10.,14] 
+    Double32_t dzR; //[-10.,10.,14]
+    Double32_t dyC; //[-10.,10.,14] 
+    Double32_t dzC; //[-10.,10.,14]
+    Double32_t q2pt;//[-3,3,14]
+    Double32_t tgLam;//[-2.,2.,14]
+    Double32_t tgSlp;//[-2,2,14] 
+    Float_t x;  //[80,160,14]
+    Float_t y; //[-50,50,14]
+    Float_t z; //[-250,250,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: kVoxQ,kVoxF,kVoxX,kVoxZ
     //
     dtc_t() {memset(this,0,sizeof(dtc_t));}
@@ -84,6 +81,7 @@ class AliTPCDcalibRes: public TNamed
     Float_t E[kResDim];      // their errors
     Float_t DS[kResDim];     // smoothed residual
     Float_t DC[kResDim];     // Cheb parameterized residual
+    Float_t EXYCorr;         // correlation between extracted X and Y
     Float_t stat[kVoxHDim];  // statistics: averages of each voxel dimension + entries
     UChar_t bvox[kVoxDim];   // voxel identifier, here the bvox[0] shows number of Q bins used for Y
     UChar_t bsec;            // sector ID (0-35)
@@ -220,10 +218,14 @@ class AliTPCDcalibRes: public TNamed
   void     SetFilterOutliers(Bool_t v=kTRUE)     {fFilterOutliers = v;}
 
   void     SetMaxFitYErr2(float v=1.0)           {fMaxFitYErr2 = v;}
-  void     SetMaxFitXErr2(float v=1.5)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXErr2(float v=1.2)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXYCorr(float v=0.95)         {fMaxFitXYCorr = v;}
+  void     SetLTMCut(float v=0.75)               {fLTMCut = v;}
 
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
+  Float_t  GetMaxFitXYCorr()                const {return fMaxFitXYCorr;}
+  Float_t  GetLTMCut()                      const {return fLTMCut;}
 
   Int_t    GetRun()                         const {return fRun;}
   Long64_t GetTMin()                        const {return fTMin;}
@@ -303,6 +305,8 @@ protected:
 
   Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
+  Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
+  Float_t  fLTMCut;                  // LTM cut for outliers suppression
 
   // -------------------------------Binning
   Int_t    fNY2XBins;    // y/x bins per sector
@@ -382,6 +386,8 @@ protected:
   //
   static AliTPCDcalibRes* fgUsedInstance; //! interface instance to use for parameterization
   //
+  static const float kMaxResid;  // max range of distortions, must be <= than the double32_t range of dst_t
+  static const float kMaxTgSlp;  // max range of tgSlope, must be <= than the double32_t range of dst_t
   static const float kSecDPhi;
   static const float kMaxQ2Pt;
   //  static const float kMaxTgSlp;
@@ -389,7 +395,7 @@ protected:
   static const float kMinX;   // min X to cover
   static const float kMaxX;   // max X to cover
   static const float kMaxZ2X;   // max z/x
-  static const float kZLim;   // endcap position
+  static const float kZLim[2];   // endcap positions
   static const char* kLocalResFileName;
   static const char* kClosureTestFileName;
   static const char* kStatOut;
@@ -407,7 +413,7 @@ protected:
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,1);
+  ClassDef(AliTPCDcalibRes,2);
 };
 
 //________________________________________________________________

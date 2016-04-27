@@ -31,6 +31,7 @@ AliAODTracklets::AliAODTracklets()
   ,fFastOrFiredChips(),fClusterFiredChips()
 {
   fFiredChips[0] = fFiredChips[1] = 0;
+  for (int i=6;i--;) fITSClusters[i] = 0;
   // default constructor
 }
 
@@ -40,6 +41,7 @@ AliAODTracklets::AliAODTracklets(const char* name, const char* title)
 {
   // Named constructor
   fFiredChips[0] = fFiredChips[1] = 0;
+  for (int i=6;i--;) fITSClusters[i] = 0;
 }
 
 AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
@@ -67,6 +69,7 @@ AliAODTracklets::AliAODTracklets(const AliAODTracklets& tracklet) :
     }
     fFiredChips[0] = tracklet.fFiredChips[0];
     fFiredChips[1] = tracklet.fFiredChips[1];
+    for (int i=6;i--;) fITSClusters[i] = tracklet.fITSClusters[i];
 }
 
 AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
@@ -89,6 +92,7 @@ AliAODTracklets& AliAODTracklets::operator=(const AliAODTracklets& tracklet)
     fFiredChips[1] = tracklet.fFiredChips[1];
     fFastOrFiredChips = tracklet.fFastOrFiredChips;
     fClusterFiredChips = tracklet.fClusterFiredChips;
+    for (int i=6;i--;) fITSClusters[i] = tracklet.fITSClusters[i];
     return *this;
 }
 

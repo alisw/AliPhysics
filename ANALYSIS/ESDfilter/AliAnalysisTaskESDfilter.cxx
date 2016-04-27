@@ -1669,6 +1669,8 @@ void AliAnalysisTaskESDfilter::ConvertTracklets(const AliESDEvent& esd)
     SPDTracklets.SetFastOrFiredChipMap(mult->GetFastOrFiredChipMap());
     SPDTracklets.SetFiredChips(0,mult->GetNumberOfFiredChips(0));
     SPDTracklets.SetFiredChips(1,mult->GetNumberOfFiredChips(1));
+    //
+    for (int i=6;i--;) SPDTracklets.SetITSClusters(i,mult->GetNumberOfITSClusters(i));
   } else {
     //Printf("ERROR: AliMultiplicity could not be retrieved from ESD");
   }

@@ -34,7 +34,7 @@ AliAODITSsaTrackCuts::~AliAODITSsaTrackCuts()
 //destructor
   delete fdcaxycut;
   delete fdcazcut;
-  delete fPrimaryVertex;
+  // Do not delete, not owner  delete fPrimaryVertex;
 }
 
 Bool_t AliAODITSsaTrackCuts::AcceptTrack(const AliAODTrack* aodTrack)

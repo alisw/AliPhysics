@@ -61,6 +61,7 @@ public:
   static const Double_t kCapacitorDx; 
   static const Double_t kConnectorLength;
   static const Double_t kConnectorWidth;
+  static const Double_t kConnectorHeight;
   static const Double_t kConnectorThickness;
   static const Double_t kEpsilon;
   static const Double_t kGlueThickness;

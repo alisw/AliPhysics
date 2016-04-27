@@ -11,16 +11,21 @@ void MakeT0RecoParam2015(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infi
   TObjArray *recoParamArray = new TObjArray();
   AliT0RecoParam* t0RecoParam;
   //coefficients for new QTC 00->10
-  Float_t a[26] ={0.842277,  0.9588,   0.957138, 0.985494,0.983393, 0.960508,   
-		  0.929485,  0.941351,  0.987975,  0.994604, 0.95595, 0.964502,   
-		  0.964731,    0.97356,  0.996221,  0.981255, 0.943558, 1.00606,   
-		  0.934549,   0.969384, 0.97097, 0.989021, 0.95537, 0.987018,
-		  1,    1};   
-  Float_t b[26] = { 35.431,  14.6214,  3.83161, 48.624, 18.9751, 31.1847 ,  
-		    40.1204, 24.1932 ,20.8494,  17.2447, 23.0073, 20.1561,   
-		    22.3656, 27.0031, 19.4473,  18.5315, 20.9247, 15.5292,   
-		    42.4446, -3.91989, 11.0756, 16.9568,  25.8498, 21.2587, 0,0};   
+  Float_t a[26] = { 0.862486, 0.982631, 0.969829, 0.987521, 0.992425, 
+		    0.991012, 0.955364, 0.973607, 0.994484, 1.000748,
+		    0.965197, 0.978035, 0.981249, 0.993485, 1.013696, 
+		    0.980984, 0.952803, 0.989909, 0.946670, 0.972652, 
+		    0.984168, 0.986350, 0.952677, 0.986929,
+		    1.1,    0.9};
+  Float_t  b[26] = {33.057700, 11.560650, 3.381142, 48.665796, 
+		    18.108813, 27.025644, 37.289124, 20.609302, 
+		    19.673466, 16.640889, 20.773348, 18.378632, 
+		    19.674898, 24.323490, 17.358610, 18.515412,
+		    20.156329, 15.466606, 40.983598, -5.113665, 
+		    10.714077, 17.500848, 26.717135, 21.718537,
+		    29.8, 33.3};
 
+  
   
   Float_t low[500], high[500] ;
   for (Int_t i=0; i<500; i++)
@@ -35,9 +40,9 @@ void MakeT0RecoParam2015(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infi
   t0RecoParam->SetRefPoint(-1);
    // amplitude range for recontruction
   //C side
-  low[200]=0.55;
+  low[200]=200;
   //A side
-  low[201] = 0.55;
+  low[201] = 200;
   //  amplitude cutted 10% spectra  
    // for runs 2015
   for (Int_t i=0; i<26; i++) {
@@ -47,9 +52,9 @@ void MakeT0RecoParam2015(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infi
   for (Int_t i=0; i<24; i++) t0RecoParam-> SetBadChannels(i,0);
   //corridor : mean position +-corridor
   low[300]=70; 
-  low[310]=0;
-  low[311]=16;
-  low[312]=20; //according LHC15k1
+  low[310]=80;
+  low[311]=56;
+  low[312]=70; //according LHC15k1
   
   t0RecoParam->SetEq(1);
   t0RecoParam->SetSatelliteThresholds(-15, -1.7);
@@ -71,16 +76,24 @@ void MakeT0RecoParam2015(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infi
   // for runs 2015
    t0RecoParam->SetEq(1); //after  LHC11f
   //C side
-  low[200]=0.55;
+  low[200]=100;
   //A side
-  low[201]=0.55;
+  low[201]=100;
   //corridor : mean position +-corridor
   low[300]=70; // for 2015
-  //shift simulated  T0A, T0C, (T0A+T0C)/2
+  //shift simulated  T0A, T0C, (T0A+T0C)/2 for 13TeV
+  // low[310]=40;
+  // low[311]=30;
+  // low[312]=45;
+  //shift simulated  T0A, T0C, (T0A+T0C)/2 for 5 TeV
+  //  low[310]=55;
+  // low[311]=60;
+  // low[312]=70;
+  //shift simulated  T0A, T0C, (T0A+T0C)/2 for 13 TeV
   low[310]=40;
   low[311]=30;
   low[312]=45;
-   //new QTC start position
+    //new QTC start position
   for (Int_t i=0; i<26; i++) {
     low[i+130]=a[i];
     low[i+156]=b[i];

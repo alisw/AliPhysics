@@ -43,6 +43,10 @@ class AliGenTunedOnPbPb : public AliGenerator
   void SetDecreaseSp(Float_t value=0.2){fYdecreaseSp=value;};
   void SetDecreaseV2(Float_t value=0.2){fYdecreaseV2=value;};
 
+  enum Particles {
+    kPiPlus, kPiMinus, kPi0   , kKaonPlus, kKaonMinus, kProton , kAntiProton , kKaon0, kLambda, kAntiLambda,
+    kPhi   , kXi     , kAntiXi, kOmega   , kAntiOmega, kNeutron, kAntiNeutron
+  };
  private:
   AliGenTunedOnPbPb(const AliGenTunedOnPbPb &para);
   AliGenTunedOnPbPb& operator = (const AliGenTunedOnPbPb &para) ;
@@ -51,7 +55,7 @@ class AliGenTunedOnPbPb : public AliGenerator
 
   static void SetParameters(Float_t centrality);
 
-  static const Int_t fgNspecies = 15; // number of species available
+  static const Int_t fgNspecies = 17; // number of species available
   static Int_t fgPdgInput[fgNspecies]; // pdgs available
   static Float_t fgMult[fgNspecies]; // current multiplicity  (fixed as a function of centrality)
   static Float_t fgV3Overv2; // v3 / v2 (fixed as a function of centrality)
@@ -71,6 +75,6 @@ class AliGenTunedOnPbPb : public AliGenerator
   Float_t fYdecreaseSp;          // angular coefficient for the decrease above fYlimitForFlatness (spectra)
   Float_t fYdecreaseV2;          // angular coefficient for the decrease above fYlimitForFlatness (v2)
 
-  ClassDef(AliGenTunedOnPbPb,2) // Hijing parametrisation generator
+  ClassDef(AliGenTunedOnPbPb,3) // Hijing parametrisation generator
 };
 #endif

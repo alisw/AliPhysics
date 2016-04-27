@@ -1851,7 +1851,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
     Int_t nPointsSampled=0;
 
     TGraph *gr=sensor->GetGraph();
-    if ( gr && gr->GetN()>1 ){
+    if ( gr && gr->GetN()>0 ){
       //1. sample voltage over time
       //   get a robust median
       //   buffer sampled voltages
@@ -1864,7 +1864,8 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       Int_t pointGraph=0;
 
       //initialise graph information
-      Int_t timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
+      Int_t timeGraph=stopTimeGRP;
+      if (gr->GetN()>1) timeGraph=TMath::Nint(gr->GetX()[pointGraph+1]*3600+sensor->GetStartTime());
       Double_t sampledHV=gr->GetY()[pointGraph++];
 
       while (time<stopTimeGRP){
@@ -1897,7 +1898,7 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       fChamberHVgoodFraction[iROC] = 1.;
       AliWarning(Form("ROC %d detected without HV Splines and HV graph. Will set median HV to nominal voltage",iROC));
     } else {
-      AliError(Form("No Graph or too few points found for HV sensor of ROC %d",iROC));
+      AliError(Form("No Graph or graph without points found for HV sensor of ROC %d",iROC));
     }
   }
 

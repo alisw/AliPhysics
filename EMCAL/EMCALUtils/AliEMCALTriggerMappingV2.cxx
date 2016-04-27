@@ -83,8 +83,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(Int_t iTRU, Int_t iADC
   
   Int_t iADCtmp = (fTRUIsCside[ iTRU])? (fNModulesInTRU - iADC - 1) : iADC   ;
   Int_t x = fTRUFastOROffsetX[iTRU]                              + int(iADCtmp / fnFastORInTRUPhi[iTRU])  ;
-  //Int_t y = fTRUFastOROffsetY[iTRU]                              + int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;//XXX
-  Int_t y = fTRUFastOROffsetY[iTRU] + fnFastORInTRUPhi[iTRU] - 1 - int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;//XXX
+  Int_t y = fTRUFastOROffsetY[iTRU] + fnFastORInTRUPhi[iTRU] - 1 - int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;
   id      = y * fSTURegionNEta + x          ;
   id      = ConvAbsFastORIndexA2B(id)       ;
   return kTRUE  ;
@@ -101,9 +100,10 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInTRU(Int_t iTRU, 
     AliError(Form("Out of range! iTRU=%d, iEta=%d, iPhi=%d", iTRU, iEta, iPhi));	
     return kFALSE;
   }
-  Int_t iEtatmp = (fTRUIsCside[ iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta) : iEta  ;
-  //Int_t iPhitmp = (fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;//XXX
-  Int_t iPhitmp = (!fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;//XXX
+  Int_t iEtatmp = iEta  ;//XXX
+  Int_t iPhitmp = iPhi  ;//XXX
+  //Int_t iEtatmp = ( fTRUIsCside[ iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta) : iEta  ;
+  //Int_t iPhitmp = (!fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;
   Int_t x = fTRUFastOROffsetX[iTRU] + iEtatmp ;
   Int_t y = fTRUFastOROffsetY[iTRU] + iPhitmp ;
   id      = y * fSTURegionNEta + x            ;
@@ -122,8 +122,9 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInSM(Int_t  iSM, I
     AliError(Form("Out of range! iSM=%d, iEta=%d, iPhi=%d", iSM, iEta, iPhi));	
     return kFALSE;
   }
-  Int_t iEtatmp = (flag && GetSMIsCside(iSM) && GetSMType(iSM) == kDCAL_Standard)?(iEta + 8):iEta ;
-  Int_t x = fSMFastOROffsetX[iSM] + iEtatmp ;
+  //Int_t iEtatmp = (GetSMIsCside(iSM) && GetSMType(iSM) == kDCAL_Standard)?(iEta + 8):iEta ;
+  //Int_t x = fSMFastOROffsetX[iSM] + iEtatmp ;
+  Int_t x = fSMFastOROffsetX[iSM] + iEta    ;
   Int_t y = fSMFastOROffsetY[iSM] + iPhi    ;
   id      = y * fSTURegionNEta + x          ;
   id      = ConvAbsFastORIndexA2B(id)       ;
@@ -219,7 +220,18 @@ Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromCellIndex(Int_t id, Int_t& id
 
   Int_t iSupMod, nModule, nIphi, nIeta, iphim, ietam;
   Bool_t isOK = fGeometry->GetCellIndex( id, iSupMod, nModule, nIphi, nIeta );
-  fGeometry->GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );
+  
+  //- XXX fGeometry->GetModulePhiEtaIndexInSModule( iSupMod, nModule, iphim, ietam );
+ 
+  //+ => XXX  
+  fGeometry->GetCellPhiEtaIndexInSModule(iSupMod, nModule, nIphi, nIeta, iphim, ietam);
+  //ietam:0-31  for DCAL Cside
+  if( GetSMType(iSupMod)==kDCAL_Standard && (iSupMod%2)==1)
+    fGeometry->ShiftOfflineToOnlineCellIndexes(iSupMod, iphim, ietam);
+  //ietam:16-47 for DCAL Cside
+  iphim /= 2  ;
+  ietam /= 2  ;
+  //+ <= XXX
   
   if (isOK && GetAbsFastORIndexFromPositionInSM(iSupMod, ietam, iphim, idx)) return kTRUE;
   return kFALSE;
@@ -234,6 +246,18 @@ Bool_t AliEMCALTriggerMappingV2::GetCellIndexFromFastORIndex(Int_t id, Int_t idx
   {
     Int_t ix = 2 * iEta;
     Int_t iy = 2 * iPhi;
+
+    //+ => XXX  
+    //ietam:16-47 for DCAL Cside
+    if( GetSMType(iSM)==kDCAL_Standard ){
+      if( iSM%2==1 )
+        fGeometry->ShiftOnlineToOfflineCellIndexes(iSM, iy, ix);
+      if(ix < 0 || ix > 31)
+        return kFALSE ;
+    }
+    //ietam:0-31  for DCAL Cside
+    //+ <= XXX
+    
     idx[0] = fGeometry->GetAbsCellIdFromCellIndexes(iSM, iy    , ix    );
     idx[1] = fGeometry->GetAbsCellIdFromCellIndexes(iSM, iy    , ix + 1);
     idx[2] = fGeometry->GetAbsCellIdFromCellIndexes(iSM, iy + 1, ix    );
@@ -438,9 +462,6 @@ Bool_t AliEMCALTriggerMappingV2::Init_SM_offset(){
          || SM_type == kDCAL_Ext       ){
       nModule_inSM_phi  = (Int_t)((Float_t)nModule_inSM_phi      / 3.);
     }
-    //else if(SM_type == kDCAL_Standard  ){
-    //  nModule_inSM_eta  = (Int_t)((Float_t)nModule_inSM_eta * 2. / 3.);
-    //}
 
     fnFastORInSMPhi[iSM]  = nModule_inSM_phi ;
     fnFastORInSMEta[iSM]  = nModule_inSM_eta ;
@@ -462,13 +483,6 @@ Bool_t AliEMCALTriggerMappingV2::Init_SM_offset(){
       fSMFastOROffsetY[iSM+1]  = fSMFastOROffsetY[iSM] + nModule_inSM_phi ;
     }
     else{//left SM
-      //if(SM_type == kDCAL_Standard){
-      //  fSMFastOROffsetX[iSM+1]  = fSMFastOROffsetX[iSM] + nModule_inSM_eta * 2 ;
-      //  fSMFastOROffsetY[iSM+1]  = fSMFastOROffsetY[iSM]                        ;
-      //}else{
-      //  fSMFastOROffsetX[iSM+1]  = fSMFastOROffsetX[iSM] + nModule_inSM_eta     ;
-      //  fSMFastOROffsetY[iSM+1]  = fSMFastOROffsetY[iSM]                        ;
-      //}
       fSMFastOROffsetX[iSM+1]  = fSMFastOROffsetX[iSM] + nModule_inSM_eta     ;
       fSMFastOROffsetY[iSM+1]  = fSMFastOROffsetY[iSM]                        ;
     }
@@ -490,30 +504,25 @@ Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(//conv from A
     return kFALSE;
   }
   Int_t idB = ConvAbsFastORIndexA2B(id) ;
-  //TRU
-  iTRU      = idB / fNModulesInTRU  ;
-
-  iADC      = idB  % fNModulesInTRU         ;
-  iEta_TRU  = fnFastORInTRUPhi[iTRU] ? iADC / fnFastORInTRUPhi[iTRU] : 0;
-  iPhi_TRU  = fnFastORInTRUPhi[iTRU] ? iADC % fnFastORInTRUPhi[iTRU] : 0;
-
-  //iADC      = (fTRUIsCside[iTRU])? (fNModulesInTRU         - 1 - iADC      ) : iADC      ;
-  iEta_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta_TRU  ) : iEta_TRU  ;
-  //iPhi_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU  ;//XXX
-  iPhi_TRU  = (!fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU  ;//XXX
-  iADC      = iPhi_TRU + fnFastORInTRUPhi[iTRU] * iEta_TRU  ;//XXX
   
-  //SM
-  Int_t x   = id % fSTURegionNEta ;
-  Int_t y   = id / fSTURegionNEta ;
+  iTRU      = idB / fNModulesInTRU  ;
+  iADC      = idB % fNModulesInTRU  ;
+  if( iTRU > fNTotalTRU - 1 ) return kFALSE;
 
+  iEta_TRU  = iADC / fnFastORInTRUPhi[iTRU] ;
+  iPhi_TRU  = iADC % fnFastORInTRUPhi[iTRU] ;
+  iADC      = fnFastORInTRUPhi[iTRU] * (( fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta_TRU  ) : iEta_TRU ) 
+            +                          ((!fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU )
+            ;
+
+  Int_t x = id % fSTURegionNEta ;
+  Int_t y = id / fSTURegionNEta ;
   Int_t idtmp = (y<fnModuleInEMCALPhi[2])? id : (id + fNModulesInTRU * 4) ;
   iSM = 2 * (int)(idtmp/(2 * fNEta * fNPhi)) + (int)(fTRUIsCside[iTRU]);
+  if( iSM > fNumberOfSuperModules - 1 ) return kFALSE ;
 
-  iEta_SM = fnFastORInSMEta[iSM] ? x   % fnFastORInSMEta[iSM] : 0 ;
-  iPhi_SM = fnFastORInSMPhi[iSM] ? idB % fnFastORInSMPhi[iSM] : 0;
-  if(flag &&  GetSMIsCside(iSM) && GetSMType(iSM)==kDCAL_Standard )       iEta_SM -= 8  ;
-  if(flag && GetSMType(iSM)==kDCAL_Standard && (iEta_SM<0 || iEta_SM>=16)) iEta_SM = -1  ;
+  iEta_SM = x   % fnFastORInSMEta[iSM] ;
+  iPhi_SM = idB % fnFastORInSMPhi[iSM] ;
   
   return kTRUE;
 }
@@ -593,8 +602,8 @@ Bool_t  AliEMCALTriggerMappingV2::GetTRUFromSTU(Int_t iTRU, Int_t ieta, Int_t ip
 Bool_t  AliEMCALTriggerMappingV2::GetSTUFromTRU(Int_t iTRU, Int_t iADC, Int_t& oTRU, Int_t& oADC)const
 {
   Int_t ieta, iphi, oeta, ophi;
-  ieta  = iADC % fnFastORInTRUPhi[iTRU] ;
-  iphi  = iADC / fnFastORInTRUPhi[iTRU] ;
+  ieta  = iADC / fnFastORInTRUPhi[iTRU] ;
+  iphi  = iADC % fnFastORInTRUPhi[iTRU] ;
   oeta  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - ieta - 1) : ieta;
   ophi  = (fTRUIsCside[iTRU])? iphi : (fnFastORInTRUPhi[iTRU] - iphi - 1);
   oTRU  = GetSTUIndexFromTRUIndex(iTRU);

@@ -245,10 +245,10 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	amp_new = tz->GetT0NewAmplitude();
 	time=fESD->GetT0time();
 	for (Int_t i=0; i<24; i++){ 
-	  if( time[i]>100 ) {
+	  if( time[i] !=0 ) {
 	    ftime[i] = time[i];
 	    if( amp[i]>0.1)  famp[i] = amp[i];
-	    if(amp_new)famp_new[i] = amp_new[i];	
+	    if(amp_new[i]>0) famp_new[i] = amp_new[i];	
 	  }
 	}
 	//new raw OrA OrC TVDC all CFD

@@ -161,7 +161,6 @@ private:
   Bool_t  GetSMIsCside(Int_t iSM)   const {
     return (iSM%2 == 1)? kTRUE : kFALSE ;
   }
-  static const Bool_t flag = kFALSE  ;
     
   ClassDef(AliEMCALTriggerMappingV2,1)
 };

@@ -43,6 +43,7 @@ class AliAODITSsaTrackCuts : public AliVCuts
   void SetDefaultDCAZptdepCut2015();						//defines default pt-dependent cut on DCAZ: (const 1)
   void SetUserDCAXYptdepCut(const char *formula);				//defines the user's pt-dependent cut on DCAXY 
   void SetUserDCAZptdepCut(const char *formula);				//defines the user's pt-dependent cut on DCAZ
+  void ExtractAndSetPrimaryVertex(AliVEvent *event) {fPrimaryVertex = event ? event->GetPrimaryVertex(): 0x0;}	//Extracts and sets primary vertex from the AOD event
 
 //Getters
   Double_t GetMinNClustersITS() {return fMinNClustersITS;}			//returns minimum number of ITS clusters
@@ -56,8 +57,6 @@ class AliAODITSsaTrackCuts : public AliVCuts
   TFormula *fdcaxycut;								//TFormula defining the pt-dependent cut on DCAXY
   TFormula *fdcazcut;								//TFormula defining the pt-dependent cut on DCAZ
   const AliVVertex* fPrimaryVertex;						//! Primary vertex
-
-  void ExtractAndSetPrimaryVertex(AliVEvent *event) {fPrimaryVertex = event->GetPrimaryVertex();}	//Extracts and sets primary vertex from the AOD event
 
   ClassDef(AliAODITSsaTrackCuts,1)
 };

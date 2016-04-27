@@ -328,7 +328,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t deltaZcorrTime=0;
   static time_t    lastStampT=-1;
   //
-  Bool_t isChange=(lastStampT!=(Int_t)fCurrentTimeStamp);
+  Bool_t isChange=(lastStampT!=(Int_t)fCurrentTimeStamp)||lastStamp<0;
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
     if(fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
@@ -414,21 +414,28 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
     if (ctp){
       //for TPC standalone runs no ctp info
-      Double_t delay = ctp->GetDelayL1L0()*0.000000025;
-      x[2]-=delay/param->GetTSample();
+      delay = ctp->GetDelayL1L0()*0.000000025;
+      delay/=param->GetTSample();
+      x[2]-=delay;
     }
   }
   if (isChange && fDebugStreamer!=NULL){
     //
     //
+    Double_t zwidth=param->GetZWidth();
+    Double_t binsL1=param->GetNTBinsL1();
+    Double_t zsigma=param->GetZSigma();
     (*fDebugStreamer)<<"transformDump"<<
       "fCurrentTimeStamp="<<lastStampT<<
-      "delay="<<delay<<
+      "zwidth="<<zwidth<<                                      // nominal z drift
+      "delay="<<delay<<                                           // trigger delay
+      "binsL1="<<binsL1<<                                       // L1 delay
+      "zsigma="<<zsigma<<                                     // z sigma
       "driftCorr="<<driftCorr<<
       "vdcorrectionTime="<<vdcorrectionTime<<
       "time0corrTime="<<time0corrTime<<
       "deltaZcorrTime="<<deltaZcorrTime<<
-      "vdcorrectionTimeG="<<vdcorrectionTimeGY<<
+      "vdcorrectionTimeGY="<<vdcorrectionTimeGY<<
       "\n";
       
       

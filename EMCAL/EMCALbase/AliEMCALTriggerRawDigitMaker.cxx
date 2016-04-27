@@ -389,7 +389,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
       
       trgData->SetL1RawData(fSTURawStream->GetRawData());
       
-      Int_t iTRU, jTRU, x, y;
+      Int_t iTRU, jTRU, x, y, jADC;
       
       TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
       fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
@@ -413,7 +413,12 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
             
 //             AliDebug(10,Form("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]));
             
-            fGeometry->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+            if(fGeometry->GetTriggerMappingVersion() == 1){
+              fGeometry->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+            } else {
+              fGeometry->GetTRUFromSTU(i, j, jTRU, jADC, detectorID);
+              fGeometry->GetAbsFastORIndexFromTRU(jTRU, jADC, idx);
+            }
             
             if (fRawDigitIndex[idx] >= 0)
             {

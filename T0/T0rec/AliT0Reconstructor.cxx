@@ -386,8 +386,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     time2zero[i0] = 99999;
    }
   
-  Int_t alldata[220][5];   // container for readed raw 
-  for (Int_t i0=0; i0<220; i0++)
+  Int_t alldata[250][5];   // container for readed raw 
+  for (Int_t i0=0; i0<250; i0++)
     for (Int_t j0=0; j0<5; j0++)  alldata[i0][j0]=0; 
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
@@ -418,7 +418,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	}
       
       if(type == 7  ) {  //only physics 
-	for (Int_t i=0; i<211; i++) {
+	for (Int_t i=0; i<226; i++) {
 	  for (Int_t iHit=0; iHit<5; iHit++) {
 	    alldata[i][iHit] = myrawreader.GetData(i,iHit);
 	  }
@@ -433,30 +433,27 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	}
 	for (Int_t in=0; in<12; in++)  
 	  {
-	    for (Int_t iHit=0; iHit<5; iHit++) 
-	      {
-		//		printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-		//		       in+12,iHit, alldata[in+1][iHit] ); 
-		if(alldata[in+1][iHit]>0)
+	    for (Int_t iHit=0; iHit<5; iHit++) {
 		if(alldata[in+1][iHit] > low[in] && 
 		   alldata[in+1][iHit] < high[in])
 		  {
+		    //		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+		    //		       in+1,iHit, alldata[in+1][iHit] ); 
 		    timeCFD[in] = alldata[in+1][iHit] ; 
  		    break;
 		  }
+		
 	      }
-	    for (Int_t iHit=0; iHit<5; iHit++) 
-	      {
-		if(alldata[in+1+56][iHit]>0)
-		  //		  printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
-		  //			 in+12,iHit, alldata[in+1+56][iHit] ); 
+	    for (Int_t iHit=0; iHit<5; iHit++) {
 		if(alldata[in+1+56][iHit] > low[in+12] && 
 		   alldata[in+1+56][iHit] < high[in+12])
 		  {
+		    //		    printf(" ::Reconstruct :: readed i %i hit %i cfd %i \n",
+		    //		   in+12,iHit, alldata[in+1+56][iHit] ); 
 		    timeCFD[in+12] = alldata[in+56+1][iHit] ;
 		    break;
 		  }
-	      }	    
+	    }	    
 	  }
 	ReadNewQTC(alldata, amplitudeNew);
 	ReadOldQTC(alldata, amplitude);
@@ -619,11 +616,15 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    timefull = -9999; 
 	    if (i0<12) 
             {
-	      if(alldata[i0+1][iHit]>1)
+	      if(alldata[i0+1][iHit]>1) {
 		timefull = (Float_t(alldata[i0+1][iHit]) - timecent)* channelWidth* 0.001;
+		//	if(alldata[i0+1][iHit]>1) printf ("Reconstruct ::: RAW pmt %i hit %i time %f readed %i\n",i0,iHit, timefull,alldata[i0+1][iHit] );
+	      }
 	      else 
-		if(alldata[i0+45][iHit]>1) 
+		if(alldata[i0+45][iHit]>1) {
 		  timefull = (Float_t(alldata[i0+45][iHit]) - timecent)* channelWidth* 0.001;
+		  //	  if(alldata[i0+45][iHit]>1) printf ("Reconstruct ::: RAW pmt %i hit %i time %f readed %i\n",i0,iHit, timefull,alldata[i0+45][iHit] );
+		}
             }
 	    frecpoints.SetTimeFull(i0, iHit,timefull) ;
 	  }
@@ -716,10 +717,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     if ( time[i] != 0 && time[i]>-9999) {
       ampQTC[i] = frecpoints.GetAmp(i);
       ampnew[i] = frecpoints.AmpLED(i);
-      //     AliDebug(1,Form("T0: %i  time %f  ampold %f ampnew %f \n", i, time[i], ampQTC[i], ampnew[i]));
-     }
+      AliDebug(1,Form("T0: %i  time %f  ampold %f ampnew %f \n", i, time[i], ampQTC[i], ampnew[i]));
+      }
   }
-  //  for ( Int_t i=0; i<24; i++)       printf("T0: %i  time %f  ampQTC %f ampNewQTC %f \n", i, time[i], ampQTC[i], ampnew[i]);
+  //   for ( Int_t i=0; i<24; i++)   
+  // printf("T0: %i  time %f  ampQTC %f ampNewQTC %f \n", i, time[i], ampQTC[i], ampnew[i]);
   fESDTZERO->SetT0time(time);         // best TOF on each PMT 
   fESDTZERO->SetT0amplitude(ampQTC);     // amplitude old QTC
   fESDTZERO->SetT0NewAmplitude(ampnew);     // amplitude new QTC
@@ -873,7 +875,7 @@ Bool_t  AliT0Reconstructor::SatelliteFlag() const
 
 }
  //____________________________________________________________
-void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26]) const
+void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[250][5], Int_t amplitude[26]) const
 {
   // QT00 -> QT11
   printf("@@ readNewQTC");
@@ -925,7 +927,7 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
     }
 }
  //____________________________________________________________
-void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] ) const
+void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[250][5], Int_t amplitude[26] ) const
 {
   Int_t  chargeQT0[26], chargeQT1[26], pedestal[26];
   Float_t meanQT1[26];
@@ -965,8 +967,7 @@ void  AliT0Reconstructor::ReadOldQTC(Int_t alldata[220][5], Int_t amplitude[26] 
 	      chargeQT1[in]>0)
 	    {
 	      chargeQT0[in]=alldata[2*in+ind[in]][iHit];
-	      //	      printf(" readed Raw %i %i %i\n",
-	      //	     in, chargeQT0[in],chargeQT1[in]);
+	      //      printf(" readedOld QTC Raw %i %i %i\n",  in, chargeQT0[in],chargeQT1[in]);
  	      break;
 	    }
 	}

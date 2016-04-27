@@ -8,6 +8,8 @@ void trainCorr(int row, float* tzLoc, float* corrLoc);
 
 const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
+const float  AliTPCDcalibRes::kMaxResid=10.0;   
+const float  AliTPCDcalibRes::kMaxTgSlp=2.0;
 
 const float AliTPCDcalibRes::kSecDPhi = 20.f*TMath::DegToRad();
 const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
@@ -16,7 +18,7 @@ const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
 const float AliTPCDcalibRes::kMinX = 85.0f;
 const float AliTPCDcalibRes::kMaxX = 246.0f;
 const float AliTPCDcalibRes::kMaxZ2X = 1.0f;
-const float AliTPCDcalibRes::kZLim = 250.0f;
+const float AliTPCDcalibRes::kZLim[2] = {2.49725e+02,2.49698e+02};
 const char* AliTPCDcalibRes::kLocalResFileName  = "tmpDeltaSect";
 const char* AliTPCDcalibRes::kClosureTestFileName  = "closureTestSect";
 const char* AliTPCDcalibRes::kStatOut      = "voxelStat";
@@ -93,7 +95,9 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxRejFrac(0.15)
   ,fFilterOutliers(kTRUE) 
   ,fMaxFitYErr2(1.0)
-  ,fMaxFitXErr2(1.5)
+  ,fMaxFitXErr2(1.2)
+  ,fMaxFitXYCorr(0.95)
+  ,fLTMCut(0.75)
   ,fNY2XBins(15)
   ,fNZ2XBins(10)
   ,fNXBins(-1)
@@ -219,7 +223,8 @@ void AliTPCDcalibRes::Save(const char* name)
   // save itself
   TString names = name;
   if (names.IsNull()) {
-    names = Form("%s_run%d_%lld_%lld.root",IsA()->GetName(),fRun,fTMin,fTMax);
+    //    names = Form("%s_run%d_%lld_%lld.root",IsA()->GetName(),fRun,fTMin,fTMax);
+    names = Form("%s.root",IsA()->GetName());
     names.ToLower();
   }
   TFile* flout = TFile::Open(names.Data(),"recreate");
@@ -443,7 +448,7 @@ void AliTPCDcalibRes::CollectData(int mode)
       int nc0 = fNCl; 
       fNCl = 0;
       for (int ip=0;ip<nc0;ip++) {
-	
+	int side = ((fArrSectID[ip] /kNSect)&0x1);
 	float sna = TMath::Sin(fArrPhi[ip]-(0.5f +fArrSectID[ip]%kNSect)*kSecDPhi);
 	float csa = TMath::Sqrt((1.f-sna)*(1.f+sna));
 	//
@@ -481,7 +486,7 @@ void AliTPCDcalibRes::CollectData(int mode)
 	if (TMath::Abs(fArrDZ[fNCl])>kMaxResid-kEps) continue;
 	//
 	if (fArrX[fNCl]<kMinX || fArrX[fNCl]>kMaxX) continue;
-	if (TMath::Abs(fArrZCl[fNCl])>kZLim) continue;;
+	if (TMath::Abs(fArrZCl[fNCl])>kZLim[side]) continue;;
 	//
 	// End of manipulations to go to the sector frame
 	//
@@ -598,7 +603,7 @@ void AliTPCDcalibRes::FillCorrectedResiduals()
     fDTC.dzR = fArrDZ[icl];
 
     fDTC.dyC = fArrDY[icl] - (corr[kResY]-corr[kResX]*fArrTgSlp[icl]);
-    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]+corr[kResX]*fTgLam);
+    fDTC.dzC = fArrDZ[icl] - (corr[kResZ]-corr[kResX]*fTgLam); // we evaluate at pad-row
 
     fDTC.q2pt   = fQ2Pt;
     fDTC.tgLam  = fTgLam;
@@ -1058,13 +1063,13 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
 void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes)
 {
   // extract X,Y,Z distortions of the voxel
-  const float kDefLTMCut = 0.8;
   if (np<fMinEntriesVoxel) return;
   float a,b,err[3];
   TVectorF zres(7),yres(7);
-  if (!TStatToolkit::LTMUnbinned(np,dz,zres,kDefLTMCut)) return; 
+  voxRes.flags = 0;
+  if (!TStatToolkit::LTMUnbinned(np,dz,zres,fLTMCut)) return; 
   //
-  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,kDefLTMCut);
+  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,fLTMCut);
   if (!indY) return;
   // rearrange used events in increasing order
   TStatToolkit::Reorder(np,dy,indY);
@@ -1093,7 +1098,8 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   offs =  TMath::Nint(yres[5]);
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
 
-  if (err[0]>fMaxFitYErr2 || err[2]>fMaxFitXErr2) return;
+  float corrErr = err[0]*err[2];
+  corrErr = corrErr>0 ? err[1]/TMath::Sqrt(corrErr) : -999;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
   voxRes.D[kResX] = -b;
@@ -1102,13 +1108,14 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   voxRes.E[kResX] = TMath::Sqrt(err[2]);
   voxRes.E[kResY] = TMath::Sqrt(err[0]);
   voxRes.E[kResZ] = zres[4];
+  voxRes.EXYCorr  = corrErr;
   //
   // store the statistics
   ULong64_t binStat = GetBin2Fill(voxRes.bvox,kVoxV);
   voxRes.stat[kVoxV] = fArrNDStat[voxRes.bsec]->At(binStat);
   for (int iv=kVoxDim;iv--;) voxRes.stat[iv] = fArrNDStat[voxRes.bsec]->At(binStat+iv-kVoxV);
   //
-  voxRes.flags |= kDistDone;
+  if (err[0]<fMaxFitYErr2 && err[2]<fMaxFitXErr2 && TMath::Abs(corrErr)<fMaxFitXYCorr) voxRes.flags |= kDistDone;
 }
 
 //_________________________________________________
@@ -1370,8 +1377,7 @@ void AliTPCDcalibRes::FixAlignmentBug(int sect, float q2pt, float bz, float& alp
 {
   // fix alignment bug: https://alice.its.cern.ch/jira/browse/ATO-339?focusedCommentId=170850&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-170850
   //
-  // alp, x, z correspond to 
-  //
+  // NOTE: deltaZ in the buggy code is calculated as Ztrack_with_bug - Zcluster_w/o_bug
   static TGeoHMatrix *mCache[72] = {0};
   if (sect<0||sect>=72) {
     AliErrorF("Invalid sector %d",sect);
@@ -1388,18 +1394,20 @@ void AliTPCDcalibRes::FixAlignmentBug(int sect, float q2pt, float bz, float& alp
   }  
   double alpSect = ((sect%18)+0.5)*20.*TMath::DegToRad();
 
-  // cluster in its proper alpha frame with alignment bug, Z trackITS is used !!! 
-  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree, ITS Z only is stored
+  // cluster in its proper alpha frame with alignment bug
+  double xyzClUse[3] = {x,0,z}; // this is what we read from the residual tree
   double xyzTrUse[3] = {x, deltaY, z}; // track in bad cluster frame
   //
-  // recover cluster Z position by adding deltaZ, this is approximate, since ITS track Z was used...
-  xyzClUse[2] -= deltaZ;
+  // recover cluster Z position by adding deltaZ
+  double zClSave = xyzClUse[2] -= deltaZ;  // here the cluster is not affected by Z alignment component of the bug!
   static AliExternalTrackParam trDummy;
   trDummy.Local2GlobalPosition(xyzClUse,alp); // misaligned cluster in global frame
   double xyz0[3]={xyzClUse[0],xyzClUse[1],xyzClUse[2]};
   mgt->MasterToLocal(xyz0,xyzClUse);
-  // we got ideal cluster in the sector tracking frame, 
+  // we got ideal cluster in the sector tracking frame, but now the Z is wrong, since it was not affected by the bug!!!
   //
+  xyzClUse[2] = zClSave;
+
   // go to ideal cluster frame
   trDummy.Local2GlobalPosition(xyzClUse,alpSect); // ideal global
   double alpFix = TMath::ATan2(xyzClUse[1],xyzClUse[0]);    // fixed cluster phi
@@ -1973,11 +1981,11 @@ float AliTPCDcalibRes::GetDriftCorrection(float z, float x, float phi, int rocID
 {
   // apply vdrift correction
   int side = ((rocID/kNSect)&0x1) ? -1:1; // C:A
-  float drift = side>0 ? kZLim-z : z+kZLim;
+  float drift = side>0 ? kZLim[0]-z : z+kZLim[1];
   float gy    = TMath::Sin(phi)*x;
   Double_t pvecFit[3];
   pvecFit[0]= side;             // z shift (cm)
-  pvecFit[1]= drift*gy/kZLim;   // global y gradient
+  pvecFit[1]= drift*gy/kZLim[side<0];   // global y gradient
   pvecFit[2]= drift;            // drift length
   float expected = (fVDriftParam==NULL) ? 0:
     (*fVDriftParam)[0]+
@@ -2215,7 +2223,9 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 	Bool_t res = GetSmoothEstimate(vox->bsec,vox->stat[kVoxX],vox->stat[kVoxF],vox->stat[kVoxZ],
 				       BIT(kResX)|BIT(kResY)|BIT(kResZ), // at this moment we cannot smooth dispersion
 				       vox->DS);
-	if (res) {
+	if (res) { 
+	  vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
+	  vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX];
 	  vox->flags |= kSmoothDone;
 	  cnt++;
 	}

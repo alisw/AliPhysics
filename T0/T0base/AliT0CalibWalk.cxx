@@ -402,5 +402,24 @@ void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma)
   delete fit;
 }
 
-
-
+//______________________________________________________________________________
+void AliT0CalibWalk::SetWalkZero() 
+{
+  Float_t amp[100], walk[100];
+  for (int  i=0; i<100; i++) {
+    amp[i] = Float_t(i*100);  
+    walk[i]=0;
+  }
+  TGraph *gramp, *grwalk;
+  for (int igr=0; igr<24; igr++) {
+    gramp = new TGraph(100, amp,amp);
+    grwalk = new TGraph(100, amp,walk);
+    grwalk->SetTitle(Form("PMT%i",igr+1));
+    gramp->SetTitle(Form("PMT%i",igr+1));
+    fWalk.AddAtAndExpand(grwalk,igr);
+    fAmpLEDRec.AddAtAndExpand(grwalk,igr);
+    fQTC.AddAtAndExpand(gramp,igr);	 
+    fAmpLED.AddAtAndExpand(gramp,igr);
+     
+  }
+}

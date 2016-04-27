@@ -101,7 +101,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
     fTriggerData->SetL1RawData(stustream->GetRawData());
 
-    Int_t iTRU, jTRU, x, y;
+    Int_t iTRU, jTRU, x, y, jADC;
 
     TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
     fDCSConfigSTU->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
@@ -121,7 +121,14 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
         for (Int_t j = 0; j < 96; j++) {
           if (adc[j] <= 0) continue;
           HLTDebug("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]);
-          fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+          if(fkGeometryPtr->GetGeometryPtr()->GetTriggerMappingVersion() == 1){
+            fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+          } else {
+            fkGeometryPtr->GetGeometryPtr()->GetTRUFromSTU(i, j, jTRU, jADC, detector);
+            //printf("Detector %d, iTRU %d (%d), jTRU %d, iADC %d, jADC %d\n", detector, i, iTRU, jTRU, j, jADC);
+            fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromTRU(jTRU, jADC, idx);
+          }
+
           SetL1TimeSum(GetRawDigit(idx), adc[j]);
         }
       }
@@ -173,8 +180,8 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
             lphi = 64;
             if (vx >= 0 && vy < lphi) {
               if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
-            	HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy, index);
-            	SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
+                HLTDebug("| STU => Add L1 gamma [%d] patch at (%2d , %2d)\n", ithr, vx, vy);
+                SetTriggerBit(GetRawDigit(idx), kL1GammaHigh + ithr, 1);
               }
             }
           } else {
@@ -203,7 +210,7 @@ void AliHLTEMCALSTURawDigitMaker::ProcessSTUStream(AliEMCALTriggerSTURawStream *
 
           if (vx >= 0 && vy >= 0) {
             if (fkGeometryPtr->GetGeometryPtr()->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx)) {
-              HLTDebug("| STU => Add L1 jet patch at (%2d , %2d)\n", ix, iy);
+              HLTDebug("| STU => Add L1 jet patch at (%2d , %2d)\n", vx, vy);
               SetTriggerBit(GetRawDigit(idx), kL1JetHigh + ithr, 1);
             }
           }
