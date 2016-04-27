@@ -177,9 +177,8 @@ const char* alizmq_socket_name(int socketType)
 }
 
 //_______________________________________________________________________________________
-int alizmq_socket_close(void*& socket)
+int alizmq_socket_close(void*& socket, int linger)
 {
-  int linger=0;
   zmq_setsockopt(socket, ZMQ_LINGER, &linger, sizeof(linger));
   int rc = zmq_close(socket);
   if (rc>=0) socket = NULL;
@@ -198,7 +197,10 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   if (configStartPos!=std::string::npos && configEndPos!=std::string::npos)
   { config = config.substr(configStartPos,configEndPos-configStartPos+1); }
 
-  if (config.empty()) return 0;
+  if (config.empty()) {
+    alizmq_socket_close(socket);
+    return 999999;
+  }
 
   std::size_t found = config.find_first_of("@>-+");
   if (found == 0)
@@ -217,7 +219,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   if (socket)
   {
     newSocket=false;
-    int lingerValue = 0;
+    int lingerValue = 10;
     rc = zmq_setsockopt(socket, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
     if (rc!=0) 
     {
