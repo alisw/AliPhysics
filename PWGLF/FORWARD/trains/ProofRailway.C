@@ -593,8 +593,8 @@ struct ProofRailway : public Railway
   /** 
    * Connect to PROOF(,-Lite,-on-Demand) cluster 
    * 
-   * @param url Connection URL
-   * @param opt Possible options 
+   * @param url  Connection URL
+   * @param opts Possible options 
    * 
    * @return true on success 
    */
