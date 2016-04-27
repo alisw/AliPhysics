@@ -67,10 +67,10 @@ AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmca
 // Definitions of class AliAnalysisTaskEmcalJetSpectraQA
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA)
+ClassImp(AliAnalysisTaskEmcalJetSpectraQA);
 /// \endcond
 
-/// Default constractor for ROOT I/O purposes
+/// Default constructor for ROOT I/O purposes
 AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
   fHistoType(kTHnSparse),
