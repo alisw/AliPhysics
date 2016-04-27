@@ -139,7 +139,7 @@ protected:
    * hits structure.
    * 
    * @param event    MC event 
-   * @param vz       IP z-coordinate
+   * @param ip       IP z-coordinate
    * @param primary  Primary information, if available. 
    * 
    * @return true 

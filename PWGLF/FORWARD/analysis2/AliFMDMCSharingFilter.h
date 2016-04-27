@@ -101,7 +101,7 @@ public:
    * 
    * @param input   Input ESD event
    * @param event   Input MC event
-   * @param vz      Vertex position 
+   * @param ip      Vertex position 
    * @param output  Output ESD-like object
    * @param primary Per-event histogram of primaries 
    *

@@ -1,5 +1,5 @@
 /**
- * @file   AliBaseMultTask
+ * @file   AliBaseMultTask.cxx
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Thu Feb  7 01:01:24 2013
  * 

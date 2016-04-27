@@ -90,6 +90,7 @@ struct MakeTrackletTrain : public TrainSetup
    * AliMixInputEventHandler if requested.
    * 
    * @param type Type of analysis 
+   * @param needRec If we need rec-points
    * 
    * @return The input handler 
    */
