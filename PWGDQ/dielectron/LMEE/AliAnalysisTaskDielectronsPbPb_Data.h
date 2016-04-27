@@ -126,7 +126,9 @@ public:
 private:
     AliESDEvent         *fESDevent;//!
     AliEventPoolManager *fPoolMgr;//!
-    AliESDtrackCuts     *fESDTrackCuts;//!
+    AliESDtrackCuts     *fESDTrackCuts_Mult;//!
+    AliESDtrackCuts     *fESDTrackCuts_Std;//!
+    AliESDtrackCuts     *fESDTrackCuts_Loose;//!
     AliPIDResponse      *fPIDResponse;//!
     TList               *fOutputList;//!
     

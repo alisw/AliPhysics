@@ -28,7 +28,9 @@ AliAnalysisTaskDielectronsPbPb_Data::AliAnalysisTaskDielectronsPbPb_Data():
 AliAnalysisTaskSE(),
 fESDevent(0x0),
 fPoolMgr(0x0),
-fESDTrackCuts(0x0),
+fESDTrackCuts_Mult(0x0),
+fESDTrackCuts_Std(0x0),
+fESDTrackCuts_Loose(0x0),
 fPIDResponse(0x0),
 fOutputList(0x0),
 fCentralityMin(0),
@@ -68,7 +70,9 @@ AliAnalysisTaskDielectronsPbPb_Data::AliAnalysisTaskDielectronsPbPb_Data(const c
 AliAnalysisTaskSE(name),
 fESDevent(0x0),
 fPoolMgr(0x0),
-fESDTrackCuts(0x0),
+fESDTrackCuts_Mult(0x0),
+fESDTrackCuts_Std(0x0),
+fESDTrackCuts_Loose(0x0),
 fPIDResponse(0x0),
 fOutputList(0x0),
 fCentralityMin(0),
@@ -112,7 +116,9 @@ AliAnalysisTaskDielectronsPbPb_Data::~AliAnalysisTaskDielectronsPbPb_Data()
     fOutputList->Clear();
     delete fESDevent;
     delete fPoolMgr;
-    delete fESDTrackCuts;
+    delete fESDTrackCuts_Mult;
+    delete fESDTrackCuts_Std;
+    delete fESDTrackCuts_Loose;
     delete fPIDResponse;
     delete fOutputList;
 }
@@ -126,7 +132,9 @@ void AliAnalysisTaskDielectronsPbPb_Data::UserCreateOutputObjects()
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = (AliInputEventHandler*) (mgr->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
-    fESDTrackCuts = new AliESDtrackCuts ("AliESDtrackCuts");
+    fESDTrackCuts_Mult  = new AliESDtrackCuts ("fESDTrackCuts_Mult");
+    fESDTrackCuts_Std   = new AliESDtrackCuts ("fESDTrackCuts_Std");
+    fESDTrackCuts_Loose = new AliESDtrackCuts ("fESDTrackCuts_Loose");
 
     
     //Event Statistics
@@ -434,78 +442,78 @@ Bool_t AliAnalysisTaskDielectronsPbPb_Data::TaggedByPrefilter (AliESDtrack *trac
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedTrackQualityCutsMultiplicity (AliESDtrack* track)  {
     
-    fESDTrackCuts -> SetMaxDCAToVertexZ(0.1);
-    fESDTrackCuts -> SetMaxDCAToVertexXY(0.00515869 + 0.0101668/TMath::Power(track->Pt(),1.34489));
-    fESDTrackCuts -> SetAcceptKinkDaughters(false);
-    fESDTrackCuts -> SetMinNCrossedRowsTPC(100);
-    fESDTrackCuts -> SetMinNClustersITS(4);
-    fESDTrackCuts -> SetRequireTPCRefit(true);
-    fESDTrackCuts -> SetRequireITSRefit(true);
-    fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    fESDTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fESDTrackCuts -> SetMaxChi2TPCConstrainedGlobal(36);
-    fESDTrackCuts -> SetMaxChi2PerClusterTPC(4.0);
-    fESDTrackCuts -> SetMaxChi2PerClusterITS(36);
-    fESDTrackCuts -> SetEtaRange(-0.8, 0.8);
-    fESDTrackCuts -> SetPtRange(0.4,5.0);
+    fESDTrackCuts_Mult -> SetMaxDCAToVertexZ(0.1);
+    fESDTrackCuts_Mult -> SetMaxDCAToVertexXY(0.00515869 + 0.0101668/TMath::Power(track->Pt(),1.34489));
+    fESDTrackCuts_Mult -> SetAcceptKinkDaughters(false);
+    fESDTrackCuts_Mult -> SetMinNCrossedRowsTPC(100);
+    fESDTrackCuts_Mult -> SetMinNClustersITS(4);
+    fESDTrackCuts_Mult -> SetRequireTPCRefit(true);
+    fESDTrackCuts_Mult -> SetRequireITSRefit(true);
+    fESDTrackCuts_Mult -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    fESDTrackCuts_Mult -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fESDTrackCuts_Mult -> SetMaxChi2TPCConstrainedGlobal(36);
+    fESDTrackCuts_Mult -> SetMaxChi2PerClusterTPC(4.0);
+    fESDTrackCuts_Mult -> SetMaxChi2PerClusterITS(36);
+    fESDTrackCuts_Mult -> SetEtaRange(-0.8, 0.8);
+    fESDTrackCuts_Mult -> SetPtRange(0.4,5.0);
     
     if ( track -> GetTPCsignalN()<50 ) return false;
-    if ( fESDTrackCuts->AcceptTrack (track) ) return true;
+    if ( fESDTrackCuts_Mult->AcceptTrack (track) ) return true;
     return false;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedLooseTrackQualityCuts (AliESDtrack* track)  {
     
-    fESDTrackCuts -> SetMinNCrossedRowsTPC(70);
-    fESDTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    fESDTrackCuts -> SetMaxChi2PerClusterTPC(4);
-    fESDTrackCuts -> SetAcceptKinkDaughters(false);
-    fESDTrackCuts -> SetRequireTPCRefit(true);
-    fESDTrackCuts -> SetRequireITSRefit(true);
-    fESDTrackCuts -> SetMinNClustersITS(3);
-    fESDTrackCuts -> SetMinNClustersTPC(50);
-    fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    fESDTrackCuts -> SetMaxDCAToVertexXY(1.0);
-    fESDTrackCuts -> SetMaxDCAToVertexZ(3.0);
-    fESDTrackCuts -> SetDCAToVertex2D(false);
-    fESDTrackCuts -> SetRequireSigmaToVertex(false);
-    fESDTrackCuts -> SetMaxChi2PerClusterITS(36);
+    fESDTrackCuts_Loose -> SetMinNCrossedRowsTPC(70);
+    fESDTrackCuts_Loose -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fESDTrackCuts_Loose -> SetMaxChi2PerClusterTPC(4);
+    fESDTrackCuts_Loose -> SetAcceptKinkDaughters(false);
+    fESDTrackCuts_Loose -> SetRequireTPCRefit(true);
+    fESDTrackCuts_Loose -> SetRequireITSRefit(true);
+    fESDTrackCuts_Loose -> SetMinNClustersITS(3);
+    fESDTrackCuts_Loose -> SetMinNClustersTPC(50);
+    fESDTrackCuts_Loose -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fESDTrackCuts_Loose -> SetMaxDCAToVertexXY(1.0);
+    fESDTrackCuts_Loose -> SetMaxDCAToVertexZ(3.0);
+    fESDTrackCuts_Loose -> SetDCAToVertex2D(false);
+    fESDTrackCuts_Loose -> SetRequireSigmaToVertex(false);
+    fESDTrackCuts_Loose -> SetMaxChi2PerClusterITS(36);
     
-    if ( fESDTrackCuts->AcceptTrack (track) ) return true;
+    if ( fESDTrackCuts_Loose->AcceptTrack (track) ) return true;
     return false;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedTrackQualityCuts (AliESDtrack* track)  {
     
-    fESDTrackCuts -> SetMaxDCAToVertexZ(fDCAz_max);
-    fESDTrackCuts -> SetMaxDCAToVertexXY(fDCAxy_param0 + fDCAxy_param1/TMath::Power(track->Pt(),fDCAxy_param2));
-    fESDTrackCuts -> SetAcceptKinkDaughters(false);
-    fESDTrackCuts -> SetMinNCrossedRowsTPC(fTPC_minCr);
-    fESDTrackCuts -> SetMinNClustersITS(fITS_minNcls);
-    fESDTrackCuts -> SetMinNClustersTPC(fTPC_minNcls);
-    fESDTrackCuts -> SetRequireTPCRefit(true);
-    fESDTrackCuts -> SetRequireITSRefit(true);
+    fESDTrackCuts_Std -> SetMaxDCAToVertexZ(fDCAz_max);
+    fESDTrackCuts_Std -> SetMaxDCAToVertexXY(fDCAxy_param0 + fDCAxy_param1/TMath::Power(track->Pt(),fDCAxy_param2));
+    fESDTrackCuts_Std -> SetAcceptKinkDaughters(false);
+    fESDTrackCuts_Std -> SetMinNCrossedRowsTPC(fTPC_minCr);
+    fESDTrackCuts_Std -> SetMinNClustersITS(fITS_minNcls);
+    fESDTrackCuts_Std -> SetMinNClustersTPC(fTPC_minNcls);
+    fESDTrackCuts_Std -> SetRequireTPCRefit(true);
+    fESDTrackCuts_Std -> SetRequireITSRefit(true);
     
     //ITS Requirement
-    if (strcmp(fITSreq,"kOff")==0)        fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-    if (strcmp(fITSreq,"kNone")==0)       fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
-    if (strcmp(fITSreq,"kAny")==0)        fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    if (strcmp(fITSreq,"kFirst")==0)      fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    if (strcmp(fITSreq,"kOnlyFirst")==0)  fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlyFirst);
-    if (strcmp(fITSreq,"kSecond")==0)     fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kSecond);
-    if (strcmp(fITSreq,"kOnlySecond")==0) fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlySecond);
-    if (strcmp(fITSreq,"kBoth")==0)       fESDTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+    if (strcmp(fITSreq,"kOff")==0)        fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+    if (strcmp(fITSreq,"kNone")==0)       fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+    if (strcmp(fITSreq,"kAny")==0)        fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    if (strcmp(fITSreq,"kFirst")==0)      fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    if (strcmp(fITSreq,"kOnlyFirst")==0)  fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlyFirst);
+    if (strcmp(fITSreq,"kSecond")==0)     fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kSecond);
+    if (strcmp(fITSreq,"kOnlySecond")==0) fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOnlySecond);
+    if (strcmp(fITSreq,"kBoth")==0)       fESDTrackCuts_Std -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
     
-    fESDTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(fMinCrOverFindableCls);
-    fESDTrackCuts -> SetMaxChi2TPCConstrainedGlobal(fMaxGoldenChi2);
-    fESDTrackCuts -> SetMaxChi2PerClusterTPC(fMaxTPCchi2);
-    fESDTrackCuts -> SetMaxChi2PerClusterITS(fMaxITSchi2);
-    fESDTrackCuts -> SetEtaRange(-fEtaLim,fEtaLim);
-    fESDTrackCuts -> SetPtRange(fPtMin,fPtMax);
+    fESDTrackCuts_Std -> SetMinRatioCrossedRowsOverFindableClustersTPC(fMinCrOverFindableCls);
+    fESDTrackCuts_Std -> SetMaxChi2TPCConstrainedGlobal(fMaxGoldenChi2);
+    fESDTrackCuts_Std -> SetMaxChi2PerClusterTPC(fMaxTPCchi2);
+    fESDTrackCuts_Std -> SetMaxChi2PerClusterITS(fMaxITSchi2);
+    fESDTrackCuts_Std -> SetEtaRange(-fEtaLim,fEtaLim);
+    fESDTrackCuts_Std -> SetPtRange(fPtMin,fPtMax);
     
     if ( track -> GetTPCsignalN() < fTPC_nClsdEdx ) return false;
     if ( FractionSharedClsITS(track) > fMaxFracSharedCls ) return false;
-    if ( fESDTrackCuts->AcceptTrack (track) ) return true;
+    if ( fESDTrackCuts_Std->AcceptTrack (track) ) return true;
     return false;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
