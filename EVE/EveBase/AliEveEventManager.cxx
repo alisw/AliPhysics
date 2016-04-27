@@ -626,6 +626,29 @@ void AliEveEventManager::AfterNewEventLoaded()
         fViewsSaver->SendToAmore();
     }
     
+    // animate tracks
+    if(settings.GetValue("tracks.byType.animate",false)){
+        TEveElementList *tracks = (TEveElementList*)gEve->GetCurrentEvent()->FindChild("ESD Tracks by PID");
+        
+        vector<TEveTrackPropagator*> propagators;
+        
+        for(TEveElement::List_i i = tracks->BeginChildren();i != tracks->EndChildren();i++)
+        {
+            TEveTrackList* trkList = ((TEveTrackList*)*i);
+            propagators.push_back(trkList->GetPropagator());
+        }
+        int animationSpeed = settings.GetValue("tracks.animation.speed",10);
+        for(int R=0; R<520; R+=animationSpeed)
+        {
+            animationSpeed-=10;
+            if(animationSpeed<10)animationSpeed=10;
+            for(int propIter=0;propIter<propagators.size();propIter++){
+                propagators[propIter]->SetMaxR(R);
+            }
+            gSystem->ProcessEvents();
+            gEve->Redraw3D();
+        }
+    }
 }
 
 void AliEveEventManager::Timeout()

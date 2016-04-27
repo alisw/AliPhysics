@@ -18,6 +18,8 @@ tracks.width:                           2
 tracks.noRefit.dash:                    1
 tracks.noRefit.show:                    1
 tracks.byType.show:                     1
+tracks.byType.animate:                  0
+tracks.animation.speed:                 10
 tracks.byPt.show:                       0
 tracks.byCategory.show:                 0
 tracks.aod.byPID.show:                  1

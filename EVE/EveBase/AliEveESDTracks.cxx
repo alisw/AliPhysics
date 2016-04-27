@@ -696,7 +696,7 @@ TEveElementList* AliEveESDTracks::ByType()
     gEve->AddElement(cont);
     
     const Int_t   nCont = 15;
-    const Float_t maxR  = 520;
+    const Float_t maxR  = settings.GetValue("tracks.byType.animate",false) ? 0 : 520;
     const Float_t magF  = 0.1*esd->GetMagneticField();
     
     TEveTrackList *tl[nCont];
@@ -770,7 +770,7 @@ TEveElementList* AliEveESDTracks::ByType()
                 shade++;
                 if(shade>3)shade=-3;
             }
-            
+//            track->SetMainTransparency(50);
             track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
             tlist->AddElement(track);
         }
