@@ -47,7 +47,9 @@ AliJetContainer::AliJetContainer():
   fLocalRho(0),
   fRhoMass(0),
   fGeom(0),
-  fRunNumber(0)
+  fRunNumber(0),
+  fTpcHolePos(0),
+  fTpcHoleWidth(0)
 {
   // Default constructor.
 
@@ -85,7 +87,9 @@ AliJetContainer::AliJetContainer(const char *name):
   fLocalRho(0),
   fRhoMass(0),
   fGeom(0),
-  fRunNumber(0)
+  fRunNumber(0),
+  fTpcHolePos(0),
+  fTpcHoleWidth(0)
 {
   // Standard constructor.
 
@@ -420,6 +424,11 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReaso
 {
   // Return true if jet is accepted.
 
+  if(fTpcHolePos>0){
+    Bool_t s = CheckTpcHolesOverlap(jet,rejectionReason);
+    if (!s) return kFALSE; 
+  }
+  
   Bool_t r = ApplyJetCuts(jet, rejectionReason);
   if (!r) return kFALSE;
 
@@ -433,7 +442,12 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReaso
 Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if jet is accepted.
-
+ 
+  if(fTpcHolePos>0){
+    Bool_t s = CheckTpcHolesOverlap(GetJet(i),rejectionReason);
+    if (!s) return kFALSE; 
+   }
+  
   Bool_t r = ApplyJetCuts(GetJet(i), rejectionReason);
   if (!r) return kFALSE;
 
@@ -910,4 +924,35 @@ const char* AliJetContainer::GetTitle() const
   }
 
   return jetString.Data();
+}
+
+Bool_t AliJetContainer::CheckTpcHolesOverlap(const AliEmcalJet *jet, UInt_t &rejectionReason) const
+{   
+     if (!jet) {
+    AliDebug(11,"No jet found");
+    rejectionReason |= kNullObject;
+    return kFALSE;
+  } 
+  
+     Double_t disthole=RelativePhi(jet->Phi(),fTpcHolePos);
+     if(TMath::Abs(disthole)< (fTpcHoleWidth+fJetRadius)){
+     AliDebug(11,"Jet overlaps with TPC hole");
+     rejectionReason |=kOverlapTpcHole;
+     return kFALSE;
+    }
+   
+   return kTRUE;
+}
+
+Double_t AliJetContainer::RelativePhi(Double_t mphi,Double_t vphi) const
+{
+
+  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
+  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
+  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
+  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
+  double dphi = mphi-vphi;
+  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
+  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
+  return dphi;//dphi in [-Pi, Pi]
 }
