@@ -288,6 +288,15 @@ protected:
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;
 
+  /**
+   * Check according to geometrical cuts whether the patch has
+   * overlap with the PHOS region. Partial overlap is sufficient
+   * for this check.
+   * @param[in] patch Patch to check
+   * @return True if the patch has at least partial overlap with PHOS
+   */
+  bool HasPHOSOverlap(const AliEMCALTriggerRawPatch &patch) const;
+
   std::set<Short_t>                         fBadChannels;                 ///< Container of bad channels
   std::set<Short_t>                         fOfflineBadChannels;          ///< Abd ID of offline bad channels
   TArrayF                                   fFastORPedestal;              ///< FastOR pedestal

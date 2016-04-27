@@ -419,6 +419,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
     // Apply offline and recalc selection
     // Remove unwanted bits from the online bits (gamma bits from jet patches and vice versa)
     Int_t offlinebits = 0, onlinebits = (*fTriggerBitMap)(patchit->GetColStart(), patchit->GetRowStart());
+    if(HasPHOSOverlap(*patchit)) continue;
     if(IsGammaPatch(*patchit)){
       if(patchit->GetADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kRecalcOffset + fTriggerBitConfig->GetGammaHighBit());
       if(patchit->GetOfflineADC() > fL1ThresholdsOffline[1]) SETBIT(offlinebits, AliEMCALTriggerPatchInfo::kOfflineOffset + fTriggerBitConfig->GetGammaHighBit());
@@ -452,6 +453,7 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   if (fLevel0PatchFinder) l0patches = fLevel0PatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
     Int_t offlinebits = 0, onlinebits = 0;
+    if(HasPHOSOverlap(*patchit)) continue;
     ELevel0TriggerStatus_t L0status = CheckForL0(patchit->GetColStart(), patchit->GetRowStart());
     if (L0status == kNotLevel0) continue;
     if (L0status == kLevel0Fired) SETBIT(onlinebits, fTriggerBitConfig->GetLevel0Bit());
@@ -521,4 +523,13 @@ void AliEmcalTriggerMakerKernel::SetTriggerBitConfig(const AliEMCALTriggerBitCon
   if (config == fTriggerBitConfig) return;
   if (fTriggerBitConfig) delete fTriggerBitConfig;
   fTriggerBitConfig = config;
+}
+
+bool AliEmcalTriggerMakerKernel::HasPHOSOverlap(const AliEMCALTriggerRawPatch &patch) const {
+  const int kEtaMinPhos = 16, kEtaMaxPhos = 31, kPhiMinPhos = 64, kPhiMaxPhos = 99;
+  if(patch.GetRowStart() + patch.GetPatchSize() -1 < kPhiMinPhos) return false;   // EMCAL Patch
+  if(patch.GetRowStart() > kPhiMaxPhos) return false;         // DCAL 1/3 supermodule
+  if(patch.GetColStart() + patch.GetPatchSize() -1 < kEtaMinPhos) return false;
+  if(patch.GetColStart() > kEtaMaxPhos) return false;
+  return true;
 }
