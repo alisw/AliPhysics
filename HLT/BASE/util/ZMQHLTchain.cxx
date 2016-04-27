@@ -28,6 +28,7 @@
 #include "AliHLTGlobalTriggerDecision.h"
 #include "AliHLTCTPData.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliDAQ.h"
 #include "TROOT.h"
 #include "TServerSocket.h"
@@ -67,6 +68,8 @@ string fINFOstring;
 string fConfigMacro;
 
 bool fRequestGRP = false;
+bool fUsePromptCDBcache = false;
+std::string fLocalCDBcache = "local://OCDB";
 
 Bool_t fInterruptOnSOR = kFALSE;
 
@@ -84,6 +87,7 @@ const char* fUSAGE =
     " -ExitOnSOR : quit on change of run\n"
     " -requestGRP : request an on-the-fly GRP from upstream\n"
     " -cdbPath : the path to the default CDB storage\n"
+    " -localGRPcache : location of prompt GRP storage (local://OCDB)\n"
     " -config : ROOT macro defining the HLT chain.\n"
     "           a \"source\" component is provided, use as first parent\n"
     "           a \"sink\" component needs to be defined (last in chain)\n"
@@ -282,6 +286,7 @@ int Run()
         //get the GRP
         else if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
         {
+          printf("GRP received\n");
           alizmq_msg_iter_data(i, grpEntry);
         }
         //get the INFO block
@@ -297,7 +302,7 @@ int Run()
           }
         }
         //get the event info
-        else if (alizmq_msg_iter_check(i, kAliHLTDataTypeEvent)==0)
+        else if (alizmq_msg_iter_check(i, "EVENTTYP")==0)
         {
           AliHLTDataTopic topic;
           alizmq_msg_iter_topic(i, topic);
@@ -337,8 +342,17 @@ int Run()
       if (grpEntry) {
         AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(grpEntry);
         if (entry) {
-          printf("--putting the on-the-fly GRP into the CDB manager\n");
-          AliCDBManager::Instance()->PromptCacheEntry("GRP/GRP/Data",entry);
+          if (fUsePromptCDBcache) {
+            printf("--putting the on-the-fly GRP into the CDB prompt cache\n");
+            AliCDBManager::Instance()->PromptCacheEntry("GRP/GRP/Data",entry);
+          } else {
+            printf("--putting the on-the-fly GRP into %s\n",fLocalCDBcache.c_str());
+            AliCDBStorage* localStorage = 
+              AliCDBManager::Instance()->GetStorage(fLocalCDBcache.c_str());
+            localStorage->Put(entry);
+            AliCDBManager* man = AliCDBManager::Instance();
+            man->SetSpecificStorage("GRP/GRP/Data",fLocalCDBcache.c_str());
+          }
           if (fVerbose) {
             printf("some info from the GRP entry: %p, object: %p\n",entry,entry->GetObject());
             grp = dynamic_cast<AliGRPObject*>(entry->GetObject());
@@ -351,24 +365,13 @@ int Run()
               Int_t activeDetectors = grp->GetDetectorMask();
               TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
               printf("DetectorMask: %s\n", detStr.Data());
-              AliGRPObject* clone = dynamic_cast<AliGRPObject*>(grp->Clone());
-              printf("cloned: %p\n",clone);
             }
           }
         }
       }
       if (!fMagfieldIsSet) {
         printf("--init mag field\n");
-        AliGRPManager grpMan;
-        if (grp) {
-          grpMan.SetGRPEntry(grp);
-        } else {
-          AliCDBEntry* entry = dynamic_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("GRP/GRP/Data"));
-          grp = dynamic_cast<AliGRPObject*>(entry->GetObject());
-          printf("getting GRP %p from the default OCDB\n",grp);
-          grpMan.SetGRPEntry(grp);
-        }
-        grpMan.SetMagField();
+        AliHLTMisc::Instance().InitMagneticField();
         fMagfieldIsSet=kTRUE;
       }
       
@@ -446,6 +449,10 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("cdbPath"))
     {
       fCDBpath=value.Data();
+    }
+    else if (option.EqualTo("localGRPcache"))
+    {
+      fLocalCDBcache = value.Data();
     }
     else if (option.EqualTo("ExitOnSOR"))
     {
