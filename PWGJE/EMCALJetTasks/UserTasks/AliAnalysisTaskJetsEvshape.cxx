@@ -20,6 +20,7 @@
 // MC stuff
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliStack.h"
 
 // ESD stuff
 #include "AliESDEvent.h"
@@ -90,8 +91,10 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
     fTracksCont       = GetParticleContainer(0);
     fCaloClustersCont = GetClusterContainer(0);
   }
-  if(fTracksCont) fTracksCont->SetClassName("AliVParticle");
-  if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
+  if(fTracksCont)
+    fTracksCont->SetClassName("AliVParticle");
+  if(fCaloClustersCont)
+    fCaloClustersCont->SetClassName("AliVCluster");
 
   // setup list
   OpenFile(kOutputTask);
@@ -111,6 +114,9 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
                40, 0., 40.);
   AddHistogram(ID(kHistMult), "tracklet multiplicity;N_{trkl};counts",
                100, 0., 400.);
+  AddHistogram(ID(kHistJetPtVsMult), "jet p_{T} vs mult;multiplicity;p_{T}^{jet,ch} (GeV/#it{c})",
+               100, 0., 400.,
+               40, 0., 40.);
 
   PostData(kOutputTask, fOutputList);
 }
@@ -167,8 +173,12 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
 {
   FillH1(kHistStat, kStatUsed);
 
-  AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
-  const Int_t nTracklets = mult ? mult->GetNumberOfTracklets() : -1;
+  const AliStack *stack = fMCEvent->Stack();
+  const AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
+  const Int_t nTracklets =
+    stack ? stack->GetNprimary() :
+    mult ? mult->GetNumberOfTracklets() :
+    -1;
   FillH1(kHistMult, nTracklets);
 
   if (fJetsCont) {
@@ -178,6 +188,7 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
     fJetsCont->ResetCurrentID();
     while (AliEmcalJet *jet = fJetsCont->GetNextAcceptJet()) {
       FillH1(kHistJetPt, jet->Pt());
+      FillH1(kHistJetPtVsMult, nTracklets, jet->Pt());
     }
   }
 
