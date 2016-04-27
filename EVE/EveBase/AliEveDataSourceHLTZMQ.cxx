@@ -173,6 +173,9 @@ void AliEveDataSourceHLTZMQ::NextEvent()
 Bool_t AliEveDataSourceHLTZMQ::ReceivePromptRecoParameters(Int_t runNo)
 {
 #ifdef ZMQ
+  //makes no sense to do anything here if we cannot request anything
+  if (alizmq_socket_type(fZMQin)!=ZMQ_REQ) return kFALSE;
+
   aliZMQmsg request;
   if ((alizmq_socket_state(fZMQin) & ZMQ_POLLOUT)==ZMQ_POLLOUT)
   {
@@ -213,6 +216,7 @@ Bool_t AliEveDataSourceHLTZMQ::ReceivePromptRecoParameters(Int_t runNo)
     localStorage->Put(cdbGRPEntry);
     AliCDBManager* man = AliCDBManager::Instance();
     man->SetSpecificStorage("GRP/GRP/Data","local://OCDB");
+    delete cdbGRPEntry;
     return kTRUE;
   }
 #endif
