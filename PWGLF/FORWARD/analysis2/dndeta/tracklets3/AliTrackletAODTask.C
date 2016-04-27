@@ -900,12 +900,16 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
   Int_t             label0  = mult->GetLabel(no, 0);
   Int_t             label1  = mult->GetLabel(no, 1);
   TParticle*        parent0 = FindParent(label0);
-  mc->SetParentPdg(parent0->GetPdgCode());
-  mc->SetParentPt (parent0->Pt());
+  if (parent0) {
+    mc->SetParentPdg(parent0->GetPdgCode());
+    mc->SetParentPt (parent0->Pt());
+  }
   if (label0 != label1) {
     TParticle* parent1 = FindParent(label1);
-    mc->SetParentPdg(parent1->GetPdgCode(), true);
-    mc->SetParentPt (parent1->Pt(),         true);
+    if (parent1) { 
+      mc->SetParentPdg(parent1->GetPdgCode(), true);
+      mc->SetParentPt (parent1->Pt(),         true);
+    }
     mc->SetCombinatorics();
     // Here, we could track back in the cluster labels to see if we
     // have the same ultimate mother of both clusters.  Since this
@@ -923,11 +927,23 @@ TParticle* AliTrackletAODMCTask::FindParent(Int_t label)
   AliStack*   stack     = MCEvent()->Stack();
   Int_t       nTracks   = stack->GetNtrack();
   TParticle*  particle  = stack->Particle(label);
+  Int_t       trackNo   = label;
+#if 1
+  while (!stack->IsPhysicalPrimary(trackNo)) {
+    trackNo  = particle->GetFirstMother();
+    // If we have hit the top 
+    if (trackNo < 0) return 0;
+    // Partice first next iteration 
+    particle = stack->Particle(trackNo);
+  }
+      
+#else 
   Int_t       parentID  = particle->GetFirstMother();
   while (parentID >= 0 && parentID < nTracks) {
     particle  = stack->Particle(parentID);
     parentID  = particle->GetFirstMother();
   }
+#endif 
   return particle;
 }
 //====================================================================
