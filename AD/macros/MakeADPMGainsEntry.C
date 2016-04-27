@@ -38,14 +38,20 @@ void MakeADPMGainsEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB")
   Double_t b[16] = { 6.230, 6.866, 6.799, 6.510, 6.118, 6.815, 6.136, 6.739,
   		     5.928, 8.848, 6.568, 6.794, 7.394, 5.681, 6.503, 7.147};
 
-   /*/		    
+   		    
   //2015 after run 245683
   Double_t a[16] = {1272.8, 1283.7, 1325.5, 1511.5, 1498.4, 1449.6, 1104.4, 1337.8, 
   	            1348.3, 1476.9, 1243.3, 1403.6, 1337.3, 1347.0, 1376.4, 1487.0};
   
   Double_t b[16] = { 6.230, 6.866, 6.799, 6.510, 6.118, 6.815, 9.027, 6.739,
   		     5.928, 8.848, 6.568, 6.794, 7.394, 5.681, 6.503, 7.147};
-  
+  /*/		     
+  //2016 after run 252234		     
+  Double_t a[16] = {1584.3, 1472.4, 1422.5, 1376.6, 1417.6, 1316.6, 1251.3, 1437.6,
+		    1419.6, 1488.5, 1599.5, 1320.5, 1438.0, 1557.8, 1396.2, 1352.5};
+		    
+  Double_t b[16] = { 8.252, 7.496, 7.229, 7.232, 7.488, 7.284, 7.150, 7.613,
+		     7.296, 8.003, 9.106, 7.477, 7.225, 7.254, 8.036, 7.600};  
 		    
   TH2F *gains = new TH2F("ADPMGains", "AD PM gain factors", 16, -0.5, 15.5, 2, -0.5, 1.5);
   for(Int_t channel = 0; channel < 16; ++channel) {
@@ -61,7 +67,7 @@ void MakeADPMGainsEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB")
   md->AddDateToComment();
   md->PrintMetaData();
 
-  AliCDBId id("AD/Calib/PMGains", 245683, AliCDBRunRange::Infinity());
+  AliCDBId id("AD/Calib/PMGains", 252234, AliCDBRunRange::Infinity());
   man->Put(gains, id, md);
 
   delete md;
