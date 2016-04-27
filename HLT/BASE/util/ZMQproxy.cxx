@@ -72,8 +72,15 @@ int capture(void* capture, zmq_msg_t* msg, int more = 0)
   rc = zmq_msg_init(&ctrl);
   if (rc<0) return -1;
   rc = zmq_msg_copy(&ctrl, msg);
-  if (rc<0) return -1;
-  return zmq_msg_send(&ctrl, capture, more?ZMQ_SNDMORE:0);
+  if (rc<0) {
+    zmq_msg_close(&ctrl);
+    return -1;
+  }
+  rc = zmq_msg_send(&ctrl, capture, more?ZMQ_SNDMORE:0);
+  if (rc<0) {
+    zmq_msg_close(&ctrl);
+  }
+  return rc;
 }
 
 int forward(void* from, void* to, void* mon, zmq_msg_t* msg)
