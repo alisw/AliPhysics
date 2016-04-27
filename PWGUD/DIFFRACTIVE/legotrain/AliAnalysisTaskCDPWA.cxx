@@ -31,6 +31,8 @@
 #include <TArrayI.h>
 #include <TRandom3.h>
 #include <TString.h>
+#include <TParticle.h>
+#include <TParticlePDG.h>
 
 #include "AliTriggerAnalysis.h"
 #include "AliESDInputHandler.h"
@@ -74,22 +76,36 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMCprocess(-1)
 	, fRun(-999)
 	, fPIDmode(0)
+	, fIsRun2(0)
 	, fSavemode(0)
+	, fCombmode(0)
 	, fTree(0x0)
+	, fTree_Comb(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fCheckFourPion_ITSSA(0)
-	, fDGV0SPD(0)
-	, fDGADSPD(0)
+	, fMultiplicity(0)
 	, fSPDFired(0)
 	, fV0Gap(0)
 	, fADGap(0)
 	, fFMDGap(0)
 	, fZDCGap(0)
 	, fIsMC(0)
+	, fIsSaveGen(0)
+	, fIsPythia8(0)
+	, fIsPythia(0)
+	, fIsPhojet(0)
+	, fIsEPOS(0)
 	, fRunNumber(0)
 	, fPeriod(0)
+	, fComb_IsPileUp(0)
+	, fComb_IsPassClusterCut(0)
+	, fComb_SPDCluster(0)
+	, fComb_SPDTracklets(0)
+	, fComb_MC_EventProcess(0)
+	, fComb_IsPassMBOR(0)
+	, fComb_IsPassVertex(0)
 	, fList(0x0)
 	, fHistEvent(0x0)
 	, fHistTrigger(0x0)
@@ -158,11 +174,22 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fTOFSignal(0x0)
 	, fITSSignal(0x0)
 	, fTRDSignal(0x0)
+	, fMult_Gen(0x0)
+	, fMult_Gen_Process(0x0)
+	, fMult_Rec_DG_Process(0x0)
+	, fMult_Rec_NG_Process(0x0)
 {
 	//
 	// standard constructor (the one which should be used)
 	//
 	// slot in TaskSE must start from 1
+
+	for (Int_t i = 0; i < 7; i++) {
+		fMC_Eta[i] = 0x0;
+		fMC_DiffMass[i] = 0x0;
+		fMC_DiffMass_PDG[i] = 0x0;
+		if (i<6) fRunFiducial[i] = 0x0;
+	}
 	for (Int_t i = 0; i < 16; i++) {
 		fADCharge[i] = 0.;
 	}
@@ -180,7 +207,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		fTwoPionMask_TRD[i] = 0;
 		fTwoPionMask_tot[i] = 0;
 		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fTwoPionTrack[i][j] = 0;
 			fTwoPionTPCSigma[i][j] = 0;
 			fTwoPionTOFSigma[i][j] = 0;
@@ -202,7 +229,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 		fFourPionMask_TRD[i] = 0;
 		fFourPionMask_tot[i] = 0;
 		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fFourPionTrack[i][j] = 0;
 			fFourPionTPCSigma[i][j] = 0;
 			fFourPionTOFSigma[i][j] = 0;
@@ -217,17 +244,37 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			}
 		}
 	}
+	for (Int_t i = 0; i < 64; i++) {
+		if (i < 2) {
+			fComb_V0_Time_Mean[i] = -999.;
+			fComb_AD_Time_Mean[i] = -999.;
+			fComb_forwardP[i].SetPxPyPzE(0,0,0,0);
+			fComb_diffSystem[i].SetPxPyPzE(0,0,0,0);
+		}
+		if (i < 10) {
+			fComb_DetHit[i] = 0;
+		}
+		if (i < 16) {
+			fComb_AD_Time[i] = -999.;
+			fComb_AD_ADC[i] = -999.;
+		}
+		if (i < 64) {
+			fComb_V0_Time[i] = -999.;
+			fComb_V0_ADC[i] = -999.;
+		}
+	}
 
 
 	// MC variable
 	for (Int_t i=0; i< 5; i++) {
-		for (Int_t j = 0; j < 2; j++) {
+		for (Int_t j = 0; j < 4; j++) {
 			fMCGenProtonTrack[j][i] = 0.;
 			fMCGenPionTrack[j][i] = 0.;
 		}
 	}
 	DefineOutput(1, TTree::Class());
-	DefineOutput(2, TList::Class());
+	DefineOutput(2, TTree::Class());
+	DefineOutput(3, TList::Class());
 }
 //______________________________________________________________________________
 AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
@@ -245,22 +292,36 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMCprocess(-1)
 	, fRun(-999)
 	, fPIDmode(0)
+	, fIsRun2(0)
 	, fSavemode(0)
+	, fCombmode(0)
 	, fTree(0x0)
+	, fTree_Comb(0x0)
 	, fCheckTwoPion(0)
 	, fCheckFourPion(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fCheckFourPion_ITSSA(0)
-	, fDGV0SPD(0)
-	, fDGADSPD(0)
+	, fMultiplicity(0)
 	, fSPDFired(0)
 	, fV0Gap(0)
 	, fADGap(0)
 	, fFMDGap(0)
 	, fZDCGap(0)
 	, fIsMC(0)
+	, fIsSaveGen(0)
+	, fIsPythia8(0)
+	, fIsPythia(0)
+	, fIsPhojet(0)
+	, fIsEPOS(0)
 	, fRunNumber(0)
 	, fPeriod(0)
+	, fComb_IsPileUp(0)
+	, fComb_IsPassClusterCut(0)
+	, fComb_SPDCluster(0)
+	, fComb_SPDTracklets(0)
+	, fComb_MC_EventProcess(0)
+	, fComb_IsPassMBOR(0)
+	, fComb_IsPassVertex(0)
 	, fList(0x0)
 	, fHistEvent(0x0)
 	, fHistTrigger(0x0)
@@ -329,7 +390,17 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fTOFSignal(0x0)
 	, fITSSignal(0x0)
 	, fTRDSignal(0x0)
+	, fMult_Gen(0x0)
+	, fMult_Gen_Process(0x0)
+	, fMult_Rec_DG_Process(0x0)
+	, fMult_Rec_NG_Process(0x0)
 {
+	for (Int_t i = 0; i < 7; i++) {
+		fMC_Eta[i] = 0x0;
+		fMC_DiffMass[i] = 0x0;
+		fMC_DiffMass_PDG[i] = 0x0;
+		if (i<6) fRunFiducial[i] = 0x0;
+	}
 	for (Int_t i = 0; i < 16; i++) {
 		fADCharge[i] = 0.;
 	}
@@ -346,7 +417,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		fTwoPionMask_TRD[i] = 0;
 		fTwoPionMask_tot[i] = 0;
 		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fTwoPionTrack[i][j] = 0;
 			fTwoPionTPCSigma[i][j] = 0;
 			fTwoPionTOFSigma[i][j] = 0;
@@ -368,7 +439,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		fFourPionMask_TRD[i] = 0;
 		fFourPionMask_tot[i] = 0;
 		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fFourPionTrack[i][j] = 0;
 			fFourPionTPCSigma[i][j] = 0;
 			fFourPionTOFSigma[i][j] = 0;
@@ -383,9 +454,28 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 			}
 		}
 	}
+	for (Int_t i = 0; i < 64; i++) {
+		if (i < 2) {
+			fComb_V0_Time_Mean[i] = -999.;
+			fComb_AD_Time_Mean[i] = -999.;
+			fComb_forwardP[i].SetPxPyPzE(0,0,0,0);
+			fComb_diffSystem[i].SetPxPyPzE(0,0,0,0);
+		}
+		if (i < 10) {
+			fComb_DetHit[i] = 0;
+		}
+		if (i < 16) {
+			fComb_AD_Time[i] = -999.;
+			fComb_AD_ADC[i] = -999.;
+		}
+		if (i < 64) {
+			fComb_V0_Time[i] = -999.;
+			fComb_V0_ADC[i] = -999.;
+		}
+	}
 
 	for (Int_t i=0; i< 5; i++) {
-		for (Int_t j = 0; j < 2; j++) {
+		for (Int_t j = 0; j < 4; j++) {
 			fMCGenProtonTrack[j][i] = 0.;
 			fMCGenPionTrack[j][i] = 0.;
 		}
@@ -395,28 +485,13 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 {
 	//Destructor(pointer should be deleted)
-	if (fTree) {
-		delete fTree;
-		fTree = 0x0;
-	}
-	if (fList) {
-		delete fList;
-		fList = 0x0;
-	}
-	if (fPhysicsSelection) {
-		delete fPhysicsSelection;
-		fPhysicsSelection = 0x0;
-	}
-	if (fTrackCuts) {
-		delete fTrackCuts;
-	}
-	if (fTrackCuts_ITSSA) {
-		delete fTrackCuts_ITSSA;
-	}
-	if (fHistEvent) {
-		delete fHistEvent;
-		fHistEvent = 0x0;
-	}
+	if (fTree) delete fTree;
+	if (fTree_Comb) delete fTree_Comb;
+	if (fList) delete fList;
+	if (fPhysicsSelection) delete fPhysicsSelection;
+	if (fTrackCuts) delete fTrackCuts;
+	if (fTrackCuts_ITSSA) delete fTrackCuts_ITSSA;
+	if (fHistEvent) delete fHistEvent;
 	if (fPIDResponse) delete fPIDResponse;
 	if (fPIDCombined) delete fPIDCombined;
 	if (fHistEventProcesses) delete fHistEventProcesses;
@@ -486,6 +561,16 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fTOFSignal) delete fTOFSignal;
 	if (fITSSignal) delete fITSSignal;
 	if (fTRDSignal) delete fTRDSignal;
+	if (fMult_Gen) delete fMult_Gen;
+	if (fMult_Gen_Process) delete fMult_Gen_Process;
+	if (fMult_Rec_DG_Process) delete fMult_Rec_DG_Process;
+	if (fMult_Rec_NG_Process) delete fMult_Rec_NG_Process;
+	for (Int_t i = 0; i < 7; i++) {
+		if (fMC_Eta[i]) delete fMC_Eta[i];
+		if (fMC_DiffMass[i]) delete fMC_DiffMass[i];
+		if (fMC_DiffMass_PDG[i]) delete fMC_DiffMass_PDG[i];
+		if (i<6 && fRunFiducial[i]) delete fRunFiducial[i];
+	}
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
@@ -498,8 +583,6 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	fTree->Branch("CheckFourPion",&fCheckFourPion);
 	fTree->Branch("CheckTwoPion_ITSSA",&fCheckTwoPion_ITSSA);
 	fTree->Branch("CheckFourPion_ITSSA",&fCheckFourPion_ITSSA);
-	fTree->Branch("DGV0SPD",&fDGV0SPD);
-	fTree->Branch("DGADSPD",&fDGADSPD);
 	fTree->Branch("SPDFired",&fSPDFired);
 	fTree->Branch("V0Gap",&fV0Gap);
 	fTree->Branch("ADGap",&fADGap);
@@ -507,6 +590,18 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	fTree->Branch("ZDCGap",&fZDCGap);
 	fTree->Branch("RunNumber",&fRunNumber);
 	fTree->Branch("Period",&fPeriod);
+	fTree->Branch("Multiplicity",&fMultiplicity);
+	//For vertex
+	for (Int_t i = 0; i < 3; i++) {
+		fTree->Branch(Form("Vertex_%d",i),&fVertex[i]);
+	}
+	if (fIsRun2) {
+		fTree->Branch("ADANmbBB",&fADANmbBB);
+		fTree->Branch("ADCNmbBB",&fADCNmbBB);
+		for (Int_t i = 0; i < 16; i++) {
+			fTree->Branch(Form("ADCharge_%d",i),&fADCharge[i]);
+		}
+	}
 	for (Int_t i = 0; i < 2; i++) {
 		fTree->Branch(Form("TwoPionMask_TPC_%d",i),&fTwoPionMask_TPC[i]);
 		fTree->Branch(Form("TwoPionMask_TOF_%d",i),&fTwoPionMask_TOF[i]);
@@ -514,7 +609,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fTree->Branch(Form("TwoPionMask_TRD_%d",i),&fTwoPionMask_TRD[i]);
 		fTree->Branch(Form("TwoPionMask_tot_%d",i),&fTwoPionMask_tot[i]);
 		fTree->Branch(Form("TwoPionDetMask_tot_%d",i),&fTwoPionDetMask_tot[i]);
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fTree->Branch(Form("TwoPionTrack_%d_%d",i,j),&fTwoPionTrack[i][j]);
 			fTree->Branch(Form("TwoPionTPCSigma_%d_%d",i,j),&fTwoPionTPCSigma[i][j]);
 			fTree->Branch(Form("TwoPionTOFSigma_%d_%d",i,j),&fTwoPionTOFSigma[i][j]);
@@ -536,7 +631,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fTree->Branch(Form("FourPionMask_TRD_%d",i),&fFourPionMask_TRD[i]);
 		fTree->Branch(Form("FourPionMask_tot_%d",i),&fFourPionMask_tot[i]);
 		fTree->Branch(Form("FourPionDetMask_tot_%d",i),&fFourPionDetMask_tot[i]);
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fTree->Branch(Form("FourPionTrack_%d_%d",i,j),&fFourPionTrack[i][j]);
 			fTree->Branch(Form("FourPionTPCSigma_%d_%d",i,j),&fFourPionTPCSigma[i][j]);
 			fTree->Branch(Form("FourPionTOFSigma_%d_%d",i,j),&fFourPionTOFSigma[i][j]);
@@ -552,30 +647,67 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		}
 	}
 	//For MC
-	for (Int_t i = 0; i < 5; i++) {
-		for (Int_t j = 0; j < 2; j++) {
-			fTree->Branch(Form("MCGenProtonTrack_%d_%d",j,i),&fMCGenProtonTrack[j][i]);
-			fTree->Branch(Form("MCGenPionTrack_%d_%d",j,i),&fMCGenPionTrack[j][i]);
+	if (fIsMC) {//Simple parameter
+	}
+	if (fIsMC && fIsSaveGen) {//For the PWA
+		for (Int_t i = 0; i < 5; i++) {
+			for (Int_t j = 0; j < 4; j++) {
+				fTree->Branch(Form("MCGenProtonTrack_%d_%d",j,i),&fMCGenProtonTrack[j][i]);
+				fTree->Branch(Form("MCGenPionTrack_%d_%d",j,i),&fMCGenPionTrack[j][i]);
+			}
 		}
 	}
-	//For vertex
-	for (Int_t i = 0; i < 3; i++) {
-		fTree->Branch(Form("Vertex_%d",i),&fVertex[i]);
+	//-------------------------------------------------------------------------
+
+	// TTree for combinatorics------------------------------------------------
+	OpenFile(2);
+	fTree_Comb = new TTree("tree_comb","tree_comb");
+	fTree_Comb->Branch("Comb_RunNumber",&fRunNumber);
+	fTree_Comb->Branch("Comb_Period",&fPeriod);
+	fTree_Comb->Branch("Comb_IsPassMBOR",&fComb_IsPassMBOR);
+	fTree_Comb->Branch("Comb_IsPassVertex",&fComb_IsPassVertex);
+	fTree_Comb->Branch("Comb_IsPileUp",&fComb_IsPileUp);
+	fTree_Comb->Branch("Comb_IsPassClusterCut",&fComb_IsPassClusterCut);
+	fTree_Comb->Branch("Comb_SPDCluster",&fComb_SPDCluster);
+	fTree_Comb->Branch("Comb_SPDTracklets",&fComb_SPDTracklets);
+	for (Int_t i = 0; i < 64; i++) {
+		if (i < 2) {
+			fTree_Comb->Branch(Form("Comb_V0_Time_Mean_%d",i),&fComb_V0_Time_Mean[i]);
+			fTree_Comb->Branch(Form("Comb_AD_TIme_Mean_%d",i),&fComb_AD_Time_Mean[i]);
+		}
+		if (i < 10) fTree_Comb->Branch(Form("Comb_DetHit_%d",i),&fComb_DetHit[i]);
+		if (i < 16) {
+			fTree_Comb->Branch(Form("Comb_AD_Time_%d",i),&fComb_AD_Time[i]);
+			fTree_Comb->Branch(Form("Comb_AD_ADC_%d",i),&fComb_AD_ADC[i]);
+		}
+		if (i < 64) {
+			fTree_Comb->Branch(Form("Comb_V0_Time_%d",i),&fComb_V0_Time[i]);
+			fTree_Comb->Branch(Form("Comb_V0_ADC_%d",i),&fComb_V0_ADC[i]);
+		}
+		if (i < 3) {
+			fTree_Comb->Branch(Form("Comb_Vertex_%d",i),&fVertex[i]);
+		}
 	}
-	fTree->Branch("ADANmbBB",&fADANmbBB);
-	fTree->Branch("ADCNmbBB",&fADCNmbBB);
-	for (Int_t i = 0; i < 16; i++) {
-		fTree->Branch(Form("ADCharge_%d",i),&fADCharge[i]);
+	if (fIsMC) {
+		fTree_Comb->Branch("Comb_MC_EventProcess",&fComb_MC_EventProcess);
+		for (Int_t i = 0; i < 2; i++) {
+			fTree_Comb->Branch(Form("Comb_forwardP_%d",i),&fComb_forwardP[i]);
+			fTree_Comb->Branch(Form("Comb_diffSystem_%d",i),&fComb_diffSystem[i]);
+		}
 	}
-	//fTree->Branch("test",&fPIDResponse);
 	//-------------------------------------------------------------------------
 
 	// TList-------------------------------------------------------------------
-	Int_t minRn = 224800;
-	Int_t maxRn = 250000;
+	// For the run by run analysis
+	Int_t minRn = 114500;//min run number in Run1
+	Int_t maxRn = 179300;//max run number in Run1
+	if (fIsRun2) {//Run2
+		minRn = 224800;
+		maxRn = 260000;
+	}
 	Int_t diff = maxRn - minRn;
 
-	OpenFile(2);
+	OpenFile(3);
 	fList = new TList();
 	fList->SetOwner();
 	if (!fHistEvent) {
@@ -583,7 +715,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fHistEvent->GetXaxis()->SetBinLabel(kInput+1,"InputEvent");
 		fHistEvent->GetXaxis()->SetBinLabel(kMCCheck+1,"MCCheck");
 		fHistEvent->GetXaxis()->SetBinLabel(kOnlineTrigger+1,"OnlineTrigger");
-		fHistEvent->GetXaxis()->SetBinLabel(kMBOR+1,"OfflineMBOR");
+		fHistEvent->GetXaxis()->SetBinLabel(kOfflineCut+1,"OfflineMBOR");
 		fHistEvent->GetXaxis()->SetBinLabel(kVtxCut+1,"VertexCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kPileUpCut+1,"PileUpCut");
 		fHistEvent->GetXaxis()->SetBinLabel(kClusterCut+1,"ClusterCut");
@@ -625,8 +757,9 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinND+1,"ND");
 		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinCD+1,"CD");
 		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinSD1+1,"SD1");
-		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinSD2+1,"SD1");
+		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinSD2+1,"SD2");
 		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinDD+1,"DD");
+		fHistEventProcesses->GetXaxis()->SetBinLabel(kBinEL+1,"Elastic");
 		fList->Add(fHistEventProcesses);
 	}
 	if (!fHistPrimVtxX) {
@@ -689,6 +822,7 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fRunVsMBAND_Global = new TH1D("fRunVsMBAND_Global","",diff,minRn,maxRn);
 		fList->Add(fRunVsMBAND_Global);
 	}
+	Char_t tname[50];
 	const Int_t trigger_no = 8;
 	const char *trigger_name[trigger_no] = {
 		"CINT5-B-NOPF-ALLNOTRD",
@@ -700,7 +834,6 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		"CDG6-B-SPD2-CENTNOTRD",
 		"CDG7-B-SPD2-CENTNOTRD"
 	};
-	Char_t tname[50];
 	for (Int_t i = 0; i < trigger_no; i++) {
 		sprintf(tname,"%s",trigger_name[i]);
 		fRunOnline[i] = new TH1D(tname,"",diff,minRn,maxRn);
@@ -894,29 +1027,75 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fTRDSignal = new TH2D("fTRDSignal","",500,0,5,400,0,50);
 		fList->Add(fTRDSignal);
 	}
+	for (Int_t i = 0; i < 6; i++) {
+		if (!fRunFiducial[i]) {
+			fRunFiducial[i] = new TH1D(Form("fRunFiducial_%d",i),"",diff,minRn,maxRn);
+			fList->Add(fRunFiducial[i]);
+		}
+	}
+	if (fIsMC) {
+		for (Int_t i = 0; i < 7; i++) {
+			if (!fMC_Eta[i]) {
+				fMC_Eta[i] = new TH1D(Form("fMC_Eta_%d",i),"",300,-15,15);
+				fList->Add(fMC_Eta[i]);
+			}
+			if (!fMC_DiffMass[i]) {
+				fMC_DiffMass[i] = new TH1D(Form("fMC_DiffMass_%d",i),"",1000,0,1000);
+				fList->Add(fMC_DiffMass[i]);
+			}
+			if (!fMC_DiffMass_PDG[i]) {
+				fMC_DiffMass_PDG[i] = new TH1D(Form("fMC_DiffMass_PDG_%d",i),"",1000,0,1000);
+				fList->Add(fMC_DiffMass_PDG[i]);
+			}
+		}
+		if (!fMult_Gen) {
+			fMult_Gen = new TH1D("fMult_Gen","",500,0,500);
+			fList->Add(fMult_Gen);
+		}
+		if (!fMult_Gen_Process) {
+			fMult_Gen_Process = new TH2D("fMult_Gen_Process","",kBinMCAll,0,kBinMCAll,500,0,500);
+			fList->Add(fMult_Gen_Process);
+		}
+		if (!fMult_Rec_DG_Process) {
+			fMult_Rec_DG_Process = new TH2D("fMult_Rec_DG_Process","",kBinMCAll,0,kBinMCAll,500,0,500);
+			fList->Add(fMult_Rec_DG_Process);
+		}
+		if (!fMult_Rec_NG_Process) {
+			fMult_Rec_NG_Process = new TH2D("fMult_Rec_NG_Process","",kBinMCAll,0,kBinMCAll,500,0,500);
+			fList->Add(fMult_Rec_NG_Process);
+		}
+	}
 
 	// Track Cuts
-	fTrackCuts = new AliESDtrackCuts();
-	{
-		fTrackCuts -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
-		fTrackCuts -> SetMinNCrossedRowsTPC(120);
-		fTrackCuts -> SetMaxDCAToVertexZ(2);
-		fTrackCuts -> SetEtaRange(-0.9,0.9);
-		fTrackCuts -> SetMaxChi2PerClusterTPC(4);
-		fTrackCuts -> SetRequireTPCRefit(kTRUE);
-		fTrackCuts -> SetRequireITSRefit(kTRUE);
-		fTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		fTrackCuts -> SetAcceptKinkDaughters(kFALSE);
-		fTrackCuts -> SetMaxChi2PerClusterITS(36);
-		fTrackCuts -> SetMaxChi2TPCConstrainedGlobal(36);
-		fTrackCuts -> SetPtRange(0.15);
-		fTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-		fTrackCuts -> SetMaxFractionSharedTPCClusters(0.4);
+	if (!fIsRun2) {
+		fTrackCuts = new AliESDtrackCuts();
+		fTrackCuts->GetStandardITSTPCTrackCuts2010(1,0);//0 for d and e
+		fTrackCuts_ITSSA = new AliESDtrackCuts();
+		fTrackCuts_ITSSA->GetStandardITSSATrackCuts2010(1,0);//0 for no-PID mode
 	}
-	fTrackCuts_ITSSA = new AliESDtrackCuts();
-	{
-		fTrackCuts_ITSSA->GetStandardITSSATrackCuts2010(1,0);//0 for noPID
-		fTrackCuts_ITSSA->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+	else {
+		fTrackCuts = new AliESDtrackCuts();
+		{
+			fTrackCuts -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
+			fTrackCuts -> SetMinNCrossedRowsTPC(120);
+			fTrackCuts -> SetMaxDCAToVertexZ(2);
+			fTrackCuts -> SetEtaRange(-0.9,0.9);
+			fTrackCuts -> SetMaxChi2PerClusterTPC(4);
+			fTrackCuts -> SetRequireTPCRefit(kTRUE);
+			fTrackCuts -> SetRequireITSRefit(kTRUE);
+			fTrackCuts -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+			fTrackCuts -> SetAcceptKinkDaughters(kFALSE);
+			fTrackCuts -> SetMaxChi2PerClusterITS(36);
+			fTrackCuts -> SetMaxChi2TPCConstrainedGlobal(36);
+			fTrackCuts -> SetPtRange(0.15);
+			fTrackCuts -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+			fTrackCuts -> SetMaxFractionSharedTPCClusters(0.4);
+		}
+		fTrackCuts_ITSSA = new AliESDtrackCuts();
+		{
+			fTrackCuts_ITSSA->GetStandardITSSATrackCuts2010(1,0);//0 for noPID
+			fTrackCuts_ITSSA->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+		}
 	}
 
 	//PID Combined
@@ -939,7 +1118,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		fTwoPionMask_TRD[i] = 0;
 		fTwoPionMask_tot[i] = 0;
 		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fTwoPionTrack[i][j] = 0;
 			fTwoPionTPCSigma[i][j] = 0;
 			fTwoPionTOFSigma[i][j] = 0;
@@ -961,7 +1140,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		fFourPionMask_TRD[i] = 0;
 		fFourPionMask_tot[i] = 0;
 		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			fFourPionTrack[i][j] = 0;
 			fFourPionTPCSigma[i][j] = 0;
 			fFourPionTOFSigma[i][j] = 0;
@@ -977,7 +1156,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		}
 	}
 	for (Int_t i = 0; i < 5; i++) {
-		for (Int_t j = 0; j < 2; j++) {
+		for (Int_t j = 0; j < 4; j++) {
 			fMCGenProtonTrack[j][i] = 0.;
 			fMCGenPionTrack[j][i] = 0.;
 		}
@@ -990,8 +1169,6 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fCheckTwoPion_ITSSA = kFALSE;
 	fCheckFourPion_ITSSA = kFALSE;
 
-	fDGV0SPD = kFALSE;
-	fDGADSPD = kFALSE;
 	fSPDFired = kFALSE;
 	fV0Gap = kFALSE;
 	fADGap = kFALSE;
@@ -999,11 +1176,41 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fZDCGap = kFALSE;
 	fRunNumber = -999;
 	fPeriod = -999;
-	fIsMC = kFALSE;
 	fADANmbBB = 0;
 	fADCNmbBB = 0;
 	for (Int_t i = 0; i < 16; i++) {
 		fADCharge[i] = 0.;
+	}
+	fMultiplicity = -999;
+	fComb_IsPileUp = kFALSE;
+	fComb_IsPassClusterCut = kFALSE;
+	fComb_SPDCluster = -999;
+	fComb_SPDTracklets = -999;
+	fComb_IsPassMBOR = kFALSE;
+	fComb_IsPassVertex = kFALSE;
+	for (Int_t i = 0; i < 64; i++) {
+		if (i < 2) {
+			fComb_V0_Time_Mean[i] = -999.;
+			fComb_AD_Time_Mean[i] = -999.;
+		}
+		if (i < 10) {
+			fComb_DetHit[i] = kFALSE;
+		}
+		if (i < 16) {
+			fComb_AD_Time[i] = -999.;
+			fComb_AD_ADC[i] = -999.;
+		}
+		if (i < 64) {
+			fComb_V0_Time[i] = -999.;
+			fComb_V0_ADC[i] = -999.;
+		}
+	}
+	if (fIsMC) {
+		fComb_MC_EventProcess = -999;
+		for (Int_t i = 0; i < 2; i++) {
+			fComb_forwardP[i].SetPxPyPzE(0,0,0,0);
+			fComb_diffSystem[i].SetPxPyPzE(0,0,0,0);
+		}
 	}
 	//-------------------------------------------------------------------------
 
@@ -1016,18 +1223,42 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	*/
 	//-------------------------------------------------------------------------
 
-	//Check Input event is available-------------------------------------------
+	//Check input file is corrupted or not-------------------------------------
 	//Load Input handler and MC
 	if (!CheckInput()) {
 		PostOutputs();
 		return;
 	}
-	fHistEvent->Fill(kInput);
+	fRunNumber = (Int_t)fESDEvent->GetRunNumber();
+	fHistEvent->Fill(kInput);//Check total number
+	fRunFiducial[0]->Fill(fRunNumber);//Check run by run
+
+	if (!fIsRun2) {
+		if (fRunNumber < 117224) fPeriod = 1;//10b
+		else if (fRunNumber < 121041) fPeriod = 2;//10c
+		else if (fRunNumber < 126438) fPeriod = 3;//10d
+		else if (fRunNumber < 130851) fPeriod = 4;//10e
+		else if (fRunNumber < 135032) fPeriod = 5;//10f
+		else fPeriod = 6;//12b (8 TeV)
+	}
+	else {
+		if (fRunNumber >= 224891 && fRunNumber < 227750) fPeriod = 1;//15f
+		else if (fRunNumber < 232465) fPeriod = 2;//15g
+		else if (fRunNumber < 235196) fPeriod = 3;//15h
+		else if (fRunNumber < 236892) fPeriod = 4;//15i
+		else if (fRunNumber < 238682) fPeriod = 5;//15j
+		else if (fRunNumber < 239207) fPeriod = 6;//15k
+		else if (fRunNumber < 243374) fPeriod = 7;//15l
+		else if (fRunNumber < 244340) fPeriod = 8;//15m
+		else if (fRunNumber < 244824) fPeriod = 9;//15n
+		else if (fRunNumber <= 246994) fPeriod = 10;//15o
+	}
 	//-------------------------------------------------------------------------
 
 	//MC TRUTH-----------------------------------------------------------------
 	Int_t nMCprimaries = 0;
-	DetermineMCprocessType();
+	DetermineMCprocessType();//Get MC process type in here
+	if (fIsMC) fComb_MC_EventProcess = fMCprocessType;
 	//Fill Histo for MC processes
 	for (Int_t i = 0; i < kBinMCAll; i++) {
 		if (fMCprocessType == i) 
@@ -1035,7 +1266,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	}
 	if (fMCEvent) {
 		nMCprimaries = DoMCTruth();
-		if (nMCprimaries == -1) { // Something is wrong with MC
+		if (fIsSaveGen && nMCprimaries == -1) { // Something is wrong with DIME, DRgen
 			PostOutputs();
 			return;
 		}
@@ -1043,80 +1274,162 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	fHistEvent->Fill(kMCCheck);
 	//-------------------------------------------------------------------------
 
-	//At least we have to use CINT10 + C0SMB-----------------------------------
-	//CDG6 is included..
-	if (!CheckOnlineTrigger(fESDEvent)) {
+	//At least we have to use CINT10 + C0SMB for Run2--------------------------
+	if (fIsRun2 && !fIsMC && !CheckOnlineTrigger(fESDEvent)) {
 		PostOutputs();
 		return;
 	}
 	fHistEvent->Fill(kOnlineTrigger);
+	fRunFiducial[1]->Fill(fRunNumber);
 	//-------------------------------------------------------------------------
 
 	//Offline MBOR cut(available only for pass2)-------------------------------
-	//Timing check before cutting out
-	AliESDAD *ad = (AliESDAD*)fESDEvent->GetADData();
-	if(!ad) {
+	AliESDAD *ad = NULL;
+	if (fIsRun2) ad = (AliESDAD*)fESDEvent->GetADData();//AD is included in the Run2
+	AliESDVZERO *vzero = (AliESDVZERO*)fESDEvent->GetVZEROData();
+	if (!fIsRun2 && !vzero) {
 		PostOutputs();
 		return;
 	}
+	if(fIsRun2 && (!ad || !vzero)) {
+		PostOutputs();
+		return;
+	}
+	//Timing check before applying cut
 	DoTimeV0AD(fESDEvent, fV0ATime_bf, fV0CTime_bf, fADATime_bf, fADCTime_bf);
 
+	//Apply offline MB_OR cut
 	AliInputEventHandler *inputHandler = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-	Bool_t isMinimumBias = kFALSE;
-	if (inputHandler->IsEventSelected() & AliVEvent::kUserDefined) {
-		isMinimumBias = kTRUE;
+	if (!fIsRun2) {//For Run1
+		if (inputHandler->IsEventSelected()) {//passed
+			fComb_IsPassMBOR = kTRUE;
+			fHistEvent->Fill(kOfflineCut);
+			fRunFiducial[2]->Fill(fRunNumber);
+		}
 	}
-	else {
-		PostOutputs();
-		return;
+	else {//For Run2
+		if (inputHandler->IsEventSelected() & AliVEvent::kUserDefined) {
+			fComb_IsPassMBOR = kTRUE;
+			fHistEvent->Fill(kOfflineCut);
+			fRunFiducial[2]->Fill(fRunNumber);
+		}
 	}
 	//Time measurement after cutting out
-	DoTimeV0AD(fESDEvent, fV0ATime_af, fV0CTime_af, fADATime_af, fADCTime_af);
-
-	// SPD FastOR chip check to see noisy chips
-	DoSPDCheck(fESDEvent, fSPDFiredChipsCluster, fSPDFiredChipsHardware, fSPDwc);
-	fHistEvent->Fill(kMBOR);
+	if (fComb_IsPassMBOR) {
+		DoTimeV0AD(fESDEvent, fV0ATime_af, fV0CTime_af, fADATime_af, fADCTime_af);
+		// SPD FastOR chip check to see noisy chips
+		DoSPDCheck(fESDEvent, fSPDFiredChipsCluster, fSPDFiredChipsHardware, fSPDwc);
+	}
 	//-------------------------------------------------------------------------
 
 	// Event selection :: Vertex cut-------------------------------------------
-	const Bool_t eventIsValid = CutEvent(fESDEvent, fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ);
-	if (!eventIsValid) {
-		PostOutputs();
-		return;
+	const Bool_t IsVertexCut = CutEvent(fESDEvent, fHistPrimVtxX, fHistPrimVtxY, fHistPrimVtxZ);
+	if (IsVertexCut) {
+		if (fComb_IsPassMBOR) {
+			fHistEvent->Fill(kVtxCut); //After MBOR/Vertex cut
+			fRunFiducial[3]->Fill(fRunNumber);
+		}
+		fComb_IsPassVertex = kTRUE;
 	}
-	fHistEvent->Fill(kVtxCut); //After Vertex cut
 	//-------------------------------------------------------------------------
 
 	// Event selection :: Pile-up cut -----------------------------------------
-	// Which is same as dN/dpT 13TeV analysis
-	const Bool_t isPileup = fESDEvent->IsPileupFromSPD(5, 0.8, 3., 2., 5.);
-	if (isPileup) {
-		PostOutputs();
-		return;
+	Double_t pileUpValue[5] = {2., 0.8, 3., 2., 5.};
+	if (fIsRun2) pileUpValue[0] = 5.;//From dN/dpT at 13 TeV analysis
+	const Bool_t isPileup = fESDEvent->IsPileupFromSPD(pileUpValue[0], pileUpValue[1], pileUpValue[2], pileUpValue[3], pileUpValue[4]);
+	fComb_IsPileUp = isPileup;
+	if (!fComb_IsPileUp && fComb_IsPassMBOR && fComb_IsPassVertex) {
+		fHistEvent->Fill(kPileUpCut); // After MBOR/Vertex/pile up
+		fRunFiducial[4]->Fill(fRunNumber);
 	}
-	fHistEvent->Fill(kPileUpCut); // After pile up
 	//-------------------------------------------------------------------------
 
 	// Cluster Cut ------------------------------------------------------------
 	// Note that this is responsible for USER!!
-	Bool_t IsClusterCut = kFALSE;
 	const AliMultiplicity *tmp_mult = fESDEvent->GetMultiplicity();
 	Int_t nClustersLayer0 = fESDEvent->GetNumberOfITSClusters(0);
 	Int_t nClustersLayer1 = fESDEvent->GetNumberOfITSClusters(1);
 	Int_t nTracklets      = tmp_mult->GetNumberOfTracklets();
+	fComb_SPDCluster = nClustersLayer0 + nClustersLayer1;
+	fComb_SPDTracklets = nTracklets;
 
-	fhClusterVsTracklets_bf->Fill(nTracklets,nClustersLayer0+nClustersLayer1);
-
+	if (!fComb_IsPileUp && fComb_IsPassMBOR && fComb_IsPassVertex) fhClusterVsTracklets_bf->Fill(nTracklets,nClustersLayer0+nClustersLayer1);
 	Double_t cut_slope = 4.;//4 is default
 	Double_t cut_b = 65.;//65 is default
-	if (nClustersLayer0 + nClustersLayer1 <= (cut_b+cut_slope*nTracklets)) IsClusterCut = kTRUE;
-	if (IsClusterCut == kFALSE) {
+	if (nClustersLayer0 + nClustersLayer1 <= (cut_b+cut_slope*nTracklets)) {
+		fComb_IsPassClusterCut = kTRUE;
+		if (!fComb_IsPileUp && fComb_IsPassMBOR && fComb_IsPassVertex) {
+			fhClusterVsTracklets_af->Fill(nTracklets,nClustersLayer0+nClustersLayer1);
+			fHistEvent->Fill(kClusterCut); //Cluster Cut
+			fRunFiducial[5]->Fill(fRunNumber);
+		}
+	}
+
+	//Combinatorics study------------------------------------------------------
+	Bool_t IsSPD = kFALSE;
+	Bool_t IsV0A = kFALSE;
+	Bool_t IsV0C = kFALSE;
+	Bool_t IsADA = kFALSE;
+	Bool_t IsADC = kFALSE;
+	Bool_t IsFMDA = kFALSE;
+	Bool_t IsFMDC = kFALSE;
+	Bool_t IsZDCA = kFALSE;
+	Bool_t IsZDCC = kFALSE;
+
+	if (fCombmode) DoCombStudy(ad,vzero);
+	AliTriggerAnalysis fTrigger;
+	fTrigger.SetFMDThreshold(0.3,0.5);//FMD Threshold at 7/13TeV is used.
+
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFO)) {
+		fComb_DetHit[0] = kTRUE;
+		fSPDFired = kTRUE;
+		IsSPD = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0A)) {
+		fComb_DetHit[1] = kTRUE;
+		IsV0A = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0C)) {
+		fComb_DetHit[2] = kTRUE;
+		IsV0C = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDA)) {
+		fComb_DetHit[3] = kTRUE;
+		IsFMDA = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDC)) {
+		fComb_DetHit[4] = kTRUE;
+		IsFMDC = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZDCA)) {
+		fComb_DetHit[5] = kTRUE;
+		IsZDCA = kTRUE;
+	}
+	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZDCC)) {
+		fComb_DetHit[6] = kTRUE;
+		IsZDCC = kTRUE;
+	}
+	if (fIsRun2) {
+		if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADA)) {
+			fComb_DetHit[7] = kTRUE;
+			IsADA = kTRUE;
+		}
+		if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADC)) {
+			fComb_DetHit[8] = kTRUE;
+			IsADC = kTRUE;
+		}
+	}
+	//-------------------------------------------------------------------------
+
+	//Fill combinatorics here!!
+	if (fCombmode) fTree_Comb->Fill();
+	if (!fComb_IsPassMBOR || !fComb_IsPassVertex || fComb_IsPileUp || !fComb_IsPassClusterCut) {//Return to the normal CEP analysis to reduce memory-problem
 		PostOutputs();
 		return;
 	}
-	fhClusterVsTracklets_af->Fill(nTracklets,nClustersLayer0+nClustersLayer1);
-	fHistEvent->Fill(kClusterCut); //Cluster Cut
 	//-------------------------------------------------------------------------
+	
+	//CEP ANLYSIS START FROM HERE!!
 
 	// QA ANANLYSIS for PID----------------------------------------------------
 	Double_t spdc = TMath::C()*1.E-9;// m/ns
@@ -1148,53 +1461,6 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	// TRIGGER ANALYSIS -------------------------------------------------------
 	// MBOR and MBAND for Run2
-	fRunNumber = (Int_t)fESDEvent->GetRunNumber();
-	//Period
-	if (fRunNumber >= 224891 && fRunNumber < 227750) {
-		fPeriod = 1;//LHC15f
-	}
-	else if (fRunNumber < 232465) {
-		fPeriod = 2;//LHC15g
-	}
-	else if (fRunNumber < 235196) {
-		fPeriod = 3;//LHC15h
-	}
-	else if (fRunNumber < 236892) {
-		fPeriod = 4;//LHC15i
-	}
-	else if (fRunNumber < 238682) {
-		fPeriod = 5;//LHC15j
-	}
-	else if (fRunNumber < 239207) {
-		fPeriod = 6;//LHC15k
-	}
-	else if (fRunNumber < 243374) {
-		fPeriod = 7;//LHC15l
-	}
-	else if (fRunNumber < 244340) {
-		fPeriod = 8;//LHC15m
-	}
-	else if (fRunNumber < 244824) {
-		fPeriod = 9;//LHC15n
-	}
-	else if (fRunNumber <= 246994) {
-		fPeriod = 10;//LHC15o
-	}
-	else fPeriod = -999;
-
-	AliTriggerAnalysis fTrigger;
-	fTrigger.SetFMDThreshold(0.3,0.5);//FMD Threshold for 7TeV is used.
-
-	Bool_t IsV0A = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0A);
-	Bool_t IsV0C = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0C);
-	Bool_t IsADA = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADA);
-	Bool_t IsADC = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kADC);
-	Bool_t IsSPD = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFO);
-	Bool_t IsFMDA = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDA);
-	Bool_t IsFMDC = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDC);
-	Bool_t IsZDCA = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZDCA);//Not TDC info..
-	Bool_t IsZDCC = fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kZDCC);//Not TDC info..
-
 	Bool_t IsMBOR_V0 = (IsV0A || IsV0C || IsSPD) ? kTRUE : kFALSE;
 	Bool_t IsMBAND_V0 = (IsV0A && IsV0C) ? kTRUE : kFALSE;
 	Bool_t IsMBOR_AD = (IsADA || IsADC || IsSPD) ? kTRUE : kFALSE;
@@ -1212,34 +1478,41 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	// Determine GAP ----------------------------------------------------------
 	// Below two conditions will be used as criteria
-	fDGV0SPD = (!IsV0A && !IsV0C && IsSPD) ? kTRUE : kFALSE;
-	fDGADSPD = (!IsADA && !IsADC && IsSPD) ? kTRUE : kFALSE;
-	fSPDFired = IsSPD;
+	Bool_t fDGV0SPD = (!IsV0A && !IsV0C && IsSPD) ? kTRUE : kFALSE;
+	Bool_t fDGADSPD = (!IsADA && !IsADC && IsSPD) ? kTRUE : kFALSE;//Always true for 7TeV
 
 	// Sub-sample for double gap conditions
+	// will be stroed in the TTree
 	fV0Gap = (!IsV0A && !IsV0C) ? kTRUE : kFALSE;
-	fADGap = (!IsADA && !IsADC) ? kTRUE : kFALSE;
+	fADGap = (!IsADA && !IsADC) ? kTRUE : kFALSE;// Always true for 7TeV
 	fFMDGap = (!IsFMDA && !IsFMDC) ? kTRUE : kFALSE;
 	fZDCGap = (!IsZDCA && !IsZDCC) ? kTRUE : kFALSE;
-
+	if (fV0Gap) { 
+		fHistEvent->Fill(kDGV0);//Total number of events for DG_V0
+		fRunVsDG_V0->Fill(fESDEvent->GetRunNumber());//Run-by-Run
+	}
 	Int_t nmbBB_Online_C = 0;
 	Int_t nmbBB_Online_A = 0;
-	if (fV0Gap) {fHistEvent->Fill(kDGV0); fRunVsDG_V0->Fill(fESDEvent->GetRunNumber());}
-	if (fADGap) {
-		fHistEvent->Fill(kDGAD); 
-		fRunVsDG_AD->Fill(fESDEvent->GetRunNumber());
-		for (Int_t i = 0; i < 8; i++) {
-			if(ad->GetBBFlag(i)) nmbBB_Online_C++;//C-side
-			if(ad->GetBBFlag(i+8)) nmbBB_Online_A++;//A-side
-		}
-		fADANmbBB = nmbBB_Online_A;
-		fADCNmbBB = nmbBB_Online_C;
-		for (Int_t i = 0; i < 16; i++) {
-			fADCharge[i] = ad->GetAdc(i);
+	if (fADGap) {//For the AD gap
+		if (fIsRun2) {
+			fHistEvent->Fill(kDGAD); 
+			fRunVsDG_AD->Fill(fESDEvent->GetRunNumber());
+			for (Int_t i = 0; i < 8; i++) {
+				if(ad->GetBBFlag(i)) nmbBB_Online_C++;//C-side
+				if(ad->GetBBFlag(i+8)) nmbBB_Online_A++;//A-side
+			}
+			fADANmbBB = nmbBB_Online_A;
+			fADCNmbBB = nmbBB_Online_C;
+			for (Int_t i = 0; i < 16; i++) {
+				fADCharge[i] = ad->GetAdc(i);
+			}
 		}
 	}
-	if (fDGV0SPD) {fHistEvent->Fill(kDGV0SPD); fRunVsDG_V0SPD->Fill(fESDEvent->GetRunNumber());}
-	if (fDGADSPD) {
+	if (fDGV0SPD) {//For V0+SPD gap
+		fHistEvent->Fill(kDGV0SPD); 
+		fRunVsDG_V0SPD->Fill(fESDEvent->GetRunNumber());
+	}
+	if (fDGADSPD) {//For AD+SPD gap
 		fHistEvent->Fill(kDGADSPD); 
 		fRunVsDG_ADSPD->Fill(fESDEvent->GetRunNumber());
 	}
@@ -1265,14 +1538,24 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//-------------------------------------------------------------------------
 
 	// Track cuts by Martin's selection----------------------------------------
+	Bool_t is10bc = kFALSE;
+	if (fPeriod <= 2) is10bc=kTRUE;
 	AliMultiplicitySelectionCPPWA *selec = new AliMultiplicitySelectionCPPWA();
-	selec->InitDefaultTrackCuts(0,0);// 1 = 10b and 10c, 0 = 10d and 10e
+	//(clusterCut,useITSSA,isRun2)
+	if (!fIsRun2) selec->InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE);// 1 = b,c and 0 = d,e
+	else selec->InitDefaultTrackCuts(0,0,kTRUE);
 	TArrayI indices;
 	Int_t Nsel = selec->GetNumberOfITSTPCtracks(fESDEvent,indices);
+	fMultiplicity = Nsel;
 	Double_t pionmass = 0.139570;
 	TLorentzVector lv_track1;
 	TLorentzVector lv_track2;
 	TLorentzVector lv_sum;
+	//Multiplicity distribution with generated info
+	if (fIsMC) {
+		if (fDGV0SPD) fMult_Rec_DG_Process->Fill(fMCprocessType,Nsel);
+		if (IsNG) fMult_Rec_NG_Process->Fill(fMCprocessType,Nsel);
+	}
 	//-------------------------------------------------------------------------
 
 	// Mass distribution for NG and DG events with Martin's trackcuts and standard trackcuts
@@ -1390,7 +1673,8 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	//ITSSA + Martin's trackcuts
 	AliMultiplicitySelectionCPPWA *selec_ITSSA = new AliMultiplicitySelectionCPPWA();
-	selec_ITSSA->InitDefaultTrackCuts(0,1);// 1 = 10b and 10c, 0 = 10d and 10e
+	if (!fIsRun2) selec_ITSSA->InitDefaultTrackCuts((Int_t)is10bc,1,kFALSE);// 1 = 10b and 10c, 0 = 10d and 10e
+	else selec_ITSSA->InitDefaultTrackCuts(0,1,kTRUE);
 	TArrayI indices_ITSSA;
 	Int_t Nsel_ITSSA = selec_ITSSA->GetNumberOfITSSAtracks(fESDEvent,indices_ITSSA);
 	fCheck2tracks_ITSSA = (Nsel_ITSSA == 2) ? kTRUE : kFALSE;
@@ -1411,13 +1695,19 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	//-------------------------------------------------------------------------
 
 	// TAESOO PWA TREE INFO ---------------------------------------------------
-	if (fV0Gap || fADGap) {
-		//printf("== This events are double gap ==\n");
-	}
-	else {
-		//printf("== This events are not double gap! ==\n");
+	if (!fIsRun2 && !fDGV0SPD) {//Run1
 		PostOutputs();
 		return;
+	}
+	if (fIsRun2) {
+		if ((fV0Gap || fADGap)) {
+			//printf("== This events are double gap ==\n");
+		}
+		else {
+			//printf("== This events are not double gap! ==\n");
+			PostOutputs();
+			return;
+		}
 	}
 
 	if(fDGV0SPD) {
@@ -1425,12 +1715,16 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		fTrackCutsInfo_ITSSA->Fill(Nsel_ITSSA);
 	}
 	if(fDGV0SPD) {
-		fADATime_V0SPD->Fill(ad->GetADATime());
-		fADCTime_V0SPD->Fill(ad->GetADCTime());
+		if (fIsRun2) {
+			fADATime_V0SPD->Fill(ad->GetADATime());
+			fADCTime_V0SPD->Fill(ad->GetADCTime());
+		}
 	}
 	if(fDGV0ADSPD) {
-		fADATime_V0ADSPD->Fill(ad->GetADATime());
-		fADCTime_V0ADSPD->Fill(ad->GetADCTime());
+		if (fIsRun2) {
+			fADATime_V0ADSPD->Fill(ad->GetADATime());
+			fADCTime_V0ADSPD->Fill(ad->GetADCTime());
+		}
 	}
 
 	fCheck2tracks = (Nsel == 2) ? kTRUE : kFALSE;
@@ -1448,6 +1742,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fTwoPionTrack[i][2] = track->Pz();
 			fTwoPionTrack[i][3] = track->E();
 			fTwoPionTrack[i][4] = track->GetSign();
+			fTwoPionTrack[i][5] = track->GetIntegratedLength();
 			//TPC (by L.Goerlich)
 			fTwoPionTPCSigma[i][0] = track->GetTPCsignal();
 			fTwoPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
@@ -1463,14 +1758,15 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fTwoPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 			//ITS (by L.Goerlich)
 			fTwoPionITSSigma[i][0] = track->GetITSsignal();
-			fTwoPionITSSigma[i][1] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
-			fTwoPionITSSigma[i][2] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
-			fTwoPionITSSigma[i][3] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
-			fTwoPionITSSigma[i][4] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
-			fTwoPionITSSigma[i][5] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
-			fTwoPionITSSigma[i][6] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
-			fTwoPionITSSigma[i][7] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
-			fTwoPionITSSigma[i][8] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fTwoPionITSSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionITSSigma[i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fTwoPionITSSigma[i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fTwoPionITSSigma[i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fTwoPionITSSigma[i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fTwoPionITSSigma[i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fTwoPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fTwoPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fTwoPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
@@ -1509,6 +1805,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fFourPionTrack[i][2] = track->Pz();
 			fFourPionTrack[i][3] = track->E();
 			fFourPionTrack[i][4] = track->GetSign();
+			fFourPionTrack[i][5] = track->GetIntegratedLength();
 			//TPC (by L.Goerlich)
 			fFourPionTPCSigma[i][0] = track->GetTPCsignal();
 			fFourPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
@@ -1524,14 +1821,15 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fFourPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 			//ITS (by L.Goerlich)
 			fFourPionITSSigma[i][0] = track->GetITSsignal();
-			fFourPionITSSigma[i][1] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
-			fFourPionITSSigma[i][2] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
-			fFourPionITSSigma[i][3] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
-			fFourPionITSSigma[i][4] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
-			fFourPionITSSigma[i][5] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
-			fFourPionITSSigma[i][6] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
-			fFourPionITSSigma[i][7] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
-			fFourPionITSSigma[i][8] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fFourPionITSSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fFourPionITSSigma[i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fFourPionITSSigma[i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fFourPionITSSigma[i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fFourPionITSSigma[i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fFourPionITSSigma[i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fFourPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fFourPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fFourPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
@@ -1560,7 +1858,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	//For ITSSA track----------------------------------------------------------
 	if (fCheck2tracks_ITSSA) {
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			for (Int_t i = 0; i < 2; i++) {
 				fTwoPionTrack_ITSSA[i][j] = 0;
 			}
@@ -1580,7 +1878,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		fCheckTwoPion_ITSSA = kTRUE;
 	}
 	if (fCheck4tracks_ITSSA) {
-		for (Int_t j = 0; j < 9; j++) {
+		for (Int_t j = 0; j < 10; j++) {
 			for (Int_t i = 0; i < 4; i++) {
 				fFourPionTrack_ITSSA[i][j] = 0;
 			}
@@ -1604,10 +1902,12 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	indices = 0x0;
 	indices_ITSSA = 0x0;
 
-	if(!fIsMC) {//Reduce size of output file (only for 2, 4tracks)
-		if (fSavemode) fTree->Fill();
-		else {
-			if (fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
+	if(!fIsMC) {//Reduce output size (only for 2tracks and 4tracks)
+		if(fSavemode) {
+		       fTree->Fill();
+		}
+ 		else {
+			if(fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
 		}
 	}
 
@@ -1617,9 +1917,14 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::PostOutputs()
 {
-	if (fIsMC) fTree->Fill();
+	if (fIsMC) {
+		fTree->Fill();
+		if (fCombmode) fTree_Comb->Fill();
+	}
+		
 	PostData(1,fTree);
-	PostData(2,fList);
+	PostData(2,fTree_Comb);
+	PostData(3,fList);
 	return;
 }
 //______________________________________________________________________________
@@ -1667,7 +1972,9 @@ Bool_t AliAnalysisTaskCDPWA::CutEvent(
 			kpr0 = kFALSE;
 		}
 	}
-	const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < 15.);
+	Double_t cutVertex = 10.;
+	if (fIsRun2) cutVertex = 15.;//For run2
+	const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < cutVertex);
 	if(!kpriv) return kFALSE;
 
 	if(hpriVtxX) hpriVtxX->Fill(vertex->GetX());
@@ -1709,8 +2016,7 @@ Bool_t AliAnalysisTaskCDPWA::CheckInput()
 	//-------------------------------------------------------------------------
 
 	//Get MC event-------------------------------------------------------------
-	fMCEvent = MCEvent();
-	if (fMCEvent) fIsMC = kTRUE;
+	if (fIsMC) fMCEvent = MCEvent();
 	//-------------------------------------------------------------------------
 
 	return kTRUE;
@@ -1741,12 +2047,13 @@ Bool_t AliAnalysisTaskCDPWA::CheckOnlineTrigger(
 		}
 	}
 
+	//Reject beam-gas trigger in AD
+
 	//Check that this event is MB_OR online triggered
 	if (ESDevent->IsTriggerClassFired("CINT10-B-NOPF-ALLNOTRD") ||
-			ESDevent->IsTriggerClassFired("C0SMB-B-NOPF-ALLNOTRD") ||
-			ESDevent->IsTriggerClassFired("CDG6-B-SPD2-CENTNOTRD")) return kTRUE;
+			ESDevent->IsTriggerClassFired("C0SMB-B-NOPF-ALLNOTRD")) return kTRUE;
 	else {
-		//printf("AliAnalysisTaskCDTest1::CheckOnlineTrigger not passed!");
+		//printf("AliAnalysisTaskCDPWA1::CheckOnlineTrigger not passed!");
 		return kFALSE;
 	}
 	
@@ -1776,20 +2083,22 @@ void AliAnalysisTaskCDPWA::DoTimeV0AD(
 	if (BB_V0C) v0chist->Fill(esdv0->GetV0CTime());
 
 	// AD
-	AliESDAD *esdad = (AliESDAD*)ESDevent->GetADData();
-	if (!esdad) return;
+	if (fIsRun2) {
+		AliESDAD *esdad = (AliESDAD*)ESDevent->GetADData();
+		if (!esdad) return;
 
-	// Fill only BB-triggered event
-	Bool_t BB_ADA = kFALSE;
-	Bool_t BB_ADC = kFALSE;
+		// Fill only BB-triggered event
+		Bool_t BB_ADA = kFALSE;
+		Bool_t BB_ADC = kFALSE;
 
-	for (Int_t i = 0; i < 4; i++) {//Coincidence
-		if (esdad->GetBBFlag(i) && esdad->GetBBFlag(i+4)) BB_ADC = kTRUE;
-		if (esdad->GetBBFlag(i+8) && esdad->GetBBFlag(i+12)) BB_ADA = kTRUE;
+		for (Int_t i = 0; i < 4; i++) {//Coincidence
+			if (esdad->GetBBFlag(i) && esdad->GetBBFlag(i+4)) BB_ADC = kTRUE;
+			if (esdad->GetBBFlag(i+8) && esdad->GetBBFlag(i+12)) BB_ADA = kTRUE;
+		}
+
+		if (BB_ADA) adahist->Fill(esdad->GetADATime());
+		if (BB_ADC) adchist->Fill(esdad->GetADCTime());
 	}
-
-	if (BB_ADA) adahist->Fill(esdad->GetADATime());
-	if (BB_ADC) adchist->Fill(esdad->GetADCTime());
 
 	return;
 	
@@ -2027,7 +2336,6 @@ Int_t AliAnalysisTaskCDPWA::DetermineGap(const AliESDEvent *esd,const Bool_t wCe
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::DetermineMCprocessType()
 {
-
 	// Get MC information------------------------------------------------------
 	fMCprocess = -1; //detailed MC sub process information
 	fMCprocessType = kBinND; // ND is default, also for data
@@ -2035,20 +2343,38 @@ void AliAnalysisTaskCDPWA::DetermineMCprocessType()
 	if (fMCEvent) {
 		AliGenEventHeader* header = fMCEvent->GenEventHeader();
 		if (!header) return;
-		// Pythia6
-		if (TString(header->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+		TString st_header = header->IsA()->GetName();
+		// Pythia
+		if (st_header == "AliGenPythiaEventHeader") {//Pythia6
+			fIsPythia = kTRUE;
 			fMCprocess = ((AliGenPythiaEventHeader*)header)->ProcessType();
-			switch(fMCprocess) {
-				case 92: fMCprocessType = kBinSD1; break;
-				case 93: fMCprocessType = kBinSD2; break;
-				case 94: fMCprocessType = kBinDD; break;
-				default: fMCprocessType = AliAnalysisTaskCDPWA::kBinND; break;
+			if (!fIsPythia8) {//Pythia6
+				switch(fMCprocess) {
+					case 91: fMCprocessType = kBinEL; break;
+					case 92: fMCprocessType = kBinSD1; break;
+					case 93: fMCprocessType = kBinSD2; break;
+					case 94: fMCprocessType = kBinDD; break;
+					case 95: fMCprocessType = kBinCD; break;//To be checked!!
+					default: fMCprocessType = kBinND; break;
+				}
+			}
+			else {//Pythia8
+				switch(fMCprocess) {
+					case 102: fMCprocessType = kBinEL; break;
+					case 103: fMCprocessType = kBinSD1; break;
+					case 104: fMCprocessType = kBinSD2; break;
+					case 105: fMCprocessType = kBinDD; break;
+					case 106: fMCprocessType = kBinCD; break;
+					default: fMCprocessType = kBinND; break;
+				}
 			}
 		}
 		// Phojet
-		else if (TString(header->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+		else if (st_header == "AliGenDPMjetEventHeader") {
+			fIsPhojet = kTRUE;
 			fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
 			switch(fMCprocess) {
+				case 2: fMCprocessType = kBinEL; break;
 				case 5: fMCprocessType = kBinSD1; break;
 				case 6: fMCprocessType = kBinSD2; break;
 				case 7: fMCprocessType = kBinDD; break;
@@ -2056,35 +2382,235 @@ void AliAnalysisTaskCDPWA::DetermineMCprocessType()
 				default: fMCprocessType = kBinND; break;
 			}
 		}
+		else if (st_header == "AliGenEposEventHeader" || st_header == "AliGenEpos3EventHeader" || st_header == "AliGenHepMCEventHeader") {
+			fIsEPOS = kTRUE;
+			fMCprocessType = kBinND;
+		}
+		else {// forDIME/DRgen
+			fMCprocessType = kBinCD;
+		}
 	}
 	//-------------------------------------------------------------------------
 }
 //______________________________________________________________________________
 Int_t AliAnalysisTaskCDPWA::DoMCTruth()
 {
+	// Get generated information from stack and save as TTree if necessary---
 	if (!fMCEvent) return -1;
 	AliStack* stack = fMCEvent->Stack();
 	if (!stack) return -1;
+	//-------------------------------------------------------------------------
 
 	// Multiplicity ----------------------------------------------------------
 	// determine number of charged physical primaries on the stack
 	Int_t nPhysicalPrimaries = 0;
 	Int_t nProton = 0;
 	Int_t nPrimaries = stack->GetNprimary();
-	TParticle *part = NULL;
-	for (Int_t iTracks = 0; iTracks < nPrimaries; ++iTracks) {
-		part = stack->Particle(iTracks);
+	TLorentzVector lv_vect;
+	TLorentzVector lv_sum(0,0,0,0);
+	TLorentzVector lv_sum_DD1(0,0,0,0);
+	TLorentzVector lv_sum_DD2(0,0,0,0);
+	TLorentzVector lv_largestEta;
+	TLorentzVector lv_smallestEta;
+	TLorentzVector lv_minEta_CD;
+	TLorentzVector lv_maxEta_CD;
+	Double_t etaMax = -999;
+	Double_t etaMin = 999;
+	Double_t etaMin_CD = 999;
+	Double_t etaMax_CD = -999;
+	Double_t minEtaMass_CD = 0.;
+	Double_t maxEtaMass_CD = 0.;
+	Int_t nFinal = 0;
+
+	TLorentzVector checkSum_i(0,0,0,0);
+
+	for (Int_t iTracks = 0; iTracks < nPrimaries; iTracks++) {
+		TParticle *part = (TParticle*)stack->Particle(iTracks);
 		if (!part) continue;
-		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part->GetPdgCode()))) == 211) {
+		//For the DIME, DRgen--------------------------------------
+		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1 && (TMath::Abs(((Int_t)(part->GetPdgCode()))) == 211 || TMath::Abs(((Int_t)(part->GetPdgCode()))) == 321)) {
 			nPhysicalPrimaries++;
 		}
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part->GetPdgCode()))) == 2212) {
 			nProton++;
 		}
+		//---------------------------------------------------------
+
+		lv_vect.SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->Energy());
+		if (iTracks == 0 || iTracks ==1) {
+			checkSum_i = checkSum_i + lv_vect;
+		}
+		if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD1) {
+//			cout << "N=" << iTracks << ",  " << "PDG = " << part->GetPdgCode() << ",  " << "Status = " << part->GetStatusCode() << ",  " << "FM = " << part->GetFirstMother() << ",  " << "Eta=" << part->Eta() <<endl;
+		}
+		//Check pseudosystem in pythia
+		if (fIsPythia) {
+			if (part->GetPdgCode() == 9902210) {//excited proton(p_diffr)
+				TParticle *part_mo = (TParticle*)stack->Particle(part->GetFirstMother());
+				if (!part_mo) continue;
+			       	if (part_mo->GetPdgCode()!=2212) continue;//from incoming proton
+
+				if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD1) {
+					fMC_DiffMass_PDG[1]->Fill(lv_vect.M());
+				}
+				else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD2) fMC_DiffMass_PDG[2]->Fill(lv_vect.M());
+				else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinDD) {
+					fMC_DiffMass_PDG[3]->Fill(lv_vect.M());
+					if (part_mo->Pz() > 0) fMC_DiffMass_PDG[4]->Fill(lv_vect.M());
+					else fMC_DiffMass_PDG[5]->Fill(lv_vect.M());
+				}
+			}
+			else if (part->GetPdgCode() == 9900110) {//??(rho_diffr)
+				if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinCD) fMC_DiffMass_PDG[6]->Fill(lv_vect.M());
+			}
+		}
+		if (fIsPhojet) {
+		}
+
+		//Reject incoming proton and keep final states
+		//AliPWG0??
+//		if (!AliPWG0Helper::IsPrimaryCharged(part,nPrimaries,0)) continue;
+		if (!stack->IsPhysicalPrimary(iTracks) || part->GetStatusCode() != 1) continue;// || part->GetStatusCode() != 1) continue;
+		nFinal++;
+
+
+		//For the single diffraction
+		//Intacted proton should have largest eta
+		if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD2) {
+			lv_sum = lv_sum + lv_vect;
+			if (part->GetPdgCode() == 2212 && (etaMax < part->Eta())) {//Largest Eta for proton
+				etaMax = part->Eta();
+				lv_largestEta = lv_vect;
+			}
+			fMC_Eta[2]->Fill(part->Eta());
+
+		}
+		else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD1) {
+			lv_sum = lv_sum + lv_vect;
+			if (part->GetPdgCode() == 2212 && (etaMin > part->Eta())) {//Largest Eta for proton
+				etaMin = part->Eta();
+				lv_largestEta = lv_vect;
+			}
+			fMC_Eta[1]->Fill(part->Eta());
+
+		}
+		//For the double diffraction
+		else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinDD) {
+			if (fIsPythia) {
+				//Largest Eta for proton
+				if (part->GetPdgCode() == 2212 && (etaMax < part->Eta())) {
+					etaMax = part->Eta();
+					lv_largestEta = lv_vect;
+				}
+				if (part->GetPdgCode() == 2212 && (etaMin > part->Eta())) {
+					etaMin = part->Eta();
+					lv_smallestEta = lv_vect;
+				}
+				lv_sum = lv_sum + lv_vect;
+				fMC_Eta[3]->Fill(part->Eta());
+
+				//Find pseudo particle
+				TParticle *part_mo = (TParticle*)stack->Particle(part->GetFirstMother());
+				if (!part_mo) continue;
+				while (part_mo->GetPdgCode() != 9902210) {//Find pseudoparticle
+					if (part_mo->GetFirstMother() < 0) break;
+					part_mo = (TParticle*)stack->Particle(part_mo->GetFirstMother());
+					if (!part_mo) break;
+				}
+				if (part_mo->GetPdgCode() != 9902210 || part_mo->GetFirstMother() == -1) continue;//Protection
+				
+				// proton -> pseudoparticle decay
+				// part_mo == 9902210
+				TParticle *part_top = (TParticle*)stack->Particle(part_mo->GetFirstMother());
+				if (!part_top) continue;
+				if (part_top->GetPdgCode()!=2212) continue;//protection 
+
+				if (part_top->Pz() > 0) {
+					lv_sum_DD1 = lv_sum_DD1 + lv_vect;
+					fMC_Eta[4]->Fill(part->Eta());
+				}
+				else {
+					lv_sum_DD2 = lv_sum_DD2 + lv_vect;
+					fMC_Eta[5]->Fill(part->Eta());
+				}
+			}
+			if (fIsPhojet) {
+				//Find mother particle for proton
+				fMC_Eta[3]->Fill(part->Eta());//total
+			}
+		}
+		//For the central diffraction
+		else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinCD) {
+			lv_sum = lv_sum + lv_vect;
+			if (part->GetPdgCode() == 2212 && etaMin_CD > part->Eta()) {//Minimum eta
+				etaMin_CD = part->Eta();
+				lv_minEta_CD = lv_vect;
+			}
+			if (part->GetPdgCode() == 2212 && etaMax_CD < part->Eta()) {//Maximum eta
+				etaMax_CD = part->Eta();
+				lv_maxEta_CD = lv_vect;
+			}
+			fMC_Eta[6]->Fill(part->Eta());
+		}
+
+		//Store eta informations
+		else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinND) fMC_Eta[0]->Fill(part->Eta());
+	}
+	//Multiplicity distribution for final states particle
+	if (fMCprocessType == AliAnalysisTaskCDPWA::kBinSD1 || fMCprocessType == AliAnalysisTaskCDPWA::kBinSD2) {
+		fMult_Gen->Fill(nFinal-1);
+		fMult_Gen_Process->Fill(fMCprocessType,nFinal-1);
+	}
+	else if (fMCprocessType == AliAnalysisTaskCDPWA::kBinDD) {
+		fMult_Gen->Fill(nFinal);
+		fMult_Gen_Process->Fill(fMCprocessType,nFinal);
+	}
+	else if (fMCprocessType == AliAnalysisTaskCDPWA::kBinCD) {
+		fMult_Gen->Fill(nFinal-2);
+		fMult_Gen_Process->Fill(fMCprocessType,nFinal-2);
+	}
+	else {
+		fMult_Gen->Fill(nFinal);
+		fMult_Gen_Process->Fill(fMCprocessType,nFinal);
 	}
 
-	// Sergey's MC test(2 pion, proton generated)
-	if (nPhysicalPrimaries !=2 || nProton !=2) return -1;
+	TLorentzVector lv_diffMass;
+	//For single-diffraction
+	if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD1 || fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD2) {
+		lv_diffMass = lv_sum - lv_largestEta;//For single
+		if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD1) {
+			fMC_DiffMass[1]->Fill(lv_diffMass.M());
+			fComb_diffSystem[0] = lv_diffMass;
+			fComb_forwardP[0] = lv_largestEta;
+		}
+		if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinSD2) {
+			fMC_DiffMass[2]->Fill(lv_diffMass.M());
+			fComb_diffSystem[0] = lv_diffMass;
+			fComb_forwardP[0] = lv_largestEta;
+		}
+	}
+
+	//For double-diffraction
+	else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinDD) {
+		/* Should we subtract this???
+		lv_sum = lv_sum - lv_largestEta - lv_smallestEta;
+		lv_sum_DD1 = lv_sum_DD1 - lv_largestEta;
+		lv_sum_DD2 = lv_sum_DD2 - lv_smallestEta;
+		*/
+		fMC_DiffMass[3]->Fill(lv_sum.M());
+		fMC_DiffMass[4]->Fill(lv_sum_DD1.M());
+		fMC_DiffMass[5]->Fill(lv_sum_DD2.M());
+		fComb_diffSystem[0] = lv_sum_DD1;
+		fComb_diffSystem[1] = lv_sum_DD2;
+	}
+	//For central diffraction
+	else if (fComb_MC_EventProcess == AliAnalysisTaskCDPWA::kBinCD) {
+		lv_diffMass = lv_sum - lv_minEta_CD - lv_maxEta_CD;
+		fMC_DiffMass[6]->Fill(lv_diffMass.M());
+		fComb_diffSystem[0] = lv_diffMass;
+		fComb_forwardP[0] = lv_maxEta_CD;
+		fComb_forwardP[1] = lv_minEta_CD;
+	}
 	//-------------------------------------------------------------------------
 	
 	// Track Gap && Multiplicity in Region Bins -------------------------------
@@ -2097,11 +2623,10 @@ Int_t AliAnalysisTaskCDPWA::DoMCTruth()
 	Int_t gapCv0fmd = 0;
 	Int_t gapCad = 0;
 	Int_t central = 0;
-	part = NULL;
 	for (Int_t iTracks = 0; iTracks <  nPrimaries; ++iTracks) {
-		part = (TParticle*)stack->Particle(iTracks);
+		TParticle *part = (TParticle*)stack->Particle(iTracks);
 		if (!part) continue;
-		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part->GetPdgCode()))) == 211) {
+		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1) {
 			if (part->Eta() > -0.9 && part->Eta() < 0.9) central++;
 			if (part->Eta() > 0.9 && part->Eta() < 6.3) gapA++;
 			if (part->Eta() > 2.8 && part->Eta() < 5.1) gapAv0++;
@@ -2124,33 +2649,60 @@ Int_t AliAnalysisTaskCDPWA::DoMCTruth()
 	//-------------------------------------------------------------------------
 
 	//Store Generated proton and pion momentum in the TTree--------------------
-	TParticle *part1 = NULL;
-	Int_t n_proton = 0;
-	Int_t n_pion = 0;
-	for (Int_t j = 0; j < nPrimaries; j++) {
-		part1 = stack->Particle(j);
-		if (!part1) continue;
-		if (stack->IsPhysicalPrimary(j) && (part1->GetPDG()->Charge() != 0.) && part1->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part1->GetPdgCode()))) == 2212) {
-			fMCGenProtonTrack[n_proton][0] = part1->Px();
-			fMCGenProtonTrack[n_proton][1] = part1->Py();
-			fMCGenProtonTrack[n_proton][2] = part1->Pz();
-			fMCGenProtonTrack[n_proton][3] = part1->Energy();
-			fMCGenProtonTrack[n_proton][4] = part1->GetPdgCode();
-			n_proton++;
-			continue;
-		}
-		if (stack->IsPhysicalPrimary(j) && (part1->GetPDG()->Charge() != 0.) && part1->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part1->GetPdgCode()))) == 211) {
-			fMCGenPionTrack[n_pion][0] = part1->Px();
-			fMCGenPionTrack[n_pion][1] = part1->Py();
-			fMCGenPionTrack[n_pion][2] = part1->Pz();
-			fMCGenPionTrack[n_pion][3] = part1->Energy();
-			fMCGenPionTrack[n_pion][4] = part1->GetPdgCode();
-			n_pion++;
-			continue;
+	//This part is for DIME and DRgen
+	if (fIsSaveGen) {
+		if (nProton !=2) return -1;
+		if (nPhysicalPrimaries != 2 && nPhysicalPrimaries != 4) return -1;
+		TParticle *part1 = NULL;
+		Int_t n_proton = 0;
+		Int_t n_pion = 0;
+		for (Int_t j = 0; j < nPrimaries; j++) {
+			part1 = (TParticle*)stack->Particle(j);
+			if (!part1) continue;
+			if (stack->IsPhysicalPrimary(j) && (part1->GetPDG()->Charge() != 0.) && part1->GetStatusCode() == 1 && TMath::Abs(((Int_t)(part1->GetPdgCode()))) == 2212) {
+				fMCGenProtonTrack[n_proton][0] = part1->Px();
+				fMCGenProtonTrack[n_proton][1] = part1->Py();
+				fMCGenProtonTrack[n_proton][2] = part1->Pz();
+				fMCGenProtonTrack[n_proton][3] = part1->Energy();
+				fMCGenProtonTrack[n_proton][4] = part1->GetPdgCode();
+				n_proton++;
+				continue;
+			}
+			if (stack->IsPhysicalPrimary(j) && (part1->GetPDG()->Charge() != 0.) && part1->GetStatusCode() == 1 && (TMath::Abs(((Int_t)(part1->GetPdgCode()))) == 211 || TMath::Abs(((Int_t)(part1->GetPdgCode()))) == 321)) {
+				fMCGenPionTrack[n_pion][0] = part1->Px();
+				fMCGenPionTrack[n_pion][1] = part1->Py();
+				fMCGenPionTrack[n_pion][2] = part1->Pz();
+				fMCGenPionTrack[n_pion][3] = part1->Energy();
+				fMCGenPionTrack[n_pion][4] = part1->GetPdgCode();
+				n_pion++;
+				continue;
+			}
 		}
 	}
 	//-------------------------------------------------------------------------
 	return nPhysicalPrimaries;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskCDPWA::DoCombStudy(const AliESDAD *ad, const AliESDVZERO *vzero)
+{
+	//Save AD, V0 charge and adc to the TTree
+	//AD
+	if (fIsRun2) {
+		fComb_AD_Time_Mean[0] = ad->GetADATime();
+		fComb_AD_Time_Mean[1] = ad->GetADCTime();
+		for (Int_t i = 0; i < 16; i++) {
+			fComb_AD_Time[i] = ad->GetTime(i);
+			fComb_AD_ADC[i] = ad->GetAdc(i);
+		}
+	}
+	//VZERO
+	fComb_V0_Time_Mean[0] = vzero->GetV0ATime();
+	fComb_V0_Time_Mean[1] = vzero->GetV0CTime();
+	for (Int_t i = 0; i < 64; i++) {
+		fComb_V0_Time[i] = vzero->GetTime(i);
+		fComb_V0_ADC[i] = vzero->GetAdc(i);
+	}
+	return;
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::Terminate(Option_t *)
