@@ -1,4 +1,11 @@
-AliAnalysisTaskCDPWA *AddTaskCDPWA() {
+AliAnalysisTaskCDPWA *AddTaskCDPWA(
+		Bool_t IsRun2 = kTRUE,//Select Run1/Run2
+		Bool_t IsSaveGap = kFALSE,//Store Gap events
+		Bool_t IsComb = kTRUE,//Store combinatorics
+		Bool_t IsSaveGen = kFALSE,//For DIME/DRgen and PWA
+		Bool_t IsPythia8 = kFALSE//For Pythia8
+		)
+{
 
 	 //--- get the current analysis manager ---//
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -12,7 +19,7 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 		Error("AddTask_CDPWA", "This task requires an input event handler");
 		return 0;
 	}
-	//ESD handler
+	// Event Handler
 	AliInputEventHandler* hdl = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 	if (hdl) hdl->SetNeedField(kTRUE);
 
@@ -22,45 +29,56 @@ AliAnalysisTaskCDPWA *AddTaskCDPWA() {
 
 	// Create tasks
 	AliAnalysisTaskCDPWA *task = new AliAnalysisTaskCDPWA("test");
-	//task->SetRunTree(runTree);
-	//task->SetRunHist(runHist);
-	//task->SetIsMC(isMC);
-	//task->SetRunSyst(runSyst);
-	//task->SelectCollisionCandidates(AliVEvent::kMB);
+	task->SetIsRun2(IsRun2);
+	task->SetIsMC(isMC);
+	task->SetSaveGapEvents(IsSaveGap);
+	task->SetCombinatoricsMode(IsComb);
+	task->SetSaveGenParticle(IsSaveGen);
+	task->SetIsPythia8(IsPythia8);
 
-	/*
+	/* For the local-test
+	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+	AliAnalysisTaskPIDResponse *pidTask = AddTaskPIDResponse(isMC);
+
 	// Load other task
 	gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
 
 	AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(isMC);
 
 	//OADB Physics selection
-	AliOADBPhysicsSelection *oadb = new AliOADBPhysicsSelection("oadb_custom");
-	oadb->AddCollisionTriggerClass(AliVEvent::kUserDefined,"+CINT10-B-NOPF-ALLNOTRD","B",0);
-	oadb->SetHardwareTrigger(0,"V0A || V0C");
-	oadb->SetOfflineTrigger(0,"(V0A || V0C || ADA || ADC) && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
+	if (IsRun2) {
+		AliOADBPhysicsSelection *oadb = new AliOADBPhysicsSelection("oadb_custom");
+		oadb->AddCollisionTriggerClass(AliVEvent::kUserDefined,"+CINT10-B-NOPF-ALLNOTRD","B",0);
+		oadb->SetHardwareTrigger(0,"V0A || V0C || ADA || ADC");
+		oadb->SetOfflineTrigger(0,"(V0A || V0C || ADA || ADC) && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
 
-	oadb->AddCollisionTriggerClass(AliVEvent::kUserDefined,"+C0SMB-B-NOPF-ALLNOTRD","B",1);
-	oadb->SetHardwareTrigger(1,"SPDGFO >= 1");
-	oadb->SetOfflineTrigger(1,"SPDGFO >= 1 && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
-	physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadb,0);
+		oadb->AddCollisionTriggerClass(AliVEvent::kUserDefined,"+C0SMB-B-NOPF-ALLNOTRD","B",1);
+		oadb->SetHardwareTrigger(1,"SPDGFO >= 1");
+		oadb->SetOfflineTrigger(1,"SPDGFO >= 1 && !V0ABG && !V0CBG && !ADABG && !ADCBG && !TPCLaserWarmUp");
+		physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadb,0);
+	}
+	else {
+		task->SelectCollisionCandidates(AliVEvent::kMB);
+	}
 	*/
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TTree::Class(), AliAnalysisManager::kOutputContainer,
 			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
-	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TList::Class(), AliAnalysisManager::kOutputContainer,
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("output2", TTree::Class(), AliAnalysisManager::kOutputContainer,
+			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("output3", TList::Class(), AliAnalysisManager::kOutputContainer,
 			Form("%s:PWATask", AliAnalysisManager::GetCommonFileName()));
 
 	// Add task
 	mgr->AddTask(task);
-	mgr->SetDebugLevel(0);
 
 	// Connect input/output
 	mgr->ConnectInput(task, 0, cinput);
 	mgr->ConnectOutput(task, 1, coutput);
 	mgr->ConnectOutput(task, 2, coutput2);
+	mgr->ConnectOutput(task, 3, coutput3);
 
 	return task;
 }
