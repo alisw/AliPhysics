@@ -1,8 +1,9 @@
 #ifndef ALITRACKLETAODUTILS_H
 #define ALITRACKLETAODUTILS_H
 #ifndef __CINT__
-# include <TH2.h>
 # include <TH1.h>
+# include <TH2.h>
+# include <TH3.h>
 # include <TList.h>
 # include <TParameter.h>
 # include <TError.h>
@@ -15,6 +16,7 @@
 class TList;
 class TH1;
 class TH2;
+class TH3;
 class TProfile;
 class TProfile2D;
 class TAxis;
@@ -177,6 +179,15 @@ public:
    */
   static TH2* GetH2(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 3D histogram from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of histogram 
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH3* GetH3(Container* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 2D profile from a container 
    * 
    * @param parent Container 
@@ -276,6 +287,19 @@ public:
 		     const char* newName=0,
 		     Bool_t      verb=true);
   /** 
+   * Get a copy of a 3D histogram from a container 
+   * 
+   * @param parent  Container 
+   * @param name    Name of histogram 
+   * @param newName Optional new name of copy 
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH3* CopyH3(Container*  parent,
+		     const char* name,
+		     const char* newName=0,
+		     Bool_t      verb=true);
+  /** 
    * Copy attributes from one histogram to another 
    * 
    * @param src  Source histogram 
@@ -329,6 +353,25 @@ public:
 		     Style_t        style,
 		     const TAxis&   xAxis,
 		     const TAxis&   yAxis);
+  /** 
+   * Service function to make a 3D histogram from axis definitions 
+   * 
+   * @param name   Name of histogram 
+   * @param title  Title of histogram 
+   * @param xAxis  X axis definition 
+   * @param yAxis  Y axis definition 
+   * @param zAxis  Z axis definition 
+   * 
+   * @return Newly created histogram 
+   */
+  static TH3* Make3D(Container*     c,
+		     const TString& name,
+		     const TString& title,
+		     Color_t        color,
+		     Style_t        style,
+		     const TAxis&   xAxis,
+		     const TAxis&   yAxis,
+		     const TAxis&   zAxis);
   /** 
    * Service function to make a 2D profile from axis definitions 
    * 
@@ -445,6 +488,65 @@ public:
    * @return New copy of input, scaled by second histogram
    */
   static TH2* ScaleToIPz(TH2* h, TH1* ipZ, Bool_t full=false);
+  static TH3* ScaleToIPz(TH3* h, TH1* ipZ, Bool_t full=false);
+  static TH3* ScaleDelta(TH3* h, TH2* scale);
+  /** 
+   * Project (integrate) 
+   @f[
+   \frac{\mathrm{d}^3N}{\mathrm{d}\eta\mathrm{d}\Delta\mathrm{dIP}_z}
+   @f] 
+   * over @f$\mathrm{IP}_z@f$ to return 
+   *
+   @f[ 
+   \frac{\mathrm{d}^2N}{\mathrm{d}\eta\mathrm{d}\Delta}
+   @f] 
+   * 
+   * The integral is scaled to number of bins, that is, we calculate
+   * the weighted average over @f$\mathrm{IP}_z@f$ 
+   * 
+   @f{eqnarray}
+   N(\eta,\Delta) &=& \sum_{\mathrm{IP}_z} w N(\eta,\Delta,\mathrm{IP}_z)\\
+   \delta N(\eta,\Delta) &=& \sqrt{1/\sum_{\mathrm{IP}_z} w}\\
+   w &=&  \delta N(\eta,\Delta,\mathrm{IP}_z)
+   @f{eqnarray}
+   * 
+   * @param h 3D histogram to integrate 
+   * 
+   * @return Newly allocated projection 
+   */
+  static TH2* ProjectEtaDelta(TH3* h);
+  /** 
+   * Project (integrate) 
+   @f[ 
+   \frac{\mathrm{d}^2N}{\mathrm{d}\eta\mathrm{d}\Delta}
+   @f] 
+   * over @f$\eta@f$ 
+   *
+   @f[ 
+   \frac{\mathrm{d}N}{\mathrm{d}\Delta}
+   @f] 
+   * 
+   * @param h 
+   * 
+   * @return 
+   */
+  static TH1* ProjectDelta(TH2* h);
+  /** 
+   * Project (integrate) 
+   @f[ 
+   \frac{\mathrm{d}^3N}{\mathrm{d}\eta\mathrm{d}\Delta\mathrm{dIP}_z}
+   @f] 
+   * over @f$\eta,\mathrm{IP}_z@f$ 
+   *
+   @f[ 
+   \frac{\mathrm{d}N}{\mathrm{d}\Delta}
+   @f] 
+   * 
+   * @param h 
+   * 
+   * @return 
+   */
+  static TH1* ProjectDeltaFull(TH3* h);
   /** 
    * Average primary particle
    * @f$\mathrm{d}N_{\mathrm{ch}}/\mathrm{d}\\eta@f$ over 
@@ -768,6 +870,11 @@ TH2* AliTrackletAODUtils::GetH2(Container* parent, const char* name, Bool_t v)
   return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
 }
 //____________________________________________________________________
+TH3* AliTrackletAODUtils::GetH3(Container* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH3*>(GetO(parent, name, TH3::Class(), v));
+}
+//____________________________________________________________________
 TProfile* AliTrackletAODUtils::GetP1(Container* parent,const char* name,
 				     Bool_t v)
 {
@@ -848,6 +955,18 @@ TH2* AliTrackletAODUtils::CopyH2(Container*  parent,
   TH2* orig = GetH2(parent, name, v);
   if (!orig) return 0;
   TH2* ret  = static_cast<TH2*>(orig->Clone(newName ? newName : name));
+  ret->SetDirectory(0); // Release from file container
+  return ret;
+}
+//____________________________________________________________________
+TH3* AliTrackletAODUtils::CopyH3(Container*  parent,
+				 const char* name,
+				 const char* newName,
+				 Bool_t      v)
+{
+  TH3* orig = GetH3(parent, name, v);
+  if (!orig) return 0;
+  TH3* ret  = static_cast<TH3*>(orig->Clone(newName ? newName : name));
   ret->SetDirectory(0); // Release from file container
   return ret;
 }
@@ -1008,6 +1127,87 @@ TH2* AliTrackletAODUtils::Make2D(Container*     c,
   if (c) c->Add(ret);
   return ret;
 }
+//____________________________________________________________________
+TH3* AliTrackletAODUtils::Make3D(Container*     c,
+				 const TString& name,
+				 const TString& title,
+				 Color_t        color,
+				 Style_t        style,
+				 const TAxis&   xAxis,
+				 const TAxis&   yAxis,
+				 const TAxis&   zAxis)
+{
+  TString   n   = name;
+  TString   t   = title;
+  TH3*      ret = 0;
+  Int_t     nx  = xAxis.GetNbins();
+  Int_t     ny  = yAxis.GetNbins();
+  Int_t     nz  = zAxis.GetNbins();
+  Double_t* xb  = (xAxis.GetXbins() && xAxis.GetXbins()->GetArray() ?
+		   const_cast<Double_t*>(xAxis.GetXbins()->GetArray()) : 0);
+  Double_t* yb  = (yAxis.GetXbins() && yAxis.GetXbins()->GetArray() ?
+		   const_cast<Double_t*>(yAxis.GetXbins()->GetArray()) : 0);
+  Double_t* zb  = (zAxis.GetXbins() && zAxis.GetXbins()->GetArray() ?
+		   const_cast<Double_t*>(zAxis.GetXbins()->GetArray()) : 0);
+  if (t.IsNull())
+    t.Form("%s vs %s vs %s",
+	   zAxis.GetTitle(), yAxis.GetTitle(), xAxis.GetTitle());
+  if (xb || yb || zb) {
+    // One or more axis are defined as arrays.  Make sure the rest are
+    // also arrays.
+    if (xb) {
+      xb = new Double_t[nx+1];
+      Double_t dx = (xAxis.GetXmax()-xAxis.GetXmin())/nx;
+      xb[0] = xAxis.GetXmin();
+      for (Int_t i = 1; i <= nx; i++) xb[i] = xb[i-1]+dx;
+    }
+    if (yb) {
+      yb = new Double_t[ny+1];
+      Double_t dy = (yAxis.GetXmax()-yAxis.GetXmin())/ny;
+      yb[0] = yAxis.GetXmin();
+      for (Int_t i = 1; i <= ny; i++) yb[i] = yb[i-1]+dy;
+    }
+    if (zb) {
+      zb = new Double_t[nz+1];
+      Double_t dz = (zAxis.GetXmax()-zAxis.GetXmin())/nz;
+      zb[0] = zAxis.GetXmin();
+      for (Int_t i = 1; i <= nz; i++) zb[i] = zb[i-1]+dz;
+    }
+    ret = new TH3D(n,t,nx,xb,ny,yb,nz,zb);
+  }
+  else  {
+    ret = new TH3D(n,t,
+		   nx, xAxis.GetXmin(), xAxis.GetXmax(),
+		   ny, yAxis.GetXmin(), yAxis.GetXmax(),
+		   nz, zAxis.GetXmin(), zAxis.GetXmax());
+  }
+  ret->Sumw2();
+  ret->SetXTitle(xAxis.GetTitle());
+  ret->SetYTitle(yAxis.GetTitle());
+  ret->SetZTitle(zAxis.GetTitle());
+  ret->SetLineColor(color);
+  ret->SetMarkerColor(color);
+  ret->SetFillColor(color);
+  ret->SetMarkerStyle(style);
+  static_cast<const TAttAxis&>(xAxis).Copy(*(ret->GetXaxis()));
+  static_cast<const TAttAxis&>(yAxis).Copy(*(ret->GetYaxis()));
+  static_cast<const TAttAxis&>(zAxis).Copy(*(ret->GetZaxis()));
+  ret->SetDirectory(0);
+  if (const_cast<TAxis&>(xAxis).GetLabels()) {
+    for (Int_t i = 1; i <= xAxis.GetNbins(); i++)
+      ret->GetXaxis()->SetBinLabel(i, xAxis.GetBinLabel(i));
+  }
+  if (const_cast<TAxis&>(yAxis).GetLabels()) {
+    for (Int_t i = 1; i <= yAxis.GetNbins(); i++)
+      ret->GetYaxis()->SetBinLabel(i, yAxis.GetBinLabel(i));
+  }
+  if (const_cast<TAxis&>(zAxis).GetLabels()) {
+    for (Int_t i = 1; i <= zAxis.GetNbins(); i++)
+      ret->GetZaxis()->SetBinLabel(i, zAxis.GetBinLabel(i));
+  }
+  if (c) c->Add(ret);
+  return ret;
+}  
 //____________________________________________________________________
 TProfile2D* AliTrackletAODUtils::Make2P(Container*     c,
 					const TString& name,
@@ -1209,11 +1409,139 @@ TH2* AliTrackletAODUtils::ScaleToIPz(TH2* h, TH1* ipZ, Bool_t full)
   return ret;
 }
 //____________________________________________________________________
+TH3* AliTrackletAODUtils::ScaleToIPz(TH3* h, TH1* ipZ, Bool_t full)
+{
+  if (!h) {
+    ::Warning("ScaleToIPz","Nothing to scale");
+    return 0;
+  }
+  if (!ipZ) {
+    ::Warning("ScaleToIPz","Nothing to scale by");
+    return 0;
+  }
+  TH3* ret = static_cast<TH3*>(h->Clone());
+  ret->SetDirectory(0);
+  if (!ipZ) return ret;
+  for (Int_t iz = 1; iz <= ret->GetNbinsZ(); iz++) {
+    Double_t z   = ret->GetZaxis()->GetBinCenter(iz);
+    Int_t    bin = ipZ->GetXaxis()->FindBin(z);
+    Double_t nEv = ipZ->GetBinContent(bin);
+    Double_t eEv = ipZ->GetBinError  (bin);
+    Double_t esc = (nEv > 0 ? 1./nEv : 0);
+    Double_t rE2 = esc*esc*eEv*eEv;
+    for (Int_t iy = 1; iy <= ret->GetNbinsY(); iy++) {
+      for (Int_t ix = 1; ix <= ret->GetNbinsX(); ix++) {
+	Double_t  c   = ret->GetBinContent(ix,iy,iz);
+	Double_t  e   = ret->GetBinError  (ix,iy,iz);
+	Double_t  r   = (c > 0 ? e/c : 0);
+	// Scale by number of events, and error propagate 
+	Double_t  sc  = c * esc;
+	Double_t  se  = 0;
+	if (full) se  = sc * TMath::Sqrt(r*r+rE2);
+	else      se  = e * esc;
+	Double_t scl = 1 / ret->GetXaxis()->GetBinWidth(ix);
+	ret->SetBinContent(ix, iy, iz, scl*sc);
+	ret->SetBinError  (ix, iy, iz, scl*se);
+      }
+    }
+  }
+  return ret;
+}
+//____________________________________________________________________
+TH3* AliTrackletAODUtils::ScaleDelta(TH3* h, TH2* etaIPzScale)
+{
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) { // eta
+    for (Int_t j = 1; j <= h->GetNbinsZ(); j++) { // IPz
+      Double_t scale  = etaIPzScale->GetBinContent(i,j);
+      Double_t scaleE = etaIPzScale->GetBinError  (i,j);
+      Double_t q      = (scale > 0 ? scaleE / scale : 0);
+      for (Int_t k = 1; k <= h->GetNbinsY(); k++) { // delta
+	Double_t c = h->GetBinContent(i,k,j);
+	Double_t e = h->GetBinError  (i,k,j);
+	Double_t r = (c > 0 ? e / c : 0);
+	Double_t w = c * scale;
+	Double_t v = w * TMath::Sqrt(r*r + q*q);
+	h->SetBinContent(i,k,j,w);
+	h->SetBinError  (i,k,j,v);
+#if 0
+	Printf("%2d,%3d,%2d=(%9g+/-%9g)*(%9g+/-%9g)=(%9g+/-%9g)",
+	       i,k,j,c,e,scale,scaleE,w,v);
+#endif 
+      }
+    }
+  }
+  return h;
+}
+//____________________________________________________________________
+TH2* AliTrackletAODUtils::ProjectEtaDelta(TH3* h)
+{
+  TH2* etaDelta = static_cast<TH2*>(h->Project3D("yx e"));
+  etaDelta->SetName("etaDelta");
+  etaDelta->SetTitle(h->GetTitle());
+  etaDelta->SetDirectory(0);
+  etaDelta->SetZTitle("d^{2}#it{N}/(d#etad#Delta)");
+#if 1
+  // Reset content of projected histogram and calculate averages
+  etaDelta->Reset();
+  for (Int_t i = 1; i <= h->GetNbinsX(); i++) { // Loop over eta
+    for (Int_t j = 1; j <= h->GetNbinsY(); j++) { // Loop over Delta
+      Double_t sum  = 0;
+      Double_t sumw = 0;
+      Int_t    cnt  = 0;
+      for (Int_t k = 1; k <= h->GetNbinsZ(); k++) { // Loop over IPz
+	Double_t c  = h->GetBinContent(i,j,k);
+	Double_t e  = h->GetBinError  (i,j,k);
+	if (c < 1e-6 || e/c > 1) continue;
+#if 0
+	Double_t w  =  1/e/e;
+	sum         += w * c;
+	sumw        += w;
+#else
+	sum         += c;
+	sumw        += e*e;
+#endif 
+	cnt         += 1;
+      }
+      if (sumw < 1e-6) continue;
+#if 0
+      etaDelta->SetBinContent(i,j,sum/sumw);
+      etaDelta->SetBinError  (i,j,TMath::Sqrt(1/sumw));
+#else
+      etaDelta->SetBinContent(i,j,sum/cnt);
+      etaDelta->SetBinError  (i,j,TMath::Sqrt(sumw)/cnt);
+#endif 
+    }
+  }
+#endif 
+  return etaDelta;
+}
+//____________________________________________________________________
+TH1* AliTrackletAODUtils::ProjectDelta(TH2* h)
+{
+  TH1* delta = h->ProjectionY("delta");
+  delta->SetDirectory(0);
+  delta->SetTitle(h->GetTitle());
+  delta->SetYTitle("d#it{N}/d#Delta");
+  delta->Scale(1./h->GetNbinsX());
+  return delta;
+}
+//____________________________________________________________________
+TH1* AliTrackletAODUtils::ProjectDeltaFull(TH3* h)
+{
+  TH2* tmp   = ProjectEtaDelta(h);  
+  TH1* delta = ProjectDelta(tmp);
+  delta->SetDirectory(0);
+  tmp->SetDirectory(0);
+  delete tmp;
+  return delta;
+}
+
+//____________________________________________________________________
 TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
-					    const char* name,
-					    UShort_t    mode,
-					    TH1*        ipz,
-					    TH2*        other)
+					 const char* name,
+					 UShort_t    mode,
+					 TH1*        ipz,
+					 TH2*        other)
 {
   if (!h) return 0;
   
