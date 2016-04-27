@@ -12,11 +12,17 @@
 //configIndex = 9 ---> TPC PID: -0.5 to 3.0
 //configIndex = 10 ---> V0A -> other
 //configIndex = 11 ---> Associated hadron with SPD::kAny cut
-//Configurations for the hadron cut
-//configIndex = 20 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
-//configIndex = 21 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
-//configIndex = 22 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
-//configIndex = 23 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
+//Configurations for the Assoated pT Cut
+//configIndex = 20 ---> Default (same as 0)
+//configIndex = 21 ---> pT>0.3
+//configIndex = 22 ---> pT>0.5
+//configIndex = 23 ---> pT>0.7 (Do not use it - removed)
+//Configurations for the hadron cut:
+//0 (no Sum) = Only the cut from AODFilterBit
+//+1000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
+//+2000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
+//+3000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
+//+4000 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
 
 //To change the electron the test electron binning: just sum +100 to the configuration you are working. For example: config 1 with alternative binning-> 101
 
@@ -39,14 +45,22 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsMinBias","HFE Cuts");
     hfecuts->CreateStandardCuts();
     
-    //TPC Cuts
     Bool_t SetFinepTBinning;
+    Int_t HadronCutType = 0;
+    //To be able to vary the other configurations alongside with the new Hadrons Cuts
+    if(configIndex>999)
+    {
+        HadronCutType = (Int_t) configIndex/1000;
+        configIndex = (Int_t) (configIndex - HadronCutType*1000);
+    }
+    //Test Diferent pT Binning
     if(configIndex>99)
     {
         SetFinepTBinning = kTRUE;
         configIndex = configIndex - 100;
     }
-    
+    //TPC Cuts
+
     hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
     if(configIndex==1) 	hfecuts->SetMinNClustersTPC(100);			                //Minimum number of clusters on TPC = 100
     else if(configIndex==2) hfecuts->SetMinNClustersTPC(60);			        	//Minimum number of clusters on TPC = 60
@@ -108,7 +122,7 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     if(configIndex==20) task->SetAdditionalCuts(0.0,80);
     if(configIndex==21) task->SetAdditionalCuts(0.3,80);
     if(configIndex==22) task->SetAdditionalCuts(0.5,80);
-    if(configIndex==23) task->SetAdditionalCuts(0.7,80);
+    //if(configIndex==23) task->SetAdditionalCuts(0.7,80);
     
     if(configIndex==11) task->SetSPDCutForHadrons();
     
@@ -137,28 +151,24 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     if(centralityIndex==3) task->SetCentrality(0,10);
     if(centralityIndex==4) task->SetCentrality(10,20);
     
-    //Configuring the DCA Hadrons cuts
-    //configIndex = 20 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
-    //configIndex = 21 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
-    //configIndex = 22 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
-    //configIndex = 23 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
-    if(configIndex == 20)
+    
+    if(HadronCutType == 1)
     {
         task->SetUseDCACutHadron();
         task->SetDCACutHadron(0.25, 1);
     }
     
-    if(configIndex == 21)
+    if(HadronCutType == 2)
     {
         task->SetUseDCACutHadron();
         task->SetDCACutHadron(0.1, 1);
     }
-    if(configIndex == 22)
+    if(HadronCutType == 3)
     {
         task->SetUseDCACutHadron();
         task->SetDCACutHadron(0.5, 1);
     }
-    if(configIndex == 23)
+    if(HadronCutType == 4)
     {
         task->SetUseDCACutHadron();
         task->SetDCACutHadron(1, 1);
