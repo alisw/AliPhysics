@@ -262,16 +262,16 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   if (fMcMuons)     fTree->Branch("mcmuons",&fMcMuons);
 
   Int_t iParameter=0; // Mapping Tracks
-  for (Int_t i=0; i<10; i++) {
+  for (Int_t i=0; i<=AliCFTreeMapping::kZ; i++) {
     if (fStoreTrackInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
-  for (Int_t i=10; i<13; i++) {
+  for (Int_t i=AliCFTreeMapping::kTPCsignalN; i<=AliCFTreeMapping::kbeta; i++) {
     if (fStorePidInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
-  for (Int_t i=13; i<14; i++) {
+  for (Int_t i=AliCFTreeMapping::kLabel; i<=AliCFTreeMapping::kLabel; i++) {
     if (fStoreMcTracks) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
-  for (Int_t i=14; i<AliCFTreeMapping::kMappingTracks; i++) {
+  for (Int_t i=AliCFTreeMapping::kDCAxy; i<AliCFTreeMapping::kMappingTracks; i++) {
     if (fStoreAodDCAInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
 
@@ -281,10 +281,10 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   }
 
   iParameter=0; // Mapping Muons
-  for (Int_t i=0; i<4; i++) {
+  for (Int_t i=0; i<=AliCFTreeMapping::kMuonpDCA; i++) {
       if (fStoreMuons) fMapping->MappingMuons()[i]=iParameter++; else fMapping->MappingMuons()[i]=-1;
   }
-  for (Int_t i=4; i<AliCFTreeMapping::kMappingMuons; i++) {
+  for (Int_t i=AliCFTreeMapping::kMuonMCPt; i<AliCFTreeMapping::kMappingMuons; i++) {
       if (fStoreMcMuons) fMapping->MappingMuons()[i]=iParameter++; else fMapping->MappingMuons()[i]=-1;
   }
 
@@ -599,10 +599,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         Bool_t primary  = particle->InheritsFrom("AliAODMCParticle") ? ((AliAODMCParticle*) particle)->IsPhysicalPrimary() : fMCEvent->IsPhysicalPrimary(label1);
         tracklet->SetCharge(charge);
         tracklet->SetMask(primary);
-        tracklet->SetAt(ptMC,0);
-        tracklet->SetAt(etaMC,1);
-        tracklet->SetAt(phiMC,2);
-        tracklet->SetAt(pdg,3);
+        tracklet->SetAt(ptMC,fMapping->MappingTracklets()[AliCFTreeMapping::kTklptMC]);
+        tracklet->SetAt(etaMC,fMapping->MappingTracklets()[AliCFTreeMapping::kTkletaMC]);
+        tracklet->SetAt(phiMC,fMapping->MappingTracklets()[AliCFTreeMapping::kTklphiMC]);
+        tracklet->SetAt(pdg,fMapping->MappingTracklets()[AliCFTreeMapping::kTklpdg]);
       }
     }
 
@@ -625,10 +625,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         if (rabs < 17.6 || rabs > 89.5) continue;
         if (eta < -4 || eta > -2.5) continue;
         AliCFParticle* part = new ((*fMuons)[fMuons->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,fStoreMcMuons?16:4);
-        part->SetAt(dca,0);
-        part->SetAt(chi2,1);
-        part->SetAt(rabs,2);
-        part->SetAt(pdca,3);
+        part->SetAt(dca,fMapping->MappingMuons()[AliCFTreeMapping::kMuonDCA]);
+        part->SetAt(chi2,fMapping->MappingMuons()[AliCFTreeMapping::kMuonChi2perNDF]);
+        part->SetAt(rabs,fMapping->MappingMuons()[AliCFTreeMapping::kMuonRabs]);
+        part->SetAt(pdca,fMapping->MappingMuons()[AliCFTreeMapping::kMuonpDCA]);
         if (!fStoreMcMuons || !fMCEvent) continue;
         Int_t label = TMath::Abs(track->GetLabel());
         AliVParticle* mcpart = fMCEvent->GetTrack(label);
@@ -637,10 +637,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         Float_t mceta = mcpart->Eta();
         Float_t mcphi = mcpart->Phi();
         Int_t   mcpdg = mcpart->PdgCode();
-        part->SetAt(mcpt,4);
-        part->SetAt(mceta,5);
-        part->SetAt(mcphi,6);
-        part->SetAt(mcpdg,7);
+        part->SetAt(mcpt,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCPt]);
+        part->SetAt(mceta,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCEta]);
+        part->SetAt(mcphi,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCPhi]);
+        part->SetAt(mcpdg,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCPdg]);
         TString origin = Form("%+i",mcpdg);
 
         Bool_t isPrimary = ((AliAODMCParticle*) mcpart)->IsPhysicalPrimary();
@@ -657,10 +657,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         Float_t mcprimarypt  = mcpart->Pt();
         Float_t mcprimaryeta = mcpart->Eta();
         Float_t mcprimaryphi = mcpart->Phi();
-        part->SetAt(mcprimarypt,  8);
-        part->SetAt(mcprimaryeta, 9);
-        part->SetAt(mcprimaryphi,10);
-        part->SetAt(mcprimarypdg,11);
+        part->SetAt(mcprimarypt,  fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCprimPt]);
+        part->SetAt(mcprimaryeta, fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCprimEta]);
+        part->SetAt(mcprimaryphi, fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCprimPhi]);
+        part->SetAt(mcprimarypdg, fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCprimPdg]);
 
         while (label>=0 && label < fMCEvent->GetNumberOfPrimaries()) {
           mcpart = (AliVParticle*) fMCEvent->GetTrack(label);
@@ -672,10 +672,10 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         Float_t mcoriginpt  = mcpart->Pt();
         Float_t mcorigineta = mcpart->Eta();
         Float_t mcoriginphi = mcpart->Phi();
-        part->SetAt(mcoriginpt, 12);
-        part->SetAt(mcorigineta,13);
-        part->SetAt(mcoriginphi,14);
-        part->SetAt(mcoriginpdg,15);
+        part->SetAt(mcoriginpt, fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCoriginpt]);
+        part->SetAt(mcorigineta,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCoriginEta]);
+        part->SetAt(mcoriginphi,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCoriginPhi]);
+        part->SetAt(mcoriginpdg,fMapping->MappingMuons()[AliCFTreeMapping::kMuonMCoriginPdg]);
         if (fStoreMuonOrigin) new ((*fMuonOrigin)[fMuonOrigin->GetEntriesFast()]) TObjString(origin);
       }
     }
@@ -765,15 +765,15 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
       if(writeOutMC) {
         Int_t nAdditionalParameters = 4;
         AliCFParticle* cftrack = new ((*fMcParticles)[fMcParticles->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,pdg,nAdditionalParameters);
-        cftrack->SetAt(ipart,0); // index in generated MC array (matched with label of reconstructed tracks)
-        cftrack->SetAt(((AliAODMCParticle*)mcpart)->GetLabel(),1);
-        cftrack->SetAt(((AliAODMCParticle*)mcpart)->IsPhysicalPrimary(),2);
+        cftrack->SetAt(ipart,fMapping->MappingMCTracks()[AliCFTreeMapping::kMCindex]); // index in generated MC array (matched with label of reconstructed tracks)
+        cftrack->SetAt(((AliAODMCParticle*)mcpart)->GetLabel(),fMapping->MappingMCTracks()[AliCFTreeMapping::kMCLabel]);
+        cftrack->SetAt(((AliAODMCParticle*)mcpart)->IsPhysicalPrimary(),fMapping->MappingMCTracks()[AliCFTreeMapping::kMCIsPhysPrim]);
         Int_t motherlabel = (Int_t)(((AliAODMCParticle*)mcpart)->GetMother());
         AliVParticle* mothertrack = 0;
         if(motherlabel>=0)
           mothertrack = (AliVParticle*)fMCEvent->GetTrack(motherlabel);
-        if(mothertrack) cftrack->SetAt(mothertrack->PdgCode(),3);
-        else cftrack->SetAt(-999,3);
+        if(mothertrack) cftrack->SetAt(mothertrack->PdgCode(),fMapping->MappingMCTracks()[AliCFTreeMapping::kMCmotherpdg]);
+        else cftrack->SetAt(-999,fMapping->MappingMCTracks()[AliCFTreeMapping::kMCmotherpdg]);
       }
 
     }
@@ -869,7 +869,6 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
   if (fStorePidInfo)   nAdditionalParameters+=3;
   if (fStoreMcTracks)  nAdditionalParameters+=1;
   AliCFParticle* cftrack = new ((*fTracks)[fTracks->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,nAdditionalParameters);
-  Int_t iParameter=0;
   if (fStoreTrackInfo && flag==0){
     AliAODTrack* part = (AliAODTrack*) track;
     cftrack->SetBit(AliAODTrack::kIsDCA              ,part->TestBit(AliAODTrack::kIsDCA));
@@ -880,20 +879,20 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
     cftrack->SetBit(AliAODTrack::kIsGlobalConstrained,part->TestBit(AliAODTrack::kIsGlobalConstrained));
     cftrack->SetBit(AliAODTrack::kIsHybridGCG        ,part->TestBit(AliAODTrack::kIsHybridGCG));
     ULong_t status = part->GetStatus();
-    cftrack->SetAt(*((Float_t*) &status),iParameter++);
-    cftrack->SetAt(part->GetITSClusterMap(),iParameter++);
-    cftrack->SetAt(part->GetTPCNCrossedRows(),iParameter++);
-    cftrack->SetAt(part->GetTPCNclsF(),iParameter++);
-    cftrack->SetAt(part->GetTPCnclsS(),iParameter++);
-    cftrack->SetAt(part->GetTPCncls(),iParameter++);
-    cftrack->SetAt(part->Chi2perNDF(),iParameter++);
+    cftrack->SetAt(*((Float_t*) &status),fMapping->MappingTracks()[AliCFTreeMapping::kStatus]);
+    cftrack->SetAt(part->GetITSClusterMap(),fMapping->MappingTracks()[AliCFTreeMapping::kITSClusterMap]);
+    cftrack->SetAt(part->GetTPCNCrossedRows(),fMapping->MappingTracks()[AliCFTreeMapping::kTPCNCrossedRows]);
+    cftrack->SetAt(part->GetTPCNclsF(),fMapping->MappingTracks()[AliCFTreeMapping::kTPCNclsF]);
+    cftrack->SetAt(part->GetTPCnclsS(),fMapping->MappingTracks()[AliCFTreeMapping::kTPCnclsS]);
+    cftrack->SetAt(part->GetTPCncls(),fMapping->MappingTracks()[AliCFTreeMapping::kTPCncls]);
+    cftrack->SetAt(part->Chi2perNDF(),fMapping->MappingTracks()[AliCFTreeMapping::kChi2perNDF]);
     Double_t xyz[3];
     part->GetXYZ(xyz);
-    cftrack->SetAt(xyz[0],iParameter++);
-    cftrack->SetAt(xyz[1],iParameter++);
-    cftrack->SetAt(xyz[2],iParameter++);
+    cftrack->SetAt(xyz[0],fMapping->MappingTracks()[AliCFTreeMapping::kX]);
+    cftrack->SetAt(xyz[1],fMapping->MappingTracks()[AliCFTreeMapping::kY]);
+    cftrack->SetAt(xyz[2],fMapping->MappingTracks()[AliCFTreeMapping::kZ]);
   }
-
+ 
   if (fStorePidInfo){
     Float_t ncl  = track->GetTPCsignalN();
     Float_t dedx = track->GetTPCsignalTunedOnData(); if (dedx<=0) dedx = track->GetTPCsignal();
@@ -903,20 +902,20 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
       track->GetIntegratedTimes(tof);
       beta = tof[0]/track->GetTOFsignal();
     }
-    cftrack->SetAt(ncl,iParameter++);
-    cftrack->SetAt(dedx,iParameter++);
-    cftrack->SetAt(beta,iParameter++);
+    cftrack->SetAt(ncl,fMapping->MappingTracks()[AliCFTreeMapping::kTPCsignalN]);
+    cftrack->SetAt(dedx,fMapping->MappingTracks()[AliCFTreeMapping::kdEdx]);
+    cftrack->SetAt(beta,fMapping->MappingTracks()[AliCFTreeMapping::kbeta]);
   }
 
   if(fStoreMcTracks)
   {
-    cftrack->SetAt(track->GetLabel(),iParameter++);
+    cftrack->SetAt(track->GetLabel(),fMapping->MappingTracks()[AliCFTreeMapping::kLabel]);
   }
 
   if(fStoreAodDCAInfo)
   {
-    cftrack->SetAt(fitssatrackcuts->CalculateDCAXY((AliAODTrack*)track),iParameter++);
-    cftrack->SetAt(fitssatrackcuts->CalculateDCAZ((AliAODTrack*)track),iParameter++);
+    cftrack->SetAt(fitssatrackcuts->CalculateDCAXY((AliAODTrack*)track),fMapping->MappingTracks()[AliCFTreeMapping::kDCAxy]);
+    cftrack->SetAt(fitssatrackcuts->CalculateDCAZ((AliAODTrack*)track),fMapping->MappingTracks()[AliCFTreeMapping::kDCAz]);
   }
 
   return cftrack;
