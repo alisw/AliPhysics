@@ -242,9 +242,9 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fHistoNCL1NoPilSPD = new TH1F("hNCL1NoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoNCL1NoPilSPD);
 
-  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
+  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of contributors in events tagged as pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribPrimVertPilSPD);
-  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
+  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of contributors in events without pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribPrimVertNoPilSPD);
 
   fHistoContribFirstPilSPD = new TH1F("hContribFirstPilSPD","Number of contributors to first pileup",101,-0.5,100.5);
