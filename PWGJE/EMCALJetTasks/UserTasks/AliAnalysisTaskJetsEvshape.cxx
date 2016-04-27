@@ -188,7 +188,7 @@ Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
     fJetsCont->ResetCurrentID();
     while (AliEmcalJet *jet = fJetsCont->GetNextAcceptJet()) {
       FillH1(kHistJetPt, jet->Pt());
-      FillH1(kHistJetPtVsMult, nTracklets, jet->Pt());
+      FillH2(kHistJetPtVsMult, nTracklets, jet->Pt());
     }
   }
 
