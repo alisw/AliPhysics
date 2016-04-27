@@ -26,15 +26,19 @@ Int_t cW = 1200;
 Int_t cH =  800;
 
 //____________________________________________________________________
-void AddPath(const TString& dir, Bool_t prepend=true)
+namespace CombineNS
 {
-  TString d(gSystem->ExpandPathName(dir.Data()));
-  gSystem->AddIncludePath("-I%s", d.Data());
-  const char* oldPath = gROOT->GetMacroPath();
-  gROOT->SetMacroPath(Form(".:%s:%s",
-			   prepend ? d.Data() : oldPath,
-			   prepend ? oldPath  : d.Data()));
+  void AddPath(const TString& dir, Bool_t prepend=true)
+  {
+    TString d(gSystem->ExpandPathName(dir.Data()));
+    gSystem->AddIncludePath(Form("-I%s", d.Data()));
+    const char* oldPath = gROOT->GetMacroPath();
+    gROOT->SetMacroPath(Form(".:%s:%s",
+			     prepend ? d.Data() : oldPath,
+			     prepend ? oldPath  : d.Data()));
+  }
 }
+
 
 //____________________________________________________________________
 /** 
@@ -186,10 +190,11 @@ TObject* MakeGSE(TH1* g, Int_t bin)
 }
 
 //====================================================================
-TObject* GetO(TDirectory* dir, const char* name="result", TClass* cls=0)
+TObject* GetO(TDirectory* dir, const char* name="result",
+	      TClass* cls=0, Bool_t verbose=true)
 {
   if (!dir) {
-    Warning("GetHS", "No directory");
+    if (verbose) Warning("GetHS", "No directory");
     return 0;
   }
   TString par; par = gSystem->DirName(name);
@@ -206,31 +211,31 @@ TObject* GetO(TDirectory* dir, const char* name="result", TClass* cls=0)
   }
   TObject* o = dir->Get(bse);
   if (!o) {
-    Warning("GetO", "%s not found in %s", name, dir->GetName());
+    if (verbose) Warning("GetO", "%s not found in %s", name, dir->GetName());
     return 0;
   }
   if (!cls) return o;
   if (!o->IsA()->InheritsFrom(cls)) {
-    Warning("GetO", "%s is not a %s!", name, cls->GetName());
+    if (verbose) Warning("GetO", "%s is not a %s!", name, cls->GetName());
     return 0;
   }
   return o;
 }
 
 //____________________________________________________________________
-THStack* GetHS(TDirectory* dir, const char* name="result")
+THStack* GetHS(TDirectory* dir, const char* name="result", Bool_t verbose=true)
 {
-  return static_cast<THStack*>(GetO(dir,name,THStack::Class()));
+  return static_cast<THStack*>(GetO(dir,name,THStack::Class(),verbose));
 }
 //____________________________________________________________________
-TH1* GetH1(TDirectory* dir, const char* name="result")
+TH1* GetH1(TDirectory* dir, const char* name="result", Bool_t verbose=true)
 {
-  return static_cast<TH1*>(GetO(dir,name,TH1::Class()));
+  return static_cast<TH1*>(GetO(dir,name,TH1::Class(),verbose));
 }
 //____________________________________________________________________
-TH2* GetH2(TDirectory* dir, const char* name="result")
+TH2* GetH2(TDirectory* dir, const char* name="result", Bool_t verbose=true)
 {
-  return static_cast<TH2*>(GetO(dir,name,TH2::Class()));
+  return static_cast<TH2*>(GetO(dir,name,TH2::Class(),verbose));
 }
 
 //====================================================================
@@ -423,12 +428,12 @@ Combine(THStack*    sleft,
 void
 Combine(UShort_t flags=0x0, const char* var="none")
 {
-  const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
-  AddPath("$HOME/GraphSysErr");
-  AddPath(TString::Format("%s/gse", fwd), false);
-  AddPath(TString::Format("%s/dndeta/tracklets", fwd));
-  if (!gROOT->GetClass("GraphSysErr")) 
-    gROOT->LoadMacro("$HOME/GraphSysErr/GraphSysErr.C+g");
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  if (gSystem->Getenv("ANA_SRC")) fwd = gSystem->Getenv("ANA_SRC");
+  CombineNS::AddPath("$HOME/GraphSysErr");
+  CombineNS::AddPath(TString::Format("%s/gse", fwd), false);
+  CombineNS::AddPath(TString::Format("%s/dndeta/tracklets", fwd));
+  if (!gROOT->GetClass("GraphSysErr")) gROOT->LoadMacro("GraphSysErr.C+g");
   
   UShort_t which = flags & 0x3;
   TFile* fleft    = TFile::Open(Form("partial/left_%s_0x%x.root",  var,which),
@@ -489,10 +494,10 @@ Combine(UShort_t flags=0x0, const char* var="none")
 	CombineMap(mleft, mmiddle, mright, det);
 	pmap++;
       }
-      sname.Form("%s/details/deltaInt", name.Data());
-      TH1* hleft   = GetH1(fleft,  sname);
-      TH1* hmiddle = GetH1(fmiddle,sname);
-      TH1* hright  = GetH1(fright, sname);
+      sname.Form("%s/details/scalar", name.Data());
+      TH1* hleft   = GetH1(fleft,  sname, false);
+      TH1* hmiddle = GetH1(fmiddle,sname, false);
+      TH1* hright  = GetH1(fright, sname, false);
       if (hleft && hmiddle && hright) {
 	TH1* kHist = Combine(hleft, hmiddle, hright, det);
 	det->cd();

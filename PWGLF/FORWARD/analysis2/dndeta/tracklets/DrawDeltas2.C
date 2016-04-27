@@ -1,11 +1,17 @@
-
-
-void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
+/** 
+ * Read in a single file and display Delta distributions for selected
+ * centrality class.
+ * 
+ * @param filename File to read 
+ * @param c1       Centrality class 
+ * @param c2       Centrality class 
+ */
+TCanvas* DrawDeltas2(const char* filename, Double_t c1=0, Double_t c2=5)
 {
   TFile* file = TFile::Open(filename, "READ");
   if (!file) {
     Warning("DrawDeltas2", "File %s couldn't be opened", filename);
-    return;
+    return 0;
   }
 
   TString dname; dname.Form("cent%06.2f_%06.2f", c1, c2);
@@ -14,7 +20,7 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
   if (!d) {
     Warning("DrawDeltas2", "Directory %s not found in %s",
 	    dname.Data(), file->GetName());
-    return;
+    return 0;
   }
 
   TDirectory* det = d->GetDirectory("details");
@@ -22,20 +28,20 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
     Warning("DrawDeltas2", "Directory details not found in %s",
 	    d->GetName());
     d->ls();
-    return;
+    return 0;
   }
 
   TObject* o = det->Get("deltas");
   if (!o) {
     Warning("DrawDeltas2", "Object deltas not found in %s",
 	    det->GetName());
-    return;
+    return 0;
   }
 
   if (!o->IsA()->InheritsFrom(THStack::Class())) {
     Warning("DrawDeltas2", "Object %s is not a THStack, but a %s",
 	    o->GetName(), o->ClassName());
-    return;
+    return 0;
   }
   THStack* s = static_cast<THStack*>(o);
 
@@ -51,7 +57,7 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
     t.ReplaceAll("none", "No weights,");
   else
     t.Append(" weights,");
-  if (det->Get("deltaInt")) {
+  if (det->Get("scalar")) {
     t.Append(" #it{k}(#eta),"); nm.Append("keta_");
   }
   else {
@@ -60,7 +66,9 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
   t.Append(Form(" %5.2f - %5.2f%%", c1, c2));
   nm.Append(dname);
   
-  TCanvas* c = new TCanvas(nm,t,1000, 800);
+  Int_t cW = 1200;
+  Int_t cH =  800;
+  TCanvas* c = new TCanvas(nm,t,cW, cH);
   c->SetTopMargin(0.10);
   c->SetRightMargin(0.01);
   c->Divide(1,2,0,0);
@@ -105,22 +113,33 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
   // l->SetBorderSize(0);
   // l->SetFillStyle(0);
   p->Modified();
+  // s->GetHists()->Print();
 
   TH1* realMeas = static_cast<TH1*>(s->GetHists()->At(0));
   TH1* simMeas  = static_cast<TH1*>(s->GetHists()->At(1));
-  TH1* simSum   = static_cast<TH1*>(s->GetHists()->At(n-3));
+  TH1* realInj  = static_cast<TH1*>(s->GetHists()->At(2));
+  TH1* simInj   = static_cast<TH1*>(s->GetHists()->At(3));
+  TH1* simComb  = static_cast<TH1*>(s->GetHists()->At(4));
 
-  TH1* measRat = static_cast<TH1*>(simMeas->Clone("simMeas"));
+  TH1* measRat = static_cast<TH1*>(simMeas->Clone("ratioMeas"));
   measRat->Divide(realMeas);
-  measRat->SetTitle(Form("%s/%s", simMeas->GetTitle(), realMeas->GetTitle()));
+  measRat->SetTitle("Sim./Real Measured");
 
-  TH1* sumRat = static_cast<TH1*>(simSum->Clone("simSum"));
-  sumRat->Divide(realMeas);
-  sumRat->SetTitle(Form("%s/%s", simSum->GetTitle(), realMeas->GetTitle()));
+  
+  TH1* simInjRat = static_cast<TH1*>(simInj->Clone("ratioSimInj"));
+  simInjRat->Divide(simComb);
+  simInjRat->SetDirectory(0); 
+  simInjRat->SetTitle("Sim. Inj./Combinatorics");
 
+  TH1* realInjRat = static_cast<TH1*>(realInj->Clone("ratioRealInj"));
+  realInjRat->Divide(simComb);
+  realInjRat->SetDirectory(0); 
+  realInjRat->SetTitle("Real Inj./Combinatorics");
+  
   THStack* ratios = new THStack("ratios", "");
   ratios->Add(measRat);
-  ratios->Add(sumRat);
+  ratios->Add(realInjRat);
+  ratios->Add(simInjRat);
 
   p = c->cd(2);
   p->SetRightMargin(0.01);
@@ -129,12 +148,12 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
   p->SetGridx();
   p->SetGridy();
   p->SetTicks();
-  ratios->SetMinimum(0.8);
-  ratios->SetMaximum(1.2);
+  ratios->SetMinimum(0.5);
+  ratios->SetMaximum(1.5);
   ratios->Draw("nostack");
   h   = ratios->GetHistogram();
-  h->SetXTitle("#Delta");
-  h->SetYTitle("Ratio to measured");
+  h->SetXTitle(realMeas->GetXaxis()->GetTitle());
+  h->SetYTitle("Ratio");
 
   l = p->BuildLegend(.11,.11,.7,.35);
   // l->SetNColumns(2);
@@ -143,7 +162,15 @@ void DrawDeltas2(const char* filename, Double_t c1, Double_t c2)
   c->Modified();
   c->Update();
   c->cd();
-  c->SaveAs(Form("%s.png", nm.Data()));
+
+  return c;
 }
 
     
+void DrawDeltas2(UShort_t flags, const char* which)
+{
+  TCanvas* c =
+    DrawDeltas2(Form("results/combine_%s_0x%x.root", which, flags), 0, 5);
+  c->SaveAs(Form("plots/deltas_%s_0x%x.png", which, flags));
+}
+
