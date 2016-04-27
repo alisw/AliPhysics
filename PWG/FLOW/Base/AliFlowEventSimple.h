@@ -121,12 +121,13 @@ class AliFlowEventSimple: public TObject {
   virtual void Get2Qsub(AliFlowVector* Qarray, Int_t n=2, TList *weightsList=NULL, Bool_t usePhiWeights=kFALSE, Bool_t usePtWeights=kFALSE, Bool_t useEtaWeights=kFALSE);
   virtual void GetZDC2Qsub(AliFlowVector* Qarray);
   virtual void SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, Double_t MA);
+  virtual void SetVertexPosition(Double_t* pos);
+  virtual void GetVertexPosition(Double_t* pos);
 
   void SetCentrality(Double_t c) {fCentrality=c;}
   Double_t GetCentrality() const {return fCentrality;}
   void SetCentralityVar(Double_t c) {fCentralityVar=c;}
   Double_t GetCentralityVar() const {return fCentralityVar;}
- 
   void SetRun(Int_t const run) {fRun = run;};
   Int_t GetRun() const {return fRun;};
 
@@ -170,12 +171,13 @@ class AliFlowEventSimple: public TObject {
   Double_t                fZNAQ[2];                   // Q_1 vector from ZDCN-A
   Double_t                fZNCM;                      // total energy from ZDCN-C
   Double_t                fZNAM;                      // total energy from ZDCN-A
+  Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
  
  private:
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,3)
+  ClassDef(AliFlowEventSimple,4)
 };
 
 #endif

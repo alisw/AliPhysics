@@ -75,6 +75,22 @@ AliEmcalJet::AliEmcalJet() :
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
   fJetShapeLeSubSecondSub(0),
+  fJetShape1subjettinessktFirstDer(0),
+  fJetShape1subjettinessktSecondDer(0),
+  fJetShape1subjettinessktFirstSub(0),
+  fJetShape1subjettinessktSecondSub(0),
+  fJetShape2subjettinessktFirstDer(0),
+  fJetShape2subjettinessktSecondDer(0),
+  fJetShape2subjettinessktFirstSub(0),
+  fJetShape2subjettinessktSecondSub(0),
+  fJetShape3subjettinessktFirstDer(0),
+  fJetShape3subjettinessktSecondDer(0),
+  fJetShape3subjettinessktFirstSub(0),
+  fJetShape3subjettinessktSecondSub(0),
+  fJetShapeOpeningAnglektFirstDer(0),
+  fJetShapeOpeningAnglektSecondDer(0),
+  fJetShapeOpeningAnglektFirstSub(0),
+  fJetShapeOpeningAnglektSecondSub(0),
   fHasGhost(kFALSE),
   fGhosts()
 {
@@ -150,6 +166,22 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
   fJetShapeLeSubSecondSub(0),
+  fJetShape1subjettinessktFirstDer(0),
+  fJetShape1subjettinessktSecondDer(0),
+  fJetShape1subjettinessktFirstSub(0),
+  fJetShape1subjettinessktSecondSub(0),
+  fJetShape2subjettinessktFirstDer(0),
+  fJetShape2subjettinessktSecondDer(0),
+  fJetShape2subjettinessktFirstSub(0),
+  fJetShape2subjettinessktSecondSub(0),
+  fJetShape3subjettinessktFirstDer(0),
+  fJetShape3subjettinessktSecondDer(0),
+  fJetShape3subjettinessktFirstSub(0),
+  fJetShape3subjettinessktSecondSub(0),
+  fJetShapeOpeningAnglektFirstDer(0),
+  fJetShapeOpeningAnglektSecondDer(0),
+  fJetShapeOpeningAnglektFirstSub(0),
+  fJetShapeOpeningAnglektSecondSub(0),
   fHasGhost(kFALSE),
   fGhosts()
 {
@@ -230,6 +262,22 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fJetShapeLeSubSecondDer(0),
   fJetShapeLeSubFirstSub(0),
   fJetShapeLeSubSecondSub(0),
+  fJetShape1subjettinessktFirstDer(0),
+  fJetShape1subjettinessktSecondDer(0),
+  fJetShape1subjettinessktFirstSub(0),
+  fJetShape1subjettinessktSecondSub(0),
+  fJetShape2subjettinessktFirstDer(0),
+  fJetShape2subjettinessktSecondDer(0),
+  fJetShape2subjettinessktFirstSub(0),
+  fJetShape2subjettinessktSecondSub(0),
+  fJetShape3subjettinessktFirstDer(0),
+  fJetShape3subjettinessktSecondDer(0),
+  fJetShape3subjettinessktFirstSub(0),
+  fJetShape3subjettinessktSecondSub(0),
+  fJetShapeOpeningAnglektFirstDer(0),
+  fJetShapeOpeningAnglektSecondDer(0),
+  fJetShapeOpeningAnglektFirstSub(0),
+  fJetShapeOpeningAnglektSecondSub(0),
   fHasGhost(kFALSE),
   fGhosts()
 
@@ -309,6 +357,22 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fJetShapeLeSubSecondDer(jet.fJetShapeLeSubSecondDer),
   fJetShapeLeSubFirstSub(jet.fJetShapeLeSubFirstSub),
   fJetShapeLeSubSecondSub(jet.fJetShapeLeSubSecondSub),
+  fJetShape1subjettinessktFirstDer(jet.fJetShape1subjettinessktFirstDer),
+  fJetShape1subjettinessktSecondDer(jet.fJetShape1subjettinessktSecondDer),
+  fJetShape1subjettinessktFirstSub(jet.fJetShape1subjettinessktFirstSub),
+  fJetShape1subjettinessktSecondSub(jet.fJetShape1subjettinessktSecondSub),
+  fJetShape2subjettinessktFirstDer(jet.fJetShape2subjettinessktFirstDer),
+  fJetShape2subjettinessktSecondDer(jet.fJetShape2subjettinessktSecondDer),
+  fJetShape2subjettinessktFirstSub(jet.fJetShape2subjettinessktFirstSub),
+  fJetShape2subjettinessktSecondSub(jet.fJetShape2subjettinessktSecondSub),
+  fJetShape3subjettinessktFirstDer(jet.fJetShape3subjettinessktFirstDer),
+  fJetShape3subjettinessktSecondDer(jet.fJetShape3subjettinessktSecondDer),
+  fJetShape3subjettinessktFirstSub(jet.fJetShape3subjettinessktFirstSub),
+  fJetShape3subjettinessktSecondSub(jet.fJetShape3subjettinessktSecondSub),
+  fJetShapeOpeningAnglektFirstDer(jet.fJetShapeOpeningAnglektFirstDer),
+  fJetShapeOpeningAnglektSecondDer(jet.fJetShapeOpeningAnglektSecondDer),
+  fJetShapeOpeningAnglektFirstSub(jet.fJetShapeOpeningAnglektFirstSub),
+  fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub),
   fHasGhost(jet.fHasGhost),
   fGhosts(jet.fGhosts)
 {
@@ -391,6 +455,22 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     fJetShapeLeSubSecondDer = jet.fJetShapeLeSubSecondDer;
     fJetShapeLeSubFirstSub  = jet.fJetShapeLeSubFirstSub;
     fJetShapeLeSubSecondSub = jet.fJetShapeLeSubSecondSub;
+    fJetShape1subjettinessktFirstDer  = jet.fJetShape1subjettinessktFirstDer;
+    fJetShape1subjettinessktSecondDer = jet.fJetShape1subjettinessktSecondDer;
+    fJetShape1subjettinessktFirstSub  = jet.fJetShape1subjettinessktFirstSub;
+    fJetShape1subjettinessktSecondSub = jet.fJetShape1subjettinessktSecondSub;
+    fJetShape2subjettinessktFirstDer  = jet.fJetShape2subjettinessktFirstDer;
+    fJetShape2subjettinessktSecondDer = jet.fJetShape2subjettinessktSecondDer;
+    fJetShape2subjettinessktFirstSub  = jet.fJetShape2subjettinessktFirstSub;
+    fJetShape2subjettinessktSecondSub = jet.fJetShape2subjettinessktSecondSub;
+    fJetShape3subjettinessktFirstDer  = jet.fJetShape3subjettinessktFirstDer;
+    fJetShape3subjettinessktSecondDer = jet.fJetShape3subjettinessktSecondDer;
+    fJetShape3subjettinessktFirstSub  = jet.fJetShape3subjettinessktFirstSub;
+    fJetShape3subjettinessktSecondSub = jet.fJetShape3subjettinessktSecondSub;
+    fJetShapeOpeningAnglektFirstDer  = jet.fJetShapeOpeningAnglektFirstDer;
+    fJetShapeOpeningAnglektSecondDer = jet.fJetShapeOpeningAnglektSecondDer;
+    fJetShapeOpeningAnglektFirstSub  = jet.fJetShapeOpeningAnglektFirstSub;
+    fJetShapeOpeningAnglektSecondSub = jet.fJetShapeOpeningAnglektSecondSub;
     fHasGhost = jet.fHasGhost;
     fGhosts   = jet.fGhosts;
   }

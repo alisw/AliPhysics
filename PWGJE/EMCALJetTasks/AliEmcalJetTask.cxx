@@ -556,13 +556,17 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub) 
 {
   Double_t dphi=0;
+  Double_t phimin=100;
+  Int_t index=0;
   for (UInt_t ii = 0; ii < constituents_unsub.size(); ii++) {
+    dphi=0;
     Double_t phi_unsub = constituents_unsub[ii].phi();
     dphi=phi_unsub-phi_sub;
     if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
     else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-    if (TMath::Abs(dphi)<0.1 && constituents_unsub[ii].user_index()!=-1)  return constituents_unsub[ii].user_index();
-  }
+    if(TMath::Abs(dphi)<phimin){ phimin=TMath::Abs(dphi);
+      index=ii;} }
+    if (constituents_unsub[index].user_index()!=-1)  return constituents_unsub[index].user_index();
 
   return 0;
 }

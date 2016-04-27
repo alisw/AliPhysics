@@ -74,6 +74,7 @@ E-AliCDBGrid::PutEntry:
 F-AliCDBGrid::
 E-TAlienFile::ReadBuffer: The remote (removed) file is not open
 illegal pointer
+Compilation failed
 EOF
 
 found=`grep -f grep.cnf -i -n $fullLogList`

@@ -58,13 +58,29 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   man->SetDefaultStorage(ocdb);
   // Reconstruction settings
   AliReconstruction rec;
+  //
+  // do we extract the TPC recpoints in advance
+  Bool_t noTPCLocalRec = gSystem->Getenv("preclusterizeTPC")!=NULL;
+  if (noTPCLocalRec) printf("TPC local reconstruction assumed to be already done\n");
+  //
   if (gSystem->Getenv("disableOuter")!=NULL){
-    rec.SetRunLocalReconstruction((gSystem->Getenv("disableOuter")));
-    rec.SetRunReconstruction((gSystem->Getenv("disableOuter")));
-    rec.SetRunTracking((gSystem->Getenv("disableOuter")));
-  } else {
-    rec.SetRunReconstruction("ALL");
+    TString disOuter = gSystem->Getenv("disableOuter");
+    TString disOuterLoc = disOuter;
+    if (noTPCLocalRec) {
+      disOuterLoc.ReplaceAll("TPC","");
+      disOuterLoc.ReplaceAll("HLT","");
+    }
+    rec.SetRunReconstruction(disOuter.Data());
+    rec.SetRunLocalReconstruction(disOuterLoc.Data());
+  } 
+  else if (noTPCLocalRec) {
+    rec.SetRunReconstruction("ALL -HLT");
+    rec.SetRunLocalReconstruction("ALL -TPC -HLT");
   }
+  else {
+    rec.SetRunLocalReconstruction("ALL");
+  }
+
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
   if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
     rec.SetCDBSnapshotMode("OCDB.root");
@@ -88,7 +104,9 @@ void recCPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   // Remove recpoints after each event
-  rec.SetDeleteRecPoints("TPC TRD ITS"); 
+  TString delRecPoints="TPC TRD ITS";
+  if (noTPCLocalRec) delRecPoints.ReplaceAll("TPC","");
+  rec.SetDeleteRecPoints(delRecPoints.Data()); 
   //
 
 

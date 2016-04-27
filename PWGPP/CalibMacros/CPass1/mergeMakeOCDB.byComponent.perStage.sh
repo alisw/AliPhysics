@@ -83,7 +83,7 @@ main()
   # setup components to be merged
   #components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
   #TPCCluster and TPCAlign removed (see Computing Board on 01/12/2014, https://docs.google.com/document/d/14i0G6bxZpnB3MFdWgqsweI3vCcUaeCwaq99tYoqmfxk/edit, https://indico.cern.ch/event/291343/)
-  components="TOF MeanVertex T0 SDD TRD TPCCalib"   
+  components="TOF MeanVertex T0 SDD TRD TPCCalib AD"   
   #components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
   # take Data Quality Flags from JDL

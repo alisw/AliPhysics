@@ -17,6 +17,7 @@
 // evgeny.kryshen@cern.ch
 // lmilano@cern.ch
 // alice.ohlson@cern.ch
+// igor.lakomov@cern.ch
 
 // aliroot
 #include "AliAnalysisTaskCFTree.h"
@@ -72,6 +73,7 @@ fHybridConstrainedMask(0),
 fTPConlyConstrainedMask(0),
 fMuonTrackCuts(new AliMuonTrackCuts),
 fUtils(0x0),
+fitssatrackcuts(0x0),
 fListOfHistos(0x0),
 fEventStatistics(0x0),
 fClassStatistics(0x0),
@@ -151,12 +153,14 @@ fStoreMcTracklets(0),
 fStoreMcMuons(0),
 fStoreTrackInfo(0),
 fStorePidInfo(0),
+fStoreAodDCAInfo(0),
 fStoreMuonOrigin(0),
 fApplyPhysicsSelectionCut(0),
 fStoreOnlyEventsWithMuons(0),
 fStoreCutBitsInTrackMask(0),
 fDecayArray(0x0),
-fDecayer(0x0)
+fDecayer(0x0),
+fMapping(0x0)
 {
   Info("AliAnalysisTaskCFTree","Calling Constructor");
   fMuonTrackCuts->SetCustomParamFromRun(197388,"muon_pass2");
@@ -195,6 +199,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   if (fStoreMcTracks)  fMcParticles = new TClonesArray("AliCFParticle",2000);
   if (fStoreMuonOrigin)fMuonOrigin  = new TClonesArray("TObjString",2000);
   if (fStoreMcMuons)   fMcMuons     = new TClonesArray("AliCFParticle",2000);
+
   // create file-resident tree
   TDirectory *owd = gDirectory;
   OpenFile(2);
@@ -256,10 +261,46 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   if (fMuonOrigin)  fTree->Branch("muon_origin",&fMuonOrigin);
   if (fMcMuons)     fTree->Branch("mcmuons",&fMcMuons);
 
+  Int_t iParameter=0; // Mapping Tracks
+  for (Int_t i=0; i<10; i++) {
+    if (fStoreTrackInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
+  }
+  for (Int_t i=10; i<13; i++) {
+    if (fStorePidInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
+  }
+  for (Int_t i=13; i<14; i++) {
+    if (fStoreMcTracks) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
+  }
+  for (Int_t i=14; i<AliCFTreeMapping::kMappingTracks; i++) {
+    if (fStoreAodDCAInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
+  }
+
+  iParameter=0; // Mapping Tracklets
+  for (Int_t i=0; i<AliCFTreeMapping::kMappingTracklets; i++) {
+      if (fStoreTracklets) fMapping->MappingTracklets()[i]=iParameter++; else fMapping->MappingTracklets()[i]=-1;
+  }
+
+  iParameter=0; // Mapping Muons
+  for (Int_t i=0; i<4; i++) {
+      if (fStoreMuons) fMapping->MappingMuons()[i]=iParameter++; else fMapping->MappingMuons()[i]=-1;
+  }
+  for (Int_t i=4; i<AliCFTreeMapping::kMappingMuons; i++) {
+      if (fStoreMcMuons) fMapping->MappingMuons()[i]=iParameter++; else fMapping->MappingMuons()[i]=-1;
+  }
+
+  iParameter=0; // Mapping MCTracks
+  for (Int_t i=0; i<AliCFTreeMapping::kMappingMCTracks; i++) {
+    if (fStoreMcTracks) fMapping->MappingMCTracks()[i]=iParameter++; else fMapping->MappingMCTracks()[i]=-1;
+  }
+
+  fTree->GetUserInfo()->Add(fMapping);	//to retreive it afterwards one needs fTree->GetUserInfo()->At(0)
+
   fUtils = new AliAnalysisUtils();
   fUtils->SetUseSPDCutInMultBins(kTRUE);
   //  fUtils->SetMinPlpContribSPD(3);
   fUtils->SetMinPlpContribMV(3);
+
+  fitssatrackcuts = AliAODITSsaTrackCuts::GetStandardAODITSsaTrackCuts2015();
 
   if(fMcMuons) {
     Int_t products[4] = {13,211,111,22};
@@ -507,13 +548,18 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
         AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
         if (!track) continue;
         UInt_t mask = GetFilterMap(track);
-
-
+        if ( track->InheritsFrom("AliAODTrack") ) {
+	  fitssatrackcuts->ExtractAndSetPrimaryVertex(fInputEvent);
+	}
         if(fTrackFilterBit==2){//we are saving only ITSsa, It's a muon_calo_production!
           if((mask & (1<<1)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
         }else if((mask & (1<<0)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
 
-        if(!(mask & fTrackFilterBit))continue; //filter bit cut
+	if ( !(mask==0 && fTrackFilterBit==0) ){ //this would apply the fbit selection only to tracks with mask defined
+	  if(!(mask & fTrackFilterBit))continue; //filter bit cut
+	}
+        else if ( track->InheritsFrom("AliAODTrack") && !(fitssatrackcuts->AcceptTrack((AliAODTrack*)track)) ) continue;
+
         if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
         else if (track->InheritsFrom("AliESDtrack")) {
           if (mask)                           AddTrack(track,mask,1);
@@ -865,6 +911,12 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
   if(fStoreMcTracks)
   {
     cftrack->SetAt(track->GetLabel(),iParameter++);
+  }
+
+  if(fStoreAodDCAInfo)
+  {
+    cftrack->SetAt(fitssatrackcuts->CalculateDCAXY((AliAODTrack*)track),iParameter++);
+    cftrack->SetAt(fitssatrackcuts->CalculateDCAZ((AliAODTrack*)track),iParameter++);
   }
 
   return cftrack;

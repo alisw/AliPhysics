@@ -1,7 +1,20 @@
 #ifndef ALIANALYSISTASKCHARGEDJETSHADRONCF_H
 #define ALIANALYSISTASKCHARGEDJETSHADRONCF_H
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-// $Id$
+/**
+ * \class AliAnalysisTaskChargedJetsHadronCF
+ * \brief Support task for (charged) jet-hadron correlations
+ *
+ * This task selects the jets and optionally the particles which are saved as a TClonesArray to the event
+ * and which are read by a correlation task. The tasks does a special event selection (e.g. dijet events)
+ * and jet selection (e.g. fakefactor rejection). In addition, it fills auxiliary histograms
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Apr 21, 2016
+ */
+// 
 
 class THn;
 
@@ -16,6 +29,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
+  void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
   void                        SetJetMatchingArrayName(const char* name)   { fJetMatchingArrayName = name; }
@@ -43,39 +57,39 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        FillHistogramsJets(AliEmcalJet* jet);
   void                        FillHistogramsJetConstituents(AliEmcalJet* jet);
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
-  Bool_t                      IsEventSelected();
+  Bool_t                      IsEventCriteriumFulfilled();
 
-  AliJetContainer            *fJetsCont;                                //!Jets
-  AliTrackContainer          *fTracksCont;                              //!Tracks
-  TTree*                      fJetsTree;                                //!Jets that will be saved to a tree (optionally)
-  void*                       fJetsTreeBuffer;                          //! buffer for one jet (that will be saved to the tree)
-  Double_t                    fExtractionPercentage;                    // percentage that is recorded
-  Double_t                    fExtractionMinPt;                         // minimum pt of recorded jets
-  Int_t                       fNumberOfCentralityBins;                  // Number of centrality bins
-  TClonesArray               *fJetsOutput;                              //!Array of basic correlation particles attached to the event (jets)
-  TClonesArray               *fTracksOutput;                            //!Array of basic correlation particles attached to the event (tracks)
-  TClonesArray               *fJetsInput;                               //!Array of generated jets imported into task (toy model)
-  TString                     fJetParticleArrayName;                    // Name of fJetsOutput array
-  TString                     fTrackParticleArrayName;                  // Name of fTracksOutput array
-  TString                     fJetMatchingArrayName;                    // Name of array used to match jets
-  TRandom3*                   fRandom;                                  // random number generator
+  AliJetContainer            *fJetsCont;                                //!<! Jets
+  AliTrackContainer          *fTracksCont;                              //!<! Tracks
+  TTree*                      fJetsTree;                                //!<! Jets that will be saved to a tree (optionally)
+  void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
+  Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
+  Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
+  Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
+  TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
+  TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
+  TClonesArray               *fJetsInput;                               //!<! Array of generated jets imported into task (toy model)
+  TString                     fJetParticleArrayName;                    ///< Name of fJetsOutput array
+  TString                     fTrackParticleArrayName;                  ///< Name of fTracksOutput array
+  TString                     fJetMatchingArrayName;                    ///< Name of array used to match jets
+  TRandom3*                   fRandom;                                  ///< random number generator
 
   // Criteria for the selection of jets that are passed to the correlation task
-  TF1*                        fRejectionFunction;                       // Function describing the cut applied to jet const.
-  Int_t                       fJetOutputMode;                           // mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Double_t                    fMinFakeFactorPercentage;                 // min fake factor (percentage relative to cut profile)
-  Double_t                    fMaxFakeFactorPercentage;                 // max fake factor (percentage relative to cut profile)
-  Int_t                       fEventCriteriumMode;                      // Mode of event selection
-  Double_t                    fEventCriteriumMinBackground;             // Minimum background
-  Double_t                    fEventCriteriumMaxBackground;             // Maximum background
-  Double_t                    fEventCriteriumMinLeadingJetPt;           // Min leading jet
-  Double_t                    fEventCriteriumMinSubleadingJetPt;        // Min subleading jet
+  TF1*                        fRejectionFunction;                       ///< Function describing the cut applied to jet const.
+  Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
+  Double_t                    fMinFakeFactorPercentage;                 ///< min fake factor (percentage relative to cut profile)
+  Double_t                    fMaxFakeFactorPercentage;                 ///< max fake factor (percentage relative to cut profile)
+  Int_t                       fEventCriteriumMode;                      ///< Mode of event selection
+  Double_t                    fEventCriteriumMinBackground;             ///< Minimum background
+  Double_t                    fEventCriteriumMaxBackground;             ///< Maximum background
+  Double_t                    fEventCriteriumMinLeadingJetPt;           ///< Min leading jet
+  Double_t                    fEventCriteriumMinSubleadingJetPt;        ///< Min subleading jet
 
   // Event properties
-  AliEmcalJet*                fLeadingJet;                              //! leading jet (calculated event-by-event)
-  AliEmcalJet*                fSubleadingJet;                           //! subleading jet (calculated event-by-event)
-  Int_t                       fAcceptedJets;                            //! number accepted jets (calculated event-by-event)
-  Int_t                       fAcceptedTracks;                          //! number accepted tracks (calculated event-by-event)
+  AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
+  AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
+  Int_t                       fAcceptedJets;                            //!<!  number accepted jets (calculated event-by-event)
+  Int_t                       fAcceptedTracks;                          //!<!  number accepted tracks (calculated event-by-event)
 
   // ######### HISTOGRAM FUNCTIONS
   void                        FillHistogram(const char * key, Double_t x);
@@ -97,12 +111,24 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF(const AliAnalysisTaskChargedJetsHadronCF&);            // not implemented
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedJetsHadronCF, 6) // Charged jet+h analysis support task
+  /// \endcond
 };
 
 
 //###############################################################################################################################################3
 
+/**
+ * \class AliBasicJetConstituent
+ * \brief Simple class containing basic information for a constituent
+ *
+ * This class is used to save jet constituents with less overhead
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Apr 21, 2016
+ */
+// 
 class AliBasicJetConstituent : public TObject
 {
   public:
@@ -120,16 +146,28 @@ class AliBasicJetConstituent : public TObject
     Short_t  Charge()   { return fCharge; }
 
   private:
-    Float_t fEta;      // eta
-    Float_t fPhi;      // phi
-    Float_t fpT;       // pT
-    Short_t fCharge;   // charge
+    Float_t fEta;      ///< eta
+    Float_t fPhi;      ///< phi
+    Float_t fpT;       ///< pT
+    Short_t fCharge;   ///< charge
 
-    ClassDef( AliBasicJetConstituent, 1); // very basic jet constituent object
+  /// \cond CLASSIMP
+  ClassDef( AliBasicJetConstituent, 1); // very basic jet constituent object
+  /// \endcond
 };
 
 //###############################################################################################################################################3
-
+/**
+ * \class AliBasicJet
+ * \brief Simple class containing basic information for a jet
+ *
+ * This class is used to save jets including constituents with minimize memory consumption.
+ * Saved information focus on correlation analyses
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Apr 21, 2016
+ */
+// 
 class AliBasicJet : public TObject
 {
   public:
@@ -164,18 +202,20 @@ class AliBasicJet : public TObject
 
 
   private:
-    Float_t   fEta;      // eta
-    Float_t   fPhi;      // phi
-    Float_t   fpT;       // pT
-    Short_t   fCharge;   // charge
-    Float_t   fRadius;   // jet radius
-    Float_t   fArea;     // jet area
-    Float_t   fBackgroundDensity; // background
-    Long64_t  fEventID;  // Unique event id
-    Short_t   fCentrality; // centrality
+    Float_t   fEta;      ///< eta
+    Float_t   fPhi;      ///< phi
+    Float_t   fpT;       ///< pT
+    Short_t   fCharge;   ///< charge
+    Float_t   fRadius;   ///< jet radius
+    Float_t   fArea;     ///< jet area
+    Float_t   fBackgroundDensity; ///< background
+    Long64_t  fEventID;  ///< Unique event id
+    Short_t   fCentrality; ///< centrality
 
-    std::vector<AliBasicJetConstituent> fConstituents; // vector of constituents
+    std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
-    ClassDef( AliBasicJet, 2); // very basic jet object
+  /// \cond CLASSIMP
+  ClassDef( AliBasicJet, 2); // very basic jet object
+  /// \endcond
 };
 #endif

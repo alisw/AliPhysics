@@ -295,7 +295,7 @@ private:
  TH1F *fPtSpecRec[10];		//! PtSpecRec
  Bool_t fCutTPC;
  
- ClassDef(AliAnalysisTaskCRCZDC,3);
+ ClassDef(AliAnalysisTaskCRCZDC,4);
  
 };
 

@@ -15,7 +15,6 @@
 #include <TClonesArray.h>
 #include <TBits.h>
 #include <TMath.h>
-#include <TArrayS.h>
 #include <TString.h>
 #include "iostream"
 

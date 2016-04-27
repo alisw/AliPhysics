@@ -11,6 +11,7 @@ AliEmcalJetUtility(),
   fDoGenericSubtractionJetMass(kFALSE),
   fDoGenericSubtractionGR(kFALSE),
   fDoGenericSubtractionExtraJetShapes(kFALSE),
+  fDoGenericSubtractionNsubjettiness(kFALSE),  
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
@@ -32,6 +33,7 @@ AliEmcalJetUtilityGenSubtractor::AliEmcalJetUtilityGenSubtractor(const char* nam
   fDoGenericSubtractionJetMass(kFALSE),
   fDoGenericSubtractionGR(kFALSE),
   fDoGenericSubtractionExtraJetShapes(kFALSE),
+  fDoGenericSubtractionNsubjettiness(kFALSE), 
   fUseExternalBkg(kFALSE),
   fRhoName(""),
   fRhomName(""),
@@ -52,6 +54,7 @@ AliEmcalJetUtilityGenSubtractor::AliEmcalJetUtilityGenSubtractor(const AliEmcalJ
   fDoGenericSubtractionJetMass(other.fDoGenericSubtractionJetMass),
   fDoGenericSubtractionGR(other.fDoGenericSubtractionGR),
   fDoGenericSubtractionExtraJetShapes(other.fDoGenericSubtractionExtraJetShapes),
+  fDoGenericSubtractionNsubjettiness(other.fDoGenericSubtractionNsubjettiness), 
   fUseExternalBkg(other.fUseExternalBkg),
   fRhoName(other.fRhoName),
   fRhomName(other.fRhomName),
@@ -76,6 +79,7 @@ AliEmcalJetUtilityGenSubtractor& AliEmcalJetUtilityGenSubtractor::operator=(cons
   fDoGenericSubtractionJetMass = other.fDoGenericSubtractionJetMass;
   fDoGenericSubtractionGR = other.fDoGenericSubtractionGR;
   fDoGenericSubtractionExtraJetShapes = other.fDoGenericSubtractionExtraJetShapes;
+  fDoGenericSubtractionNsubjettiness = other.fDoGenericSubtractionNsubjettiness;
   fUseExternalBkg = other.fUseExternalBkg;
   fRhoName = other.fRhoName;
   fRhomName = other.fRhomName;
@@ -138,6 +142,14 @@ void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
    fjw.DoGenericSubtractionJetSigma2();
    fjw.DoGenericSubtractionJetConstituent();
    fjw.DoGenericSubtractionJetLeSub();
+ }
+ 
+ if  (fDoGenericSubtractionNsubjettiness) {
+   fjw.SetUseExternalBkg(fUseExternalBkg,fRho,fRhom);
+   fjw.DoGenericSubtractionJet1subjettiness_kt();
+   fjw.DoGenericSubtractionJet2subjettiness_kt();
+   fjw.DoGenericSubtractionJet3subjettiness_kt();
+   fjw.DoGenericSubtractionJetOpeningAngle_kt();
  }
 }
 
@@ -235,7 +247,7 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->SetFirstOrderSubtractedConstituent(jetConstituentInfo[ij].first_order_subtracted());
       jet->SetSecondOrderSubtractedConstituent(jetConstituentInfo[ij].second_order_subtracted());
     }
-
+    
     std::vector<fastjet::contrib::GenericSubtractorInfo> jetLeSubInfo = fjw.GetGenSubtractorInfoJetLeSub();
     Int_t nlsub = (Int_t)jetLeSubInfo.size();
     if(nlsub > ij && nlsub > 0) {
@@ -243,6 +255,44 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->SetSecondDerivativeLeSub(jetLeSubInfo[ij].second_derivative());
       jet->SetFirstOrderSubtractedLeSub(jetLeSubInfo[ij].first_order_subtracted());
       jet->SetSecondOrderSubtractedLeSub(jetLeSubInfo[ij].second_order_subtracted());
+    }
+  }
+
+  if (fDoGenericSubtractionNsubjettiness) {
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinessktInfo = fjw.GetGenSubtractorInfoJet1subjettiness_kt();
+    Int_t n1subjettiness_kt = (Int_t)jet1subjettinessktInfo.size();
+    if(n1subjettiness_kt > ij && n1subjettiness_kt > 0) {
+      jet->SetFirstDerivative1subjettiness_kt(jet1subjettinessktInfo[ij].first_derivative());
+      jet->SetSecondDerivative1subjettiness_kt(jet1subjettinessktInfo[ij].second_derivative());
+      jet->SetFirstOrderSubtracted1subjettiness_kt(jet1subjettinessktInfo[ij].first_order_subtracted());
+      jet->SetSecondOrderSubtracted1subjettiness_kt(jet1subjettinessktInfo[ij].second_order_subtracted());
+    }
+          
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinessktInfo = fjw.GetGenSubtractorInfoJet2subjettiness_kt();
+    Int_t n2subjettiness_kt = (Int_t)jet2subjettinessktInfo.size();
+    if(n2subjettiness_kt > ij && n2subjettiness_kt > 0) {
+      jet->SetFirstDerivative2subjettiness_kt(jet2subjettinessktInfo[ij].first_derivative());
+      jet->SetSecondDerivative2subjettiness_kt(jet2subjettinessktInfo[ij].second_derivative());
+      jet->SetFirstOrderSubtracted2subjettiness_kt(jet2subjettinessktInfo[ij].first_order_subtracted());
+      jet->SetSecondOrderSubtracted2subjettiness_kt(jet2subjettinessktInfo[ij].second_order_subtracted());
+    }
+
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet3subjettinessktInfo = fjw.GetGenSubtractorInfoJet3subjettiness_kt();
+    Int_t n3subjettiness_kt = (Int_t)jet3subjettinessktInfo.size();
+    if(n3subjettiness_kt > ij && n3subjettiness_kt > 0) {
+      jet->SetFirstDerivative3subjettiness_kt(jet3subjettinessktInfo[ij].first_derivative());
+      jet->SetSecondDerivative3subjettiness_kt(jet3subjettinessktInfo[ij].second_derivative());
+      jet->SetFirstOrderSubtracted3subjettiness_kt(jet3subjettinessktInfo[ij].first_order_subtracted());
+      jet->SetSecondOrderSubtracted3subjettiness_kt(jet3subjettinessktInfo[ij].second_order_subtracted());
+    }
+
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAnglektInfo = fjw.GetGenSubtractorInfoJetOpeningAngle_kt();
+    Int_t nOpeningAngle_kt = (Int_t)jetOpeningAnglektInfo.size();
+    if(nOpeningAngle_kt > ij && nOpeningAngle_kt > 0) {
+      jet->SetFirstDerivativeOpeningAngle_kt(jetOpeningAnglektInfo[ij].first_derivative());
+      jet->SetSecondDerivativeOpeningAngle_kt(jetOpeningAnglektInfo[ij].second_derivative());
+      jet->SetFirstOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].first_order_subtracted());
+      jet->SetSecondOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].second_order_subtracted());
     }
   }
 

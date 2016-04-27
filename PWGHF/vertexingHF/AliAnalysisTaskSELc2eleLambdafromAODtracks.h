@@ -349,6 +349,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoLcMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen2;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCGenWithEleA;         //!<! Lc in mcArray
+  TH2D* fHistoLcMCGenWithEleB;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS2;         //!<! Lc in mcArray
@@ -554,8 +556,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoEleLambdaPtvsRapidityWS; //!<! e-Lambda pT vs y
 	TH2F *fHistoEleLambdaPtvsRapidityMCS; //!<! e-Lambda pT vs y
 
+  TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Tag;         //!<! Number of electrons from pi0 and have partner
+  TH1F* fHistoEtaMCGen;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
 
@@ -602,7 +606,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,25); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,26); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
