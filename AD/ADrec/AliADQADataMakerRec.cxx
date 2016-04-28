@@ -190,7 +190,7 @@ void AliADQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
     TDatime currentTime;
     fCycleStopTime = currentTime.GetSecond();
     
-    if (fRun==fOldRun){
+    if (fRun!=fOldRun){
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADA))->SetBins(1,0,1);
     ((TH1F*)GetRawsData(kTrend_TriggerChargeQuantileADC))->SetBins(1,0,1);
     fOldRun=fRun;
