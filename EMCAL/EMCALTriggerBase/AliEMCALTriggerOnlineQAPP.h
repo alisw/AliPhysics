@@ -61,11 +61,6 @@ public:
   TCollection* GetListOfHistograms()  { return &fHistograms; }
 
 protected:
-  static const Int_t fgkSM = 20;
-  static const Int_t fgkNPatchTypes = 3;
-  static const Int_t fgkNTriggerTypes = 6;
-  static const Int_t fgkNDet = 2;
-
   Int_t                      fL0MinTime;                   ///< Minimum L0 time
   Int_t                      fL0MaxTime;                   ///< Maximum L0 time
   Double_t                   fMinCellAmp;                  ///< Minimum offline amplitude of the cells
