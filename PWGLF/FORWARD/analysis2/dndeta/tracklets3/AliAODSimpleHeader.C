@@ -1,7 +1,22 @@
+/**
+ * @file   AliAODSimpleHeader.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:49:43 2016
+ * 
+ * @brief  A simplified AOD header
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
 #ifndef ALIAODSIMPLEHEADER_H
 #define ALIAODSIMPLEHEADER_H
 #include <TVector3.h>
 
+/**
+ * A simplified header
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 class AliAODSimpleHeader : public TObject
 {
 public:

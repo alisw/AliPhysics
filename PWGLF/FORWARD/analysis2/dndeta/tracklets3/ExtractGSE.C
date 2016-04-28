@@ -1,3 +1,13 @@
+/**
+ * @file   ExtractGSE.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:51:39 2016
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef __CINT__
 # include "GraphSysErr.C"
 # include <TFile.h>
@@ -71,9 +81,10 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
 /** 
  * Make a GraphSysErr object
  * 
- * @param g  Graph 
- * @param c1 Least centrality 
- * @param c2 Largest centrality 
+ * @param d   Directory 
+ * @param sNN Collision energy in GeV
+ * @param c1  Least centrality 
+ * @param c2  Largest centrality 
  * 
  * @return Newly created GraphSysErr
  */
@@ -150,9 +161,10 @@ TObject* MakeGSE(TDirectory* d, UShort_t sNN, Double_t c1, Double_t c2)
 
 //____________________________________________________________________
 /** 
- * Make a GraphSysErr object
+ * Make a GraphSysErr object for simulations 
  * 
- * @param g  Graph 
+ * @param d   Directory 
+ * @param sNN Collision energy in GeV
  * @param c1 Least centrality 
  * @param c2 Largest centrality 
  * 

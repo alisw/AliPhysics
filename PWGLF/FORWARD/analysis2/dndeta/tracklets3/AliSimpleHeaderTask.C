@@ -1,3 +1,12 @@
+/**
+ * @file   AliSimpleHeaderTask.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:47:16 2016
+ * 
+ * @brief  A task to make a simplified AOD header 
+ * 
+ * @ingroup pwglf_forward_tracklets 
+ */
 #ifndef ALISIMPLEHEADERTASK_C
 #define ALISIMPLEHEADERTASK_C
 #include <AliAnalysisTaskSE.h>
@@ -26,6 +35,7 @@ class AliMultSelection;  // Auto-load
 /**
  * A task to make a simple header in AOD 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliSimpleHeaderTask : public AliAnalysisTaskSE
 {

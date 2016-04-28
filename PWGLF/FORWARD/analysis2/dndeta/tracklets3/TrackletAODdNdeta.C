@@ -1,3 +1,13 @@
+/**
+ * @file   TrackletAODdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:51:47 2016
+ * 
+ * @brief  A tracklet dNdeta train
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #include "TrainSetup.C"
 #ifndef __CINT__
 #include <AliESDInputHandlerRP.h>
@@ -29,6 +39,8 @@ class AliAnalysisTaskSE;
  *
  * If these classes lived in a compiled AliPhysics library (Say
  * libPWGUD.so), the we wouldn't need that PAR file.
+ *
+ * @ingroup pwglf_forward_tracklets
  */
 struct TrackletAODdNdeta : public TrainSetup
 {

@@ -1,3 +1,14 @@
+/**
+ * @file   AliTrackletAODUtils.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:46:28 2016
+ * 
+ * @brief  Utilities for midrapidity analysis 
+ * 
+ * This contains code shared at different stages in the analysis 
+ *
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALITRACKLETAODUTILS_H
 #define ALITRACKLETAODUTILS_H
 #ifndef __CINT__
@@ -12,6 +23,7 @@
 # include <THashList.h>
 # include <TProfile.h>
 # include <TProfile2D.h>
+# include <TDatabasePDG.h>
 #else
 class TList;
 class TH1;
@@ -21,11 +33,17 @@ class TProfile;
 class TProfile2D;
 class TAxis;
 class TDirectory;
+class TDatabasePDG; // Auto-load
 #endif
 
 /**
+ * @defgroup pwglf_forward_tracklets  Mid-rapidity tracklet code for dN/deta
+ * 
+ */
+/**
  * Class with utlity functions 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODUtils
 {
@@ -156,6 +174,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -165,6 +184,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of profile 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to profile or null 
    */
@@ -174,6 +194,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -183,6 +204,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -192,6 +214,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of profile 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to profile or null 
    */
@@ -202,6 +225,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of profile 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to profile or null 
    */
@@ -214,6 +238,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of container 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to container or null 
    */
@@ -223,6 +248,7 @@ public:
    * 
    * @param parent Container 
    * @param name   Name of container 
+   * @param verb   Whether to be verbose
    * 
    * @return Pointer to container or null 
    */
@@ -233,6 +259,7 @@ public:
    * @param parent Parent container 
    * @param name   Name of parameter 
    * @param def    Default value if not found 
+   * @param verb   Whether to be verbose
    * 
    * @return The value (or default if not found)
    */
@@ -244,6 +271,7 @@ public:
    * @param parent Parent container 
    * @param name   Name of parameter 
    * @param def    Default value if not found 
+   * @param verb   Whether to be verbose
    * 
    * @return The value (or default if not found)
    */  
@@ -255,6 +283,7 @@ public:
    * @param parent Parent container 
    * @param name   Name of parameter 
    * @param def    Default value if not found 
+   * @param verb   Whether to be verbose
    * 
    * @return The value (or default if not found)
    */  
@@ -266,6 +295,7 @@ public:
    * @param parent  Container 
    * @param name    Name of histogram 
    * @param newName Optional new name of copy 
+   * @param verb    Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -279,6 +309,7 @@ public:
    * @param parent  Container 
    * @param name    Name of histogram 
    * @param newName Optional new name of copy 
+   * @param verb    Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -292,6 +323,7 @@ public:
    * @param parent  Container 
    * @param name    Name of histogram 
    * @param newName Optional new name of copy 
+   * @param verb    Whether to be verbose
    * 
    * @return Pointer to histogram or null 
    */
@@ -309,8 +341,11 @@ public:
   /** 
    * Service function to make a 1D histogram from an axis definition 
    * 
+   * @param c     Container to add to 
    * @param name  Name of histogram 
    * @param title Title of histogram 
+   * @param color Color 
+   * @param style Marker style 
    * @param xAxis X axis to use 
    * 
    * @return Newly created histogram 
@@ -324,8 +359,11 @@ public:
   /** 
    * Service function to make a 1D profile from an axis definition 
    * 
+   * @param c     Container to add to 
    * @param name  Name of profile 
    * @param title Title of profile 
+   * @param color Color 
+   * @param style Marker style 
    * @param xAxis X axis to use 
    * 
    * @return Newly created profile
@@ -339,10 +377,13 @@ public:
   /** 
    * Service function to make a 2D histogram from axis definitions 
    * 
-   * @param name   Name of histogram 
-   * @param title  Title of histogram 
-   * @param xAxis  X axis definition 
-   * @param yAxis  Y axis definition 
+   * @param c     Container to add to 
+   * @param name  Name of histogram 
+   * @param title Title of histogram 
+   * @param color Color 
+   * @param style Marker style 
+   * @param xAxis X axis definition 
+   * @param yAxis Y axis definition 
    * 
    * @return Newly created histogram 
    */
@@ -356,11 +397,14 @@ public:
   /** 
    * Service function to make a 3D histogram from axis definitions 
    * 
-   * @param name   Name of histogram 
-   * @param title  Title of histogram 
-   * @param xAxis  X axis definition 
-   * @param yAxis  Y axis definition 
-   * @param zAxis  Z axis definition 
+   * @param c     Container to add to 
+   * @param name  Name of histogram 
+   * @param title Title of histogram 
+   * @param color Color 
+   * @param style Marker style 
+   * @param xAxis X axis definition 
+   * @param yAxis Y axis definition 
+   * @param zAxis Z axis definition 
    * 
    * @return Newly created histogram 
    */
@@ -375,10 +419,13 @@ public:
   /** 
    * Service function to make a 2D profile from axis definitions 
    * 
-   * @param name   Name of profile 
-   * @param title  Title of profile 
-   * @param xAxis  X axis definition 
-   * @param yAxis  Y axis definition 
+   * @param c     Container to add to 
+   * @param name  Name of profile 
+   * @param title Title of profile 
+   * @param color Color 
+   * @param style Marker style 
+   * @param xAxis X axis definition 
+   * @param yAxis Y axis definition 
    * 
    * @return Newly created profile 
    */
@@ -431,7 +478,6 @@ public:
    * Scale bins of an axis by constant factor.  The number of bins
    * remains the same.
    * 
-   * @param axis Base axis
    * @param ret  Axis to modify
    * @param fact Factor to scale by
    */
@@ -475,6 +521,7 @@ public:
    * 
    * @param axis Axis to print 
    * @param nSig Number of significant digits 
+   * @param alt  Alternative 
    */
   static void PrintAxis(const TAxis& axis, Int_t nSig=2, const char* alt=0);
   /** 
@@ -564,6 +611,7 @@ public:
    * @param ipz   Vertex distribution
    * @param mask  Optional mask - if a bin is zero here, do not count
    *              it in average.
+   * @param verb  Whether to be verbose 
    * 
    * @return Newly allocated histogram or null
    */
@@ -615,13 +663,42 @@ public:
    * @param e2n  Squared numerator error 
    * @param d    Denominator value 
    * @param e2d  Squared denominator error 
-   * @param er   On return, squared ratio error 
+   * @param e2r  On return, squared ratio error 
    * 
    * @return Ratio 
    */
   static Double_t RatioE2(Double_t n, Double_t e2n,
 			  Double_t d, Double_t e2d,
 			  Double_t& e2r);
+  /* @} */
+  /** 
+   * Get attributes corresponding to a PDG code 
+   * 
+   * @param pdg PDG code 
+   * @param nme On return, the name 
+   * @param c   On return, the color 
+   * @param s   On return, the marker style 
+   */
+  static void PdgAttr(Int_t pdg, TString& nme, Color_t& c, Style_t& s);
+  /** 
+   * @{ 
+   * @name Particle type utilities 
+   */
+  static Int_t* PdgArray(Int_t& size);    
+  /** 
+   * Get the PDG axis 
+   * 
+   * @return Reference to static TAxis object
+   */
+  static const TAxis& PdgAxis();
+  /** 
+   * Get the PDG bin 
+   * 
+   * @param pdg Particle type 
+   * 
+   * @return Bin number 
+   */
+  static Int_t  PdgBin(Int_t pdg);
   /* @} */
 protected:
   ClassDef(AliTrackletAODUtils,1); // Utilities

@@ -1,3 +1,13 @@
+/**
+ * @file   CompareResults.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:51:29 2016
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
 #ifndef __CINT__
 # include <TLegend.h>
 # include <TLegendEntry.h>
