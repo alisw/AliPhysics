@@ -523,7 +523,10 @@ void AliVZERODigitizer::WriteDigits(AliLoader *loader)
   loader->MakeDigitsContainer();
   TTree* treeD  = loader->TreeD();
   DigitsArray();
-  treeD->Branch("VZERODigit", "TClonesArray", &fDigits); 
+  if (treeD->GetBranch("VZERODigits"))
+    treeD->SetBranchAddress("VZERODigits", &fDigits);
+  else
+    treeD->Bronch("VZERODigit", "TClonesArray", &fDigits);
   
   Short_t *chargeADC = new Short_t[kNClocks];
   for (Int_t i=0; i<64; i++) {      
@@ -553,7 +556,10 @@ void AliVZERODigitizer::WriteSDigits(AliLoader *loader)
   loader->MakeSDigitsContainer();
   TTree* treeS  = loader->TreeS();
   SDigitsArray();
-  treeS->Branch("VZEROSDigit", "TClonesArray", &fDigits); 
+  if (treeS->GetBranch("VZEROSDigits"))
+    treeS->SetBranchAddress("VZEROSDigits", &fDigits);
+  else
+    treeS->Bronch("VZEROSDigit", "TClonesArray", &fDigits);
   
   for (Int_t ipmt = 0; ipmt < 64; ++ipmt) {
     AddSDigit(ipmt,fNBins[ipmt],fTime[ipmt],fLabels[ipmt]);
