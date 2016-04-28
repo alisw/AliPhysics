@@ -88,6 +88,9 @@
 #include "AliTPCTransform.h"
 #include "TTreeStream.h"
 
+// for fast TMatrix operator()
+#include "AliFastContainerAccess.h"
+
 ClassImp(AliTPC) 
 //_____________________________________________________________________________
   AliTPC::AliTPC():AliDetector(),
@@ -865,15 +868,6 @@ void AliTPC::GenerNoise(Int_t tablesize, Bool_t normType)
   }
 }
 
-Float_t AliTPC::GetNoise()
-{
-  // get noise from table
-  //  if ((fCurrentNoise%10)==0) 
-  //  fCurrentNoise= gRandom->Rndm()*fNoiseDepth;
-  if (fCurrentNoise>=fNoiseDepth) fCurrentNoise=0;
-  return fNoiseTable[fCurrentNoise++];
-  //gRandom->Gaus(0, fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
-}
 
 
 Bool_t  AliTPC::IsSectorActive(Int_t sec) const
@@ -1826,10 +1820,11 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   AliDigits *dig = fDigitsArray->GetRow(isec,irow);
   Int_t gi=-1;
   Float_t fzerosup = zerosup+0.5;
-  for(Int_t it=0;it<nofTbins;it++){
-    for(Int_t ip=0;ip<nofPads;ip++){
+  for(Int_t ip=0;ip<nofPads;ip++){
+    for(Int_t it=0;it<nofTbins;it++){
       gi++;
-      Float_t q=total(ip,it);      
+      // calling our fast "operator(int,int)" of TMatrix
+      Float_t q=AliFastContainerAccess::TMatrixFastAt<Float_t>(total, ip, it);
       if(fDigitsSwitch == 0){	
 	Float_t gain = gainROC->GetValue(irow,ip);  // get gain for given - pad-row pad	
 	Float_t noisePad = noiseROC->GetValue(irow,ip);	
