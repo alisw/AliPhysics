@@ -1,3 +1,13 @@
+/**
+ * @file   AliTrackletAODTask.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:48:04 2016
+ * 
+ * @brief  Tasks to make tracklet AOD output
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
 #include <AliAnalysisTaskSE.h>
 #ifndef __CINT__
 #include "AliAODTracklet.C"
@@ -39,6 +49,11 @@ class TParticle;
 
 
 //====================================================================
+/**
+ * Store tracklets on AOD 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 class AliTrackletAODTask : public AliAnalysisTaskSE
 {
 public:
@@ -227,7 +242,9 @@ protected:
   /** 
    * Find the interaction point location 
    * 
-   * @param event Event 
+   * @param event         Event 
+   * @param maxDispersion Max dispersion 
+   * @param maxZError     Max error along Z
    * 
    * @return Pointer to vertex, or null in case of problems 
    */
@@ -721,6 +738,11 @@ class TParticle;
 class AliStack;
 #endif 
 //====================================================================
+/**
+ * Store tracklets on AOD 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 class AliTrackletAODMCTask : public AliTrackletAODTask
 {
 public:

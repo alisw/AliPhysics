@@ -1,8 +1,19 @@
+/**
+ * @file   AliTrackletAODdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:46:04 2016
+ * 
+ * @brief  AOD tasks to do final dN/deta in midrapidity
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+
 #include <AliAnalysisTaskSE.h>
 #include <AliTrackletAODUtils.C>
+#include <AliAODTracklet.C>
 #ifndef __CINT__
 #include <cctype>
-#include "AliAODTracklet.C"
 #include "AliAODSimpleHeader.C"
 #include <AliVVertex.h>
 #include <AliVertex.h>
@@ -84,6 +95,7 @@ public:
    * @param mc      Whether this is for MC or not
    * @param sumFile (Optional) name of sum file 
    * @param resFile (Optional) name of result file 
+   * @param weights (Optional) name of weights file 
    * 
    * @return Newly allocated task or null
    */
@@ -315,10 +327,10 @@ public:
     /** 
      * Initialize the bin 
      * 
-     * @param parent   Parent container 
-     * @param etaAxis  pseudorapidity axis to use 
-     * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param parent    Parent container 
+     * @param etaAxis   pseudorapidity axis to use 
+     * @param ipzAxis   Interaction point Z coordinate axis 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
@@ -361,6 +373,7 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Distribution of interaction point Z coordinate
      * @param tailCut Cut on tails 
      * 
      * @return 
@@ -433,11 +446,54 @@ public:
      */
     Histos& operator=(const Histos&) { return *this; }
     /** 
+     * @return Selection corresponds to observed tracklets
+     */    
+    Bool_t IsMeasured() const
+    {
+      return fMask == kMeasuredMask && fVeto == kMeasuredVeto;
+    }
+    /** 
+     * @return Selection corresponds to tracklets from injection events
+     */
+    Bool_t IsInjected() const
+    {
+      return fMask == kInjectedMask && fVeto == kInjectedVeto;
+    }
+    /** 
+     * @return Selection corresponds to tracklets from two particles
+     */
+    Bool_t IsCombinatoric() const
+    {
+      return fMask == kCombinatoricMask && fVeto == kCombinatoricVeto;
+    }
+    /** 
+     * @return Selection corresponds to primaries particles 
+     */
+    Bool_t IsPrimary() const
+    {
+      return fMask == kPrimaryMask && fVeto == kPrimaryVeto;
+    }
+    /** 
+     * @return Selection corresponds to secondary particles 
+     */
+    Bool_t IsSecondary() const
+    {
+      return fMask == kSecondaryMask && fVeto == kSecondaryVeto;
+    }
+    /** 
+     * @return Selection corresponds to generated particles 
+     */
+    Bool_t IsGenerated() const
+    {
+      return fMask == kGeneratedMask && fVeto == kGeneratedVeto;
+    }
+    /** 
      * Initialize the bin 
      * 
-     * @param etaAxis  pseudorapidity axis to use 
-     * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param parent    Parent container 
+     * @param etaAxis   pseudorapidity axis to use 
+     * @param ipzAxis   Interaction point Z coordinate axis 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
@@ -480,9 +536,10 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Interaction point Z coordinate distribution
      * @param tailCut Cut on tails 
      * 
-     * @return 
+     * @return true on success
      */
     Bool_t MasterFinalize(Container* parent,
 			  TH1*       ipz,
@@ -623,6 +680,7 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Z-coordinate of the IP
      * @param tailCut Cut on tails 
      * 
      * @return 
@@ -769,7 +827,9 @@ protected:
   /** 
    * Find the interaction point location 
    * 
-   * @param event Event 
+   * @param event         Event 
+   * @param maxDispersion Max uncertainty 
+   * @param maxZError     Max uncertainty in Z 
    * 
    * @return Pointer to vertex, or null in case of problems 
    */
@@ -914,7 +974,7 @@ protected:
   Double_t   fMaxDelta;
   /** Least value of @f$\Delta@f$ considered background tail */
   Double_t   fTailDelta;
-  /** Shift @f$\delta_{\phi}@$f of @f$\Delta\phi@f$ */
+  /** Shift @f$\delta_{\phi}@f$ of @f$\Delta\phi@f$ */
   Double_t   fDPhiShift;
   /** Signal cut on @f$\Delta\phi-\delta_{\phi}@f$ */
   Double_t   fShiftedDPhiCut;
@@ -929,6 +989,7 @@ protected:
 /**
  * Task to analyse AOD tracklets for dNch/deta 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODMCdNdeta : public AliTrackletAODdNdeta
 {
@@ -1060,6 +1121,7 @@ protected:
 /**
  * Task to analyse AOD tracklets for dNch/deta 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODWeightedMCdNdeta : public AliTrackletAODMCdNdeta
 {

@@ -1,3 +1,13 @@
+/**
+ * @file   AliAODTracklet.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:49:06 2016
+ * 
+ * @brief  Tracklet AOD object
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALIAODTRACKLET_C
 #define ALIAODTRACKLET_C
 #include <TObject.h>
@@ -10,6 +20,7 @@
 /**
  * Single tracklet information 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliAODTracklet : public TObject
 {
@@ -222,7 +233,7 @@ public:
   /** 
    * Get parent particle type 
    * 
-   * @param first If true, second parent, otherwise first 
+   * @param second If true, second parent, otherwise first 
    * 
    * @return Here, we always return 0 
    */
@@ -304,6 +315,7 @@ void AliAODTracklet::Print(Option_t* option) const
 /**
  * Single tracklet information 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliAODMCTracklet : public AliAODTracklet
 {
