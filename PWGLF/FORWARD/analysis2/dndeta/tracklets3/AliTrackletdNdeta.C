@@ -1,3 +1,13 @@
+/**
+ * @file   AliTrackletdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:50:35 2016
+ * 
+ * @brief  Post processing
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALITRACKLETDNDETA_H
 #define ALITRACKLETDNDETA_H
 #include <AliTrackletAODUtils.C>
@@ -37,6 +47,11 @@ class TDirectory;
 #endif
 
 //====================================================================
+/**
+ * Post processing 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct AliTrackletdNdeta : public AliTrackletAODUtils
 {
   /**
@@ -143,8 +158,6 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * Create our canvas 
    * 
    * @param outputName Output file name 
-   * @param landscape  Should it be landscape? 
-   * @param pdf        Should we store in PDF?
    */
   void CreateCanvas(const TString& outputName);
   /** 
@@ -248,6 +261,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * 
    * @param pars 
    * @param title 
+   * @param comb if true, write for combinatorial background 
    */
   void DrawParams(Container* pars, const char* title, Bool_t comb);
   /** 
@@ -503,7 +517,9 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * The same expression holds for the case when we use injected
    * clusters to estimate the background in real data.
    *
-   *  (1-\beta)M = (1-B/M)M = M-B
+   * @f[
+   (1-\beta)M = (1-B/M)M = M-B
+   @f]
    *
    * where @f$ B@f$ has the same meaning as @f$ B\prime@f$ except we use
    * real data. 
@@ -534,14 +550,13 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   /** 
    * Process a single bin 
    * 
-   * @param proc     Bit mask of processing options 
-   * @param viz      Bit mask of visualization options
    * @param bin      Centrality bin number 
    * @param c1       Least centrality 
    * @param c2       Largest centrality 
    * @param realList Results from real data 
    * @param simList  Results from simulated data 
    * @param stack    Possible stack to add dN/deta to 
+   * @param out      Output directory 
    * @param mid      Histogram to fill with @f$|\eta|<0.5@f$ results
    */
   void ProcessBin(Int_t      bin,
@@ -553,9 +568,12 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   /** 
    * Run it 
    * 
-   * @param dataName File from real data 
-   * @param simName  File from simulated data 
-   * @param what     Bit mask of processing options 
+   * @param proc     Process mask 
+   * @param viz      Visualisation mask
+   * @param maxBins  Maximum number of bins to look at 
+   * @param dataName Name of file from real data 
+   * @param simName  Name of file from simulated data 
+   * @param output   Output file name 
    */
   void Run(UInt_t      proc     = kDefaultProc,
 	   UInt_t      viz      = kDefaultViz,
@@ -563,6 +581,16 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
 	   const char* dataName = "data.root",
 	   const char* simName  = "sim.root",
 	   const char* output   = 0);
+  /** 
+   * Run it 
+   * 
+   * @param proc     Process mask 
+   * @param viz      Visualisation mask
+   * @param dataName Name of file from real data 
+   * @param simName  Name of file from simulated data 
+   * @param output   Output file name 
+   * @param maxBins  Maximum number of bins to look at 
+   */
   void Run(const char* proc,
 	   const char* viz, 
 	   const char* dataName = "data.root",
