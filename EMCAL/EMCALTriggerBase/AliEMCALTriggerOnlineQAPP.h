@@ -80,8 +80,6 @@ protected:
   TH1                       *fHistFastORL0LargeAmp;            //!<! Counter of FastOR L0 signal above some large amplitude
   TH2                       *fHistFastORL0Amp;                 //!<! Amplitude spectra of each FastOR L0 channel
   TH2                       *fHistFastORL0Time;                //!<! Time spectra of each FastOR L0 channel
-  TH2                       *fHistFastORL0BySM[fgkSM];         //!<! Counter of FastOR L0 signal above zero (by SM)
-  TH2                       *fHistFastORL0LargeAmpBySM[fgkSM]; //!<! Counter of FastOR L0 signal above some large amplitude (by SM)
   TH2                       *fHistFastORL0AmpBySM[fgkSM];      //!<! Integrated amplitude of each FastOR L0 channel (by SM)
   TH2                       *fHistFEEvsTRUBySM[fgkSM];         //!<! Correlation FEE vs TRU (by SM)
 
@@ -89,8 +87,6 @@ protected:
   TH1                       *fHistFastORL1;                    //!<! Counter of FastOR L1 signal above zero
   TH1                       *fHistFastORL1LargeAmp;            //!<! Counter of FastOR L1 signal above some large amplitude
   TH2                       *fHistFastORL1Amp;                 //!<! Amplitude spectra of each FastOR L1 channel
-  TH2                       *fHistFastORL1BySM[fgkSM];         //!<! Counter of FastOR L1 signal above zero (by SM)
-  TH2                       *fHistFastORL1LargeAmpBySM[fgkSM]; //!<! Counter of FastOR L1 signal above some large amplitude (by SM)
   TH2                       *fHistFastORL1AmpBySM[fgkSM];      //!<! Integrated amplitude of each FastOR L1 channel (by SM)
   TH2                       *fHistFEEvsSTUBySM[fgkSM];         //!<! Correlation FEE vs STU (by SM)
 

@@ -49,13 +49,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
   fHistFastORL1Amp(0)
 {
   for (Int_t iSM = 0; iSM < fgkSM; iSM++) {
-    fHistFastORL0BySM[iSM] = 0;
-    fHistFastORL0LargeAmpBySM[iSM] = 0;
     fHistFastORL0AmpBySM[iSM] = 0;
     fHistFEEvsTRUBySM[iSM] = 0;
 
-    fHistFastORL1BySM[iSM] = 0;
-    fHistFastORL1LargeAmpBySM[iSM] = 0;
     fHistFastORL1AmpBySM[iSM] = 0;
     fHistFEEvsSTUBySM[iSM] = 0;
   }
@@ -115,13 +111,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
   fHistograms.SetName(name);
 
   for (Int_t iSM = 0; iSM < fgkSM; iSM++) {
-    fHistFastORL0BySM[iSM] = 0;
-    fHistFastORL0LargeAmpBySM[iSM] = 0;
     fHistFastORL0AmpBySM[iSM] = 0;
     fHistFEEvsTRUBySM[iSM] = 0;
 
-    fHistFastORL1BySM[iSM] = 0;
-    fHistFastORL1LargeAmpBySM[iSM] = 0;
     fHistFastORL1AmpBySM[iSM] = 0;
     fHistFEEvsSTUBySM[iSM] = 0;
   }
@@ -181,13 +173,9 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const AliEMCALTriggerOnline
   fHistograms.SetName(triggerQA.GetName());
 
   for (Int_t iSM = 0; iSM < fgkSM; iSM++) {
-    fHistFastORL0BySM[iSM] = 0;
-    fHistFastORL0LargeAmpBySM[iSM] = 0;
     fHistFastORL0AmpBySM[iSM] = 0;
     fHistFEEvsTRUBySM[iSM] = 0;
 
-    fHistFastORL1BySM[iSM] = 0;
-    fHistFastORL1LargeAmpBySM[iSM] = 0;
     fHistFastORL1AmpBySM[iSM] = 0;
     fHistFEEvsSTUBySM[iSM] = 0;
   }
@@ -272,16 +260,6 @@ void AliEMCALTriggerOnlineQAPP::Init()
   if (fGeom) nSM = fGeom->GetNumberOfSuperModules();
 
   for (Int_t iSM = 0; iSM < nSM; iSM++) {
-    hname = TString::Format("EMCTRQA_histFastORL0_SM%d", iSM);
-    htitle = TString::Format("SM%d L0 (amp>0);eta id;phi id;entries above 0", iSM);
-    fHistFastORL0BySM[iSM] = new TH2F(hname, htitle, 24, 0, 24, 12, 0, 12);
-    fHistograms.Add(fHistFastORL0BySM[iSM]);
-
-    hname = TString::Format("EMCTRQA_histFastORL0LargeAmp_SM%d", iSM);
-    htitle = TString::Format("SM%d L0 (amp>%d);eta id;phi id;entries above %d", iSM, fFastorL0Th, fFastorL0Th);
-    fHistFastORL0LargeAmpBySM[iSM] = new TH2F(hname, htitle, 24, 0, 24, 12, 0, 12);
-    fHistograms.Add(fHistFastORL0LargeAmpBySM[iSM]);
-
     hname = TString::Format("EMCTRQA_histFastORL0Amp_SM%d", iSM);
     htitle = TString::Format("SM%d L0 int. amplitude;eta id;phi id;amplitude", iSM);
     fHistFastORL0AmpBySM[iSM] = new TH2F(hname, htitle, 24, 0, 24, 12, 0, 12);
@@ -289,18 +267,8 @@ void AliEMCALTriggerOnlineQAPP::Init()
 
     hname = TString::Format("EMCTRQA_histFEEvsTRU_SM%d", iSM);
     htitle = TString::Format("SM%d FEE vs TRU;TRU amplitude;FEE energy (GeV)", iSM);
-    fHistFEEvsTRUBySM[iSM] = new TH2F(hname, htitle, 128, 0, 2048, 150, 0, 150);
+    fHistFEEvsTRUBySM[iSM] = new TH2F(hname, htitle, 128, 0, 1536, 100, 0, 100);
     fHistograms.Add(fHistFEEvsTRUBySM[iSM]);
-
-    hname = TString::Format("EMCTRQA_histFastORL1_SM%d", iSM);
-    htitle = TString::Format("SM%d L1 (amp>0);eta id;phi id;entries above 0", iSM);
-    fHistFastORL1BySM[iSM] = new TH2F(hname, htitle, 24, 0, 24, 12, 0, 12);
-    fHistograms.Add(fHistFastORL1BySM[iSM]);
-
-    hname = TString::Format("EMCTRQA_histFastORL1LargeAmp_SM%d", iSM);
-    htitle = TString::Format("SM%d L1 (amp>%d);eta id;phi id;entries above %d", iSM, fFastorL1Th, fFastorL1Th);
-    fHistFastORL1LargeAmpBySM[iSM] = new TH2F(hname, htitle, 24, 0, 24, 12, 0, 12);
-    fHistograms.Add(fHistFastORL1LargeAmpBySM[iSM]);
 
     hname = TString::Format("EMCTRQA_histFastORL1Amp_SM%d", iSM);
     htitle = TString::Format("SM%d L1 int. amplitude;eta id;phi id;amplitude", iSM);
@@ -309,7 +277,7 @@ void AliEMCALTriggerOnlineQAPP::Init()
 
     hname = TString::Format("EMCTRQA_histFEEvsSTU_SM%d", iSM);
     htitle = TString::Format("SM%d FEE vs STU;STU amplitude;FEE energy (GeV)", iSM);
-    fHistFEEvsSTUBySM[iSM] = new TH2F(hname, htitle, 128, 0, 2048, 150, 0, 150);
+    fHistFEEvsSTUBySM[iSM] = new TH2F(hname, htitle, 128, 0, 1536, 100, 0, 100);
     fHistograms.Add(fHistFEEvsSTUBySM[iSM]);
   }
 
@@ -445,14 +413,10 @@ void AliEMCALTriggerOnlineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fasto
 
   if (iSM >=0 && iSM < fgkSM) {
     if (L0amp > fMinL0FastORAmp) {
-      fHistFastORL0BySM[iSM]->Fill(iEta, iPhi);
-      if (L0amp > fFastorL0Th) fHistFastORL0LargeAmpBySM[iSM]->Fill(iEta, iPhi);
       fHistFastORL0AmpBySM[iSM]->Fill(iEta, iPhi, L0amp);
     }
 
     if (L1amp > fMinL1FastORAmp) {
-      fHistFastORL1BySM[iSM]->Fill(iEta, iPhi);
-      if (L1amp > fFastorL1Th) fHistFastORL1LargeAmpBySM[iSM]->Fill(iEta, iPhi);
       fHistFastORL1AmpBySM[iSM]->Fill(iEta, iPhi, L1amp);
     }
   }
