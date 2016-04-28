@@ -2901,11 +2901,23 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   Int_t nRecJetsCuts = 0;                                        //number of reconstructed jets after jet cuts
   if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries(); 
-  if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
+  if(fDebug>2)Printf("%s:%d Selected Rec jets after cuts (noJetPtBias): %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
   
  
+  //test:
+  if(fDebug>3){
+    for(Int_t i=0; i<nRecJetsCuts; i++){
+      AliAODJet* jet = (AliAODJet*) fJetsRecCuts->At(i);
+      if(!jet) continue;      
+      std::cout<<"Reconstructed Jet (noJetPtBias yet) - jetPt:"<<jet->Pt()<<"- jetEta: "<<jet->Eta()<<" - jetAreaCharged: "<<jet->EffectiveAreaCharged()<<std::endl;
+      std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
+      std::cout<<"      "<<std::endl;
+    }
+  }
+  
+
   Int_t nGenJets = 0;
   
   Int_t nEmbeddedJets =  0; 
@@ -2968,16 +2980,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
     //std::cout<<"Hallo!"<<std::endl;
 
-    //test:
-    //for(Int_t i=0; i<nEmbeddedJets; i++){
-    //AliAODJet* embJet = (AliAODJet*) fJetsEmbedded->At(i);
-    //if(!embJet) continue; 
-      
-    //std::cout<<" embJet pt: "<<embJet->Pt()<<" embJet eta: "<<embJet->Eta()<<std::endl;
-   
-    //}
-
-
 
     // embedded pt fracion
     for(Int_t i=0; i<nRecJetsCuts; i++){
@@ -2985,11 +2987,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(!recJet) continue; 
 
       Int_t indexEmbedded = iRecMatchIndex[i];
-      
-      // std::cout<<"indexEmbedded: "<<indexEmbedded<<" recJet pt: "<<recJet->Pt()<<" recJet eta: "<<recJet->Eta()<<std::endl;
-      
-      //std::cout<<"nEmbeddedJets: "<<nEmbeddedJets<<std::endl;
-      
+         
       if(indexEmbedded>-1){
 	AliAODJet* embeddedJet = (AliAODJet*) fJetsEmbedded->At(indexEmbedded);
 	fRecMatchPtFraction[i] = AliAnalysisHelperJetTasks::GetFractionOfJet(recJet, embeddedJet, 1); // mode 1 / 2nd arg is denominator of fraction
@@ -3047,7 +3045,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     Int_t nRecBckgJets = 0;
     if(nBJ>=0) nRecBckgJets = fBckgJetsRec->GetEntries();
     if(fDebug>2)Printf("%s:%d Selected Rec background jets: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
-    if(nBJ != nRecBckgJets) Printf("%s:%d Mismatch Selected Rec background jets: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
+    if(nBJ != nRecBckgJets) Printf("%s:%d Mismatch Selected Rec background jets before cuts: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
     
     if(!(fUseExtraTracks == 0)){//for Embedding study only
       fTracksRecBckgCuts->Clear();
@@ -3067,6 +3065,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	//apply some further jet cuts since they are not carried out in GetListOfBckgJets()
 	if( jetBckg->Pt() < fJetPtCut ) isBadBckgJet=kTRUE;
 	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) isBadBckgJet=kTRUE;
+
+	if(fDebug>3)std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
+	std::cout<<"nRecBckgJets: "<<nRecBckgJets<<std::endl;
+	std::cout<<"      "<<std::endl;
 
 	Double_t jetPt = jetBckg->Pt();
 	if(isBadBckgJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
