@@ -169,6 +169,8 @@ class AliEmcalContainer : public TObject {
   void                        SetPhiLimits(Double_t min, Double_t max)  { fMaxPhi = max ; fMinPhi = min ; }
   void                        SetMassHypothesis(Double_t m)             { fMassHypothesis         = m   ; }
   void                        SetClassName(const char *clname);
+  void                        SetIsEmbedding(Bool_t b)                  { fIsEmbedding = b ; }
+  Bool_t                      GetIsEmbedding() const                    { return fIsEmbedding; }
 
   const char*                 GetName()                       const { return fName.Data()               ; }
   void                        SetName(const char* n)                { fName = n                         ; }
@@ -202,6 +204,7 @@ class AliEmcalContainer : public TObject {
   Int_t                       fMinMCLabel;              ///< minimum MC label
   Int_t                       fMaxMCLabel;              ///< maximum MC label
   Double_t                    fMassHypothesis;          ///< if < 0 it will use a PID mass when available
+  Bool_t                      fIsEmbedding;             ///< if true, this container will connect to an external event
   TClonesArray               *fClArray;                 //!<! Pointer to array in input event
   Int_t                       fCurrentID;               //!<! current ID for automatic loops
   AliNamedArrayI             *fLabelMap;                //!<! Label-Index map
@@ -215,7 +218,7 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer& operator=(const AliEmcalContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalContainer,8);
+  ClassDef(AliEmcalContainer,9);
   /// \endcond
 };
 #endif

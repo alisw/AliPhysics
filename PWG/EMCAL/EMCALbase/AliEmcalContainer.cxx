@@ -19,6 +19,8 @@
 #include "AliVParticle.h"
 #include "AliTLorentzVector.h"
 
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+
 #include "AliEmcalContainer.h"
 
 /// \cond CLASSIMP
@@ -48,6 +50,7 @@ AliEmcalContainer::AliEmcalContainer():
   fMinMCLabel(-1),
   fMaxMCLabel(-1),
   fMassHypothesis(-1),
+  fIsEmbedding(kFALSE),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -84,6 +87,7 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fMinMCLabel(-1),
   fMaxMCLabel(-1),
   fMassHypothesis(-1),
+  fIsEmbedding(kFALSE),
   fClArray(0),
   fCurrentID(0),
   fLabelMap(0),
@@ -128,6 +132,19 @@ void AliEmcalContainer::SetClassName(const char *clname)
  */
 void AliEmcalContainer::SetArray(const AliVEvent *event)
 {
+  if (fIsEmbedding) {
+    // this is an embedding container
+    // will ignore the provided event and use the event
+    // from the embedding helper class
+
+    const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (!embedding) return;
+
+    event = embedding->GetExternalEvent();
+  }
+
+  if (!event) return;
+
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);
 
