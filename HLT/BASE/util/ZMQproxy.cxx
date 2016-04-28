@@ -12,6 +12,7 @@
 #include "TRint.h"
 #include "TApplication.h"
 #include <time.h>
+#include <unistd.h>
 #include <string>
 #include <map>
 #include "AliZMQhelpers.h"
