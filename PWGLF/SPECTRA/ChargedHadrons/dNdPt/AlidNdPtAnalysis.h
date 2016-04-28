@@ -80,6 +80,7 @@ public :
   void SetTRDTriggerHJT(const Bool_t require = kFALSE) { fTRDTriggerRequiredHJT = require;}
   void SetTRDTriggerHSE(const Bool_t require = kFALSE) { fTRDTriggerRequiredHSE = require;}
   
+
   
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB);
@@ -179,6 +180,9 @@ public :
   THnSparseF *GetRecTrackHist() const {return fRecTrackHist;} 
   THnSparseF* GetMCPrimTrackHist() const {return fMCPrimTrackHist;}   
 
+//   Bool_t IsRequiredCompleteDAQ() const  { return f2015IsIncompleteDAQ;}
+
+  
 private:
 
   // analysis folder 
@@ -338,6 +342,7 @@ private:
   Bool_t fTRDTriggerRequiredHJT;
   Bool_t fTRDTriggerRequiredHSE;
   Bool_t triggerResult;
+//   Bool_t f2015IsIncompleteDAQ;
   
   // generic function to change binning
   Bool_t CanChangeBins();
