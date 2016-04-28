@@ -12,10 +12,11 @@ class TArrayI;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJetFinder;
+class AliFJWrapper;
 
 #include "AliAnalysisTaskEmcalJet.h"
-
-
+#include "AliFJWrapper.h"
+#include "AliClusterContainer.h"
 
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
@@ -24,7 +25,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
     kTrue = 0,   // generated jets only 
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
-    kDetEmbPart = 3  //detector embedded jets    
+    kDetEmbPart = 3,  //detector embedded jets
+    kSim = 4,
+    kGenOnTheFly=5 //fast truth level MC
   };
   enum JetShapeSub {
     kNoSub = 0, 
@@ -34,6 +37,10 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   enum JetSelectionType {
     kInclusive = 0,
     kRecoil = 1
+  };
+  enum DerivSubtrOrder {
+    kSecondOrder = 0,
+    kFirstOrder = 1
   };
 
   AliAnalysisTaskSubJetFraction();
@@ -67,6 +74,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
   void SetRMatched(Double_t RMatched)                     {fRMatched=RMatched;}
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
+  void SetDerivativeSubtractionOrder(Int_t Order)              {fDerivSubtrOrder = Order;}
+  void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -82,7 +91,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   Double_t                            SubJetFraction(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Add, Bool_t Loss);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
-
+  Double_t                            fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0);
+ 
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
@@ -109,6 +119,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fSharedFractionPtMin;
   Double_t                            Background_Median;
   Double_t                            Background_Fluc;
+  Int_t                               fDerivSubtrOrder;
+  Bool_t                              fFullTree;
   
 
   TH1F                                *fhJetPt;
@@ -127,17 +139,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhJetRadius_1;
   TH1F                                *fhJetRadius_2;
   TH1F                                *fhJetAngularity;
-  TH1F                                *fhJetAngularity_1;
-  TH1F                                *fhJetAngularity_2;
   TH2F                                *fhJetAngularityJetPt;
-  TH2F                                *fhJetAngularityJetPt_1;
-  TH2F                                *fhJetAngularityJetPt_2;
   TH1F                                *fhJetPTD;
-  TH1F                                *fhJetPTD_1;
-  TH1F                                *fhJetPTD_2;
   TH2F                                *fhJetPTDJetPt;
-  TH2F                                *fhJetPTDJetPt_1;
-  TH2F                                *fhJetPTDJetPt_2;
   TH1F                                *fhJetCounter;
   TH1F                                *fhJetCounter_1;
   TH1F                                *fhJetCounter_2;
@@ -160,64 +164,77 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhNumberOfSubJetTracks_1;
   TH1F                                *fhNumberOfSubJetTracks_2;
   TH1F                                *fhSubJetPtFrac;
-  TH1F                                *fhSubJetPtFrac_1;
-  TH1F                                *fhSubJetPtFrac_2;
   TH1F                                *fhSubJetPtFrac2;
-  TH1F                                *fhSubJetPtFrac2_1;
-  TH1F                                *fhSubJetPtFrac2_2;
   TH1F                                *fhSubJetPtLoss;
-  TH1F                                *fhSubJetPtLoss_1;
-  TH1F                                *fhSubJetPtLoss_2;
   TH1F                                *fhSubJetPtLoss2;
-  TH1F                                *fhSubJetPtLoss2_1;
-  TH1F                                *fhSubJetPtLoss2_2;
   TH1F                                *fhSubJetEnergyFrac;
-  TH1F                                *fhSubJetEnergyFrac_1;
-  TH1F                                *fhSubJetEnergyFrac_2;
   TH1F                                *fhSubJetEnergyFrac2;
-  TH1F                                *fhSubJetEnergyFrac2_1;
-  TH1F                                *fhSubJetEnergyFrac2_2;
   TH1F                                *fhSubJetEnergyLoss;
-  TH1F                                *fhSubJetEnergyLoss_1;
-  TH1F                                *fhSubJetEnergyLoss_2;
   TH1F                                *fhSubJetEnergyLoss2;
-  TH1F                                *fhSubJetEnergyLoss2_1;
-  TH1F                                *fhSubJetEnergyLoss2_2; 
   TH1F                                *fhSubJetiness1;
-  TH1F                                *fhSubJetiness1_1;
-  TH1F                                *fhSubJetiness1_2;
   TH2F                                *fhSubJetiness1JetPt;
-  TH2F                                *fhSubJetiness1JetPt_1;
-  TH2F                                *fhSubJetiness1JetPt_2;
   TH1F                                *fhSubJetiness2;
-  TH1F                                *fhSubJetiness2_1;
-  TH1F                                *fhSubJetiness2_2;
   TH2F                                *fhSubJetiness2JetPt;
-  TH2F                                *fhSubJetiness2JetPt_1;
-  TH2F                                *fhSubJetiness2JetPt_2;
   TH1F                                *fh2to1SubJetinessRatio;
-  TH1F                                *fh2to1SubJetinessRatio_1;
-  TH1F                                *fh2to1SubJetinessRatio_2;
   TH2F                                *fh2to1SubJetinessRatioJetPt;
-  TH2F                                *fh2to1SubJetinessRatioJetPt_1;
-  TH2F                                *fh2to1SubJetinessRatioJetPt_2;
   TH1F                                *fhEventCounter;
   TH1F                                *fhEventCounter_1;
   TH1F                                *fhEventCounter_2;
   TH2F                                *fhJetPtJetEta;
-  TH2F                                *fhJetPtJetEta_1;
-  TH2F                                *fhJetPtJetEta_2;
   TH2F                                *fhSubJetiness2Distance;
-  TH2F                                *fhSubJetiness2Distance_1;
-  TH2F                                *fhSubJetiness2Distance_2;
   TH2F                                *fh2PtRatio;
+  TH2D                                *fh2JetTracksEtaPhiPt;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_AKT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_KT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_CA;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_WTA_KT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_WTA_CA;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_OP_AKT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_OP_KT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_OP_CA;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_OP_WTA_KT;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_OP_WTA_CA;
+  TH2D                                *fhSubJettiness1CheckRatio_FJ_MIN;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_AKT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_KT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_CA;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_WTA_KT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_WTA_CA;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_AKT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_KT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_CA;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_WTA_KT;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_OP_WTA_CA;
+  TH2D                                *fhSubJettiness2CheckRatio_FJ_MIN;
+  TH1D                                *fhSubJettiness1_FJ_AKT;
+  TH1D                                *fhSubJettiness1_FJ_KT;
+  TH1D                                *fhSubJettiness1_FJ_CA;
+  TH1D                                *fhSubJettiness1_FJ_WTA_KT;
+  TH1D                                *fhSubJettiness1_FJ_WTA_CA;
+  TH1D                                *fhSubJettiness1_FJ_OP_AKT;
+  TH1D                                *fhSubJettiness1_FJ_OP_KT;
+  TH1D                                *fhSubJettiness1_FJ_OP_CA;
+  TH1D                                *fhSubJettiness1_FJ_OP_WTA_KT;
+  TH1D                                *fhSubJettiness1_FJ_OP_WTA_CA;
+  TH1D                                *fhSubJettiness1_FJ_MIN;
+  TH1D                                *fhSubJettiness2_FJ_AKT;
+  TH1D                                *fhSubJettiness2_FJ_KT;
+  TH1D                                *fhSubJettiness2_FJ_CA;
+  TH1D                                *fhSubJettiness2_FJ_WTA_KT;
+  TH1D                                *fhSubJettiness2_FJ_WTA_CA;
+  TH1D                                *fhSubJettiness2_FJ_OP_AKT;
+  TH1D                                *fhSubJettiness2_FJ_OP_KT;
+  TH1D                                *fhSubJettiness2_FJ_OP_CA;
+  TH1D                                *fhSubJettiness2_FJ_OP_WTA_KT;
+  TH1D                                *fhSubJettiness2_FJ_OP_WTA_CA;
+  TH1D                                *fhSubJettiness2_FJ_MIN; 
   TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw 
 
  private:
   AliAnalysisTaskSubJetFraction(const AliAnalysisTaskSubJetFraction&);            // not implemented
   AliAnalysisTaskSubJetFraction &operator=(const AliAnalysisTaskSubJetFraction&); // not implemented
 
-  ClassDef(AliAnalysisTaskSubJetFraction, 4)
+  ClassDef(AliAnalysisTaskSubJetFraction, 6)
 };
 #endif
 
