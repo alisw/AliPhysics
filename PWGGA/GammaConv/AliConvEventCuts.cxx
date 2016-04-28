@@ -2483,8 +2483,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
       if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
       else {     
         if (fIsHeavyIon == 1){
-                fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-            }    
+            fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;    
         } else if (fIsHeavyIon == 2){
             fOfflineTriggerMask = AliVEvent::kINT7;
         } else if ( fPeriodEnum == kLHC11cg || fPeriodEnum == kLHC12 ) {
