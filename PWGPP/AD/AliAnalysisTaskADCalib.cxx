@@ -389,12 +389,13 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
     TH2 *h0Int0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, 10, 0)));
     TH2 *h0Int1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, 10, 1)));
-    h0Int0->Add(h0Int1);
-    Double_t qx = 0.99; // 99% quantile
-    TH1* h1 = h0Int0->ProjectionX();
-    h1->SetDirectory(NULL);
+    TH2* hSum   = dynamic_cast<TH2*>(h0Int0->Clone("hSum"));
+    hSum->Add(h0Int1);
+    const Double_t qx = 0.95; // 95% quantile
+    TH1* h1 = hSum->ProjectionX();
     h1->GetQuantiles(1, chargeQuantiles+ch, &qx);
     delete h1;
+    delete hSum;
   }
   const Double_t meanQuantiles[2] = { 
     (Float_t)TMath::Mean(8, chargeQuantiles),
@@ -463,6 +464,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     }
     t->Fill();
   } // next channel
+
+  t->ResetBranchAddresses();
 
   return t;
 }
