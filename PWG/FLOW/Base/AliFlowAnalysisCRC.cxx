@@ -18118,18 +18118,20 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     }
   }
   
-  Double_t DC=0.,LC=0.,DA=0.,LA=0.;
+  Double_t DC=0.,LC=0.,mC=0.,DA=0.,LA=0.,mA=0.;
   if(fMinMulZN==5) {
     fPolDist[0]->SetParameter(0,fCentralityEBE);
     fPolDist[0]->SetParameter(1,ZCM);
     DC = fPolDist[0]->GetMinimum(0.,45.);
-    DC *= (ZCM<fPolAv[0]->Eval(fCentralityEBE)?-1.:1.);
-    LC = fPolInt[0]->Integral(0.,fPolDist[0]->GetMinimumX(0.,45.));
+    mC = fPolDist[0]->GetMinimumX(0.,45.);
+    DC *= (ZCM<fPolAv[0]->Eval(mC)?-1.:1.);
+    LC = fPolInt[0]->Integral(0.,mC);
     fPolDist[1]->SetParameter(0,fCentralityEBE);
     fPolDist[1]->SetParameter(1,ZAM);
     DA = fPolDist[1]->GetMinimum(0.,45.);
-    DA *= (ZAM<fPolAv[1]->Eval(fCentralityEBE)?-1.:1.);
-    LA = fPolInt[1]->Integral(0.,fPolDist[1]->GetMinimumX(0.,45.));
+    mA = fPolDist[1]->GetMinimumX(0.,45.);
+    DA *= (ZAM<fPolAv[1]->Eval(mA)?-1.:1.);
+    LA = fPolInt[1]->Integral(0.,mA);
   }
   
   // cut on centroid position
@@ -18153,8 +18155,12 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhCenvsMul[1]->Fill(fNumberOfPOIsEBE,fCentralityVarEBE);
     fhZNvsMul[0]->Fill(fNumberOfPOIsEBE,ZCM);
     fhZNvsMul[1]->Fill(fNumberOfPOIsEBE,ZAM);
-    if(fhImpvsNcol[0]->GetXaxis()->FindBin(LC)<=fZDCESENBins/2) fhImpvsNcol[0]->Fill(LC,DC);
-    if(fhImpvsNcol[1]->GetXaxis()->FindBin(LA)<=fZDCESENBins/2) fhImpvsNcol[1]->Fill(LA,DA);
+    if(fhImpvsNcol[0]->GetXaxis()->FindBin(LC)<=fZDCESENBins/2) {
+      fhImpvsNcol[0]->Fill(LC,DC);
+    }
+    if(fhImpvsNcol[1]->GetXaxis()->FindBin(LA)<=fZDCESENBins/2) {
+      fhImpvsNcol[1]->Fill(LA,DA);
+    }
     fhZNQVecCov[0]->Fill(fCentralityEBE,ZCRe*ZARe);
     fhZNQVecCov[1]->Fill(fCentralityEBE,ZCIm*ZAIm);
     fhZNQVecCov[2]->Fill(fCentralityEBE,ZCRe*ZAIm);
