@@ -39,7 +39,7 @@ AliAnalysisTaskSE(),
   fOutputList(0),
   fpidAOD(0),
   fVariableCutType(0),
-  fNominalCutIndex(0),
+  fNominalTopCutIndex(0),
   fEventCount(0),
   fPDGLambda(1.115683),
   fPDGProton(.938272),
@@ -81,38 +81,18 @@ AliAnalysisTaskSE(),
   fMCOtherV0Identity(NULL),
 // fDataCompeted(NULL), fDataCulled(NULL),
 // fRemainingV0s(NULL), fRemainingFrac(NULL),
-  fHistPsmearingKreconMinusKtruthLL(NULL),
-  fHistPsmearingKreconVsKtruthLL(NULL),
-  fHistPsmearingKreconMinusKtruthAA(NULL),
-  fHistPsmearingKreconVsKtruthAA(NULL),
-  fHistPsmearingKreconMinusKtruthLA(NULL),
-  fHistPsmearingKreconVsKtruthLA(NULL),
-// fHistsSignalMomResTruthLL(0),
-// fHistsSignalMomResRecLL(0),
-// fHistsBkgMomResTruthLL(0),
-// fHistsBkgMomResRecLL(0),
-// fHistsSignalMomResTruthAA(0),
-// fHistsSignalMomResRecAA(0),
-// fHistsBkgMomResTruthAA(0),
-// fHistsBkgMomResRecAA(0),
-// fHistsSignalMomResTruthLA(0),
-// fHistsSignalMomResRecLA(0),
-// fHistsBkgMomResTruthLA(0),
-// fHistsBkgMomResRecLA(0),
-// fLednickyWeightsLA(0),
-// fLednickyWeightsLL(0),
-// fSignalMomResTruthUnweightedLL(NULL),
-// fSignalMomResTruthUnweightedAA(NULL),
-// fSignalMomResTruthUnweightedLA(NULL),
-// fBkgMomResTruthUnweightedLL(NULL),
-// fBkgMomResTruthUnweightedAA(NULL),
-// fBkgMomResTruthUnweightedLA(NULL),
-// fSignalMomResTruthVsPtLL(NULL),
-// fSignalMomResTruthVsPtAA(NULL),
-// fSignalMomResTruthVsPtLA(NULL),
-// fBkgMomResTruthVsPtLL(NULL),
-// fBkgMomResTruthVsPtAA(NULL),
-// fBkgMomResTruthVsPtLA(NULL),
+  fResMatrixLLSameAll(NULL),
+  fResMatrixAASameAll(NULL),
+  fResMatrixLASameAll(NULL),
+  fResMatrixLLMixedAll(NULL),
+  fResMatrixAAMixedAll(NULL),
+  fResMatrixLAMixedAll(NULL),
+  fResMatrixLLSamePure(NULL),
+  fResMatrixAASamePure(NULL),
+  fResMatrixLASamePure(NULL),
+  fResMatrixLLMixedPure(NULL),
+  fResMatrixAAMixedPure(NULL),
+  fResMatrixLAMixedPure(NULL),
   fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
   fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
   fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
@@ -133,30 +113,6 @@ AliAnalysisTaskSE(),
   fBkgLamLamPlusMinusSep(NULL), fBkgALamALamPlusMinusSep(NULL),
   fBkgLamALamProtSep(NULL), fBkgLamALamPionSep(NULL)
 {
-
-  // //Load in the lednicky weight histograms
-  // TFile lednickyLL("LedWeightsLL.root","read");
-  // TIter nextLL(lednickyLL.GetListOfKeys());
-  // TKey *key;
-  // while ((key = (TKey*)nextLL())) {
-  //   TClass *cl = gROOT->GetClass(key->GetClassName());
-  //   if (!cl->InheritsFrom("TH1D")) continue;
-  //   TH1D *h = (TH1D*)key->ReadObj();
-  //   h->SetDirectory(0);
-  //   fLednickyWeightsLL.push_back(h);
-  // }
-  // lednickyLL.Close();
-
-  // TFile lednickyLA("LedWeightsLA.root","read");
-  // TIter nextLA(lednickyLL.GetListOfKeys());
-  // while ((key = (TKey*)nextLA())) {
-  //   TClass *cl = gROOT->GetClass(key->GetClassName());
-  //   if (!cl->InheritsFrom("TH1D")) continue;
-  //   TH1D *h = (TH1D*)key->ReadObj();
-  //   h->SetDirectory(0);
-  //   fLednickyWeightsLA.push_back(h);
-  // }
-  // lednickyLA.Close();
 }
 //________________________________________________________________________
 
@@ -166,7 +122,7 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fOutputList(0),
   fpidAOD(0),
   fVariableCutType(varCutType),
-  fNominalCutIndex(0),
+  fNominalTopCutIndex(0),
   fEventCount(0),
   fPDGLambda(1.115683),
   fPDGProton(.938272),
@@ -208,38 +164,18 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fMCOtherV0Identity(NULL),
   // fDataCompeted(NULL), fDataCulled(NULL),
   // fRemainingV0s(NULL), fRemainingFrac(NULL),
-  fHistPsmearingKreconMinusKtruthLL(NULL),
-  fHistPsmearingKreconVsKtruthLL(NULL),
-  fHistPsmearingKreconMinusKtruthAA(NULL),
-  fHistPsmearingKreconVsKtruthAA(NULL),
-  fHistPsmearingKreconMinusKtruthLA(NULL),
-  fHistPsmearingKreconVsKtruthLA(NULL),
-  // fHistsSignalMomResTruthLL(0),
-  // fHistsSignalMomResRecLL(0),
-  // fHistsBkgMomResTruthLL(0),
-  // fHistsBkgMomResRecLL(0),
-  // fHistsSignalMomResTruthAA(0),
-  // fHistsSignalMomResRecAA(0),
-  // fHistsBkgMomResTruthAA(0),
-  // fHistsBkgMomResRecAA(0),
-  // fHistsSignalMomResTruthLA(0),
-  // fHistsSignalMomResRecLA(0),
-  // fHistsBkgMomResTruthLA(0),
-  // fHistsBkgMomResRecLA(0),
-  // fLednickyWeightsLA(0),
-  // fLednickyWeightsLL(0),
-  // fSignalMomResTruthUnweightedLL(NULL),
-  // fSignalMomResTruthUnweightedAA(NULL),
-  // fSignalMomResTruthUnweightedLA(NULL),
-  // fBkgMomResTruthUnweightedLL(NULL),
-  // fBkgMomResTruthUnweightedAA(NULL),
-  // fBkgMomResTruthUnweightedLA(NULL),
-  // fSignalMomResTruthVsPtLL(NULL),
-  // fSignalMomResTruthVsPtAA(NULL),
-  // fSignalMomResTruthVsPtLA(NULL),
-  // fBkgMomResTruthVsPtLL(NULL),
-  // fBkgMomResTruthVsPtAA(NULL),
-  // fBkgMomResTruthVsPtLA(NULL),
+  fResMatrixLLSameAll(NULL),
+  fResMatrixAASameAll(NULL),
+  fResMatrixLASameAll(NULL),
+  fResMatrixLLMixedAll(NULL),
+  fResMatrixAAMixedAll(NULL),
+  fResMatrixLAMixedAll(NULL),
+  fResMatrixLLSamePure(NULL),
+  fResMatrixAASamePure(NULL),
+  fResMatrixLASamePure(NULL),
+  fResMatrixLLMixedPure(NULL),
+  fResMatrixAAMixedPure(NULL),
+  fResMatrixLAMixedPure(NULL),
   fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
   fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
   fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
@@ -263,34 +199,9 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
-  if ((kTopologicalStudy == fSysStudyType)
-      || (kTwoTrackStudy == fSysStudyType)) {
-    fNominalCutIndex = 1;
+  if (kTopologicalStudy == fSysStudyType) {
+    fNominalTopCutIndex = 1;
   }
-
-  //   //Load in the lednicky weight histograms
-  // TFile lednickyLL("LedWeightsLL.root","read");
-  // TIter nextLL(lednickyLL.GetListOfKeys());
-  // TKey *key;
-  // while ((key = (TKey*)nextLL())) {
-  //   TClass *cl = gROOT->GetClass(key->GetClassName());
-  //   if (!cl->InheritsFrom("TH1D")) continue;
-  //   TH1D *h = (TH1D*)key->ReadObj();
-  //   h->SetDirectory(0);
-  //   fLednickyWeightsLL.push_back(h);
-  // }
-  // lednickyLL.Close();
-
-  // TFile lednickyLA("LedWeightsLA.root","read");
-  // TIter nextLA(lednickyLA.GetListOfKeys());
-  // while ((key = (TKey*)nextLA())) {
-  //   TClass *cl = gROOT->GetClass(key->GetClassName());
-  //   if (!cl->InheritsFrom("TH1D")) continue;
-  //   TH1D *h = (TH1D*)key->ReadObj();
-  //   h->SetDirectory(0);
-  //   fLednickyWeightsLA.push_back(h);
-  // }
-  // lednickyLA.Close();
 }
 //________________________________________________________________________
 AliAnalysisV0Lam::~AliAnalysisV0Lam()
@@ -308,16 +219,6 @@ AliAnalysisV0Lam::~AliAnalysisV0Lam()
   delete[] fEC;
   delete fCutProcessor;
   if(fOutputList) delete fOutputList; //This cleans up all output hists
-  // for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++){
-  //   delete fLednickyWeightsLL[i];
-  //   fLednickyWeightsLL[i] = NULL;
-  // }
-  // for(UInt_t i = 0; i < fLednickyWeightsLA.size(); i++){
-  //   delete fLednickyWeightsLA[i];
-  //   fLednickyWeightsLA[i] = NULL;
-  // }
-
-  
 } 
 //________________________________________________________________________
 void AliAnalysisV0Lam::MyInit()
@@ -472,22 +373,6 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fOutputList->Add(fKtALamALamBkg);
   fKtLamALamBkg = new TH3F("fKtLamALamBkg", "LamALam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtLamALamBkg);
-
-  //Momentum resolution (pre-)correction analysis
-  fHistPsmearingKreconVsKtruthLL = new TH2F ("fHistPsmearingKreconVsKtruthLL","Relative momentum resolution, recon vs truth LL;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
-  fOutputList->Add(fHistPsmearingKreconVsKtruthLL);
-  fHistPsmearingKreconMinusKtruthLL = new TH1F ("fHistPsmearingKreconMinusKtruthLL","Relative momentum resolution, recon - truth LL;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
-  fOutputList->Add(fHistPsmearingKreconMinusKtruthLL);
-
-  fHistPsmearingKreconVsKtruthAA = new TH2F ("fHistPsmearingKreconVsKtruthAA","Relative momentum resolution, recon vs truth AA;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
-  fOutputList->Add(fHistPsmearingKreconVsKtruthAA);
-  fHistPsmearingKreconMinusKtruthAA = new TH1F ("fHistPsmearingKreconMinusKtruthAA","Relative momentum resolution, recon - truth AA;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
-  fOutputList->Add(fHistPsmearingKreconMinusKtruthAA);
-
-  fHistPsmearingKreconVsKtruthLA = new TH2F ("fHistPsmearingKreconVsKtruthLA","Relative momentum resolution, recon vs truth LA;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
-  fOutputList->Add(fHistPsmearingKreconVsKtruthLA);
-  fHistPsmearingKreconMinusKtruthLA = new TH1F ("fHistPsmearingKreconMinusKtruthLA","Relative momentum resolution, recon - truth LA;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
-  fOutputList->Add(fHistPsmearingKreconMinusKtruthLA);
   
   /////////Signal Distributions///////////////////
   //First bin is variable cut value, second bin is centrality, third bin is Kstar
@@ -605,140 +490,35 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fMCTruthEtaALam = new TH1F("fMCTruthEtaALam","Eta AntiLambda;Eta;counts", 200, -1., 1.);
   arrMC->Add(fMCTruthEtaALam);
 
-  // // Directory for momentum resolution correction histograms
-  // TObjArray *resArrLL = new TObjArray();
-  // resArrLL->SetName("ResolutionLL");
-  // fOutputList->Add(resArrLL);
-  // // Make some unweighted histograms for comparison
-  // TString histNameSignalMomResTruthUnweighted = "fSignalMomResTruthUnweighted";
-  // fSignalMomResTruthUnweightedLL = new TH2F(histNameSignalMomResTruthUnweighted + "LL", histNameSignalMomResTruthUnweighted + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrLL->Add(fSignalMomResTruthUnweightedLL);
-  // TString histNameBkgMomResTruthUnweighted = "fBkgMomResTruthUnweighted";
-  // fBkgMomResTruthUnweightedLL = new TH2F(histNameBkgMomResTruthUnweighted + "LL", histNameBkgMomResTruthUnweighted + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrLL->Add(fBkgMomResTruthUnweightedLL);
-
-
-  // TString histNameSignalMomResTruthVsPt = "fSignalMomResTruthVsPt";
-  // fSignalMomResTruthVsPtLL = new TH3F(histNameSignalMomResTruthVsPt + "LL", histNameSignalMomResTruthVsPt + "LL;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrLL->Add(fSignalMomResTruthVsPtLL);
-  // TString histNameBkgMomResTruthVsPt = "fBkgMomResTruthVsPt";
-  // fBkgMomResTruthVsPtLL = new TH3F(histNameBkgMomResTruthVsPt + "LL", histNameBkgMomResTruthVsPt + "LL;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrLL->Add(fBkgMomResTruthVsPtLL);
+  // Directory for momentum resolution correction histograms
+  TObjArray *resArr = new TObjArray();
+  resArr->SetName("ResolutionMatrices");
+  fOutputList->Add(resArr);
+  fResMatrixLLSameAll = new TH2F("fResMatrixLLSameAll","ResolutionMatrix LLSameAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixAASameAll = new TH2F("fResMatrixAASameAll","ResolutionMatrix AASameAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLASameAll = new TH2F("fResMatrixLASameAll","ResolutionMatrix LASameAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLLMixedAll = new TH2F("fResMatrixLLMixedAll","ResolutionMatrix LLMixedAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixAAMixedAll = new TH2F("fResMatrixAAMixedAll","ResolutionMatrix AAMixedAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLAMixedAll = new TH2F("fResMatrixLAMixedAll","ResolutionMatrix LAMixedAll;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLLSamePure = new TH2F("fResMatrixLLSamePure","ResolutionMatrix LLSamePure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixAASamePure = new TH2F("fResMatrixAASamePure","ResolutionMatrix AASamePure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLASamePure = new TH2F("fResMatrixLASamePure","ResolutionMatrix LASamePure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLLMixedPure = new TH2F("fResMatrixLLMixedPure","ResolutionMatrix LLMixedPure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixAAMixedPure = new TH2F("fResMatrixAAMixedPure","ResolutionMatrix AAMixedPure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fResMatrixLAMixedPure = new TH2F("fResMatrixLAMixedPure","ResolutionMatrix LAMixedPure;k^{*}_{true};k^{*}_{rec}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  resArr->Add(fResMatrixLLSameAll);
+  resArr->Add(fResMatrixAASameAll);
+  resArr->Add(fResMatrixLASameAll);
+  resArr->Add(fResMatrixLLMixedAll);
+  resArr->Add(fResMatrixAAMixedAll);
+  resArr->Add(fResMatrixLAMixedAll);
+  resArr->Add(fResMatrixLLSamePure);
+  resArr->Add(fResMatrixAASamePure);
+  resArr->Add(fResMatrixLASamePure);
+  resArr->Add(fResMatrixLLMixedPure);
+  resArr->Add(fResMatrixAAMixedPure);
+  resArr->Add(fResMatrixLAMixedPure);
   
-  // // Momentum resolution corrections. One for each weighting scheme
-  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLL.size(); iHist++)
-  // {
-  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
-  //   histNameSignalMomResTruth += iHist;
-  //   TH2F *hSignalMomResTruthLL = new TH2F(histNameSignalMomResTruth + "LL", histNameSignalMomResTruth + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLL->Add(hSignalMomResTruthLL);
-  //   fHistsSignalMomResTruthLL.push_back(hSignalMomResTruthLL);
-
-  //   TString histNameSignalMomResRec = "hSignalMomResRec";
-  //   histNameSignalMomResRec += iHist;
-  //   TH2F *hSignalMomResRecLL = new TH2F(histNameSignalMomResRec + "LL", histNameSignalMomResRec + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLL->Add(hSignalMomResRecLL);
-  //   fHistsSignalMomResRecLL.push_back(hSignalMomResRecLL);
-    
-  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
-  //   histNameBkgMomResTruth += iHist;
-  //   TH2F *hBkgMomResTruthLL = new TH2F(histNameBkgMomResTruth + "LL", histNameBkgMomResTruth + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLL->Add(hBkgMomResTruthLL);
-  //   fHistsBkgMomResTruthLL.push_back(hBkgMomResTruthLL);
-
-  //   TString histNameBkgMomResRec = "hBkgMomResRec";
-  //   histNameBkgMomResRec += iHist;
-  //   TH2F *hBkgMomResRecLL = new TH2F(histNameBkgMomResRec + "LL", histNameBkgMomResRec + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLL->Add(hBkgMomResRecLL);
-  //   fHistsBkgMomResRecLL.push_back(hBkgMomResRecLL);
-  // }
-
-
-  // TObjArray *resArrAA = new TObjArray();
-  // resArrAA->SetName("ResolutionAA");
-  // fOutputList->Add(resArrAA);
-  // fSignalMomResTruthUnweightedAA = new TH2F(histNameSignalMomResTruthUnweighted + "AA", histNameSignalMomResTruthUnweighted + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrAA->Add(fSignalMomResTruthUnweightedAA);
-  // fBkgMomResTruthUnweightedAA = new TH2F(histNameBkgMomResTruthUnweighted + "AA", histNameBkgMomResTruthUnweighted + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrAA->Add(fBkgMomResTruthUnweightedAA);
-
-  // fSignalMomResTruthVsPtAA = new TH3F(histNameSignalMomResTruthVsPt + "AA", histNameSignalMomResTruthVsPt + "AA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrAA->Add(fSignalMomResTruthVsPtAA);
-  // fBkgMomResTruthVsPtAA = new TH3F(histNameBkgMomResTruthVsPt + "AA", histNameBkgMomResTruthVsPt + "AA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrAA->Add(fBkgMomResTruthVsPtAA);
-
-  // // Momentum resolution corrections. One for each weighting scheme
-  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLL.size(); iHist++)
-  //   // for(UInt_t iHist = 0; iHist < 2; iHist++)
-  // {
-  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
-  //   histNameSignalMomResTruth += iHist;
-  //   TH2F *hSignalMomResTruthAA = new TH2F(histNameSignalMomResTruth + "AA", histNameSignalMomResTruth + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrAA->Add(hSignalMomResTruthAA);
-  //   fHistsSignalMomResTruthAA.push_back(hSignalMomResTruthAA);
-
-  //   TString histNameSignalMomResRec = "hSignalMomResRec";
-  //   histNameSignalMomResRec += iHist;
-  //   TH2F *hSignalMomResRecAA = new TH2F(histNameSignalMomResRec + "AA", histNameSignalMomResRec + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrAA->Add(hSignalMomResRecAA);
-  //   fHistsSignalMomResRecAA.push_back(hSignalMomResRecAA);
-
-  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
-  //   histNameBkgMomResTruth += iHist;
-  //   TH2F *hBkgMomResTruthAA = new TH2F(histNameBkgMomResTruth + "AA", histNameBkgMomResTruth + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrAA->Add(hBkgMomResTruthAA);
-  //   fHistsBkgMomResTruthAA.push_back(hBkgMomResTruthAA);
-
-  //   TString histNameBkgMomResRec = "hBkgMomResRec";
-  //   histNameBkgMomResRec += iHist;
-  //   TH2F *hBkgMomResRecAA = new TH2F(histNameBkgMomResRec + "AA", histNameBkgMomResRec + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrAA->Add(hBkgMomResRecAA);
-  //   fHistsBkgMomResRecAA.push_back(hBkgMomResRecAA);
-  // }
-
-
-
-  // TObjArray *resArrLA = new TObjArray();
-  // resArrLA->SetName("ResolutionLA");
-  // fOutputList->Add(resArrLA);
-
-  // fSignalMomResTruthUnweightedLA = new TH2F(histNameSignalMomResTruthUnweighted + "LA", histNameSignalMomResTruthUnweighted + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrLA->Add(fSignalMomResTruthUnweightedLA);
-  // fBkgMomResTruthUnweightedLA = new TH2F(histNameBkgMomResTruthUnweighted + "LA", histNameBkgMomResTruthUnweighted + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  // resArrLA->Add(fBkgMomResTruthUnweightedLA);
-
-  // fSignalMomResTruthVsPtLA = new TH3F(histNameSignalMomResTruthVsPt + "LA", histNameSignalMomResTruthVsPt + "LA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrLA->Add(fSignalMomResTruthVsPtLA);
-  // fBkgMomResTruthVsPtLA = new TH3F(histNameBkgMomResTruthVsPt + "LA", histNameBkgMomResTruthVsPt + "LA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
-  // resArrLA->Add(fBkgMomResTruthVsPtLA);
-  
-  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLA.size(); iHist++)
-  //   // for(UInt_t iHist = 0; iHist < 2; iHist++)
-  // {
-  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
-  //   histNameSignalMomResTruth += iHist;
-  //   TH2F *hSignalMomResTruthLA = new TH2F(histNameSignalMomResTruth + "LA", histNameSignalMomResTruth + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLA->Add(hSignalMomResTruthLA);
-  //   fHistsSignalMomResTruthLA.push_back(hSignalMomResTruthLA);
-
-  //   TString histNameSignalMomResRec = "hSignalMomResRec";
-  //   histNameSignalMomResRec += iHist;
-  //   TH2F *hSignalMomResRecLA = new TH2F(histNameSignalMomResRec + "LA", histNameSignalMomResRec + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLA->Add(hSignalMomResRecLA);
-  //   fHistsSignalMomResRecLA.push_back(hSignalMomResRecLA);
-
-  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
-  //   histNameBkgMomResTruth += iHist;
-  //   TH2F *hBkgMomResTruthLA = new TH2F(histNameBkgMomResTruth + "LA", histNameBkgMomResTruth + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLA->Add(hBkgMomResTruthLA);
-  //   fHistsBkgMomResTruthLA.push_back(hBkgMomResTruthLA);
-
-  //   TString histNameBkgMomResRec = "hBkgMomResRec";
-  //   histNameBkgMomResRec += iHist;
-  //   TH2F *hBkgMomResRecLA = new TH2F(histNameBkgMomResRec + "LA", histNameBkgMomResRec + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
-  //   resArrLA->Add(hBkgMomResRecLA);
-  //   fHistsBkgMomResRecLA.push_back(hBkgMomResRecLA);
-  // }
   PostData(1, fOutputList);
 }
 
@@ -1048,12 +828,12 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     
     if(fIsMCEvent) {
       // Fill some MC information for lambdas, fill for antilambdas
-      if(thisV0.isLamCenter[fNominalCutIndex]) {
+      if(thisV0.isLamCenter[fNominalTopCutIndex]) {
       	fMCTruthPtLam->Fill(thisV0.v0MomentumTruth.Pt());
       	fMCTruthPhiLam->Fill(thisV0.v0MomentumTruth.Phi());
     	fMCTruthEtaLam->Fill(thisV0.v0MomentumTruth.Eta());
       }
-      if(thisV0.isALamCenter[fNominalCutIndex]) {
+      if(thisV0.isALamCenter[fNominalTopCutIndex]) {
       	fMCTruthPtALam->Fill(thisV0.v0MomentumTruth.Phi());
     	fMCTruthPhiALam->Fill(thisV0.v0MomentumTruth.Phi());
     	fMCTruthEtaALam->Fill(thisV0.v0MomentumTruth.Eta());
@@ -1089,8 +869,8 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   
   DoV0JudgmentCuts(fEvt, v0Count);
   HistogramEventMultiplicities(lambdaCount, antiLambdaCount, centralityBin);
-  fTotalLambda += lambdaCount[fNominalCutIndex];
-  fTotalAntiLambda += antiLambdaCount[fNominalCutIndex];
+  fTotalLambda += lambdaCount[fNominalTopCutIndex];
+  fTotalAntiLambda += antiLambdaCount[fNominalTopCutIndex];
   //Printf("Reconstruction Finished. Starting pair studies.");
   
   //Now look at pairs for correlation function binning
@@ -1666,12 +1446,12 @@ void AliAnalysisV0Lam::HistogramEventMultiplicities(vector<int> & lambdaCount, v
 void AliAnalysisV0Lam::FillTPCSignalHists(const AliReconstructedV0 *v0, const double posDaughterP, const double posDaughterTPCSignal, const double negDaughterP, const double negDaughterTPCSignal)
 {
   //Histogram P vs TPCsignal for V0 daughters
-  if(v0->isLamCenter[fNominalCutIndex])
+  if(v0->isLamCenter[fNominalTopCutIndex])
   {
     fTPCVsPPosLam->Fill(posDaughterP,posDaughterTPCSignal);
     fTPCVsPNegLam->Fill(negDaughterP,negDaughterTPCSignal);
   }
-  if(v0->isALamCenter[fNominalCutIndex])
+  if(v0->isALamCenter[fNominalTopCutIndex])
   {
     fTPCVsPPosALam->Fill(posDaughterP,posDaughterTPCSignal);
     fTPCVsPNegALam->Fill(negDaughterP,negDaughterTPCSignal);
@@ -1684,19 +1464,19 @@ void AliAnalysisV0Lam::CheckForFakeV0s(const AliReconstructedV0 *v0, TH1F *mcFak
   // Used in MC studies to determine how many reconstructed Lambdas and
   // Antilambdas are actually fake.  For simplicity, this is only done for
   // the default value of the variable reconstruction cut.
-  if(v0->isLamCenter[fNominalCutIndex] 
-     || v0->isALamCenter[fNominalCutIndex])
+  if(v0->isLamCenter[fNominalTopCutIndex] 
+     || v0->isALamCenter[fNominalTopCutIndex])
   {
     if(AliReconstructedV0::kFake == mcV0Origin){
       //These V0s are fake
-      if(v0->isLamCenter[fNominalCutIndex]) mcFakeParticleIdentity->Fill(0);
-      if(v0->isALamCenter[fNominalCutIndex]) mcFakeParticleIdentity->Fill(1);
+      if(v0->isLamCenter[fNominalTopCutIndex]) mcFakeParticleIdentity->Fill(0);
+      if(v0->isALamCenter[fNominalTopCutIndex]) mcFakeParticleIdentity->Fill(1);
     }
     if(AliReconstructedV0::kUnassigned == mcV0Origin){
       // These V0s correspond to actual MC particles, but they aren't
       // Lambdas, Antilambdas, or K0s.
-      if(v0->isLamCenter[fNominalCutIndex]) mcOtherV0Identity->Fill(0);
-      if(v0->isALamCenter[fNominalCutIndex]) mcOtherV0Identity->Fill(1);
+      if(v0->isLamCenter[fNominalTopCutIndex]) mcOtherV0Identity->Fill(0);
+      if(v0->isALamCenter[fNominalTopCutIndex]) mcOtherV0Identity->Fill(1);
     }
   }
 }
@@ -1715,31 +1495,6 @@ double AliAnalysisV0Lam::CalculateKstar(TVector3 p1, TVector3 p2, double mass1, 
   TLorentzVector kstarVec = 0.5*(pDiff - (pDiff * pSum/pSum.Mag2())*pSum);
 
   return -1.*kstarVec.Mag();
-}
-
-//________________________________________________________________________
-void AliAnalysisV0Lam::BinMomentumSmearing(TVector3 v01MomentumRecon, TVector3 v01MomentumTruth, TVector3 v02MomentumRecon, TVector3 v02MomentumTruth, int pairType)
-{
-  // Used in MC studies to determine the amount of pair-wise relative-
-  // momentum smearing.  For a given pair of V0s, fills output histograms
-  // with reconstructed k* vs true k*.  Separate histograms are filled
-  // for each pair type
-  if(v01MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
-  if(v02MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
-  double reconKstar = CalculateKstar(v01MomentumRecon,v02MomentumRecon, fPDGLambda, fPDGLambda);
-  double truthKstar = CalculateKstar(v01MomentumTruth,v02MomentumTruth, fPDGLambda, fPDGLambda);
-  if(0 == pairType){ //Lambda-Lambda
-    fHistPsmearingKreconVsKtruthLL->Fill(reconKstar,truthKstar);
-    fHistPsmearingKreconMinusKtruthLL->Fill(reconKstar-truthKstar);
-  }
-  if(1 == pairType){ //Antilambda-Antilambda
-    fHistPsmearingKreconVsKtruthAA->Fill(reconKstar,truthKstar);
-    fHistPsmearingKreconMinusKtruthAA->Fill(reconKstar-truthKstar);
-  }
-  if(2 == pairType){ //Lambda-Antilambda
-    fHistPsmearingKreconVsKtruthLA->Fill(reconKstar,truthKstar);
-    fHistPsmearingKreconMinusKtruthLA->Fill(reconKstar-truthKstar);
-  }
 }
 
 TVector3 AliAnalysisV0Lam::GetEmissionPoint(const AliAODMCParticle * const track, TVector3 primVertex)
@@ -1817,24 +1572,11 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 	  Double_t pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
 	  //Calculate k* for V0s and daughters using different mass assumptions
 	  Double_t pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
-	  
-	  //****** Now we get to the actual pair histogramming ******
 
-	  // // Momentum smearing study
-	  // if (fIsMCEvent) {
-	  //   if (center1Lam && center2Lam) {
-	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 0);
-	  //   }
-	  //   if (center1ALam && center2ALam) {
-	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 1);
-	  //   }
-	  //   if ((center1Lam && center2ALam)  || (center1ALam && center2Lam)) {
-	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 2);
-	  //   }
-	  // }
-
+	  // Check that the pair passes our pair cuts
 	  vector<Bool_t> avgSepCutResults = CheckAvgSepCut(pairType, v01, v02);
-	  if (topCutIndex == fNominalCutIndex) {
+	  
+	  if (topCutIndex == fNominalTopCutIndex) {
 	    FillAvgSepHists(pairType, v01, v02, eventNumber);
 	  }
 
@@ -1848,6 +1590,14 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 		cutBin = iTTC;
 	      }
 	      FillCorrelationHists(pairType, v01, v02, eventNumber, cutBin, centralityBin);
+	      
+	      // Fill the momentum resolution matrices. We only
+	      // want to fill this once, so make sure that there is
+	      // no systematic cut study going on, or that we are
+	      // using the default cut index (1)
+	      if (kNoStudy == fSysStudyType || cutBin == 1) {
+		FillMomentumResolutionMatrix(pairType, v01, v02, eventNumber);
+	      }
 	    }
 	  }
 	}//end past event
@@ -2019,104 +1769,67 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
 }
 
 
+void AliAnalysisV0Lam::FillMomentumResolutionMatrix(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent)
+{
 
+  if(v01.v0MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
+  if(v02.v0MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
 
-// void AliAnalysisV0Lam::DoMomResCorrelationWeighting(const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent, Int_t centBin, Int_t pairType)
-// {
-//   // Description...
   
-//   Double_t kstarRec = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda, fPDGLambda);
-//   Double_t kstarTruth = CalculateKstar(v01.v0MomentumTruth, v02.v0MomentumTruth, fPDGLambda, fPDGLambda);
-//   Double_t pt1 = v01.v0MomentumTruth.Pt();
-//   Double_t pt2 = v02.v0MomentumTruth.Pt();
-//   if(0 == pairType) {
-//     if(!isMixedEvent) {
-//       fSignalMomResTruthUnweightedLL->Fill(centBin, kstarTruth);
-//       fSignalMomResTruthVsPtLL->Fill(kstarTruth, pt1, pt2);
-//     }
-//     else {
-//       fBkgMomResTruthUnweightedLL->Fill(centBin, kstarTruth);
-//       fBkgMomResTruthVsPtLL->Fill(kstarTruth, pt1, pt2);
-//     }
-//     for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++)
-//     {
-//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
-//       if(!isMixedEvent) {
-// 	fHistsSignalMomResTruthLL[i]->Fill(centBin, kstarTruth, weight);
-// 	fHistsSignalMomResRecLL[i]->Fill(centBin, kstarRec, weight);
-//       }
-//       else {
-// 	fHistsBkgMomResTruthLL[i]->Fill(centBin, kstarTruth);
-// 	fHistsBkgMomResRecLL[i]->Fill(centBin, kstarRec);
-//       }
-//     }
-//   }
-//   if(1 == pairType) {
-//     if(!isMixedEvent) {
-//       fSignalMomResTruthUnweightedAA->Fill(centBin, kstarTruth);
-//       fSignalMomResTruthVsPtAA->Fill(kstarTruth, pt1, pt2);
-//     }
-//     else {
-//       fBkgMomResTruthUnweightedAA->Fill(centBin, kstarTruth);
-//       fBkgMomResTruthVsPtAA->Fill(kstarTruth, pt1, pt2);
-//     }
-//     for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++)
-//     {
-//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
-//       if(!isMixedEvent) {
-//       fHistsSignalMomResTruthAA[i]->Fill(centBin, kstarTruth, weight);
-//       fHistsSignalMomResRecAA[i]->Fill(centBin, kstarRec, weight);
-//       }
-//       else {
-// 	fHistsBkgMomResTruthAA[i]->Fill(centBin, kstarTruth);
-// 	fHistsBkgMomResRecAA[i]->Fill(centBin, kstarRec);
-//       }
-//     }
-//   } // end LL or AA pairs
+  Double_t kstarRec = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda, fPDGLambda);
+  Double_t kstarTruth = CalculateKstar(v01.v0MomentumTruth, v02.v0MomentumTruth, fPDGLambda, fPDGLambda);
 
-//   if(2 == pairType) {
-//     if(!isMixedEvent) {
-//       fSignalMomResTruthUnweightedLA->Fill(centBin, kstarTruth);
-//       fSignalMomResTruthVsPtLA->Fill(kstarTruth, pt1, pt2);
-//     }
-//     else {
-//       fBkgMomResTruthUnweightedLA->Fill(centBin, kstarTruth);
-//       fBkgMomResTruthVsPtLA->Fill(kstarTruth, pt1, pt2);
-//     }
-//     for(UInt_t i = 0; i < fLednickyWeightsLA.size(); i++)
-//     {
-//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
+  // Fill the matrices with all pairs that pass reconstruction cuts, even if they aren't primary lambdas
+  if (!isMixedEvent) {
+    if (type == kLamLam) {
+      fResMatrixLLSameAll->Fill(kstarTruth, kstarRec);
+    } else if (type == kALamALam) {
+      fResMatrixAASameAll->Fill(kstarTruth, kstarRec);
+    } else if (type == kLamALam || type == kALamLam) {
+      fResMatrixLASameAll->Fill(kstarTruth, kstarRec);
+    } else {
+      cerr << "AliAnalysisV0Lam - Not a valid pair type. Cannot fill resolution matrix." << endl;
+    }
+  } else {
+    if (type == kLamLam) {
+      fResMatrixLLMixedAll->Fill(kstarTruth, kstarRec);
+    } else if (type == kALamALam) {
+      fResMatrixAAMixedAll->Fill(kstarTruth, kstarRec);
+    } else if (type == kLamALam || type == kALamLam) {
+      fResMatrixLAMixedAll->Fill(kstarTruth, kstarRec);
+    } else {
+      cerr << "AliAnalysisV0Lam - Not a valid pair type. Cannot fill resolution matrix." << endl;
+    }
+  }
 
-//       if(!isMixedEvent) {
-// 	fHistsSignalMomResTruthLA[i]->Fill(centBin, kstarTruth, weight);
-// 	fHistsSignalMomResRecLA[i]->Fill(centBin, kstarRec, weight);
-//       }
-//       else {
-// 	fHistsBkgMomResTruthLA[i]->Fill(centBin, kstarTruth);
-// 	fHistsBkgMomResRecLA[i]->Fill(centBin, kstarRec);
-//       }
-//     }
-//   } // end LA pairs
-// }
+  // Fill the matrices with pairs of true primary lambdas
+  if ((v01.mcOriginType == AliReconstructedV0::kPrimaryLambda || v01.mcOriginType == AliReconstructedV0::kPrimaryAntiLambda) &&
+      (v02.mcOriginType == AliReconstructedV0::kPrimaryLambda || v02.mcOriginType == AliReconstructedV0::kPrimaryAntiLambda)) {
+    if (!isMixedEvent) {
+      if (type == kLamLam) {
+	fResMatrixLLSamePure->Fill(kstarTruth, kstarRec);
+      } else if (type == kALamALam) {
+	fResMatrixAASamePure->Fill(kstarTruth, kstarRec);
+      } else if (type == kLamALam || type == kALamLam) {
+	fResMatrixLASamePure->Fill(kstarTruth, kstarRec);
+      } else {
+	cerr << "AliAnalysisV0Lam - Not a valid pair type. Cannot fill resolution matrix." << endl;
+      }
+    } else {
+      if (type == kLamLam) {
+	fResMatrixLLMixedPure->Fill(kstarTruth, kstarRec);
+      } else if (type == kALamALam) {
+	fResMatrixAAMixedPure->Fill(kstarTruth, kstarRec);
+      } else if (type == kLamALam || type == kALamLam) {
+	fResMatrixLAMixedPure->Fill(kstarTruth, kstarRec);
+      } else {
+	cerr << "AliAnalysisV0Lam - Not a valid pair type. Cannot fill resolution matrix." << endl;
+      }
+    }
+  }
 
-// Double_t AliAnalysisV0Lam::GetLednickyWeight(UInt_t histIndex, Double_t kstar, Int_t pairType)
-// {
-//   // Get the lednicky weight for a given kstar bin from a particular
-//   // Lednicky Weight histogram
   
-//   TH1D *hist;
-//   if(2 == pairType) hist = fLednickyWeightsLA[histIndex];
-//   else hist = fLednickyWeightsLL[histIndex];
-//   Double_t bin = hist->FindBin(kstar);
-//   return hist->GetBinContent(bin);
-// }
-
-
-
-
-
-
-
+}
 
 
 bool AliAnalysisV0Lam::RejectEventCentFlat(float MagField, float CentPercent)
