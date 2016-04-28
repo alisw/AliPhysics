@@ -1,57 +1,71 @@
 #ifndef ALIANALYSISTASKEMCALJETSAMPLE_H
 #define ALIANALYSISTASKEMCALJETSAMPLE_H
+/**
+ * \file AliAnalysisTaskEmcalJetSample.h
+ * \brief Declaration of class AliAnalysisTaskEmcalJetSample
+ *
+ * In this header file the class AliAnalysisTaskEmcalJetSample is declared.
+ * This is a sample task that shows how to write a simple user analysis task
+ * using the EMCal jet framework. It is also used to do automatic benchmark
+ * tests of the software.
+ *
+ * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \date Apr 27, 2016
+ */
 
-// $Id$
-
-class TH1;
-class TH2;
-class TH3;
-class AliJetContainer;
-class AliParticleContainer;
-class AliClusterContainer;
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "THistManager.h"
 
+/**
+ * \class AliAnalysisTaskEmcalJetSample
+ * \brief Implementation of a sample jet analysis task.
+ *
+ * This class in an implementation of a sample task for EMCal jet analysis.
+ * It derives from AliAnalysisTaskEmcalJet.
+ * It performs a simple analysis, producing track, cluster and jet spectra.
+ * It also generates trigger patch spectra and basic QA on EMCal cells and
+ * trigger FastOR amplitudes.
+ * It also performs a QA of the cluster-track matching.
+ * Note: if jets are not used this class can be simplified by deriving
+ * from AliAnalysisTaskEmcal and removing the functions DoJetLoop()
+ * and AllocateJetHistograms().
+ */
 class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskEmcalJetSample();
-  AliAnalysisTaskEmcalJetSample(const char *name);
-  virtual ~AliAnalysisTaskEmcalJetSample();
+  AliAnalysisTaskEmcalJetSample()                                               ;
+  AliAnalysisTaskEmcalJetSample(const char *name)                               ;
+  virtual ~AliAnalysisTaskEmcalJetSample()                                      ;
 
-  void                        UserCreateOutputObjects();
-  void                        Terminate(Option_t *option);
+  void                        UserCreateOutputObjects()                         ;
+  void                        Terminate(Option_t *option)                       ;
 
  protected:
-  void                        ExecOnce();
-  Bool_t                      FillHistograms()   ;
-  Bool_t                      Run()              ;
-  void                        CheckClusTrackMatching();
+  void                        ExecOnce()                                        ;
+  Bool_t                      FillHistograms()                                  ;
+  Bool_t                      Run()                                             ;
 
-  // General histograms
-  TH1                       **fHistTracksPt;            //!Track pt spectrum
-  TH1                       **fHistClustersPt;          //!Cluster pt spectrum
-  TH1                       **fHistLeadingJetPt;        //!Leading jet pt spectrum
-  TH2                       **fHistJetsPhiEta;          //!Phi-Eta distribution of jets
-  TH2                       **fHistJetsPtArea;          //!Jet pt vs. area
-  TH2                       **fHistJetsPtLeadHad;       //!Jet pt vs. leading hadron
-  TH2                       **fHistJetsCorrPtArea;      //!Jet pt - bkg vs. area
-  TH3                        *fHistPtDEtaDPhiTrackClus; //!track pt, delta eta, delta phi to matched cluster
-  TH3                        *fHistPtDEtaDPhiClusTrack; //!cluster pt, delta eta, delta phi to matched track
-  TH1                       **fHistNTracks;             //! number of tracks per event
+  void                        AllocateJetHistograms()                           ;
+  void                        AllocateTrackHistograms()                         ;
+  void                        AllocateClusterHistograms()                       ;
+  void                        AllocateCellHistograms()                          ;
 
-  TH1                        *fHistClustDx; //!
-  TH1                        *fHistClustDz; //!
-  TH1                        *fNAccJets;    //! number of jets per event
+  void                        DoJetLoop()                                       ;
+  void                        DoTrackLoop()                                     ;
+  void                        DoClusterLoop()                                   ;
+  void                        DoCellLoop()                                      ;
 
-  AliJetContainer            *fJetsCont;                   //!Jets
-  AliParticleContainer       *fTracksCont;                 //!Tracks
-  AliClusterContainer        *fCaloClustersCont;           //!Clusters  
+  THistManager                fHistManager                                      ;///< Histogram manager
 
  private:
-  AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&);            // not implemented
+  AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&)           ; // not implemented
   AliAnalysisTaskEmcalJetSample &operator=(const AliAnalysisTaskEmcalJetSample&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSample, 6) // jet sample analysis task
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalJetSample, 7);
+  /// \endcond
 };
 #endif

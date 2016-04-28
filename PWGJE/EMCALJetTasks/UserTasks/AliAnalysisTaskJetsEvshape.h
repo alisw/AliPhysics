@@ -47,6 +47,7 @@ public:
       kHistStat = 0,
       kHistJetPt,
       kHistMult,
+      kHistJetPtVsMult,
       kHistLast
   };
 

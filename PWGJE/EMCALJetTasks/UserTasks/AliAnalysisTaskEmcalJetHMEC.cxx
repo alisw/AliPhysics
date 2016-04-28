@@ -312,6 +312,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     if (jet->Pt() > 15) {
 
       AliVTrack * track = 0;
+      tracks->ResetCurrentID();
       while ((track = tracks->GetNextAcceptTrack())) {
 
         // Determine relative angles and distances and set the respective variables
@@ -499,7 +500,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::BiasedJet(AliEmcalJet * jet)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHMEC::GetDeltaEtaDeltaPhiDeltaR(AliVParticle * particleOne, AliVParticle * particleTwo, Double_t & deltaPhi, Double_t & deltaEta, Double_t & deltaR)
+void AliAnalysisTaskEmcalJetHMEC::GetDeltaEtaDeltaPhiDeltaR(AliVParticle * particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR)
 {
   // TODO: Understand order of arguments to DeltaPhi vs DeltaEta
   // Returns deltaPhi in symmetric range so that we can calculate DeltaR.

@@ -787,6 +787,143 @@ void AliRsnCutSetDaughterParticle::Init()
       SetCutScheme( Form("%s&%s",fCutQuality->GetName(), iCutTPCNSigma->GetName()) );
       break;
 
+      
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed:
+      
+      /* 
+	 28/04/2016: Neelima Agrawal
+	 Roberto Preghenella (preghenella@bo.infn.it)
+	 
+	 Pb-Pb for pions, kaons and protons
+	 tuned to work for both Pb-Pb 2010/2011 data
+	 
+	 - TPC PID enlarged at 5(7) sigma at low momentum for
+	 kaons   < 0.30(0.20) GeV/c
+	 protons < 0.50(0.25) GeV/c
+	 
+	 - TOF PID veto for
+	 pions   > 0.40 GeV/c
+	 kaon    > 0.45 GeV/c
+	 protons > 0.80 GeV
+	 
+	 - TOF PID required for
+	 kaons   > 0.55 GeV/c
+	 protons > 1.00 GeV/c
+      */
+      
+      /* pion cuts */
+      if (fPID == AliPID::kPion) {
+	iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.40);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.40, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* kaon cuts */
+      if (fPID == AliPID::kKaon) {
+	iCutTPCNSigma->AddPIDRange(7.00      , 0.00, 0.20);
+	iCutTPCNSigma->AddPIDRange(5.00      , 0.20, 0.30);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.30, 0.55);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.45);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.45, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* proton cuts */
+      if (fPID == AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(7.00      , 0.00, 0.25);
+	iCutTPCNSigma->AddPIDRange(5.00      , 0.25, 0.50);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.50, 1.00);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.80);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.80, 1.e6);
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+      SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
+      break;
+      
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFveto:
+      
+      /* 
+	 28/04/2016: Neelima Agrawal
+	 Roberto Preghenella (preghenella@bo.infn.it)
+	 
+	 Pb-Pb for pions, kaons and protons
+	 tuned to work for both Pb-Pb 2010/2011 data
+	 
+	 - TPC PID enlarged at 5(7) sigma at low momentum for
+	 kaons   < 0.30(0.20) GeV/c
+	 protons < 0.50(0.25) GeV/c
+	 
+	 - TOF PID veto for
+	 pions   > 0.40 GeV/c
+	 kaon    > 0.45 GeV/c
+	 protons > 0.80 GeV
+	 
+      */
+      
+      /* pion cuts */
+      if (fPID == AliPID::kPion) {
+	iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.40);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.40, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* kaon cuts */
+      if (fPID == AliPID::kKaon) {
+	iCutTPCNSigma->AddPIDRange(7.00      , 0.00, 0.20);
+	iCutTPCNSigma->AddPIDRange(5.00      , 0.20, 0.30);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.30, 1.e6);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.45);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.45, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* proton cuts */
+      if (fPID == AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(7.00      , 0.00, 0.25);
+	iCutTPCNSigma->AddPIDRange(5.00      , 0.25, 0.50);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.50, 1.e6);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.80);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.80, 1.e6);
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+      SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
+      break;
+
+      
     default :
       break;
     }

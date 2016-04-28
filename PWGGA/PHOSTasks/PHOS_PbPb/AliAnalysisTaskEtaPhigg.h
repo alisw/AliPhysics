@@ -13,6 +13,7 @@ class AliV0ReaderV1 ;
 class AliConvEventCuts ;
 class AliConversionPhotonCuts ;
 class AliAODConversionPhoton ;
+class AliEMCALGeometry ;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -46,7 +47,7 @@ public:
   
   
   
-private:
+protected:
   AliAnalysisTaskEtaPhigg(const AliAnalysisTaskEtaPhigg&); // not implemented
   AliAnalysisTaskEtaPhigg& operator=(const AliAnalysisTaskEtaPhigg&); // not implemented
 
@@ -61,18 +62,20 @@ private:
   Bool_t PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const ; 
   Bool_t SecondaryPi0Cut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2) const ;
   void ProcessPCMPhotonCandidates() ;
+  Bool_t TestPHOSEvent(AliAODEvent * event) ;
+  
 
-private:
+protected:
 //  AliStack * fStack ;
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;        //!
 //  TClonesArray * fStack ;  
-  TList *       fPHOSEvents[10][10][1] ; //Containers for events with PHOS photons
-  TList *       fPCMEvents[10][10][1] ; //Containers for events with PHOS photons
-  TClonesArray* fHadrEvents[10][10][1] ; //Containers for events with PHOS photons
-  TClonesArray* fPHOSEvent ;      //PHOS photons in current event
-  TClonesArray* fPCMEvent ;       //PCM photons in current event
-  TClonesArray* fHadrEvent;       //hadrons
+  TList *       fPHOSEvents[10][10][10] ;  //Containers for events with PHOS photons
+  TList *       fEMCALEvents[10][10][10] ; //Containers for events with EMCAL photons
+  TList *       fPCMEvents[10][10][10] ;   //Containers for events with PHOS photons
+  TClonesArray* fPHOSEvent ;     //PHOS photons in current event
+  TClonesArray* fEMCALEvent ;    //EMCAL photons in current event
+  TClonesArray* fPCMEvent ;      //PCM photons in current event
   
   //Reaction plain for v2
   AliEPFlattener * fV0AFlat ; //!
@@ -84,6 +87,7 @@ private:
   Int_t fCenBin ;       //! Current centrality bin
 
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
+  AliEMCALGeometry *fEMCALgeo; //! EMCAL geometry
   Int_t fEventCounter;         // number of analyzed events
 
   AliV0ReaderV1	*fV0Reader;											//

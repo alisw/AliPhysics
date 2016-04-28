@@ -251,7 +251,7 @@ Bool_t AliRsnCutPrimaryVertex::GoodDispersionSPD()
 //__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack(const AliESDVertex *vTrk, const AliESDVertex *vSPD)
 {
-   if(!vTrk || !vSPD) return kTRUE;
+   if(!vTrk || vTrk->GetNContributors()<1 || !vSPD) return kTRUE;
    Double_t vzTrk = vTrk->GetZ();
    Double_t vzSPD = vSPD->GetZ();
    if(TMath::Abs(vzTrk - vzSPD)>fMaxZDifferenceSPDTrack) return kFALSE;
@@ -261,7 +261,7 @@ Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack(const AliESDVertex *vTrk,
 //__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodZDifferenceSPDTrack(AliAODVertex *vTrk, AliAODVertex *vSPD)
 {
-   if(!vTrk || !vSPD) return kTRUE;
+   if(!vTrk || vTrk->GetNContributors()<1 || !vSPD) return kTRUE;
    Double_t vzTrk = vTrk->GetZ();
    Double_t vzSPD = vSPD->GetZ();
    if(TMath::Abs(vzTrk - vzSPD)>fMaxZDifferenceSPDTrack) return kFALSE;

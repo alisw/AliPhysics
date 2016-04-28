@@ -21,6 +21,7 @@
 #pragma link C++ class AliAnalysisTaskPHOSPCMgg+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMC+;
 #pragma link C++ class AliAnalysisTaskEtaPhigg+;
+#pragma link C++ class AliAnalysisTaskEtaPhiMultgg+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCAOD+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCHijing+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCParamWeights+;

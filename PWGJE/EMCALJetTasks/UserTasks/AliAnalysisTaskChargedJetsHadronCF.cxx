@@ -189,6 +189,12 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_100", "Jet constituent count vs. jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_10", "Jet constituent count vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
 
+  // Random cone plots
+  AddHistogram2D<TH2D>("hRandomConePt", "Random cone p_{T} distribution", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConeRawPt", "Random cone p_{T} distribution (no bgrd. correction)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+
+  // Leading/subleading, background ...
+
   AddHistogram2D<TH2D>("hLeadingJetPtRaw", "Jets p_{T} distribution (no bgrd. corr.)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPt", "Jets p_{T} distribution (background subtracted)", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hLeadingJetPhi", "Jet angular distribution #phi", "LEGO2", 180, 0., 2*TMath::Pi(), fNumberOfCentralityBins, 0, 100, "#phi", "Centrality", "dN^{Jets}/d#phi");
@@ -447,6 +453,7 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
     if( (fCent >= 0) && (fCent < 10) )
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt()); 
+
   }
 
   FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
@@ -527,6 +534,11 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
 
   // ####### Particle loop
+  // Throw random cone
+  Double_t tmpRandConeEta = fJetsCont->GetJetEtaMin() + fRandom->Rndm()*TMath::Abs(fJetsCont->GetJetEtaMax()-fJetsCont->GetJetEtaMin());
+  Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
+  Double_t tmpRandConePt  = 0; // to be determined
+
   fAcceptedTracks = 0;
   fTracksCont->ResetCurrentID();
   Int_t trackcount = 0;
@@ -535,12 +547,18 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     // Track plots
     FillHistogramsTracks(track);
 
+    if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, fJetsCont->GetJetRadius()))
+      tmpRandConePt += track->Pt();
+
     // Add track to output array
     trackcount++;
     AddTrackToOutputArray(track);
   }
 
   // ####### Event properties
+  FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+  FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
+
   FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
   FillHistogram("hJetCount", fAcceptedJets, fCent);
   FillHistogram("hTrackCount", trackcount, fCent);
@@ -560,6 +578,26 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 //########################################################################
 // HELPERS
 //########################################################################
+
+
+//________________________________________________________________________
+inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius)
+{
+  // This is to use a full cone in phi even at the edges of phi (2pi -> 0) (0 -> 2pi)
+  Double_t trackPhi = 0.0;
+  if (track->Phi() > (TMath::TwoPi() - (radius-phi)))
+    trackPhi = track->Phi() - TMath::TwoPi();
+  else if (track->Phi() < (phi+radius - TMath::TwoPi()))
+    trackPhi = track->Phi() + TMath::TwoPi();
+  else
+    trackPhi = track->Phi();
+  
+  if ( TMath::Abs(trackPhi-phi)*TMath::Abs(trackPhi-phi) + TMath::Abs(track->Eta()-eta)*TMath::Abs(track->Eta()-eta) <= radius*radius)
+    return kTRUE;
+  
+  return kFALSE;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::CalculateEventProperties()

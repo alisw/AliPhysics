@@ -58,6 +58,8 @@ public:
     kTPCTOFpidLstarPbPb2011elRej,//cuts for L* in AA with electron rejection
     kTPCTOFpidphipp2015,//TPC+TOF cuts for phi in pp 13 TeV (LHC15f)
     kTPCpidphipp2015,//TPC cuts for phi in pp 13 TeV (LHC15f)
+    kTPCTOFpidTunedPbPbTOFveto, // Pb-Pb cuts tuned for Pb-Pb 2010/2011 (TOF veto)
+    kTPCTOFpidTunedPbPbTOFneed, // Pb-Pb cuts tuned for Pb-Pb 2010/2011 (TOF needed)
     kNDaughterCuts
   };
 

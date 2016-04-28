@@ -39,7 +39,7 @@ class AliESDEvent;
 #include <AliLog.h>
 #include <AliEMCALTriggerChannelContainer.h>
 
-#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisTaskEmcalLight.h"
 
 /**
  * \class AliEmcalTriggerQATask
@@ -47,7 +47,7 @@ class AliESDEvent;
  *
  * This Class does some fast QA of the EMCal trigger. Useful also to tune trigger thresholds.
  */
-class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
+class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
  public:
 
   AliEmcalTriggerQATask();
@@ -87,7 +87,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcal {
   AliEmcalTriggerQATask &operator=(const AliEmcalTriggerQATask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATask, 3)
+  ClassDef(AliEmcalTriggerQATask, 4);
   /// \endcond
 };
 
