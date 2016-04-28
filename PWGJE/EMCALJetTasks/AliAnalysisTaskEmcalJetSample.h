@@ -26,8 +26,6 @@
  * This class in an implementation of a sample task for EMCal jet analysis.
  * It derives from AliAnalysisTaskEmcalJet.
  * It performs a simple analysis, producing track, cluster and jet spectra.
- * It also generates trigger patch spectra and basic QA on EMCal cells and
- * trigger FastOR amplitudes.
  * It also performs a QA of the cluster-track matching.
  * Note: if jets are not used this class can be simplified by deriving
  * from AliAnalysisTaskEmcal and removing the functions DoJetLoop()
