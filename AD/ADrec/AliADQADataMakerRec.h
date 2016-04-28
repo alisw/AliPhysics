@@ -95,11 +95,12 @@ private:
   Float_t fADCmean[32];               // mean adc per integrator
   size_t fTrendingUpdateTime;         // trending histos update time
   UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
-  UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
+  UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle		      
   Float_t fADADist;     	      // Z position of ADA
   Float_t fADCDist;     	      // Z position of ADC
+  UInt_t fOldRun;
 
-  ClassDef(AliADQADataMakerRec,3)  // description 
+  ClassDef(AliADQADataMakerRec,4)  // description 
 
 };
 
