@@ -223,6 +223,9 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH3F(Form("hdPhiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
     fOutputContainer->Add(new TH3F(Form("hmidPhiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
     
+    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi(),TMath::Pi(),100,0.,5.));
+    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi(),TMath::Pi(),100,0.,5.));
+
     fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
     fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
 
@@ -382,7 +385,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
     if(!arr){
       AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
-      arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
+      arr = (TObjArray*)flatContainer.GetObject(170593,"phosFlat"); //default
     }
         
     AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
@@ -828,10 +831,12 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
 	
  	FillHistogram(Form("hdPhiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
 	
-        if(TMath::Abs(asym)<asymCut)
+        if(TMath::Abs(asym)<asymCut){
+          FillHistogram(Form("hEtaPhiPHOS_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
 	  if(ph1->Module()==ph2->Module())
             FillHistogram(Form("hEtaPhiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-
+	}
+	
 	if(kTbin.Length()) 
  	  FillHistogram(Form("hEtaPhiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
 	  
@@ -1068,6 +1073,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
  	  FillHistogram(Form("hmidPhiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
 	  	  
           if(TMath::Abs(asym)<asymCut){
+            FillHistogram(Form("hmiEtaPhiPHOS_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
 	    if(ph1->Module()==ph2->Module())
               FillHistogram(Form("hmiEtaPhiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
  	    if(TMath::Abs(dEta)>kEtaHBTcut)
@@ -2170,7 +2176,7 @@ Bool_t AliAnalysisTaskEtaPhigg::TestPHOSEvent(AliAODEvent * event){
   for(Int_t mod=2; mod<8; mod++){
     if(a[mod]==0){
       bad=kTRUE;
-      FillHistogram("hBadMod",float(mod)) ;
+//      FillHistogram("hBadMod",float(mod)) ;
     }
   }
   
