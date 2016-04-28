@@ -1767,6 +1767,169 @@ Double_t AliTrackletAODUtils::RatioE2(Double_t n, Double_t e2n,
   return r;
 }
 
+//____________________________________________________________________
+Int_t* AliTrackletAODUtils::PdgArray(Int_t& size)
+{
+  static Int_t codes[] = {
+    211,        // #pi^{+}			 
+    2212, 	  // p				 
+    321, 	  // K^{+}			 
+    323, 	  // K^{*+}			 
+    11, 	  // e^{-}			 
+    13, 	  // #mu^{-}			 
+    213, 	  // #rho^{+}			 
+    411, 	  // D^{+}			 
+    413, 	  // D^{*+}			 
+    431, 	  // D_{s}^{+}			 
+    433, 	  // D_{s}^{*+}			 
+    1114, 	  // #Delta^{-}			 
+    2214, 	  // #Delta^{+}			 
+    2224, 	  // #Delta^{++}			 
+    3112, 	  // #Sigma^{-}			 
+    3222, 	  // #Sigma^{+}			 
+    3114, 	  // #Sigma^{*-}			 
+    3224, 	  // #Sigma^{*+}			 
+    4214, 	  // #Sigma^{*+}_{c}		 
+    4224, 	  // #Sigma^{*++}_{c}		 
+    3312, 	  // #Xi^{-}			 
+    3314, 	  // #Xi^{*-}			 
+    4122, 	  // #Lambda^{+}_{c}		 
+    2112, 	  // n				 
+    2114, 	  // #Delta^{0}			 
+    22, 	  // #gamma			 
+    310, 	  // K^{0}_{S}			 
+    130, 	  // K^{0}_{L}			 
+    311, 	  // K^{0}			 
+    313, 	  // K^{*}			 
+    221, 	  // #eta				 
+    111, 	  // #pi^{0}			 
+    113, 	  // #rho^{0}			 
+    333, 	  // #varphi			 
+    331, 	  // #eta'			 
+    223, 	  // #omega			 
+    3122, 	  // #Lambda			 
+    3212, 	  // #Sigma^{0}			 
+    4114, 	  // #Sigma^{*0}_{c}		 
+    3214, 	  // #Sigma^{*0}			 
+    421, 	  // D^{0}			 
+    423, 	  // D^{*0}			 
+    3322, 	  // #Xi_{0}			 
+    3324, 	  // #Xi^{*0}			 
+    4132, 	  // #Xi^{0}_{c}			 
+    4314,	  // #Xi^{*0}_{c}
+    1000000000  // Nuclei			 
+  };
+  static Int_t  nCodes = sizeof(codes) / sizeof(Int_t);
+  static Int_t* sorted = 0;
+  size = nCodes;
+  if (sorted) return sorted;
+  
+  sorted     = new Int_t[nCodes];
+  Int_t* idx = new Int_t[nCodes];
+  TMath::Sort(nCodes, codes, idx, false);
+  for (Int_t i = 0; i < nCodes; i++) sorted[i] = codes[idx[i]];
+  delete [] idx;
+  return sorted;
+}
+
+//____________________________________________________________________
+void AliTrackletAODUtils::PdgAttr(Int_t pdg, TString& nme,
+				  Color_t& c, Style_t& s)
+{
+  // Leptons are black
+  // Non-strange, non-charm meson are red
+  // Non-strange, non-charm baryons are magenta
+  // Strange-mesons are blue 
+  // Strange-baryons are cyan
+  // Charmed mesons are green
+  // Charmed baryons are yellow
+  switch (pdg) {
+  case -1:        c=kPink   +7; s=20; nme="?";               break;
+  case 11: 	  c=kBlack  +0; s=20; nme="e^{-}"; 	     break;
+  case 13: 	  c=kBlack  +0; s=21; nme="#mu^{-}"; 	     break;
+  case 22: 	  c=kBlack  +0; s=22; nme="#gamma"; 	     break;
+  case 111: 	  c=kRed    +2; s=20; nme="#pi^{0}"; 	     break;
+  case 211:       c=kRed    +2; s=21; nme="#pi^{+}";         break;
+  case 213: 	  c=kRed    +2; s=22; nme="#rho^{+}"; 	     break;
+  case 113: 	  c=kRed    +2; s=23; nme="#rho^{0}"; 	     break;
+  case 223: 	  c=kRed    +2; s=24; nme="#omega"; 	     break;
+  case 321: 	  c=kBlue   +2; s=20; nme="K^{+}"; 	     break;
+  case 323: 	  c=kBlue   +2; s=21; nme="K^{*+}"; 	     break;
+  case 310: 	  c=kBlue   +2; s=22; nme="K^{0}_{S}"; 	     break;
+  case 130: 	  c=kBlue   +2; s=23; nme="K^{0}_{L}"; 	     break;
+  case 311: 	  c=kBlue   +2; s=24; nme="K^{0}"; 	     break;
+  case 313: 	  c=kBlue   +2; s=25; nme="K^{*}"; 	     break;
+  case 221: 	  c=kBlue   +2; s=26; nme="#eta"; 	     break;
+  case 333: 	  c=kBlue   +2; s=27; nme="#varphi"; 	     break;
+  case 331: 	  c=kBlue   +2; s=28; nme="#eta'"; 	     break;
+  case 411: 	  c=kGreen  +2; s=20; nme="D^{+}"; 	     break;
+  case 413: 	  c=kGreen  +2; s=21; nme="D^{*+}"; 	     break;
+  case 421: 	  c=kGreen  +2; s=22; nme="D^{0}"; 	     break;
+  case 423: 	  c=kGreen  +2; s=23; nme="D^{*0}"; 	     break;
+  case 431: 	  c=kGreen  +2; s=24; nme="D_{s}^{+}"; 	     break;
+  case 433: 	  c=kGreen  +2; s=25; nme="D_{s}^{*+}";      break;
+  case 2212: 	  c=kMagenta+2; s=20; nme="p"; 	             break;
+  case 2112: 	  c=kMagenta+2; s=21; nme="n"; 	             break;
+  case 2114: 	  c=kMagenta+2; s=22; nme="#Delta^{0}";      break;
+  case 1114: 	  c=kMagenta+2; s=23; nme="#Delta^{-}";      break;
+  case 2214: 	  c=kMagenta+2; s=24; nme="#Delta^{+}";	     break;
+  case 2224: 	  c=kMagenta+2; s=25; nme="#Delta^{++}";     break;
+  case 3112: 	  c=kCyan   +2; s=20; nme="#Sigma^{-}";      break;
+  case 3222: 	  c=kCyan   +2; s=21; nme="#Sigma^{+}";      break;
+  case 3114: 	  c=kCyan   +2; s=22; nme="#Sigma^{*-}";     break;
+  case 3224: 	  c=kCyan   +2; s=23; nme="#Sigma^{*+}";     break;
+  case 3312: 	  c=kCyan   +2; s=24; nme="#Xi^{-}"; 	     break;
+  case 3314: 	  c=kCyan   +2; s=25; nme="#Xi^{*-}"; 	     break;
+  case 3122: 	  c=kCyan   +2; s=26; nme="#Lambda"; 	     break;
+  case 3212: 	  c=kCyan   +2; s=27; nme="#Sigma^{0}";      break;
+  case 3214: 	  c=kCyan   +2; s=28; nme="#Sigma^{*0}";     break;
+  case 3322: 	  c=kCyan   +2; s=29; nme="#Xi_{0}"; 	     break;
+  case 3324: 	  c=kCyan   +2; s=30; nme="#Xi^{*0}"; 	     break;
+  case 4214: 	  c=kYellow +2; s=20; nme="#Sigma^{*+}_{c}"; break;
+  case 4224: 	  c=kYellow +2; s=21; nme="#Sigma^{*++}_{c}";break;
+  case 4122: 	  c=kYellow +2; s=22; nme="#Lambda^{+}_{c}"; break;
+  case 4114: 	  c=kYellow +2; s=23; nme="#Sigma^{*0}_{c}"; break;
+  case 4132: 	  c=kYellow +2; s=24; nme="#Xi^{0}_{c}";     break;
+  case 4314:	  c=kYellow +2; s=25; nme="#Xi^{*0}_{c}";    break;
+  case 1000000000:c=kPink   +2; s=20; nme="Nuclei";          break;
+  default:        c=kGray;      s=1;  nme.Form("%d",pdg);    break;
+  };
+}
+
+//____________________________________________________________________
+Int_t AliTrackletAODUtils::PdgBin(Int_t pdg)
+{
+  Int_t  size;
+  Int_t* array = PdgArray(size);
+  Int_t  apdg  = TMath::Abs(pdg);
+  Int_t  idx   = TMath::BinarySearch(size, array, apdg);
+  if (idx        == size - 1) return idx+1;
+  if (array[idx] != apdg)     return size+1;
+  return idx+1;
+}
+
+//____________________________________________________________________
+const TAxis& AliTrackletAODUtils::PdgAxis()
+{
+  static TAxis* axis = 0;
+  if (axis) return *axis;
+
+  Int_t         size;
+  Int_t*        array = PdgArray(size);
+  axis                = new TAxis(size+1, +.5, size+1.5);
+  // TDatabasePDG* pdgDb = TDatabasePDG::Instance();
+  for (Int_t i = 1; i <= size; i++) {
+    Int_t         pdg  = array[i-1];
+    axis->SetBinLabel(i, Form("%d", pdg));
+    // TString       name = "?";
+    // TParticlePDG* type = pdgDb->GetParticle(pdg);
+    // if (type)     name = type->GetName();
+    // axis->SetBinLabel(i, name.Data());
+  }
+  axis->SetBinLabel(size+1, "-1");
+  return *axis;
+}
+    
 #endif
 // Local Variables:
 //  mode: C++

@@ -420,6 +420,7 @@ public:
 	fVeto(veto),
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
+	fEtaPdgIPz(0),
 	fColor(color),
 	fStyle(style)
     {}
@@ -433,7 +434,10 @@ public:
 	fMask(o.fMask),
 	fVeto(o.fVeto),
 	fEtaIPz(0),
-	fEtaDeltaIPz(0)
+	fEtaDeltaIPz(0),
+	fEtaPdgIPz(0),
+	fColor(o.fColor),
+	fStyle(o.fStyle)
     {}
     /**
      * Destructor 
@@ -554,10 +558,11 @@ public:
      */
     void Print(Option_t* option="") const;
   protected:
-    UChar_t fMask;
-    UChar_t fVeto;
-    TH2*    fEtaIPz;    //!
-    TH3*    fEtaDeltaIPz;  //!
+    const UChar_t fMask;
+    const UChar_t fVeto;
+    TH2*          fEtaIPz;       //!
+    TH3*          fEtaDeltaIPz;  //!
+    TH3*          fEtaPdgIPz;    //! 
   public:
     Color_t fColor;
     Style_t fStyle;
@@ -1746,6 +1751,12 @@ void AliTrackletAODdNdeta::Histos::SetAttr(Color_t c, Style_t m)
     fEtaDeltaIPz->SetLineColor(c);
     fEtaDeltaIPz->SetFillColor(c);
   }
+  if (fEtaPdgIPz) {
+    fEtaPdgIPz->SetMarkerStyle(m);
+    fEtaPdgIPz->SetMarkerColor(c);
+    fEtaPdgIPz->SetLineColor(c);
+    fEtaPdgIPz->SetFillColor(c);
+  }    
 }
 
 //____________________________________________________________________
@@ -2119,6 +2130,16 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
     fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
   if (fEtaDeltaIPz && (signal & 0x2)) // just check dPhi
     fEtaDeltaIPz->Fill(tracklet->GetEta(), tracklet->GetDelta(), ipZ, weight);
+  if (fEtaPdgIPz) {
+    fEtaPdgIPz->Fill(tracklet->GetEta(),
+		     PdgBin(tracklet->GetParentPdg()),
+		     ipZ, weight);
+    if (tracklet->IsCombinatorics())
+      // Fill both particles 
+      fEtaPdgIPz->Fill(tracklet->GetEta(),
+		       PdgBin(tracklet->GetParentPdg(true)),
+		       ipZ, weight);
+  }
   return true;
 }
 
@@ -2170,8 +2191,9 @@ Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
 Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
 {
   fContainer   = GetC(parent, fName);
-  fEtaIPz      = GetH2(fContainer, "etaIPz", false); // No complaints
+  fEtaIPz      = GetH2(fContainer, "etaIPz",      false); // No complaints
   fEtaDeltaIPz = GetH3(fContainer, "etaDeltaIPz", false);
+  fEtaPdgIPz   = GetH3(fContainer, "etaPdgIPz",   false);
   if (GetName()[0] == 'm' && GetC(parent,"generated")) {
     // Fix up titles 
     if (fEtaIPz)
@@ -2309,14 +2331,80 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
+  TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
 
+  // If we have the PDG distributions, we project on eta,IPz, and then
+  // average over IPz to get dNpdg/deta.
+  if (fEtaPdgIPz) {
+    // Scale each vertex range by number of events in that range
+    TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
+    result->Add(etaPdgIPz);
+
+    // Loop over PDG types and create 2D and 1D distributions 
+    TAxis*     yaxis  = etaPdgIPz->GetYaxis();
+    Int_t      first  = yaxis->GetFirst();
+    Int_t      last   = yaxis->GetLast();
+    THStack*   pdgs   = new THStack("all","");
+    THStack*   ratios = new THStack("toPion", "");
+    TH1*       pion   = 0;
+    Container* pdgOut = new Container();
+    pdgOut->SetName("types");
+    result->Add(pdgOut);
+    pdgOut->Add(pdgs);
+    pdgOut->Add(ratios);
+    for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
+      yaxis->SetRange(i,i);
+
+      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+      TString nme;
+      Style_t sty;
+      Color_t col;
+      PdgAttr(pdg, nme, col, sty);
+      if (pdg < 0) pdg = 0;
+
+      TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
+      if (h2->GetEntries() <= 0) continue; // Do not store if empty
+      h2->SetDirectory(0);
+      h2->SetName(Form("etaIPz_%d", pdg));
+      h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
+      h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
+			 "(d#etadIP_{#it{z}})",
+			 nme.Data(), shn.Data()));
+      h2->SetFillColor(col);
+      h2->SetMarkerColor(col);
+      h2->SetLineColor(col);
+      pdgOut->Add(h2);
+
+      TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
+      h1->SetDirectory(0);
+      h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
+			 nme.Data(), shn.Data()));
+      h1->SetMarkerStyle(sty);
+      pdgs->Add(h1);
+
+      if (pdg == 211) pion = h1;
+    }
+    if (pdgs->GetHists()) {
+      TIter    next(pdgs->GetHists());
+      TH1*     tmp = 0;
+      while ((tmp = static_cast<TH1*>(next()))) {
+	if (tmp == pion) continue;
+	TH1* rat = static_cast<TH1*>(tmp->Clone());
+	rat->Divide(pion);
+	rat->SetDirectory(0);
+	ratios->Add(rat);
+      }
+    }
+    
+    yaxis->SetRange(first, last);    
+  }
   // If we do not have eta vs Delta, just return 
   if (!fEtaDeltaIPz) return true;
 
   // Normalize delta distribution to integral number of events
   // static_cast<TH3*>(CloneAndAdd(result, fEtaDeltaIPz));
-  TH3* etaDeltaIPz = ScaleToIPz(fEtaDeltaIPz, ipz,
-				ipz->GetEntries()>1000);
+  TH3* etaDeltaIPz = ScaleToIPz(fEtaDeltaIPz, ipz, false); 
+  // ipz->GetEntries()>1000);
   result->Add(etaDeltaIPz);
   
   // Make 2D projection to eta,Delta
