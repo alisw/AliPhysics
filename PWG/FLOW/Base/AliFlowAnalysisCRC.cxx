@@ -18100,7 +18100,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     if(ZCM < fPolMax[0]->Eval(fCentralityEBE) || ZAM < fPolMax[1]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
   }
   
-  if(fMinMulZN==3 || fMinMulZN==4) {
+  if(fMinMulZN==3 || fMinMulZN==4 || fMinMulZN==14) {
     Double_t ZCMd = ZCM;
     Double_t ZAMd = ZAM;
     if(fCorrMap[CenBin]) {
@@ -18108,13 +18108,13 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
       ZCMd -= fCorrMap[CenBin];
     }
     if(fMinMulZN==3) {
-      if(ZCMd-ZAMd > fZDCESEMinHist[0]->GetBinContent(fZDCESEMinHist[0]->FindBin(fCentralityEBE))) PassZDCcuts = kFALSE;
+      if(ZCMd-ZAMd > fPolMin[0]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
     }
     if(fMinMulZN==4) {
-      if(ZCMd-ZAMd < fZDCESEMaxHist[0]->GetBinContent(fZDCESEMaxHist[0]->FindBin(fCentralityEBE))) PassZDCcuts = kFALSE;
+      if(ZCMd-ZAMd < fPolMax[0]->Eval(fCentralityEBE)) PassZDCcuts = kFALSE;
     }
     if(fMinMulZN==14) {
-      if(ZCMd-ZAMd < fZDCESEMinHist[0]->GetBinContent(fZDCESEMinHist[0]->FindBin(fCentralityEBE)) || ZCMd-ZAMd > fZDCESEMaxHist[0]->GetBinContent(fZDCESEMaxHist[0]->FindBin(fCentralityEBE))) PassZDCcuts = kFALSE;
+      if((ZCMd-ZAMd < fPolMin[0]->Eval(fCentralityEBE)) || (ZCMd-ZAMd > fPolMax[0]->Eval(fCentralityEBE))) PassZDCcuts = kFALSE;
     }
   }
   
