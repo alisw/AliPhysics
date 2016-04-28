@@ -40,6 +40,8 @@
 #include "AliHLTOUTHandlerEquId.h"
 #include "AliHLTOUTHandlerEsdBranch.h"
 
+#include "AliFileUtilities.h"
+
 /** global instance for agent registration */
 AliHLTAgentSample gAliHLTAgentSample;
 
@@ -67,9 +69,10 @@ AliHLTAgentSample::~AliHLTAgentSample()
   // delete the test data
   ofstream dump(fgkAliHLTAgentSampleData, ios::in);
   if (dump.good()) {
-    TString arg("rm -f ");
-    arg+=fgkAliHLTAgentSampleData;
-    gSystem->Exec(arg.Data());
+    //TString arg("rm -f ");
+    //arg+=fgkAliHLTAgentSampleData;
+    //gSystem->Exec(arg.Data());
+    AliFileUtilities::RemoveLocalFile(fgkAliHLTAgentSampleData);
   }
 }
 

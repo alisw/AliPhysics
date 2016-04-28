@@ -41,6 +41,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliDetector.h"
+#include "AliFileUtilities.h"
 #include "AliGenerator.h"
 #include "AliGeomManager.h"
 #include "AliHeader.h"
@@ -2008,5 +2009,5 @@ void AliMC::ReorderAndExpandTreeTR()
     fTmpFileTR->Close();
     delete fTmpFileTR;
     fTmpTrackReferences.Clear();
-    gSystem->Exec("rm -rf TrackRefsTmp.root");
+    AliFileUtilities::RemoveLocalFile("TrackRefsTmp.root");
 }

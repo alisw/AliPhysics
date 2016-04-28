@@ -32,6 +32,7 @@
 
 #include "AliCDBLocal.h"
 #include "AliCDBEntry.h"
+#include "AliFileUtilities.h"
 #include "AliLog.h"
 using namespace std;
 
@@ -1039,7 +1040,8 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   }
 
   file.close();
-  gSystem->Exec( Form( "rm %s", runValidFile.Data() ) );
+  //gSystem->Exec( Form( "rm %s", runValidFile.Data() ) );
+  AliFileUtilities::RemoveLocalFile(runValidFile.Data());
   return;
 }
 

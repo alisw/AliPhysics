@@ -48,6 +48,7 @@ set(SRCS
     AliEventTag.cxx
     AliExternalTrackParam.cxx
     AliFileTag.cxx
+    AliFileUtilities.cxx
     AliGenCocktailEventHeader.cxx
     AliGenDPMjetEventHeader.cxx
     AliGenEpos3EventHeader.cxx
@@ -197,3 +198,9 @@ if(ALIROOT_STATIC)
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib)
 endif(ALIROOT_STATIC)
+
+
+
+#TEST programs
+add_executable(TestAliFileUtilities TestAliFileUtilities.cxx)
+target_link_libraries(TestAliFileUtilities STEERBase ${ROOT_LIBRARIES})
