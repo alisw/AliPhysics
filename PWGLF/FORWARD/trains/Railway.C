@@ -190,7 +190,7 @@ struct Railway
    * 
    * @param use Whether to use pars or not.  On return contains old value 
    */
-  virtual void UsePar(Bool_t&) {}
+  virtual void UsePar(Bool_t& use);
   /** 
    * Add an include path
    * 
@@ -647,6 +647,7 @@ protected:
 
 
 // ===================================================================
+void Railway::UsePar(Bool_t&) {}
 Railway* 
 Railway::Create(const TUrl& url, Int_t verbose)
 {
