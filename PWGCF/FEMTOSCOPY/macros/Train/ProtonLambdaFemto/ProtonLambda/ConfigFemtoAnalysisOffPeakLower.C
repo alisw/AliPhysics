@@ -55,7 +55,7 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(Bool_t fK0shortRemove=kFALSE) {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
@@ -211,6 +211,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
 	      dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
 	      dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
+	      if(fK0shortRemove) {
+		dtc1etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48, 0.515);
+	      }
 	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(1.077, 1.105);
 	      
 	      //V0 second particle cut -> AntiLambda ichg 1, 3, 4, 5
@@ -231,6 +234,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.3, 0.1);
 	      dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
 	      dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
+	      if(fK0shortRemove) {
+		dtc2etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48, 0.515);
+	      }
 	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(1.077, 1.105);
 	      
 	      
