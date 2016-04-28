@@ -55,8 +55,8 @@ public:
 
   Int_t  GetDebugLevel()        const { return fDebugLevel    ; }
 
-  void   EnablePatchType(PatchTypes_t type, Bool_t e = kTRUE);
-  void   EnableTriggerType(EMCalTriggerType_t type, Bool_t e = kTRUE);
+  void   EnablePatchType(PatchTypes_t patchtype, EMCalTriggerType_t triggertype, Bool_t e);
+  Bool_t IsPatchTypeEnabled(Int_t patchtype, Int_t triggertype) const;
   void   EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
   void   SetEMCALGeometry(const AliEMCALGeometry* geom) { fGeom = geom; }
 
@@ -82,27 +82,31 @@ public:
 
   static Int_t  GetAmplitude(const AliEMCALTriggerPatchInfo* patch, Int_t itype);
 
-  static const Int_t      fgkMaxPatchAmp[6];            ///< Maximum patch amplitude for the histograms
-  static const TString    fgkPatchTypes[3];             ///< Patch type names
+  static const Int_t fgkSM = 20;
+  static const Int_t fgkNPatchTypes = 3;
+  static const Int_t fgkNTriggerTypes = 6;
+  static const Int_t fgkNDet = 2;
+
+  static const Int_t      fgkMaxPatchAmp[fgkNTriggerTypes];          ///< Maximum patch amplitude for the histograms
+  static const TString    fgkPatchTypes[fgkNPatchTypes];             ///< Patch type names
 
 protected:
-  Bool_t                  fEnabledPatchTypes[3];        ///< Patch types to be plotted
-  Bool_t                  fEnabledTriggerTypes[6];      ///< Trigger types to be plotted
-  Int_t                   fFastorL0Th;                  ///< FastOR L0 threshold
-  Int_t                   fFastorL1Th;                  ///< FastOR L1 threshold
-  Int_t                   fADCperBin;                   ///< ADC counts per bin
-  Int_t                   fDebugLevel;                  ///< Debug level
-  UInt_t                  fTimeStampBinWidth;           ///< Time stamp bin width
+  UInt_t                  fEnabledTriggerPatches[fgkNPatchTypes];    ///< Patch types to be plotted
+  Int_t                   fFastorL0Th;                               ///< FastOR L0 threshold
+  Int_t                   fFastorL1Th;                               ///< FastOR L1 threshold
+  Int_t                   fADCperBin;                                ///< ADC counts per bin
+  Int_t                   fDebugLevel;                               ///< Debug level
+  UInt_t                  fTimeStampBinWidth;                        ///< Time stamp bin width
 
-  const AliEMCALGeometry *fGeom;                        //!<! Pointer to the EMCal geometry
-  UInt_t                  fEventTimeStamp;              //!<! Time stamp of the current event
-  UInt_t                  fEventTimeStampBin;           //!<! Time stamp bin
+  const AliEMCALGeometry *fGeom;                                     //!<! Pointer to the EMCal geometry
+  UInt_t                  fEventTimeStamp;                           //!<! Time stamp of the current event
+  UInt_t                  fEventTimeStampBin;                        //!<! Time stamp bin
 
 private:
   AliEMCALTriggerQA &operator=(const AliEMCALTriggerQA &); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerQA, 2);
+  ClassDef(AliEMCALTriggerQA, 3);
   /// \endcond
 };
 
