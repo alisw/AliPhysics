@@ -86,7 +86,8 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
     std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   static AliHLTEMCALCaloCells cells;
-  cells.Clear();
+  // Creates the container, if not yet done. It also clears it.
+  cells.CreateContainer(fGeometry->GetGeometryPtr()->GetNCells());
 
   //patch in order to skip calib events
   if (!IsDataEvent()) return 0;
@@ -154,10 +155,9 @@ void AliHLTEMCALTriggerQAComponent::ProcessCells(const AliHLTComponentBlockData*
 #endif
 
   Int_t nDigits = block->fSize/sizeof(AliHLTCaloDigitDataStruct);
-  cells.CreateContainer(nDigits);
 
   for (Int_t idigit = 0; idigit < nDigits; idigit++){
-    cells.SetCell(idigit, digit->fID, digit->fEnergy, digit->fTime);
+    cells.AddCell(digit->fID, digit->fEnergy);
     digit++;
   }
 
