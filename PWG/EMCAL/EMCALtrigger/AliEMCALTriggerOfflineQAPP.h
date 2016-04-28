@@ -93,8 +93,8 @@ protected:
   Int_t                      fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
   THistManager               fHistManager;                 ///< Histogram manager
 
-  const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[6][3];         //!<! EMCal max patch (will be reset each event)
-  const AliEMCALTriggerPatchInfo  *fMaxPatchDCal[6][3];          //!<! DCal max patch (will be reset each event)
+  const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];         //!<! EMCal max patch (will be reset each event)
+  const AliEMCALTriggerPatchInfo  *fMaxPatchDCal[fgkNTriggerTypes][fgkNPatchTypes];          //!<! DCal max patch (will be reset each event)
   Double_t                   fSumOfflineEMCal;             //!<! EMCal sum of all offline energy deposition (will be reset each event)
   Int_t                      fSumL0EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
   Int_t                      fSumL1EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
