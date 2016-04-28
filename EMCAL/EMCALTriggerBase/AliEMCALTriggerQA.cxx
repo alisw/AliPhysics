@@ -47,8 +47,7 @@ AliEMCALTriggerQA::AliEMCALTriggerQA():
   fEventTimeStamp(0),
   fEventTimeStampBin(0)
 {
-  memset(fEnabledPatchTypes, 0, sizeof(Bool_t)*3);
-  memset(fEnabledTriggerTypes, 0, sizeof(Bool_t)*6);
+  memset(fEnabledTriggerPatches, 0, sizeof(fEnabledTriggerPatches));
 }
 
 /**
@@ -66,8 +65,7 @@ AliEMCALTriggerQA::AliEMCALTriggerQA(const char* name):
   fEventTimeStamp(0),
   fEventTimeStampBin(0)
 {
-  memset(fEnabledPatchTypes, 0, sizeof(Bool_t)*3);
-  memset(fEnabledTriggerTypes, 0, sizeof(Bool_t)*6);
+  memset(fEnabledTriggerPatches, 0, sizeof(fEnabledTriggerPatches));
 }
 
 /**
@@ -85,8 +83,7 @@ AliEMCALTriggerQA::AliEMCALTriggerQA(const AliEMCALTriggerQA& ref) :
   fEventTimeStamp(0),
   fEventTimeStampBin(0)
 {
-  memcpy(fEnabledPatchTypes, ref.fEnabledPatchTypes, sizeof(Bool_t)*3);
-  memcpy(fEnabledTriggerTypes, ref.fEnabledTriggerTypes, sizeof(Bool_t)*6);
+  memcpy(fEnabledTriggerPatches, ref.fEnabledTriggerPatches, sizeof(fEnabledTriggerPatches));
 }
 
 /**
@@ -98,21 +95,35 @@ AliEMCALTriggerQA::~AliEMCALTriggerQA()
 
 /**
  * Set the patch types to be plotted
- * \param type Patch type of which the status is being changed
+ * \param patchtype Patch type (online, recalc,offline) of which the status is being changed
+ * \param triggertype Trigger type of which the status is being changed
  * \param e    Either enable or disable
  */
-void AliEMCALTriggerQA::EnablePatchType(PatchTypes_t type, Bool_t e)
+void AliEMCALTriggerQA::EnablePatchType(PatchTypes_t patchtype, EMCalTriggerType_t triggertype, Bool_t e)
 {
-  fEnabledPatchTypes[type] = e;
+  if (e) {
+    fEnabledTriggerPatches[patchtype] |= BIT(triggertype);
+  }
+  else {
+    fEnabledTriggerPatches[patchtype] &= ~(BIT(triggertype));
+  }
 }
 
-/** Set the trigger types to be plotted
- * \param type Trigger type of which the status is being changed
- * \param e    Either enable or disable
+/**
+ * Check whether a patch type is enabled
+ * \param patchtype Patch type (online, recalc,offline) of which the status is being changed
+ * \param triggertype Trigger type of which the status is being changed
  */
-void AliEMCALTriggerQA::EnableTriggerType(EMCalTriggerType_t type, Bool_t e)
+Bool_t AliEMCALTriggerQA::IsPatchTypeEnabled(Int_t patchtype, Int_t triggertype) const
 {
-  fEnabledTriggerTypes[type] = e;
+  if (patchtype < 0 || patchtype > 2) return kFALSE;
+  if (triggertype < 0 || triggertype > 31) return kFALSE;
+  if ((fEnabledTriggerPatches[patchtype] & BIT(triggertype)) != 0) {
+    return kTRUE;
+  }
+  else {
+    return kFALSE;
+  }
 }
 
 /**

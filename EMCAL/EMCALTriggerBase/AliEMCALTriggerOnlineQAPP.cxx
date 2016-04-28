@@ -60,10 +60,6 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
     fHistFEEvsSTUBySM[iSM] = 0;
   }
 
-  for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
-    fEnabledPatchTypes[ipatch] = kTRUE;
-  }
-
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
@@ -81,9 +77,19 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP():
     }
   }
 
-  fEnabledPatchTypes[kOnlinePatch] = kTRUE;
-  fEnabledPatchTypes[kRecalcPatch] = kTRUE;
-  fEnabledPatchTypes[kOfflinePatch] = kTRUE;
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalGammaL, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalJetL, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
+
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
+
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
 }
 
 /// Default constructor
@@ -137,16 +143,19 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const char* name):
     }
   }
 
-  fEnabledPatchTypes[kOnlinePatch] = kTRUE;
-  fEnabledPatchTypes[kRecalcPatch] = kTRUE;
-  fEnabledPatchTypes[kOfflinePatch] = kTRUE;
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalGammaL, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalJetL, kTRUE);
+  EnablePatchType(kOnlinePatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
 
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalBkg] = kFALSE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalLevel0] = kTRUE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalGammaL] = kTRUE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalJetL] = kTRUE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalGammaH] = kTRUE;
-  fEnabledTriggerTypes[EMCALTrigger::kTMEMCalJetH] = kTRUE;
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kRecalcPatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
+
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOfflinePatch, EMCALTrigger::kTMEMCalJetH, kTRUE);
 }
 
 /// Copy constructor
@@ -183,12 +192,7 @@ AliEMCALTriggerOnlineQAPP::AliEMCALTriggerOnlineQAPP(const AliEMCALTriggerOnline
     fHistFEEvsSTUBySM[iSM] = 0;
   }
 
-  for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
-    fEnabledPatchTypes[ipatch] = triggerQA.fEnabledPatchTypes[ipatch];
-  }
-
   for (Int_t itrigger = 0; itrigger < fgkNTriggerTypes; itrigger++) {
-    fEnabledTriggerTypes[itrigger] = triggerQA.fEnabledTriggerTypes[itrigger];
 
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
@@ -312,10 +316,8 @@ void AliEMCALTriggerOnlineQAPP::Init()
   const char* det[fgkNDet] = { "EMCal", "DCal" };
 
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
-    if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
-
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
-      if (!fEnabledPatchTypes[ipatch]) continue;
+      if (!IsPatchTypeEnabled(ipatch, itrig)) continue;
       for (Int_t idet = 0; idet < fgkNDet; idet++) {
         hname = TString::Format("EMCTRQA_hist%sNPatches%s%s", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
         htitle = TString::Format("EMCTRQA_hist%sNPatches%s%s;num. of patches;events", det[idet], EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[ipatch].Data());
@@ -382,10 +384,8 @@ void AliEMCALTriggerOnlineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pat
   }
 
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
-    if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
-
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
-      if (!fEnabledPatchTypes[ipatch]) continue;
+      if (!IsPatchTypeEnabled(ipatch, itrig)) continue;
       if (!(patch->*(triggerCheck[ipatch][itrig]))()) continue;
 
       Int_t amp = GetAmplitude(patch, ipatch);
@@ -480,10 +480,8 @@ void AliEMCALTriggerOnlineQAPP::EventCompleted()
 
   enum {kEMCAL=0,kDCAL=1};
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
-    if (EMCALTrigger::kEMCalTriggerNames[itrig].IsNull() || fEnabledTriggerTypes[itrig] == kFALSE) continue;
-
     for (Int_t ipatch = 0; ipatch < fgkNPatchTypes; ipatch++) {
-      if (!fEnabledPatchTypes[ipatch]) continue;
+      if (!IsPatchTypeEnabled(ipatch, itrig)) continue;
 
       fHistNPatches[kEMCAL][itrig][ipatch]->Fill(fNPatches[kEMCAL][itrig][ipatch]);
       fHistNPatches[kDCAL][itrig][ipatch]->Fill(fNPatches[kDCAL][itrig][ipatch]);

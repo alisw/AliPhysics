@@ -54,13 +54,29 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb():
     fBkgADCAmpDCal[i].Set(100);
     fNBkgPatchesEMCal[i] = 0;
     fNBkgPatchesDCal[i] = 0;
-    fEnabledPatchTypes[i] = kTRUE;
 
     for (Int_t itype = 0; itype < 6; itype++) {
       fMaxPatchEMCal[itype][i] = 0;
       fMaxPatchDCal[itype][i] = 0;
     }
   }
+
+  EnablePatchType(kOnlinePatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalGammaL, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalJetL, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalBkg, kTRUE);
+
+  EnablePatchType(kRecalcPatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalBkg, kTRUE);
+
+  EnablePatchType(kOfflinePatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalBkg, kTRUE);
 
   memset(fPatchAreas, 0, sizeof(Int_t)*6);
 }
@@ -78,7 +94,6 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
     fBkgADCAmpDCal[i].Set(100);
     fNBkgPatchesEMCal[i] = 0;
     fNBkgPatchesDCal[i] = 0;
-    fEnabledPatchTypes[i] = kTRUE;
 
     for (Int_t itype = 0; itype < 6; itype++) {
       fMaxPatchEMCal[itype][i] = 0;
@@ -86,7 +101,24 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const char* name):
     }
   }
 
-  memset(fPatchAreas, 0, sizeof(Int_t)*6);
+  EnablePatchType(kOnlinePatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalGammaL, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalJetL, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kOnlinePatch, kTMEMCalBkg, kTRUE);
+
+  EnablePatchType(kRecalcPatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kRecalcPatch, kTMEMCalBkg, kTRUE);
+
+  EnablePatchType(kOfflinePatch, kTMEMCalLevel0, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalGammaH, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalJetH, kTRUE);
+  EnablePatchType(kOfflinePatch, kTMEMCalBkg, kTRUE);
+
+  memset(fPatchAreas, 0, sizeof(fPatchAreas));
 }
 
 /*
@@ -102,14 +134,14 @@ AliEMCALTriggerOnlineQAPbPb::AliEMCALTriggerOnlineQAPbPb(const AliEMCALTriggerOn
    fBkgADCAmpDCal[i].Set(100);
    fNBkgPatchesEMCal[i] = 0;
    fNBkgPatchesDCal[i] = 0;
-   fEnabledPatchTypes[i] = triggerQA.fEnabledPatchTypes[i];
 
    for (Int_t itype = 0; itype < 6; itype++) {
      fMaxPatchEMCal[itype][i] = 0;
      fMaxPatchDCal[itype][i] = 0;
    }
   }
-  memset(fPatchAreas, 0, sizeof(Int_t)*6);
+
+  memset(fPatchAreas, 0, sizeof(fPatchAreas));
 }
 
 /**
@@ -168,7 +200,7 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
   CreateTH2(hname, htitle, 64, 0, 2048, 64, 0, 2048);
 
   for (Int_t itype = 0; itype < 3; itype++) {
-    if (!fEnabledPatchTypes[itype]) continue;
+    if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
     hname = Form("EMCTRQA_histEMCalMedianVsDCalMedian%s", fgkPatchTypes[itype].Data());
     htitle = Form("EMCTRQA_histEMCalMedianVsDCalMedian%s;EMCal median;DCal median;entries", fgkPatchTypes[itype].Data());
     CreateTH2(hname, htitle, fgkMaxPatchAmp[fBkgPatchType]/fADCperBin/10, 0, fgkMaxPatchAmp[fBkgPatchType]/10, fgkMaxPatchAmp[fBkgPatchType]/fADCperBin/10, 0, fgkMaxPatchAmp[fBkgPatchType]/10);
@@ -177,9 +209,8 @@ void AliEMCALTriggerOnlineQAPbPb::Init()
   const char* det[2] = { "EMCal", "DCal" };
 
   for (Int_t itrig = 0; itrig < 6; itrig++) {
-    if (kEMCalTriggerNames[itrig].IsNull()) continue;
     for (Int_t itype = 0; itype < 3; itype++) {
-      if (!fEnabledPatchTypes[itype]) continue;
+      if (!IsPatchTypeEnabled(itype, itrig)) continue;
       for (Int_t idet = 0; idet < 2; idet++) {
         hname = Form("EMCTRQA_hist%sPatchEnergy%s%s", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         htitle = Form("EMCTRQA_hist%sPatchEnergy%s%s;energy (GeV);entries", det[idet], kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
@@ -252,10 +283,10 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessPatch(const AliEMCALTriggerPatchInfo* p
   Double_t bkg[3] = {0};
 
   for (Int_t itrig = 0; itrig < 6; itrig++) {
-    if (kEMCalTriggerNames[itrig].IsNull()) continue;
     if (itrig == fBkgPatchType) continue;
     for (Int_t itype = 0; itype < 3; itype++) {
-      if (!fEnabledPatchTypes[itype]) continue;
+      if (!IsPatchTypeEnabled(itype, itrig)) continue;
+
       if (!patch->TestTriggerBit(triggerBits[itrig]+offsets[itype])) continue;
       fPatchAreas[itrig] = patch->GetPatchSize()*patch->GetPatchSize();
 
@@ -323,7 +354,7 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessBkgPatch(const AliEMCALTriggerPatchInfo
   Int_t bkgTriggerBit = patch->GetTriggerBitConfig()->GetBkgBit();
 
   for (Int_t itype = 0; itype < 3; itype++) {
-    if (!fEnabledPatchTypes[itype]) continue;
+    if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
     if (!patch->TestTriggerBit(bkgTriggerBit+offsets[itype])) continue;
     fPatchAreas[bkgTriggerBit] = patch->GetPatchSize()*patch->GetPatchSize();
 
@@ -442,7 +473,7 @@ void AliEMCALTriggerOnlineQAPbPb::ComputeBackground()
   AliDebug(2, Form("Entering AliEMCALTriggerQA::ComputeBackground"));
 
   for (Int_t itype = 0; itype < 3; itype++) {
-    if (!fEnabledPatchTypes[itype]) continue;
+    if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
 
     AliDebug(2, Form("Patch type %s", fgkPatchTypes[itype].Data()));
 
@@ -464,16 +495,14 @@ void AliEMCALTriggerOnlineQAPbPb::EventCompleted()
   TString hname;
 
   for (Int_t itype = 0; itype < 3; itype++) {
-    if (!fEnabledPatchTypes[itype]) continue;
-
     AliDebug(2, Form("Patch type %s", fgkPatchTypes[itype].Data()));
 
     hname = Form("EMCTRQA_histEMCalMedianVsDCalMedian%s", fgkPatchTypes[itype].Data());
     FillTH2(hname, fMedianEMCal[itype], fMedianDCal[itype]);
 
     for (Int_t itrig = 0; itrig < 6; itrig++) {
-      if (kEMCalTriggerNames[itrig].IsNull()) continue;
-      if (fMaxPatchDCal[itrig][itype] == 0 && fMaxPatchEMCal[itrig][itype] == 0) continue;
+
+      if (!IsPatchTypeEnabled(itype, itrig)) continue;
 
       AliDebug(2, Form("Trigger type: %s", kEMCalTriggerNames[itype].Data()));
 
