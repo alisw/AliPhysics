@@ -20,6 +20,10 @@
 #pragma link C++ class AliAnalysisTaskSEPicoV0Maker+;
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
+#pragma link C++ class AliHFTrackContainer+;
+#pragma link C++ class AliMCHFParticleSelector+;
+
+#ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
@@ -28,7 +32,6 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
-#pragma link C++ class AliHFTrackContainer+;
-#pragma link C++ class AliMCHFParticleSelector+;
+#endif
 
 #endif
