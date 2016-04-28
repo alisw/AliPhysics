@@ -188,37 +188,37 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with AliEn support: ${error}")
     endif(error)
-    
+
     #if defined
     if(ROOT_HASALIEN)
         string(STRIP "${ROOT_HASALIEN}" ROOT_HASALIEN)
         if(ROOT_HASALIEN STREQUAL "yes")
             if(ALIEN)
-            add_definitions(-DWITHALIEN)
+                add_definitions(-DWITHALIEN)
 
-            # AliEn might bring some system libraries, we need to use them
-            if(EXISTS "${ALIEN}/lib")
-                link_directories(${ALIEN}/lib)
-            endif()
+                # AliEn might bring some system libraries, we need to use them
+                if(EXISTS "${ALIEN}/lib")
+                    link_directories(${ALIEN}/lib)
+                endif()
 
-            # api/lib should always exists
-            if(EXISTS "${ALIEN}/api/lib")
-                link_directories(${ALIEN}/api/lib)
-            endif()
+                # api/lib should always exists
+                if(EXISTS "${ALIEN}/api/lib")
+                    link_directories(${ALIEN}/api/lib)
+                endif()
 
-            # include for AliEn
-            if(EXISTS "${ALIEN}/include")
-                include_directories(SYSTEM ${ALIEN}/include)
-            endif()
+                # include for AliEn
+                if(EXISTS "${ALIEN}/include")
+                    include_directories(SYSTEM ${ALIEN}/include)
+                endif()
 
-            # api/include always exists
-            if(EXISTS "${ALIEN}/api/include")
-                include_directories(SYSTEM ${ALIEN}/api/include)
-            endif()
+                # api/include always exists
+                if(EXISTS "${ALIEN}/api/include")
+                    include_directories(SYSTEM ${ALIEN}/api/include)
+                endif()
 
-            set(ROOT_HASALIEN TRUE)
+                set(ROOT_HASALIEN TRUE)
             else(ALIEN)
-            message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+                message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
             endif(ALIEN)
         else()
             set(ROOT_HASALIEN FALSE)
@@ -230,7 +230,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with xml support: ${error}")
     endif(error)
-    
+
     # if defined
     if(ROOT_HASXML)
         string(STRIP "${ROOT_HASXML}" ROOT_HASXML)
@@ -247,7 +247,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with monalisa support: ${error}")
     endif(error)
-    
+
     # if defined
     if(ROOT_HASMONALISA)
         string(STRIP "${ROOT_HASMONALISA}" ROOT_HASMONALISA)
@@ -263,7 +263,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with ldap support: ${error}")
     endif(error)
-    
+
     # if defined
     if(ROOT_HASLDAP)
         string(STRIP "${ROOT_HASLDAP}" ROOT_HASLDAP)
@@ -279,7 +279,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with OpenGL support: ${error}")
     endif(error)
-    
+
     if(ROOT_HASOPENGL)
         string(STRIP "${ROOT_HASOPENGL}" ROOT_HASOPENGL)
         if(ROOT_HASOPENGL STREQUAL "yes")
@@ -294,7 +294,7 @@ if(ROOTSYS)
     if(error)
         message(FATAL_ERROR "Error checking if ROOT was built with VCt: ${error}")
     endif(error)
-    
+
     if(ROOT_HASVC)
         string(STRIP "${ROOT_HASVC}" ROOT_HASVC)
         if(ROOT_HASVC STREQUAL "yes")
@@ -326,19 +326,19 @@ if(ROOTSYS)
         find_package(LibXml2)
 
         if(LIBXML2_FOUND)
-        
+
             # adding SSL
             find_package(OpenSSL)
-        
+
             if(OPENSSL_FOUND)
                 file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o" "${ROOTSYS}/tree/treeplayer/src/*.o" "${ROOTSYS}/io/xmlparser/src/*.o" "${ROOTSYS}/math/minuit2/src/*.o")
                 add_library(RootExtra STATIC ${_extraroot})
                 set_target_properties(RootExtra PROPERTIES COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
                 set_target_properties(RootExtra PROPERTIES LINKER_LANGUAGE CXX)
                 target_link_libraries(RootExtra ${ROOT_LIBDIR}/libfreetype.a ${ROOT_LIBDIR}/libpcre.a ${ROOT_LIBDIR}/liblzma.a ${LIBXML2_LIBRARIES} ${OPENSSL_LIBRARIES})
-		install(TARGETS RootExtra 
-		  ARCHIVE DESTINATION lib
-		  LIBRARY DESTINATION lib)
+                install(TARGETS RootExtra
+                    ARCHIVE DESTINATION lib
+                    LIBRARY DESTINATION lib)
             else()
                 message(FATAL_ERROR "OpenSSL not found. Coould not generate the static RootExtra. Please install Openssl")
             endif()
