@@ -28,7 +28,7 @@
 #include <TUrl.h>
 #include <TFile.h>
 #else
-class AliAODTracklet;
+// class AliAODTracklet;
 class AliTrackletWeights;
 class AliVEvent;
 class AliMultSelection;  // Auto-load 
@@ -39,11 +39,33 @@ class TClonesArray;
 /**
  * Task to analyse AOD tracklets for dNch/deta 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODdNdeta : public AliAnalysisTaskSE,
 			     public AliTrackletAODUtils
 {
 public:
+  /**
+   * Masks and vetos used by histogram sets 
+   */
+  enum {
+    kMeasuredMask     = 0x0,
+    kMeasuredVeto     = AliAODTracklet::kInjection|AliAODTracklet::kGenerated,
+    kInjectedMask     = AliAODTracklet::kInjection,
+    kInjectedVeto     = AliAODTracklet::kGenerated,
+    kCombinatoricMask = AliAODTracklet::kCombinatorics,
+    kCombinatoricVeto = 0x0,
+    kPrimaryMask      = 0x0,
+    kPrimaryVeto      = (AliAODTracklet::kInjection|
+			 AliAODTracklet::kCombinatorics|
+			 AliAODTracklet::kSecondary|
+			 AliAODTracklet::kGenerated),
+    kSecondaryMask    = AliAODTracklet::kSecondary,
+    kSecondaryVeto    = 0x0,
+    kGeneratedMask    = AliAODTracklet::kGenerated,
+    kGeneratedVeto    = 0x0
+  };
+    
   /** Type of containers */
   typedef TList Container;
   /** 
@@ -636,11 +658,28 @@ public:
      */
     CentBin& operator=(const CentBin&) { return *this; }
     /** 
+     * Create a histogram set 
+     * 
+     * @param name  Name of histogram set 
+     * @param color Color used by histograms 
+     * @param style Style used by histograms 
+     * @param mask  Tracklet selection mask  
+     * @param veto  Tracklet veto mask 
+     * 
+     * @return Newly allocated histogram set 
+     */
+    Histos* MakeHistos(const char* name,
+		       Color_t     color,
+		       Style_t     style,
+		       UShort_t    mask,
+		       UShort_t    veto);
+    /** 
      * Initialize the bin 
      * 
+     * @param parent   Parent container 
      * @param etaAxis  pseudorapidity axis to use 
      * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
@@ -1639,13 +1678,12 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   fName.Form("cent%03dd%02d_%03dd%02d",
 	     Int_t(fLow), Int_t(fLow*100)%100,
 	     Int_t(fHigh), Int_t(fHigh*100)%100);
-  fMeasured  = new Histos("measured", kRed+2, 20,
-			  0x00, // No requirements, just veto 
-			  AliAODTracklet::kInjection|
-			  AliAODTracklet::kGenerated);
-  fInjection = new Histos("injected", kOrange+2, 21,
-			  AliAODTracklet::kInjection,
-			  AliAODTracklet::kGenerated);
+  fMeasured  = MakeHistos("measured", kRed+2, 20,
+			  kMeasuredMask, // No requirements, just veto
+			  kMeasuredVeto);
+  fInjection = MakeHistos("injected", kOrange+2, 21,
+			  kInjectedMask,
+			  kInjectedVeto);
   fSubs = new Container;
   fSubs->SetOwner(true);
   fSubs->Add(fMeasured);
@@ -1664,24 +1702,35 @@ AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   // Primaries all with simulated bit, but not secondary or
   // combinatorics bit.
   // Secondaries are all those with the secondary bit set 
-  fCombinatorics  = new Histos("combinatorics", kMagenta+2, 30, 
-			       AliAODTracklet::kCombinatorics, 0x00);
-  fPrimaries  = new Histos("primaries", kGreen+2, 26, 
-			   0,
-			   AliAODTracklet::kInjection|
-			   AliAODTracklet::kCombinatorics|
-			   AliAODTracklet::kSecondary|
-			   AliAODTracklet::kGenerated);
-  fSecondaries = new Histos("secondaries", kBlue+2, 32, 
-			    AliAODTracklet::kSecondary, 0x00);
-  fGenerated = new Histos("generated", kGray+1, 28, 
-			  AliAODTracklet::kGenerated, 0x00);
+  fCombinatorics  = MakeHistos("combinatorics", kMagenta+2, 30,
+			       kCombinatoricMask,
+			       kCombinatoricVeto);
+  fPrimaries      = MakeHistos("primaries", kGreen+2, 26, 
+			       kPrimaryMask,
+			       kPrimaryVeto);
+  fSecondaries    = MakeHistos("secondaries", kBlue+2, 32, 
+			       kSecondaryMask,
+			       kSecondaryVeto);
+  fGenerated      = MakeHistos("generated", kGray+1, 28, 
+			       kGeneratedMask,
+			       kGeneratedVeto);
   fMeasured->fStyle = 24;
   fInjection->fStyle = 25;
   fSubs->Add(fCombinatorics);
   fSubs->Add(fPrimaries);
   fSubs->Add(fSecondaries);
   fSubs->AddAfter(fMeasured, fGenerated);
+}
+
+//____________________________________________________________________
+AliTrackletAODdNdeta::Histos*
+AliTrackletAODdNdeta::CentBin::MakeHistos(const char* name,
+					  Color_t     color,
+					  Style_t     style,
+					  UShort_t    mask,
+					  UShort_t    veto)
+{
+  return new Histos(name, color, style, mask, veto);
 }
 
 //____________________________________________________________________
@@ -1721,18 +1770,23 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
   if (GetC(parent, "generated", false) != 0) shrt.Append("'");
   
   // Do not make eta vs IPz for secondaries and primaries 
-  if (fMask != AliAODTracklet::kSecondary &&
-      (fVeto != (AliAODTracklet::kSecondary     |
-		 AliAODTracklet::kInjection     |
-		 AliAODTracklet::kCombinatorics |
-		 AliAODTracklet::kGenerated)))
+  if (!IsPrimary() && !IsSecondary()) 
     fEtaIPz   = Make2D(fContainer, "etaIPz", shrt.Data(),
 		       kRed+2, 20, etaAxis, ipzAxis);
-  // Always make eta vs Delta distribution
-  if (fMask != AliAODTracklet::kGenerated) 
+  // Always make eta vs Delta distribution, except for MC truth 
+  if (!IsGenerated()) 
     fEtaDeltaIPz = Make3D(fContainer, "etaDeltaIPz",
 			  Form("#Delta_{%s}",shrt.Data()), 
 			  kBlue+2, 21, etaAxis, deltaAxis, ipzAxis);
+  if (!IsGenerated() &&
+      // !IsPrimary() &&
+      // !IsSecondary() &&
+      !IsInjected() &&
+      fStyle != 20) // Last condition to not make this for real data
+    fEtaPdgIPz = Make3D(fContainer, "etaPdgIPz",
+			Form("Parent particle type"),
+			kGreen+2, 22, etaAxis, PdgAxis(), ipzAxis);
+  
   SetAttr(fColor, fStyle);
   return true;
 }
@@ -2464,17 +2518,18 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   result->Add(new TParameter<double>("deltaTailError", eintg));
 
   // Some consistency checks:
-  Printf("%10s: Integral over eta,IPz: %9.4f +/- %9.4f",
-	 GetName(), intg, eintg);
-  intg = etaDelta->IntegralAndError(1,etaDeltaIPz->GetNbinsX(),
+  if (fDebug > 1) {
+    Printf("%10s: Integral over eta,IPz: %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+    intg = etaDelta->IntegralAndError(1,etaDeltaIPz->GetNbinsX(),
 				    lowBin, highBin,
 				    eintg);
-  Printf("%10s: Integral over eta:     %9.4f +/- %9.4f",
-	 GetName(), intg, eintg);
-  intg = delta->IntegralAndError(lowBin, highBin, eintg);
-  Printf("%10s: Integral:              %9.4f +/- %9.4f",
-	 GetName(), intg, eintg);
-  
+    Printf("%10s: Integral over eta:     %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+    intg = delta->IntegralAndError(lowBin, highBin, eintg);
+    Printf("%10s: Integral:              %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+  }
 				    
   return true;
 }
