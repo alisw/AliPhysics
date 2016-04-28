@@ -1,3 +1,13 @@
+/**
+ * @file   AliTrackletdNdeta2.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:50:04 2016
+ * 
+ * @brief  To post processing 2nd version
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALITRACKLETDNDETA_H
 #define ALITRACKLETDNDETA_H
 #include <AliTrackletAODUtils.C>
@@ -38,6 +48,11 @@ class TDirectory;
 #endif
 
 //====================================================================
+/**
+ * Post processing 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 {
   typedef AliTrackletAODUtils::Container Container;
@@ -137,9 +152,12 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   /** 
    * Run it 
    * 
-   * @param dataName File from real data 
-   * @param simName  File from simulated data 
-   * @param what     Bit mask of processing options 
+   * @param proc     Process mask 
+   * @param viz      Visualisation mask
+   * @param maxBins  Maximum number of bins to look at 
+   * @param dataName Name of file from real data 
+   * @param simName  Name of file from simulated data 
+   * @param output   Output file name 
    */
   void Run(UInt_t      proc     = kDefaultProc,
 	   UInt_t      viz      = kDefaultViz,
@@ -333,8 +351,6 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * Create our canvas 
    * 
    * @param outputName Output file name 
-   * @param landscape  Should it be landscape? 
-   * @param pdf        Should we store in PDF?
    */
   void CreateCanvas(const TString& outputName);
   /** 
@@ -360,20 +376,117 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @return if a legend is drawn, return that
    */
   TLegend* DrawInPad(TVirtualPad* c, Int_t pad, TObject* o, Option_t* opt);
+  /** 
+   * Modify placement of legend 
+   * 
+   * @param p   Pad it's drawn in 
+   * @param l   The legend 
+   * @param x1  New X1 coordiante in pad NDC
+   * @param y1  New Y1 coordiante in pad NDC
+   * @param x2  New X2 coordiante in pad NDC
+   * @param y2  New Y2 coordiante in pad NDC
+   */
   void ModLegend(TVirtualPad* p, TLegend* l,
 		 Double_t x1, Double_t y1,
 		 Double_t x2, Double_t y2);
+  /** 
+   * Make a stack of histograms for real and simulated data. 
+   * 
+   * @param name     Name of stack 
+   * @param title    Title of stack
+   * @param realList Container of real data 
+   * @param simList  Container of simulated data 
+   * @param dataOpt  Options for real data 
+   * @param simOpt   Options for simulated data 
+   * 
+   * @return The created stack 
+   */
+  THStack* Make2Stack(const char*      name,
+		      const char*      title,
+		      Container*       realList,
+		      Container*       simList,
+		      Option_t*        dataOpt="",
+		      Option_t*        simOpt="");
   /* @} */
   //____________________________________________________________________
   /** 
    * @{ 
    * @name Visualization functions 
    */
+  Bool_t Visualize(Container*  realSums,
+		   Container*  simSums,
+		   Container*  realRess,
+		   Container*  simRess,
+		   TDirectory* outTop,
+		   Int_t       maxBins);
+  void   VisualizeGeneral(Container* realList, Container* simList);
+  /** 
+   * Draw the used simulation weights
+   * 
+   * @param simList Simulation list 
+   */
+  void VisualizeWeights(Container* simList);
+  void VisualizeFinal(TDirectory* outDir, Int_t i);
   Bool_t VisualizeBin(Double_t    c1,
 		      Double_t    c2,
+		      Container*  simList, 
 		      TDirectory* outTop);
+  Bool_t VisualizeSpecies(Container* simCont);
   Bool_t VisualizeDelta(TDirectory* outTop, Int_t dimen);
   Bool_t VisualizeResult(TDirectory* outTop,  Int_t       dimen);
+  /* @} */
+  //____________________________________________________________________
+  /** 
+   * @{ 
+   * @name Drawing parameters 
+   */
+  /** 
+   * Draw parameter name and value 
+   * 
+   * @param name  Name of parameter 
+   * @param y     Current y coordinate 
+   * @param val   Value 
+   */
+  void VisualizeParam(const char* name, Double_t& y,  const char* val);
+  /** 
+   * Draw a real valued paraemeter 
+   * 
+   * @param name  Name of parameter 
+   * @param y     Current y coordinate 
+   * @param val   Value 
+   */  
+  void VisualizeParam(const char* name, Double_t& y,  Double_t val);
+  /** 
+   * Draw an integer valued paraemeter 
+   * 
+   * @param name  Name of parameter 
+   * @param y     Current y coordinate 
+   * @param val   Value 
+   */  
+  void VisualizeParam(const char* name, Double_t& y,  Int_t val);
+  /** 
+   * Draw a boolean valued paraemeter 
+   * 
+   * @param name  Name of parameter 
+   * @param y     Current y coordinate 
+   * @param val   Value 
+   */  
+  void VisualizeParam(const char* name, Double_t& y,  Bool_t val);
+  /** 
+   * Draw all parameters in a container 
+   * 
+   * @param pars 
+   * @param title 
+   * @param comb if true, write for combinatorial background 
+   */
+  void VisualizeParams(Container* pars, const char* title);
+  /** 
+   * Draw parameters from both real and simulated analysis 
+   * 
+   * @param realSums Real data 
+   * @param simSums  simulated data 
+   */
+  void VisualizeParams(Container* realSums, Container* simSums);
   /* @} */
   
   //____________________________________________________________________
