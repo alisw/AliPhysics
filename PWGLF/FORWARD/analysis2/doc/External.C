@@ -235,6 +235,30 @@ class TH2D : public TH2 {};
  */
 class TH2F : public TH2 {};
 /**
+ * Base classs for 3D histograms
+ * 
+ * See also
+ * - http://root.cern.ch/root/htmldoc/TH3.html
+ * @ingroup pwglf_external_root
+ */
+class TH3 : public TH2 {};
+/**
+ * 3D histograms
+ * 
+ * See also
+ * - http://root.cern.ch/root/htmldoc/TH3D.html
+ * @ingroup pwglf_external_root
+ */
+class TH3D : public TH3 {};
+/**
+ * 3D histograms
+ * 
+ * See also
+ * - http://root.cern.ch/root/htmldoc/TH3F.html
+ * @ingroup pwglf_external_root
+ */
+class TH3F : public TH3 {};
+/**
  * A graph
  * 
  * See also

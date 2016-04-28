@@ -10,6 +10,7 @@
  * - @subpage density_doc
  * - @subpage dist_doc
  * - @subpage flow_doc
+ * - @subpage mid_doc
  * - <a href="modules.html"><b>Modules</b></a>
  * 
  * @par External Information 
