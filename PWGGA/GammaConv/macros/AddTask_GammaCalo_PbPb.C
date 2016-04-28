@@ -241,9 +241,11 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   // run 2 configs
     // first look
   } else if (trainConfig == 201){ // EMCAL clusters
-    cuts.AddCut("90000013","1111100000022220000","0163103100000050"); // initial values
-    cuts.AddCut("90000013","1111100003022220000","0163103100000050"); // track matching
-    cuts.AddCut("90000013","1111100003042220000","0163103100000050"); // min E
+    cuts.AddCut("20110113","1111100000022220000","0163103100000050"); // 0-10
+    cuts.AddCut("21210113","1111100000022220000","0163103100000050"); // 10-20
+    cuts.AddCut("22510113","1111100000022220000","0163103100000050"); // 20-50
+    cuts.AddCut("25910113","1111100000022220000","0163103100000050"); // 50-90
+    cuts.AddCut("20010113","1111100000022220000","0163103100000050"); // 0-100
     
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
