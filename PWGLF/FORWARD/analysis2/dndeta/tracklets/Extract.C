@@ -50,20 +50,56 @@ static Color_t PbPbColor(Double_t c1, Double_t c2)
 }
 
 //====================================================================
+/** 
+ * Evaluate a systematic error 
+ * 
+ * @param x     Independent value 
+ * @param sMin  Value at least X(=0)
+ * @param sMax  Value at largest X 
+ * @param xMax  Largest X value 
+ * 
+ * @return Value 
+ */
 Double_t SysEval(Double_t x, Double_t sMin, Double_t sMax, Double_t xMax)
 {
   return sMin + TMath::Power(x/xMax, 2)*(sMax-sMin);
 }
-
+/** 
+ * Evaluate a centrality dependent systematic uncertainty 
+ * 
+ * @param x     Centrality 
+ * @param sMin  Value at least centrality 
+ * @param sMax  Value at largest centrality 
+ * 
+ * @return Value 
+ */
 Double_t CSysEval(Double_t x, Double_t sMin, Double_t sMax)
 {
   return SysEval(x, sMin, sMax, 80);
 }
+/** 
+ * Evaluate eta dependent systematic uncertainty 
+ *    
+ * @param x     eta 
+ * @param sMin  Value at least eta
+ * @param sMax  Value at largest eta  
+ * 
+ * @return Value 
+ */
 Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
 {
   return SysEval(x, sMin, sMax, 2);
 }
-
+/** 
+ * Make a GraphSysErr object 
+ * 
+ * @param o         Output stream
+ * @param h         Histogram
+ * @param c1        Lower centrality bound
+ * @param c2        Upper centrality bound 
+ * @param reweigh   True if reweighed 
+ * @param fac       Scaling factor 
+ */
 void MakeGSE(std::ostream& o, const TH1* h,
 	     Double_t c1, Double_t c2, Bool_t reweigh, Double_t fac=1)
 {
@@ -119,6 +155,13 @@ void MakeGSE(std::ostream& o, const TH1* h,
   }
   o << "*dataend:\n" << std::endl;
 }
+/** 
+ * Find largest and least value 
+ * 
+ * @param o  Object to look at 
+ * @param c1 Lower centrality bound
+ * @param c2 Upper centrality bount
+ */
 void FindLeastLargest(TObject* o, Double_t c1, Double_t c2)
 {
   Double_t eMin = +10000;
@@ -138,8 +181,9 @@ void FindLeastLargest(TObject* o, Double_t c1, Double_t c2)
 /** 
  * Extract ALICE PbPb @ 5.02TeV over |eta|<2
  * 
- * @param filename 
- * @param outname 
+ * @param filename  Input file name 
+ * @param outname   Output file name 
+ * @param reweigh   Whether it is reweighed 
  */
 void
 Extract(const char* filename="dndneta.pbpb502.20151124.root",

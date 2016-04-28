@@ -118,8 +118,9 @@ TH2* GetH2(TSeqCollection* l, const char* name)
 /** 
  * Get a copy of 1 dimensional histogram from a collection
  * 
- * @param l     Collection
- * @param name  Name of histogram to look for 
+ * @param l       Collection
+ * @param name    Name of histogram to look for 
+ * @param newName Optional new name 
  * 
  * @return Found object or null
  */
@@ -133,8 +134,9 @@ TH1* CopyH1(TSeqCollection* l, const char* name, const char* newName=0)
 /** 
  * Get a copy of 2 dimensional histogram from a collection
  * 
- * @param l     Collection
- * @param name  Name of histogram to look for 
+ * @param l       Collection
+ * @param name    Name of histogram to look for 
+ * @param newName Optional new name 
  * 
  * @return Found object or null
  */
@@ -772,7 +774,7 @@ TH1* Avg(TH2*        h,
       n++;
     }
     if (k == 0 || n == 0) {
-      /// ::Warning("Average", "Eta bin # %3d has no data",etaBin);
+      // ::Warning("Average", "Eta bin # %3d has no data",etaBin);
       continue; // This eta bin empty!
     }
 
@@ -810,7 +812,6 @@ TH1* Avg(TH2*        h,
  * @param ipz   (optional) @f$\mathrm{IP}_z@f$ distribution 
  * @param mode  How to scale 
  * @param name  Name of output histogram 
- * @param other (optional) mask to apply to @f$ h@f$ 
  * 
  * @return @f$\langle h(\eta)\rangle@f$
  */
@@ -1212,7 +1213,9 @@ TH1* GetDelta(TSeqCollection* l,
  * The same expression holds for the case when we use injected
  * clusters to estimate the background in real data.
  *
- *  (1-\beta)M = (1-B/M)M = M-B
+ * @f[
+ (1-\beta)M = (1-B/M)M = M-B
+ @f]
  *
  * where @f$ B@f$ has the same meaning as @f$ B\prime@f$ except we use
  * real data. 
@@ -1237,6 +1240,7 @@ TH1* GetDelta(TSeqCollection* l,
  * @param showOne   
  * @param scaleMode Scaling mode (0: fixed, 1: per c, 2: per
  *                  @f$\eta@f$ and c)
+ * @param lim       Limit 
  */
 void CorrectOneBin(THStack*        stack,
 		   TDirectory*     dir,
@@ -1607,7 +1611,9 @@ void CorrectOneBin(THStack*        stack,
 /** 
  * Print the stats stored in hStat histogram 
  * 
- * @param list List to get histogram from 
+ * @param list  List to get histogram from 
+ * @param title Title 
+ * @param path  Path to the file
  */
 void
 ShowStats(TList* list, const char* title, const char* path)
@@ -1647,8 +1653,12 @@ ShowStats(TList* list, const char* title, const char* path)
  * real and simulated data.  The files are expected to be in trdt.root
  * for real data and trmc.root for simulated data.
  * 
- * @param flags Flags for the processing 
- * @param nBins Number of bins to process 
+ * @param flags         Flags for the processing 
+ * @param scaleMode     Scaling mode 
+ * @param realFileName  Name of real input file 
+ * @param simFileName   Name of simulation input file 
+ * @param nBins         Number of bins to process 
+ * @param otherFileName Name of aux input file
  */
 void SimpleCorrect(UShort_t flags,
 		   UShort_t scaleMode, 

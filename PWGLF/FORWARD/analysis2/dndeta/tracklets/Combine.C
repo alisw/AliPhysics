@@ -94,9 +94,8 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
 /** 
  * Make a GraphSysErr object
  * 
- * @param g  Graph 
- * @param c1 Least centrality 
- * @param c2 Largest centrality 
+ * @param g   Graph 
+ * @param bin Bin number
  * 
  * @return Newly created GraphSysErr
  */
