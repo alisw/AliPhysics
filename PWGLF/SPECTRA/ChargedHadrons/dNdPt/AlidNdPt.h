@@ -62,7 +62,9 @@ public:
   void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
   void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
   void SetBackgroundCuts(AlidNdPtBackgroundCuts* const cuts)    { fdNdPtBackgroundCuts = cuts; }
+  void SetRequireCompleteDAQ(const Bool_t req = kFALSE){ f2015IsIncompleteDAQ = req;     }
 
+  
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
   AlidNdPtAcceptanceCuts* GetMultAcceptanceCuts() const         { return (fMultAcceptanceCuts) ? fMultAcceptanceCuts : fdNdPtAcceptanceCuts; }
@@ -73,6 +75,7 @@ public:
   Bool_t IsUsePileUpRejection() const				{ return fUsePileUpRejection;}
   Bool_t IsUseSPDClusterVsTrackletRejection() const             { return fUseSPDClusterVsTrackletRejection;}
   Bool_t IsUseTOFBunchCrossing() const                          { return fUseTOFBunch;}
+  Bool_t IsRequiredCompleteDAQ() const  { return f2015IsIncompleteDAQ;}
   Bool_t IsUseKinkMotherReject() const                          { return fUseKinkMother; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
@@ -111,6 +114,7 @@ private:
   Bool_t fUseSPDClusterVsTrackletRejection;     // use SPD Clusters vs Tracklet
   Bool_t fUseTOFBunch;                          // use TOF bunch crossing
   Bool_t fUseKinkMother;                        // use Rejection of Kink Mothers
+  Bool_t f2015IsIncompleteDAQ;                  // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
   const Char_t * fTriggerClass;                 // trigger class
@@ -119,6 +123,7 @@ private:
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
   AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
   
+ 
   Bool_t fAnalyseOutput;  // call Analyse() function in the FinishTaskOutput
   Bool_t fMergeTHnSparse; // merge THnSparse histograms in Merge() function
 

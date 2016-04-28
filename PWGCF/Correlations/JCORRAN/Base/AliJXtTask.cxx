@@ -342,7 +342,6 @@ void AliJXtTask::GetEfficiencyFilterBit(int inputTrackCut ){
 //______________________________________________________________________________
 void AliJXtTask::Terminate(Option_t *)
 {
-	fXtAna->Terminate("");
 	// Processing when the event loop is ended
 	cout<<"AliJXtTask Analysis DONE !!"<<endl; 
 }

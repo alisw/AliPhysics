@@ -42,7 +42,7 @@ ClassImp(AliAnalysisTaskEmcalJetQA)
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
-  AliAnalysisTaskEmcal("AliAnalysisTaskEmcalJetQA", kTRUE),
+  AliAnalysisTaskEmcalLight("AliAnalysisTaskEmcalJetQA", kTRUE),
   fCellEnergyCut(0.05),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -52,7 +52,10 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
+  fPtBinWidth(0.5),
+  fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
+  fIsEmbedded(kFALSE),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -72,7 +75,7 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA(const char *name) :
-  AliAnalysisTaskEmcal(name, kTRUE),
+  AliAnalysisTaskEmcalLight(name, kTRUE),
   fCellEnergyCut(0.05),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
@@ -82,7 +85,10 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA(const char *name) :
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
   fMaxCellsInCluster(50),
+  fPtBinWidth(0.5),
+  fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
+  fIsEmbedded(kFALSE),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
@@ -111,12 +117,14 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 {
   // Create histograms
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
 
   AliEmcalContainer* cont = 0;
 
   TString histname;
   TString title;
+
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
   TIter nextPartColl(&fParticleCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) {
@@ -145,7 +153,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
       for (Int_t j = 0; j < nlabels; j++) {
         histname = TString::Format("%s/fHistTrPhiEtaPt_%d_%d", cont->GetArrayName().Data(), i, j);
         title = histname + ";#eta;#phi;#it{p}_{T} (GeV/#it{c})";
-        fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
       }
 
       if (!fParticleLevel) {
@@ -156,7 +164,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
           histname = TString::Format("%s/fHistTrPtZeroLab_%d", cont->GetArrayName().Data(), i);
           title = histname + ";#it{p}_{T} (GeV/#it{c});counts";
-          fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+          fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
         }
 
         histname = TString::Format("%s/fHistTrEmcPhiEta_%d", cont->GetArrayName().Data(), i);
@@ -165,7 +173,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
         histname = TString::Format("%s/fHistTrEmcPt_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
         histname = TString::Format("%s/fHistTrPhiEtaNonProp_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#eta;#phi;counts";
@@ -173,19 +181,19 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
         histname = TString::Format("%s/fHistTrPtNonProp_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
         histname = TString::Format("%s/fHistDeltaEtaPt_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T} (GeV/#it{c});#delta#eta;counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 50, -0.5, 0.5);
 
         histname = TString::Format("%s/fHistDeltaPhiPt_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T} (GeV/#it{c});#delta#phi;counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 200, -2, 2);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 200, -2, 2);
 
         histname = TString::Format("%s/fHistDeltaPtvsPt_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T} (GeV/#it{c});#delta#it{p}_{T} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -fMaxPt/2, fMaxPt/2);
       }
     }
   }
@@ -205,45 +213,45 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
       histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -1, 1, 50, 0, TMath::TwoPi(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -1, 1, 50, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
 
       if (fForceBeamType != kpp) {
         histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", cont->GetArrayName().Data(), i);
         title = histname + ";#it{E}_{cluster} (GeV);#phi_{cluster} - #psi_{EP};counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 100, 0, TMath::Pi());
       }
 
       if (fIsEmbedded) {
         histname = TString::Format("%s/fHistClusMCEnergyFraction_%d", cont->GetArrayName().Data(), i);
         title = histname + ";MC fraction;counts";
-        fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, 0, 1.2);
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, 1.2);
       }
 
       histname = TString::Format("%s/fHistClusTimeEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);time (s);counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, -1e-6, 1e-6);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -1e-6, 1e-6);
 
       Int_t nbins = fMaxCellsInCluster;
-      while (nbins > fNbins) nbins /= 2;
+      while (nbins > nPtBins) nbins /= 2;
       histname = TString::Format("%s/fHistNCellsEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);#it{N}_{cells};counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nbins, -0.5, fMaxCellsInCluster-0.5);
 
       histname = TString::Format("%s/fHistFcrossEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);#it{F}_{cross};counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 200, -3.5, 1.5);
 
       histname = TString::Format("%s/fHistClusEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);counts";
-      fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
       histname = TString::Format("%s/fHistClusNonLinCorrEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);counts";
-      fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
 
       histname = TString::Format("%s/fHistClusHadCorrEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);counts";
-      fHistManager.CreateTH1(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
     }
   }
 
@@ -252,7 +260,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), i);
       title = histname + ";cell abs. Id;#it{E}_{cell} (GeV);counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), 0, fMaxPt / 2);
     }
   }
 
@@ -262,7 +270,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   Double_t min[40] = {0};
   Double_t max[40] = {0};
 
-  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+  if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
     axistitle[dim] = "Centrality %";
     nbins[dim] = 101;
     min[dim] = 0;
@@ -317,7 +325,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   if (fParticleCollArray.GetEntriesFast()>0) {
     axistitle[dim] = "No. of tracks";
-    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
       nbins[dim] = 3000;
       min[dim] = -0.5;
       max[dim] = 6000-0.5;
@@ -330,9 +338,9 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     dim++;
 
     axistitle[dim] = "#it{p}_{T,track}^{leading} (GeV/c)";
-    nbins[dim] = fNbins;
-    min[dim] = fMinBinPt;
-    max[dim] = fMaxBinPt;
+    nbins[dim] = nPtBins;
+    min[dim] = 0;
+    max[dim] = fMaxPt;
     dim++;
 
     if (fDoLeadingObjectPosition) {
@@ -353,7 +361,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   if (fClusterCollArray.GetEntriesFast()>0) {
     axistitle[dim] = "No. of clusters";
 
-    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
       nbins[dim] = 2000;
       min[dim] = -0.5;
       max[dim] = 4000-0.5;
@@ -367,15 +375,15 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
     if (fSeparateEMCalDCal) {
       axistitle[dim] = "#it{E}_{EMCal cluster}^{leading} (GeV)";
-      nbins[dim] = fNbins;
-      min[dim] = fMinBinPt;
-      max[dim] = fMaxBinPt;
+      nbins[dim] = nPtBins;
+      min[dim] = 0;
+      max[dim] = fMaxPt;
       dim++;
 
       axistitle[dim] = "#it{E}_{DCal cluster}^{leading} (GeV)";
-      nbins[dim] = fNbins;
-      min[dim] = fMinBinPt;
-      max[dim] = fMaxBinPt;
+      nbins[dim] = nPtBins;
+      min[dim] = 0;
+      max[dim] = fMaxPt;
       dim++;
 
       if (fDoLeadingObjectPosition) {
@@ -406,9 +414,9 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     }
     else {
       axistitle[dim] = "#it{E}_{cluster}^{leading} (GeV)";
-      nbins[dim] = fNbins;
-      min[dim] = fMinBinPt;
-      max[dim] = fMaxBinPt;
+      nbins[dim] = nPtBins;
+      min[dim] = 0;
+      max[dim] = fMaxPt;
       dim++;
 
       if (fDoLeadingObjectPosition) {
@@ -430,7 +438,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   if (!fCaloCellsName.IsNull()) {
     axistitle[dim] = "No. of cells";
 
-    if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    if (fForceBeamType != AliAnalysisTaskEmcalLight::kpp) {
       nbins[dim] = 5000;
       min[dim] = -0.5;
       max[dim] = 10000-0.5;
@@ -463,7 +471,7 @@ void AliAnalysisTaskEmcalJetQA::ExecOnce()
     fNeedEmcalGeom = kTRUE;
   }
 
-  AliAnalysisTaskEmcal::ExecOnce();
+  AliAnalysisTaskEmcalLight::ExecOnce();
 
   if (fDoV0QA) {
     fVZERO = InputEvent()->GetVZEROData();
@@ -478,7 +486,7 @@ Bool_t AliAnalysisTaskEmcalJetQA::RetrieveEventObjects()
 {
   // Retrieve event objects.
 
-  if (!AliAnalysisTaskEmcal::RetrieveEventObjects()) return kFALSE;
+  if (!AliAnalysisTaskEmcalLight::RetrieveEventObjects()) return kFALSE;
 
   if (!fCentMethod2.IsNull() || !fCentMethod3.IsNull()) {
     if (fBeamType == kAA || fBeamType == kpA ) {
@@ -507,22 +515,15 @@ Bool_t AliAnalysisTaskEmcalJetQA::FillHistograms()
 
   EventQA_t eventQA;
 
-  if (fTracks) {
-    DoTrackLoop();
-    AliDebug(2,Form("%d tracks found in the event", fNTotTracks));
+  DoTrackLoop();
+  AliDebug(2,Form("%d tracks found in the event", fNTotTracks));
+  eventQA.fMaxTrack = fLeadingTrack;
 
-    eventQA.fMaxTrack = fLeadingTrack;
-  } 
-
-  if (fCaloClusters) {
-    DoClusterLoop();
-    AliDebug(2,Form("%d clusters found in EMCal and %d in DCal", fNTotClusters[0], fNTotClusters[1]));
-
-
-    for (Int_t i = 0; i < 2; i++) {
-      if (!fLeadingCluster[i]) continue;
-      fLeadingCluster[i]->GetMomentum(eventQA.fMaxCluster[i], fVertex);
-    }
+  DoClusterLoop();
+  AliDebug(2,Form("%d clusters found in EMCal and %d in DCal", fNTotClusters[0], fNTotClusters[1]));
+  for (Int_t i = 0; i < 2; i++) {
+    if (!fLeadingCluster[i]) continue;
+    fLeadingCluster[i]->GetMomentum(eventQA.fMaxCluster[i], fVertex);
   }
 
   if (fCaloCells) {

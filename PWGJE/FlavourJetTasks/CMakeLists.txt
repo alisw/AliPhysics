@@ -43,8 +43,6 @@ set(SRCS
     AliAnalysisTaskSEPicoV0Filter.cxx
     AliAnalysisTaskSEPicoV0Maker.cxx
     AliAnalysisTaskSEPicoV0MakerMC.cxx
-    AliHFAODMCParticleContainer.cxx
-    AliHFTrackContainer.cxx
     AliMCHFParticleSelector.cxx
     AliPicoHeaderCJ.cxx
     AliPicoJet.cxx
@@ -59,7 +57,10 @@ if(FASTJET_FOUND)
   link_directories(${FASTJET_LIBS_DIR})
   add_definitions(${FASTJET_DEFINITIONS})
   set(SRCS ${SRCS}
-           AliAnalysisTaskDmesonJets.cxx)
+           AliHFAODMCParticleContainer.cxx
+           AliHFTrackContainer.cxx
+           AliAnalysisTaskDmesonJets.cxx
+           )
 endif(FASTJET_FOUND)
 
 # Headers from sources

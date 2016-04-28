@@ -39,6 +39,8 @@ class AliPIDResponse;
 class AliPIDCombined;
 class AliPhysicsSelection;
 class AliESDtrackCuts;
+class AliESDAD;
+class AliESDVZERO;
 
 class TH1I;
 class TH1F;
@@ -64,7 +66,12 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		virtual void UserCreateOutputObjects();
 		virtual void UserExec(Option_t *);
 		virtual void Terminate(Option_t *);
-		void SetSaveMode(Bool_t isTree) {fSavemode = isTree;}//kTRUE = Save gap, kFALSE = Save 2,4-track
+		void SetIsRun2(Bool_t isRun2) {fIsRun2 = isRun2;}//Run2 mode
+		void SetIsMC(Bool_t MC) {fIsMC = MC;}//MC mode
+		void SetSaveGapEvents(Bool_t isTree) {fSavemode = isTree;}//kTRUE = Save gap-event, kFALSE = Save 2,4-track
+		void SetCombinatoricsMode(Bool_t isComb) {fCombmode = isComb;}//kTRUE = save combinatorics
+		void SetSaveGenParticle(Bool_t isSaveGen) {fIsSaveGen = isSaveGen;}//kTRUE = save proton, 2pion info
+		void SetIsPythia8(Bool_t ispythia8) {fIsPythia8 = ispythia8;}
 
 	private:
 		enum {
@@ -82,6 +89,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kBinSD1, // single diffractive
 			kBinSD2, // single diffractive
 			kBinDD, // double diffractive
+			kBinEL, // Elastic event
 			kBinMCAll
 		};
 		enum {
@@ -89,7 +97,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kInput = 0, // Total event
 			kMCCheck, // For MC only..
 			kOnlineTrigger, //Pass MB_OR online trigger
-			kMBOR, //Offline MB_OR trigger
+			kOfflineCut, //Offline MB_OR trigger
 			kVtxCut, //Vertex cut
 			kPileUpCut, //Pile-up cut by secondary SPD vertex
 			kClusterCut, //SPD Cluster cut
@@ -147,6 +155,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t CheckV0Hit(const AliESDEvent *ESDEvent, TH1D* fHitV0A, TH1D* fHitV0C);
 		Int_t DetermineGap(const AliESDEvent *ESDEvent, const Bool_t wCent, const Int_t type); // determines the gap of all available detectors
 		Int_t DoMCTruth(); // analyses the MCtruth for corrections, returns #Primaries
+		void DoCombStudy(const AliESDAD *ad, const AliESDVZERO *vzero); 
 
 		// analyzes track pairs in MC truth
 		void DetermineMCprocessType(); // determines the MC process ID
@@ -171,23 +180,41 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		// information about the trackpair which is currently processed
 		Int_t fRun; // number of the run which is about to be processed
 		Int_t fPIDmode; // selects set of PID cuts, 0 for 3sigma standard cuts,
-		Int_t fSavemode;
+		Bool_t fIsRun2;
+		Bool_t fSavemode;
+		Bool_t fCombmode;
+		Bool_t fIsMC;
+		Bool_t fIsSaveGen;
+		Bool_t fIsPythia8;
+		Bool_t fIsPythia;
+		Bool_t fIsPhojet;
+		Bool_t fIsEPOS;
 		// on central activity
 
 		// Output objects-----------------------------------------------------
 		TTree *fTree; //! V0 2pion
+		TTree *fTree_Comb;//! Combinatorics
 		TList *fList; //! List for histogram
 
 		// Tree variables----------------------------------------------------
+		Bool_t fSPDFired;//!
+		Bool_t fV0Gap;//!
+		Bool_t fADGap;//!
+		Bool_t fFMDGap;//!
+		Bool_t fZDCGap;//!
+		Int_t fRunNumber;//!
+		Int_t fPeriod;//!
 		Bool_t fCheckTwoPion; //! Check that this event has 2 tracks
 		Bool_t fCheckFourPion; //! Check that this event has 4 tracks
 		Bool_t fCheckTwoPion_ITSSA;//! Check that this event has 2 ITSSA_track events
 		Bool_t fCheckFourPion_ITSSA;//! Check that this event has 2 ITSSA_track events
+		Int_t fMultiplicity;//!
+		Double_t fVertex[3];//! Vertex information
 
-		Double_t fTwoPionTrack[2][9]; //! Two track Momentum, Energy and Sign
-		Double_t fTwoPionTPCSigma[2][9]; //! Two track TPC sigma for PID
-		Double_t fTwoPionTOFSigma[2][9]; //! Two track TOF sigma for PID
-		Double_t fTwoPionITSSigma[2][9]; //! Two track ITS sigma for PID
+		Double_t fTwoPionTrack[2][10]; //! Two track Momentum, Energy and Sign
+		Double_t fTwoPionTPCSigma[2][10]; //! Two track TPC sigma for PID
+		Double_t fTwoPionTOFSigma[2][10]; //! Two track TOF sigma for PID
+		Double_t fTwoPionITSSigma[2][10]; //! Two track ITS sigma for PID
 		UInt_t fTwoPionMask_TPC[2]; //! Two track mask for TPC
 		UInt_t fTwoPionMask_TOF[2]; //! Two track mask for TOF
 		UInt_t fTwoPionMask_ITS[2]; //! Two track mask for ITS
@@ -199,44 +226,50 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Double_t fTwoPionBayesProb_ITS[2][5]; //!Bayesian probabilities for ITS
 		Double_t fTwoPionBayesProb_TRD[2][5]; //!Bayesian probabilities for TRD
 		Double_t fTwoPionBayesProb_tot[2][5]; //!Bayesian probabilities for tot
-		Double_t fTwoPionTrack_ITSSA[2][9]; //! Two track(ITSSA) Momentum, Energy and Sign
+		Double_t fTwoPionTrack_ITSSA[2][10]; //! Two track(ITSSA) Momentum, Energy and Sign
 
-		Double_t fFourPionTrack[4][9]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionTPCSigma[4][9]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionTOFSigma[4][9]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionITSSigma[4][9]; //! Four track Momentum, Energy and Sign
-		UInt_t fFourPionMask_TPC[2]; //! Four track mask for TPC
-		UInt_t fFourPionMask_TOF[2]; //! Four track mask for TOF
-		UInt_t fFourPionMask_ITS[2]; //! Four track mask for ITS
-		UInt_t fFourPionMask_TRD[2]; //! Four track mask for TRD
-		UInt_t fFourPionMask_tot[2]; //! Four track mask for TRD
-		UInt_t fFourPionDetMask_tot[2]; //! Four track mask for TRD
+		Double_t fFourPionTrack[4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTPCSigma[4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTOFSigma[4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionITSSigma[4][10]; //! Four track Momentum, Energy and Sign
+		UInt_t fFourPionMask_TPC[4]; //! Four track mask for TPC
+		UInt_t fFourPionMask_TOF[4]; //! Four track mask for TOF
+		UInt_t fFourPionMask_ITS[4]; //! Four track mask for ITS
+		UInt_t fFourPionMask_TRD[4]; //! Four track mask for TRD
+		UInt_t fFourPionMask_tot[4]; //! Four track mask for TRD
+		UInt_t fFourPionDetMask_tot[4]; //! Four track mask for TRD
 		Double_t fFourPionBayesProb_TPC[4][5]; //!Bayesian probabilities for TPC
 		Double_t fFourPionBayesProb_TOF[4][5]; //!Bayesian probabilities for TOF
 		Double_t fFourPionBayesProb_ITS[4][5]; //!Bayesian probabilities for ITS
 		Double_t fFourPionBayesProb_TRD[4][5]; //!Bayesian probabilities for TRD
 		Double_t fFourPionBayesProb_tot[4][5]; //!Bayesian probabilities for tot
-		Double_t fFourPionTrack_ITSSA[4][9];//!
+		Double_t fFourPionTrack_ITSSA[4][10];//!
 
-		Double_t fMCGenProtonTrack[2][5]; //! Info of generated Proton 1 after scattering
-		Double_t fMCGenPionTrack[2][5]; //! Info of generated Pion 1 after scattering
-		Double_t fVertex[3];//! Vertex information
+		Double_t fMCGenProtonTrack[4][5]; //! Info of generated Proton 1 after scattering
+		Double_t fMCGenPionTrack[4][5]; //! Info of generated Pion 1 after scattering
 
 		Double_t fADCharge[16];//!
 		Int_t fADANmbBB;//!
 		Int_t fADCNmbBB;//!
 
-		// Double gap tree variables------------------------------------------
-		Bool_t fDGV0SPD;//! V0+SPD gap info
-		Bool_t fDGADSPD;//! AD+SPD gap info
-		Bool_t fSPDFired;//!
-		Bool_t fV0Gap;//!
-		Bool_t fADGap;//!
-		Bool_t fFMDGap;//!
-		Bool_t fZDCGap;//!
-		Bool_t fIsMC;//!
-		Int_t fRunNumber;//!
-		Int_t fPeriod;//!
+		// Tree variables for combinatorics----------------------------------
+		Bool_t fComb_IsPassMBOR;//! Need for MC
+		Bool_t fComb_IsPassVertex;//! Need for MC
+		Bool_t fComb_IsPileUp;//!
+		Bool_t fComb_IsPassClusterCut;//!
+		Int_t fComb_SPDCluster;//!
+		Int_t fComb_SPDTracklets;//!
+		Bool_t fComb_DetHit[10];//!
+		Double_t fComb_V0_Time_Mean[2];//!
+		Double_t fComb_V0_Time[64];//!
+		Double_t fComb_V0_ADC[64];//!
+		Double_t fComb_AD_Time_Mean[2];//!
+		Double_t fComb_AD_Time[16];//!
+		Double_t fComb_AD_ADC[16];//!
+		Int_t fComb_MC_EventProcess;//!
+		TLorentzVector fComb_forwardP[2];//!
+		TLorentzVector fComb_diffSystem[2];//!
+
 
 		//Histograms----------------------------------------------------------
 		TH1D *fHistEvent; //Histogram for number of event
@@ -305,6 +338,14 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH2D *fTOFSignal;
 		TH2D *fITSSignal;
 		TH2D *fTRDSignal;
+		TH1D *fMC_Eta[7];
+		TH1D *fMC_DiffMass[7];
+		TH1D *fMC_DiffMass_PDG[7];
+		TH1D *fRunFiducial[6];
+		TH1D *fMult_Gen;
+		TH2D *fMult_Gen_Process;
+		TH2D *fMult_Rec_DG_Process;
+		TH2D *fMult_Rec_NG_Process;
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);

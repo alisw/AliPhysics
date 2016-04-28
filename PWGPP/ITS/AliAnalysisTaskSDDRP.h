@@ -110,8 +110,9 @@ class AliAnalysisTaskSDDRP : public AliAnalysisTaskSE {
   TString fTriggerClass;    // Name of selected trigger class
   Bool_t  fOnlyEventsWithSDD; // Flag to use only trigger cluster with SDD
   Bool_t  fExcludeBadMod;   // Flag to reject bad modules
+  Bool_t fInitCalib;        // Flag to check calib initiatization
  
-  ClassDef(AliAnalysisTaskSDDRP,5);
+  ClassDef(AliAnalysisTaskSDDRP,6);
 };
 
 

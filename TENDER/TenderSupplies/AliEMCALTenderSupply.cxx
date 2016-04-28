@@ -1546,7 +1546,7 @@ Bool_t AliEMCALTenderSupply::InitClusterization()
 
   if (!event) 
     return kFALSE;
-  
+
   if (fDebugLevel>0) 
     AliInfo(Form("Initialising reclustering parameters: Clusterizer type: %d",fRecParam->GetClusterizerFlag()));
   

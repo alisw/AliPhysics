@@ -641,6 +641,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myScaleSetUp(hMeanTotalChargeADA,hMeanTotalChargeADC); 
   hMeanTotalChargeADA->Draw("P");
   hMeanTotalChargeADC->Draw("Psame");
+  AddFillSeparationLines(hFillNumber);
 
   TLegend *myLegend1 = new TLegend(0.70,0.67,0.97,0.82);
   myLegendSetUp(myLegend1,0.04,1);
@@ -917,28 +918,28 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   constFitADA_TailW->Draw("same");
   constFitADC_TailW->Draw("same");
   
-  TLegend *myLegend1 = new TLegend(0.70,0.17,0.97,0.52);
-  myLegendSetUp(myLegend1,0.04,1);
-  myLegend1->AddEntry(hFitIntegrated,"Integrated charge","p");
-  myLegend1->AddEntry(hFitIntegrated_Weighted,"Integrated charge weighted","p");
-  myLegend1->AddEntry(hFitTrigger,"Trigger charge","p");
-  myLegend1->AddEntry(hFitTrigger_Weighted,"Trigger charge weighted","p");
-  myLegend1->AddEntry(hFitTail,"Tail charge","p");
-  myLegend1->AddEntry(hFitTail_Weighted,"Tail charge weighted","p");
-  myLegend1->Draw();
+  TLegend *myLegend01 = new TLegend(0.70,0.17,0.97,0.52);
+  myLegendSetUp(myLegend01,0.04,1);
+  myLegend01->AddEntry(hFitIntegrated,"Integrated charge","p");
+  myLegend01->AddEntry(hFitIntegrated_Weighted,"Integrated charge weighted","p");
+  myLegend01->AddEntry(hFitTrigger,"Trigger charge","p");
+  myLegend01->AddEntry(hFitTrigger_Weighted,"Trigger charge weighted","p");
+  myLegend01->AddEntry(hFitTail,"Tail charge","p");
+  myLegend01->AddEntry(hFitTail_Weighted,"Tail charge weighted","p");
+  myLegend01->Draw();
   
-  TLegend *myLegend2 = new TLegend(0.70,0.17,0.97,0.52);
-  myLegendSetUp(myLegend2,0.04,1);
+  TLegend *myLegend02 = new TLegend(0.70,0.17,0.97,0.52);
+  myLegendSetUp(myLegend02,0.04,1);
   //myLegend2->SetFillStyle(kSolid);
-  myLegend2->AddEntry(constFitADA_Int," ","l");
-  myLegend2->AddEntry(constFitADA_IntW," ","l");
-  myLegend2->AddEntry(constFitADA_Trg," ","l");
-  myLegend2->AddEntry(constFitADA_TrgW," ","l");
-  myLegend2->AddEntry(constFitADA_Tail," ","l");
-  myLegend2->AddEntry(constFitADA_TailW," ","l");
-  myLegend2->Draw();
+  myLegend02->AddEntry(constFitADA_Int," ","l");
+  myLegend02->AddEntry(constFitADA_IntW," ","l");
+  myLegend02->AddEntry(constFitADA_Trg," ","l");
+  myLegend02->AddEntry(constFitADA_TrgW," ","l");
+  myLegend02->AddEntry(constFitADA_Tail," ","l");
+  myLegend02->AddEntry(constFitADA_TailW," ","l");
+  myLegend02->Draw();
   
-  c104->Print(Form("%s/GainMon_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c104->Print(Form("%s/GainMon_%d_%d.pdf)",plotDir.Data(),minRun,maxRun));
   
   	
   TCanvas *c2 = new TCanvas("MeanTime"," ",800,400); 
@@ -960,6 +961,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hMeanTimeADA->GetYaxis()->SetRangeUser(50,70); 
   hMeanTimeADA->Draw("E");
   hMeanTimeADC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c2->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -983,6 +985,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hMeanTimeSigmaADA->GetYaxis()->SetRangeUser(0.1,1.0);
   hMeanTimeSigmaADA->Draw("E");
   hMeanTimeSigmaADC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1022,6 +1025,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	if(i<8)hChannelSlice->GetYaxis()->SetRangeUser(62,68);
 	else hChannelSlice->GetYaxis()->SetRangeUser(53,59);
 	hChannelSlice->DrawCopy("P");
+	AddFillSeparationLines(hFillNumber);
 	}
  
   c22->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1060,6 +1064,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	hChannelSlice->SetTitle(Form("Time resolution channel %d",i));
 	hChannelSlice->GetYaxis()->SetRangeUser(0.1,1.1);
 	hChannelSlice->DrawCopy("P");
+	AddFillSeparationLines(hFillNumber);
 	}
   c32->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   
@@ -1081,6 +1086,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hRateUBA->GetYaxis()->SetRangeUser(0,1.4);
   hRateUBA->Draw("E");
   hRateUBC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1103,6 +1109,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hRatePhysBBA->GetYaxis()->SetRangeUser(0,1.4);
   hRatePhysBBA->Draw("E");
   hRatePhysBBC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c41->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1125,6 +1132,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myScaleSetUp(hRateUGA,hRateUGC);
   hRateUGA->Draw("E");
   hRateUGC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1147,6 +1155,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myScaleSetUp(hRatePhysBGA,hRatePhysBGC);
   hRatePhysBGA->Draw("E");
   hRatePhysBGC->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c51->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1169,6 +1178,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hRateADAND->GetYaxis()->SetRangeUser(0,1.4);
   hRateADAND->Draw("E");
   hRateADOR->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   
   TLegend *myLegend2 = new TLegend(0.70,0.67,0.97,0.82);
   myLegendSetUp(myLegend2,0.04,1);
@@ -1196,6 +1206,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hRatePhysADAND->GetYaxis()->SetRangeUser(0,1.4);
   hRatePhysADAND->Draw("E");
   hRatePhysADOR->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
 
   myLegend2->Draw();
   
@@ -1219,6 +1230,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myScaleSetUp(hRatioVZEROADAND,hRatioVZEROADOR);
   hRatioVZEROADAND->Draw("E");
   hRatioVZEROADOR->Draw("Esame");
+  AddFillSeparationLines(hFillNumber);
   
   TLegend *myLegend3 = new TLegend(0.70,0.67,0.97,0.82);
   myLegendSetUp(myLegend3,0.04,1);
@@ -1250,7 +1262,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   myPad151->Draw();
   
   for(Int_t i = 0; i<16; i++){
-  	myPadSetUp(myPad151->cd(i+1),0.15,0.00,0.05,0.15);
+  	myPadSetUp(myPad151->cd(i+1),0.15,0.10,0.05,0.15);
   	myPad151->cd(i+1);
   	gPad->SetGridy();
 	hChannelSlice = hFlagNoTime->ProjectionY("hChannelSlice",i+1,i+1);
@@ -1325,8 +1337,11 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hSlewingChi2ADC->SetMarkerStyle(kFullCircle);  
   //myScaleSetUp(hSlewingChi2ADA,hSlewingChi2ADC); 
   hSlewingChi2ADA->GetYaxis()->SetRangeUser(-0.1,1); 
+  hSlewingChi2ADA->SetTitle("Average deviation from time of flight");
+  hSlewingChi2ADA->GetYaxis()->SetTitle("Mean |#Delta| [ns]");
   hSlewingChi2ADA->Draw("P");
   hSlewingChi2ADC->Draw("Psame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c13->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1350,6 +1365,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
   hSaturationADA->GetYaxis()->SetRange(0,hSaturationADA->GetYaxis()->GetLast()); 
   hSaturationADA->Draw("P");
   hSaturationADC->Draw("Psame");
+  AddFillSeparationLines(hFillNumber);
   myLegend1->Draw();
   
   c14->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1468,6 +1484,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	myScaleSetUp(hChannelSlice);
 	hChannelSlice->SetTitle(Form("Pedestal mean channel %d, Int0",i));
 	hChannelSlice->DrawCopy("HIST");
+	AddFillSeparationLines(hFillNumber);
 	}
  
   c81->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1491,6 +1508,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	myScaleSetUp(hChannelSlice);
 	hChannelSlice->SetTitle(Form("Pedestal mean channel %d, Int1",i));
 	hChannelSlice->DrawCopy("HIST");
+	AddFillSeparationLines(hFillNumber);
 	}
  
   c82->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1528,6 +1546,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	myScaleSetUp(hChannelSlice);
 	hChannelSlice->SetTitle(Form("Pedestal width channel %d, Int0",i));
 	hChannelSlice->DrawCopy("HIST");
+	AddFillSeparationLines(hFillNumber);
 	}
  
   c91->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -1551,6 +1570,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root",Bool_t showLumi 
 	myScaleSetUp(hChannelSlice);
 	hChannelSlice->SetTitle(Form("Pedestal width channel %d, Int1",i));
 	hChannelSlice->DrawCopy("HIST");
+	AddFillSeparationLines(hFillNumber);
 	}
  
   c92->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));

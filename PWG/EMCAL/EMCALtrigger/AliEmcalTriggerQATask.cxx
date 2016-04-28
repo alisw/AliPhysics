@@ -37,7 +37,7 @@ ClassImp(AliEmcalTriggerQATask);
  * Dummy constructor
  */
 AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
-  AliAnalysisTaskEmcal(),
+  AliAnalysisTaskEmcalLight(),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
   fADCperBin(20),
@@ -56,7 +56,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
  * \param name Name of the trigger QA task
  */
 AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins, Bool_t online) :
-  AliAnalysisTaskEmcal(name,kTRUE),
+  AliAnalysisTaskEmcalLight(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(0),
   fADCperBin(20),
@@ -75,7 +75,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
 
   if (nCentBins == 0) {
     AliInfo("Setting up the task for pp collisions.");
-    SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+    SetForceBeamType(AliAnalysisTaskEmcalLight::kpp);
     fEMCALTriggerQA = new TObjArray(1);
     if (online){
       fEMCALTriggerQA->AddAt(new AliEMCALTriggerOnlineQAPP(name), 0);
@@ -87,7 +87,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
   else {
     AliInfo("Setting up the task for PbPb collisions.");
     // No offline class for PbPb... yet
-    SetForceBeamType(AliAnalysisTaskEmcal::kAA);
+    SetForceBeamType(AliAnalysisTaskEmcalLight::kAA);
     fEMCALTriggerQA = new TObjArray(nCentBins);
     for (Int_t i = 0; i < nCentBins; i++) {
       fEMCALTriggerQA->AddAt(new AliEMCALTriggerOnlineQAPbPb(name), 0);
@@ -110,7 +110,7 @@ AliEmcalTriggerQATask::~AliEmcalTriggerQATask()
  */
 void AliEmcalTriggerQATask::ExecOnce()
 {
-  AliAnalysisTaskEmcal::ExecOnce();
+  AliAnalysisTaskEmcalLight::ExecOnce();
 
   fESDEvent = dynamic_cast<AliESDEvent*>(InputEvent());
 
@@ -150,7 +150,7 @@ void AliEmcalTriggerQATask::ExecOnce()
  */
 void AliEmcalTriggerQATask::UserCreateOutputObjects()
 {
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
 
   if (fOutput) {  
     for (Int_t i = 0; i < fNcentBins; i++) {
