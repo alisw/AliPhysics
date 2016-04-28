@@ -790,26 +790,16 @@ Bool_t AliConvEventCuts::InitializeCutsFromCutString(const TString analysisCutSe
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
   ///Set individual cut ID
+//   "HeavyIon",                     //0
+//   "CentralityMin",                //1
+//   "CentralityMax",                //2
+//   "SelectSpecialTrigger",         //3
+//   "SelectSpecialSubTriggerClass", //4
+//   "RemovePileUp",                 //5
+//   "RejectExtraSignals",           //6
+//   "VertexCut",                    //7
 
   switch (cutID) {
-  case kremovePileUp:
-    if( SetRemovePileUp(value)) {
-      fCuts[kremovePileUp] = value;
-      UpdateCutString();
-      return kTRUE;
-    } else return kFALSE;
-  case kSelectSpecialTriggerAlias:
-    if( SetSelectSpecialTrigger(value)) {
-      fCuts[kSelectSpecialTriggerAlias] = value;
-      UpdateCutString();
-      return kTRUE;
-    } else return kFALSE;
-  case kSelectSubTriggerClass:
-    if( SetSelectSubTriggerClass(value)) {
-      fCuts[kSelectSubTriggerClass] = value;
-      UpdateCutString();
-      return kTRUE;
-    } else return kFALSE;
   case kisHeavyIon:
     if( SetIsHeavyIon(value)) {
       fCuts[kisHeavyIon] = value;
@@ -825,6 +815,24 @@ Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
   case kCentralityMax:
     if( SetCentralityMax(value)) {
       fCuts[kCentralityMax] = value;
+      UpdateCutString();
+      return kTRUE;
+    } else return kFALSE;
+  case kSelectSpecialTriggerAlias:
+    if( SetSelectSpecialTrigger(value)) {
+      fCuts[kSelectSpecialTriggerAlias] = value;
+      UpdateCutString();
+      return kTRUE;
+    } else return kFALSE;
+  case kSelectSubTriggerClass:
+    if( SetSelectSubTriggerClass(value)) {
+      fCuts[kSelectSubTriggerClass] = value;
+      UpdateCutString();
+      return kTRUE;
+    } else return kFALSE;
+  case kremovePileUp:
+    if( SetRemovePileUp(value)) {
+      fCuts[kremovePileUp] = value;
       UpdateCutString();
       return kTRUE;
     } else return kFALSE;
@@ -2473,15 +2481,19 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
     TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
     if (!fTriggerSelectedManually){
       if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
-      else {
-        if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-        else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-        else if ( fPeriodEnum == kLHC11cg || fPeriodEnum == kLHC12  || fPeriodEnum == kLHC13g ) {
+      else {     
+        if (fIsHeavyIon == 1){
+                fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+            }    
+        } else if (fIsHeavyIon == 2){
+            fOfflineTriggerMask = AliVEvent::kINT7;
+        } else if ( fPeriodEnum == kLHC11cg || fPeriodEnum == kLHC12 ) {
           // fixing default trigger to kINT7 as no data with kMB was taken!!!
           fOfflineTriggerMask = AliVEvent::kINT7;
   //         cout << "will take kINT7 as trigger mask" << endl; 
+        } else {
+            fOfflineTriggerMask = AliVEvent::kMB;
         }
-        else fOfflineTriggerMask = AliVEvent::kMB;
       }
     }
     // Get the actual offline trigger mask for the event and AND it with the
@@ -2591,7 +2603,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 //             }
           }
         }
-        //if for specif centrality trigger selection 
+        //if for specific centrality trigger selection 
         if(fSpecialSubTrigger == 1){
           if(fSpecialSubTriggerName.Contains("|")  && GetCentrality(fInputEvent) <= 10.){
             TObjArray *ClassesList = fSpecialSubTriggerName.Tokenize("|");
