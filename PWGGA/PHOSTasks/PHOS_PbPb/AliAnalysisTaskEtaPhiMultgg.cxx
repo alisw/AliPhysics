@@ -237,32 +237,9 @@ void AliAnalysisTaskEtaPhiMultgg::UserExec(Option_t *)
   if(fEventCounter == 0) {
     //Get Event Plane flattening
     Int_t run = fEvent->GetRunNumber() ;
-    AliOADBContainer flatContainer("phosFlat");
-    flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
-    TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
-    if(!arr){
-      AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
-      arr = (TObjArray*)flatContainer.GetObject(1,"phosFlat"); //default
-    }
-        
-    AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
-//    AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
-//      if(fTPCFlat) delete fTPCFlat ;
-//      fTPCFlat = new AliEPFlattener() ;
-//      fTPCFlat = h ;
-    AliEPFlattener * h = (AliEPFlattener*)arr->At(1) ;  
-    if(fV0AFlat) delete fV0AFlat ;
-    fV0AFlat = new AliEPFlattener() ;
-    fV0AFlat = h ;
-    h = (AliEPFlattener*)arr->At(2) ;  
-    if(fV0CFlat) delete fV0CFlat ;
-    fV0CFlat = new AliEPFlattener() ;
-    fV0CFlat = h ;
-   
     
     fEMCALgeo = AliEMCALGeometry::GetInstance();
-    
-    
+        
     fEventCounter++ ;
   }
 
@@ -357,8 +334,8 @@ void AliAnalysisTaskEtaPhiMultgg::UserExec(Option_t *)
   FillHistogram("phiRPV0C",rpV0C,fCentrality) ;  
   FillHistogram("phiRPV0AC",rpV0A,rpV0C) ;  
 
-  rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
-  rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
+//   rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
+//   rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
   FillHistogram("phiRPV0Aflat",rpV0A,fCentrality) ;  
   FillHistogram("phiRPV0Cflat",rpV0C,fCentrality) ;  
   FillHistogram("phiRPV0ACflat",rpV0A,rpV0C) ;  
@@ -586,7 +563,7 @@ void AliAnalysisTaskEtaPhiMultgg::UserExec(Option_t *)
           Double_t e3=ph3->E() ;
           if(!IsSameKtBin(e1,e3))
 	  continue ;
-          for(Int_t i4=0; i4<mixPHOS1->GetEntriesFast();i4++){
+          for(Int_t i4=0; i4<mixPHOS3->GetEntriesFast();i4++){
             AliCaloPhoton * ph4=(AliCaloPhoton*)mixPHOS3->At(i4) ;
             Double_t e4=ph4->E() ;
             if(!IsSameKtBin(e1,e4))
