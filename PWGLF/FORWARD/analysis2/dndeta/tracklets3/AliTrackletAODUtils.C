@@ -619,7 +619,8 @@ public:
 			     const char* name,
 			     UShort_t    mode,
 			     TH1*        ipz,
-			     TH2*        mask=0);
+			     TH2*        mask=0,
+			     Bool_t      verb=true);
   /** 
    * Clone an object and add to container 
    * 
@@ -1618,7 +1619,8 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
 					 const char* name,
 					 UShort_t    mode,
 					 TH1*        ipz,
-					 TH2*        other)
+					 TH2*        other,
+					 Bool_t      verb)
 {
   if (!h) return 0;
   
@@ -1683,7 +1685,8 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
       n++;
     }
     if (k == 0 || n == 0) {
-      ::Warning("Average", "Eta bin # %3d has no data",etaBin);
+      if (verb) 
+	::Warning("Average", "Eta bin # %3d has no data",etaBin);
       continue; // This eta bin empty!
     }
     Double_t norm = (mode > 0 ? n : dsum);
