@@ -165,6 +165,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   else // "else" is important to not add additional cuts to previous cutInstance by accident.
   {
     LMEECutLib* LMcutlib = new LMEECutLib();
+    LMcutlib->SetIsESDTask(isESD);
     LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
     
     if (cutInstance==0+nCutsUsingConfigFunctions) {
@@ -230,9 +231,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
     //      isPrefilterCutset=kTRUE;
     //    }
     
-    if (isESD) {
-      anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna() );
-    }
+    //if (isESD) anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna() ); // now done within CutLib
     if (!isPrefilterCutset) {
       anaFilter->AddCuts( LMcutlib->GetTrackCutsAna() );
     }

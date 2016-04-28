@@ -1,14 +1,8 @@
 TString names=(
-               "PID1_SPDfirst1_pt200;"
-               "PID1_SPDfirst1_pt200_PairCutm20t20;"
-               "PID1_SPDfirst1_pt200_PairCutp236m100;"
-               "PID1_SPDfirst1_pt400;"
-               "PID1_SPDfirst1_pt400_PairCutm20t20;"
-               "PID1_SPDfirst1_pt400_PairCutp236m100;"
-               "PID1_SPDfirst1_PrefAllm40t80_pt200;"
-               "PID1_SPDfirst1_PrefAllm40t80_pt200_PairCutp236m100;"
-               "PID1_SPDfirst1_PrefAllm40t80_pt400;"
-               "PID1_SPDfirst1_PrefAllm40t80_pt400_PairCutp236m100;"
+               "PID1_SPDfirst_PrefAllm60t100_pt200;"
+               "PID1_SPDorSDD_PrefAllm60t100_pt200;"
+               "PID1_SPDfirst_PrefAllm60t100_pt400;"
+               "PID1_SPDorSDD_PrefAllm60t100_pt400;"
                );
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
@@ -16,7 +10,7 @@ const Int_t nDie=arrNames->GetEntries();
 // _____ for Random Rejection task (AddTask_reichelt_RandomRejection.C)
 //TF1    PtFunc = TF1("MyPtFunc", "exp(-x/3.)", 0.4, 3.5); // not working
 const TString  RndmPtExpr="exp(-x/3.)";
-const Double_t RndmPtMin=0.4; // pt and eta ranges need to cover at least the kinematic range of final analysis electrons
+const Double_t RndmPtMin=0.2; // pt and eta ranges need to cover at least the kinematic range of final analysis electrons
 const Double_t RndmPtMax=3.5;
 const Double_t RndmEtaMax=0.8;
 const Int_t nTestpartPerEle=100; // number of testparticles used per final analysis electron in an event.
@@ -30,6 +24,7 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   //
   
   LMEECutLib*  LMcutlib = new LMEECutLib();
+  LMcutlib->SetIsESDTask(isESD);
   LMcutlib->SetIsRandomRejTask(isRandomRej);
   
   // task name
@@ -63,68 +58,44 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   cout << endl;
   cout<<"_________________________ "<<"SET UP cutSet NR: "<<cutSet<<" -----> "<<name.Data()<<" _________________________"<<endl;
   
+  // --------------------------------------------------
   // common settings:
+  // --------------------------------------------------
   LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-  LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
-  LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
-  LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
+  // prefilter settings:
+  die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
+  LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_TPCITSif_2;
+  LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_FilterBit0;
   LMcutlib->selectedKineCutsPre = LMEECutLib::kKineCut_pt50_eta090;
-  LMcutlib->SetITSSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
-  LMcutlib->SetTPCSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee60_theta100;
+  // ana settings:
+  LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta20;
+  // post-PID corrections must be done later, because they depend on kine cuts, which may still change.
+  //
+  // --------------------------------------------------
   // additional settings:
+  // --------------------------------------------------
   switch (cutSet) {
     case 0:
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
+      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
       break;
     case 1:
-      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_mee20_theta20;
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
+      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDorSDD_1;
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
       break;
     case 2:
-      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_phiv236_mee100;
-      break;
-//    case 3:
-//      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
-//      break;
-//    case 4:
-//      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
-//      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_mee20_theta20;
-//      break;
-//    case 5:
-//      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
-//      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_phiv236_mee100;
-//      break;
-/*    case 6:
-      //prefilter settings:
-      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_3;
-      LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_Minimal_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
-      break;
-    case 7:
-      //prefilter settings:
-      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_3;
-      LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_Minimal_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
-      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_phiv236_mee100;
-      break;
-    case 8:
-      //prefilter settings:
-      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_3;
-      LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_Minimal_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
+      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
       break;
-    case 9:
-      //prefilter settings:
-      die->SetPreFilterAllSigns();  LMcutlib->SetDoRejectionStep(kTRUE);
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_3;
-      LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_Minimal_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
+    case 3:
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_ITSTPCTOFif_1;
+      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDorSDD_1;
       LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt400_eta080;
-      LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_phiv236_mee100;
       break;
-      */
     default:
       cout << " =============================== " << endl;
       cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -132,6 +103,8 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
       cout << " =============================== " << endl;
       return 0x0;
   }
+  LMcutlib->SetITSSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  LMcutlib->SetTPCSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   
   //
   // Further configuration of task
@@ -149,10 +122,10 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   // --------------------------------------------------
   if (LMcutlib->GetDoRejectionStep() && die->DoEventProcess()) 
   {
-    if (isESD) {
-      die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
-      die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetESDTrackCutsAna() ); // this is redundant!?
-    }
+    //if (isESD) { // now done within CutLib
+    //  die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
+    //  die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetESDTrackCutsAna() ); // this is redundant!?
+    //}
     // set initial track filter.
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsPre() );
     
@@ -173,9 +146,9 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutSet, Bool_t hasMC=kFALSE, B
   // --------------------------------------------------
 	else 
   {
-	  if (isESD) {
-      die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
-	  }
+    //if (isESD) { // now done within CutLib
+    //  die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna() );
+    //}
 	  die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna() );
 	  die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna() );
 	}
