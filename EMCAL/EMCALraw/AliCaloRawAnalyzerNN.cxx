@@ -85,10 +85,10 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
   short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
   double maxf =  maxamp - ped;
   Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
-  if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
+  if(  maxf < fAmpCut  ||  maxamp > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
       //   cout << __FILE__ << __LINE__<< ":  timebinOffset = " <<  timebinOffset  << "  maxf "<< maxf  << endl; 
-      return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time);
+      return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, time, (int)time, 0, 0, Ret::kDummy);
     }
 
   int first = 0;

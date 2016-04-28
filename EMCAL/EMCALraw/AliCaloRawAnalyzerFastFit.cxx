@@ -59,9 +59,9 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
     Float_t maxf = TMath::MaxElement( bunchvector.at(index).GetLength(),  fReversed );
     short timebinOffset = maxampindex - (bunchvector.at(index).GetLength()-1);
     Float_t time = (timebinOffset*TIMEBINWITH)-fL1Phase;
-    if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
+    if(  maxf < fAmpCut  ||  maxamp > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
-      return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, time); //Time scale 19/08/2014 (Antônio)
+      return  AliCaloFitResults( maxamp, ped, Algo::kCrude, maxf, time, (int)time, 0, 0, Ret::kDummy); //Time scale 19/08/2014 (Antônio)
     }
     else if ( maxf >= fAmpCut ) // no if statement needed really; keep for readability
     {
