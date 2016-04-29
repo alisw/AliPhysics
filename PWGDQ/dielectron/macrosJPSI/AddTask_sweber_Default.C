@@ -74,7 +74,7 @@ AliAnalysisTask* AddTask_sweber_Default(
     case k15h: task->SetTriggerMask(AliVEvent::kINT7); break;
   }
   mgr->AddTask(task);
-  if(! triggerClass.isNull ) task->SetFiredTriggerName(triggerClass.Data() );
+  if(! triggerClass.IsNull() ) task->SetFiredTriggerName(triggerClass.Data() );
   
   // set config file name
   TString configFile("");
