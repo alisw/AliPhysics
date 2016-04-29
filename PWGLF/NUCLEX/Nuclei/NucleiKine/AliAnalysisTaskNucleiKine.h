@@ -16,10 +16,10 @@ using std::string;
 #include <vector>
 using std::vector;
 
+class TF1;
 class TH1D;
 class TH2D;
 class TList;
-
 
 class AliAnalysisTaskNucleiKine: public AliAnalysisTaskSE {
   public:
@@ -33,9 +33,11 @@ class AliAnalysisTaskNucleiKine: public AliAnalysisTaskSE {
     template<typename F> static F GetPcm(const LorentzVector<PxPyPzE4D<F> > &a, const LorentzVector<PxPyPzE4D<F> > &b);
 
     /// Coalescence parameters
-    float fPmax;
-    float fRmax;
+    TF1*  fPotentialShape;
     float fSpinProb;
+
+    /// Spatial distribution
+    TF1*  fSpatialDistribution;
 
     // POIs
     vector<int> fPdgCodes;
@@ -54,10 +56,12 @@ class AliAnalysisTaskNucleiKine: public AliAnalysisTaskSE {
 
     TList* fOutputList;    //! output list for histograms
 
-    TH1D*  fEventCounter;
-    TH2D*  fPtSpectra;
+    TH1D*  fEventCounter;  //!
+    TH2D*  fPtSpectra;     //!
+    TH2D*  fCosine;        //!
+    TH1D*  fPsi2;          //!
 
-    ClassDef(AliAnalysisTaskNucleiKine, 1)
+    ClassDef(AliAnalysisTaskNucleiKine, 2)
 };
 
 template<typename F> F AliAnalysisTaskNucleiKine::GetPcm(const ROOT::Math::LorentzVector<PxPyPzE4D<F> > &a, const ROOT::Math::LorentzVector<PxPyPzE4D<F> > &b) {
