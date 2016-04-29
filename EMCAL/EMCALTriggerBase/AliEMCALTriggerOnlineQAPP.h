@@ -69,7 +69,6 @@ protected:
 
   AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];  //!<! EMCal max patch (will be reset each event)
   AliEMCALTriggerPatchInfo  *fMaxPatchDCal[fgkNTriggerTypes][fgkNPatchTypes];   //!<! DCal max patch (will be reset each event)
-  UShort_t                   fNPatches[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];//!<! Number of patches in the current event
   TList                      fHistograms;                                       //!<! List of histograms
 
   // General histograms
@@ -78,24 +77,17 @@ protected:
   // TRU histograms
   TH1                       *fHistFastORL0;                    //!<! Counter of FastOR L0 signal above zero
   TH1                       *fHistFastORL0LargeAmp;            //!<! Counter of FastOR L0 signal above some large amplitude
-  TH2                       *fHistFastORL0Amp;                 //!<! Amplitude spectra of each FastOR L0 channel
   TH2                       *fHistFastORL0Time;                //!<! Time spectra of each FastOR L0 channel
-  TH2                       *fHistFastORL0AmpBySM[fgkSM];      //!<! Integrated amplitude of each FastOR L0 channel (by SM)
-  TH2                       *fHistFEEvsTRUBySM[fgkSM];         //!<! Correlation FEE vs TRU (by SM)
+  TH2                       *fHistFastORL0Amp;                 //!<! Integrated amplitude of each FastOR L0 channel
 
   // STU histograms
   TH1                       *fHistFastORL1;                    //!<! Counter of FastOR L1 signal above zero
   TH1                       *fHistFastORL1LargeAmp;            //!<! Counter of FastOR L1 signal above some large amplitude
-  TH2                       *fHistFastORL1Amp;                 //!<! Amplitude spectra of each FastOR L1 channel
-  TH2                       *fHistFastORL1AmpBySM[fgkSM];      //!<! Integrated amplitude of each FastOR L1 channel (by SM)
-  TH2                       *fHistFEEvsSTUBySM[fgkSM];         //!<! Correlation FEE vs STU (by SM)
+  TH2                       *fHistFastORL1Amp;                 //!<! Integrated amplitude of each FastOR L1 channel
 
   // Trigger patch histograms
-  TH1                       *fHistNPatches[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Spectra of patch amplitudes
-  TH1                       *fHistPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes];    //!<! Number of patches
-  TH1                       *fHistMaxPatchAmp[fgkNDet][fgkNTriggerTypes][fgkNPatchTypes]; //!<! Spectra of maximum patch amplitudes
   TH2                       *fHistMaxEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch
-  TH2                       *fHistAmpEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Position of the maximum patch weighted by the amplitude
+  TH2                       *fHistAmpEdgePos[fgkNTriggerTypes][fgkNPatchTypes];           //!<! Integrated amplitude of all patches (edge position)
 
 private:
   AliEMCALTriggerOnlineQAPP &operator=(const AliEMCALTriggerOnlineQAPP &);
