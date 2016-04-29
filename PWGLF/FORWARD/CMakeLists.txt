@@ -203,7 +203,7 @@ install(FILES ${HDRS} DESTINATION include)
 if(ROOT_HASALIEN AND AliRoot_HASALIEN)
   add_executable(runTrain
                  trains/trainMain.cxx)
-  target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
+  target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint RIO)
   install(TARGETS runTrain
           RUNTIME DESTINATION bin)
 endif(ROOT_HASALIEN AND AliRoot_HASALIEN)
