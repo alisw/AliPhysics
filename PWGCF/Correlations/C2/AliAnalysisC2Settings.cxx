@@ -1,9 +1,11 @@
+#include "TString.h"
+#include "TMath.h"
 #include "AliAnalysisC2Settings.h"
 
 ClassImp(AliAnalysisC2Settings)
 //________________________________________________________________________
 AliAnalysisC2Settings::AliAnalysisC2Settings() :
-  fDataType(AliAnalysisC2Settings::kRECON),
+  fDataType(-1),
   fEtaAcceptanceLowEdge(-0.8),
   fEtaAcceptanceUpEdge(0.8),
   fNEtaBins(15),
@@ -16,7 +18,8 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fZVtxAcceptanceUpEdge(10),
   fNZvtxBins(20),
   fMaxDcaLong(3.0),
-  fMaxDcaTang(2.4)
+  fMaxDcaTang(2.4),
+  fOfflineTrigger("")
 {
   Double_t _ptbins[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   fPtBinEdges = edgeContainer(_ptbins, _ptbins + sizeof(_ptbins) / sizeof(_ptbins[0]));
