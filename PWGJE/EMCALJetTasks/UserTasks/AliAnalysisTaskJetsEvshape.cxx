@@ -112,10 +112,10 @@ void AliAnalysisTaskJetsEvshape::UserCreateOutputObjects()
 
   AddHistogram(ID(kHistJetPt), "jet spectrum;p_{T}^{jet,ch} (GeV/#it{c});counts",
                40, 0., 40.);
-  AddHistogram(ID(kHistMult), "tracklet multiplicity;N_{trkl};counts",
-               100, 0., 400.);
+  AddHistogram(ID(kHistMult), "multiplicity;multiplicity;counts",
+               100, 0., 4000.);
   AddHistogram(ID(kHistJetPtVsMult), "jet p_{T} vs mult;multiplicity;p_{T}^{jet,ch} (GeV/#it{c})",
-               100, 0., 400.,
+               100, 0., 4000.,
                40, 0., 40.);
 
   PostData(kOutputTask, fOutputList);
@@ -146,6 +146,22 @@ Bool_t AliAnalysisTaskJetsEvshape::PrepareEvent()
 {
   Bool_t eventGood = kTRUE;
 
+  // setup pointers to input data (null if unavailable)
+  // mcEvent:  MC input
+  // esdEvent: ESD input
+  // outEvent: AOD output
+  // aodEvent: AOD input if available, otherwise AOD output
+
+  fMCEvent   = this->MCEvent();
+  fESDEvent  = dynamic_cast<AliESDEvent*>(this->InputEvent()); // could also be AOD input
+  AliAODEvent* outEvent  = this->AODEvent();
+  fAODEvent  = dynamic_cast<AliAODEvent*> (this->InputEvent());
+  if (!fAODEvent)
+    fAODEvent = outEvent;
+
+  if ((fDebug > 0) && fESDEvent)
+    printf("event: %s-%06i\n", CurrentFileName(), fESDEvent->GetEventNumberInFile());
+
   // check for run change
   if (fRunNumber != InputEvent()->GetRunNumber()) {
     fRunNumber = InputEvent()->GetRunNumber();
@@ -166,14 +182,33 @@ void AliAnalysisTaskJetsEvshape::ExecOnce()
 
 Bool_t AliAnalysisTaskJetsEvshape::Run()
 {
-  return kTRUE;
+  // record number of sampled events and detect trigger contributions
+  FillH1(kHistStat, kStatSeen);
+
+  // so far, no trigger selection, we accept all
+  FillH1(kHistStat, kStatTrg);
+
+  // prepare the event
+  if (PrepareEvent()) {
+    // here we have passed the event cuts
+    FillH1(kHistStat, kStatEvCuts);
+
+    // multiplicity selection
+
+    // event shape selection
+
+    // InputEvent()->GetList()->ls();
+    return kTRUE;
+  } else {
+    return kFALSE;
+  }
 }
 
 Bool_t AliAnalysisTaskJetsEvshape::FillHistograms()
 {
   FillH1(kHistStat, kStatUsed);
 
-  const AliStack *stack = fMCEvent->Stack();
+  const AliStack *stack = fMCEvent ? fMCEvent->Stack() : 0x0;
   const AliVMultiplicity *mult = InputEvent()->GetMultiplicity();
   const Int_t nTracklets =
     stack ? stack->GetNprimary() :
@@ -201,42 +236,6 @@ void AliAnalysisTaskJetsEvshape::UserExec(Option_t *option)
 
   AliAnalysisTaskEmcalJet::UserExec(option);
 
-  // setup pointers to input data (null if unavailable)
-  // mcEvent:  MC input
-  // esdEvent: ESD input
-  // outEvent: AOD output
-  // aodEvent: AOD input if available, otherwise AOD output
-
-  fMCEvent   = this->MCEvent();
-  fESDEvent  = dynamic_cast<AliESDEvent*>(this->InputEvent()); // could also be AOD input
-  AliAODEvent* outEvent  = this->AODEvent();
-  fAODEvent  = dynamic_cast<AliAODEvent*> (this->InputEvent());
-  if (!fAODEvent)
-    fAODEvent = outEvent;
-
-  if ((fDebug > 0) && fESDEvent)
-    printf("event: %s-%06i\n", CurrentFileName(), fESDEvent->GetEventNumberInFile());
-
-  // record number of sampled events and detect trigger contributions
-  FillH1(kHistStat, kStatSeen);
-
-  // so far, no trigger selection, we accept all
-  FillH1(kHistStat, kStatTrg);
-
-  // prepare the event
-  // (make sure it is cleaned up in the end)
-  if (PrepareEvent()) {
-    // here we have passed the event cuts
-    FillH1(kHistStat, kStatEvCuts);
-
-    // multiplicity selection
-
-    // event shape selection
-
-    // InputEvent()->GetList()->ls();
-  }
-
- stop:
   CleanUpEvent();
 
   PostData(kOutputEmcal, fOutput);
