@@ -9,7 +9,8 @@ AliAnalysisTask* AddTask_sweber_Default(
   Bool_t gridconf = kTRUE,
   TString prod = "", 
   Bool_t isMC = kFALSE,
-  Bool_t rejectPileup = kTRUE
+  Bool_t rejectPileup = kTRUE,
+  Bool_t usePhysicsSelection = kTRUE
 )
 {
   // get the current analysis manager
@@ -54,7 +55,7 @@ AliAnalysisTask* AddTask_sweber_Default(
 
   // create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("JpsiDefault");
-  if (!hasMC) task->UsePhysicsSelection();
+  if ( usePhysicsSelection ) task->UsePhysicsSelection();
 
 
   
