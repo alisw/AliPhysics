@@ -69,7 +69,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     int    fNumberOfTopologicalCutValues; //this is > 1 if checking systematics of a
     int    fNumberOfCfVariableCutValues; //Only different from above if doing variable avg sep cuts
     int    fVariableCutType;             //DCA, CosP, Mass... which is being varied
-    int    fNominalCutIndex;    //Index of nominal cut value
+    int    fNominalTopCutIndex;    //Index of nominal topological cut value
     
     int    fNumberVariableAvgSepCuts;
     bool   fIsUsingVariableAvgSepCut;
@@ -107,44 +107,21 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     /* TH1F *fDataCulled; //! */
     /* TH1F *fRemainingV0s; //! */
     /* TH1F *fRemainingFrac; //! */
+
+    // Momentum resolution matrices
+    TH2F *fResMatrixLLSameAll; //!
+    TH2F *fResMatrixAASameAll; //!
+    TH2F *fResMatrixLASameAll; //!
+    TH2F *fResMatrixLLMixedAll; //!
+    TH2F *fResMatrixAAMixedAll; //!
+    TH2F *fResMatrixLAMixedAll; //!
+    TH2F *fResMatrixLLSamePure; //!
+    TH2F *fResMatrixAASamePure; //!
+    TH2F *fResMatrixLASamePure; //!
+    TH2F *fResMatrixLLMixedPure; //!
+    TH2F *fResMatrixAAMixedPure; //!
+    TH2F *fResMatrixLAMixedPure; //!
     
-    //Momentum resolution (pre-)correction analysis
-    TH1F *fHistPsmearingKreconMinusKtruthLL; //!
-    TH2F *fHistPsmearingKreconVsKtruthLL; //!
-    TH1F *fHistPsmearingKreconMinusKtruthAA; //!
-    TH2F *fHistPsmearingKreconVsKtruthAA; //!
-    TH1F *fHistPsmearingKreconMinusKtruthLA; //!
-    TH2F *fHistPsmearingKreconVsKtruthLA; //!
-
-    // New momentum smearing analysis
-    /* vector<TH2F *> fHistsSignalMomResTruthLL; */
-    /* vector<TH2F *> fHistsSignalMomResRecLL; */
-    /* vector<TH2F *> fHistsBkgMomResTruthLL; */
-    /* vector<TH2F *> fHistsBkgMomResRecLL; */
-    /* vector<TH2F *> fHistsSignalMomResTruthAA; */
-    /* vector<TH2F *> fHistsSignalMomResRecAA; */
-    /* vector<TH2F *> fHistsBkgMomResTruthAA; */
-    /* vector<TH2F *> fHistsBkgMomResRecAA; */
-    /* vector<TH2F *> fHistsSignalMomResTruthLA; */
-    /* vector<TH2F *> fHistsSignalMomResRecLA; */
-    /* vector<TH2F *> fHistsBkgMomResTruthLA; */
-    /* vector<TH2F *> fHistsBkgMomResRecLA; */
-    /* vector<TH1D *> fLednickyWeightsLA; */
-    /* vector<TH1D *> fLednickyWeightsLL; */
-    /* TH2F *fSignalMomResTruthUnweightedLL; //! */
-    /* TH2F *fSignalMomResTruthUnweightedAA; //! */
-    /* TH2F *fSignalMomResTruthUnweightedLA; //! */
-    /* TH2F *fBkgMomResTruthUnweightedLL; //! */
-    /* TH2F *fBkgMomResTruthUnweightedAA; //! */
-    /* TH2F *fBkgMomResTruthUnweightedLA; //! */
-
-    /* TH3F *fSignalMomResTruthVsPtLL; //! */
-    /* TH3F *fSignalMomResTruthVsPtAA; //! */
-    /* TH3F *fSignalMomResTruthVsPtLA; //! */
-    /* TH3F *fBkgMomResTruthVsPtLL; //! */
-    /* TH3F *fBkgMomResTruthVsPtAA; //! */
-    /* TH3F *fBkgMomResTruthVsPtLA; //! */
-
     // MC info
     TH1F *fMCTruthPtLam; //!
     TH1F *fMCTruthPtALam; //!
@@ -201,7 +178,6 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     void DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const event, const int totalV0s);
     int DetermineWhichV0IsWorse(const AliAnalysisV0LamEvent * const event, const int V01, const int V02, const int Criterion, const int cutIndex);
     AliReconstructedV0::MCV0Origin_t DetermineV0Origin(AliAODv0 *v0, TClonesArray *mcArray);
-    /* Double_t GetLednickyWeight(UInt_t histIndex, Double_t kstar, Int_t pairType); */
     int GetV0MCParticleID(AliAODv0 *v0, TClonesArray *mcArray);
     AliReconstructedV0::MCV0Origin_t DeterminePdgCodeOfMcParticle(AliAODMCParticle *mcParticle, TClonesArray *mcArray);
     void GetMCParticleMomentumTruth(TVector3 &pTruth, AliAODv0 *v0, TClonesArray *mcArray);
@@ -218,12 +194,12 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     void FillTPCSignalHists(const AliReconstructedV0 *v0, const double posDaughterP, const double posDaughterTPCSignal, const double negDaughterP, const double negDaughterTPCSignal);
     void CheckForFakeV0s(const AliReconstructedV0 *v0, TH1F *mcFakeParticleIdentity, TH1F *mcOtherV0Identity, const AliReconstructedV0::MCV0Origin_t mcV0Origin);
     double CalculateKstar(TVector3 p1, TVector3 p2, double mass1, double mass2);
-    void BinMomentumSmearing(TVector3 v01MomentumRecon,TVector3 v01MomentumTruth, TVector3 v02MomentumRecon,TVector3 v02MomentumTruth, int pairType);
-    /* void DoMomResCorrelationWeighting(const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent, Int_t centBin, Int_t pairType); */
+
     void DoPairStudies(const AliAnalysisV0LamEvent *const event, const Int_t centralityBin);
     void FillAvgSepHists(PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     void FillCorrelationHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t cutBin, const Int_t centralityBin);
     vector<Bool_t> CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02);
+    void FillMomentumResolutionMatrix(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     bool RejectEventCentFlat(float MagField, float CentPercent);
     
 
