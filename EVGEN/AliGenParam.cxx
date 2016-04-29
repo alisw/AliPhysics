@@ -553,13 +553,14 @@ void AliGenParam::GenerateN(Int_t ntimes)
 
   //
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
-  Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
-  Float_t time0;              // Time0 of the generated parent particle
-  Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
-  Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
-  Float_t p[3], pc[3], och[3];// Momentum, polarisation and origin of the children particles from lujet
+  Double_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
+  Double_t time0;              // Time0 of the generated parent particle
+  Double_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
+  Double_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
+  Double_t p[3], pc[3], och[3];// Momentum, polarisation and origin of the children particles from lujet
   Double_t ty, xmt;
   Int_t nt, i, j;
+  Double_t energy;
   Float_t  wgtp, wgtch;
   Double_t dummy;
   static TClonesArray *particles;
@@ -655,6 +656,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
       p[0]=pt*TMath::Cos(phi);
       p[1]=pt*TMath::Sin(phi);
       p[2]=pl;
+      energy=TMath::Sqrt(ptot*ptot+am*am);
 
       if(fVertexSmear==kPerTrack) {
 	Rndm(random,6);
@@ -681,7 +683,6 @@ void AliGenParam::GenerateN(Int_t ntimes)
 
       if (fForceDecay != kNoDecay) {
 	// Using lujet to decay particle
-	Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
 	TLorentzVector pmom(p[0], p[1], p[2], energy);
 	fDecayer->Decay(iPart,&pmom);
 	//
@@ -790,7 +791,7 @@ PushTrack(0, -1, iPart, p[0],p[1],p[2],energy,origin0[0],origin0[1],origin0[2],t
 	  fNprimaries++;
 		  
 	  //but count is as "generated" particle" only if it produced child(s) within cut
-	  if ((fCutOnChild && ncsel >0) || !fCutOnChild){
+	  if ((fCutOnChild && ncsel >0) || !fCutOnChild) {
 	    ipa++;
 	  }
 		  
@@ -804,22 +805,27 @@ PushTrack(0, -1, iPart, p[0],p[1],p[2],energy,origin0[0],origin0[1],origin0[2],t
 	      Int_t ksc  = iparticle->GetStatusCode();
 	      Int_t jpa  = iparticle->GetFirstMother()-1;
 	      Double_t weight = iparticle->GetWeight();  
-			  
 	      och[0] = origin0[0]+iparticle->Vx();
 	      och[1] = origin0[1]+iparticle->Vy();
 	      och[2] = origin0[2]+iparticle->Vz();
 	      pc[0]  = iparticle->Px();
 	      pc[1]  = iparticle->Py();
 	      pc[2]  = iparticle->Pz();
-			  
+	      Double_t ec   = iparticle->Energy();
+	      
 	      if (jpa > -1) {
 		iparent = pParent[jpa];
 	      } else {
 		iparent = -1;
 	      }
-	      PushTrack(fTrackIt * trackIt[i], iparent, kf,
-			pc, och, polar,
-			time0 + iparticle->T(), kPDecay, nt, weight*wgtch, ksc);
+	      
+	      PushTrack(fTrackIt * trackIt[i], iparent, kf, pc[0], pc[1], pc[2], ec, 
+			och[0], och[1], och[2], time0 + iparticle->T(), 
+			polar[0], polar[1], polar[2], kPDecay, nt, weight*wgtch, ksc);
+
+	      //	      PushTrack(fTrackIt * trackIt[i], iparent, kf,
+	      //		pc, och, polar,
+	      //	time0 + iparticle->T(), kPDecay, nt, weight*wgtch, ksc);
 
 
 	      pParent[i] = nt;
@@ -832,8 +838,14 @@ PushTrack(0, -1, iPart, p[0],p[1],p[2],energy,origin0[0],origin0[1],origin0[2],t
       } // kinematic selection
       else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	{
-	  gAlice->GetMCApp()->
-	    PushTrack(fTrackIt,-1,iPart,p,origin0,polar,time0,kPPrimary,nt,wgtp, 1);
+	  PushTrack(fTrackIt, -1, iPart, p[0], p[1], p[2], energy, 
+		    origin0[0], origin0[1], origin0[2], time0, 
+		    polar[0], polar[1], polar[2], 
+		    kPPrimary, nt, wgtp, 1);
+
+	  //	  gAlice->GetMCApp()->
+	  //  PushTrack(fTrackIt,-1,iPart,p,origin0,polar,time0,kPPrimary,nt,wgtp, 1);
+
 	  ipa++; 
 	  fNprimaries++;
 	}
