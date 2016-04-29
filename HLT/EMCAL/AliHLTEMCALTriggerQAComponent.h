@@ -96,13 +96,13 @@ protected:
    int RetrieveFiredTriggerClasses();
 
    /** process trigger patches contained in block **/
-   void ProcessCells(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells);
+   //void ProcessCells(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells);
 
    /** process trigger patches contained in block **/
    void ProcessTriggerPatches(const AliHLTComponentBlockData* block);
 
    /** process trigger FastORs contained in block **/
-   void ProcessTriggerFastors(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells);
+   void ProcessTriggerFastors(const AliHLTComponentBlockData* block, const AliHLTEMCALCaloCells* cells);
    
    /** converts the HLT trigger patch flat structure into an AliEMCALTriggerPatchInfo object */
    void HLTPatch2Patch(const AliHLTCaloTriggerPatchDataStruct& htlpatch, AliEMCALTriggerPatchInfo& patch) const;

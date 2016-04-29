@@ -36,7 +36,7 @@
 
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTEMCALGeometry.h"
-#include "AliHLTEMCALCaloCells.h"
+//#include "AliHLTEMCALCaloCells.h"
 
 #include "AliHLTEMCALTriggerQAComponent.h"
 
@@ -85,9 +85,9 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
     AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
     std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
-  static AliHLTEMCALCaloCells cells;
+  //static AliHLTEMCALCaloCells cells;
   // Creates the container, if not yet done. It also clears it.
-  cells.CreateContainer(fGeometry->GetGeometryPtr()->GetNCells());
+  //cells.CreateContainer(fGeometry->GetGeometryPtr()->GetNCells());
 
   //patch in order to skip calib events
   if (!IsDataEvent()) return 0;
@@ -114,10 +114,14 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
     if(!CheckInputDataType(iter->fDataType)) continue;
 
+    /*
     if (iter->fDataType == AliHLTEMCALDefinitions::fgkDigitDataType) {
       cellData = iter;
     }
-    else if (iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerPatchDataType) {
+    else
+    */
+
+    if (iter->fDataType == AliHLTEMCALDefinitions::fgkTriggerPatchDataType) {
       patchData = iter;
     }
     else if (iter->fDataType == (kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL)) {
@@ -125,9 +129,9 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
     }
   }
 
-  ProcessCells(cellData, cells);
+  //ProcessCells(cellData, cells);
   ProcessTriggerPatches(patchData);
-  ProcessTriggerFastors(fastorData, cells);
+  ProcessTriggerFastors(fastorData, 0);
 
   fTriggerQAPtr->EventCompleted();
 
@@ -142,7 +146,7 @@ int AliHLTEMCALTriggerQAComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
   return 0;
 }
-
+/*
 void AliHLTEMCALTriggerQAComponent::ProcessCells(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells)
 {
   if (!block) return;
@@ -166,7 +170,7 @@ void AliHLTEMCALTriggerQAComponent::ProcessCells(const AliHLTComponentBlockData*
   printf("End of ProcessCells: %f (Wall) / %f (CPU)\n", profile.RealTime(), profile.CpuTime());
 #endif
 }
-
+*/
 void AliHLTEMCALTriggerQAComponent::PushHistograms(TCollection* list)
 {
   TIter next(list);
@@ -220,7 +224,7 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerPatches(const AliHLTComponentB
 #endif
 }
 
-void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentBlockData* block, AliHLTEMCALCaloCells& cells)
+void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentBlockData* block, const AliHLTEMCALCaloCells* /*cells*/)
 {
   if (!block) return;
   AliHLTCaloTriggerPatchDataStruct* hltpatchPtr = reinterpret_cast<AliHLTCaloTriggerPatchDataStruct*>(block->fPtr);
@@ -239,7 +243,7 @@ void AliHLTEMCALTriggerQAComponent::ProcessTriggerFastors(const AliHLTComponentB
   HLTDebug("Received %d fastor triggers", triggerhead->fNfastor);
   for(Int_t datacount = 0; datacount < triggerhead->fNfastor; datacount++) {
     HLTFastor2Fastor(dataptr[datacount], fastor);
-    fTriggerQAPtr->ProcessFastor(&fastor, &cells);
+    fTriggerQAPtr->ProcessFastor(&fastor, 0);
   }
 
 #ifdef __PROFILE__
@@ -289,7 +293,7 @@ void AliHLTEMCALTriggerQAComponent::GetInputDataTypes(std::vector<AliHLTComponen
   list.clear();
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerPatchDataType);
   list.push_back(kAliHLTDataTypeCaloTrigger | kAliHLTDataOriginEMCAL);
-  list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
+  //list.push_back(AliHLTEMCALDefinitions::fgkDigitDataType);
 }
 
 AliHLTComponentDataType AliHLTEMCALTriggerQAComponent::GetOutputDataType()
@@ -322,7 +326,6 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
   InitialiseGeometry();
 
   Int_t debugLevel = 0;
-  Bool_t enabledPatchType[3] = {kTRUE};
 
   Bool_t isPbPb = GetRunNo() > 244823 && GetRunNo() < 246995; // For the moment quick hack to distinguish PbPb from pp
   fBeamType = isPbPb ? kPbPb : kPP;
@@ -338,15 +341,6 @@ int AliHLTEMCALTriggerQAComponent::DoInit(int argc, const char** argv)
       option.Remove(0, 11);
       debugLevel = option.Atoi();
       if (debugLevel < 0) debugLevel = 0;
-    }
-    if (option.BeginsWith("-disableOffline")) {
-      enabledPatchType[AliEMCALTriggerQA::kOfflinePatch] = kFALSE;
-    }
-    if (option.BeginsWith("-disableOnline")) {
-      enabledPatchType[AliEMCALTriggerQA::kOnlinePatch] = kFALSE;
-    }
-    if (option.BeginsWith("-disableRecalc")) {
-      enabledPatchType[AliEMCALTriggerQA::kRecalcPatch] = kFALSE;
     }
   }
 
