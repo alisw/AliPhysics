@@ -910,10 +910,18 @@ public:
   void SetFlowQCMulCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMulCorPro[eg][k] = TP;};
   TH1D* GetFlowQCMulCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCMulCorHist[eg][h];};
   void SetFlowQCMulCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMulCorHist[eg][k] = TP;};
+  TProfile* GetFlowQCMetricCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorPro[eg][h];};
+  void SetFlowQCMetricCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorPro[eg][k] = TP;};
+  TH1D* GetFlowQCMetricCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorHist[eg][h];};
+  void SetFlowQCMetricCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorHist[eg][k] = TP;};
   TProfile* GetFlowQCIntCorProEG(Int_t const eg) const {return this->fFlowQCIntCorProEG[eg];};
   void SetFlowQCIntCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCIntCorProEG[eg] = TP;};
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
+  TProfile* GetFlowQCMetricCorProEG(Int_t const eg) const {return this->fFlowQCMetricCorProEG[eg];};
+  void SetFlowQCMetricCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCMetricCorProEG[eg] = TP;};
+  TH1D* GetFlowQCMetricCorHistEG(Int_t const eg) const {return this->fFlowQCMetricCorHistEG[eg];};
+  void SetFlowQCMetricCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCMetricCorHistEG[eg] = TP;};
  
  void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
@@ -1127,6 +1135,7 @@ private:
  Double_t fNumberOfPOIsEBE; // # of Particles of Interest
  Double_t fReferenceMultiplicityEBE; // reference multiplicity
  Double_t fCentralityEBE; // centrality percentile
+ Double_t fNewMetricLEBE; // new metric D
  Double_t fCentralityVarEBE; // centrality (alternative estimation) percentile
  //  3d.) profiles:
  TProfile *fAvMultiplicity; //! profile to hold average multiplicities and number of events for events with nRP>=0, nRP>=1, ... , and nRP>=8
@@ -1417,6 +1426,8 @@ private:
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!
  TH1D *fZDCESEAvHist[2]; //!
+  TH1D *fZDCESEMinMetricHist[2]; //!
+  TH1D *fZDCESEMaxMetricHist[2]; //!
  
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
@@ -1573,8 +1584,12 @@ private:
  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
  TProfile *fFlowQCMulCorPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCMulCorHist[fFlowNHarm][3]; //!
+  TProfile *fFlowQCMetricCorPro[fFlowNHarm][3]; //!
+  TH1D *fFlowQCMetricCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
+  TProfile *fFlowQCMetricCorProEG[fFlowNHarm]; //!
+  TH1D *fFlowQCMetricCorHistEG[fFlowNHarm]; //!
  
  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
  TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
@@ -1620,6 +1635,8 @@ private:
   TF1 *fPolDer[2]; //!
   TF1 *fPolInt[2]; //!
   TF1 *fPolDist[2]; //!
+  TF1 *fPolMinMetric[2]; //!
+  TF1 *fPolMaxMetric[2]; //!
   
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
@@ -1629,7 +1646,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 8);
+ ClassDef(AliFlowAnalysisCRC, 9);
  
 };
 
