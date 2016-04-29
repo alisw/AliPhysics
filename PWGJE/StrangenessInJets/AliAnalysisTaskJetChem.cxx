@@ -3059,6 +3059,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       for(Int_t ij=0; ij<nRecBckgJets; ++ij){ // loop over all jets in event 
 	
 	AliAODJet* jetBckg = (AliAODJet*) (fBckgJetsRec->At(ij));
+	if(!jetBckg)continue;
+
 	Double_t sumBckgPt      = 0.;
 	Bool_t isBadBckgJet     = kFALSE;
 	
@@ -3066,9 +3068,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if( jetBckg->Pt() < fJetPtCut ) isBadBckgJet=kTRUE;
 	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) isBadBckgJet=kTRUE;
 
-	if(fDebug>3)std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
+	if((fDebug>3)&&(isBadBckgJet==kFALSE)){std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
 	std::cout<<"nRecBckgJets: "<<nRecBckgJets<<std::endl;
-	std::cout<<"      "<<std::endl;
+	std::cout<<"      "<<std::endl;}
 
 	Double_t jetPt = jetBckg->Pt();
 	if(isBadBckgJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
