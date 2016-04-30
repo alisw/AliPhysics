@@ -607,8 +607,8 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
 
 	if (pString) {
 	  HLTInfo("received configuration object string: \'%s\'", pString->GetName());
+	  if( !arguments.IsNull() ) arguments+=" ";
 	  arguments+=pString->GetName();
-	  arguments+=" ";
 	} else {
 	  HLTError("configuration object \"%s\"%s%s has wrong type, required TObjString", path, key?" key ":"",key?key:"");
 	  iResult=-EINVAL;
