@@ -186,9 +186,9 @@ void AliT0Parameters::InitIfOnline()
   Int_t ikey=0; Int_t chain=0;
   for (Int_t ik=0; ik<226; ik++)
     {
-     if (ik==56) {trm=7; chain=1; tdc=0; channel=0;}
-      if (ik==106) { trm=9; chain=0; tdc=0; channel=0;}
-      if (ik==162) { trm=9; chain=1; tdc=0; channel=0;}
+     if (ik==57) {trm=7; chain=1; tdc=0; channel=0;}
+      if (ik==107) { trm=9; chain=0; tdc=0; channel=0;}
+      if (ik==163) { trm=9; chain=1; tdc=0; channel=0;}
       if (ik==211) { trm=7; chain=1; tdc=14; channel=0;}
       if (ik==215) { trm=9; chain=1; tdc=12; channel=0;}
       AliT0LookUpKey * lookkey= new AliT0LookUpKey();
