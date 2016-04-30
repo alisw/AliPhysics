@@ -2905,18 +2905,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
   
- 
-  //test:
-  if(fDebug>3){
-    for(Int_t i=0; i<nRecJetsCuts; i++){
-      AliAODJet* jet = (AliAODJet*) fJetsRecCuts->At(i);
-      if(!jet) continue;      
-      std::cout<<"Reconstructed Jet (noJetPtBias yet) - jetPt:"<<jet->Pt()<<"- jetEta: "<<jet->Eta()<<" - jetAreaCharged: "<<jet->EffectiveAreaCharged()<<std::endl;
-      std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
-      std::cout<<"      "<<std::endl;
-    }
-  }
-  
 
   Int_t nGenJets = 0;
   
@@ -3062,8 +3050,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if(!jetBckg)continue;
 
 	Double_t sumBckgPt      = 0.;
-	Bool_t isBadBckgJet     = kFALSE;
-	Bool_t isBadJet     = kFALSE;
+	Bool_t isBadBckgJet     = kFALSE;//flag for testing leading constituent bias
+	Bool_t isBadJet     = kFALSE;//flag for area and jet pt cut
 	
 	//apply some further jet cuts since they are not carried out in GetListOfBckgJets()
 	if( jetBckg->Pt() < fJetPtCut ) {isBadJet=kTRUE;}
@@ -3842,7 +3830,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if((GetFFMinNTracks()>0) && (jettracklist->GetSize() <= GetFFMinNTracks())) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
       
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
-      
+      if(!isBadJet) {
+	std::cout<<"Reconstructed Jet - jetPt:"<<jet->Pt()<<"- jetEta: "<<jet->Eta()<<" - jetAreaCharged: "<<jet->EffectiveAreaCharged()<<std::endl;
+	std::cout<<"nRecJetsCuts: "<<nRecJetsCuts<<std::endl;
+	std::cout<<"      "<<std::endl;
+      }
+
       if(isBadJet) {
 	
 	nSelJets = nSelJets-1;//remove one jet from nSelJets (was initialized with nRecJetsCuts)
