@@ -47,6 +47,7 @@ class AliITSMFTChip: public TObject {
   Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de);
   Bool_t   LineSegmentG(Int_t hindex,Double_t &a,Double_t &b,Double_t &c,Double_t &d,Double_t &e,Double_t &f,Double_t &de, Double_t &tof, Int_t &track);
   //
+  AliITSMFTGeomTGeo* GetITSMFTGeomTGeo() {return fGeomTG;}
   
  protected:
     AliITSMFTChip(const AliITSMFTChip &source); 

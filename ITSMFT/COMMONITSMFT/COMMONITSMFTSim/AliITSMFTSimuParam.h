@@ -107,7 +107,26 @@ class AliITSMFTSimuParam : public TObject {
   Bool_t   GetPixAddNoisyFlag()                                           const  {return fPixAddNoisyFlag;}
   void     SetPixRemoveDeadFlag(Bool_t value)                                    {fPixRemoveDeadFlag = value;}
   Bool_t   GetPixRemoveDeadFlag()                                         const  {return fPixRemoveDeadFlag;}
-  //
+  
+    
+  //////////////////////// pALPIDE config ////////////////////////
+  void     SetALPIDEThreshold(const Float_t value) {fALPIDEThreshold = value;}
+  Float_t  GetALPIDEThreshold() const {return fALPIDEThreshold;}
+
+  void     SetUseALPIDESim(const Bool_t value) {fUseALPIDESim = value;}
+  Bool_t   GetUseALPIDESim() const {return fUseALPIDESim;}
+    
+  void     SetACSFromBGPar1(const Double_t value) {fACSFromBGPar1 = value;}
+  Double_t GetACSFromBGPar1() const {return fACSFromBGPar1;}
+    
+  void     SetACSFromBGPar2(const Double_t value) {fACSFromBGPar2 = value;}
+  Double_t GetACSFromBGPar2() const {return fACSFromBGPar2;}
+    
+  void     SetACSFromBGPar3(const Double_t value) {fACSFromBGPar3 = value;}
+  Double_t GetACSFromBGPar3() const {return fACSFromBGPar3;}
+  ////////////////////////////////////////////////////////////////
+    
+    
   Double_t LorentzAngleElectron(Double_t bz)                              const;
   Double_t LorentzAngleHole(Double_t bz)                                  const;
   //
@@ -175,7 +194,14 @@ class AliITSMFTSimuParam : public TObject {
   Float_t*   fPixSigma;       //[fNPix] Pix threshold fluctuations spread
   Float_t*   fPixNoise;       //[fNPix] Pix electronic noise: sigma
   Float_t*   fPixBaseline;    //[fNPix] Pix electronic noise: baseline
-  //
+    
+    
+  Float_t    fALPIDEThreshold; //chip threshold for the pALPIDE chip
+  Bool_t     fUseALPIDESim;    //flag to activate the pALPIDE simulation
+  Double_t   fACSFromBGPar1;   //ACS from BetaGamma parameter 1
+  Double_t   fACSFromBGPar2;   //ACS from BetaGamma parameter 2
+  Double_t   fACSFromBGPar3;   //ACS from BetaGamma parameter 3
+  //  
   TObjArray  fRespFunParam;   // set of parameterizations for response function (AliITSMFTParamList)
 
   ClassDef(AliITSMFTSimuParam,1);  // ITSU simulataion params

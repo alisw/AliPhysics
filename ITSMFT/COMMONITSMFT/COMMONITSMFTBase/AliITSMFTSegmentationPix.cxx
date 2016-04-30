@@ -46,7 +46,7 @@ AliITSMFTSegmentationPix::AliITSMFTSegmentationPix(UInt_t id, int nchips,int nco
 						   float pitchX,float pitchZ,
 						   float thickness,
 						   float pitchLftC,float pitchRgtC,
-						   float edgL,float edgR,float edgT,float edgB)
+						   float edgL,float edgR,float edgT,float edgB, float thr)
 : TObject()
   ,fGuardLft(edgL)
   ,fGuardRgt(edgR)
@@ -572,7 +572,6 @@ void AliITSMFTSegmentationPix::Print(Option_t* /*option*/) const
   printf("%d chips along Z: chip Ncol=%d Nrow=%d\n",fNChips, fNColPerChip,fNRow);
   if (Abs(fPitchZLftCol-fPitchZ)>1e-5) printf("Special left  column pitch: %.1f\n",fPitchZLftCol*kmc);
   if (Abs(fPitchZRgtCol-fPitchZ)>1e-5) printf("Special right column pitch: %.1f\n",fPitchZRgtCol*kmc);
-  //
   if (fDiodShiftMatDim) {
     double dx,dz=0;
     printf("Diod shift (fraction of pitch) periodicity pattern (X,Z[row][col])\n");

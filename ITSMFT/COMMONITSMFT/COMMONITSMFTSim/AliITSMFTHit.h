@@ -15,6 +15,7 @@
 
 #include "AliHit.h" 
 #include "AliRun.h"
+#include <iostream>
 
 class AliITSMFTGeomTGeo;
 
@@ -38,8 +39,17 @@ public:
   void SetEdep(Float_t de){fDestep = de;}
   void SetMomentum(TLorentzVector &p){fPx=p.Px();fPy=p.Py();fPz=p.Pz();}
 
+  void SetPID(Int_t pid){fPID = pid;}
+  void SetTotalEnergy(Double_t etot){fEtot = etot;}
+  
   Int_t GetChip()  const {return fModule;}
 
+  void GetMomentum(Float_t &px, Float_t &py, Float_t &pz) const {
+    px=fPx;py=fPy;pz=fPz;return;}
+
+  Double_t GetTotalEnergy() const {return fEtot;}
+  Int_t GetPID() const {return fPID;}
+  
   void GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof,
 		    AliITSMFTGeomTGeo *);
   void GetPositionL(Float_t &x,Float_t &y,Float_t &z,
@@ -90,6 +100,9 @@ protected:
    Float_t   fz0;     // Starting point of this step
    Float_t   ft0;     // Starting point of this step
 
+   Int_t     fPID;    // PID of the particle 
+   Double_t  fEtot;   // Total energy of the particle
+   
   ClassDef(AliITSMFTHit,3)  //Hits object
 	 
 }; 

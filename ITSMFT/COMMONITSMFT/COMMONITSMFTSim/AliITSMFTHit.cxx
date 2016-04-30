@@ -45,7 +45,9 @@ fStatus0(0),// Track Status of Starting point
 fx0(0),     // Starting point of this step
 fy0(0),     // Starting point of this step
 fz0(0),     // Starting point of this step
-ft0(0)     // Starting point of this step
+ft0(0),     // Starting point of this step
+fPID(0),    // PID of the particle 
+fEtot(0)    // Total energy of the particle
 {
 }
 
@@ -64,7 +66,9 @@ fStatus0(vol[4]),// Track Status of Starting point
 fx0(x0.X()),     // Starting point of this step
 fy0(x0.Y()),     // Starting point of this step
 fz0(x0.Z()),     // Starting point of this step
-ft0(x0.T())     // Starting point of this step
+ft0(x0.T()),     // Starting point of this step
+fPID(0),    // PID of the particle 
+fEtot(0)    // Total energy of the particle
 {
     // ct-r
     SetPosition(x);
@@ -84,7 +88,9 @@ fStatus0(vol[4]),// Track Status of Starting point
 fx0(hits[8]),     // Starting point of this step
 fy0(hits[9]),     // Starting point of this step
 fz0(hits[10]),     // Starting point of this step
-ft0(hits[11])     // Starting point of this step
+ft0(hits[11]),     // Starting point of this step
+fPID(0),    // PID of the particle 
+fEtot(0)    // Total energy of the particle
 {
     // c-tor
     fX          = hits[0];  // Track X global position
@@ -106,7 +112,9 @@ fStatus0(h.fStatus0),// Track Status of Starting point
 fx0(h.fx0),     // Starting point of this step
 fy0(h.fy0),     // Starting point of this step
 fz0(h.fz0),     // Starting point of this step
-ft0(h.ft0)     // Starting point of this step
+ft0(h.ft0),     // Starting point of this step
+fPID(h.fPID),    // PID of the particle 
+fEtot(h.fEtot)    // Total energy of the particle
 {
     // cp c-tor
     if(this == &h) return;
@@ -130,6 +138,8 @@ AliITSMFTHit& AliITSMFTHit::operator=(const AliITSMFTHit &h)
     this->fy0      = h.fy0;
     this->fz0      = h.fz0;
     this->ft0      = h.ft0;
+    this->fPID     = h.fPID;
+    this->fEtot    = h.fEtot;
     return *this;
 }
 

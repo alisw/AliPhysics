@@ -55,7 +55,6 @@
 #include "AliGeomManager.h"
 using namespace TMath;
 
-
 ClassImp(AliITSUv2)
 
 //______________________________________________________________________
@@ -902,6 +901,16 @@ void AliITSUv2::StepManager()
   hit.SetPosition(position);
   hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
+
+
+  //
+  // pALPIDE chip simulation
+  //
+  hit.SetPID(TVirtualMC::GetMC()->TrackPid());
+  hit.SetTotalEnergy(TVirtualMC::GetMC()->Etot());
+  //////////////////////////////
+
+  
   hit.SetStatus(status);
   hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());

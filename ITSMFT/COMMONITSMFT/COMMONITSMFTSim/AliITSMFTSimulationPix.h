@@ -81,6 +81,7 @@ public:
     Int_t GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime);
     //
     void CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z);
+    void ClusterGenerator();
     //
 private:
     void WriteSDigits(TClonesArray *);
@@ -93,7 +94,13 @@ private:
     //
     void SetCoupling(AliITSMFTSDigit* old);     // "New" coupling routine  Tiziano Virgili
     void SetCouplingOld(AliITSMFTSDigit* old);  // "Old" coupling routine  Rocco Caliandro
-    //
+
+    Double_t ACSFromBetaGamma(Double_t x, Double_t theta) const; // Returns the average cluster size from the betagamma value
+    Int_t CSSampleFromLandau(Double_t mpv, Double_t w) const; // Sample the actual cluster size from a Landau distribution
+    Double_t ComputeIncidenceAngle(TLorentzVector dir) const; // Compute the angle between the particle and the normal to the chip
+    Int_t GetPixelPositionResponse(Int_t idPadX, Int_t idPadZ, Float_t locx, Float_t locz, Double_t acs) const;
+    void CreateDigi(UInt_t col, UInt_t row, Int_t trk, Int_t ht);
+    
 protected:
     Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
     Double_t      fGlobalChargeScale;       // Charge scaling to match Geant and Test beam

@@ -13,7 +13,7 @@ class AliITSMFTSegmentationPix : public TObject {
 			 float pitchX=0,float pitchZ=0,
 			 float thickness=0,
 			 float pitchLftC=-1,float pitchRgtC=-1,
-			 float edgL=0,float edgR=0,float edgT=0,float edgB=0);
+			   float edgL=0,float edgR=0,float edgT=0,float edgB=0,float thr=0);
   
   //  AliITSMFTSegmentationPix(Option_t *opt="" );
   AliITSMFTSegmentationPix(const AliITSMFTSegmentationPix &source);
@@ -24,6 +24,7 @@ class AliITSMFTSegmentationPix : public TObject {
   //  
   virtual void    SetDetSize(Float_t p1,Float_t p2,Float_t p3) 
                     {fDx=p1; fDz=p2; fDy=p3;}
+  
   // Detector length
   virtual Float_t Dx() const {return fDx;}
   // Detector width
@@ -42,8 +43,7 @@ class AliITSMFTSegmentationPix : public TObject {
   virtual void    GetPadTxz(Float_t &x ,Float_t &z) const;
   virtual Bool_t  LocalToDet(Float_t x,Float_t z,Int_t &ix,Int_t &iz) const;
   virtual void    DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) const;
-  virtual void    CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,
-				Double_t &zl,Double_t &zu) const;
+  virtual void    CellBoundries(Int_t ix,Int_t iz,Double_t &xl,Double_t &xu,Double_t &zl,Double_t &zu) const;
   //
   virtual Int_t    GetNumberOfChips() const {return fNChips;}
   virtual Int_t    GetMaximumChipIndex() const {return fNChips-1;}
@@ -63,6 +63,8 @@ class AliITSMFTSegmentationPix : public TObject {
   Float_t          GetGuardRgt()   const {return fGuardRgt;}
   Float_t          GetGuardTop()   const {return fGuardTop;}
   Float_t          GetGuardBot()   const {return fGuardBot;}
+  Float_t          GetPitchX()     const {return fPitchX;}
+  Float_t          GetPitchZ()     const {return fPitchZ;}
   //
   Int_t            GetNRow()       const {return fNRow;}
   Int_t            GetNCol()       const {return fNCol;}
@@ -93,31 +95,31 @@ class AliITSMFTSegmentationPix : public TObject {
   Float_t Col2Z(Int_t col) const;
   //
  protected:
-    Float_t fDx;    //Full width of the detector (x axis)- microns
-    Float_t fDz;    //Full length of the detector (z axis)- microns
-    Float_t fDy;    //Full thickness of the detector (y axis) -um 
+    Float_t  fDx;    //Full width of the detector (x axis)- microns
+    Float_t  fDz;    //Full length of the detector (z axis)- microns
+    Float_t  fDy;    //Full thickness of the detector (y axis) -um 
 
-    Float_t fGuardLft;        // left guard edge
-    Float_t fGuardRgt;        // right guard edge
-    Float_t fGuardTop;        // upper guard edge
-    Float_t fGuardBot;        // bottom guard edge
-    Float_t fShiftXLoc;       // shift in local X of sensitive area wrt geometry center
-    Float_t fShiftZLoc;       // shift in local Z of sensitive area wrt geometry center
-    Float_t fDxActive;        // size of active area in X
-    Float_t fDzActive;        // size of active area in Z    
-    Float_t fPitchX;          // default pitch in X
-    Float_t fPitchZ;          // default pitch in Z
-    Float_t fPitchZLftCol;    // Z pitch of left column of each chip
-    Float_t fPitchZRgtCol;    // Z pitch of right column of each chip
-    Float_t fChipDZ;          // aux: chip size along Z
-    Int_t   fNChips;          // number of chips per chip
-    Int_t   fNColPerChip;     // number of columns per chip
-    Int_t   fNRow;            // number of rows
-    Int_t   fNCol;            // number of columns (total)
+    Float_t  fGuardLft;        // left guard edge
+    Float_t  fGuardRgt;        // right guard edge
+    Float_t  fGuardTop;        // upper guard edge
+    Float_t  fGuardBot;        // bottom guard edge
+    Float_t  fShiftXLoc;       // shift in local X of sensitive area wrt geometry center
+    Float_t  fShiftZLoc;       // shift in local Z of sensitive area wrt geometry center
+    Float_t  fDxActive;        // size of active area in X
+    Float_t  fDzActive;        // size of active area in Z    
+    Float_t  fPitchX;          // default pitch in X
+    Float_t  fPitchZ;          // default pitch in Z
+    Float_t  fPitchZLftCol;    // Z pitch of left column of each chip
+    Float_t  fPitchZRgtCol;    // Z pitch of right column of each chip
+    Float_t  fChipDZ;          // aux: chip size along Z
+    Int_t    fNChips;          // number of chips per chip
+    Int_t    fNColPerChip;     // number of columns per chip
+    Int_t    fNRow;            // number of rows
+    Int_t    fNCol;            // number of columns (total)
     //
-    Int_t   fDiodShiftMatNCol; // periodicity of diod shift in columns
-    Int_t   fDiodShiftMatNRow; // periodicity of diod shift in rows
-    Int_t   fDiodShiftMatDim;  // dimension of diod shift matrix
+    Int_t    fDiodShiftMatNCol; // periodicity of diod shift in columns
+    Int_t    fDiodShiftMatNRow; // periodicity of diod shift in rows
+    Int_t    fDiodShiftMatDim;  // dimension of diod shift matrix
     Float_t* fDiodShidtMatX; //[fDiodShiftMatDim] diod shift in X (along column), in fraction of X pitch
     Float_t* fDiodShidtMatZ; //[fDiodShiftMatDim] diod shift in Z (along row), in fraction of Z pitch
     //

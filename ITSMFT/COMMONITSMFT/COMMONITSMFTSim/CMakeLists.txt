@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 set(SRCS
      AliITSMFTChip.cxx
      AliITSMFTHit.cxx
+     AliITSMFTSimuClusterShaper.cxx	
      AliITSMFTSimuParam.cxx
      AliITSMFTSimulation.cxx
      AliITSMFTSimulationPix.cxx
