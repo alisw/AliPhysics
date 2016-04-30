@@ -81,7 +81,7 @@ AliTrackContainer::AliTrackContainer(const char *name, const char *period):
  * for the period provided in the constructor.
  * @param[in] event Event from which the data is read
  */
-void AliTrackContainer::SetArray(AliVEvent *event)
+void AliTrackContainer::SetArray(const AliVEvent *event)
 {
   AliParticleContainer::SetArray(event);
 

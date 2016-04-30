@@ -140,7 +140,7 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const = 0;
   Int_t                       GetNAcceptEntries() const;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
-  virtual void                SetArray(AliVEvent *event);
+  virtual void                SetArray(const AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
   void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
