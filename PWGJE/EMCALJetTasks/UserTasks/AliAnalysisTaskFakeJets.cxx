@@ -315,8 +315,8 @@ Bool_t AliAnalysisTaskFakeJets::FillHistograms()
 Float_t AliAnalysisTaskFakeJets::GetJetMass(AliEmcalJet *jet,Int_t jetContNb=0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtracted();
-      else return jet->GetSecondOrderSubtracted();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtracted();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtracted();
   else 
     return jet->M();
 }
@@ -351,8 +351,8 @@ Float_t AliAnalysisTaskFakeJets::Angularity(AliEmcalJet *jet, Int_t jetContNb = 
 Float_t AliAnalysisTaskFakeJets::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
   if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedAngularity();
-      else return jet->GetSecondOrderSubtractedAngularity();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
  
@@ -387,8 +387,8 @@ Float_t AliAnalysisTaskFakeJets::AngularitySquared(AliEmcalJet *jet, Int_t jetCo
 Float_t AliAnalysisTaskFakeJets::GetJetAngularitySquared(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
   if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedAngularity();
-      else return jet->GetSecondOrderSubtractedAngularity();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
   else
     return AngularitySquared(jet, jetContNb);
  
@@ -422,8 +422,8 @@ Float_t AliAnalysisTaskFakeJets::PTD(AliEmcalJet *jet, Int_t jetContNb = 0){
 Float_t AliAnalysisTaskFakeJets::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedpTD();
-      else return jet->GetSecondOrderSubtractedpTD();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedpTD();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
   else
     return PTD(jet, jetContNb);
  
@@ -463,8 +463,8 @@ return num;
 Float_t AliAnalysisTaskFakeJets::GetJetHardTrack(AliEmcalJet *jet, Int_t jetContNb =0) {
   
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedLeSub();
-      else return jet->GetSecondOrderSubtractedLeSub();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
   else
     return HardTrack(jet, jetContNb);
  
@@ -506,8 +506,8 @@ Float_t AliAnalysisTaskFakeJets::GetJetSecHardTrack(AliEmcalJet *jet, Int_t jetC
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedLeSub();
-      else return jet->GetSecondOrderSubtractedLeSub();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
   else
     return SecHardTrack(jet, jetContNb);
  
@@ -610,8 +610,8 @@ Float_t AliAnalysisTaskFakeJets::GetJetCoreFrac(AliEmcalJet *jet, Int_t jetContN
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedLeSub();
-      else return jet->GetSecondOrderSubtractedLeSub();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
   else
     return CoreFrac(jet, jetContNb);
  

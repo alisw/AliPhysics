@@ -262,7 +262,7 @@ Double_t AliAnalysisTaskJetMassResponseDet::GetJetMass(AliEmcalJet *jet) {
   if(fJetMassType==kRaw)
     return jet->M();
   else if(fJetMassType==kDeriv)
-    return jet->GetSecondOrderSubtracted();
+    return jet->GetShapeProperties()->GetSecondOrderSubtracted();
   
   return 0;
 }

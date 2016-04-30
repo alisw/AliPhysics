@@ -1399,20 +1399,20 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
   AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetFirstOrderSubtracted1subjettiness_kt();
-      else return Jet->GetSecondOrderSubtracted1subjettiness_kt();
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted1subjettiness_kt();
     }
     else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetFirstOrderSubtracted2subjettiness_kt();
-      else return Jet->GetSecondOrderSubtracted2subjettiness_kt();
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted2subjettiness_kt();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted2subjettiness_kt();
     }
     else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==3) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetFirstOrderSubtracted3subjettiness_kt();
-      else return Jet->GetSecondOrderSubtracted3subjettiness_kt();
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted3subjettiness_kt();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtracted3subjettiness_kt();
     }
     else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==0) && (Beta==1.0) && (Option==1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetFirstOrderSubtractedOpeningAngle_kt();
-      else return Jet->GetSecondOrderSubtractedOpeningAngle_kt();
+      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_kt();
+      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_kt();
     }
     else{
       JetFinder->SetJetMaxEta(0.9-fJetRadius);
