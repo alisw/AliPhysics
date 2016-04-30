@@ -70,7 +70,7 @@ class AliTrackContainer : public AliParticleContainer {
   ETrackFilterType_t          GetTrackFilterType()                      const   { return fTrackFilterType; }
   Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : kUndefined ; }
 
-  void                        SetArray(AliVEvent *event);
+  void                        SetArray(const AliVEvent *event);
 
   void                        SetTrackFilterType(ETrackFilterType_t f)          { fTrackFilterType = f; }
   void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method

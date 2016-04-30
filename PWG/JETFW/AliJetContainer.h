@@ -158,7 +158,7 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
-  void                        SetArray(AliVEvent *event);
+  void                        SetArray(const AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;

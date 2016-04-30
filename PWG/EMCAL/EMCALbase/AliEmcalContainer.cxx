@@ -126,7 +126,7 @@ void AliEmcalContainer::SetClassName(const char *clname)
  * The object name in the event must match the name given in the constructor
  * @param event Input event containing the array with content.
  */
-void AliEmcalContainer::SetArray(AliVEvent *event) 
+void AliEmcalContainer::SetArray(const AliVEvent *event)
 {
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);

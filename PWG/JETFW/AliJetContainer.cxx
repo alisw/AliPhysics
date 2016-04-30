@@ -139,7 +139,7 @@ AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoSc
 }
 
 //________________________________________________________________________
-void AliJetContainer::SetArray(AliVEvent *event) 
+void AliJetContainer::SetArray(const AliVEvent *event)
 {
   // Set jet array
 
