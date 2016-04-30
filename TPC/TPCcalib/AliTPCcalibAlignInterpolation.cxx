@@ -1949,19 +1949,18 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
 	  }
 
 	  if (gRandom->Rndm()<kDumpSample){
-	    Float_t zcorr=  z+expected*side; // corrected z
-	    Float_t zcorrB= z-expected*side;
+
 	    (*pcstream)<<"dumpSample"<<
 	      "iter="<<iter<<
 	      "run="<<runNumber<<
 	      "sector="<<sector<<
 	      "side="<<side<<
 	      "drift="<<drift<<
-	      "tofBC"<<tofBC<<
+	      "radius="<<radius<<
+	      "phi="<<phi<<
+	      "tofBC="<<tofBC<<
 	      "gy="<<gy<<
 	      "z="<<z<<
-	      "zcorr="<<zcorr<<
-	      "zcorrB="<<zcorrB<<
 	      "expected="<<expected<<
 	      "paramRobust.="<<&paramRobust<<      //  drift fit using all tracks
 	      "dZTOF="<<dZTOF<<
@@ -2948,7 +2947,6 @@ void  AliTPCcalibAlignInterpolation::MakeVDriftOCDB(const char *inputFile, Int_t
   ///
   /* 
      char * inputFile= "fitDrift.root"
-     char * inputFile= "/hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o.1502/000244918/fitDrift.root";
      char * testDiffCDB="/cvmfs/alice.cern.ch/calibration/data/2015/OCDB/TPC/Calib/TimeDrift/Run244918_244918_v3_s0.root";
      Int_t  run=244918;
 
