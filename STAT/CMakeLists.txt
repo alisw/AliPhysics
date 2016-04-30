@@ -35,6 +35,7 @@ set(SRCS
     TStatToolkit.cxx
     AliNDLocalRegression.cxx
     AliExternalInfo.cxx
+    AliFFTsmoother.cxx   
   )
 
 # Headers from sources

@@ -20,6 +20,7 @@
 #pragma link C++ class AliNDLocalRegression+;
 
 #pragma link C++ class AliExternalInfo+;
+#pragma link C++ namespace AliFFTsmoother+;
 
 #pragma link C++ namespace TStatToolkit;
 #pragma link C++ function  TStatToolkit::LTMHisto(TH1 * , TVectorF &, Float_t);
