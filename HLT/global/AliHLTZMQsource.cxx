@@ -234,7 +234,8 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       blockSize = zmq_recv(fZMQin, block, outputBufferCapacity, (fZMQneverBlock)?ZMQ_DONTWAIT:0);
       if (blockSize < 0 && errno == EAGAIN) break; //nothing on the socket
       if (blockSize > outputBufferCapacity) {
-        HLTWarning("output buffer too small: %i", initialOutputBufferCapacity);
+        HLTWarning("output buffer too small: %i, doubling size", initialOutputBufferCapacity);
+        fOutputBufferSize = 2*fOutputBufferSize;
         retCode = -ENOSPC; break;
       }//no space for message
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
