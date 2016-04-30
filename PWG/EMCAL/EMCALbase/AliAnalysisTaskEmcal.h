@@ -200,6 +200,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
 
   void                        GeneratePythiaInfoObject(AliMCEvent* mcEvent);
+  Bool_t                      CheckMCOutliers();
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
