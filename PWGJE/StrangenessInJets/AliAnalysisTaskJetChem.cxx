@@ -3063,34 +3063,37 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	Double_t sumBckgPt      = 0.;
 	Bool_t isBadBckgJet     = kFALSE;
+	Bool_t isBadJet     = kFALSE;
 	
 	//apply some further jet cuts since they are not carried out in GetListOfBckgJets()
-	if( jetBckg->Pt() < fJetPtCut ) isBadBckgJet=kTRUE;
-	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) isBadBckgJet=kTRUE;
-
-	if((fDebug>3)&&(isBadBckgJet==kFALSE)){std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
-	std::cout<<"nRecBckgJets: "<<nRecBckgJets<<std::endl;
-	std::cout<<"      "<<std::endl;}
+	if( jetBckg->Pt() < fJetPtCut ) {isBadJet=kTRUE;}
+	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) {isBadJet=kTRUE;}
 
 	Double_t jetPt = jetBckg->Pt();
-	if(isBadBckgJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
+	if(isBadJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
 
-	if((GetFFRadius()<=0)&&(isBadBckgJet == kFALSE)){
-	  GetJetTracksTrackrefs(jettracklist, jetBckg, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);// list of jet tracks from trackrefs, normally not used here
+	if((GetFFRadius()<=0)&&(isBadJet == kFALSE)){
+	  GetJetTracksTrackrefs(jettracklist, jetBckg, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);
+	  if(isBadBckgJet == kTRUE)isBadJet = kTRUE;// list of jet tracks from trackrefs, normally not used here
 	} else {
-	  if(isBadBckgJet == kFALSE){GetJetTracksPointing(fTracksRecBckgCuts, jettracklist, jetBckg, GetFFRadius(), sumBckgPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+	  if(isBadJet == kFALSE){GetJetTracksPointing(fTracksRecBckgCuts, jettracklist, jetBckg, GetFFRadius(), sumBckgPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+	    if(isBadBckgJet == kTRUE)isBadJet = kTRUE;
 	  }
 	}
 
 	//APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..):
-	if(isBadBckgJet == kTRUE){
+	if(isBadJet == kTRUE){
 	  nRemainingBckgJets = nRemainingBckgJets-1;//remove one jet from nRemainingJets (was initialized with nRecJetsCuts) continue;//all bad jets are rejected
 	  
 	  if(nRemainingBckgJets == 0){fIsNJEventEmb = kTRUE;fh1NJEmbEvt->Fill(1.);}//set switch for Embedding into NJ events
 	}
 
-	if(isBadBckgJet == kFALSE)fh1BckgJetsPtBias->Fill(jetPt);//good jets are filled here
-	if(fDebug>3)std::cout<<"isBadBckgJet: "<<isBadBckgJet<<std::endl;
+	if((fDebug>3)&&(isBadJet==kFALSE)){std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
+	std::cout<<"nRecBckgJets: "<<nRecBckgJets<<std::endl;
+	std::cout<<"      "<<std::endl;}
+
+	if(isBadJet == kFALSE)fh1BckgJetsPtBias->Fill(jetPt);//good jets are filled here
+	if(fDebug>3)std::cout<<"isBadJet: "<<isBadJet<<std::endl;
 
 	jettracklist->Clear();
 	fTracksRecBckgCuts->Clear();
