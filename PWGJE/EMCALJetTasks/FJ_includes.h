@@ -25,6 +25,9 @@
 #include <fastjet/contrib/GenericSubtractor.hh>
 #include <fastjet/contrib/ShapeWithComponents.hh>
 #include <fastjet/contrib/ConstituentSubtractor.hh>
+#include <fastjet/contrib/Nsubjettiness.hh>
+#include <fastjet/contrib/Njettiness.hh>
+#include <fastjet/contrib/NjettinessPlugin.hh>
 #endif
 #endif
 
