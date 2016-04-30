@@ -79,6 +79,10 @@ class AliHLTTPCHWCFEmulator
    **/
   void SetTagDeconvolutedClusters( bool b ){ fDivisionUnit.SetTagDeconvolutedClusters( b ); }
 
+  /** set RCU2 flag (data is not split in two branches)
+   **/
+  void SetProcessingRCU2Data( bool b ){ fChannelExtractor.SetRCU2Flag( b ); }
+
  private: 
 
   /** copy constructor prohibited */
