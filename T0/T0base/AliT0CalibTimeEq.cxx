@@ -112,7 +112,7 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
   for (Int_t i=0; i<24; i++) 
-    printf(" CFD  %f diff %f qt1 %f  \n",fCFDvalue[i][0],fTimeEq[i],fCFDvalue[i][1]);
+    printf(" CFD  %f diff %f qt1 %f pedestal %f  \n",fCFDvalue[i][0],fTimeEq[i],fCFDvalue[i][1], fCFDvalue[i][3]);
   printf(" TVDC  %f OrA %f OrC %f  \n",fMeanVertex,fCFDvalue[0][2], fCFDvalue[1][2]);
 
 
@@ -125,7 +125,8 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
   Float_t ora,orc, meanqt, sigmaor,sigmaver, meanEstimate;
-  
+  Float_t meanpedold=0, sigmaped=0;
+
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime = ora = orc = meanqt =0;
   meanEstimate=sigmaver=sigmaor = 0;
   Int_t maxBin=0;
@@ -141,7 +142,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   else
     {
       ok=true;
-      for (Int_t i=0; i<24; i++)
+      for (Int_t i=0; i<24; i++)  
 	{
 	  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
 	  TH1F *hcfd     = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
@@ -227,13 +228,12 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    }
 	    if(hqt1) 	GetMeanAndSigma(hqt1,meanqt, sigmaor);
 	    //Pedestals
-	    Float_t meanpedold=0, sigmaped=0;
 	    if(hPedOld )   GetMeanAndSigma(hPedOld ,meanpedold, sigmaped);
-	    SetPedestalOld(i,meanpedold);       
 	  } //cycle 24 PMT
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0,meancfdtime);
+	  SetPedestalOld(i,meanpedold);       
 	  SetCFDvalue(i,1,meanqt);
 	  if (hcfd) delete hcfd;
 	  if (hcfdtime) delete hcfdtime;
