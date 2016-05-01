@@ -1,11 +1,23 @@
-//
-// Emcal jet shape properties class.
-//
-// Authors: A.Salvatore, N.Zardoshti
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include "AliEmcalJetShapeProperties.h"
 
-//______________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeMassFirstDer(0),
   fJetShapeMassSecondDer(0),
@@ -56,10 +68,13 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeOpeningAnglektFirstSub(0),
   fJetShapeOpeningAnglektSecondSub(0)
 {
-  //constructor
 }
 
-//_________________________________________________________________________________
+/**
+ * Copy constructor
+ *
+ * @param[in] jet Const reference to copy the content from
+ */
 AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapeProperties &jet):
   fJetShapeMassFirstDer(jet.fJetShapeMassFirstDer),
   fJetShapeMassSecondDer(jet.fJetShapeMassSecondDer),
@@ -111,14 +126,15 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapePro
   fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub)
 
 {
-  //copy constructor
 }
 
-//_________________________________________________________________________________
+/**
+ * Assignment operator
+ *
+ * @param[in] jet Const reference to copy the content from
+ */
 AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcalJetShapeProperties &jet)
 {
-  // Assignment operator.
-
   fJetShapeMassFirstDer  = jet.fJetShapeMassFirstDer;
   fJetShapeMassSecondDer = jet.fJetShapeMassSecondDer;
   fJetShapeMassFirstSub  = jet.fJetShapeMassFirstSub;
@@ -171,7 +187,9 @@ AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcal
   return *this;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Print the list of the GR properties in the standard output
+ */
 void AliEmcalJetShapeProperties::PrintGR() const
 {
   for(Int_t i = 0; i < fGRNumerator.GetSize(); i++) {
