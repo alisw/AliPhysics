@@ -752,6 +752,13 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   return (TMath::Sqrt(mass));
   */
   if(p1>4 || p2>4) return -1;
+  return GetEffMassExplicit(kpmass[p1],kpmass[p2]);			       
+}
+
+Double_t AliESDv0::GetEffMassExplicit(Double_t m1, Double_t m2) const {
+  //
+  // calculate effective mass with given masses of decay products
+  //
   const AliExternalTrackParam *paramP = GetParamP();
   const AliExternalTrackParam *paramN = GetParamN();
   if (paramP->GetParameter()[4]<0){
@@ -761,9 +768,9 @@ Double_t AliESDv0::GetEffMass(UInt_t p1, UInt_t p2) const{
   Double_t pmom[3]={0}, nmom[3]={0};
   paramP->GetPxPyPz(pmom);
   paramN->GetPxPyPz(nmom);
-  Double_t e12   = kpmass[p1]*kpmass[p1]+pmom[0]*pmom[0]+pmom[1]*pmom[1]+pmom[2]*pmom[2];
-  Double_t e22   = kpmass[p2]*kpmass[p2]+nmom[0]*nmom[0]+nmom[1]*nmom[1]+nmom[2]*nmom[2];
-  Double_t cmass = TMath::Sqrt(TMath::Max(kpmass[p1]*kpmass[p1]+kpmass[p2]*kpmass[p2]
+  Double_t e12   = m1*m1+pmom[0]*pmom[0]+pmom[1]*pmom[1]+pmom[2]*pmom[2];
+  Double_t e22   = m2*m2+nmom[0]*nmom[0]+nmom[1]*nmom[1]+nmom[2]*nmom[2];
+  Double_t cmass = TMath::Sqrt(TMath::Max(m1*m1+m2*m2
 					  +2.*(TMath::Sqrt(e12*e22)-pmom[0]*nmom[0]-pmom[1]*nmom[1]-pmom[2]*nmom[2]),0.));
   return cmass;
 			       

@@ -71,6 +71,7 @@ public:
 
   Int_t    GetPdgCode() const {return fPdgCode;}
   Double_t  GetEffMass(UInt_t p1, UInt_t p2) const;
+  Double_t  GetEffMassExplicit(Double_t m1, Double_t m2) const;
   Double_t  GetEffMass() const {return fEffMass;}
   Double_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
