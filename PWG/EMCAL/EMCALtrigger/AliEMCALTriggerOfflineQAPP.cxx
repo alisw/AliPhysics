@@ -599,6 +599,15 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     Int_t idx[4] = {-1};
     fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);
     fGeom->GetTRUFromAbsFastORIndex(fastor->GetAbsId(), nTRU, nADC);
+
+    if (nTRU >= fNTotTRU || nTRU < 0 ||
+        nTRU == 34 || nTRU == 35 ||
+        nTRU == 40 || nTRU == 41 ||
+        nTRU == 46 || nTRU == 47) {
+      AliError(Form("FastOR with abs ID %d and TRU number %d: this TRU does not exist!!", fastor->GetAbsId(), nTRU));
+      return;
+    }
+
     Double_t pos[3] = {0};
     if (idx[0] >= 0) {
       fGeom->GetGlobal(idx[0], pos);
