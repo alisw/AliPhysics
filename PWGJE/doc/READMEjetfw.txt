@@ -127,4 +127,6 @@ See \subpage READMEtagging for more details.
 # Unfolding
 \subpage READMEunfolding
 
+# User tasks
+\subpage READMEJEtasks
 */
