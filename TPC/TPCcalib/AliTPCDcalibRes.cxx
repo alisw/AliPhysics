@@ -1,4 +1,7 @@
 #include "AliTPCDcalibRes.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
+#include "AliGRPObject.h"
 
 using std::swap;
 
@@ -75,6 +78,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fRun(run)
   ,fTMin(tmin)
   ,fTMax(tmax)
+  ,fTMinGRP(0)
+  ,fTMaxGRP(0)
   ,fMaxTracks(9999999)
   ,fCacheInp(100)
   ,fLearnSize(1)
@@ -120,7 +125,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fNTrSelTotWO(0)
   ,fNReadCallTot(0)
   ,fNBytesReadTot(0)
-
+  ,fTracksRate(0)
   ,fVDriftParam(0)
   ,fVDriftGraph(0)
   ,fCorrTime(0)
@@ -181,6 +186,7 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
     delete fSectGVoxRes[i];
     delete fStatHist[i];
   }
+  delete fTracksRate;
 }
 
 //________________________________________
@@ -247,6 +253,23 @@ void AliTPCDcalibRes::Init()
     if (run<1) AliFatal("Run number is neither set nor provided via runNumber env.var");
     SetRun(run);
   }
+  //
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (fOCDBPath.IsNull()) fOCDBPath = "raw://";
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(fOCDBPath);
+  if (man->GetRun()!=fRun) man->SetRun(fRun); 
+  //
+  // memorize GRP time
+  AliGRPObject* grp = (AliGRPObject*)man->Get(AliCDBPath("GRP/GRP/Data"))->GetObject();
+  fTMinGRP = grp->GetTimeStart();
+  fTMaxGRP = grp->GetTimeEnd();
+  //
+  // init histo for track rate
+  Long64_t tmn = fTMinGRP-fTMin>1000 ? fTMinGRP-100 : fTMin;
+  Long64_t tmx = fTMax-fTMaxGRP>1000 ? fTMaxGRP+100 : fTMax;
+  fTracksRate = new TH1F("TracksRate","TracksRate", 1+tmx-tmn, -0.5+tmn,0.5+tmx);
+  fTracksRate->SetDirectory(0);
+  //
   InitGeom();
   SetName(Form("run%d_%lld_%lld",fRun,fTMin,fTMax));
   SetTitle(IsA()->GetName());
@@ -265,8 +288,6 @@ void AliTPCDcalibRes::Init()
   for (int i=kVoxDim-1;i--;) {
     fNBProdSectG[i] = fNBProdSectG[i+1]*fNBins[i+1];
   }
-  
-
   //
   AliSysInfo::AddStamp("Init",0,0,0,0);
   //
@@ -577,6 +598,9 @@ void AliTPCDcalibRes::FillLocalResidualsTrees()
     }
     //
   } // loop over clusters
+  //
+  if (fTracksRate) fTracksRate->Fill(fTimeStamp); // register track time
+  //
 }
 
 //________________________________________________
@@ -2685,7 +2709,35 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   SetUsedInstance(this);
   fChebCorr->Parameterize(trainCorr,kResDim,fNPCheb,fChebPrecD);
   //
+  // register tracks rate for lumi weighting
+  fChebCorr->SetTracksRate(ExtractTrackRate());
+  //
   AliSysInfo::AddStamp("CreateCorrectionObject",1,0,0,0);
+}
+
+//________________________________________________________________
+TH1* AliTPCDcalibRes::ExtractTrackRate() const
+{
+  // create histo with used tracks per timestamp
+  TH1* hTr = 0;
+  if (fTracksRate) { 
+    const float *tarr = fTracksRate->GetArray();
+    int nb = fTracksRate->GetNbinsX();
+    int bin0=1,bin1=nb;
+    while(tarr[bin0]<0.5 && bin0<=nb) bin0++; // find first significant time bin 
+    while(tarr[bin1]<0.5 && bin1>=bin0) bin1--; // find last significant time bin
+    nb = bin1 - bin0 + 1;
+    Long64_t tmn = (Long64_t)fTracksRate->GetBinCenter(bin0);
+    Long64_t tmx = (Long64_t)fTracksRate->GetBinCenter(bin1);
+    hTr = new TH1F(Form("TrackRate%lld_%lld",tmn,tmx),"TracksRate",nb,
+		   fTracksRate->GetBinLowEdge(bin0),fTracksRate->GetBinLowEdge(bin1+1));
+    for (int ib=0;ib<nb;ib++) {
+      int ibh = ib+bin0;
+      hTr->SetBinContent(ib+1,tarr[ibh]);
+    }
+  }
+  else AliError("TracksRate accumulation histo was not initialized");
+  return hTr;
 }
 
 //________________________________________________________________

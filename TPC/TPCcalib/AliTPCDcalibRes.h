@@ -162,7 +162,9 @@ class AliTPCDcalibRes: public TNamed
  Int_t   GetXBin(float x);
  Int_t   GetRowID(float x);
   
-  Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
+ Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
+ TH1*    GetTracksRateHisto()   const {return fTracksRate;}
+ TH1*    ExtractTrackRate() const;
   
   Int_t   GetXBinExact(float x);
   Float_t GetY2X(int ix, int iy);
@@ -193,6 +195,7 @@ class AliTPCDcalibRes: public TNamed
   //
   void     SetRun(int run)                       {fRun = run;}
   void     SetTMinMax(Long64_t tmin=0, Long64_t tmax=9999999999) {fTMin=tmin; fTMax=tmax;}
+  void     SetTMinMaxGRP(Long64_t tmin=0, Long64_t tmax=9999999999) {fTMinGRP=tmin; fTMaxGRP=tmax;}
   void     SetNXBins(int n=kNPadRows)            {fNXBins = n;}
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
   void     SetNZ2XBins(int n=10)                 {fNZ2XBins = n;}
@@ -230,6 +233,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t    GetRun()                         const {return fRun;}
   Long64_t GetTMin()                        const {return fTMin;}
   Long64_t GetTMax()                        const {return fTMax;}  
+  Long64_t GetTMinGRP()                     const {return fTMinGRP;}
+  Long64_t GetTMaxGRP()                     const {return fTMaxGRP;}  
   Int_t    GetNXBins()                      const {return fNXBins;}
   Int_t    GetNY2XBins()                    const {return fNY2XBins;}
   Int_t    GetNZ2XBins()                    const {return fNZ2XBins;}
@@ -280,8 +285,10 @@ protected:
 
   // -------------------------------Task defintion
   Int_t    fRun;     // run numbet 
-  Long64_t fTMin;    // time start
-  Long64_t fTMax;    // time stop
+  Long64_t fTMin;    // time start for timebin
+  Long64_t fTMax;    // time stop for timebin
+  Long64_t fTMinGRP;    // time start from GRP
+  Long64_t fTMaxGRP;    // time stop from GRP
   Int_t    fMaxTracks;  // max tracks to accept
   Int_t    fCacheInp;      // input trees cache in MB
   Int_t    fLearnSize;     // event to learn for the cache
@@ -346,6 +353,7 @@ protected:
   Int_t    fNTrSelTotWO;    // would be selected w/o outliers rejection
   Int_t    fNReadCallTot;   // read calls from input trees
   Long64_t fNBytesReadTot;  // total bytes read
+  TH1F*    fTracksRate;     // accepted tracks per second
 
 
   // ------------------------------VDrift correction
@@ -413,7 +421,7 @@ protected:
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,2);
+  ClassDef(AliTPCDcalibRes,3);
 };
 
 //________________________________________________________________

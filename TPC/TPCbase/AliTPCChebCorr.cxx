@@ -18,6 +18,7 @@
 #include "AliTPCChebCorr.h"
 #include "AliLog.h"
 #include <TMath.h>
+#include <TH1.h>
 
 ClassImp(AliTPCChebCorr)
 
@@ -56,6 +57,7 @@ AliTPCChebCorr::AliTPCChebCorr()
   ,fDeadZone(0)
   ,fRowXI(0)
   ,fParams(0)
+  ,fTracksRate(0)
 {
 // def. c-tor  
 }
@@ -78,6 +80,7 @@ AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title,
   ,fDeadZone(deadZone)
   ,fRowXI(0)
   ,fParams(0)
+  ,fTracksRate(0)
 {
   // c-tor, optional parameter xrow provides the X of every slice if deadZone is requested 
   // (if xrow is absent, default will be used)
@@ -99,6 +102,7 @@ AliTPCChebCorr::~AliTPCChebCorr()
   if (fParams) for (int i=fNStacks;i--;) delete fParams[i];
   delete[] fRowXI;
   delete[] fParams;
+  delete fTracksRate;
 }
 
 //____________________________________________________________________
