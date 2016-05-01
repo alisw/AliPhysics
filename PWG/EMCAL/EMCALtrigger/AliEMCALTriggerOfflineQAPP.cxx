@@ -42,7 +42,6 @@ AliEMCALTriggerOfflineQAPP::AliEMCALTriggerOfflineQAPP():
   AliEMCALTriggerQA(),
   fOfflineBadChannels(),
   fBadChannels(),
-  fFastORPedestal(),
   fDCalPlots(kTRUE),
   fL0MinTime(7),
   fL0MaxTime(10),
@@ -94,7 +93,6 @@ AliEMCALTriggerOfflineQAPP::AliEMCALTriggerOfflineQAPP(const char* name):
   AliEMCALTriggerQA(name),
   fOfflineBadChannels(),
   fBadChannels(),
-  fFastORPedestal(5000),
   fDCalPlots(kTRUE),
   fL0MinTime(7),
   fL0MaxTime(10),
@@ -146,7 +144,6 @@ AliEMCALTriggerOfflineQAPP::AliEMCALTriggerOfflineQAPP(const AliEMCALTriggerOffl
   AliEMCALTriggerQA(triggerQA),
   fOfflineBadChannels(triggerQA.fOfflineBadChannels),
   fBadChannels(),
-  fFastORPedestal(triggerQA.fFastORPedestal),
   fDCalPlots(kTRUE),
   fL0MinTime(triggerQA.fL0MinTime),
   fL0MaxTime(triggerQA.fL0MaxTime),
@@ -224,43 +221,6 @@ void AliEMCALTriggerOfflineQAPP::ReadFastORBadChannelFromFile(const char* fname)
 {
   std::ifstream file(fname);
   ReadFastORBadChannelFromStream(file);
-}
-
-/// Set the pedestal value for a FastOR
-///
-/// \param absId Absolute ID of a FastOR
-/// \param ped   Pedestal value
-void AliEMCALTriggerOfflineQAPP::SetFastORPedestal(Short_t absId, Float_t ped)
-{
-  if (absId < 0 || absId >= fFastORPedestal.GetSize()) {
-    AliWarning(Form("Abs. ID %d out of range (0,5000)", absId));
-    return;
-  }
-  fFastORPedestal[absId] = ped;
-}
-
-
-/// Read the FastOR pedestals from a standard stream
-///
-/// \param stream A reference to a standard stream to read from (can be a file stream)
-void AliEMCALTriggerOfflineQAPP::ReadFastORPedestalFromStream(std::istream& stream)
-{
-  Short_t absId = 0;
-  Float_t ped = 0;
-  while (stream.good()) {
-    stream >> ped;
-    SetFastORPedestal(absId, ped);
-    absId++;
-  }
-}
-
-/// Read the FastOR pedestals from a text file
-///
-/// \param fname Path and name of the file
-void AliEMCALTriggerOfflineQAPP::ReadFastORPedestalFromFile(const char* fname)
-{
-  std::ifstream file(fname);
-  ReadFastORPedestalFromStream(file);
 }
 
 /// Initialize the class, i.e. allocate histograms.
@@ -588,14 +548,20 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
 
   if (fBadChannels.find(fastor->GetAbsId()) != fBadChannels.end()) return;
 
-  Int_t L0amp = fastor->GetL0Amp() - fFastORPedestal[fastor->GetAbsId()];
   Bool_t isDCal = kFALSE;
 
   Double_t offlineAmp = 0;
   Int_t nTRU = -1;
   Int_t nADC = -1;
+  Int_t iSM  = -1;
+  Int_t iEta = -1;
+  Int_t iPhi = -1;
 
   if (fGeom) {
+    fGeom->GetPositionInSMFromAbsFastORIndex(fastor->GetAbsId(), iSM, iEta, iPhi);
+    isDCal = fGeom->IsDCALSM(iSM);
+    if (isDCal && !fDCalPlots) return;
+
     Int_t idx[4] = {-1};
     fGeom->GetCellIndexFromFastORIndex(fastor->GetAbsId(), idx);
     fGeom->GetTRUFromAbsFastORIndex(fastor->GetAbsId(), nTRU, nADC);
@@ -604,17 +570,12 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
         nTRU == 34 || nTRU == 35 ||
         nTRU == 40 || nTRU == 41 ||
         nTRU == 46 || nTRU == 47) {
-      AliError(Form("FastOR with abs ID %d and TRU number %d: this TRU does not exist!!", fastor->GetAbsId(), nTRU));
+      if (fastor->GetL0Amp() > 0) AliError(Form("FastOR with abs ID %d (amp = %u) and TRU number %d: this TRU does not exist!!", fastor->GetAbsId(), fastor->GetL0Amp(), nTRU));
       return;
     }
 
-    Double_t pos[3] = {0};
     if (idx[0] >= 0) {
-      fGeom->GetGlobal(idx[0], pos);
-      isDCal = fGeom->IsInDCAL(pos[0], pos[1], pos[2]);
-      if (isDCal && !fDCalPlots) return;
-
-      if (L0amp > fMinL0FastORAmp) {
+      if (fastor->GetL0Amp() > fMinL0FastORAmp) {
         if (cells) {
           for (Int_t i = 0; i < 4; i++) {
             offlineAmp += cells->GetCellAmplitude(idx[i]);
@@ -624,7 +585,7 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     }
   }
 
-  if (L0amp > fMinL0FastORAmp) {
+  if (fastor->GetL0Amp() > fMinL0FastORAmp) {
     if (fTimeStampBinWidth > 0) {
       hname = TString::Format("ByTimeStamp/EMCTRQA_histFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
       fHistManager.FillTH1(hname, fastor->GetAbsId());
@@ -634,33 +595,33 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     fHistManager.FillTH1(hname, fastor->GetAbsId());
 
     hname = Form("EMCTRQA_histFastORL0Amp");
-    fHistManager.FillTH2(hname, fastor->GetAbsId(), L0amp);
+    fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Amp());
 
     hname = Form("EMCTRQA_histFastORL0Time");
     fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Time());
 
     hname = Form("EMCTRQA_histFastORL0AmpVsTime");
-    fHistManager.FillTH2(hname, fastor->GetL0Time(), L0amp);
+    fHistManager.FillTH2(hname, fastor->GetL0Time(), fastor->GetL0Amp());
 
     if (fastor->GetL0Time() > fL0MinTime && fastor->GetL0Time() < fL0MaxTime) {
       hname = Form("EMCTRQA_histFastORL0TimeOk");
       fHistManager.FillTH1(hname, fastor->GetAbsId());
 
       hname = Form("EMCTRQA_histFastORL0AmpTimeOk");
-      fHistManager.FillTH2(hname, fastor->GetAbsId(), L0amp);
+      fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Amp());
 
       hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
-      fHistManager.FillTH2(hname, L0amp, offlineAmp);
+      fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
       hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d",nTRU);
-      fHistManager.FillTH2(hname, L0amp, offlineAmp);
+      fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
     }
 
     hname = Form("EMCTRQA_histCellAmpVsFastORL0Amp");
-    fHistManager.FillTH2(hname, L0amp, offlineAmp);
+    fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
     hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTRU%d",nTRU);
-    fHistManager.FillTH2(hname, L0amp, offlineAmp);
+    fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
     if (offlineAmp == 0) {
       hname = Form("EMCTRQA_histFastORNoOffline");
@@ -668,16 +629,16 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     }
 
     if (isDCal) {
-      fSumL0DCal += L0amp;
+      fSumL0DCal += fastor->GetL0Amp();
       fNL0DCal++;
     }
     else {
-      fSumL0EMCal += L0amp;
+      fSumL0EMCal += fastor->GetL0Amp();
       fNL0EMCal++;
     }
   }
 
-  if (L0amp > fFastorL0Th) {
+  if (fastor->GetL0Amp() > fFastorL0Th) {
     if (fTimeStampBinWidth > 0) {
       hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
       fHistManager.FillTH1(hname, fastor->GetAbsId());
@@ -712,9 +673,9 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     fHistManager.FillTH1(hname, fastor->GetAbsId());
   }
 
-  if (fastor->GetL1Amp() > fMinL1FastORAmp || L0amp > fMinL0FastORAmp) {
+  if (fastor->GetL1Amp() > fMinL1FastORAmp || fastor->GetL0Amp() > fMinL0FastORAmp) {
     hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
-    fHistManager.FillTH2(hname, L0amp, fastor->GetL1Amp());
+    fHistManager.FillTH2(hname, fastor->GetL0Amp(), fastor->GetL1Amp());
   }
 }
 

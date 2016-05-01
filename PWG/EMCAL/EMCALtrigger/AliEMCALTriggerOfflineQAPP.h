@@ -64,10 +64,6 @@ public:
   void   AddOfflineBadChannel(Short_t absId)  { fOfflineBadChannels.insert(absId)   ; }
   void   ReadOfflineBadChannelFromFile(const char* fname);
   void   ReadOfflineBadChannelFromStream(std::istream& stream);
-  void   ReadFastORPedestalFromStream(std::istream& stream);
-  void   ReadFastORPedestalFromFile(const char* fname);
-  void   SetFastORPedestal(Short_t absId, Float_t ped);
-  void   ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   // Overloaded methods of AliEMCALTriggerQA
   void   Init();
@@ -83,7 +79,6 @@ protected:
 
   std::set<Short_t>          fOfflineBadChannels;          ///< Abs ID of offline bad channels
   std::set<Short_t>          fBadChannels;                 ///< Container of bad channels
-  TArrayF                    fFastORPedestal;              ///< FastOR pedestal
 
   Bool_t                     fDCalPlots;                   ///< Whether to add DCal QA plots
   Int_t                      fL0MinTime;                   ///< Minimum L0 time
