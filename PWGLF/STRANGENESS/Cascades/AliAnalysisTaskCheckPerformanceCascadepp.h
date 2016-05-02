@@ -60,6 +60,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
   void SetExtraSelections              (Bool_t  extraSelections             = kFALSE ) { fkExtraSelections               = extraSelections;              }
   void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                = 0.8    ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
   void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors    = 3      ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
+  void SetNumTPCPIDsigma               (Double_t ftpcpidsigma               = 4      ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
   //Setters for the V0 and cascade Vertexer Parameters
   void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -110,6 +111,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
         Float_t           fMinPtCutOnDaughterTracks;       // minimum pt cut on daughter tracks
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
         Int_t             fSPDPileUpminContributors;       // 
+        Double_t          fTPCPIDsigma;                    //
 
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -153,6 +155,10 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistPVxAnalysis;                      // After any event selections 
          TH1F *fHistPVyAnalysis;                      // After any event selections
          TH1F *fHistPVzAnalysis;                      // After any event selections
+         // TPC cluster distributions for daughters
+         TH1F   *fHistPosV0TPCClusters;                                //! TPC clusters distribution for Positive V0 daughter track
+         TH1F   *fHistNegV0TPCClusters;                                //! TPC clusters distribution for Negative V0 daughter track
+         TH1F   *fHistBachTPCClusters;                                 //! TPC clusters distribution for Bachelor V0 daughter track
          // - Plots before Physics Selection
          TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_A;    // Before any event selection 
          TH3D *f3dHistGenPtVsGenctauvsYXiMinus_A;       // Before any event selection 
