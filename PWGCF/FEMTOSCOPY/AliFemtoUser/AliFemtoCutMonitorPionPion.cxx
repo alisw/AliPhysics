@@ -26,8 +26,8 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                          const bool suffix_output):
   AliFemtoCutMonitor()
   , fCentMult(NULL)
-  , _vertex_z(NULL)
-  , _vertex_xy(NULL)
+  , fVertexZ(NULL)
+  , fVertexXY(NULL)
   , _collection_size_pass(NULL)
   , _collection_size_fail(NULL)
   , _identical_collection_size_pass(NULL)
@@ -49,14 +49,14 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   );
   fCentMult->Sumw2();
 
-  _vertex_z = new TH1F(
+  fVertexZ = new TH1F(
     "VertexZ" + pf,
     TString::Format("Vertex Z Distribution%s;z (cm);N_{ev}", title_suffix),
     128, -15.0f, 15.0f
   );
-  _vertex_z->Sumw2();
+  fVertexZ->Sumw2();
 
-  _vertex_xy = new TH2F(
+  fVertexXY = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
     48, 0.05f, 0.08f,
@@ -64,7 +64,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
     // 48, 0.0f, 0.12f,
     // 48, 0.22f, 0.32f
   );
-  _vertex_xy->Sumw2();
+  fVertexXY->Sumw2();
 
   // only create _collection_size histograms if this is the passing event cut monitor
   if (passing) {
@@ -96,8 +96,8 @@ AliFemtoCutMonitorPionPion::Event::GetOutputList()
   TCollection *output = olist;
 
   output->Add(fCentMult);
-  output->Add(_vertex_z);
-  output->Add(_vertex_xy);
+  output->Add(fVertexZ);
+  output->Add(fVertexXY);
 
   if (_collection_size_pass) {
      output->Add(_collection_size_pass);
@@ -118,8 +118,8 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoEvent* ev)
   const AliFemtoThreeVector vertex = ev->PrimVertPos();
 
   fCentMult->Fill(centrality, multiplicty);
-  _vertex_z->Fill(vertex.z());
-  _vertex_xy->Fill(vertex.x(), vertex.y());
+  fVertexZ->Fill(vertex.z());
+  fVertexXY->Fill(vertex.x(), vertex.y());
 
   if (ev == _prev_ev) {
     if (_collection_size_pass) {
@@ -164,6 +164,11 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoParticleCollection *coll_1
   _prev_pion_coll_2_size = coll_2->size();
   _prev_pion_coll_1_size = coll_1->size();
 }
+
+
+//
+// Pion Cut Monitor
+//
 
 AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const TString& typestr,

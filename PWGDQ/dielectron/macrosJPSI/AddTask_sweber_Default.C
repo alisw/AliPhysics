@@ -9,7 +9,9 @@ AliAnalysisTask* AddTask_sweber_Default(
   Bool_t gridconf = kTRUE,
   TString prod = "", 
   Bool_t isMC = kFALSE,
-  Bool_t rejectPileup = kTRUE
+  Bool_t rejectPileup = kTRUE,
+  Bool_t usePhysicsSelection = kTRUE,
+  TString triggerClass = ""
 )
 {
   // get the current analysis manager
@@ -33,28 +35,28 @@ AliAnalysisTask* AddTask_sweber_Default(
   if( list.IsNull()) list=prod;
 
   // selected period
-  if(      !prod.CompareTo("LHC10b") ) iPeriod = k10b;
-  else if( !prod.CompareTo("LHC10c") ) iPeriod = k10c;
-  else if( !prod.CompareTo("LHC10d") ) iPeriod = k10d;
-  else if( !prod.CompareTo("LHC10e") ) iPeriod = k10e;
-  else if( !prod.CompareTo("LHC10f") ) iPeriod = k10f;
-  else if( !prod.CompareTo("LHC10h") ) iPeriod = k10h;
-  else if( !prod.CompareTo("LHC11a") ) iPeriod = k11a;
-  else if( !prod.CompareTo("LHC11d") ) iPeriod = k11d;
-  else if( !prod.CompareTo("LHC11h") ) iPeriod = k11h;
-  else if( !prod.CompareTo("LHC12h") ) iPeriod = k12h;
-  else if( !prod.CompareTo("LHC13b") ) iPeriod = k13b;
-  else if( !prod.CompareTo("LHC13c") ) iPeriod = k13c;
-  else if( !prod.CompareTo("LHC13d") ) iPeriod = k13d;
-  else if( !prod.CompareTo("LHC13e") ) iPeriod = k13e;
-  else if( !prod.CompareTo("LHC13f") ) iPeriod = k13f;
-  else if( !prod.CompareTo("LHC15f") ) iPeriod = k15f;
-  else if( !prod.CompareTo("LHC15h") ) iPeriod = k15h;
+  if(      prod.Contains("LHC10b") ) iPeriod = k10b;
+  else if( prod.Contains("LHC10c") ) iPeriod = k10c;
+  else if( prod.Contains("LHC10d") ) iPeriod = k10d;
+  else if( prod.Contains("LHC10e") ) iPeriod = k10e;
+  else if( prod.Contains("LHC10f") ) iPeriod = k10f;
+  else if( prod.Contains("LHC10h") ) iPeriod = k10h;
+  else if( prod.Contains("LHC11a") ) iPeriod = k11a;
+  else if( prod.Contains("LHC11d") ) iPeriod = k11d;
+  else if( prod.Contains("LHC11h") ) iPeriod = k11h;
+  else if( prod.Contains("LHC12h") ) iPeriod = k12h;
+  else if( prod.Contains("LHC13b") ) iPeriod = k13b;
+  else if( prod.Contains("LHC13c") ) iPeriod = k13c;
+  else if( prod.Contains("LHC13d") ) iPeriod = k13d;
+  else if( prod.Contains("LHC13e") ) iPeriod = k13e;
+  else if( prod.Contains("LHC13f") ) iPeriod = k13f;
+  else if( prod.Contains("LHC15f") ) iPeriod = k15f;
+  else if( prod.Contains("LHC15h") ) iPeriod = k15h;
 
 
   // create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("JpsiDefault");
-  if (!hasMC) task->UsePhysicsSelection();
+  if ( usePhysicsSelection ) task->UsePhysicsSelection();
 
 
   
@@ -72,7 +74,7 @@ AliAnalysisTask* AddTask_sweber_Default(
     case k15h: task->SetTriggerMask(AliVEvent::kINT7); break;
   }
   mgr->AddTask(task);
-  
+  if(! triggerClass.IsNull() ) task->SetFiredTriggerName(triggerClass.Data() );
   
   // set config file name
   TString configFile("");

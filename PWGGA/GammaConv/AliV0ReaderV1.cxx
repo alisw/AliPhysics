@@ -1169,7 +1169,15 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
     }
   }
   if(!AODLabelPos || !AODLabelNeg){
-    AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
+    AliError(Form("NO AOD Daughters Found Pos: %i %i Neg: %i %i, setting all labels to -999999",AODLabelPos,PhotonCandidate->GetTrackLabelPositive(),AODLabelNeg,PhotonCandidate->GetTrackLabelNegative()));
+    if(!AODLabelNeg){
+      PhotonCandidate->SetMCLabelNegative(-999999);
+      PhotonCandidate->SetLabelNegative(-999999);
+    }
+    if(!AODLabelPos){
+      PhotonCandidate->SetMCLabelPositive(-999999);
+      PhotonCandidate->SetLabelPositive(-999999);
+    }
   }
 
 }

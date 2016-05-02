@@ -495,7 +495,10 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
   }
 
   if (!identical) {
-    const TString p2_type_str = (fPionType_2 == kPiPlus) ? "Pi+" : (fPionType_2 == kPiMinus) ? "Pi-" : "ERROR";
+    const TString p2_type_str = (fPionType_2 == kPiPlus)  ? "Pi+"
+                              : (fPionType_2 == kPiMinus) ? "Pi-"
+                                                          : "ERROR";
+
     fSecondParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p2_type_str, fMCAnalysis),
                                       new AliFemtoCutMonitorPionPion::Pion(false, p2_type_str, fMCAnalysis));
 
@@ -576,10 +579,8 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
 
     output->Add(GetPassFailOutputList("Pair", PairCut()));
 
-    for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                  iter != fCorrFctnCollection->end();
-                                  ++iter) {
-      TList *cf_output = (*iter)->GetOutputList();
+    for (auto& iter : *fCorrFctnCollection) {
+      TList *cf_output = iter->GetOutputList();
       output->AddAll(cf_output);
       delete cf_output;
     }
@@ -651,10 +652,8 @@ void AliFemtoAnalysisPionPion::EventBegin(const AliFemtoEvent* ev)
   }
 
   fPairCut->EventBegin(ev);
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
-                                iter != fCorrFctnCollection->end();
-                                ++iter) {
-    (*iter)->EventBegin(ev);
+  for (auto& iter : *fCorrFctnCollection) {
+    iter->EventBegin(ev);
   }
 }
 

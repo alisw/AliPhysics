@@ -1,16 +1,14 @@
 #ifndef AliAnalysisTaskC2_cxx
 #define AliAnalysisTaskC2_cxx
 
-#include "TH2F.h"
-#include "TH3F.h"
-#include "THnSparse.h"
-#include "THn.h"
-#include "TRandom3.h"
-
 #include "AliAnalysisTaskC2Base.h"
 
-class AliVEvent;
+class TH1;
+class THn;
+class TProfile2D;
+
 class AliAODTrack;
+class AliVEvent;
 
 class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
  public:
@@ -24,12 +22,15 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
 
  private:
   // Histograms to construct C2
-  THn *fEventCounter;
-  THn *fSingles;
-  THn *fPairs;
+  THn *fEventCounter;  //!
+  THn *fSingles;       //!
+  THn *fPairs;         //!
+
+  // Profile <N(cent, zvtx)> for a given estimator
+  TProfile2D *fNchDistribution;  //!
 
   // QA Histograms
-  TH1F *fmultDistribution;
+  TH1 *fmultDistribution;  //!
 
   // struct to buffer the track informations. Makes it easy to replace tracks with random data
   struct cNano_track {
@@ -46,9 +47,6 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
   struct cSinglesDims {
     enum type {kEta, kPhi, kPt, kMult, kZvtx, kNdimensions};
   };
-
-
-  TRandom3 *fRndmGenerator;
 
   // Declaring these shuts up warnings from Weffc++
   AliAnalysisTaskC2(const AliAnalysisTaskC2&); // not implemented

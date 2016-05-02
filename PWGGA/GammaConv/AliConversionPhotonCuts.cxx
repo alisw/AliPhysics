@@ -1398,6 +1398,7 @@ AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
     return track;
 
   } else {
+    if(label == -999999) return NULL; // if AOD relabelling goes wrong, immediately return NULL
     AliVTrack * track = 0x0;
     if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
       if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));

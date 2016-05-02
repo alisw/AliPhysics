@@ -1,13 +1,11 @@
 #include <iostream>
 #include <vector>
 
-#include "THnSparse.h"
+#include "TH1.h"
 #include "THn.h"
 #include "TList.h"
 #include "TMath.h"
-#include "TVectorF.h"
-#include "TMatrix.h"
-#include "TRandom3.h"
+#include "TProfile2D.h"
 
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
@@ -32,7 +30,7 @@ AliAnalysisTaskC2::AliAnalysisTaskC2()
     fSingles(0),
     fPairs(0),
     fmultDistribution(0),
-    fRndmGenerator(0)
+    fNchDistribution(0)
 {
 }
 
@@ -43,7 +41,7 @@ AliAnalysisTaskC2::AliAnalysisTaskC2(const char *name)
     fSingles(0),
     fPairs(0),
     fmultDistribution(0),
-    fRndmGenerator(0)
+    fNchDistribution(0)
 {
   DefineOutput(1, TList::Class());
 }
@@ -138,6 +136,16 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
   this->fEventCounter->GetAxis(cEventCounterDims::kMult)->Set(nMult, &this->fSettings.fMultBinEdges[0]);
   this->fOutputList->Add(this->fEventCounter);
 
+  this->fNchDistribution = new TProfile2D("NchDistribution", "Mean N_{ch};cent;z_{vtx};",
+					  nbins_pairs[cPairsDims::kMult],
+					  xmin_pairs[cPairsDims::kMult],
+					  xmax_pairs[cPairsDims::kMult],
+					  nbins_pairs[cPairsDims::kZvtx],
+					  xmin_pairs[cPairsDims::kZvtx],
+					  xmax_pairs[cPairsDims::kZvtx]);
+  this->fNchDistribution->GetXaxis()->Set(nbins_pairs[cPairsDims::kMult], &this->fSettings.fMultBinEdges[0]);
+  this->fOutputList->Add(this->fNchDistribution);
+
   // Debug hists
   this->fmultDistribution = new TH1F("multDistribution", "multDistribution", 210, 0, 210);
   this->fOutputList->Add(this->fmultDistribution);
@@ -151,34 +159,39 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskC2::UserExec(Option_t *)
 {
+  // Run setup for base class
+  this->SetupEventForBase();
+
   // AODEvent() returns a null pointer for whatever reason...
   AliMCEvent*   mcEvent = this->MCEvent();
   AliAODEvent* aodEvent = dynamic_cast< AliAODEvent* >(this->InputEvent());
-  if (!this->IsValidEvent())
-    return;
-  AliMultSelection *multSelection =
-    dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection"));
-  if( !multSelection){
-    AliWarning("AliMultSelection object not found!");
+
+  if (!this->IsValidEvent()){
+    PostData(1, this->fOutputList);
     return;
   }
-  
+  // Event is invalid if no multselection is present; ie. tested in base class
+  AliMultSelection *multSelection =
+    dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection"));
   const Float_t multiplicity = multSelection->GetMultiplicityPercentile("V0M");
   this->fmultDistribution->Fill(multiplicity);
 
   const Double_t weight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
-    ? 1 //mcEvent->GenEventHeader()->EventWeight()
+    ? mcEvent->GenEventHeader()->EventWeight()
     : 1;
   const Double_t zvtx = (this->InputEvent()->GetPrimaryVertex())
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
     : -999;
-  
+
+  this->fNchDistribution->Fill(multiplicity, zvtx, multSelection->GetEstimator("V0M")->GetValue());
   // Yes, the following is realy "aodEvent" not mcEvent :P
   TClonesArray* tracksArray = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))
     : aodEvent->GetTracks();
+
   if (!tracksArray || tracksArray->GetSize()==0){
     AliWarning("Could not retrieve track array");
+    PostData(1, this->fOutputList);
     return;
   }
 
@@ -188,8 +201,9 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     // The naming around VTrack, VParticle, AODTrack mcParticle is a mess!
     // Take-away message: They all derive from AliVParticle one way or another.
     AliVParticle* particle = dynamic_cast< AliVParticle* >(obj);
-    if (!this->IsValidParticle(particle))
+    if (!this->IsValidParticle(particle)){
       continue;
+    }
     // eta, phi, pt, q are pure virtual in AliVParticle, so it should be safe to just call them on AliVParticle
     cNano_track tmp_track = {
       particle->Eta(), //fRndmGenerator->Rndm() * 1.6 - 0.8;
@@ -217,16 +231,13 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
   // If there are no tracks, do not count the event since this would be an undefined correlation
   if (tracks.size() == 0){
     // This might be slightly inconsistent and misses the PostData!
-    //this->fDiscardedEvents->Fill(cDiscardEventReasons::noTracksInPtRegion);
-    //return;
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::noTracksInPtRegion);
+    PostData(1, this->fOutputList);
+    return;
   }
   {
     Double_t stuffing[3] = {multiplicity, zvtx};
     this->fEventCounter->Fill(stuffing, weight);
-  }
-  // Fill the single particle density
-  for (std::vector<cNano_track>::size_type iTrack = 0; iTrack < tracks.size(); iTrack++) {
-
   }
   // n: number of valid tracks
   for (std::vector<cNano_track>::size_type iTrack = 0; iTrack < tracks.size(); iTrack++) {
