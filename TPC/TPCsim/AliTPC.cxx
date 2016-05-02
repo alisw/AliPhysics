@@ -1994,6 +1994,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
+  // cached access to signal(ip,it)), sandro.wenzel@cern.ch
   //-----------------------------------------------------------------
 
   TMatrixF &signal = *m;
@@ -2003,10 +2004,13 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
   for(Int_t it=indexRange[2];it<indexRange[3]+1;it++){
     for(Int_t ip=indexRange[0];ip<indexRange[1]+1;ip++){
 
+      // fast read from signal matrix and cache result for later queries
+      // TODO: the loop order seems to be wrong for cache-efficient access to this structure
+      Float_t sig = AliFastContainerAccess::TMatrixFastAt<Float_t>(signal,ip,it);
 
       // accept only the contribution larger than 500 electrons (1/2 s_noise)
 
-      if(signal(ip,it)<0.5) continue; 
+      if(sig<0.5) continue;
 
       Int_t globalIndex = it*np+ip; // globalIndex starts from 0!
         
@@ -2028,7 +2032,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 	*(pList[globalIndex]+5) = -1.;
 
 	*pList[globalIndex] = label;
-	*(pList[globalIndex]+3) = signal(ip,it);
+    *(pList[globalIndex]+3) = sig;
       }
       else {
 
@@ -2042,28 +2046,28 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 	//  compare the new signal with already existing list
 	//
 	
-	if(signal(ip,it)<lowest) continue; // neglect this track
+    if(sig<lowest) continue; // neglect this track
 
 	//
 
-	if (signal(ip,it)>highest){
+    if (sig>highest){
 	  *(pList[globalIndex]+5) = middle;
 	  *(pList[globalIndex]+4) = highest;
-	  *(pList[globalIndex]+3) = signal(ip,it);
+      *(pList[globalIndex]+3) = sig;
 	  
 	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
 	  *(pList[globalIndex]+1) = *pList[globalIndex];
 	  *pList[globalIndex] = label;
 	}
-	else if (signal(ip,it)>middle){
+    else if (sig>middle){
 	  *(pList[globalIndex]+5) = middle;
-	  *(pList[globalIndex]+4) = signal(ip,it);
+      *(pList[globalIndex]+4) = sig;
 	  
 	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
 	  *(pList[globalIndex]+1) = label;
 	}
 	else{
-	  *(pList[globalIndex]+5) = signal(ip,it);
+      *(pList[globalIndex]+5) = sig;
 	  *(pList[globalIndex]+2) = label;
 	}
       }
