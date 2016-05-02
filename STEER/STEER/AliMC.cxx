@@ -986,9 +986,9 @@ void AliMC::PreTrack()
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
-     for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-       if((module = dynamic_cast<AliModule*>(dets[i])))
-	 module->PreTrack();
+     for (Int_t i = 0; i <= gAlice->GetNdets(); i++)
+       if ((module = static_cast<AliModule *>(dets[i])))
+         module->PreTrack();
 }
 
 //_______________________________________________________________________
@@ -1050,7 +1050,7 @@ void AliMC::Stepping()
     }
 
     //Call the appropriate stepping routine;
-    AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
+    AliModule *det = static_cast<AliModule*>(gAlice->Modules()->At(id));
     if(det && det->StepManagerIsEnabled()) {
       det->StepManager();
     }
@@ -1275,7 +1275,7 @@ void AliMC::PostTrack()
   AliModule *module;
 
   for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-    if((module = dynamic_cast<AliModule*>(dets[i])))
+    if((module = static_cast<AliModule*>(dets[i])))
       module->PostTrack();
 }
 
