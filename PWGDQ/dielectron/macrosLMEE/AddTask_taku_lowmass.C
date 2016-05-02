@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_taku_lowmass(Bool_t getFromAlien=kFALSE,
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_taku_lowmass(i);
+    AliDielectron *diel_low = Config_taku_lowmass(i, hasMC);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
 

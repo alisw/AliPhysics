@@ -321,13 +321,13 @@ void AddTPC(AliQnCorrectionsManager* QnManager){
 
   AliQnCorrectionsCuts *trackTPC = new AliQnCorrectionsCuts();
   //trackTPC->AddFlag(QnCorrectionsVarManager::kFilterBit,QnCorrectionsVarManager::kFilterBit0,kTRUE);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaXY,-1.0,1.0);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaZ,-3.0,3.0);
+  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaXY,-0.3,0.3);
+  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaZ ,-0.3,0.3);
   trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.8,0.8);
   //trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.3,0.3, kTRUE);  // exclusion region
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,2.);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCnclsIter1,70.0,161.0);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCchi2Iter1,0.2,4.0);
+  trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,5.);
+  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCncls,70.0,161.0);
+  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCchi2,0.2,4.0);
   TPCconf->SetDataVectorCuts(trackTPC);
 
   TPCconf->SetQnCorrectionRecentering();
@@ -630,7 +630,7 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   AliQnCorrectionsAxes * FMDchannelbinning = new AliQnCorrectionsAxes(FMDdim+1); // +1 is for channel axis
   FMDchannelbinning->SetAxis(0, AliQnCorrectionsVarManager::kVtxZ, nVtxZwidths, VtxZbins, VtxZedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kVtxZ));
   FMDchannelbinning->SetAxis(1, AliQnCorrectionsVarManager::kCentVZERO, nCtwidths, Ctbins, Ctedges,AliQnCorrectionsVarManager::VarName(AliQnCorrectionsVarManager::kCentVZERO));
-  FMDchannelbinning->SetNchannels(5500);
+  FMDchannelbinning->SetNchannels(4000);
 
   ////////// end of binning
 
@@ -640,7 +640,7 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   FMDAconf->SetQnHarmonicsRange(1,4);
   FMDAconf->SetHarmonicForAlignment(2);
   //FMDAconf->SetDataVectorEqualizationMethod(1);
-  FMDAconf->SetDataVectorIdList(new TArrayS(5500, FMDchannels[0]));
+  FMDAconf->SetDataVectorIdList(new TArrayS(4000, FMDchannels[0]));
   FMDAconf->SetQnConfigurationName("FMDA");
   FMDAconf->SetReferenceQnForAlignment("TPC");
   FMDAconf->SetQnCorrectionsCommonAxes(FMDbinning);
@@ -656,7 +656,7 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   FMDCconf->SetQnHarmonicsRange(1,4);
   FMDCconf->SetHarmonicForAlignment(2);
   //FMDCconf->SetDataVectorEqualizationMethod(1);
-  FMDCconf->SetDataVectorIdList(new TArrayS(5500, FMDchannels[0]));
+  FMDCconf->SetDataVectorIdList(new TArrayS(4000, FMDchannels[1]));
   FMDCconf->SetQnConfigurationName("FMDC");
   FMDCconf->SetReferenceQnForAlignment("TPC");
   FMDCconf->SetQnCorrectionsCommonAxes(FMDbinning);
