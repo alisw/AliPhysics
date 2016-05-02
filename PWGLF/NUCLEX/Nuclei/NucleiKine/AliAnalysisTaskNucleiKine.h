@@ -15,8 +15,10 @@ using std::string;
 
 #include <vector>
 using std::vector;
+#include <utility>
+using std::pair;
+#include <TF1.h>
 
-class TF1;
 class TH1D;
 class TH2D;
 class TList;
@@ -33,11 +35,12 @@ class AliAnalysisTaskNucleiKine: public AliAnalysisTaskSE {
     template<typename F> static F GetPcm(const LorentzVector<PxPyPzE4D<F> > &a, const LorentzVector<PxPyPzE4D<F> > &b);
 
     /// Coalescence parameters
-    TF1*  fPotentialShape;
+    TF1   fPotentialShape;
     float fSpinProb;
 
     /// Spatial distribution
-    TF1*  fSpatialDistribution;
+    TF1   fSpatialDistribution;
+    bool  fEnableDisplace;
 
     // POIs
     vector<int> fPdgCodes;
@@ -54,12 +57,18 @@ class AliAnalysisTaskNucleiKine: public AliAnalysisTaskSE {
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
     AliAnalysisTaskNucleiKine& operator=(const AliAnalysisTaskNucleiKine& other);
 
+    void FirstPartner(int iS, vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > > &d);
+
     TList* fOutputList;    //! output list for histograms
 
     TH1D*  fEventCounter;  //!
     TH2D*  fPtSpectra;     //!
     TH2D*  fCosine;        //!
     TH1D*  fPsi2;          //!
+
+    vector<bool> fMask;
+    vector<pair<int,Particle> > fNeutrons[2];
+    vector<pair<int,Particle> > fProtons[2];
 
     ClassDef(AliAnalysisTaskNucleiKine, 2)
 };
