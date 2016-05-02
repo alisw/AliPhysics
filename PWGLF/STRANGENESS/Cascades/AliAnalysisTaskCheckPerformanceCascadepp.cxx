@@ -134,7 +134,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
     fSPDPileUpminContributors       (3),
-    fTPCPIDsigma                    (4),
 
     // - Plots initialisation
     // - List
@@ -178,10 +177,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistPVxAnalysis(0),                      // After any event selections
       fHistPVyAnalysis(0),                      // After any event selections
       fHistPVzAnalysis(0),                      // After any event selections
-      // TPC cluster distributions for daughters
-      fHistPosV0TPCClusters(0),
-      fHistNegV0TPCClusters(0),
-      fHistBachTPCClusters(0),
       // -- Plots needed for efficiency denominator calculation
       f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),    // Before any event selection 
       f3dHistGenPtVsGenctauvsYXiMinus_A(0),       // Before any event selection 
@@ -367,7 +362,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
     fSPDPileUpminContributors       (3),
-    fTPCPIDsigma                    (4),
 
     // - Plots initialisation
     fListHistCascade(0),
@@ -410,10 +404,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistPVxAnalysis(0),                      // After any event selections
       fHistPVyAnalysis(0),                      // After any event selections
       fHistPVzAnalysis(0),                      // After any event selections
-      // TPC cluster distributions for daughters
-      fHistPosV0TPCClusters(0),
-      fHistNegV0TPCClusters(0),
-      fHistBachTPCClusters(0),
       // -- Plots needed for efficiency denominator calculation
       f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),    // Before any event selection 
       f3dHistGenPtVsGenctauvsYXiMinus_A(0),       // Before any event selection 
@@ -758,19 +748,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
    if (! fHistPVzAnalysis ){
         fHistPVzAnalysis = new TH1F("fHistPVzAnalysis", "Best PV position in z (after events selections); z (cm); Events", 400, -20, 20);
         fListHistCascade->Add(fHistPVzAnalysis);
-   }
-   // - TPC clusetr sdistributions for daughters (histos for events containing at least ONE CASCADE)
-   if(! fHistPosV0TPCClusters ){
-        fHistPosV0TPCClusters = new TH1F("fHistPosV0TPCClusters", "TPC clusters for Pos. V0 daughter track, in Casc; Nbr of TPC clusters (V0 Pos.); Track counts", 165, 0.0, 165.0);
-        fListHistCascade->Add(fHistPosV0TPCClusters);
-   }
-   if(! fHistNegV0TPCClusters ){
-        fHistNegV0TPCClusters = new TH1F("fHistNegV0TPCClusters", "TPC clusters for Neg. V0 daughter track, in Casc; Nbr of TPC clusters (V0 Neg.); Track counts", 165, 0.0, 165.0);
-        fListHistCascade->Add(fHistNegV0TPCClusters);
-   }
-   if(! fHistBachTPCClusters ){
-        fHistBachTPCClusters = new TH1F("fHistBachTPCClusters", "TPC clusters for Bachelor track; Nbr of TPC clusters (Bach); Track counts", 165, 0.0, 165.0);
-        fListHistCascade->Add(fHistBachTPCClusters);
    }
 
  //--------------------------
@@ -2802,14 +2779,14 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 }
 	        // - 4-sigma bands on Bethe-Bloch curve
                 // Bachelor
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
                 // Negative V0 daughter
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
                 // Positive V0 daughter
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
 	        // - PID probability vs Pt(Bach)
                 lblBachForPID = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
                 mcBachForPID = 0x0; mcBachForPID  = lMCstack->Particle( lblBachForPID );
@@ -2988,14 +2965,14 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 */
                 // - TPC PID: 4-sigma bands on Bethe-Bloch curve
                 // Bachelor
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXiaod,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXiaod,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXiaod,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXiaod,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
                 // Negative V0 daughter
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXiaod,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXiaod,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXiaod,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXiaod,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
                 // Positive V0 daughter
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXiaod,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
-                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXiaod,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXiaod,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
+                if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXiaod,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
                 /*
                 const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXiaod    ->GetInnerParam(); // Do not use GetTPCInnerWall
                 const AliExternalTrackParam *nInnerWallTrackXi    = nTrackXiaod    ->GetInnerParam();
@@ -3193,9 +3170,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt, lV0CosineOfPointingAngle);
         }
         fHistV0toXiCosineOfPointingAngle->Fill(lV0CosineOfPointingAngleXi);
-        fHistPosV0TPCClusters->Fill( lPosTPCClusters );
-        fHistNegV0TPCClusters->Fill( lNegTPCClusters );
-        fHistBachTPCClusters->Fill( lBachTPCClusters );
         // - Fill containers
         // - Filling the AliCFContainer (optimisation of topological selections + systematics)
         Double_t lContainerCutVars[19] = {0.0};
