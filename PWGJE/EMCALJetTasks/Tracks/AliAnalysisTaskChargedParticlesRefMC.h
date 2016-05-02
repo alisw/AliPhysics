@@ -21,6 +21,8 @@ class AliMCEvent;
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEMCalTriggerWeightHandler;
+
 /**
  * \class AliAnalysisTaskChargedParticlesRefMC
  * \brief Unit test class for charged particle distributions (MC case)
@@ -56,12 +58,13 @@ public:
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
+  void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
 
 protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
   void                        CreateNewPtBinning(TArrayD &binning) const;
 
-  void                        FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
+  void                        FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
   void                        FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
 
   TString                     GetFiredTriggerClasses(const TClonesArray * triggerpatches);
@@ -71,11 +74,12 @@ protected:
   Bool_t                      IsOutlier(AliGenPythiaEventHeader * const header) const;
 
 
-  AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
-  AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
-  AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
-  THistManager                    *fHistos;                   ///< Histogram manager
-  AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
+  AliEmcalTrackSelection                *fTrackCuts;                ///< Standard track selection
+  AliAnalysisUtils                      *fAnalysisUtil;             ///< Event selection
+  AliEmcalTriggerOfflineSelection       *fTriggerSelection;         ///< Offline trigger selection
+  THistManager                          *fHistos;                   ///< Histogram manager
+  AliEMCALGeometry                      *fGeometry;                 ///< EMCAL geometry methods
+  const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 
   // Monte-Carlo specific information
   Double_t                        fPtHard;                    ///< event pt hard
