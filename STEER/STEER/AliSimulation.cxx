@@ -370,13 +370,6 @@ void AliSimulation::InitRunNumber(){
   if (fInitRunNumberCalled) return;
   fInitRunNumberCalled = kTRUE;
   
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (man->GetRun() >= 0)
-  {
-    	AliFatal(Form("Run number cannot be set in AliCDBManager before start of simulation: "
-			"Use external variable DC_RUN or AliSimulation::SetRun()!"));
-  }
-    
   if(fRun >= 0) {
     	AliDebug(2, Form("Setting CDB run number to: %d",fRun));
   } else {
@@ -384,7 +377,11 @@ void AliSimulation::InitRunNumber(){
     	AliWarning(Form("Run number not yet set !!!! Setting it now to: %d",
 			fRun));
   }
-  man->SetRun(fRun);
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (man->GetRun() != fRun) {    
+    man->SetRun(fRun);
+  }
 
   man->Print();
 
