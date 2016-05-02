@@ -31,7 +31,7 @@
 #include <TNamed.h>
 #include <time.h>
 #include "AliCheb2DStack.h"
-
+class TGraph;
 class TH1;
 
 class AliTPCChebCorr : public TNamed
@@ -90,6 +90,7 @@ class AliTPCChebCorr : public TNamed
   //
   TH1*     GetTracksRate()                       const {return fTracksRate;}
   void     SetTracksRate(TH1* hrate)             {fTracksRate = hrate;}
+  Double_t GetLuminosityCOG(TGraph* lumi, time_t tmin=-1, time_t tmax=-1) const;
   //
   virtual  Bool_t   IsCorrection()               const {return kTRUE;}
   virtual  Bool_t   IsDistortion()               const {return kFALSE;}

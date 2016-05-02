@@ -19,6 +19,8 @@
 #include "AliLog.h"
 #include <TMath.h>
 #include <TH1.h>
+#include <TAxis.h>
+#include <TGraph.h>
 
 ClassImp(AliTPCChebCorr)
 
@@ -273,3 +275,29 @@ Int_t AliTPCChebCorr::GetDimOut() const
   const AliCheb2DStack* par = GetParam(0);
   return par ? par->GetDimOut() : 0;
 }
+
+//____________________________________________________________________
+Double_t AliTPCChebCorr::GetLuminosityCOG(TGraph* lumi, time_t tmin, time_t tmax) const
+{
+  // calculate used-track-weighted luminosity COG
+  if (!fTracksRate) {
+    AliError("Tracks per time stamp histo is not stored");
+    return 0.0;
+  }
+  TAxis* tax = fTracksRate->GetXaxis();
+  time_t tmnH = tax->GetXmin();
+  time_t tmxH = tax->GetXmax();
+  tmax = (tmax>tmin && tmax>tmnH && tmax<tmxH) ? tmax : tmxH;
+  tmin = (tmin>tmnH && tmin<tmax) ? tmin : tmnH;
+  int bmn = tax->FindBin(tmin);
+  int bmx = tax->FindBin(tmax);
+  double lumiCOG = 0.0, norm = 0.0;
+  for (int ib=bmn;ib<bmx;ib++) {
+    double wgh = fTracksRate->GetBinContent(ib);
+    lumiCOG += wgh*lumi->Eval(tax->GetBinCenter(ib));
+    norm    += wgh;
+  }
+  if (norm>0) lumiCOG /= norm;
+  return lumiCOG;
+}
+
