@@ -67,10 +67,10 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
     if(V0ReaderEventCutNumber!=""){
       fEventCuts= new AliConvEventCuts(V0ReaderEventCutNumber.Data(),V0ReaderEventCutNumber.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
+      fEventCuts->SetV0ReaderName(V0ReaderName);
       if(fEventCuts->InitializeCutsFromCutString(V0ReaderEventCutNumber.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
-        fEventCuts->SetV0ReaderName(V0ReaderName);
         if (IsHeavyIon==2){
           fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
           fEventCuts->DoEtaShift(doEtaShiftV0Reader);
