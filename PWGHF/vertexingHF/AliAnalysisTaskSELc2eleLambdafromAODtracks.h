@@ -54,7 +54,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, TVector *tinfo, TVector *v0info2, Int_t charge);
-  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
+  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, Int_t convtype, Int_t mcetype, AliAODEvent *event, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
@@ -351,6 +351,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoLcMCGen2;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGenWithEleA;         //!<! Lc in mcArray
   TH2D* fHistoLcMCGenWithEleB;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCGenWithEleA;         //!<! Lc in mcArray
+  TH2D* fHistoLbMCGenWithEleB;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS2;         //!<! Lc in mcArray
@@ -378,6 +380,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoLcElectronMCS;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCS1;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCS2;         //!<! Lc in mcArray
+  THnSparse* fHistoLbElectronMCGen;         //!<! Lb in mcArray
+  THnSparse* fHistoLbElectronMCGen1;         //!<! Lb in mcArray
+  THnSparse* fHistoLbElectronMCGen2;         //!<! Lb in mcArray
+  THnSparse* fHistoLbElectronMCS;         //!<! Lb in mcArray
+  THnSparse* fHistoLbElectronMCS1;         //!<! Lb in mcArray
+  THnSparse* fHistoLbElectronMCS2;         //!<! Lb in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
@@ -390,6 +398,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElectronFeedDownXicPlusMCS;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCGen;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCGen1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCGen2;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCS;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCS1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXibMCS2;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoBottomElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoCharmElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
@@ -606,7 +620,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,26); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,27); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
