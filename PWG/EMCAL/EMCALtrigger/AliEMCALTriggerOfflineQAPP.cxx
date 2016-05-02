@@ -468,7 +468,7 @@ void AliEMCALTriggerOfflineQAPP::ProcessPatch(const AliEMCALTriggerPatchInfo* pa
 
   for (Int_t itrig = 0; itrig < fgkNTriggerTypes; itrig++) {
     if (IsPatchTypeEnabled(kRecalcPatch, itrig) && IsPatchTypeEnabled(kOfflinePatch, itrig)) {
-      hname = Form("EMCTRQA_hist%s%sOfflineVsRecalc", det.Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data());
+      hname = TString::Format("EMCTRQA_hist%s%sOfflineVsRecalc", det.Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data());
       fHistManager.FillTH2(hname, GetAmplitude(patch, kRecalcPatch) , GetAmplitude(patch, kOfflinePatch));
     }
 
@@ -527,14 +527,14 @@ void AliEMCALTriggerOfflineQAPP::ProcessCell(const AliEMCALCellInfo& cell)
 
   if (cell.fEnergy < fMinCellAmp) return;
 
-  hname = Form("EMCTRQA_histCell");
+  hname = "EMCTRQA_histCell";
   fHistManager.FillTH1(hname, cell.fAbsId);
 
-  hname = Form("EMCTRQA_histCellAmp");
+  hname = "EMCTRQA_histCellAmp";
   fHistManager.FillTH2(hname, cell.fAbsId, cell.fEnergy);
 
   if (cell.fEnergy > fFastorL1Th * EMCALTrigger::kEMCL1ADCtoGeV) {
-    hname = Form("EMCTRQA_histLargeAmpCell");
+    hname = "EMCTRQA_histLargeAmpCell";
     fHistManager.FillTH1(hname, cell.fAbsId);
   }
 }
@@ -592,40 +592,40 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
       fHistManager.FillTH1(hname, fastor->GetAbsId());
     }
 
-    hname = Form("EMCTRQA_histFastORL0");
+    hname = "EMCTRQA_histFastORL0";
     fHistManager.FillTH1(hname, fastor->GetAbsId());
 
-    hname = Form("EMCTRQA_histFastORL0Amp");
+    hname = "EMCTRQA_histFastORL0Amp";
     fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Amp());
 
-    hname = Form("EMCTRQA_histFastORL0Time");
+    hname = "EMCTRQA_histFastORL0Time";
     fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Time());
 
-    hname = Form("EMCTRQA_histFastORL0AmpVsTime");
+    hname = "EMCTRQA_histFastORL0AmpVsTime";
     fHistManager.FillTH2(hname, fastor->GetL0Time(), fastor->GetL0Amp());
 
     if (fastor->GetL0Time() > fL0MinTime && fastor->GetL0Time() < fL0MaxTime) {
-      hname = Form("EMCTRQA_histFastORL0TimeOk");
+      hname = "EMCTRQA_histFastORL0TimeOk";
       fHistManager.FillTH1(hname, fastor->GetAbsId());
 
-      hname = Form("EMCTRQA_histFastORL0AmpTimeOk");
+      hname = "EMCTRQA_histFastORL0AmpTimeOk";
       fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL0Amp());
 
-      hname = Form("EMCTRQA_histCellAmpVsFastORL0AmpTriggered");
+      hname = "EMCTRQA_histCellAmpVsFastORL0AmpTriggered";
       fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
-      hname = Form("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d",nTRU);
+      hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d",nTRU);
       fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
     }
 
-    hname = Form("EMCTRQA_histCellAmpVsFastORL0Amp");
+    hname = "EMCTRQA_histCellAmpVsFastORL0Amp";
     fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
-    hname = Form("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTRU%d",nTRU);
+    hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTRU%d",nTRU);
     fHistManager.FillTH2(hname, fastor->GetL0Amp(), offlineAmp);
 
     if (offlineAmp == 0) {
-      hname = Form("EMCTRQA_histFastORNoOffline");
+      hname = "EMCTRQA_histFastORNoOffline";
       fHistManager.FillTH1(hname, fastor->GetAbsId());
     }
 
@@ -645,15 +645,15 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
       fHistManager.FillTH1(hname, fastor->GetAbsId());
     }
 
-    hname = Form("EMCTRQA_histLargeAmpFastORL0");
+    hname = "EMCTRQA_histLargeAmpFastORL0";
     fHistManager.FillTH1(hname, fastor->GetAbsId());
   }
 
   if (fastor->GetL1Amp() > fMinL1FastORAmp) {
-    hname = Form("EMCTRQA_histFastORL1");
+    hname = "EMCTRQA_histFastORL1";
     fHistManager.FillTH1(hname, fastor->GetAbsId());
 
-    hname = Form("EMCTRQA_histFastORL1Amp");
+    hname = "EMCTRQA_histFastORL1Amp";
     fHistManager.FillTH2(hname, fastor->GetAbsId(), fastor->GetL1Amp());
 
     if (isDCal) {
@@ -665,17 +665,17 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
       fNL1EMCal++;
     }
 
-    hname = Form("EMCTRQA_histCellAmpVsFastORL1Amp");
+    hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
     fHistManager.FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
   }
 
   if (fastor->GetL1Amp() > fFastorL1Th) {
-    hname = Form("EMCTRQA_histLargeAmpFastORL1");
+    hname = "EMCTRQA_histLargeAmpFastORL1";
     fHistManager.FillTH1(hname, fastor->GetAbsId());
   }
 
   if (fastor->GetL1Amp() > fMinL1FastORAmp || fastor->GetL0Amp() > fMinL0FastORAmp) {
-    hname = Form("EMCTRQA_histFastORL1AmpVsL0Amp");
+    hname = "EMCTRQA_histFastORL1AmpVsL0Amp";
     fHistManager.FillTH2(hname, fastor->GetL0Amp(), fastor->GetL1Amp());
   }
 }
@@ -694,11 +694,11 @@ void AliEMCALTriggerOfflineQAPP::EventCompleted()
     AliDebug(2, Form("Trigger type: %s", EMCALTrigger::kEMCalTriggerNames[itrig].Data()));
 
     if (IsPatchTypeEnabled(itrig, kOfflinePatch) && IsPatchTypeEnabled(itrig, kRecalcPatch)) {
-      hname = Form("EMCTRQA_histEMCal%sMaxOfflineVsRecalc", EMCALTrigger::kEMCalTriggerNames[itrig].Data());
+      hname = TString::Format("EMCTRQA_histEMCal%sMaxOfflineVsRecalc", EMCALTrigger::kEMCalTriggerNames[itrig].Data());
       fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig][1], 1), GetAmplitude(fMaxPatchEMCal[itrig][2], 2));
 
       if (fDCalPlots) {
-        hname = Form("EMCTRQA_histDCal%sMaxOfflineVsRecalc", EMCALTrigger::kEMCalTriggerNames[itrig].Data());
+        hname = TString::Format("EMCTRQA_histDCal%sMaxOfflineVsRecalc", EMCALTrigger::kEMCalTriggerNames[itrig].Data());
         fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig][1], 1), GetAmplitude(fMaxPatchDCal[itrig][2], 2));
       }
     }
@@ -709,23 +709,23 @@ void AliEMCALTriggerOfflineQAPP::EventCompleted()
       AliDebug(2, Form("Patch type %s", fgkPatchTypes[itype].Data()));
 
       if (fMaxPatchEMCal[itrig][itype]) {
-        hname = Form("EMCTRQA_histMaxEdgePos%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        hname = TString::Format("EMCTRQA_histMaxEdgePos%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.FillTH2(hname, fMaxPatchEMCal[itrig][itype]->GetColStart(), fMaxPatchEMCal[itrig][itype]->GetRowStart());
       }
 
-      hname = Form("EMCTRQA_histEMCalMaxPatchAmp%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+      hname = TString::Format("EMCTRQA_histEMCalMaxPatchAmp%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
       fHistManager.FillTH1(hname, GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
 
       if (fDCalPlots) {
         if (fMaxPatchDCal[itrig][itype]) {
-          hname = Form("EMCTRQA_histMaxEdgePos%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+          hname = TString::Format("EMCTRQA_histMaxEdgePos%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
           fHistManager.FillTH2(hname, fMaxPatchDCal[itrig][itype]->GetColStart(), fMaxPatchDCal[itrig][itype]->GetRowStart());
         }
 
-        hname = Form("EMCTRQA_histDCalMaxPatchAmp%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        hname = TString::Format("EMCTRQA_histDCalMaxPatchAmp%s%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.FillTH1(hname, GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
 
-        hname = Form("EMCTRQA_histEMCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
+        hname = TString::Format("EMCTRQA_histEMCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig].Data(), fgkPatchTypes[itype].Data());
         fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig][itype], itype), GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
       }
     }
@@ -738,17 +738,17 @@ void AliEMCALTriggerOfflineQAPP::EventCompleted()
       for (Int_t itrig2 = itrig+1; itrig2 < fgkNTriggerTypes; itrig2++) {
         if (!IsPatchTypeEnabled(itype, itrig2))  continue;
 
-        hname = Form("EMCTRQA_histEMCal%sMaxVsEMCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+        hname = TString::Format("EMCTRQA_histEMCal%sMaxVsEMCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
         fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig2][itype], itype), GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
 
         if (fDCalPlots) {
-          hname = Form("EMCTRQA_histDCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+          hname = TString::Format("EMCTRQA_histDCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
           fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig2][itype], itype), GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
 
-          hname = Form("EMCTRQA_histEMCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+          hname = TString::Format("EMCTRQA_histEMCal%sMaxVsDCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
           fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchDCal[itrig2][itype], itype), GetAmplitude(fMaxPatchEMCal[itrig][itype], itype));
 
-          hname = Form("EMCTRQA_histDCal%sMaxVsEMCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
+          hname = TString::Format("EMCTRQA_histDCal%sMaxVsEMCal%sMax%s", EMCALTrigger::kEMCalTriggerNames[itrig].Data(), EMCALTrigger::kEMCalTriggerNames[itrig2].Data(), fgkPatchTypes[itype].Data());
           fHistManager.FillTH2(hname, GetAmplitude(fMaxPatchEMCal[itrig2][itype], itype), GetAmplitude(fMaxPatchDCal[itrig][itype], itype));
 
         }
