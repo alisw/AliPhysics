@@ -18,6 +18,7 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     // Getters
     Int_t    ProcessType() const {return fProcessType;}
     void     SetNMPI(Int_t mpi) {fNMPI = mpi;}
+    void     SetNSuperpositions(Int_t sp) { fNSuperpositions = sp; }
     // Setters
     void     SetProcessType(Int_t type)  {fProcessType = type;}
     Int_t    Trials() const {return fTrials;}
@@ -42,6 +43,7 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     void     SetXsection(Float_t xsec) {fXsection = xsec;}
     Float_t  GetXsection() const {return fXsection;}
     Int_t    GetNMPI() const {return fNMPI;}
+    Int_t    GetNSuperpositions() const { return fNSuperpositions; }
 	    
 protected:
     Int_t    fProcessType;               // PYTHIA process id for this event 
@@ -49,6 +51,7 @@ protected:
     Int_t    fNJets;                     // Number of triggered jets
     Int_t    fNUQJets;                   // Number of unquenched jets
     Int_t    fNMPI;                      // numbers of MPI
+    Int_t    fNSuperpositions;           // numbers of superimposed events
     Double_t fXJet;                      // Jet production point (x)
     Double_t fYJet;                      // Jet production point (y)
     Double_t fInMediumLength;            // In medium length
@@ -59,7 +62,7 @@ protected:
     Float_t  fPtHard;                    // pT hard
     Float_t  fXsection;                  // Cross-section
 
-    ClassDef(AliGenPythiaEventHeader,8)  // Event header for Pythia event
+    ClassDef(AliGenPythiaEventHeader,9)  // Event header for Pythia event
 };
 	
 	
