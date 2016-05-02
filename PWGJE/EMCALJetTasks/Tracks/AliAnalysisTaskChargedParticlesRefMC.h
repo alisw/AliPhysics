@@ -57,6 +57,7 @@ public:
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
   void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
   void                        SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
+  void                        SetUsePythiaHard(Bool_t usePythiaHard) { fUsePythiaHard = usePythiaHard; }
   void                        InitializeTrackCuts(TString cutname, bool isAOD);
   void                        SetWeightHandler(const AliEMCalTriggerWeightHandler * wh) { fWeightHandler = wh; }
 
@@ -82,6 +83,7 @@ protected:
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 
   // Monte-Carlo specific information
+  Bool_t                          fUsePythiaHard;             ///< flag whether using PYTHIA Hard
   Double_t                        fPtHard;                    ///< event pt hard
   Int_t                           fPtHardBin;                 ///< event pt hard bin
   Int_t                           fNTrials;                   ///< event trials
