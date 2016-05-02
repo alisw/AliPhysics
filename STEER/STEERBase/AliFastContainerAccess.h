@@ -25,6 +25,24 @@ T TMatrixFastAt(TMatrixT<T> const &m, int rown, int coln){
  return entries[arown*m.GetNcols() + acoln];
 }
 
+// fast access to a reference to elements of ROOT's TMatrix class
+template <typename T>
+inline
+T &TMatrixFastAtRef(TMatrixT<T> &m, int rown, int coln){
+ const Int_t arown = rown - m.GetRowLwb();
+ const Int_t acoln = coln - m.GetColLwb();
+#ifndef NDEBUG
+// put boundary checks here
+#endif
+ T *entries = m.TMatrixT<T>::GetMatrixArray();
+
+ // verify correctness w.r.t to original implementation
+ assert(entries[arown*m.GetNcols() + acoln] == m(rown,coln));
+
+ return entries[arown*m.GetNcols() + acoln];
+}
+
+
 
 }
 

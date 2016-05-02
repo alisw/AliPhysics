@@ -1951,25 +1951,34 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
     Int_t *index = fTPCParam->GetResBin(0);  
     Float_t *weight = & (fTPCParam->GetResWeight(0));
 
-    if (n>0) for (Int_t i =0; i<n; i++){       
-      Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
+    if (n > 0)
+      for (Int_t i = 0; i < n; i++) {
+        Int_t pad = index[1] + centralPad; // in digit coordinates central pad
+                                           // has coordinate 0
 
-      if (pad>=0){
-	Int_t time=index[2];	 
-	Float_t qweight = *(weight)*eltoadcfac;
-	
-	if (m1!=0) signal(pad,time)+=qweight;
-	total(pad,time)+=qweight;
-	if (indexRange[0]>pad) indexRange[0]=pad;
-	if (indexRange[1]<pad) indexRange[1]=pad;
-	if (indexRange[2]>time) indexRange[2]=time;
-	if (indexRange[3]<time) indexRange[3]=time;
-	
-	index+=3;
-	weight++;	
+        if (pad >= 0) {
+          Int_t time = index[2];
+          Float_t qweight = *(weight) * eltoadcfac;
 
-      }	 
-    }
+          if (m1 != 0){
+            //signal(pad, time) += qweight;
+            AliFastContainerAccess::TMatrixFastAtRef<Float_t>(signal, pad, time) += qweight;
+          }
+          //total(pad, time) += qweight;
+          AliFastContainerAccess::TMatrixFastAtRef<Float_t>(total, pad, time) += qweight;
+          if (indexRange[0] > pad)
+            indexRange[0] = pad;
+          if (indexRange[1] < pad)
+            indexRange[1] = pad;
+          if (indexRange[2] > time)
+            indexRange[2] = time;
+          if (indexRange[3] < time)
+            indexRange[3] = time;
+
+          index += 3;
+          weight++;
+        }
+      }
   } // end of loop over electrons
   
   return label; // returns track label when finished
