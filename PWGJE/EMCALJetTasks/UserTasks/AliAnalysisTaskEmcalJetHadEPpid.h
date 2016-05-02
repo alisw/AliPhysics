@@ -163,11 +163,13 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   TString                 GetLocalRhoName() const		{return fLocalRhoName; }
 
   // set names of some objects
+  // appended "MYTASK" to end until EMCal / Jet framework changes/deletes function from base class..
   virtual void            SetLocalRhoName(const char *ln)       { fLocalRhoName = ln; }
-  virtual void            SetTracksName(const char *tn)         { fTracksName = tn; }
+  virtual void            SetTracksNameMYTASK(const char *tn)         { fTracksName = tn; }
   virtual void	          SetTracksNameME(const char *MEtn)     { fTracksNameME = MEtn; }
+  //virtual void            SetJetsNameMYTASK(const char *jn)           { fJetsName2 = jn; }
   virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
-  virtual void            SetCaloClustersName(const char *cn)   { fCaloClustersName=cn; }
+  virtual void            SetCaloClustersNameMYTASK(const char *cn)   { fCaloClustersName=cn; }
 
   // bias and cuts - setters
   virtual void            SetAreaCut(Double_t a)                { fAreacut    = a; }
@@ -199,6 +201,9 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
 
   // use local rho to correct jet pt in correlation sparses
   void                    SetCorrectJetPt(Bool_t cpt)           { fcorrJetPt = cpt; }
+
+  // framework setters NEW/OLD
+  void                    SetUseOLDTrackFramework(Bool_t otf)   { douseOLDtrackFramework = otf; }
 
   // jet container - setters
   void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
@@ -305,6 +310,9 @@ protected:
   Bool_t         doFlavourJetAnalysis;
   Int_t	         fJetFlavTag;
 
+  // do setup for OLD/NEW track framework
+  Bool_t         douseOLDtrackFramework;
+
   // beam type
   BeamType       fBeam;
 
@@ -378,6 +386,19 @@ protected:
   TH1F              *fHistJetHaddPhiOUTcent[6];//!
   TH1F              *fHistJetHaddPhiMIDcent[6];//!
 
+  TH1               *fHistNTrackPtNEW;//!
+  TH1               *fHistNTrackPhiNEW;//!
+  TH1               *fHistNTrackEtaNEW;//!
+  TH2               *fHistNTrackPhiEtaNEW;//!
+  TH1               *fHistNTrackPt;//!
+  TH1               *fHistNTrackPhi;//!
+  TH1               *fHistNTrackEta;//!
+  TH2               *fHistNTrackPhiEta;//!
+  TH1               *fHistNJetPt;//!
+  TH1               *fHistNJetPhi;//!
+  TH1               *fHistNJetEta;//!
+  TH2               *fHistNJetPhiEta;//!
+
   TH1               *fHistMult;//!
   TH1               *fHistJetPhi;//!
   TH1               *fHistTrackPhi;//!
@@ -442,11 +463,12 @@ protected:
   Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
 
   // save containers in clones array (object)
-  TClonesArray          *fTracksFromContainer;       //!jets
+  TClonesArray          *fTracksFromContainer;       //!tracks from AliTrackContainer
 
   // container objects
   AliJetContainer       *fJetsCont;                //!Jets
-  AliParticleContainer  *fTracksCont;              //!Tracks
+//  AliParticleContainer  *fTracksCont;              //!Tracks - not quality cuts applied to this container
+  AliTrackContainer     *fTracksCont;              //!Tracks - Need this for applying track quality cuts 
   AliClusterContainer   *fCaloClustersCont;        //!Clusters
 
   // container specifier

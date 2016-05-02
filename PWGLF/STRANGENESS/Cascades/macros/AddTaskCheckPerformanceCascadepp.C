@@ -26,7 +26,8 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
                                                                             Bool_t   kwithsdd                            = kFALSE,
                                                                             Float_t  minptondaughtertracks               = 0.0,
                                                                             Float_t  etacutondaughtertracks              = 0.8,
-                                                                            Bool_t   kacccut                             = kFALSE) {
+                                                                            Bool_t   kacccut                             = kFALSE,
+                                                                            Double_t ftpcpidsigma                        = 4) {
     
    //______________________________________________________________________________
    // Creates, configures and attaches to the train a cascades check task
@@ -67,7 +68,8 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
      taskCheckPerfCascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
      taskCheckPerfCascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
      taskCheckPerfCascadepp->SetApplyAccCut                (kacccut);                // choose if apply acceptance cut
-    
+     taskCheckPerfCascadepp->SetNumTPCPIDsigma             (ftpcpidsigma); 
+
    mgr->AddTask(taskCheckPerfCascadepp);
 
 

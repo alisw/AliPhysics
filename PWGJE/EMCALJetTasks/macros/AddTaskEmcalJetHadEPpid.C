@@ -31,7 +31,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
-   Bool_t newFramework        = 0,
+   Bool_t newFramework        = kTRUE,
+   Bool_t turnQualityCutsOFF      = 0,
    const char *tag            = ""
 )
 {  
@@ -39,8 +40,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr)
-  {
+  if (!mgr) {
     ::Error("AddTaskEmcalJetHadEPpid", "No analysis manager to connect to.");
     return NULL;
   }  
@@ -68,6 +68,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   else if(colltype == "p-A") beam = 2;
   else beam = -1;
 
+  // if new Framework, overwrite possible existing track names
   if(newFramework) {
     nTracks = "tracks";
     nTracksME = "tracks";
@@ -79,10 +80,11 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
 
   TString name(Form("Correlations_%s%s", nJets, tag));
   AliAnalysisTaskEmcalJetHadEPpid *correlationtask = new AliAnalysisTaskEmcalJetHadEPpid(name);
+  //correlationtask->SetJetsNameMYTASK(nJets);
   correlationtask->SetJetsName(nJets);
-  correlationtask->SetTracksName(nTracks);
-  correlationtask->SetTracksNameME(nTracksME);
-  correlationtask->SetCaloClustersName(nClusters);
+  correlationtask->SetTracksNameMYTASK(nTracks);
+  correlationtask->SetTracksNameME(nTracksME);   // still need to change - using same collections since updated framework
+  correlationtask->SetCaloClustersNameMYTASK(nClusters);
   correlationtask->SetRhoName(nRho);
   if(colltype == "A-A") correlationtask->SetLocalRhoName(lrho);
   correlationtask->SetJetPhi(minPhi,maxPhi);
@@ -108,18 +110,30 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetMixedEventType(mixevent);
   correlationtask->SetCentBinSize(centbinsize);
   correlationtask->SetDoEffCorr(doEffcorrSW);
-  //correlationtask->SetdoEventPlaneRes(doEventPlaneRes);
+  //correlationtask->SetdoEventPlaneRes(doEventPlaneRes); // removed to free up AddTask params
 
   // =================== set up containers ================================================
   // Cluster Container
   AliClusterContainer *clusCont = correlationtask->AddClusterContainer(nClusters);
 
-  // Particle Container
-  //AliParticleContainer *partCont = correlationtask->AddParticleContainer(nTracks);
-  AliTrackContainer *trackCont =  correlationtask->AddTrackContainer(nTracks);
-  if(trackCont && newFramework) trackCont->SetFilterHybridTracks(kTRUE);
-  
-  // Jet Containers
+  // Track Container
+  AliTrackContainer *trackCont = correlationtask->AddTrackContainer(nTracks);
+  trackCont->SetName("MyTrackContainer_JetHad");
+
+  // turns quality cuts off
+  if(turnQualityCutsOFF) { 
+    trackCont->SetFilterHybridTracks(kFALSE);
+    trackCont->SetTrackFilterType(AliEmcalTrackSelection::kNoTrackFilter);       // turn OFF filter
+    //trackCont->SetTrackFilterType(AliEmcalTrackSelection::kTPCOnlyTracks);     // use TPC only tracks
+    //trackCont->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter); // used for custom filter
+  }
+
+  // custom filter bit for tracks done here - Need to customize still
+  UInt_t myFilterBits = 1<<8 | 1<<9;
+  //correlationtask->GetTrackContainer(0)->SetAODfilterBits(myFilterBits);  // doesn't currently work
+
+/*
+  // Jet Containers - not using..
   AliJetContainer *jetCont0 = correlationtask->AddJetContainer(nJets, cutType, JetRadius);
   AliJetContainer *jetCont1 = correlationtask->AddJetContainer(nJets, cutType, JetRadius);
   correlationtask->SetContainerAllJets(0);
@@ -128,9 +142,10 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // jet container cuts..
   correlationtask->SetJetPtCut(JetPtcut, 1);
   correlationtask->SetPercAreaCut(0.6, 1); 
+*/
 
   // ===================================================================
-  // for manually doing Track Cuts
+  // for manually doing Track Cuts: before Jet Framework changes for ESD
   // ESD track quality cuts
   AliESDtrackCuts *esdTrackCuts = 0x0;
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");

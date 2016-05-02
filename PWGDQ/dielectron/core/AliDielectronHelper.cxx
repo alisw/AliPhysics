@@ -272,6 +272,8 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Int_t nAcc = 0;
 
+  // @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCuts' fillmap.
+  // Since 'trkCuts' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;
@@ -308,6 +310,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev){
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Double_t nTPC = 0, nITS = 0;
 
+  // @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
+  // Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
   for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
     AliVTrack *track        = static_cast<AliVTrack*>(ev->GetTrack(iTrack));
     if (!track) continue;

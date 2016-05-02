@@ -631,9 +631,10 @@ inline void AliDielectronVarManager::Fill(const TObject* object, Double_t * cons
 
 inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *particle, Double_t * const values)
 {
-  //
-  // Fill track information available in AliVParticle into an array
-  //
+  ///
+  /// Fill track information available in AliVParticle into an array
+  /// Also fill event information from local buffer into the array
+  ///
   values[AliDielectronVarManager::kPx]        = particle->Px();
   values[AliDielectronVarManager::kPy]        = particle->Py();
   values[AliDielectronVarManager::kPz]        = particle->Pz();
@@ -1522,7 +1523,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   
   Double_t errPseudoProperTime2 = -1;
   // Fill common AliVParticle interface information
-  FillVarVParticle(pair, values);
+  FillVarVParticle(pair, values); // this also filles the event information into 'values'.
 
   // Fill AliDielectronPair specific information
   const AliKFParticle &kfPair = pair->GetKFParticle();
@@ -1742,7 +1743,6 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
 	values[AliDielectronVarManager::kE]         = (lv1+lv2).E();
 
-
 	values[AliDielectronVarManager::kM]         = (lv1+lv2).M();
 
 	values[AliDielectronVarManager::kOpeningAngle] =  lv1.Angle(lv2.Vect());
@@ -1752,9 +1752,6 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kEta]       = (lv1+lv2).Eta();
 
 	values[AliDielectronVarManager::kY]       = (lv1+lv2).Rapidity();
-
-	for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
-	  values[i]=fgData[i];
 
 	// Fill AliDielectronPair specific information
 	values[AliDielectronVarManager::kDeltaEta]     = TMath::Abs(feta1 -feta2 );

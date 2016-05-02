@@ -145,6 +145,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp()
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
     fSPDPileUpminContributors       (3),
+    fTPCPIDsigma                    (4),
 
     // - Plots initialisation
     fListHistCascade(0),
@@ -252,6 +253,7 @@ AliAnalysisTaskCheckCascadepp::AliAnalysisTaskCheckCascadepp(const char *name)
     fMinPtCutOnDaughterTracks       (0),
     fEtaCutOnDaughterTracks         (0),
     fSPDPileUpminContributors       (3),
+    fTPCPIDsigma                    (4),
 
     // - Plots initialisation
     fListHistCascade(0),
@@ -1751,14 +1753,14 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
 
 	   // - TPC PID : 3-sigma bands on Bethe-Bloch curve
            //Bachelor
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
            //Negative V0 daughter
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
            //Positive V0 daughter
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
-           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
+           if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
            /*
            const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXi    ->GetInnerParam();
            const AliExternalTrackParam *nInnerWallTrackXi    = nTrackXi    ->GetInnerParam();
@@ -1914,14 +1916,14 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
 
            // - TPC PID : 3-sigma bands on Bethe-Bloch curve
            //Bachelor
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < fTPCPIDsigma) lIsBachelorKaonForTPC = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < fTPCPIDsigma) lIsBachelorPionForTPC = kTRUE;
            //Negative V0 daughter
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsNegPionForTPC   = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsNegProtonForTPC = kTRUE;
            //Positive V0 daughter
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
-           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < fTPCPIDsigma) lIsPosPionForTPC   = kTRUE;
+           if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < fTPCPIDsigma) lIsPosProtonForTPC = kTRUE;
 
            //---------------------------------
            // - Extra info for QA (AOD)

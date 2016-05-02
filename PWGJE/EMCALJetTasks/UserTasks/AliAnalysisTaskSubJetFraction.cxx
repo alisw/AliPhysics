@@ -199,7 +199,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJettiness2_FJ_OP_CA(0x0),
   fhSubJettiness2_FJ_OP_WTA_KT(0x0),
   fhSubJettiness2_FJ_OP_WTA_CA(0x0),
-  fhSubJettiness2_FJ_MIN(0x0), 
+  fhSubJettiness2_FJ_MIN(0x0),
   fTreeResponseMatrixAxis(0)
 
 {

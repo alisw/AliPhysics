@@ -1,21 +1,27 @@
-// $Id: AddTaskEMCALPi0V2.C 56081 2012-05-01 08:57:08Z loizides $
-
-AliAnalysisTask *AddTaskEMCALPi0V2 (
-  TString trackName  = "PicoTracks",
-  Double_t Ecut      = 1,   
-  Double_t M02cut    = 0.5, 
-  Double_t fDrCut    = 0.025, 
-  Bool_t IsV1cus     = 0,
-  TString V1ClusName = "CaloClusters", 
-  TString V2ClusName = "caloClusters", 
-  TString trigClass  = "",
-  Bool_t IsPhosCali  = kFALSE,
-  Bool_t IsCentFlat  = kTRUE,
-  Bool_t IsFullHist  = kFALSE,
-  Int_t EvtType      = 5 
+AliAnalysisTask* AddTaskEMCALPi0V2 (
+  Bool_t   useV2Clust       = kTRUE,
+  Bool_t   useV1Clust       = kTRUE,
+  Bool_t   useTrk           = kTRUE,
+  TString  v2ClustName      = "caloClusters",
+  TString  v1ClustName      = "V1_Ecell150_Eseed300_DT0_WT0",
+  TString  trackName        = "tracks",
+  TString  trigClass        = "",
+  Double_t vzCut            = 10.,
+  Double_t nCell            = 2.,
+  Double_t clustE           = 1.,
+  Double_t clustEta         = 0.65,
+  Double_t v2M02cut         = 0.5,
+  Double_t v1M02cut         = 0.3, 
+  Double_t drCut            = 0.025, 
+  Double_t pi0Asy           = 0,
+  Bool_t   usePhosEPCali    = kTRUE,
+  Bool_t   flattenMostCent  = kFALSE,
+  Bool_t   flattenSemiCent  = kFALSE,
+  AliVEvent::EOfflineTriggerTypes trig = AliVEvent::kCentral + AliVEvent::kSemiCentral + AliVEvent::kMB + AliVEvent::kEMCEGA,
+  const Int_t debug = 0
 )
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskEMCALPi0V2", "No analysis manager found.");
     return NULL;
@@ -26,52 +32,34 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
     return NULL;
   }
 
-  TString Input;
-  AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task");
-  if(EvtType == 1){ //central
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
-    Input = "kCentral";
-  } else if (EvtType == 2){ //SemiCentral
-    taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
-    Input = "kSemiCentral";
-  } else if (EvtType == 3){ //kMB 
-    taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-    Input = "kMB";
-  } else if (EvtType == 4){ //Central + SemiCentral 
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral);
-    Input = "Central_SemiCentral";
-  } else if (EvtType == 5){ //Central + SemiCentral + kMB
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
-    Input = "ALLMB";
-  }
-  taskMB->SetTracksName(trackName.Data());
-  taskMB->SetClusE(Ecut);
-  taskMB->SetClusM02(M02cut);
-  taskMB->SetDrCut(fDrCut);
-  taskMB->SetIsV1Clus(IsV1cus);
-  taskMB->SetV1ClusName(V1ClusName);
-  taskMB->SetV2ClusName(V2ClusName);
-  taskMB->SetTrigClass(trigClass);
-  taskMB->SetIsPHOSCali(IsPhosCali);
-  taskMB->SetIsCentFlat(IsCentFlat);
-  taskMB->SetIsFullHist(IsFullHist);
+  AliAnalysisTaskPi0V2* task = new  AliAnalysisTaskPi0V2("Pi0V2Task");
+  task->SelectCollisionCandidates(trig);
+  task->SetTrigClass(trigClass);
+  task->SetVzCut(vzCut);
+  task->SetClustNCell(nCell);
+  task->SetClustE(clustE);
+  task->SetClustEta(clustEta);
+  task->SetV2M02Cut(v2M02cut);
+  task->SetV1M02Cut(v1M02cut);
+  task->SetDrCut(drCut);
+  task->SetPi0Asy(pi0Asy);
+  task->UseV2Clust(useV2Clust);
+  task->UseV1Clust(useV1Clust);
+  task->UseTrack(useTrk);
+  task->SetV2ClustName(v2ClustName);
+  task->SetV1ClustName(v1ClustName);
+  task->SetTrackName(trackName);
+  task->UsePhosEPCali(usePhosEPCali);
+  task->FlattenMostCent(flattenMostCent);
+  task->FlattenSemiCent(flattenSemiCent);
+  task->SetDebugLevel(debug);
 
-  TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGGA_EMCalpi0v2";
+  mgr->AddTask(task);
+  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer("hist", TList::Class(), AliAnalysisManager::kOutputContainer, 
+                                                            Form("%s",AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->SetDebugLevel(debug);
 
-  if(IsPhosCali) 
-    Input += "_EPON_";
-  if(IsCentFlat)
-    Input += "centOn";
-
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(
-    Form("%s_E%1.2f_M02%1.2f", Input.Data(), Ecut, M02cut), 
-    TList::Class(),
-    AliAnalysisManager::kOutputContainer, 
-    containerName.Data());
-  mgr->ConnectInput(taskMB, 0, cinput);
-  mgr->ConnectOutput(taskMB, 1, coutput2);
-
-  return taskMB;
+  return task;
 }

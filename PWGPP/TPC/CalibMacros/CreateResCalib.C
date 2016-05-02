@@ -19,6 +19,7 @@ void postProcResCalib(int run=245231
 {
 
   AliTPCDcalibRes* clb = new AliTPCDcalibRes(run, tmin, tmax);
+  clb->SetMaxTracks(5000000);
   clb->SetOCDBPath("local:///cvmfs/alice.cern.ch/calibration/data/2015/OCDB");
   clb->ProcessFromLocalBinnedTrees();
   clb->Save();
