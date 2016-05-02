@@ -22,6 +22,9 @@
 #include <AliAODTrack.h>
 #include <AliEmcalJet.h>
 #include <AliRhoParameter.h>
+#include "TH1D.h"
+#include "TH2D.h"
+#include "AliAnalysisTaskEmcal.h"
 #include "AliAnalysisTaskParticleRandomizer.h"
 
 /// \cond CLASSIMP
@@ -30,7 +33,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskSE("AliAnalysisTaskParticleRandomizer"), fInitialized(0), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandom()
+  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandom()
 {
 // constructor
 }
@@ -80,15 +83,13 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
   fOutputArray = new TClonesArray(fInputArray->GetClass()->GetName());
   fOutputArray->SetName(fOutputArrayName.Data());
   InputEvent()->AddObject(fOutputArray);
-  fInitialized = kTRUE;
+
+  AliAnalysisTaskEmcal::ExecOnce();
 }
 
 //_____________________________________________________________________________________________________
-void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
+Bool_t AliAnalysisTaskParticleRandomizer::Run()
 {
-  // Run once the exec once (must be here to have the input event ready)
-  if(!fInitialized)
-    ExecOnce();
 
   Int_t accTracks = 0;
   for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
@@ -126,9 +127,13 @@ void AliAnalysisTaskParticleRandomizer::UserExec(Option_t *)
     if(fRandomizeInPt)
       particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
 
+    if(fDistributionV2)
+      particle->SetPhi(AddFlow(particle->Phi(), particle->Pt()));
+
     accTracks++;
   }
 //  std::cout << Form("%i particles from jets removed out of %i tracks. ", fInputArray->GetEntries()-accTracks, fInputArray->GetEntries()) << std::endl;
+  return kTRUE;
 }
 
 //_____________________________________________________________________________________________________
@@ -164,4 +169,29 @@ Double_t AliAnalysisTaskParticleRandomizer::GetExternalRho()
     return 0;
 
   return (rho->GetVal());
+}
+
+
+//_____________________________________________________________________________________________________
+Double_t AliAnalysisTaskParticleRandomizer::AddFlow(Double_t phi, Double_t pt)
+{
+  // adapted from AliFlowTrackSimple
+  Double_t precisionPhi = 1e-10;
+  Int_t maxNumberOfIterations  = 100;
+
+  Double_t phi0=phi;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
+  Double_t v2 = fDistributionV2->GetBinContent(fDistributionV2->GetXaxis()->FindBin(pt), fDistributionV2->GetYaxis()->FindBin(fCent));
+
+  for (Int_t i=0; i<maxNumberOfIterations; i++)
+  {
+    phiprev=phi; //store last value for comparison
+    f =  phi-phi0+2.0*v2*TMath::Sin(phi-fEPV0);
+    fp = 1.0+2.0*v2*TMath::Cos(phi-fEPV0); //first derivative
+    phi -= f/fp;
+    if (TMath::AreEqualAbs(phiprev,phi,precisionPhi)) break;
+  }
+  return phi;
 }
