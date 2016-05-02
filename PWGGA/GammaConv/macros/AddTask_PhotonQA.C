@@ -50,7 +50,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   }
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",V0ReaderEventCutNumber.Data(),V0ReaderPhotonCutNumber.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
     
