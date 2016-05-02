@@ -111,8 +111,8 @@ struct TrackletAODdNdeta : public TrainSetup
   {
     Info("CreateTasks", "Loading code");
     fRailway->LoadSource("FixPaths.C");
-    fRailway->LoadSource("AliAODTracklet.C");
     fRailway->LoadSource("AliAODSimpleHeader.C");
+    fRailway->LoadSource("AliAODTracklet.C");
     fRailway->LoadSource("AliTrackletWeights.C");
     fRailway->LoadSource("AliTrackletAODUtils.C");
     fRailway->LoadSource("AliTrackletAODdNdeta.C");
