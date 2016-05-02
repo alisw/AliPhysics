@@ -913,7 +913,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     
     
     Double_t coiTOF = coi->GetTOF()*1e9;
-    if(coiTOF<-30 || coiTOF>30)
+    if(coiTOF<-30. || coiTOF>30.)
       return kFALSE;
     
     
@@ -947,6 +947,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         //   Double_t coiM02 = coi->GetM02();
       
       FillQAHistograms((*it),vecCOI);
+      
+      if(((*it)->GetNCells() < 2)) continue;
+      if(((*it)->GetDistanceToBadChannel() < 2)) continue;
       
       if(vecCOI.Et()<5.) continue;
         //Printf("cluster with energy %lf",vecCOI.Et());
@@ -1046,7 +1049,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   
   Double_t checktof = coi->GetTOF()*1e9;
   
-  if(checktof>-30 && checktof<30 && !fIsMC){
+  if(checktof>-30. && checktof<30. && !fIsMC){
     fClusTime->Fill(checktof);
       // fPtaftTime->Fill(vecCOI.Pt());
     
@@ -1473,10 +1476,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     phiClust =nClust.Phi();
     etaClust= nClust.Eta();
     
+    if(((*it)->GetNCells() < 2)) continue;
+    if(((*it)->GetDistanceToBadChannel() < 2)) continue;
+    
     clustTOF = (*it)->GetTOF()*1e9;
     
     if(!fIsMC)
-      if(clustTOF<-30 || clustTOF>30) continue;
+      if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)
       if(ClustTrackMatching((*it))) continue;
@@ -1580,10 +1586,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     Double_t etaClust= nClust.Eta();
     Double_t eTcluster=0, radius;
     
+    if(((*it)->GetNCells() < 2)) continue;
+    if(((*it)->GetDistanceToBadChannel() < 2)) continue;
     
     clustTOF = (*it)->GetTOF()*1e9;
     if(!fIsMC)
-      if(clustTOF<-30 || clustTOF>30) continue;
+      if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)//{Printf("CT Matching from EtIsoClusEtaBand");
       if(ClustTrackMatching((*it))) continue;
@@ -1882,7 +1890,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
   
   if(!fTPC4Iso){
     minPhiBound = 1.4+fIsoConeRadius;
-    maxPhiBound = 3.15-fIsoConeRadius; // normally 110° but shorter cut to avoid EMCAL border
+    maxPhiBound = TMath::Pi()-fIsoConeRadius; // normally 110° but shorter cut to avoid EMCAL border
     minEtaBound = -0.67+fIsoConeRadius; // ""
     maxEtaBound = 0.67-fIsoConeRadius; // ""
   }
@@ -2085,10 +2093,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
         //   Float_t etaClust= nClust.Eta();
         //    Float_t eTcluster=0;
       
+      if(((*it)->GetNCells() < 2)) continue;
+      if(((*it)->GetDistanceToBadChannel() < 2)) continue;
       
       clustTOF = (*it)->GetTOF()*1e9;
       if(!fIsMC)
-        if(clustTOF<-30 || clustTOF>30) continue;
+        if(clustTOF<-30. || clustTOF>30.) continue;
       
       if(ClustTrackMatching((*it))) continue;
       
