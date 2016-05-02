@@ -129,6 +129,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaPatternObject+;
