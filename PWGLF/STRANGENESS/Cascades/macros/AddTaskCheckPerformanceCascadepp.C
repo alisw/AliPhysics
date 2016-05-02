@@ -26,7 +26,8 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
                                                                             Bool_t   kwithsdd                            = kFALSE,
                                                                             Float_t  minptondaughtertracks               = 0.0,
                                                                             Float_t  etacutondaughtertracks              = 0.8,
-                                                                            Bool_t   kacccut                             = kFALSE) {
+                                                                            Bool_t   kacccut                             = kFALSE,
+                                                                            Double_t ftpcpidsigma                        = 4) {
     
    //______________________________________________________________________________
    // Creates, configures and attaches to the train a cascades check task
