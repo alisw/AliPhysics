@@ -980,8 +980,16 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                     fSparseSpherocity->Fill(arrayForSparseSo);
                 }
                 
-                if(labD>=0) FillMCMassHistos(arrayMC,labD, multForCand, spherocity);
-                
+                if(labD>=0){
+		  Bool_t keepCase=kTRUE;
+		  if(fPdgMeson==421){
+                    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+                    Int_t code=partD->GetPdgCode();
+		    if(code<0 && iHyp==0) keepCase=kFALSE;
+                    if(code>0 && iHyp==1) keepCase=kFALSE;
+		  }
+		  if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity);
+                }
                 if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse);
 
             }
