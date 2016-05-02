@@ -53,6 +53,9 @@ ClassImp(AliAnalysisTaskITSsaTracks)
 AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("ITSsa resolution"), 
   fOutput(0),
   fHistNEvents(0),
+  fHistNEventsVsTrig(0),
+  fHistPureSAtracksVsTracklets(0),
+  fHistITSTPCtracksVsTracklets(0),
   fHistMCPhiResid(0),
   fHistPhiResid(0),
   fNtupleTracks(0),
@@ -100,6 +103,7 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
     fHistNclu[ij]=0x0;
     fHistNcluGood[ij]=0x0;
     fHistNcluFake[ij]=0x0;
+    fHistCluInLayVsPt[ij]=0x0;
     fHistdedxvsP2cls[ij]=0x0;
     fHistdedxvsP3cls[ij]=0x0;
     fHistdedxvsP4cls[ij]=0x0;
@@ -136,63 +140,61 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
 AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
   //
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
-  // RS: why do we delete all histos? they are owned by the output!!!
-  /*
-  delete fHistNEvents;
+  if(fOutput && !fOutput->IsOwner()){
+    delete fHistNEvents;
+    delete fHistNEventsVsTrig;
     for(Int_t iType=0; iType<kNtrackTypes; iType++){
-    delete fHistPt[iType];
-    delete fHistPtGood[iType];
-    delete fHistPtFake[iType];
-    delete fHistEtaPhi[iType];
-    delete fHistEtaPhiGood[iType];
-    delete fHistEtaPhiFake[iType];
-    delete fHistEtaPhiAny[iType];
-    delete fHistEtaPhi1SPD[iType];
-    delete fHistEtaPhi4Clu[iType];
-    delete fHistEtaPhi6Clu[iType];
-    delete fHistChi2[iType];
-    delete fHistChi2Good[iType];
-    delete fHistChi2Fake[iType];
-    delete fHistNclu[iType];
-    delete fHistNcluGood[iType];
-    delete fHistNcluFake[iType];
-    delete fHistdedxvsP2cls[iType];
-    delete fHistdedxvsP3cls[iType];
-    delete fHistdedxvsP4cls[iType];
-  }
-  for(Int_t iSpec=0; iSpec<kNspecies; iSpec++){
-    delete fHistPtTPCITS[iSpec];
-    delete fHistPtITSsa[iSpec];
-    delete fHistPtITSpureSA[iSpec];
-    delete fHistEtaPhiTPCITS[iSpec];
-    delete fHistEtaPhiITSsa[iSpec];
-    delete fHistEtaPhiITSpureSA[iSpec];
-    delete fHistNcluTPCITS[iSpec];
-    delete fHistNcluITSsa[iSpec];
-    delete fHistNcluITSpureSA[iSpec];
-    delete fHistd0rphiITSpureSA[iSpec];
-    delete fHistd0zITSpureSA[iSpec];
-    delete fHistCluInLayTPCITS[iSpec];
-    delete fHistCluInLayITSsa[iSpec];
-    delete fHistCluInLayITSpureSA[iSpec];
-    delete fHistOuterLayITSpureSA[iSpec];
-    delete fHistPtResid[iSpec];
-    delete fHistPtRelResid[iSpec];
-    delete fHistInvPtResid[iSpec];
-    delete fHistInvPtRelResid[iSpec];
-    delete fHistMCPtResid[iSpec];
-    delete fHistMCPtRelResid[iSpec];
-    delete fHistMCInvPtResid[iSpec];
-    delete fHistMCInvPtRelResid[iSpec];
-  } 
-  */
+      delete fHistPt[iType];
+      delete fHistPtGood[iType];
+      delete fHistPtFake[iType];
+      delete fHistEtaPhi[iType];
+      delete fHistEtaPhiGood[iType];
+      delete fHistEtaPhiFake[iType];
+      delete fHistEtaPhiAny[iType];
+      delete fHistEtaPhi1SPD[iType];
+      delete fHistEtaPhi4Clu[iType];
+      delete fHistEtaPhi6Clu[iType];
+      delete fHistChi2[iType];
+      delete fHistChi2Good[iType];
+      delete fHistChi2Fake[iType];
+      delete fHistNclu[iType];
+      delete fHistNcluGood[iType];
+      delete fHistNcluFake[iType];
+      delete fHistCluInLayVsPt[iType];
+      delete fHistdedxvsP2cls[iType];
+      delete fHistdedxvsP3cls[iType];
+      delete fHistdedxvsP4cls[iType];
+    }
+    for(Int_t iSpec=0; iSpec<kNspecies; iSpec++){
+      delete fHistPtTPCITS[iSpec];
+      delete fHistPtITSsa[iSpec];
+      delete fHistPtITSpureSA[iSpec];
+      delete fHistEtaPhiTPCITS[iSpec];
+      delete fHistEtaPhiITSsa[iSpec];
+      delete fHistEtaPhiITSpureSA[iSpec];
+      delete fHistNcluTPCITS[iSpec];
+      delete fHistNcluITSsa[iSpec];
+      delete fHistNcluITSpureSA[iSpec];
+      delete fHistd0rphiITSpureSA[iSpec];
+      delete fHistd0zITSpureSA[iSpec];
+      delete fHistCluInLayTPCITS[iSpec];
+      delete fHistCluInLayITSsa[iSpec];
+      delete fHistCluInLayITSpureSA[iSpec];
+      delete fHistOuterLayITSpureSA[iSpec];
+      delete fHistPtResid[iSpec];
+      delete fHistPtRelResid[iSpec];
+      delete fHistInvPtResid[iSpec];
+      delete fHistInvPtRelResid[iSpec];
+      delete fHistMCPtResid[iSpec];
+      delete fHistMCPtRelResid[iSpec];
+      delete fHistMCInvPtResid[iSpec];
+      delete fHistMCInvPtRelResid[iSpec];
+    } 
   delete fHistMCPhiResid;
   delete fHistPhiResid;
   delete fNtupleTracks;
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
   }
+  delete fOutput;
 }
    
 //________________________________________________________________________
@@ -226,7 +228,7 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   // Total:                              36
   fOutput->Add(fNtupleTracks);
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",7,-0.5,6.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",15,-0.5,14.5);
   //fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
@@ -235,8 +237,43 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Without SPD"); 
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Without SDD"); 
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Without SSD"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"Analyzed events"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"No ITS layers"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"SPD only"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"SDD only"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"SSD only"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"SPD+SDD");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"SPD+SSD");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"SDD+SSD");
+  fHistNEvents->GetXaxis()->SetBinLabel(14,"SPD+SDD+SSD");
+  fHistNEvents->GetXaxis()->SetBinLabel(15,"Analyzed events"); 
   fOutput->Add(fHistNEvents);
+
+  fHistNEventsVsTrig = new TH2F("hNEventsVsTrig", "Events per trigger type",9,-0.5,8.5,8,-0.5,7.5);
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(1,"MB - all");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(2,"MB - fast");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(3,"HighMult - all");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(4,"HighMult - fast");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(5,"Central");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(6,"SemiCentral");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(7,"EMC");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(8,"Muon");
+  fHistNEventsVsTrig->GetXaxis()->SetBinLabel(9,"Other");
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(1,"No ITS layers"); 
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(2,"SPD only"); 
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(3,"SDD only"); 
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(4,"SSD only"); 
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(5,"SPD+SDD");
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(6,"SPD+SSD");
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(7,"SDD+SSD");
+  fHistNEventsVsTrig->GetYaxis()->SetBinLabel(8,"SPD+SDD+SSD");
+  fOutput->Add(fHistNEventsVsTrig);
+
+
+  fHistPureSAtracksVsTracklets = new TH2F("hPureSAtracksVsTracklets","  ; nTrackelts, ; nITSpureSAtracks",100,0.,200,100,0.,200.);
+  fOutput->Add(fHistPureSAtracksVsTracklets);
+
+  fHistITSTPCtracksVsTracklets = new TH2F("hITSTPCtracksVsTracklets","  ; nTrackelts, ; nITSTPCtracks",100,0.,200,100,0.,200.);
+  fOutput->Add(fHistITSTPCtracksVsTracklets);
 
   //binning for the dedx histogram
   const Int_t hnbinsdedx=400;
@@ -305,6 +342,9 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
     fHistNcluFake[iType]=new TH1F(Form("hNcluFake%s",tit[iType].Data()),"",7,-0.5,6.5);
     //fHistNcluFake[iType]->Sumw2();
     fOutput->Add(fHistNcluFake[iType]);
+
+    fHistCluInLayVsPt[iType]=new TH2F(Form("hCluInLayVsPt%s",tit[iType].Data()),"",100,0.,2.,7,-1.5,5.5);
+    fOutput->Add(fHistCluInLayVsPt[iType]);
 
     fHistdedxvsP2cls[iType] = new TH2F(Form("hdedxvsP2cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
     //fHistdedxvsP2cls[iType]->Sumw2();
@@ -538,6 +578,16 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(2);
 
+  Int_t trigMask=esd->GetTriggerMask();
+  Bool_t isMB=trigMask&(AliVEvent::kAnyINT);
+  Int_t muonMask=(AliVEvent::kMUON) | (AliVEvent::kCMUS5) | (AliVEvent::kMUSH7) | (AliVEvent::kMUL7) | (AliVEvent::kMUU7) | (AliVEvent::kMUS7) | (AliVEvent::kMuonSingleLowPt8) | (AliVEvent::kMuonSingleHighPt8) | (AliVEvent::kMuonLikeLowPt8) | (AliVEvent::kMuonUnlikeLowPt8) | (AliVEvent::kMuonUnlikeLowPt0);
+  Bool_t isMuon=trigMask&muonMask;
+  Bool_t isHighMult=trigMask&(AliVEvent::kHighMult);
+  Int_t emcMask=(AliVEvent::kEMC1) | (AliVEvent::kEMC7) | (AliVEvent::kEMC8) | (AliVEvent::kEMCEJE) | (AliVEvent::kEMCEGA);
+  Bool_t isEMC=trigMask&emcMask;
+  Bool_t isCent=trigMask&(AliVEvent::kCentral);
+  Bool_t isSemiCent=trigMask&(AliVEvent::kSemiCentral);
+  Bool_t isFast=trigMask&(AliVEvent::kFastOnly);
   Bool_t spdOK=kTRUE;
   Bool_t sddOK=kTRUE;
   Bool_t ssdOK=kTRUE;
@@ -548,16 +598,36 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     if(!sddOK) fHistNEvents->Fill(4);
     ssdOK=esd->IsDetectorInTriggerCluster("ITSSSD",fTrigConfig);
     if(!ssdOK) fHistNEvents->Fill(5);
+    Int_t laymask=0;
+    if(spdOK) laymask+=1;
+    if(sddOK) laymask+=2;
+    if(ssdOK) laymask+=4;
+    fHistNEvents->Fill(6+laymask);
+    if(isMB){
+      if(!isFast) fHistNEventsVsTrig->Fill(0.,laymask);
+      else fHistNEventsVsTrig->Fill(1.,laymask);
+    }
+    else if(isHighMult){
+      if(!isFast) fHistNEventsVsTrig->Fill(2.,laymask);
+      else fHistNEventsVsTrig->Fill(3.,laymask);
+    }
+    else if(isCent) fHistNEventsVsTrig->Fill(4.,laymask);
+    else if(isSemiCent) fHistNEventsVsTrig->Fill(5.,laymask);
+    else if(isEMC) fHistNEventsVsTrig->Fill(6.,laymask);
+    else if(isMuon) fHistNEventsVsTrig->Fill(7.,laymask);
+    else fHistNEventsVsTrig->Fill(8.,laymask);
   }
   if(fRequireSPD && !spdOK) return;
   if(fRequireSDD && !sddOK) return;
   if(fRequireSSD && !ssdOK) return;
-  fHistNEvents->Fill(6);
+  fHistNEvents->Fill(14);
   
 
   Int_t ntracks = esd->GetNumberOfTracks();
   const AliMultiplicity* mult=esd->GetMultiplicity();
   Int_t ntracklets = mult->GetNumberOfTracklets();
+  Int_t nPureSAtracks=0;
+  Int_t nITSTPCtracks=0;
 
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = esd->GetTrack(iTrack);
@@ -665,11 +735,18 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     for(Int_t i=2; i<6; i++){
       if(clumap&(1<<i)) ++nPointsForPid;
     }
-
+    if(iTrackType==kTypeTPCITS) nITSTPCtracks+=1;
+    if(iTrackType==kTypeITSpureSA) nPureSAtracks+=1;
     fHistEtaPhiAny[iTrackType]->Fill(track->Eta(),track->Phi());
     if(nSPDPoints>=1) fHistEtaPhi1SPD[iTrackType]->Fill(track->Eta(),track->Phi());
     if(nSPDPoints>=1 && nPointsForPid>=3) fHistEtaPhi4Clu[iTrackType]->Fill(track->Eta(),track->Phi());
     if(nITSclus==6) fHistEtaPhi6Clu[iTrackType]->Fill(track->Eta(),track->Phi());
+
+    fHistCluInLayVsPt[iTrackType]->Fill(ptrack,-1);
+    for(Int_t iBit=0; iBit<6; iBit++){
+      if(clumap&(1<<iBit)) fHistCluInLayVsPt[iTrackType]->Fill(pttrack,iBit);
+    }
+
 
 
     if(nITSclus<fMinITSpts)continue;
@@ -880,7 +957,8 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       }
     }
   }
-
+  fHistPureSAtracksVsTracklets->Fill(nPureSAtracks,ntracklets);
+  fHistITSTPCtracksVsTracklets->Fill(nITSTPCtracks,ntracklets);
   PostData(1,fOutput);
   
 }
@@ -893,45 +971,8 @@ void AliAnalysisTaskITSsaTracks::Terminate(Option_t */*option*/)
     printf("ERROR: fOutput not available\n");
     return;
   }
-  fNtupleTracks = dynamic_cast<TNtuple*>(fOutput->FindObject("ntupleTracks"));
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-
-  TString spname[3]={"Pion","Kaon","Proton"};
-
-  for(Int_t iSpec=0; iSpec<kNspecies; iSpec++){
-    fHistPtTPCITS[iSpec]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hPtTPCITS%s",spname[iSpec].Data())));
-    fHistPtITSsa[iSpec]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hPtITSsa%s",spname[iSpec].Data())));
-    fHistPtITSpureSA[iSpec]= dynamic_cast<TH1F*>(fOutput->FindObject(Form("hPtITSpureSA%s",spname[iSpec].Data())));
-
-    fHistEtaPhiTPCITS[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hEtaPhiTPCITS%s",spname[iSpec].Data())));
-    fHistEtaPhiITSsa[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hEtaPhiITSsa%s",spname[iSpec].Data())));
-    fHistEtaPhiITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hEtaPhiITSpureSA%s",spname[iSpec].Data())));
-    
-    fHistNcluTPCITS[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNcluTPCITS%s",spname[iSpec].Data())));
-    fHistNcluITSsa[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNcluITSsa%s",spname[iSpec].Data())));
-    fHistNcluITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hNcluITSpureSA%s",spname[iSpec].Data())));
-    
-    fHistd0rphiITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hd0rphiITSpureSA%s",spname[iSpec].Data())));
-    fHistd0zITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hd0zITSpureSA%s",spname[iSpec].Data())));
-    
-    fHistCluInLayTPCITS[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hCluInLayTPCITS%s",spname[iSpec].Data())));
-    fHistCluInLayITSsa[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hCluInLayITSsa%s",spname[iSpec].Data())));
-    fHistCluInLayITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hCluInLayITSpureSA%s",spname[iSpec].Data())));
-    
-    fHistOuterLayITSpureSA[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hOuterLayITSpureSA%s",spname[iSpec].Data())));
-  
-    fHistPtResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPtResid%s",spname[iSpec].Data())));
-    fHistPtRelResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hPtRelResid%s",spname[iSpec].Data())));
-    fHistInvPtResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hInvPtResid%s",spname[iSpec].Data())));
-    fHistInvPtRelResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hInvPtRelResid%s",spname[iSpec].Data())));
-    fHistMCPtResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hMCPtResid%s",spname[iSpec].Data())));
-    fHistMCPtRelResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hMCPtRelResid%s",spname[iSpec].Data())));
-    fHistMCInvPtResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hMCInvPtResid%s",spname[iSpec].Data())));
-    fHistMCInvPtRelResid[iSpec]= dynamic_cast<TH2F*>(fOutput->FindObject(Form("hMCInvPtRelResid%s",spname[iSpec].Data())));
-  
-  }
-  fHistMCPhiResid= dynamic_cast<TH2F*>(fOutput->FindObject("hMCPhiResid"));
-  fHistPhiResid= dynamic_cast<TH2F*>(fOutput->FindObject("hPhiResid"));
+  printf("Number of events: read = %.0f  analysed = %.0f\n",fHistNEvents->GetBinContent(1),fHistNEvents->GetBinContent(15));
   return;
 }
 
