@@ -70,6 +70,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fHistos(NULL),
         fGeometry(NULL),
         fWeightHandler(NULL),
+        fUsePythiaHard(kFALSE),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
@@ -97,6 +98,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fHistos(NULL),
         fGeometry(NULL),
         fWeightHandler(NULL),
+        fUsePythiaHard(kFALSE),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
@@ -659,6 +661,7 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTriggerJetHistograms(Bool_t after
 Bool_t AliAnalysisTaskChargedParticlesRefMC::UserNotify()
 {
   // Called when file changes.
+  if(!fUsePythiaHard) return kTRUE;
 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
