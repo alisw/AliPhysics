@@ -23,8 +23,8 @@ void runEventPlane()
   gSystem->Load("libPWGPPevcharQn.so");
   gSystem->Load("libPWGPPevcharQnInterface.so");
 
-  Bool_t onGrid=kTRUE;
   //Bool_t onGrid=kFALSE;
+  Bool_t onGrid=kFALSE;
 
   // Select input format
   Bool_t isESD=kTRUE;
@@ -66,7 +66,7 @@ void runEventPlane()
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
       //chain = CreateESDChain("/u/jonderw/file137231.txt", 1, 0);
       //chain = CreateESDChain("/u/jonderw/files.txt", 1, 0);
-      chain = CreateESDChain("/home/jonderw/Work/ReducedTreeMaker/macros/data/data.txt", 1, 0);
+      chain = CreateESDChain("/u/jonderw/files.txt", 1, 0);
     }
     if(isAOD) {
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");

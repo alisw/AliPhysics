@@ -496,7 +496,6 @@ void AliQnCorrectionsFillEvent::FillFMD(AliAnalysisTaskSE* task)
 
       fEventPlaneManager->AddDataVector(VAR::kFMD, phi, m, iEta*nPhi+iPhi);   // 1st ich is position in array, 2nd ich is channel id
 
-
     }
   }
 }
