@@ -118,10 +118,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 //     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
 //   }
 //   if( fDataSet==2015){
+  if(fDataSet==20100  ||fDataSet==2011 ||  fDataSet==2015){//If this is Pb+Pb
     AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
     fCentBin = GetCentralityBin(fNCentBins, MultSelection);
     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
-    //}
+  }
   AnalyseEvent(ev);
   if(kDoTriggerChecksOnly) return 1;//If we are only doing trigger checks, don't bother with all of the reconstructed stuff
   //for PID
