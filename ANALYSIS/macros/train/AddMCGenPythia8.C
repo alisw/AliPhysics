@@ -17,10 +17,8 @@ AliGenerator* AddMCGenPythia8(Float_t e_cms = 2760., Bool_t kCR = kTRUE, Int_t k
 AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProcess,Double_t ptHardMin,Double_t ptHardMax) {
     
    gSystem->Load("libpythia6");
-   gSystem->Load("libEGPythia6");
-   gSystem->Load("libAliPythia6");
-   gSystem->Load("libpythia8");
-   gSystem->Load("libAliPythia8");
+   // loaded automatically -> gSystem->Load("libpythia8");
+
    gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8/xmldoc"));
    gSystem->Setenv("LHAPDF",      gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF"));
    gSystem->Setenv("LHAPATH",     gSystem->ExpandPathName("$ALICE_ROOT/LHAPDF/PDFsets"));
