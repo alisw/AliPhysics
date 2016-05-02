@@ -560,6 +560,7 @@ Bool_t AliQnCorrectionsHistograms::ConnectMultiplicityHistograms(TList* list, Al
   fEqualizationHistogramsM[0]  = (THnF*)((THn*)  GetHistogram(list, "Mult"+epdet, "Mult_"+epdet+"_raw"));
   fEqualizationHistogramsE[0]  = (THnF*)((THn*)  GetHistogram(list, "Mult"+epdet, "Mult_"+epdet+"_raw_entries"));
 
+  if(!fEqualizationHistogramsM[0]) return kFALSE;
   if(fEqualizationHistogramsM[0]->GetEntries()==0) return kFALSE;
 
   SetEqualizationHistogramM(  DivideTHnF(fEqualizationHistogramsM[0],fEqualizationHistogramsE[0]),0);
@@ -594,6 +595,7 @@ Bool_t AliQnCorrectionsHistograms::ConnectMeanQnCalibrationHistograms(TList* lis
   
   SetCalibrationHistogramE( is, (THnF*)((THn*)  GetHistogram(list, "Qvec"+det, "Qvec_"+det+"_"+fStages[is]+"_entries")));//->Clone(Form("_hCentering%s_Qvec%s_entries", fStages[is].Data(),det.Data())));
 
+  if(!fCalibrationHistogramsE[is]) return kFALSE;
   if(fCalibrationHistogramsE[is]->GetEntries()==0) return kFALSE;
 
   Int_t maxHar = QnConf->MaximumHarmonic();
@@ -619,6 +621,7 @@ Bool_t AliQnCorrectionsHistograms::ConnectU2nQnCalibrationHistograms(TList* list
 
     SetU2nHistogramE( (THnF*)((THn*)  GetHistogram(list, "Qvec"+det, Form("nphi_%s_entries", det.Data()))));//->Clone(Form("_hCor_%s_u2nE_%s_h%d", det.Data())));
 
+    if(!fU2nHistogramsE) return kFALSE;
     if(fU2nHistogramsE->GetEntries()==0) return kFALSE;
 
     for(Int_t ih=QnConf->MinimumHarmonic(); ih<=QnConf->MaximumHarmonic(); ++ih) {
@@ -660,6 +663,7 @@ Bool_t AliQnCorrectionsHistograms::ConnectCorrelationQnCalibrationHistograms(TLi
             fCorrelationProfs[0][idet][ih-1][icomp][iaxis] = (TProfile*) GetHistogram(list, "Correlations"+det,Form("Correlation_%s_%sx%s_h%d_%s",components[icomp].Data(), detectors[idet].Data(), detectors[(idet+1)%3].Data(), ih, QnConf->GetAlignmentAxes()->AxisLabel(iaxis).Data()));
 
             //cout<<det<<"  "<<fCorrelationProfs[0][idet][ih-1][icomp][iaxis]<<"  "<<Form("Correlation_%s_%sx%s_h%d_%s",components[icomp].Data(), detectors[idet].Data(), detectors[(idet+1)%3].Data(), ih, QnConf->GetAlignmentAxes()->AxisLabel(iaxis).Data())<<endl;
+            if(!fCorrelationProfs[0][idet][ih-1][icomp][iaxis]) return kFALSE;
             if(fCorrelationProfs[0][idet][ih-1][icomp][iaxis]->GetEntries()==0) return kFALSE;
   
      }}}}
@@ -679,6 +683,7 @@ Bool_t AliQnCorrectionsHistograms::ConnectRotationQnCalibrationHistograms(TList*
     SetRotationHistogramE( (THnF*)((THn*)  GetHistogram(list, "Correlations"+det, Form("Correlation_%sx%s_entries", det.Data(), QnConf->GetReferenceQnForAlignment().Data()))));//->Clone(Form("_hCor_%s_u2nE_%s_h%d", det.Data())));
 
 
+    if(!fRotationHistogramE[0]) return kFALSE;
     if(fRotationHistogramE[0]->GetEntries()==0) return kFALSE;
 
     SetRotationHistogram( 0, (THnF*)((THn*)  GetHistogram(list,"Correlations"+det, Form("Correlation_%sx%s_XX", det.Data(), QnConf->GetReferenceQnForAlignment().Data()) )));
