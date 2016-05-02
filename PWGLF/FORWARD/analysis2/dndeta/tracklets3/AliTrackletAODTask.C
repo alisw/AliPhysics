@@ -322,7 +322,7 @@ protected:
   Double_t   fPhiOverlapCut;
   /** Overlap cut in @f$ z,\eta@f$ plane */
   Double_t   fZEtaOverlapCut;
-  
+  AliITSMultRecBg* fReco; //!
   
   ClassDef(AliTrackletAODTask,1); 
 };
@@ -336,7 +336,8 @@ AliTrackletAODTask::AliTrackletAODTask()
     fDThetaWindow(0.025),
     fDPhiWindow(0.06),
     fPhiOverlapCut(0.005),
-    fZEtaOverlapCut(0.05)    
+    fZEtaOverlapCut(0.05),
+    fReco(0)
 {}
 //____________________________________________________________________
 AliTrackletAODTask::AliTrackletAODTask(const char*)
@@ -348,7 +349,8 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
     fDThetaWindow(0.025),
     fDPhiWindow(0.06),
     fPhiOverlapCut(0.005),
-    fZEtaOverlapCut(0.05)    
+    fZEtaOverlapCut(0.05),
+    fReco(0)
 {
   // DefineOutput(1,TList::Class());
 }
@@ -362,7 +364,8 @@ AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
     fDThetaWindow(other.fDThetaWindow),
     fDPhiWindow(other.fDPhiWindow),
     fPhiOverlapCut(other.fPhiOverlapCut),
-    fZEtaOverlapCut(other.fZEtaOverlapCut)    
+    fZEtaOverlapCut(other.fZEtaOverlapCut),
+    fReco(0)
 {}
 //____________________________________________________________________
 Bool_t AliTrackletAODTask::Connect()
@@ -647,7 +650,8 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   ipv[1] = ip->GetY();
   ipv[2] = ip->GetZ();
 
-  // Make the reconstructor 
+  // Make the reconstructor
+  fReco =  0;
   AliITSMultRecBg reco;
   reco.SetCreateClustersCopy        (true);
   reco.SetScaleDThetaBySin2T        (fScaleDTheta);
@@ -665,13 +669,16 @@ Bool_t AliTrackletAODTask::Reconstruct(TTree* clusters, const AliVVertex* ip)
   // Run normal reconstruction 
   reco.Run(clusters, ipv);
 
+  // Save pointer to reco object - for MC combinatorics
+  fReco = &reco; 
   // And fill results into output branch 
   if (!ProcessTracklets(true, reco.GetMultiplicity())) return false;
-   
+  fReco = 0;
+  
   // Run again, but in injection mode
   reco.SetRecType(AliITSMultRecBg::kBgInj);
   reco.Run(clusters, ipv);
-
+  
   // And fill results into output branch 
   if(!ProcessTracklets(false, reco.GetMultiplicity())) return false;
 
@@ -839,7 +846,50 @@ private:
 					  AliMultiplicity* mult,
 					  Int_t            no);
   /* @} */
-  TParticle* FindParent(Int_t label);
+  /** 
+   * Find first primary parent of particle identified by passed label
+   * 
+   * @param label Label particle to search for primary parent of 
+   * 
+   * @return Pointer to parent, or null if not found.  Note, if label
+   * corresponds to a primary, then than particle is returned.
+   */
+  TParticle* FindPrimaryParent(Int_t label) const;
+  /** 
+   * Find parent of particle with label @a label.  If no parent is
+   * found, or it goes beyond the stack, a negative value is returned.
+   * 
+   * @param label Label particle to get the parent for 
+   * 
+   * @return Label of parent to particle with label @a label. 
+   */
+  Int_t FindParent(Int_t label) const;
+  /** 
+   * Find list of parents corresponding to passed label.  
+   *
+   * We find the labels of all parent particles and store into cache
+   * @a fill.  Elements are assigned starting from @a offset.  In this
+   * way, we can invoke this member function multiple times and fill
+   * into the same cache array.
+   * 
+   * @param label   Starting particle 
+   * @param fill    Cache to fill into 
+   * @param offset  Offset in @a fill to start assigning into 
+   * 
+   * @return Number of assigned elements
+   */
+  Int_t FindParents(Int_t label, TArrayI& fill,	Int_t offset) const;
+  /** 
+   * Find the the common parent of @a label and those given in @a
+   * fill, if any.  If a common parent is found, return the index into
+   * @a fill of that parent.
+   * 
+   * @param label Particles who's parents we're checking 
+   * @param fill  List of known parents 
+   * 
+   * @return Index of common parent of @a label and those in @a fill 
+   */
+  Int_t CommonParent(Int_t label, const TArrayI& fill) const;
   
   ClassDef(AliTrackletAODMCTask,1); 
 };
@@ -921,13 +971,13 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
   AliAODMCTracklet* mc      = static_cast<AliAODMCTracklet*>(tracklet);
   Int_t             label0  = mult->GetLabel(no, 0);
   Int_t             label1  = mult->GetLabel(no, 1);
-  TParticle*        parent0 = FindParent(label0);
+  TParticle*        parent0 = FindPrimaryParent(label0);
   if (parent0) {
     mc->SetParentPdg(parent0->GetPdgCode());
     mc->SetParentPt (parent0->Pt());
   }
   if (label0 != label1) {
-    TParticle* parent1 = FindParent(label1);
+    TParticle* parent1 = FindPrimaryParent(label1);
     if (parent1) { 
       mc->SetParentPdg(parent1->GetPdgCode(), true);
       mc->SetParentPt (parent1->Pt(),         true);
@@ -936,6 +986,33 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
     // Here, we could track back in the cluster labels to see if we
     // have the same ultimate mother of both clusters.  Since this
     // isn't really used, we do not do that
+    if (fReco) {
+      TArrayI parents(50); // At most 50 levels deep
+      // Tracklet parameters
+      Float_t* ftrack = fReco->GetTracklet(no); 
+      // Cluster identifiers 
+      Int_t    clus0  = Int_t(ftrack[AliITSMultReconstructor::kClID1]);
+      Int_t    clus1  = Int_t(ftrack[AliITSMultReconstructor::kClID2]);
+      // Cluster labelsx
+      Float_t* fclus0 = (fReco->GetClusterOfLayer(0,clus0) +
+			 AliITSMultReconstructor::kClMC0);
+      Float_t* fclus1 = (fReco->GetClusterOfLayer(0,clus1) +
+			 AliITSMultReconstructor::kClMC0);
+      // Loop over three inner layer cluster labels
+      Int_t offset = 0;
+      for (Int_t i = 0; i < 3; i++)
+	offset = FindParents(Int_t(fclus0[i]), parents, offset);
+      // Loop over three outer layer cluster labels
+      Bool_t distinct = true;
+      for (Int_t i = 0; i < 3; i++) {
+	if (CommonParent(Int_t(fclus1[i]), parents)) {
+	  distinct = false;
+	  // We break out as soon as we find a common parent. 
+	  break;
+	}
+      } // loop over outer layer
+      if (distinct) mc->SetDistinct();
+    } // if (fReco)
   }
   else {
     if (!MCEvent()->Stack()->IsPhysicalPrimary(label0))
@@ -943,8 +1020,65 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
   }
   return tracklet;
 }
+
 //____________________________________________________________________
-TParticle* AliTrackletAODMCTask::FindParent(Int_t label)
+Int_t AliTrackletAODMCTask::FindParent(Int_t label) const
+{
+  AliStack*   stack     = MCEvent()->Stack();
+  Int_t       nTracks   = stack->GetNtrack();
+  TParticle*  particle  = stack->Particle(label);
+  if (!particle) return -1;
+  Int_t       ret       = particle->GetFirstMother();
+  if (ret > nTracks) return -1;
+  return ret;
+}
+    
+//____________________________________________________________________
+Int_t AliTrackletAODMCTask::FindParents(Int_t    label,
+					TArrayI& fill,
+					Int_t    offset) const
+{
+  // If offset is negative, then we don't really store the labels, but
+  // only check against those already stored.
+  Int_t       i         = offset;
+  Int_t       lbl       = label;
+  while (i < fill.GetSize()-1 && lbl >= 1) {
+    fill[i]      = lbl;
+    i++;
+    lbl = FindParent(lbl);
+  }
+  // If we get here, and we're checking, that means we did not find a
+  // common ancestor, so we return 0 (false).  If we're not checking,
+  // then we return the number of elements assigned in the passed
+  // cache.
+  return i;
+}
+
+//____________________________________________________________________
+Int_t AliTrackletAODMCTask::CommonParent(Int_t          label,
+					 const TArrayI& fill) const
+{
+  Int_t       i         = 0;
+  Int_t       lbl       = label;
+  while (i < fill.GetSize()-1 && lbl >= 1) {
+    // If we're checking, just see if we have the label in the list
+    // already.  If we do, then return the index 
+    for (Int_t j = 0; j < fill.GetSize(); j++) {
+      if (fill[j] == lbl) return j;
+    }
+    i++;
+    lbl = FindParent(lbl);
+  }
+  // If we get here, and we're checking, that means we did not find a
+  // common ancestor, so we return 0 (false).  If we're not checking,
+  // then we return the number of elements assigned in the passed
+  // cache.
+  return false;
+}
+
+  
+//____________________________________________________________________
+TParticle* AliTrackletAODMCTask::FindPrimaryParent(Int_t label) const
 {
   AliStack*   stack     = MCEvent()->Stack();
   Int_t       nTracks   = stack->GetNtrack();
