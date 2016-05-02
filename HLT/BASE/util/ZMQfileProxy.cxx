@@ -380,7 +380,7 @@ int main(int argc, char** argv)
   TDirectory::AddDirectory(kFALSE);
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
-  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), fPollTimeout, 2);
+  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
   if (fZMQsocketModeIN < 0) return 1;
   printf("in:  (%s) %s\n", alizmq_socket_name(fZMQsocketModeIN), fZMQconfigIN.Data());
 
