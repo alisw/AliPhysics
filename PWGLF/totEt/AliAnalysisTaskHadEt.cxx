@@ -192,16 +192,45 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
   if(fRecAnalysis->DataSet()==2015){
-    cout<<"Setting track cuts for the 2011 Pb+Pb collisions at 2.76 TeV"<<endl;
-    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selectPrimaries,1,kTRUE,kTRUE);//extra arguments in 2015: replace cluster cut by number of crossed rows, cut acceptance edges, and remove distorted TPC regions
-    fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
-    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    cout<<"Setting track cuts for the 2015 Pb+Pb collisions at 2.76 TeV"<<endl;
     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+
+
+//     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selectPrimaries,1,kTRUE,kTRUE);//extra arguments in 2015: replace cluster cut by number of crossed rows, cut acceptance edges, and remove distorted TPC regions
+//     fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+//     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+
+    fEsdtrackCutsITSTPC = new AliESDtrackCuts("AliESDtrackCuts");
+
+    fEsdtrackCutsITSTPC->SetRequireTPCRefit(kTRUE);
+    fEsdtrackCutsITSTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fEsdtrackCutsITSTPC->SetMaxChi2PerClusterTPC(4);
+    fEsdtrackCutsITSTPC->SetMaxFractionSharedTPCClusters(0.4); 
+    //
+    // ITS
+    //
+    fEsdtrackCutsITSTPC->SetRequireITSRefit(kTRUE);
+    fEsdtrackCutsITSTPC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fEsdtrackCutsITSTPC->SetMaxChi2PerClusterITS(36.);
+    //
+    // primary selection
+    //
+    fEsdtrackCutsITSTPC->SetDCAToVertex2D(kFALSE);
+    fEsdtrackCutsITSTPC->SetRequireSigmaToVertex(kFALSE);
+    fEsdtrackCutsITSTPC->SetMaxDCAToVertexZ(2.0);
+    // 7*(0.0026+0.0050/pt^1.01)
+    fEsdtrackCutsITSTPC->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fEsdtrackCutsITSTPC->SetAcceptKinkDaughters(kFALSE);
+    fEsdtrackCutsITSTPC->SetMaxChi2TPCConstrainedGlobal(36.);
+   
+    // Geometrical-Length Cut
+    fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+
   }
 
   fOutputList->Add(fEsdtrackCutsITSTPC);
