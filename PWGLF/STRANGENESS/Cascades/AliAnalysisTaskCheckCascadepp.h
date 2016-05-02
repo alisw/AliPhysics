@@ -66,6 +66,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetMinptCutOnDaughterTracks     (Float_t minptdaughtrks                   ) { fMinPtCutOnDaughterTracks       = minptdaughtrks;               }
         void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                     ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
         void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors         ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
+        void SetNumTPCPIDsigma               (Double_t ftpcpidsigma                    ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
         //Setters for the V0 and cascade Vertexer Parameters
         void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
         void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -115,6 +116,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         Float_t           fMinPtCutOnDaughterTracks;       // minimum pt cut on daughter tracks
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
         Int_t             fSPDPileUpminContributors;       //
+        Double_t          fTPCPIDsigma;                    //
        
         Double_t          fV0Sels[7];                      // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t          fCascSels[8];                    // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)

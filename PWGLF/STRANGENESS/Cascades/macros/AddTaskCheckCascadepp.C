@@ -25,7 +25,8 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
                                                       Bool_t   ksddselection                       = kFALSE,
                                                       Bool_t   kwithsdd                            = kFALSE,
                                                       Float_t  minptondaughtertracks               = 0.0,
-                                                      Float_t  etacutondaughtertracks              = 0.8) {
+                                                      Float_t  etacutondaughtertracks              = 0.8,
+                                                      Double_t ftpcpidsigma                        = 4 ) {
 
    //______________________________________________________________________________
    // Creates, configures and attaches to the train a cascades check task
@@ -66,7 +67,7 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
      taskcheckcascadepp->SetVertexRange                (vtxlimmin,vtxlimmax);
      taskcheckcascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
      taskcheckcascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
-   
+     taskcheckcascadepp->SetNumTPCPIDsigma             (ftpcpidsigma); 
 
    mgr->AddTask(taskcheckcascadepp);
 
