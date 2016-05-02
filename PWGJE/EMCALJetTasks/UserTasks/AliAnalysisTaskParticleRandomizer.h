@@ -18,18 +18,14 @@
 class TClonesArray;
 class TString;
 class TRandom3;
+class TH2D;
 
-#include "AliAnalysisTaskSE.h"
-
-class AliAnalysisTaskParticleRandomizer : public AliAnalysisTaskSE {
+class AliAnalysisTaskParticleRandomizer : public AliAnalysisTaskEmcal {
 public:
   AliAnalysisTaskParticleRandomizer();
   virtual ~AliAnalysisTaskParticleRandomizer();
-
   virtual void  UserCreateOutputObjects();
-  virtual void  UserExec(Option_t *);
   virtual void  Terminate(Option_t *) {}
-  void          ExecOnce();
 
   // ###### Configuration setters
   void          SetRandomizeInPhi(Bool_t val)               {fRandomizeInPhi = val;}
@@ -43,14 +39,17 @@ public:
   void          SetEtaMax(Double_t val)                     {fMaxEta = val;}
   void          SetPtMin(Double_t val)                      {fMinPt = val;}
   void          SetPtMax(Double_t val)                      {fMaxPt = val;}
+  void          SetDistributionV2(TH2D* dist)               {fDistributionV2 = dist;}
   void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
   void          SetOutputArrayName(const char* name)        {fOutputArrayName = name;}
 
+protected:
+  Bool_t        Run();
+  void          ExecOnce();
+  Double_t      AddFlow(Double_t phi, Double_t pt);
 
-private:
-  Bool_t              fInitialized;               /// internal state when ExecOnce has been executed
   Bool_t              fRandomizeInPhi;            /// randomize the particle's position in azimuth
   Bool_t              fRandomizeInEta;            /// randomize the particle's position in pseudorap
   Bool_t              fRandomizeInTheta;          /// randomize the particle's position in theta
@@ -62,6 +61,8 @@ private:
   Double_t            fMaxEta;                    /// range for eta for randomization
   Double_t            fMinPt;                     /// range for Pt for randomization
   Double_t            fMaxPt;                     /// range for Pt for randomization
+
+  TH2D*               fDistributionV2;            /// Distribution for v2 in bins of pt and centrality
 
   TString             fInputArrayName;            /// Name of the TClonesArray that will be loaded
   TString             fOutputArrayName;           /// Name of the destination TClonesArray
@@ -79,7 +80,7 @@ private:
   Bool_t              IsParticleInJet(Int_t part);
   Double_t            GetExternalRho();
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 3);
+  ClassDef(AliAnalysisTaskParticleRandomizer, 4);
 };
 
 #endif
