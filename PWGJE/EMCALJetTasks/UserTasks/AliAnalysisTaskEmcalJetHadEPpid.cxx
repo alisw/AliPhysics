@@ -87,6 +87,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliTrackContainer.h"
 
 using std::cout;
 using std::endl;
@@ -115,6 +116,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(3),
+  douseOLDtrackFramework(kFALSE),
   fBeam(kNA),
   fLocalRhoVal(0),
   fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
@@ -129,6 +131,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fHistCentZvertGA(0), fHistCentZvertJE(0), fHistCentZvertMB(0), fHistCentZvertAny(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0),
+  fHistNTrackPtNEW(0), fHistNTrackPhiNEW(0), fHistNTrackEtaNEW(0), fHistNTrackPhiEtaNEW(0),
+  fHistNTrackPt(0), fHistNTrackPhi(0), fHistNTrackEta(0), fHistNTrackPhiEta(0),
+  fHistNJetPt(0), fHistNJetPhi(0), fHistNJetEta(0), fHistNJetPhiEta(0),
   fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
   fHistLocalRhoJetpt(0),
@@ -236,6 +241,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   doEventPlaneRes(0),
   doComments(0),
   doFlavourJetAnalysis(0), fJetFlavTag(3),
+  douseOLDtrackFramework(kFALSE),
   fBeam(kNA),
   fLocalRhoVal(0),
   fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
@@ -250,6 +256,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fHistCentZvertGA(0), fHistCentZvertJE(0), fHistCentZvertMB(0), fHistCentZvertAny(0),
   fHistTPCdEdX(0), fHistITSsignal(0), //fHistTOFsignal(0),
   fHistRhovsCent(0), fHistNjetvsCent(0),
+  fHistNTrackPtNEW(0), fHistNTrackPhiNEW(0), fHistNTrackEtaNEW(0), fHistNTrackPhiEtaNEW(0),
+  fHistNTrackPt(0), fHistNTrackPhi(0), fHistNTrackEta(0), fHistNTrackPhiEta(0),
+  fHistNJetPt(0), fHistNJetPhi(0), fHistNJetEta(0), fHistNJetPhiEta(0),
   fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
   fHistLocalRhoJetpt(0),
@@ -362,14 +371,6 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   TString name1;
   TString title1;
 
-  // create histograms that arn't array
-  fHistNjetvsCent = new TH2F("NjetvsCent", "NjetvsCent", 100, 0.0, 100.0, 100, 0, 100);
-  fHistJetHaddPHI = new TH1F("fHistJetHaddPHI", "Jet-Hadron #Delta#varphi", 72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistJetHaddPhiIN = new TH1F("fHistJetHaddPhiIN","Jet-Hadron #Delta#varphi IN PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
-  fHistJetHaddPhiOUT = new TH1F("fHistJetHaddPhiOUT","Jet-Hadron #Delta#varphi OUT PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
-  fHistJetHaddPhiMID = new TH1F("fHistJetHaddPhiMID","Jet-Hadron #Delta#varphi MIDDLE of PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
-  fHistLocalRhoJetpt = new TH1F("fHistLocalRhoJetpt","Local Rho corrected Jet p_{T}", 50, -50, 200);
-
   // Centrality and Zvertex distribution for various triggers - Event Mixing QA
   fHistCentZvertGA = new TH2F("fHistCentZvertGA", "Centrality - Z-vertex distribution for GA trigger", 20, 0, 100, 10, -10, 10);
   fOutput->Add(fHistCentZvertGA);
@@ -395,6 +396,14 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   //SetfHistEvtSelQALabels(fHistEventSelectionQAafterCuts);
   fOutput->Add(fHistEventSelectionQAafterCuts);
 
+  // create histograms that arn't array
+  fHistNjetvsCent = new TH2F("NjetvsCent", "NjetvsCent", 100, 0.0, 100.0, 100, 0, 100);
+  fHistJetHaddPHI = new TH1F("fHistJetHaddPHI", "Jet-Hadron #Delta#varphi", 72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistJetHaddPhiIN = new TH1F("fHistJetHaddPhiIN","Jet-Hadron #Delta#varphi IN PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
+  fHistJetHaddPhiOUT = new TH1F("fHistJetHaddPhiOUT","Jet-Hadron #Delta#varphi OUT PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
+  fHistJetHaddPhiMID = new TH1F("fHistJetHaddPhiMID","Jet-Hadron #Delta#varphi MIDDLE of PLANE", 72,-0.5*TMath::Pi(), 1.5*TMath::Pi());
+  fHistLocalRhoJetpt = new TH1F("fHistLocalRhoJetpt","Local Rho corrected Jet p_{T}", 50, -50, 200);
+
   // add to output lists
   fOutput->Add(fHistNjetvsCent);
   fOutput->Add(fHistJetHaddPHI);
@@ -403,8 +412,40 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   fOutput->Add(fHistJetHaddPhiMID);
   fOutput->Add(fHistLocalRhoJetpt);
 
+  // TPC signal (PID)
   fHistTPCdEdX = new TH2F("TPCdEdX", "TPCdEdX", 400, 0.0, 20.0, 500, 0, 500);
   fOutput->Add(fHistTPCdEdX);
+
+  // TEST HISTOS - making sure container tracks are filtered properly
+  fHistNTrackPhiNEW = new TH1F("fHistNTrackPhiNEW", "NTrack vs #Psi (new framework)", 144, 0, 2*TMath::Pi());
+  fHistNTrackPtNEW = new TH1F("fHistNTrackPtNEW", "NTrack vs p_T (new framework)", 500, 0, 50);
+  fHistNTrackEtaNEW = new TH1F("fHistNTrackEtaNEW", "NTrack vs #eta (new framework)", 180, -0.9, 0.9);
+  fHistNTrackPhiEtaNEW = new TH2F("fHistNTrackPhiEtaNEW", "NTrack vs #phi vs #eta (new framework)", 72, 0, 2*TMath::Pi(), 90, -0.9, 0.9);
+  fOutput->Add(fHistNTrackPhiNEW);
+  fOutput->Add(fHistNTrackPtNEW);
+  fOutput->Add(fHistNTrackEtaNEW);
+  fOutput->Add(fHistNTrackPhiEtaNEW);
+
+  // some default histos for QA - Added April 28, 2016
+  // tracks
+  fHistNTrackPt = new TH1F("fHistNTrackPt", "NTrack vs p_T", 500, 0, 50);
+  fHistNTrackPhi = new TH1F("fHistNTrackPhi", "NTrack vs #phi", 144, 0, 2*TMath::Pi());
+  fHistNTrackEta = new TH1F("fHistNTrackEta", "NTrack vs #eta", 180, -0.9, 0.9);
+  fHistNTrackPhiEta = new TH2F("fHistNTrackPhiEta", "NTrack vs #phi vs #eta", 72, 0, 2*TMath::Pi(), 90, -0.9, 0.9);
+  fOutput->Add(fHistNTrackPt);
+  fOutput->Add(fHistNTrackPhi);
+  fOutput->Add(fHistNTrackEta);
+  fOutput->Add(fHistNTrackPhiEta);
+
+  // jets
+  fHistNJetPt = new TH1F("fHistNJetPt", "NJet vs p_T", 500, 0, 250);
+  fHistNJetPhi = new TH1F("fHistNJetPhi", "NJet vs #phi", 144, 0, 2*TMath::Pi());
+  fHistNJetEta = new TH1F("fHistNJetEta", "NJet vs #eta", 180, -0.9, 0.9);
+  fHistNJetPhiEta = new TH2F("fHistNJetPhiEta", "NJet vs #phi vs #eta", 72, 0, 2*TMath::Pi(), 90, -0.9, 0.9);
+  fOutput->Add(fHistNJetPt);
+  fOutput->Add(fHistNJetPhi);
+  fOutput->Add(fHistNJetEta);
+  fOutput->Add(fHistNJetPhiEta);
 
   if(doEventPlaneRes){
     // Reaction Plane resolution as function of centrality - corrected for 2nd order event plane
@@ -828,10 +869,10 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
               1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17 | 1<<18; // | 1<<19 | 1<<20;
       fhnPID = NewTHnSparseFPID("fhnPID", bitcodePID);
     } else {
-	  bitcodePID = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
+      bitcodePID = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
               1<<10 | 1<<11; // | 1<<12 | 1<<13;
       fhnPID = NewTHnSparseFPID("fhnPID", bitcodePID);
-	}
+    }
 
     // set some variable binning of sparse
     if(dovarbinTHnSparse){
@@ -862,10 +903,6 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
     if(hn)hn->Sumw2();
   }
-
-  // Added March14, 2016 - used for new framework (track container)
-  fTracksCont = GetParticleContainer(0);
-  fTracksCont->SetClassName("AliVTrack");
 
   PostData(1, fOutput);
 }
@@ -1017,41 +1054,77 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 //test
   GetTriggerList();
 
+// ==================================================================================================================================
+
   // initialize TClonesArray pointers to jets and tracks
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0; 
   TClonesArray *tracksME = 0;
   TClonesArray *clusters = 0;
 
+  // TESTING HERE!!!
+  AliTrackContainer* fTracksCont2 = GetTrackContainer("MyTrackContainer_JetHad");
+  if(!fTracksCont2) {
+    AliError(Form("Pointer to tracks: %s == 0", fTracksCont2->GetName()));
+  } else { 
+    if(doComments) cout<<"#tracks = "<<fTracksCont2->GetNParticles()<<"  #accepted tracks = "<<fTracksCont2->GetNAcceptedParticles()<<endl; 
+  }
+
   // method for filling collection output array of 'saved' tracks - Added March14, 2016 for new framework
   Int_t tacc = 0;
   fTracksFromContainer->Clear();
-  if(fTracksCont) {
-    fTracksCont->ResetCurrentID();
-    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+
+  // if we have track container loop over and add to TClonesArray
+  if(fTracksCont2) {
+    fTracksCont2->ResetCurrentID();
+    AliVTrack *track = dynamic_cast<AliVTrack*>(fTracksCont2->GetNextAcceptParticle());
     while(track) {
       // add container tracks to clones array
       (*fTracksFromContainer)[tacc] = track;
       ++tacc;
 
-      // get next track
-      track = dynamic_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+      // apply track cuts
+      if(TMath::Abs(track->Eta())>fTrkEta) continue;
+      if (track->Pt()<0.15) continue;
+
+      // calculate single particle tracking efficiency for correlations
+      //Double_t efficiency = -999;
+      //efficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorr);
+
+      // fill track distributions here (efficiency corrected)
+      fHistNTrackPhiNEW->Fill(track->Phi());
+      fHistNTrackPtNEW->Fill(track->Pt());
+      fHistNTrackEtaNEW->Fill(track->Eta());
+      fHistNTrackPhiEtaNEW->Fill(track->Phi(), track->Eta());
+
+      // get next accepted track
+      track = dynamic_cast<AliVTrack*>(fTracksCont2->GetNextAcceptParticle());
     } // accepted track loop
   }
 
-  // get Tracks object
-  tracks = fTracksFromContainer; // added March14, 2016
+  // get Tracks object - have switch for old/new framework version of tracks
+  if(!douseOLDtrackFramework) { // NEW
+    tracks = fTracksFromContainer; // added March14, 2016
+  } else { // OLD
+    tracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
+  }
   if (!tracks) {
-    AliError(Form("Pointer to tracks: %s == 0", fTracksCont->GetName()));
+    AliError(Form("Pointer to tracks: %s == 0", tracks->GetName()));
     return kTRUE;
   } // verify existence of tracks
 
-  // get ME Tracks object
-  tracksME = fTracksFromContainer; // Added March14, 2016
+  // get ME Tracks object - have switch for old/new framework version of tracks
+  if(!douseOLDtrackFramework) { // NEW
+    tracksME = fTracksFromContainer; // added March14, 2016
+  } else { // OLD
+    tracksME = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
+  }
   if (!tracksME) {
-    AliError(Form("Pointer to ME tracks: %s == 0", fTracksCont->GetName()));
+    AliError(Form("Pointer to ME tracks: %s == 0", tracksME->GetName()));
     return kTRUE;
-  } // verify existence of tracks
+  } // verify existence of tracksME
+
+// ==================================================================================================================================
 
   // get Jets object
   Int_t Njets = 0;
@@ -1102,14 +1175,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     if(makeQAhistos) fHistClusEnergy->Fill(nPart.E());
   }
 
-  // initialize track parameters
-  Int_t iTT=-1;
-  Double_t ptmax=-10;
-  Int_t NtrackAcc = 0;
-
+  // get event object
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   if (!fVevent) {
-    printf("ERROR: fVEvent not available\n");
+    AliError(Form("ERROR: AliVEvent (fVevent) not available! \n"));
     return kTRUE;
   }
 
@@ -1119,6 +1188,11 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   if(trig & AliVEvent::kMB) fHistCentZvertMB->Fill(fCent, zVtx);
   if(trig & AliVEvent::kAny) fHistCentZvertAny->Fill(fCent, zVtx);
 
+  // initialize track parameters
+  Int_t iTT=-1;
+  Double_t ptmax=-10;
+  Int_t NtrackAcc = 0;
+
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){    
     AliVTrack *track = dynamic_cast<AliVTrack*>(tracks->At(iTracks));
@@ -1127,9 +1201,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       continue;
     }
 
-    // track cuts
-    if(TMath::Abs(track->Eta())>0.9) continue;
-    if(track->Pt()<0.15) continue;
+    // apply track cuts
+    if(TMath::Abs(track->Eta())>fTrkEta) continue;
+    if (track->Pt()<0.15) continue;
+
     //iCount++;
     NtrackAcc++;
 
@@ -1137,12 +1212,24 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       ptmax=track->Pt();             // max pT track
       iTT=iTracks;                   // trigger tracks
     } // check if Pt>maxpt
-    
+
+    // calculate single particle tracking efficiency for correlations
+    Double_t efficiency = -999;
+    efficiency = EffCorrection(track->Eta(), track->Pt(), fDoEffCorr);
+    //efficiency = 1.0;
+
+    // fill track distributions here
+    fHistNTrackPt->Fill(track->Pt());
+    fHistNTrackPhi->Fill(track->Phi());
+    fHistNTrackEta->Fill(track->Eta());
+    fHistNTrackPhiEta->Fill(track->Phi(), track->Eta());
+
     if (makeQAhistos) fHistTrackPhi->Fill(track->Phi()); 
     if (makeQAhistos) fHistTrackPt[centbin]->Fill(track->Pt());
     if (makeQAhistos) fHistTrackPtallcent->Fill(track->Pt());
   } // end of loop over tracks
 
+  // do event plane analysis for resolution parameter calculation
   if(doEventPlaneRes){
     // cut on event selection before calculating reaction plane and filling histo's
     if ((trig && fTriggerEventType)) {
@@ -1168,6 +1255,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   // get rho from event and fill relative histo's
   fRho = GetRhoFromEvent(fRhoName);
+  if(!fRho) {
+    AliError(Form("Couldn't get fRho named %s\n", fRhoName.Data()));
+    return kFALSE;    
+  } 
   fRhoVal = fRho->GetVal();
 
   if (makeQAhistos) {
@@ -1180,10 +1271,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   }
 
   // initialize jet parameters
-  Int_t ijethi=-1;
-  Double_t highestjetpt=0.0;
-  Int_t passedTTcut=0;
+  Int_t ijethi = -1;
+  Int_t passedTTcut = 0;
   Int_t NjetAcc = 0;
+  Double_t highestjetpt = 0.0;
   Double_t leadhadronPT = 0.0;
   Double_t maxclusterpt = 0.0;
   Double_t maxtrackpt = 0.0;
@@ -1204,6 +1295,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
     // if FlavourJetAnalysis, get desired FlavTag and check against Jet
     if(doFlavourJetAnalysis) { if(!AcceptFlavourJet(jet, fJetFlavTag)) continue;}
+
+    // fill track distributions here
+    fHistNJetPt->Fill(jet->Pt());
+    fHistNJetPhi->Fill(jet->Phi());
+    fHistNJetEta->Fill(jet->Eta());
+    fHistNJetPhiEta->Fill(jet->Phi(), jet->Eta());
 
     // use this to get total # of jets passing cuts in events!!!!!!!!
     if (makeQAhistos) fHistJetPhi->Fill(jet->Phi()); // Jet Phi histogram (filled)
@@ -1250,8 +1347,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      if (ijet==ijethi) maxtrackpt = jet->MaxTrackPt();
 
      // initialize and calculate various parameters: pt, eta, phi, rho, etc...
-     Double_t jetphi = jet->Phi();      // phi of jet
      NJETAcc++;   // # accepted jets
+     Double_t jetphi = jet->Phi();      // phi of jet
      Double_t jeteta = jet->Eta();     // ETA of jet
      Double_t jetPt = -500; 
      Double_t jetPtGlobal = -500; 
@@ -2930,22 +3027,26 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneCombinedVZERO(Double_t*
 
 //_____________________________________________________________________________
 void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
-{
+{  // made change on Apr20, 2016 for updated framework
+
    // grab the TPC event plane
    fNAcceptedTracks = 0;        // reset the track counter
    Double_t qx2(0), qy2(0);     // for psi2
    Double_t qx3(0), qy3(0);     // for psi3
 
-   // first check for track object
-   if(fTracks) {
+   // first check for track object 
+   //if(tracks) {
+   if(fTracksFromContainer) {
      Float_t excludeInEta = -999;
      if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
        if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
      }
        
      // loop over tracks in TPC
-     for(Int_t iTPC(0); iTPC < fTracks->GetEntries(); iTPC++) {
-       AliVParticle *track = dynamic_cast<AliVParticle*>(fTracks->At(iTPC));
+     //for(Int_t iTPC(0); iTPC < tracks->GetEntries(); iTPC++) {
+     for(Int_t iTPC(0); iTPC < fTracksFromContainer->GetEntries(); iTPC++) {
+       //AliVParticle *track = dynamic_cast<AliVParticle*>(tracks->At(iTPC));
+       AliVParticle *track = dynamic_cast<AliVParticle*>(fTracksFromContainer->At(iTPC));
 
        // apply general track cuts
        if(TMath::Abs(track->Eta())>0.9) continue;
@@ -2967,7 +3068,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
 
 //_____________________________________________________________________________
 void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
-{
+{   // updated here Apr20, 2016 for updates to framework
     // fill the profiles for the resolution parameters
     Int_t centbin = GetCentBin(fCent);
     fInCentralitySelection = centbin;
@@ -3013,10 +3114,13 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneResolution(Double_t vze
     Double_t qx5b(0), qy5b(0);     // for psi5c, positive eta
 
     // check for track object and loop over tpc tracks
-    if(fTracks) {
-       Int_t iTracks(fTracks->GetEntriesFast());
+    //if(tracks) {
+    if(fTracksFromContainer) {
+       //Int_t iTracks(tracks->GetEntriesFast());
+       Int_t iTracks(fTracksFromContainer->GetEntriesFast());
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
-           AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(iTPC));
+           //AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTPC));
+           AliVTrack* track = static_cast<AliVTrack*>(fTracksFromContainer->At(iTPC));
 
            // apply track cuts
            if(TMath::Abs(track->Eta())>0.9) continue;
