@@ -3035,7 +3035,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(fDebug>2)Printf("%s:%d Selected Rec background jets: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
     if(nBJ != nRecBckgJets) Printf("%s:%d Mismatch Selected Rec background jets before cuts: %d %d",(char*)__FILE__,__LINE__,nBJ,nRecBckgJets);
     
+
+
+    //++++++++++++++
+
+
     if(!(fUseExtraTracks == 0)){//for Embedding study only
+
       fTracksRecBckgCuts->Clear();
       Int_t nTBckgCuts = GetListOfTracks(fTracksRecBckgCuts, kTrackAODCuts);//all standard tracks of data event, no embedded tracks
 
@@ -3043,11 +3049,18 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
       fIsNJEventEmb = kFALSE;//initialize boolean flag
       
+      if(nRecBckgJets == 0)fh1NJEmbEvt->Fill(1.);
+
+      //loop Bckg Jets
+
       Int_t nRemainingBckgJets = nRecBckgJets; //init value for NJ events for embedding study 
+
       for(Int_t ij=0; ij<nRecBckgJets; ++ij){ // loop over all jets in event 
 	
 	AliAODJet* jetBckg = (AliAODJet*) (fBckgJetsRec->At(ij));
 	if(!jetBckg)continue;
+
+	jettracklist->Clear();
 
 	Double_t sumBckgPt      = 0.;
 	Bool_t isBadBckgJet     = kFALSE;//flag for testing leading constituent bias
@@ -3057,8 +3070,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	if( jetBckg->Pt() < fJetPtCut ) {isBadJet=kTRUE;}
 	if( jetBckg->EffectiveAreaCharged() < fJetMinArea ) {isBadJet=kTRUE;}
 
-	Double_t jetPt = jetBckg->Pt();
-	if(isBadJet == kFALSE)fh1BckgJets->Fill(jetPt);//all cuts on jets except LeadingTrackPt cut are applied here
+	Double_t jetBckgPt = jetBckg->Pt();
+	if(isBadJet == kFALSE)fh1BckgJets->Fill(jetBckgPt);//all cuts on jets except LeadingTrackPt cut are applied here
+
 
 	if((GetFFRadius()<=0)&&(isBadJet == kFALSE)){
 	  GetJetTracksTrackrefs(jettracklist, jetBckg, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadBckgJet);
@@ -3076,16 +3090,18 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  if(nRemainingBckgJets == 0){fIsNJEventEmb = kTRUE;fh1NJEmbEvt->Fill(1.);}//set switch for Embedding into NJ events
 	}
 
-	if((fDebug>3)&&(isBadJet==kFALSE)){std::cout<<"Embedding BckgJet (noJetPtBias yet) - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
+	if((fDebug>3)&&(isBadJet==kFALSE)){std::cout<<"Embedding BckgJet - jetPt:"<<jetBckg->Pt()<<"- jetEta: "<<jetBckg->Eta()<<" - jetAreaCharged: "<<jetBckg->EffectiveAreaCharged()<<std::endl;
 	std::cout<<"nRecBckgJets: "<<nRecBckgJets<<std::endl;
 	std::cout<<"      "<<std::endl;}
 
-	if(isBadJet == kFALSE)fh1BckgJetsPtBias->Fill(jetPt);//good jets are filled here
-	if(fDebug>3)std::cout<<"isBadJet: "<<isBadJet<<std::endl;
+	if(isBadJet == kFALSE)fh1BckgJetsPtBias->Fill(jetBckgPt);//good jets are filled here
+	//if(fDebug>3)std::cout<<"isBadJet: "<<isBadJet<<std::endl;
 
 	jettracklist->Clear();
-	fTracksRecBckgCuts->Clear();
-      }
+	
+      } 
+
+      fTracksRecBckgCuts->Clear();//all tracks in the event from standard track branch
     }
     
   }
@@ -3371,6 +3387,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
       jettracklist->Clear();
+
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
  
@@ -4317,6 +4334,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fListLaRC->Clear();
 	fListALaRC->Clear();
 	fTracksRecCutsRC->Clear();
+
       }
 
 
