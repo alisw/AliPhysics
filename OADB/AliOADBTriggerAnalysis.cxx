@@ -8,52 +8,65 @@
 #include "TBrowser.h"
 #include "TFolder.h"
 #include <iostream>
+#include "TObjString.h"
 
 using namespace std;
 
 ClassImp(AliOADBTriggerAnalysis)
 
-AliOADBTriggerAnalysis::AliOADBTriggerAnalysis() : TNamed("AliOADBTriggerAnalysis", "OADB object storing trigger analysis settings"),   
-  fZDCCutRefSumCorr(-65.5),
-  fZDCCutRefDeltaCorr(-2.1),
-  fZDCCutSigmaSumCorr(6.0),
-  fZDCCutSigmaDeltaCorr(1.2),
-  fZDCCutZNATimeCorrMin(2.0),
-  fZDCCutZNATimeCorrMax(100.0),
-  fZDCCutZNCTimeCorrMin(5.0),
-  fZDCCutZNCTimeCorrMax(100.0)
+AliOADBTriggerAnalysis::AliOADBTriggerAnalysis(TString name) : TNamed(name.Data(), "OADB object storing trigger analysis settings"),
+fFMDLowCut(0.2),
+fFMDHitCut(0.5),
+fZDCCutRefSum(-568.5),
+fZDCCutRefDelta(-2.1),
+fZDCCutSigmaSum(3.25),
+fZDCCutSigmaDelta(2.25),
+fZDCCutRefSumCorr(-65.5),
+fZDCCutRefDeltaCorr(-2.1),
+fZDCCutSigmaSumCorr(6.0),
+fZDCCutSigmaDeltaCorr(1.2),
+fZDCCutZNATimeCorrMin(0.0),
+fZDCCutZNATimeCorrMax(2.0),
+fZDCCutZNCTimeCorrMin(0.0),
+fZDCCutZNCTimeCorrMax(5.0),
+fSPDClsVsTklA(65),
+fSPDClsVsTklB(4),
+fV0MOnVsOfA(-1200.),
+fV0MOnVsOfB(8.),
+fSPDOnVsOfA(-20.),
+fSPDOnVsOfB(1.0),
+fV0CasymA(-25),
+fV0CasymB(0.15),
+fNBCsPast(4),
+fNBCsFuture(7),
+fVHMBBAflags(1),
+fVHMBBCflags(1),
+fVHMBGAflags(3),
+fVHMBGCflags(15),
+fVIRBBAflags(10),
+fVIRBBCflags(10),
+fVIRBGAflags(33),
+fVIRBGCflags(33),
+fV0MOnThreshold(2500),
+fV0MOfThreshold(400),
+fSPDGFOThreshold(2),
+fTRDptHSE(3.),
+fTRDpidHSE(144),
+fTRDptHQU(2.),
+fTRDpidHQU(164.),
+fTRDptHEE(3.),
+fTRDpidHEE(144),
+fTRDminSectorHEE(6),
+fTRDmaxSectorHEE(8),
+fTRDptHJT(3.),
+fTRDnHJT(3)
 {
-  // default ctor
 }
-
-AliOADBTriggerAnalysis::AliOADBTriggerAnalysis(char* name) : TNamed(name, "OADB object storing trigger analysis settings"), 
-  fZDCCutRefSumCorr(-65.5),
-  fZDCCutRefDeltaCorr(-2.1),
-  fZDCCutSigmaSumCorr(6.0),
-  fZDCCutSigmaDeltaCorr(1.2),
-  fZDCCutZNATimeCorrMin(2.0),
-  fZDCCutZNATimeCorrMax(100.0),
-  fZDCCutZNCTimeCorrMin(5.0),
-  fZDCCutZNCTimeCorrMax(100.0)
-{
-  // ctor
-  // Init();
-}
-
-// void AliOADBTriggerAnalysis::Init() {
-//   // initialize pointers
-  
-  
-
-// }
 
 AliOADBTriggerAnalysis::~AliOADBTriggerAnalysis(){
-  // dtor
-
 }
   
-void AliOADBTriggerAnalysis::Browse(TBrowser *b)
-{
+void AliOADBTriggerAnalysis::Browse(TBrowser *b){
    // Browse this object.
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
@@ -114,5 +127,4 @@ void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   cout << " - ZDCCutZNCTimeCorrMin "<< fZDCCutZNCTimeCorrMin << endl;
   cout << " - ZDCCutZNCTimeCorrMax "<< fZDCCutZNCTimeCorrMax << endl;
   cout << option << endl;
-
 }
