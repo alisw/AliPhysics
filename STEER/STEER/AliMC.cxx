@@ -999,15 +999,18 @@ void AliMC::Stepping()
   //
   //verbose.Stepping();
 
-  Int_t id = DetFromMate(TVirtualMC::GetMC()->CurrentMedium());
+  // a reference to our mc;
+  auto const mc = TVirtualMC::GetMC();
+
+  Int_t id = DetFromMate(mc->CurrentMedium());
   if (id < 0) return;
 
 
-  if ( TVirtualMC::GetMC()->IsNewTrack()            &&
-       TVirtualMC::GetMC()->TrackTime() == 0.       &&
-       fRDecayMin >= 0.             &&
+  if ( mc->IsNewTrack()            &&
+       mc->TrackTime() == 0.       &&
+       fRDecayMin >= 0.             &&  
        fRDecayMax > fRDecayMin      &&
-       TVirtualMC::GetMC()->TrackPid() == fDecayPdg )
+       mc->TrackPid() == fDecayPdg )
   {
       FixParticleDecaytime();
   }
@@ -1015,19 +1018,19 @@ void AliMC::Stepping()
   // --- If monitoring timing was requested, monitor the step
   if (fUseMonitoring) {
     if (!fMonitor) {
-      fMonitor = new AliTransportMonitor(TVirtualMC::GetMC()->NofVolumes()+1);
+      fMonitor = new AliTransportMonitor(mc->NofVolumes()+1);
       fMonitor->Start();
-    }
-    if (TVirtualMC::GetMC()->IsNewTrack() || TVirtualMC::GetMC()->TrackTime() == 0. || TVirtualMC::GetMC()->TrackStep()<1.1E-10) {
+    }  
+    if (mc->IsNewTrack() || mc->TrackTime() == 0. || mc->TrackStep()<1.1E-10) {
       fMonitor->DummyStep();
     } else {
     // Normal stepping
       Int_t copy;
-      Int_t volId = TVirtualMC::GetMC()->CurrentVolID(copy);
-      Int_t pdg = TVirtualMC::GetMC()->TrackPid();
+      Int_t volId = mc->CurrentVolID(copy);
+      Int_t pdg = mc->TrackPid();
       TLorentzVector xyz, pxpypz;
-      TVirtualMC::GetMC()->TrackPosition(xyz);
-      TVirtualMC::GetMC()->TrackMomentum(pxpypz);
+      mc->TrackPosition(xyz);
+      mc->TrackMomentum(pxpypz);
       fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
     }
   }
@@ -1038,12 +1041,12 @@ void AliMC::Stepping()
   else {
     Int_t copy;
     //Update energy deposition tables
-    AddEnergyDeposit(TVirtualMC::GetMC()->CurrentVolID(copy),TVirtualMC::GetMC()->Edep());
+    AddEnergyDeposit(mc->CurrentVolID(copy),mc->Edep());
     //
     // write tracke reference for track which is dissapearing - MI
 
-    if (TVirtualMC::GetMC()->IsTrackDisappeared() && !(TVirtualMC::GetMC()->IsTrackAlive())) {
-	if (TVirtualMC::GetMC()->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
+    if (mc->IsTrackDisappeared() && !(mc->IsTrackAlive())) {
+    if (mc->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
 						AliTrackReference::kDisappeared);
 
 

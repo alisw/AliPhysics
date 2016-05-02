@@ -2266,27 +2266,28 @@ void AliTPCv2::Init()
   
   AliTPC::Init();
 
+  auto const mc = TVirtualMC::GetMC();
  
-  fIdSens=TVirtualMC::GetMC()->VolId("TPC_Strip");  // one strip is always selected...
+  fIdSens=mc->VolId("TPC_Strip");  // one strip is always selected...
 
-  fIDrift=TVirtualMC::GetMC()->VolId("TPC_Drift");
+  fIDrift=mc->VolId("TPC_Drift");
   fSecOld=-100; // fake number 
 
-  TVirtualMC::GetMC()->SetMaxNStep(-120000); // max. number of steps increased
+  mc->SetMaxNStep(-120000); // max. number of steps increased
 
   if (fPrimaryIonisation) {
     // for FLUKA
-      TVirtualMC::GetMC()->Gstpar(idtmed[2],"PRIMIO_E", 20.77); // 1st ionisation potential
+      mc->Gstpar(idtmed[2],"PRIMIO_E", 20.77); // 1st ionisation potential
  
-      TVirtualMC::GetMC()->Gstpar(idtmed[2],"PRIMIO_N", 14.35);
-      TVirtualMC::GetMC()->Gstpar(idtmed[2],"LOSS", 14); // specific energy loss
-      TVirtualMC::GetMC()->Gstpar(idtmed[2],"STRA",4);
+      mc->Gstpar(idtmed[2],"PRIMIO_N", 14.35);
+      mc->Gstpar(idtmed[2],"LOSS", 14); // specific energy loss
+      mc->Gstpar(idtmed[2],"STRA",4);
   } 
   // specific energy loss for geant3 is now defined in galice.cuts
 
 
   AliDebug(1,"*** TPC version 2 initialized ***");
-  AliDebug(1,Form("Maximum number of steps = %d",TVirtualMC::GetMC()->GetMaxNStep()));
+  AliDebug(1,Form("Maximum number of steps = %d",mc->GetMaxNStep()));
 
   //
   
@@ -2321,29 +2322,33 @@ void AliTPCv2::StepManager()
   
   vol[1]=0; // preset row number to 0
   //
-  if (!fPrimaryIonisation) TVirtualMC::GetMC()->SetMaxStep(kbig);
+
+  // cache reference to MC
+  auto const mc = TVirtualMC::GetMC();
+
+  if (!fPrimaryIonisation) mc->SetMaxStep(kbig);
   
-  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
+  if(!mc->IsTrackAlive()) return; // particle has disappeared
   
-  Float_t charge = TVirtualMC::GetMC()->TrackCharge();
+  Float_t charge = mc->TrackCharge();
   
   if(TMath::Abs(charge)<=0.) return; // take only charged particles
   
   // check the sensitive volume
 
-  id = TVirtualMC::GetMC()->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
+  id = mc->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
   if(id != fIDrift && id != fIdSens) return; // not in the sensitive folume 
 
   if ( fPrimaryIonisation && id == fIDrift ) {
-    Double_t rnd = TVirtualMC::GetMC()->GetRandom()->Rndm();
-    TVirtualMC::GetMC()->SetMaxStep(0.2+(2.*rnd-1.)*0.05);  // 2 mm +- rndm*0.5mm step
+    Double_t rnd = mc->GetRandom()->Rndm();
+    mc->SetMaxStep(0.2+(2.*rnd-1.)*0.05);  // 2 mm +- rndm*0.5mm step
   }   
 
-  //if ( fPrimaryIonisation && id == fIDrift && TVirtualMC::GetMC()->IsTrackEntering()) {
-  //  TVirtualMC::GetMC()->SetMaxStep(0.2);  // 2 mm 
+  //if ( fPrimaryIonisation && id == fIDrift && mc->IsTrackEntering()) {
+  //  mc->SetMaxStep(0.2);  // 2 mm
   //}   
   
-  TVirtualMC::GetMC()->TrackPosition(p);
+  mc->TrackPosition(p);
   Double_t r = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
   //
   
@@ -2391,7 +2396,7 @@ void AliTPCv2::StepManager()
   // track is in the sensitive strip
   if(id == fIdSens){
     // track is entering the strip
-    if (TVirtualMC::GetMC()->IsTrackEntering()){
+    if (mc->IsTrackEntering()){
       Int_t totrows = fTPCParam->GetNRowLow()+fTPCParam->GetNRowUp();
       vol[1] = (copy<=totrows) ? copy-1 : copy-1-totrows;
       // row numbers are autonomous for lower and upper sectors
@@ -2403,25 +2408,25 @@ void AliTPCv2::StepManager()
   
         // lower sector, row 0, because Jouri wants to have this
 
-        TVirtualMC::GetMC()->TrackMomentum(p);
+        mc->TrackMomentum(p);
         hits[0]=p[0];
         hits[1]=p[1];
         hits[2]=p[2];
         hits[3]=0.; // this hit has no energy loss
         // Get also the track time for pileup simulation
-        hits[4]=TVirtualMC::GetMC()->TrackTime();
+        hits[4]=mc->TrackTime();
 
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  
       }
     //
 
-       TVirtualMC::GetMC()->TrackPosition(p);
+       mc->TrackPosition(p);
        hits[0]=p[0];
        hits[1]=p[1];
        hits[2]=p[2];
        hits[3]=0.; // this hit has no energy loss
        // Get also the track time for pileup simulation
-       hits[4]=TVirtualMC::GetMC()->TrackTime();
+       hits[4]=mc->TrackTime();
 
        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  
     
@@ -2431,31 +2436,31 @@ void AliTPCv2::StepManager()
   //-----------------------------------------------------------------
   //  charged particle is in the sensitive drift volume
   //-----------------------------------------------------------------
-  if(TVirtualMC::GetMC()->TrackStep() > 0) {
+  if(mc->TrackStep() > 0) {
     Int_t nel=0;
     if (!fPrimaryIonisation) {
-      nel = (Int_t)(((TVirtualMC::GetMC()->Edep())-poti)/wIon) + 1;
+      nel = (Int_t)(((mc->Edep())-poti)/wIon) + 1;
     }
     else {
       
       /*
       static Double_t deForNextStep = 0.;
       // Geant4 (the meaning of Edep as in Geant3) - wrong
-      //nel = (Int_t)(((TVirtualMC::GetMC()->Edep())-poti)/wIon) + 1;
+      //nel = (Int_t)(((mc->Edep())-poti)/wIon) + 1;
 
       // Geant4 (the meaning of Edep as in Geant3) - NEW
-      Double_t eAvailable = TVirtualMC::GetMC()->Edep() + deForNextStep;
+      Double_t eAvailable = mc->Edep() + deForNextStep;
       nel = (Int_t)(eAvailable/wIon);
       deForNextStep = eAvailable - nel*wIon;
       */
 
       //new Geant4-approach
-      Double_t meanIon = TVirtualMC::GetMC()->Edep()/(wIon*kScalewIonG4);
+      Double_t meanIon = mc->Edep()/(wIon*kScalewIonG4);
       nel = (Int_t) ( kFanoFactorG4*AliMathBase::Gamma(meanIon/kFanoFactorG4)); // smear nel using gamma distr w mean = meanIon and variance = meanIon/kFanoFactorG4
     }
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     //
-    TVirtualMC::GetMC()->TrackPosition(p);
+    mc->TrackPosition(p);
     hits[0]=p[0];
     hits[1]=p[1];
     hits[2]=p[2];
@@ -2465,14 +2470,14 @@ void AliTPCv2::StepManager()
 
     //    if (fHitType&&2){
     if(fHitType){
-      TVirtualMC::GetMC()->TrackMomentum(p);
+      mc->TrackMomentum(p);
       Float_t momentum = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
       fTrackHits->SetHitPrecision(precision);
     }
 
     // Get also the track time for pileup simulation
-    hits[4]=TVirtualMC::GetMC()->TrackTime();
+    hits[4]=mc->TrackTime();
  
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
     if (fDebugStreamer){   
@@ -2480,9 +2485,9 @@ void AliTPCv2::StepManager()
       // function  CreateDebugStremer() to be called in the Config.C  macro
       // if you want to enable it
       // By default debug streaemer is OFF
-      Float_t edep = TVirtualMC::GetMC()->Edep();
-      Float_t tstep = TVirtualMC::GetMC()->TrackStep();
-      Int_t pid=TVirtualMC::GetMC()->TrackPid();
+      Float_t edep = mc->Edep();
+      Float_t tstep = mc->TrackStep();
+      Int_t pid=mc->TrackPid();
       (*fDebugStreamer)<<"hit"<<      
 	"x="<<hits[0]<<  // hit position
  	"y="<<hits[1]<<
@@ -2504,11 +2509,11 @@ void AliTPCv2::StepManager()
   TLorentzVector mom;
   // below is valid only for Geant3 (fPromaryIonisation not set)
   if(!fPrimaryIonisation){
-    TVirtualMC::GetMC()->TrackMomentum(mom);
+    mc->TrackMomentum(mom);
     Float_t ptot=mom.Rho();
-    Float_t betaGamma = ptot/TVirtualMC::GetMC()->TrackMass();
+    Float_t betaGamma = ptot/mc->TrackMass();
 
-    //Int_t pid=TVirtualMC::GetMC()->TrackPid();
+    //Int_t pid=mc->TrackPid();
     // if((pid==kElectron || pid==kPositron) && ptot > 0.002)
     //       { 
     //         pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
@@ -2521,9 +2526,9 @@ void AliTPCv2::StepManager()
     pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));         
     //     }
   
-    Double_t rnd = TVirtualMC::GetMC()->GetRandom()->Rndm();
+    Double_t rnd = mc->GetRandom()->Rndm();
   
-    TVirtualMC::GetMC()->SetMaxStep(-TMath::Log(rnd)/pp);
+    mc->SetMaxStep(-TMath::Log(rnd)/pp);
   }
   
 }
