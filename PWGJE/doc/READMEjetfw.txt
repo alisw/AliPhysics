@@ -1,5 +1,9 @@
 /*! \page READMEjetfw The jet finding framework
 
+# Introduction
+
+For an introduction, see \subpage READMEjetfwIntroduction.
+
 # Basic jet finding
 
 Basic jet finding is provided by the AliEmcalJetTask class which is found in the library libPWGJEEMCALJetTasks (source code in PWGJE/EMCALJetTasks). An add task macro is provided in PWGJE/EMCALJetTasks/AddTaskEmcalJet.C:
@@ -47,7 +51,7 @@ enum VCluUserDefEnergy_t {
 ## Particle level jets (MC)
 For particle level jets it is usually enough to filter primary particles (see \subpage READMEtracks).
 
-# Utilities (e.g. FJ contribs)
+# Utilities (e.g. FJ contribs)                    {#fjContribUtilities}
 Additional utilities can be attached to the AliEmcalJetTask object, in a similar fashion as it is done for the AliTender class. The utility classes have to derive from the abstract class AliEmcalJetUtility. An EMCal jet utility class can implement any of the following four methods declared as virtual in AliEmcalJetUtility:
 
 ~~~{.cxx}
