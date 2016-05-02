@@ -108,7 +108,7 @@ enum {kSigCorr,kMCPrim,kRawDtCut,kSignalEst,kSignalEstMC,kBgEst,k1MBeta,k1MBetaM
 
 #ifndef __CINT__
 #include <TROOT.h>
-UShort_t fgDebug = 0;
+UShort_t fgDebug = 1;
 void _MyPrint(UShort_t lvl, const char* fmt, ...)
 {
   if (lvl > fgDebug) return;
@@ -484,12 +484,13 @@ Bool_t PrepareHistos(int bin, TList* lst, TList* lstMC, Bool_t isMC)
 			res,kDataDist,shift);
   MyPrint(1,"Delta dist %s (clone of %s)", hDstDt->GetName(), tmp1->GetName());
 
+  // Integrate tail of measured Delta dist 
   double nrmDst,dumErr = 0;
   Integrate(hDstDt, cutBgMin,cutBgMax, nrmDst, dumErr);
   MyPrint(1,"Integral of %s is %f +/- %f", hDstDt->GetName(), nrmDst, dumErr);
   
   if (nrmDst<1e-10) nrmDst = 1.; // RS resque
-  // Scale Delta distribution by integral
+  // Scale measured Delta distribution by integral
   hDstDt->Scale(1./nrmDst);
   MyPrint(1,"Scaled %s and by integral %f", hDstDt->GetName(),nrmDst);
 
@@ -1889,7 +1890,7 @@ TH1* ProjNorm(TH2* hEtaZ, TH1* hZv,const char* name, Int_t firstbin, Int_t lastb
       int j = ind[iu];
       double rt = TMath::Sqrt(vsme+arrE[j]*arrE[j])/(vsm+ arrV[j]);
       // printf("%2d(%2d/%2d) New:%.e Old:%.e  | %e %e %e\n",ibe,j,iu,rt,rat,arrV[j],arrE[j],arrE[j]/arrV[j]);
-      MyPrint(0,"  %10s - bin %3d,%3d %9.3f+/-%9.3f (%5.2f%%) [%9.3f+/-%9.3f] "
+      MyPrint(10,"  %10s - bin %3d,%3d %9.3f+/-%9.3f (%5.2f%%) [%9.3f+/-%9.3f] "
 	      "-> %9.3f (%9.3g)",
 	      hEtaZ->GetName(), ibe, j, arrV[j], arrE[j],
 	      100*relE[j], arZV[j], arZE[j], rt, rat);
@@ -1908,7 +1909,7 @@ TH1* ProjNorm(TH2* hEtaZ, TH1* hZv,const char* name, Int_t firstbin, Int_t lastb
     zsme /= zsm*zsm;
     vsme /= vsm*vsm;
     ave = av*TMath::Sqrt( vsme + zsme );
-    MyPrint(0,
+    MyPrint(10,
 	    "%10s - bin %3d (%+6.3f) count=%2d  n=%9.3f+/-%9.3f d=%9.3f+/-%9.3f"
 	    " -> %9.3f +/- %9.3f", hEtaZ->GetName(), ibe,
 	    hEtaZ->GetXaxis()->GetBinCenter(ibe), iu, vsm, TMath::Sqrt(vsme),
