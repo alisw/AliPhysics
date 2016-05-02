@@ -279,7 +279,9 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
 {
   fADCperBin = n;
 
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    GetTriggerQA(i)->SetADCperBin(n);
+  TIter next(fEMCALTriggerQA);
+  AliEMCALTriggerQA* qa = 0;
+  while ((qa = static_cast<AliEMCALTriggerQA*>(next()))) {
+    qa->SetADCperBin(n);
   }
 }
