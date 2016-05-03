@@ -22,6 +22,12 @@
  */
 namespace EMCalTriggerPtAnalysis{
 
+template<typename t>
+class AliCutValueRange;
+
+template<typename t>
+std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &cut);
+
 /**
  * \class AliCutValueRange
  * \brief Class containing a range for a value to cut on
@@ -43,7 +49,7 @@ public:
 	 */
 	virtual ~AliCutValueRange() {}
 
-	friend std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &val);
+	friend std::ostream &operator<< <>(std::ostream &stream, const AliCutValueRange<t> &val);
 
 	void SetLimits(t min, t max){
 		fLimits[0] = min;
@@ -116,9 +122,6 @@ private:
 	ClassDef(AliCutValueRange, 1);     // Value range for cuts
 	/// \endcond
 };
-
-template<typename t>
-ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &cut);
 
 }
 
