@@ -262,9 +262,10 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
       if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
       if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
       else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
-   
-      TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
-      if(!fFiredTrigger.IsNull()) isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+      if( isSelected && !fFiredTrigger.IsNull() ){
+        TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
+        isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+      }
     }
    }
  
