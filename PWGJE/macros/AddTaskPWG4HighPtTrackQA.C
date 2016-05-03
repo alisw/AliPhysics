@@ -1,4 +1,4 @@
-void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272, Bool_t doEfficiency = kFALSE)
+void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272, Bool_t doEfficiency = kFALSE, Bool_t useSPDTrackletVsClusterBG=kFALSE)
 {
   if(iAODanalysis==0) { //run on ESDs
     if(prodType.EqualTo("LHC10h") || prodType.EqualTo("LHC11a")) {
@@ -21,7 +21,7 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
       gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
       AddTaskHybridTrackEfficiencyQA_AOD_train(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
     }
-    AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
+    AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit, useSPDTrackletVsClusterBG);
   }
 }
 
@@ -203,7 +203,7 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
   AliPWG4HighPtTrackQA *taskTrackQA75SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagSemiCentral);
 }
 
-void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768) 
+void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768, Bool_t useSPDTrackletVsClusterBG=kFALSE)
 {  
   UInt_t iPhysicsSelectionFlagMB          = AliVEvent::kMB; 
   UInt_t iPhysicsSelectionFlagCentral     = AliVEvent::kCentral;
@@ -320,15 +320,17 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
       AliPWG4HighPtTrackQA *taskTrackQAMB = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagMB);
       taskTrackQAMB->SetFilterMask(filterBit);
       taskTrackQAMB->SetIncludeNoITS(bIncludeNoITS);
+      taskTrackQAMB->SetUseSPDTrackletVsClusterBG(useSPDTrackletVsClusterBG);
 
       AliPWG4HighPtTrackQA *taskTrackQAMB1 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagMB);
       taskTrackQAMB1->SetFilterMask(filterBit1);
       taskTrackQAMB1->SetIncludeNoITS(bIncludeNoITS);
+      taskTrackQAMB1->SetUseSPDTrackletVsClusterBG(useSPDTrackletVsClusterBG);
       
-
       AliPWG4HighPtTrackQA *taskTrackQAMB2 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagMB);
       taskTrackQAMB2->SetFilterMask(filterBit2);
       taskTrackQAMB2->SetIncludeNoITS(bIncludeNoITS);
+      taskTrackQAMB2->SetUseSPDTrackletVsClusterBG(useSPDTrackletVsClusterBG);
     }
   }
 }
