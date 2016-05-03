@@ -47,10 +47,9 @@ ClassImp(AliAnalysisTaskGammaHadron)
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron():
 AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
-fGammaOrPi0(0),
-fSameEventAnalysis(1),
-fCellEnergyCut(0.05),
-fMaxCellsInCluster(50),
+
+fGammaOrPi0(0),fSameEventAnalysis(1),
+fCellEnergyCut(0.05),fMaxCellsInCluster(50),
 
 fParticleLevel(kFALSE),
 fIsMC(kFALSE),
@@ -59,20 +58,44 @@ fPoolMgr(0x0),
 fHistEffGamma(0x0),
 fHistEffHadron(0x0),
 
-fOutputList1(),
-fOutputList2(),
-fOutputList3(),
-fOutputListGamma(),
-fOutputListXi(),
-fOutputListZeta(),
+fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),
 
-fHistNoClusPtTrigger(0),
-fHistNoClusPt(0),
-fHistNoClusPtH(0),
-fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),
-fHistDEtaDPhiTrackQA(0),
+fHistNoClusPtTrigger(0),fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
+
 fHPoolReady(0x0)
+{
+	InitArrays();
+}
+//________________________________________________________________________
+AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis) :
+AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
+
+fGammaOrPi0(0),fSameEventAnalysis(1),
+fCellEnergyCut(0.05),fMaxCellsInCluster(50),
+
+fParticleLevel(kFALSE),
+fIsMC(kFALSE),
+fCentAlt(),
+fPoolMgr(0x0),
+fHistEffGamma(0x0),
+fHistEffHadron(0x0),
+
+fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),
+
+fHistNoClusPtTrigger(0),fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
+
+fHPoolReady(0x0)
+{
+	InitArrays();
+
+	//set input variables
+	fSameEventAnalysis =InputSameEventAnalysis;
+	fGammaOrPi0        =InputGammaOrPi0;
+}
+//________________________________________________________________________
+AliAnalysisTaskGammaHadron::InitArrays()
 {
 	//Initialize by defult for
 	//InputGammaOrPi0 = 0 ( Gamma analysis )
@@ -90,9 +113,9 @@ fHPoolReady(0x0)
 	for(Int_t i=0; i<kNIdentifier;i++)
 	{
 		fHistptAssHadron[i]= 0;
-		fHistDEtaDPhiG[i]= 0;
-		fHistDEtaDPhiZT[i]= 0;
-		fHistDEtaDPhiXI[i]= 0;
+		fHistDEtaDPhiG[i]  = 0;
+		fHistDEtaDPhiZT[i] = 0;
+		fHistDEtaDPhiXI[i] = 0;
 	}
 	fHistDpGh[0]= 0;
 	fHistDpGh[1]= 0;
@@ -103,37 +126,6 @@ fHPoolReady(0x0)
 	//Set some default values.
 	//if desired one can add a set function to
 	//set these values in the add task function
-	Int_t fCentBinSize= 10;//<<<<< to be set in a setter function
-
-	/*Int_t NcentBins = 100;
-	Double_t mult = 1.0;
-	if(fCentBinSize==1)
-	{
-		NcentBins = 100;
-		mult = 1.0;
-	}
-	else if(fCentBinSize==2)
-	{
-		NcentBins = 50;
-		mult = 2.0;
-	}
-	else if(fCentBinSize==5)
-	{
-		NcentBins = 20;
-		mult = 5.0;
-	}
-	else if(fCentBinSize==10)
-	{
-		NcentBins = 10;
-		mult = 10.0;
-	}
-
-	Double_t centmix[NcentBins+1];
-	for(Int_t ic=0; ic<NcentBins+1; ic++)
-	{
-		centmix[ic]=mult*ic;
-	}*/
-
     static const Int_t NcentBins=8;
     Double_t centmix[NcentBins+1] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0};
 	fMixBCent = new TAxis(NcentBins,centmix);
@@ -141,113 +133,13 @@ fHPoolReady(0x0)
 	static const Int_t NvertBins=8;
     Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
     fMixBZvtx = new TAxis(NvertBins,zvtxmix);
+
     fCentMethodAlt = "V0M";
     fTrackDepth     = 100;     //Hanseul sets it to 100! Q:: is this good? Maximum number of tracks??
     fPoolSize       = 200;     //hanseuls default value Q:: is this correct? Maximum number of events in pool
 
-    SetMakeGeneralHistograms(kTRUE);  //What is this?? In jet exe?
-}
-//________________________________________________________________________
-AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis) :
-AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
-fGammaOrPi0(0),
-fSameEventAnalysis(1),
-fCellEnergyCut(0.05),
-fMaxCellsInCluster(50),
-
-fParticleLevel(kFALSE),
-fIsMC(kFALSE),
-fCentAlt(),
-fPoolMgr(0x0),
-fHistEffGamma(0x0),
-fHistEffHadron(0x0),
-
-
-fOutputList1(),
-fOutputList2(),
-fOutputList3(),
-fOutputListGamma(),
-fOutputListXi(),
-fOutputListZeta(),
-
-fHistNoClusPtTrigger(0),
-fHistNoClusPt(0),
-fHistNoClusPtH(0),
-fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),
-fHistDEtaDPhiTrackQA(0),
-fHPoolReady(0x0)
-
-{
-	//set input variables
-	fSameEventAnalysis =InputSameEventAnalysis;
-	fGammaOrPi0        =InputGammaOrPi0;
-	fDebug             =0;  //set only 1 for debugging
-
-	// Default constructor.
-	fAODfilterBits[0] = 0;
-	fAODfilterBits[1] = 0;
-
-	for(Int_t i=0; i<kNIdentifier;i++)
-	{
-		fHistptAssHadron[i]= 0;
-		fHistDEtaDPhiG[i]= 0;
-		fHistDEtaDPhiZT[i]= 0;
-		fHistDEtaDPhiXI[i]= 0;
-	}
-	fHistDpGh[0]= 0;
-	fHistDpGh[1]= 0;
-	fHistDpGh[2]= 0;
-
-	fRtoD=180.0/TMath::Pi();
-
-	//Set some default values.
-	//if desired one can add a set function to
-	//set these values in the add task function
-	Int_t fCentBinSize= 10;//<<<<< to be set in a setter function
-
-	/*
-	Int_t NcentBins = 100;
-	Double_t mult = 1.0;
-	if(fCentBinSize==1)
-	{
-		NcentBins = 100;
-		mult = 1.0;
-	}
-	else if(fCentBinSize==2)
-	{
-		NcentBins = 50;
-		mult = 2.0;
-	}
-	else if(fCentBinSize==5)
-	{
-		NcentBins = 20;
-		mult = 5.0;
-	}
-	else if(fCentBinSize==10)
-	{
-		NcentBins = 10;
-		mult = 10.0;
-	}
-
-
-	Double_t centmix[NcentBins+1];
-	for(Int_t ic=0; ic<NcentBins+1; ic++)
-	{
-		centmix[ic]=mult*ic;
-	}*/
-    static const Int_t NcentBins=8;
-    Double_t centmix[NcentBins+1] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0};
-	fMixBCent = new TAxis(NcentBins,centmix);
-    static const Int_t NvertBins=8;
-    Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
-    fMixBZvtx = new TAxis(NvertBins,zvtxmix);
-
-    fCentMethodAlt = "V0M";
-    fTrackDepth     = 100;     //Hanseul sets it to 100! Q:: is this good?
-    fPoolSize       = 200;     //hanseuls default value Q:: is this correct?
-
-    SetMakeGeneralHistograms(kTRUE);  //What is this?? In jet exe?
+    //member function of AliAnalysisTaskEmcal
+    SetMakeGeneralHistograms(kTRUE);
 }
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::~AliAnalysisTaskGammaHadron()
