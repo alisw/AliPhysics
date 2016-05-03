@@ -135,6 +135,7 @@
 #include "AliCDBManager.h"
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
+#include "AliVZEROTriggerData.h"
 
 using std::cout;
 using std::endl;
@@ -704,6 +705,48 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
     // Add a new statistics histo containing only the tokens actually used in the selection
     
     Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
+    
+    if (fTriggerOADB->GetV0MOnThreshold()<0 ||
+        fTriggerOADB->GetVHMBBAflags()<0 ||
+        fTriggerOADB->GetVHMBBCflags()<0 ||
+        fTriggerOADB->GetVHMBGAflags()<0 ||
+        fTriggerOADB->GetVHMBGCflags()<0
+       ) 
+    {
+      AliInfo("Setting V0 online thresholds from OCDB");
+      AliCDBManager* man = AliCDBManager::Instance();
+      man->SetRun(runNumber);
+      AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
+      AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
+      if (trigData) {
+        // names in trigData getters are misleading but actual meaning of parameters is ok 
+        if (fTriggerOADB->GetV0MOnThreshold()<0) {
+          Int_t val = trigData->GetCentralityV0AThrLow();
+          AliInfo(Form("  V0MOnThreshold set to %i",val));
+          fTriggerOADB->SetV0MOnThreshold(val);
+        }
+        if (fTriggerOADB->GetVHMBBAflags()<0) {
+          Int_t val = trigData->GetMultV0AThrLow();
+          AliInfo(Form("  VHMBBAflags set to %i",val));
+          fTriggerOADB->SetVHMBBAflags(val);
+        }
+        if (fTriggerOADB->GetVHMBGAflags()<0) {
+          Int_t val = trigData->GetMultV0AThrHigh();
+          AliInfo(Form("  VHMBGAflags set to %i",val));
+          fTriggerOADB->SetVHMBGAflags(val);
+        }
+        if (fTriggerOADB->GetVHMBBCflags()<0) {
+          Int_t val = trigData->GetMultV0CThrLow();
+          AliInfo(Form("  VHMBBCflags set to %i",val));
+          fTriggerOADB->SetVHMBBCflags(val);
+        }
+        if (fTriggerOADB->GetVHMBGCflags()<0) {
+          Int_t val = trigData->GetMultV0CThrHigh();
+          AliInfo(Form("  VHMBGCflags set to %i",val));
+          fTriggerOADB->SetVHMBGCflags(val);
+        }
+      } else AliError("Failed to set V0M online threshold");
+    }
     
     for (Int_t i=0; i<count; i++) {
       AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis(Form("TriggerAnalysis%i",i));
