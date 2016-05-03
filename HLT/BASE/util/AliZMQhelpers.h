@@ -69,6 +69,7 @@ void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TObjArr
 
 //checking identity of the frame via iterator
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
+int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic);
 //helpers for accessing data via iterators
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);

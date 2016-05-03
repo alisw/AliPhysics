@@ -700,6 +700,15 @@ int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic)
 }
 
 //_______________________________________________________________________________________
+int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topic)
+{
+  AliHLTDataTopic actualTopic;
+  alizmq_msg_iter_topic(it, actualTopic);
+  if (actualTopic.GetID() == topic.GetID()) return 0;
+  return 1;
+}
+
+//_______________________________________________________________________________________
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic)
 {
   std::string actualTopic;

@@ -888,13 +888,13 @@ extern "C" {
       return description;
     }
 
-    std::string GetOrigin()
+    std::string GetOrigin() const
     {
       std::string origin(fTopic+kAliHLTComponentDataTypefIDsize, kAliHLTComponentDataTypefOriginSize);
       return origin;
     }
 
-    std::string GetID()
+    std::string GetID() const
     {
       std::string id(fTopic, kAliHLTComponentDataTypefIDsize);
       return id;
