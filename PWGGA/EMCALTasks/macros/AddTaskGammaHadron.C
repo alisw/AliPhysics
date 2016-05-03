@@ -92,9 +92,10 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
     clusCont->SetClusPtCut(clusptcut);
     AnalysisTask->SetNeedEmcalGeom(kTRUE);
   }
-  else
+  if(!partCont || !clusCont)
   {
-	  AnalysisTask->SetNeedEmcalGeom(kFALSE);
+	 cout<<"Task can not run like this!"<<endl;
+	 //return 0;
   }
 
 
