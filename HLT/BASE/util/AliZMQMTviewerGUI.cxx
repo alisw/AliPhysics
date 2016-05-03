@@ -239,6 +239,7 @@ void AliZMQMTviewerGUI::EventInfo(Int_t event, Int_t px, Int_t py, TObject *sele
 void AliZMQMTviewerGUI::PadSelected(TVirtualPad* pad, TObject *object, Int_t event)
 {
   if (event==1 && pad) {
+    if (pad==fCanvas) { return; }
     std::string name = "";
     std::string title = "";
     TList primitives;
@@ -251,6 +252,7 @@ void AliZMQMTviewerGUI::PadSelected(TVirtualPad* pad, TObject *object, Int_t eve
         title = o->GetTitle();
       }
     }
+    if (primitives.GetSize()==0) return;
     AliZMQMTviewerGUIview* window = new AliZMQMTviewerGUIview(
         name.c_str(),title.c_str(),100,200,700,600);
     window->fDrawnObjects.AddAll(&primitives);
