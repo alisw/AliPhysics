@@ -2496,7 +2496,11 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 
     // in case of MC switch to kAny if no MB/INT7/INT8 has been selected
     if(isMC){
-      if( fOfflineTriggerMask != AliVEvent::kMB && fOfflineTriggerMask != AliVEvent::kINT7 && fOfflineTriggerMask != AliVEvent::kINT8 ){
+      if( fIsHeavyIon == 0){
+        if( fOfflineTriggerMask != AliVEvent::kMB && fOfflineTriggerMask != AliVEvent::kINT7 && fOfflineTriggerMask != AliVEvent::kINT8 ){
+          fOfflineTriggerMask = AliVEvent::kAny;
+        }
+      }else{
         fOfflineTriggerMask = AliVEvent::kAny;
       }
     }
