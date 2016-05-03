@@ -70,6 +70,12 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   AnalysisTask->SetCaloCellsName(ncells);
   AnalysisTask->SetVzRange(-10,10);
 
+  /*
+  // Used for physics selection
+  task->SetUseAliAnaUtils(kTRUE);
+  task->DoVertexRCut(doVertexRCut);
+  */
+
  //for later AnalysisTask->SetEffHistGamma(THnF *h);
  //for later AnalysisTask->SetEffHistHadron(THnF *h);
 

@@ -23,7 +23,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   virtual ~AliAnalysisTaskGammaHadron();
 
   void                        UserCreateOutputObjects();
-
   //Set things for the analyis
   //void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut      ; }
   //void                        SetMaxCellsInCluster(Int_t b)                        { fMaxCellsInCluster  = b        ; }
@@ -36,6 +35,7 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 
  protected:
 
+  void                        InitArrays()                                                  ;
   void                        ExecOnce()         										  ;
   void                        InitEventMixer()											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
