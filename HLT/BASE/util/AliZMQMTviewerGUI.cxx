@@ -211,6 +211,7 @@ void AliZMQMTviewerGUI::UpdateCanvas()
    }
    std::string title = fWindowTitle + info;
    SetWindowName(title.c_str());
+   fCanvas->cd();
    fViewer->UpdateCanvas(fCanvas, fSelection, fUnSelection);
    fCanvas->Update();
 }
@@ -252,13 +253,12 @@ void AliZMQMTviewerGUI::PadSelected(TVirtualPad* pad, TObject *object, Int_t eve
     }
     AliZMQMTviewerGUIview* window = new AliZMQMTviewerGUIview(
         name.c_str(),title.c_str(),100,200,700,600);
-    window->Connect("Closed()","AliZMQMTviewerGUIview",window,"CleanUp()");
     window->fDrawnObjects.AddAll(&primitives);
     TIter i(&primitives);
     while (TObject* o = i.Next()) {
       o->Draw();
     }
-    window->Update();
+    window->fCanvas.Update();
   }
 }
 
@@ -318,5 +318,7 @@ ClassImp(AliZMQMTviewerGUIview)
 
 void AliZMQMTviewerGUIview::CleanUp()
 {
+  fDrawnObjects.Delete();
+  delete this;
 }
 
