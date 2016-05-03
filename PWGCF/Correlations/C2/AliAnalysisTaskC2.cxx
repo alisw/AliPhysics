@@ -82,7 +82,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
     Double_t(nptPairBins),  // ptpairbin max
     1,  // mult dummy
     this->fSettings.fZVtxAcceptanceUpEdge};
-  this->fPairs = new THnC("pairs",
+  this->fPairs = new THnS("pairs",
 			  "<N_{1}N_{2}>;#eta_{1};#eta_{2};#phi_{1};#phi_{2};p_{pair};mult;z_{vtx};",
 			  cPairsDims::kNdimensions, nbins_pairs, xmin_pairs, xmax_pairs);
   this->fPairs->GetAxis(cPairsDims::kMult)
@@ -111,7 +111,7 @@ void AliAnalysisTaskC2::UserCreateOutputObjects()
     1,  // Dummy
     xmax_pairs[cPairsDims::kMult],
     xmax_pairs[cPairsDims::kZvtx]};
-  this->fSingles = new THnS("singles", "<N>;#eta;#phi;p_{T};mult;z_{vtx};",
+  this->fSingles = new THnF("singles", "<N>;#eta;#phi;p_{T};mult;z_{vtx};",
 			    cSinglesDims::kNdimensions, nbins_singles, xmin_singles, xmax_singles);
   this->fSingles->GetAxis(cSinglesDims::kPt)->Set(nPtbins, &this->fSettings.fPtBinEdges[0]);
   this->fSingles->GetAxis(cSinglesDims::kMult)->Set(nMult, &this->fSettings.fMultBinEdges[0]);
