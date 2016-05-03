@@ -177,19 +177,24 @@ Double_t AliAnalysisTaskParticleRandomizer::AddFlow(Double_t phi, Double_t pt)
 {
   // adapted from AliFlowTrackSimple
   Double_t precisionPhi = 1e-10;
-  Int_t maxNumberOfIterations  = 100;
+  Int_t maxNumberOfIterations  = 200;
 
   Double_t phi0=phi;
   Double_t f=0.;
   Double_t fp=0.;
   Double_t phiprev=0.;
-  Double_t v2 = fDistributionV2->GetBinContent(fDistributionV2->GetXaxis()->FindBin(pt), fDistributionV2->GetYaxis()->FindBin(fCent));
+  Int_t ptBin = fDistributionV2->GetXaxis()->FindBin(pt);
+  Double_t v2 = 0;
+  if(ptBin>fDistributionV2->GetNbinsX())
+    v2 = fDistributionV2->GetBinContent(fDistributionV2->GetNbinsX(), fDistributionV2->GetYaxis()->FindBin(fCent));
+  else if(ptBin>0)
+    v2 = fDistributionV2->GetBinContent(ptBin, fDistributionV2->GetYaxis()->FindBin(fCent));
 
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {
     phiprev=phi; //store last value for comparison
-    f =  phi-phi0+2.0*v2*TMath::Sin(phi-fEPV0);
-    fp = 1.0+2.0*v2*TMath::Cos(phi-fEPV0); //first derivative
+    f =  phi-phi0+v2*TMath::Sin(2*(phi-(fEPV0+(TMath::Pi()/2.)))); // fEPV0 can be negative in this convention
+    fp = 1.0+2.0*v2*TMath::Cos(2*(phi-(fEPV0+(TMath::Pi()/2.)))); //first derivative
     phi -= f/fp;
     if (TMath::AreEqualAbs(phiprev,phi,precisionPhi)) break;
   }
