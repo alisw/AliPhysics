@@ -51,7 +51,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   //Configure jet tagger task
   AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName.Data());
 
-  task->SetNCentBins(4);
+  //  task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
