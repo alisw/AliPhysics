@@ -2486,7 +2486,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
             fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;    
         } else if (fIsHeavyIon == 2){
             fOfflineTriggerMask = AliVEvent::kINT7;
-        } else if ( fPeriodEnum == kLHC11cg || fPeriodEnum == kLHC12 ) {
+        } else if ( fPeriodEnum == kLHC11cg ) {
           // fixing default trigger to kINT7 as no data with kMB was taken!!!
           fOfflineTriggerMask = AliVEvent::kINT7;
   //         cout << "will take kINT7 as trigger mask" << endl; 
