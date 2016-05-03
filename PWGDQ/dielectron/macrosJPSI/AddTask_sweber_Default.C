@@ -11,7 +11,8 @@ AliAnalysisTask* AddTask_sweber_Default(
   Bool_t isMC = kFALSE,
   Bool_t rejectPileup = kTRUE,
   Bool_t usePhysicsSelection = kTRUE,
-  TString triggerClass = ""
+  TString triggerClass = "",
+  TString suffix = ""
 )
 {
   // get the current analysis manager
@@ -122,28 +123,28 @@ AliAnalysisTask* AddTask_sweber_Default(
 
   // create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("sweber_Default_tree",
+    mgr->CreateContainer( Form("sweber_Default_tree%s",suffix.Data() ),
       TTree::Class(),
       AliAnalysisManager::kExchangeContainer,
-      "sweber_Default_default");
+      Form("sweber_Default_default%s",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("sweber_Default_QA",
+    mgr->CreateContainer(Form("sweber_Default_QA%s",suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("sweber_Default_CF",
+    mgr->CreateContainer(Form("sweber_Default_CF%s",suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("sweber_Default_EventStat",
+    mgr->CreateContainer(Form("sweber_Default_EventStat%s",suffix.Data()),
       TH1D::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()) );
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
