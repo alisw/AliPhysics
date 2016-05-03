@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 
-// Short comment describing what this class does needed!
+// Implementation for correlation analysis
 
 //===========================================================
 // AliJCorrelations.h
