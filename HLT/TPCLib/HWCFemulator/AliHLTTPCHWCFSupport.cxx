@@ -48,6 +48,7 @@ using namespace std;
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport()
   : 
   AliHLTLogging(),
+  fProcessingRCU2Data(0),
   fEventMemory(0),
   fEventMCMemory(0)
 {
@@ -68,6 +69,7 @@ AliHLTTPCHWCFSupport::~AliHLTTPCHWCFSupport()
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport(const AliHLTTPCHWCFSupport&)
   : 
   AliHLTLogging(),
+  fProcessingRCU2Data(0),
   fEventMemory(0),
   fEventMCMemory(0)
 {
@@ -89,6 +91,16 @@ void AliHLTTPCHWCFSupport::ReleaseEventMemory()
   fEventMCMemory = 0;
 }
 
+void AliHLTTPCHWCFSupport::UnloadMapping()
+{
+  // unload mapping
+  for( int i=0; i<fgkNSlices; i++ ){
+    for( int j=0; j<fgkNPatches; j++ ){
+      delete[] fMapping[i][j];
+      fMapping[i][j] = NULL;
+    }
+  }
+}
 
 const AliHLTUInt32_t *AliHLTTPCHWCFSupport::GetMapping( int slice, int patch )
 { 
@@ -265,6 +277,7 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
       mapping[1+hwAdd] = configWord;
 	
       AliHLTUInt32_t branch = (hwAdd >> 11) & 0x1;	
+      if( fProcessingRCU2Data ) branch = 0;
       rowBranchPadHw[nRead] = (row<<25) | (branch<<24) | (pad<<16) | hwAdd;
 
       nRead++;
