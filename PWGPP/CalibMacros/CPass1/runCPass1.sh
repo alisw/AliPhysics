@@ -201,7 +201,7 @@ if [ -f $filtMacro ]; then
 else
     echo "no ${filtMacro} ..."
 fi
-if [-f filtering.log ]; then
+if [ -f filtering.log ]; then
     mv filtering.log ../filtering.log
 fi
 #
