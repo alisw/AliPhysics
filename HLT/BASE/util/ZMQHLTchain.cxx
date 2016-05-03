@@ -250,7 +250,7 @@ int Run()
           //if (fVerbose) printf("in block type: %s\n",topicstr.c_str());
         }
         //get the trigger mask
-        if (alizmq_msg_iter_check(i, kAliHLTDataTypeGlobalTrigger)==0)
+        if (alizmq_msg_iter_check_id(i, kAliHLTDataTypeGlobalTrigger)==0)
         {
           TObject* obj = NULL;
           alizmq_msg_iter_data(i, obj);
