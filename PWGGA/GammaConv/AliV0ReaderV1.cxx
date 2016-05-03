@@ -1203,8 +1203,15 @@ void AliV0ReaderV1::CountTracks(){
 
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     // Using standard function for setting Cuts
-    Bool_t selectPrimaries=kTRUE;
-    AliESDtrackCuts *EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    Int_t runNumber = fInputEvent->GetRunNumber();
+    AliESDtrackCuts *EsdTrackCuts = 0x0;
+    // if LHC11a or earlier or if LHC13g -> use 2010 cuts
+    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) ){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    // else use 2011 version of track cuts
+    }else{
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    }
     EsdTrackCuts->SetMaxDCAToVertexZ(2);
     EsdTrackCuts->SetEtaRange(-0.8, 0.8);
     EsdTrackCuts->SetPtRange(0.15);
