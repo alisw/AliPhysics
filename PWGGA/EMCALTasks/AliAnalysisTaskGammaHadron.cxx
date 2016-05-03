@@ -95,7 +95,7 @@ fHPoolReady(0x0)
 	fGammaOrPi0        =InputGammaOrPi0;
 }
 //________________________________________________________________________
-AliAnalysisTaskGammaHadron::InitArrays()
+void AliAnalysisTaskGammaHadron::InitArrays()
 {
 	//Initialize by defult for
 	//InputGammaOrPi0 = 0 ( Gamma analysis )
@@ -170,7 +170,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	InitEventMixer();
-
 	/*
 	// Centrality mixing axis
 	Int_t nCentBins=fMixBCent->GetNbins();
