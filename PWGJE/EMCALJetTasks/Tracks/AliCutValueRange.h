@@ -10,6 +10,7 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <iosfwd>
 #include <TObject.h>
 
 /**
@@ -41,6 +42,8 @@ public:
 	 * Destructor, nothing to do
 	 */
 	virtual ~AliCutValueRange() {}
+
+	friend std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &val);
 
 	void SetLimits(t min, t max){
 		fLimits[0] = min;
@@ -85,6 +88,22 @@ public:
 	 */
 	void SetUseSmallerEqual(Bool_t doUse = true) { fUseSmallerEqual = doUse; }
 	bool IsInRange(t value) const;
+  /**
+   * Get the minimum value of the cut range
+   * @return minimum value of the cut range
+   */
+	t GetMinimum() const { return fLimits[0]; }
+	/**
+	 * Get the maximum value of the cut range
+	 * @return maximum value of the cut range
+	 */
+	t GetMaximum() const { return fLimits[1]; }
+
+	/**
+	 * Print cut values to the ostream
+	 * @param stream stream used for printout
+	 */
+	void Print(std::ostream &stream) const;
 
 private:
 	t       fLimits[2];                 ///< Specifies the limit in either of the direction (not used unless fHasLimit of that direction is true)
@@ -97,6 +116,9 @@ private:
 	ClassDef(AliCutValueRange, 1);     // Value range for cuts
 	/// \endcond
 };
+
+template<typename t>
+ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &cut);
 
 }
 

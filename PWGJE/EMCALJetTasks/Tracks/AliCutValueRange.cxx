@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 #include "AliCutValueRange.h"
 
 /// \cond CLASSIMP
@@ -100,6 +101,17 @@ namespace EMCalTriggerPtAnalysis {
 			  result = !result;
 		}
 		return result;
+	}
+
+	template<typename t>
+	void AliCutValueRange<t>::Print(std::ostream &stream) const {
+	  stream << "[" << fLimits[0] << "|" << fLimits[1] << "]";
+	}
+
+	template<typename t>
+	std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &val){
+	  val.Print(stream);
+	  return stream;
 	}
 
 	template class AliCutValueRange<int>;
