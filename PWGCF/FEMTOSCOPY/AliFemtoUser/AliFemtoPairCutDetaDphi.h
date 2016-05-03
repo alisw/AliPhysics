@@ -121,9 +121,12 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const AliFemtoThreeVector &p1 = track1->P(),
                             &p2 = track2->P();
 
-  bool passes = AliFemtoShareQualityPairCut::Pass(pair)
-             && fDeltaEtaMin <= fabs(CalculateDEta(p1, p2))
-             && fDeltaPhiMin <= fabs(CalculateDPhiStar(p1, p2, fR));
+  const Float_t dEta = fabs(CalculateDEta(p1, p2)),
+                dPhi = fabs(CalculateDPhiStar(p1, p2, fR));
+
+  const bool within_cut_range = (dEta < fDeltaEtaMin) && (dPhi < fDeltaPhiMin);
+
+  bool passes = !within_cut_range && AliFemtoShareQualityPairCut::Pass(pair);
 
   // cout << "> " << passes << " " << CalculateDEta(p1, p2) << " " << CalculateDPhiStar(p1, p2, fR) << "\n";
 
