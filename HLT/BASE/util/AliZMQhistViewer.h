@@ -29,22 +29,34 @@ struct ZMQviewerObject {
   TObject* previous;
   int pad;
   bool redraw;
+  bool isnew;
   
-  ZMQviewerObject() : object(NULL), previous(NULL), pad(-1), redraw(true) {}
+  ZMQviewerObject() : object(NULL), previous(NULL), pad(-1), redraw(true), isnew(true) {}
   ZMQviewerObject(TObject* o) : object(o), previous(NULL), 
-                                pad(-1), redraw(true) {}
+                                pad(-1), redraw(true), isnew(true) {}
   ZMQviewerObject(const ZMQviewerObject& o) : object(o.object), previous(o.previous),
                                               pad(o.pad), 
-                                              redraw(o.redraw) {}
+                                              redraw(o.redraw),
+                                              isnew(o.isnew) {}
+  
   ZMQviewerObject& operator=(const ZMQviewerObject& o) {
     object = o.object;
     previous = o.previous;
     pad = o.pad;
     redraw = o.redraw;
+    isnew = o.isnew;
     return *this;
   }
-  void SwapObject(ZMQviewerObject& from) {
-    if (from.object) { previous = object; std::swap(object, from.object); }
+
+  bool SwapObject(ZMQviewerObject& from) {
+    if (isnew) { return false; }
+    if (from.object) { 
+      previous = object;
+      std::swap(object, from.object);
+      isnew = true;
+      return true;
+    }
+    return false;
   }
 
   ~ZMQviewerObject() {}

@@ -309,12 +309,15 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
     {
       if (strcmp(safename(incoming), safename(current))==0)
       {
-        if (fVerbose) printf("  updating %s\n",safename(incoming));
+        if (fVerbose) printf("  updating %s %s\n",safename(incoming), safetitle(incoming));
         found = true;
         if (!(incoming->object)) { printf("WARNING: null pointer in input data"); }
-        else { 
-          current->SwapObject(*incoming);
-          if (verbose) printf("  swapping plot %s\n", safename(incoming));
+        else {
+          if (current->SwapObject(*incoming)) {
+            if (verbose) printf("  swapped plot %s %s\n", safename(incoming),safetitle(incoming));
+          } else {
+            printf("duplicate histogram in incoming message! skipping %s\n", safename(incoming));
+          }
         }
         break;
       }
@@ -326,6 +329,14 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
       fContent->push_back(tmp); //completely new one
       nNewPlots++;
     }
+  }
+
+  //MUST reset isnew after updating
+  for (vector<ZMQviewerObject>::iterator current=fContent->begin();
+      current!=fContent->end();
+      ++current)
+  {
+    current->isnew = false;
   }
 
   //re-sort the new list if we have new plots
