@@ -114,7 +114,7 @@ class AliEmcalContainer : public TObject {
   AliEmcalContainer(const char *name); 
   virtual ~AliEmcalContainer(){;}
 
-  TObject *operator[](int index) const;
+  virtual TObject *operator[](int index) const = 0;
 
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
   TClonesArray               *GetArray() const                      { return fClArray                   ; }
