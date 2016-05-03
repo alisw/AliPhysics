@@ -977,6 +977,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     triggerString           = triggerString(3,2);
     if (triggerString.CompareTo("03")==0) 
       triggerString         = "00";
+    if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
+      triggerString         = "00";
 
     dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
