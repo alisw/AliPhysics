@@ -10,6 +10,8 @@
 #include "AliFemtoShareQualityPairCut.h"
 #include <TList.h>
 
+#include <cmath>
+
 
 /// \class AliFemtoPairCutDetaDphi
 /// \brief A pair cut which cuts on the Δη Δφ of the pair.
@@ -52,10 +54,10 @@ protected:
   /// Radius at which we calculate φ*
   Float_t fR;
 
-  /// Minimum acceptable delta-eta
+  /// Minimum acceptable Δη
   Float_t fDeltaEtaMin;
 
-  /// Minimum acceptable delta-phi
+  /// Minimum acceptable Δφ*
   Float_t fDeltaPhiMin;
 };
 
@@ -70,6 +72,7 @@ AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
   // no-op
 }
 
+
 inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi(Float_t min_eta, Float_t min_phi, Float_t radius):
   AliFemtoShareQualityPairCut()
@@ -81,34 +84,42 @@ AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi(Float_t min_eta, Float_t min_ph
 }
 
 
-inline void AliFemtoPairCutDetaDphi::SetR(Float_t R)
+inline
+void AliFemtoPairCutDetaDphi::SetR(Float_t R)
 {
   fR = R;
 }
 
-inline void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
+
+inline
+void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
 {
   fDeltaEtaMin = eta;
 }
 
-inline void AliFemtoPairCutDetaDphi::SetMinPhi(Float_t phi)
+
+inline
+void AliFemtoPairCutDetaDphi::SetMinPhi(Float_t phi)
 {
   fDeltaPhiMin = phi;
 }
 
-inline bool AliFemtoPairCutDetaDphi::Pass(AliFemtoPair *pair)
+
+inline
+bool AliFemtoPairCutDetaDphi::Pass(AliFemtoPair *pair)
 {
   return Pass(const_cast<const AliFemtoPair*>(pair));
 }
 
-inline bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
+
+inline
+bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
 {
   const AliFemtoTrack *track1 = pair->Track1()->Track(),
                       *track2 = pair->Track2()->Track();
 
   const AliFemtoThreeVector &p1 = track1->P(),
                             &p2 = track2->P();
-
 
   bool passes = AliFemtoShareQualityPairCut::Pass(pair)
              && fDeltaEtaMin <= fabs(CalculateDEta(p1, p2))
@@ -118,6 +129,7 @@ inline bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
 
   return passes;
 }
+
 
 inline
 Float_t AliFemtoPairCutDetaDphi::CalculateDEta(const AliFemtoThreeVector& a,
@@ -129,7 +141,9 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEta(const AliFemtoThreeVector& a,
   return deta;
 }
 
-inline Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
+
+inline
+Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
   const AliFemtoThreeVector& a,
   const AliFemtoThreeVector& b,
   const Double_t radius_in_meters)
@@ -147,7 +161,8 @@ inline Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
 }
 
 
-inline Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
+inline
+Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
   const AliFemtoThreeVector& a,
   const AliFemtoThreeVector& b,
   const Double_t radius_in_meters)
@@ -171,21 +186,24 @@ inline Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
   const Double_t phi_a = a.Phi(),
                  phi_b = b.Phi(),
 
-                 shift_a = TMath::ASin(unit_factor * charge * b_field * radius_in_meters / a.Perp()),
-                 shift_b = TMath::ASin(unit_factor * charge * b_field * radius_in_meters / b.Perp()),
+                 shift_a = TMath::ASin(- unit_factor * charge * b_field * radius_in_meters / a.Perp()),
+                 shift_b = TMath::ASin(- unit_factor * charge * b_field * radius_in_meters / b.Perp()),
 
                  delta_phi_star = (phi_a + shift_a) - (phi_b + shift_b);
 
   return delta_phi_star;
 }
 
-inline TList* AliFemtoPairCutDetaDphi::ListSettings()
+
+inline
+TList* AliFemtoPairCutDetaDphi::ListSettings()
 {
   TList* settings = AliFemtoShareQualityPairCut::ListSettings();
   AppendSettings(settings);
 
   return settings;
 };
+
 
 inline
 TList*
