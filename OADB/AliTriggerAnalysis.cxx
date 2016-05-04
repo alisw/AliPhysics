@@ -59,6 +59,7 @@ fHistSPDOnVsOf(0),
 fHistV0MOn(0),
 fHistV0MOfAll(0),
 fHistV0MOfAcc(0),
+fHistSPDOnOuter(0),
 fHistV0C3vs012(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
@@ -114,6 +115,8 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fV0MOnThreshold       = oadb->GetV0MOnThreshold();
   fV0MOfThreshold       = oadb->GetV0MOfThreshold();
   fSPDGFOThreshold      = oadb->GetSPDGFOThreshhold();
+  fSH1OuterThreshold    = oadb->GetSH1OuterThreshold();
+  fSH2OuterThreshold    = oadb->GetSH2OuterThreshold();
   fFMDLowCut            = oadb->GetFMDLowThreshold();
   fFMDHitCut            = oadb->GetFMDHitThreshold();
 }
@@ -135,6 +138,7 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
   if (fHistV0MOn)          { delete fHistV0MOn;          fHistV0MOn = 0;          }
   if (fHistV0MOfAll)       { delete fHistV0MOfAll;       fHistV0MOfAll = 0;       }
   if (fHistV0MOfAcc)       { delete fHistV0MOfAcc;       fHistV0MOfAcc = 0;       }
+  if (fHistSPDOnOuter)     { delete fHistSPDOnOuter;     fHistSPDOnOuter = 0;     }
   if (fHistAD)             { delete fHistAD;             fHistAD  = 0;            }
   if (fHistADA)            { delete fHistADA;            fHistADA = 0;            }
   if (fHistADC)            { delete fHistADC;            fHistADC = 0;            }
@@ -181,6 +185,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistV0MOn          = new TH1F("fHistV0MOn",";Online V0M;",10000,0,10000);
   fHistV0MOfAll       = new TH1F("fHistV0MOfAll","All;Offline V0M;",2000,0,2000);
   fHistV0MOfAcc       = new TH1F("fHistV0MOfAcc","Accepted;Offline V0M;",2000,0,2000);
+  fHistSPDOnOuter     = new TH1F("fHistSPDOnOuter","Online outer FO chips",800,0,800);
   fHistAD             = new TH2F("fHistAD", "ADC+ADA vs ADC+ADA;ADC-ADA time (ns);ADC+ADA time (ns)", 300, -150, 150, 300, -50, 250);
   fHistADA            = new TH1F("fHistADA", "ADA;mean time (ns);events", 2000, -100, 100);
   fHistADC            = new TH1F("fHistADC", "ADC;mean time (ns);events", 2000, -100, 100);
@@ -249,6 +254,8 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     case kV0CBG :          str = "V0 C BG";                   break;
     case kVHM :            str = "VHM";                       break;
     case kV0M :            str = "V0M";                       break;
+    case kSH1 :            str = "SH1";                       break;
+    case kSH2 :            str = "SH2";                       break;
     case kZDC :            str = "ZDC";                       break;
     case kZDCA :           str = "ZDC A";                     break;
     case kZDCC :           str = "ZDC C";                     break;
@@ -342,6 +349,8 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     if (  triggerNoFlags==kCTPV0A 
         ||triggerNoFlags==kCTPV0C
         ||triggerNoFlags==kVHM
+        ||triggerNoFlags==kSH1
+        ||triggerNoFlags==kSH2
         ||triggerNoFlags==kCentral
         ||triggerNoFlags==kSemiCentral
       ) AliFatal(Form("Offline trigger not available for trigger %d", triggerNoFlags));
@@ -368,6 +377,8 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kV0CBG:           return V0Trigger(event, kCSide, !offline) == kV0BG;
     case kVHM:             return VHMTrigger(event,!offline);
     case kV0M:             return V0MTrigger(event,!offline);
+    case kSH1:             return SH1Trigger(event);
+    case kSH2:             return SH2Trigger(event);
     case kT0:              return T0Trigger(event, !offline) == kT0BB;
     case kT0BG:            return T0Trigger(event, !offline) == kT0DecBG;
     case kT0Pileup:        return T0Trigger(event, !offline) == kT0DecPileup;
@@ -1186,6 +1197,36 @@ Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Boo
 
 
 //-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::SH1Trigger(const AliVEvent* event, Bool_t fillHists){
+  if (fMC) return kFALSE;
+  AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) {
+    AliError("AliVMultiplicity not available");
+    return kFALSE;
+  }
+  TBits onMap = mult->GetFastOrFiredChips();
+  Int_t on = onMap.CountBits(400);
+  if (fillHists) fHistSPDOnOuter->Fill(on);
+  return (on>=fSH1OuterThreshold);
+}
+
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::SH2Trigger(const AliVEvent* event, Bool_t fillHists){
+  if (fMC) return kFALSE;
+  AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) {
+    AliError("AliVMultiplicity not available");
+    return kFALSE;
+  }
+  TBits onMap = mult->GetFastOrFiredChips();
+  Int_t on = onMap.CountBits(400);
+  if (fillHists) fHistSPDOnOuter->Fill(on);
+  return (on>=fSH2OuterThreshold);
+}
+
+
+//-------------------------------------------------------------------------------------------------
 Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   // Merge a list of objects with this (needed for PROOF).
   // Returns the number of merged objects (including this).
@@ -1195,7 +1236,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   TObject* obj;
   
   // collections of all histograms
-  const Int_t nHists = 28;
+  const Int_t nHists = 29;
   TList collections[nHists];
   
   Int_t count = 0;
@@ -1230,6 +1271,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
     collections[n++].Add(entry->fHistV0MOn);
     collections[n++].Add(entry->fHistV0MOfAll);
     collections[n++].Add(entry->fHistV0MOfAcc);
+    collections[n++].Add(entry->fHistSPDOnOuter);
     collections[n++].Add(entry->fHistT0);
     
     // merge fTriggerClasses
@@ -1276,6 +1318,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   fHistV0MOn->Merge(&collections[n++]);
   fHistV0MOfAll->Merge(&collections[n++]);
   fHistV0MOfAcc->Merge(&collections[n++]);
+  fHistSPDOnOuter->Merge(&collections[n++]);
   fHistT0->Merge(&collections[n++]);
   
   delete iter;
@@ -1300,6 +1343,7 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event){
   IsV0Casym(event,kTRUE);
   VHMTrigger(event,kTRUE);
   V0MTrigger(event,kFALSE,kTRUE);
+  SH1Trigger(event,kTRUE);
 //  TODO: Adjust for AOD
 //  AliESDZDC* zdcData = event->GetESDZDC();
 //  if (zdcData)  {
@@ -1364,6 +1408,7 @@ void AliTriggerAnalysis::SaveHistograms() const {
   if (fHistV0MOn)          fHistV0MOn->Write();
   if (fHistV0MOfAll)       fHistV0MOfAll->Write();
   if (fHistV0MOfAcc)       fHistV0MOfAcc->Write();
+  if (fHistSPDOnOuter)     fHistSPDOnOuter->Write();
   if (fHistT0)             fHistT0->Write();
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);
 }

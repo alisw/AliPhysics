@@ -47,31 +47,36 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t   GetV0MOnThreshold()       { return fV0MOnThreshold;       }
   Float_t GetV0MOfThreshold()       { return fV0MOfThreshold;       }
   Int_t   GetSPDGFOThreshhold()     { return fSPDGFOThreshold;      }
+  Int_t   GetSH1OuterThreshold()    { return fSH1OuterThreshold;    }
+  Int_t   GetSH2OuterThreshold()    { return fSH2OuterThreshold;    }
   Float_t GetFMDLowThreshold()      { return fFMDLowCut;            }
   Float_t GetFMDHitThreshold()      { return fFMDHitCut;            }
   
   // Setters
-  void SetSPDClsVsTklA(Float_t val)   { fSPDClsVsTklA    = val; }
-  void SetSPDClsVsTklB(Float_t val)   { fSPDClsVsTklB    = val; }
-  void SetV0MOnVsOfA(Float_t val)     { fV0MOnVsOfA      = val; }
-  void SetV0MOnVsOfB(Float_t val)     { fV0MOnVsOfB      = val; }
-  void SetSPDOnVsOfA(Float_t val)     { fSPDOnVsOfA      = val; }
-  void SetSPDOnVsOfB(Float_t val)     { fSPDOnVsOfB      = val; }
-  void SetV0CasymA(Float_t val)       { fV0CasymA        = val; }
-  void SetV0CasymB(Float_t val)       { fV0CasymB        = val; }
-  void SetNBCsPast(Int_t val)         { fNBCsPast        = val; }
-  void SetNBCsFuture(Int_t val)       { fNBCsFuture      = val; }
-  void SetVIRBBAflags(Int_t val)      { fVIRBBAflags     = val; }
-  void SetVIRBBCflags(Int_t val)      { fVIRBBCflags     = val; }
-  void SetVIRBGAflags(Int_t val)      { fVIRBGAflags     = val; }
-  void SetVIRBGCflags(Int_t val)      { fVIRBGCflags     = val; }
-  void SetVHMBBAflags(Int_t val)      { fVHMBBAflags     = val; }
-  void SetVHMBBCflags(Int_t val)      { fVHMBBCflags     = val; }
-  void SetVHMBGAflags(Int_t val)      { fVHMBGAflags     = val; }
-  void SetVHMBGCflags(Int_t val)      { fVHMBGCflags     = val; }
-  void SetV0MOnThreshold(Int_t val)   { fV0MOnThreshold  = val; }
-  void SetV0MOfThreshold(Float_t val) { fV0MOfThreshold  = val; }
-  void SetSPDGFOThreshhold(Int_t val) { fSPDGFOThreshold = val; }
+  void SetSPDClsVsTklA(Float_t val)   { fSPDClsVsTklA       = val; }
+  void SetSPDClsVsTklB(Float_t val)   { fSPDClsVsTklB       = val; }
+  void SetV0MOnVsOfA(Float_t val)     { fV0MOnVsOfA         = val; }
+  void SetV0MOnVsOfB(Float_t val)     { fV0MOnVsOfB         = val; }
+  void SetSPDOnVsOfA(Float_t val)     { fSPDOnVsOfA         = val; }
+  void SetSPDOnVsOfB(Float_t val)     { fSPDOnVsOfB         = val; }
+  void SetV0CasymA(Float_t val)       { fV0CasymA           = val; }
+  void SetV0CasymB(Float_t val)       { fV0CasymB           = val; }
+  void SetNBCsPast(Int_t val)         { fNBCsPast           = val; }
+  void SetNBCsFuture(Int_t val)       { fNBCsFuture         = val; }
+  void SetVIRBBAflags(Int_t val)      { fVIRBBAflags        = val; }
+  void SetVIRBBCflags(Int_t val)      { fVIRBBCflags        = val; }
+  void SetVIRBGAflags(Int_t val)      { fVIRBGAflags        = val; }
+  void SetVIRBGCflags(Int_t val)      { fVIRBGCflags        = val; }
+  void SetVHMBBAflags(Int_t val)      { fVHMBBAflags        = val; }
+  void SetVHMBBCflags(Int_t val)      { fVHMBBCflags        = val; }
+  void SetVHMBGAflags(Int_t val)      { fVHMBGAflags        = val; }
+  void SetVHMBGCflags(Int_t val)      { fVHMBGCflags        = val; }
+  void SetV0MOnThreshold(Int_t val)   { fV0MOnThreshold     = val; }
+  void SetV0MOfThreshold(Float_t val) { fV0MOfThreshold     = val; }
+  void SetSPDGFOThreshhold(Int_t val) { fSPDGFOThreshold    = val; }
+  void SetSH1OuterThreshold(Int_t val){ fSH1OuterThreshold  = val; }
+  void SetSH2OuterThreshold(Int_t val){ fSH2OuterThreshold  = val; }
+  
   void SetZDCCorrParameters(Float_t sumCorr, Float_t deltaCorr, Float_t sigmaSumCorr, Float_t sigmaDeltaCorr){ 
     fZDCCutRefSumCorr = sumCorr; 
     fZDCCutRefDeltaCorr = deltaCorr; 
@@ -133,6 +138,8 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t fV0MOnThreshold;          // 
   Float_t fV0MOfThreshold;        // 
   Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
+  Int_t fSH1OuterThreshold;       //
+  Int_t fSH2OuterThreshold;       //
   Float_t fTRDptHSE;              // pt threshold for HSE trigger
   UChar_t fTRDpidHSE;             // PID threshold for HSE trigger
   Float_t fTRDptHQU;              // pt threshold for HQU trigger
@@ -147,7 +154,7 @@ class AliOADBTriggerAnalysis : public TNamed {
   AliOADBTriggerAnalysis(const AliOADBTriggerAnalysis& cont);  // not implemented
   AliOADBTriggerAnalysis& operator=(const AliOADBTriggerAnalysis& cont); // not implemented
 
-  ClassDef(AliOADBTriggerAnalysis, 4);
+  ClassDef(AliOADBTriggerAnalysis, 5);
 };
 
 #endif

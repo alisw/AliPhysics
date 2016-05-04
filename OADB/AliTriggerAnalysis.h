@@ -30,7 +30,7 @@ public:
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
     kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kV0Casym,
-    kVHM,kV0M,
+    kVHM,kV0M,kSH1,kSH2,
     kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
   enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
@@ -69,6 +69,8 @@ public:
   Bool_t IsV0Casym(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t VHMTrigger(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t V0MTrigger(const AliVEvent* event, Bool_t online, Bool_t fillHists = kFALSE);
+  Bool_t SH1Trigger(const AliVEvent* event, Bool_t fillHists = kFALSE);
+  Bool_t SH2Trigger(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Int_t SPDFiredChips(const AliVEvent* event, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
   Bool_t IsSPDClusterVsTrackletBG(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsLaserWarmUpTPCEvent(const AliVEvent* event);
@@ -108,6 +110,7 @@ protected:
   TH1F* fHistV0MOn;          //
   TH1F* fHistV0MOfAll;       //
   TH1F* fHistV0MOfAcc;       //
+  TH1F* fHistSPDOnOuter;     //
   TH2F* fHistAD;             // AD timing (sum vs difference)
   TH1F* fHistADA;            // ADA timing
   TH1F* fHistADC;            // ADC timing

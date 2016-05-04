@@ -136,7 +136,8 @@
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
 #include "AliVZEROTriggerData.h"
-
+#include "AliITSOnlineCalibrationSPDhandler.h"
+#include "AliITSTriggerConditions.h"
 using std::cout;
 using std::endl;
 ClassImp(AliPhysicsSelection)
@@ -745,9 +746,31 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
           AliInfo(Form("  VHMBGCflags set to %i",val));
           fTriggerOADB->SetVHMBGCflags(val);
         }
-      } else AliError("Failed to set V0M online threshold");
+      } else AliError("Failed to set V0 online thresholds from OCDB");
     }
     
+    if (fTriggerOADB->GetSH1OuterThreshold()<0 ||
+        fTriggerOADB->GetSH2OuterThreshold()<0
+        ){
+      AliInfo("Setting FO online thresholds from OCDB");
+      AliITSOnlineCalibrationSPDhandler h;
+      h.ReadPITConditionsFromDB(runNumber,"raw://") ;
+      AliITSTriggerConditions* tri = h.GetTriggerConditions();
+      if (tri) {
+        Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
+        if (fTriggerOADB->GetSH1OuterThreshold()<0) {
+          Int_t val = tri->GetAlgoParamValueLI("0SH1",1);
+          AliInfo(Form("  SH1OuterThreshold set to %i",val));
+          fTriggerOADB->SetSH1OuterThreshold(val);
+        }
+        if (fTriggerOADB->GetSH2OuterThreshold()<0) {
+          Int_t val = tri->GetAlgoParamValueLI("0SH2",1);
+          AliInfo(Form("  SH2OuterThreshold set to %i",val));
+          fTriggerOADB->SetSH2OuterThreshold(val);
+        }
+      } else  AliError("Failed to set FO online thresholds from OCDB");
+    }
+      
     for (Int_t i=0; i<count; i++) {
       AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis(Form("TriggerAnalysis%i",i));
       triggerAnalysis->SetParameters(fTriggerOADB);
