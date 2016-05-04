@@ -139,7 +139,7 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
     return kTRUE;
 }
 
-Bool_t AliMCGenHandler::CreateGenerator()
+void AliMCGenHandler::CreateGenerator()
 {
       if (fGeneratorMacroPath.Length() == 0)
 	AliFatal("fGeneratorMacroPath empty!");
