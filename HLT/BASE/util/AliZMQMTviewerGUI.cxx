@@ -145,10 +145,6 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    }
 
    fViewer->SetCanvas(fCanvas);
-   bool updateCanvas = false;
-   fViewer->GetUpdateCanvas(&updateCanvas);
-
-   //fViewer->Connect("DataReady()","AliZMQMTviewerGUI",this,"UpdateCanvas()");
 
    fTimer = new TTimer(this, 1000);
    fTimer->Reset();
@@ -211,9 +207,7 @@ void AliZMQMTviewerGUI::UpdateCanvas()
    }
    std::string title = fWindowTitle + info;
    SetWindowName(title.c_str());
-   fCanvas->cd();
    fViewer->UpdateCanvas(fCanvas, fSelection, fUnSelection);
-   fCanvas->Update();
 }
 
 //______________________________________________________________________________

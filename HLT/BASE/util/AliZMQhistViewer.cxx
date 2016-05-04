@@ -142,8 +142,6 @@ int AliZMQhistViewer::Run(void* arg)
       GetData(fZMQin);
       if (fUpdateCanvas) {
         UpdateCanvas(fCanvas);
-        fCanvas->Update();
-        gSystem->ProcessEvents();
       }
     }
     else if (sockets[1].revents & ZMQ_POLLIN) //ZMQconfig
@@ -263,7 +261,6 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
 
   if (forceClearCanvas && fContent) {
     canvas->Clear();
-    //canvas->Update();
     fTrashQueue.push_back(fContent);
     fContent = NULL;
   }
@@ -401,6 +398,7 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
     }
   }
   canvas->SetTitle(info.c_str());
+  canvas->Update();
   
   fTrashQueue.push_back(incomingObjects);
   //garbage collect
