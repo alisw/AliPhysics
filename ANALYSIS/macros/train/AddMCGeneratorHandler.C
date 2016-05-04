@@ -18,6 +18,12 @@ AliInputEventHandler* AddMCGeneratorHandler()
   
   mcInputHandler->SetSeedMode(3);
 
+  const char *streamGen = gSystem->Getenv("STREAM_GENERATOR");
+  if (streamGen && (atoi(streamGen) == 1)) {
+    ::Info("handlers", "creating generator for streaming");
+    mcInputHandler->CreateGenerator();
+  }
+
   mgr->SetMCtruthEventHandler(mcInputHandler);
   
   return mcInputHandler;

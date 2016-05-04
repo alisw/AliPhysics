@@ -91,40 +91,9 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
   // Initialize input
     //
     
-    if (!fGenerator) {
-      if (fGeneratorMacroPath.Length() == 0)
-	AliFatal("fGeneratorMacroPath empty!");
-      
-      TString macroPath(fGeneratorMacroPath);
-      
-      if (!fGeneratorMacroPath.BeginsWith("$"))
-        macroPath.Form("$ALICE_ROOT/%s", fGeneratorMacroPath.Data());
-      
-      macroPath = gSystem->ExpandPathName(macroPath.Data());
+    if (!fGenerator)
+      CreateGenerator();
 
-      if (gSystem->AccessPathName(macroPath))
-	  AliFatal(Form("Cannot find macro %s", macroPath.Data()));
-
-      TMacro m(macroPath);
-      Int_t error = 0;
-      Long64_t retval = m.Exec(fGeneratorMacroParameters, &error);
-      if (error != TInterpreter::kNoError)
-	  AliFatal(Form("Macro interpretation %s failed", macroPath.Data()));
-
-      if (retval<0)
-	AliFatal(Form("The macro %s did not return a valid generator (1)", macroPath.Data()));
-
-      fGenerator = reinterpret_cast<AliGenerator*>(retval);
-      if (!fGenerator)
-	AliFatal(Form("The macro %s did not return a valid generator (2)", macroPath.Data()));
-
-      // customization from LEGO train
-      if (fGeneratorCustomization) {
-	fGeneratorCustomization->Exec(Form("(AliGenerator*) %p", fGenerator), &error);
-	if (error != TInterpreter::kNoError)
-	  AliFatal("Execution of generator customization failed");
-      }
-    }
     
     if (fSeedMode == 0)
       Printf("AliMCGenHandler::Init: Not setting any seed. Seed needs to be set externally!");
@@ -168,6 +137,42 @@ Bool_t AliMCGenHandler::Init(Option_t* /*opt*/)
     fMCEvent = new AliMCEvent;
 
     return kTRUE;
+}
+
+Bool_t AliMCGenHandler::CreateGenerator()
+{
+      if (fGeneratorMacroPath.Length() == 0)
+	AliFatal("fGeneratorMacroPath empty!");
+      
+      TString macroPath(fGeneratorMacroPath);
+      
+      if (!fGeneratorMacroPath.BeginsWith("$"))
+        macroPath.Form("$ALICE_ROOT/%s", fGeneratorMacroPath.Data());
+      
+      macroPath = gSystem->ExpandPathName(macroPath.Data());
+
+      if (gSystem->AccessPathName(macroPath))
+	  AliFatal(Form("Cannot find macro %s", macroPath.Data()));
+
+      TMacro m(macroPath);
+      Int_t error = 0;
+      Long64_t retval = m.Exec(fGeneratorMacroParameters, &error);
+      if (error != TInterpreter::kNoError)
+	  AliFatal(Form("Macro interpretation %s failed", macroPath.Data()));
+
+      if (retval<0)
+	AliFatal(Form("The macro %s did not return a valid generator (1)", macroPath.Data()));
+
+      fGenerator = reinterpret_cast<AliGenerator*>(retval);
+      if (!fGenerator)
+	AliFatal(Form("The macro %s did not return a valid generator (2)", macroPath.Data()));
+
+      // customization from LEGO train
+      if (fGeneratorCustomization) {
+	fGeneratorCustomization->Exec(Form("(AliGenerator*) %p", fGenerator), &error);
+	if (error != TInterpreter::kNoError)
+	  AliFatal("Execution of generator customization failed");
+      }
 }
 
 Bool_t AliMCGenHandler::BeginEvent(Long64_t /*entry*/)
