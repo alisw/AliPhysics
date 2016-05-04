@@ -295,14 +295,14 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
     // mark pads at borders of A/B branches 
       
     std::sort(rowBranchPadHw, rowBranchPadHw + nHWAdd);
-    int rowBranchLast = -1;
+    int rowBranchPadLast = -10;
     for( unsigned int i=0; i<nHWAdd; i++ ){
-      int rowBranch = rowBranchPadHw[i]>>24;
-      if( rowBranch != rowBranchLast ){
+      int rowBranchPad = rowBranchPadHw[i]>>16;
+      if( rowBranchPad != rowBranchPadLast+1 ){
 	mapping[1+(rowBranchPadHw[i] & 0xFFF)] |= kBorderFlag;
-	rowBranchLast = rowBranch;
 	if( i>0 ) mapping[1+(rowBranchPadHw[i-1] & 0xFFF)] |= kBorderFlag;	  
       }
+      rowBranchPadLast = rowBranchPad;
     }
     mapping[1+(rowBranchPadHw[nRead-1] & 0xFFF)] |= kBorderFlag;
     
