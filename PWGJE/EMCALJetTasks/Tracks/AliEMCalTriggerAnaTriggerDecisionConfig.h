@@ -6,13 +6,6 @@
 #include <TObject.h>
 #include "AliEMCalTriggerAnaHelper.h"
 
-/**
- * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-p_{t} tracks in triggered events
- *
- * This namespace contains classes for the analysis of high-p_{t} tracks in
- * triggered events.
- */
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerAnaTriggerDecisionConfig : public TObject {
