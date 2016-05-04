@@ -58,6 +58,8 @@ class AliAnalysisTaskEmcalJetLight : public AliAnalysisTaskEmcalLight {
   AliAnalysisTaskEmcalJetLight(const AliAnalysisTaskEmcalJetLight&);            // not implemented
   AliAnalysisTaskEmcalJetLight &operator=(const AliAnalysisTaskEmcalJetLight&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalLight, 1) // EMCAL Jet base analysis task
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalLight, 1);
+  /// \endcond
 };
 #endif
