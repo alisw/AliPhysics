@@ -38,6 +38,7 @@ public:
   virtual void Terminate(Option_t *);
   virtual void NotifyRun();
 
+  void SetIsMC(Bool_t b=kTRUE) { fIsMC = b; }
   void SetBranchNames(TString options) { fTreeBranchNames = options; }
   void SetTrackCutType(TString tc) { fTrackCutType = tc; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
@@ -168,6 +169,7 @@ private:
   AliAnalysisTaskDG(const AliAnalysisTaskDG&); // not implemented
   AliAnalysisTaskDG& operator=(const AliAnalysisTaskDG&); // not implemented
 
+  Bool_t           fIsMC;                //
   TString          fTreeBranchNames;     //
   TString          fTrackCutType;        //
   TString          fTriggerSelection;    //
@@ -192,6 +194,7 @@ private:
   TString          fFiredTriggerClasses; //!
   TreeData         fTreeData;            //!
   TClonesArray     fTrackData;           //!
+  TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
   Bool_t           fUseTriggerMask;      //!
   ULong64_t        fClassMask;           //!
