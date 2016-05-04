@@ -33,7 +33,7 @@ class AliHLTTPCHWClusterMergerV1 : public AliHLTLogging
   /// destructor
   ~AliHLTTPCHWClusterMergerV1();
 
-  Int_t Init();
+  Int_t Init( Bool_t processingRCU2Data );
 
   void SetDataPointer(  AliHLTUInt8_t *data ){ fpData=data; }
 

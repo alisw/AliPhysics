@@ -69,7 +69,7 @@ AliHLTTPCHWClusterMergerV1::~AliHLTTPCHWClusterMergerV1()
   delete[] fMCBlocks;
 }
 
-Int_t AliHLTTPCHWClusterMergerV1::Init()
+Int_t AliHLTTPCHWClusterMergerV1::Init( Bool_t processingRCU2Data )
 {
   // initialisation
   
@@ -96,6 +96,7 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
   }
 
   AliHLTTPCHWCFSupport support; 
+  support.SetProcessingRCU2Data( processingRCU2Data );
 
   for( int iPart=0; iPart<6; iPart++ ){
     const AliHLTUInt32_t *m = support.GetMapping(0,iPart);
@@ -211,8 +212,10 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 {
   /// merge clusters
    
-  if( !fMapping ) Init();
-  if( !fMapping ) return 0;
+  if( !fMapping ){
+    HLTError("Mapping is not initialised");
+    return 0;
+  }
 
   if( !fpData ){    
     HLTError("Pointer to input data is not set");

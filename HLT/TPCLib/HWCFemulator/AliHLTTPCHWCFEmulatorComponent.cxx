@@ -448,6 +448,9 @@ int AliHLTTPCHWCFEmulatorComponent::Configure( const char* cdbEntry, const char*
   if( fDebug>1 ) fCFEmulator.SetDebugLevel( fDebug );
   else fCFEmulator.SetDebugLevel(0);
 
+  fCFSupport.UnloadMapping();
+  fCFSupport.SetProcessingRCU2Data( fProcessingRCU2Data );
+
   return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }
 

@@ -61,6 +61,7 @@ fpClusterMerger(NULL),
 fDoMerge(1),
 fAlreadyMerged(0),
 fTPCPresent(0),
+fProcessingRCU2Data(0),
 fBenchmark("HWClusterDecoder")
 {
   // see header file for class documentation
@@ -146,6 +147,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
   if (!fpDecoder) iResult=-ENOMEM;
   
   fDoMerge = 1;
+  fAlreadyMerged = 0;
+  fProcessingRCU2Data = 0;
 
   if (iResult>=0) iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
 
@@ -170,6 +173,8 @@ int AliHLTTPCHWClusterDecoderComponent::Reconfigure(const char* /*cdbEntry*/, co
   // see header file for class documentation
 
   fDoMerge = 1;
+  fAlreadyMerged = 0;
+  fProcessingRCU2Data = 0;
   int iResult = 0;
   iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
   if ( iResult>=0 ) iResult = InitClusterMerger();  
@@ -186,7 +191,8 @@ int AliHLTTPCHWClusterDecoderComponent::ScanConfigurationArgument(int argc, cons
   
   if (argument.CompareTo("-do-merge")==0){
     fDoMerge = 1;
-    return 1;
+    fAlreadyMerged = 0;    
+   return 1;
   }
 
   if (argument.CompareTo("-do-not-merge")==0){
@@ -203,8 +209,9 @@ int AliHLTTPCHWClusterDecoderComponent::ScanConfigurationArgument(int argc, cons
 
   if (argument.CompareTo("-rcu2-data") == 0)
   {
-    fDoMerge = 0;
-    fAlreadyMerged = 1;
+    fDoMerge = 1;
+    fAlreadyMerged = 0;
+    fProcessingRCU2Data = 1;
     return 1;
   }
 
@@ -218,15 +225,21 @@ int AliHLTTPCHWClusterDecoderComponent::InitClusterMerger()
   // init merger
   //
   int iResult = 0;
-  if ( fDoMerge && !fpClusterMerger) {
+  if( !fDoMerge ){
+    delete fpClusterMerger;
+    fpClusterMerger = NULL;
+    return iResult;
+  }
+  if ( !fpClusterMerger ) {
     fpClusterMerger = new AliHLTTPCHWClusterMergerV1;
-    if( !fpClusterMerger ) iResult=-ENOMEM;
-    else iResult = fpClusterMerger->Init();
-    if( iResult<0 ){
-      HLTError("Can not initialise cluster merger");
-      delete fpClusterMerger;
-      fpClusterMerger = 0;
-    }
+    if( !fpClusterMerger ) return -ENOMEM;
+  }
+
+  iResult = fpClusterMerger->Init( fProcessingRCU2Data );
+  if( iResult<0 ){
+    HLTError("Can not initialise cluster merger");
+    delete fpClusterMerger;
+    fpClusterMerger = 0;
   }
   return iResult;
 }
@@ -389,7 +402,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   }
 
   AliHLTTPCRawClustersDescriptor desc; 
-  desc.SetMergedClustersFlag(fDoMerge || fAlreadyMerged ? 1 : 0);
+  desc.SetMergedClustersFlag( (fDoMerge || fAlreadyMerged) ? 1 : 0);
 
   // Write header block 
   if( isInputPresent ){
