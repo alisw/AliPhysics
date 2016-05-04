@@ -40,6 +40,7 @@ public:
   void          SetPtMin(Double_t val)                      {fMinPt = val;}
   void          SetPtMax(Double_t val)                      {fMaxPt = val;}
   void          SetDistributionV2(TH2D* dist)               {fDistributionV2 = dist;}
+  void          SetDistributionV3(TH2D* dist)               {fDistributionV3 = dist;}
   void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
@@ -63,6 +64,7 @@ protected:
   Double_t            fMaxPt;                     /// range for Pt for randomization
 
   TH2D*               fDistributionV2;            /// Distribution for v2 in bins of pt and centrality
+  TH2D*               fDistributionV3;            /// Distribution for v3 in bins of pt and centrality
 
   TString             fInputArrayName;            /// Name of the TClonesArray that will be loaded
   TString             fOutputArrayName;           /// Name of the destination TClonesArray
@@ -75,12 +77,13 @@ protected:
   TClonesArray*       fJetRemovalArray;           //!<! TClonesArray containing jets
   Double_t            fJetRemovalPtThreshold;     /// threshold at which jets given in fInputJetArray will be removed
 
+  Double_t            fRandomPsi3;                /// eventwise calculated psi 3
   TRandom3*           fRandom;                    //!<! random number generator
 
   Bool_t              IsParticleInJet(Int_t part);
   Double_t            GetExternalRho();
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 4);
+  ClassDef(AliAnalysisTaskParticleRandomizer, 5);
 };
 
 #endif
