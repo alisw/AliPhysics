@@ -33,7 +33,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandom()
+  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fRandomPsi3(0), fRandom()
 {
 // constructor
 }
@@ -90,6 +90,7 @@ void AliAnalysisTaskParticleRandomizer::ExecOnce()
 //_____________________________________________________________________________________________________
 Bool_t AliAnalysisTaskParticleRandomizer::Run()
 {
+  fRandomPsi3 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi3
 
   Int_t accTracks = 0;
   for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
@@ -127,7 +128,7 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
     if(fRandomizeInPt)
       particle->SetPt(fMinPt  + fRandom->Rndm()*(fMaxPt-fMinPt));
 
-    if(fDistributionV2)
+    if(fDistributionV2 || fDistributionV3)
       particle->SetPhi(AddFlow(particle->Phi(), particle->Pt()));
 
     accTracks++;
@@ -183,20 +184,43 @@ Double_t AliAnalysisTaskParticleRandomizer::AddFlow(Double_t phi, Double_t pt)
   Double_t f=0.;
   Double_t fp=0.;
   Double_t phiprev=0.;
-  Int_t ptBin = fDistributionV2->GetXaxis()->FindBin(pt);
-  Double_t v2 = 0;
-  if(ptBin>fDistributionV2->GetNbinsX())
-    v2 = fDistributionV2->GetBinContent(fDistributionV2->GetNbinsX(), fDistributionV2->GetYaxis()->FindBin(fCent));
-  else if(ptBin>0)
-    v2 = fDistributionV2->GetBinContent(ptBin, fDistributionV2->GetYaxis()->FindBin(fCent));
+  Int_t ptBin = 0;
 
+  // Evaluate V2 for track pt/centrality
+  Double_t v2 = 0;
+  if(fDistributionV2)
+  {
+    ptBin = fDistributionV2->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV2->GetNbinsX())
+      v2 = fDistributionV2->GetBinContent(fDistributionV2->GetNbinsX(), fDistributionV2->GetYaxis()->FindBin(fCent));
+    else if(ptBin>0)
+      v2 = fDistributionV2->GetBinContent(ptBin, fDistributionV2->GetYaxis()->FindBin(fCent));
+  }
+
+  // Evaluate V3 for track pt/centrality
+  Double_t v3 = 0;
+  if(fDistributionV3)
+  {
+    ptBin = fDistributionV3->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV3->GetNbinsX())
+      v3 = fDistributionV3->GetBinContent(fDistributionV3->GetNbinsX(), fDistributionV3->GetYaxis()->FindBin(fCent));
+    else if(ptBin>0)
+      v3 = fDistributionV3->GetBinContent(ptBin, fDistributionV3->GetYaxis()->FindBin(fCent));
+  }
+
+  // Add v2 & v3
   for (Int_t i=0; i<maxNumberOfIterations; i++)
   {
     phiprev=phi; //store last value for comparison
-    f =  phi-phi0+v2*TMath::Sin(2*(phi-(fEPV0+(TMath::Pi()/2.)))); // fEPV0 can be negative in this convention
-    fp = 1.0+2.0*v2*TMath::Cos(2*(phi-(fEPV0+(TMath::Pi()/2.)))); //first derivative
+    f =  phi-phi0
+        +      v2*TMath::Sin(2.*(phi-(fEPV0+(TMath::Pi()/2.))))
+        +2./3.*v3*TMath::Sin(3.*(phi-fRandomPsi3));
+    fp =  1.0+2.0*(
+           +v2*TMath::Cos(2.*(phi-(fEPV0+(TMath::Pi()/2.))))
+           +v3*TMath::Cos(3.*(phi-fRandomPsi3))); //first derivative
     phi -= f/fp;
     if (TMath::AreEqualAbs(phiprev,phi,precisionPhi)) break;
   }
+
   return phi;
 }
