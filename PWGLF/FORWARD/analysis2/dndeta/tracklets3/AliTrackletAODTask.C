@@ -308,6 +308,8 @@ protected:
   
   /** Container of tracklets */
   TClonesArray* fTracklets;
+  /* Output container */
+  // Container* fContainer;
   /** Whether we should scale @f$ \Delta\theta@f$ by @f$\sin^{-2}(\theta)@f$ */ 
   Bool_t     fScaleDTheta;
   /** Maximum @f$\Delta@f$ to consider */
@@ -322,6 +324,7 @@ protected:
   Double_t   fPhiOverlapCut;
   /** Overlap cut in @f$ z,\eta@f$ plane */
   Double_t   fZEtaOverlapCut;
+  /** Pointer to current reconstruction object */
   AliITSMultRecBg* fReco; //!
   
   ClassDef(AliTrackletAODTask,1); 
@@ -330,6 +333,7 @@ protected:
 AliTrackletAODTask::AliTrackletAODTask()
   : AliAnalysisTaskSE(),
     fTracklets(0),
+    // fContainer(0),
     fScaleDTheta(true),
     fMaxDelta(25),
     fDPhiShift(0.0045),
@@ -343,6 +347,7 @@ AliTrackletAODTask::AliTrackletAODTask()
 AliTrackletAODTask::AliTrackletAODTask(const char*)
   : AliAnalysisTaskSE("tracklets"),
     fTracklets(0),
+    // fContainer(0),
     fScaleDTheta(true),
     fMaxDelta(25),
     fDPhiShift(0.0045),
@@ -358,6 +363,7 @@ AliTrackletAODTask::AliTrackletAODTask(const char*)
 AliTrackletAODTask::AliTrackletAODTask(const AliTrackletAODTask& other)
   : AliAnalysisTaskSE(other),
     fTracklets(0),
+    // fContainer(0),
     fScaleDTheta(other.fScaleDTheta),
     fMaxDelta(other.fMaxDelta),
     fDPhiShift(other.fDPhiShift),
@@ -411,11 +417,17 @@ AliTrackletAODTask& AliTrackletAODTask::operator=(const AliTrackletAODTask&)
 //____________________________________________________________________
 void AliTrackletAODTask::UserCreateOutputObjects()
 {
+  // fContainer = new Container;
+  // fContainer->SetOwner();
+  // fContainer->SetName(GetName());
+  // PostData(1, fContainer);
+  
   // Create container of tracklets
   if (WorkerInit()) return;
 
   AliWarning("Failed to initialize task on worker, making zombie");
   SetZombie();
+  
 }
 
 //____________________________________________________________________
@@ -787,6 +799,10 @@ private:
    * @{ 
    * @name Event processing 
    */
+  /* 
+   * Initialize the worker 
+   */
+  // Bool_t WorkerInit();
   /** 
    * Process a single event
    * 
@@ -890,7 +906,6 @@ private:
    * @return Index of common parent of @a label and those in @a fill 
    */
   Int_t CommonParent(Int_t label, const TArrayI& fill) const;
-  
   ClassDef(AliTrackletAODMCTask,1); 
 };
 
@@ -922,11 +937,12 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
       AliWarningF("No particle found for track # %d", trackNo);
       continue;
     }
+    
     TParticlePDG* pdg = particle->GetPDG();
-    if (pdg->Charge() == 0) {
-      // Uncharged - don't care
-      continue;
-    }
+    // if (pdg->Charge() == 0) {
+    // Uncharged - don't care
+    // continue;
+    // }
     
     // Get theta
     Double_t theta = particle->Theta();
@@ -947,6 +963,7 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
     mc->SetDelta (0);
     mc->SetParentPdg(particle->GetPdgCode());
     mc->SetParentPt (particle->Pt());
+    if (pdg->Charge() == 0) mc->SetNeutral();
   }
   return true;
 }
@@ -996,7 +1013,7 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
       // Cluster labelsx
       Float_t* fclus0 = (fReco->GetClusterOfLayer(0,clus0) +
 			 AliITSMultReconstructor::kClMC0);
-      Float_t* fclus1 = (fReco->GetClusterOfLayer(0,clus1) +
+      Float_t* fclus1 = (fReco->GetClusterOfLayer(1,clus1) +
 			 AliITSMultReconstructor::kClMC0);
       // Loop over three inner layer cluster labels
       Int_t offset = 0;
@@ -1005,7 +1022,11 @@ AliTrackletAODMCTask::ProcessTracklet(Bool_t            normal,
       // Loop over three outer layer cluster labels
       Bool_t distinct = true;
       for (Int_t i = 0; i < 3; i++) {
-	if (CommonParent(Int_t(fclus1[i]), parents)) {
+	Float_t flbl = fclus1[i];
+	// Be careful not to get overflows on conversions
+	if (flbl > nextafter(INT_MAX, 0) || flbl < nextafter(INT_MIN, 0))
+	  continue; // Would overflow 
+	if (CommonParent(Int_t(flbl), parents)) {
 	  distinct = false;
 	  // We break out as soon as we find a common parent. 
 	  break;
