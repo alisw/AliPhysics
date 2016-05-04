@@ -32,6 +32,7 @@ class AliZMQMTviewerGUIview {
   TCanvas fCanvas;
   TList fDrawnObjects;
   void CleanUp();
+  virtual ~AliZMQMTviewerGUIview() {}
   ClassDef(AliZMQMTviewerGUIview, 0)
 };
 
