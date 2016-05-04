@@ -71,7 +71,7 @@ void ConfigJpsi( AliAnalysisTaskMultiDielectron* task )
   Bool_t triggerOnV0AND = kFALSE;
   Bool_t setTriggerMaskFromPeriod = kFALSE;
   AliVEvent::EOfflineTriggerTypes triggerMask = AliVEvent::kMB;
-  TString triggerClass = "";
+  TString triggerClass = "ALLNOTRD";
   
   
   

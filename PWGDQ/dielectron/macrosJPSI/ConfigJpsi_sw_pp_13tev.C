@@ -460,7 +460,8 @@ void SetupPairCuts(AliDielectron *die, ULong_t cutDefinition)
     AliDielectronVarCuts *gammaCut=new AliDielectronVarCuts("gammaCut","gammaCut");
     gammaCut->AddCut(AliDielectronVarManager::kM,0.,.1);
     die->GetPairPreFilter().AddCuts(gammaCut);
-    die->SetPreFilterUnlikeOnly();
+    die->SetPreFilterUnlikeOnly(0);
+    die->SetPreFilterAllSigns(1);
   }
     
   AliDielectronVarCuts *invMassCut=new AliDielectronVarCuts("InvMass","1.6<M");
