@@ -31,7 +31,7 @@
 class AliJMCTrack : public AliJBaseTrack {
 
  public:
-  enum { kPrimary=AliJBaseTrack::kNFlag, kPHOS, kEMCAL, kTPC, kInjected, kNFlag };//For ALICE
+  enum { kPHOS = AliJBaseTrack::kNFlag, kEMCAL, kTPC, kInjected, kNFlag };//For ALICE
   enum { kFinal=AliJBaseTrack::kNFlag };// for MC
   //usage : this->SetFlag( kPrimary, kTRUE );
   //usage : this->IsTrue( kFinal );
