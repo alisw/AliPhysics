@@ -27,33 +27,28 @@ ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight)
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Constructor
- */
 AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
   fWeightModel(NULL),
   fBinWeights(NULL),
   fUseCrossSection(kFALSE)
 {
-
+  /*
+   * See header file for details
+   */
 }
 
-/**
- * Destructor, cleanup memory assigned
- */
 AliEMCalTriggerWeightHandler::~AliEMCalTriggerWeightHandler(){
+  /*
+   * See header file for details
+   */
   if(fWeightModel) delete fWeightModel;
   if(fBinWeights) delete fBinWeights;
 }
 
-/**
- * Set weight for a given pt-hard bin to the list of weights. Creates the
- * container if not yet existing.
- * \param ptmin Min. \f$ p_{t} \f$ of the \f$ p_{t} \f$-hard bin
- * \param ptmax Max. \f$ p_{t} \f$ of the \f$ p_{t} \f$-hard bin
- * \param weight Bin weight
- */
 void AliEMCalTriggerWeightHandler::SetWeightForBin(double ptmin, double ptmax, double weight){
+  /*
+   * See header file for details
+   */
   if(!fBinWeights) fBinWeights = new TObjArray;
   // check whether bin already exists
   AliEMCalTriggerPtHardWeight *exist = NULL, *tmp = NULL;
@@ -68,12 +63,10 @@ void AliEMCalTriggerWeightHandler::SetWeightForBin(double ptmin, double ptmax, d
   else fBinWeights->Add(new AliEMCalTriggerPtHardWeight(ptmin, ptmax, weight));
 }
 
-/**
- * Get weight for event
- * \param event Input event
- * \return the weight calculated for the event
- */
 double AliEMCalTriggerWeightHandler::GetEventWeight(const AliMCEvent* const event) const {
+  /*
+   * See header file for details
+   */
   const AliGenPythiaEventHeader *header = dynamic_cast<const AliGenPythiaEventHeader *>(event->GenEventHeader());
   if(!header){
     AliError("Event not a pythia event - returning 1");
@@ -82,12 +75,10 @@ double AliEMCalTriggerWeightHandler::GetEventWeight(const AliMCEvent* const even
   return GetEventWeight(header);
 }
 
-/**
- * Get weight for event using a given pythia event header
- * \param header Pythia Event Header
- * \return the weight calculated for the event
- */
 double AliEMCalTriggerWeightHandler::GetEventWeight(const AliGenPythiaEventHeader * const header) const {
+  /*
+   * See header file for details
+   */
   double weight = 1.;
   if(fWeightModel) {
     weight = fWeightModel->Eval(header->GetPtHard());
@@ -101,12 +92,10 @@ double AliEMCalTriggerWeightHandler::GetEventWeight(const AliGenPythiaEventHeade
   return weight;
 }
 
-/**
- * Find weihgt for pt-hard value in the list of weights
- * \param pthard Pt-hard value to find a bin for
- * \return weight for the pthard bin (if found), NULL otherwise
- */
 const AliEMCalTriggerPtHardWeight *AliEMCalTriggerWeightHandler::FindWeight(Double_t pthard) const{
+  /*
+   * See header file for details
+   */
   const AliEMCalTriggerPtHardWeight *result = NULL, *tmp = NULL;
   for(TIter biniter = TIter(fBinWeights).Begin(); biniter != TIter::End(); ++biniter){
     tmp = static_cast<const AliEMCalTriggerPtHardWeight *>(*biniter);
@@ -117,6 +106,5 @@ const AliEMCalTriggerPtHardWeight *AliEMCalTriggerWeightHandler::FindWeight(Doub
   }
   return result;
 }
-
 
 } /* namespace EMCalTriggerPtAnalysis */

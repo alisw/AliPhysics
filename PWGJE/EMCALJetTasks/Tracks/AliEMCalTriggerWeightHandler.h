@@ -1,10 +1,3 @@
-/**
- * \file AliEMCalTriggerWeightHandler.h
- * \brief Weight handler for the analysis of high-\f$ p_{t} \f$ tracks in EMCAL-triggered events
- *
- * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * \date Mar 15, 2015
- */
 #ifndef ALIEMCALTRIGGERWEIGHTHANDLER_H
 #define ALIEMCALTRIGGERWEIGHTHANDLER_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
@@ -19,8 +12,9 @@ class AliGenPythiaEventHeader;
 class AliMCEvent;
 
 /**
- * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
+ * @namespace EMCalTriggerPtAnalysis
+ * @brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
+ * @ingroup PWGJETASKS
  *
  * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
  * triggered events.
@@ -53,8 +47,11 @@ private:
 };
 
 /**
- * \class AliEMCalTriggerWeightHandler
- * \brief Weight handler
+ * @class AliEMCalTriggerWeightHandler
+ * @brief Weight handler
+ * @ingroup PWGJETASKS
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * @date Mar 15, 2015
  *
  * Weight handler, assigning an event-dependent weight. The weight is coming from a weight model,
  * which is based on an analytic description. For the moment it is assumed that the event depends
@@ -62,27 +59,55 @@ private:
  */
 class AliEMCalTriggerWeightHandler : public TObject {
 public:
+  /**
+   * Constructor
+   */
   AliEMCalTriggerWeightHandler();
+  /**
+   * Destructor, cleanup memory assigned
+   */
   virtual ~AliEMCalTriggerWeightHandler();
 
   /**
    * Defines whether we use the cross section as weight.
-   * \param useCrossSection Define whether to use the cross section as event weight
+   * @param[in] useCrossSection Define whether to use the cross section as event weight
    */
   void SetUseCrossSection(bool useCrossSection) { fUseCrossSection = useCrossSection; }
 
   /**
    * Set the weight model
-   * \param model The weight model
+   * @param[in] model The weight model
    */
   void SetWeightModel(const TF1 *model) { fWeightModel = model; }
 
+  /**
+   * Set weight for a given pt-hard bin to the list of weights. Creates the
+   * container if not yet existing.
+   * @param[in] ptmin Min. \f$ p_{t} \f$ of the \f$ p_{t} \f$-hard bin
+   * @param[in] ptmax Max. \f$ p_{t} \f$ of the \f$ p_{t} \f$-hard bin
+   * @param[in] weight Bin weight
+   */
   void SetWeightForBin(double ptmin, double ptmax, double weight);
 
+  /**
+   * Get weight for event
+   * @param[in] event Input event
+   * @return the weight calculated for the event
+   */
   double GetEventWeight(const AliMCEvent *const event) const;
+  /**
+   * Get weight for event using a given pythia event header
+   * @param[in] header Pythia Event Header
+   * @return the weight calculated for the event
+   */
   double GetEventWeight(const AliGenPythiaEventHeader * const header) const;
 
 protected:
+  /**
+   * Find weihgt for pt-hard value in the list of weights
+   * @param[in] pthard Pt-hard value to find a bin for
+   * @return weight for the pthard bin (if found), NULL otherwise
+   */
   const AliEMCalTriggerPtHardWeight *FindWeight(Double_t pthard) const;
 
 private:

@@ -113,6 +113,8 @@ set(SRCS
     Tracks/AliAnalysisTaskParticleInJet.cxx
     Tracks/AliAnalysisTaskTrackDensity.cxx
     Tracks/AliAnalysisTaskTrackDensityData.cxx
+    Tracks/AliEmcalTriggerEmulation.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
