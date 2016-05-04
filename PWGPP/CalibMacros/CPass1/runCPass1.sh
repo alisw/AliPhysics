@@ -17,7 +17,15 @@
 
 #ALIEN setting
 # $1 = raw input filename
-runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
+tmpName=$(basename "$1")
+runNumF="${tmpName:2:9}"
+runNum=`echo "$runNumF" |  sed 's/^0*//'`
+
+#default alias for CPass1
+defAlias="kCalibBarrelMB"
+
+#optionallly skip Outer pass
+export skipOuter='1'
 
 # Exporting variable to define that we are in CPass1 to be used in reconstruction
 export CPass='1'
@@ -32,7 +40,7 @@ if [ $# -eq 1 ]; then
     nEvents=99999999
     ocdbPath="raw://"
     # use the value passed by LPM, or by default use the kCalibBarrel alias
-    triggerOptions=${ALIEN_JDL_TRIGGERALIAS-?Trigger=kCalibBarrel}
+    triggerOptions=${ALIEN_JDL_TRIGGERALIAS-?Trigger=$defAlias}
     #triggerOptions="?Trigger=kPhysicsAll"
 fi
 
@@ -41,7 +49,7 @@ if [ $# -ge 4 ]; then
     nEvents=$2
     runNum=$3
     ocdbPath=$4
-    triggerOptions="?Trigger=kCalibBarrel"
+    triggerOptions="?Trigger=$defAlias"
 fi
 
 if [ $# -eq 5 ]; then
@@ -95,6 +103,9 @@ echo "* triggerOptions: $triggerOptions"
 echo "* ************************"
 
 mkdir Barrel OuterDet
+if [ -n  "$skipOuter" ]; then
+    echo "Outer pass will be skept"
+fi
 
 if [ -f Run0_999999999_v3_s0.root ]; then
     echo "* TPC correction file found"
@@ -254,9 +265,18 @@ for file in FilterEvents_Trees.root AliESDfriends_v1.root QAresults_barrel.root 
     fi
 done
 
+# cleanup of barrel
+cd ../
+mv EventStat_temp_barrel_grp0.root EventStat_temp_barrel.root
+rm EventStat_temp_*_grp*.root
+
+if [ -n  "$skipOuter" ]; then
+  exit 0
+fi
+
 ####################################   Outer   #######################################
 
-cd ../OuterDet
+cd OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
@@ -316,13 +336,9 @@ for file in QAresults_outer.root EventStat_temp_outer_grp*.root; do
     fi
 done
 
-################################## Final cleanup ###################################
-
+# cleanup of outer
 cd ..
-
-mv EventStat_temp_barrel_grp0.root EventStat_temp_barrel.root
 mv EventStat_temp_outer_grp0.root EventStat_temp_outer.root
-
 rm EventStat_temp_*_grp*.root
 
 exit 0
