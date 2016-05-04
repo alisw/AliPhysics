@@ -4,10 +4,13 @@
 #include <TH1.h>
 #include <TFile.h>
 #include <TString.h>
+#include <TLorentzVector.h>
 
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliTriggerIR.h"
@@ -121,6 +124,7 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
 
 AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   : AliAnalysisTaskSE(name)
+  , fIsMC(kFALSE)
   , fTreeBranchNames("")
   , fTrackCutType("TPCOnly")
   , fTriggerSelection("")
@@ -140,6 +144,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 10)
   , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTrackSave)
+  , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(NULL)
   , fUseTriggerMask(kFALSE)
   , fClassMask(0ULL)
@@ -202,6 +207,11 @@ void AliAnalysisTaskDG::SetBranches(TTree* t) {
   if (fTreeBranchNames.Contains("Tracks")) {
     t->Branch("AliAnalysisTaskDG::TrackData", &fTrackData);
   }
+
+  if (fIsMC) {
+    t->Branch("TLorentzVector", &fMCTracks, 32000, 0);
+  }
+
 }
 
 void AliAnalysisTaskDG::UserCreateOutputObjects()
@@ -277,47 +287,50 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 {
   AliVEvent *event = InputEvent();
   if (NULL == event) {
-     Error("UserExec", "Could not retrieve event");
-     return;
+    AliFatal("NULL == event");
+    return;
   }
 
   // ESD Event
   AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
   if (NULL == esdEvent) {
-    AliWarning("ESDEvent is not available");
+    AliFatal("NULL == esdEvent");
     return;
   }
   
   // input handler
   const AliAnalysisManager* man(AliAnalysisManager::GetAnalysisManager());
   if (NULL == man) {
-    AliWarning("AliAnalysisManager is not available");
+    AliFatal("NULL == man");
     return;
   }
 
   AliESDInputHandler* inputHandler(dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler()));  
   if (NULL == inputHandler) {
-    AliWarning("AliESDInputHandler is not available");
+    AliFatal("NULL == inputHandler");
     return;
   }
 
   AliPIDResponse* pidResponse = inputHandler->GetPIDResponse();
   if (NULL == pidResponse) {
-    AliFatal("AliPIDResponse is not available");
+    AliFatal("NULL == pidResponse");
     return;
   }
 
   const AliESDHeader *esdHeader = esdEvent->GetHeader();
-  if (NULL == esdHeader)
+  if (NULL == esdHeader) {
+    AliFatal("NULL == esdHeader");
     return;
+  }
 
-  if (esdHeader->GetEventType() != AliRawEventHeaderBase::kPhysicsEvent)
+  if (kFALSE == fIsMC && esdHeader->GetEventType() != AliRawEventHeaderBase::kPhysicsEvent)
     return;
 
   const AliMultiplicity *mult = esdEvent->GetMultiplicity();
-  if (NULL == mult)
+  if (NULL == mult) {
+    AliFatal("NULL == mult");
     return;
-
+  }
 
   fHist[kHistTrig]->Fill(-1); // # analyzed events in underflow bin
 
@@ -382,6 +395,28 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
   delete oa;
+
+  if (fIsMC) {
+    AliMCEvent *mcEvent = MCEvent();
+    if (NULL == mcEvent)
+      AliFatal("NULL ==mcEvent");
+
+    fMCTracks.Delete();
+    Int_t counter = 0;
+    for(Int_t i=0, n=mcEvent->GetNumberOfTracks(); i<n && counter<2; ++i) {
+      AliMCParticle *p = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(i));
+      if (NULL == p) continue;
+      p->Print();
+      Printf("A");
+      p->Particle()->Print();
+      Printf("B");
+      new(fMCTracks[counter]) TLorentzVector;
+      TLorentzVector *v = dynamic_cast<TLorentzVector*>(fMCTracks.At(counter));
+      Printf("B %p", v);
+      p->Particle()->Momentum(*v);
+      ++counter;
+    }
+  } // fIsMC
 
   fTE->Fill();
   PostData(2, fTE);
