@@ -1,42 +1,53 @@
-//
-// Emcal jet finder task.
-//
-// Authors: C.Loizides, S.Aiola, M. Verweij
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include <vector>
-#include "AliEmcalJetTask.h"
 
-#include <TChain.h>
 #include <TClonesArray.h>
-#include <TList.h>
 #include <TMath.h>
 #include <TRandom3.h>
-#include <TClass.h>
+
+#include <AliVCluster.h>
+#include <AliVEvent.h>
+#include <AliVParticle.h>
+#include <AliEMCALGeometry.h>
 
 #include "AliTLorentzVector.h"
-#include "AliAnalysisManager.h"
-#include "AliCentrality.h"
-#include "AliEMCALGeometry.h"
-#include "AliESDEvent.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
 #include "AliFJWrapper.h"
-#include "AliVCluster.h"
-#include "AliVEvent.h"
-#include "AliVParticle.h"
 #include "AliEmcalJetUtility.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+
+#include "AliEmcalJetTask.h"
 
 using std::cout;
 using std::endl;
 using std::cerr;
 
-ClassImp(AliEmcalJetTask)
+/// \cond CLASSIMP
+ClassImp(AliEmcalJetTask);
+/// \endcond
 
 const Int_t AliEmcalJetTask::fgkConstIndexShift = 100000;
 
-//________________________________________________________________________
+/**
+ * Default constructor. This constructor is only for ROOT I/O and
+ * not to be used by users.
+ */
 AliEmcalJetTask::AliEmcalJetTask() :
   AliAnalysisTaskEmcal(),
   fJetsTag(),
@@ -63,10 +74,12 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJets(0),
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
 {
-  // Default constructor.
 }
 
-//________________________________________________________________________
+/**
+ * Standard named constructor.
+ * @param name Name of the task.
+ */
 AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
@@ -93,25 +106,24 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJets(0),
   fFastJetWrapper(name,name)
 {
-  // Standard constructor.
-
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.";
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalJetTask::~AliEmcalJetTask()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
+/**
+ * Add a utility to the utility list. Utilities are instances of classes
+ * derived from AliEmcalJetUtility that implements wrappers to FastJet contribs.
+ */
 AliEmcalJetUtility* AliEmcalJetTask::AddUtility(AliEmcalJetUtility* utility)
 {
-  // Addition of utilities.
-
   if (!fUtilities) fUtilities = new TObjArray();
   if (fUtilities->FindObject(utility)) {
-    Error("AddSupply", "Jet utility %s already connected.", utility->GetName());
+    Error("AddUtility", "Jet utility %s already connected.", utility->GetName());
     return utility;
   }   
   fUtilities->Add(utility);
@@ -120,7 +132,10 @@ AliEmcalJetUtility* AliEmcalJetTask::AddUtility(AliEmcalJetUtility* utility)
   return utility;
 }
 
-//________________________________________________________________________
+/**
+ * This method is called once before analyzing the first event. It executes
+ * the Init() method of all utilities (if any).
+ */
 void AliEmcalJetTask::InitUtilities()
 {
   TIter next(fUtilities);
@@ -128,7 +143,11 @@ void AliEmcalJetTask::InitUtilities()
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Init();
 }
 
-//________________________________________________________________________
+/**
+ * This method is called in the event loop after jet finding but before filling
+ * the output jet branch to prepare the utilities.
+ * It executes the Prepare() method of all utilities (if any).
+ */
 void AliEmcalJetTask::PrepareUtilities()
 {
   TIter next(fUtilities);
@@ -136,7 +155,10 @@ void AliEmcalJetTask::PrepareUtilities()
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Prepare(fFastJetWrapper);
 }
 
-//________________________________________________________________________
+/**
+ * This method is called in the event loop for each jet found, while filling the output jet branch.
+ * It executes the ProcessJet() method of all utilities (if any).
+ */
 void AliEmcalJetTask::ExecuteUtilities(AliEmcalJet* jet, Int_t ij)
 {
   TIter next(fUtilities);
@@ -144,7 +166,10 @@ void AliEmcalJetTask::ExecuteUtilities(AliEmcalJet* jet, Int_t ij)
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->ProcessJet(jet, ij, fFastJetWrapper);
 }
 
-//________________________________________________________________________
+/**
+ * This method is called in the event loop after jet finding has been completed.
+ * It executes the Terminate() method of all utilities (if any).
+ */
 void AliEmcalJetTask::TerminateUtilities()
 {
   TIter next(fUtilities);
@@ -152,11 +177,12 @@ void AliEmcalJetTask::TerminateUtilities()
   while ((utility=static_cast<AliEmcalJetUtility*>(next()))) utility->Terminate(fFastJetWrapper);
 }
 
-//________________________________________________________________________
+/**
+ * This method is called for each event.
+ * @return Always kTRUE
+ */
 Bool_t AliEmcalJetTask::Run()
 {
-  // Main loop, called for each event.
-
   // clear the jet array (normally a null operation)
   fJets->Delete();
 
@@ -169,12 +195,15 @@ Bool_t AliEmcalJetTask::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * This method steers the jet finding. It first loops over all particle and cluster containers
+ * that were provided when the task was initialized. All accepted objects (tracks, particle, clusters)
+ * are added as input vectors to the FastJet wrapper. Then the jet finding is launched
+ * in the wrapper.
+ * @return Total number of jets found.
+ */
 Int_t AliEmcalJetTask::FindJets()
 {
-  // Find jets.
-
-
   if (fParticleCollArray.GetEntriesFast() == 0 && fClusterCollArray.GetEntriesFast() == 0){
     AliError("No tracks or clusters, returning.");
     return 0;
@@ -254,11 +283,13 @@ Int_t AliEmcalJetTask::FindJets()
   return fFastJetWrapper.GetInclusiveJets().size();
 }
 
-//________________________________________________________________________
+/**
+ * This method fills the jet output branch (TClonesArray) with the jet found by the FastJet
+ * wrapper. Before filling the jet branch, the utilities are prepared. Then the utilities are
+ * called for each jet and finally after jet finding the terminate method of all utilities is called.
+ */
 void AliEmcalJetTask::FillJetBranch()
 {
-  // Fill jet branch with fastjet jets.
-
   PrepareUtilities();
 
   // loop over fastjet jets
@@ -309,11 +340,14 @@ void AliEmcalJetTask::FillJetBranch()
   TerminateUtilities();
 }
 
-//________________________________________________________________________
+/**
+ * Sorts jets by pT (decreasing)
+ * @param[out] indexes This array is used to return the indexes of the jets ordered by pT
+ * @param[in] array Vector containing the list of jets obtained by the FastJet wrapper
+ * @return kTRUE if at least one jet was found in array; kFALSE otherwise
+ */
 Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const
 {
-  // Get the leading jets.
-
   static Float_t pt[9999] = {0};
 
   const Int_t n = (Int_t)array.size();
@@ -329,11 +363,13 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * This method is called once before analzying the first event.
+ * It generates the output jet branch name, initializes the FastJet wrapper
+ * and the utilities (FJ contribs).
+ */
 void AliEmcalJetTask::ExecOnce()
 {
-  // Init the task.
-
   SetNeedEmcalGeom(kFALSE);
 
   if (fTrackEfficiency < 1.) {
@@ -373,7 +409,15 @@ void AliEmcalJetTask::ExecOnce()
   AliAnalysisTaskEmcal::ExecOnce();
 }
 
-//___________________________________________________________________________________________________________________
+/**
+ * This method is called for each jet. It loops over the jet constituents and
+ * adds them to the jet object.
+ * @param jet Pointer to the AliEmcalJet object where the jet constituents will be added
+ * @param constituents List of the jet constituents returned by the FastJet wrapper
+ * @param constituents_unsub List of jet constituents before background subtraction
+ * @param flag If kTRUE it means that the argument "constituents" is a list of subtracted constituents
+ * @param particles_sub Array containing subtracted constituents
+ */
 void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet::PseudoJet>& constituents,
     std::vector<fastjet::PseudoJet>& constituents_unsub, Int_t flag, TClonesArray *particles_sub)
 {
@@ -552,7 +596,12 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
   jet->SortConstituents();
 }
 
-//______________________________________________________________________________________
+/**
+ * Search for the index of the unsubtracted constituents by comparing the azimuthal angles
+ * @param phi_sub Azimuthal angle of the subtracted constituent
+ * @param constituents_unsub Vector containing the list of unsubtracted constituents
+ * @return Index of the subtracted constituent
+ */
 Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub) 
 {
   Double_t dphi=0;
@@ -571,7 +620,12 @@ Int_t AliEmcalJetTask::GetIndexSub(Double_t phi_sub, std::vector<fastjet::Pseudo
   return 0;
 }
 
-//______________________________________________________________________________________
+/**
+ * An instance of this class can be "locked". Once locked, it cannot be unlocked.
+ * If the instance is locked, attempting to change the configuration will throw a
+ * fatal and stop the execution of the program. This method checks whether the instance
+ * is locked and throw a fatal if it is locked.
+ */
 Bool_t AliEmcalJetTask::IsLocked() const
 {
   if (fLocked) {
@@ -583,7 +637,12 @@ Bool_t AliEmcalJetTask::IsLocked() const
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * This overloads the method of AliAnalysisTaskSE to set the trigger bits. Since
+ * the output of this task is often a shared input of several consumer task
+ * the event selection is not allwed.
+ * @param offlineTriggerMask Trigger bit mask
+ */
 void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
 {
   if(!fIsPSelSet) {
@@ -596,7 +655,11 @@ void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Set the eta range of the track constituents.
+ * @param emi Minimum eta
+ * @param ema Maximum eta
+ */
 void AliEmcalJetTask::SetEtaRange(Double_t emi, Double_t ema)
 {
   if (IsLocked()) return;
@@ -608,7 +671,10 @@ void AliEmcalJetTask::SetEtaRange(Double_t emi, Double_t ema)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Set the minimum pT of the cluster constituents.
+ * @param min Minimum pT
+ */
 void AliEmcalJetTask::SetMinJetClusPt(Double_t min)
 {
   if (IsLocked()) return;
@@ -620,7 +686,10 @@ void AliEmcalJetTask::SetMinJetClusPt(Double_t min)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Set the minimum energy of the cluster constituents.
+ * @param min Minimum energy
+ */
 void AliEmcalJetTask::SetMinJetClusE(Double_t min)
 {
   if (IsLocked()) return;
@@ -632,7 +701,10 @@ void AliEmcalJetTask::SetMinJetClusE(Double_t min)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Set the minimum pT of the track constituents.
+ * @param min Minimum pT
+ */
 void AliEmcalJetTask::SetMinJetTrackPt(Double_t min)
 {
   if (IsLocked()) return;
@@ -644,7 +716,11 @@ void AliEmcalJetTask::SetMinJetTrackPt(Double_t min)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Set the phi range of the track constituents.
+ * @param pmi Minimum phi
+ * @param pma Maximum phi
+ */
 void AliEmcalJetTask::SetPhiRange(Double_t pmi, Double_t pma)
 {
   if (IsLocked()) return;
@@ -656,7 +732,12 @@ void AliEmcalJetTask::SetPhiRange(Double_t pmi, Double_t pma)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Converts the internal enum values representing jet algorithms in
+ * the corresponding values accepted by the FastJet wrapper.
+ * @param algo Algorithm represented in the EJetAlgo_t enum
+ * @return Algortithm represented in the fastjet::JetAlgorithm enum
+ */
 fastjet::JetAlgorithm AliEmcalJetTask::ConvertToFJAlgo(EJetAlgo_t algo)
 {
   switch(algo) {
@@ -683,7 +764,12 @@ fastjet::JetAlgorithm AliEmcalJetTask::ConvertToFJAlgo(EJetAlgo_t algo)
   }
 }
 
-//______________________________________________________________________________________
+/**
+ * Converts the internal enum values representing jet recombination schemes in
+ * the corresponding values accepted by the FastJet wrapper.
+ * @param reco Recombination scheme represented in the EJetAlgo_t enum
+ * @return Recombination scheme represented in the fastjet::JetAlgorithm enum
+ */
 fastjet::RecombinationScheme AliEmcalJetTask::ConvertToFJRecoScheme(ERecoScheme_t reco)
 {
   switch(reco) {

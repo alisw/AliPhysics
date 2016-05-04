@@ -1,17 +1,19 @@
 #ifndef ALIEMCALJETTASK_H
 #define ALIEMCALJETTASK_H
 
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 class TClonesArray;
 class TObjArray;
 class AliVEvent;
-class AliEMCALGeometry;
 class AliEmcalJetUtility;
 
-#include "AliLog.h"
+#include <AliLog.h>
+
 #include "AliAnalysisTaskEmcal.h"
 #include "AliFJWrapper.h"
 #include "FJ_includes.h"
-#include "AliAODMCParticle.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
 
@@ -19,6 +21,27 @@ namespace fastjet {
   class PseudoJet;
 }
 
+/**
+ * @class AliEmcalJetTask
+ * @brief General jet finder task implementing a wrapper for FastJet
+ * @author Constantin Lozides <cloizides@lbl.gov>, Lawrence Berkeley National Laboratory
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ *
+ * This class implements a wrapper for the FastJet jet finder. It allows
+ * to set a jet definition (jet algorithm, recombination scheme) and the
+ * list of jet constituents. Jet constituents are provided via multiple instances
+ * of AliParticleContainer and AliClusterContainer. These classes are delegated for
+ * applying cuts and filtering constituents that are then fed to the jet finder.
+ * This task will further filter constituents based on whether the jet was
+ * defined as being charged, neutral or full. The jet finding is delegated to
+ * the class AliFJWrapper which implements an interface to FastJet.
+ *
+ * The FastJet contrib utilities are available via the AliEmcalJetUtility base class
+ * and its derived classes. Utilities can be added via the AddUtility(AliEmcalJetUtility*) method.
+ * All the utilities added in the list will be executed. Users can implement new utilities
+ * deriving a new class from AliEmcalJetUtility to interface functionalities of the FastJet contribs.
+ */
 class AliEmcalJetTask : public AliAnalysisTaskEmcal {
  public:
 
@@ -137,6 +160,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 23) // Jet producing task
+  /// \cond CLASSIMP
+  ClassDef(AliEmcalJetTask, 23);
+  /// \endcond
 };
 #endif
