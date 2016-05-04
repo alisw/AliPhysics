@@ -1,5 +1,3 @@
-// $Id$
-
 AliJJetTask* AddTaskJJet(
     // FIXME: Really need default values? Is this needed by AliROOT? Or, let's remove it to reduce mistakes
     Int_t       trigger           = AliVEvent::kEMCEJE,
@@ -57,7 +55,7 @@ AliJJetTask* AddTaskJJet(
     const int nTrackJetFinder       = 0;
   }
   if(doRecoMCPartleJet){
-    const int nMCParticleJetFinder  = 3;
+    const int nMCParticleJetFinder  = 6;
   }else{
     const int nMCParticleJetFinder  = 0;
 
@@ -93,7 +91,7 @@ AliJJetTask* AddTaskJJet(
     // We have 6 type of recos
     double   aConeSizes[nTrackJetFinder]={     0.4,     0.5,     0.6,   0.4,   0.5,   0.6 };
     int      aJetType  [nTrackJetFinder]={       0,       0,       0,     1,     1,     1 }; // 0 :FullJet  1:Charged
-    TString  aType     [nTrackJetFinder]={ "EMCAL", "EMCAL", "EMCAL", "TPC", "TPC", "TPC" };  
+    TString  aType     [nTrackJetFinder]={ "EMCAL", "EMCAL", "EMCAL", "TPC", "TPC", "TPC" };
 
     //================= Containers : Track, Cluster
     AliParticleContainer *trackCont  = jtTask->AddParticleContainer( tracksName );
@@ -139,9 +137,9 @@ AliJJetTask* AddTaskJJet(
 
     //================= AddTaskEmcalJet
     // We have 3 type of recos
-    double   aConeSizesMC[nMCParticleJetFinder] = {   0.4,   0.5,   0.6 };
-    int      aJetTypeMC  [nMCParticleJetFinder] = {     1,     1,     1 }; // 0 :FullJet  1:Charged
-    TString *aTypeMC     [nMCParticleJetFinder] = { "TPC", "TPC", "TPC" };  
+    double   aConeSizesMC[nTrackJetFinder]={     0.4,     0.5,     0.6,   0.4,   0.5,   0.6 };
+    int      aJetTypeMC  [nTrackJetFinder]={       0,       0,       0,     1,     1,     1 }; // 0 :FullJet  1:Charged
+    TString  aTypeMC     [nTrackJetFinder]={ "TPC", "TPC", "TPC", "TPC", "TPC", "TPC" };  
 
     char *nrho = rhoName;
 
@@ -161,7 +159,7 @@ AliJJetTask* AddTaskJJet(
 
       //== JetFinderTask, JetContainer
       TString _clustersCorrName = ( type == "EMCAL" ? clustersCorrName : "" ); // Check if it is EMCAL // FIXME: Good for MC particles also? //No clusters in mc particles?
-      jetFinderTask[i] = AddTaskEmcalJet( tracksNameMC, _clustersCorrName, 1, consizeMC, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
+      jetFinderTask[i] = AddTaskEmcalJet( tracksNameMC, "", 1, consizeMC, jettype, 0.15, 0.300, 0.005, 1, "Jet", 5. ); // anti-kt
       cout << jetFinderTask[i]->GetName() << endl;
       //jetFinderTask[i]->GetParticleContainer(0)->SelectPhysicalPrimaries(kTRUE); 
       // FIXME: DUPLICATION? not needed here, I think // FIXME: Why before ConnectParticleContainer? //I don't think the order matters

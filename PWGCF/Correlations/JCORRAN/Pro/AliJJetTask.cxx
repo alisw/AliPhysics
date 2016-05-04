@@ -192,9 +192,6 @@ Bool_t AliJJetTask::FillHistograms()
     int tracks = 0;
     for (int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
       AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
-      if(!(track->IsPhysicalPrimary())) continue;
-      if(TMath::Abs(track->Eta())>1.0) continue;
-      if(track->Charge() == 0) continue;
       new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
       tracks++;
       if(debug > 0){
@@ -203,7 +200,11 @@ Bool_t AliJJetTask::FillHistograms()
         cout << "pT " << track->Pt() << " eta: " << track->Eta() << endl;
       }
       AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
+      if(track->IsPrimary()){
+        particle->SetPrimary();
+      }
       particle->SetPdgCode(track->GetPdgCode());
+      particle->SetLabel(track->GetLabel());
     }     
     if(debug > 0){
       cout << "Number of accepted tracks: " << tracks << endl;
