@@ -14,7 +14,7 @@ class AliEmcalContainer;
  * @brief Container implementing iterable functionality of the EMCAL containers
  * @ingroup EMCALCOREFW
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * @author Salvatore Aiola, Yale University
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
  * @date March 23rd, 2016
  *
  * Providing an interface to iterator functionality for the AliEmcalContainer and
@@ -48,7 +48,9 @@ class AliEmcalContainer;
  * }
  * ~~~
  */
-class AliEmcalIterableContainer : public TObject {
+
+template <class T>
+class AliEmcalIterableContainerT : public TObject {
 public:
   /**
    * @class iterator
@@ -71,7 +73,7 @@ public:
                                         TObject,std::ptrdiff_t,
                                         TObject **, TObject *>{
   public:
-    iterator(const AliEmcalIterableContainer *cont, int currentpos, bool forward = true);
+    iterator(const AliEmcalIterableContainerT *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
     iterator &operator=(const iterator &ref);
     virtual ~iterator(){}
@@ -83,27 +85,27 @@ public:
     iterator &operator--();
     iterator operator--(int);
 
-    TObject *operator*() const;
+    T *operator*() const;
 
   private:
     iterator();
 
-    const AliEmcalIterableContainer         *fkData;    ///< container with data
+    const AliEmcalIterableContainerT         *fkData;    ///< container with data
     int                                      fCurrent;  ///< current index in the container
     bool                                     fForward;  ///< use forward or backward direction
   };
 
-  AliEmcalIterableContainer();
-  AliEmcalIterableContainer(const AliEmcalContainer *cont, bool useAccept);
-  AliEmcalIterableContainer(const AliEmcalIterableContainer &ref);
-  AliEmcalIterableContainer &operator=(const AliEmcalIterableContainer &cont);
+  AliEmcalIterableContainerT();
+  AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept);
+  AliEmcalIterableContainerT(const AliEmcalIterableContainerT &ref);
+  AliEmcalIterableContainerT &operator=(const AliEmcalIterableContainerT &ref);
 
   /**
    * Destructor
    */
-  virtual ~AliEmcalIterableContainer() {}
+  virtual ~AliEmcalIterableContainerT() {}
 
-  TObject *operator[](int index) const;
+  T *operator[](int index) const;
 
   /**
    * Integer conversion operator: Returning the size if the container (number of entries)
@@ -156,7 +158,7 @@ private:
   Bool_t                      fUseAccepted;         ///< Switch between accepted and all objects
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalIterableContainer, 1);
+  ClassDef(AliEmcalIterableContainerT, 1);
   /// \endcond
 };
 
