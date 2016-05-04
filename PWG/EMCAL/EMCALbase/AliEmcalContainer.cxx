@@ -278,3 +278,19 @@ const AliEmcalIterableContainer AliEmcalContainer::all() const {
 const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
 }
+
+
+/**
+ * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
+ * @param mphi First angle value
+ * @param vphi Second angle value
+ * @return Difference between mphi and vphi
+ */
+Double_t AliEmcalContainer::RelativePhi(Double_t mphi, Double_t vphi)
+{
+  vphi = TVector2::Phi_0_2pi(vphi);
+  mphi = TVector2::Phi_0_2pi(mphi);
+
+  Double_t dphi = TVector2::Phi_mpi_pi(mphi - vphi);
+  return dphi;
+}
