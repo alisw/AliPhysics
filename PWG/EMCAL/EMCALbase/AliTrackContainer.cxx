@@ -193,7 +193,6 @@ AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
 {
   //Get i^th jet in array
 
-  if (i == -1) i = fCurrentID;
   if (i < 0 || i >= fFilteredTracks->GetEntriesFast()) return 0;
   AliVTrack *vp = static_cast<AliVTrack*>(fFilteredTracks->At(i));
   return vp;

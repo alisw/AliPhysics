@@ -92,6 +92,7 @@ fMinErat(0),
 fMinEcc(-1),
 fDoTrMtSmpl(0),
 fDoManualRecal(0),
+fCalibRun(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
 fIsoDist(0.2),
@@ -197,6 +198,10 @@ fHPionInvMassesDCal(0x0),
 fHPionInvMassesMixDCal(0x0),
 fHPionInvMassesEMCalDCal(0x0),
 fHPionInvMassesMixEMCalDCal(0x0),
+fHPionInvMassesEMCalCalib(0x0),
+fHPionInvMassesMixEMCalCalib(0x0),
+fHPionInvMassesDCalCalib(0x0),
+fHPionInvMassesMixDCalCalib(0x0),
 //fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
@@ -305,6 +310,7 @@ fMinErat(0),
 fMinEcc(-1),
 fDoTrMtSmpl(0),
 fDoManualRecal(0),
+fCalibRun(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
 fIsoDist(0.2),
@@ -404,6 +410,10 @@ fHPionInvMassesDCal(0x0),
 fHPionInvMassesMixDCal(0x0),
 fHPionInvMassesEMCalDCal(0x0),
 fHPionInvMassesMixEMCalDCal(0x0),
+fHPionInvMassesEMCalCalib(0x0),
+fHPionInvMassesMixEMCalCalib(0x0),
+fHPionInvMassesDCalCalib(0x0),
+fHPionInvMassesMixDCalCalib(0x0),
 //fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
@@ -1034,6 +1044,29 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionInvMassesMixEMCalDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMixEMCalDCal);
 
+    // calibration stuff
+    if(fCalibRun){
+      fHPionInvMassesEMCalCalib = new TH2F("hPionInvMassesEMCalCalib","hPionInvMassesEMCalCalib",massbins,0,massmax,nbins,0,ptmax);
+      fHPionInvMassesEMCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+      fHPionInvMassesEMCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
+      fOutput->Add(fHPionInvMassesEMCalCalib);
+
+      fHPionInvMassesMixEMCalCalib = new TH2F("hPionInvMassesMixEMCalCalib","hPionInvMassesMixEMCalCalib",massbins,0,massmax,nbins,0,ptmax);
+      fHPionInvMassesMixEMCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+      fHPionInvMassesMixEMCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
+      fOutput->Add(fHPionInvMassesMixEMCalCalib);
+
+      fHPionInvMassesDCalCalib = new TH2F("hPionInvMassesDCalCalib","hPionInvMassesDCalCalib",massbins,0,massmax,nbins,0,ptmax);
+      fHPionInvMassesDCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+      fHPionInvMassesDCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
+      fOutput->Add(fHPionInvMassesDCalCalib);
+      
+      fHPionInvMassesMixDCalCalib = new TH2F("hPionInvMassesMixDCalCalib","hPionInvMassesMixEMCalCalib",massbins,0,massmax,nbins,0,ptmax);
+      fHPionInvMassesMixDCalCalib->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+      fHPionInvMassesMixDCalCalib->SetYTitle("(E_{1} + E_{2}/2 [GeV]");
+      fOutput->Add(fHPionInvMassesMixDCalCalib);
+    }
+    
     // distribution of particle weights
     fHWgt = new TH1F("hWgt","hWgt",100,0,10);
     fOutput->Add(fHWgt);
@@ -1634,7 +1667,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     AliWarning("AliMultSelection object not found!");
   }else{
-    cent = MultSelection->GetMultiplicityPercentile("V0M");
+    cent = MultSelection->GetMultiplicityPercentile(fCentVar.Data());
 //    cent = MultSelection->GetMultiplicityPercentile("CL1");
   }
   fHCent->Fill(cent);
@@ -3090,6 +3123,17 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
       
       Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
       Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
+      
+      if(fCalibRun && pionZgg < 0.2){
+        //EMCal histos
+        if((hitclass1 >= 100 && hitclass2 >= 100) && (hitclass1 < 200 && hitclass2 < 200)){
+          fHPionInvMassesEMCalCalib->Fill(pionVec.M(),(clusterVec1.E() + clusterVec2.E())/2);
+        }
+        else if(hitclass1 >= 200 && hitclass2 >= 200){
+          fHPionInvMassesDCalCalib->Fill(pionVec.M(),(clusterVec1.E() + clusterVec2.E())/2);
+        }
+      }
+      
       if (pionZgg < fAsymMax1) {
         fHPionMggPt->Fill(pionVec.M(),pionVec.Pt());
         fHPionMggAsym->Fill(pionVec.M(),pionZgg);
@@ -3603,6 +3647,17 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
           
           Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
           //                    Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
+          
+          if(fCalibRun && pionZgg < 0.2){
+            //EMCal histos
+            if((hitclass1 >= 100 && hitclass2 >= 100) && (hitclass1 < 200 && hitclass2 < 200)){
+              fHPionInvMassesMixEMCalCalib->Fill(pionVec.M(),(clusterVec1.E() + clusterVec2.E())/2);
+            }
+            else if(hitclass1 >= 200 && hitclass2 >= 200){
+              fHPionInvMassesMixDCalCalib->Fill(pionVec.M(),(clusterVec1.E() + clusterVec2.E())/2);
+            }
+          }
+
           if (pionZgg < fAsymMax3) {
             /*
              fHPionEtaPhiMix->Fill(pionVec.Eta(),pionVec.Phi());

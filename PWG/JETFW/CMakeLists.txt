@@ -35,6 +35,7 @@ set(SRCS
   AliJetContainer.cxx
   AliLocalRhoParameter.cxx
   AliRhoParameter.cxx
+  AliEmcalJetShapeProperties.cxx
   )
 
 # Headers from sources

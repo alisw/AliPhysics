@@ -8,9 +8,7 @@
 #include "AliLog.h"
 #include "FJ_includes.h"
 #include "AliJetShape.h"
-#include "fastjet/contrib/Nsubjettiness.hh"
-#include "fastjet/contrib/Njettiness.hh"
-#include "fastjet/contrib/NjettinessPlugin.hh"
+
 
 class AliFJWrapper
 {

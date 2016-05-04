@@ -135,6 +135,8 @@ namespace AliFemtoCutMonitorPionPion {
     TH1F *fMinv;
     TH1F *fKt;
     TH2F *fDetaDphi;
+    TH2F *fQinvDeta;
+    TH2F *fQinvDphiStar;
 
     TH2F *fMCTrue_minv;
     TH2F *fMCTrue_kstar;

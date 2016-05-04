@@ -24,7 +24,7 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, B
   if(!aod){
     AliESDtrackCuts *esdcuts = NULL;
     if(cut == "standard"){
-      AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+      esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
       esdcuts->DefineHistograms(kRed);
       esdcuts->SetName("Standard Track cuts");
       esdcuts->SetMinNCrossedRowsTPC(120);

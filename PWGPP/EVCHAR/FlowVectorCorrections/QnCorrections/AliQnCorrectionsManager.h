@@ -143,8 +143,7 @@ class AliQnCorrectionsManager : public TObject {
   Bool_t CallStepRecenterQnVector(AliQnCorrectionsConfiguration* QnConf);
   //void CallStepRescaleQnVector(Int_t corpar);
   void CallStepTwistAndRescaleQnVector(AliQnCorrectionsConfiguration* QnConf);
-  void RotateQvec(AliQnCorrectionsConfiguration* QnConf);
-
+  void CallStepRotateQvector(AliQnCorrectionsConfiguration* QnConf);
 
   void WriteCalibrationHistogramsToList();
   void WriteQaHistogramsToList();

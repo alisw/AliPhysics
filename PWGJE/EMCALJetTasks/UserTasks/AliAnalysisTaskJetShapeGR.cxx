@@ -510,8 +510,8 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
       fh1PtRaw[fCentBin]->Fill(ptcorr);
       if(fMatch==1) fh1PtRawMatch[fCentBin]->Fill(ptcorr);
 
-      TArrayF numRaw = jet1->GetGRNumerator();
-      TArrayF denRaw = jet1->GetGRDenominator();
+      TArrayF numRaw = jet1->GetShapeProperties()->GetGRNumerator();
+      TArrayF denRaw = jet1->GetShapeProperties()->GetGRDenominator();
       if(numRaw.GetSize()>0) {
 	for(Int_t i = 0; i<nr; i++) {
 	  Double_t r = i*wr + 0.5*wr;
@@ -533,8 +533,8 @@ Bool_t AliAnalysisTaskJetShapeGR::FillHistograms()
 	fh1PtMatch[fCentBin]->Fill(ptcorr);
 
 	//now get second derivative vs R and do final calculation
-	TArrayF num = jet1->GetGRNumeratorSub();
-	TArrayF den = jet1->GetGRDenominatorSub();
+	TArrayF num = jet1->GetShapeProperties()->GetGRNumeratorSub();
+	TArrayF den = jet1->GetShapeProperties()->GetGRDenominatorSub();
 	if(num.GetSize()>0) {
 	  for(Int_t i = 0; i<nr; i++) {
 	    Double_t r = i*wr + 0.5*wr;

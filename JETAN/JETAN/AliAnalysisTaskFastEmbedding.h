@@ -71,6 +71,7 @@ public:
    void SetJetBranch(TString name) {fJetBranch = name;}
 
    void SetEmbedMode(Int_t m) {fEmbedMode = m;}
+   void SetEPMode(Int_t m)  { fEPMode = m;}
    Int_t GetEmbedMode() const {return fEmbedMode;} 
    void SetEvtSelecMode(Int_t s) {fEvtSelecMode = s;}
    Int_t GetEvtSelecMode() const {return fEvtSelecMode;}
@@ -184,6 +185,7 @@ private:
    Int_t fCountEvents; // count processed events in this file
 
    Int_t fEmbedMode;     // embedding mode: kAODFull=0, kAODJetTracks=1, kAODJet4Mom=2, kToyTracks=3
+   Int_t fEPMode;        // event plane dependent embedding: fEPMode = 0 (not selected), fEPMode = 1 (in-plane), fEPMode = 2 (out-of-plane)
    Int_t fEvtSelecMode;  // event selection criterion: kEventsAll=0, kEventsJetPt=1
 
    // event selection from AOD
@@ -261,7 +263,8 @@ private:
    TH1F  *fh1MCTrackN;        //! nb. of MC tracks
    TH1I  *fh1AODfile;         //! used AOD files from AODPathArray
    TH2I  *fh2AODevent;        //! selected events in AODs
-     
+   TH2F  *fh2EP2;             //! 2nd order harmonic event plane ESD event 
+   TH2F  *fh2EP3;             //! 3rd order harmonic event plane ESD event
 
    Int_t GetJobID();    // get job id (sub-job id on the GRID)
    Int_t SelectAODfile();

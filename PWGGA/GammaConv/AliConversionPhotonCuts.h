@@ -71,6 +71,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
         kPhotonIn=0,
         kOnFly,
         kNoTracks,
+        kNoV0,
         kTrackCuts,
         kdEdxCuts,
         kConvPointFail,
@@ -329,7 +330,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,9)
+    ClassDef(AliConversionPhotonCuts,10)
 };
 
 #endif

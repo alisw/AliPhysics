@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <TF1.h>
+#include <TObjArray.h>
 
 #include "AliEMCalTriggerWeightHandler.h"
 #include "AliGenPythiaEventHeader.h"
@@ -21,46 +22,89 @@
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler)
+ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight)
 /// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Constructor
- */
 AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
   fWeightModel(NULL),
-  fUsePtHard(kTRUE)
+  fBinWeights(NULL),
+  fUseCrossSection(kFALSE)
 {
-
+  /*
+   * See header file for details
+   */
 }
 
-/**
- * Get weight for event
- * \param event Input event
- * \return the weight calculated for the event
- */
+AliEMCalTriggerWeightHandler::~AliEMCalTriggerWeightHandler(){
+  /*
+   * See header file for details
+   */
+  if(fWeightModel) delete fWeightModel;
+  if(fBinWeights) delete fBinWeights;
+}
+
+void AliEMCalTriggerWeightHandler::SetWeightForBin(double ptmin, double ptmax, double weight){
+  /*
+   * See header file for details
+   */
+  if(!fBinWeights) fBinWeights = new TObjArray;
+  // check whether bin already exists
+  AliEMCalTriggerPtHardWeight *exist = NULL, *tmp = NULL;
+  for(TIter biniter = TIter(fBinWeights).Begin(); biniter != TIter::End(); ++biniter){
+    tmp = static_cast<AliEMCalTriggerPtHardWeight *>(*biniter);
+    if(ptmin == tmp->GetPtMin() && ptmax == tmp->GetPtMax()){
+      exist = tmp;
+      break;
+    }
+  }
+  if(exist) exist->SetWeight(weight);
+  else fBinWeights->Add(new AliEMCalTriggerPtHardWeight(ptmin, ptmax, weight));
+}
+
 double AliEMCalTriggerWeightHandler::GetEventWeight(const AliMCEvent* const event) const {
-  if(!fWeightModel) {
-    AliError("Weight model not set - returning 1");
+  /*
+   * See header file for details
+   */
+  const AliGenPythiaEventHeader *header = dynamic_cast<const AliGenPythiaEventHeader *>(event->GenEventHeader());
+  if(!header){
+    AliError("Event not a pythia event - returning 1");
     return 1.;
   }
+  return GetEventWeight(header);
+}
+
+double AliEMCalTriggerWeightHandler::GetEventWeight(const AliGenPythiaEventHeader * const header) const {
+  /*
+   * See header file for details
+   */
   double weight = 1.;
-  if(fUsePtHard){
-    const AliGenPythiaEventHeader *header = dynamic_cast<const AliGenPythiaEventHeader *>(event->GenEventHeader());
-    if(header)
-      weight = fWeightModel->Eval(header->GetPtHard());
-    else
-      AliError("Event not a pythia event - returning 1");
-  } else {
+  if(fWeightModel) {
+    weight = fWeightModel->Eval(header->GetPtHard());
+  } else if(fBinWeights){
+    const AliEMCalTriggerPtHardWeight *tmp = FindWeight(header->GetPtHard());
+    if(tmp) weight = tmp->GetWeight();
+  } else if(fUseCrossSection){
     // Using cross section
-    const AliGenPythiaEventHeader *header = dynamic_cast<const AliGenPythiaEventHeader *>(event->GenEventHeader());
-    if(header)
-      weight = header->GetXsection()/static_cast<double>(header->Trials());
-    else
-      AliError("Event not a pythia event - returning 1");
+    weight = header->GetXsection()/static_cast<double>(header->Trials());
   }
   return weight;
+}
+
+const AliEMCalTriggerPtHardWeight *AliEMCalTriggerWeightHandler::FindWeight(Double_t pthard) const{
+  /*
+   * See header file for details
+   */
+  const AliEMCalTriggerPtHardWeight *result = NULL, *tmp = NULL;
+  for(TIter biniter = TIter(fBinWeights).Begin(); biniter != TIter::End(); ++biniter){
+    tmp = static_cast<const AliEMCalTriggerPtHardWeight *>(*biniter);
+    if(tmp->IsSelected(pthard)){
+      result = tmp;
+      break;
+    }
+  }
+  return result;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

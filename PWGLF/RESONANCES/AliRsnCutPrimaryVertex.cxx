@@ -203,11 +203,11 @@ Bool_t AliRsnCutPrimaryVertex::GoodZResolutionSPD(const AliESDVertex* v)
 //__________________________________________________________________________________________________
 Bool_t AliRsnCutPrimaryVertex::GoodZResolutionSPD(AliAODVertex* v)
 {
-   if(!v || !CheckVertex(v)) return kTRUE;
-   Double_t sigma[3];
-   v->GetSigmaXYZ(sigma);
-   if(sigma[2]<0.) return kFALSE;
-   if(TMath::Sqrt(sigma[2])>=fMaxZResolutionSPD) return kFALSE;
+  //if(!v || !CheckVertex(v)) return kTRUE;
+  //Double_t sigma[3];
+  //v->GetSigmaXYZ(sigma);
+  //if(sigma[2]<0.) return kFALSE;
+  //if(TMath::Sqrt(sigma[2])>=fMaxZResolutionSPD) return kFALSE;
    return kTRUE;
 }
 

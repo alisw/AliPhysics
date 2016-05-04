@@ -147,6 +147,7 @@ public:
   void         SetAddedSignal(Bool_t b)                       { fAddedSignal   = b;         }
   void         SetDataPeriod(Int_t b)                         { fDataPeriod   = b;         }
   void         SetDoManualRecal(Bool_t b)                     { fDoManualRecal = b;         }
+  void         SetDoCalibRun(Bool_t b)                     { fCalibRun = b;         }
   void         SetDnDpT(Int_t i, Double_t par0, Double_t par1, Double_t par2, Double_t par3, Double_t par4);
   
 protected:
@@ -213,6 +214,7 @@ protected:
   Double_t               fM02;                    // maximum M02
   Double_t               fMinErat;                // minimum emax/ec ratio (def=0)
   Double_t               fMinEcc;                 // minimum eccentricity (def=0)
+  Bool_t                 fCalibRun;               // fill energy calibration histograms (def = 0)
   Bool_t                 fDoManualRecal;          // do manual recalibration here? (def = 0)
   Bool_t                 fDoTrMtSmpl;             // use built in track matching? (def=0)
   TString                fGeoName;                // geometry name (def = EMCAL_FIRSTYEARV1)
@@ -352,6 +354,15 @@ protected:
   TH2                   *fHPionInvMassesEMCalDCal;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesMixEMCalDCal;     //!histos for invariant mass plots
 
+  // calibration
+  TH2                   *fHPionInvMassesEMCalCalib;     //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesMixEMCalCalib;     //!histos for invariant mass plots
+
+  // calibration
+  TH2                   *fHPionInvMassesDCalCalib;     //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesMixDCalCalib;     //!histos for invariant mass plots
+
+  
   // quick histo for J/Psi
   //TH2                   *fHJPInvMasses;            //!histo for inv mass in JPsi region
   // primary pions

@@ -9,6 +9,9 @@
 //_________________________________________________________________________
 #include "AliAnalysisHadEtMonteCarlo.h"
 #include "AliAnalysisEtCuts.h"
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TInterpreter.h>
 
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -118,10 +121,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 //     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
 //   }
 //   if( fDataSet==2015){
+  if(fDataSet==20100  ||fDataSet==2011 ||  fDataSet==2015){//If this is Pb+Pb
     AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
     fCentBin = GetCentralityBin(fNCentBins, MultSelection);
     if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
-    //}
+  }
   AnalyseEvent(ev);
   if(kDoTriggerChecksOnly) return 1;//If we are only doing trigger checks, don't bother with all of the reconstructed stuff
   //for PID
@@ -160,6 +164,14 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   TString *strTPCITS = new TString("TPCITS");
   Int_t lastcutset = 1;
   if(fRequireITSHits) lastcutset = 2;
+  //cerr<<"Do track cuts exist MC?  "<<fEsdtrackCutsITSTPC<<", "<<fEsdtrackCutsITS<<", "<<fEsdtrackCutsTPC<<endl;
+  if(!fEsdtrackCutsITSTPC || !fEsdtrackCutsITS ||!fEsdtrackCutsTPC){
+    fEsdtrackCutsITSTPC = (AliESDtrackCuts *)fhistoList->FindObject("fEsdTrackCuts");// gInterpreter->ProcessLine("SetTrackCutsITSTPC()");
+    fEsdtrackCutsTPC = (AliESDtrackCuts *)  fhistoList->FindObject("fEsdTrackCutsTPCOnly");//  gInterpreter->ProcessLine("SetTrackCutsTPC()");
+    fEsdtrackCutsITS = (AliESDtrackCuts *)  fhistoList->FindObject("fEsdTrackCutsITS");//  gInterpreter->ProcessLine("SetTrackCutsITS()");
+    //cerr<<"Remade track cuts.  Do track cuts exist MC?  "<<fEsdtrackCutsITSTPC<<", "<<fEsdtrackCutsITS<<", "<<fEsdtrackCutsTPC<<endl;
+
+  }
   for(Int_t cutset=0;cutset<=lastcutset;cutset++){
     TString *cutName = NULL;
     TObjArray* list = NULL;

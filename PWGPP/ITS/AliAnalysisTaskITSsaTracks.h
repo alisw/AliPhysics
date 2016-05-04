@@ -101,8 +101,10 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   AliAnalysisTaskITSsaTracks& operator=(const AliAnalysisTaskITSsaTracks &source);
   
   TList*  fOutput;          //! list of output histos
-  TH1F*   fHistNEvents;     //! histo with N of events  
-
+  TH1F*   fHistNEvents;           //! histo with N of events  
+  TH2F*   fHistNEventsVsTrig;     //! histo with N of events  
+  TH2F*   fHistPureSAtracksVsTracklets;  //! correlation #ITS pureSA tracks, nTracklets
+  TH2F*   fHistITSTPCtracksVsTracklets;  //! correlation #ITS pureSA tracks, nTracklets
   
   TH1F*   fHistPt[kNtrackTypes];          //! pt distr., no PID
   TH1F*   fHistPtGood[kNtrackTypes];      //! pt distr. good tracks, no PID
@@ -124,6 +126,8 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TH1F*   fHistNclu[kNtrackTypes];        //! ITS clu distr., no PID
   TH1F*   fHistNcluGood[kNtrackTypes];    //! ITS clu distr., good tracks, no PID
   TH1F*   fHistNcluFake[kNtrackTypes];    //! ITS clu distr., fake tracks, no PID
+
+  TH2F*   fHistCluInLayVsPt[kNtrackTypes];   //! ITS clu distr., no PID
 
   TH2F*   fHistdedxvsP2cls[kNtrackTypes]; //! dedx vs. p for tracks with 2 clus in SDD+SSD
   TH2F*   fHistdedxvsP3cls[kNtrackTypes]; //! dedx vs. p for tracks with 3 clus in SDD+SSD

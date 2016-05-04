@@ -25,8 +25,8 @@ static const double PionMass = 0.13956995;
 
 const struct { unsigned int bin_count; float min; float max; }
 
-VertexBinning = {16, -10.0, 10.0},
-MultBinning = {30, 0, 10000};
+VertexBinning = {16, -10.0f, 10.0f},
+MultBinning = {30, 0.0f, 10000.0f};
 
 const bool default_verbose = kFALSE
          , default_enable_pair_monitors = kTRUE
@@ -106,21 +106,21 @@ AliFemtoAnalysisPionPion::_Init(const AliFemtoAnalysisPionPion::CutParams& p = A
 { // This function is to be called at the end of all constructors. It will
   // create default objects for any cuts that haven't been initialized
 
-  if (fFirstParticleCut == NULL) {
+  if (fFirstParticleCut == nullptr) {
     SetFirstParticleCut(BuildPionCut1(p));
   }
 
-  if (fPionType_2 != kNone && fSecondParticleCut == NULL) {
+  if (fPionType_2 != kNone && fSecondParticleCut == nullptr) {
     SetSecondParticleCut(BuildPionCut2(p));
   } else if (fPionType_2 == kNone) {
     fSecondParticleCut = fFirstParticleCut;
   }
 
-  if (fEventCut == NULL) {
+  if (fEventCut == nullptr) {
     SetEventCut(BuildEventCut(p));
   }
 
-  if (fPairCut == NULL) {
+  if (fPairCut == nullptr) {
     SetPairCut(BuildPairCut(p));
   }
 }
@@ -556,8 +556,8 @@ static TObjArray* GetPassFailOutputList(const TString &name,
 
 TList* AliFemtoAnalysisPionPion::GetOutputList()
 {
-  TList *outputlist = NULL;
-  TSeqCollection *output = NULL;
+  TList *outputlist = nullptr;
+  TSeqCollection *output = nullptr;
 
   // get "standard" outputs - that's what we output
   if (!fGroupOutputObjects) {
@@ -596,7 +596,7 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
     TList *setting_list = ListSettings();
     TIter next_setting(setting_list);
     for (TObject *setting = next_setting();
-                  setting != NULL;
+                  setting != nullptr;
                   setting = next_setting()) {
       TObjString *setting_str = (TObjString*)setting;
       settings += setting_str->String() + "\n";
@@ -625,7 +625,7 @@ TList* AliFemtoAnalysisPionPion::ListSettings()
       TString::Format("AliFemtoAnalysisPionPion.pion_1_type=%d", fPionType_1)
     ),
 
-  NULL);
+  nullptr);
 
   if (!AnalyzeIdenticalParticles()) {
     setting_list->Add(

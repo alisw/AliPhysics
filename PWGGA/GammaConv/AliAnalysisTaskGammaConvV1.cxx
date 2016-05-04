@@ -3609,6 +3609,14 @@ void AliAnalysisTaskGammaConvV1::RelabelAODPhotonCandidates(Bool_t mode){
     }
     if(!AODLabelPos || !AODLabelNeg){
       cout<<"WARNING!!! AOD TRACKS NOT FOUND FOR"<<endl;
+      if(!AODLabelNeg){
+        PhotonCandidate->SetMCLabelNegative(-999999);
+        PhotonCandidate->SetLabelNegative(-999999);
+      }
+      if(!AODLabelPos){
+        PhotonCandidate->SetMCLabelPositive(-999999);
+        PhotonCandidate->SetLabelPositive(-999999);
+      }
     }
   }
   

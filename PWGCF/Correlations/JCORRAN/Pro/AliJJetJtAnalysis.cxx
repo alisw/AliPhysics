@@ -1938,6 +1938,7 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     trackArray = fMCTracks;
   else 
     trackArray = fTracks;
+
   int iBin, iptaBin=0;
   int jBin=0;
   int iBin2=0;
@@ -2138,6 +2139,11 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     for (int icon = 0; icon<trackArray->GetEntries(); icon++){
       AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
       if (!track) continue;
+      if(mc){
+        if(!track->IsPrimary()) continue;
+        if(track->GetCharge() == 0) continue;
+        if(TMath::Abs(track->Eta()) > 1.0) continue;
+      }
       fhTrackEtaPhi[iContainer]->Fill(track->Eta(),track->Phi());
       pta = track->Pt();
       if (pta > maxconpt) maxconpt = pta;
@@ -2511,7 +2517,36 @@ void AliJJetJtAnalysis::FillJtHistogramMC( TObjArray *Jets , int iContainer)
         fhJetConeLogJtWithPtCutWeight2BinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
 
         //TODO Correct track matching
-        int found = 0;
+        int found =0;
+        AliJMCTrack *mcTrack = (AliJMCTrack*)fMCTracks->At(icon);
+        if(!mcTrack || !mcTrack->IsTrue(AliJMCTrack::kPrimary) ){
+          cout << "Not primary " << endl;
+          continue;
+          }
+        if(iContainer == 0){
+          for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
+            AliJTrack * jtrack = (AliJTrack*) fTracks->At(i);
+            if(mcTrack && (TMath::Abs(track->GetLabel()) == TMath::Abs(mcTrack->GetLabel())) ){
+              found++;
+              fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
+              fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],track->Pt());
+              fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],jet->Pt());
+              fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
+            }
+          }
+          if(found == 0){
+            //cout << "FOUND NO MATCHING TRACK" << endl;
+            fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
+            fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
+            fhTrackPtCorr[iContainer]->Fill(0.0,track->Pt());
+          }
+          if(found > 1){
+            fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
+            //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
+          }
+        }
+
+        /*int found = 0;
         if(iContainer == 0){
           for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
             AliJBaseTrack *recoTrack = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon2));
@@ -2536,7 +2571,7 @@ void AliJJetJtAnalysis::FillJtHistogramMC( TObjArray *Jets , int iContainer)
             fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
             //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
           }
-        }
+        }*/
 
 
       }
@@ -2676,6 +2711,12 @@ void AliJJetJtAnalysis::FillRandomBackground(TObjArray *Jets , int iContainer, i
     countTrack = 1;
     AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
     if (!track) continue;
+    if(MC){
+      if(!track->IsPrimary()) continue;
+      if(track->GetCharge() == 0) continue;
+      if(TMath::Abs(track->Eta()) > 1.0) continue;
+    }
+    fhTrackEtaPhi[iContainer]->Fill(track->Eta(),track->Phi());
     if (Jets->GetEntries()>0){
       //fhNumber[iContainer]->Fill(3.5);
       for (int j = 0; j<Jets->GetEntries(); j++){
@@ -2796,23 +2837,26 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
     if(!mcjet) continue;
     if (TMath::Abs(mcjet->Eta()) > fJetEtaCut) continue;
     for (int icon = 0; icon<fMCTracks->GetEntries(); icon++){
-      AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(fMCTracks->At(icon));
-      if (!track) continue;
-      pta = track->Pt();
+      AliJMCTrack *mcTrack = dynamic_cast<AliJMCTrack*>(fMCTracks->At(icon));
+      if (!mcTrack) continue;
+      if (!mcTrack->IsPrimary()) continue;
+      if (TMath::Abs(mcTrack->Eta()) > 1.0) continue;
+      if (mcTrack->GetCharge() == 0) continue;
+      pta = mcTrack->Pt();
       iptaBin = GetBin(fJetAssocPtBorders, pta);
       if( iptaBin < 0 ) continue;
 
-      double z = (track->Vect()*mcjet->Vect().Unit())/mcjet->P();
+      double z = (mcTrack->Vect()*mcjet->Vect().Unit())/mcjet->P();
       //Jet Cone Jt here
-      deltaR   = getDiffR(mcjet->Phi(),track->Phi(),mcjet->Eta(),track->Eta());
+      deltaR   = getDiffR(mcjet->Phi(),mcTrack->Phi(),mcjet->Eta(),mcTrack->Eta());
       double jt = 0;
       if ( deltaR < thisConeSize){ 
-        jt = (track->Vect()-z*mcjet->Vect()).Mag();
+        jt = (mcTrack->Vect()-z*mcjet->Vect()).Mag();
         /*if(iContainer == 0){
           (*fTrackJt)[icon] = jt;
-          (*fTrackPt)[icon] = track->Pt();
+          (*fTrackPt)[icon] = mcTrack->Pt();
           (*fJetPt)[icon] = jet->Pt();
-        }*/
+          }*/
         //fhJetConeJt[iContainer]->Fill( jt , effCorrection);
         //fhJetConeJtBin[iContainer][iBin]->Fill( jt , effCorrection);
         //fhJetConeJtWeightBin[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
@@ -2835,16 +2879,18 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
         //fhJetConeLogJtWithPtCutWeight2BinBin[iContainer][iBin][iptaBin]
         //  ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
         int found = 0;
+        //AliJMCTrack *mcTrack = (AliJMCTrack*)fMCTracks->At(icon);
+        if(!mcTrack || !mcTrack->IsPrimary()){
+          //cout << "Not primary " << endl;
+          continue;
+        }
         for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
-          AliJBaseTrack *recoTrack = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon2));
-          deltaR   = getDiffR(recoTrack->Phi(),track->Phi(),recoTrack->Eta(),track->Eta());
-          if(deltaR < 0.2 && TMath::Abs(recoTrack->Pt() - track->Pt()) < 0.2 ){
+          AliJBaseTrack * track = (AliJBaseTrack*) fTracks->At(i);
+          if(mcTrack && (TMath::Abs(track->GetLabel()) == TMath::Abs(mcTrack->GetLabel())) ){
             found++;
-            //cout << "Filling fhTrackJtCorrBin with " << (*fTrackJt)[icon2] << endl;
-            //cout << "and " << jt << endl;
             fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
-            fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],track->Pt());
-            //fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],mcjet->Pt());
+            fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],mcTrack->Pt());
+            fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],mcjet->Pt());
             fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
           }
         }
@@ -2852,12 +2898,37 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
           //cout << "FOUND NO MATCHING TRACK" << endl;
           fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
           fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
-          fhTrackPtCorr[iContainer]->Fill(0.0,track->Pt());
+          fhJetPtCorr[iContainer]->Fill(0.0,mcjet->Pt());
+          fhTrackPtCorr[iContainer]->Fill(0.0,mcTrack->Pt());
         }
         if(found > 1){
           fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
           //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
         }
+        /*int found = 0;
+          for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
+          AliJBaseTrack *recoTrack = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon2));
+          deltaR   = getDiffR(recoTrack->Phi(),track->Phi(),recoTrack->Eta(),track->Eta());
+          if(deltaR < 0.2 && TMath::Abs(recoTrack->Pt() - track->Pt()) < 0.2 ){
+          found++;
+        //cout << "Filling fhTrackJtCorrBin with " << (*fTrackJt)[icon2] << endl;
+        //cout << "and " << jt << endl;
+        fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
+        fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],track->Pt());
+        //fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],mcjet->Pt());
+        fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
+        }
+        }
+        if(found == 0){
+        //cout << "FOUND NO MATCHING TRACK" << endl;
+        fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
+        fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
+        fhTrackPtCorr[iContainer]->Fill(0.0,track->Pt());
+        }
+        if(found > 1){
+        fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
+        //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
+        }*/
       }
     }
   }
