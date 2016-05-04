@@ -26,7 +26,10 @@ template<typename t>
 class AliCutValueRange;
 
 template<typename t>
-std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &cut);
+std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &val){
+  val.Print(stream);
+  return stream;
+}
 
 /**
  * \class AliCutValueRange

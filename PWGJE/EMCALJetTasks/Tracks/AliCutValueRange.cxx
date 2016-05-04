@@ -108,12 +108,6 @@ namespace EMCalTriggerPtAnalysis {
 	  stream << "[" << fLimits[0] << "|" << fLimits[1] << "]";
 	}
 
-	template<typename t>
-	std::ostream &operator<<(std::ostream &stream, const AliCutValueRange<t> &val){
-	  val.Print(stream);
-	  return stream;
-	}
-
 	template class AliCutValueRange<int>;
 	template class AliCutValueRange<double>;
 	template class AliCutValueRange<float>;
