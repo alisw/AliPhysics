@@ -127,7 +127,7 @@ protected:
   TH1F* fHistT0;             // histograms that histogram the criterion the cut is applied on: bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 26)
+  ClassDef(AliTriggerAnalysis, 27)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
