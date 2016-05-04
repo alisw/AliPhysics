@@ -284,7 +284,7 @@ TGraphErrors * AliTPCcalibBase::FitSlices(TH2* hist, Int_t minEntries, Int_t nma
       //
       imin   =  TMath::Max(i-idelta,1);
       imax   =  TMath::Min(i+idelta,hist->GetNbinsX());
-      nsum = TMath::Nint(hist->Integral(imin,imax,0,hist->GetNbinsY()));
+      nsum = TMath::Nint(hist->Integral(imin,imax,1,hist->GetNbinsY()));
       if (nsum==0) break;
       if (nsum>minEntries) break;
     }
