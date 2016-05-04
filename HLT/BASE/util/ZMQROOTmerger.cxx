@@ -41,6 +41,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
+int ClearOutputData();
 Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
 int RemoveEntry(TObject* object);
@@ -61,6 +62,7 @@ Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
 Bool_t  fAllowResetOnRequest=kTRUE;
 Bool_t  fAllowResetAtSOR=kTRUE;
+Bool_t  fAllowClearAtSOR=kFALSE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -103,6 +105,7 @@ const char* fUSAGE =
     " -AllowGlobalReset :  allow a global \'reset\' on request\n"
     " -AllowResetOnRequest : allow reset on request\n"
     " -AllowResetAtSOR : allow reset at change of run\n"
+    " -AllowClearAtSOR : clear the histograms at change of run, works only if AllowResetAtSOR=0\n"
     " -AllowControlSequences : allow control seqs (CONFIG messages)\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
     " -reset : reset NOW\n"
@@ -267,6 +270,13 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       if (ResetOutputData(fAllowResetAtSOR)>0)
       {
         if (fVerbose) printf("Run changed, merger reset!\n");
+      }
+    }
+    else if (runnumber!=fRunNumber && fAllowClearAtSOR)
+    {
+      if (ClearOutputData()>0)
+      {
+        if (fVerbose) printf("Run changed, objects cleared!\n");
       }
     }
    fRunNumber = runnumber; 
@@ -492,9 +502,28 @@ int ResetOutputData(Bool_t force)
   {
       if (fVerbose) Printf("Resetting the merger");
       fMergeObjectMap.DeleteAll();
+      fMergeListMap.DeleteAll();
       return 1;
   }
   return 0;
+}
+
+//______________________________________________________________________________
+int ClearOutputData()
+{
+  TObject* object = NULL;
+  TObject* key = NULL;
+  
+  TIter mapIter(&fMergeObjectMap);
+  while ((key = mapIter.Next()))
+  {
+    //the data
+    object = fMergeObjectMap.GetValue(key);
+    if (!object) continue;
+    object->Clear();
+  }
+  fMergeListMap.DeleteAll();
+  return 1;
 }
 
 //_______________________________________________________________________________________
@@ -637,6 +666,10 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("AllowResetAtSOR"))
     {
       fAllowResetAtSOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("AllowClearAtSOR"))
+    {
+      fAllowClearAtSOR = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
     else if (option.EqualTo("schema"))
     {
