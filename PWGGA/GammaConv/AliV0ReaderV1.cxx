@@ -1208,6 +1208,9 @@ void AliV0ReaderV1::CountTracks(){
     // if LHC11a or earlier or if LHC13g -> use 2010 cuts
     if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) ){
       EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    // else if run2 data use 2015 PbPb cuts
+    }else if (runNumber>=209122){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
     // else use 2011 version of track cuts
     }else{
       EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
