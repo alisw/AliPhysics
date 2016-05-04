@@ -112,8 +112,8 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
       row+=AliHLTTPCGeometry::GetFirstRow(iPart);
-      if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
+      if( row>=fNRows ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(row) ) continue;
       fMapping[row*fNRowPads + pad] = -2-iPart;
     }
   }
