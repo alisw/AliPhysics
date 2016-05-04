@@ -2556,7 +2556,7 @@ goSummarizeMetaFiles()
         if ($0 ~ /OK/) mergeLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
           mergeLogsBAD[runNumber,pass,logFile]++
-          listOfBadLogs[nBadLogs++]=$1
+          listOfBadLogs[nBadLogs++]=$0
         }
       }
       
@@ -2566,7 +2566,7 @@ goSummarizeMetaFiles()
         if ($0 ~ /OK/) jobLogsOK[runNumber,pass,logFile]++
         else if ($0 ~ /BAD/) {
           jobLogsBAD[runNumber,pass,logFile]++
-          listOfBadLogs[nBadLogs++]=$1
+          listOfBadLogs[nBadLogs++]=$0
         }
       }
       
@@ -2622,7 +2622,7 @@ goSummarizeMetaFiles()
         print "run "run
 
         for (pass in passes ) {
-          print "  "pass
+          print "=="pass"=="
 
           filesToPrint["esd"]=0
           filesToPrint["qafile"]=0
@@ -2632,23 +2632,24 @@ goSummarizeMetaFiles()
           for (outputFile in filesToPrint) {
             if (outputFilesJobs[run,pass,outputFile])  print "      "outputFilesJobs[run,pass,outputFile]" X "outputFile
           }
-          print "    merge:"
+          print "  "pass" merge:"
           for (outputFile in filesToPrint) {
             if (outputFilesMerge[run,pass,outputFile])  print "      "outputFilesMerge[run,pass,outputFile]" X "outputFile
           }
-
+          print ""
           for (logFile in jobLogsFiles) {
             if (jobLogsBAD[run,pass,logFile]>0) {
-              print "    ERROR: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
+              print "    ->ERRORS: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
             }
           }
           
           for (logFile in mergeLogsFiles) {
             if (mergeLogsBAD[run,pass,logFile]>0) {
-              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
+              print "    ->ERRORS merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
             }
           }
 
+          print ""
         }
       }
      

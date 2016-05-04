@@ -504,7 +504,7 @@ validateLog()
   for errorCondition in "${errorConditions[@]}"; do
     local tmp=$(grep -m1 -e "${errorCondition}" "${log}")
     local error=""
-    [[ -n "${tmp}" ]] && error=" : ${errorCondition}"
+    [[ -n "${tmp}" ]] && error=" ; ${errorCondition}"
     errorSummary+=${error}
   done
 
