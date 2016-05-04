@@ -650,7 +650,7 @@ AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
     }
     
     // Calculate the rapidity of the particle 
-    Double_t mm = (pdg != 3124 ? p->GetMass() : 1.5195);
+    Double_t mm = (pdg != 3124 && p->GetPDG() ? p->GetMass() : 1.5195);
     Double_t yy = rapidity(p, mm);
     
     // Check if the rapidity of this particle is further out than any
