@@ -323,6 +323,7 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
     {
       if (fVerbose) printf("  new object %s\n",safename(incoming));
       ZMQviewerObject tmp(*incoming); incoming->object=NULL;
+      tmp.options = drawOptions;
       fContent->push_back(tmp); //completely new one
       nNewPlots++;
     }
@@ -391,8 +392,8 @@ int AliZMQhistViewer::UpdateCanvas(TCanvas* canvas,
         if (verbose) printf("  removing previous %s at %p\n", safename(current), current->previous);
         pad->SetName(safename(current));
         pad->RecursiveRemove(current->previous);
-        pad->GetListOfPrimitives()->Add(current->object,drawOptions);
-        pad->Modified();
+        pad->GetListOfPrimitives()->Add(current->object,current->options.c_str());
+        pad->Modified(kTRUE);
       }
       else { if (verbose) printf("  missing object\n"); }
     }

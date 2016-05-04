@@ -234,25 +234,41 @@ void AliZMQMTviewerGUI::PadSelected(TVirtualPad* pad, TObject *object, Int_t eve
 {
   if (event==1 && pad) {
     if (pad==fCanvas) { return; }
+    pad->cd();
     std::string name = "";
     std::string title = "";
+    Int_t logx = pad->GetLogx();
+    Int_t logy = pad->GetLogy();
+    Int_t logz = pad->GetLogz();
     TList primitives;
-    TIter iter(pad->GetListOfPrimitives());
-    while (TObject* o = iter.Next()) {
-      TObject* copy = o->Clone();
-      primitives.Add(copy);
+    TObjLink* link = pad->GetListOfPrimitives()->FirstLink();
+    while (link) {
+      TObject* o = link->GetObject();
+      if (!o) { continue; }
       if (o->InheritsFrom("TH1") || o->InheritsFrom("TGraph")) {
+        TObject* copy = o->Clone();
+        Option_t* option = link->GetOption();
+        primitives.Add(copy,option);
         name = o->GetName();
         title = o->GetTitle();
       }
+      link = link->Next();
     }
     if (primitives.GetSize()==0) return;
     AliZMQMTviewerGUIview* window = new AliZMQMTviewerGUIview(
         name.c_str(),title.c_str(),100,200,700,600);
     window->fDrawnObjects.AddAll(&primitives);
-    TIter i(&primitives);
-    while (TObject* o = i.Next()) {
-      o->Draw();
+    window->fCanvas.cd();
+    window->fCanvas.SetLogx(logx);
+    window->fCanvas.SetLogy(logy);
+    window->fCanvas.SetLogz(logz);
+    link = primitives.FirstLink();
+    while (link) {
+      TObject* o = link->GetObject();
+      if (!o) { continue; }
+      Option_t* option = link->GetOption();
+      o->Draw(option);
+      link = link->Next();
     }
     window->fCanvas.Update();
   }
