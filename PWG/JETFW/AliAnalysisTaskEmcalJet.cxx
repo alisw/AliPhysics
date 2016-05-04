@@ -1,7 +1,17 @@
-//
-// Emcal jet analysis base task.
-//
-// Author: S.Aiola, M. Verweij
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -20,9 +30,13 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 
-ClassImp(AliAnalysisTaskEmcalJet)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJet);
+/// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor (should only be used by ROOT I/O).
+ */
 AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskEmcalJet"),
   fRhoName(),
@@ -33,12 +47,19 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet() :
   fLocalRho(0),
   fRhoVal(0)
 {
-  // Default constructor.
-
   fJetCollArray.SetOwner(kTRUE);
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor. Should be used by the user.
+ *
+ * Note: This constructor also handles the general histograms. In
+ * case the second parameter is true, then general histograms (see
+ * UserCreateOutputObjects and FillHistograms) are created and filled
+ * by the task, and a container is provided handling the user histograms.
+ * @param[in] name Name of the task
+ * @param[in] histo If true then general histograms are filled by the task
+ */
 AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name, histo),
   fRhoName(),
@@ -49,52 +70,24 @@ AliAnalysisTaskEmcalJet::AliAnalysisTaskEmcalJet(const char *name, Bool_t histo)
   fLocalRho(0),
   fRhoVal(0)
 {
-  // Standard constructor.
-
   fJetCollArray.SetOwner(kTRUE);
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliAnalysisTaskEmcalJet::~AliAnalysisTaskEmcalJet()
 {
-  // Destructor
 }
 
-//________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet, Int_t c)
-{
-
-  AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
-    AliError(Form("%s:Container %d not found",GetName(),c));
-    return 0;
-  }
-
-  return cont->GetLeadingHadronPt(jet);
-}
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Int_t c) 
-{   
-  // Return true if jet is accepted.
-  if (!jet)
-    return kFALSE;
-
-  AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
-    AliError(Form("%s:Container %d not found",GetName(),c));
-    return 0;
-  }
-
-  UInt_t rejectionReason = 0;
-  return cont->AcceptJet(jet, rejectionReason);
-}
-
-//________________________________________________________________________
+/**
+ * Get the rho object from the event object list. The rho object contains
+ * the value of the average event background.
+ * @param name Name of the object used to search in the event object list
+ * @return Pointer to the rho object
+ */
 AliRhoParameter *AliAnalysisTaskEmcalJet::GetRhoFromEvent(const char *name)
 {
-  // Get rho from event.
-
   AliRhoParameter *rho = 0;
   TString sname(name);
   if (!sname.IsNull()) {
@@ -107,7 +100,12 @@ AliRhoParameter *AliAnalysisTaskEmcalJet::GetRhoFromEvent(const char *name)
   return rho;
 }
 
-//________________________________________________________________________
+/**
+ * Get the local rho object from the event object list. The local rho object contains
+ * information about the average event background as a function of the event geometry.
+ * @param name Name of the object used to search in the event object list
+ * @return Pointer to the local rho object
+ */
 AliLocalRhoParameter *AliAnalysisTaskEmcalJet::GetLocalRhoFromEvent(const char *name)
 {
   // Get local rho from event.
@@ -123,8 +121,16 @@ AliLocalRhoParameter *AliAnalysisTaskEmcalJet::GetLocalRhoFromEvent(const char *
   return rho;
 }
 
-
-//________________________________________________________________________
+/**
+ * Perform steps needed to initialize the analysis.
+ * This function relies on the presence of an input
+ * event (ESD or AOD event). Consequently it is called
+ * internally by UserExec for the first event.
+ *
+ * This function connects all containers attached to
+ * this task to the corresponding arrays in the
+ * input event. Furthermore it initializes the geometry.
+ */
 void AliAnalysisTaskEmcalJet::ExecOnce()
 {
   // Init the analysis.
@@ -180,11 +186,15 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   }
 }
 
-//________________________________________________________________________
+/**
+ * Checks whether a cluster is among the constituents of a jet.
+ * @param jet Pointer to an AliEmcalJet object
+ * @param iclus Index of the cluster to look for
+ * @param sorted If the constituents are sorted by index it will speed up computation
+ * @return kTRUE if the cluster is among the constituents, kFALSE otherwise
+ */
 Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool_t sorted) const
 {
-  // Return true if cluster is in jet.
-
   for (Int_t i = 0; i < jet->GetNumberOfClusters(); ++i) {
     Int_t ijetclus = jet->ClusterAt(i);
     if (sorted && ijetclus > iclus)
@@ -195,11 +205,15 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetCluster(AliEmcalJet* jet, Int_t iclus, Bool
   return kFALSE;
 }
 
-//________________________________________________________________________
+/**
+ * Checks whether a track is among the constituents of a jet.
+ * @param jet Pointer to an AliEmcalJet object
+ * @param itrack Index of the track to look for
+ * @param sorted If the constituents are sorted by index it will speed up computation
+ * @return kTRUE if the track is among the constituents, kFALSE otherwise
+ */
 Bool_t AliAnalysisTaskEmcalJet::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_t sorted) const
 {
-  // Return true if track is in jet.
-
   for (Int_t i = 0; i < jet->GetNumberOfTracks(); ++i) {
     Int_t ijettrack = jet->TrackAt(i);
     if (sorted && ijettrack > itrack)
@@ -210,11 +224,13 @@ Bool_t AliAnalysisTaskEmcalJet::IsJetTrack(AliEmcalJet* jet, Int_t itrack, Bool_
   return kFALSE;
 }
 
-//________________________________________________________________________
+/**
+ * Retrieve objects from event. This operation needs to be performed
+ * for every event.
+ * @return kTRUE if successful, kFALSE otherwise
+ */
 Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
 {
-  // Retrieve objects from event.
-
   if (!AliAnalysisTaskEmcal::RetrieveEventObjects())
     return kFALSE;
 
@@ -228,26 +244,40 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * @param[in] jetType One of the AliJetContainer::EJetType_t enumeration values (charged, full, neutral)
+ * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
+ * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
+ * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
+ * @return Pointer to the new jet container
+ */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     JetAcceptanceType accType, TString tag)
 {
-  // Add particle container
-  // will be called in AddTask macro
-
   AliParticleContainer* partCont = GetParticleContainer(0);
   AliClusterContainer* clusCont = GetClusterContainer(0);
 
   return AddJetContainer(jetType, jetAlgo, recoScheme, radius, accType, partCont, clusCont, tag);
 }
 
-//________________________________________________________________________
+/**
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * @param[in] jetType One of the AliJetContainer::EJetType_t enumeration values (charged, full, neutral)
+ * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
+ * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
+ * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] partCont Particle container of the objects used to generate the jets
+ * @param[in] clusCont Cluster container of the objects used to generate the jets
+ * @param[in] tag Label to distinguish different jet branches (defaul is 'Jet')
+ * @return Pointer to the new jet container
+ */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, JetAcceptanceType accType,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
-  // Add particle container
-  // will be called in AddTask macro
-
   AliJetContainer *cont = new AliJetContainer(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag);
   cont->SetJetAcceptanceType(accType);
   fJetCollArray.Add(cont);
@@ -255,12 +285,15 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJ
   return cont;
 }
 
-//________________________________________________________________________
-AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType, Float_t jetRadius) {
-
-  // Add particle container
-  // will be called in AddTask macro
-
+/**
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * @param[in] n Name of the jet branch
+ * @param[in] accType One of the AliJetContainer::JetAcceptanceType enumeration values (TPC, EMCAL, user, ...)
+ * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @return Pointer to the new jet container
+ */
+AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetContainer::JetAcceptanceType accType, Float_t jetRadius)
+{
   if (TString(n).IsNull()) return 0;
 
   AliJetContainer *cont = new AliJetContainer(n);
@@ -271,7 +304,13 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, AliJetC
   return cont;
 }
 
-//________________________________________________________________________
+/**
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * @param[in] n Name of the jet branch
+ * @param[in] defaultCutType String that correspond to a possible acceptance cut type
+ * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @return Pointer to the new jet container
+ */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {
 
   // Add particle container
@@ -311,27 +350,31 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString
   return AddJetContainer(n, acc, jetRadius);
 }
 
-//________________________________________________________________________
-AliJetContainer* AliAnalysisTaskEmcalJet::GetJetContainer(Int_t i) const{
-  // Get i^th jet container
-
-  if(i<0 || i>=fJetCollArray.GetEntriesFast()) return 0;
+/**
+ * Get \f$ i^{th} \f$ jet container attached to this task
+ * @param[in] i Index of the jet container
+ * @return Jet container found for the given index (NULL if no jet container exists for that index)
+ */
+AliJetContainer* AliAnalysisTaskEmcalJet::GetJetContainer(Int_t i) const
+{
+  if (i < 0 || i >= fJetCollArray.GetEntriesFast()) return 0;
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }
 
-//________________________________________________________________________
-AliJetContainer* AliAnalysisTaskEmcalJet::GetJetContainer(const char* name) const{
-  // Get the jet container with name
-  
+/**
+ * Find jet container attached to this task according to its name
+ * @param[in] name Name of the jet container
+ * @return Jet container found under the given name
+ */
+AliJetContainer* AliAnalysisTaskEmcalJet::GetJetContainer(const char* name) const
+{
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.FindObject(name));
   return cont;
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(UInt_t t, Int_t c) 
 {
-  // Set acceptance cuts
   AliJetContainer *cont = GetJetContainer(c);
   if (cont) {
     cont->SetJetAcceptanceType((AliJetContainer::JetAcceptanceType)t);
@@ -341,10 +384,8 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(UInt_t t, Int_t c)
   }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c) {
-  //set acceptance cuts
-
+void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c)
+{
   AliJetContainer *cont = GetJetContainer(c);
   if (!cont) {
     AliError(Form("%s in SetJetAcceptanceType(...): container %d not found",GetName(),c));
@@ -364,7 +405,6 @@ void AliAnalysisTaskEmcalJet::SetJetAcceptanceType(TString cutType, Int_t c) {
     cont->SetJetAcceptanceType(AliJetContainer::kUser);
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetRhoName(const char *n, Int_t c)
 {
   if (c >= 0) {
@@ -377,7 +417,6 @@ void AliAnalysisTaskEmcalJet::SetRhoName(const char *n, Int_t c)
   }
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetEtaLimits(Float_t min, Float_t max, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -385,7 +424,6 @@ void AliAnalysisTaskEmcalJet::SetJetEtaLimits(Float_t min, Float_t max, Int_t c)
   else AliError(Form("%s in SetJetEtaLimits(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetPhiLimits(Float_t min, Float_t max, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -393,7 +431,6 @@ void AliAnalysisTaskEmcalJet::SetJetPhiLimits(Float_t min, Float_t max, Int_t c)
   else AliError(Form("%s in SetJetPhiLimits(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetAreaCut(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -401,7 +438,6 @@ void AliAnalysisTaskEmcalJet::SetJetAreaCut(Float_t cut, Int_t c)
   else AliError(Form("%s in SetJetAreaCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetPercAreaCut(Float_t p, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -409,7 +445,6 @@ void AliAnalysisTaskEmcalJet::SetPercAreaCut(Float_t p, Int_t c)
   else AliError(Form("%s in SetPercAreaCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetZLeadingCut(Float_t zemc, Float_t zch, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -417,7 +452,6 @@ void AliAnalysisTaskEmcalJet::SetZLeadingCut(Float_t zemc, Float_t zch, Int_t c)
   else AliError(Form("%s in SetZLeadingCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetNEFCut(Float_t min, Float_t max, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -425,7 +459,6 @@ void AliAnalysisTaskEmcalJet::SetNEFCut(Float_t min, Float_t max, Int_t c)
   else AliError(Form("%s in SetNEFCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetAreaEmcCut(Double_t a, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -433,7 +466,6 @@ void AliAnalysisTaskEmcalJet::SetAreaEmcCut(Double_t a, Int_t c)
   else AliError(Form("%s in SetAreaEmcCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetPtCut(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -441,7 +473,6 @@ void AliAnalysisTaskEmcalJet::SetJetPtCut(Float_t cut, Int_t c)
   else AliError(Form("%s in SetJetPtCut(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetRadius(Float_t r, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -449,7 +480,6 @@ void AliAnalysisTaskEmcalJet::SetJetRadius(Float_t r, Int_t c)
   else AliError(Form("%s in SetJetRadius(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetMaxClusterPt(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -457,7 +487,6 @@ void AliAnalysisTaskEmcalJet::SetMaxClusterPt(Float_t cut, Int_t c)
   else AliError(Form("%s in SetMaxClusterPt(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetMaxTrackPt(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -465,7 +494,6 @@ void AliAnalysisTaskEmcalJet::SetMaxTrackPt(Float_t cut, Int_t c)
   else AliError(Form("%s in SetMaxTrackPt(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetPtBiasJetClus(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -473,7 +501,6 @@ void AliAnalysisTaskEmcalJet::SetPtBiasJetClus(Float_t cut, Int_t c)
   else AliError(Form("%s in SetPtBiasJetClus(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetPtBiasJetTrack(Float_t cut, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -481,7 +508,6 @@ void AliAnalysisTaskEmcalJet::SetPtBiasJetTrack(Float_t cut, Int_t c)
   else AliError(Form("%s in SetPtBiasJetTrack(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetLeadingHadronType(Int_t t, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -489,7 +515,6 @@ void AliAnalysisTaskEmcalJet::SetLeadingHadronType(Int_t t, Int_t c)
   else AliError(Form("%s in SetLeadingHadronType(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetNLeadingJets(Int_t t, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -497,7 +522,6 @@ void AliAnalysisTaskEmcalJet::SetNLeadingJets(Int_t t, Int_t c)
   else AliError(Form("%s in SetNLeadingJets(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetJetBitMap(UInt_t m, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -505,7 +529,6 @@ void AliAnalysisTaskEmcalJet::SetJetBitMap(UInt_t m, Int_t c)
   else AliError(Form("%s in SetJetBitMap(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskEmcalJet::SetIsParticleLevel(Bool_t b, Int_t c)
 {
   AliJetContainer *cont = GetJetContainer(c);
@@ -513,7 +536,6 @@ void AliAnalysisTaskEmcalJet::SetIsParticleLevel(Bool_t b, Int_t c)
   else AliError(Form("%s in SetIsParticleLevel(...): container %d not found",GetName(),c));
 }
 
-//________________________________________________________________________
 const TString& AliAnalysisTaskEmcalJet::GetRhoName(Int_t c) const
 {
   if (c >= 0) {
@@ -526,24 +548,20 @@ const TString& AliAnalysisTaskEmcalJet::GetRhoName(Int_t c) const
   }
 }
 
-//________________________________________________________________________
-TClonesArray* AliAnalysisTaskEmcalJet::GetJetArray(Int_t i) const {
-  // Get i^th TClonesArray with AliEmcalJet
-
+TClonesArray* AliAnalysisTaskEmcalJet::GetJetArray(Int_t i) const
+{
   AliJetContainer *cont = GetJetContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),i));
     return 0;
   }
   return cont->GetArray();
 }
 
-//________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJet::GetJetRadius(Int_t i) const {
-  // Get jet radius from jet container i
-
+Double_t AliAnalysisTaskEmcalJet::GetJetRadius(Int_t i) const
+{
   AliJetContainer *cont = GetJetContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),i));
     return 0;
   }
@@ -551,13 +569,10 @@ Double_t AliAnalysisTaskEmcalJet::GetJetRadius(Int_t i) const {
   return cont->GetJetRadius();
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalJet::GetJetFromArray(Int_t j, Int_t c) const {
-  // Get jet j if accepted from  container c
-  // If jet not accepted return 0
-
+AliEmcalJet* AliAnalysisTaskEmcalJet::GetJetFromArray(Int_t j, Int_t c) const
+{
   AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),c));
     return 0;
   }
@@ -566,13 +581,10 @@ AliEmcalJet* AliAnalysisTaskEmcalJet::GetJetFromArray(Int_t j, Int_t c) const {
   return jet;
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliAnalysisTaskEmcalJet::GetAcceptJetFromArray(Int_t j, Int_t c) const {
-  // Get jet j if accepted from  container c
-  // If jet not accepted return 0
-
+AliEmcalJet* AliAnalysisTaskEmcalJet::GetAcceptJetFromArray(Int_t j, Int_t c) const
+{
   AliJetContainer *cont = GetJetContainer(c);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),c));
     return 0;
   }
@@ -581,12 +593,10 @@ AliEmcalJet* AliAnalysisTaskEmcalJet::GetAcceptJetFromArray(Int_t j, Int_t c) co
   return jet;
 }
 
-//________________________________________________________________________
-Int_t AliAnalysisTaskEmcalJet::GetNJets(Int_t i) const {
-  // Get number of entries in jet array i
-
+Int_t AliAnalysisTaskEmcalJet::GetNJets(Int_t i) const
+{
   AliJetContainer *cont = GetJetContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),i));
     return 0;
   }
@@ -594,14 +604,38 @@ Int_t AliAnalysisTaskEmcalJet::GetNJets(Int_t i) const {
 
 }
 
-//________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJet::GetRhoVal(Int_t i) const {
-  // Get rho corresponding to jet array i
-
+Double_t AliAnalysisTaskEmcalJet::GetRhoVal(Int_t i) const
+{
   AliJetContainer *cont = GetJetContainer(i);
-  if(!cont) {
+  if (!cont) {
     AliError(Form("%s:Container %d not found",GetName(),i));
     return 0;
   }
   return cont->GetRhoVal();
+}
+
+Double_t AliAnalysisTaskEmcalJet::GetLeadingHadronPt(AliEmcalJet *jet, Int_t c)
+{
+  AliJetContainer *cont = GetJetContainer(c);
+  if (!cont) {
+    AliError(Form("%s:Container %d not found",GetName(),c));
+    return 0;
+  }
+
+  return cont->GetLeadingHadronPt(jet);
+}
+
+Bool_t AliAnalysisTaskEmcalJet::AcceptJet(AliEmcalJet *jet, Int_t c)
+{
+  if (!jet)
+    return kFALSE;
+
+  AliJetContainer *cont = GetJetContainer(c);
+  if (!cont) {
+    AliError(Form("%s:Container %d not found",GetName(),c));
+    return 0;
+  }
+
+  UInt_t rejectionReason = 0;
+  return cont->AcceptJet(jet, rejectionReason);
 }
