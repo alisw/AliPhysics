@@ -313,7 +313,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        //Int_t lab = TMath::Abs(vp->GetLabel());
        if(vp) fhpTTracksJet1 -> Fill(vp->Pt());
     }
-    Double_t mjet1 = jet1->GetSecondOrderSubtracted();
+    Double_t mjet1 = jet1->GetShapeProperties()->GetSecondOrderSubtracted();
     Double_t mUnsubjet1 = jet1->M();
     Double_t ptjet1 = jet1->Pt()-fRho*jet1->Area();
     Double_t ptUnsubjet1 = jet1->Pt();
@@ -326,12 +326,12 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     //Fill histograms for all AA jets
     fh2MSubPtRawAll[fCentBin]->Fill(var,ptUnsubjet1);
     fh2MSubPtSubAll[fCentBin]->Fill(var,ptjet1);
-    fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-    fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-    fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
-    fh2PtRawSubFacV2[fCentBin]->Fill(jet1->Pt(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-    fh2PtCorrSubFacV2[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
-    fh2NConstSubFacV2[fCentBin]->Fill(jet1->GetNumberOfTracks(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetSecondDerivative());
+    fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetShapeProperties()->GetFirstDerivative());
+    fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetShapeProperties()->GetFirstDerivative());
+    fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetShapeProperties()->GetFirstDerivative());
+    fh2PtRawSubFacV2[fCentBin]->Fill(jet1->Pt(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetShapeProperties()->GetSecondDerivative());
+    fh2PtCorrSubFacV2[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetShapeProperties()->GetSecondDerivative());
+    fh2NConstSubFacV2[fCentBin]->Fill(jet1->GetNumberOfTracks(),0.5*(fRho+fRhoM)*(fRho+fRhoM)*jet1->GetShapeProperties()->GetSecondDerivative());
     
     Double_t fraction = 0.;
     fMatch = 0;
@@ -470,10 +470,10 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fAreaPhi = (Float_t)jet1->AreaPhi();
       fAreaEta = (Float_t)jet1->AreaEta();
       fNConst = (Int_t)jet1->GetNumberOfTracks();
-      fM1st   = (Float_t)jet1->GetFirstOrderSubtracted();
-      fM2nd   = (Float_t)jet1->GetSecondOrderSubtracted();
-      fDeriv1st = (Float_t)jet1->GetFirstDerivative();
-      fDeriv2nd = (Float_t)jet1->GetSecondDerivative();
+      fM1st   = (Float_t)jet1->GetShapeProperties()->GetFirstOrderSubtracted();
+      fM2nd   = (Float_t)jet1->GetShapeProperties()->GetSecondOrderSubtracted();
+      fDeriv1st = (Float_t)jet1->GetShapeProperties()->GetFirstDerivative();
+      fDeriv2nd = (Float_t)jet1->GetShapeProperties()->GetSecondDerivative();
       fTreeJetBkg->Fill();
     }
   }

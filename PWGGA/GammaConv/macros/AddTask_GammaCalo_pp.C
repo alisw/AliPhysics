@@ -460,132 +460,163 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
 
     //standard cut
   } else if (trainConfig == 101){ // EMCAL clusters pp 8 TeV 
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // 700 MeV cluster min energy
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); // std
     // 8 TeV variations
   } else if (trainConfig == 102){ // EMCAL clusters pp 8 TeV, timing variation
-    cuts.AddCut("00000113","1111111053032220000","0163103100000050"); // time -50ns_50ns
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // time -30ns_35ns - standard
-    cuts.AddCut("00000113","1111111073032220000","0163103100000050"); // time -30ns_30ns
-    cuts.AddCut("00000113","1111111083032220000","0163103100000050"); // time -20ns_30ns
+    cuts.AddCut("00010113","1111111053032220000","0163103100000050"); // time -50ns_50ns
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // time -30ns_35ns - standard
+    cuts.AddCut("00010113","1111111073032220000","0163103100000050"); // time -30ns_30ns
+    cuts.AddCut("00010113","1111111083032220000","0163103100000050"); // time -20ns_30ns
   } else if (trainConfig == 103){ //EMCAL minEnergy variation
-    cuts.AddCut("00000113","1111111063012220000","0163103100000050"); //0.5 GeV/c
-    cuts.AddCut("00000113","1111111063022220000","0163103100000050"); //0.6 GeV/c
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); //0.7 GeV/c default
-    cuts.AddCut("00000113","1111111063042220000","0163103100000050"); //0.8 GeV/c
-    cuts.AddCut("00000113","1111111063052220000","0163103100000050"); //0.9 GeV/c
+    cuts.AddCut("00010113","1111111063012220000","0163103100000050"); //0.5 GeV/c
+    cuts.AddCut("00010113","1111111063022220000","0163103100000050"); //0.6 GeV/c
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); //0.7 GeV/c default
+    cuts.AddCut("00010113","1111111063042220000","0163103100000050"); //0.8 GeV/c
+    cuts.AddCut("00010113","1111111063052220000","0163103100000050"); //0.9 GeV/c
   } else if (trainConfig == 104){ //EMCAL minNCells, M02, with/without TRD variation
-    cuts.AddCut("00000113","1111111063031220000","0163103100000050"); //n cells >= 1
-    cuts.AddCut("00000113","1111111063033220000","0163103100000050"); //n cells >= 3
-    cuts.AddCut("00000113","1111111063032000000","0163103100000050"); //no M02 cut
-    cuts.AddCut("00000113","1113111063032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00000113","1111211063032220000","0163103100000050"); //no modules with TRD infront
+    cuts.AddCut("00010113","1111111063031220000","0163103100000050"); //n cells >= 1
+    cuts.AddCut("00010113","1111111063033220000","0163103100000050"); //n cells >= 3
+    cuts.AddCut("00010113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00010113","1113111063032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00010113","1111211063032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 105){  // trackMatching variations
-    cuts.AddCut("00000113","1111111061032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111062032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111064032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111065032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111066032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111061032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111062032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111064032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111065032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111066032220000","0163103100000050"); //
   } else if (trainConfig == 106){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
-    cuts.AddCut("00000113","1111111003032220000","0163103100000050"); //
-  } else if (trainConfig == 107 ){ // EMCAL clusters open angle variation
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // min open angle - 0.0202
-    cuts.AddCut("00000113","1111111063032220000","0163103100000030"); // min open angle - 0.01
-    cuts.AddCut("00000113","1111111063032220000","0163103100000040"); // min open angle - 0.0152
-    cuts.AddCut("00000113","1111111063032220000","0163103100000060"); // min open angle - 0.0404
+    cuts.AddCut("00010113","1111111003032220000","0163103100000050"); //
+  } else if (trainConfig == 107){ // EMCAL clusters open angle variation
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // min open angle - 0.0202
+    cuts.AddCut("00010113","1111111063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00010113","1111111063032220000","0163103100000040"); // min open angle - 0.0152
+    cuts.AddCut("00010113","1111111063032220000","0163103100000060"); // min open angle - 0.0404
   } else if (trainConfig == 108){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111163032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111263032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111363032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111563032220000","0163103100000050"); //
-    cuts.AddCut("00000113","1111111663032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111163032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111263032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111363032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111563032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111663032220000","0163103100000050"); //
   } else if (trainConfig == 109){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00000113","1111101063032220000","0163103100000050"); // NonLinearity kSDMv5
-    cuts.AddCut("00000113","1111113063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
-    cuts.AddCut("00000113","1111114063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
+    cuts.AddCut("00010113","1111101063032220000","0163103100000050"); // NonLinearity kSDMv5
+    cuts.AddCut("00010113","1111113063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+    cuts.AddCut("00010113","1111114063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
   } else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
-    cuts.AddCut("00000113","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
-    cuts.AddCut("00000113","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
-    cuts.AddCut("00000113","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
-    cuts.AddCut("00000113","1111100063032220000","0163103100000050"); // NonLinearity none
-
-   // LHC12fa-i and MC
-    // default with three cuts
+    cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
+    cuts.AddCut("00010113","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
+    cuts.AddCut("00010113","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
+    cuts.AddCut("00010113","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
+    cuts.AddCut("00010113","1111100063032220000","0163103100000050"); // NonLinearity none
   } else if (trainConfig == 111){  // EMCAL clusters, different triggers no NonLinearity
     cuts.AddCut("00010113","1111100063032220000","0163103100000050");
     cuts.AddCut("00052013","1111100063032220000","0163103100000050"); // EMC7
     cuts.AddCut("00081013","1111100063032220000","0163103100000050"); // EMCEG1,
     
-    // all the cut variations
-  } else if (trainConfig == 112){  // EMCAL clusters, EMCEG1 trigger
-    cuts.AddCut("00081013","1111111063032220000","0163103100000050"); // EMCEGA, 400 MeV min energy, NCells >=2, M02 default cut
-    cuts.AddCut("00081013","1111111063052220000","0163103100000050"); // EMCEGA, 600 MeV min energy
-  } else if (trainConfig == 113){  // EMCAL clusters, EMCEG1 trigger
-    cuts.AddCut("00081013","1111111063031220000","0163103100000050"); // EMCEGA,                     NCells >=1
-    cuts.AddCut("00081013","1111111063033220000","0163103100000050"); // EMCEGA,                     NCells >=3
-  } else if (trainConfig == 114){  // EMCAL clusters, EMCEG1 trigger
-    cuts.AddCut("00081013","1111111063032000000","0163103100000050"); // EMCEGA,                                 no M02 cut
-    cuts.AddCut("00081013","1111111023032220000","0163103100000050"); // EMCEGA,                                                 500ns timing
-    cuts.AddCut("00085013","1111111043032220000","0163103100000050"); // EMCEGA,                                                 100ns timing
-  } else if (trainConfig == 115){  // EMCAL clusters, INT7 trigger
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050"); //  700 MeV min energy, NCells >=2, M02 default cut
-    cuts.AddCut("00000113","1111111063052220000","0163103100000050"); //  900 MeV min energy
-  } else if (trainConfig == 116){  // EMCAL clusters, INT7 trigger
-    cuts.AddCut("00000113","1111111063031220000","0163103100000050"); //                        NCells >=1
-    cuts.AddCut("00000113","1111111063033220000","0163103100000050"); //                        NCells >=3
-  } else if (trainConfig == 117){  // EMCAL clusters, INT7 trigger
-    cuts.AddCut("00000113","1111111063032000000","0163103100000050"); //                                    no M02 cut
-    cuts.AddCut("00000113","1111111023032220000","0163103100000050"); //                                                    500ns timing
-    cuts.AddCut("00000113","1111111043032220000","0163103100000050"); //                                                    100ns timing
-  } else if (trainConfig == 118){  // EMCAL clusters, EMC7 trigger
-    cuts.AddCut("00052013","1111111063032220000","0163103100000050"); // EMC7, 700 MeV min energy, NCells >=2, M02 default cut
-    cuts.AddCut("00052013","1111111063052220000","0163103100000050"); // EMC7, 900 MeV min energy
-  } else if (trainConfig == 119){  // EMCAL clusters, EMC7 trigger
-    cuts.AddCut("00052013","1111111063031220000","0163103100000050"); // EMC7,                     NCells >=1
-    cuts.AddCut("00052013","1111111063033220000","0163103100000050"); // EMC7,                     NCells >=3
-  } else if (trainConfig == 120){  // EMCAL clusters, EMC7 trigger
-    cuts.AddCut("00052013","1111111063032000000","0163103100000050"); // EMC7,                                 no M02 cut
-    cuts.AddCut("00052013","1111111023032220000","0163103100000050"); // EMC7,                                                 500ns timing
-    cuts.AddCut("00052013","1111111043032220000","0163103100000050"); // EMC7,                                                 100ns timing
 
-  }else if (trainConfig == 121){ // EMCAL clusters, different special triggers, different conv calo non lin
-    cuts.AddCut("00000113","1111111063032220000","0163103100000050");
-    cuts.AddCut("00052013","1111111063032220000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111111063032220000","0163103100000050"); // EMCEG1,
-  }else if (trainConfig == 122){ // EMCAL clusters, different special triggers, different kSDMv5
-    cuts.AddCut("00000113","1111101063032220000","0163103100000050");
-    cuts.AddCut("00052013","1111101063032220000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111101063032220000","0163103100000050"); // EMCEG1,
-  }else if (trainConfig == 123){ // EMCAL clusters, different special triggers, different conv calo non lin
-    cuts.AddCut("00000113","1111112063032220000","0163103100000050");
-    cuts.AddCut("00052013","1111112063032220000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111112063032220000","0163103100000050"); // EMCEG1,
-  } else if (trainConfig == 124){  // EMCAL clusters, EMCEG1 trigger
-    cuts.AddCut("00000113","1111111063032220000","0163103100000060"); //  700 MeV min energy, NCells >=2, M02 default cut, wider distance cut
-    cuts.AddCut("00052013","1111111063032220000","0163103100000060"); // EMC7, 700 MeV min energy, NCells >=2, M02 default cut, wider distance cut
-    cuts.AddCut("00081013","1111111063032220000","0163103100000060"); // EMCEGA, 700 MeV min energy, NCells >=2, M02 default cut, wider distance cut
+    //8 TeV kEMC7 variations
+  } else if (trainConfig == 121){ // EMCAL clusters pp 8 TeV, timing variation
+    cuts.AddCut("00052113","1111111053032220000","0163103100000050"); // time -50ns_50ns
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); // time -30ns_35ns - standard
+    cuts.AddCut("00052113","1111111073032220000","0163103100000050"); // time -30ns_30ns
+    cuts.AddCut("00052113","1111111083032220000","0163103100000050"); // time -20ns_30ns
+  } else if (trainConfig == 122){ //EMCAL minEnergy variation
+    cuts.AddCut("00052113","1111111063012220000","0163103100000050"); //0.5 GeV/c
+    cuts.AddCut("00052113","1111111063022220000","0163103100000050"); //0.6 GeV/c
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); //0.7 GeV/c default
+    cuts.AddCut("00052113","1111111063042220000","0163103100000050"); //0.8 GeV/c
+    cuts.AddCut("00052113","1111111063052220000","0163103100000050"); //0.9 GeV/c
+  } else if (trainConfig == 123){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00052113","1111111063031220000","0163103100000050"); //n cells >= 1
+    cuts.AddCut("00052113","1111111063033220000","0163103100000050"); //n cells >= 3
+    cuts.AddCut("00052113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00052113","1113111063032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00052113","1111211063032220000","0163103100000050"); //no modules with TRD infront
+  } else if (trainConfig == 124){  // trackMatching variations
+    cuts.AddCut("00052113","1111111061032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111062032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111064032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111065032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111066032220000","0163103100000050"); //
+  } else if (trainConfig == 125){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
+    cuts.AddCut("00052113","1111111003032220000","0163103100000050"); //
+  } else if (trainConfig == 126){ // EMCAL clusters open angle variation
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); // min open angle - 0.0202
+    cuts.AddCut("00052113","1111111063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00052113","1111111063032220000","0163103100000040"); // min open angle - 0.0152
+    cuts.AddCut("00052113","1111111063032220000","0163103100000060"); // min open angle - 0.0404
+  } else if (trainConfig == 127){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111163032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111263032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111363032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111563032220000","0163103100000050"); //
+    cuts.AddCut("00052113","1111111663032220000","0163103100000050"); //
+  } else if (trainConfig == 128){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00052113","1111101063032220000","0163103100000050"); // NonLinearity kSDMv5
+    cuts.AddCut("00052113","1111113063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+    cuts.AddCut("00052113","1111114063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
+  } else if (trainConfig == 129){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00052113","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
+    cuts.AddCut("00052113","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
+    cuts.AddCut("00052113","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
+    cuts.AddCut("00052113","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
+    cuts.AddCut("00052113","1111100063032220000","0163103100000050"); // NonLinearity none
 
-  } else if (trainConfig == 125){ // EMCAL clusters EMC7 pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00052013","1111100063032220000","0163103100000050"); // NonLinearity none
-    cuts.AddCut("00052013","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
-    cuts.AddCut("00052013","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
-    cuts.AddCut("00052013","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
-    cuts.AddCut("00052013","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
-  } else if (trainConfig == 126){ // EMCAL clusters EMCEGA pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00081013","1111100063032220000","0163103100000050"); // NonLinearity none
-    cuts.AddCut("00081013","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
-    cuts.AddCut("00081013","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
-    cuts.AddCut("00081013","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
-    cuts.AddCut("00081013","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
-
-// PHOS @ 8 TeV
-  } else if (trainConfig == 181){ // PHOS clusters
-    cuts.AddCut("00010113","2444400070023200000","0163003100900050");
-  } else if (trainConfig == 182){ // PHOS clusters
-    cuts.AddCut("00062113","2444400070023200000","0163003100900050");
-
+    //8 TeV kEMCEGA variations
+  } else if (trainConfig == 141){ // EMCAL clusters pp 8 TeV, timing variation
+    cuts.AddCut("00081113","1111111053032220000","0163103100000050"); // time -50ns_50ns
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); // time -30ns_35ns - standard
+    cuts.AddCut("00081113","1111111073032220000","0163103100000050"); // time -30ns_30ns
+    cuts.AddCut("00081113","1111111083032220000","0163103100000050"); // time -20ns_30ns
+  } else if (trainConfig == 142){ //EMCAL minEnergy variation
+    cuts.AddCut("00081113","1111111063012220000","0163103100000050"); //0.5 GeV/c
+    cuts.AddCut("00081113","1111111063022220000","0163103100000050"); //0.6 GeV/c
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); //0.7 GeV/c default
+    cuts.AddCut("00081113","1111111063042220000","0163103100000050"); //0.8 GeV/c
+    cuts.AddCut("00081113","1111111063052220000","0163103100000050"); //0.9 GeV/c
+  } else if (trainConfig == 143){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00081113","1111111063031220000","0163103100000050"); //n cells >= 1
+    cuts.AddCut("00081113","1111111063033220000","0163103100000050"); //n cells >= 3
+    cuts.AddCut("00081113","1111111063032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00081113","1113111063032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00081113","1111211063032220000","0163103100000050"); //no modules with TRD infront
+  } else if (trainConfig == 144){  // trackMatching variations
+    cuts.AddCut("00081113","1111111061032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111062032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111064032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111065032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111066032220000","0163103100000050"); //
+  } else if (trainConfig == 145){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
+    cuts.AddCut("00081113","1111111003032220000","0163103100000050"); //
+  } else if (trainConfig == 146){ // EMCAL clusters open angle variation
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); // min open angle - 0.0202
+    cuts.AddCut("00081113","1111111063032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00081113","1111111063032220000","0163103100000040"); // min open angle - 0.0152
+    cuts.AddCut("00081113","1111111063032220000","0163103100000060"); // min open angle - 0.0404
+  } else if (trainConfig == 147){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111163032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111263032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111363032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111563032220000","0163103100000050"); //
+    cuts.AddCut("00081113","1111111663032220000","0163103100000050"); //
+  } else if (trainConfig == 148){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00081113","1111101063032220000","0163103100000050"); // NonLinearity kSDMv5
+    cuts.AddCut("00081113","1111113063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+    cuts.AddCut("00081113","1111114063032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
+  } else if (trainConfig == 149){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00081113","1111111063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
+    cuts.AddCut("00081113","1111112063032220000","0163103100000050"); // NonLinearity LHC12 Calo
+    cuts.AddCut("00081113","1111121063032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
+    cuts.AddCut("00081113","1111122063032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
+    cuts.AddCut("00081113","1111100063032220000","0163103100000050"); // NonLinearity none
 
 
   // pp multiplicity studies
@@ -603,21 +634,60 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("04500113","1111121063032220000","0163103100000050"); // 30 -100
     
     
-
     // 7 TeV
   } else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","1111111013032220000","0163103100000050"); // 1000ns timing cut, std NL
-  } else if (trainConfig == 202){ // EMCAL clusters pp 7 TeV - NL variations
-    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); // NL ConvCalo
-    cuts.AddCut("00000113","1111112013032220000","0163103100000050"); // NL Calo
-    cuts.AddCut("00000113","1111113013032220000","0163103100000050"); // NL ConvCalo + TestBeamv3
-    cuts.AddCut("00000113","1111114013032220000","0163103100000050"); // NL Calo + TestBeamv3
-    cuts.AddCut("00000113","1111100013032220000","0163103100000050"); // NL off
-  } else if (trainConfig == 203){ // EMCAL clusters pp 7 TeV - NL variations
-    cuts.AddCut("00000113","1111101013032220000","0163103100000050"); // NL kSDMv5
-    cuts.AddCut("00000113","1111102013032220000","0163103100000050"); // NL Pi0MCv3 + TestBeamv3
-    cuts.AddCut("00000113","1111103013032220000","0163103100000050"); // NL Pi0MCv3 + TestBeamv2
-    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); // NL ConvCalo - std
+  } else if (trainConfig == 202){ // EMCAL clusters pp 7 TeV, timing variation
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111023032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111033032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111043032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111053032220000","0163103100000050"); //
+  } else if (trainConfig == 203){ //EMCAL minEnergy variation
+    cuts.AddCut("00000113","1111111013012220000","0163103100000050"); //0.5 GeV/c
+    cuts.AddCut("00000113","1111111013022220000","0163103100000050"); //0.6 GeV/c
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); //0.7 GeV/c default
+    cuts.AddCut("00000113","1111111013042220000","0163103100000050"); //0.8 GeV/c
+    cuts.AddCut("00000113","1111111013052220000","0163103100000050"); //0.9 GeV/c
+  } else if (trainConfig == 204){ //EMCAL minNCells, M02, with/without TRD variation
+    cuts.AddCut("00000113","1111111013031220000","0163103100000050"); //n cells >= 1
+    cuts.AddCut("00000113","1111111013033220000","0163103100000050"); //n cells >= 3
+    cuts.AddCut("00000113","1111111013032000000","0163103100000050"); //no M02 cut
+    cuts.AddCut("00000113","1113111013032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00000113","1111211013032220000","0163103100000050"); //no modules with TRD infront
+  } else if (trainConfig == 205){  // trackMatching variations
+    cuts.AddCut("00000113","1111111011032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111012032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111014032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111015032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111016032220000","0163103100000050"); //
+//  } else if (trainConfig == 206){ // EMCAL clusters pp 8 TeV, combining cluster within time window and without
+//    cuts.AddCut("00000113","1111111003032220000","0163103100000050"); //
+  } else if (trainConfig == 207){ // EMCAL clusters open angle variation
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); // min open angle - 0.0202
+    cuts.AddCut("00000113","1111111013032220000","0163103100000030"); // min open angle - 0.01
+    cuts.AddCut("00000113","1111111013032220000","0163103100000040"); // min open angle - 0.0152
+    cuts.AddCut("00000113","1111111013032220000","0163103100000060"); // min open angle - 0.0404
+  } else if (trainConfig == 208){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111113032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111213032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111313032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111513032220000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111613032220000","0163103100000050"); //
+  } else if (trainConfig == 209){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00000113","1111101013032220000","0163103100000050"); // NonLinearity kSDMv5
+    cuts.AddCut("00000113","1111113013032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+    cuts.AddCut("00000113","1111114013032220000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
+  } else if (trainConfig == 210){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+    cuts.AddCut("00000113","1111111013032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo
+    cuts.AddCut("00000113","1111112013032220000","0163103100000050"); // NonLinearity LHC12 Calo
+    cuts.AddCut("00000113","1111121013032220000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
+    cuts.AddCut("00000113","1111122013032220000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
+    cuts.AddCut("00000113","1111100013032220000","0163103100000050"); // NonLinearity none
+  } else if (trainConfig == 211){  // EMCAL clusters, different triggers no NonLinearity
+    cuts.AddCut("00000113","1111100013032220000","0163103100000050");
 
   // ************************************* PHOS cuts ****************************************************
   } else if (trainConfig == 301) { //PHOS clusters
@@ -631,6 +701,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","2444400040033200000","0163003100900050");
     cuts.AddCut("00003123","2444400040033200000","0163003100900050");
     
+// PHOS @ 8 TeV
+  } else if (trainConfig == 381){ // PHOS clusters
+    cuts.AddCut("00010113","2444400070023200000","0163003100900050");
+  } else if (trainConfig == 382){ // PHOS clusters
+    cuts.AddCut("00062113","2444400070023200000","0163003100900050");
+
     // 13 TeV & 5 TeV
   } else if (trainConfig == 401){ // EMCAL clusters pp 13 TeV
     cuts.AddCut("00010113","1111111013032220000","0163103100000050"); // 1000ns timing cut, std NL
@@ -729,13 +805,15 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     triggerString           = triggerString(3,2);
     if (triggerString.CompareTo("03")==0) 
       triggerString         = "00";
-
+    if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
+      triggerString         = "00";
+    
+    
     dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
    
     if (doMultiplicityWeighting) analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
 
-    
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

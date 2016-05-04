@@ -149,6 +149,10 @@ fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
+fOpeningAngleGen_OpeningAngleRecUS(0x0),
+fOpeningAngleGen_OpeningAngleRecLS(0x0),
+fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
+fOpeningAngleGen_OpeningAngleResolutionLS(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -289,6 +293,10 @@ fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
 fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
+fOpeningAngleGen_OpeningAngleRecUS(0x0),
+fOpeningAngleGen_OpeningAngleRecLS(0x0),
+fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
+fOpeningAngleGen_OpeningAngleResolutionLS(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -478,6 +486,11 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fEtaGen_EtaRec_PhiGen_PhiRec          = new THnF("etaGen_etaRec_phiGen_phiRec",         "",4,bins,min,max);
     fEtaGen_EtaRec_PhiGen_PhiRec_poslabel = new THnF("etaGen_etaRec_phiGen_phiRec_poslabel","",4,bins,min,max);
     
+    fOpeningAngleGen_OpeningAngleRecUS        = new TH2D("OpeningAngleGen_OpeningAngleRecUS","",       3300,-0.1,3.2,3300,-0.1,3.2);
+    fOpeningAngleGen_OpeningAngleRecLS        = new TH2D("OpeningAngleGen_OpeningAngleRecLS","",       3300,-0.1,3.2,3300,-0.1,3.2);
+    fOpeningAngleGen_OpeningAngleResolutionUS = new TH2D("OpeningAngleGen_OpeningAngleResolutionUS","",3300,-0.1,3.2,2000, 0.0,2.0);
+    fOpeningAngleGen_OpeningAngleResolutionLS = new TH2D("OpeningAngleGen_OpeningAngleResolutionLS","",3300,-0.1,3.2,2000, 0.0,2.0);
+    
     resolutionList->Add(fPrecOverPgen_PGen             );
     resolutionList->Add(fPtRecOverPtGen_PtGen          );
     resolutionList->Add(f1PGenOver1PRec_1PGen          );
@@ -504,12 +517,31 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec_poslabel);
    
+    resolutionList->Add(fOpeningAngleGen_OpeningAngleRecUS       );
+    resolutionList->Add(fOpeningAngleGen_OpeningAngleRecLS       );
+    resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionUS);
+    resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionLS);   
+   
     fEtaGen_EtaRec                        ->Sumw2();
     fPhiGen_PhiRec                        ->Sumw2();
     fEtaGen_EtaRec_PhiGen_PhiRec          ->Sumw2();
     fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Sumw2();
     
+    fOpeningAngleGen_OpeningAngleRecUS        ->Sumw2();     
+    fOpeningAngleGen_OpeningAngleRecLS        ->Sumw2();     
+    fOpeningAngleGen_OpeningAngleResolutionUS ->Sumw2();   
+    fOpeningAngleGen_OpeningAngleResolutionLS ->Sumw2();
     
+    fOpeningAngleGen_OpeningAngleRecUS        ->GetXaxis()->SetTitle("#theta_{ee}^{gen}"); 
+    fOpeningAngleGen_OpeningAngleRecLS        ->GetXaxis()->SetTitle("#theta_{ee}^{gen}"); 
+    fOpeningAngleGen_OpeningAngleResolutionUS ->GetXaxis()->SetTitle("#theta_{ee}^{gen}"); 
+    fOpeningAngleGen_OpeningAngleResolutionLS ->GetXaxis()->SetTitle("#theta_{ee}^{gen}"); 
+
+    fOpeningAngleGen_OpeningAngleRecUS        ->GetYaxis()->SetTitle("#theta_{ee}^{rec}"); 
+    fOpeningAngleGen_OpeningAngleRecLS        ->GetYaxis()->SetTitle("#theta_{ee}^{rec}"); 
+    fOpeningAngleGen_OpeningAngleResolutionUS ->GetYaxis()->SetTitle("#theta_{ee}^{rec} / #theta_{ee}^{gen}"); 
+    fOpeningAngleGen_OpeningAngleResolutionLS ->GetYaxis()->SetTitle("#theta_{ee}^{rec} / #theta_{ee}^{gen}"); 
+
     fEtaGen_EtaRec->GetXaxis()->SetTitle("#eta^{gen}"); 
     fEtaGen_EtaRec->GetYaxis()->SetTitle("#eta^{rec}");                   
     fPhiGen_PhiRec->GetXaxis()->SetTitle("#varphi^{gen} (rad)");
@@ -1043,6 +1075,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
       UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
       Int_t Nprimaries = mcEvent->GetNumberOfPrimaries();
+      TLorentzVector l1Gen,l2Gen,l1Rec,l2Rec;
       for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         AliESDtrack *track = fESD->GetTrack(iTracks);
         if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
@@ -1060,7 +1093,41 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
           if(!mother || mother->PdgCode() == 22) continue;
         }
-
+        l1Gen.SetPtEtaPhiM(part ->Pt(),part ->Eta(),part ->Phi(),AliPID::ParticleMass(AliPID::kElectron));
+        l1Rec.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),AliPID::ParticleMass(AliPID::kElectron));
+        for(Int_t iTracks2 = iTracks; iTracks2 < fESD->GetNumberOfTracks(); iTracks2++){
+          if(iTracks == iTracks2) continue;
+          AliESDtrack *track2 = fESD->GetTrack(iTracks2);
+          if (!track2) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
+          if(fResolutionCuts->IsSelected(track2) != selectedMask) continue;
+          Int_t label2 = track2->GetLabel();
+          if(label == label2) continue;
+          AliMCParticle *part2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label2)));
+          if(!part2) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
+          Int_t mcLabel2 = part2->Label();
+          if(!fStack->IsPhysicalPrimary(mcLabel2)) continue;
+          Int_t pdg2 = TMath::Abs(part2->PdgCode());
+          if(pdg2 != 11 && pdg2 != 211) continue;
+          if(pdg2 == 211 && (mcLabel2 > Nprimaries || mcLabel2 < 0)) continue;
+          if(pdg2 == 11){
+            if(part2->GetMother() > Nprimaries || part2->GetMother() < 0) continue;
+            AliMCParticle *mother2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part2->GetMother()));
+            if(!mother2 || mother2->PdgCode() == 22) continue;
+          }
+          l2Gen.SetPtEtaPhiM(part2 ->Pt(),part2 ->Eta(),part2 ->Phi(),AliPID::ParticleMass(AliPID::kElectron));
+          l2Rec.SetPtEtaPhiM(track2->Pt(),track2->Eta(),track2->Phi(),AliPID::ParticleMass(AliPID::kElectron));
+          Double_t OpeningAngleGen = l1Gen.Angle(l2Gen.Vect());
+          Double_t OpeningAngleRec = l1Rec.Angle(l2Rec.Vect());
+          Double_t OpeningAngleResolution = (OpeningAngleGen > 0.) ? OpeningAngleRec/OpeningAngleGen : -1.;
+          if(part->Charge() != part2->Charge()){
+            fOpeningAngleGen_OpeningAngleRecUS        ->Fill(OpeningAngleGen,OpeningAngleRec);
+            fOpeningAngleGen_OpeningAngleResolutionUS ->Fill(OpeningAngleGen,OpeningAngleResolution);
+          }
+          else{
+            fOpeningAngleGen_OpeningAngleRecLS        ->Fill(OpeningAngleGen,OpeningAngleRec);
+            fOpeningAngleGen_OpeningAngleResolutionLS ->Fill(OpeningAngleGen,OpeningAngleResolution);
+          }
+        }
         Double_t mcPt   = part->Pt();
         Double_t mcP    = part->P();
         Double_t recPt  = track->Pt();

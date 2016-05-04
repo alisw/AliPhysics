@@ -563,7 +563,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetMass(AliEmcalJet *jet,Int_t jetContNb=0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtracted();
+    return jet->GetShapeProperties()->GetSecondOrderSubtracted();
   else 
     return jet->M();
 }
@@ -598,7 +598,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::Angularity(AliEmcalJet *jet, Int_t je
 Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
   if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-    return jet->GetSecondOrderSubtractedAngularity();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
 
@@ -632,7 +632,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::PTD(AliEmcalJet *jet, Int_t jetContNb
 Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedpTD();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
   else
     return PTD(jet, jetContNb);
 
@@ -721,7 +721,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetCircularity(AliEmcalJet *jet, I
   //calc subtracted jet mass
 
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedCircularity();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity();
   else
     return Circularity(jet, jetContNb);
 }
@@ -768,7 +768,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetLeSub(AliEmcalJet *jet, Int_t j
   //calc subtracted jet mass
 
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedLeSub();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
   else
     return LeSub(jet, jetContNb);
 
@@ -779,7 +779,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::GetJetNumberOfConstituents(AliEmcalJe
   //calc subtracted jet mass
 
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedConstituent();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent();
   else
     return jet->GetNumberOfTracks();
 
@@ -852,7 +852,7 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::GetSigma2(AliEmcalJet *jet, Int_t jet
   //calc subtracted jet mass
 
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedSigma2();
+    return jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2();
   else
     return Sigma2(jet, jetContNb);
 

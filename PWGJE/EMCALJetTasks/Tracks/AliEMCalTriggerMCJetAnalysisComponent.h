@@ -19,13 +19,6 @@ class TString;
 class AliVParticle;
 class AliEmcalJet;
 
-/**
- * \namespace EMCalTriggerPtAnalysis
- * \brief Analysis of high-\f$ p_{t} \f$ tracks in triggered events
- *
- * This namespace contains classes for the analysis of high-\f$ p_{t} \f$ tracks in
- * triggered events.
- */
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalTriggerEventData;

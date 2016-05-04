@@ -32,7 +32,7 @@ using namespace std;
 
 class AliJBaseTrack : public TLorentzVector {
     public:
-        enum { kIsIsolated, kNFlag };
+        enum { kIsIsolated,kPrimary,kNFlag };
         AliJBaseTrack();
         AliJBaseTrack(float px,float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge); // constructor
         AliJBaseTrack(const AliJBaseTrack& a);
@@ -75,6 +75,9 @@ class AliJBaseTrack : public TLorentzVector {
 
         void SetWeight(Double_t weight) { fWeight = weight;}
         void SetMCIndex(Int_t idx) {      fMCIndex = idx;}
+
+        void SetPrimary(Bool_t b=kTRUE){ SetFlag(kPrimary,b);}
+        Bool_t IsPrimary(){return IsTrue(kPrimary);}
 
         virtual void Print(Option_t *option="") const;
 

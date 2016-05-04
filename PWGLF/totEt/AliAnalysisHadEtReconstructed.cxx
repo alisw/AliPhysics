@@ -139,6 +139,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 //     }
 //   }
      //if( fDataSet==2015){
+ if(fDataSet==20100||fDataSet==2011 ||  fDataSet==2015){//If this is Pb+Pb or pPb
     AliMultSelection *MultSelection = (AliMultSelection * ) realEvent->FindListObject("MultSelection");
     fCentBin = GetCentralityBin(fNCentBins, MultSelection);
     if(fCentBin ==-1){
@@ -150,6 +151,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
 	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
       }
     }
+ }
     //}
   //for PID
 //   AliESDpid *pID = new AliESDpid();
@@ -157,6 +159,14 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
+  //cerr<<"Do track cuts exist reco?  "<<fEsdtrackCutsITSTPC<<", "<<fEsdtrackCutsITS<<", "<<fEsdtrackCutsTPC<<endl;
+  if(!fEsdtrackCutsITSTPC || !fEsdtrackCutsITSTPC ||!fEsdtrackCutsITSTPC){
+    //gROOT->LoadMacro("ConfigEtReconstructed.C");
+    fEsdtrackCutsITSTPC = (AliESDtrackCuts *)fhistoList->FindObject("fEsdTrackCuts");// gInterpreter->ProcessLine("SetTrackCutsITSTPC()");
+    fEsdtrackCutsTPC = (AliESDtrackCuts *)  fhistoList->FindObject("fEsdTrackCutsTPCOnly");//  gInterpreter->ProcessLine("SetTrackCutsTPC()");
+    fEsdtrackCutsITS = (AliESDtrackCuts *)  fhistoList->FindObject("fEsdTrackCutsITS");//  gInterpreter->ProcessLine("SetTrackCutsITS()");
+    //cerr<<"Remade track cuts.  Do track cuts exist reco?  "<<fEsdtrackCutsITSTPC<<", "<<fEsdtrackCutsITS<<", "<<fEsdtrackCutsTPC<<endl;
+  }
   for(Int_t cutset=0;cutset<2;cutset++){
     bool isTPC = false;
     TString *cutName = NULL;

@@ -16863,13 +16863,13 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
     fhZNvsTCen[c] = new TH2F(Form("fhZNvsTCen[%d]",c), Form("fhZNvsTCen[%d]",c), 100, 0., 100., 100, 0., 100.);
     fhZNvsTCen[c]->Sumw2();
     fVariousList->Add(fhZNvsTCen[c]);
-    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 500, 0., 2500, 100, 0., 100.);
+    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 1100, 0., 11000, 100, 0., 100.);
     fhCenvsMul[c]->Sumw2();
     fVariousList->Add(fhCenvsMul[c]);
-    fhCenvsDif[c] = new TH2F(Form("fhCenvsDif[%d]",c), Form("fhCenvsDif[%d]",c), 100, 0., 100., 200, -100., 100);
+    fhCenvsDif[c] = new TH2F(Form("fhCenvsDif[%d]",c), Form("fhCenvsDif[%d]",c), 220, -10., 100., 200, 0., 100.);
     fhCenvsDif[c]->Sumw2();
     fVariousList->Add(fhCenvsDif[c]);
-    fhZNvsMul[c] = new TH2F(Form("fhZNvsMul[%d]",c), Form("fhZNvsMul[%d]",c), 500, 0., 2500, 100, 0., 100.);
+    fhZNvsMul[c] = new TH2F(Form("fhZNvsMul[%d]",c), Form("fhZNvsMul[%d]",c), 1100, 0., 11000, 100, 0., 100.);
     fhZNvsMul[c]->Sumw2();
     fVariousList->Add(fhZNvsMul[c]);
     fhImpvsNcol[c] = new TH2F(Form("fhImpvsNcol[%d]",c), Form("fhImpvsNcol[%d]",c), fZDCESENBins, 0., (c==0?fZDCESELCtot:fZDCESELAtot), 2000, -100., 100.);
@@ -18094,6 +18094,12 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   Double_t ZAIm = fZDCFlowVect[1].Y();
   Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
   
+  // VZ eta < 0
+  Double_t VZCM = fVZFlowVect[0][1].GetMult();
+  // VZ eta > 0
+  Double_t VZAM = fVZFlowVect[1][1].GetMult();
+  Double_t VZM = (VZCM+VZAM)/2.;
+  
   if( fInvertZDC ) ZARe = -ZARe;
   // cut on multiplicity
   if( ZCM<=0. || ZAM<=0. ) PassZDCcuts = kFALSE;
@@ -18170,10 +18176,19 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhZNvsCen[1]->Fill(fCentralityEBE,ZAM);
     fhZNvsTCen[0]->Fill(fCentralityVarEBE,ZCM);
     fhZNvsTCen[1]->Fill(fCentralityVarEBE,ZAM);
-    fhCenvsMul[0]->Fill(fNumberOfPOIsEBE,fCentralityEBE);
-    fhCenvsMul[1]->Fill(fNumberOfPOIsEBE,fCentralityVarEBE);
-    fhZNvsMul[0]->Fill(fNumberOfPOIsEBE,ZCM);
-    fhZNvsMul[1]->Fill(fNumberOfPOIsEBE,ZAM);
+    fhCenvsMul[0]->Fill(VZM,fCentralityEBE);
+    fhCenvsMul[1]->Fill(VZM,fCentralityVarEBE);
+    fhZNvsMul[0]->Fill(VZM,ZCM);
+    fhZNvsMul[1]->Fill(VZM,ZAM);
+      // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
+      Double_t ZAmax = 44.5, ZAcen = 36.4; // at cen 40
+      Double_t ZCmax = 49.0, ZCcen = 40.1; // at cen 40
+      Double_t VZmin = 1856; // at cen 40
+      Double_t cZC = ZCmax/1.E4;
+      Double_t cZA = ZAmax/1.E4;
+      fhCenvsDif[0]->Fill(cZC*VZM,ZCM);
+      fhCenvsDif[1]->Fill(cZA*VZM,ZAM);
+    
     if(fhImpvsNcol[0]->GetXaxis()->FindBin(LC)<=fZDCESENBins/2) {
       fhImpvsNcol[0]->Fill(LC,DC);
     }
@@ -18189,8 +18204,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
       ZAM += fCorrMap[CenBin];
       ZCM -= fCorrMap[CenBin];
     }
-    fhCenvsDif[0]->Fill(fCentralityEBE,ZCM-ZAM);
-    fhCenvsDif[1]->Fill(fCentralityVarEBE,ZCM-ZAM);
+//    fhCenvsDif[0]->Fill(fCentralityEBE,ZCM-ZAM);
+//    fhCenvsDif[1]->Fill(fCentralityVarEBE,ZCM-ZAM);
   }
   
   return PassZDCcuts;

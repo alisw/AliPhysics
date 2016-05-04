@@ -61,13 +61,13 @@ class CutHandlerNeutralConv{
 //main function
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(    
-                    Int_t trainConfig = 1,
-                    Bool_t isMC       = kFALSE, //run MC 
-                    Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
-                    TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                    Bool_t doWeighting = kFALSE,  //enable Weighting
-                    TString generatorName = "HIJING",				
-                    TString cutnumberAODBranch = "000000006008400001001500000"
+                      Int_t trainConfig                 = 1,
+                      Bool_t isMC                       = kFALSE, //run MC
+                      Bool_t enableQAMesonTask          = kTRUE, //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
+                      TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+                      Bool_t doWeighting                = kFALSE,  //enable Weighting
+                      TString generatorName             = "HIJING",
+                      TString cutnumberAODBranch        = "000000006008400001001500000"
                     ) {
 
   Int_t isHeavyIon = 0;
@@ -90,9 +90,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   }
   
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "06000008400100001500000000";
-  TString cutnumberEvent = "00000003";
-  TString PionCuts      = "000000200";            //Electron Cuts
+  TString cutnumberPhoton   = "06000008400100001500000000";
+  TString cutnumberEvent    = "00000003";
+  TString PionCuts          = "000000200";            //Electron Cuts
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
@@ -152,17 +152,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
 
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
-
     AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector("PionSelector");
     // Set AnalysisCut Number
-
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
-
       }
     }
 
@@ -170,18 +167,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     mgr->AddTask(fPionSelector);
     
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-
     //connect input V0Reader
     mgr->ConnectInput (fPionSelector,0,cinput1);
 
   }
-
-  
   
   AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero *task=NULL;
-
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero(Form("GammaConvNeutralMesonPiPlPiMiPiZero_%i_%i",neutralPionMode, trainConfig));
-
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -220,6 +212,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.75, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
     cuts.AddCut("00000113","00200009117000008260400000","002010702","0103503100000000","0103503000000000");
+  } else if( trainConfig == 10 ) {
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.6, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("00000113","00200009117000008260400000","002010703","0103503100000000","0103503000000000");
+  } else if( trainConfig == 11 ) {
+    // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass cut of 0.5, min pt charged pi = 100 MeV
+    // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
+    cuts.AddCut("00000113","00200009117000008260400000","002010705","0103503100000000","0103503000000000");
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
