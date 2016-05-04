@@ -66,12 +66,12 @@ void ConfigJpsi( AliAnalysisTaskMultiDielectron* task )
 {
   
   
-  Bool_t usePhysicsSelection = kTRUE;
+  Bool_t usePhysicsSelection = 0;
   Bool_t rejectPileup = kTRUE;
   Bool_t triggerOnV0AND = kFALSE;
   Bool_t setTriggerMaskFromPeriod = kFALSE;
-  AliVEvent::EOfflineTriggerTypes triggerMask = AliVEvent::kMB;
-  TString triggerClass = "";
+  AliVEvent::EOfflineTriggerTypes triggerMask = AliVEvent::kAny;
+  TString triggerClass = "HM";
   
   
   

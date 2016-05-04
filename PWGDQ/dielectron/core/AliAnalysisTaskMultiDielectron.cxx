@@ -256,16 +256,18 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   // Was event selected ?
   ULong64_t isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
-  if( fSelectPhysics && inputHandler){
-    if((isESD && inputHandler->GetEventSelection()) || isAOD){
-      isSelected = inputHandler->IsEventSelected();
-      if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
-      if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
-      else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
-      if( isSelected && !fFiredTrigger.IsNull() ){
-        TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
-        isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
+  if( inputHandler){
+    if(fSelectPhysics){
+      if((isESD && inputHandler->GetEventSelection()) || isAOD){
+        isSelected = inputHandler->IsEventSelected();
+        if (fExcludeTriggerMask && (isSelected&fExcludeTriggerMask)) isRejected=kTRUE;
+        if (fTriggerLogic==kAny) isSelected&=fTriggerMask;
+        else if (fTriggerLogic==kExact) isSelected=((isSelected&fTriggerMask)==fTriggerMask);
       }
+    }
+    if( isSelected && !fFiredTrigger.IsNull() ){
+      TString firedTriggerClasses=InputEvent()->GetFiredTriggerClasses();
+      isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
     }
    }
  
