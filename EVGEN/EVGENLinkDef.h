@@ -77,5 +77,6 @@
 #pragma link C++ class  AliGenReaderHepMC+;
 #pragma link C++ class  AliGenPerformance+;
 #pragma link C++ class  AliGenReadersEMD+;
+#pragma link C++ class  AliGenToy+;
 
 #endif

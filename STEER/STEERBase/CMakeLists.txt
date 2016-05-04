@@ -59,6 +59,7 @@ set(SRCS
     AliGenHerwigEventHeader.cxx
     AliGenHijingEventHeader.cxx
     AliGenPythiaEventHeader.cxx
+    AliGenToyEventHeader.cxx
     AliHeader.cxx
     AliHMPIDPIDParams.cxx
     AliHMPIDPIDResponse.cxx

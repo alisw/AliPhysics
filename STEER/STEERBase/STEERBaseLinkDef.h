@@ -61,6 +61,7 @@
 #pragma link C++ class AliGenGeVSimEventHeader+;
 #pragma link C++ class AliGenEpos3EventHeader+;
 #pragma link C++ class AliGenEposEventHeader+;
+#pragma link C++ class AliGenToyEventHeader+;
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;
 #pragma link C++ class AliInputEventHandler+;
