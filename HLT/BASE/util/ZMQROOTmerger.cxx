@@ -190,6 +190,7 @@ Int_t Run()
     //data present socket 0 - in
     if (sockets[0].revents & ZMQ_POLLIN)
     {
+      int pushBack = 0;
       aliZMQmsg message;
       alizmq_msg_recv(&message, fZMQin, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
@@ -197,14 +198,22 @@ Int_t Run()
         if (alizmq_socket_type(fZMQin)==ZMQ_REP) 
         { HandleRequest(i, fZMQin); }
         else
-        { HandleDataIn(i, fZMQout); }
+        { pushBack += HandleDataIn(i, fZMQout); }
       }
       alizmq_msg_close(&message);
+      
+      if (pushBack>0)
+      {
+        if (fVerbose) printf("pushback!\n");
+        DoSend(fZMQout);
+        fLastPushBackTime.Set();
+      }
     } //socket 0
 
     //data present socket 1 - out
     if (sockets[1].revents & ZMQ_POLLIN)
     {
+      int pushBack = 0;
       aliZMQmsg message;
       alizmq_msg_recv(&message, fZMQout, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
@@ -212,14 +221,21 @@ Int_t Run()
         if (alizmq_socket_type(fZMQout)==ZMQ_REP) 
         { HandleRequest(i, fZMQout); }
         else
-        { HandleDataIn(i, fZMQin); }
+        { pushBack += HandleDataIn(i, fZMQin); }
       }
       alizmq_msg_close(&message);
+      if (pushBack>0)
+      {
+        if (fVerbose) printf("pushback!\n");
+        DoSend(fZMQin);
+        fLastPushBackTime.Set();
+      }
     }//socket 1
     
     //data present socket 2 - mon
     if (sockets[2].revents & ZMQ_POLLIN)
     {
+      int pushBack = 0;
       aliZMQmsg message;
       alizmq_msg_recv(&message, fZMQmon, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
@@ -227,9 +243,15 @@ Int_t Run()
         if (alizmq_socket_type(fZMQmon)==ZMQ_REP) 
         { HandleRequest(i, fZMQmon); }
         else
-        { HandleDataIn(i, fZMQmon); }
+        { pushBack += HandleDataIn(i, fZMQmon); }
       }
       alizmq_msg_close(&message);
+      if (pushBack>0)
+      {
+        if (fVerbose) printf("pushback!\n");
+        DoSend(fZMQmon);
+        fLastPushBackTime.Set();
+      }
     }//socket 2
     
     //data present socket 3 - mon
@@ -446,9 +468,7 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
     TTimeStamp time;
     if ((time.GetSec()-fLastPushBackTime.GetSec())>=fPushbackPeriod)
     {
-      if (fVerbose) printf("pushback!\n");
-      DoSend(socket);
-      fLastPushBackTime.Set();
+      return 1; //signal we will want to send after message is done
     }
 
   }
