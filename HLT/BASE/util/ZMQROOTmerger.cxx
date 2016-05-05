@@ -100,7 +100,7 @@ const char* fUSAGE =
     " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
     " -out : data out\n"
     " -mon : monitoring socket\n"
-    " -sync : sync socket, will send the INFO block on run change, should be PUB\n"
+    " -sync : sync socket, will send the INFO block on run change, has to be PUB or SUB\n"
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n seconds\n"
     " -ResetOnSend : always reset after send\n"
@@ -134,11 +134,12 @@ Int_t Run()
   //main loop
   while(1)
   {
-    Int_t nSockets=3;
+    Int_t nSockets=4;
     zmq_pollitem_t sockets[] = { 
       { fZMQin, 0, ZMQ_POLLIN, 0 },
       { fZMQout, 0, ZMQ_POLLIN, 0 },
       { fZMQmon, 0, ZMQ_POLLIN, 0 },
+      { fZMQsync, 0, ZMQ_POLLIN, 0 },
     };
 
     Int_t rc = 0;
@@ -147,6 +148,7 @@ Int_t Run()
     Int_t inType=alizmq_socket_type(fZMQin);
     Int_t outType=alizmq_socket_type(fZMQout);
     Int_t monType=alizmq_socket_type(fZMQmon);
+    Int_t syncType=alizmq_socket_type(fZMQsync);
     
     //request first
     if (inType==ZMQ_REQ) DoRequest(fZMQin);
@@ -213,7 +215,7 @@ Int_t Run()
       alizmq_msg_close(&message);
     }//socket 1
     
-    //data present socket 1 - mon
+    //data present socket 2 - mon
     if (sockets[2].revents & ZMQ_POLLIN)
     {
       aliZMQmsg message;
@@ -226,8 +228,19 @@ Int_t Run()
         { HandleDataIn(i, fZMQmon); }
       }
       alizmq_msg_close(&message);
-    }//socket 1
+    }//socket 2
     
+    //data present socket 3 - mon
+    if (sockets[3].revents & ZMQ_POLLIN)
+    {
+      aliZMQmsg message;
+      alizmq_msg_recv(&message, fZMQsync, 0);
+      for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+      {
+        HandleDataIn(i, fZMQsync);
+      }
+      alizmq_msg_close(&message);
+    }//socket 3
   }//main loop
 
   return 0;
@@ -630,10 +643,11 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("ZMQconfigSYNC") || option.EqualTo("sync"))
     {
-      if (alizmq_socket_type(value.Data())==ZMQ_PUB) {
+      int type = alizmq_socket_type(value.Data());
+      if (type==ZMQ_PUB || type==ZMQ_SUB) {
         fZMQconfigSYNC = value;
       } else {
-        printf("sync socket has to be PUB!\n");
+        printf("sync socket has to be PUB or SUB!\n");
         return -1;
       }
     }
