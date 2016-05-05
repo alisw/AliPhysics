@@ -60,7 +60,6 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   void                        SetJetBitMap(UInt_t m, Int_t c = 0);
   void                        SetJetTrigger(UInt_t t, Int_t c = 0);
   void                        SetIsParticleLevel(Bool_t b, Int_t c = 0);
-  void                        SetJetsName(const char *n)                   { AddJetContainer(n); }
   virtual void                SetRhoName(const char *n, Int_t c = 0);
   virtual void                SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
   const TString&              GetRhoName(Int_t c = 0) const;

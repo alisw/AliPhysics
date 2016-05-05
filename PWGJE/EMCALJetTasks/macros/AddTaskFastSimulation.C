@@ -28,7 +28,7 @@ AliJetFastSimulation* AddTaskFastSimulation(
   //-------------------------------------------------------
 
   AliJetFastSimulation *jetFastSim = new AliJetFastSimulation(taskName);
-  jetFastSim->SetTracksName(tracksName1);
+  jetFastSim->AddParticleContainer(tracksName1);
   jetFastSim->SetTracksOutName(tracksName2);
 
   //-------------------------------------------------------

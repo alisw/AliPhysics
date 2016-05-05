@@ -138,7 +138,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
   void                        SetClusPtCut(Double_t cut, Int_t c=0);
   void                        SetClusTimeCut(Double_t min, Double_t max, Int_t c=0);
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
@@ -158,7 +157,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPtCut(Double_t cut, Int_t c=0);
-  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }

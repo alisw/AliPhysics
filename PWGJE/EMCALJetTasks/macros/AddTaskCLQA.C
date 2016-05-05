@@ -50,8 +50,8 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   }
 
   AliAnalysisTaskCLQA* qaTask = new AliAnalysisTaskCLQA(name);
-  qaTask->SetTracksName(ntracks);
-  qaTask->SetClusName(nclusters);
+  qaTask->AddParticleContainer(ntracks);
+  qaTask->AddClusterContainer(nclusters);
   qaTask->SetDoCumulants(doCumulants);
   qaTask->SetCumParams(cumMmin,cumPtMin,cumPtMax,cumEtaMin,cumEtaMax);
   qaTask->SelectCollisionCandidates(trigsel);
