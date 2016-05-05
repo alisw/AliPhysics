@@ -520,7 +520,7 @@ Int_t DoSend(void* socket)
   if (fVerbose) Printf("merger sent %i bytes", sentBytes);
   alizmq_msg_close(&message);
 
-  return 0;
+  return sentBytes;
 }
 
 //______________________________________________________________________________
