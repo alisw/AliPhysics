@@ -120,6 +120,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fclusterSizeTPCtransformed(0.)
   , fclusterSizeTPC(0.)
   , fcompressedSizeTPC(0.)
+  , fTPCSplitRatio(0.)
   , fnITSSAPtracks(0.)
   , fnTPCtracklets(0.)
   , fnTPCtracks(0.)
@@ -437,6 +438,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
   }
 
+  fAxes["tpcSplitRatio"].set( 20, 0., 1., &fTPCSplitRatio );
+
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
   NewHistogram(",fHistSDDclusters_SDDrawSize,SDD clusters vs SDD raw size,rawSizeSDD,nClustersSDD");
   NewHistogram(",fHistSSDclusters_SSDrawSize,SSD clusters vs SSD raw size,rawSizeSSD,nClustersSSD");
@@ -449,6 +452,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistTPCRawSize_TPCCompressedSize,TPC compressed size vs TPC Raw Size,rawSizeTPC,compressedSizeTPC");
   NewHistogram(",fHistTPCHLTclusters_TPCCompressionRatio,Huffman compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatio");
   NewHistogram(",fHistTPCHLTclusters_TPCFullCompressionRatio,Full compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatioFull");
+  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatio,TPC Split Cluster ratio vs TPC HLT clusters,nClustersTPC,tpcSplitRatio");
   NewHistogram(",fHistHLTInSize_HLTOutSize,HLT Out Size vs HLT In Size,nHLTInSize,nHLTOutSize");
   NewHistogram(",fHistHLTSize_HLTInOutRatio,HLT Out/In Size Ratio vs HLT Input Size,nHLTInSize,hltRatio");
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
@@ -724,6 +728,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t nTPCtracks = 0;
   AliHLTUInt32_t nITSTracks = 0;
   AliHLTUInt32_t nITSOutTracks = 0;
+
+  AliHLTUInt32_t nTPCHitsSplit = 0;
 
   float vZEROMultiplicity = 0.;
   UShort_t vZEROTriggerChargeA = 0;
@@ -1032,6 +1038,35 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   nHLTOutSize = nESDSize + compressedSizeTPC;
   hltRatio = nHLTInSize > 0 ? ((float) nHLTOutSize / (float) nHLTInSize) : 0.f;
 
+  for (int ndx=0; ndx<nBlocks; ndx++) {
+    const AliHLTComponentBlockData* iter = blocks+ndx;
+
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
+    {
+      AliHLTTracksData* tracks = (AliHLTTracksData*) iter->fPtr;
+      const AliHLTUInt8_t* pCurrent = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
+      for (unsigned i = 0;i < tracks->fCount;i++)
+      {
+        const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
+        fHistTPCTrackPt->Fill(1. / track->fq1Pt);
+        pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
+      }
+    }
+
+    if (iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC))
+    {
+      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
+      for (unsigned i = 0;i < clusters->fCount;i++)
+      {
+        AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
+        fHistClusterChargeTot->Fill(cluster.GetCharge());
+        nTPCHitsSplit += cluster.GetFlagSplitAny();
+      }
+    }
+  }
+  PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+  PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+
   //convert the numbers fo floats for histograms
   fnClustersSPD = nClustersSPD;
   frawSizeSPD = rawSizeSPD;
@@ -1050,6 +1085,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fclusterSizeTPCtransformed = clusterSizeTPCtransformed;
   fclusterSizeTPC = clusterSizeTPC;
   fcompressedSizeTPC = compressedSizeTPC;
+  fTPCSplitRatio = nTPCHitsSplit ? ((double) nTPCHitsSplit / (double) nClustersTPC) : 0.0;
   fnITSSAPtracks = nITSSAPtracks;
   fnTPCtracklets = nTPCtracklets;
   fnTPCtracks = nTPCtracks;
@@ -1092,33 +1128,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   //Fill the histograms
   int pushed_something = FillHistograms();
 
-  for (int ndx=0; ndx<nBlocks; ndx++) {
-    const AliHLTComponentBlockData* iter = blocks+ndx;
-
-    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
-    {
-      AliHLTTracksData* tracks = (AliHLTTracksData*) iter->fPtr;
-      const AliHLTUInt8_t* pCurrent = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
-      for (unsigned i = 0;i < tracks->fCount;i++)
-      {
-        const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
-        fHistTPCTrackPt->Fill(1. / track->fq1Pt);
-        pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
-      }
-    }
-
-    if (iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC))
-    {
-      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
-      for (unsigned i = 0;i < clusters->fCount;i++)
-      {
-        AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
-        fHistClusterChargeTot->Fill(cluster.GetCharge());
-      }
-    }
-  }
-  PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
-  PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
 
   static int nPrinted = 0;
   if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period

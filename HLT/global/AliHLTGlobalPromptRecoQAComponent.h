@@ -159,6 +159,7 @@ protected:
   double fclusterSizeTPCtransformed; 
   double fclusterSizeTPC; 
   double fcompressedSizeTPC; 
+  double fTPCSplitRatio;
 
   double fnITSSAPtracks; 
   double fnTPCtracklets; 
