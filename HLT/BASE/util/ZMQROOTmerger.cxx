@@ -52,6 +52,7 @@ TString fZMQconfigIN  = "PULL";
 TString fZMQsubscriptionIN = "";
 TString fZMQconfigOUT  = "PUSH";
 TString fZMQconfigMON  = "REP";
+TString fZMQconfigSYNC  = "";
 Int_t   fZMQmaxQueueSize = 10;
 Int_t   fZMQtimeout = -1;
 
@@ -91,6 +92,7 @@ void* fZMQcontext = NULL;    //ze zmq context
 void* fZMQmon = NULL;        //the request-reply socket, here we request the merged data
 void* fZMQout = NULL;        //the monitoring socket, here we publish a copy of the data
 void* fZMQin  = NULL;        //the in socket - entry point for the data to be merged.
+void* fZMQsync = NULL;
 
 const char* fUSAGE = 
     "ZMQROOTmerger options: Merge() all ROOT mergeables in the message.\n"
@@ -98,6 +100,7 @@ const char* fUSAGE =
     " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
     " -out : data out\n"
     " -mon : monitoring socket\n"
+    " -sync : sync socket, will send the INFO block on run change, should be PUB\n"
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n seconds\n"
     " -ResetOnSend : always reset after send\n"
@@ -278,6 +281,10 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       {
         if (fVerbose) printf("Run changed, objects cleared!\n");
       }
+    }
+    if (runnumber != fRunNumber && fZMQsync)
+    {
+      alizmq_msg_send(kAliHLTDataTypeInfo, fInfo, fZMQsync, ZMQ_DONTWAIT);
     }
    fRunNumber = runnumber; 
 
@@ -541,6 +548,8 @@ Int_t InitZMQ()
   printf("out: (%s) %s\n", alizmq_socket_name(rc), fZMQconfigOUT.Data());
   rc = alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("mon: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigMON.Data());
+  rc = alizmq_socket_init(fZMQsync, fZMQcontext, fZMQconfigSYNC.Data(), fZMQtimeout, fZMQmaxQueueSize);
+  printf("sync: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigSYNC.Data());
   return 0;
 }
 
@@ -618,6 +627,15 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("ZMQconfigMON") || option.EqualTo("mon"))
     {
       fZMQconfigMON = value;
+    }
+    else if (option.EqualTo("ZMQconfigSYNC") || option.EqualTo("sync"))
+    {
+      if (alizmq_socket_type(value.Data())==ZMQ_PUB) {
+        fZMQconfigSYNC = value;
+      } else {
+        printf("sync socket has to be PUB!\n");
+        return -1;
+      }
     }
     else if (option.EqualTo("Verbose"))
     {
@@ -729,7 +747,8 @@ int main(Int_t argc, char** argv)
   //destroy ZMQ sockets
   zmq_close(fZMQmon);
   zmq_close(fZMQin);
-  //zmq_close(fZMQout);
+  zmq_close(fZMQout);
+  zmq_close(fZMQsync);
   zmq_ctx_destroy(fZMQcontext);
   return mainReturnCode;
 }
