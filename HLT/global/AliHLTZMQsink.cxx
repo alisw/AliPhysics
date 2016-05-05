@@ -261,7 +261,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
   }  
 
   //caching the ECS param string has to happen for non data event
-  if (!IsDataEvent())
+  AliHLTUInt32_t eventType = 0;
+  if (!IsDataEvent(&eventType))
   {
     const AliHLTComponentBlockData* inputBlock = NULL;
     for (int iBlock = 0;
@@ -444,6 +445,13 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     rc = alizmq_msg_send(&message, fZMQout, flags);
     HLTMessage(Form("sent data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     alizmq_msg_close(&message);
+  } //if (doSend)
+  else if (eventType==gkAliEventTypeStartOfRun)
+  {
+    HLTMessage("sending INFO block on SOR");
+    int flags = 0;
+    if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
+    alizmq_msg_send(kAliHLTDataTypeInfo,fInfoString,fZMQout,flags);
   }
 
   outputBlocks.clear();
