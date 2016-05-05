@@ -145,6 +145,8 @@ AliZMQMTviewerGUI::AliZMQMTviewerGUI(const TGWindow *p,UInt_t w,UInt_t h, int ar
    }
 
    fViewer->SetCanvas(fCanvas);
+   bool updateCanvas = false;
+   fViewer->GetUpdateCanvas(&updateCanvas);
 
    fTimer = new TTimer(this, 1000);
    fTimer->Reset();

@@ -141,7 +141,7 @@ int AliZMQhistViewer::Run(void* arg)
     {
       GetData(fZMQin);
       if (fUpdateCanvas) {
-        UpdateCanvas(fCanvas);
+        UpdateCanvas(fCanvas,fSelectionRegexp, fUnSelectionRegexp);
       }
     }
     else if (sockets[1].revents & ZMQ_POLLIN) //ZMQconfig
