@@ -468,6 +468,9 @@ Int_t DoRequest(void* socket)
 //______________________________________________________________________________
 Int_t DoSend(void* socket)
 {
+  //only send if we actually CAN send
+  if ( !(alizmq_socket_state(socket) & ZMQ_POLLOUT) ) { return 0; }
+
   //send back merged data, one object per frame
 
   aliZMQmsg message;
