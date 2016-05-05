@@ -159,7 +159,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   
   TString name(Form("SpectraMECpA_%s", nJets.Data()));
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
-  spectratask->SetJetsName(nJets.Data());
+  spectratask->AddJetContainer(nJets.Data());
   spectratask->SetCentralityEstimator(CentEst);
   spectratask->SetVzRange(-10,10);
 
@@ -176,7 +176,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
   spectratask->SetJetAreaCut(AreaCut);
-  spectratask->SetTracksName(usedTracks);
+  spectratask->AddParticleContainer(usedTracks);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
