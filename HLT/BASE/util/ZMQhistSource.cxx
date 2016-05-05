@@ -58,6 +58,7 @@ const char* fUSAGE =
     " -entries : how many entries in the histogram before sending\n"
     " -histos : how many histograms per message\n"
     " -schema : include the streamer infos in the message\n"
+    " -run : run number\n"
     //" -compression : compression level (0|1)\n"
     ;
 
