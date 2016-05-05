@@ -433,10 +433,11 @@ Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
     TLorentzVector vtx;
     gamma->ProductionVertex(vtx);
     TParticle *currPart;
-    currPart = new((*particles)[nPartNew]) TParticle(220011, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e1V3,Ee1), vtx);
+    Int_t sign = (gRandom->Rndm() < 0.5) ? 1 : -1; 
+    currPart = new((*particles)[nPartNew]) TParticle(sign * 220011, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e1V3,Ee1), vtx);
     currPart->SetWeight(convProb);
     nPartNew++;
-    currPart = new((*particles)[nPartNew]) TParticle(-220011, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e2V3,Ee2), vtx);
+    currPart = new((*particles)[nPartNew]) TParticle(- sign * 220011, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e2V3,Ee2), vtx);
     currPart->SetWeight(convProb);
     nPartNew++;
   }
