@@ -72,7 +72,7 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDataType() {
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() {
-  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSOTC", kAliHLTDataOriginTPC);
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSNOTC", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDescriptorDataType() {
