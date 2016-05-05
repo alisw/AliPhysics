@@ -1,6 +1,6 @@
 #ifndef ALIEMCALITERABLECONTAINER_H
 #define ALIEMCALITERABLECONTAINER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 #include <iterator>
@@ -156,10 +156,6 @@ private:
   const AliEmcalContainer     *fkContainer;         ///< Container to be iterated over
   TArrayI                     fAcceptIndices;       ///< Array of accepted indices
   Bool_t                      fUseAccepted;         ///< Switch between accepted and all objects
-
-  /// \cond CLASSIMP
-  ClassDef(AliEmcalIterableContainerT, 1);
-  /// \endcond
 };
 
 #endif /* ALIEMCALITERABLECONTAINER_H */
