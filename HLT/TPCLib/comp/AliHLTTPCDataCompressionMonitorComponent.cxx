@@ -95,6 +95,8 @@ void AliHLTTPCDataCompressionMonitorComponent::GetInputDataTypes( AliHLTComponen
   tgtList.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType);
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());  
+  tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
 }
 
 AliHLTComponentDataType AliHLTTPCDataCompressionMonitorComponent::GetOutputDataType()
