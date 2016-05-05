@@ -73,7 +73,6 @@ AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
 
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
-stringMap fInfoMap;
 
 //internal state
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
@@ -300,8 +299,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
   {
     //check if we have a runnumber in the string
     alizmq_msg_iter_data(block, fInfo);
-    fInfoMap = ParseParamString(fInfo);
-    int runnumber = atoi(fInfoMap["run"].c_str());
+    int runnumber = atoi(GetParamString("run",fInfo).c_str());
 
     if (fVerbose) printf("received run=%i\n",runnumber);
 
