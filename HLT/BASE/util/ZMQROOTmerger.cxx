@@ -304,6 +304,7 @@ Int_t HandleDataIn(aliZMQmsg::iterator block, void* socket)
 //_____________________________________________________________________
 Int_t DoReply(aliZMQmsg::iterator block, void* socket)
 {
+  if (fVerbose) printf("replying!\n");
   int rc = DoSend(socket);
 
   //reset the "one shot" options to default values
@@ -418,6 +419,7 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
     TTimeStamp time;
     if ((time.GetSec()-fLastPushBackTime.GetSec())>=fPushbackPeriod)
     {
+      if (fVerbose) printf("pushback!\n");
       DoSend(socket);
       fLastPushBackTime.Set();
     }
@@ -519,8 +521,10 @@ int ClearOutputData()
   {
     //the data
     object = fMergeObjectMap.GetValue(key);
-    if (!object) continue;
-    object->Clear();
+    TH1* hist = dynamic_cast<TH1*>(object);
+    if (!hist) continue;
+    if (fVerbose) printf("clearing %s\n",hist->GetName());
+    hist->Reset();
   }
   fMergeListMap.DeleteAll();
   return 1;
