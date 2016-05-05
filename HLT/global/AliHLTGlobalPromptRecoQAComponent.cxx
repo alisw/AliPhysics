@@ -31,6 +31,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCRawCluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliITStrackV2.h"
@@ -68,8 +69,8 @@
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
 
-#include "TH1I.h"
 #include "TH2F.h"
+#include "TH1D.h"
 #include <string>
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
@@ -144,6 +145,8 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fnHLTInSize(0.)
   , fnHLTOutSize(0.)
   , fhltRatio(0.)
+  , fHistClusterChargeTot(NULL)
+  , fHistTPCTrackPt(NULL)
 {
   // see header file for class documentation
   // or
@@ -211,6 +214,9 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   {
     rc = PushBack("reset", kAliHLTDataTypeConfig|kAliHLTDataOriginHLT);
   }
+
+  fHistClusterChargeTot->Reset();
+  fHistTPCTrackPt->Reset();
   return 0;
 }
 
@@ -467,6 +473,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     return -EINVAL;
   }
 
+  fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", 100, 0, 499);
+  fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", 100, 0., 5.);
+
   return iResult;
 }
 
@@ -613,6 +622,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
   // see header file for class documentation
   
   delete fpHWCFData;
+  
+  delete fHistClusterChargeTot;
+  delete fHistTPCTrackPt;
   return 0;
 }
 
@@ -1079,6 +1091,34 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   //Fill the histograms
   int pushed_something = FillHistograms();
+
+  for (int ndx=0; ndx<nBlocks; ndx++) {
+    const AliHLTComponentBlockData* iter = blocks+ndx;
+
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
+    {
+      AliHLTTracksData* tracks = (AliHLTTracksData*) iter->fPtr;
+      const AliHLTUInt8_t* pCurrent = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
+      for (unsigned i = 0;i < tracks->fCount;i++)
+      {
+        const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
+        fHistTPCTrackPt->Fill(1. / track->fq1Pt);
+        pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
+      }
+    }
+
+    if (iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC))
+    {
+      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
+      for (unsigned i = 0;i < clusters->fCount;i++)
+      {
+        AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
+        fHistClusterChargeTot->Fill(cluster.GetCharge());
+      }
+    }
+  }
+  PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+  PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
 
   static int nPrinted = 0;
   if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period
