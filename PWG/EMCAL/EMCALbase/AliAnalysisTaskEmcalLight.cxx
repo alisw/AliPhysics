@@ -755,11 +755,11 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
         break;
       }
     }
-  }
 
-  if (!acceptedTrgClassFound) {
-    if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (acc)",1);
-    return kFALSE;
+    if (!acceptedTrgClassFound) {
+      if (fGeneralHistograms) fHistEventRejection->Fill("Trg class (acc)",1);
+      return kFALSE;
+    }
   }
 
   if (fRejectedTriggerClasses.GetEntriesFast() > 0) {
