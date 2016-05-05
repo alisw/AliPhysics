@@ -132,4 +132,5 @@ public:
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
 //parse 
 stringMap ParseParamString(const std::string paramString);
+std::string GetParamString(const std::string param, const std::string paramstring);
 #endif

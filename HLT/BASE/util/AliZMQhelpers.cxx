@@ -1036,3 +1036,15 @@ stringMap ParseParamString(const string paramString)
   return output;
 }
 
+//a much faster version of the param string parser - just gives you one value
+std::string GetParamString(const std::string param, const std::string paramstring)
+{
+  size_t start = paramstring.find(param+"=");
+  if (start==std::string::npos) return "";
+  start = paramstring.find_first_of("=",start);
+  if (start==std::string::npos) return "";
+  size_t end = paramstring.find_first_of(";", start);
+  start++;
+  return paramstring.substr(start,end-start);
+}
+
