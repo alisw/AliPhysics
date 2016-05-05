@@ -18,6 +18,7 @@
 #include <TFile.h>
 #include <THashList.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TList.h>
 #include <TF1.h>
 #include <TProfile.h>
@@ -53,6 +54,9 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   fBCRangeExtrapolation[0] = 10;
   fBCRangeExtrapolation[1] = 13;
 
+  fTimeResolution[0] = 25./256.;
+  fTimeResolution[1] = 25./256.;
+
   DefineOutput(1, TList::Class());
 }
 
@@ -73,35 +77,69 @@ Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y) {
   h->Fill(x, y);
   return kTRUE;
 }
+Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y, Double_t z) {
+  if (NULL == fList) return kFALSE;
+  TH3* h = dynamic_cast<TH3*>(fList->FindObject(name.Data()));
+  if (NULL == h) return kFALSE;
+  h->Fill(x, y, z);
+  return kTRUE;
+}
 
-TString AliAnalysisTaskADCalib::GetHistName(Int_t  ch, // offline channel,
-					    Int_t  bc, // bc
+TString AliAnalysisTaskADCalib::GetHistName(Int_t  ch,                 // offline channel
+					    Int_t  bc,                 // bc
 					    Bool_t integrator) const { // integrator
-  return TString::Format("hCh%02d_bc%02d_int%d",
-			 ch, bc, integrator);
+  return TString::Format("hCh%02d_bc%02d_int%d", ch, bc, integrator);
 }
-TString AliAnalysisTaskADCalib::GetFcnName(Int_t  ch, // offline channel,
-					   Int_t  bc, // bc
+TString AliAnalysisTaskADCalib::GetHistName(Int_t  ch,                 // offline channel
+					    Bool_t integrator) const { // integrator
+  return TString::Format("hCh%02d_int%d", ch, integrator);
+}
+TString AliAnalysisTaskADCalib::GetFcnName(Int_t  ch,                 // offline channel
+					   Int_t  bc,                 // bc
 					   Bool_t integrator) const { // integrator
-  return TString::Format("f_Ch%02d_BC%02d_int%d",
-			 ch, bc, integrator);
+  return TString::Format("f_Ch%02d_BC%02d_int%d", ch, bc, integrator);
 }
-TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch, // offline channel,
-					     Int_t  bc, // bc
+TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch,                 // offline channel
+					     Int_t  bc,                 // bc
 					     Bool_t integrator) const { // integrator
   return TString::Format("chOff=%02d BC=%02d int=%d;charge in tail [%d..%d] (ADC);charge in BC=%02d",
-			 ch, bc, integrator,
-			 fBCRangeTail[0],
-			 fBCRangeTail[1],
-			 bc);
+			 ch, bc, integrator, fBCRangeTail[0], fBCRangeTail[1], bc);
+}
+TString AliAnalysisTaskADCalib::GetHistTitle(Int_t  ch,                 // offline channel,
+					     Bool_t integrator) const { // integrator
+  return TString::Format("chOff=%02d int(BC=10)=%d;charge in tail [%d..%d] (ADC);time Ch%02d (ns);time Ch%02d (ns)",
+			 ch, integrator, fBCRangeTail[0], fBCRangeTail[1], ch, ch+4);
 }
 
 void AliAnalysisTaskADCalib::NotifyRun() {
+  // (1) set up ADESDFriendUtils
   if (NULL == fADESDFriendUtils) {
     AliFatal("NULL == fADESDFriendUtils");
     return;
   }
   fADESDFriendUtils->Init(fCurrentRunNumber);
+
+  // get the time resolution from OCDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  if (NULL == man) {
+    AliFatal("CDB manager not found");
+    return;
+  }
+  if (!man->IsDefaultStorageSet())
+    man->SetDefaultStorage("raw://");
+
+  man->SetRun(fCurrentRunNumber);
+
+  AliCDBEntry *entry = man->Get("AD/Calib/Data");
+  AliADCalibData* calibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
+  if (NULL == calibData) {
+    AliFatal("No calibration data from calibration database");
+    return;
+  }
+
+  fTimeResolution[0] = calibData->GetTimeResolution(0);
+  fTimeResolution[1] = calibData->GetTimeResolution(1);
+  AliInfo(Form("timeResolution: %f %f", fTimeResolution[0], fTimeResolution[1]));
 }
 
 void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
@@ -112,16 +150,26 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
   fList->SetOwner(kTRUE);
 
   // (2) populate the list with histograms
-  TH2 *h = NULL;
+  Double_t tMin[2] = { 175.0, 180.0 };
+  Double_t tMax[2] = { 205.0, 210.0 };
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) { // bc
-      for (Int_t integrator=0; integrator<2; ++integrator) { // integrator flag for bc
-	h = new TH2D(GetHistName (ch, bc, integrator),
-		     GetHistTitle(ch, bc, integrator),
-		     301, -1.0,  601.0,
-		     513, -2.0, 4098.0);
-	fList->Add(h);
+    const Int_t    side = ch/8;
+    const Double_t dt   = fTimeResolution[side];
+    tMin[side] = TMath::Nint(tMin[side]/dt/4)*dt*4;
+    tMax[side] = TMath::Nint(tMax[side]/dt/4)*dt*4;
+    const Int_t tBins = TMath::Nint((tMax[side]-tMin[side])/(dt*4));
+    for (Int_t integrator=0; integrator<2; ++integrator) { // integrator flag for bc
+      for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) { // bc
+ 	fList->Add(new TH2D(GetHistName (ch, bc, integrator),
+ 			    GetHistTitle(ch, bc, integrator),
+ 			    302, -1.0,  601.0,
+  			    129, -4.0, 1028.0));
       }
+      fList->Add(new TH3I(GetHistName (ch, integrator),
+   			  GetHistTitle(ch, integrator),
+   			  304/2,  -2.0,     602.0,
+   			  tBins, tMin[side], tMax[side],
+   			  tBins, tMin[side], tMax[side]));
     }
   }
 
@@ -137,7 +185,7 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
     AliError("NULL == esdEvent");
     return;
   }
-  AliESDAD* esdAD = esdEvent->GetADData();
+  const AliESDAD* esdAD = esdEvent->GetADData();
   if (NULL == esdAD) {
     AliError("NULL == esdAD");
     return;
@@ -148,7 +196,7 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
     AliError("NULL == esdFriend");
     return;
   }
-  AliESDADfriend* esdADfriend = esdFriend->GetADfriend();
+  const AliESDADfriend* esdADfriend = esdFriend->GetADfriend();
   if (NULL == esdADfriend) {
     AliError("NULL == esdADfriend");
     return;
@@ -156,26 +204,49 @@ void AliAnalysisTaskADCalib::UserExec(Option_t* ) {
 
   fADESDFriendUtils->Update(esdADfriend);
 
-  TH2 *h = NULL;
+  Float_t tail[16]      = { 0 };      // tail charges
+  Float_t time[16]      = { 0 };      // HTPDC time (ns) from esdFriend
+  Bool_t  timeValid[16] = { kFALSE }; // true if there is a time measurement and not pileup
+
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
+    tail[ch]      = 0.0f;
+    time[ch]      = 0.0f;
+    timeValid[ch] = kFALSE;
+
     if (fADESDFriendUtils->IsPileUp(ch))
       continue;
-    
-    // (3) compute the charge in the tail
-    Float_t tail = 0.0f;
-    for (Int_t bc=fBCRangeTail[0], n=fBCRangeTail[1]; bc<=n; ++bc)
-      tail += fADESDFriendUtils->GetADCPedSub(ch, bc);
 
-    // (4) fill histograms with charge in BC vs. charge in the tail
+    time[ch]      =  esdADfriend->GetTime(ch);
+    timeValid[ch] = (esdADfriend->GetWidth(ch) > 1.0f);
+
+    // (3) compute the charge in the tail
+    for (Int_t bc=fBCRangeTail[0], n=fBCRangeTail[1]; bc<=n; ++bc)
+      tail[ch] += fADESDFriendUtils->GetADCPedSub(ch, bc);    
+
+    // (4) fill 2D histograms with charge in BC vs. tail charge
     for (Int_t bc=fBCRangeExtrapolation[0], n=fBCRangeExtrapolation[1]; bc<=n; ++bc) {
       const Bool_t  integratorFlag = esdADfriend->GetIntegratorFlag(ch, bc);
       const TString histName = GetHistName(ch, bc, integratorFlag);
-      const Bool_t  ok = FillHist(histName, tail, fADESDFriendUtils->GetADCPedSub(ch, bc));
+      const Bool_t  ok = FillHist(histName, tail[ch], fADESDFriendUtils->GetADCPedSub(ch, bc));
       if (!ok)
 	AliError(Form("FillHist failed for %s", histName.Data()));
     }
   }
-
+  // (5) fill 3D histograms with time2 vs. time1 vs. tail charge
+  for (Int_t side=0; side<2; ++side) {
+    for (Int_t i=0; i<4; ++i) {
+      const Int_t ch[2] = { 8*side + i, 8*side + i + 4 }; // offline channel numbers of adjacent pads
+      if (timeValid[ch[0]] && timeValid[ch[1]]) {
+	for (Int_t j=0; j<2; ++j) {
+	  const Bool_t  integratorFlag = esdADfriend->GetIntegratorFlag(ch[j], 10);
+	  const TString histName = GetHistName(ch[j], integratorFlag);
+	  const Bool_t  ok = FillHist(histName, tail[ch[j]], time[ch[0]], time[ch[1]]);
+	  if (!ok)
+	    AliError(Form("FillHist failed for %s", histName.Data()));
+	}
+      }
+    }
+  }
   PostData(1, fList);
 }
 
@@ -285,8 +356,10 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     break;
   case 11:
   case 12:
+  case 13:
     f->SetParameters(0, 2, 0, 2);
     f->SetParNames("offset", "slope", "p_{0}", "power");
+    f->SetParLimits(0,-20.0,20.0);
     f->SetParLimits(1, 0.0, 10.0);
     f->SetParLimits(2, 0.0,  1.0);
     f->SetParLimits(3, 1.1,  6.0);
@@ -439,7 +512,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
 	  break;
 	}
 	case 11:
-	case 12: {
+	case 12:
+	case 13: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
