@@ -275,18 +275,13 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Determining bins for histogram indices
   Int_t jetPtBin = -1;
   Int_t etaBin = -1;
-  // For the jets below
-  AliEmcalJet * jet = 0;
   // For comparison to the current jet
   AliEmcalJet * leadingJet = jets->GetLeadingJet();
 
   // Determine the trigger for the current event
   UInt_t eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-  // Just to be certain that we are interating from the start
-  jets->ResetCurrentID();
-  while ((jet = jets->GetNextAcceptJet())) {
-    
+  for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
     if (!(eventTrigger & fTriggerType)) continue;
 
@@ -311,9 +306,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
     if (jet->Pt() > 15) {
 
-      AliVTrack * track = 0;
-      tracks->ResetCurrentID();
-      while ((track = tracks->GetNextAcceptTrack())) {
+      for (auto track : tracks->accepted()) {
 
         // Determine relative angles and distances and set the respective variables
         GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
@@ -416,8 +409,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       // check for a trigger jet
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
-        jets->ResetCurrentID();
-        while ((jet = jets->GetNextAcceptJet())) {
+        for (auto jet : jets->accepted()) {
+
           // Jet properties
           // Determine if we have the lead jet
           leadJet = kFALSE;
@@ -637,13 +630,10 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
   tracksClone->SetOwner(kTRUE);
 
   // Loop over all tracks
-  AliVParticle * particle = 0;
   AliBasicParticle * clone = 0;
   AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
-  // Ensure that we start from the beginning
-  tracks->ResetCurrentID();
 
-  while ((particle = tracks->GetNextAcceptTrack()))
+  for (auto particle : tracks->accepted())
   {
     // Fill some QA information about the tracks
     Int_t trackPtBin = GetTrackPtBin(particle->Pt());
