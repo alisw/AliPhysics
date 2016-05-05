@@ -227,7 +227,7 @@ class AliJetContainer : public AliParticleContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,15);
+  ClassDef(AliJetContainer, 16);
 };
 
 #endif
