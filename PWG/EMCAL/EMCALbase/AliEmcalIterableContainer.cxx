@@ -15,10 +15,6 @@
 #include "AliEmcalContainer.h"
 #include "AliEmcalIterableContainer.h"
 
-/// \cond CLASSIMP
-templateClassImp(AliEmcalIterableContainerT);
-/// \endcond
-
 /**
  * Default (I/O) constructor
  */
