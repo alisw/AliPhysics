@@ -19,6 +19,7 @@ struct AliHLTTPCRawCluster {
     , fSigmaTime2(0.)
     , fCharge(0)
     , fQMax(0)
+    , fFlags(0)
   {}
 
   AliHLTTPCRawCluster(short PadRow,
@@ -36,6 +37,7 @@ struct AliHLTTPCRawCluster {
     , fSigmaTime2(SigmaTime2)
     , fCharge(Charge)
     , fQMax(QMax)
+    , fFlags(0)
   {}
 
   AliHLTTPCRawCluster(const AliHLTTPCRawCluster& other)
@@ -46,6 +48,7 @@ struct AliHLTTPCRawCluster {
     , fSigmaTime2(other.fSigmaTime2)
     , fCharge(other.fCharge)
     , fQMax(other.fQMax)
+    , fFlags(other.fFlags)
   {}
 
   AliHLTTPCRawCluster& operator=(const AliHLTTPCRawCluster& other) {
@@ -61,6 +64,8 @@ struct AliHLTTPCRawCluster {
   }
 
   short fPadRow;
+  unsigned short fFlags; //Flags: (1 << 0): Split in pad direction
+                         //       (1 << 1): Split in time direction
   float fPad;
   float fTime;
   float fSigmaPad2;
@@ -75,6 +80,9 @@ struct AliHLTTPCRawCluster {
   Float_t GetSigmaTime2() const {return fSigmaTime2;}
   Int_t   GetCharge()  const {return fCharge;}
   Int_t   GetQMax()    const {return fQMax;}
+  Bool_t  GetFlagSplitPad() const {return (fFlags & (1 << 0));}
+  Bool_t  GetFlagSplitTime() const {return (fFlags & (1 << 1));}
+  Bool_t  GetFlagSplitAny() const {return (fFlags & 3);}
 
   void SetPadRow(Short_t padrow)  {fPadRow=padrow;}
   void SetPad(Float_t pad)     {fPad=pad;}
@@ -83,6 +91,9 @@ struct AliHLTTPCRawCluster {
   void SetSigmaTime2(Float_t sigmaTime2) {fSigmaTime2=sigmaTime2;}
   void SetCharge(UShort_t charge)  {fCharge=charge;}
   void SetQMax(UShort_t qmax)    {fQMax=qmax;}
+
+  void SetFlagSplitPad() {fFlags |= (1 << 0);}
+  void SetFlagSplitTime() {fFlags |= (1 << 1);}
 };
 typedef struct AliHLTTPCRawCluster AliHLTTPCRawCluster;
 
