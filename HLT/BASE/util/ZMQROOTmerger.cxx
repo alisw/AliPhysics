@@ -69,6 +69,8 @@ TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
 TString fTitleAnnotation = "";
 
+AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
+
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 stringMap fInfoMap;
@@ -281,25 +283,30 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
 
     if (fVerbose) printf("received run=%i\n",runnumber);
 
-    if (runnumber!=fRunNumber && fAllowResetAtSOR) 
+    //on run change
+    if (runnumber != fRunNumber)
     {
-      if (ResetOutputData(fAllowResetAtSOR)>0)
+      if (fAllowResetAtSOR) 
       {
-        if (fVerbose) printf("Run changed, merger reset!\n");
+        if (ResetOutputData(fAllowResetAtSOR)>0)
+        {
+          if (fVerbose) printf("Run changed, merger reset!\n");
+        }
       }
-    }
-    else if (runnumber!=fRunNumber && fAllowClearAtSOR)
-    {
-      if (ClearOutputData()>0)
+      else if (fAllowClearAtSOR)
       {
-        if (fVerbose) printf("Run changed, objects cleared!\n");
+        if (ClearOutputData()>0)
+        {
+          if (fVerbose) printf("Run changed, objects cleared!\n");
+        }
       }
-    }
-    if (runnumber != fRunNumber && fZMQsync)
-    {
-      alizmq_msg_send(kAliHLTDataTypeInfo, fInfo, fZMQsync, ZMQ_DONTWAIT);
-    }
-   fRunNumber = runnumber; 
+      if (fZMQsync)
+      {
+        alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
+      }
+      fRunNumber = runnumber; 
+      DoSend(socket);
+    }//on run change
 
     return 1;
   }
@@ -465,7 +472,7 @@ Int_t DoSend(void* socket)
 
   aliZMQmsg message;
   //forward the (run-)info string
-  alizmq_msg_add(&message, "INFO", fInfo);
+  alizmq_msg_add(&message, &fInfoTopic, fInfo);
   Int_t rc = 0;
   TObject* object = NULL;
   TObject* key = NULL;
@@ -509,10 +516,6 @@ Int_t DoSend(void* socket)
   int sentBytes = alizmq_msg_send(&message, socket, 0);
   if (fVerbose) Printf("merger sent %i bytes", sentBytes);
   alizmq_msg_close(&message);
-
-  //always at least send an empty reply if we are replying
-  if (sentBytes==0 && alizmq_socket_type(socket)==ZMQ_REP)
-    alizmq_msg_send("INFO","NODATA",socket,0);
 
   return 0;
 }
