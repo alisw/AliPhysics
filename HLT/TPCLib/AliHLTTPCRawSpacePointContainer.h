@@ -30,7 +30,7 @@ class AliHLTTPCRawSpacePointContainer : public AliHLTSpacePointContainer
 {
  public:
   /// standard constructor
-  AliHLTTPCRawSpacePointContainer(int mode=0);
+  AliHLTTPCRawSpacePointContainer(int mode=0, int createFlags=0);
   /// copy constructor
   AliHLTTPCRawSpacePointContainer(const AliHLTTPCRawSpacePointContainer& c);
   /// assignment operator
@@ -65,6 +65,9 @@ class AliHLTTPCRawSpacePointContainer : public AliHLTSpacePointContainer
   int PopulateAccessGrid(AliHLTSpacePointPropertyGrid* pGrid, AliHLTTPCRawClusterData * pDecoder, int slice, int partition) const;
   virtual const AliHLTSpacePointPropertyGrid* GetSpacePointPropertyGrid(AliHLTUInt32_t mask) const;
   virtual int SetSpacePointPropertyGrid(AliHLTUInt32_t mask, AliHLTSpacePointPropertyGrid*);
+  
+  // Define whether to create the optional structure with cluster flags or not
+  
 
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * option ="");
@@ -186,6 +189,7 @@ class AliHLTTPCRawSpacePointContainer : public AliHLTSpacePointContainer
 
   /// mode
   int fMode; //!
+  int fCreateFlags; //!
 
   /// vector of cluster ids for writing
   vector<AliHLTUInt32_t>* fWrittenClusterIds; //!

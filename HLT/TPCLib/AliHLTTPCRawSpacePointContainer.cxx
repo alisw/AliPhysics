@@ -26,6 +26,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
+#include "AliHLTTPCClusterFlagsData.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
@@ -43,13 +44,14 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCRawSpacePointContainer)
 
-AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointContainer(int mode)
+AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointContainer(int mode, int createFlags)
   : AliHLTSpacePointContainer()
   , fClusters()
   , fSelections()
   , fBlocks()
   , fSingleBlock()
   , fMode(mode)
+  , fCreateFlags(createFlags)
   , fWrittenClusterIds(NULL)
 {
   // see header file for class documentation
@@ -70,6 +72,7 @@ AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointContainer(const AliHLTTPC
   , fBlocks()
   , fSingleBlock()
   , fMode(c.fMode)
+  , fCreateFlags(c.fCreateFlags)
   , fWrittenClusterIds(NULL)
 {
   /// copy constructor
@@ -82,6 +85,7 @@ AliHLTTPCRawSpacePointContainer& AliHLTTPCRawSpacePointContainer::operator=(cons
   AliHLTSpacePointContainer::operator=(c);
   fClusters=c.fClusters;
   fMode=c.fMode;
+  fCreateFlags = c.fCreateFlags;
   fWrittenClusterIds=NULL;
 
   return *this;
@@ -821,6 +825,63 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
     size = bd.fSize;
   } else {
     iResult=-ENOSPC;
+  }
+  
+  if (iResult >= 0 && fCreateFlags)
+  {
+    if (size + sizeof(AliHLTTPCClusterFlagsData) > capacity)
+    {
+      iResult = -ENOSPC;
+    }
+    else
+    {
+      AliHLTComponent::FillBlockData(bd);
+      bd.fOffset = size + offset;
+      bd.fDataType = AliHLTTPCDefinitions::ClustersFlagsDataType();
+      bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
+ 
+      AliHLTTPCClusterFlagsData* clusterFlagsData = (AliHLTTPCClusterFlagsData*) (outputPtr + size);
+      clusterFlagsData->fVersion = 1;
+      clusterFlagsData->fNumberOfFlags = 2;
+
+      unsigned int tmpVal = 0;
+      unsigned int tmppos = 0;
+      unsigned int nEntries = 0;
+      unsigned int nClusters = 0;
+      for (AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin(); clusterID!=pGrid->end(); clusterID++)
+      {
+        if (clusterID.Data().fTrackId>-1) continue;  //Cannot handle clusters associated to tracks yet
+
+        if (size + sizeof(AliHLTTPCClusterFlagsData) + nEntries * sizeof(tmpVal) > capacity)
+        {
+          iResult = -ENOSPC;
+          break;
+        }
+
+        int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
+        const AliHLTTPCRawCluster &input = pDecoder->fClusters[index];
+
+        unsigned int tmpFlags = input.fFlags & ((1 << clusterFlagsData->fNumberOfFlags) - 1);
+        tmpVal |= tmpFlags << tmppos;
+        tmppos += clusterFlagsData->fNumberOfFlags;
+        nClusters++;
+        while (tmppos >= sizeof(tmpVal) * 8)
+        {
+          tmppos -= sizeof(tmpVal) * 8;
+          *((unsigned int*) &clusterFlagsData[nEntries++]) = tmpVal;
+          tmpVal = 0;
+          tmpVal |= tmpFlags >> (clusterFlagsData->fNumberOfFlags - tmppos);
+        }
+      }
+      if (iResult >= 0)
+      {
+        if (tmppos) *((unsigned int*) &clusterFlagsData[nEntries++]) = tmpVal;
+        clusterFlagsData->fNumberOfClusters = nClusters;
+        bd.fSize = sizeof(AliHLTTPCClusterFlagsData) + nEntries * sizeof(tmpVal);
+        outputBlocks.push_back(bd);
+        size += bd.fSize;
+      }
+    }
   }
 
   if ( (iResult>=0) && fWrittenClusterIds && (fWrittenClusterIds->size()>0) ) {

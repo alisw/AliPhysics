@@ -227,6 +227,7 @@ private:
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
   int fVerificationMode; //! mode for verification and unit tests
+  int fCreateFlags; //! Store cluster flags in compressed data
 
   float fMaxDeltaPad; //! maximum deviation in pad
   float fMaxDeltaTime; //! maximum deviation in time

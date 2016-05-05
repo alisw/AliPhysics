@@ -52,6 +52,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fMode(kCompressionModeNone)
   , fDeflaterMode(kDeflaterModeNone)
   , fVerificationMode(0)
+  , fCreateFlags(0)
   , fMaxDeltaPad(AliHLTTPCDefinitions::GetMaxClusterDeltaPad())
   , fMaxDeltaTime(AliHLTTPCDefinitions::GetMaxClusterDeltaTime())
   , fRawInputClusters(NULL)
@@ -845,7 +846,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     // optimized storage format: differential pad and time storage
     spacePointContainerMode|=AliHLTTPCRawSpacePointContainer::kModeDifferentialPadTime;
   }
-  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode));
+  std::auto_ptr<AliHLTTPCRawSpacePointContainer> rawInputClusters(new AliHLTTPCRawSpacePointContainer(spacePointContainerMode, fCreateFlags));
   std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
   std::auto_ptr<TH1F> histoCompFactor(new TH1F("CompressionFactor",
@@ -1081,6 +1082,19 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       TString parameter=argv[i];
       if (parameter.IsDigit()) {
 	fMode=parameter.Atoi();
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
+
+    // -create-flags
+    if (argument.CompareTo("-create-flags")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.IsDigit()) {
+	fCreateFlags=parameter.Atoi();
 	return 2;
       } else {
 	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
