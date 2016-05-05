@@ -117,6 +117,7 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
   return tgtList.size();
 }
 

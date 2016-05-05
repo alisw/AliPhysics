@@ -155,6 +155,9 @@ public:
   static const AliHLTComponentDataType& RemainingClustersCompressedDataType();
   /** remaining clusters ids data type */
   static const AliHLTComponentDataType& RemainingClusterIdsDataType();
+  /** Data type to transport optional flags, like split cluster flag */
+  static const AliHLTComponentDataType fgkClustersFlagsDataType;          // see above
+  static const AliHLTComponentDataType& ClustersFlagsDataType();
 
   // Calibration data
   /** pedestal calibration data */

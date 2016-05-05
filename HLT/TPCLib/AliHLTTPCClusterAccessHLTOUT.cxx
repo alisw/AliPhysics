@@ -313,7 +313,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       // unpacking in this class. Changed in r51306, the next tag containing this
       // change in the online system is v5-01-Rev-07. There are only very few runs
       // of Sep 2011 with recorded clusters not containing the 0.5 shift
-      // There was also a chenge in the data type of the compressed partition
+      // There was also a change in the data type of the compressed partition
       // cluster blocks which helps to identify the blocks which need the pad shift
       // here
       if (desc.fSize<sizeof(AliHLTTPCRawClusterData)) continue;
