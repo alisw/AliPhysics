@@ -311,6 +311,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed());
   list.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  list.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
 }
@@ -823,6 +824,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       iter->fDataType == AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::ClustersFlagsDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType())
     {
