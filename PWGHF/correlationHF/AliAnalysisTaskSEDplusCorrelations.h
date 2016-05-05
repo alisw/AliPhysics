@@ -120,7 +120,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     Double_t  fMaxCentrality; // Maximum Centrality Value
     Bool_t  fPoolByPool;
     Int_t  fWhichPool;
-    Bool_t fCheckCutDist;
+    Bool_t fCheckCutDist; //flag to check topological cuts distribuition
     ClassDef(AliAnalysisTaskSEDplusCorrelations,5); // class for D+ meson correlations
     
 };
