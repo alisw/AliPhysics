@@ -42,9 +42,10 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
 int ClearOutputData();
+void ClearMergeListMap();
 Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
-int RemoveEntry(TObject* object);
+int RemoveEntry(TPair* entry, TMap* map);
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
@@ -132,6 +133,8 @@ void* work(void* /*param*/)
 //_______________________________________________________________________________________
 Int_t Run()
 {
+  fMergeListMap.SetOwnerKeyValue(kTRUE,kTRUE);
+
   //main loop
   while(1)
   {
@@ -542,14 +545,25 @@ Int_t DoSend(void* socket)
 }
 
 //______________________________________________________________________________
+void ClearMergeListMap()
+{
+  TIter mapIter(&fMergeListMap);
+  while (TObject* key = mapIter.Next())
+  {
+    TList* list = static_cast<TList*>(fMergeListMap.GetValue(key));
+    if (list) list->Delete();
+  }
+}
+
+//______________________________________________________________________________
 int ResetOutputData(Bool_t force)
 {
   if (fAllowGlobalReset || force) 
   {
-      if (fVerbose) Printf("Resetting the merger");
-      fMergeObjectMap.DeleteAll();
-      fMergeListMap.DeleteAll();
-      return 1;
+    if (fVerbose) Printf("Resetting the merger");
+    fMergeObjectMap.DeleteAll();
+    ClearMergeListMap();
+    return 1;
   }
   return 0;
 }
@@ -570,7 +584,7 @@ int ClearOutputData()
     if (fVerbose) printf("clearing %s\n",hist->GetName());
     hist->Reset();
   }
-  fMergeListMap.DeleteAll();
+  ClearMergeListMap();
   return 1;
 }
 
