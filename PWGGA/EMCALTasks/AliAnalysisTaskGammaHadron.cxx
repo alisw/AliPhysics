@@ -207,13 +207,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	fOutputList1    = new TList();
 	fOutputList1    ->SetOwner();
-	fOutputList1    ->SetName("p_{T}_distributions_of_the_gamma");
+	fOutputList1    ->SetName("pT_distributions_of_the_gamma");
 	fOutputList2    = new TList();
 	fOutputList2    ->SetOwner();
-	fOutputList2    ->SetName("p_{T}_distributions_of_the_associated_hadrons_for_a_given_p_{T}^{gamma}");
+	fOutputList2    ->SetName("pT_distr_of_the_ass_H_for_a_given_Gpt");
 	fOutputList3    = new TList();
 	fOutputList3    ->SetOwner();
-	fOutputList3    ->SetName("Delta_phi^{g-h}_for a_given_p_{T}^{gamma}");
+	fOutputList3    ->SetName("DPhi_GH_GammaPt");
 	fOutputListGamma= new TList();
 	fOutputListGamma->SetOwner();
 	fOutputListGamma->SetName("Different_Gamma_2DHistograms");
