@@ -349,7 +349,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
       mgr.GetGRPData()->GetBeamType() == "PbPb" ||
       mgr.GetGRPData()->GetBeamType() == "A-A" ||
       mgr.GetGRPData()->GetBeamType() == "AA" )
-  {
+  {//Start Axes for Pb-Pb
     fAxes["nClustersSPD"].set( 100, 0., 30e3,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 140e3, &frawSizeSPD );
     fAxes["nClustersSDD"].set( 100, 0., 26e3,  &fnClustersSDD );
@@ -392,10 +392,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
     fAxes["nHLTInSize"].set( 100, 0., 200e6, &fnHLTInSize );
     fAxes["nHLTOutSize"].set( 100, 0., 70e6, &fnHLTOutSize );
-
-  }
+  }//End Axes for Pb-Pb
   else
-  {
+  {//Start Axes for pp
     fAxes["nClustersSPD"].set( 100, 0., 800.,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 10e3, &frawSizeSPD );
     fAxes["nClustersSDD"].set( 100, 0., 1e3,  &fnClustersSDD );
@@ -438,11 +437,14 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
     fAxes["nHLTInSize"].set( 100, 0., 40e6, &fnHLTInSize );
     fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
-  }
+  }//End Axes for pp
 
+  //Start Common Axes
   fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
   fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
+  //End Common Axes
 
+  //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
   NewHistogram(",fHistSDDclusters_SDDrawSize,SDD clusters vs SDD raw size,rawSizeSDD,nClustersSDD");
   NewHistogram(",fHistSSDclusters_SSDrawSize,SSD clusters vs SSD raw size,rawSizeSSD,nClustersSSD");
@@ -469,6 +471,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram("CINT7,fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
   NewHistogram("MUFAST,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
   NewHistogram("CINT7,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
+  //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;
   
