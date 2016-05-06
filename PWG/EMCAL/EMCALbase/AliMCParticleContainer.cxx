@@ -195,6 +195,24 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
 }
 
 /**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliMCParticleIterableContainer AliMCParticleContainer::all() const {
+  return AliMCParticleIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliMCParticleIterableContainer AliMCParticleContainer::accepted() const {
+  return AliMCParticleIterableContainer(this, true);
+}
+
+/**
  * Build title of the container consisting of the container name
  * and a string encoding the minimum \f$ p_{t} \f$ cut applied
  * in the kinematic particle selection.

@@ -279,7 +279,6 @@ const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
 }
 
-
 /**
  * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
  * @param mphi First angle value
