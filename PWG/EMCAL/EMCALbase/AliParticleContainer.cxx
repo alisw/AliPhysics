@@ -415,6 +415,24 @@ const char* AliParticleContainer::GetTitle() const
   return trackString.Data();
 }
 
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliParticleIterableContainer AliParticleContainer::all() const {
+  return AliParticleIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliParticleIterableContainer AliParticleContainer::accepted() const {
+  return AliParticleIterableContainer(this, true);
+}
+
 /******************************************
  * Unit tests                             *
  ******************************************/
