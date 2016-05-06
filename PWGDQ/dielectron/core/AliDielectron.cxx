@@ -1149,10 +1149,16 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
 
   //remove the tracks from the Track arrays
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
-    if(bTracks1[itrack1]) arrTracks1.AddAt(0x0, itrack1);
+    if(bTracks1[itrack1]) {
+      arrTracks1.AddAt(0x0, itrack1);
+      if(arr1 == arr2) arrTracks2.AddAt(0x0, itrack1);
+    }
   }
   for (Int_t itrack2=0; itrack2<ntrack2; ++itrack2){
-    if(bTracks2[itrack2]) arrTracks2.AddAt(0x0, itrack2);
+    if(bTracks2[itrack2]) {
+      arrTracks2.AddAt(0x0, itrack2);
+      if(arr1 == arr2) arrTracks1.AddAt(0x0, itrack2);
+    }
   }
 
   // clean up
