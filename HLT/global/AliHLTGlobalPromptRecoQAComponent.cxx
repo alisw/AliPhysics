@@ -120,7 +120,8 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fclusterSizeTPCtransformed(0.)
   , fclusterSizeTPC(0.)
   , fcompressedSizeTPC(0.)
-  , fTPCSplitRatio(0.)
+  , fTPCSplitRatioPad(0.)
+  , fTPCSplitRatioTime(0.)
   , fnITSSAPtracks(0.)
   , fnTPCtracklets(0.)
   , fnTPCtracks(0.)
@@ -439,7 +440,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
   }
 
-  fAxes["tpcSplitRatio"].set( 20, 0., 1., &fTPCSplitRatio );
+  fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
+  fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
 
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
   NewHistogram(",fHistSDDclusters_SDDrawSize,SDD clusters vs SDD raw size,rawSizeSDD,nClustersSDD");
@@ -453,7 +455,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistTPCRawSize_TPCCompressedSize,TPC compressed size vs TPC Raw Size,rawSizeTPC,compressedSizeTPC");
   NewHistogram(",fHistTPCHLTclusters_TPCCompressionRatio,Huffman compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatio");
   NewHistogram(",fHistTPCHLTclusters_TPCFullCompressionRatio,Full compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatioFull");
-  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatio,TPC Split Cluster ratio vs TPC HLT clusters,nClustersTPC,tpcSplitRatio");
+  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatioPad,TPC Split Cluster ratio pad vs TPC HLT clusters,nClustersTPC,tpcSplitRatioPad");
+  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatioTime,TPC Split Cluster ratio time vs TPC HLT clusters,nClustersTPC,tpcSplitRatioTime");
   NewHistogram(",fHistHLTInSize_HLTOutSize,HLT Out Size vs HLT In Size,nHLTInSize,nHLTOutSize");
   NewHistogram(",fHistHLTSize_HLTInOutRatio,HLT Out/In Size Ratio vs HLT Input Size,nHLTInSize,hltRatio");
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
@@ -730,7 +733,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t nITSTracks = 0;
   AliHLTUInt32_t nITSOutTracks = 0;
 
-  AliHLTUInt32_t nTPCHitsSplit = 0;
+  AliHLTUInt32_t nTPCHitsSplitPad = 0;
+  AliHLTUInt32_t nTPCHitsSplitTime = 0;
 
   float vZEROMultiplicity = 0.;
   UShort_t vZEROTriggerChargeA = 0;
@@ -1062,7 +1066,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       {
         AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
         fHistClusterChargeTot->Fill(cluster.GetCharge());
-        nTPCHitsSplit += cluster.GetFlagSplitAny();
+        nTPCHitsSplitPad += cluster.GetFlagSplitPad();
+        nTPCHitsSplitTime += cluster.GetFlagSplitTime();
       }
     }
   }
@@ -1087,7 +1092,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fclusterSizeTPCtransformed = clusterSizeTPCtransformed;
   fclusterSizeTPC = clusterSizeTPC;
   fcompressedSizeTPC = compressedSizeTPC;
-  fTPCSplitRatio = nTPCHitsSplit ? ((double) nTPCHitsSplit / (double) nClustersTPC) : 0.0;
+  fTPCSplitRatioPad = nTPCHitsSplitPad ? ((double) nTPCHitsSplitPad / (double) nClustersTPC) : 0.0;
+  fTPCSplitRatioTime = nTPCHitsSplitTime ? ((double) nTPCHitsSplitTime / (double) nClustersTPC) : 0.0;
   fnITSSAPtracks = nITSSAPtracks;
   fnTPCtracklets = nTPCtracklets;
   fnTPCtracks = nTPCtracks;
