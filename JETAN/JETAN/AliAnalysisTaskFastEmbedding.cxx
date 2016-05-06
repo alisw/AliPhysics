@@ -1475,7 +1475,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		  
 		  if(fEPMode == 2){//rotate jet axis out-of-plane
 		    //new (out-of-plane-rotated) jet phi fulfills the following condition
-		    jetPhiDelta = jetPhi-(event_plane_2+(TMath::Pi()*0.5));
+		    jetPhiDelta = (jetPhi-(event_plane_2))+(TMath::Pi()*0.5);
 		    
 		    if(fDebug>3)std::cout<<"Out-of-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
 		    
@@ -1492,7 +1492,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		    
 		    if(fDebug>3)std::cout<<"jet track phi before rotation: "<<trackphi<<std::endl;
 		    
-		    trackphi=trackphi+jetPhiDelta;//rotate jet constituent in-/out-of-plane
+		    trackphi=trackphi-jetPhiDelta;//rotate jet constituent in-/out-of-plane
 		    tmpTr->SetPhi(trackphi);//save new phi angle of jet track
 		    
 		    if(fDebug>3)std::cout<<"jet track phi after rotation: "<<trackphi<<std::endl;
