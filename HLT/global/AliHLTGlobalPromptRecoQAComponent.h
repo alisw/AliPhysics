@@ -110,6 +110,8 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   void NewAxis(string name, int bins, float low, float high);
   void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
   void NewHistogram(std::string histConfig);
+  void CreateFixedHistograms();
+  void DeleteFixedHistograms();
   int FillHistograms();
 
 protected:

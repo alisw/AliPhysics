@@ -439,9 +439,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
   }//End Axes for pp
 
+  static double fakePtr = 0.;
   //Start Common Axes
   fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
   fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
+  fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
+  fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
   //End Common Axes
 
   //Start Histograms
@@ -484,10 +487,23 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     return -EINVAL;
   }
 
-  fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", 100, 0, 499);
-  fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", 100, 0., 5.);
+  CreateFixedHistograms();
 
   return iResult;
+}
+
+void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
+{
+  delete fHistClusterChargeTot;
+  delete fHistTPCTrackPt;
+}
+
+void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
+{
+  axisStruct& axisClusterChargeTot = fAxes["tpcClusterCharge"];
+  fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", axisClusterChargeTot.bins, axisClusterChargeTot.low, axisClusterChargeTot.high );
+  axisStruct& axisTrackPt = fAxes["tpcTrackPt"];
+  fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", axisTrackPt.bins, axisTrackPt.low, axisTrackPt.high );
 }
 
 void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
@@ -634,8 +650,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
   
   delete fpHWCFData;
   
-  delete fHistClusterChargeTot;
-  delete fHistTPCTrackPt;
   return 0;
 }
 
@@ -781,6 +795,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       configString.assign(configCharArr,iter->fSize);
       HLTInfo("reconfiguring with: %s", configString.c_str());
       ProcessOptionString(configString.c_str());
+      DeleteFixedHistograms();
+      CreateFixedHistograms();
     }
 
     //SPD Vertex Found
