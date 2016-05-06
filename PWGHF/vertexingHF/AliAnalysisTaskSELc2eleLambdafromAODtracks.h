@@ -349,13 +349,20 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoLcMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen2;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCGen;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCGen1;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCGen2;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGenWithEleA;         //!<! Lc in mcArray
   TH2D* fHistoLcMCGenWithEleB;         //!<! Lc in mcArray
   THnSparse* fHistoLbMCGenWithEleA;         //!<! Lc in mcArray
   TH2D* fHistoLbMCGenWithEleB;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCGenWithLambdac;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCS2;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCS;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCS1;         //!<! Lc in mcArray
+  THnSparse* fHistoLbMCS2;         //!<! Lc in mcArray
   THnSparse* fHistoFeedDownXic0MCGen;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
@@ -560,10 +567,16 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma; //!<! Response function e-Lambda pT <- XicPt
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma1; //!<! Response function e-Lambda pT <- XicPt
   TH2D *fHistoResponseEleLambdaPtFeeddownSigma2; //!<! Response function e-Lambda pT <- XicPt
+  TH2D *fHistoResponseEleLambdaPtLambdab; //!<! Response function e-Lambda pT <- Lambdab pT
+  TH2D *fHistoResponseElePtLambdab; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseLambdaPtLambdab; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseLambdaPt; //!<! Response function Lambda pT <- XicPt
   TH2D *fHistoResponseLambdaPtFeeddownXic0; //!<! Response function Lambda pT <- XicPt
   TH2D *fHistoResponseLambdaPtFeeddownXicPlus; //!<! Response function Lambda pT <- XicPt
   TH2D *fHistoResponseLambdaPtFeeddownSigma; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPtvsEleLambdaPt; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseLambdaPtvsEleLambdaPtLambdab; //!<! Response function Lambda pT <- XicPt
+  TH2D *fHistoResponseMcGenLambdabPtvsLambdacPt; //!<! Response function Lambda-c pT <- Lambda-b pT
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
 	TH2F *fHistoEleLambdaPtvsRapidityRS; //!<! e-Lambda pT vs y
@@ -620,7 +633,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,27); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,28); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
