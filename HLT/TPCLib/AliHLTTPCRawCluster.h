@@ -92,6 +92,7 @@ struct AliHLTTPCRawCluster {
   void SetCharge(UShort_t charge)  {fCharge=charge;}
   void SetQMax(UShort_t qmax)    {fQMax=qmax;}
 
+  void ClearFlags() {fFlags = 0;}
   void SetFlagSplitPad() {fFlags |= (1 << 0);}
   void SetFlagSplitTime() {fFlags |= (1 << 1);}
 };
