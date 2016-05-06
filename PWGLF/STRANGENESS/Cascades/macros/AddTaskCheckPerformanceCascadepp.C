@@ -3,7 +3,7 @@
 //      Author: dcolella (domenico.colella@cern.ch)
 //
 //      Notes:
-//       - collidingSystem: "pp", "pPb"
+//       - collidingSystem: 0 --> "pp", 1 --> "pPb"
 //       - SDD selection
 //         This selection has been introduced for the pp@2.76TeV analysis
 //         and allow to select the events wrt the status of the SDD during
@@ -17,7 +17,7 @@
 //
 ///////////////////////////////////////////////////////////////
 
-AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TString  collidingSystem                     = "pp",
+AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( Int_t  collidingSystem                       = 0,
                                                                             AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7,
                                                                             Int_t    minnTPCcls                          = 70,
                                                                             Float_t  vtxlimmax                           = 10.,
@@ -27,7 +27,7 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
                                                                             Float_t  minptondaughtertracks               = 0.0,
                                                                             Float_t  etacutondaughtertracks              = 0.8,
                                                                             Bool_t   kacccut                             = kFALSE,
-                                                                            Double_t ftpcpidsigma                        = 4) {
+                                                                            TString  suffix                              = "" ) {
     
    //______________________________________________________________________________
    // Creates, configures and attaches to the train a cascades check task
@@ -54,9 +54,10 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
    // Create and configure the task
    //==============================
    const Char_t *sddstatus = "";
-   if      (collidingSystem == "pp" && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
-   else if (collidingSystem == "pp" && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
+   if      (collidingSystem == 0 && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
+   else if (collidingSystem == 0 && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
    TString tasknameperf = Form("TaskCheckPerformanceCascade_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   tasknameperf.Append(Form("%s",suffix.Data()));
    AliAnalysisTaskCheckPerformanceCascadepp *taskCheckPerfCascadepp = new AliAnalysisTaskCheckPerformanceCascadepp(tasknameperf);
      taskCheckPerfCascadepp->SetAnalysisType               (type);                   // "ESD" or "AOD"
      taskCheckPerfCascadepp->SetCollidingSystem            (collidingSystem);        // choose the collision system to run on: "pp" and "pPb"
@@ -68,7 +69,7 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
      taskCheckPerfCascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
      taskCheckPerfCascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
      taskCheckPerfCascadepp->SetApplyAccCut                (kacccut);                // choose if apply acceptance cut
-     taskCheckPerfCascadepp->SetNumTPCPIDsigma             (ftpcpidsigma); 
+     taskCheckPerfCascadepp->SetSuffix                     (suffix);
 
    mgr->AddTask(taskCheckPerfCascadepp);
 
@@ -86,6 +87,12 @@ AliAnalysisTaskCheckPerformanceCascadepp *AddTaskCheckPerformanceCascadepp( TStr
    TString outputnameperf3 = Form("cfcontPIDAsOmegaM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    TString outputnameperf4 = Form("cfcontPIDAsOmegaP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    TString outputnameperf5 = Form("cfcontAsCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   outputnameperf0.Append(Form("%s",suffix.Data()));
+   outputnameperf1.Append(Form("%s",suffix.Data()));
+   outputnameperf2.Append(Form("%s",suffix.Data()));
+   outputnameperf3.Append(Form("%s",suffix.Data()));
+   outputnameperf4.Append(Form("%s",suffix.Data()));
+   outputnameperf5.Append(Form("%s",suffix.Data()));
    // - Save objects into the train common file
    AliAnalysisDataContainer *coutputperf1 = mgr->CreateContainer(outputnameperf0, TList::Class(),          AliAnalysisManager::kOutputContainer, outputFileNamePerf);
    AliAnalysisDataContainer *coutputperf2 = mgr->CreateContainer(outputnameperf1, AliCFContainer::Class(), AliAnalysisManager::kOutputContainer, outputFileNamePerf);
