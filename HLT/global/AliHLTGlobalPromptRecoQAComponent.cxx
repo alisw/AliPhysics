@@ -779,7 +779,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       char* configCharArr = reinterpret_cast<char*>(iter->fPtr);
       string configString;
       configString.assign(configCharArr,iter->fSize);
-      HLTImportant("reconfiguring with: %s", configString.c_str());
+      HLTInfo("reconfiguring with: %s", configString.c_str());
       ProcessOptionString(configString.c_str());
     }
 
