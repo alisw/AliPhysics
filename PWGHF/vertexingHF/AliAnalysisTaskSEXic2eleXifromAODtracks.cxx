@@ -283,6 +283,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
+	fHistoResponseXiPtvsEleXiPt(0),
   fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
@@ -539,6 +540,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
+	fHistoResponseXiPtvsEleXiPt(0),
   fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
@@ -1681,6 +1683,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							fHistoResponseElePt->Fill(mcxic->Pt(),trk->Pt());
 							fHistoResponseXiPt->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 							fHistoResponseEleXiPt->Fill(mcxic->Pt(),exobj->Pt());
+							fHistoResponseXiPtvsEleXiPt->Fill(exobj->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 
 							Double_t cont_eleptvsxiptvsxicpt[4];
 							cont_eleptvsxiptvsxicpt[0] = cont_eleptvsxipt[0];
@@ -3360,6 +3363,8 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseXiPt);
   fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPt);
+  fHistoResponseXiPtvsEleXiPt = new TH2D("fHistoResponseXiPtvsEleXiPt","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseXiPtvsEleXiPt);
 
 
   fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",20000,-0.5,19999.5);
