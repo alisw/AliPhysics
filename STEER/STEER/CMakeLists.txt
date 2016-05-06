@@ -89,6 +89,7 @@ set(SRCS
     AliLHCReader.cxx
     AliLoader.cxx
     AliLTUConfig.cxx
+    AliLumiTools.cxx
     AliMatrixSparse.cxx
     AliMatrixSq.cxx
     AliMC.cxx
