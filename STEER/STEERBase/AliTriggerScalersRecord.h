@@ -15,8 +15,10 @@
 // in partition  
 //
 //////////////////////////////////////////////////////////////////////////////
+#include "AliTimeStamp.h"
+
 class TObjArray;
-class  AliTimeStamp;
+class AliTriggerScalers;
 
 class AliTriggerScalersRecord : public TObject {
 

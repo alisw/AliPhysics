@@ -28,7 +28,6 @@
 #include <Riostream.h>
 #include <TObjArray.h>
 #include "AliLog.h"  
-#include "AliTimeStamp.h"
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
 
