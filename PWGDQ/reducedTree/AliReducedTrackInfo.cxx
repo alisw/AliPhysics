@@ -50,7 +50,12 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDntracklets(),
   fTRDpid(),
   fTRDpidLQ2D(),
-  fCaloClusterId(-999)
+  fCaloClusterId(-999),
+  fMCMom(),
+  fMCFreezeout(),
+  fMCLabels(),
+  fMCPdg(),
+  fMCGeneratorIndex(-1)
 {
   //
   // Constructor
@@ -60,6 +65,8 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDntracklets[0]=0; fTRDntracklets[1]=0;
   fTRDpid[0]=-999.; fTRDpid[1]=-999.;
   fTRDpidLQ2D[0] = -999.; fTRDpidLQ2D[1] = -999.;
+  for(Int_t i=0;i<3;++i) {fMCMom[i]=0.; fMCFreezeout[i]=0.;}
+  for(Int_t i=0;i<4;++i) {fMCLabels[i]=-9999; fMCPdg[i]=-9999;}
 }
 
 

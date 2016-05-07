@@ -119,10 +119,10 @@ void AliAnalysisTaskReducedEventProcessor::UserExec(Option_t *){
   // Main loop. Called for every event
   //   
   AliReducedBaseEvent* event = NULL;
-  if(fRunningMode=kUseOnTheFlyReducedEvents) 
+  if(fRunningMode==kUseOnTheFlyReducedEvents) 
      event = dynamic_cast<AliReducedBaseEvent*>(GetInputData(0)); 
   
-  if(fRunningMode=kUseEventsFromTree) {
+  if(fRunningMode==kUseEventsFromTree) {
      fInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
      fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
      if (fMultiInputHandler)
