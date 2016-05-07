@@ -69,6 +69,7 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::invalidxVertex + 1, "invalid vertex");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isIncomplete + 1, "incomplete");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::isOutOfBunchPileup + 1, "out of bunch PU");
+  discardedEvtsAx->SetBinLabel(cDiscardEventReasons::multEstimatorNotAvailable + 1, "!multEstimator");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noMultSelectionObject + 1, "!multSelection");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noTracks + 1, "!trackArray");
   discardedEvtsAx->SetBinLabel(cDiscardEventReasons::noTracksInPtRegion + 1, "no track in pt interval");
@@ -140,7 +141,7 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
   //trigger check; TODO: ask Katarina about "fMBtrigger" in her code!
   if (TString firedTrigger = InputEvent()->GetFiredTriggerClasses()) {
     // Make choice base on type of MB trigger?
-    if (!firedTrigger.Contains(this->fSettings.fOfflineTrigger)) {
+    if (!firedTrigger.Contains(this->fSettings.fTrigger)) {
       this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
       return false;
     }
@@ -182,6 +183,11 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
     this->fDiscardedEvents->Fill(cDiscardEventReasons::noMultSelectionObject);
     return false;
   }
+  if (!multSel->GetEstimator(this->fSettings.fMultEstimator)){
+    this->fDiscardedEvents->Fill(cDiscardEventReasons::multEstimatorNotAvailable);
+    return false;
+  }
+
   // tkl-cluster cut
   Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
   Int_t nITScluster = InputEvent()->GetNumberOfITSClusters(0) + InputEvent()->GetNumberOfITSClusters(1);

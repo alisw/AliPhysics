@@ -19,7 +19,12 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fNZvtxBins(20),
   fMaxDcaLong(3.0),
   fMaxDcaTang(2.4),
-  fOfflineTrigger("")
+  fMultEstimatorRefMult08("RefMult08"),
+  fMultEstimatorV0M("V0M"),
+  fMultEstimator(""),
+  fTriggerCint7("CINT7-B-"),
+  fTriggerVhmV0M("CVHMV0M-B-"),
+  fTrigger("")
 {
   Double_t _ptbins[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   fPtBinEdges = edgeContainer(_ptbins, _ptbins + sizeof(_ptbins) / sizeof(_ptbins[0]));
