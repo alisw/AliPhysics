@@ -24,7 +24,7 @@
 #include "AliClusterContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliClusterContainer)
+ClassImp(AliClusterContainer);
 /// \endcond
 
 /**

@@ -25,7 +25,7 @@
 #include "AliTrackContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliTrackContainer)
+ClassImp(AliTrackContainer);
 /// \endcond
 
 TString AliTrackContainer::fgDefTrackCutsPeriod = "";

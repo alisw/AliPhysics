@@ -1,3 +1,5 @@
+#include "AliEmcalIterableContainer.h"
+
 #ifndef ALIEMCALCONTAINER_H
 #define ALIEMCALCONTAINER_H
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
@@ -11,7 +13,6 @@ class AliVParticle;
 
 #include <TNamed.h>
 #include <TClonesArray.h>
-#include "AliEmcalIterableContainer.h"
 
 typedef AliEmcalIterableContainerT<TObject> AliEmcalIterableContainer;
 

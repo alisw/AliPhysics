@@ -22,7 +22,7 @@
 #include "AliEmcalContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalContainer)
+ClassImp(AliEmcalContainer);
 /// \endcond
 
 /**
