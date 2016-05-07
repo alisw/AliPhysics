@@ -12,7 +12,7 @@
 #include "AliMCParticleContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliParticleContainer);
+ClassImp(AliMCParticleContainer);
 /// \endcond
 
 /**
