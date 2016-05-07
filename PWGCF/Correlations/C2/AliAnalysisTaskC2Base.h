@@ -38,6 +38,7 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
       invalidxVertex,
       isIncomplete,
       isOutOfBunchPileup,
+      multEstimatorNotAvailable,
       noMultSelectionObject,
       noTracks,
       noTracksInPtRegion,
@@ -75,7 +76,7 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
   AliAnalysisTaskC2Base(const AliAnalysisTaskC2Base&); // not implemented
   AliAnalysisTaskC2Base& operator=(const AliAnalysisTaskC2Base&); // not implemented
 
-  ClassDef(AliAnalysisTaskC2Base, 1); // example of analysis
+  ClassDef(AliAnalysisTaskC2Base, 1);
 };
 
 #endif

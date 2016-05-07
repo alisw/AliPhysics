@@ -171,9 +171,10 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     return;
   }
   // Event is invalid if no multselection is present; ie. tested in base class
-  AliMultSelection *multSelection =
-    dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection"));
-  const Float_t multiplicity = multSelection->GetMultiplicityPercentile("V0M");
+  AliMultEstimator *multEstimator =
+    (dynamic_cast< AliMultSelection* >(this->InputEvent()->FindListObject("MultSelection")))
+    ->GetEstimator(this->fSettings.fMultEstimator);
+  const Float_t multiplicity = multEstimator->GetPercentile();
   this->fmultDistribution->Fill(multiplicity);
 
   const Double_t weight = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
@@ -183,7 +184,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
     ? this->InputEvent()->GetPrimaryVertex()->GetZ()
     : -999;
 
-  this->fNchDistribution->Fill(multiplicity, zvtx, multSelection->GetEstimator("V0M")->GetValue());
+  this->fNchDistribution->Fill(multiplicity, zvtx, multEstimator->GetValue());
   // Yes, the following is realy "aodEvent" not mcEvent :P
   TClonesArray* tracksArray = (this->fSettings.kMCTRUTH == this->fSettings.fDataType)
     ? dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()))

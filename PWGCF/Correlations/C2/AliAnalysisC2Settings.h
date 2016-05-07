@@ -17,8 +17,7 @@ class AliAnalysisC2Settings : public TObject {
   AliAnalysisC2Settings();
 
   // Types of data this analysis can access
-  static const Int_t kMCTRUTH = 0;
-  static const Int_t kRECON = 1;
+  enum {kMCTRUTH, kRECON};
   // The type of data this task is accessing
   Int_t fDataType;
   // The lower bound of the eta acceptance region
@@ -50,8 +49,21 @@ class AliAnalysisC2Settings : public TObject {
   Double_t fMaxDcaTang;
   // Max longitudinal distance of closest approach to primary vertex in order to be still valid
   Double_t fMaxDcaLong;
-  // Offline trigger
-  TString fOfflineTrigger;
+  // Multiplicity estimator used for this analysis
+  TString fMultEstimator;
+  // Options for MultEstimator. This would be better down in a subclass, but CINT chokes on that...
+  // Use these predefined estimator strings to set the estimator for this analysis like:
+  //    fMultEstimator = fMultEstimatorV0M;
+  TString fMultEstimatorV0M;
+  TString fMultEstimatorRefMult08;
+  // Require this trigger in the event selection. This is needed to
+  // mitigate the missing physics selection in the ITS stand alone
+  // runs (eg. 15j, at the time of writing)
+  TString fTrigger;
+  // Predefined strings of triggers. Use these to set the trigger for this analysis like:
+  //     fTrigger = fTriggerCint7;
+  TString fTriggerCint7;
+  TString fTriggerVhmV0M;
 
  private:
   ClassDef(AliAnalysisC2Settings, 1);
