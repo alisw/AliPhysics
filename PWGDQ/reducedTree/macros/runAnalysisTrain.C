@@ -3,7 +3,7 @@
 #include<TSystem.h>
 #include<TROOT.h>
 
-void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD",
+void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
                                      Int_t reducedEventType = -1, Bool_t writeTree = kFALSE,
                                      Int_t nEntries=1234567890, Int_t firstEntry=0)
 {
@@ -11,7 +11,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    // infile: list of input files if mode is local, or list of runs for job submission if mode is grid
    //
    // Load common libraries
-   gSystem->Load("libCore.so");  
+/*   gSystem->Load("libCore.so");  
    gSystem->Load("libTree.so");
    gSystem->Load("libGeom.so");
    gSystem->Load("libVMC.so");
@@ -37,7 +37,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    gSystem->Load("libTOFbase.so");
 
    gSystem->Load("libTRDbase.so");
-   gSystem->Load("libVZERObase.so");
+   gSystem->Load("libVZERObase.so");*/
    gSystem->Load("libPWGDQdielectron.so"); 
    gSystem->Load("libPWGDQreducedTree.so"); 
    //gSystem->Load("/hera/alice/iarsene/trainTrunk/util/dielectron/libPWGDQdielectron.so");
@@ -82,6 +82,12 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    }
    mgr->SetInputEventHandler(inputHandler);
    
+   // Add the MC handler if needed
+   AliMCEventHandler *mc = NULL;
+   if(hasMC) {
+      mc = new AliMCEventHandler();
+      mgr->SetMCtruthEventHandler(mc);
+   }
    
    //==== Add tender ====
    //   gROOT->LoadMacro("AddTaskTender.C");
@@ -95,6 +101,23 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
       //===== ADD CENTRALITY: ===
       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
       AddTaskCentrality();
+      /* // For Run-2 Pb-Pb there is a new way to get centrality. Below are the lines of code presented by David Chinellato at the PF in 11 december 2015
+       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+       AddTaskMultSelection();
+       // we also need to add something like the lines below, in the analysis task:
+       // AliMultSelection* MultSelection = (AliMultSelection*)esdEvent->FindListObject("MultSelection");
+       // Float_t lPerc = 300;  // nonsense
+       // if(MultSelection) {
+       //   lPerc = MultSelection->GetMultiplicityPercentile("V0M");
+       //   // Quality check
+       //   Int_t lEvSelCode = MultSelection->GetEvSelCode();
+       //   if(lEvSelCode>0) lPerc = lEvSelCode; // disregard!
+       // }
+       // else {
+       //   // If this happens, re-check if AliMultSelectionTask ran before your task!
+       //   AliInfo("Didn't find MultSelection!");
+       // }
+       */
 
       //===== ADD PID RESPONSE: ===
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
