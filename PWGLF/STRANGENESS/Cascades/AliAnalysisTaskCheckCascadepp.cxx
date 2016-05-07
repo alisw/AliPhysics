@@ -57,9 +57,6 @@
 //               Feb 2015
 //               - Added the possibility to select events in the class kINT7 for the pp@13TeV analysis through "fkSwitchINT7"
 //               - Revision of the event selections for the pp@13TeV analysis
-//               May 2016
-//               - move the "fCollidingSystem" from TString to Int_t
-//               - add fSuffix for the LEGO train usage
 //
 //             
 //
@@ -1068,10 +1065,6 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   // - Define useful variables
   Int_t ncascades = 0;
   Int_t nTrackMultiplicity = 0;
-
-cout<<"type of file: "<<fAnalysisType<<endl;
-cout<<"Suffix : "<<fSuffix<<endl;
-
 
   //----------------------
   // Before any selections
