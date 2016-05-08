@@ -16,7 +16,7 @@ set(ALIROOT_SERIAL 0)
 set(ALIROOT_GITREFTYPE "")
 
 # Checks if the sources where cloned as a full git repository
-if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+if((EXISTS ${AliRoot_SOURCE_DIR}/.git/) OR (EXISTS ${AliRoot_SOURCE_DIR}/.git))
   # Git installation mandatory
   find_package(Git REQUIRED)
 
@@ -194,9 +194,9 @@ if(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
     # it does not get here
     message(FATAL_ERROR "Git type error")
   endif()
-else(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+else()
     message(WARNING "AliRoot sources not downloaded from a Version Control System. I can't tell which revision you are using!")
-endif(EXISTS ${AliRoot_SOURCE_DIR}/.git/)
+endif()
 
 # Use the output of git describe for RPM versions, but strip invalid characters.
 string(REGEX REPLACE "[^A-Za-z0-9_.]" "." ALIROOT_VERSION_RPM ${ALIROOT_GIT_DESCRIBE})
