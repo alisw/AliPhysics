@@ -95,7 +95,8 @@ AliTPCTransform::AliTPCTransform():
   fCorrMapCache1(0),
   fCurrentMapScaling(1.0),
   fCorrMapLumiCOG(0.0),
-  fLumiGraph(0),
+  fLumiGraphRun(0),
+  fLumiGraphMap(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0),       //! current time stamp
   fTimeDependentUpdated(kFALSE),
@@ -121,7 +122,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCacheRef(transform.fCorrMapCacheRef),
   fCorrMapCache0(transform.fCorrMapCache0),
   fCorrMapCache1(transform.fCorrMapCache1),
-  fLumiGraph(fLumiGraph ? new TGraph(*fLumiGraph) : 0),
+  fLumiGraphRun(fLumiGraphRun ? new TGraph(*fLumiGraphRun) : 0),
+  fLumiGraphMap(fLumiGraphMap ? new TGraph(*fLumiGraphMap) : 0),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
   fTimeDependentUpdated(transform.fTimeDependentUpdated),
@@ -142,7 +144,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
 
 AliTPCTransform::~AliTPCTransform() {
   /// Destructor
-  delete fLumiGraph; // own copy should be attached
+  delete fLumiGraphRun; // own copy should be attached
+  delete fLumiGraphMap; // own copy should be attached
   delete fCorrMapCacheRef;
   delete fCorrMapCache0;
   delete fCorrMapCache1;
@@ -584,16 +587,28 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       case AliTPCRecoParam::kCorrMapInterpolation :
       case AliTPCRecoParam::kCorrMapNoScaling     : break;
       case AliTPCRecoParam::kCorrMapGlobalScalingLumi: 
-	if (!fLumiGraph) fLumiGraph = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType()); 
-	if (!fLumiGraph) AliFatalF("Failed to load luminosity graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	// load lumi graph used for map (run may be different from current one if the map is default one)
+	if (!fLumiGraphMap) {
+	  //if (!fLumiGraphMap || fLumiGraphMap->GetUniqueID()!=fCorrMapCache0->GetRun()) {
+	  //if (fLumiGraphMap) delete fLumiGraphMap;
+	  int runMap = fCorrMapCache0->GetRun();
+	  if (runMap<0) AliErrorF("CorrectionMap Lumi scaling requested but run is not set, current %d will be used",fCurrentRun);
+	  fLumiGraphMap = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType(),runMap);
+	  if (!fLumiGraphMap) AliFatalF("Failed to load CorrectionMapluminosity lumi graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	}
+	// load lumi graph for this run
+	if (!fLumiGraphRun) {
+	  fLumiGraphRun = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType(),fCurrentRun);
+	  if (!fLumiGraphRun) AliFatalF("Failed to load run lumi graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	}
 	if (needToLoad) {  // calculate average luminosity used for current corr. map
-	  fCorrMapLumiCOG = fCorrMapCache0->GetLuminosityCOG(fLumiGraph); // recalculate lumi for new map
+	  fCorrMapLumiCOG = fCorrMapCache0->GetLuminosityCOG(fLumiGraphMap); // recalculate lumi for new map
 	  if (!fCorrMapLumiCOG) AliError("Correction map rescaling with luminosity cannot be done, will use constant map");
 	}
 	//
 	fCurrentMapScaling = 1.0;
 	if (fCorrMapLumiCOG>0) {
-	  double lumi = fLumiGraph->Eval(fCurrentTimeStamp);
+	  double lumi = fLumiGraphRun->Eval(fCurrentTimeStamp);
 	  fCurrentMapScaling = lumi/fCorrMapLumiCOG;
 	  AliInfoF("Luminosity scaling factor %.3f will be used for time %ld (Lumi: current: %.2e COG:%.2e)",
 		   fCurrentMapScaling,fCurrentTimeStamp,lumi,fCorrMapLumiCOG);
@@ -664,10 +679,11 @@ void AliTPCTransform::LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided)
       }
     }
     //
-    AliInfoF("Loaded %d maps for time stamp %ld",fCorrMapCache1?2:1,fCurrentTimeStamp);
-    fCorrMapCache0->Print();
-    if (fCorrMapCache1) fCorrMapCache1->Print();
   }
+  //
+  AliInfoF("Loaded %d maps for time stamp %ld",fCorrMapCache1?2:1,fCurrentTimeStamp);
+  fCorrMapCache0->Print();
+  if (fCorrMapCache1) fCorrMapCache1->Print();
   //
   if (!mapsArrProvided) { // if loaded locally, clean unnecessary stuff
     mapsArr->Remove((TObject*)fCorrMapCache0);
