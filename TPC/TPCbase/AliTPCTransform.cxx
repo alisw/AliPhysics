@@ -790,7 +790,7 @@ void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], f
     UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
     UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
       // possible division by 0 is checked at upload of maps
-    double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
+    double dtScale = (fCurrentTimeStamp-t0)/double(t1-t0);
     for (int i=4;i--;) res[i] += (delta1[i]-res[i])*dtScale;
   }
   //
