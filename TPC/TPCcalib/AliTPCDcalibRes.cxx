@@ -2701,11 +2701,17 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   fChebCorr = new AliTPCChebCorr(name.Data(),name.Data(),
 				 fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
   fChebCorr->SetUseFloatPrec(kFALSE);
+  fChebCorr->SetRun(fRun);
   fChebCorr->SetTimeStampStart(fTMin);
   fChebCorr->SetTimeStampEnd(fTMax);
   fChebCorr->SetTimeDependent(kFALSE);
   fChebCorr->SetUseZ2R(kTRUE);
   //
+  if      (fBz> 0.01) fChebCorr->SetFieldType(AliTPCChebCorr::kFieldPos);
+  else if (fBz<-0.01) fChebCorr->SetFieldType(AliTPCChebCorr::kFieldNeg);
+  else                fChebCorr->SetFieldType(AliTPCChebCorr::kFieldZero);
+  // Note: to create universal map, set manually SetFieldType(AliTPCChebCorr::kFieldAny)
+
   SetUsedInstance(this);
   fChebCorr->Parameterize(trainCorr,kResDim,fNPCheb,fChebPrecD);
   //

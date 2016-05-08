@@ -284,7 +284,7 @@ protected:
   AliTPCChebCorr* fChebCorr;                        // final Chebyshev object
 
   // -------------------------------Task defintion
-  Int_t    fRun;     // run numbet 
+  Int_t    fRun;     // run number 
   Long64_t fTMin;    // time start for timebin
   Long64_t fTMax;    // time stop for timebin
   Long64_t fTMinGRP;    // time start from GRP
