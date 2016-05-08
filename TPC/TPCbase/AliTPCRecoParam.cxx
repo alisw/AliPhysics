@@ -112,6 +112,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
   fUseCorrectionMap(kFALSE),
+  fCorrMapTimeDepMethod(kCorrMapInterpolation),
+  fUseLumiType(-1),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
   fUseSystematicCorrelation(kTRUE)

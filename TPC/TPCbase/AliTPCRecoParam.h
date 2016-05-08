@@ -13,6 +13,12 @@
 class AliTPCRecoParam : public AliDetectorRecoParam
 {
  public:
+  enum {                       // methods used for correction maps time dependence
+    kCorrMapInterpolation         // interpolate between 2 nearest timebins maps
+    ,kCorrMapNoScaling            // no scaling, use just the single map matching to timestamp
+    ,kCorrMapGlobalScalingLumi // scale current map by ratio of inst_lumi/<lumi_timebin>
+  };
+ public:
   AliTPCRecoParam();
   AliTPCRecoParam(const AliTPCRecoParam& src);
   AliTPCRecoParam& operator=(const AliTPCRecoParam& src);
@@ -119,7 +125,12 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseIonTailCorrection(Int_t flag) {fUseIonTailCorrection = flag;}
   void  SetCrosstalkCorrection(Float_t crosstalkCorrection) {fCrosstalkCorrection= crosstalkCorrection; }
   void  SetCrosstalkCorrectionMissingCharge(Float_t crosstalkCorrection) {fCrosstalkCorrectionMissingCharge= crosstalkCorrection; }
- //
+  //
+  Int_t  GetCorrMapTimeDepMethod()      const {return fCorrMapTimeDepMethod;}
+  void   SetCorrMapTimeDepMethod(int m)       {fCorrMapTimeDepMethod = m;}
+  Int_t  GetUseLumiType()               const {return fUseLumiType;}
+  void   SetUseLumiType(int tp)               {fUseLumiType  =tp;}
+  //
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseComposedCorrection() const {return fUseComposedCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
@@ -253,6 +264,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseTOFCorrection;  ///< switch - kTRUE use TOF correction kFALSE - do not use
   //
   Bool_t fUseCorrectionMap;  ///< flag to use parameterized correction map (AliTPCChebCorr)
+  Int_t  fCorrMapTimeDepMethod; ///< method used for correction time dependence
+  Int_t  fUseLumiType;          ///< luminosity graph to be used for different lumi scalings
   //  misscalibration
   //
   TVectorF* fSystErrClInnerRegZ;        //< center of region in Z to apply extra systematic error
@@ -272,7 +285,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 27)
+  ClassDef(AliTPCRecoParam, 28)
   /// \endcond
 };
 

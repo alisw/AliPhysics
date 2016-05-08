@@ -2078,14 +2078,14 @@ void AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t idROC = cluster->GetDetector();
   transform->Transform(x,&idROC,0,1);
-  const float* clCorr = transform->GetLastMapCorrection(); 
+  const float* clCorr = transform->GetLastMapCorrection();
   const float* clCorrRef = transform->GetLastMapCorrectionRef();
   //
   cluster->SetDistortions(clCorr[0]-clCorrRef[0],
 			  clCorr[1]-clCorrRef[1],
 			  clCorr[2]-clCorrRef[2]); // memorize distortions (difference to reference one)
   // store the dispersion difference
-  cluster->SetDistortionDispersion(clCorr[3]>clCorrRef[3] ? TMath::Sqrt(clCorr[3]*clCorr[3] - clCorrRef[3]*clCorrRef[3]) : 0);
+  cluster->SetDistortionDispersion(clCorr[3]); // ref error is already subtracted
   //
   cluster->SetX(x[0]);
   cluster->SetY(x[1]);
@@ -9739,7 +9739,7 @@ Bool_t AliTPCtracker::DistortX(const AliTPCseed* seed, double& x, int row)
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   AliTPCTransform *transform = calibDB->GetTransform();
   if (!transform) AliFatal("Tranformations not in calibDB");
-  x += transform->EvalCorrectionMap(roc,row,xyz,0);
+  x += transform->GetCorrMapComponent(roc,row,xyz,0);
   return kTRUE;
 }
 
@@ -9759,7 +9759,7 @@ Double_t AliTPCtracker::GetDistortionX(double x, double y, double z, int sec, in
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   AliTPCTransform *transform = calibDB->GetTransform() ;
   if (!transform) AliFatal("Tranformations not in calibDB");
-  return transform->EvalCorrectionMap(sec,row,xyz,0);
+  return transform->GetCorrMapComponent(sec,row,xyz,0);
 }
 
 Double_t AliTPCtracker::GetYSectEdgeDist(int sec, int row, double y, double z) 
@@ -9779,8 +9779,8 @@ Double_t AliTPCtracker::GetYSectEdgeDist(int sec, int row, double y, double z)
   AliTPCTransform *transform = calibDB->GetTransform();
   if (!transform) AliFatal("Tranformations not in calibDB");
   // change of distance from the edge due to the X shift 
-  double dxtg = transform->EvalCorrectionMap(sec,row,xyz,0)*AliTPCTransform::GetMaxY2X();
-  double dy = transform->EvalCorrectionMap(sec,row,xyz,1);
+  double dxtg = transform->GetCorrMapComponent(sec,row,xyz,0)*AliTPCTransform::GetMaxY2X();
+  double dy = transform->GetCorrMapComponent(sec,row,xyz,1);
   return dy + (y>0?dxtg:-dxtg);
   //
 }

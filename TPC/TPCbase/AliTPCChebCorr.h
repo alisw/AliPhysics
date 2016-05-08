@@ -39,10 +39,12 @@ class AliTPCChebCorr : public TNamed
  public:
   enum {kFieldAny, kFieldPos, kFieldNeg, kFieldZero};
   enum {kNSectors=18,kNSectorsIROC=2*kNSectors,kNRows=159,kNRowsIROC=63,kMaxIROCSector=kNSectorsIROC-1};
-  enum {kParamDone=BIT(14), // parameterization done
-	kUseParF=BIT(15),   // if ON - internal FLOAT representation, otherwise - SHORT
-	kUseZ2R=BIT(16),    // 2nd dimension parameterizes Z/R
-	kTimeDependent=BIT(17) // flag to signal time-dependent objects to follow
+  enum {kParamDone=BIT(14) // parameterization done
+	,kUseParF=BIT(15)   // if ON - internal FLOAT representation, otherwise - SHORT
+	,kUseZ2R=BIT(16)    // 2nd dimension parameterizes Z/R
+	,kTimeDependent=BIT(17) // flag to signal time-dependent objects to follow
+	,kFirst=BIT(18) // first map in the array (marked on fly)
+	,kLast=BIT(19) // last map in the array (marked on fly)	
   };
   //
  public:
@@ -62,6 +64,11 @@ class AliTPCChebCorr : public TNamed
   void     SetUseZ2R(Bool_t v=kTRUE)                   {SetBit(kUseZ2R,v);}
   Bool_t   GetTimeDependent()                    const {return TestBit(kTimeDependent);}
   void     SetTimeDependent(Bool_t v=kTRUE)            {SetBit(kTimeDependent,v);}
+  Bool_t   IsFirst()                             const {return TestBit(kFirst);}
+  void     SetFirst(Bool_t v=kTRUE)                    {SetBit(kFirst,v);}
+  Bool_t   IsLast()                              const {return TestBit(kLast);}
+  void     SetLast(Bool_t v=kTRUE)                     {SetBit(kLast,v);}
+
   Float_t  GetZMin()                             const {return -fZMaxAbs;}
   Float_t  GetZMax()                             const {return fZMaxAbs;}
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}

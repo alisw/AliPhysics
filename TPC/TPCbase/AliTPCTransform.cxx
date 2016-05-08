@@ -73,6 +73,8 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "TTreeStream.h"
+#include "AliLumiTools.h"
+#include <TGraph.h>
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
@@ -91,6 +93,9 @@ AliTPCTransform::AliTPCTransform():
   fCorrMapCacheRef(0),
   fCorrMapCache0(0),
   fCorrMapCache1(0),
+  fCurrentMapScaling(1.0),
+  fCorrMapLumiCOG(0.0),
+  fLumiGraph(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0),       //! current time stamp
   fTimeDependentUpdated(kFALSE),
@@ -116,6 +121,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCacheRef(transform.fCorrMapCacheRef),
   fCorrMapCache0(transform.fCorrMapCache0),
   fCorrMapCache1(transform.fCorrMapCache1),
+  fLumiGraph(fLumiGraph ? new TGraph(*fLumiGraph) : 0),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
   fTimeDependentUpdated(transform.fTimeDependentUpdated),
@@ -136,7 +142,7 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
 
 AliTPCTransform::~AliTPCTransform() {
   /// Destructor
-
+  delete fLumiGraph; // own copy should be attached
 }
 
 void AliTPCTransform::SetPrimVertex(Double_t *vtx){
@@ -494,125 +500,187 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 {
   // update cache for time-dependent parameters
   //
+  static time_t lastTimeStamp = -1;
   fTimeDependentUpdated = kFALSE;
   //
-  // correction maps, potentially time dependent
-  TObjArray* mapsArr = 0;
+  Bool_t timeChanged = lastTimeStamp!=fCurrentTimeStamp;
   if (!fCurrentRecoParam) {
     AliWarning("RecoParam is not set, do nothing");
     return fTimeDependentUpdated;
   }
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
+    if (!fCorrMapCacheRef) LoadFieldDependendStaticCorrectionMap(kTRUE); // need to load the reference correction map
     //
-    if (!fCorrMapCacheRef) { // need to load the reference correction map
-      LoadReferenceCorrectionMap();      
-    }
-    //
-    if (fCorrMapCache0) {
+    int mapTimeDepMethod = fCurrentRecoParam->GetCorrMapTimeDepMethod();
+    Bool_t needToLoad = timeChanged;
+    if (fCorrMapCache0 && timeChanged) { // do we need to update already loaded maps?
       // 1: easiest case: map is already cached, it is either time-static or there is 
       // no other map to follow
-      if (!fCorrMapCache0->GetTimeDependent() || !fCorrMapCache1) break;
+      if (!fCorrMapCache0->GetTimeDependent()) needToLoad = kFALSE;   // maps are not time dependent, no update needed
       //
-      // 2: still easy: time dependent but we have in memory all what we need
-      if (fCorrMapCache1 && fCurrentTimeStamp<=fCorrMapCache1->GetTimeStampCenter()
-	  && fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart()) break;
+      // 2: still easy: time dependent in interpolation mode but we have in memory all what we need
+      if (fCorrMapCache1 && // interpolation method already triggered loading of 2nd map
+	  ( (fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampCenter()&& // still covered by already loaded
+	     fCurrentTimeStamp<=fCorrMapCache1->GetTimeStampCenter()) // interpolation region
+	    ||
+	    (fCurrentTimeStamp<fCorrMapCache0->GetTimeStampEnd()&&fCorrMapCache0->IsFirst()) // no earlier object
+	    ||
+	    (fCurrentTimeStamp>fCorrMapCache1->GetTimeStampStart()&&fCorrMapCache1->IsLast()) // no later object
+	    ) ) {
+	needToLoad = kFALSE; // no update needed
+      }
+      // 3: still easy: time depenedent but only 1 map needed (no interpolation)
+      if ( (mapTimeDepMethod!=AliTPCRecoParam::kCorrMapInterpolation) 
+	   &&
+	   ((fCurrentTimeStamp<=fCorrMapCache0->GetTimeStampEnd() && 
+	     (fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart()||fCorrMapCache0->IsFirst()))
+	    ||
+	    (fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart() && 
+	     (fCurrentTimeStamp<=fCorrMapCache0->GetTimeStampEnd()||fCorrMapCache0->IsLast()))
+	    )) {
+	needToLoad = kFALSE; // still covered by existing map or no other map to load
+      }
     }
-    else  { // no map yet: 1st query
-      mapsArr = LoadCorrectionMaps(kFALSE);
-      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(0);
+    //
+    if (needToLoad) { // need to upload correction maps, potentially time dependent
+      TObjArray* mapsArr = LoadCorrectionMaps(kFALSE);
+      // are these time-static maps?
+      if (!((AliTPCChebCorr*)mapsArr->UncheckedAt(0))->GetTimeDependent()) {
+	LoadFieldDependendStaticCorrectionMap(kFALSE,mapsArr); // static maps are field-dependent
+      }
+      else {
+	LoadCorrectionMapsForTimeBin(mapsArr); // load maps matching to time stamp
+      }
+      // clean unneeded object to save the memory
+      mapsArr->Remove((TObject*)fCorrMapCache0);
+      if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
+      mapsArr->SetOwner(kTRUE);
+      delete mapsArr;
       //
-      // 3: easy case: time-static map, fCorrMapCache1 is not neaded
-      if (!fCorrMapCache0->GetTimeDependent()) {
-	if (mapsArr->GetEntriesFast()>2) { 
-	  // time independent maps are field dependent!
-	  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-	  Double_t bz = magF->SolenoidField(); //field in kGaus
-	  if (bz>0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(1);
-	  else if (bz<-0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
+      if (fCorrMapCache0 && !fCorrMapCache0->IsCorrection()) 
+	AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
+      if (fCorrMapCache1 && !fCorrMapCache1->IsCorrection()) 
+	AliFatalF("Uploaded map is not correction: %s",fCorrMapCache1->IsA()->GetName());
+      
+      // check time stamps
+      if (fCorrMapCache0 && fCorrMapCache0->GetTimeStampStart()>fCurrentTimeStamp) {
+	AliWarningF("Event timestamp %ld < map0 beginning %ld",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampStart());
+      }
+      if (fCorrMapCache1) {
+	if (fCorrMapCache1->GetTimeStampEnd()<fCurrentTimeStamp) {
+	  AliWarningF("Event timestamp %ld > map1 end %ld",fCurrentTimeStamp,fCorrMapCache1->GetTimeStampEnd());
 	}
-	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
-	break; // done for static map, if needed, look for other stuff 
       } 
-    }
-    // need to scan whole array to find matching maps
-    if (!mapsArr) mapsArr = LoadCorrectionMaps(kFALSE);
-    int nmaps = mapsArr->GetEntriesFast();
-    const AliTPCChebCorr* prv=0,*nxt=0;
-    for (int i=0;i<nmaps;i++) { // maps are ordered in time
-      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i);
-      if (fCorrMapCache0->GetTimeStampEnd()<=fCurrentTimeStamp) {
-	prv = fCorrMapCache0;
-	continue;
+      else if (fCorrMapCache0->GetTimeStampEnd()<fCurrentTimeStamp) {
+	AliWarningF("Event timestamp %ld > map0 end %ld",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampEnd());
       }
-      // we found a chunk which contain our time stamp
-      if (fCurrentTimeStamp <= fCorrMapCache0->GetTimeStampCenter()) { // we are in the 1st half
-	if (prv) { // previous chunk will be used
-	  fCorrMapCache1 = fCorrMapCache0;
-	  fCorrMapCache0 = prv;
-	  break;
+    }
+    // do we need to update luminosity scaling params?
+    if (timeChanged) { 
+      switch(mapTimeDepMethod) {
+      case AliTPCRecoParam::kCorrMapInterpolation :
+      case AliTPCRecoParam::kCorrMapNoScaling     : break;
+      case AliTPCRecoParam::kCorrMapGlobalScalingLumi: 
+	if (!fLumiGraph) fLumiGraph = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType()); 
+	if (!fLumiGraph) AliFatalF("Failed to load luminosity graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	if (needToLoad) {  // calculate average luminosity used for current corr. map
+	  fCorrMapLumiCOG = fCorrMapCache0->GetLuminosityCOG(fLumiGraph); // recalculate lumi for new map
+	  if (!fCorrMapLumiCOG) AliError("Correction map rescaling with luminosity cannot be done, will use constant map");
 	}
-	// we are at the 1st chunk, read the next one
-	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
-	else fCorrMapCache1 = 0;
+	//
+	fCurrentMapScaling = 1.0;
+	if (fCorrMapLumiCOG>0) {
+	  double lumi = fLumiGraph->Eval(fCurrentTimeStamp);
+	  fCurrentMapScaling = lumi/fCorrMapLumiCOG;
+	  AliInfoF("Luminosity scaling factor %.3f will be used for time %ld (Lumi: current: %.2e COG:%.2e)",
+		   fCurrentMapScaling,fCurrentTimeStamp,lumi,fCorrMapLumiCOG);
+	}
+	//
 	break;
-      }
-      else { // we are in the 2nd half of cache0,  look for the next for cache1
-	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
-	else { // no next one, do we have previous?
-	  if (prv) {
-	    fCorrMapCache1 = fCorrMapCache0;
-	    fCorrMapCache0 = prv;
-	  }
-	  else fCorrMapCache1 = 0;
-	}
-      }
-      break;
+      default: AliFatalF("Unknown corrections time-evolution mode %d",mapTimeDepMethod);
+      };
     }
+    //
     break;
-  } // while
-  // clean unneaded object to save the memory
-  if (mapsArr) {
-    mapsArr->Remove((TObject*)fCorrMapCache0);
-    if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
-    mapsArr->SetOwner(kTRUE);
-    delete mapsArr;
-    if (!fCorrMapCache1) {
-      AliInfoF("Loaded static correction map for time stamp %ld",fCurrentTimeStamp);
-      fCorrMapCache0->Print();
-    }
-    else {
-      AliInfoF("Switched to pair of time-dependent correction maps at time stamp %ld",fCurrentTimeStamp);
-      fCorrMapCache0->Print();
-      fCorrMapCache1->Print();
-    }
-  }
-  if (fCorrMapCache0 && !fCorrMapCache0->IsCorrection()) 
-    AliFatalF("Uploaded map is not correction: %s",fCorrMapCache0->IsA()->GetName());
-  if (fCorrMapCache1 && !fCorrMapCache1->IsCorrection()) 
-    AliFatalF("Uploaded map is not correction: %s",fCorrMapCache1->IsA()->GetName());
-
-  if (fCorrMapCache0 && fCorrMapCache0->GetTimeStampStart()>fCurrentTimeStamp) {
-    AliWarningF("Event timestamp %ld < map0 beginning %ld",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampStart());
-    fCorrMapCache0->Print();
-  }
-  if (fCorrMapCache1 && fCorrMapCache1->GetTimeStampEnd()<fCurrentTimeStamp) {
-    AliWarningF("Event timestamp %ld > map1 end %ld",fCurrentTimeStamp,fCorrMapCache1->GetTimeStampEnd());
-    fCorrMapCache0->Print();
-  }
-
+  } // loading of correction maps
+  //
   // other time dependent stuff if needed
   //
+  lastTimeStamp = fCurrentTimeStamp;
   fTimeDependentUpdated = kTRUE;
   return fTimeDependentUpdated;
 }
 
 //______________________________________________________
-void AliTPCTransform::LoadReferenceCorrectionMap()
+void AliTPCTransform::LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided)
 {
-  // loads IR-independent reference correction map for relevan field polarity
+  // loads time-independent correction map for given time bin
+  // 
+  TObjArray* mapsArr = mapsArrProvided;
+  if (!mapsArr) mapsArr = LoadCorrectionMaps(kFALSE);
+  int entries = mapsArr->GetEntriesFast();
+  fCorrMapCache0 = fCorrMapCache1 = 0;
+  //1) choose map covering current time stamp.
+  int selID=0;
+  for (selID=0;selID<entries;selID++) { // maps are ordered in time
+    fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(selID);
+    if (fCurrentTimeStamp > fCorrMapCache0->GetTimeStampEnd()) { 
+      if (selID==entries-1) break; // in case the maps end limit < timestamp close to EOR
+    }
+    else if (fCurrentTimeStamp < fCorrMapCache0->GetTimeStampStart()) {
+      if (!selID) break; // in case the maps start limit > timestamp close to SOR
+    }
+    else break;  // exact match
+  }
+  // this should not happen
+  if (!fCorrMapCache0) AliFatalF("Did not find map matching to timestamp %ld",fCurrentTimeStamp);
+  //
+  if (!selID) fCorrMapCache0->SetFirst(); // flag if there are maps before/after
+  if (selID==entries-1) fCorrMapCache0->SetLast();
+  //
+  // if we are in the interpolation mode, load 2nd closest map
+  if (fCurrentRecoParam->GetCorrMapTimeDepMethod()==AliTPCRecoParam::kCorrMapInterpolation) {
+    if (fCurrentTimeStamp<=fCorrMapCache0->GetTimeStampCenter()) { // load map before or closest, if any
+      if (selID) fCorrMapCache1 = (AliTPCChebCorr*)mapsArr->UncheckedAt(--selID);
+      else if (selID<entries-1) fCorrMapCache1 = (AliTPCChebCorr*)mapsArr->UncheckedAt(++selID);
+    }
+    else { // load map after or closest, if any
+      if (selID<entries-1) fCorrMapCache1 = (AliTPCChebCorr*)mapsArr->UncheckedAt(++selID);
+      else if (selID) fCorrMapCache1 = (AliTPCChebCorr*)mapsArr->UncheckedAt(--selID);
+    }
+    //
+    if (fCorrMapCache1) {
+      if (!selID) fCorrMapCache1->SetFirst(); // flag if there are maps before/after
+      if (selID==entries-1) fCorrMapCache0->SetLast();
+      if (fCorrMapCache1->GetTimeStampStart()<fCorrMapCache0->GetTimeStampStart()) {
+	AliTPCChebCorr* tmp = fCorrMapCache1; // swap to order in time
+	fCorrMapCache1 = fCorrMapCache0;
+	fCorrMapCache0 = tmp;
+      }
+    }
+    //
+    AliInfoF("Loaded %d maps for time stamp %ld",fCorrMapCache1?2:1,fCurrentTimeStamp);
+    fCorrMapCache0->Print();
+    if (fCorrMapCache1) fCorrMapCache1->Print();
+  }
+  //
+  if (!mapsArrProvided) { // if loaded locally, clean unnecessary stuff
+    mapsArr->Remove((TObject*)fCorrMapCache0);
+    if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
+    mapsArr->SetOwner(kTRUE);
+    delete mapsArr;
+  }
+}
+
+//______________________________________________________
+void AliTPCTransform::LoadFieldDependendStaticCorrectionMap(Bool_t ref, TObjArray* mapsArrProvided)
+{
+  // loads time-independent correction map for relevan field polarity. If ref is true, then the
+  // reference map is loaded
   // 
   const float kZeroField = 0.1;
-  TObjArray* mapsArr = LoadCorrectionMaps(kTRUE);
+  TObjArray* mapsArr = mapsArrProvided;
+  if (!mapsArr) mapsArr = LoadCorrectionMaps(ref);
   int entries = mapsArr->GetEntriesFast();
   AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField(); // think on extracting field once only
   Double_t bzField = magF->SolenoidField(); //field in kGaus
@@ -620,28 +688,33 @@ void AliTPCTransform::LoadReferenceCorrectionMap()
   if      (bzField<-kZeroField) expectType = AliTPCChebCorr::kFieldNeg;
   else if (bzField> kZeroField) expectType = AliTPCChebCorr::kFieldPos;
   //
-  fCorrMapCacheRef = 0;
+  AliTPCChebCorr* cormap = 0;
   for (int i=0;i<entries;i++) {
     AliTPCChebCorr* map = (AliTPCChebCorr*)mapsArr->At(i); if (!map) continue;
     if (!map->IsCorrection()) continue;
     Char_t mtp = map->GetFieldType();
-    if (mtp==expectType || mtp==AliTPCChebCorr::kFieldAny) fCorrMapCacheRef = map;
+    if (mtp==expectType || mtp==AliTPCChebCorr::kFieldAny) cormap = map;
     if (mtp==expectType) break;
   }
-  if (!fCorrMapCacheRef) AliFatal("Did not find reference correction map");
+  if (!cormap) AliFatalF("Did not find %s correction map",ref ? "reference":"");
 
-  AliInfo("Loaded reference correction map");
-  fCorrMapCacheRef->Print();
-  if (fCorrMapCacheRef->GetFieldType() == AliTPCChebCorr::kFieldAny) {
+  AliInfoF("Loaded  %s correction map",ref ? "reference":"");
+  cormap->Print();
+  if (cormap->GetFieldType() == AliTPCChebCorr::kFieldAny) {
     AliWarningF("ATTENTION: no map for field %+.1f was found, placeholder map is used",bzField);
   }
-  //  fCorrMapCacheRef->SetTimeDependent(kFALSE);
+  //
+  cormap->SetFirst(); // flag absence of maps before
+  cormap->SetLast();  // and after
+  //
+  if (ref) fCorrMapCacheRef = cormap;
+  else     fCorrMapCache0 = cormap;
 
-  // clean unnecessary stuff
-  mapsArr->Remove((TObject*)fCorrMapCacheRef);
-  mapsArr->SetOwner(kTRUE);
-  delete mapsArr;
-
+  if (!mapsArrProvided) { // if loaded locally, clean unnecessary stuff
+    mapsArr->Remove((TObject*)cormap);
+    mapsArr->SetOwner(kTRUE);
+    delete mapsArr;
+  }
 }
 
 //______________________________________________________
@@ -672,8 +745,25 @@ void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
   // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
   EvalCorrectionMap(roc, row, xyzSect, fLastCorrRef, kTRUE);
   EvalCorrectionMap(roc, row, xyzSect, fLastCorr, kFALSE);
+  fLastCorr[3] = fLastCorr[3]>fLastCorrRef[3] ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
+  if (fCurrentMapScaling!=1.0f) {
+    for (int i=3;i--;) fLastCorr[i] = (fLastCorr[i]-fLastCorrRef[i])*fCurrentMapScaling + fLastCorrRef[i];
+    fLastCorr[3] *= fCurrentMapScaling;
+  }
   for (int i=3;i--;) xyzSect[i] += fLastCorr[i];
   //
+}
+
+//______________________________________________________
+Float_t AliTPCTransform::GetCorrMapComponent(int roc, int row, const double xyz[3], int dimOut)
+{
+  // calculate final correction component from the map
+  float corr = EvalCorrectionMap(roc, row, xyz, dimOut, kFALSE); // run specific correction
+  // do we need to rescale?
+  if (fCurrentMapScaling!=1.0f) {
+    float corrRef =  EvalCorrectionMap(roc, row, xyz, dimOut, kTRUE); // ref correction
+    if (dimOut<3) corr = (corr-corrRef)*fCurrentMapScaling + corrRef;    // rescale with lumi
+  }
 }
 
 //______________________________________________________
@@ -682,11 +772,11 @@ void AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3], f
   // get correction from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
 
-  const AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
+  AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
   float y2x=xyz[1]/xyz[0], z2x = map->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
   map->Eval(roc,row,y2x,z2x,res);
 
-  if (ref) return; // this was time-independent query request
+  if (ref) return; // this was time-independent ref.map query request
   // 
   // for time dependent correction need to evaluate 2 maps, assuming linear dependence
   if (fCorrMapCache1) {
@@ -707,7 +797,7 @@ Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3]
   // get correction for dimOut-th dimension from the map for a point at given ROC and row (IROC/OROC convention)
   if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) AliFatal("Failed to update time-dependent cache");
 
-  const AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
+  AliTPCChebCorr* map = ref ? fCorrMapCacheRef : fCorrMapCache0;
   float y2x=xyz[1]/xyz[0], z2x = map->GetUseZ2R() ? xyz[2]/xyz[0] : xyz[2];
   float corr = map->Eval(roc,row,y2x,z2x,dimOut);
   // 
