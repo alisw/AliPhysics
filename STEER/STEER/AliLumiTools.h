@@ -7,11 +7,14 @@
 class AliLumiTools : public TObject
 {
  public:
+  enum {kLumiCTP,kLumiDIP,kNLumiTypes};
+ public:
   AliLumiTools() {}
   virtual ~AliLumiTools() {}
   //
   static TGraph* GetLumiFromCTP(Int_t run=-1, TString refClassName="", Double_t refSigma=-1, const char * ocdbPathDef="raw://");
   static TGraph* GetLumiFromDIP(Int_t run=-1, const char * ocdbPathDef="raw://");
+  static TGraph* GetLumiGraph(int tp);
   //
  protected:
   static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma);

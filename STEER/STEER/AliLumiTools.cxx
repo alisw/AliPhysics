@@ -17,6 +17,19 @@
 #include <TMath.h>
 
 //___________________________________________________________________
+TGraph* AliLumiTools::GetLumiGraph(Int_t tp)
+{
+  // get lumi graph of requested type, relying on preconfigured CDB
+  TGraph* gr = 0;
+  switch(tp) {
+  case kLumiCTP: gr = GetLumiFromCTP(); break;
+  case kLumiDIP: gr = GetLumiFromDIP(); break;
+  default: AliFatalClassF("Unknown luminosity type %d",tp);
+  };
+  return gr;
+}
+
+//___________________________________________________________________
 TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
 {
   //  Get TGraph with luminosity vs time using LHC DIP data stored in the GRP/GRP/LHCData object
