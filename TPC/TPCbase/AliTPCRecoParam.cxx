@@ -39,7 +39,7 @@
 
 
 #include "AliTPCRecoParam.h"
-
+#include "AliLumiTools.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCRecoParam)
@@ -113,7 +113,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseTOFCorrection(kTRUE),
   fUseCorrectionMap(kFALSE),
   fCorrMapTimeDepMethod(kCorrMapInterpolation),
-  fUseLumiType(-1),
+  fUseLumiType(AliLumiTools::kLumiCTP),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
   fUseSystematicCorrelation(kTRUE)
