@@ -224,7 +224,14 @@ class AliTPCDcalibRes: public TNamed
   void     SetMaxFitXErr2(float v=1.2)           {fMaxFitXErr2 = v;}
   void     SetMaxFitXYCorr(float v=0.95)         {fMaxFitXYCorr = v;}
   void     SetLTMCut(float v=0.75)               {fLTMCut = v;}
-
+  //
+  Bool_t   GetUseTOFBC()                   const {return fUseTOFBC;}
+  Float_t  GetTOFBCMin()                   const {return fTOFBCMin;}
+  Float_t  GetTOFBCMax()                   const {return fTOFBCMax;}
+  void     SetUseTOFBC(Bool_t v)                 {fUseTOFBC = v;}
+  void     SetTOFBCMin(Float_t v=-5.f)           {fTOFBCMin = v;}
+  void     SetTOFBCMax(Float_t v=25.f)           {fTOFBCMax = v;}
+  //
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
   Float_t  GetMaxFitXYCorr()                const {return fMaxFitXYCorr;}
@@ -308,8 +315,10 @@ protected:
   Float_t  fMaxStdDevMA;             // max cluster N std.dev (Y^2+Z^2) wrt moving av. to accept
   Float_t  fMaxRMSLong;              // max RMS of cleaned residuals wrt its fNVoisinMALong moving average
   Float_t  fMaxRejFrac;              // max outlier clusters tagged to accept the track
+  Float_t  fTOFBCMin;                // min dTOF cut in ns if validation requested
+  Float_t  fTOFBCMax;                // max dTOF cut in ns if validation requested
+  Bool_t   fUseTOFBC;                // require TOF BC validation
   Bool_t   fFilterOutliers;          // reject outliers
-
   Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
   Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
@@ -421,7 +430,7 @@ protected:
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,3);
+  ClassDef(AliTPCDcalibRes,4);
 };
 
 //________________________________________________________________

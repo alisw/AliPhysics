@@ -2,6 +2,7 @@
 #include "AliCDBPath.h"
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
+#include "AliDAQ.h"
 
 using std::swap;
 
@@ -98,6 +99,9 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxStdDevMA(25.0)
   ,fMaxRMSLong(0.8)
   ,fMaxRejFrac(0.15)
+  ,fTOFBCMin(-5.0)
+  ,fTOFBCMax(25.0)
+  ,fUseTOFBC(kFALSE)
   ,fFilterOutliers(kTRUE) 
   ,fMaxFitYErr2(1.0)
   ,fMaxFitXErr2(1.2)
@@ -264,6 +268,18 @@ void AliTPCDcalibRes::Init()
   fTMinGRP = grp->GetTimeStart();
   fTMaxGRP = grp->GetTimeEnd();
   //
+  if (fUseTOFBC) { // check if TOF is present
+    Int_t activeDetectors = grp->GetDetectorMask();
+    if (!(activeDetectors&AliDAQ::DetectorPattern("TOF"))) {
+      AliWarning("Disabling TOF BC validation since TOF is not in the GRP");
+      fUseTOFBC = kFALSE;
+    }
+    if (fTOFBCMin>=fTOFBCMax) {
+      AliWarningF("Disabling TOF BC validation: inconsistent cuts %.3f:%.3f",fTOFBCMin,fTOFBCMax);
+      fUseTOFBC = kFALSE;      
+    }
+  }
+
   // init histo for track rate
   Long64_t tmn = fTMinGRP-fTMin>1000 ? fTMinGRP-100 : fTMin;
   Long64_t tmx = fTMax-fTMaxGRP>1000 ? fTMaxGRP+100 : fTMax;
@@ -305,7 +321,8 @@ void AliTPCDcalibRes::CollectData(int mode)
   TVectorF *vecDY=0,*vecDZ=0,*vecZ=0,*vecR=0,*vecSec=0,*vecPhi=0, *vecDYITS=0,*vecDZITS=0;
   UShort_t npValid = 0;
   Int_t nPrimTracks = 0;
-  Char_t trdOK=0;
+  Char_t trdOK=0,tofOK=0;
+  Double_t tofBC = 0.0;
   AliExternalTrackParam* param = 0;
   //
   TStopwatch swTot;
@@ -369,10 +386,23 @@ void AliTPCDcalibRes::CollectData(int mode)
     tree->SetBranchAddress("its0.",&vecDYITS);
     tree->SetBranchAddress("its1.",&vecDZITS);
     //
+    if (fUseTOFBC) {
+      tree->SetBranchStatus("tofOK",kTRUE);
+      tree->SetBranchStatus("tofBC",kTRUE);
+      tree->SetBranchAddress("tofOK",&tofOK);
+      tree->SetBranchAddress("tofBC",&tofBC);
+    }
+    //
+
     tree->GetEntry(0);
 
     TBranch* brTime = tree->GetBranch("timeStamp");
     TBranch* brTRDOK = tree->GetBranch("trdOK");
+    TBranch* brTOFOK=0, *brTOFBC=0;
+    if (fUseTOFBC) {
+      brTOFOK = tree->GetBranch("tofOK");
+      brTOFBC = tree->GetBranch("tofBC");
+    }
     //
     int nTracks = tree->GetEntries();
     AliInfoF("Processing %d tracks of %s",nTracks,fileNameString.Data());
@@ -394,6 +424,9 @@ void AliTPCDcalibRes::CollectData(int mode)
       //
       brTRDOK->GetEntry(itr);
       if (!trdOK) continue;
+      //
+      if (brTOFOK && brTOFOK->GetEntry(itr) && !tofOK) continue;
+      if (brTOFBC && brTOFBC->GetEntry(itr) && (tofBC<fTOFBCMin || tofBC>fTOFBCMax)) continue;      
       //
       if (!lastReadMatched && fSwitchCache) { // reset the cache before switching to event reading mode
 	tree->SetCacheSize(0);
