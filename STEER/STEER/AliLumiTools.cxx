@@ -17,13 +17,13 @@
 #include <TMath.h>
 
 //___________________________________________________________________
-TGraph* AliLumiTools::GetLumiGraph(Int_t tp)
+TGraph* AliLumiTools::GetLumiGraph(Int_t tp, Int_t run, const char * ocdbPathDef)
 {
   // get lumi graph of requested type, relying on preconfigured CDB
   TGraph* gr = 0;
   switch(tp) {
-  case kLumiCTP: gr = GetLumiFromCTP(); break;
-  case kLumiDIP: gr = GetLumiFromDIP(); break;
+  case kLumiCTP: gr = GetLumiFromCTP(run,ocdbPathDef); break;
+  case kLumiDIP: gr = GetLumiFromDIP(run,ocdbPathDef); break;
   default: AliFatalClassF("Unknown luminosity type %d",tp);
   };
   return gr;
@@ -36,20 +36,17 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
   //
   const Int_t kMinDelta=30; // use minimum kMinDelta  seconds difference
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(ocdbPathDef);
-  int runSave = man->GetRun();
-  if (run>-1) {
-    if (runSave!=run) man->SetRun(run);
+  if (!man->IsDefaultStorageSet()) {
+    man->SetDefaultStorage(ocdbPathDef);
+    if (run>=0) man->SetRun(run);
+    else {
+      AliErrorClass("OCDB cannot be configured since run number is not provided"); return 0;
+    }
   }
-  else if (runSave<0) {
-    AliErrorClass("Run number is neither provided nor set in the CDBManager");
-    return 0;
-  }
-  else {
-    run = runSave;
-  }
+  if (run<0) run = man->GetRun();
   //
-  AliLHCData* lhcData = (AliLHCData*)(man->Get(AliCDBPath("GRP/GRP/LHCData"))->GetObject());
+  // use explicit run number since we may query for run other than in CDB cache
+  AliLHCData* lhcData = (AliLHCData*)(man->Get(AliCDBPath("GRP/GRP/LHCData"),run)->GetObject());
 
   Int_t nRec = lhcData->GetNLumiAliceSBDelivered();
   Double_t vecIntLuminosity[nRec];
@@ -99,13 +96,12 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
   grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/b)");
   grLumi->SetMarkerStyle(25);
   grLumi->SetMarkerSize(0.4);
-  if (runSave>-1 && run>-1 && runSave!=run) man->SetRun(runSave); // if needed, restore run
+  grLumi->SetUniqueID(run);
   return grLumi;
 }
 
-
 //___________________________________________________________________
-TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, TString refClassName, Double_t refSigma, const char * ocdbPathDef) 
+TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TString refClassName, Double_t refSigma) 
 {
   /*
     Get TGraph with luminosity vs time using reference trigger from the CTP scalers
@@ -121,21 +117,18 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, TString refClassName, Double_t r
    */
   //
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(ocdbPathDef);
-  int runSave = man->GetRun();
-  if (run>-1) {
-    if (runSave!=run) man->SetRun(run);
+  if (!man->IsDefaultStorageSet()) {
+    man->SetDefaultStorage(ocdbPathDef);
+    if (run>=0) man->SetRun(run);
+    else {
+      AliErrorClass("OCDB cannot be configured since run number is not provided"); return 0;
+    }
   }
-  else if (runSave<0) {
-    AliErrorClass("Run number is neither provided nor set in the CDBManager");
-    return 0;
-  }
-  else {
-    run = runSave;
-  }
+  if (run<0) run = man->GetRun();
   //
+  // use explicit run number since we may query for run other than in CDB cache  
   // Get trigger config 
-  AliTriggerConfiguration* cfg = (AliTriggerConfiguration*) man->Get(AliCDBPath("GRP/CTP/Config"))->GetObject();
+  AliTriggerConfiguration* cfg = (AliTriggerConfiguration*) man->Get(AliCDBPath("GRP/CTP/Config"),run)->GetObject();
   //
   TString refClassAuto="";
   double refSigmaAuto=-1;
@@ -156,8 +149,8 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, TString refClassName, Double_t r
   Int_t nBCs = bcmask->GetNUnmaskedBCs();
 
   TString activeDetectorsString = cfg->GetActiveDetectors();
-
-  AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers")->GetObject();
+  // use explicit run number since we may query for run other than in CDB cache  
+  AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers",run)->GetObject();
   TString refCluster = cl->GetCluster()->GetName();
   Bool_t useLM = activeDetectorsString.Contains("TRD") && (refCluster.EqualTo("CENT") || refCluster.EqualTo("ALL") || refCluster.EqualTo("FAST"));
 
@@ -200,7 +193,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, TString refClassName, Double_t r
   grLumi->SetMarkerStyle(25);
   grLumi->SetMarkerSize(0.4);
   //
-  if (runSave>-1 && run>-1 && runSave!=run) man->SetRun(runSave); // if needed, restore run
+  grLumi->SetUniqueID(run);
   return grLumi;
 }
 
