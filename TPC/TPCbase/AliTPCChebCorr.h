@@ -99,6 +99,8 @@ class AliTPCChebCorr : public TNamed
   void     SetTracksRate(TH1* hrate)             {fTracksRate = hrate;}
   Double_t GetLuminosityCOG(TGraph* lumi, time_t tmin=-1, time_t tmax=-1) const;
   //
+  Int_t    GetRun()                              const;
+  void     SetRun(int run)                             {fRun = run;}
   virtual  Bool_t   IsCorrection()               const {return kTRUE;}
   virtual  Bool_t   IsDistortion()               const {return kFALSE;}
   //
@@ -108,6 +110,7 @@ class AliTPCChebCorr : public TNamed
   //
  protected:
   Char_t   fFieldType;              // info about the field type
+  Int_t    fRun;                    // run number used extract this map
   Int_t    fNRows;                  // number of slices along the radius (e.g. rows)
   Int_t    fNStacksSect;            // number of stacks per sector in phi
   Int_t    fNStacksZSect;           // number of stacks per sector (side) in Z 
@@ -137,7 +140,7 @@ class AliTPCChebCorr : public TNamed
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
   AliTPCChebCorr& operator=(const AliTPCChebCorr& rhs); // dummy
   //
-  ClassDef(AliTPCChebCorr,5)
+  ClassDef(AliTPCChebCorr,6)
 };
 
 //_________________________________________________________________

@@ -46,6 +46,7 @@ const float AliTPCChebCorr::fgkPadRowX[AliTPCChebCorr::kNRows] = {
 AliTPCChebCorr::AliTPCChebCorr()
   : TNamed()
   ,fFieldType(kFieldAny)
+  ,fRun(-1)
   ,fNRows(0)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
@@ -69,6 +70,7 @@ AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title,
 			       int nps, int nzs, float zmaxAbs, float deadZone, const float *xrow)
   : TNamed(name,title)
   ,fFieldType(kFieldAny)
+  ,fRun(-1)
   ,fNRows(kNRows)
   ,fNStacksSect(0)
   ,fNStacksZSect(0)
@@ -224,8 +226,8 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector. DeadZone: %.1fcm\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
 	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect,fDeadZone);
-  printf("Time span: %ld:%ld TimeDependent flag: %s Field type: %s\n",fTimeStampStart,fTimeStampEnd,
-	 GetTimeDependent() ? "ON ":"OFF", fgkFieldTypeName[fFieldType]);
+  printf("Run used: %d Time span: %ld:%ld TimeDependent flag: %s Field type: %s\n",
+	 GetRun(),fTimeStampStart,fTimeStampEnd,GetTimeDependent() ? "ON ":"OFF", fgkFieldTypeName[fFieldType]);
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {
     for (int iz=0;iz<fNStacksZ;iz++) {
@@ -301,3 +303,16 @@ Double_t AliTPCChebCorr::GetLuminosityCOG(TGraph* lumi, time_t tmin, time_t tmax
   return lumiCOG;
 }
 
+//__________________________________________
+Int_t AliTPCChebCorr::GetRun() const
+{
+  // get run number used for this map
+  if (fRun>=0) return fRun;
+  // try to extract from name
+  TString runstr = "";
+  const char* nm = GetName();
+  while (*nm && !isdigit(*nm)) nm++;
+  while (*nm && isdigit(*nm)){ runstr += *nm;nm++;}
+  if (!runstr.IsDigit()) return -1;
+  return runstr.Atoi();
+}
