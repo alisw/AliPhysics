@@ -143,6 +143,9 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
 AliTPCTransform::~AliTPCTransform() {
   /// Destructor
   delete fLumiGraph; // own copy should be attached
+  delete fCorrMapCacheRef;
+  delete fCorrMapCache0;
+  delete fCorrMapCache1;
 }
 
 void AliTPCTransform::SetPrimVertex(Double_t *vtx){
@@ -619,6 +622,8 @@ void AliTPCTransform::LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided)
   TObjArray* mapsArr = mapsArrProvided;
   if (!mapsArr) mapsArr = LoadCorrectionMaps(kFALSE);
   int entries = mapsArr->GetEntriesFast();
+  delete fCorrMapCache0;
+  delete fCorrMapCache1;
   fCorrMapCache0 = fCorrMapCache1 = 0;
   //1) choose map covering current time stamp.
   int selID=0;
