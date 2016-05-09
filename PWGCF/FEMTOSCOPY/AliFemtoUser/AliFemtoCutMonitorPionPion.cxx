@@ -416,11 +416,17 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   fMinv->Fill(minv);
   fKt->Fill(pair->KT());
 
-  const AliFemtoThreeVector p1 = pair->Track1()->Track()->P(),
-                            p2 = pair->Track2()->Track()->P();
+  const AliFemtoTrack *track1 = pair->Track1()->Track(),
+                      *track2 = pair->Track2()->Track();
+
+  const AliFemtoThreeVector p1 = track1->P(),
+                            p2 = track2->P();
+
+  const short chg_1 = track1->Charge(),
+              chg_2 = track2->Charge();
 
   const float delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
-         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, p2, 1.6);
+         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, chg_1, p2, chg_2, 1.6, 0.5006670488586);
 
   fDetaDphi->Fill(delta_eta, delta_phi_star);
   fQinvDeta->Fill(qinv, delta_eta);
