@@ -99,7 +99,11 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	if (beamEnergy == -123456.f) {printf("Error obtaining Beam Energy from DIM\n"); return(1);}
 	
 	AliMagF* field = AliMagF::CreateFieldMap(l3Current, dipoleCurrent, 0, kFALSE, beamEnergy, beamType, "$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root", true);
-	if (field == NULL) return(4);
+	if (field == NULL)
+	{
+		cout << "Cannot create fild map with current magnet currents: L3 " << l3Current << ", Diploe " << dipoleCurrent;
+		return(4);
+	}
 	
 	cout << "Values from DIM: L3 Polarity " << l3Polarity << ", L3 Current " << l3Current << ", Dipole Polarity " << dipolePolarity <<
 		", Dipole Current " << dipoleCurrent << ", Surface Pressure " << surfaceAtmosPressure << ", Cavern Pressure " << cavernAtmosPressure << " / " << cavernAtmosPressure2 <<
