@@ -23,7 +23,7 @@ class AliGenToyEventHeader : public AliGenEventHeader
 
 protected:
     Float_t fCentrality; // centrality
-    std::map<const std::string, Float_t> fParameters; // additional parameters
+    std::map<std::string, Float_t> fParameters; // additional parameters
 
     ClassDef(AliGenToyEventHeader, 0)
 };

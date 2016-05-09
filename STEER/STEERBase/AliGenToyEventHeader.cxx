@@ -14,6 +14,8 @@
  **************************************************************************/
 
 #include "AliGenToyEventHeader.h"
+#include <map>
+#include <string>
 
 AliGenToyEventHeader::AliGenToyEventHeader(const char* name) :
   AliGenEventHeader(name),
