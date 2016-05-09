@@ -1115,7 +1115,7 @@ void AliAnalysisTaskEmcalJetCDFUE::Terminate ( Option_t * )
   {
   // Called once at the end of the analysis.
   // Update pointers reading them from the output slot
-  fOutput = dynamic_cast<TList *> ( GetOutputData (0) );
+  fOutput = dynamic_cast<AliEmcalList*> ( GetOutputData (0) );
   }
 
 // kate: indent-mode none; indent-width 2; replace-tabs on;

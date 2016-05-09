@@ -19,5 +19,5 @@
 #pragma link C++ class AliPicoTrack+;
 #pragma link C++ class AliMCParticleContainer+;
 #pragma link C++ class AliTrackContainer+;
-
+#pragma link C++ class AliEmcalList+;
 #endif

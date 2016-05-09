@@ -46,6 +46,7 @@ set(SRCS
   AliPicoTrack.cxx
   AliMCParticleContainer.cxx
   AliTrackContainer.cxx
+  AliEmcalList.cxx
   )
 
 # Headers from sources

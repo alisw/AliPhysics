@@ -974,7 +974,7 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 	TH1::AddDirectory(kFALSE);
 	OpenFile(1);
 	if(!fOutput) {
-		fOutput = new TList();
+		fOutput = new AliEmcalList();
 		fOutput->SetOwner();
 	}
 	if(!fOutput) {

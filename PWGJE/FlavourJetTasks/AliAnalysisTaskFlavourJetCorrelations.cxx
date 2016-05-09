@@ -553,7 +553,7 @@ void AliAnalysisTaskFlavourJetCorrelations::Terminate(Option_t*)
    Info("Terminate"," terminate");
    AliAnalysisTaskSE::Terminate();
    
-   fOutput = dynamic_cast<TList*> (GetOutputData(1));
+   fOutput = dynamic_cast<AliEmcalList*> (GetOutputData(1));
    if (!fOutput) {     
       printf("ERROR: fOutput not available\n");
       return;

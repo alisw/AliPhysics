@@ -1617,7 +1617,7 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 	fHFJetUtils = new AliHFJetsTagging("fHFJetUtils");
 	fNparents = 7;
 
-	if (!fOutput) fOutput = new TList();
+	if (!fOutput) fOutput = new AliEmcalList();
 	fOutput->SetOwner(kTRUE);
 
 	//Event selection histograms
