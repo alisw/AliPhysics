@@ -30,26 +30,66 @@
 ///
 class AliFemtoPairCutDetaDphi : public AliFemtoShareQualityPairCut {
 public:
+  /// Default Constructor
   AliFemtoPairCutDetaDphi();
   AliFemtoPairCutDetaDphi(Float_t min_eta, Float_t min_phi, Float_t radius=1.6f);
 
   virtual bool Pass(const AliFemtoPair *);
   virtual bool Pass(AliFemtoPair *);
 
-  virtual AliFemtoString Report() {return "";};
+  /// Returns an empty string
+  virtual AliFemtoString Report();
+
+  /// Return a list of TObjStrings describing the configuration settings for this cut
   virtual TList* ListSettings();
   virtual TList* AppendSettings(TList *, const TString &prefix="");
 
+  /// Called every time a new event is processed. This method updates the fCurrentMagneticField variable
+  virtual void EventBegin(const AliFemtoEvent *event);
+
+  /// Set the radius for $\Delta\phi^{*}$ calculations
   void SetR(Float_t r);
+
+  /// Set the minimum allowed Delta eta value
   void SetMinEta(Float_t eta);
+
+  /// Set the minimum allowed Delta phi value
   void SetMinPhi(Float_t phi);
 
+  /// Calculate \Delta\eta between two particles.
+  /// \param a Momentum of first particle
+  /// \param b Momentum of second particle
+  ///
+  /// The calculation returns $\Delta\eta = \eta_2 - \eta_1$, with each eta caluclated via the
+  /// PseudoRapidity method of AliFemtoThreeVector.
+  ///
   static Float_t CalculateDEta(const AliFemtoThreeVector& a, const AliFemtoThreeVector& b);
 
-  static Float_t CalculateDPhiStar(const AliFemtoThreeVector& a, const AliFemtoThreeVector& b, const Double_t minRad);
+  /// Calculate the \Delta\phi^{*} between two particles.
+  /// \param p_a momentum of first particle
+  /// \param charge_a charge of the first particle
+  /// \param p_b momentum of second particle
+  /// \param charge_b charge of the second particle
+  /// \param radius_in_meters Radial distance at which the angle should be taken [Meters]
+  /// \param magnetic_field_in_tesla Strength and direction of the magnetic field in the detector [Tesla]
+  ///
+  static Float_t CalculateDPhiStar(const AliFemtoThreeVector& p_a,
+                                   const Short_t charge_a,
+                                   const AliFemtoThreeVector& p_b,
+                                   const Short_t charge_b,
+                                   const Double_t radius_in_meters,
+                                   const Double_t magnetic_field_in_tesla);
+
+  /// Calculate \Delta\eta between two particles.
+  /// \param a Momentum of first particle
+  /// \param b Momentum of second particle
+  /// \param minRad Radial distance at which the eta value should be taken?
   static Float_t CalculateDEtaStar(const AliFemtoThreeVector& a, const AliFemtoThreeVector& b, const Double_t minRad);
 
 protected:
+
+  /// The magnetic field of the most recent event, updated on EventUpdate
+  Float_t fCurrentMagneticField;
 
   /// Radius at which we calculate φ*
   Float_t fR;
@@ -121,14 +161,15 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const AliFemtoThreeVector &p1 = track1->P(),
                             &p2 = track2->P();
 
+  const short charge1 = track1->Charge(),
+              charge2 = track2->Charge();
+
   const Float_t dEta = fabs(CalculateDEta(p1, p2)),
-                dPhi = fabs(CalculateDPhiStar(p1, p2, fR));
+                dPhi = fabs(CalculateDPhiStar(p1, charge1, p2, charge2, fR, fCurrentMagneticField));
 
   const bool within_cut_range = (dEta < fDeltaEtaMin) && (dPhi < fDeltaPhiMin);
 
   bool passes = !within_cut_range && AliFemtoShareQualityPairCut::Pass(pair);
-
-  // cout << "> " << passes << " " << CalculateDEta(p1, p2) << " " << CalculateDPhiStar(p1, p2, fR) << "\n";
 
   return passes;
 }
@@ -166,33 +207,35 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
 
 inline
 Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
-  const AliFemtoThreeVector& a,
-  const AliFemtoThreeVector& b,
-  const Double_t radius_in_meters)
+  const AliFemtoThreeVector& p_a,
+  const Short_t charge_a,
+  const AliFemtoThreeVector& p_b,
+  const Short_t charge_b,
+  const Double_t radius_in_meters,
+  const Double_t magnetic_field)
 {
-  // phi shift at radius R in magnetic field B, with charge and momentum q & pT is:
-  //    φ = arcsin( q * B * R / 2 pT )
+  // phi shift at radius R in magnetic field B, with charge and momentum q & p_T is:
+  //    φ = arcsin( q * B * R / 2 p_T )
   //
   // Unit analysis:
   //   q * B * R : [Coulomb][Tesla][Meter] = 1.60218e-19 [e][Tesla][Meter]
-  //   pT : [Joule][Second]/[Meter] = 1.60218e-10 [GeV][Second]/[Meter] = 1.60218e-10 / c [GeV/c]
+  //   p_T : [Joule][Second]/[Meter] = 1.60218e-10 [GeV][Second]/[Meter] = 1.60218e-10 / c [GeV/c]
   //
   //  q * B * R / pT = (1.60218e-19 * c / 1.60218e-10) [e] [Tesla] [Meters] / [GeV/c]
   //                 ~ 0.3 [e] [Tesla] [Meters] / [GeV/c]
   //
 
   const Double_t unit_factor = 0.299792458 / 2.0;
-  const Double_t b_field = 0.5006670488586,
-                  charge = 1.0;
-  // ((AliAODInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetEvent()->GetMagneticField();
 
-  const Double_t phi_a = a.Phi(),
-                 phi_b = b.Phi(),
+  const Double_t phi_a = p_a.Phi(),
+                 phi_b = p_b.Phi(),
 
-                 shift_a = TMath::ASin(- unit_factor * charge * b_field * radius_in_meters / a.Perp()),
-                 shift_b = TMath::ASin(- unit_factor * charge * b_field * radius_in_meters / b.Perp()),
+                 prefix = -1.0 * unit_factor * magnetic_field * radius_in_meters,
 
-                 delta_phi_star = (phi_a + shift_a) - (phi_b + shift_b);
+                 shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
+                 shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
+
+  const Double_t delta_phi_star = (phi_b + shift_b) - (phi_a + shift_a);
 
   return delta_phi_star;
 }
@@ -207,6 +250,19 @@ TList* AliFemtoPairCutDetaDphi::ListSettings()
   return settings;
 };
 
+inline
+void
+AliFemtoPairCutDetaDphi::EventBegin(const AliFemtoEvent *event)
+{
+  fCurrentMagneticField = event->MagneticField();
+
+  // Correct AliFemto units error for magnetic field (back to Tesla)
+  // TODO: Fix this bug in AliFemtoEventReaderAOD::CopyAODtoFemtoEvent
+  if (fabs(fCurrentMagneticField) < 1e-10) {
+    fCurrentMagneticField *= 1e13;
+  }
+
+}
 
 inline
 TList*
@@ -228,6 +284,12 @@ AliFemtoPairCutDetaDphi::AppendSettings(TList *setting_list, const TString &pref
   NULL);
 
   return setting_list;
+}
+
+inline
+AliFemtoString AliFemtoPairCutDetaDphi::Report()
+{
+  return "";
 }
 
 
