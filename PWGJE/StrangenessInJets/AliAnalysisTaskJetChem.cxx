@@ -189,6 +189,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fListMCgenLaCone(0)
    ,fListMCgenALaCone(0)
    ,IsArmenterosSelected(0)
+   ,fUseNJEvents(0)
    ,fUseExtraTracks(0)
    ,fUseExtraJetPt(0)
    ,fUseEmbeddedJetPt(0)
@@ -527,6 +528,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fListMCgenLaCone(0)
   ,fListMCgenALaCone(0)
   ,IsArmenterosSelected(0)
+  ,fUseNJEvents(0)
   ,fUseExtraTracks(0)
   ,fUseExtraJetPt(0)
   ,fUseEmbeddedJetPt(0)
@@ -868,6 +870,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fListMCgenLaCone(copy.fListMCgenLaCone)
   ,fListMCgenALaCone(copy.fListMCgenALaCone)
   ,IsArmenterosSelected(copy.IsArmenterosSelected)
+  ,fUseNJEvents(copy.fUseNJEvents)
   ,fUseExtraTracks(copy.fUseExtraTracks)
   ,fUseExtraJetPt(copy.fUseExtraJetPt)
   ,fUseEmbeddedJetPt(copy.fUseEmbeddedJetPt)
@@ -1214,6 +1217,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fListMCgenLaCone                = o.fListMCgenLaCone;
     fListMCgenALaCone               = o.fListMCgenALaCone;
     IsArmenterosSelected            = o.IsArmenterosSelected;
+    fUseNJEvents                    = o.fUseNJEvents;
     fUseExtraTracks                 = o.fUseExtraTracks;
     fUseExtraJetPt                  = o.fUseExtraJetPt;
     fUseEmbeddedJetPt               = o.fUseEmbeddedJetPt;
@@ -3952,6 +3956,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //############################################################################################################################################
      
 
+      if(fUseNJEvents == kFALSE){fIsNJEventEmb = kTRUE;}//in case Embedding should be done into all events, select flag fIsNJEventEmb as always true
 
       if(!(fUseExtraTracks == 0)&&(fIsNJEventEmb == kTRUE)){//this following big block is used only for Embedding study
     
@@ -5500,7 +5505,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     //##################################################################################################################
     
     //########generated jets for embedding##############################################################################
-    
+  
+  if(fUseNJEvents == kFALSE){fIsNJEventEmb = kTRUE;}//in case Embedding should be done into all events, select flag fIsNJEventEmb as always true
+  
   if((fBranchGenJets.Length())&&(fUseExtraTracks == 1)&&(fMatchMode == 2)&&(fIsNJEventEmb == kTRUE)){//match mode needed for V0 histograms, to be running as a seperate wagon for match mode 1 and match mode 2 and only for extra jet branch + switch for Embedding into NJ events (here: events in which all jets were rejected - events with no rec. jets at all are not used here for technical reasons (but should be small amount in PbPb anyhow))
 
     //match mode 1 is for detector level - detector level PYTHIA matching

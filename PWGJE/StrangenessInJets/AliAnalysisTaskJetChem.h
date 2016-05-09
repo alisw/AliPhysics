@@ -154,6 +154,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetFilterMaskALa(UInt_t i) {fFilterMaskALa = i;}
 
   virtual void SetSelectArmenteros(Bool_t b) {IsArmenterosSelected = b;}
+  virtual void SetUseNJEvents()        { fUseNJEvents = kFALSE;}
   virtual void UseExtraTracks()        { fUseExtraTracks =  1;}
   virtual void UseExtraonlyTracks()    { fUseExtraTracks = -1;}
   virtual void SetUseExtraJetPt(Bool_t ut) { fUseExtraJetPt = ut;}
@@ -343,7 +344,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TList* fListMCgenLaCone;                                 //! MC generated Lambdas in cone around jet axis, particles are from fragmentation but also from underlying event
   TList* fListMCgenALaCone;                                //! MC generated Antilambdas in cone around jet axis, particles are from fragmentation but also from underlying event
 
-  Bool_t IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
+  Bool_t  IsArmenterosSelected;                             //Armenteros-Podolanski Cut (is/isn't) applied  
+  Bool_t  fUseNJEvents;              //select in Embedding part only NJ events from background jet branch, default is Embedding into all events (= kFALSE)
   Int_t   fUseExtraTracks;          // +/- 1: embedded extra/extra only tracks, default: 0 (is set in initialisation list of task, ignore extra tracks)
   Bool_t  fUseExtraJetPt;           // for MC use jet of matching extra jet (= data + MC tracks)  
   Bool_t  fUseEmbeddedJetPt;        // for extra branch: use unsmeared jet pt
