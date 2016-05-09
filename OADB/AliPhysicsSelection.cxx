@@ -574,10 +574,10 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list) {
 
 void AliPhysicsSelection::SaveHistograms(const char* folder) {
   // write histograms to current directory
-  if (!folder) return;
-  gDirectory->mkdir(folder);
-  gDirectory->cd(folder);
-  
+  if (folder) {
+    gDirectory->mkdir(folder);
+    gDirectory->cd(folder);
+  }
   for (Int_t i=0; i < fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries(); i++) {
     TString triggerClass = "trigger_histograms_";
     if (i < fCollTrigClasses.GetEntries())
@@ -592,7 +592,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) {
     
     gDirectory->cd("..");
   }
-  gDirectory->cd("..");
+  if (folder) gDirectory->cd("..");
 }
 
 
