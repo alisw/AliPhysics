@@ -18,7 +18,6 @@
 # Module include folder
 include_directories(
                     ${AliRoot_SOURCE_DIR}/EVE/alieve_main
-                    ${AliRoot_SOURCE_DIR}/EVE/aliceToJson
                    )
 
 # Additional include folders in alphabetical order
@@ -26,7 +25,6 @@ include_directories(
                     ${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
-                    ${AliRoot_SOURCE_DIR}/EVE/converters/ConverterJSON
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
@@ -38,8 +36,14 @@ include_directories(
                    )
 
 # aliceToJson executable
-add_executable(aliceToJson aliceToJson.cxx)
-target_link_libraries(aliceToJson ConverterJSON STEERBase STEER ESD)
+if(ROOT_HTTP_FOUND)
+    include_directories(
+        ${AliRoot_SOURCE_DIR}/EVE/aliceToJson
+        ${AliRoot_SOURCE_DIR}/EVE/converters/ConverterJSON
+        )
+    add_executable(aliceToJson aliceToJson.cxx)
+    target_link_libraries(aliceToJson ConverterJSON STEERBase STEER ESD)
+endif(ROOT_HTTP_FOUND)
 
 # alieve executable
 add_executable(alieve alieve_main.cxx)
@@ -57,4 +61,8 @@ endif(ZEROMQ_FOUND)
 
 
 # Installation
-install(TARGETS alieve aliceToJson RUNTIME DESTINATION bin)
+install(TARGETS alieve RUNTIME DESTINATION bin)
+
+if(ROOT_HTTP_FOUND)
+    install(TARGETS aliceToJson RUNTIME DESTINATION bin)
+endif(ROOT_HTTP_FOUND)
