@@ -317,6 +317,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoXicMCS;         //!<! electron in mcArray
   THnSparse* fHistoXicMCS1;         //!<! electron in mcArray
   THnSparse* fHistoXicMCS2;         //!<! electron in mcArray
+  THnSparse* fHistoXibMCGen;         //!<! electron in mcArray
+  THnSparse* fHistoXibMCGenWithXic;         //!<! electron in mcArray
+  THnSparse* fHistoXibMCS;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen1;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen2;         //!<! electron in mcArray
@@ -340,9 +343,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoEleXiPtvsRapidityMCS; //!<! e-Xi pT vs y
 
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseXiPt; //!<! Response function Lambda pT <- True ept
+	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
   TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
+	TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
+	TH2D *fHistoResponseEleXiPtXib; //!<! Response function Xi pT <- True ept
+  TH2D *fHistoResponseMcGenXibPtvsXicPt; //!<! Response function Xi-c pT <- Xi-b pT
 
   TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
@@ -397,7 +403,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,26); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,27); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
