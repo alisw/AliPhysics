@@ -13,6 +13,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliOADBTriggerAnalysis.h"
+#include "TBrowser.h"
 class AliVEvent;
 class AliESDEvent;
 class TH1F;
@@ -87,7 +88,8 @@ public:
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
   void PrintTriggerClasses() const;
-  
+  void Browse(TBrowser *b);
+
 protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
   
@@ -95,7 +97,9 @@ protected:
   
   Bool_t  fDoFMD;            // If false, skips the FMD (physics selection runs much faster)
   Bool_t  fMC;               // flag if MC is analyzed
-
+  
+  TList* fHistList;          //
+  
   TH1F* fHistFiredBitsSPD;   // fired hardware bits
   TH2F* fHistSPDClsVsTkl;    // 
   TH2F* fHistV0MOnVsOf;      //
