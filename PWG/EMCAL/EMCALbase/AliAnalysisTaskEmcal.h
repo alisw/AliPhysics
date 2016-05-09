@@ -5,7 +5,6 @@
 
 class TClonesArray;
 class TString;
-class TList;
 class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
@@ -28,6 +27,7 @@ class AliEmcalPythiaInfo;
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalList.h"
 
 #include "AliAnalysisTaskSE.h"
 /**
@@ -168,6 +168,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+  void                        SetUsePtHardBinScaling(Bool_t b)                      { fUsePtHardBinScaling = b                            ; }
   void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
   void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
   void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
@@ -280,6 +281,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   EMCalTriggerMode_t          fEMCalTriggerMode;           ///< EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
+  Bool_t                      fUsePtHardBinScaling;        ///< Use pt hard bin scaling in merging
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
@@ -312,7 +314,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
 
   // Output
-  TList                      *fOutput;                     //!<!output list
+  AliEmcalList               *fOutput;                     //!<!output list
   TH1                        *fHistEventCount;             //!<!incoming and selected events
   TH1                        *fHistTrialsAfterSel;         //!<!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!<!total number of events per pt hard bin after selection

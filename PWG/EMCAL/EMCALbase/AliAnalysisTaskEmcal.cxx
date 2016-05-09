@@ -16,7 +16,7 @@
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
-#include <TList.h>
+#include <AliEmcalList.h>
 #include <TObject.h>
 #include <TH1F.h>
 #include <TProfile.h>
@@ -103,6 +103,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
@@ -209,6 +210,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
@@ -260,7 +262,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterCollArray.SetOwner(kTRUE);
 
   if (fCreateHisto) {
-    DefineOutput(1, TList::Class()); 
+    DefineOutput(1, AliEmcalList::Class());
   }
 }
 
@@ -385,7 +387,8 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     return;
 
   OpenFile(1);
-  fOutput = new TList();
+  fOutput = new AliEmcalList();
+  fOutput->SetUseScaling(fUsePtHardBinScaling);
   fOutput->SetOwner();
 
   if (fForceBeamType == kpp)
