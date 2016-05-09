@@ -32,7 +32,8 @@ public:
     kSecondary      = 0x04,
     kDistinct       = 0x08,
     kSimulated      = 0x10,
-    kGenerated      = 0x20
+    kGenerated      = 0x20,
+    kNeutral        = 0x40
   };
     
   /** Type of real values */
@@ -121,9 +122,13 @@ public:
    */
   void SetSimulated() { fFlags |= kSimulated; }
   /** 
-   * Flag "tracklet" as from a generated particle in simulated data 
+   * Flag "tracklet" as from a generated primary, particle in simulated data 
    */
   void SetGenerated() { fFlags |= kGenerated; }
+  /** 
+   * Flag "tracklet" as from a neutral primary, particle in simulated data 
+   */
+  void SetNeutral() { fFlags |= kNeutral; }
   /* @} */
   /** 
    * @{ 
@@ -217,6 +222,10 @@ public:
    * @return true if tracklet is a generated, primary, charged particle
    */
   Bool_t IsGenerated() const { return fFlags & kGenerated; }
+  /** 
+   * @return true if tracklet is a generated, primary, neutral particle
+   */
+  Bool_t IsNeutral() const { return fFlags & kNeutral; }
   /* @} */
   /** 
    * @{ 
@@ -254,7 +263,7 @@ protected:
   /** Tracklet flags */
   UChar_t fFlags;
 
-  ClassDef(AliAODTracklet,1); // Single tracklet
+  ClassDef(AliAODTracklet,2); // Single tracklet
 };
 //____________________________________________________________________
 AliAODTracklet::AliAODTracklet()
@@ -399,7 +408,7 @@ protected:
   /** Second parent pt */
   Short_t fPar2Pdg; 
   
-  ClassDef(AliAODMCTracklet,1); // Single tracklet information (sim)
+  ClassDef(AliAODMCTracklet,2); // Single tracklet information (sim)
 };
   
 //____________________________________________________________________

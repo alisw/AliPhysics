@@ -38,14 +38,14 @@ AliAnalysisTaskEmcalJetHadCorQA* AddTaskEmcalJetHadCorQA(
 
   TString name(Form("JetHadCor_%s", nJets));
   AliAnalysisTaskEmcalJetHadCorQA *jethadcortask = new AliAnalysisTaskEmcalJetHadCorQA(name);
-  jethadcortask->SetJetsName(nJets);
+  jethadcortask->AddJetContainer(nJets);
   jethadcortask->SetAnaType(type);
   jethadcortask->SetRhoName(nRhosChEm);
   jethadcortask->SetJetPhiLimits(minPhi,maxPhi);
   jethadcortask->SetJetEtaLimits(minEta,maxEta);
   jethadcortask->SetJetAreaCut(minArea);
-  jethadcortask->SetTracksName(nTracks);
-  jethadcortask->SetClusName(nClusters);
+  jethadcortask->AddParticleContainer(nTracks);
+  jethadcortask->AddClusterContainer(nClusters);
   jethadcortask->SetCalo2Name(nClustersCorr);
   jethadcortask->SetPtCut(0.15);
 

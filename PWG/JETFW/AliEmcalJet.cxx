@@ -1,16 +1,29 @@
-//
-// Emcal jet class.
-//
-// Author: C.Loizides
-
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include "AliEmcalJet.h"
 
 #include "AliLog.h"
 #include "Riostream.h"
 
-ClassImp(AliEmcalJet)
+/// \cond CLASSIMP
+ClassImp(AliEmcalJet);
+/// \endcond
 
-//__________________________________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalJet::AliEmcalJet() :
   AliVParticle(),
   fPt(0),
@@ -47,14 +60,19 @@ AliEmcalJet::AliEmcalJet() :
   fGhosts(),
   fJetShapeProperties(0)
 {
-  // Constructor.
   fClosestJets[0] = 0;
   fClosestJets[1] = 0;
   fClosestJetsDist[0] = 999;
   fClosestJetsDist[1] = 999;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Constructor that uses the 3-momentum to define the jet axis.
+ * It assumes zero mass for the jet.
+ * @param px First transverse component of the jet momentum
+ * @param px Second transverse component of the jet momentum
+ * @param pz Longitudinal component of the jet momentum
+ */
 AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   AliVParticle(),
   fPt(TMath::Sqrt(px * px + py* py)),
@@ -91,9 +109,7 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fGhosts(),
   fJetShapeProperties(0)
 {
-  // Constructor.
-
-  if(fPt != 0) {
+  if (fPt != 0) {
     fPhi = TVector2::Phi_0_2pi(TMath::ATan2(py, px));
   }
 
@@ -103,7 +119,14 @@ AliEmcalJet::AliEmcalJet(Double_t px, Double_t py, Double_t pz) :
   fClosestJetsDist[1] = 999;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Constructor that uses the 4-momentum to define the jet axis.
+ * Coordinates are given in cylindrical system plus the mass.
+ * @param pt Transverse component of the jet momentum
+ * @param eta Pseudo-rapidity of the jet
+ * @param phi Azimuthal angle of the jet axis
+ * @param m Mass of the jet
+ */
 AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   AliVParticle(),
   fPt(pt),
@@ -140,8 +163,6 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fGhosts(),
   fJetShapeProperties(0)
 {
-  // Constructor.
-
   fPhi = TVector2::Phi_0_2pi(fPhi);
 
   fClosestJets[0] = 0;
@@ -150,7 +171,10 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fClosestJetsDist[1] = 999;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Copy constructor.
+ * @param jet Constant reference to copy from
+ */
 AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   AliVParticle(jet),
   fPt(jet.fPt),
@@ -198,18 +222,22 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   }
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Destructor.
+ */
 AliEmcalJet::~AliEmcalJet()
 {
   if (fJetShapeProperties) delete fJetShapeProperties;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Assignment operator
+ * @param jet Constant reference to copy from
+ * @return A reference to this
+ */
 AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
 {
-  // Assignment operator.
-
-  if(this != &jet) {
+  if (this != &jet) {
     AliVParticle::operator=(jet);
     fPt                 = jet.fPt;
     fEta                = jet.fEta;
@@ -254,68 +282,81 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
   return *this;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Compares two instances of AliEmcalJet, ordering them based on their transverse momentum.
+ * @param obj Pointer to another instance of AliEmcalJet
+ * @return -1 if this is smaller than obj, 1 if this is larger than obj, 0 if objects are equal or if obj is NULL or not an instance of AliEmcalJet
+ */
 Int_t AliEmcalJet::Compare(const TObject* obj) const
 {
   //Return -1 if this is smaller than obj, 0 if objects are equal and 1 if this is larger than obj.
 
-  const AliEmcalJet* jet = static_cast<const AliEmcalJet*>(obj);
-  if(!obj)
-    return 0;
-  if(Pt() > jet->Pt())
-    return -1;
-  return 1;
+  if (obj == this) return 0;
+
+  const AliEmcalJet* jet = dynamic_cast<const AliEmcalJet*>(obj);
+  if (!jet) return 0;
+
+  if (Pt() > jet->Pt()) return -1;
+  else if (Pt() < jet->Pt()) return 1;
+  else return 0;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Builds a 4-momentum object using information contained in this instance of AliEmcalJet
+ * @param[out] vec Reference to TLorentzVector where the 4-momentum is returned
+ */
 void AliEmcalJet::GetMomentum(TLorentzVector& vec) const
 {
-  // Return momentum as four-vector.
-
   vec.SetPtEtaPhiE(fPt, fEta, fPhi, E());
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Calculates transverse momentum after scalar average background subtraction.
+ * The result can be negative. It saves the result if requested.
+ * @param rho Scalar average background
+ * @param save If kTRUE, stores the result in a class field
+ * @return The subtracted transverse momentum
+ */
 Double_t AliEmcalJet::PtSub(Double_t rho, Bool_t save)
 {
-  // Return transverse momentum after scalar subtraction. Save the result if required.
-  // Result can be negative.
-
   Double_t ptcorr = fPt - rho * fArea;
-  if(save)
-    fPtSub = ptcorr;
+  if (save) fPtSub = ptcorr;
   return ptcorr;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Calculates transverse momentum after vectorial average background subtraction.
+ * The result can be negative. It saves the result if requested.
+ * @param rho Vectorial average background
+ * @param save If kTRUE, stores the result in a class field
+ * @return The subtracted transverse momentum
+ */
 Double_t AliEmcalJet::PtSubVect(Double_t rho, Bool_t save)
 {
-  // Return transverse momentum after vectorial subtraction. Save the result if required.
-  // Result cannot be negative.
-
   Double_t dx = Px() - rho * fArea * TMath::Cos(fAreaPhi);
   Double_t dy = Py() - rho * fArea * TMath::Sin(fAreaPhi);
   //Double_t dz = Pz() - rho * fArea * TMath::SinH(fAreaEta);
   Double_t ptcorr = TMath::Sqrt(dx * dx + dy * dy);
-  if(save)
-    fPtSubVect = ptcorr;
+  if (save) fPtSubVect = ptcorr;
   return ptcorr;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Calculates 4-momentum after vectorial average background subtraction.
+ * It saves the result if requested.
+ * @param rho Vectorial average background
+ * @param save If kTRUE, stores the result in a class field
+ * @return The subtracted 4-momentum
+ */
 TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho, Bool_t save)
 {
-  // Return four-momentum after vectorial subtraction. Save pt if required.
-  // Saved value of pt is negative if the corrected momentum is pointing to the opposite half-plane in the x-y plane w.r.t. the raw momentum.
-
   TLorentzVector vecCorr;
-  GetMom(vecCorr);
+  GetMomentum(vecCorr);
   TLorentzVector vecBg;
   vecBg.SetPtEtaPhiE(fArea, fAreaEta, fAreaPhi, fAreaE);
   vecBg *= rho;
   vecCorr -= vecBg;
-  if(save)
-  {
+  if (save) {
     Double_t dPhi = TMath::Abs(TVector2::Phi_mpi_pi(Phi() - vecCorr.Phi()));
     Int_t signum = dPhi <= TMath::PiOver2() ? 1 : -1;
     fPtSubVect = signum * vecCorr.Pt();
@@ -323,119 +364,139 @@ TLorentzVector AliEmcalJet::SubtractRhoVect(Double_t rho, Bool_t save)
   return vecCorr;
 }
 
-//__________________________________________________________________________________________________
+/**
+ *  Sort constituent by index (increasing).
+ *
+ */
 void AliEmcalJet::SortConstituents()
 {
-  // Sort constituent by index (increasing).
-
   std::sort(fClusterIDs.GetArray(), fClusterIDs.GetArray() + fClusterIDs.GetSize());
   std::sort(fTrackIDs.GetArray(), fTrackIDs.GetArray() + fTrackIDs.GetSize());
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Helper function to calculate the distance between two jets or a jet and a particle
+ * @param part Constant pointer to another particle
+ * @return Distance in the eta-phi phase space
+ */
 Double_t AliEmcalJet::DeltaR(const AliVParticle* part) const
 {
-  // Helper function to calculate the distance between two jets or a jet and a particle
-
   Double_t dPhi = Phi() - part->Phi();
   Double_t dEta = Eta() - part->Eta();
   dPhi = TVector2::Phi_mpi_pi(dPhi);
   return TMath::Sqrt(dPhi * dPhi + dEta * dEta);
 }
 
-
-//__________________________________________________________________________________________________
+/**
+ * Sorting jet constituents by pT (decreasing)
+ * @param tracks Array containing pointers to the tracks from which jet constituents are drawn
+ * @return Standard vector with the list of track indexes
+ */
 std::vector<int> AliEmcalJet::SortConstituentsPt(TClonesArray* tracks) const
 {
-  // Sorting by p_T (decreasing) jet constituents
-
   typedef std::pair<Double_t, Int_t> ptidx_pair;
 
   // Create vector for Pt sorting
-  std::vector<ptidx_pair> pair_list ;
+  std::vector<ptidx_pair> pair_list;
 
-  for(Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++)
-  {
+  for (Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++) {
     AliVParticle* track = TrackAt(i_entry, tracks);
-    if(!track)
-    {
+    if (!track) {
       AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)", i_entry, tracks->GetName(), TrackAt(i_entry), tracks->GetEntriesFast()));
       continue;
     }
-
     pair_list.push_back(std::make_pair(track->Pt(), i_entry));
   }
 
   std::stable_sort(pair_list.begin() , pair_list.end() , sort_descend());
 
-  // return an vector of indexes of constituents (sorted descending by pt)
+  // return a vector of indexes of constituents (sorted descending by pt)
   std::vector <int> index_sorted_list;
 
-  for(std::vector< std::pair<Double_t, Int_t> >::iterator it = pair_list.begin(); it != pair_list.end(); ++it)
-  { index_sorted_list.push_back((*it).second); }   // populating the return object with indexes of sorted tracks
+  // populating the return object with indexes of sorted tracks
+  for (auto it : pair_list) index_sorted_list.push_back(it.second);
 
   return index_sorted_list;
 }
 
-//________________________________________________________________________
+/**
+ * Get the momentum fraction of a jet constituent
+ * @param trkPx First transverse component of the momentum of the jet constituent
+ * @param trkPy Second transverse component of the momentum of the jet constituent
+ * @param trkPz Longitudinal component of the momentum of the jet constituent
+ * @return Momentum fraction
+ */
 Double_t AliEmcalJet::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz) const
 {
-  // Get the z of a constituent inside of a jet
-
   Double_t pJetSq = P();
   pJetSq *= pJetSq;
 
-  if(pJetSq > 1e-6)
-  { return (trkPx * Px() + trkPy * Py() + trkPz * Pz()) / pJetSq ; }
-  else
-  { AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f", GetName(), pJetSq)); return -1; }
+  if (pJetSq > 1e-6) {
+    return (trkPx * Px() + trkPy * Py() + trkPz * Pz()) / pJetSq;
+  }
+  else {
+    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f", GetName(), pJetSq));
+    return -1;
+  }
 }
 
-//________________________________________________________________________
+/**
+ * Get the momentum fraction of a jet constituent
+ * @param trk Jet constituent
+ * @return Momentum fraction
+ */
 Double_t AliEmcalJet::GetZ(const AliVParticle* trk) const
 {
-  // Get Z of constituent trk
-
   return GetZ(trk->Px(), trk->Py(), trk->Pz());
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Find the leading track constituent of the jet.
+ * @param tracks Array containing the pointers to the tracks from which jet constituents are drawn
+ * @return Pointer to the leading track of the jet
+ */
 AliVParticle* AliEmcalJet::GetLeadingTrack(TClonesArray* tracks) const
 {
   AliVParticle* maxTrack = 0;
-  for(Int_t i = 0; i < GetNumberOfTracks(); i++) {
+  for (Int_t i = 0; i < GetNumberOfTracks(); i++) {
     AliVParticle* track = TrackAt(i, tracks);
-    if(!track) {
+    if (!track) {
       AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)",
-                    i, tracks->GetName(), TrackAt(i), tracks->GetEntriesFast()));
+          i, tracks->GetName(), TrackAt(i), tracks->GetEntriesFast()));
       continue;
     }
-    if(!maxTrack || track->Pt() > maxTrack->Pt())
+    if (!maxTrack || track->Pt() > maxTrack->Pt())
       maxTrack = track;
   }
 
   return maxTrack;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Find the leading cluster constituent of the jet.
+ * @param tracks Array containing the pointers to the clusters from which jet constituents are drawn
+ * @return Pointer to the leading cluster of the jet
+ */
 AliVCluster* AliEmcalJet::GetLeadingCluster(TClonesArray* clusters) const
 {
   AliVCluster* maxCluster = 0;
-  for(Int_t i = 0; i < GetNumberOfClusters(); i++) {
+  for (Int_t i = 0; i < GetNumberOfClusters(); i++) {
     AliVCluster* cluster = ClusterAt(i, clusters);
-    if(!cluster) {
+    if (!cluster) {
       AliError(Form("Unable to find jet cluster %d in collection %s (pos in collection %d, max %d)",
-                    i, clusters->GetName(), ClusterAt(i), clusters->GetEntriesFast()));
+          i, clusters->GetName(), ClusterAt(i), clusters->GetEntriesFast()));
       continue;
     }
-    if(!maxCluster || cluster->E() > maxCluster->E())
+    if (!maxCluster || cluster->E() > maxCluster->E())
       maxCluster = cluster;
   }
 
   return maxCluster;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Reset jet matching information.
+ */
 void AliEmcalJet::ResetMatching()
 {
   fClosestJets[0] = 0;
@@ -445,7 +506,11 @@ void AliEmcalJet::ResetMatching()
   fMatched = 2;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Checks whether a certain track is among the jet constituents by looking for its index
+ * @param Index of the track to search
+ * @return The position of the track in the jet constituent array, if the track is found; -1 if the track is not a jet constituent
+ */
 Int_t AliEmcalJet::ContainsTrack(Int_t it) const
 {
   for (Int_t i = 0; i < fTrackIDs.GetSize(); i++) {
@@ -454,7 +519,11 @@ Int_t AliEmcalJet::ContainsTrack(Int_t it) const
   return -1;
 }
 
-//__________________________________________________________________________________________________
+/**
+ * Checks whether a certain cluster is among the jet constituents by looking for its index
+ * @param Index of the cluster to search
+ * @return The position of the cluster in the jet constituent array, if the cluster is found; -1 if the cluster is not a jet constituent
+ */
 Int_t AliEmcalJet::ContainsCluster(Int_t ic) const
 {
   for (Int_t i = 0; i < fClusterIDs.GetSize(); i++) {
@@ -502,7 +571,11 @@ std::ostream &AliEmcalJet::Print(std::ostream &in) const {
   return in;
 }
 
-//________________________________________________________________________
+/**
+ * Prints the list of constituents in the standard output
+ * @param tracks Array containing the pointers to tracks
+ * @param clusters Array containing the pointers to the clusters
+ */
 void AliEmcalJet::PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const
 {
   if (tracks) {
@@ -524,7 +597,11 @@ void AliEmcalJet::PrintConstituents(TClonesArray* tracks, TClonesArray* clusters
   }
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the momentum fraction carried by the "flavor" track
+ * @param i Position of the flavor track in the flavor track constituent array
+ * @return The momentum fraction carried by the flavor track
+ */
 Double_t AliEmcalJet::GetFlavourTrackZ(Int_t i)  const
 {
   if (P() < 1e-6) return 0.;
@@ -542,4 +619,141 @@ Double_t AliEmcalJet::GetFlavourTrackZ(Int_t i)  const
 std::ostream &operator<<(std::ostream &in, const AliEmcalJet &myjet) {
   std::ostream &result = myjet.Print(in);
   return result;
+}
+
+/**
+ * Add a ghost particle to the ghost particle array.
+ * This function should be called by the jet finder to fill the ghost particle array.
+ * @param dPx First component of the transverse momentum of the particle
+ * @param dPy First component of the transverse momentum of the particle
+ * @param dPz Longitudinal component of the momentum of the particle
+ * @param dE Energy of the particle
+ */
+void AliEmcalJet::AddGhost(const Double_t dPx, const Double_t dPy, const Double_t dPz, const Double_t dE)
+{
+  TLorentzVector ghost(dPx, dPy, dPz, dE);
+  fGhosts.push_back(ghost);
+  if (!fHasGhost) fHasGhost = kTRUE;
+  return;
+}
+
+/**
+ * Clear this object: remove matching information, jet constituents, ghosts
+ */
+void AliEmcalJet::Clear(Option_t */*option*/)
+{
+  fClusterIDs.Set(0);
+  fTrackIDs.Set(0);
+  fClosestJets[0] = 0;
+  fClosestJets[1] = 0;
+  fClosestJetsDist[0] = 0;
+  fClosestJetsDist[1] = 0;
+  fMatched = 0;
+  fPtSub = 0;
+  fGhosts.clear();
+  fHasGhost = kFALSE;
+}
+
+/**
+ * Finds the track constituent corresponding to the index found at a certain position.
+ * @param idx Position of the track constituent
+ * @param ta Array with pointers to the tracks from which jet constituents are drawn
+ * @return Pointer to the track constituent requested (if found)
+ */
+AliVParticle* AliEmcalJet::TrackAt(Int_t idx, TClonesArray *ta) const
+{
+  if (!ta) return 0;
+  return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx)));
+}
+
+/**
+ * Checks whether a given track is among the jet constituents
+ * @param track Pointer to the track to be searched
+ * @param tracks Array with pointers to the tracks from which jet constituents are drawn
+ * @return Position of the track among the jet constituents, if the track is found; -1 otherwise
+ */
+Int_t AliEmcalJet::ContainsTrack(AliVParticle* track, TClonesArray* tracks) const
+{
+  if (!tracks || !track) return 0;
+  return ContainsTrack(tracks->IndexOf(track));
+}
+
+/**
+ * Finds the cluster constituent corresponding to the index found at a certain position.
+ * @param idx Position of the cluster constituent
+ * @param ta Array with pointers to the clusters from which jet constituents are drawn
+ * @return Pointer to the cluster constituent requested (if found)
+ */
+AliVCluster* AliEmcalJet::ClusterAt(Int_t idx, TClonesArray *ca) const
+{
+  if (!ca) return 0;
+  return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx)));
+}
+
+/**
+ * Checks whether a given cluster is among the jet constituents
+ * @param cluster Pointer to the track to be searched
+ * @param clusters Array with pointers to the clusters from which jet constituents are drawn
+ * @return Position of the cluster among the jet constituents, if the cluster is found; -1 otherwise
+ */
+Int_t AliEmcalJet::ContainsCluster(AliVCluster* cluster, TClonesArray* clusters) const
+{
+  if (!clusters || !cluster) return 0;
+  return ContainsCluster(clusters->IndexOf(cluster));
+}
+
+/**
+ * Get Xi = Log(1 / z) of constituent track
+ * @param trk Pointer to a constituent track
+ * @return Xi of the constituent
+ */
+Double_t AliEmcalJet::GetXi(const AliVParticle* trk) const
+{
+  return TMath::Log(1 / GetZ(trk));
+}
+
+/**
+ * Get Xi = Log(1 / z) of constituent track
+ * @param trkPx First transverse component of the momentum of the jet constituent
+ * @param trkPy Second transverse component of the momentum of the jet constituent
+ * @param trkPz Longitudinal component of the momentum of the jet constituent
+ * @return Xi of the constituent
+ */
+Double_t AliEmcalJet::GetXi( const Double_t trkPx, const Double_t trkPy, const Double_t trkPz ) const
+{
+  return TMath::Log(1 / GetZ(trkPx, trkPy, trkPz));
+}
+
+/**
+ * Add a track to the list of flavor tagging tracks
+ * @param Pointer to the flavor track
+ */
+void AliEmcalJet::AddFlavourTrack(AliVParticle* hftrack)
+{
+  if (!fFlavourTracks) fFlavourTracks = new TObjArray();
+  fFlavourTracks->Add(hftrack);
+}
+
+/**
+ * Finds the flavor track at a given array position
+ * @param i Position of the flavor track in the array
+ * @return Pointer to the flavor track
+ */
+AliVParticle* AliEmcalJet::GetFlavourTrack(Int_t i) const
+{
+  if (!fFlavourTracks || i < 0 || i >= fFlavourTracks->GetEntriesFast()) return 0;
+
+  return  static_cast<AliVParticle*>(fFlavourTracks->At(i));
+}
+
+/**
+ * Finds the flavor track at a given array position and removes it from the array
+ * @param i Position of the flavor track in the array
+ * @return Pointer to the flavor track that was removed
+ */
+AliVParticle* AliEmcalJet::RemoveFlavourTrack(Int_t i)
+{
+  if (!fFlavourTracks || i < 0 || i >= fFlavourTracks->GetEntriesFast()) return 0;
+
+  return static_cast<AliVParticle*>(fFlavourTracks->RemoveAt(i));
 }

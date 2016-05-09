@@ -55,8 +55,8 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
   tName += coName;
 
   AliEmcalParticleMaker *eTask = new AliEmcalParticleMaker(tName);
-  eTask->SetTracksName(tracksName);
-  eTask->SetClusName(clusName);
+  eTask->AddParticleContainer(tracksName);
+  eTask->AddClusterContainer(clusName);
   eTask->SetTracksOutName(toName);
   eTask->SetClusOutName(coName);
 

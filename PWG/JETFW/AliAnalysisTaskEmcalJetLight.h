@@ -52,12 +52,14 @@ class AliAnalysisTaskEmcalJetLight : public AliAnalysisTaskEmcalLight {
   void                        ExecOnce()                                                                    ;
   Bool_t                      RetrieveEventObjects()                                                        ;
 
-  TObjArray                   fJetCollArray;               /// jet collection array
+  TObjArray                   fJetCollArray;               ///< jet collection array
 
  private:
   AliAnalysisTaskEmcalJetLight(const AliAnalysisTaskEmcalJetLight&);            // not implemented
   AliAnalysisTaskEmcalJetLight &operator=(const AliAnalysisTaskEmcalJetLight&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalLight, 1) // EMCAL Jet base analysis task
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalJetLight, 1);
+  /// \endcond
 };
 #endif

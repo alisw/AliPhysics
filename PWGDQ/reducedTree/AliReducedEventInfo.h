@@ -6,6 +6,7 @@
 #define ALIREDUCEDEVENTINFO_H
 
 #include "AliReducedBaseEvent.h"
+#include "AliReducedEventPlaneInfo.h"
 
 class AliReducedCaloClusterInfo;
 class AliReducedPairInfo;
@@ -97,6 +98,18 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   void  SubtractParticleFromQvector(AliReducedTrackInfo* particle, Double_t Qvec[][2], Int_t det,
                                     Float_t etaMin=-0.8, Float_t etaMax=+0.8,
 	 			    Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
+  
+  // Event plane information handling for the case when event plane information is written directly in the trees
+  //void SetEventPlane(const AliReducedEventPlaneInfo* ep) 
+  //    {if(ep) {fEventPlane=new AliReducedEventPlaneInfo(); fEventPlane->CopyEvent(ep);}};
+  //AliReducedEventPlaneInfo* GetEventPlane() const {return fEventPlane;};
+  void SetEventPlane(const AliReducedEventPlaneInfo* ep) {if(ep) fEventPlane.CopyEvent(ep);}
+  
+  //Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
+   //   {if(fEventPlane) return fEventPlane->EventPlane(detector, harmonic); return 0.0;};
+  Double_t GetEventPlane(Int_t detector, Int_t harmonic) const 
+      {return fEventPlane.EventPlane(detector, harmonic); return 0.0;};    
+      
 
   virtual void ClearEvent();
   
@@ -145,6 +158,9 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   TClonesArray* fFMD;            //->   array containing fmd readout          (NEW)
   static TClonesArray* fgFMD;    //       fmd readout			      (NEW)
 
+  //AliReducedEventPlaneInfo* fEventPlane;     //-> container for event plane information
+  AliReducedEventPlaneInfo fEventPlane;     // container for event plane information
+  
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 

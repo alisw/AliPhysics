@@ -290,13 +290,20 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoLcMCGen(0),
 	fHistoLcMCGen1(0),
 	fHistoLcMCGen2(0),
+	fHistoLbMCGen(0),
+	fHistoLbMCGen1(0),
+	fHistoLbMCGen2(0),
 	fHistoLcMCGenWithEleA(0),
 	fHistoLcMCGenWithEleB(0),
 	fHistoLbMCGenWithEleA(0),
 	fHistoLbMCGenWithEleB(0),
+	fHistoLbMCGenWithLambdac(0),
 	fHistoLcMCS(0),
 	fHistoLcMCS1(0),
 	fHistoLcMCS2(0),
+	fHistoLbMCS(0),
+	fHistoLbMCS1(0),
+	fHistoLbMCS2(0),
 	fHistoFeedDownXic0MCGen(0),
 	fHistoFeedDownXic0MCGen1(0),
 	fHistoFeedDownXic0MCGen2(0),
@@ -496,10 +503,16 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoResponseEleLambdaPtFeeddownSigma(0),
 	fHistoResponseEleLambdaPtFeeddownSigma1(0),
 	fHistoResponseEleLambdaPtFeeddownSigma2(0),
+	fHistoResponseEleLambdaPtLambdab(0),
+	fHistoResponseElePtLambdab(0),
+	fHistoResponseLambdaPtLambdab(0),
 	fHistoResponseLambdaPt(0),
 	fHistoResponseLambdaPtFeeddownXic0(0),
 	fHistoResponseLambdaPtFeeddownXicPlus(0),
 	fHistoResponseLambdaPtFeeddownSigma(0),
+	fHistoResponseLambdaPtvsEleLambdaPt(0),
+	fHistoResponseLambdaPtvsEleLambdaPtLambdab(0),
+	fHistoResponseMcGenLambdabPtvsLambdacPt(0),
 	fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt(0),
 	fHistoEleLambdaPtvsRapidityRS(0),
 	fHistoEleLambdaPtvsRapidityWS(0),
@@ -761,13 +774,20 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoLcMCGen(0),
 	fHistoLcMCGen1(0),
 	fHistoLcMCGen2(0),
+	fHistoLbMCGen(0),
+	fHistoLbMCGen1(0),
+	fHistoLbMCGen2(0),
 	fHistoLcMCGenWithEleA(0),
 	fHistoLcMCGenWithEleB(0),
 	fHistoLbMCGenWithEleA(0),
 	fHistoLbMCGenWithEleB(0),
+	fHistoLbMCGenWithLambdac(0),
 	fHistoLcMCS(0),
 	fHistoLcMCS1(0),
 	fHistoLcMCS2(0),
+	fHistoLbMCS(0),
+	fHistoLbMCS1(0),
+	fHistoLbMCS2(0),
 	fHistoFeedDownXic0MCGen(0),
 	fHistoFeedDownXic0MCGen1(0),
 	fHistoFeedDownXic0MCGen2(0),
@@ -967,10 +987,16 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoResponseEleLambdaPtFeeddownSigma(0),
 	fHistoResponseEleLambdaPtFeeddownSigma1(0),
 	fHistoResponseEleLambdaPtFeeddownSigma2(0),
+	fHistoResponseEleLambdaPtLambdab(0),
+	fHistoResponseElePtLambdab(0),
+	fHistoResponseLambdaPtLambdab(0),
 	fHistoResponseLambdaPt(0),
 	fHistoResponseLambdaPtFeeddownXic0(0),
 	fHistoResponseLambdaPtFeeddownXicPlus(0),
 	fHistoResponseLambdaPtFeeddownSigma(0),
+	fHistoResponseLambdaPtvsEleLambdaPt(0),
+	fHistoResponseLambdaPtvsEleLambdaPtLambdab(0),
+	fHistoResponseMcGenLambdabPtvsLambdacPt(0),
 	fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt(0),
 	fHistoEleLambdaPtvsRapidityRS(0),
 	fHistoEleLambdaPtvsRapidityWS(0),
@@ -2194,6 +2220,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 							else fHistoResponseEleLambdaPt2->Fill(mclc->Pt(),trk->Pt());
 
 							fHistoResponseLambdaPt->Fill(mclc->Pt(),v0->Pt());
+							fHistoResponseLambdaPtvsEleLambdaPt->Fill(elobj->Pt(),v0->Pt());
 
 							Double_t cont_eleptvslambdaptvslcpt[4];
 							cont_eleptvslambdaptvslcpt[0] = cont_eleptvslambdapt[0];
@@ -2500,6 +2527,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			if(fUseMCInfo){
 				if(mclc){
 					Int_t pdgcode = mclc->GetPdgCode();
+					Double_t cont_mclb[3];
+					cont_mclb[0] = mclc->Pt();
+					cont_mclb[1] = mclc->Y();
+					cont_mclb[2] = fCentrality;
 					Double_t cont_mcele[3];
 					cont_mcele[0] = mcele->Pt();
 					cont_mcele[1] = mcele->Eta();
@@ -2507,6 +2538,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 
 					if(abs(pdgcode)==5122 && abs(mcpdgele_array[1])==5122 && abs(mcpdgv0_array[1])==4122 && abs(mcpdgv0_array[2])==5122){
 						fHistoEleLambdaMassLambdabMCS->Fill(cont);
+						fHistoResponseEleLambdaPtLambdab->Fill(mclc->Pt(),elobj->Pt());
+						fHistoResponseElePtLambdab->Fill(mclc->Pt(),trk->Pt());
+						fHistoResponseLambdaPtLambdab->Fill(mclc->Pt(),v0->Pt());
+						fHistoResponseLambdaPtvsEleLambdaPtLambdab->Fill(elobj->Pt(),v0->Pt());
+
+						fHistoLbMCS->Fill(cont_mclb);
+						if(trk->Charge()>0) fHistoLbMCS1->Fill(cont_mclb);
+						else fHistoLbMCS2->Fill(cont_mclb);
 
             fHistoEleLambdaPtvsV0dlLambdabMCS->Fill(cont_elelamptvsv0dl);
             if(trk->Charge()>0) fHistoEleLambdaPtvsV0dlLambdabMCS1->Fill(cont_elelamptvsv0dl);
@@ -3729,6 +3768,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 		fHistoLbElectronMCGen->Fill(contmcele);
 		if(mcepart->GetPdgCode()<0) fHistoLbElectronMCGen1->Fill(contmcele);
 		if(mcepart->GetPdgCode()>0) fHistoLbElectronMCGen2->Fill(contmcele);
+		fHistoLbMCGen->Fill(contmc);
+		if(mcpart->GetPdgCode()>0) fHistoLbMCGen1->Fill(contmc);
+		if(mcpart->GetPdgCode()<0) fHistoLbMCGen2->Fill(contmc);
 
 		fHistoLcMCGenWithEleA->Fill(contmc_withele);
     if(fabs(mcepart->Eta())<0.8){
@@ -4352,16 +4394,30 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fHistoLbMCGenWithEleB = new TH2D("fHistoLbMCGenWithEleB","",100,0.,20.,100,0.,10.);
   fOutputAll->Add(fHistoLbMCGenWithEleB);
 
+  Int_t bins_lbmcgen_withlc[3]=	{50 ,100	,100};
+  Double_t xmin_lbmcgen_withlc[3]={0.,-5.,-5.};
+  Double_t xmax_lbmcgen_withlc[3]={50.,5.,5.};
+  fHistoLbMCGenWithLambdac = new THnSparseF("fHistoLbMCGenWithLambdac","",3,bins_lbmcgen_withlc,xmin_lbmcgen_withlc,xmax_lbmcgen_withlc);
+  fOutputAll->Add(fHistoLbMCGenWithLambdac);
 
   Int_t bins_lcmcgen[3]=	{100 ,20	,10};
   Double_t xmin_lcmcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_lcmcgen[3]={20.,1.0	,100};
+  Int_t bins_lbmcgen[3]=	{100 ,20	,10};
+  Double_t xmin_lbmcgen[3]={0.,-1.0	,0.0};
+  Double_t xmax_lbmcgen[3]={50.,1.0	,100};
   fHistoLcMCGen = new THnSparseF("fHistoLcMCGen","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoLcMCGen);
   fHistoLcMCGen1 = new THnSparseF("fHistoLcMCGen1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoLcMCGen1);
   fHistoLcMCGen2 = new THnSparseF("fHistoLcMCGen2","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoLcMCGen2);
+  fHistoLbMCGen = new THnSparseF("fHistoLbMCGen","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCGen);
+  fHistoLbMCGen1 = new THnSparseF("fHistoLbMCGen1","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCGen1);
+  fHistoLbMCGen2 = new THnSparseF("fHistoLbMCGen2","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCGen2);
   fHistoFeedDownXic0MCGen = new THnSparseF("fHistoFeedDownXic0MCGen","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoFeedDownXic0MCGen);
   fHistoFeedDownXic0MCGen1 = new THnSparseF("fHistoFeedDownXic0MCGen1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
@@ -4387,6 +4443,12 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLcMCS1);
   fHistoLcMCS2 = new THnSparseF("fHistoLcMCS2","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoLcMCS2);
+  fHistoLbMCS = new THnSparseF("fHistoLbMCS","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCS);
+  fHistoLbMCS1 = new THnSparseF("fHistoLbMCS1","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCS1);
+  fHistoLbMCS2 = new THnSparseF("fHistoLbMCS2","",3,bins_lbmcgen,xmin_lbmcgen,xmax_lbmcgen);
+  fOutputAll->Add(fHistoLbMCS2);
   fHistoFeedDownXic0MCS = new THnSparseF("fHistoFeedDownXic0MCS","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
   fOutputAll->Add(fHistoFeedDownXic0MCS);
   fHistoFeedDownXic0MCS1 = new THnSparseF("fHistoFeedDownXic0MCS1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
@@ -4791,6 +4853,12 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownSigma1);
   fHistoResponseEleLambdaPtFeeddownSigma2 = new TH2D("fHistoResponseEleLambdaPtFeeddownSigma2","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownSigma2);
+  fHistoResponseEleLambdaPtLambdab = new TH2D("fHistoResponseEleLambdaPtLambdab","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtLambdab);
+  fHistoResponseElePtLambdab = new TH2D("fHistoResponseElePtLambdab","",100,0.,50.,100,0.,10.);
+  fOutputAll->Add(fHistoResponseElePtLambdab);
+  fHistoResponseLambdaPtLambdab = new TH2D("fHistoResponseLambdaPtLambdab","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLambdaPtLambdab);
   fHistoResponseLambdaPt = new TH2D("fHistoResponseLambdaPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseLambdaPt);
   fHistoResponseLambdaPtFeeddownXic0 = new TH2D("fHistoResponseLambdaPtFeeddownXic0","",100,0.,20.,100,0.,20.);
@@ -4799,6 +4867,12 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseLambdaPtFeeddownXicPlus);
   fHistoResponseLambdaPtFeeddownSigma = new TH2D("fHistoResponseLambdaPtFeeddownSigma","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseLambdaPtFeeddownSigma);
+  fHistoResponseLambdaPtvsEleLambdaPt = new TH2D("fHistoResponseLambdaPtvsEleLambdaPt","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLambdaPtvsEleLambdaPt);
+  fHistoResponseLambdaPtvsEleLambdaPtLambdab = new TH2D("fHistoResponseLambdaPtvsEleLambdaPtLambdab","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseLambdaPtvsEleLambdaPtLambdab);
+  fHistoResponseMcGenLambdabPtvsLambdacPt = new TH2D("fHistoResponseMcGenLambdabPtvsLambdacPt","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseMcGenLambdabPtvsLambdacPt);
 
   fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonEvtvsRunNumber);
@@ -5885,6 +5959,18 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
           }
         }
       }
+
+			if(lc_flag){
+				Double_t contmc_withlc[3];
+				contmc_withlc[0] = mcpart->Pt();
+				contmc_withlc[1] = mcpart->Y();
+				contmc_withlc[2] = mclcpart->Y();
+				if(fabs(mclcpart->Y())<1.){
+					fHistoResponseMcGenLambdabPtvsLambdacPt->Fill(mcpart->Pt(),mclcpart->Pt());
+				}
+				fHistoLbMCGenWithLambdac->Fill(contmc_withlc);
+			}
+
 			Int_t decaytype = -9999;
 			if(e_flag && lc_flag && lam_flag) decaytype = 10;
 			FillMCROOTObjects(mcpart,mcepart,mcv0part,decaytype);

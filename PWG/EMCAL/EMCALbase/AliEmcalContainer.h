@@ -1,6 +1,8 @@
-#ifndef AliEmcalContainer_H
-#define AliEmcalContainer_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+#include "AliEmcalIterableContainer.h"
+
+#ifndef ALIEMCALCONTAINER_H
+#define ALIEMCALCONTAINER_H
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 class TLorentzVector;
@@ -11,13 +13,16 @@ class AliVParticle;
 
 #include <TNamed.h>
 #include <TClonesArray.h>
-#include "AliEmcalIterableContainer.h"
+
+typedef AliEmcalIterableContainerT<TObject> AliEmcalIterableContainer;
 
 /**
  * @class AliEmcalContainer
  * @brief Base class for container structures within the EMCAL framework
  * @ingroup EMCALCOREFW
- * @author  M. Verweij
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  *
  * This class is the base class for container object used in the EMCAL framework.
  * The main purpose is to connect this to objects stored as list objects in the
@@ -140,7 +145,7 @@ class AliEmcalContainer : public TObject {
   virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const = 0;
   Int_t                       GetNAcceptEntries() const;
   void                        ResetCurrentID(Int_t i=-1)            { fCurrentID = i                    ; }
-  virtual void                SetArray(AliVEvent *event);
+  virtual void                SetArray(const AliVEvent *event);
   void                        SetArrayName(const char *n)           { fClArrayName = n                  ; }
   void                        SetBitMap(UInt_t m)                   { fBitMap = m                       ; }
   void                        SetIsParticleLevel(Bool_t b)          { fIsParticleLevel = b              ; }
@@ -165,6 +170,7 @@ class AliEmcalContainer : public TObject {
   const char*                 GetName()                       const { return fName.Data()               ; }
   void                        SetName(const char* n)                { fName = n                         ; }
 
+  static Double_t             RelativePhi(Double_t ang1, Double_t ang2);
   static Bool_t               SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
 
   const AliEmcalIterableContainer   all() const;

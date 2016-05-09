@@ -260,7 +260,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 1) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcalLight, 1);
   /// \endcond
 };
 

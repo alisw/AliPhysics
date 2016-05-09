@@ -205,7 +205,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 //     fEsdtrackCutsITSTPC->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
 //     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
 
-    fEsdtrackCutsITSTPC = new AliESDtrackCuts("AliESDtrackCuts");
+    fEsdtrackCutsITSTPC = new AliESDtrackCuts();
+    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
 
     fEsdtrackCutsITSTPC->SetRequireTPCRefit(kTRUE);
     fEsdtrackCutsITSTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -277,6 +278,11 @@ if (!fESDEvent) {
   fRecAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
   fMCAnalysis->SetIsOfflineV0AND(kIsOfflineV0AND);
   fMCAnalysis->SetIsOfflineMB(kIsOfflineMB);
+
+
+
+
+
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
   if(fIsSim &&( fRecAnalysis->DataSet()!=20100 || fRecAnalysis->DataSet()!=2011 ||  fRecAnalysis->DataSet()!=2015)) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());

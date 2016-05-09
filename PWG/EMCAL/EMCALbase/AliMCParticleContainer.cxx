@@ -12,7 +12,7 @@
 #include "AliMCParticleContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliParticleContainer)
+ClassImp(AliMCParticleContainer);
 /// \endcond
 
 /**
@@ -192,6 +192,24 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
   }
 
   return ApplyParticleCuts(vp, rejectionReason);
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliMCParticleIterableContainer AliMCParticleContainer::all() const {
+  return AliMCParticleIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliMCParticleIterableContainer AliMCParticleContainer::accepted() const {
+  return AliMCParticleIterableContainer(this, true);
 }
 
 /**
