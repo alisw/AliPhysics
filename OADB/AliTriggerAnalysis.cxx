@@ -52,7 +52,7 @@ AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
 fDoFMD(kFALSE),
-fHistList(0),
+fHistList(new TList()),
 fHistFiredBitsSPD(0),
 fHistSPDClsVsTkl(0),
 fHistV0MOnVsOf(0),
@@ -82,10 +82,13 @@ fHistFMDC(0),
 fHistFMDSingle(0),
 fHistFMDSum(0),
 fHistT0(0),
-fTriggerClasses(0),
+fTriggerClasses(new TMap),
 fMC(kFALSE)
 {
   // constructor
+  fHistList->SetName("histos");
+  fHistList->SetOwner();
+  fTriggerClasses->SetOwner();
 }
 
 void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
@@ -124,9 +127,8 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
 
 //-------------------------------------------------------------------------------------------------
 AliTriggerAnalysis::~AliTriggerAnalysis(){
-  // destructor
-  if (fHistList)           { fHistList->Delete();          delete fHistList;       fHistList       = 0; }
-  if (fTriggerClasses)     { fTriggerClasses->DeleteAll(); delete fTriggerClasses; fTriggerClasses = 0; }
+  delete fHistList;
+  delete fTriggerClasses;
 }
 
 
@@ -134,7 +136,7 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
 void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // creates the monitoring histograms 
   // dynamical range of histograms can be adapted for pp and pPb via isLowFlux flag)
-  // TODO check limits for FMD
+  // TODO check limits
   
   Int_t nBinsX = isLowFlux ?  400 :  300;
   Int_t nBinsY = isLowFlux ? 4000 : 1000;
@@ -146,8 +148,8 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   TH1::AddDirectory(kFALSE);
   fHistFiredBitsSPD   = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
-  fHistV0MOnVsOf      = new TH2F("fHistV0MOnvsOf",";Offline V0M;Online V0M",1000,0,2000,1000,0,10000);
-  fHistSPDOnVsOf      = new TH2F("fHistV0MOnvsOf",";Offline FOR;Online FOR",800,0,800,800,0,800);
+  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",1000,0,2000,1000,0,10000);
+  fHistSPDOnVsOf      = new TH2F("fHistSPDOnVsOf",";Offline FOR;Online FOR",800,0,800,800,0,800);
   fHistVIRvsBCmod4pup = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
   fHistVIRvsBCmod4acc = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
   fHistV0C3vs012      = new TH2F("fHistV0C3vs012",";V0C012 multiplicity;V0C3 multiplicity",800,0,800,300,0,300);
@@ -186,9 +188,6 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fFuncV0C3vs012->SetParameters(fV0CasymA,fV0CasymB);
   fHistV0C3vs012->GetListOfFunctions()->Add(fFuncV0C3vs012);
   
-  fHistList = new TList();
-  fHistList->Add(fHistV0A);
-  fHistList->Add(fHistV0C);
   fHistList->Add(fHistFiredBitsSPD);
   fHistList->Add(fHistSPDClsVsTkl);
   fHistList->Add(fHistV0MOnVsOf);
@@ -218,10 +217,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistFMDSingle);
   fHistList->Add(fHistFMDSum);
   fHistList->Add(fHistT0);
-  fHistList->SetOwner();
   
-  fTriggerClasses = new TMap;
-  fTriggerClasses->SetOwner();
   TH1::AddDirectory(oldStatus);
 }
 
@@ -1238,7 +1234,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   // Merge a list of objects with this (needed for PROOF).
   // Returns the number of merged objects (including this).
   if (!list) return 0;
-  if (list->IsEmpty()) return 1;
+  if (list->IsEmpty()) return 0;
   TIterator* iter = list->MakeIterator();
   TObject* obj;
   TList histListCollection; 
@@ -1247,19 +1243,6 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
     AliTriggerAnalysis* entry = dynamic_cast<AliTriggerAnalysis*> (obj);
     if (entry == 0) continue;
     histListCollection.Add(entry->fHistList);
-    
-    TIterator* iter2 = entry->fTriggerClasses->MakeIterator();
-    TObjString* obj2 = 0;
-    while ((obj2 = dynamic_cast<TObjString*> (iter2->Next()))) {
-      TParameter<Long64_t>* param2 = static_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obj2));
-      TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj2));
-      if (param1) { param1->SetVal(param1->GetVal() + param2->GetVal()); }
-      else {        
-        param1 = dynamic_cast<TParameter<Long64_t>*> (param2->Clone());
-        fTriggerClasses->Add(new TObjString(obj2->String()), param1);
-      }
-    }
-    delete iter2;
     count++;
   }
   fHistList->Merge(&histListCollection);

@@ -94,11 +94,11 @@ protected:
   Bool_t fUsingCustomClasses; // flag that is set if custom trigger classes are defined
   TList fCollTrigClasses;     // trigger class identifying collision candidates
   TList fBGTrigClasses;       // trigger classes identifying background events
-  TList fTriggerAnalysis;     // list of offline trigger objects (several are needed to keep the control histograms separate per trigger class)
+  TList fTriggerAnalysis;     // list of AliTriggerAnalysis objects (several are needed to keep the control histograms separate per trigger class)
 
-  AliOADBPhysicsSelection* fPSOADB;      // Physics selection OADB object
-  AliOADBFillingScheme*    fFillOADB;    // Filling scheme OADB object
-  AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
+  AliOADBPhysicsSelection* fPSOADB;      //! Physics selection OADB object
+  AliOADBFillingScheme*    fFillOADB;    //! Filling scheme OADB object
+  AliOADBTriggerAnalysis*  fTriggerOADB; //! Trigger analysis OADB object
 
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list

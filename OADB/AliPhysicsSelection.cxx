@@ -122,32 +122,23 @@ fTriggerAnalysis(),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
-fRegexp(0),
-fCashedTokens(0)
+fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
+fCashedTokens(new TList())
 {
   // constructor
-  
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
-  
-  fRegexp = new TPRegexp("([[:alpha:]]\\w*)");
-  fCashedTokens = new TList;
   fCashedTokens->SetOwner();
-  
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
 AliPhysicsSelection::~AliPhysicsSelection(){
-  // destructor
-  fCollTrigClasses.Delete();
-  fBGTrigClasses.Delete();
-  fTriggerAnalysis.Delete();
-  if (fPSOADB)       { delete fPSOADB;       fPSOADB = 0;       }
-  if (fFillOADB)     { delete fFillOADB;     fFillOADB = 0;     }
-  if (fTriggerOADB)  { delete fTriggerOADB;  fTriggerOADB = 0;  }
-  if (fRegexp)       { delete fRegexp;       fRegexp = 0;       }
-  if (fCashedTokens) { delete fCashedTokens; fCashedTokens = 0; }
+  if (fPSOADB)       delete fPSOADB;
+  if (fFillOADB)     delete fFillOADB;
+  if (fTriggerOADB)  delete fTriggerOADB;
+  delete fRegexp;
+  delete fCashedTokens;
 }
 
 UInt_t AliPhysicsSelection::CheckTriggerClass(const AliVEvent* event, const char* trigger, Int_t& triggerLogic) const {
@@ -562,7 +553,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list) {
   // Merge a list of AliPhysicsSelection objects.
   // Returns the number of merged objects (including this).
   if (!list) return 0;
-  if (list->IsEmpty()) return 1;
+  if (list->IsEmpty()) return 0;
   
   TIterator* iter = list->MakeIterator();
   TObject* obj;
@@ -572,29 +563,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list) {
   while ((obj = iter->Next())) {
     AliPhysicsSelection* entry = dynamic_cast<AliPhysicsSelection*> (obj);
     if (entry == 0) continue;
-    Int_t currentRun = entry->GetCurrentRun();
-    // Nothing to merge with since run number was not initialized.
-    if (currentRun < 0) continue;
-    if (fCurrentRun < 0) {
-      fCurrentRun = currentRun;
-      fMC = entry->fMC;
-      for (Int_t i=0; i<entry->fCollTrigClasses.GetEntries(); i++)
-        fCollTrigClasses.Add(entry->fCollTrigClasses.At(i)->Clone());
-      for (Int_t i=0; i<entry->fBGTrigClasses.GetEntries(); i++)
-        fBGTrigClasses.Add(entry->fBGTrigClasses.At(i)->Clone());
-    }
-    if (fCurrentRun != currentRun)
-      AliWarning(Form("Current run %d not matching the one to be merged with %d", fCurrentRun, currentRun));
-    
-    // Merge the OADBs: take just the first instance you find
-    if (!fPSOADB && entry->GetOADBPhysicsSelection()) {
-      fPSOADB = (AliOADBPhysicsSelection*) entry->GetOADBPhysicsSelection()->Clone();
-    }
-    if (!fFillOADB && entry->GetOADBFillingScheme()){
-      fFillOADB = (AliOADBFillingScheme*) entry->GetOADBFillingScheme()->Clone();
-    }
-    
-    fTriggerAnalysis.Add(&(entry->fTriggerAnalysis));
+    collection.Add(&(entry->fTriggerAnalysis));
     count++;
   }
   fTriggerAnalysis.Merge(&collection);
