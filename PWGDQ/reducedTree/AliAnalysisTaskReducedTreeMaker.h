@@ -87,10 +87,12 @@ public:
   void SetFillGammaConversions(Bool_t flag=kTRUE) {fFillGammaConversions = flag;}
   void SetFillK0s(Bool_t flag=kTRUE)              {fFillK0s = flag;}
   void SetFillLambda(Bool_t flag=kTRUE)           {fFillLambda = flag;}
-  void SetFillALambda(Bool_t flag=kTRUE)          {fFillALambda = flag;}
-  void SetFillCaloClusterInfo(Bool_t flag=kTRUE)  {fFillCaloClusterInfo = flag;}
-  void SetFillFMDInfo(Bool_t flag=kTRUE)          {fFillFMDInfo = flag;}
+  void SetFillALambda(Bool_t flag=kTRUE)             {fFillALambda = flag;}
+  void SetFillCaloClusterInfo(Bool_t flag=kTRUE)   {fFillCaloClusterInfo = flag;}
+  void SetFillFMDInfo(Bool_t flag=kTRUE)               {fFillFMDInfo = flag;}
   void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
+  void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
+  void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
   
  private:
 
@@ -119,6 +121,8 @@ public:
   Bool_t fFillCaloClusterInfo;       // fill the calorimeter clusters  
   Bool_t fFillFMDInfo;               // fill the FMD info
   Bool_t fFillBayesianPIDInfo;   // fill the bayesian PID information
+  Bool_t fFillEventPlaneInfo;     // Write event plane information
+  Bool_t fFillMCInfo;                  // Write MC truth information
 
   AliAnalysisCuts *fEventFilter;     // event filter
   AliAnalysisCuts *fTrackFilter;     // filter for the hadrons to be correlated with the dielectrons
@@ -140,8 +144,8 @@ public:
   Double_t fLambdaMassRange[2];      // mass range for allowed Lambda pairs
   Double_t fGammaMassRange[2];       // mass range for allowed Gamma conversion pairs
 
-  TString fActiveBranches;
-  TString fInactiveBranches;
+  TString fActiveBranches;                   // list of active output tree branches 
+  TString fInactiveBranches;                // list of inactive output tree branches
 
   AliFlowTrackCuts* fAliFlowTrackCuts;
   AliFlowBayesianPID* fBayesianResponse;

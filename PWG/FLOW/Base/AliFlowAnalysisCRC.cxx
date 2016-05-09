@@ -18225,11 +18225,12 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhZNvsMul[0]->Fill(VZM,ZCM);
     fhZNvsMul[1]->Fill(VZM,ZAM);
       // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
-      Double_t ZAmax = 44.5, ZAcen = 36.4; // at cen 40
-      Double_t ZCmax = 49.0, ZCcen = 40.1; // at cen 40
-      Double_t VZmin = 1856; // at cen 40
-      Double_t cZC = ZCmax/1.E4;
-      Double_t cZA = ZAmax/1.E4;
+      Double_t ZCmax = 52.7;
+      Double_t ZAmax = 47.4;
+      Double_t VZCmin = 10577;
+      Double_t VZAmin = 10510;
+      Double_t cZC = ZCmax/VZCmin;
+      Double_t cZA = ZAmax/VZAmin;
       fhCenvsDif[0]->Fill(cZC*VZM,ZCM);
       fhCenvsDif[1]->Fill(cZA*VZM,ZAM);
     
@@ -19349,10 +19350,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
   }
   
   // Set ZDC weights
-  Double_t NZC = (fCorrWeightZDC==kMultiplicity? ZCM : 1.);
-  Double_t NZA = (fCorrWeightZDC==kMultiplicity? ZAM : 1.);
-  Double_t WZC = (fCorrWeightZDC==kMultiplicity? ZCM : ZCM);
-  Double_t WZA = (fCorrWeightZDC==kMultiplicity? ZAM : ZAM);
+  Double_t NZC = (fCorrWeightZDC==kMultiplicity? ZCM : fZDCFlowVect[0].Mod());
+  Double_t NZA = (fCorrWeightZDC==kMultiplicity? ZAM : fZDCFlowVect[1].Mod());
+  Double_t WZC = (fCorrWeightZDC==kMultiplicity? ZCM : 1.);
+  Double_t WZA = (fCorrWeightZDC==kMultiplicity? ZAM : 1.);
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     
@@ -25926,7 +25927,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   }
   for(Int_t k=0; k<4; k++) {
     fZDCFitSec[k] = new TF1(Form("fZDCFitSec[%d]",k),"pol3",0.,100.);
-    fTempList->Add(fZDCFitSec[k]);
+    fVariousList->Add(fZDCFitSec[k]);
   }
   if(fZDCESEList) {
     fZDCESEMinHist[0] = (TH1D*)(fZDCESEList->FindObject("MinMulHis[0]"));

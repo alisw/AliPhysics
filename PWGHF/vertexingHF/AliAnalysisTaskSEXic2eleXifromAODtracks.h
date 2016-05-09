@@ -342,6 +342,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Lambda pT <- True ept
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+  TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
 
   TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
@@ -396,7 +397,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,25); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,26); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

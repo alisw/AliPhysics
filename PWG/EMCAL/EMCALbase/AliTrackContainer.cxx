@@ -25,7 +25,7 @@
 #include "AliTrackContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliTrackContainer)
+ClassImp(AliTrackContainer);
 /// \endcond
 
 TString AliTrackContainer::fgDefTrackCutsPeriod = "";
@@ -548,6 +548,24 @@ AliVCuts* AliTrackContainer::GetTrackCuts(Int_t icut)
     return static_cast<AliVCuts *>(fListOfCuts->At(icut));
   }
   return NULL;
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliTrackIterableContainer AliTrackContainer::all() const {
+  return AliTrackIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliTrackIterableContainer AliTrackContainer::accepted() const {
+  return AliTrackIterableContainer(this, true);
 }
 
 /**

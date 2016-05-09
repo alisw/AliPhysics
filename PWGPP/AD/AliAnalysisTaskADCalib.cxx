@@ -150,8 +150,8 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
   fList->SetOwner(kTRUE);
 
   // (2) populate the list with histograms
-  Double_t tMin[2] = { 175.0, 180.0 };
-  Double_t tMax[2] = { 205.0, 210.0 };
+  Double_t tMin[2] = { 180.0, 170.0 };
+  Double_t tMax[2] = { 210.0, 200.0 };
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
     const Int_t    side = ch/8;
     const Double_t dt   = fTimeResolution[side];

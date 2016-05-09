@@ -173,8 +173,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fh1MCTrackN(0)
   ,fh1AODfile(0)
   ,fh2AODevent(0)       
-  ,fh2EP2(0)
-  ,fh2EP3(0)
+  ,fh1EP2(0)
+  ,fh1EP3(0)
 
 {
   // default constructor
@@ -293,8 +293,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fh1MCTrackN(0)
 ,fh1AODfile(0)
 ,fh2AODevent(0)         
-,fh2EP2(0)
-,fh2EP3(0)
+,fh1EP2(0)
+,fh1EP3(0)
 
 {
    // constructor
@@ -414,8 +414,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fh1MCTrackN(copy.fh1MCTrackN)
 ,fh1AODfile(copy.fh1AODfile)
 ,fh2AODevent(copy.fh2AODevent)
-,fh2EP2(copy.fh2EP2)
-,fh2EP3(copy.fh2EP3)
+,fh1EP2(copy.fh1EP2)
+,fh1EP3(copy.fh1EP3)
 
 
 {
@@ -539,8 +539,8 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fh1MCTrackN        = o.fh1MCTrackN;
       fh1AODfile         = o.fh1AODfile;
       fh2AODevent        = o.fh2AODevent;
-      fh2EP2             = o.fh2EP2;
-      fh2EP3             = o.fh2EP3;
+      fh1EP2             = o.fh1EP2;
+      fh1EP3             = o.fh1EP3;
    }
 
    return *this;
@@ -724,8 +724,8 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fh1ALaPt        =  new TH1F("fh1ALaPt","pT of extra associated #bar{#Lamdba};p_{T};entries", 120, 0., 12.);
    fh2ALaEtaPhi    =  new TH2F("fh2ALaEtaPhi","eta-phi distribution of extra associated #bar{#Lamdba};#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
    //fh2ALaPtJetPtCone  =  new TH2F("fh2ALaPtJetPtCone","v0-pt jet pt distribution of extra associated #bar{#Lamdba};#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
-   fh2EP2          = new TH2F("fh2EP2","2nd order harmonic event plane distribution ESD events",200,-2.,2.,200,-2.,2.);
-   fh2EP3          = new TH2F("fh2EP3","3rd order harmonic event plane distribution ESD events",200,-2.,2.,200,-2.,2.);
+   fh1EP2          = new TH1F("fh1EP2","2nd order harmonic event plane distribution ESD events",200,-2.,2.);
+   fh1EP3          = new TH1F("fh1EP3","3rd order harmonic event plane distribution ESD events",200,-2.,2.);
   
    fHistList->Add(fh1TrackPt);
    fHistList->Add(fh2TrackEtaPhi);
@@ -742,8 +742,8 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fHistList->Add(fh2ALaEtaPhi);
    //fHistList->Add(fh2ALaPtJetPtCone);
    if(fEPMode != 0){
-   fHistList->Add(fh2EP2);
-   fHistList->Add(fh2EP3);}
+   fHistList->Add(fh1EP2);
+   fHistList->Add(fh1EP3);}
   
    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
       
@@ -1136,8 +1136,8 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
  
    //std::cout<<"PbPb vertex z coordinate: "<<primVertex->GetZ()<<std::endl;
 
-   fh2EP2->Fill(qx2,qy2);
-   fh2EP3->Fill(qx3,qy3);
+   fh1EP2->Fill(event_plane_2);
+   fh1EP3->Fill(event_plane_3);
 
    // connect aod out
    TClonesArray *tracks = (TClonesArray*)(fAODout->FindListObject(fTrackBranch.Data()));
@@ -1475,7 +1475,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		  
 		  if(fEPMode == 2){//rotate jet axis out-of-plane
 		    //new (out-of-plane-rotated) jet phi fulfills the following condition
-		    jetPhiDelta = jetPhi-(event_plane_2+(TMath::Pi()*0.5));
+		    jetPhiDelta = (jetPhi-(event_plane_2))+(TMath::Pi()*0.5);
 		    
 		    if(fDebug>3)std::cout<<"Out-of-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
 		    
@@ -1492,7 +1492,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		    
 		    if(fDebug>3)std::cout<<"jet track phi before rotation: "<<trackphi<<std::endl;
 		    
-		    trackphi=trackphi+jetPhiDelta;//rotate jet constituent in-/out-of-plane
+		    trackphi=trackphi-jetPhiDelta;//rotate jet constituent in-/out-of-plane
 		    tmpTr->SetPhi(trackphi);//save new phi angle of jet track
 		    
 		    if(fDebug>3)std::cout<<"jet track phi after rotation: "<<trackphi<<std::endl;
