@@ -3,6 +3,7 @@
 #include "TString.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TFile.h"
 
 #include "AliOADBContainer.h"
 #include "AliOADBMuonTrackCutsParam.h"
@@ -44,6 +45,12 @@ void AddParams ( AliOADBContainer* container, AliOADBMuonTrackCutsParam* oadbObj
   defaultContainer->AppendObject ( oadbObj->Clone(), firstRun, lastRun );
 }
 
+//________________________________________________________
+AliOADBMuonTrackCutsParam* CloneOADBobject ( TString objName, const AliOADBMuonTrackCutsParam* inputOADBobj )
+{
+  return static_cast<AliOADBMuonTrackCutsParam*>(inputOADBobj->Clone(objName.Data()));
+}
+
 enum {kData, kDataDef, kMC, kMCDef, kNcontainers};
 AliOADBContainer* containers[kNcontainers] = {0x0};
 
@@ -63,9 +70,6 @@ void buildMuonTrackCutsOADB ( )
 {
   Double_t defMeanPCorr23 = 2.*1.5;
   Double_t defMeanPCorr310 = 2.*1.2;
-  Double_t defSigmaPdca23 = 99.;
-  Double_t defSigmaPdca310 = 54.;
-  Double_t defNSigmaPdca = 6.;
   Double_t defChi2NormCut = 1.e6;
   Double_t lut4 = 4.2;
   Double_t lut2 = 1.7;
@@ -73,6 +77,7 @@ void buildMuonTrackCutsOADB ( )
   Double_t lut05 = 0.5;
 
   AliOADBMuonTrackCutsParam* oadbObj = 0x0;
+  AliOADBMuonTrackCutsParam* cloneOadbObj = 0x0;
 
   TString baseContName = "MuonTrackCutsParam";
   TString contNameSuffix[kNcontainers] = {"data","data_def","MC","MC_def"};
@@ -83,136 +88,156 @@ void buildMuonTrackCutsOADB ( )
     oadbObj = CreateOADBObject ( "default",
                                 0., 0., 0.,
                                 defMeanPCorr23, defMeanPCorr310,
-                                defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                                80., 54., 6.,
                                 defChi2NormCut,
-                                5.e-4, 6.e-4,
+                                4.e-4, 5.e-4,
                                 0., lut1, lut4 );
     containers[icont]->AddDefaultObject(oadbObj);
   }
 
 
+  // PbPb 5 TeV 2015
+  oadbObj = CreateOADBObject ( "LHC15o",
+                              0., 0., 0.,
+                              defMeanPCorr23, defMeanPCorr310,
+                              80., 54., 6.,
+                              defChi2NormCut,
+                              4.e-4, 5.e-4,
+                              0., lut1, lut4 );
+  FillDataAndMC ( oadbObj, 244918, 246994, "muon_calo_pass1", kTRUE );
 
+
+  // pp 5 TeV 2015
+  oadbObj = CreateOADBObject ( "LHC15n",
+                              0., 0., 0.,
+                              defMeanPCorr23, defMeanPCorr310,
+                              80., 54., 6.,
+                              defChi2NormCut,
+                              4.e-4, 5.e-4,
+                              0., lut05, lut4 );
+  FillDataAndMC ( oadbObj, 244340, 244628, "muon_calo_pass2", kTRUE );
+
+
+  // pp 13 TeV 2015
+  oadbObj = CreateOADBObject ( "LHC15l",
+                              0., 0., 0.,
+                              defMeanPCorr23, defMeanPCorr310,
+                              80., 54., 6.,
+                              defChi2NormCut,
+                              4.e-4, 5.e-4,
+                              0., lut1, lut4 );
+  FillDataAndMC ( oadbObj, 239319, 241544, "muon_calo_pass2", kTRUE );
+
+  cloneOadbObj = CloneOADBobject("LHC15ghij",oadbObj);
+  FillDataAndMC ( cloneOadbObj, 228936, 238621, "muon_calo_pass2", kTRUE );
+
+
+  // pPb 5.02 TeV 2013
+  oadbObj = CreateOADBObject ( "LHC13def",
+                              0.18943, -0.250591, 0.,
+                              defMeanPCorr23, defMeanPCorr310,
+                              80., 54., 6.,
+                              defChi2NormCut,
+                              4.e-4, 5.e-4,
+                              0., lut05, lut4 );
+  FillDataAndMC ( oadbObj, 195682, 197388, "muon_pass2", kTRUE );
+
+  cloneOadbObj = CloneOADBobject("LHC13f",oadbObj);
+  FillDataAndMC ( cloneOadbObj, 196433, 197388, "muon_calo", kFALSE );
+
+
+  // pp 8 TeV 2012
   oadbObj = CreateOADBObject ( "LHC12hi",
                               0.18943, -0.250591, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              80., defSigmaPdca310, defNSigmaPdca,
+                              80., 54., 6.,
                               defChi2NormCut,
                               4.e-4, 5.e-4,
                               0., lut1, lut4 );
   FillDataAndMC ( oadbObj, 189576, 193341, "muon_calo_pass2", kTRUE );
 
 
-  oadbObj = CreateOADBObject ( "LHC13def",
-                              0.18943, -0.250591, 0.,
-                              defMeanPCorr23, defMeanPCorr310,
-                              80., defSigmaPdca310, defNSigmaPdca,
-                              defChi2NormCut,
-                              4.e-4, 5.e-4,
-                              0., lut05, lut4 );
-  FillDataAndMC ( oadbObj, 195682, 197388, "muon_pass2", kTRUE );
-
-
-  oadbObj = CreateOADBObject ( "LHC13f",
-                              0.18943, -0.250591, 0.,
-                              defMeanPCorr23, defMeanPCorr310,
-                              80., defSigmaPdca310, defNSigmaPdca,
-                              defChi2NormCut,
-                              4.e-4, 5.e-4,
-                              0., lut05, lut4 );
-  FillDataAndMC ( oadbObj, 196433, 197388, "muon_calo", kFALSE );
-
-
+  // PbPb 2.76 TeV 2011 + pp 7 TeV 2011
   oadbObj = CreateOADBObject ( "LHC11h_2",
                               -1.118002, -1.175119, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               5.e-4, 6.e-4,
                               0., lut1, lut4 );
   FillDataAndMC ( oadbObj, 167706, 170593, "pass2", kFALSE );
 
-
   oadbObj = CreateOADBObject ( "LHC11c3defgh",
                               0.296514, -0.229262, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               4.e-4, 5.e-4,
                               0., lut1, lut4 );
   FillDataAndMC ( oadbObj, 154726, 170593, "pass2_muon", kTRUE );
 
+  cloneOadbObj = CloneOADBobject ("LHC11c2",oadbObj);
+  cloneOadbObj->SetSharpPtCut(0., lut1, lut2);
+  FillDataAndMC ( cloneOadbObj, 153059, 154495, "pass2_muon", kTRUE );
 
-  oadbObj = CreateOADBObject ( "LHC11c2",
-                              0.296514, -0.229262, 0.,
-                              defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
-                              defChi2NormCut,
-                              4.e-4, 5.e-4,
-                              0., lut1, lut2 );
-  FillDataAndMC ( oadbObj, 153059, 154495, "pass2_muon", kTRUE );
-
-
-  oadbObj = CreateOADBObject ( "LHC11c1",
-                               0.296514, -0.229262, 0.,
-                               defMeanPCorr23, defMeanPCorr310,
-                               defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
-                               defChi2NormCut,
-                               4.e-4, 5.e-4,
-                               0., lut05, lut1 );
-  FillDataAndMC ( oadbObj, 151661, 152935, "pass2_muon", kTRUE );
-
+  cloneOadbObj = CloneOADBobject ("LHC11c1",oadbObj);
+  cloneOadbObj->SetSharpPtCut(0., lut05, lut1);
+  FillDataAndMC ( cloneOadbObj, 151661, 152935, "pass2_muon", kTRUE );
 
   oadbObj = CreateOADBObject ( "LHC11h",
                               -1.118002, -1.175119, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               5.e-4, 6.e-4,
                               0., lut1, lut4 );
   FillDataAndMC ( oadbObj, 167706, 170593, "pass1_muon", kFALSE );
 
-
   oadbObj = CreateOADBObject ( "LHC11def",
                               -1.146336, -1.130535, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               5.e-4, 6.e-4,
                               0., lut1, lut4 );
   FillDataAndMC ( oadbObj, 156620, 162717, "pass1", kFALSE );
 
 
+  // pp 2.76 TeV 2011
   oadbObj = CreateOADBObject ( "LHC11a",
                               -1.146336, -1.130535, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               5.e-4, 6.e-4,
                               0., lut05, lut1 );
   FillDataAndMC ( oadbObj, 146688, 146860, "pass1", kTRUE );
 
 
+  // PbPb 2.76 TeV 2010
   oadbObj = CreateOADBObject ( "LHC10h",
                               -0.4599, -0.9172, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               3.5,
                               5.e-4, 6.e-4,
                               0., lut05, lut1 );
   FillDataAndMC ( oadbObj, 137135, 139513, "pass1", kTRUE );
 
 
+  // pp 7 TeV 2010
   oadbObj = CreateOADBObject ( "LHC10pp",
                               -0.4599, -0.9172, 0.,
                               defMeanPCorr23, defMeanPCorr310,
-                              defSigmaPdca23, defSigmaPdca310, defNSigmaPdca,
+                              99., 54., 6.,
                               defChi2NormCut,
                               5.e-4, 6.e-4,
                               0., lut05, lut1 );
   FillDataAndMC ( oadbObj, 114783, 136376, "pass1", kTRUE );
 
 
-  TString oadbFilename = "$ALICE_ROOT/OADB/PWG/MUON/MuonTrackCuts.root";
+
+  TString oadbFilename = "$ALICE_PHYSICS/OADB/PWG/MUON/MuonTrackCuts.root";
   if ( ! gSystem->AccessPathName(gSystem->ExpandPathName(oadbFilename.Data())) ) {
     gSystem->Exec(Form("rm %s", oadbFilename.Data()));
   }
@@ -220,5 +245,29 @@ void buildMuonTrackCutsOADB ( )
   for ( Int_t icont=0; icont<kNcontainers; icont++ ) {
     containers[icont]
     ->WriteToFile ( oadbFilename.Data() );
+  }
+}
+
+//_____________________________________________
+void PrintOADB ( TString oadbFilename = "$ALICE_PHYSICS/OADB/PWG/MUON/MuonTrackCuts.root" )
+{
+  gSystem->ExpandPathName(oadbFilename);
+  if ( gSystem->AccessPathName(oadbFilename.Data()) ) {
+    printf("Error: cannot open %s\n",oadbFilename.Data());
+    return;
+  }
+  TFile* file = TFile::Open(oadbFilename.Data());
+  for ( Int_t icont=0; icont<file->GetListOfKeys()->GetEntries(); icont++ ) {
+    TString currKey = file->GetListOfKeys()->At(icont)->GetName();
+    AliOADBContainer* container = dynamic_cast<AliOADBContainer*>(file->Get(currKey.Data()));
+    if ( ! container ) continue;
+    printf("\n\nContainer: %s\n",currKey.Data());
+    for ( Int_t idx=0; idx<container->GetNumberOfEntries(); idx++ ) {
+      TObject* obj = container->GetObjectByIndex(idx);
+      printf("\n%s  (%i - %i)\n",obj->GetName(),container->LowerLimit(idx),container->UpperLimit(idx));
+      obj->Print();
+    }
+    printf("\nDefault:\n");
+    container->GetDefaultList()->Print();
   }
 }
