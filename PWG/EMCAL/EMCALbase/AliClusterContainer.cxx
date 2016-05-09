@@ -24,7 +24,7 @@
 #include "AliClusterContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliClusterContainer)
+ClassImp(AliClusterContainer);
 /// \endcond
 
 /**
@@ -381,6 +381,11 @@ Int_t AliClusterContainer::GetNAcceptedClusters() const
   return nClus;
 }
 
+/**
+ * Get the energy cut of the applied on cluster energy of type t
+ * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
+ * @return Cluster energy cut
+ */
 Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -391,6 +396,11 @@ Double_t AliClusterContainer::GetClusUserDefEnergyCut(Int_t t) const
   }
 }
 
+/**
+ * Set the energy cut of the applied on cluster energy of type t
+ * @param t Cluster energy type (base energy, non-linearity corrected energy, hadronically corrected energy)
+ * @param cut Cluster energy cut
+ */
 void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
 {
   if (t >= 0 && t <= AliVCluster::kLastUserDefEnergy){
@@ -399,6 +409,24 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
   else {
     fMinE = cut;
   }
+}
+
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliClusterIterableContainer AliClusterContainer::all() const {
+  return AliClusterIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliClusterIterableContainer AliClusterContainer::accepted() const {
+  return AliClusterIterableContainer(this, true);
 }
 
 const char* AliClusterContainer::GetTitle() const
