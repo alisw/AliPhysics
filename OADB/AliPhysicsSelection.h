@@ -102,7 +102,7 @@ protected:
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 17)
+  ClassDef(AliPhysicsSelection, 18)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);
