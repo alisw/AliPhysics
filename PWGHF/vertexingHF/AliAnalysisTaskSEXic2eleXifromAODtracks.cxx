@@ -261,6 +261,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoXicMCS(0),
 	fHistoXicMCS1(0),
 	fHistoXicMCS2(0),
+	fHistoXibMCGen(0),
+	fHistoXibMCGenWithXic(0),
+	fHistoXibMCS(0),
 	fHistoXicElectronMCGen(0),
 	fHistoXicElectronMCGen1(0),
 	fHistoXicElectronMCGen2(0),
@@ -284,6 +287,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
 	fHistoResponseXiPtvsEleXiPt(0),
+	fHistoResponseXiPtXib(0),
+	fHistoResponseEleXiPtXib(0),
+	fHistoResponseMcGenXibPtvsXicPt(0),
   fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
@@ -518,6 +524,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoXicMCS(0),
 	fHistoXicMCS1(0),
 	fHistoXicMCS2(0),
+	fHistoXibMCGen(0),
+	fHistoXibMCGenWithXic(0),
+	fHistoXibMCS(0),
 	fHistoXicElectronMCGen(0),
 	fHistoXicElectronMCGen1(0),
 	fHistoXicElectronMCGen2(0),
@@ -541,6 +550,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoResponseXiPt(0),
 	fHistoResponseEleXiPt(0),
 	fHistoResponseXiPtvsEleXiPt(0),
+	fHistoResponseXiPtXib(0),
+	fHistoResponseEleXiPtXib(0),
+	fHistoResponseMcGenXibPtvsXicPt(0),
   fHistoPi0MCGen(0),
   fHistoElectronPi0Total(0),
   fHistoElectronPi0Tag(0),
@@ -1883,25 +1895,42 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
       if(fUseMCInfo){
 				if(mcxic){
 					Int_t pdgcode = mcxic->GetPdgCode();
+					Double_t cont_xib[3];
+					cont_xib[0] = mcxic->Pt();
+					cont_xib[1] = mcxic->Y();
+					cont_xib[2] = fCentrality;
+
 					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5132){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
+						fHistoXibMCS->Fill(cont_xib);
+						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
           }
 					if(abs(pdgcode)==5132 && abs(mcpdgele_array[1])==5132 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5132){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
+						fHistoXibMCS->Fill(cont_xib);
+						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4132 && abs(mcpdgcasc_array[2])==5232){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
+						fHistoXibMCS->Fill(cont_xib);
+						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
           }
 					if(abs(pdgcode)==5232 && abs(mcpdgele_array[1])==5232 && abs(mcpdgcasc_array[1])==4232 && abs(mcpdgcasc_array[2])==5232){
 						fHistoEleXiMassXibMCS->Fill(cont);
 						if(trk->Charge()>0) fHistoEleXiMassXibMCS1->Fill(cont);
 						else  fHistoEleXiMassXibMCS2->Fill(cont);
+						fHistoXibMCS->Fill(cont_xib);
+						fHistoResponseXiPtXib->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
+						fHistoResponseEleXiPtXib->Fill(mcxic->Pt(),exobj->Pt());
           }
         }
       }
@@ -2777,6 +2806,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 				fHistoElePtvsXiPtvsXicPtMCGen->Fill(cont_eleptvsxiptvsxicpt);
 			}
 		}
+	}else if(decaytype==10){
+		fHistoXibMCGen->Fill(contmc);
 	}
 
 	if(fWriteMCVariableTree)
@@ -3309,6 +3340,20 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fHistoXicMCS2 = new THnSparseF("fHistoXicMCS2","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
   fOutputAll->Add(fHistoXicMCS2);
 
+  Int_t bins_xibmcgen[3]=	{100 ,20	,10};
+  Double_t xmin_xibmcgen[3]={0.,-1.0	,0.0};
+  Double_t xmax_xibmcgen[3]={50.,1.0	,100};
+  fHistoXibMCGen = new THnSparseF("fHistoXibMCGen","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
+  fOutputAll->Add(fHistoXibMCGen);
+  fHistoXibMCS = new THnSparseF("fHistoXibMCS","",3,bins_xibmcgen,xmin_xibmcgen,xmax_xibmcgen);
+  fOutputAll->Add(fHistoXibMCS);
+
+  Int_t bins_xibmcgen_withxic[3]=	{50 ,100	,100};
+  Double_t xmin_xibmcgen_withxic[3]={0.,-5.,-5.};
+  Double_t xmax_xibmcgen_withxic[3]={50.,5.,5.};
+  fHistoXibMCGenWithXic = new THnSparseF("fHistoXibMCGenWithXic","",3,bins_xibmcgen_withxic,xmin_xibmcgen_withxic,xmax_xibmcgen_withxic);
+  fOutputAll->Add(fHistoXibMCGenWithXic);
+
   Int_t bins_elemcgen[3]=	{100 ,20	,10};
   Double_t xmin_elemcgen[3]={0.,-1.0	,0.0};
   Double_t xmax_elemcgen[3]={10.,1.0	,100};
@@ -3365,6 +3410,12 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseEleXiPt);
   fHistoResponseXiPtvsEleXiPt = new TH2D("fHistoResponseXiPtvsEleXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseXiPtvsEleXiPt);
+  fHistoResponseXiPtXib = new TH2D("fHistoResponseXiPtXib","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseXiPtXib);
+  fHistoResponseEleXiPtXib = new TH2D("fHistoResponseEleXiPtXib","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleXiPtXib);
+  fHistoResponseMcGenXibPtvsXicPt = new TH2D("fHistoResponseMcGenXibPtvsXicPt","",100,0.,50.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseMcGenXibPtvsXicPt);
 
 
   fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",20000,-0.5,19999.5);
@@ -4405,6 +4456,56 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			if(!e_flag&&!xi_flag)
 				fHistoMCXic0Decays->Fill(4);
 
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
+		}
+		if(TMath::Abs(mcpart->GetPdgCode())==5132 || TMath::Abs(mcpart->GetPdgCode())==5232){
+			Bool_t e_flag = kFALSE;
+			Bool_t xic_flag = kFALSE;
+			AliAODMCParticle *mcepart = 0;
+			AliAODMCParticle *mcxicpart = 0;
+			AliAODMCParticle *mccascpart = 0;
+			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			{
+				if(idau<0) break;
+				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+				if(!mcdau) continue;
+				if(TMath::Abs(mcdau->GetPdgCode())==11){
+					e_flag = kTRUE;
+					mcepart = mcdau;
+				}
+				if(TMath::Abs(mcdau->GetPdgCode())==4132 || TMath::Abs(mcdau->GetPdgCode())==4232 ){
+					xic_flag = kTRUE;
+					mcxicpart = mcdau;
+				}
+			}
+
+			Bool_t xi_flag = kFALSE;
+      if(e_flag && xic_flag){
+        for(Int_t idau=mcxicpart->GetFirstDaughter();idau<mcxicpart->GetLastDaughter()+1;idau++)
+        {
+          if(idau<0) break;
+          AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+          if(!mcdau) continue;
+          if(TMath::Abs(mcdau->GetPdgCode())==3312){
+            xi_flag = kTRUE;
+            mccascpart = mcdau;
+          }
+        }
+      }
+
+			if(xic_flag){
+				Double_t contmc_withxic[3];
+				contmc_withxic[0] = mcpart->Pt();
+				contmc_withxic[1] = mcpart->Y();
+				contmc_withxic[2] = mcxicpart->Y();
+				if(fabs(mcxicpart->Y())<1.){
+					fHistoResponseMcGenXibPtvsXicPt->Fill(mcpart->Pt(),mcxicpart->Pt());
+				}
+				fHistoXibMCGenWithXic->Fill(contmc_withxic);
+			}
+
+			Int_t decaytype = -9999;
+			if(e_flag && xic_flag && xi_flag) decaytype = 10;
 			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
 		}
 		if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
