@@ -154,7 +154,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetFilterMaskALa(UInt_t i) {fFilterMaskALa = i;}
 
   virtual void SetSelectArmenteros(Bool_t b) {IsArmenterosSelected = b;}
-  virtual void SetUseNJEvents()        { fUseNJEvents = kFALSE;}
+  virtual void SetUseNJEvents(Bool_t b)        { fUseNJEvents = b;}
   virtual void UseExtraTracks()        { fUseExtraTracks =  1;}
   virtual void UseExtraonlyTracks()    { fUseExtraTracks = -1;}
   virtual void SetUseExtraJetPt(Bool_t ut) { fUseExtraJetPt = ut;}
