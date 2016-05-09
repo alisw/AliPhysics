@@ -63,7 +63,7 @@ public:
     kSecondaryMask    = AliAODTracklet::kSecondary,
     kSecondaryVeto    = 0x0,
     kGeneratedMask    = AliAODTracklet::kGenerated,
-    kGeneratedVeto    = 0x0
+    kGeneratedVeto    = AliAODTracklet::kNeutral
   };
     
   /** Type of containers */

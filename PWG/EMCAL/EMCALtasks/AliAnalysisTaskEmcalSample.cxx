@@ -1,242 +1,396 @@
-// $Id$
-//
-// Emcal sample analysis task.
-//
-// Author: S.Aiola, M. Verweij
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <TList.h>
-#include <TLorentzVector.h>
 
-#include "AliVCluster.h"
-#include "AliAODCaloCluster.h"
-#include "AliESDCaloCluster.h"
-#include "AliVTrack.h"
-#include "AliLog.h"
+#include <AliVCluster.h>
+#include <AliVParticle.h>
+#include <AliLog.h>
+
+#include "AliTLorentzVector.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
-#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskEmcalSample.h"
 
-ClassImp(AliAnalysisTaskEmcalSample)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalSample);
+/// \endcond
 
-//________________________________________________________________________
-AliAnalysisTaskEmcalSample::AliAnalysisTaskEmcalSample() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskEmcalSample", kTRUE),
-  fHistTracksPt(0),
-  fHistClustersPt(0),
-  fHistPtDEtaDPhiTrackClus(0),
-  fHistPtDEtaDPhiClusTrack(0),
-  fTracksCont(0),
-  fCaloClustersCont(0)
+/**
+ * Default constructor. Needed by ROOT I/O
+ */
+AliAnalysisTaskEmcalSample::AliAnalysisTaskEmcalSample() :
+  AliAnalysisTaskEmcal(),
+  fHistManager()
 {
-  // Default constructor.
-
-  fHistTracksPt       = new TH1*[fNcentBins];
-  fHistClustersPt     = new TH1*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fHistTracksPt[i] = 0;
-    fHistClustersPt[i] = 0;
-  }
-
-  SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
-AliAnalysisTaskEmcalSample::AliAnalysisTaskEmcalSample(const char *name) : 
+/**
+ * Standard constructor. Should be used by the user.
+ *
+ * @param[in] name Name of the task
+ */
+AliAnalysisTaskEmcalSample::AliAnalysisTaskEmcalSample(const char *name) :
   AliAnalysisTaskEmcal(name, kTRUE),
-  fHistTracksPt(0),
-  fHistClustersPt(0),
-  fHistPtDEtaDPhiTrackClus(0),
-  fHistPtDEtaDPhiClusTrack(0),
-  fTracksCont(0),
-  fCaloClustersCont(0)
+  fHistManager(name)
 {
-  // Standard constructor.
-
-  fHistTracksPt       = new TH1*[fNcentBins];
-  fHistClustersPt     = new TH1*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fHistTracksPt[i] = 0;
-    fHistClustersPt[i] = 0;
-  }
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliAnalysisTaskEmcalSample::~AliAnalysisTaskEmcalSample()
 {
-  // Destructor.
 }
 
-//________________________________________________________________________
+/**
+ * Performing run-independent initialization.
+ * Here the histograms should be instantiated.
+ */
 void AliAnalysisTaskEmcalSample::UserCreateOutputObjects()
 {
-  // Create user output.
-
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  fTracksCont       = GetParticleContainer(0);
-  fCaloClustersCont = GetClusterContainer(0);
-  fTracksCont->SetClassName("AliVTrack");
-  fCaloClustersCont->SetClassName("AliVCluster");
+  AllocateClusterHistograms();
+  AllocateTrackHistograms();
+  AllocateCellHistograms();
 
-  TString histname;
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    if (fParticleCollArray.GetEntriesFast()>0) {
-      histname = "fHistTracksPt_";
-      histname += i;
-      fHistTracksPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-      fHistTracksPt[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
-      fHistTracksPt[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistTracksPt[i]);
-    }
-
-    if (fClusterCollArray.GetEntriesFast()>0) {
-      histname = "fHistClustersPt_";
-      histname += i;
-      fHistClustersPt[i] = new TH1F(histname.Data(), histname.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2);
-      fHistClustersPt[i]->GetXaxis()->SetTitle("p_{T,clus} (GeV/c)");
-      fHistClustersPt[i]->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistClustersPt[i]);
-    }
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
   }
-
-  histname = "fHistPtDEtaDPhiTrackClus";
-  fHistPtDEtaDPhiTrackClus = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{track};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
-  fOutput->Add(fHistPtDEtaDPhiTrackClus);
-
-  histname = "fHistPtDEtaDPhiClusTrack";
-  fHistPtDEtaDPhiClusTrack = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{clus};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
-  fOutput->Add(fHistPtDEtaDPhiClusTrack);
-
+  
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
-//________________________________________________________________________
+/*
+ * This function allocates the histograms for basic EMCal cluster QA.
+ * A set of histograms (energy, eta, phi, number of cluster) is allocated
+ * per each cluster container and per each centrality bin.
+ */
+void AliAnalysisTaskEmcalSample::AllocateClusterHistograms()
+{
+  TString histname;
+  TString histtitle;
+  TString groupname;
+  AliClusterContainer* clusCont = 0;
+  TIter next(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
+    groupname = clusCont->GetName();
+    fHistManager.CreateHistoGroup(groupname);
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{exotic} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{non-lin.corr.} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{had.corr.} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{custer};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{custer};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      histname = TString::Format("%s/histNClusters_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;number of clusters;events", histname.Data());
+      if (fForceBeamType != kpp) {
+        fHistManager.CreateTH1(histname, histtitle, 500, 0, 3000);
+      }
+      else {
+        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+      }
+    }
+  }
+}
+
+/*
+ * This function allocates the histograms for basic EMCal QA.
+ * One 2D histogram with the cell energy spectra and the number of cells
+ * per event is allocated per each centrality bin.
+ */
+void AliAnalysisTaskEmcalSample::AllocateCellHistograms()
+{
+  TString histname;
+  TString histtitle;
+  TString groupname(fCaloCellsName);
+
+  fHistManager.CreateHistoGroup(groupname);
+  for (Int_t cent = 0; cent < fNcentBins; cent++) {
+    histname = TString::Format("%s/histCellEnergyvsAbsId_%d", groupname.Data(), cent);
+    histtitle = TString::Format("%s;cell abs. ID;#it{E}_{cell} (GeV);counts", histname.Data());
+    fHistManager.CreateTH2(histname, histtitle, 20000, 0, 20000, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+    histname = TString::Format("%s/histNCells_%d", groupname.Data(), cent);
+    histtitle = TString::Format("%s;number of cells;events", histname.Data());
+    if (fForceBeamType != kpp) {
+      fHistManager.CreateTH1(histname, histtitle, 500, 0, 6000);
+    }
+    else {
+      fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+    }
+  }
+}
+
+/*
+ * This function allocates the histograms for basic tracking QA.
+ * A set of histograms (pT, eta, phi, difference between kinematic properties
+ * at the vertex and at the EMCal surface, number of tracks) is allocated
+ * per each particle container and per each centrality bin.
+ */
+void AliAnalysisTaskEmcalSample::AllocateTrackHistograms()
+{
+  TString histname;
+  TString histtitle;
+  TString groupname;
+  AliParticleContainer* partCont = 0;
+  TIter next(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+    groupname = partCont->GetName();
+    fHistManager.CreateHistoGroup(groupname);
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
+      histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#phi}_{track};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, TMath::TwoPi());
+
+      histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{#eta}_{track};counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
+
+      if (TClass(partCont->GetClassName()).InheritsFrom("AliVTrack")) {
+        histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#eta}_{track}^{vertex} - #it{#eta}_{track}^{EMCal};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 50, -0.5, 0.5);
+
+        histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{#phi}_{track}^{vertex} - #it{#phi}_{track}^{EMCal};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, 200, -2, 2);
+
+        histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,track}^{vertex} (GeV/#it{c});#it{p}_{T,track}^{vertex} - #it{p}_{T,track}^{EMCal} (GeV/#it{c});counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, -fMaxBinPt/2, fMaxBinPt/2);
+
+        histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{P}_{track} (GeV/#it{c});#it{E}_{cluster} / #it{P}_{track} #it{c};counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt, fNbins / 2, 0, 4);
+      }
+
+      histname = TString::Format("%s/histNTracks_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;number of tracks;events", histname.Data());
+      if (fForceBeamType != kpp) {
+        fHistManager.CreateTH1(histname, histtitle, 500, 0, 5000);
+      }
+      else {
+        fHistManager.CreateTH1(histname, histtitle, 200, 0, 200);
+      }
+    }
+  }
+}
+
+/**
+ * The body of this function should contain instructions to fill the output histograms.
+ * This function is called inside the event loop, after the function Run() has been
+ * executed successfully (i.e. it returned kTRUE).
+ * @return Always kTRUE
+ */
 Bool_t AliAnalysisTaskEmcalSample::FillHistograms()
 {
-  // Fill histograms.
-
-  if (fTracksCont) {
-    fTracksCont->ResetCurrentID();
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
-    while(track) {
-      fHistTracksPt[fCentBin]->Fill(track->Pt()); 
-      track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
-    }
-  }
-  
-  if (fCaloClustersCont) {
-    fCaloClustersCont->ResetCurrentID();
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
-    while(cluster) {
-      TLorentzVector nPart;
-      cluster->GetMomentum(nPart, fVertex);
-      fHistClustersPt[fCentBin]->Fill(nPart.Pt());
-      cluster = fCaloClustersCont->GetNextAcceptCluster();
-    }
-  }
-
-  CheckClusTrackMatching();
+  DoTrackLoop();
+  DoClusterLoop();
+  DoCellLoop();
 
   return kTRUE;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalSample::CheckClusTrackMatching()
+/**
+ * This function performs a loop over the reconstructed tracks
+ * in the current event and fills the relevant histograms.
+ */
+void AliAnalysisTaskEmcalSample::DoTrackLoop()
 {
-  
-  if(!fTracksCont || !fCaloClustersCont)
-    return;
+  AliClusterContainer* clusCont = GetClusterContainer(0);
 
-  Double_t deta = 999;
-  Double_t dphi = 999;
+  TString histname;
+  TString groupname;
+  AliParticleContainer* partCont = 0;
+  TIter next(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+    groupname = partCont->GetName();
+    UInt_t count = 0;
+    for(auto it : partCont->accepted()) {
+      count++;
+      const AliVParticle* part = static_cast<const AliVParticle*>(it);
 
-  //Get closest cluster to track
-  fTracksCont->ResetCurrentID();
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
-  while(track) {
-    //Get matched cluster
-    Int_t emc1 = track->GetEMCALcluster();
-    if(fCaloClustersCont && emc1>=0) {
-      AliVCluster *clusMatch = fCaloClustersCont->GetCluster(emc1);
-      if(clusMatch) {
-	AliPicoTrack::GetEtaPhiDiff(track, clusMatch, dphi, deta);
-	fHistPtDEtaDPhiTrackClus->Fill(track->Pt(),deta,dphi);
+      histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, part->Pt());
+
+      histname = TString::Format("%s/histTrackPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, part->Phi());
+
+      histname = TString::Format("%s/histTrackEta_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, part->Eta());
+
+      if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
+        const AliVTrack* track = static_cast<const AliVTrack*>(part);
+
+        histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, track->Pt(), track->Eta() - track->GetTrackEtaOnEMCal());
+
+        histname = TString::Format("%s/fHistDeltaPhiPt_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, track->Pt(), track->Phi() - track->GetTrackPhiOnEMCal());
+
+        histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, track->Pt(), track->Pt() - track->GetTrackPtOnEMCal());
+
+        if (clusCont) {
+          Int_t iCluster = track->GetEMCALcluster();
+          if (iCluster >= 0) {
+            AliVCluster* cluster = clusCont->GetAcceptCluster(iCluster);
+            if (cluster) {
+              histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), fCentBin);
+              fHistManager.FillTH2(histname, track->P(), cluster->GetNonLinCorrEnergy() / track->P());
+            }
+          }
+        }
       }
     }
-    track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
-  }
-  
-  //Get closest track to cluster
-  fCaloClustersCont->ResetCurrentID();
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
-  while(cluster) {
-    TLorentzVector nPart;
-    cluster->GetMomentum(nPart, fVertex);
-    fHistClustersPt[fCentBin]->Fill(nPart.Pt());
-    
-    //Get matched track
-    AliVTrack *mt = NULL;      
-    AliAODCaloCluster *acl = dynamic_cast<AliAODCaloCluster*>(cluster);
-    if(acl) {
-      if(acl->GetNTracksMatched()>1)
-	mt = static_cast<AliVTrack*>(acl->GetTrackMatched(0));
-    }
-    else {
-      AliESDCaloCluster *ecl = dynamic_cast<AliESDCaloCluster*>(cluster);
-      Int_t im = ecl->GetTrackMatchedIndex();
-      if(fTracksCont && im>=0) {
-	mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
-      }
-    }
-    if(mt) {
-      AliPicoTrack::GetEtaPhiDiff(mt, cluster, dphi, deta);
-      fHistPtDEtaDPhiClusTrack->Fill(nPart.Pt(),deta,dphi);
-      
-      /* //debugging
-	 if(mt->IsEMCAL()) {
-	 Int_t emc1 = mt->GetEMCALcluster();
-	 Printf("current id: %d  emc1: %d",fCaloClustersCont->GetCurrentID(),emc1);
-	 AliVCluster *clm = fCaloClustersCont->GetCluster(emc1);
-	 AliPicoTrack::GetEtaPhiDiff(mt, clm, dphi, deta);
-	 Printf("deta: %f dphi: %f",deta,dphi);
-	 }
-      */
-    }
-    cluster = fCaloClustersCont->GetNextAcceptCluster();
+
+    histname = TString::Format("%s/histNTracks_%d", groupname.Data(), fCentBin);
+    fHistManager.FillTH1(histname, count);
   }
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalSample::ExecOnce() {
+/**
+ * This function performs a loop over the reconstructed EMCal clusters
+ * in the current event and fills the relevant histograms.
+ */
+void AliAnalysisTaskEmcalSample::DoClusterLoop()
+{
+  TString histname;
+  TString groupname;
+  AliClusterContainer* clusCont = 0;
+  TIter next(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
+    groupname = clusCont->GetName();
 
+    for(auto it : clusCont->all()) {
+      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
+
+      if (cluster->GetIsExotic()) {
+        histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH1(histname, cluster->E());
+      }
+    }
+
+    UInt_t count = 0;
+    for(auto it : clusCont->accepted()) {
+      count++;
+      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
+      AliTLorentzVector nPart;
+      cluster->GetMomentum(nPart, fVertex);
+
+      histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, cluster->E());
+
+      histname = TString::Format("%s/histClusterNonLinCorrEnergy_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, cluster->GetNonLinCorrEnergy());
+
+      histname = TString::Format("%s/histClusterHadCorrEnergy_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, cluster->GetHadCorrEnergy());
+
+      histname = TString::Format("%s/histClusterPhi_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
+
+      histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, nPart.Eta());
+    }
+
+    histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
+    fHistManager.FillTH1(histname, count);
+  }
+}
+
+/**
+ * This function performs a loop over the reconstructed EMCal cells
+ * in the current event and fills the relevant histograms.
+ */
+void AliAnalysisTaskEmcalSample::DoCellLoop()
+{
+  if (!fCaloCells) return;
+
+  TString histname;
+
+  const Short_t ncells = fCaloCells->GetNumberOfCells();
+
+  histname = TString::Format("%s/histNCells_%d", fCaloCellsName.Data(), fCentBin);
+  fHistManager.FillTH1(histname, ncells);
+
+  histname = TString::Format("%s/histCellEnergyvsAbsId_%d", fCaloCellsName.Data(), fCentBin);
+  for (Short_t pos = 0; pos < ncells; pos++) {
+    Double_t amp   = fCaloCells->GetAmplitude(pos);
+    Short_t absId  = fCaloCells->GetCellNumber(pos);
+
+    fHistManager.FillTH2(histname, absId, amp);
+  }
+}
+
+/**
+ * This function is executed automatically for the first event.
+ * Some extra initialization can be performed here.
+ */
+void AliAnalysisTaskEmcalSample::ExecOnce()
+{
   AliAnalysisTaskEmcal::ExecOnce();
-
-  if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
-  if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
-
 }
 
-//________________________________________________________________________
+/**
+ * Run analysis code here, if needed.
+ * It will be executed before FillHistograms().
+ * If this function return kFALSE, FillHistograms() will *not*
+ * be executed for the current event
+ * @return Always kTRUE
+ */
 Bool_t AliAnalysisTaskEmcalSample::Run()
 {
-  // Run analysis code here, if needed. It will be executed before FillHistograms().
-
-  return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
+  return kTRUE;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEmcalSample::Terminate(Option_t *) 
+/**
+ * This function is called once at the end of the analysis.
+ */
+void AliAnalysisTaskEmcalSample::Terminate(Option_t *)
 {
-  // Called once at the end of the analysis.
 }

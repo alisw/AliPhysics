@@ -138,7 +138,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetClusName(const char *n)                            { AddClusterContainer(n)                              ; }
   void                        SetClusPtCut(Double_t cut, Int_t c=0);
   void                        SetClusTimeCut(Double_t min, Double_t max, Int_t c=0);
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
@@ -158,7 +157,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPtCut(Double_t cut, Int_t c=0);
-  void                        SetTracksName(const char *n)                          { AddParticleContainer(n)                             ; }
   void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
@@ -170,8 +168,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetPythiaInfoName(const char *n)                      { fPythiaInfoName    = n                              ; }
   const TString&              GetPythiaInfoName()                             const { return fPythiaInfoName                              ; }
   const AliEmcalPythiaInfo   *GetPythiaInfo()                                 const { return fPythiaInfo                                  ; }
+  void                        SetMCFilter()                                         { fMCRejectFilter = kTRUE                             ; }
+  void                        ResetMCFilter()                                       { fMCRejectFilter = kFALSE                            ; }
+  void                        SetJetPtFactor(Float_t f)                             { fPtHardAndJetPtFactor = f                           ; }
+  Float_t                     JetPtFactor()                                         { return fPtHardAndJetPtFactor                        ; }
+  void                        SetClusterPtFactor(Float_t f)                         { fPtHardAndClusterPtFactor = f                       ; }
+  Float_t                     ClusterPtFactor()                                     { return fPtHardAndClusterPtFactor                    ; }
+  void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
+  Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
- protected:  
+ protected:
   void                        LoadPythiaInfo(AliVEvent *event);
   void                        SetRejectionReasonLabels(TAxis* axis);
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
@@ -192,6 +198,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
 
   void                        GeneratePythiaInfoObject(AliMCEvent* mcEvent);
+  Bool_t                      CheckMCOutliers();
 
   // Overloaded AliAnalysisTaskSE methods
   void                        UserCreateOutputObjects();
@@ -273,6 +280,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   EMCalTriggerMode_t          fEMCalTriggerMode;           ///< EMCal trigger selection mode
   Bool_t                      fUseNewCentralityEstimation; ///< Use new centrality estimation (for 2015 data)
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
+  Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
+  Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
+  Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
+  Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
   AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
@@ -321,7 +332,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 14) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 15) // EMCAL base analysis task
   /// \endcond
 };
 

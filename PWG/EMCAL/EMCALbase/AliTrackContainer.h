@@ -1,6 +1,6 @@
 #ifndef ALITRACKCONTAINER_H
 #define ALITRACKCONTAINER_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 class AliVEvent;
@@ -14,12 +14,14 @@ class AliTLorentzVector;
 #include "AliEmcalTrackSelection.h"
 #include "AliParticleContainer.h"
 
+typedef AliEmcalIterableContainerT<AliVTrack> AliTrackIterableContainer;
+
 /**
  * @class AliTrackContainer
  * @brief Container with name, TClonesArray and cuts for particles
  * @ingroup EMCALCOREFW
- * @author M. Verweij
- * @author S. Aiola
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@yale.edu>, Yale University
  */
 class AliTrackContainer : public AliParticleContainer {
  public:
@@ -70,7 +72,7 @@ class AliTrackContainer : public AliParticleContainer {
   ETrackFilterType_t          GetTrackFilterType()                      const   { return fTrackFilterType; }
   Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : kUndefined ; }
 
-  void                        SetArray(AliVEvent *event);
+  void                        SetArray(const AliVEvent *event);
 
   void                        SetTrackFilterType(ETrackFilterType_t f)          { fTrackFilterType = f; }
   void                        SetFilterHybridTracks(Bool_t f)                   { if (f) fTrackFilterType = AliEmcalTrackSelection::kHybridTracks; else fTrackFilterType = AliEmcalTrackSelection::kNoTrackFilter; }   // legacy method
@@ -93,6 +95,19 @@ class AliTrackContainer : public AliParticleContainer {
 
   const char*                 GetTitle() const;
 
+  const AliTrackIterableContainer      all() const;
+  const AliTrackIterableContainer      accepted() const;
+
+  AliTrackIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
+  AliTrackIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
+  AliTrackIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
+  AliTrackIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
+
+  AliTrackIterableContainer::iterator  begin()         const { return all().begin()        ; }
+  AliTrackIterableContainer::iterator  end()           const { return all().end()          ; }
+  AliTrackIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
+  AliTrackIterableContainer::iterator  rend()          const { return all().rend()         ; }
+
  protected:
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
 
@@ -107,7 +122,7 @@ class AliTrackContainer : public AliParticleContainer {
 
  private:
   AliTrackContainer(const AliTrackContainer& obj); // copy constructor
-  AliParticleContainer& operator=(const AliTrackContainer& other); // assignment
+  AliTrackContainer& operator=(const AliTrackContainer& other); // assignment
 
   /// \cond CLASSIMP
   ClassDef(AliTrackContainer,1);

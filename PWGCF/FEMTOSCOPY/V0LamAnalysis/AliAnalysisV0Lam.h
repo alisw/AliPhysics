@@ -44,7 +44,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
   private:
 
     enum TwoTrackCut { kSameProtProt = 0, kSamePiPi = 1, kSameProtPi = 2,
-		       kDiffProtProt = 3, kDiffPiPi = 4, kDiffProtPi = 5};
+		       kDiffProtProt = 3, kDiffPiPi = 4, kDiffProtPi = 5, kNumberTTCTypes = 6};
     enum PairType { kLamLam = 0,  kALamALam = 1,
 		    kLamALam = 2, kALamLam = 3};
 

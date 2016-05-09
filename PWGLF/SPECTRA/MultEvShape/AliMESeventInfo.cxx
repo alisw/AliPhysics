@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// 
+//
 // A much longer description of event info
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ AliMESeventInfo::AliMESeventInfo()
 //______________________________________________________________
 void AliMESeventInfo::Clear(Option_t *)
 {
-  // Reset info 
+  // Reset info
   fQuality = 0;
   fVertexZ = 0.;
 //   memset(fMultiplicity, 0, kNmult*sizeof(Int_t));
@@ -45,71 +45,119 @@ void AliMESeventInfo::Clear(Option_t *)
 }
 
 //______________________________________________________________
-Bool_t AliMESeventInfo::MakeShape(TObjArray* tracks)
-{
-  // fill ev shape object
-  
+// fill ev shape object
+// directivity
+Bool_t AliMESeventInfo::MakeDirectivity(TObjArray* tracks){
+
   if(!tracks->GetEntries()){
-    AliInfo("Failed event shape estimation. Missing tracks in event.");
+    AliInfo("Failed event shape estimation. No tracks in event.");
     return kFALSE;
   }
-  
   Double_t rv[2] = {0.};
-  // directivity
   if((rv[0] = Directivity(tracks, kTRUE)) < 0. ){
     AliInfo("Failed D+ estimation");
-    //return kFALSE;
-  }  
+    return kFALSE;
+  }
   if((rv[1] = Directivity(tracks, kFALSE)) < 0. ){
     AliInfo("Failed D- estimation");
-    //return kFALSE;
+    return kFALSE;
   }
+  // printf("rv[0] = %f \t rv[1] = %f\n\n\n", rv[0], rv[1]);
   memcpy(fEvShape.fDir, rv, 2*sizeof(Double_t));
 
-  // thrust
-  if(!Thrust(tracks, rv)){
-    AliInfo("Failed Thrust estimation");
-    //return kFALSE;    
-  } 
-  memcpy(fEvShape.fThrust, rv, 2*sizeof(Double_t));
-  
-  // sphericity
-  if((rv[0] = Sphericity(tracks)) < 0. ){
+  return kTRUE;
+}
+
+// thrust
+Bool_t AliMESeventInfo::MakeThrust(TObjArray* tracks){
+
+    if(!tracks->GetEntries()){
+      AliInfo("Failed event shape estimation. No tracks in event.");
+      return kFALSE;
+    }
+    Double_t rv[2] = {0.};
+    if(!Thrust(tracks, rv)){
+        AliInfo("Failed Thrust estimation");
+        //return kFALSE;
+    }
+    memcpy(fEvShape.fThrust, rv, 2*sizeof(Double_t));
+
+    return kTRUE;
+}
+
+// sphericity
+Bool_t AliMESeventInfo::MakeSphericity(TObjArray* tracks){
+
+    if(!tracks->GetEntries()){
+      AliInfo("Failed event shape estimation. No tracks in event.");
+      return kFALSE;
+    }
+    Double_t rv = 0.;
+    if((rv = Sphericity(tracks)) < 0. ){
     AliInfo("Failed Sphericity estimation");
     //return kFALSE;
-  }  
-  fEvShape.fSphericity = rv[0];
+    }
+    fEvShape.fSphericity = rv;
 
-  // recoil
-  if((rv[0] = Recoil(tracks)) < 0. ){
+    return kTRUE;
+}
+
+// recoil
+Bool_t AliMESeventInfo::MakeRecoil(TObjArray* tracks){
+
+    if(!tracks->GetEntries()){
+      AliInfo("Failed event shape estimation. No tracks in event.");
+      return kFALSE;
+    }
+    Double_t rv = 0.;
+    if((rv = Recoil(tracks)) < 0. ){
     AliInfo("Failed Recoil estimation");
     //return kFALSE;
-  }  
-  fEvShape.fRecoil = rv[0];
+    }
+    fEvShape.fRecoil = rv;
 
-  // fox wolfram moments
-  Double_t fw[FW_MAX_ORDER]={0.};
-  if(!TransverseFoxWolframMoments(tracks, fw)){
+    return kTRUE;
+}
+
+// fox wolfram moments
+Bool_t AliMESeventInfo::MakeFoxWolframMoments(TObjArray* tracks){
+
+    if(!tracks->GetEntries()){
+      AliInfo("Failed event shape estimation. No tracks in event.");
+      return kFALSE;
+    }
+    Double_t fw[FW_MAX_ORDER]={0.};
+    if(!TransverseFoxWolframMoments(tracks, fw)){
     AliInfo("Failed Fox-Wolfram moments estimation");
-    //return kFALSE;    
-  } 
-  memcpy(fEvShape.fFW, fw, FW_MAX_ORDER*sizeof(Double_t));
+    //return kFALSE;
+    }
+    memcpy(fEvShape.fFW, fw, FW_MAX_ORDER*sizeof(Double_t));
 
-  // get leading particle
-  if(!LeadingParticleDirection(tracks, rv)){
+    return kTRUE;
+}
+
+// get leading particle
+Bool_t AliMESeventInfo::FindLeadingParticle(TObjArray* tracks){
+
+    if(!tracks->GetEntries()){
+      AliInfo("Failed event shape estimation. No tracks in event.");
+      return kFALSE;
+    }
+    Double_t rv[2] = {0.};
+    if(!LeadingParticleDirection(tracks, rv)){
     AliInfo("Failed LeadingParticleDirection estimation");
-    //return kFALSE;    
-  } 
-  memcpy(fEvShape.fPxyLead, rv, 2*sizeof(Double_t));
+    //return kFALSE;
+    }
+    memcpy(fEvShape.fPxyLead, rv, 2*sizeof(Double_t));
 
-  return kTRUE;
+    return kTRUE;
 }
 
 //______________________________________________________________
 Double_t AliMESeventInfo::Directivity(TObjArray* tracks, Bool_t etaSign)
 {
   // compute directivity
-
+  // printf("AliMESeventInfo::Directivity - eta = %i\n", etaSign);
   Int_t ntracks(0);
   if(!(ntracks=tracks->GetEntries())) return -1.;
 
@@ -118,10 +166,14 @@ Double_t AliMESeventInfo::Directivity(TObjArray* tracks, Bool_t etaSign)
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
     if(track->Eta()*(etaSign?1.:-1.) < 0.) continue;
+    if(TMath::Abs(track->Eta()) >= 0.8) continue;
+    // printf("Directivity eta = %f\n", track->Eta());
     dirx+=track->Px();
     diry+=track->Py();
     dir +=track->Pt();
+    // printf("iTracks = %i\n",iTracks);
   }
+  // printf("dir = %f\n", dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-1.);
   return dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-1.;
 }
 
@@ -145,6 +197,7 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
   }
   return kTRUE;
 }
+
 
 //______________________________________________________________
 Bool_t AliMESeventInfo::Thrust(TObjArray* tracks, Double_t t[2])
@@ -181,6 +234,13 @@ Bool_t AliMESeventInfo::Thrust(TObjArray* tracks, Double_t t[2])
   return kTRUE;
 }
 
+/*
+//______________________________________________________________
+Bool_t AliMESeventInfo::Thrust(TObjArray* tracks, Double_t t[2])
+{
+    return kFALSE;
+}
+*/
 //______________________________________________________________
 Double_t AliMESeventInfo::Sphericity(TObjArray* tracks)
 {
@@ -204,6 +264,13 @@ Double_t AliMESeventInfo::Sphericity(TObjArray* tracks)
            //lambda2=(ad+delta)/2.;
   return ad>kAlmost0?(2.*lambda1/ad):-1;
 }
+/*
+//______________________________________________________________
+Double_t AliMESeventInfo::Sphericity(TObjArray* tracks)
+{
+    return 0;
+}
+*/
 
 //______________________________________________________________
 Double_t AliMESeventInfo::Recoil(TObjArray* tracks)
@@ -223,6 +290,13 @@ Double_t AliMESeventInfo::Recoil(TObjArray* tracks)
   }
   return dir>kAlmost0?(TMath::Sqrt(dirx*dirx+diry*diry)/dir):-1.;
 }
+/*
+//______________________________________________________________
+Double_t AliMESeventInfo::Recoil(TObjArray* tracks)
+{
+    return 0;
+}
+*/
 
 //______________________________________________________________
 Bool_t AliMESeventInfo::TransverseFoxWolframMoments(TObjArray* tracks, Double_t fw[FW_MAX_ORDER])
@@ -230,9 +304,9 @@ Bool_t AliMESeventInfo::TransverseFoxWolframMoments(TObjArray* tracks, Double_t 
   memset(fw, 0, FW_MAX_ORDER*sizeof(Double_t));
   Int_t ntracks(0);
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
-  Double_t legendre[FW_MAX_ORDER+1] = {0.}, sumcl[FW_MAX_ORDER+1] = {0.}; 
+  Double_t legendre[FW_MAX_ORDER+1] = {0.}, sumcl[FW_MAX_ORDER+1] = {0.};
   legendre[0]=1.;  // always unity
-  
+
   AliVParticle *ti(NULL), *tj(NULL);
   for (Int_t i(0); i < ntracks; i++) {
     if(!(ti = dynamic_cast<AliVParticle*> (tracks->At(i)))) continue;
@@ -244,23 +318,29 @@ Bool_t AliMESeventInfo::TransverseFoxWolframMoments(TObjArray* tracks, Double_t 
                phij(tj->Phi()),
                cosPhiij(TMath::Cos(phii-phij)),
                ptij(pti*ptj*(i==j?1.:2.));
-      
+
       legendre[1]=cosPhiij;
-      
-      for(Int_t order=0;order<FW_MAX_ORDER+1;order++){        
+
+      for(Int_t order=0;order<FW_MAX_ORDER+1;order++){
         if(order>1){
           Double_t alfa=cosPhiij*legendre[order-1];
           legendre[order]=alfa+(alfa-legendre[order-2])*(1-1./order);
         }
         sumcl[order]+=ptij*legendre[order];
-      }      
+      }
     }
-  }  
+  }
   if(sumcl[0]<kAlmost0) return kFALSE;
   for(Int_t order=0;order<FW_MAX_ORDER;order++) fw[order]=sumcl[order+1]/sumcl[0];
   return kTRUE;
 }
-
+/*
+//______________________________________________________________
+Bool_t AliMESeventInfo::TransverseFoxWolframMoments(TObjArray* tracks, Double_t fw[FW_MAX_ORDER])
+{
+return kFALSE;
+}
+*/
 //______________________________________________________________
 void AliMESeventInfo::Print(Option_t */*o*/) const
 {
@@ -272,12 +352,12 @@ void AliMESeventInfo::Print(Option_t */*o*/) const
          "Multiplicity : [%g %g %g]\n"
          "Vertex       : [%c] Type[%s]\n"
          "Trigger      : MB[%c] HM[%c]\n",
-    IsPileUp()?'y':'n', 
+    IsPileUp()?'y':'n',
     fMultiplicity[kGlob08], fMultiplicity[kComb], fMultiplicity[kNoClSPD],
     HasVertex()?'y':'n', HasVertexGlobal()?"Global":"ITS",
     HasTriggerMB()?'y':'n', HasTriggerHM()?'y':'n');
   printf("Event Shape  : D+[%f] D-[%f] T[%f %f] S[%f] R[%f] Leading(px, py)[%f %f]\n",
-    fEvShape.fDir[0], fEvShape.fDir[1], fEvShape.fThrust[0], fEvShape.fThrust[1],  fEvShape.fSphericity,  fEvShape.fRecoil, fEvShape.fPxyLead[0], fEvShape.fPxyLead[1]);       
+    fEvShape.fDir[0], fEvShape.fDir[1], fEvShape.fThrust[0], fEvShape.fThrust[1],  fEvShape.fSphericity,  fEvShape.fRecoil, fEvShape.fPxyLead[0], fEvShape.fPxyLead[1]);
   printf("             : FW[");
   for(Int_t ifw(0); ifw<FW_MAX_ORDER; ifw++) printf("%f ", fEvShape.fFW[ifw]); printf("]\n");
 }
@@ -297,7 +377,7 @@ void AliMESeventInfo::SetEvShape(Double_t dir[2], Double_t sfr, Double_t tr[2], 
   //
   // Set event shape from scratch
   //
-  fEvShape = AliMESevShape(dir, sfr, tr, rec, fw, pxy);  
+  fEvShape = AliMESevShape(dir, sfr, tr, rec, fw, pxy);
 }
 
 //______________________________________________________________
@@ -359,5 +439,3 @@ AliMESeventInfo::AliMESevShape::AliMESevShape(const AliMESevShape &evs)
   memcpy(fFW, evs.fFW, FW_MAX_ORDER*sizeof(Double_t));
   memcpy(fPxyLead, evs.fPxyLead, 2*sizeof(Double_t));
 }
-  
-

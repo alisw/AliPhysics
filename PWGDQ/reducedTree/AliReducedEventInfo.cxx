@@ -60,7 +60,9 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fT0sattelite(kFALSE),
   fNCaloClusters(0),
   fCaloClusters(0x0),
-  fFMD(0x0)
+  fFMD(0x0),
+  //fEventPlane(0x0)
+  fEventPlane()
 {
   //
   // Constructor
@@ -116,7 +118,9 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fT0sattelite(kFALSE),
   fNCaloClusters(0),
   fCaloClusters(0x0),
-  fFMD(0x0)
+  fFMD(0x0),
+  //fEventPlane(0x0)
+  fEventPlane()
 {
   //
   // Constructor

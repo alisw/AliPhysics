@@ -19,7 +19,7 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   AliVEventHandler* handler = mgr->GetInputEventHandler();
   if (!handler)
   {
-    ::Error("AddTaskEmcalJetQA", "This task requires an input event handler");
+    ::Error("AddTaskEmcalJetSample", "This task requires an input event handler");
     return 0;
   }
 
@@ -82,7 +82,7 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
     }
   }
 
-  TString name("AliAnalysisTaskEmcalJetQA");
+  TString name("AliAnalysisTaskEmcalJetSample");
   if (!trackName.IsNull()) {
     name += "_";
     name += trackName;
@@ -106,11 +106,9 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
 
   if (trackName == "mcparticles") {
     AliMCParticleContainer* mcpartCont = sampleTask->AddMCParticleContainer(trackName);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
     AliTrackContainer* trackCont = sampleTask->AddTrackContainer(trackName);
-    trackCont->SetFilterHybridTracks(kTRUE);
   }
   else if (!trackName.IsNull()) {
     sampleTask->AddParticleContainer(trackName);

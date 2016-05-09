@@ -37,14 +37,14 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
 
   TString name(Form("Spectra_%s", nJets));
   AliAnalysisTaskEmcalJetSpectra *spectratask = new AliAnalysisTaskEmcalJetSpectra(name);
-  spectratask->SetJetsName(nJets);
+  spectratask->AddJetContainer(nJets);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosChEm);
   spectratask->SetLocalRhoName(lrho);
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
-  spectratask->SetTracksName(nTracks);
+  spectratask->AddParticleContainer(nTracks);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
