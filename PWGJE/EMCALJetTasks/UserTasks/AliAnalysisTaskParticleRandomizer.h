@@ -41,6 +41,8 @@ public:
   void          SetPtMax(Double_t val)                      {fMaxPt = val;}
   void          SetDistributionV2(TH2D* dist)               {fDistributionV2 = dist;}
   void          SetDistributionV3(TH2D* dist)               {fDistributionV3 = dist;}
+  void          SetDistributionV4(TH2D* dist)               {fDistributionV4 = dist;}
+  void          SetDistributionV5(TH2D* dist)               {fDistributionV5 = dist;}
   void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
@@ -65,6 +67,8 @@ protected:
 
   TH2D*               fDistributionV2;            /// Distribution for v2 in bins of pt and centrality
   TH2D*               fDistributionV3;            /// Distribution for v3 in bins of pt and centrality
+  TH2D*               fDistributionV4;            /// Distribution for v4 in bins of pt and centrality
+  TH2D*               fDistributionV5;            /// Distribution for v5 in bins of pt and centrality
 
   TString             fInputArrayName;            /// Name of the TClonesArray that will be loaded
   TString             fOutputArrayName;           /// Name of the destination TClonesArray
@@ -78,12 +82,14 @@ protected:
   Double_t            fJetRemovalPtThreshold;     /// threshold at which jets given in fInputJetArray will be removed
 
   Double_t            fRandomPsi3;                /// eventwise calculated psi 3
+  Double_t            fRandomPsi4;                /// eventwise calculated psi 4
+  Double_t            fRandomPsi5;                /// eventwise calculated psi 5
   TRandom3*           fRandom;                    //!<! random number generator
 
   Bool_t              IsParticleInJet(Int_t part);
   Double_t            GetExternalRho();
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 5);
+  ClassDef(AliAnalysisTaskParticleRandomizer, 6);
 };
 
 #endif
