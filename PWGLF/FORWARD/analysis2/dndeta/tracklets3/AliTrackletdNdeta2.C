@@ -29,6 +29,7 @@
 #include <TProfile.h>
 #include <TFitResult.h>
 #include <TF1.h>
+#include <TSystem.h>
 #else
 class TPad;
 class TLatex;
@@ -62,29 +63,30 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    */
   enum {
     /** Draw general information */
-    kGeneral      = 0x00001,
+    kGeneral      = 0x0001,
     /** Draw parameters */
-    kParameters   = 0x00002,
+    kParameters   = 0x0002,
     /** Draw weights */
-    kWeights      = 0x00004,    
+    kWeights      = 0x0004,    
     /** Draw dNch/deta */
-    kdNdetas      = 0x00010,
+    kdNdetas      = 0x0010,
     /** Draw delta information */   
-    kDeltas       = 0x00020,
+    kDeltas       = 0x0020,
     /** Draw backgrounds */
-    kBackgrounds  = 0x00040,
+    kBackgrounds  = 0x0040,
     /** Draw alphas */
-    kAlphas       = 0x00080,
+    kAlphas       = 0x0080,
     /** Whether to make a PDF */
-    kPDF          = 0x01000,
+    kPDF          = 0x0100,
+    kPNG          = 0x0100,
     /** Whether to pause after each plot */
-    kPause        = 0x02000,
+    kPause        = 0x0200,
     /** Draw in landscape */
-    kLandscape    = 0x04000,
+    kLandscape    = 0x0400,
     /** Alternative markers */
-    kAltMarker    = 0x08000,
+    kAltMarker    = 0x0800,
     /** Default options */
-    kDefaultViz   = 0x70ff
+    kDefaultViz   = 0x07ff
   };
   /**
    * Calculation options 
@@ -133,6 +135,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   TString  fLastTitle;
   /** Cache of centrality bin title */
   TString fLastBin;
+  /** Cache of formated centrality bin */
+  TString fLastShort;
   /** The page header text */
   TLatex*  fHeader;
 
@@ -358,10 +362,13 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   /** 
    * Print the canvas 
    * 
-   * @param title Title of this page 
-   * @param size  Size of title 
+   * @param title       Title of this page 
+   * @param shortTitle  Short title of page 
+   * @param size        Size of title 
    */
-  void PrintCanvas(const TString& title, Float_t size=.7);
+  void PrintCanvas(const char* title,
+		   const char* shortTitle="page",
+		   Float_t     size=.7);
   /** 
    * Draw an object in a sub-pad 
    * 
@@ -429,6 +436,7 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 		      Container*  simList, 
 		      TDirectory* outTop);
   Bool_t VisualizeSpecies(Container* simCont);
+  Bool_t VisualizePrimary(Container* simCont);
   Bool_t VisualizeDelta(TDirectory* outTop, Int_t dimen);
   Bool_t VisualizeResult(TDirectory* outTop,  Int_t       dimen);
   /* @} */
@@ -1448,8 +1456,11 @@ void AliTrackletdNdeta2::CreateCanvas(const TString& outputName)
 
   if (fViz & kPDF) {
     SuppressGuard g;    
-    fCanvas->Print(Form("%s[", outputName.Data()),
+    fCanvas->Print(Form("%s.pdf[", outputName.Data()),
 		   Form("pdf %s", (fViz & kLandscape) ? "Landscape" : ""));
+  }
+  if (fViz & kPNG) {
+    gSystem->mkdir(outputName);
   }
   fCanvas->SetLeftMargin  (0.10);
   fCanvas->SetRightMargin (0.05);
@@ -1490,7 +1501,7 @@ void AliTrackletdNdeta2::CloseCanvas()
 {
   if ((fViz & kPDF) && fCanvas) {
     SuppressGuard g;
-    fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
+    fCanvas->Print(Form("%s.pdf]", fCanvas->GetTitle()),
 		   Form("pdf %s Title:%s",
 			(fViz & kLandscape) ? "Landscape" : "",
 			fLastTitle.Data()));
@@ -1501,7 +1512,9 @@ void AliTrackletdNdeta2::CloseCanvas()
 }
 
 //____________________________________________________________________
-void AliTrackletdNdeta2::PrintCanvas(const TString& title, Float_t size)
+void AliTrackletdNdeta2::PrintCanvas(const char* title,
+				     const char* shortTitle,
+				     Float_t     size)
 {
   if (fTop) {
     fTop->cd();
@@ -1515,10 +1528,16 @@ void AliTrackletdNdeta2::PrintCanvas(const TString& title, Float_t size)
   if (fViz & kPDF) {
     TString tit;
     tit.Form("pdf %s Title:%s", (fViz & kLandscape) ? "Landscape" : "",
-	     title.Data());
+	     title);
     // Suppress prints
     SuppressGuard g;
-    fCanvas->Print(fCanvas->GetTitle(), tit);
+    fCanvas->Print(Form("%s.pdf",fCanvas->GetTitle()), tit);
+  }
+  static Int_t cnt = 1;
+  if (fViz & kPNG) {
+    SuppressGuard g;
+    fCanvas->Print(Form("%s/%03d_%s.png",fCanvas->GetTitle(),cnt,shortTitle));
+    cnt++;
   }
   fLastTitle = title;
   if (fViz & kPause) fCanvas->WaitPrimitive();
@@ -1626,7 +1645,6 @@ Bool_t AliTrackletdNdeta2::Visualize(Container*  realSums,
   TH1* realCent = static_cast<TH1*>(GetO(outDir, "realCent"));
   TString outName(outDir->GetName());
   outName.ReplaceAll(".root", "");
-  outName.Append(".pdf");
   CreateCanvas(outName);
   VisualizeParams(realSums, simSums);
   VisualizeGeneral(realRess, simRess);
@@ -1688,7 +1706,7 @@ void AliTrackletdNdeta2::VisualizeGeneral(Container* realList,
   DrawInPad(fBody, 3, real, "colz"); 
   DrawInPad(fBody, 3, sim,  "box same");
   
-  PrintCanvas("General information");
+  PrintCanvas("General information","general");
 }
 
 namespace {
@@ -1811,7 +1829,7 @@ void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
   p3->GetPad(1)->Modified();
   p3->GetPad(2)->Modified(); 
   
-  PrintCanvas("Simulation weights");
+  PrintCanvas("Simulation weights","weights");
 }
 
 //____________________________________________________________________
@@ -1874,7 +1892,7 @@ void AliTrackletdNdeta2::VisualizeFinal(TDirectory* outDir, Int_t i)
   const char* what = (i == 3 ? "d^{3}N/(d#Deltad#etadIP_{z})" :
 		      i == 2 ? "d^{2}N/(d#Deltad#eta)" :
 		      i == 1 ? "dN/d#Delta" : "dN/d#Delta (k#equiv1)");
-  PrintCanvas(Form("Results #topbar %s", what));
+  PrintCanvas(Form("Results #topbar %s", what), "results");
 }
 
 //====================================================================
@@ -1971,7 +1989,7 @@ void AliTrackletdNdeta2::VisualizeParams(Container* realSums,
   VisualizeParams(GetC(realSums, "parameters"), "Real data");
   fBody->cd(3);
   VisualizeParams(GetC(simSums, "parameters"), "Simulated data");
-  PrintCanvas("Parameters");
+  PrintCanvas("Parameters", "parameters");
 }
 
 //====================================================================
@@ -1983,6 +2001,7 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
   // Form the folder name
   TString centName(CentName(c1,c2));
   fLastBin.Form("%.1f#minus%.1f%%", c1, c2);
+  fLastShort = centName;
   
   TDirectory* outDir = outTop->GetDirectory(centName);
   if (!outDir) {
@@ -1993,6 +2012,7 @@ Bool_t AliTrackletdNdeta2::VisualizeBin(Double_t    c1,
 
   Printf("%5.1f - %5.1f%%", c1, c2);
   VisualizeSpecies(GetC(simList, centName));
+  VisualizePrimary(GetC(GetC(simList, centName), "generated"));
   for (Int_t i = 0; i < 4; i++) {
     if ((fProc & (1 << i)) == 0) continue;
     VisualizeDelta(outDir, i);
@@ -2032,6 +2052,7 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
     TVirtualPad* p = fBody->GetPad(i+1);
     p->SetTopMargin(0.10);
     p->SetRightMargin(0.15);
+    p->SetBottomMargin(0.15);
     p->cd();
     TLatex* ltx = new TLatex(.5, .99, tit[i]);
     ltx->SetTextAlign(23);
@@ -2044,8 +2065,17 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
     DrawInPad(p, 2, toPion, "nostack grid");
     all->GetHistogram()->SetYTitle("dN_{X}/d#eta");
     all->GetHistogram()->SetXTitle("#eta");
+    all->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+    all->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);
+    all->GetHistogram()->GetYaxis()->SetLabelSize(0.08);
     toPion->GetHistogram()->SetYTitle("Relative to #pi^{#pm} mothers");
     toPion->GetHistogram()->SetXTitle("#eta");
+    toPion->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+    toPion->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);
+    toPion->GetHistogram()->GetYaxis()->SetLabelSize(0.08);
+    toPion->GetHistogram()->GetXaxis()->SetTitleSize(0.08);
+    toPion->GetHistogram()->GetXaxis()->SetTitleOffset(0.6);
+    toPion->GetHistogram()->GetXaxis()->SetLabelSize(0.08);
     p->GetPad(1)->GetListOfPrimitives()->Remove(l);
     p->GetPad(1)->Modified();
     p->GetPad(2)->Modified();
@@ -2056,10 +2086,165 @@ Bool_t AliTrackletdNdeta2::VisualizeSpecies(Container* simCont)
     p->Modified();
   }
   
-  PrintCanvas(Form("Species #topbar %s", fLastBin.Data()));
+  PrintCanvas(Form("Species #topbar %s", fLastBin.Data()),
+	      Form("%s_species", fLastShort.Data()));
   return true;
 }
 
+//____________________________________________________________________
+Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
+{
+  if (!simCont) return true;
+  ClearCanvas();
+
+  TH2* etaPdg = GetH2(simCont, "etaPdg");
+  TH2* etaPt  = GetH2(simCont, "etaPt");
+
+
+  TH1*      pion = 0;
+  THStack*  all     = new THStack("all",    "All primaries");
+  THStack*  ratios  = new THStack("ratios", "Ratios to pions, all primaries");
+  TAxis*    pdgAxis = etaPdg->GetYaxis();
+  
+  for (Int_t i = 1; i <= pdgAxis->GetNbins(); i++) {
+    TString lbl  = pdgAxis->GetBinLabel(i);
+    Int_t   apdg = lbl.Atoi();
+    switch (apdg) {
+    case 22: continue; // ignore photons
+    }
+    TString prty;
+    Color_t colo;
+    Style_t styl;
+    PdgAttr(apdg, prty, colo, styl);
+    TH1*    proj = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d",apdg),
+							 i, i));
+    proj->SetTitle(prty);
+    proj->SetMarkerColor(colo);
+    proj->SetFillColor(colo);
+    proj->SetMarkerColor(colo);
+    proj->SetLineColor(colo);
+    proj->SetMarkerStyle(styl);
+    proj->SetFillStyle(0);
+    proj->SetFillColor(0);
+    switch (apdg) {
+    case 321:  proj->SetBinContent(0, 0.15);   break; // PRC88,044910
+    case 2212: proj->SetBinContent(0, 0.05);   break; // PRC88,044910
+    case 310:  proj->SetBinContent(0, 0.075);  break; // PRL111,222301
+    case 3122: proj->SetBinContent(0, 0.018);  break; // PRL111,222301
+    case 3212: proj->SetBinContent(0, 0.0055); break; // NPA904,539
+    case 3322: proj->SetBinContent(0, 0.005);  break; // PLB734,409
+    case 211:  proj->SetBinContent(0, 1);      break; // it self 
+    default:   proj->SetBinContent(0, -1);     break; // Unknown
+    }
+    if (apdg == 211) pion = proj;
+    all->Add(proj);
+  }
+    
+  TIter next(all->GetHists());
+  TH1*  proj = 0;
+  Double_t rmin = +1000000000;
+  Double_t rmax = -1000000000;
+  while ((proj = static_cast<TH1*>(next()))) {
+    if (proj == pion) continue;
+    Double_t r276 = proj->GetBinContent(0);
+    if (r276 < 0 || r276 >= 1) continue;
+    TH1*     copy = static_cast<TH1*>(proj->Clone(Form("r%s",proj->GetName())));
+    copy->Divide(pion);
+    copy->SetFillStyle(0);
+    copy->SetFillColor(0);
+    copy->SetTitle(Form("%s / %s", copy->GetTitle(), pion->GetTitle()));
+    ratios->Add(copy);
+
+    if (r276 > 0 && r276 < 1) {
+      TGraphErrors* g = new TGraphErrors(1);
+      g->SetName(Form("%s_2760", copy->GetName()));
+      g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", copy->GetTitle()));
+      g->SetPoint(0,0,r276);
+      g->SetPointError(0,.5,0);
+      g->SetLineColor(proj->GetLineColor());
+      g->SetLineStyle(proj->GetLineStyle());
+      g->SetMarkerColor(proj->GetMarkerColor());
+      g->SetMarkerStyle(proj->GetMarkerStyle());
+      g->SetMarkerSize(1.2*proj->GetMarkerSize());
+      copy->GetListOfFunctions()->Add(g,"p");
+      copy->SetMaximum(TMath::Max(copy->GetMaximum(),r276));
+      copy->SetMinimum(TMath::Min(copy->GetMinimum(),r276));
+      rmin = TMath::Min(copy->GetMinimum(),rmin);
+      rmax = TMath::Max(copy->GetMaximum(),rmax);
+    }
+  }
+  // ratios->SetMinimum(rmin);
+  ratios->SetMaximum(rmax*1.1);
+
+  Int_t etaM = etaPt->GetXaxis()->FindBin(-.5);
+  Int_t etaP = etaPt->GetXaxis()->FindBin(+.5);
+  TH1*  pt   = etaPt->ProjectionY("pt", etaM, etaP);
+  pt->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T}");
+  pt->GetYaxis()->SetTitleSize(0.08);
+  pt->GetYaxis()->SetLabelSize(0.08);
+  pt->GetYaxis()->SetTitleOffset(0.6);  
+  pt->GetXaxis()->SetTitleSize(0.08);
+  pt->GetXaxis()->SetLabelSize(0.08);
+  pt->GetXaxis()->SetTitleOffset(0.6);  
+
+  TPad* p1 = new TPad("p1","p1",0,.3,1,1);
+  p1->SetTopMargin(.01);
+  p1->SetRightMargin(.01);
+  fBody->cd();
+  p1->Draw(); 
+  p1->SetNumber(1);
+  p1->Divide(1,2,0,0);
+  p1->GetPad(1)->SetRightMargin(0.2);
+  p1->GetPad(2)->SetRightMargin(0.2);
+  TLegend* l = DrawInPad(p1,1,all,    "leg2 nostack logy");
+  all->GetHistogram()->GetYaxis()->SetTitle("d#it{N}_{X}/d#eta");
+  all->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+  all->GetHistogram()->GetYaxis()->SetLabelSize(0.08);
+  all->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);  
+  ModLegend(p1->GetPad(1), l,
+	    1-p1->GetPad(1)->GetRightMargin(),
+	    p1->GetPad(1)->GetBottomMargin(),
+	    1-p1->GetPad(1)->GetTopMargin(),
+	    .99);
+  l->SetBorderSize(0);
+  l = DrawInPad(p1,2,ratios, "nostack leg");
+  ratios->GetHistogram()->GetYaxis()->SetTitle("Ratios to #pi");
+  ratios->GetHistogram()->GetYaxis()->SetTitleSize(0.08);
+  ratios->GetHistogram()->GetYaxis()->SetLabelSize(0.08);
+  ratios->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);  
+  ratios->GetHistogram()->GetXaxis()->SetTitle("#eta");
+  ratios->GetHistogram()->GetXaxis()->SetTitleSize(0.08);
+  ratios->GetHistogram()->GetXaxis()->SetLabelSize(0.08);
+  ratios->GetHistogram()->GetXaxis()->SetTitleOffset(0.6);  
+  ModLegend(p1->GetPad(2), l,
+	    1-p1->GetPad(2)->GetRightMargin(),
+	    p1->GetPad(2)->GetBottomMargin(),
+	    1-p1->GetPad(2)->GetTopMargin(),
+	    .99);
+  l->SetBorderSize(0);
+  p1->Modified();
+  p1->Update();
+  p1->cd();
+  
+  TPad* p2 = new TPad("p2","p2",0,0,1,.3);
+  p2->SetTopMargin(.01);
+  p2->SetRightMargin(.01);
+  p2->SetBottomMargin(0.15);
+  fBody->cd();
+  p2->Draw(); 
+  p2->SetNumber(2);
+  DrawInPad(p2,0,pt,     "logx logy");
+  p2->Modified();
+  p2->Update();
+  p2->cd();
+
+  fBody->Modified();
+  
+  PrintCanvas(Form("Primary species #topbar %s", fLastBin.Data()),
+	      Form("%s_primary_species", fLastShort.Data()));
+		
+  return true;
+}
 
 //____________________________________________________________________
 Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
@@ -2085,11 +2270,16 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
   q->GetPad(1)->SetRightMargin(0.15);
   q->GetPad(2)->SetRightMargin(0.15);
   TVirtualPad* qq = q->GetPad(1);
-  TLegend* l = DrawInPad(q,1,GetO(outDir,"all"),"nostack logx logy grid leg");
+  THStack* all = static_cast<THStack*>(GetO(outDir,"all"));
+  TLegend* l = DrawInPad(q,1,all,"nostack logx logy grid leg");
   l->SetBorderSize(0);
   l->SetFillStyle(0);
-  l->SetMargin(0.2);
+  l->SetMargin(0.2);  
   l->SetEntrySeparation(0.1);
+  all->GetHistogram()->GetYaxis()->SetTitle("d#it{N}/d#Delta");
+  all->GetHistogram()->GetYaxis()->SetLabelSize(0.06);
+  all->GetHistogram()->GetYaxis()->SetTitleSize(0.06);
+  all->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);
   ModLegend(qq, l, 1-qq->GetRightMargin(), qq->GetBottomMargin(), .99,
 	    1-qq->GetTopMargin()-.01);
 
@@ -2103,11 +2293,21 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
   l->SetFillStyle(0);
   l->SetMargin(0.2);
   l->SetEntrySeparation(0.1);
+  ratios->GetHistogram()->GetXaxis()->SetTitle("#Delta");
+  ratios->GetHistogram()->GetYaxis()->SetTitle("Ratio");
+  ratios->GetHistogram()->GetYaxis()->SetLabelSize(0.06);
+  ratios->GetHistogram()->GetYaxis()->SetTitleSize(0.06);
+  ratios->GetHistogram()->GetYaxis()->SetTitleOffset(0.6);
+  ratios->GetHistogram()->GetXaxis()->SetLabelSize(0.06);
+  ratios->GetHistogram()->GetXaxis()->SetTitleSize(0.06);
+  ratios->GetHistogram()->GetXaxis()->SetTitleOffset(0.6);
+  
   ModLegend(qq, l, 1-qq->GetRightMargin(), qq->GetBottomMargin(), .99,
 	    1-qq->GetTopMargin()-.01);
 
   fBody->cd();
   pq = new TPad("p2","p2",0, 0, 1, .3);
+  pq->SetBottomMargin(0.25);
   pq->SetNumber(2);
   pq->Draw();
 
@@ -2117,13 +2317,29 @@ Bool_t AliTrackletdNdeta2::VisualizeDelta(TDirectory* outTop,
   q->Divide(1,2,0,0);
   q->GetPad(1)->SetRightMargin(0.10);
   q->GetPad(2)->SetRightMargin(0.10);
-  DrawInPad(q,1,GetO(outDir,"scale"),   "colz");
-  DrawInPad(q,2,GetO(outDir,"scaleProj"),"");
-
+  TH2* scale     = static_cast<TH2*>(GetO(outDir,"scale"));
+  TH1* scaleProj = static_cast<TH2*>(GetO(outDir,"scaleProj"));
+  DrawInPad(q,1,scale,    "colz");
+  DrawInPad(q,2,scaleProj,"");
+  scale->SetYTitle("IP_{#it{z}}");
+  scaleProj->SetYTitle("#it{k}");
+  scaleProj->SetXTitle("#eta");
+  scale->GetYaxis()->SetLabelSize(0.12);
+  scale->GetYaxis()->SetTitleSize(0.12);
+  scale->GetYaxis()->SetTitleOffset(0.4);
+  scaleProj->GetYaxis()->SetLabelSize(0.12);
+  scaleProj->GetYaxis()->SetTitleSize(0.12);
+  scaleProj->GetYaxis()->SetTitleOffset(0.4);
+  scaleProj->GetYaxis()->SetNdivisions(207);
+  scaleProj->GetXaxis()->SetLabelSize(0.12);
+  scaleProj->GetXaxis()->SetTitleSize(0.12);
+  scaleProj->GetXaxis()->SetTitleOffset(0.6);
+  
   const char* what = (dimen == 3 ? "d^{3}N/(d#Deltad#etadIP_{z})" :
 		      dimen == 2 ? "d^{2}N/(d#Deltad#eta)" :
 		      dimen == 1 ? "dN/d#Delta" : "dN/d#Delta (k#equiv1)");
-  PrintCanvas(Form("%s #topbar %s", what, fLastBin.Data()));
+  PrintCanvas(Form("%s #topbar %s", what, fLastBin.Data()),
+	      Form("%s_deltas", fLastShort.Data()));
 
   return true;
 }
@@ -2165,7 +2381,8 @@ Bool_t AliTrackletdNdeta2::VisualizeResult(TDirectory* outTop,
   const char* what = (dimen == 3 ? "k(#eta,IP_{z})" :
 		      dimen == 2 ? "k(#eta)" :
 		      dimen == 1 ? "k=const." : "k#equiv1");
-  PrintCanvas(Form("%s [%s] #topbar %s", ObsTitle(), what, fLastBin.Data()));
+  PrintCanvas(Form("%s [%s] #topbar %s", ObsTitle(), what, fLastBin.Data()),
+	      Form("%s_summary", fLastShort.Data()));
 
   return true;
 }
