@@ -62,7 +62,7 @@ AliADReconstructor::AliADReconstructor()
   , fSaturationCorrection(NULL)
   , fCollisionMode(0)
   , fBeamEnergy(0.)
-  , fCorrectForSaturation(kFALSE)
+  , fCorrectForSaturation(kTRUE)
 {  
   // Default constructor  
 
@@ -119,16 +119,15 @@ AliADReconstructor::AliADReconstructor()
 //________________________________________________________________________________
 void AliADReconstructor::SetOption(Option_t* opt)
 {
-  AliInfo(Form("opt='%s'", opt));
   TObjArray *oa = TString(opt).Tokenize(" ");
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
     const TString s = oa->At(i)->GetName();
-    if (s == "+SaturationCorrection") {
-      fCorrectForSaturation = kTRUE;
-      AliInfo("fCorrectForSaturation = kTRUE");
+    if (s.Contains("SaturationCorrection")) {
+      fCorrectForSaturation = !s.Contains("-");
     }
   }
   delete oa;
+  AliInfo(Form("opt='%s'  fCorrectForSaturation: %s", opt, fCorrectForSaturation ? "ON" : "OFF"));
 }
 //________________________________________________________________________________
 Double_t AliADReconstructor::GetZPosition(const char* symname)
@@ -362,8 +361,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     digitsTree->GetEvent(e);
     
     for (Int_t d=0, m=fDigitsArray->GetEntriesFast(); d<m; ++d) {    
-      const AliADdigit* digit = dynamic_cast<const AliADdigit*>(fDigitsArray->At(d));
-      const Int_t pmNumber = digit->PMNumber();
+      const AliADdigit* digit    = dynamic_cast<const AliADdigit*>(fDigitsArray->At(d));
+      const Int_t       pmNumber = digit->PMNumber();
       
       // Pedestal retrieval and suppression
       Bool_t  integrator = digit->Integrator();
@@ -371,8 +370,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
       Int_t   imax       = -1;
       Float_t adcPedSub[kADNClocks] = { 0 };
       for (Int_t iClock=0; iClock<kADNClocks; ++iClock) {
-	const Short_t charge = digit->ChargeADC(iClock);
-	const Bool_t iIntegrator = ((iClock%2) == 0 ? integrator : !integrator);
+	const Short_t charge      = digit->ChargeADC(iClock);
+	const Bool_t  iIntegrator = ((iClock%2) == 0 ? integrator : !integrator);
+
 	const Int_t k = pmNumber + 16*iIntegrator;
 	adcPedSub[iClock] = static_cast<Float_t>(charge) - fCalibData->GetPedestal(k);
 	if(adcPedSub[iClock] <= GetRecoParam()->GetNSigmaPed()*fCalibData->GetSigma(k)) {
@@ -382,14 +382,30 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	
 	if (iClock < GetRecoParam()->GetStartClock() ||
 	    iClock > GetRecoParam()->GetEndClock()) continue;
+
 	if (adcPedSub[iClock] > maxadc) {
 	  maxadc = adcPedSub[iClock];
 	  imax   = iClock;
 	}
       }
 
-      if (imax != -1) {
+      // start and end BCs for charge integration
+      const Int_t start = TMath::Max( 0, imax - GetRecoParam()->GetNPreClocks());
+      const Int_t end   = TMath::Min(20, imax + GetRecoParam()->GetNPostClocks());
+      
+      // integrated charge without saturation correction
+      adc[pmNumber] = 0.0f;
+      for (Int_t iClock=start; iClock<=end; ++iClock)
+	adc[pmNumber] += adcPedSub[iClock];
+      
+      // HPTDC leading time and width
+      // Correction for slewing and various time delays
+      time[pmNumber]    = CorrectLeadingTime(pmNumber, digit->Time(), adc[pmNumber]);
+      width[pmNumber]   = digit->Width();
+      aBBflag[pmNumber] = digit->GetBBflag();
+      aBGflag[pmNumber] = digit->GetBGflag();
 
+      if (imax != -1) {
 	const Float_t threshold = 20.0f;
 	Bool_t isPileUp = kFALSE;
 	for (Int_t bc=13; bc<20 && !isPileUp; ++bc)  
@@ -397,11 +413,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
     
 	for (Int_t iClock=14; iClock<=20; ++iClock)
 	  tail[pmNumber] += adcPedSub[iClock];
-	
-	adcTrigger[pmNumber] = adcPedSub[10];
 
-	const Int_t start = TMath::Max( 0, imax - GetRecoParam()->GetNPreClocks());
-	const Int_t end   = TMath::Min(20, imax + GetRecoParam()->GetNPostClocks());
+	adcTrigger[pmNumber] = adcPedSub[10];
 
 	for (Int_t iClock=end+1; iClock<21; ++iClock)
 	  tailComplement[pmNumber] += adcPedSub[iClock];
@@ -411,9 +424,10 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	  f_Int1->Clear();
 	  fSaturationCorrection->GetEntry(pmNumber);
 	}
-	
-	AliDebug(3, Form("pmNumber=%d offlineCh=%d onlineCh=%d", pmNumber, chOffline, chOnline));
-	for (Int_t iClock = start; iClock <= end; ++iClock) {
+
+	AliDebug(3, Form("pmNumber=%d offlineCh=%d onlineCh=%d isPileUp=%d", pmNumber, chOffline, chOnline, isPileUp));
+	adc[pmNumber] = 0.0f;
+	for (Int_t iClock=start; iClock<=end; ++iClock) {
 	  const Bool_t iIntegrator = ((iClock%2) == 0 ? integrator : !integrator);
 	  
 	  const TF1* fExtrapolation = (doExtrapolation[iClock]
@@ -445,13 +459,6 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 		       pmNumber,
 		       tail[pmNumber],
 		       tailComplement[pmNumber]));
-      
-      // HPTDC leading time and width
-      // Correction for slewing and various time delays
-      time[pmNumber]    = CorrectLeadingTime(pmNumber, digit->Time(), adc[pmNumber]);
-      width[pmNumber]   = digit->Width();
-      aBBflag[pmNumber] = digit->GetBBflag();
-      aBGflag[pmNumber] = digit->GetBGflag();
       
       // MIP multiplicity
       const Float_t adcPerMIP = const_cast<AliADCalibData*>(fCalibData)->GetADCperMIP(pmNumber);
