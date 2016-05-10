@@ -55,6 +55,9 @@ public:
     kInjectedVeto     = AliAODTracklet::kGenerated,
     kCombinatoricMask = AliAODTracklet::kCombinatorics,
     kCombinatoricVeto = 0x0,
+    kDistinctMask     = (AliAODTracklet::kCombinatorics|
+                         AliAODTracklet::kDistinct),
+    kDistinctVeto     = 0x0,
     kPrimaryMask      = 0x0,
     kPrimaryVeto      = (AliAODTracklet::kInjection|
 			 AliAODTracklet::kCombinatorics|
@@ -443,6 +446,8 @@ public:
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
 	fEtaPdgIPz(0),
+	fEtaPdg(0),
+	fEtaPt(0),
 	fColor(color),
 	fStyle(style)
     {}
@@ -458,6 +463,8 @@ public:
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
 	fEtaPdgIPz(0),
+	fEtaPdg(0),
+	fEtaPt(0),
 	fColor(o.fColor),
 	fStyle(o.fStyle)
     {}
@@ -491,6 +498,14 @@ public:
     Bool_t IsCombinatoric() const
     {
       return fMask == kCombinatoricMask && fVeto == kCombinatoricVeto;
+    }
+    /** 
+     * @return Selection corresponds to tracklets from two particles,
+     * but distinct mothers.
+     */
+    Bool_t IsDistinct() const
+    {
+      return fMask == kDistinctMask && fVeto == kDistinctVeto;
     }
     /** 
      * @return Selection corresponds to primaries particles 
@@ -585,6 +600,8 @@ public:
     TH2*          fEtaIPz;       //!
     TH3*          fEtaDeltaIPz;  //!
     TH3*          fEtaPdgIPz;    //! 
+    TH2*          fEtaPdg;       //! 
+    TH2*          fEtaPt;        //! 
   public:
     Color_t fColor;
     Style_t fStyle;
@@ -1088,6 +1105,7 @@ public:
     CentBin()
       : AliTrackletAODdNdeta::CentBin(),
 	fCombinatorics(0),
+	fDistinct(0),
 	fPrimaries(0),
 	fSecondaries(0),
 	fGenerated(0)
@@ -1124,6 +1142,7 @@ public:
     CentBin& operator=(const CentBin&) { return *this; }
   protected:
     Histos*    fCombinatorics;
+    Histos*    fDistinct;
     Histos*    fPrimaries;
     Histos*    fSecondaries;
     Histos*    fGenerated;
@@ -1694,6 +1713,7 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
 AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   : AliTrackletAODdNdeta::CentBin(c1, c2),
     fCombinatorics(0),
+    fDistinct(0),
     fPrimaries(0),
     fSecondaries(0),
     fGenerated(0)
@@ -1705,6 +1725,9 @@ AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   fCombinatorics  = MakeHistos("combinatorics", kMagenta+2, 30,
 			       kCombinatoricMask,
 			       kCombinatoricVeto);
+  fDistinct       = MakeHistos("distinct", kCyan+2, 27,
+			       kDistinctMask,
+			       kDistinctVeto);
   fPrimaries      = MakeHistos("primaries", kGreen+2, 26, 
 			       kPrimaryMask,
 			       kPrimaryVeto);
@@ -1717,6 +1740,7 @@ AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   fMeasured->fStyle = 24;
   fInjection->fStyle = 25;
   fSubs->Add(fCombinatorics);
+  fSubs->Add(fDistinct);
   fSubs->Add(fPrimaries);
   fSubs->Add(fSecondaries);
   fSubs->AddAfter(fMeasured, fGenerated);
@@ -1784,8 +1808,20 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
       !IsInjected() &&
       fStyle != 20) // Last condition to not make this for real data
     fEtaPdgIPz = Make3D(fContainer, "etaPdgIPz",
-			Form("Parent particle type"),
+			"Parent particle type",
 			kGreen+2, 22, etaAxis, PdgAxis(), ipzAxis);
+
+  if (IsGenerated()) {
+    fEtaPdg = Make2D(fContainer, "etaPdg",
+		     "Primary particle type",
+		     kYellow+2, 30, etaAxis, PdgAxis());
+    TAxis ptAxis(100, 0, 5);
+    ptAxis.SetTitle("#it{p}_{T}");
+    FixAxis(ptAxis);
+    fEtaPt = Make2D(fContainer, "etaPt",
+		    "Primary transverse momentum",
+		    kCyan+2, 30, etaAxis, ptAxis);
+  }
   
   SetAttr(fColor, fStyle);
   return true;
@@ -1810,6 +1846,18 @@ void AliTrackletAODdNdeta::Histos::SetAttr(Color_t c, Style_t m)
     fEtaPdgIPz->SetMarkerColor(c);
     fEtaPdgIPz->SetLineColor(c);
     fEtaPdgIPz->SetFillColor(c);
+  }    
+  if (fEtaPdg) {
+    fEtaPdg->SetMarkerStyle(m);
+    fEtaPdg->SetMarkerColor(c);
+    fEtaPdg->SetLineColor(c);
+    fEtaPdg->SetFillColor(c);
+  }    
+  if (fEtaPt) {
+    fEtaPt->SetMarkerStyle(m);
+    fEtaPt->SetMarkerColor(c);
+    fEtaPt->SetLineColor(c);
+    fEtaPt->SetFillColor(c);
   }    
 }
 
@@ -2073,7 +2121,7 @@ Double_t AliTrackletAODdNdeta::LookupWeight(AliAODTracklet* tracklet,
 }
 //____________________________________________________________________
 Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
-					      Double_t        cent)
+						      Double_t        cent)
 {
   // We don't check for weights, as we must have them to come this far 
   // if (!fWeights) {
@@ -2081,7 +2129,8 @@ Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
   // return 1;
   // }
   Double_t w = fWeights->LookupWeight(tracklet, cent);
-  fEtaWeight->Fill(tracklet->GetEta(), cent, w);
+  if (tracklet->IsMeasured())
+    fEtaWeight->Fill(tracklet->GetEta(), cent, w);
   // printf("Looking up weight of tracklet -> %f ", w);
   // tracklet->Print();
   return w;
@@ -2163,37 +2212,57 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
 						     Double_t        weight)
 {
   if (!fEtaIPz && !fEtaDeltaIPz) return true;
+  // Get tracklet info 
+  Double_t eta    = tracklet->GetEta();
+  Double_t delta  = tracklet->GetDelta();
+  UChar_t  flags  = tracklet->GetFlags();
+  Int_t    pdgBin = -1;
+
+  // For debugging 
   char m[7];
-  if (fDebug > 3) Bits2String(tracklet->GetFlags(), m);
-  if (fMask != 0 && (tracklet->GetFlags() & fMask) == 0) {
-    if (fDebug > 3)
-      Printf("%14s (0x%02x,----) %6s %7s (0x%02x) ",
-	     GetName(), fMask, "reject", m, tracklet->GetFlags());
+  if (fDebug > 3) Bits2String(flags, m);
+
+  // Check the filter mask 
+  if (fMask != 0 && (flags & fMask) == 0) {
+    if (fDebug > 3) Printf("%14s (0x%02x,----) %6s %7s (0x%02x) ",
+			   GetName(),fMask,"reject",m,flags);
     return false;
   }
-  if (fVeto != 0 && (tracklet->GetFlags() & fVeto) != 0) {
-    if (fDebug > 3) 
-      Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
-	     GetName(), fVeto, "veto", m, tracklet->GetFlags());
+
+  // If we need the PDG code, get that here
+  if (fEtaPdgIPz || fEtaPdg) pdgBin = PdgBin(tracklet->GetParentPdg());
+  
+  // If we have the eta-vs-pdg histogram, we should fill before the
+  // veto, which filters out the neutral particles.
+  if (fEtaPdg) fEtaPdg->Fill(eta, pdgBin, weight);
+  
+  // Check the veto mask 
+  if (fVeto != 0 && (flags & fVeto) != 0) {
+    if (fDebug > 3) Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
+			   GetName(), fVeto, "veto", m, flags);
     return false;
   }
-  if (fDebug > 3)
-    Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
-	   GetName(), fMask, fVeto, "accept", m, tracklet->GetFlags());
-  if (fEtaIPz && (signal == 0x3)) // both reguirements 
-    fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
-  if (fEtaDeltaIPz && (signal & 0x2)) // just check dPhi
-    fEtaDeltaIPz->Fill(tracklet->GetEta(), tracklet->GetDelta(), ipZ, weight);
+  // Debug message that we accepted tracklet 
+  if (fDebug > 3) Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
+			 GetName(), fMask, fVeto, "accept", m, flags);
+  
+  // Both reguirements (Delta < cut, dPhi < cut)
+  if (fEtaIPz && (signal == 0x3))     fEtaIPz->Fill(eta, ipZ, weight);
+  // Just check dPhi
+  if (fEtaDeltaIPz && (signal & 0x2)) fEtaDeltaIPz->Fill(eta,delta,ipZ,weight);
+
+  // If we do not need the eta-PDG-IPz or eta-Pt, return now 
+  if (!fEtaPdgIPz && !fEtaPt) return true;
+
   if (fEtaPdgIPz) {
-    fEtaPdgIPz->Fill(tracklet->GetEta(),
-		     PdgBin(tracklet->GetParentPdg()),
-		     ipZ, weight);
+    fEtaPdgIPz->Fill(eta, pdgBin, ipZ, weight);
     if (tracklet->IsCombinatorics())
       // Fill both particles 
-      fEtaPdgIPz->Fill(tracklet->GetEta(),
-		       PdgBin(tracklet->GetParentPdg(true)),
-		       ipZ, weight);
+      fEtaPdgIPz->Fill(eta, PdgBin(tracklet->GetParentPdg(true)), ipZ, weight);
   }
+
+  if (fEtaPt) fEtaPt ->Fill(eta, tracklet->GetParentPt(), weight);
+
   return true;
 }
 
@@ -2248,6 +2317,8 @@ Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
   fEtaIPz      = GetH2(fContainer, "etaIPz",      false); // No complaints
   fEtaDeltaIPz = GetH3(fContainer, "etaDeltaIPz", false);
   fEtaPdgIPz   = GetH3(fContainer, "etaPdgIPz",   false);
+  fEtaPdg      = GetH2(fContainer, "etaPdg",      false);
+  fEtaPt       = GetH2(fContainer, "etaPt",       false);
   if (GetName()[0] == 'm' && GetC(parent,"generated")) {
     // Fix up titles 
     if (fEtaIPz)
@@ -2385,6 +2456,24 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
+
+  // Scale distribution of PDGs to number of events and bin width
+  if (fEtaPdg) {
+    TH2* etaPdg = static_cast<TH2*>(fEtaPdg->Clone());
+    etaPdg->SetDirectory(0);
+    etaPdg->Scale(1. / nEvents, "width");
+    result->Add(etaPdg);
+  }
+
+  // Scale distribution of Pt to number of events and bin width
+  if (fEtaPt) {
+    TH2* etaPt = static_cast<TH2*>(fEtaPt->Clone());
+    etaPt->SetDirectory(0);
+    etaPt->Scale(1. / nEvents, "width");
+    result->Add(etaPt);
+  }
+  
+  // Short-hand-name
   TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
 
   // If we have the PDG distributions, we project on eta,IPz, and then
