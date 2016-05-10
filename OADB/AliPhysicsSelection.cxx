@@ -133,8 +133,11 @@ fCashedTokens(new TList())
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
   fCashedTokens->SetOwner();
+  Bool_t oldStatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
   fHistStat = new TH2F("fHistStatistics",";;",1,0,1,1,0,1);
   fHistList.Add(fHistStat);
+  TH1::AddDirectory(oldStatus);
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
@@ -481,7 +484,6 @@ void AliPhysicsSelection::FillStatistics(){
     const char* trigger = fCollTrigClasses.At(i)->GetName();
     AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
     TH1F* histStat = (TH1F*) triggerAnalysis->GetHistogram("fHistStat");
-    printf("histStat = %p\n",histStat);
     if (!histStat) continue;
     Float_t all                 = histStat->GetBinContent(1);
     Float_t accepted            = histStat->GetBinContent(4);
