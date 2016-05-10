@@ -30,7 +30,7 @@ public:
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
-    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kV0Casym,
+    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,
     kVHM,kV0M,kSH1,kSH2,
     kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
@@ -67,6 +67,7 @@ public:
   Bool_t IsV0MOnVsOfPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsSPDOnVsOfPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsV0PFPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
+  Bool_t IsSPDVtxPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsV0Casym(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t VHMTrigger(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t V0MTrigger(const AliVEvent* event, Bool_t online, Bool_t fillHists = kFALSE);
@@ -78,12 +79,13 @@ public:
   Bool_t IsHVdipTPCEvent(const AliVEvent* event);
   Bool_t IsIncompleteEvent(const AliVEvent* event);
   
-  void FillHistograms(const AliVEvent* event);
+  void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
   
   void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   
+  TObject* GetHistogram(const char* histName) { return fHistList->FindObject(histName); }
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
@@ -99,11 +101,12 @@ protected:
   Bool_t  fMC;               // flag if MC is analyzed
   
   TList* fHistList;          //
-  
+  TH1F* fHistStat;           //!
   TH1F* fHistFiredBitsSPD;   //! fired hardware bits
   TH2F* fHistSPDClsVsTkl;    //! 
   TH2F* fHistV0MOnVsOf;      //!
   TH2F* fHistSPDOnVsOf;      //!
+  TH1F* fHistSPDVtxPileup;   //!
   TH2F* fHistVIRvsBCmod4pup; //!
   TH2F* fHistVIRvsBCmod4acc; //!
   TH2F* fHistV0C3vs012;      //!
@@ -131,7 +134,7 @@ protected:
   TH1F* fHistT0;             //! histograms that histogram the criterion the cut is applied on: bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 27)
+  ClassDef(AliTriggerAnalysis, 28)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

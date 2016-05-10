@@ -119,6 +119,8 @@ fUsingCustomClasses(0),
 fCollTrigClasses(),
 fBGTrigClasses(),
 fTriggerAnalysis(),
+fHistList(),
+fHistStat(0),
 fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
@@ -129,7 +131,11 @@ fCashedTokens(new TList())
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
+  fHistList.SetOwner(1);
   fCashedTokens->SetOwner();
+  fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
+  fHistList.Add(fHistStat);
+  
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
 }
 
@@ -303,9 +309,11 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
     Int_t triggerLogic = 0;
     UInt_t singleTriggerResult = CheckTriggerClass(event, triggerClass, triggerLogic);
     if (!singleTriggerResult) continue;
-    triggerAnalysis->FillHistograms(event);
-    if (!EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetHardwareTrigger(triggerLogic), kFALSE)) continue;
-    if (!EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetOfflineTrigger(triggerLogic),  kTRUE)) continue;
+    Bool_t onlineDecision  = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetHardwareTrigger(triggerLogic), kFALSE);
+    Bool_t offlineDecision = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetOfflineTrigger(triggerLogic), kTRUE);
+    triggerAnalysis->FillHistograms(event,onlineDecision,offlineDecision);
+    if (!onlineDecision) continue;
+    if (!offlineDecision) continue;
     accept |= singleTriggerResult;
   }
   
@@ -467,6 +475,73 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
   return kTRUE;
 }
 
+void AliPhysicsSelection::FillStatistics(){
+  Int_t nColl = fCollTrigClasses.GetEntries();
+  for (Int_t i=0; i<nColl; i++) {
+    const char* trigger = fCollTrigClasses.At(i)->GetName();
+    AliTriggerAnalysis* triggerAnalysis = static_cast<AliTriggerAnalysis*> (fTriggerAnalysis.At(i));
+    TH1F* histStat = (TH1F*) triggerAnalysis->GetHistogram("fHistStat");
+    printf("histStat = %p\n",histStat);
+    if (!histStat) continue;
+    Float_t all                 = histStat->GetBinContent(1);
+    Float_t accepted            = histStat->GetBinContent(4);
+    Float_t v0and = 0;
+    Float_t plusNoSPDClsVsTrkBG   = 0;
+    Float_t plusNoV0MOnVsOfPileup = 0;
+    Float_t plusNoSPDOnVsOfPileup = 0;
+    Float_t plusNoSPDVtxPileup    = 0;
+    Float_t plusNoV0PFPileup      = 0;
+    Float_t plusNoV0Casym         = 0;
+    Float_t noSPDClsVsTrkBG   = 0;
+    Float_t noV0MOnVsOfPileup = 0;
+    Float_t noSPDOnVsOfPileup = 0;
+    Float_t noSPDVtxPileup    = 0;
+    Float_t noV0PFPileup      = 0;
+    Float_t noV0Casym         = 0;
+
+    Bool_t b[14];
+    for (Int_t i=4;i<histStat->GetNbinsX();i++){
+      for (Int_t bit=0;bit<14;bit++) b[bit]=i & 1<<bit;
+      if (b[ 5]) noSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
+      if (b[ 6]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 7]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 8]) noSPDVtxPileup+=histStat->GetBinContent(i+1);
+      if (b[ 9]) noV0PFPileup+=histStat->GetBinContent(i+1);
+      if (b[10]) noV0Casym+=histStat->GetBinContent(i+1);
+      
+      if (!b[ 3]) continue;
+      if (!b[ 4]) continue;
+      v0and+=histStat->GetBinContent(i+1);
+      if (!b[ 5]) continue;
+      plusNoSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
+      if (!b[ 6]) continue;
+      plusNoV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (!b[ 7]) continue;
+      plusNoSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (!b[ 8]) continue;
+      plusNoSPDVtxPileup+=histStat->GetBinContent(i+1);
+      if (!b[ 9]) continue;
+      plusNoV0PFPileup+=histStat->GetBinContent(i+1);
+      if (!b[10]) continue;
+      plusNoV0Casym+=histStat->GetBinContent(i+1);
+    }
+    fHistStat->Fill("all",trigger,all);
+    fHistStat->Fill("accepted",trigger,accepted);
+    fHistStat->Fill("V0A & V0C",trigger,v0and);
+    fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
+    fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
+    fHistStat->Fill("+ !SPDOnVsOfPileup",trigger,plusNoSPDOnVsOfPileup);
+    fHistStat->Fill("+ !SPDVtxPileup",trigger,plusNoSPDVtxPileup);
+    fHistStat->Fill("+ !V0PFPileup",trigger,plusNoV0PFPileup);
+    fHistStat->Fill("+ !V0Casym",trigger,plusNoV0Casym);
+    fHistStat->Fill("!SPDClsVsTrkBG",trigger,noSPDClsVsTrkBG);
+    fHistStat->Fill("!V0MOnVsOfPileup",trigger,noV0MOnVsOfPileup);
+    fHistStat->Fill("!SPDOnVsOfPileup",trigger,noSPDOnVsOfPileup);
+    fHistStat->Fill("!SPDVtxPileup",trigger,noSPDVtxPileup);
+    fHistStat->Fill("!V0PFPileup",trigger,noV0PFPileup);
+    fHistStat->Fill("!V0Casym",trigger,noV0Casym);
+  }
+}
 
 void AliPhysicsSelection::Print(const Option_t *option) const{
   // print the configuration
@@ -557,16 +632,19 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list) {
   
   TIterator* iter = list->MakeIterator();
   TObject* obj;
-  TList collection;
+  TList collTriggerAnalysis;
+  TList collHistList;
   
   Int_t count = 0;
   while ((obj = iter->Next())) {
     AliPhysicsSelection* entry = dynamic_cast<AliPhysicsSelection*> (obj);
     if (entry == 0) continue;
-    collection.Add(&(entry->fTriggerAnalysis));
+    collTriggerAnalysis.Add(&(entry->fTriggerAnalysis));
+    collHistList.Add(&(entry->fHistList));
     count++;
   }
-  fTriggerAnalysis.Merge(&collection);
+  fTriggerAnalysis.Merge(&collTriggerAnalysis);
+  fTriggerAnalysis.Merge(&collHistList);
   
   delete iter;
   return count+1;
@@ -592,6 +670,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder) {
     
     gDirectory->cd("..");
   }
+  fHistList.Write();
   if (folder) gDirectory->cd("..");
 }
 

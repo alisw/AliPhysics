@@ -53,12 +53,13 @@ public:
   UInt_t IsCollisionCandidate(const AliVEvent* event);
   Bool_t Initialize(const AliVEvent* event);
   Bool_t Initialize(Int_t runNumber);
-    
-    
+  
+  void FillStatistics();
+  
   virtual void Print(const Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms(const char* folder = 0);
-    
+  
   const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
   const AliOADBPhysicsSelection * GetOADBPhysicsSelection() const {return fPSOADB;  }
@@ -95,7 +96,9 @@ protected:
   TList fCollTrigClasses;     // trigger class identifying collision candidates
   TList fBGTrigClasses;       // trigger classes identifying background events
   TList fTriggerAnalysis;     // list of AliTriggerAnalysis objects (several are needed to keep the control histograms separate per trigger class)
-
+  TList fHistList;            // list of output histos
+  TH2F* fHistStat;            //!
+  
   AliOADBPhysicsSelection* fPSOADB;      //! Physics selection OADB object
   AliOADBFillingScheme*    fFillOADB;    //! Filling scheme OADB object
   AliOADBTriggerAnalysis*  fTriggerOADB; //! Trigger analysis OADB object
@@ -103,7 +106,7 @@ protected:
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 18)
+  ClassDef(AliPhysicsSelection, 19)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);

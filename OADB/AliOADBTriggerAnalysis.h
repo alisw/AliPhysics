@@ -32,6 +32,11 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t GetV0MOnVsOfB()           { return fV0MOnVsOfB;           }
   Float_t GetSPDOnVsOfA()           { return fSPDOnVsOfA;           }
   Float_t GetSPDOnVsOfB()           { return fSPDOnVsOfB;           }
+  Int_t   GetVtxMinContributors()   { return fVtxMinContributors;   }
+  Float_t GetVtxMinZdist()          { return fVtxMinZdist;          }
+  Float_t GetVtxNSigmaZdist()       { return fVtxNSigmaZdist;       }
+  Float_t GetVtxNSigmaDiamXY()      { return fVtxNSigmaDiamXY;      }
+  Float_t GetVtxNSigmaDiamZ()       { return fVtxNSigmaDiamZ;       }
   Float_t GetV0CasymA()             { return fV0CasymA;             }
   Float_t GetV0CasymB()             { return fV0CasymB;             }
   Int_t   GetNBCsPast()             { return fNBCsPast;             }
@@ -51,31 +56,36 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t   GetSH2OuterThreshold()    { return fSH2OuterThreshold;    }
   Float_t GetFMDLowThreshold()      { return fFMDLowCut;            }
   Float_t GetFMDHitThreshold()      { return fFMDHitCut;            }
-  
+
   // Setters
-  void SetSPDClsVsTklA(Float_t val)   { fSPDClsVsTklA       = val; }
-  void SetSPDClsVsTklB(Float_t val)   { fSPDClsVsTklB       = val; }
-  void SetV0MOnVsOfA(Float_t val)     { fV0MOnVsOfA         = val; }
-  void SetV0MOnVsOfB(Float_t val)     { fV0MOnVsOfB         = val; }
-  void SetSPDOnVsOfA(Float_t val)     { fSPDOnVsOfA         = val; }
-  void SetSPDOnVsOfB(Float_t val)     { fSPDOnVsOfB         = val; }
-  void SetV0CasymA(Float_t val)       { fV0CasymA           = val; }
-  void SetV0CasymB(Float_t val)       { fV0CasymB           = val; }
-  void SetNBCsPast(Int_t val)         { fNBCsPast           = val; }
-  void SetNBCsFuture(Int_t val)       { fNBCsFuture         = val; }
-  void SetVIRBBAflags(Int_t val)      { fVIRBBAflags        = val; }
-  void SetVIRBBCflags(Int_t val)      { fVIRBBCflags        = val; }
-  void SetVIRBGAflags(Int_t val)      { fVIRBGAflags        = val; }
-  void SetVIRBGCflags(Int_t val)      { fVIRBGCflags        = val; }
-  void SetVHMBBAflags(Int_t val)      { fVHMBBAflags        = val; }
-  void SetVHMBBCflags(Int_t val)      { fVHMBBCflags        = val; }
-  void SetVHMBGAflags(Int_t val)      { fVHMBGAflags        = val; }
-  void SetVHMBGCflags(Int_t val)      { fVHMBGCflags        = val; }
-  void SetV0MOnThreshold(Int_t val)   { fV0MOnThreshold     = val; }
-  void SetV0MOfThreshold(Float_t val) { fV0MOfThreshold     = val; }
-  void SetSPDGFOThreshhold(Int_t val) { fSPDGFOThreshold    = val; }
-  void SetSH1OuterThreshold(Int_t val){ fSH1OuterThreshold  = val; }
-  void SetSH2OuterThreshold(Int_t val){ fSH2OuterThreshold  = val; }
+  void SetSPDClsVsTklA(Float_t val)     { fSPDClsVsTklA       = val; }
+  void SetSPDClsVsTklB(Float_t val)     { fSPDClsVsTklB       = val; }
+  void SetV0MOnVsOfA(Float_t val)       { fV0MOnVsOfA         = val; }
+  void SetV0MOnVsOfB(Float_t val)       { fV0MOnVsOfB         = val; }
+  void SetSPDOnVsOfA(Float_t val)       { fSPDOnVsOfA         = val; }
+  void SetSPDOnVsOfB(Float_t val)       { fSPDOnVsOfB         = val; }
+  void SetVtxMinContributors(Int_t val) { fVtxMinContributors = val; }
+  void SetVtxMinZdist(Float_t val)      { fVtxMinZdist        = val; }
+  void SetVtxNSigmaZdist(Float_t val)   { fVtxNSigmaZdist     = val; }
+  void SetVtxNSigmaDiamXY(Float_t val)  { fVtxNSigmaDiamXY    = val; }
+  void SetVtxNSigmaDiamZ(Float_t val)   { fVtxNSigmaDiamZ     = val; }
+  void SetV0CasymA(Float_t val)         { fV0CasymA           = val; }
+  void SetV0CasymB(Float_t val)         { fV0CasymB           = val; }
+  void SetNBCsPast(Int_t val)           { fNBCsPast           = val; }
+  void SetNBCsFuture(Int_t val)         { fNBCsFuture         = val; }
+  void SetVIRBBAflags(Int_t val)        { fVIRBBAflags        = val; }
+  void SetVIRBBCflags(Int_t val)        { fVIRBBCflags        = val; }
+  void SetVIRBGAflags(Int_t val)        { fVIRBGAflags        = val; }
+  void SetVIRBGCflags(Int_t val)        { fVIRBGCflags        = val; }
+  void SetVHMBBAflags(Int_t val)        { fVHMBBAflags        = val; }
+  void SetVHMBBCflags(Int_t val)        { fVHMBBCflags        = val; }
+  void SetVHMBGAflags(Int_t val)        { fVHMBGAflags        = val; }
+  void SetVHMBGCflags(Int_t val)        { fVHMBGCflags        = val; }
+  void SetV0MOnThreshold(Int_t val)     { fV0MOnThreshold     = val; }
+  void SetV0MOfThreshold(Float_t val)   { fV0MOfThreshold     = val; }
+  void SetSPDGFOThreshhold(Int_t val)   { fSPDGFOThreshold    = val; }
+  void SetSH1OuterThreshold(Int_t val)  { fSH1OuterThreshold  = val; }
+  void SetSH2OuterThreshold(Int_t val)  { fSH2OuterThreshold  = val; }
   
   void SetZDCCorrParameters(Float_t sumCorr, Float_t deltaCorr, Float_t sigmaSumCorr, Float_t sigmaDeltaCorr){ 
     fZDCCutRefSumCorr = sumCorr; 
@@ -123,6 +133,11 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t fV0MOnVsOfB;            // 
   Float_t fSPDOnVsOfA;            // 
   Float_t fSPDOnVsOfB;            // 
+  Int_t   fVtxMinContributors;    // 
+  Float_t fVtxMinZdist;           //
+  Float_t fVtxNSigmaZdist;        //
+  Float_t fVtxNSigmaDiamXY;       // 
+  Float_t fVtxNSigmaDiamZ;        //
   Float_t fV0CasymA;              // 
   Float_t fV0CasymB;              // 
   Int_t fNBCsPast;                // 
