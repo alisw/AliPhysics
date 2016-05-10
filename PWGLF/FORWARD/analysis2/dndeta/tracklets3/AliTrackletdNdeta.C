@@ -75,6 +75,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
     kAlphas       = 0x00080,
     /** Whether to make a PDF */
     kPDF          = 0x01000,
+    kPNG          = 0x01000,
     /** Whether to pause after each plot */
     kPause        = 0x02000,
     /** Draw in landscape */
@@ -168,10 +169,13 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   /** 
    * Print the canvas 
    * 
-   * @param title Title of this page 
-   * @param size  Size of title 
+   * @param title      Title of this page 
+   * @param shortTitle Page short title
+   * @param size       Size of title 
    */
-  void PrintCanvas(const TString& title, Float_t size=.7);
+  void PrintCanvas(const TString& title,
+		   const TString& shortTitle="page",
+		   Float_t        size=.7);
   //____________________________________________________________________
   /** 
    * Draw an object in a sub-pad 
@@ -679,8 +683,11 @@ void AliTrackletdNdeta::CreateCanvas(const TString& outputName)
 
   if (fViz & kPDF) {
     SuppressGuard g;    
-    fCanvas->Print(Form("%s[", outputName.Data()),
+    fCanvas->Print(Form("%s.pdf[", outputName.Data()),
 		   Form("pdf %s", (fViz & kLandscape) ? "Landscape" : ""));
+  }
+  if (fVis & kPNG) {
+    gSystem->mkdir(outputName.Data(),1);
   }
   fCanvas->SetLeftMargin  (0.10);
   fCanvas->SetRightMargin (0.05);
@@ -721,7 +728,7 @@ void AliTrackletdNdeta::CloseCanvas()
 {
   if ((fViz & kPDF) && fCanvas) {
     SuppressGuard g;
-    fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
+    fCanvas->Print(Form("%s.pdf]", fCanvas->GetTitle()),
 		   Form("pdf %s Title:%s",
 			(fViz & kLandscape) ? "Landscape" : "",
 			fLastTitle.Data()));
@@ -732,8 +739,11 @@ void AliTrackletdNdeta::CloseCanvas()
 }
 
 //____________________________________________________________________
-void AliTrackletdNdeta::PrintCanvas(const TString& title, Float_t size)
+void AliTrackletdNdeta::PrintCanvas(const TString& title,
+				    const TString& shortTitle,
+				    Float_t        size)
 {
+  static Int_t cnt = 0;
   if (fTop) {
     fTop->cd();
     fHeader->SetTextSize(size);
@@ -749,7 +759,11 @@ void AliTrackletdNdeta::PrintCanvas(const TString& title, Float_t size)
 	     title.Data());
     // Suppress prints
     SuppressGuard g;
-    fCanvas->Print(fCanvas->GetTitle(), tit);
+    fCanvas->Print(Form("%s.pdf", fCanvas->GetTitle()), tit);
+  }
+  if (fViz & kPNG) {
+    SuppressGuard g;
+    fCanvas->Print(Form("%s/%03d_%s.png", fCanvas->GetTitle(), shortTitle));
   }
   fLastTitle = title;
   if (fViz & kPause) fCanvas->WaitPrimitive();
@@ -921,7 +935,7 @@ void AliTrackletdNdeta::DrawParams(Container* realSums, Container* simSums)
   DrawParams(GetC(realSums, "parameters"), "Real data",    (fProc & kRealComb));
   fBody->cd(3);
   DrawParams(GetC(simSums, "parameters"), "Simulated data",(fProc & kSimComb));
-  PrintCanvas("Parameters");
+  PrintCanvas("Parameters", "parameters");
 }
 //____________________________________________________________________
 void ModLegend(TVirtualPad* p, TLegend* l,
@@ -1015,7 +1029,7 @@ void AliTrackletdNdeta::DrawGeneral(Container* realList,
   DrawInPad(fBody, 3, real, "colz"); 
   DrawInPad(fBody, 3, sim,  "box same");
   
-  PrintCanvas("General information");
+  PrintCanvas("General information", "general");
 }
 
 namespace {
@@ -1092,7 +1106,7 @@ void AliTrackletdNdeta::DrawWeights(Container* simList)
   DrawInPad(p3, 1, ab, "nostack leg");
   DrawInPad(p3, 2, st, "nostack leg");
 
-  PrintCanvas("Simulation weights");
+  PrintCanvas("Simulation weights", "weights");
 }
   
 //====================================================================
@@ -1304,7 +1318,8 @@ void AliTrackletdNdeta::DrawDeltas(Container* realList, Container* simList)
 	    fBody->GetPad(3)->GetBottomMargin(),
 	    .6, .45);
   
-  PrintCanvas(Form("%s - #Delta", fLastBin.Data()));
+  PrintCanvas(Form("%s - #Delta", fLastBin.Data()),
+	      Form("%s_delta", realList->GetName()));
 
   if ((fProc & kScaleFull|kScaleAverage) == 0) return;
 
@@ -1434,7 +1449,8 @@ void AliTrackletdNdeta::DrawScalars(Container* realList, Container* simList)
   
   ModLegend(bot->GetPad(1),l,.4,.1,.75,.4);
 
-  PrintCanvas(Form("%s - #it{k}", fLastBin.Data()));
+  PrintCanvas(Form("%s - #it{k}", fLastBin.Data()),
+	      Form("%s_scalar", realList->GetName());
 }
 
 //____________________________________________________________________
@@ -1553,7 +1569,8 @@ void AliTrackletdNdeta::DrawBackground(Container* realList,
     ptr++;
     i++;
   }
-  PrintCanvas(Form("%s - backgrounds", fLastBin.Data()));
+  PrintCanvas(Form("%s - backgrounds", fLastBin.Data()),
+	      Form("%s_background", realList->GetName());
 }
 //____________________________________________________________________
 void PrintH(TH2* h, Int_t prec=2)
@@ -1632,7 +1649,8 @@ void AliTrackletdNdeta::DrawAlpha(Container* realList, Container* simList)
   ltx->SetTextSize(0.07);
   DrawInPad(fBody,2,ltx,"");
   
-  PrintCanvas(Form("%s - #alpha", fLastBin.Data()));
+  PrintCanvas(Form("%s - #alpha", fLastBin.Data()),
+	      Form("%s_alpha", realList->GetName());
 }
 //____________________________________________________________________
 Style_t AliTrackletdNdeta::MS(Int_t what, Bool_t sim, Bool_t alt) const
@@ -2160,7 +2178,7 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   if (outBase.IsNull())          outBase.Form("MiddNdeta_0x%04x", fProc);
   if (outBase.EndsWith(".root")) outBase.ReplaceAll(".root", "");
   
-  CreateCanvas(Form("%s.pdf", outBase.Data()));
+  CreateCanvas(outBase.Data());
   if (fViz & kGeneral)    DrawGeneral(realRess, simRess);
   if (fViz & kWeights)    DrawWeights(simRess);
   if (fViz & kParameters) DrawParams(realSums, simSums);
