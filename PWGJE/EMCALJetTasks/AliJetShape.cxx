@@ -220,7 +220,10 @@ Double32_t AliJetShape1subjettiness_kt::result(const fastjet::PseudoJet &jet) co
   if (!jet.has_constituents()) 
     return 0;
   AliFJWrapper *fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
-  return fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(1,0,0.2,1.0,0.4,jet,0);
+  Double32_t Result = fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(1,0,0.2,1.0,0.4,jet,0);
+  fFastjetWrapper->Clear();
+  delete fFastjetWrapper;
+  return Result;
 }
 
 
@@ -228,21 +231,30 @@ Double32_t AliJetShape2subjettiness_kt::result(const fastjet::PseudoJet &jet) co
   if (!jet.has_constituents()) 
     return 0;
   AliFJWrapper *fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
-  return fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(2,0,0.2,1.0,0.4,jet,0);
+  Double32_t Result = fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(2,0,0.2,1.0,0.4,jet,0);
+  fFastjetWrapper->Clear();
+  delete fFastjetWrapper;
+  return Result;
 }
 
 Double32_t AliJetShape3subjettiness_kt::result(const fastjet::PseudoJet &jet) const {
   if (!jet.has_constituents()) 
     return 0;
   AliFJWrapper *fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
-  return fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(3,0,0.2,1.0,0.4,jet,0);
+  Double32_t Result = fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(3,0,0.2,1.0,0.4,jet,0);
+  fFastjetWrapper->Clear();
+  delete fFastjetWrapper;
+  return Result;
 }
 
 Double32_t AliJetShapeOpeningAngle_kt::result(const fastjet::PseudoJet &jet) const {
   if (!jet.has_constituents()) 
     return 0;
   AliFJWrapper *fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
-  return fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(2,0,0.2,1.0,0.4,jet,1);
+  Double32_t Result = fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(2,0,0.2,1.0,0.4,jet,1);
+  fFastjetWrapper->Clear();
+  delete fFastjetWrapper;
+  return Result;
 }
 
 #endif
