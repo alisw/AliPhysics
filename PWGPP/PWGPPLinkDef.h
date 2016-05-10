@@ -166,6 +166,7 @@
 #pragma link C++ class  AliAnalysisMultCorrTaskQA+;
 #pragma link C++ class  AliAnalysisTaskLeadingPt+;
 #pragma link C++ class  AliAnalysisBGMonitorQA+;
+#pragma link C++ class  AliAnalysisBGMonitorQAHLT+;
 #pragma link C++ class  AliAnalysisMultCorrTaskQAPF+;
 
 #pragma link C++ class  AliTrackComparison+;
