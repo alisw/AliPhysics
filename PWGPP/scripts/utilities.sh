@@ -779,7 +779,7 @@ mkdirLocal() (
     rv=$?
     err=$((err + ($rv & 1)))
     [[ $rv == 0 ]] && alilog_success "[mkdirLocal] creation of dir $dir OK" \
-                   || alilog_fail    "[mkdirLocal] creation of dir $dir FAILED"
+                   || alilog_error   "[mkdirLocal] creation of dir $dir FAILED"
   done
   return $((err & 1))
 )
