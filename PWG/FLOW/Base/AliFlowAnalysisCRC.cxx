@@ -15938,9 +15938,9 @@ void AliFlowAnalysisCRC::InitializeCostantsForCRC()
     fCorrMap[r] = CorrMap[r];
   }
   
-  fZDCESENBins = 90;
-  fZDCESELCtot = 1.113523e+02; // hardwired, TBI
-  fZDCESELAtot = 1.078432e+02;  // hardwired, TBI
+  fZDCESENBins = 100;
+  fZDCESELCtot = 59.4; // hardwired, TBI
+  fZDCESELAtot = 53.4;  // hardwired, TBI
   
 } // end of AliFlowAnalysisCRC::InitializeCostantsForCRC()
 
@@ -18177,29 +18177,46 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     }
   }
   
-  Double_t DC=0.,LC=0.,mC=0.,DA=0.,LA=0.,mA=0.;
-  fPolDist[0]->SetParameter(0,fCentralityEBE);
-  fPolDist[0]->SetParameter(1,ZCM);
-  DC = fPolDist[0]->GetMinimum(0.,45.);
-  mC = fPolDist[0]->GetMinimumX(0.,45.);
-  DC *= (ZCM<fPolAv[0]->Eval(mC)?-1.:1.);
-  LC = fPolInt[0]->Integral(0.,mC);
+  printf("start mapping \n");
   
-  fPolDist[1]->SetParameter(0,fCentralityEBE);
-  fPolDist[1]->SetParameter(1,ZAM);
-  DA = fPolDist[1]->GetMinimum(0.,45.);
-  mA = fPolDist[1]->GetMinimumX(0.,45.);
-  DA *= (ZAM<fPolAv[1]->Eval(mA)?-1.:1.);
-  LA = fPolInt[1]->Integral(0.,mA);
+  // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
+  Double_t ZCmax = 52.7;
+  Double_t ZAmax = 47.4;
+  Double_t VZCmin = 10577;
+  Double_t VZAmin = 10510;
+  Double_t sCVZM = ZCmax/VZCmin*VZM;
+  Double_t sAVZM = ZAmax/VZAmin*VZM;
+  
+  Double_t DC=0.,LC=0.,mC=0.,DA=0.,LA=0.,mA=0.;
+  if(sCVZM>5. && sAVZM>5. && sCVZM<50. && sAVZM<45.) {
+    fPolDist[0]->SetParameter(0,sCVZM);
+    fPolDist[0]->SetParameter(1,ZCM);
+    DC = fPolDist[0]->GetMinimum(5.,50.);
+    mC = fPolDist[0]->GetMinimumX(5.,50.);
+    DC *= (ZCM<fPolAv[0]->Eval(mC)?-1.:1.);
+    LC = fPolInt[0]->Integral(5.,mC);
+    
+    fPolDist[1]->SetParameter(0,sAVZM);
+    fPolDist[1]->SetParameter(1,ZAM);
+    DA = fPolDist[1]->GetMinimum(5.,45.);
+    mA = fPolDist[1]->GetMinimumX(5.,45.);
+    DA *= (ZAM<fPolAv[1]->Eval(mA)?-1.:1.);
+    LA = fPolInt[1]->Integral(5.,mA);
+  }
+  
+  printf("end mapping \n");
   
   fNewMetricLEBE = (LA*(fZDCESELCtot/fZDCESELAtot)+LC)/2.;
   
+  if(fMinMulZN==7) {
+    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
+  }
   if(fMinMulZN==5) {
-    if((fhImpvsNcol[0]->GetXaxis()->FindBin(LC)>fZDCESENBins/2) || (fhImpvsNcol[1]->GetXaxis()->FindBin(LA)>fZDCESENBins/2)) PassZDCcuts = kFALSE;
+    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
     if((DC > fPolMinMetric[0]->Eval(LC)) || (DA > fPolMinMetric[1]->Eval(LA))) PassZDCcuts = kFALSE;
   }
   if(fMinMulZN==6) {
-    if((fhImpvsNcol[0]->GetXaxis()->FindBin(LC)>fZDCESENBins/2) || (fhImpvsNcol[1]->GetXaxis()->FindBin(LA)>fZDCESENBins/2)) PassZDCcuts = kFALSE;
+    if(LC==0. || LA==0.) PassZDCcuts = kFALSE;
     if((DC < fPolMaxMetric[0]->Eval(LC)) || (DA < fPolMaxMetric[1]->Eval(LA))) PassZDCcuts = kFALSE;
   }
   
@@ -18224,22 +18241,10 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhCenvsMul[1]->Fill(VZM,fCentralityVarEBE);
     fhZNvsMul[0]->Fill(VZM,ZCM);
     fhZNvsMul[1]->Fill(VZM,ZAM);
-      // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
-      Double_t ZCmax = 52.7;
-      Double_t ZAmax = 47.4;
-      Double_t VZCmin = 10577;
-      Double_t VZAmin = 10510;
-      Double_t cZC = ZCmax/VZCmin;
-      Double_t cZA = ZAmax/VZAmin;
-      fhCenvsDif[0]->Fill(cZC*VZM,ZCM);
-      fhCenvsDif[1]->Fill(cZA*VZM,ZAM);
-    
-    if(fhImpvsNcol[0]->GetXaxis()->FindBin(LC)<=fZDCESENBins/2) {
-      fhImpvsNcol[0]->Fill(LC,DC);
-    }
-    if(fhImpvsNcol[1]->GetXaxis()->FindBin(LA)<=fZDCESENBins/2) {
-      fhImpvsNcol[1]->Fill(LA,DA);
-    }
+    fhCenvsDif[0]->Fill(sCVZM,ZCM);
+    fhCenvsDif[1]->Fill(sAVZM,ZAM);
+    if(LC>0.) fhImpvsNcol[0]->Fill(LC,DC);
+    if(LA>0.) fhImpvsNcol[1]->Fill(LA,DA);
     fhZNQVecCov[0]->Fill(fCentralityEBE,ZCRe*ZARe);
     fhZNQVecCov[1]->Fill(fCentralityEBE,ZCIm*ZAIm);
     fhZNQVecCov[2]->Fill(fCentralityEBE,ZCRe*ZAIm);
@@ -18252,6 +18257,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
 //    fhCenvsDif[0]->Fill(fCentralityEBE,ZCM-ZAM);
 //    fhCenvsDif[1]->Fill(fCentralityVarEBE,ZCM-ZAM);
   }
+  
+  printf("end PassZDCcuts \n");
   
   return PassZDCcuts;
 }
@@ -19700,7 +19707,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
   
   // fill centrality
-  fFlowQCMetricSpec->Fill(fCentralityEBE,fNewMetricLEBE);
+  fFlowQCMetricCent->Fill(fCentralityEBE,fNewMetricLEBE);
   
 } // end of AliFlowAnalysisCRC::CalculateFlowQC();
 
@@ -25937,20 +25944,30 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     fZDCESEMaxHist[1] = (TH1D*)(fZDCESEList->FindObject("MaxMulHis[1]"));
     fZDCESEAvHist[1] = (TH1D*)(fZDCESEList->FindObject("AvMulHis[1]"));
     if(fZDCESEMinHist[0]) fTempList->Add(fZDCESEMinHist[0]);
+    else printf("WARNING: fZDCESEMinHist not found! \n");
     if(fZDCESEMaxHist[0]) fTempList->Add(fZDCESEMaxHist[0]);
+    else printf("WARNING: fZDCESEMaxHist not found! \n");
     if(fZDCESEAvHist[0]) fTempList->Add(fZDCESEAvHist[0]);
+    else printf("WARNING: fZDCESEAvHist not found! \n");
     if(fZDCESEMinHist[1]) fTempList->Add(fZDCESEMinHist[1]);
+    else printf("WARNING: fZDCESEMinHist not found! \n");
     if(fZDCESEMaxHist[1]) fTempList->Add(fZDCESEMaxHist[1]);
+    else printf("WARNING: fZDCESEMaxHist not found! \n");
     if(fZDCESEAvHist[1]) fTempList->Add(fZDCESEAvHist[1]);
+    else printf("WARNING: fZDCESEAvHist not found! \n");
     // new metric
     fZDCESEMinMetricHist[0] = (TH1D*)(fZDCESEList->FindObject("MinMetricMulHis[0]"));
     fZDCESEMaxMetricHist[0] = (TH1D*)(fZDCESEList->FindObject("MaxMetricMulHis[0]"));
     fZDCESEMinMetricHist[1] = (TH1D*)(fZDCESEList->FindObject("MinMetricMulHis[1]"));
     fZDCESEMaxMetricHist[1] = (TH1D*)(fZDCESEList->FindObject("MaxMetricMulHis[1]"));
     if(fZDCESEMinMetricHist[0]) fTempList->Add(fZDCESEMinMetricHist[0]);
+    else printf("WARNING: fZDCESEMinMetricHist not found! \n");
     if(fZDCESEMaxMetricHist[0]) fTempList->Add(fZDCESEMaxMetricHist[0]);
+    else printf("WARNING: fZDCESEMaxMetricHist not found! \n");
     if(fZDCESEMinMetricHist[1]) fTempList->Add(fZDCESEMinMetricHist[1]);
+    else printf("WARNING: fZDCESEMinMetricHist not found! \n");
     if(fZDCESEMaxMetricHist[1]) fTempList->Add(fZDCESEMaxMetricHist[1]);
+    else printf("WARNING: fZDCESEMaxMetricHist not found! \n");
     
     // functions
     for (Int_t k=0; k<2; k++) {
@@ -25964,18 +25981,19 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       fVariousList->Add(fPolMax[k]);
       
       // to calculate new metric
-      fPolAv[k] = new TF1(Form("fPolAv[%d]",k),"pol9",0.,100.);
-      fPolDer[k] = new TF1(Form("fPolDer[%d]",k),"pol8",0.,90.);
-      fPolInt[k] = new TF1(Form("fPolInt[%d]",k),"sqrt(1+pol8**2)",0.,90.);
-      fPolDist[k] = new TF1(Form("fPolDist[%d]",k),"sqrt((x-[0])**2+(pol9(2)-[1])**2)",0.,90.);
+      Double_t Lmax=(k==0?50.:45.);
+      fPolAv[k] = new TF1(Form("fPolAv[%d]",k),"pol4",0.,65.);
+      fPolDer[k] = new TF1(Form("fPolDer[%d]",k),"pol3",0.,65.);
+      fPolInt[k] = new TF1(Form("fPolInt[%d]",k),"sqrt(1+pol3**2)",0.,65.);
+      fPolDist[k] = new TF1(Form("fPolDist[%d]",k),"sqrt((x-[0])**2+(pol4(2)-[1])**2)",0.,65.);
       if(fZDCESEAvHist[k]) {
-        fZDCESEAvHist[k]->Fit(fPolAv[k],"QRN","",0.,90.);
-        for (Int_t p=1; p<=9; p++) {
+        fZDCESEAvHist[k]->Fit(fPolAv[k],"QRN","",10.,Lmax);
+        for (Int_t p=1; p<=fPolAv[k]->GetNpar(); p++) {
           fPolDer[k]->SetParameter(p-1,p*fPolAv[k]->GetParameter(p));
         }
         fPolInt[k]->SetParameters(fPolDer[k]->GetParameters());
         
-        for (Int_t p=0; p<=9; p++) {
+        for (Int_t p=0; p<=fPolAv[k]->GetNpar(); p++) {
           fPolDist[k]->SetParameter(p+2,fPolAv[k]->GetParameter(p));
         }
       }
@@ -25985,11 +26003,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       fVariousList->Add(fPolDist[k]);
       
       // cuts on new metric
-      fPolMinMetric[k] = new TF1(Form("fPolMinMetric[%d]",k),"pol9",0.,(k==0?fZDCESELCtot:fZDCESELAtot));
-      fPolMaxMetric[k] = new TF1(Form("fPolMaxMetric[%d]",k),"pol9",0.,(k==0?fZDCESELCtot:fZDCESELAtot));
+      fPolMinMetric[k] = new TF1(Form("fPolMinMetric[%d]",k),"pol1",0.,Lmax);
+      fPolMaxMetric[k] = new TF1(Form("fPolMaxMetric[%d]",k),"pol1",0.,Lmax);
       if(fZDCESEMinMetricHist[k] && fZDCESEMaxMetricHist[k]) {
-        fZDCESEMinMetricHist[k]->Fit(fPolMinMetric[k],"QRN","",2.,54.); // hardwired, TBI
-        fZDCESEMaxMetricHist[k]->Fit(fPolMaxMetric[k],"QRN","",2.,54.); // hardwired, TBI
+        fZDCESEMinMetricHist[k]->Fit(fPolMinMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
+        fZDCESEMaxMetricHist[k]->Fit(fPolMaxMetric[k],"QRN","",10.,Lmax); // hardwired, TBI
       }
       fVariousList->Add(fPolMinMetric[k]);
       fVariousList->Add(fPolMaxMetric[k]);
