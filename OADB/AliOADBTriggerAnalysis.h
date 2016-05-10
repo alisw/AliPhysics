@@ -56,7 +56,17 @@ class AliOADBTriggerAnalysis : public TNamed {
   Int_t   GetSH2OuterThreshold()    { return fSH2OuterThreshold;    }
   Float_t GetFMDLowThreshold()      { return fFMDLowCut;            }
   Float_t GetFMDHitThreshold()      { return fFMDHitCut;            }
-
+  Float_t GetTRDptHSE()             { return fTRDptHSE;             }
+  UChar_t GetTRDpidHSE()            { return fTRDpidHSE;            }
+  Float_t GetTRDptHQU()             { return fTRDptHQU;             }
+  UChar_t GetTRDpidHQU()            { return fTRDpidHQU;            }
+  Float_t GetTRDptHEE()             { return fTRDptHEE;             }
+  UChar_t GetTRDpidHEE()            { return fTRDpidHEE;            }
+  UChar_t GetTRDminSectorHEE()      { return fTRDminSectorHEE;      }
+  UChar_t GetTRDmaxSectorHEE()      { return fTRDmaxSectorHEE;      }
+  Float_t GetTRDptHJT()             { return fTRDptHJT;             }
+  UChar_t GetTRDnHJT()              { return fTRDnHJT;              }
+  
   // Setters
   void SetSPDClsVsTklA(Float_t val)     { fSPDClsVsTklA       = val; }
   void SetSPDClsVsTklB(Float_t val)     { fSPDClsVsTklB       = val; }

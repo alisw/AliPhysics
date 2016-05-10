@@ -102,6 +102,8 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fZDCCutZNATimeCorrMin = oadb->GetZDCCutZNATimeCorrMin();
   fZDCCutZNCTimeCorrMax = oadb->GetZDCCutZNCTimeCorrMax();
   fZDCCutZNCTimeCorrMin = oadb->GetZDCCutZNCTimeCorrMin();
+  fSPDClsVsTklA         = oadb->GetfSPDClsVsTklA();
+  fSPDClsVsTklB         = oadb->GetfSPDClsVsTklB();
   fV0MOnVsOfA           = oadb->GetV0MOnVsOfA();
   fV0MOnVsOfB           = oadb->GetV0MOnVsOfB();
   fSPDOnVsOfA           = oadb->GetSPDOnVsOfA();
@@ -130,6 +132,16 @@ void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fSH2OuterThreshold    = oadb->GetSH2OuterThreshold();
   fFMDLowCut            = oadb->GetFMDLowThreshold();
   fFMDHitCut            = oadb->GetFMDHitThreshold();
+  fTRDptHSE             = oadb->GetTRDptHSE();
+  fTRDpidHSE            = oadb->GetTRDpidHSE();
+  fTRDptHQU             = oadb->GetTRDptHQU();
+  fTRDpidHQU            = oadb->GetTRDpidHQU();
+  fTRDptHEE             = oadb->GetTRDptHEE();
+  fTRDpidHEE            = oadb->GetTRDpidHEE();
+  fTRDminSectorHEE      = oadb->GetTRDminSectorHEE();
+  fTRDmaxSectorHEE      = oadb->GetTRDmaxSectorHEE();
+  fTRDptHJT             = oadb->GetTRDptHJT();
+  fTRDnHJT              = oadb->GetTRDnHJT();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -184,7 +196,11 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistFMDSingle      = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;counts", 1000, 0, 10);
   fHistFMDSum         = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
   fHistT0             = new TH1F("fHistT0", "T0;time (ns);events", 100, -25, 25);
-  
+
+  TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,2000);
+  fFuncSPDClsVsTkl->SetParameters(fSPDClsVsTklA,fSPDClsVsTklB);
+  fHistSPDClsVsTkl->GetListOfFunctions()->Add(fFuncSPDClsVsTkl);
+
   TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,2000);
   fFuncV0MOnVsOf->SetParameters(fV0MOnVsOfA,fV0MOnVsOfB);
   fHistV0MOnVsOf->GetListOfFunctions()->Add(fFuncV0MOnVsOf);
