@@ -490,6 +490,7 @@ validateLog()
             'core dumped'
             'core file'
             'Exception catched'
+            'line [0-9]*.*: No such file or directory'
             'core\.'
   )
 
