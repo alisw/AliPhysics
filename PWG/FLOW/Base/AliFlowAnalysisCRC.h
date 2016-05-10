@@ -1422,7 +1422,8 @@ private:
  // temp
  TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
  TProfile *fTPCQHist[2];  //! Run-by-run TPCQvecHist
- TProfile *fZDCQHist[4];               //! Run-by-run ZDCQvecHist
+ TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
+  TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!
  TH1D *fZDCESEAvHist[2]; //!
@@ -1593,6 +1594,8 @@ private:
  
  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
  TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
+ TH2F *fFlowQCMetricSpec; //!
+ TH2F *fFlowQCMetricCent; //!
  
  // Flow SP VZ
  TList *fFlowSPVZList;    //! SPVZ List
@@ -1646,7 +1649,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 9);
+ ClassDef(AliFlowAnalysisCRC, 10);
  
 };
 

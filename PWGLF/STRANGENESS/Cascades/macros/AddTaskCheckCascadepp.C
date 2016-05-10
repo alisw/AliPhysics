@@ -17,7 +17,7 @@
 //
 ///////////////////////////////////////////////////////////////
 
-AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem                     = "pp",
+AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( Int_t    collidingSystem                     = 0,
                                                       AliVEvent::EOfflineTriggerTypes triggerclass = AliVEvent::kINT7, 
                                                       Int_t    minnTPCcls                          = 70,
                                                       Float_t  vtxlimmax                           = 10.0,
@@ -26,7 +26,7 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
                                                       Bool_t   kwithsdd                            = kFALSE,
                                                       Float_t  minptondaughtertracks               = 0.0,
                                                       Float_t  etacutondaughtertracks              = 0.8,
-                                                      Double_t ftpcpidsigma                        = 4 ) {
+                                                      TString  suffix                              = "" ) {
 
    //______________________________________________________________________________
    // Creates, configures and attaches to the train a cascades check task
@@ -38,7 +38,6 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
       return NULL;
    }   
 
-
    //___________________________________________________________________________________
    // Check the analysis type using the event handlers connected to the analysis manager
    //===================================================================================
@@ -48,14 +47,14 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
    }   
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-
    //______________________________
    // Create and configure the task
    //==============================
    const Char_t *sddstatus = "";
-   if      (collidingSystem == "pp" && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
-   else if (collidingSystem == "pp" && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
+   if      (collidingSystem == 0 && ksddselection && kwithsdd)   sddstatus = "_wSDDon";
+   else if (collidingSystem == 0 && ksddselection && !kwithsdd)  sddstatus = "_wSDDoff";
    TString taskname = Form("TaskCheckCascadepp_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   taskname.Append(Form("%s",suffix.Data()));
 
    AliAnalysisTaskCheckCascadepp *taskcheckcascadepp = new AliAnalysisTaskCheckCascadepp(taskname);
      taskcheckcascadepp->SetAnalysisType               (type);                   // "ESD" or "AOD"
@@ -67,10 +66,9 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
      taskcheckcascadepp->SetVertexRange                (vtxlimmin,vtxlimmax);
      taskcheckcascadepp->SetMinptCutOnDaughterTracks   (minptondaughtertracks);  // which value do you want apply for cut on min pt daughter track?
      taskcheckcascadepp->SetEtaCutOnDaughterTracks     (etacutondaughtertracks); // which value do you want apply for cut on eta daughter track?
-     taskcheckcascadepp->SetNumTPCPIDsigma             (ftpcpidsigma); 
+     taskcheckcascadepp->SetSuffix                     (suffix);
 
    mgr->AddTask(taskcheckcascadepp);
-
 
    //______________________________________________________________________________
    // Create ONLY the output containers for the data produced by the task
@@ -85,6 +83,12 @@ AliAnalysisTaskCheckCascadepp *AddTaskCheckCascadepp( TString  collidingSystem  
    TString outputname3 = Form("cfcontPIDOmegaM_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    TString outputname4 = Form("cfcontPIDOmegaP_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
    TString outputname5 = Form("cfcontCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",minnTPCcls,vtxlimmax,vtxlimmin,minptondaughtertracks,etacutondaughtertracks,sddstatus);
+   outputname0.Append(Form("%s",suffix.Data()));
+   outputname1.Append(Form("%s",suffix.Data()));
+   outputname2.Append(Form("%s",suffix.Data()));
+   outputname3.Append(Form("%s",suffix.Data()));
+   outputname4.Append(Form("%s",suffix.Data()));
+   outputname5.Append(Form("%s",suffix.Data()));
    //Save objects into the train common file
    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(outputname0, TList::Class(),          AliAnalysisManager::kOutputContainer, outputFileName);
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(outputname1, AliCFContainer::Class(), AliAnalysisManager::kOutputContainer, outputFileName);

@@ -77,7 +77,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutV0Rap(0.);//not applied as default
   task->SetCutDeltaREmbedded(0.); //for standard tracks
   task->SetCutFractionPtEmbedded(1.); //for standard tracks
-
+  task->SetUseNJEvents(kFALSE);//Embedding into all events (kFALSE) or only in no-jet events (kTRUE)
 
   if(K0type == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskK0(768);
   if(Latype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskLa(768);

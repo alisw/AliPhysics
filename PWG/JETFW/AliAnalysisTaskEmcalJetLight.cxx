@@ -40,8 +40,6 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight() :
   AliAnalysisTaskEmcalLight(),
   fJetCollArray()
 {
-  // Default constructor.
-
   fJetCollArray.SetOwner(kTRUE);
 }
 
@@ -59,8 +57,6 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight(const char *name, Boo
   AliAnalysisTaskEmcalLight(name, histo),
   fJetCollArray()
 {
-  // Standard constructor.
-
   fJetCollArray.SetOwner(kTRUE);
 }
 
@@ -69,7 +65,6 @@ AliAnalysisTaskEmcalJetLight::AliAnalysisTaskEmcalJetLight(const char *name, Boo
  */
 AliAnalysisTaskEmcalJetLight::~AliAnalysisTaskEmcalJetLight()
 {
-  // Destructor
 }
 
 /**
@@ -84,8 +79,6 @@ AliAnalysisTaskEmcalJetLight::~AliAnalysisTaskEmcalJetLight()
  */
 void AliAnalysisTaskEmcalJetLight::ExecOnce()
 {
-  // Init the analysis.
-
   AliAnalysisTaskEmcalLight::ExecOnce();
 
   //Load all requested jet branches - each container knows name already
@@ -103,13 +96,12 @@ void AliAnalysisTaskEmcalJetLight::ExecOnce()
 }
 
 /**
- * Retrieve objects from event.
- * @return
+ * Retrieve objects from event. This operation needs to be performed
+ * for every event.
+ * @return kTRUE if successful, kFALSE otherwise
  */
 Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
 {
-  // Retrieve objects from event.
-
   if (!AliAnalysisTaskEmcalLight::RetrieveEventObjects())
     return kFALSE;
 
@@ -122,7 +114,7 @@ Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
 }
 
 /**
- * Create new jet container and attach it to the task.
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
  * @param[in] jetType One of the AliJetContainer::EJetType_t enumeration values (charged, full, neutral)
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
@@ -141,7 +133,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetTyp
 }
 
 /**
- * Create new jet container and attach it to the task.
+ * Create new jet container and attach it to the task. This method is usually called in the add task macro.
  * @param[in] jetType One of the AliJetContainer::EJetType_t enumeration values (charged, full, neutral)
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
@@ -169,9 +161,7 @@ AliJetContainer* AliAnalysisTaskEmcalJetLight::AddJetContainer(EJetType_t jetTyp
  */
 AliJetContainer* AliAnalysisTaskEmcalJetLight::GetJetContainer(Int_t i) const
 {
-  // Get i^th jet container
-
-  if(i<0 || i>=fJetCollArray.GetEntriesFast()) return 0;
+  if (i < 0 || i >= fJetCollArray.GetEntriesFast()) return 0;
   AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
   return cont;
 }

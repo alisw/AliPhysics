@@ -1449,7 +1449,7 @@ void AliAnalysisTaskHJetSpectra::Terminate(Option_t *){
    PostData(1, fOutput);
 
    // Mandatory
-   fOutput = dynamic_cast<TList*> (GetOutputData(1)); // '1' refers to the output slot
+   fOutput = dynamic_cast<AliEmcalList*> (GetOutputData(1)); // '1' refers to the output slot
    if(!fOutput) {
       printf("ERROR: Output list not available\n");
       return;

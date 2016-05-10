@@ -128,10 +128,14 @@ void CreateCorrMapObjTime(TObjArray* arrMap,int firstrun=0,int lastrun=-1, const
     return;
   }
   //
-  // make sure time stamps are ordered
   for (int im0=0;im0<nmap;im0++) {
     AliTPCChebCorr* map0 = (AliTPCChebCorr*)arrMap->At(im0);
     map0->SetTimeDependent(kTRUE);
+  }
+  //
+  // make sure time stamps are ordered
+  for (int im0=0;im0<nmap;im0++) {
+    AliTPCChebCorr* map0 = (AliTPCChebCorr*)arrMap->At(im0);
     for (int im1=im0+1;im1<nmap;im1++) {
       AliTPCChebCorr* map1 = (AliTPCChebCorr*)arrMap->At(im1);
       if (map1->GetTimeStampCenter() < map0->GetTimeStampCenter()) { // swap

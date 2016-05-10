@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Comment describing what this class does needed!
+// Implementation for correlation analysis
 
 #include "AliJCorrelations.h"
 #include "AliJDataManager.h"
@@ -323,8 +323,8 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   
   //acceptance correction  triangle  or mixed fevent
   //  fGeometricAcceptanceCorrection = 1;
-  fGeometricAcceptanceCorrection = ( fsamplingMethod == 0 ) ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,fptaBin,2);
-  fGeometricAcceptanceCorrection3D = ( fsamplingMethod == 0 ) ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,fXlongBin,1);
+  fGeometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrectionTraditional(fsamplingMethod, fDeltaEta, fDeltaPhiPiPi, fCentralityBin, fpttBin, fptaBin);
+  fGeometricAcceptanceCorrection3D = fAcceptanceCorrection->GetAcceptanceCorrection3DNearSide(fsamplingMethod, fDeltaEta, fDeltaPhiPiPi, fCentralityBin, fpttBin);
   
   if(fpttBin<0 || fptaBin<0 || fEtaGapBin<0 ){
     cout<<"Error in FillAzimuthHistos: some pT or eta out of bin. pttBin="<<fpttBin<<" pTaBin="<<fptaBin <<" etaGapBin="<< fEtaGapBin << endl;
@@ -341,6 +341,9 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   // ===================================================================
   
   bool fill2DBackgroundQualityControlHistograms = false;  // Choose whether to fill the DeltaPhi DeltaEta histograms for jT background
+  
+  // If quality control level is high enough, fill 2D quality control histograms
+  if(fcard->Get("QualityControlLevel")>1) fill2DBackgroundQualityControlHistograms = true;
   
   //if(fhistos->fhCosThetaStar.Dimension()>0) FillPairPtAndCosThetaStarHistograms(fTyp, ftk1, ftk2);  // Fill the pair pT and cos(theta*) histograms TODO: Does not work! Needs debugging
   if(fhistos->fhxEF.Dimension()>0) FillXeHistograms(fTyp);  // Fill the xE and xLong histograms
@@ -486,7 +489,7 @@ void AliJCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocType
   
   // Calculate jT, invariant mass and the correction factor for jT
   double jt = vAssoc->Perp(vTrigger->Vect());
-  double geometricAcceptanceCorrection = fsamplingMethod == 0  ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,iBin,assocType);
+  double geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fpttBin,iBin);
   double weight = jt > 1e-3 ? geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
   double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
   
@@ -543,10 +546,12 @@ void AliJCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, TL
   
   // Find the acceptance correction for the pair
   double dEtaRndm = vTrigger->Eta() - vAssoc->Eta();
-  double geoAccCorrRndm = fsamplingMethod == 0  ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(dEtaRndm) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(dEtaRndm,fCentralityBin,fpttBin,iBin,assocType);
   
   // Find the phi difference in the interval ]-Pi,Pi]
   double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
+  
+  // Find the acceptance correction for the found particle pair
+  double geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fpttBin,iBin);
   
   // Fill the background histograms
   if(iBin>=0){ //

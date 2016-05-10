@@ -243,6 +243,7 @@ Int_t AliMTRChEffAnalysis::CompareEfficiencies ( const char* sources, const char
       TString runNum = ( dirRun->GetEntriesFast() > 1 ) ? dirRun->UncheckedAt(1)->GetName() : "";
       AliCDBManager* mgr = AliCDBManager::Instance();
       if ( ! mgr->GetDefaultStorage() ) mgr->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+      if ( mgr->GetSpecificStorage(trigEffCDBdir.Data()) ) mgr->UnloadFromCache(trigEffCDBdir.Data());
       mgr->SetSpecificStorage(trigEffCDBdir.Data(),cdbPath.Data());
       Int_t runNumber = 0;
       if ( runNum.IsNull() ) {

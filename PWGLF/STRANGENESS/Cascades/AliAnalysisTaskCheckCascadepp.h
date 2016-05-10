@@ -44,7 +44,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         virtual void   Terminate(Option_t *);
         //Setters   
         void SetAnalysisType                 (const char* analysisType                 ) { fAnalysisType                   = analysisType;                 }
-        void SetCollidingSystem              (const char* collidingSystem              ) { fCollidingSystem                = collidingSystem;              }
+        void SetCollidingSystem              (Int_t  collidingSystem                   ) { fCollidingSystem                = collidingSystem;              }
         void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType ) { fkTriggerClass                  = trigType;                     }
         void SetEventSelSDDstatus            (Bool_t eventselSDDstatus                 ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
         void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete             ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
@@ -67,6 +67,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                     ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
         void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors         ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
         void SetNumTPCPIDsigma               (Double_t ftpcpidsigma                    ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
+        void SetSuffix                       (const char* suffix                       ) { fSuffix                         = suffix;                       }
         //Setters for the V0 and cascade Vertexer Parameters
         void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
         void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -92,7 +93,7 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         AliESDtrackCuts  *fESDtrackCuts;                   // ESD track cuts used for primary track definition
         AliAnalysisUtils *fUtils;                          // analysis utils (for pA vertex selection)
 
-        TString           fCollidingSystem;                // "pPb" or "pp" colliding system
+        Int_t             fCollidingSystem;                // "pPb" or "pp" colliding system
         AliVEvent::EOfflineTriggerTypes fkTriggerClass;    // Trigger selection: kMB, kINT7, etc as needed
         AliPIDResponse   *fPIDResponse;                    //! PID response object
 
@@ -117,7 +118,8 @@ class AliAnalysisTaskCheckCascadepp : public AliAnalysisTaskSE {
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
         Int_t             fSPDPileUpminContributors;       //
         Double_t          fTPCPIDsigma;                    //
-       
+        TString           fSuffix;      
+ 
         Double_t          fV0Sels[7];                      // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t          fCascSels[8];                    // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 

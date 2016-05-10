@@ -53,6 +53,8 @@
 #include <AliAODTracklets.h>
 #include <AliPIDResponse.h>
 #include <AliFlowBayesianPID.h>
+#include <AliMCParticle.h>
+#include <AliAODMCParticle.h>
 #include "AliAnalysisUtils.h"
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
@@ -61,6 +63,7 @@
 #include "AliReducedPairInfo.h"
 #include "AliReducedCaloClusterInfo.h"
 #include "AliReducedFMDInfo.h"
+#include "AliReducedEventPlaneInfo.h"
 #include "AliAnalysisTaskReducedTreeMaker.h"
 
 #include <iostream>
@@ -91,6 +94,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillBayesianPIDInfo(kFALSE),
+  fFillEventPlaneInfo(kFALSE),
+  fFillMCInfo(kFALSE),
   fEventFilter(0x0),
   fTrackFilter(0x0),
   fFlowTrackFilter(0x0),
@@ -143,6 +148,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillBayesianPIDInfo(kFALSE),
+  fFillEventPlaneInfo(kFALSE),
+  fFillMCInfo(kFALSE),
   fEventFilter(0x0),
   fTrackFilter(0x0),
   fFlowTrackFilter(0x0),
@@ -232,6 +239,14 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
     fTree->SetBranchStatus(arinactive->At(i)->GetName(), 0);
   }
  
+  // if MC info is not requested, then set the respective branches off
+  if(!fFillMCInfo) {
+    fTree->SetBranchStatus("fTracks.fMC*", 0); 
+  }
+  if(!fFillEventPlaneInfo) {
+    fTree->SetBranchStatus("fEventPlane.*", 0);   
+  }
+ 
   if(fFillBayesianPIDInfo) {
     fBayesianResponse = new AliFlowBayesianPID();
     fBayesianResponse->SetNewTrackParam();
@@ -292,6 +307,11 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //pileup
   if (fRejectPileup){
     if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+  }
+  
+  if(fFillMCInfo) {
+    Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
+    if(hasMC) AliDielectronMC::Instance()->ConnectMCEvent();
   }
 
   //bz for AliKF
@@ -521,6 +541,13 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   for(Int_t i=0;i<64;++i) 
     eventInfo->fVZEROMult[i] = vzero->GetMultiplicity(i);  
   
+  if(fFillEventPlaneInfo) {
+    AliReducedEventPlaneInfo* ep=new AliReducedEventPlaneInfo();     
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][0] = 1.0;
+    ep->fQvector[AliReducedEventPlaneInfo::kTPC][1][1] = 1.0;
+    ep->fEventPlaneStatus[AliReducedEventPlaneInfo::kTPC][1] = AliReducedEventPlaneInfo::kCalibrated;
+  }
+  
   // EMCAL/PHOS clusters
   if(fFillCaloClusterInfo) FillCaloClusters();
   
@@ -670,6 +697,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   AliPIDResponse* pidResponse = inputHandler->GetPIDResponse();
+  
+  Bool_t hasMC = AliDielectronMC::Instance()->HasMC();
   
   // find all the tracks which belong to a V0 stored in the reduced event
   UShort_t trackIdsV0[4][20000]={{0}};
@@ -912,6 +941,41 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
                 
       if(esdTrack->IsEMCAL()) trackInfo->fCaloClusterId = esdTrack->GetEMCALcluster();
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
+      
+      if(fFillMCInfo && hasMC) {
+         AliMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(esdTrack);
+         if(truthParticle) {
+           trackInfo->fMCMom[0] = truthParticle->Px();
+           trackInfo->fMCMom[1] = truthParticle->Py();
+           trackInfo->fMCMom[2] = truthParticle->Pz();
+           trackInfo->fMCFreezeout[0] = truthParticle->Xv();
+           trackInfo->fMCFreezeout[1] = truthParticle->Yv();
+           trackInfo->fMCFreezeout[2] = truthParticle->Zv();
+           trackInfo->fMCLabels[0] = esdTrack->GetLabel();
+           trackInfo->fMCPdg[0] = truthParticle->PdgCode();
+           trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
+           
+           AliMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
+           if(motherTruth) {
+             trackInfo->fMCLabels[1] = truthParticle->GetMother();
+             trackInfo->fMCPdg[1] = motherTruth->PdgCode();
+          }
+          
+          AliMCParticle* grandmotherTruth = NULL;
+          if(motherTruth) grandmotherTruth = AliDielectronMC::Instance()->GetMCTrackMother(motherTruth);
+          if(grandmotherTruth) {
+             trackInfo->fMCLabels[2] = motherTruth->GetMother();
+             trackInfo->fMCPdg[2] = grandmotherTruth->PdgCode();
+          }
+           
+           AliMCParticle* grandgrandmotherTruth = NULL;
+           if(grandmotherTruth) grandgrandmotherTruth = AliDielectronMC::Instance()->GetMCTrackMother(grandmotherTruth);
+           if(grandgrandmotherTruth) {
+              trackInfo->fMCLabels[3] = grandmotherTruth->GetMother();
+              trackInfo->fMCPdg[3] = grandgrandmotherTruth->PdgCode();
+           }
+         }
+      }
     }  // end if(isESD)
     if(isAOD) {
       const AliExternalTrackParam* tpcInner = aodTrack->GetInnerParam();
@@ -934,6 +998,41 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       
       if(aodTrack->IsEMCAL()) trackInfo->fCaloClusterId = aodTrack->GetEMCALcluster();
       if(aodTrack->IsPHOS()) trackInfo->fCaloClusterId = aodTrack->GetPHOScluster();
+      
+      if(fFillMCInfo && hasMC) {
+         AliAODMCParticle* truthParticle = AliDielectronMC::Instance()->GetMCTrack(aodTrack);
+         if(truthParticle) {
+            trackInfo->fMCMom[0] = truthParticle->Px();
+            trackInfo->fMCMom[1] = truthParticle->Py();
+            trackInfo->fMCMom[2] = truthParticle->Pz();
+            trackInfo->fMCFreezeout[0] = truthParticle->Xv();
+            trackInfo->fMCFreezeout[1] = truthParticle->Yv();
+            trackInfo->fMCFreezeout[2] = truthParticle->Zv();
+            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
+            trackInfo->fMCPdg[0] = truthParticle->PdgCode();
+            trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
+            
+            AliAODMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
+            if(motherTruth) {
+               trackInfo->fMCLabels[1] = truthParticle->GetMother();
+               trackInfo->fMCPdg[1] = motherTruth->PdgCode();
+            }
+            
+            AliAODMCParticle* grandmotherTruth = NULL;
+            if(motherTruth) grandmotherTruth = AliDielectronMC::Instance()->GetMCTrackMother(motherTruth);
+            if(grandmotherTruth) {
+               trackInfo->fMCLabels[2] = motherTruth->GetMother();
+               trackInfo->fMCPdg[2] = grandmotherTruth->PdgCode();
+            }
+            
+            AliAODMCParticle* grandgrandmotherTruth = NULL;
+            if(grandmotherTruth) grandgrandmotherTruth = AliDielectronMC::Instance()->GetMCTrackMother(grandmotherTruth);
+            if(grandgrandmotherTruth) {
+               trackInfo->fMCLabels[3] = grandmotherTruth->GetMother();
+               trackInfo->fMCPdg[3] = grandgrandmotherTruth->PdgCode();
+            }
+         }
+      }
     }  // end if(isAOD)
 
     fReducedEvent->fNtracks[1] += 1;

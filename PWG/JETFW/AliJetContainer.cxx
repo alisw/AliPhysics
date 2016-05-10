@@ -1,7 +1,17 @@
-//
-// Container with name, TClonesArray and cuts for jets
-//
-// Author: M. Verweij, S. Aiola
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include <TClonesArray.h>
 
@@ -15,9 +25,13 @@
 
 #include "AliJetContainer.h"
 
-ClassImp(AliJetContainer)
+/// \cond CLASSIMP
+ClassImp(AliJetContainer);
+/// \endcond
 
-//________________________________________________________________________
+/**
+ * Default constructor.
+ */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
   fJetAcceptanceType(kUser),
@@ -51,13 +65,14 @@ AliJetContainer::AliJetContainer():
   fTpcHolePos(0),
   fTpcHoleWidth(0)
 {
-  // Default constructor.
-
   fBaseClassName = "AliEmcalJet";
   SetClassName("AliEmcalJet");
 }
 
-//________________________________________________________________________
+/**
+ * Standard constructor.
+ * @param name Name of the jet branch (TClonesArray)
+ */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
   fJetAcceptanceType(kUser),
@@ -91,14 +106,24 @@ AliJetContainer::AliJetContainer(const char *name):
   fTpcHolePos(0),
   fTpcHoleWidth(0)
 {
-  // Standard constructor.
-
   fBaseClassName = "AliEmcalJet";
   SetClassName("AliEmcalJet");
   SetMinPt(1);
 }
 
-//________________________________________________________________________
+/**
+ * Jet definition constructor.
+ *
+ * This constructor takes a jet definition as an input and builds automatically the
+ * jet branch name for itself.
+ * @param jetType Type of the jet (full, charged, neutral)
+ * @param jetAlgo Jet algorithm used to reconstruct the jets (anti-kt, kt, etc.)
+ * @param recoScheme Jet recombination scheme (E-scheme, pt-scheme)
+ * @param radius Jet resolution parameter
+ * @param partCont Particle container used to feed the jet finder
+ * @param clustCont Cluster container used to feed the jet finder
+ * @param tag Additional tag for the jet branch name (default is "Jet")
+ */
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
@@ -131,15 +156,16 @@ AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoSc
   fGeom(0),
   fRunNumber(0)
 {
-  // Constructor.
-
   fBaseClassName = "AliEmcalJet";
   SetClassName("AliEmcalJet");
   SetMinPt(1);
 }
 
-//________________________________________________________________________
-void AliJetContainer::SetArray(AliVEvent *event) 
+/**
+ * Calls the base class method, then set the acceptance cuts.
+ * @param event Event pointer used to retrieve the jet branch
+ */
+void AliJetContainer::SetArray(const AliVEvent *event)
 {
   // Set jet array
 
@@ -148,7 +174,11 @@ void AliJetContainer::SetArray(AliVEvent *event)
   SetAcceptanceCuts();
 }
 
-//________________________________________________________________________
+/**
+ * Set the acceptance cut limits based on the object settings.
+ * This has to be executed when the processed run is known, in order
+ * to load the correct detector geometry.
+ */
 void AliJetContainer::SetAcceptanceCuts()
 {
   // Set acceptance
@@ -183,7 +213,11 @@ void AliJetContainer::SetAcceptanceCuts()
 }
 
 
-//________________________________________________________________________
+/**
+ * Set a pointer to the EMCal geometry object.
+ * It assumes that an instance of the object has been already
+ * configured.
+ */
 void AliJetContainer::SetEMCALGeometry()
 {
   fGeom = AliEMCALGeometry::GetInstance();
@@ -193,11 +227,15 @@ void AliJetContainer::SetEMCALGeometry()
   }
 }
 
-//________________________________________________________________________
-void AliJetContainer::LoadRho(AliVEvent *event)
+/**
+ * Loads the rho object from the provided event.
+ * The rho object contains information about the event average
+ * energy density, used to subtract diffuse background in jet reconstructed
+ * in pA or A-A collisions.
+ * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ */
+void AliJetContainer::LoadRho(const AliVEvent *event)
 {
-  // Load rho
-
   if (!fRhoName.IsNull() && !fRho) {
     fRho = dynamic_cast<AliRhoParameter*>(event->FindListObject(fRhoName));
     if (!fRho) {
@@ -207,11 +245,16 @@ void AliJetContainer::LoadRho(AliVEvent *event)
   }
 }
 
-//________________________________________________________________________
-void AliJetContainer::LoadLocalRho(AliVEvent *event)
+/**
+ * Loads the local rho object from the provided event.
+ * The local rho object contains information about the event
+ * energy density as a function of the event geometry.
+ * It is used to subtract background in jet reconstructed
+ * in pA or A-A collisions.
+ * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ */
+void AliJetContainer::LoadLocalRho(const AliVEvent *event)
 {
-  // Load local rho
-
   if (!fLocalRhoName.IsNull() && !fLocalRho) {
     fLocalRho = dynamic_cast<AliLocalRhoParameter*>(event->FindListObject(fLocalRhoName));
     if (!fLocalRho) {
@@ -221,11 +264,16 @@ void AliJetContainer::LoadLocalRho(AliVEvent *event)
   }
 }
 
-//________________________________________________________________________
-void AliJetContainer::LoadRhoMass(AliVEvent *event)
+/**
+ * Loads the mass rho object from the provided event.
+ * The mass rho object contains information about the average event
+ * mass density.
+ * It is used to subtract background in jet reconstructed
+ * in pA or A-A collisions.
+ * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ */
+void AliJetContainer::LoadRhoMass(const AliVEvent *event)
 {
-  // Load rho
-
   if (!fRhoMassName.IsNull() && !fRhoMass) {
     fRhoMass = dynamic_cast<AliRhoParameter*>(event->FindListObject(fRhoMassName));
     if (!fRhoMass) {
@@ -235,11 +283,14 @@ void AliJetContainer::LoadRhoMass(AliVEvent *event)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Finds the leading jet in the container according to pT.
+ * If opt contains "rho" the sorting is done according to pT - area x rho instead of pT
+ * @param opt Options concerning the sorting. The only implemented option is "rho".
+ * @return A pointer to the leading jet in the container
+ */
 AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
 {
-  // Get the leading jet; if opt contains "rho" the sorting is according to pt-A*rho
-
   TString option(opt);
   option.ToLower();
 
@@ -266,22 +317,27 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
   return jetMax;
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetJet(Int_t i) const {
-
-  //Get i^th jet in array
-
-  if(i<0 || i>fClArray->GetEntriesFast()) return 0;
+/**
+ * Finds the jet at position i in the container.
+ * @param i Index position of the jet
+ * @return A pointer to the jet object at position i
+ */
+AliEmcalJet* AliJetContainer::GetJet(Int_t i) const
+{
+  if (i < 0 || i > fClArray->GetEntriesFast()) return 0;
   AliEmcalJet *jet = static_cast<AliEmcalJet*>(fClArray->At(i));
   return jet;
 
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
-
-  //Only return jet if is accepted
-
+/**
+ * Finds the jet at position i in the container and checks if the jet passes the cuts.
+ * @param i Index position of the jet
+ * @return A pointer to the jet object at position i if the jet passes the cuts; if the jet
+ * does not pass the cuts, a NULL pointer
+ */
+AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const
+{
   UInt_t rejectionReason = 0;
   AliEmcalJet *jet = GetJet(i);
   if(!AcceptJet(jet, rejectionReason)) return 0;
@@ -289,29 +345,14 @@ AliEmcalJet* AliJetContainer::GetAcceptJet(Int_t i) const {
   return jet;
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetJetWithLabel(Int_t lab) const {
-
-  //Get particle with label lab in array
-
-  Int_t i = GetIndexFromLabel(lab);
-  return GetJet(i);
-}
-
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) const {
-
-  //Get particle with label lab in array
-
-  Int_t i = GetIndexFromLabel(lab);
-  return GetAcceptJet(i);
-}
-
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextAcceptJet() {
-
-  //Get next accepted jet;
-
+/**
+ * Iterator over accepted jets in the container. Get the next accepted
+ * jet in the array. If the end is reached, NULL is returned.
+ * @deprecated Only for backward compatibility - use AliJetIterableContainer instead
+ * @return Next accepted jet in the array (NULL if the end is reached)
+ */
+AliEmcalJet* AliJetContainer::GetNextAcceptJet()
+{
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
   do {
@@ -323,11 +364,14 @@ AliEmcalJet* AliJetContainer::GetNextAcceptJet() {
   return jet;
 }
 
-//________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextJet() {
-
-  //Get next jet;
-
+/**
+ * Iterator over jets in the container. Get the next
+ * jet in the array. If the end is reached, NULL is returned.
+ * @deprecated Only for backward compatibility - use AliJetIterableContainer instead
+ * @return Next jet in the array (NULL if the end is reached)
+ */
+AliEmcalJet* AliJetContainer::GetNextJet()
+{
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
   do {
@@ -340,21 +384,38 @@ AliEmcalJet* AliJetContainer::GetNextJet() {
   return jet;
 }
 
-//________________________________________________________________________
-Double_t AliJetContainer::GetJetPtCorr(Int_t i) const {
+/**
+ * Finds the jet at position i in the container
+ * and subtracts the average background from the jet pT.
+ * @param i Index position of the jet
+ * @return The subtracted jet pT
+ */
+Double_t AliJetContainer::GetJetPtCorr(Int_t i) const
+{
   AliEmcalJet *jet = GetJet(i);
-
   return jet->Pt() - fRho->GetVal()*jet->Area();
 }
 
-//________________________________________________________________________
-Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
+/**
+ * Finds the jet at position i in the container
+ * and subtracts the event geometry modulated background from the jet pT.
+ * @param i Index position of the jet
+ * @return The subtracted jet pT
+ */
+Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const
+{
   AliEmcalJet *jet = GetJet(i);
 
   return jet->Pt() - fLocalRho->GetLocalVal(jet->Phi(), fJetRadius)*jet->Area();
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the jet 4-momentum assuming a given mass.
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @param[in] jet A valid pointer to an AliEmcalJet object
+ * @param[in] mass Mass assumption for the jet
+ * @return Always kTRUE
+ */
 Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const
 {
   Double_t p = jet->P();
@@ -365,7 +426,13 @@ Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJe
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the jet 4-momentum using the default mass hypothesis of the container.
+ * If the mass hypothesis is not set, it uses the mass set inside the AliEmcalJet object.
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @param[in] jet A pointer to an AliEmcalJet object
+ * @return kTRUE if successful, kFALSE if jet is not a valid pointer
+ */
 Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet) const
 {
   if (jet) {
@@ -383,48 +450,72 @@ Bool_t AliJetContainer::GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJe
   }
 }
 
-//________________________________________________________________________
+/**
+ * Finds the jet at position i in the container and calculates the jet 4-momentum
+ * using the default mass hypothesis of the container.
+ * If the mass hypothesis is not set, it uses the mass set inside the AliEmcalJet object.
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @param[in] i Index position of the jet in the container
+ * @return kTRUE if successful, kFALSE if no jet is found at position i
+ */
 Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
-  //Get momentum of the i^th particle in array
-
   AliEmcalJet *jet = GetJet(i);
   return GetMomentumFromJet(mom, jet);
 }
 
-//________________________________________________________________________
+/**
+ * Iterator over jets in the container. Get the next
+ * jet in the array. If the end is reached it will return kFALSE.
+ * Calculates the 4-momentum using the default mass hypothesis.
+ * @deprecated Only for backward compatibility - use AliJetIterableContainer instead
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @return kFALSE if the end of the container is not yet reached
+ */
 Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next jet in array
-
   AliEmcalJet *jet = GetNextJet();
   return GetMomentumFromJet(mom, jet);
 }
 
-//________________________________________________________________________
+/**
+ * Finds the jet at position i in the container, check if it passes the cuts
+ * and then calculates the jet 4-momentum
+ * using the default mass hypothesis of the container.
+ * If the mass hypothesis is not set, it uses the mass set inside the AliEmcalJet object.
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @param[in] i Index position of the jet in the container
+ * @return kTRUE if successful, kFALSE if no jet is found at position i or the jet is not accepted
+ */
 Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
-  //Get momentum of the i^th jet in array
-
   AliEmcalJet *jet = GetAcceptJet(i);
   return GetMomentumFromJet(mom, jet);
 }
 
-//________________________________________________________________________
+/**
+ * Iterator over jets in the container. Get the next accepted
+ * jet in the array. If the end is reached it will return kFALSE.
+ * Calculates the 4-momentum using the default mass hypothesis.
+ * @deprecated Only for backward compatibility - use AliJetIterableContainer instead
+ * @param[out] mom Reference to a TLorentzVector object where the 4-momentum is returned
+ * @return kFALSE if the end of the container is not yet reached
+ */
 Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
-  //Get momentum of the next accepted jet in array
-
   AliEmcalJet *jet = GetNextAcceptJet();
   return GetMomentumFromJet(mom, jet);
 }
 
-//________________________________________________________________________
+/**
+ * Checks if a jet passes the cuts.
+ * @param[in] jet Pointer to a AliEmcalJet object
+ * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @return kTRUE if jet passes the cuts, kFALSE otherwise
+ */
 Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReason) const
 {
-  // Return true if jet is accepted.
-
-  if(fTpcHolePos>0){
+  if (fTpcHolePos>0) {
     Bool_t s = CheckTpcHolesOverlap(jet,rejectionReason);
     if (!s) return kFALSE; 
   }
@@ -438,12 +529,15 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReaso
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-//________________________________________________________________________
+/**
+ * Find the jet at position i in the container and checks if it passes the cuts.
+ * @param[in] i Index position in the container
+ * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @return kTRUE if jet passes the cuts, kFALSE otherwise
+ */
 Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
 {
-  // Return true if jet is accepted.
- 
-  if(fTpcHolePos>0){
+  if (fTpcHolePos>0) {
     Bool_t s = CheckTpcHolesOverlap(GetJet(i),rejectionReason);
     if (!s) return kFALSE; 
    }
@@ -457,8 +551,12 @@ Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-
-//________________________________________________________________________
+/**
+ * Apply the jet specific cuts to a jet object
+ * @param[in] jet Pointer to a AliEmcalJet object
+ * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @return kTRUE if jet passes the cuts, kFALSE otherwise
+ */
 Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionReason) const
 {   
   // Return true if jet is accepted.
@@ -505,7 +603,7 @@ Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionRe
     return kFALSE;
   }
 
-  if(fMinNConstituents>0 && jet->GetNumberOfConstituents()<fMinNConstituents) {
+  if (fMinNConstituents > 0 && jet->GetNumberOfConstituents() < fMinNConstituents) {
     AliDebug(11,"Cut rejecting jet: minimum number of constituents");
     rejectionReason |= kMinNConstituents;
     return kFALSE;
@@ -561,7 +659,13 @@ Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionRe
   return kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Retrieve the transverse momentum of leading hadron of the jet.
+ * Depending on the internal settings, the leading hadron can be
+ * restricted to be charged, neutral or any.
+ * @param jet Pointer to a AliEmcalJet object
+ * @return The transverse momentum of the leading hadron
+ */
 Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 {
   if (fLeadingHadronType == 0)       // charged leading hadron
@@ -572,7 +676,12 @@ Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
     return jet->MaxPartPt();
 }
 
-//________________________________________________________________________
+/**
+ * Retrieve the 4-momentum of leading hadron of the jet.
+ * The mass hypothesis is always set to the pion mass (0.139 GeV/c^2).
+ * @param[out] mom Reference to a TLorentzVector object where the result is returned
+ * @param[in] jet Pointer to a AliEmcalJet object
+ */
 void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet *jet) const
 {
   Double_t maxClusterPt = 0;
@@ -610,27 +719,38 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
     mom.SetPtEtaPhiM(maxClusterPt,maxClusterEta,maxClusterPhi,0.139);
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the momentum fraction of the leading calorimeter cluster
+ * that belongs to the jet.
+ * @param jet A valid pointer to an AliEmcalJet object
+ * @return The momentum fraction of the leading calorimeter cluster
+ */
 Double_t AliJetContainer::GetZLeadingEmc(const AliEmcalJet *jet) const
 {
-
   if (fClusterContainer && fClusterContainer->GetArray()) {
     TLorentzVector mom;
 
     AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
     if (cluster) {
-      cluster->GetMomentum(mom, const_cast<Double_t*>(fVertex));
+      cluster->GetMomentum(mom, fVertex);
 
       return GetZ(jet,mom);
     }
-    else
+    else {
       return -1;
+    }
   }
-  else
+  else {
     return -1;
+  }
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the momentum fraction of the leading track
+ * that belongs to the jet.
+ * @param jet A valid pointer to an AliEmcalJet object
+ * @return The momentum fraction of the leading track
+ */
 Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 {
 
@@ -643,15 +763,23 @@ Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 
       return GetZ(jet,mom);
     }
-    else
+    else {
       return -1;
+    }
   }
-  else
+  else {
     return -1;
+  }
 }
 
-//________________________________________________________________________
-Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
+/**
+ * Calculates the momentum fraction carried by a 4-momentum
+ * with respect to the jet.
+ * @param jet A valid pointer to an AliEmcalJet object
+ * @param mom Constant reference to a TLorentz objetc
+ * @return The momentum fraction of 4-momentum
+ */
+Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, const TLorentzVector& mom) const
 {
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
@@ -670,17 +798,20 @@ Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
   return z;
 }
 
-//________________________________________________________________________
+/**
+ * Set fiducial acceptance cuts inside the EMCal for a specific jet resolution
+ * parameter. This method has to be called after the run number is known because
+ * it needs the EMCal geometry object.
+ * @param r Jet resolution parameter
+ */
 void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
 {
-  //Set default cuts for full jets in EMCal
-
   if (!fGeom) SetEMCALGeometry();
   if (fGeom) {
     SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
 
-    if(fRunNumber>=177295 && fRunNumber<=197470) {//small SM masked in 2012 and 2013
-      SetPhiLimits(1.405 + r,3.135 - r);
+    if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
+      SetPhiLimits(1.405 + r, 3.135 - r);
     }
     else {
       SetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r);
@@ -693,11 +824,14 @@ void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Set fiducial acceptance cuts inside the DCal for a specific jet resolution
+ * parameter. This method has to be called after the run number is known because
+ * it needs the EMCal geometry object.
+ * @param r Jet resolution parameter
+ */
 void AliJetContainer::SetJetEtaPhiDCAL(Double_t r)
 {
-  //Set default cuts for full jets in DCal
-
   if (!fGeom) SetEMCALGeometry();
   if (fGeom) {
     SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
@@ -710,19 +844,22 @@ void AliJetContainer::SetJetEtaPhiDCAL(Double_t r)
   }
 }
 
-//________________________________________________________________________
+/**
+ * Set fiducial acceptance cuts inside the TPC for a specific jet resolution
+ * parameter.
+ * @param r Jet resolution parameter
+ */
 void AliJetContainer::SetJetEtaPhiTPC(Double_t r)
 {
-  //Set default cuts for charged jets
-
   SetEtaLimits(-0.9 + r, 0.9 - r);
   SetPhiLimits(0, 0);  // No cut on phi
 }
 
-//________________________________________________________________________
+/**
+ * Prints the current cuts to the standard output, for debug purposes.
+ */
 void AliJetContainer::PrintCuts() 
 {
-  // Reset cuts to default values
   TString arrName = GetArrayName();
   Printf("Print jet cuts for %s",arrName.Data());
   Printf("PtBiasJetTrack: %f",fMinTrackPt);
@@ -740,14 +877,13 @@ void AliJetContainer::PrintCuts()
   Printf("LeadingHadronType: %d",fLeadingHadronType);
   Printf("ZLeadingEmcCut: %f",fZLeadingEmcCut);
   Printf("ZLeadingChCut: %f",fZLeadingChCut);
-
 }
 
-//________________________________________________________________________
+/**
+ * Resets the cuts to the default values.
+ */
 void AliJetContainer::ResetCuts() 
 {
-  // Reset cuts to default values
-
   fMinTrackPt     = 0;
   fMinClusterPt   = 0;
   fMinPt          = 0;
@@ -764,73 +900,75 @@ void AliJetContainer::ResetCuts()
   fZLeadingChCut  = 10.;
 }
 
-//________________________________________________________________________
+/**
+ * Calculates the total number of accepted jets.
+ * @return Number of accepted jets.
+ */
 Int_t AliJetContainer::GetNAcceptedJets()
 {
-  // Get number of accepted jets
-
-  Int_t nJet = 0;
-  Int_t tempID = fCurrentID;
-  ResetCurrentID();
-
-  AliEmcalJet *jet = GetNextAcceptJet();
-  if(jet) nJet = 1;
-  while (GetNextAcceptJet())
-    nJet++;
-
-  fCurrentID = tempID;
-
-  return nJet;
+  return accepted().GetEntries();
 }
 
-//________________________________________________________________________
+/**
+ * Get fraction of shared pT between matched jets.
+ * Uses ClosestJet() jet pT as baseline: fraction = \Sum_{const,jet1} pT,const,i / pT,jet,closest
+ * If no particle container is given, it assumes that the matched jet's constituent
+ * come from the same particle container.
+ * @param jet1 Pointer to an AliEmcalJet object
+ * @param cont2 Pointer to an AliParticleContainer object in which the constituents of the matched jet are to be found
+ * @return The momentum fraction of jet1 that is shared by its closest matched jet
+ */
 Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliParticleContainer *cont2) const
 {
-  //
-  // Get fraction of shared pT between matched jets
-  // Uses ClosestJet() jet pT as baseline: fraction = \Sum_{const,jet1} pT,const,i / pT,jet,closest
-  // Only works if tracks array of both jets is the same -> modifying this. if no container is given than is like this, otherwise the geomerical matching is applied
-  //
-
   AliEmcalJet *jet2 = jet1->ClosestJet();
-  if(!jet2) return -1;
+  if (!jet2) return -1;
 
-  Double_t fraction = 0.;
   Double_t jetPt2 = jet2->Pt();
+  if (jetPt2 <= 0) return -1;
+
   Int_t bgeom = kTRUE;
-  if(!cont2) bgeom = kFALSE;
-  if(jetPt2>0) {
-    Double_t sumPt = 0.;
-    AliVParticle *vpf = 0x0;
-    Int_t iFound = 0;
-    for(Int_t icc=0; icc<jet2->GetNumberOfTracks(); icc++) {
-      Int_t idx = (Int_t)jet2->TrackAt(icc);
-      //get particle
-      AliVParticle *p2 = 0x0;
-      if(bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
-      iFound = 0;
-      for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
-        if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
-          iFound=1;
-          vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
-          if(vpf) sumPt += vpf->Pt();
-          continue;
-        }
-        if(bgeom){
-          vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
-          if(!vpf) continue;
-          if(!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
-          sumPt += vpf->Pt();
-        }
+  if (!cont2) bgeom = kFALSE;
+  Double_t sumPt = 0.;
+  AliVParticle *vpf = 0x0;
+  Int_t iFound = 0;
+  for (Int_t icc = 0; icc < jet2->GetNumberOfTracks(); icc++) {
+    Int_t idx = (Int_t)jet2->TrackAt(icc);
+    //get particle
+    AliVParticle *p2 = 0x0;
+    if (bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
+    iFound = 0;
+    for (Int_t icf = 0; icf < jet1->GetNumberOfTracks(); icf++) {
+      if (!bgeom && idx == jet1->TrackAt(icf) && iFound == 0 ) {
+        iFound = 1;
+        vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+        if (vpf) sumPt += vpf->Pt();
+        continue;
+      }
+      if (bgeom){
+        vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+        if (!vpf) continue;
+        if (!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
+        sumPt += vpf->Pt();
       }
     }
-    fraction = sumPt/jetPt2;
-  } else 
-    fraction = -1;
+  }
+
+  Double_t fraction = sumPt / jetPt2;
+
   return fraction;
 }
 
-//________________________________________________________________________
+/**
+ * Generate the jet branch name according to a given jet definition.
+ * @param jetType Type of the jet (full, charged, neutral)
+ * @param jetAlgo Jet algorithm used to reconstruct the jets (anti-kt, kt, etc.)
+ * @param recoScheme Jet recombination scheme (E-scheme, pt-scheme)
+ * @param radius Jet resolution parameter
+ * @param partCont Particle container used to feed the jet finder
+ * @param clustCont Cluster container used to feed the jet finder
+ * @param tag Additional tag for the jet branch name (default is "Jet")
+ * @return A string containing the jet branch name
+ */
 TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag)
 {
   TString algoString;
@@ -908,7 +1046,29 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
   return name;
 }
 
-//________________________________________________________________________
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliJetIterableContainer AliJetContainer::all() const {
+  return AliJetIterableContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliJetIterableContainer AliJetContainer::accepted() const {
+  return AliJetIterableContainer(this, true);
+}
+
+/**
+ * Generates a title for this container. The title is generated putting together the jet branch
+ * name and the pT cut.
+ * @return A pointer to a statically allocated string which contains the title.
+ */
 const char* AliJetContainer::GetTitle() const
 {
   static TString jetString;
@@ -926,33 +1086,25 @@ const char* AliJetContainer::GetTitle() const
   return jetString.Data();
 }
 
+/**
+ * Checks that the jet is far enough (axis + radius) from a hole in the TPC acceptance.
+ * @param[in] jet A pointer to an AliEmcalJet object
+ * @param[out] rejectionReason If jet does not pass the cut the corresponding rejection reason bit is set.
+ */
 Bool_t AliJetContainer::CheckTpcHolesOverlap(const AliEmcalJet *jet, UInt_t &rejectionReason) const
 {   
-     if (!jet) {
+  if (!jet) {
     AliDebug(11,"No jet found");
     rejectionReason |= kNullObject;
     return kFALSE;
   } 
-  
-     Double_t disthole=RelativePhi(jet->Phi(),fTpcHolePos);
-     if(TMath::Abs(disthole)< (fTpcHoleWidth+fJetRadius)){
-     AliDebug(11,"Jet overlaps with TPC hole");
-     rejectionReason |=kOverlapTpcHole;
-     return kFALSE;
-    }
-   
-   return kTRUE;
-}
 
-Double_t AliJetContainer::RelativePhi(Double_t mphi,Double_t vphi) const
-{
+  Double_t disthole = RelativePhi(jet->Phi(), fTpcHolePos);
+  if (TMath::Abs(disthole) < (fTpcHoleWidth + fJetRadius)){
+    AliDebug(11,"Jet overlaps with TPC hole");
+    rejectionReason |= kOverlapTpcHole;
+    return kFALSE;
+  }
 
-  if (vphi < -1*TMath::Pi()) vphi += (2*TMath::Pi());
-  else if (vphi > TMath::Pi()) vphi -= (2*TMath::Pi());
-  if (mphi < -1*TMath::Pi()) mphi += (2*TMath::Pi());
-  else if (mphi > TMath::Pi()) mphi -= (2*TMath::Pi());
-  double dphi = mphi-vphi;
-  if (dphi < -1*TMath::Pi()) dphi += (2*TMath::Pi());
-  else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
-  return dphi;//dphi in [-Pi, Pi]
+  return kTRUE;
 }

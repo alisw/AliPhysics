@@ -310,8 +310,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   AliESDtrackCuts *tc(NULL);
   if((tc = dynamic_cast<AliESDtrackCuts*>(fTrackFilter->GetCuts()->At(0)/*FindObject("std10TC")*/))){
     //MakeMultiplicityESD(fESD, "Combined")
-// 	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
-	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
+	fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
+	// fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
     // MakeMultiplicityESD(fESD, "Global")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
 	// V0M
@@ -323,10 +323,13 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     fTrackFilter->GetCuts()->ls();
   }
 
+
   Double_t val[7] = {0.};
   THnSparse *H(NULL);
   H = (THnSparse*)fHistosQA->At(kTrkInfo);
   AliMEStrackInfo *tmes(NULL);
+
+  // Int_t counter = 0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
 
     AliESDtrack* track = fESD->GetTrack(iTracks);
@@ -368,6 +371,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 		tmes->SetTOFmisProb(0);
 	}
 
+    // counter ++;
 
     // fill tracks QA
     val[0] = tmes->Pt();
@@ -382,10 +386,16 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     }
     if(H) H->Fill(val);
     fTracks->Add(tmes);
+
+    // printf("tender: counter = %i eta = %f \t pT = %g\n", counter, val[1], val[0]);
   }
-/*
+
+  // printf("tender: combined08 = %g \t old combined08 = %i \t global08 = %g\n", fEvInfo->GetMultiplicity(AliMESeventInfo::kComb), (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8)), fEvInfo->GetMultiplicity(AliMESeventInfo::kGlob08));
+  // printf("counter = %i \t fTracks = %i\n\n", counter, fTracks->GetEntries());
+  // printf("event index = %i\n", fESD->GetEventNumberInFile());
+
   // shape
-  fEvInfo->MakeShape(fTracks);
+  fEvInfo->MakeDirectivity(fTracks);
   // fill event QA
   H = (THnSparse*)fHistosQA->At(kEvInfo);
   val[0] = fEvInfo->GetVertexZ();
@@ -393,7 +403,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[2] = fEvInfo->GetEventShape()->GetDirectivity(kTRUE);
   val[3] = fEvInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
-*/
+
 
 
   // fill debug
@@ -482,9 +492,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
       tmes->SetLabel(iesd);
     }
   }
-/*
+
   // shape
-  fMCevInfo->MakeShape(fMCtracks);
+  fMCevInfo->MakeDirectivity(fMCtracks);
   // fill event QA
   H = (THnSparse*)fHistosQA->At(kMCevInfo);
   val[0] = 0.;
@@ -492,7 +502,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[2] = fMCevInfo->GetEventShape()->GetDirectivity(kTRUE);
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
-*/
+
 
   // fill debug
   if(DebugLevel()>0){

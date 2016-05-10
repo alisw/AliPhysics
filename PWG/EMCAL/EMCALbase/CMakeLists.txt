@@ -35,7 +35,6 @@ set(SRCS
   AliAnalysisTaskEmcalLight.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
-  AliEmcalIterableContainer.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
@@ -47,6 +46,7 @@ set(SRCS
   AliPicoTrack.cxx
   AliMCParticleContainer.cxx
   AliTrackContainer.cxx
+  AliEmcalList.cxx
   )
 
 # Headers from sources

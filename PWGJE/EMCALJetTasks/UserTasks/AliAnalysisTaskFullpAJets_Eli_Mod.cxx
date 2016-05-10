@@ -1415,7 +1415,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::GenerateTPCRandomConesPt()
 	else
 	{
 		AliEmcalJet *myJet = (AliEmcalJet*) fmyAKTChargedJets->At(fTPCJetUnbiased->GetLeadingIndex());
-		myJet->GetMom(*temp_jet);
+		myJet->GetMomentum(*temp_jet);
 	}
 
 	for (j=0;j<fnBckgClusters;j++)
@@ -1551,7 +1551,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::GenerateEMCalRandomConesPt()
 	else
 	{
 		AliEmcalJet *myJet = (AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetLeadingIndex());
-		myJet->GetMom(*temp_jet);
+		myJet->GetMomentum(*temp_jet);
 	}
 
 	for (j=0;j<fnBckgClusters;j++)
@@ -1669,7 +1669,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateChargedRho1()
 	if (fTPCJetUnbiased->GetLeadingPt()>=fTPCJetThreshold)
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJet->GetLeadingIndex());
-		myJet->GetMom(*temp_jet);
+		myJet->GetMomentum(*temp_jet);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -1728,10 +1728,10 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateChargedRho2()
 	if ((fTPCJetUnbiased->GetLeadingPt()>=fTPCJetThreshold) && (fTPCJetUnbiased->GetSubLeadingPt()>=fTPCJetThreshold))
 	{
 		AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJet->GetLeadingIndex());
-		myhJet->GetMom(*temp_jet1);
+		myhJet->GetMomentum(*temp_jet1);
 
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJet->GetSubLeadingIndex());
-		myJet->GetMom(*temp_jet2);
+		myJet->GetMomentum(*temp_jet2);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -1753,7 +1753,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateChargedRho2()
 	else if (fTPCJetUnbiased->GetLeadingPt()>=fTPCJetThreshold)
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJet->GetLeadingIndex());
-		myJet->GetMom(*temp_jet1);
+		myJet->GetMomentum(*temp_jet1);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -1831,7 +1831,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateChargedRhoN()
 				while (track_away_from_jet==kTRUE && j<fTPCJetUnbiased->GetTotalSignalJets())
 				{
 					AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJetUnbiased->GetSignalJetIndex(j));
-					myJet->GetMom(*jet_vec);
+					myJet->GetMomentum(*jet_vec);
 					if (track_vec->DeltaR(*jet_vec)<=fJetRForRho)
 					{
 						track_away_from_jet=kFALSE;
@@ -1906,7 +1906,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateChargedRhoScale()
 				while (track_away_from_jet==kTRUE && j<fTPCJetUnbiased->GetTotalSignalJets())
 				{
 					AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(fTPCJetUnbiased->GetSignalJetIndex(j));
-					myJet->GetMom(*jet_vec);
+					myJet->GetMomentum(*jet_vec);
 					if (track_vec->DeltaR(*jet_vec)<=fJetRForRho)
 					{
 						track_away_from_jet=kFALSE;
@@ -2307,7 +2307,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateFullRho1()
 	if (fEMCalPartJetUnbiased->GetLeadingPt()>=fEMCalJetThreshold)
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetLeadingIndex());
-		myJet->GetMom(*temp_jet);
+		myJet->GetMomentum(*temp_jet);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -2387,10 +2387,10 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateFullRho2()
 	if ((fEMCalPartJetUnbiased->GetLeadingPt()>=fEMCalJetThreshold) && (fEMCalPartJetUnbiased->GetSubLeadingPt()>=fEMCalJetThreshold))
 	{
 		AliEmcalJet *myhJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetLeadingIndex());
-		myhJet->GetMom(*temp_jet1);
+		myhJet->GetMomentum(*temp_jet1);
 
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetSubLeadingIndex());
-		myJet->GetMom(*temp_jet2);
+		myJet->GetMomentum(*temp_jet2);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -2423,7 +2423,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateFullRho2()
 	else if (fEMCalPartJetUnbiased->GetLeadingPt()>=fEMCalJetThreshold)
 	{
 		AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetLeadingIndex());
-		myJet->GetMom(*temp_jet1);
+		myJet->GetMomentum(*temp_jet1);
 
 		//  Loop over all tracks
 		for (i=0;i<fnTracks;i++)
@@ -2522,7 +2522,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateFullRhoN()
 				while (track_away_from_jet==kTRUE && j<fEMCalPartJetUnbiased->GetTotalSignalJets())
 				{
 					AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetSignalJetIndex(j));
-					myJet->GetMom(*jet_vec);
+					myJet->GetMomentum(*jet_vec);
 					if (track_vec->DeltaR(*jet_vec)<=fJetRForRho)
 					{
 						track_away_from_jet=kFALSE;
@@ -2554,7 +2554,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::EstimateFullRhoN()
 			while (cluster_away_from_jet==kTRUE && j<fEMCalPartJetUnbiased->GetTotalSignalJets())
 			{
 				AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(fEMCalPartJetUnbiased->GetSignalJetIndex(j));
-				myJet->GetMom(*jet_vec);
+				myJet->GetMomentum(*jet_vec);
 				if (cluster_vec->DeltaR(*jet_vec)<=fJetRForRho)
 				{
 					cluster_away_from_jet=kFALSE;
@@ -2814,7 +2814,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::FullJetEnergyDensityProfile()
 			{
 				ED_pT[j]=0;
 			}
-			myJet->GetMom(*jet_vec);
+			myJet->GetMomentum(*jet_vec);
 
 			// Sum all tracks in concentric rings around jet vertex
 			for (j=0;j<fnTracks;j++)
@@ -2875,7 +2875,7 @@ void AliAnalysisTaskFullpAJets_Eli_Mod::ChargedJetEnergyDensityProfile()
 			{
 				ED_pT[j]=0;
 			}
-			myJet->GetMom(*jet_vec);
+			myJet->GetMomentum(*jet_vec);
 
 			// Sum all tracks in concentric rings around jet vertex
 			for (j=0;j<fnTracks;j++)

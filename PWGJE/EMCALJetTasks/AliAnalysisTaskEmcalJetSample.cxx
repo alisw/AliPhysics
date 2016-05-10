@@ -16,7 +16,6 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <TList.h>
 
 #include <AliVCluster.h>
@@ -303,11 +302,10 @@ void AliAnalysisTaskEmcalJetSample::DoJetLoop()
   TIter next(&fJetCollArray);
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     groupname = jetCont->GetName();
-    AliEmcalIterableContainer acceptiter = jetCont->accepted();
     UInt_t count = 0;
-    for(AliEmcalIterableContainer::iterator it = acceptiter.begin(); it != acceptiter.end(); ++it) {
+    for(auto it : jetCont->accepted()) {
       count++;
-      AliEmcalJet* jet = static_cast<AliEmcalJet*>(*it);
+      const AliEmcalJet* jet = static_cast<const AliEmcalJet*>(it);
 
       histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, jet->Pt());
@@ -345,11 +343,10 @@ void AliAnalysisTaskEmcalJetSample::DoTrackLoop()
   TIter next(&fParticleCollArray);
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     groupname = partCont->GetName();
-    AliEmcalIterableContainer acceptiter = partCont->accepted();
     UInt_t count = 0;
-    for(AliEmcalIterableContainer::iterator it = acceptiter.begin(); it != acceptiter.end(); ++it) {
+    for(auto it : partCont->accepted()) {
       count++;
-      AliVParticle* part = static_cast<AliVParticle*>(*it);
+      const AliVParticle* part = static_cast<const AliVParticle*>(it);
 
       histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, part->Pt());
@@ -361,7 +358,7 @@ void AliAnalysisTaskEmcalJetSample::DoTrackLoop()
       fHistManager.FillTH1(histname, part->Eta());
 
       if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
-        AliVTrack* track = static_cast<AliVTrack*>(part);
+        const AliVTrack* track = static_cast<const AliVTrack*>(part);
 
         histname = TString::Format("%s/fHistDeltaEtaPt_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH1(histname, track->Pt(), track->Eta() - track->GetTrackEtaOnEMCal());
@@ -403,9 +400,8 @@ void AliAnalysisTaskEmcalJetSample::DoClusterLoop()
   while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
     groupname = clusCont->GetName();
 
-    AliEmcalIterableContainer alliter = clusCont->all();
-    for(AliEmcalIterableContainer::iterator it = alliter.begin(); it != alliter.end(); ++it) {
-      AliVCluster* cluster = static_cast<AliVCluster*>(*it);
+    for(auto it : clusCont->all()) {
+      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
 
       if (cluster->GetIsExotic()) {
         histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
@@ -413,11 +409,10 @@ void AliAnalysisTaskEmcalJetSample::DoClusterLoop()
       }
     }
 
-    AliEmcalIterableContainer acceptiter = clusCont->accepted();
     UInt_t count = 0;
-    for(AliEmcalIterableContainer::iterator it = acceptiter.begin(); it != acceptiter.end(); ++it) {
+    for(auto it : clusCont->accepted()) {
       count++;
-      AliVCluster* cluster = static_cast<AliVCluster*>(*it);
+      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
       AliTLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
 

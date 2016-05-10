@@ -13,13 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Comment describing what this class does needed!
-
 // jcorran main class
 // used in local and grid execution
-// blah
-// blah
-// blah
 
 #include <TH1D.h>
 #include "AliJCORRAN.h"
@@ -222,7 +217,8 @@ void AliJCORRAN::UserCreateOutputObjects(){
   fIsolationR = fcard->Get("IsolationR");
   
   fhistos = new AliJHistos( fcard );
-  fhistos->Set2DHistoCreate(true);
+  if(fcard->Get("QualityControlLevel")>1) fhistos->Set2DHistoCreate(true);
+  if(fcard->Get("QualityControlLevel")>0) fhistos->SetAcceptanceCorrectionQA(true);
   fhistos->CreateEventTrackHistos();
   fhistos->CreateAzimuthCorrHistos();
   //fhistos->CreateIAAMoons();
@@ -246,13 +242,21 @@ void AliJCORRAN::UserCreateOutputObjects(){
   if( fInclusiveFile.Length() ) {
     fhistos->ReadInclusiveHistos(fInclusiveFile);
     fcorrelations->SetSampligInclusive(); //kperp background and triangle. Default is flat
-    fAcceptanceCorrection->ReadInclusiveHistos(fInclusiveFile);
+    fAcceptanceCorrection->ReadMixedEventHistograms(fInclusiveFile);
     cout<<"Sampling kperp and triangle from " << fInclusiveFile <<endl;
   } else cout << "Sampling kperp and triangle from flat" <<endl;
   cout<< " -----" <<endl <<endl;
   
   // Tell the correlation analysis to use the defined acceptance correction
   fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+  
+  // If we want to save the acceptance correction histograms to file for quality assurance, do it
+  // Note that the histograms are there only if they are provided from the inclusive file
+  if(fcard->Get("QualityControlLevel")>0 && fInclusiveFile.Length()){
+    fhistos->fhAcceptanceTraditional = fAcceptanceCorrection->GetTraditionalAcceptanceHistogram();
+    fhistos->fhAcceptanceTraditional2D = fAcceptanceCorrection->GetTraditionalAcceptanceHistogram2D();
+    fhistos->fhAcceptance3DNearSide = fAcceptanceCorrection->Get3DNearSideAcceptanceHistogram();
+  }
   
   //==================================
   

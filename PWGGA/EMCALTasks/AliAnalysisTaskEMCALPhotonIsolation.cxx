@@ -365,7 +365,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     return;
   }
   else{
-    fOutput = new TList();
+    fOutput = new AliEmcalList(); // RH: Leak? fOutput already exists in base class
     fOutput->SetOwner();
       //Initialize the common Output histograms
     switch (fWho)
@@ -932,7 +932,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       //since there are more than 1 Cluster per Event
       //       AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
       //    Printf("Starting loop on clusters in RUN method");
-    for (AliClusterContainer::accept_iterator it=clusters->accept_begin(); it!=clusters->accept_end(); ++it){
+    for (AliClusterIterableContainer::iterator it=clusters->accept_begin(); it!=clusters->accept_end(); ++it){
         //Printf("Index of cluster: %d",(*it)->GetID());
         // AliVCluster *coi = emccluster->GetCluster();
       if(!(*it)) {
@@ -1464,7 +1464,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
   
-  for(AliClusterContainer::accept_iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the trigger cluster
+  for(AliClusterIterableContainer::iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the trigger cluster
     
     localIndex=(*it)->GetID();
     
@@ -1573,7 +1573,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
   AliVCluster *clust= 0x0;
-  for(AliClusterContainer::accept_iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the trigger cluster
+  for(AliClusterIterableContainer::iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the trigger cluster
     
     localIndex=(*it)->GetID();
       //  AliError(Form("Tourne bien sur les clusters"));
@@ -2080,7 +2080,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
     //AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
-  for(AliClusterContainer::accept_iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the leading cluster
+  for(AliClusterIterableContainer::iterator it = clusters->accept_begin(); it != clusters->accept_end(); ++it){ //check the position of other clusters in respect to the leading cluster
     localIndex=(*it)->GetID();
     if(localIndex==index) continue;
     else{

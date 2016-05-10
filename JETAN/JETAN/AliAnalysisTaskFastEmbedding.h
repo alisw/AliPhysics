@@ -263,8 +263,8 @@ private:
    TH1F  *fh1MCTrackN;        //! nb. of MC tracks
    TH1I  *fh1AODfile;         //! used AOD files from AODPathArray
    TH2I  *fh2AODevent;        //! selected events in AODs
-   TH2F  *fh2EP2;             //! 2nd order harmonic event plane ESD event 
-   TH2F  *fh2EP3;             //! 3rd order harmonic event plane ESD event
+   TH1F  *fh1EP2;             //! 2nd order harmonic event plane ESD event 
+   TH1F  *fh1EP3;             //! 3rd order harmonic event plane ESD event
 
    Int_t GetJobID();    // get job id (sub-job id on the GRID)
    Int_t SelectAODfile();

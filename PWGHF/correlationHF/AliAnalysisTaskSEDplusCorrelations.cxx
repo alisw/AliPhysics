@@ -377,7 +377,7 @@ void AliAnalysisTaskSEDplusCorrelations::UserExec(Option_t *) {
         }
     }
     else if(!aod || !array3Prong){
-        printf("AliAnalysisTaskSEDplusCorrelationselation::UserExec: AOD  Charm3Prong branch not found!\n");
+        printf("AliAnalysisTaskSEDplusCorrelations::UserExec: AOD  Charm3Prong branch not found!\n");
         return;
     }
     
@@ -630,22 +630,33 @@ void AliAnalysisTaskSEDplusCorrelations::HadronCorrelations(AliAODRecoDecayHF3Pr
     ((TH2F*)fOutput->FindObject("DplusMVsEta"))->Fill(d->InvMassDplus(),d->Eta());
     
     if(fCheckCutDist && !fMixing){
-        ((TH1F*)fOutput->FindObject(Form("hCosPA_Bin%d",iPtBin)))->Fill(d->CosPointingAngleXY());
-        ((TH1F*)fOutput->FindObject(Form("hCosPAXY_Bin%d",iPtBin)))->Fill(d->NormalizedDecayLengthXY());
-        ((TH1F*)fOutput->FindObject(Form("hDecayLen_Bin%d",iPtBin)))->Fill(d->DecayLength());
-        ((TH1F*)fOutput->FindObject(Form("hDecayLenXY_Bin%d",iPtBin)))->Fill(d->DecayLengthXY());
-        ((TH1F*)fOutput->FindObject(Form("hPtDauPion1_Bin%d",iPtBin)))->Fill(d->PtProng(0));
-        ((TH1F*)fOutput->FindObject(Form("hPtDauKaon_Bin%d",iPtBin)))->Fill(d->PtProng(1));
-        ((TH1F*)fOutput->FindObject(Form("hPtDauPion2_Bin%d",iPtBin)))->Fill(d->PtProng(2));
+    	((TH1F*)fOutput->FindObject(Form("hPtDaughterPion1_Bin%d",iPtBin)))->Fill(d->PtProng(0)); //Prong (0)= Pion1 from line 133 of AliAODRecoDecayHF3Prong.cxx
+        ((TH1F*)fOutput->FindObject(Form("hPtDaughterKaon_Bin%d",iPtBin)))->Fill(d->PtProng(1)); //Prong (1)= Kaon from line 133 of AliAODRecoDecayHF3Prong.cxx
+        ((TH1F*)fOutput->FindObject(Form("hPtDaughterPion2_Bin%d",iPtBin)))->Fill(d->PtProng(2)); //Prong (2)= Pion2 from line 133 of AliAODRecoDecayHF3Prong.cxx
+        ((TH1F*)fOutput->FindObject(Form("hd0DaughterPion1_Bin%d",iPtBin)))->Fill(d->Getd0Prong(0)*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hd0DaughterKaon_Bin%d",iPtBin)))->Fill(d->Getd0Prong(1)*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hd0DaughterPion2_Bin%d",iPtBin)))->Fill(d->Getd0Prong(2)*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hdist12_Bin%d",iPtBin)))->Fill(d->GetDist12toPrim()*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hdist23_Bin%d",iPtBin)))->Fill(d->GetDist23toPrim()*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hCosPA_Bin%d",iPtBin)))->Fill(d->CosPointingAngle());
+        ((TH1F*)fOutput->FindObject(Form("hCosPAXY_Bin%d",iPtBin)))->Fill(d->CosPointingAngleXY());
+        ((TH1F*)fOutput->FindObject(Form("hNDeacyLenXY_Bin%d",iPtBin)))->Fill(d->NormalizedDecayLengthXY()*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hDecayLen_Bin%d",iPtBin)))->Fill(d->DecayLength()*10.0);
+        ((TH1F*)fOutput->FindObject(Form("hDecayLenXY_Bin%d",iPtBin)))->Fill(d->DecayLengthXY()*10.0);
+        ((TH2F*)fOutput->FindObject(Form("hCosPAvsdPS_Bin%d",iPtBin)))->Fill(d->DecayLength()*10.0,d->CosPointingAngle());
+        ((TH2F*)fOutput->FindObject(Form("hd0DaughterKaonvsPtK_Bin%d",iPtBin)))->Fill(d->PtProng(1),d->Getd0Prong(1)*10.0);
+        ((TH2F*)fOutput->FindObject(Form("hd0DaughterPion1vsPtPi1_Bin%d",iPtBin)))->Fill(d->PtProng(0),d->Getd0Prong(0)*10.0);
+        ((TH2F*)fOutput->FindObject(Form("hd0DaughterPion2vsPtPi2_Bin%d",iPtBin)))->Fill(d->PtProng(2),d->Getd0Prong(2)*10.0);
+
         Double_t MaxDCA = -9999.;
         for(Int_t i=0; i<3; i++){
             if(d->GetDCA(i)>MaxDCA)MaxDCA=d->GetDCA(i);
         }
-        ((TH1F*)fOutput->FindObject(Form("hDCA_Bin%d",iPtBin)))->Fill(MaxDCA);
+        ((TH1F*)fOutput->FindObject(Form("hDCA_Bin%d",iPtBin)))->Fill(MaxDCA*10.0);
         
         Double_t d0Square = d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-        ((TH1F*)fOutput->FindObject(Form("hd0square_Bin%d",iPtBin)))->Fill(d0Square);
-        ((TH1F*)fOutput->FindObject(Form("hSigmaVert_Bin%d",iPtBin)))->Fill(d->GetSigmaVert());
+        ((TH1F*)fOutput->FindObject(Form("hd0square_Bin%d",iPtBin)))->Fill(d0Square*100.0);
+        ((TH1F*)fOutput->FindObject(Form("hSigmaVert_Bin%d",iPtBin)))->Fill(d->GetSigmaVert()*10.0);
         ((TH1F*)fOutput->FindObject(Form("hDrapidty_Bin%d",iPtBin)))->Fill(d->YDplus());
     }
     
@@ -968,30 +979,27 @@ void AliAnalysisTaskSEDplusCorrelations::HistoNomenclature() {
         }
         
         if(fCheckCutDist){
-            TH1F* hCosPA       = new TH1F(Form("hCosPA_Bin%d", i), "Dist. CosTheta PA", 80, 0.2, 1.);
-            TH1F* hCosPAXY     = new TH1F(Form("hCosPAXY_Bin%d", i), "Dist. CosTheta PA", 100, -1., 1.);
-            TH1F* hDecayLen    = new TH1F(Form("hDecayLen_Bin%d", i), "Dist. Decay length", 100, 0., 0.5);
-            TH1F* hhDecayLenxy = new TH1F(Form("hDecayLenXY_Bin%d", i), "Dist. Decay length XY", 100, 0., 10.);
-            TH1F* hPtDauKaon   = new TH1F(Form("hPtDauKaon_Bin%d", i), "Dist. Pt Dau-Kaon", 400, 0., 8.);
-            TH1F* hPtDauPion1  = new TH1F(Form("hPtDauPion1_Bin%d", i), "Dist. Pt Dau-Pion1", 400, 0., 8.);
-            TH1F* hPtDauPion2  = new TH1F(Form("hPtDauPion2_Bin%d", i), "Dist. Pt Dau-Pion2", 400, 0., 8.);
-            TH1F* hDCA         = new TH1F(Form("hDCA_Bin%d", i), "Dist. Sigma Vtx", 100, 0.,0.1);
-            TH1F* hd0Square    = new TH1F(Form("hd0square_Bin%d", i), "Dist. d0Square length", 100, 0., 1);
-            TH1F* hSigmaVert   = new TH1F(Form("hSigmaVert_Bin%d", i), "Dist. Sigma Vtx", 100, 0., 0.1);
+            TH1F* hPtDauKaon   = new TH1F(Form("hPtDaughterKaon_Bin%d", i), "Dist. Pt Daughter-Kaon (GeV/c)", 100, 0., 50.);
+            TH1F* hPtDauPion1  = new TH1F(Form("hPtDaughterPion1_Bin%d", i), "Dist. Pt Daughter-Pion1 (GeV/c)", 100, 0., 50.);
+            TH1F* hPtDauPion2  = new TH1F(Form("hPtDaughterPion2_Bin%d", i), "Dist. Pt Daughter-Pion2 (GeV/c)", 100, 0., 50.);
+            TH1F* hd0DauKaon   = new TH1F(Form("hd0DaughterKaon_Bin%d", i), "Dist. d0 Daughter-Kaon (mm)", 100, 0., 50.);
+            TH1F* hd0DauPion1  = new TH1F(Form("hd0DaughterPion1_Bin%d", i), "Dist. d0 Daughter-Pion1 (mm)", 100, 0., 50.);
+            TH1F* hd0DauPion2  = new TH1F(Form("hd0DaughterPion2_Bin%d", i), "Dist. d0 Daughter-Pion2 (mm)", 100, 0., 50.);
+            TH1F* hdist12      = new TH1F(Form("hdist12_Bin%d", i), "Dist. Prim-dist12", 100, 0.0, 50.);
+            TH1F* hdist23      = new TH1F(Form("hdist23_Bin%d", i), "Dist. Prim-dist23", 100, 0.0, 50.);
+            TH1F* hSigmaVert   = new TH1F(Form("hSigmaVert_Bin%d", i), "Dist. Sigma Vtx (mm)", 100, 0., 50.0);
+            TH1F* hCosPA       = new TH1F(Form("hCosPA_Bin%d", i), "Dist. CosTheta PA", 100, 0.0, 1.);
+            TH1F* hCosPAXY     = new TH1F(Form("hCosPAXY_Bin%d", i), "Dist. CosTheta PAXY", 100, 0.0, 1.);
+            TH1F* hNDeacyLen   = new TH1F(Form("hNDeacyLenXY_Bin%d", i), "Dist. Normalized decay length (mm)", 100, -100., 100.);
+            TH1F* hDecayLen    = new TH1F(Form("hDecayLen_Bin%d", i), "Dist. Decay length (mm)", 100, 0., 100.0);
+            TH1F* hDecayLenxy  = new TH1F(Form("hDecayLenXY_Bin%d", i), "Dist. Decay length XY (mm)", 100, 0., 100.);
+            TH1F* hDCA         = new TH1F(Form("hDCA_Bin%d", i), "Dist. Max DCA (mm)", 100, 0.,50.0);
+            TH1F* hd0Square    = new TH1F(Form("hd0square_Bin%d", i), "Dist. d0Square length (mm^{2})", 100, 0., 100.0);
             TH1F* hDrapidity   = new TH1F(Form("hDrapidty_Bin%d", i), "Dist. D Rapidity", 100, -5., 5.);
-            
-            hCosPA->SetMarkerStyle(29);
-            hCosPA->SetMarkerSize(0.9);
-            hCosPA->Sumw2();
-            hCosPAXY->SetMarkerStyle(29);
-            hCosPAXY->SetMarkerSize(0.9);
-            hCosPAXY->Sumw2();
-            hDecayLen->SetMarkerStyle(29);
-            hDecayLen->SetMarkerSize(0.9);
-            hDecayLen->Sumw2();
-            hhDecayLenxy->SetMarkerStyle(29);
-            hhDecayLenxy->SetMarkerSize(0.9);
-            hhDecayLenxy->Sumw2();
+            TH2F* hCosPAvsdPS  = new TH2F(Form("hCosPAvsdPS_Bin%d", i), "Dist. CosPA vs Decay Length", 100, 0., 50.,100, 0.0, 1.0);
+            TH2F* hd0KvsPtK    = new TH2F(Form("hd0DaughterKaonvsPtK_Bin%d", i), "Dist. d0 Daughter-Kaon (mm) vs Pt K (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
+            TH2F* hd0Pi1vsPtPi1  = new TH2F(Form("hd0DaughterPion1vsPtPi1_Bin%d", i), "Dist. d0 Daughter-Pion1 (mm) vs Pt Pi1 (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
+            TH2F* hd0Pi2vsPtPi2  = new TH2F(Form("hd0DaughterPion2vsPtPi2_Bin%d", i), "Dist. d0 Daughter-Pion2 (mm) vs Pt Pi2 (GeV/c)", 100, 0., 50.,100, 0.0, 50.0);
             hPtDauKaon->SetMarkerStyle(29);
             hPtDauKaon->SetMarkerSize(0.9);
             hPtDauKaon->Sumw2();
@@ -1001,30 +1009,81 @@ void AliAnalysisTaskSEDplusCorrelations::HistoNomenclature() {
             hPtDauPion2->SetMarkerStyle(29);
             hPtDauPion2->SetMarkerSize(0.9);
             hPtDauPion2->Sumw2();
+            hd0DauKaon->SetMarkerStyle(29);
+            hd0DauKaon->SetMarkerSize(0.9);
+            hd0DauKaon->Sumw2();
+            hd0DauPion1->SetMarkerStyle(29);
+            hd0DauPion1->SetMarkerSize(0.9);
+            hd0DauPion1->Sumw2();
+            hd0DauPion2->SetMarkerStyle(29);
+            hd0DauPion2->SetMarkerSize(0.9);
+            hd0DauPion2->Sumw2();
+            hdist12->SetMarkerStyle(29);
+            hdist12->SetMarkerSize(0.9);
+            hdist12->Sumw2();
+            hdist23->SetMarkerStyle(29);
+            hdist23->SetMarkerSize(0.9);
+            hdist23->Sumw2();
+            hSigmaVert->SetMarkerStyle(29);
+            hSigmaVert->SetMarkerSize(0.9);
+            hSigmaVert->Sumw2();
+            hCosPA->SetMarkerStyle(29);
+            hCosPA->SetMarkerSize(0.9);
+            hCosPA->Sumw2();
+            hCosPAXY->SetMarkerStyle(29);
+            hCosPAXY->SetMarkerSize(0.9);
+            hCosPAXY->Sumw2();
+            hNDeacyLen->SetMarkerStyle(29);
+            hNDeacyLen->SetMarkerSize(0.9);
+            hNDeacyLen->Sumw2();
+            hDecayLen->SetMarkerStyle(29);
+            hDecayLen->SetMarkerSize(0.9);
+            hDecayLen->Sumw2();
+            hDecayLenxy->SetMarkerStyle(29);
+            hDecayLenxy->SetMarkerSize(0.9);
+            hDecayLenxy->Sumw2();
             hDCA->SetMarkerStyle(29);
             hDCA->SetMarkerSize(0.9);
             hDCA->Sumw2();
             hd0Square->SetMarkerStyle(29);
             hd0Square->SetMarkerSize(0.9);
             hd0Square->Sumw2();
-            hSigmaVert->SetMarkerStyle(29);
-            hSigmaVert->SetMarkerSize(0.9);
-            hSigmaVert->Sumw2();
             hDrapidity->SetMarkerStyle(29);
             hDrapidity->SetMarkerSize(0.9);
             hDrapidity->Sumw2();
-            
-            fOutput->Add(hCosPA);
-            fOutput->Add(hCosPAXY);
-            fOutput->Add(hDecayLen);
-            fOutput->Add(hhDecayLenxy);
+            hCosPAvsdPS->SetMarkerStyle(29);
+            hCosPAvsdPS->SetMarkerSize(0.9);
+            hCosPAvsdPS->Sumw2();
+            hd0KvsPtK->SetMarkerStyle(29);
+            hd0KvsPtK->SetMarkerSize(0.9);
+            hd0KvsPtK->Sumw2();
+            hd0Pi1vsPtPi1->SetMarkerStyle(29);
+            hd0Pi1vsPtPi1->SetMarkerSize(0.9);
+            hd0Pi1vsPtPi1->Sumw2();
+            hd0Pi2vsPtPi2->SetMarkerStyle(29);
+            hd0Pi2vsPtPi2->SetMarkerSize(0.9);
+            hd0Pi2vsPtPi2->Sumw2();
             fOutput->Add(hPtDauKaon);
             fOutput->Add(hPtDauPion1);
             fOutput->Add(hPtDauPion2);
+            fOutput->Add(hd0DauKaon);
+            fOutput->Add(hd0DauPion1);
+            fOutput->Add(hd0DauPion2);
+            fOutput->Add(hdist12);
+            fOutput->Add(hdist23);
+            fOutput->Add(hSigmaVert);
+            fOutput->Add(hCosPA);
+            fOutput->Add(hCosPAXY);
+            fOutput->Add(hNDeacyLen);
+            fOutput->Add(hDecayLen);
+            fOutput->Add(hDecayLenxy);
             fOutput->Add(hDCA);
             fOutput->Add(hd0Square);
-            fOutput->Add(hSigmaVert);
             fOutput->Add(hDrapidity);
+            fOutput->Add(hCosPAvsdPS);
+            fOutput->Add(hd0KvsPtK);
+            fOutput->Add(hd0Pi1vsPtPi1);
+            fOutput->Add(hd0Pi2vsPtPi2);
         }
         
         namePlotThn.Resize(24);
