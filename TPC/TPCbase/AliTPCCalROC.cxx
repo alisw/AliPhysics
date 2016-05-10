@@ -400,10 +400,9 @@ Double_t AliTPCCalROC::GetStats(EStatType statType, AliTPCCalROC *const outlierR
   else if(padType==kOROClong) indexMin=fkIndexes[64];
 
   for (UInt_t i=indexMin;i<indexMax;i++) {
-    if (outlierROC->GetValue(i)>1e-20) {
-      ddata[nPoints]= fData[i];
-      nPoints++;
-    }
+    if (outlierROC->GetValue(i)>1e-20) continue;
+    ddata[nPoints]= fData[i];
+    nPoints++;
   }
   Double_t value = 0;
   if(nPoints>0){
