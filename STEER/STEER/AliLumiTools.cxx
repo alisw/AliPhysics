@@ -58,7 +58,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
 
   for (int iRec=0;iRec<nRec;iRec++) {
     AliLHCDipValF *value=lhcData->GetLumiAliceSBDelivered(iRec);
-    if (TMath::Abs(value->GetValue())<1e-7) {
+    if (TMath::Abs(value->GetValue())<1e-9) {
       AliWarningClassF("Skipping empty record %d : ",iRec);
       value->Print();
       continue;
@@ -83,7 +83,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
     double t = tref + t0 + dt/2;
     if (dt&0x1) t += 0.5;
     vecRateT[nRateAcc] = t;
-    vecRate[nRateAcc] = (rate1-rate0)/dt;
+    vecRate[nRateAcc] = (rate1-rate0)/dt*1e6; // convert from Hz/b to Hz/ub
     //    printf("%lld %lld -> %lld %lld %e\n",t0,t1, tref + t0 + dt/2,dt,rate1);
     t0 = t1;
     rate0 = rate1;
@@ -93,7 +93,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
   grLumi->SetTitle(Form("Rate estimator Run %d",run));
   grLumi->GetXaxis()->SetTitle("time");
   grLumi->GetXaxis()->SetTimeDisplay(1);
-  grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/b)");
+  grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/ub)");
   grLumi->SetMarkerStyle(25);
   grLumi->SetMarkerSize(0.4);
   grLumi->SetUniqueID(run);
