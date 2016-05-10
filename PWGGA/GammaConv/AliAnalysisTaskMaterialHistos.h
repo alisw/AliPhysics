@@ -56,6 +56,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliV0ReaderV1 		*fV0Reader;					// 
         TString              fV0ReaderName;
 		TClonesArray 			*fConversionGammas; 		// Reconstructed Photons;
+    TList*                            fGammaCandidates;                           //
     TList*            fConversionCutArray;
     TList*            fEventCutArray;         //
     TList**           fCutFolder;                                 //
@@ -149,7 +150,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 5);
+        ClassDef(AliAnalysisTaskMaterialHistos, 6);
 };
 
 #endif
