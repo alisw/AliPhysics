@@ -446,7 +446,6 @@ int AliZMQhistViewer::ProcessOption(TString option, TString value)
     GetZMQconfig(&valuestr);
     fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, value.Data(), -1, 2);
     if (fZMQsocketModeIN < 0) return -1;
-    if (fZMQsocketModeIN == ZMQ_REQ && fPollInterval==0) fPollInterval=60000;
   }
   else if (option.EqualTo("Verbose"))
   {
@@ -500,6 +499,8 @@ int AliZMQhistViewer::ProcessOption(TString option, TString value)
     ret = -1;
   }
   int rc = alizmq_socket_init(fZMQsleeper, fZMQcontext, "PULL@inproc://sleep", fPollInterval);
+  if (fZMQsocketModeIN == ZMQ_REQ && fPollInterval<=0) fPollInterval=60000;
+  if (fZMQsocketModeIN != ZMQ_REQ ) fPollInterval=0;
   return ret; 
 }
 
