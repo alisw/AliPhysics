@@ -13,6 +13,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliOADBTriggerAnalysis.h"
+#include "TBrowser.h"
 class AliVEvent;
 class AliESDEvent;
 class TH1F;
@@ -29,7 +30,7 @@ public:
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
-    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kV0Casym,
+    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,
     kVHM,kV0M,kSH1,kSH2,
     kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
@@ -66,6 +67,7 @@ public:
   Bool_t IsV0MOnVsOfPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsSPDOnVsOfPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsV0PFPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
+  Bool_t IsSPDVtxPileup(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t IsV0Casym(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t VHMTrigger(const AliVEvent* event, Bool_t fillHists = kFALSE);
   Bool_t V0MTrigger(const AliVEvent* event, Bool_t online, Bool_t fillHists = kFALSE);
@@ -77,57 +79,62 @@ public:
   Bool_t IsHVdipTPCEvent(const AliVEvent* event);
   Bool_t IsIncompleteEvent(const AliVEvent* event);
   
-  void FillHistograms(const AliVEvent* event);
+  void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
   
   void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   
+  TObject* GetHistogram(const char* histName);
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
   void PrintTriggerClasses() const;
-  
+  void Browse(TBrowser *b);
+
 protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Bool_t fillHists = kFALSE);
   
-  TH1F* fSPDGFOEfficiency;   // FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
+  TH1F* fSPDGFOEfficiency;   //! FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
   
   Bool_t  fDoFMD;            // If false, skips the FMD (physics selection runs much faster)
   Bool_t  fMC;               // flag if MC is analyzed
-
-  TH1F* fHistFiredBitsSPD;   // fired hardware bits
-  TH2F* fHistSPDClsVsTkl;    // 
-  TH2F* fHistV0MOnVsOf;      //
-  TH2F* fHistSPDOnVsOf;      //
-  TH2F* fHistVIRvsBCmod4pup; //
-  TH2F* fHistVIRvsBCmod4acc; //
-  TH2F* fHistV0C3vs012;      //
-  TH1F* fHistBBAflags;       //
-  TH1F* fHistBBCflags;       //
-  TH1F* fHistBGAflags;       //
-  TH1F* fHistBGCflags;       //
-  TH1F* fHistV0MOn;          //
-  TH1F* fHistV0MOfAll;       //
-  TH1F* fHistV0MOfAcc;       //
-  TH1F* fHistSPDOnOuter;     //
-  TH2F* fHistAD;             // AD timing (sum vs difference)
-  TH1F* fHistADA;            // ADA timing
-  TH1F* fHistADC;            // ADC timing
-  TH1F* fHistV0A;            // V0A timing
-  TH1F* fHistV0C;            // V0C timing
-  TH1F* fHistZDC;            // histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
-  TH1F* fHistTDCZDC;         // histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
-  TH2F* fHistTimeZDC;        // ZDC TDC timing
-  TH2F* fHistTimeCorrZDC;    // ZDC Corrected TDC timing
-  TH1F* fHistFMDA;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
-  TH1F* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
-  TH1F* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
-  TH1F* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
-  TH1F* fHistT0;             // histograms that histogram the criterion the cut is applied on: bb triggers
+  
+  TList* fHistList;          //
+  TH1F* fHistStat;           //!
+  TH1F* fHistFiredBitsSPD;   //! fired hardware bits
+  TH2F* fHistSPDClsVsTkl;    //! 
+  TH2F* fHistV0MOnVsOf;      //!
+  TH2F* fHistSPDOnVsOf;      //!
+  TH1F* fHistSPDVtxPileup;   //!
+  TH2F* fHistVIRvsBCmod4pup; //!
+  TH2F* fHistVIRvsBCmod4acc; //!
+  TH2F* fHistV0C3vs012;      //!
+  TH1F* fHistBBAflags;       //!
+  TH1F* fHistBBCflags;       //!
+  TH1F* fHistBGAflags;       //!
+  TH1F* fHistBGCflags;       //!
+  TH1F* fHistV0MOn;          //!
+  TH1F* fHistV0MOfAll;       //!
+  TH1F* fHistV0MOfAcc;       //!
+  TH1F* fHistSPDOnOuter;     //!
+  TH2F* fHistAD;             //! AD timing (sum vs difference)
+  TH1F* fHistADA;            //! ADA timing
+  TH1F* fHistADC;            //! ADC timing
+  TH1F* fHistV0A;            //! V0A timing
+  TH1F* fHistV0C;            //! V0C timing
+  TH1F* fHistZDC;            //! histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
+  TH1F* fHistTDCZDC;         //! histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
+  TH2F* fHistTimeZDC;        //! ZDC TDC timing
+  TH2F* fHistTimeCorrZDC;    //! ZDC Corrected TDC timing
+  TH1F* fHistFMDA;           //! histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
+  TH1F* fHistFMDC;           //! histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
+  TH1F* fHistFMDSingle;      //! histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
+  TH1F* fHistFMDSum;         //! histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
+  TH1F* fHistT0;             //! histograms that histogram the criterion the cut is applied on: bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 27)
+  ClassDef(AliTriggerAnalysis, 28)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

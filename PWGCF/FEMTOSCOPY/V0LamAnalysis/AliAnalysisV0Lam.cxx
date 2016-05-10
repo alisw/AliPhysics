@@ -1713,7 +1713,7 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
   // We may be varying one of the cut values. Loop over the variations.
   for (Int_t iVar = 0; iVar < nVariableCuts; iVar++) {
     // Initialize the nominal avg sep cut values.  
-    vector<Double_t> nominalCutValues(6);
+    vector<Double_t> nominalCutValues(kNumberTTCTypes);
     nominalCutValues[kSameProtProt] = 12.; // Same sign prot-prot cut
     nominalCutValues[kSamePiPi]     = 10.; // Same sign pi-pi
     nominalCutValues[kSameProtPi]   = 10.; // Same sign prot-pi
@@ -1722,9 +1722,9 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
     nominalCutValues[kDiffProtPi]   = 15.; // Diff sign prot-pi
 
     // Vary one of the cut values
-    if (kTwoTrackStudy && (iVar == 0)) {
+    if ((kTwoTrackStudy == fSysStudyType) && (iVar == 0)) {
       nominalCutValues[fVariableCutType] *= 0.9;
-    } else if (kTwoTrackStudy && (iVar == 2)) {
+    } else if ((kTwoTrackStudy == fSysStudyType) && (iVar == 2)) {
       nominalCutValues[fVariableCutType] *= 1.1;
     }
 

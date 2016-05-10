@@ -23,7 +23,7 @@ PWGPP_runMap="
 2014 200008 208364 NONE
 2015 244908 246994 pbpb
 2015 224956 244628 pp
-2016 999999 999999 NONE
+2016 249954 999999 pp
 "
 
 parseConfig()
@@ -490,6 +490,7 @@ validateLog()
             'core dumped'
             'core file'
             'Exception catched'
+            'line [0-9]*.*: No such file or directory'
             'core\.'
   )
 
@@ -504,7 +505,7 @@ validateLog()
   for errorCondition in "${errorConditions[@]}"; do
     local tmp=$(grep -m1 -e "${errorCondition}" "${log}")
     local error=""
-    [[ -n "${tmp}" ]] && error=" : ${errorCondition}"
+    [[ -n "${tmp}" ]] && error=" ; ${errorCondition}"
     errorSummary+=${error}
   done
 
@@ -778,7 +779,7 @@ mkdirLocal() (
     rv=$?
     err=$((err + ($rv & 1)))
     [[ $rv == 0 ]] && alilog_success "[mkdirLocal] creation of dir $dir OK" \
-                   || alilog_fail    "[mkdirLocal] creation of dir $dir FAILED"
+                   || alilog_error   "[mkdirLocal] creation of dir $dir FAILED"
   done
   return $((err & 1))
 )

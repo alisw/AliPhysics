@@ -9,7 +9,7 @@
 //            It works with MC info and ESD and AOD tree 
 //            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
 //            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
-//            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
+//            Modified : D.Colella  Feb2012, domenico.colella@cern.ch
 //-----------------------------------------------------------------
 
 class TList;
@@ -38,7 +38,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   void SetAnalysisType                 (const char* analysisType            = "ESD"  ) { fAnalysisType                   = analysisType;                 }
-  void SetCollidingSystem              (const char* collidingSystem         = "pp"   ) { fCollidingSystem                = collidingSystem;              }
+  void SetCollidingSystem              (Int_t  collidingSystem              = 0      ) { fCollidingSystem                = collidingSystem;              }
   void SetSelectedTriggerClass         (AliVEvent::EOfflineTriggerTypes trigType     ) { fkTriggerClass                  = trigType;                     }
   void SetEventSelSDDstatus            (Bool_t eventselSDDstatus            = kFALSE ) { fApplyEvSelSDDstatus            = eventselSDDstatus;            }
   void SetEventSelDAQIncomplete        (Bool_t eventselDAQincomplete        = kTRUE  ) { fApplyEvSelDAQincomplete        = eventselDAQincomplete;        }
@@ -61,6 +61,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
   void SetEtaCutOnDaughterTracks       (Float_t etadaughtrks                = 0.8    ) { fEtaCutOnDaughterTracks         = etadaughtrks;                 }
   void SetSPDPileUpminContributors     (Int_t   spdpileupmincontributors    = 3      ) { fSPDPileUpminContributors       = spdpileupmincontributors;     }
   void SetNumTPCPIDsigma               (Double_t ftpcpidsigma               = 4      ) { fTPCPIDsigma                    = ftpcpidsigma;                 }
+  void SetSuffix                       (const char* suffix                  = ""     ) { fSuffix                         = suffix;                       }
   //Setters for the V0 and cascade Vertexer Parameters
   void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
   void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
@@ -84,7 +85,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
 
         TString           fAnalysisType;                   // "ESD" or "AOD" analysis type      
-        TString           fCollidingSystem;                // "pPb" or "pp" colliding system
+        Int_t             fCollidingSystem;                // "pPb" or "pp" colliding system
         AliVEvent::EOfflineTriggerTypes fkTriggerClass;    // Trigger selection: kMB, kINT7, etc as needed
         Bool_t            fApplyEvSelSDDstatus;            //
         Bool_t            fApplyEvSelDAQincomplete;        //       
@@ -112,6 +113,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
         Float_t           fEtaCutOnDaughterTracks;         // pseudorapidity cut on daughter tracks
         Int_t             fSPDPileUpminContributors;       // 
         Double_t          fTPCPIDsigma;                    //
+        TString           fSuffix;
 
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
@@ -313,7 +315,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadepp(const AliAnalysisTaskCheckPerformanceCascadepp&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadepp& operator=(const AliAnalysisTaskCheckPerformanceCascadepp&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadepp, 11);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadepp, 12);
 };
 
 #endif

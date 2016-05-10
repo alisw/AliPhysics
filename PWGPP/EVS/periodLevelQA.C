@@ -142,7 +142,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   map<Int_t,Int_t> fills;
 
-  TString detName[nDetectors]={"ACORDE","AD","CPV","EMCAL","FMD","HMPID","ITSSPD","ITSSDD","ITSSSD","MUONTRK","MUONTRG","PHOS","PMD","T0","TOF","TPC","TRD","VZERO","ZDC"};
+  TString detName[nDetectors]={"ACORDE","PMD","FMD","HMPID","CPV","PHOS","EMCAL","MUONTRK","MUONTRG","T0","VZERO","AD","ZDC","ITSSPD","ITSSDD","ITSSSD","TPC","TRD","TOF"};
   for (Int_t iDet=0;iDet<nDetectors;iDet++) hActiveDetectors->GetYaxis()->SetBinLabel(iDet+1,detName[iDet].Data());
   hClassL0BvsRun     ->SetBit(TH1::kCanRebin);
   hClassL2AvsRun     ->SetBit(TH1::kCanRebin);

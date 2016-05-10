@@ -62,14 +62,14 @@ AliAnalysisTaskEmcalJetFlavourTagExample* AddTaskEmcalJetFlavourTagExample(
 //  TString name(Form("Spectra_%s", nJets));
   TString name(Form("Spectra_%s_%s%s", nJets, nrho, tag));
   AliAnalysisTaskEmcalJetFlavourTagExample *spectratask = new AliAnalysisTaskEmcalJetFlavourTagExample(name);
-  spectratask->SetJetsName(nJets);
-  spectratask->SetClusName(nClusters);
+  spectratask->AddJetContainer(nJets);
+  spectratask->AddClusterContainer(nClusters);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nrho);
   spectratask->SetJetPhi(minPhi,maxPhi);
   spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
-  spectratask->SetTracksName(nTracks);
+  spectratask->AddParticleContainer(nTracks);
   spectratask->SetJetPt(hiPTjet); 
   spectratask->SetTrackPtCut(trptcut);
   spectratask->SetTrackEta(trketa);

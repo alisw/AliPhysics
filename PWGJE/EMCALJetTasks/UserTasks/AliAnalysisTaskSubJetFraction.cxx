@@ -1395,8 +1395,6 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Option==0 returns Nsubjettiness Value
   //Option==1 && N==2 returns opening angle between two subjet axes(Delta R?)
   //Option==2 && N==2 returns Delta R
-  AliJetContainer *JetCont = GetJetContainer(JetContNb);
-  AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
@@ -1415,6 +1413,8 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_kt();
     }
     else{
+      AliJetContainer *JetCont = GetJetContainer(JetContNb);
+      AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
       JetFinder->SetJetMaxEta(0.9-fJetRadius);
       JetFinder->SetRadius(fJetRadius); 
       JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets

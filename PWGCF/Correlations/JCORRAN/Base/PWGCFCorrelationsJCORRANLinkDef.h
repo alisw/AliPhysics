@@ -5,6 +5,7 @@
 
 
 #pragma link C++ class AliJAcceptanceCorrection+;
+#pragma link C++ class AliJAcceptanceFunctions+;
 #pragma link C++ class AliJCORRAN+;
 #pragma link C++ class AliJTrackCounter+;
 #pragma link C++ class AliJCORRANTask+;

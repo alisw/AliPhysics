@@ -3,7 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <iterator>
 #include <TArrayI.h>
 #include <AliVParticle.h>
 
@@ -12,133 +11,19 @@ class AliTLorentzVector;
 
 #include "AliEmcalContainer.h"
 
+typedef AliEmcalIterableContainerT<AliVParticle> AliParticleIterableContainer;
+
 /**
  * @class AliParticleContainer
  * @brief Container for particles within the EMCAL framework
  * @ingroup EMCALCOREFW
- * @author Martha Verweij
- * @author Salvatore Aiola
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
  *
  * Container with name, TClonesArray and cuts for particles
  */
 class AliParticleContainer : public AliEmcalContainer {
  public:
-
-  /**
-   * @class accept_iterator
-   * @brief stl iterator over accepted clusters
-   * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
-   * @date March 16, 2016
-   *
-   * Bi-directional iterator over all accepted particles in the array. The
-   * iterator is used in the standard way a c++ iterator is used. The
-   * container is responsible creating it. Afterwards one uses the prefix
-   * or postfix increment or decrement operator, depending on the direction
-   * of the iteration.
-   *
-   * ~~~{.cxx}
-   * AliParticleContainer cont;
-   * for(AliParticleContainer::iterator it = cont.accept_begin(); it != cont.accept_end(); ++cont){
-   *   std::cout << "Particle pt: " << (*it)->Pt() std::endl;      // do something with the particle inside
-   * }
-   * ~~~
-   *
-   * As the postfix operator needs to perform a copy of the iterator,
-   * the prefix operator will have a better performance and should
-   * be preferred.
-   *
-   * Note: This class is using a list of accepted clusters in the
-   * backend. This list is copied in the copy constructor and
-   * the assignment operator. Can be done in a more performant way
-   * using c++11 shared_ptr.
-   *
-   */
-  class accept_iterator : public std::iterator<std::bidirectional_iterator_tag,
-                                               AliVParticle,std::ptrdiff_t,
-                                               AliVParticle **, AliVParticle *&>
-  {
-  public:
-    accept_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
-    accept_iterator(const accept_iterator &other);
-    virtual ~accept_iterator() {}
-    accept_iterator &operator=(const accept_iterator &other);
-    bool operator!=(const accept_iterator &other) const;
-
-    accept_iterator &operator++();
-    accept_iterator operator++(int);
-    accept_iterator &operator--();
-    accept_iterator operator--(int);
-
-    AliVParticle *operator*() const;
-
-  private:
-    accept_iterator();
-
-    const AliParticleContainer      *fkContainer;       ///< Container iterated over
-    TArrayI                          fAcceptIndices;    ///< Indices of accepted clusters
-    int                              fCurrentPos;       ///< Current position inside the container
-    bool                             fForward;          ///< Direction, expressed in forward direction
-  };
-
-  /**
-   * @class all_iterator
-   * @brief stl iterator over all clusters
-   * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
-   * @date March 16, 2016
-   *
-   * Bi-directional iterator over all particles in the array. The
-   * iterator is used in the standard way a c++ iterator is used.
-   * The container is responsible creating it. Afterwards one uses
-   * the prefix or postfix increment or decrement operator, depending
-   * on the direction of the iteration.
-   *
-   * ~~~{.cxx}
-   * AliParticleContainer cont;
-   * for(AliParticleContainer::iterator it = cont.begin(); it != cont.end(); ++cont){
-   *   std::cout << "Particle pt: " << (*it)->Pt() std::endl;      // do something with the particle inside
-   * }
-   * ~~~
-   *
-   * If you are using c++11 this reduces to
-   *
-   * ~~~{.cxx}
-   * for(auto it : cont){
-   *   std::cout << "Particle pt: " << it->Pt() std::endl;      // do something with the particle inside
-   * }
-   * ~~~
-   *
-   * using c++11 range-based iterations.
-   *
-   * As the postfix operator needs to perform a copy of the iterator,
-   * the prefix operator will have a better performance and should
-   * be preferred.
-   */
-  class all_iterator : public std::iterator<std::bidirectional_iterator_tag,
-                                            AliVParticle,std::ptrdiff_t,
-                                            AliVParticle **, AliVParticle *&>
-  {
-  public:
-    all_iterator(const AliParticleContainer *cont, int startpos, bool forward  = true);
-    all_iterator(const all_iterator &other);
-    virtual ~all_iterator() {}
-    all_iterator &operator=(const all_iterator &other);
-    bool operator!=(const all_iterator &other) const;
-
-    all_iterator &operator++();
-    all_iterator operator++(int);
-    all_iterator &operator--();
-    all_iterator operator--(int);
-
-    AliVParticle *operator*() const;
-
-  private:
-    all_iterator();
-
-    const AliParticleContainer      *fkContainer;       ///< Container iterated over
-    int                              fCurrentPos;       ///< Current position inside the container
-    bool                             fForward;          ///< Direction, expressed in forward direction
-  };
-
   AliParticleContainer();
   AliParticleContainer(const char *name);
   virtual ~AliParticleContainer(){;}
@@ -185,15 +70,18 @@ class AliParticleContainer : public AliEmcalContainer {
 
   const char*                 GetTitle() const;
 
-  accept_iterator             accept_begin() const;
-  accept_iterator             accept_end() const;
-  accept_iterator             accept_rbegin() const;
-  accept_iterator             accept_rend() const;
+  const AliParticleIterableContainer      all() const;
+  const AliParticleIterableContainer      accepted() const;
 
-  all_iterator                begin() const;
-  all_iterator                end() const;
-  all_iterator                rbegin() const;
-  all_iterator                rend() const;
+  AliParticleIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
+  AliParticleIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
+  AliParticleIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
+  AliParticleIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
+
+  AliParticleIterableContainer::iterator  begin()         const { return all().begin()        ; }
+  AliParticleIterableContainer::iterator  end()           const { return all().end()          ; }
+  AliParticleIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
+  AliParticleIterableContainer::iterator  rend()          const { return all().rend()         ; }
 
  protected:
 
@@ -221,7 +109,6 @@ class AliParticleContainer : public AliEmcalContainer {
  * @return Result of the unit test (0 - passed, 1 - particles missing, 2 - excess particles)
  */
 int TestParticleContainerIterator(const AliParticleContainer *const cont, int iteratorType = 0, bool verbose = false);
-
 
 #endif
 

@@ -314,12 +314,20 @@ void AliEMCALTriggerOfflineQAPP::Init()
         nTRU == 40 || nTRU == 41 ||
         nTRU == 46 || nTRU == 47) continue;
     hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTRU%d", nTRU);
-    htitle = TString::Format("EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
-    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+    htitle = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 256, 0, 1024, 320, 0, 80);
 
     hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d", nTRU);
     htitle = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0AmpTriggeredTRU%d;FastOR L0 amplitude;2x2 cell sum energy (GeV)", nTRU);
-    fHistManager.CreateTH2(hname, htitle, 1024, 0, 4096, 400, 0, 200);
+    fHistManager.CreateTH2(hname, htitle, 256, 0, 1024, 320, 0, 80);
+
+    hname = TString::Format("ByTRU/EMCTRQA_histFastORAmpSTUVsTRU%d", nTRU);
+    htitle = TString::Format("ByTRU/EMCTRQA_histFastORAmpSTUVsTRU%d;TRU amplitude;STU amplitude", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 256, 0, 1024, 256, 0, 1024);
+
+    hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL1AmpSTU%d", nTRU);
+    htitle = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL0Amp%d;FastOR L1 amplitude;2x2 cell sum energy (GeV)", nTRU);
+    fHistManager.CreateTH2(hname, htitle, 256, 0, 1024, 320, 0, 80);
   }
 
   hname = "EMCTRQA_histFastORNoOffline";
@@ -639,6 +647,12 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     }
   }
 
+  UInt_t L1ampChopped = (fastor->GetL1Amp() >> 2) * 4;
+  if (fastor->GetL0Amp() > fMinL0FastORAmp || L1ampChopped > fMinL1FastORAmp) {
+    hname = TString::Format("ByTRU/EMCTRQA_histFastORAmpSTUVsTRU%d",nTRU);
+    fHistManager.FillTH2(hname, fastor->GetL0Amp(), L1ampChopped);
+  }
+
   if (fastor->GetL0Amp() > fFastorL0Th) {
     if (fTimeStampBinWidth > 0) {
       hname = TString::Format("ByTimeStamp/EMCTRQA_histLargeAmpFastORL0_%u_%u", fEventTimeStampBin, fEventTimeStampBin+fTimeStampBinWidth);
@@ -666,6 +680,9 @@ void AliEMCALTriggerOfflineQAPP::ProcessFastor(const AliEMCALTriggerFastOR* fast
     }
 
     hname = "EMCTRQA_histCellAmpVsFastORL1Amp";
+    fHistManager.FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
+
+    hname = TString::Format("ByTRU/EMCTRQA_histCellAmpVsFastORL1AmpSTU%d",nTRU);
     fHistManager.FillTH2(hname, fastor->GetL1Amp(), offlineAmp);
   }
 
