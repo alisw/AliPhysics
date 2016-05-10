@@ -21,7 +21,6 @@ batchFlags=""
 baseOutputDirectory="$PWD/output"
 #alirootEnv="/cvmfs/alice.cern.ch/bin/alienv setenv AliRoot/v5-04-34-AN -c"
 #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
-#trustedQAtrainMacro='/hera/alice/mkrzewic/gsisvn/Calibration/QAtrain_duo.C'
 reconstructInTemporaryDir=0
 recoTriggerOptions="\"\""
 percentProcessedFilesToContinue=100
@@ -737,53 +736,62 @@ goMergeCPass()
   
   # Copy files in case they are not already there.
   case $cpass in
-    0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
-                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
-                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
-                         "${batchWorkingDirectory}/${mergingScript}"
-                         "${batchWorkingDirectory}/OCDB.root"
-                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
+    0) filesMergeCPassCustom=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                               "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                               "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                               "${batchWorkingDirectory}/${mergingScript}"
+                               "${batchWorkingDirectory}/OCDB.root"
+                               "${batchWorkingDirectory}/localOCDBaccessConfig.C" )
+       filesMergeCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/makeOCDB.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C" ) ;;
 
-    1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
-                         "${batchWorkingDirectory}/${qaFilesToMerge}"
-                         "${batchWorkingDirectory}/${filteredFilesToMerge}"
-                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
-                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
-                         "${batchWorkingDirectory}/${mergingScript}"
-                         "${batchWorkingDirectory}/OCDB.root"
-                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
+    1) filesMergeCPassCustom=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                               "${batchWorkingDirectory}/${qaFilesToMerge}"
+                               "${batchWorkingDirectory}/${filteredFilesToMerge}"
+                               "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                               "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                               "${batchWorkingDirectory}/${mergingScript}"
+                               "${batchWorkingDirectory}/OCDB.root"
+                               "${batchWorkingDirectory}/localOCDBaccessConfig.C" )
+      filesMergeCPass=( "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                          "${batchWorkingDirectory}/QAtrain_duo.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
-                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
-                         "${trustedQAtrainMacro}" ) ;;
+                         "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C" ) ;;
 
-    2) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
-                         "${batchWorkingDirectory}/${qaFilesToMerge}"
-                         "${batchWorkingDirectory}/${filteredFilesToMerge}"
-                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
-                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
-                         "${batchWorkingDirectory}/OCDB.root"
-                         "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                         "${batchWorkingDirectory}/QAtrain_duo.C"
-                         "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz"
+    2) filesMergeCPassCustom=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                               "${batchWorkingDirectory}/${qaFilesToMerge}"
+                               "${batchWorkingDirectory}/${filteredFilesToMerge}"
+                               "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                               "${batchWorkingDirectory}/${syslogsCalibToMerge}"
+                               "${batchWorkingDirectory}/OCDB.root"
+                               "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                               "${batchWorkingDirectory}/QAtrain_duo.C" )
+       filesMergeCPass=( "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C" ) ;;
   esac
 
+  #first check if we have any custom scripts
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesMergeCPassCustom[@]}"
+  for file in ${filesMergeCPassCustom[*]}; do
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
+  done
+
+  #then download any missing ones from the default location
+  # -c: check if local source exists; -C: do not copy if local dest exists already
+  # -f: copy all in the same dest dir (flat copy)
+  xCopy -f -c -C -d . "${filesMergeCPass[@]}"
   for file in ${filesMergeCPass[*]}; do
-    [[ ! -f ${file##*/} && -f ${file} ]] && printExec cp -f $file . \
-                                         && [[ ${file##*/} =~ .*\.sh ]] \
-                                         && printExec chmod +x ${file##*/}
+    [[ ${file##*/} =~ .*\.sh ]] && printExec chmod +x ${file##*/}
   done
 
   # Monkey patching: remove spaces from around arguments to root macros. For example this sometimes
