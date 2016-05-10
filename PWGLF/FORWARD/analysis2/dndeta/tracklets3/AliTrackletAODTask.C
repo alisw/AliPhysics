@@ -952,6 +952,11 @@ Bool_t AliTrackletAODMCTask::ProcessGenerated()
 		  TMath::RadToDeg()*theta);    
       continue;
     }
+    Double_t eta = -TMath::Log(TMath::ATan(theta/2));
+    // If the pseudorapidity is way beyond the SPD acceptance, do not
+    // write down this generated "tracklet" - to save space.
+    if (TMath::Abs(eta) > 3) continue;
+    
     Double_t          phi      = particle->Phi();
     AliAODTracklet*   tracklet = MakeTracklet(false);
     AliAODMCTracklet* mc       = static_cast<AliAODMCTracklet*>(tracklet);
