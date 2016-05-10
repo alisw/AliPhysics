@@ -18177,8 +18177,6 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     }
   }
   
-  printf("start mapping \n");
-  
   // temporary mapping: Z*M = a*V0M + b, cut at cen. 40
   Double_t ZCmax = 52.7;
   Double_t ZAmax = 47.4;
@@ -18203,8 +18201,6 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     DA *= (ZAM<fPolAv[1]->Eval(mA)?-1.:1.);
     LA = fPolInt[1]->Integral(5.,mA);
   }
-  
-  printf("end mapping \n");
   
   fNewMetricLEBE = (LA*(fZDCESELCtot/fZDCESELAtot)+LC)/2.;
   
@@ -18257,8 +18253,6 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
 //    fhCenvsDif[0]->Fill(fCentralityEBE,ZCM-ZAM);
 //    fhCenvsDif[1]->Fill(fCentralityVarEBE,ZCM-ZAM);
   }
-  
-  printf("end PassZDCcuts \n");
   
   return PassZDCcuts;
 }
