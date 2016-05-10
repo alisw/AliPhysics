@@ -68,6 +68,7 @@ Bool_t  fAllowClearAtSOR=kFALSE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
+std::string fNameList = "";
 TString fTitleAnnotation = "";
 
 AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
@@ -117,6 +118,7 @@ const char* fUSAGE =
     " -select : set the selection regex for sending out objects,\n" 
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
+    " -list : a list of (fulll) names to send (arb. delimiter)\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
     " -ZMQtimeout: when to timeout the sockets\n"
@@ -360,6 +362,7 @@ Int_t DoReply(aliZMQmsg::iterator block, void* socket)
   //reset the "one shot" options to default values
   fResetOnRequest = kFALSE;
   fSchemaOnRequest = false;
+  fNameList.clear();
   if (fVerbose && (fSendSelection || fUnSendSelection)) 
   {
     Printf("unsetting include=%s, exclude=%s",
@@ -514,6 +517,8 @@ Int_t DoSend(void* socket)
     Bool_t unselected = kFALSE;
     if (fSendSelection) selected = fSendSelection->Match(objectName);
     if (fUnSendSelection) unselected = fUnSendSelection->Match(objectName);
+    if (!fNameList.empty()) unselected = unselected || 
+                                         (fNameList.find(objectName)==std::string::npos);
     if (!selected || unselected)
     {
       if (fVerbose) Printf("     object %s did NOT make the selection [%s] && ![%s]", 
@@ -716,6 +721,11 @@ Int_t ProcessOptionString(TString arguments)
       delete fUnSendSelection;
       fUnSendSelection = new TPRegexp(value);
       if (fVerbose) Printf("setting new regex %s",fUnSendSelection->GetPattern().Data());
+    }
+    else if (option.EqualTo("list"))
+    {
+      fNameList = value.Data();
+      if (fVerbose) Printf("setting a selection list %s", fNameList.c_str());
     }
     else if (option.EqualTo("cache"))
     {
