@@ -236,7 +236,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fSkipFriendsForLargeZ(kFALSE),
   fMaxFriendTracks(3000),
   fFractionFriends(0.03),
-  fFractionHLTESD(1.0),
+  fFractionHLTESD(0.05),
   fSkipFriendsCutZ(50),
   //
   fSkipIncompleteDAQ(kTRUE),
