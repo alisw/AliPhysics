@@ -248,6 +248,10 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   TH1::AddDirectory(oldStatus);
 }
 
+TObject* AliTriggerAnalysis::GetHistogram(const char* histName) { 
+  return fHistList->FindObject(histName); 
+}
+
 
 //-------------------------------------------------------------------------------------------------
 const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){

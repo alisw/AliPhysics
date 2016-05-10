@@ -85,7 +85,7 @@ public:
   void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   
-  TObject* GetHistogram(const char* histName) { return fHistList->FindObject(histName); }
+  TObject* GetHistogram(const char* histName);
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
