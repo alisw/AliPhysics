@@ -165,7 +165,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat           = new TH1F("fHistStat","Possible rejection reasons;;",16384,-0.5,16383.5);
+  fHistStat           = new TH1F("fHistStat","Accepted events;;",16384,-0.5,16383.5);
   fHistFiredBitsSPD   = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
   fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",1000,0,2000,1000,0,10000);

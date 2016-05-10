@@ -133,7 +133,7 @@ fCashedTokens(new TList())
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
   fCashedTokens->SetOwner();
-  fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
+  fHistStat = new TH2F("fHistStatistics",";;",1,0,1,1,0,1);
   fHistList.Add(fHistStat);
   
   AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kWarning);
@@ -644,7 +644,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list) {
     count++;
   }
   fTriggerAnalysis.Merge(&collTriggerAnalysis);
-  fTriggerAnalysis.Merge(&collHistList);
+  fHistList.Merge(&collHistList);
   
   delete iter;
   return count+1;
