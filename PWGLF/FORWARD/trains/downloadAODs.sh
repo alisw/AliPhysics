@@ -151,7 +151,7 @@ if test $zen -gt 0 ; then
 	head -n $stop | \
 	tail -n $n | \
 	parallel --eta --bar -j ${jobs} copyit {} \
-		 2> >(zenity --width=500 --height=100 --progress --auto-close --time-remaining --no-cancel)
+		 2> >(zenity --width=700 --height=100 --progress --auto-close --time-remaining --no-cancel)
 else 
     alien_find $dir $file | \
 	grep .${suf} | \
