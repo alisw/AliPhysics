@@ -514,8 +514,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111100063032220000","0163103100000050"); // NonLinearity none
   } else if (trainConfig == 111){  // EMCAL clusters, different triggers no NonLinearity
     cuts.AddCut("00010113","1111100063032220000","0163103100000050");
-    cuts.AddCut("00052013","1111100063032220000","0163103100000050"); // EMC7
-    cuts.AddCut("00081013","1111100063032220000","0163103100000050"); // EMCEG1,
+    cuts.AddCut("00052113","1111100063032220000","0163103100000050"); // EMC7
+    cuts.AddCut("00081113","1111100063032220000","0163103100000050"); // EMCEG1,
     
 
     //8 TeV kEMC7 variations
