@@ -7,8 +7,7 @@ class TTreeSRedirector;
 
 namespace AliFFTsmoother
 {
-  TGraph  * ReplaceOutlierFrequencies(TH1 *hinput, Int_t firstBin, Int_t lastBin, Double_t outlierCut, Int_t skipFreq, TTreeSRedirector * pcstream);
-  TGraph  * SmoothFrequencies(TH1 *hinput, Int_t firstBin, Int_t lastBin, Double_t outlierCut, Int_t skipFreq, TTreeSRedirector * pcstream);
+  TGraph  * ReplaceOutlierFrequenciesMedian(TH1 *hinput, Double_t outlierCut, Int_t medianRange, Float_t smoothSigma,  Int_t lowBand, TTreeSRedirector * pcstream);
 
 };
 
