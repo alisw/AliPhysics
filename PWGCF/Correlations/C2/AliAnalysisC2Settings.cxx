@@ -24,7 +24,8 @@ AliAnalysisC2Settings::AliAnalysisC2Settings() :
   fMultEstimator(""),
   fTriggerCint7("CINT7-B-"),
   fTriggerVhmV0M("CVHMV0M-B-"),
-  fTrigger("")
+  fTrigger(""),
+  fIsITSsa(false)
 {
   Double_t _ptbins[] = {3.0, 4.0, 6.0, 8.0, 15.0};
   fPtBinEdges = edgeContainer(_ptbins, _ptbins + sizeof(_ptbins) / sizeof(_ptbins[0]));

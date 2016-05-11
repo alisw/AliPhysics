@@ -92,7 +92,7 @@ void AliAnalysisTaskC2Base::UserCreateOutputObjects()
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::dca + 1, "DCA");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::etaAcceptance + 1, "#eta acceptance");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::failedFilterBits + 1, "failed filter bits");
-    discardedTracksAx->SetBinLabel(cDiscardTrackReasons::failedITSCut + 1, "failed ITS cut");
+  discardedTracksAx->SetBinLabel(cDiscardTrackReasons::failedITSCut + 1, "failed ITS cut");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::neutralCharge + 1, "neutral");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notAODPrimary + 1, "not aod kPrimary");
   discardedTracksAx->SetBinLabel(cDiscardTrackReasons::notHybridGCG + 1, "!HybridGCG");
@@ -123,59 +123,6 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
     this->fDiscardedEvents->Fill(cDiscardEventReasons::badRun);
     return false;
   }
-  if ((InputEvent()->GetVZEROData()->GetV0CDecision() != 1) ||
-	   (InputEvent()->GetVZEROData()->GetV0ADecision() != 1)) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::notV0AND);
-    return false;
-  }
-  //incomplete events
-  if (InputEvent()->GetHeader()->GetL0TriggerInputs() == 0 && !fMCEvent) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::isIncomplete);
-    return false;
-  }
-  //V0 asymmetry cut
-  if (this->IsAsymmetricV0()) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::v0asymmetryCut);
-    return false;
-  }
-  //trigger check; TODO: ask Katarina about "fMBtrigger" in her code!
-  if (TString firedTrigger = InputEvent()->GetFiredTriggerClasses()) {
-    // Make choice base on type of MB trigger?
-    if (!firedTrigger.Contains(this->fSettings.fTrigger)) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
-      return false;
-    }
-  }
-  //SPD vtx contributors (only aod events)
-  if (AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent)) {
-    if (aodEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::spdVertexContributors);
-      return false;
-    }
-  }
-  //out-of-bunch 11 BC
-  if (IsOutOfBunchPileup()) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::isOutOfBunchPileup);
-    return false;
-  }
-  // Online-offline SPD fastor
-  // Taken from Leonardo/Katarina; TODO: Cross-check and understand these values!
-  if (AliVMultiplicity* mult = fInputEvent->GetMultiplicity()) {
-    if(mult->GetFastOrFiredChipMap().CountBits(400)
-       <= -20.589 + 0.73664 * mult->GetFiredChipMap().CountBits(400)) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::spdFastOr);
-      return false;
-    }
-  }
-  // SPD pileup
-  if (AliAnalysisUtils* utils = new AliAnalysisUtils()) {
-    utils->SetMinPlpContribSPD(3);
-    utils->SetMinPlpContribMV(3);
-    if (utils->IsPileUpSPD(InputEvent())) {
-      this->fDiscardedEvents->Fill(cDiscardEventReasons::spdPipeup);
-      return false;
-    }
-  }
   AliMultSelection *multSel =
     dynamic_cast< AliMultSelection* >(InputEvent()->FindListObject("MultSelection"));
   // no multSelection object found
@@ -188,21 +135,75 @@ Bool_t AliAnalysisTaskC2Base::IsValidEvent()
     return false;
   }
 
-  // tkl-cluster cut
-  Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
-  Int_t nITScluster = InputEvent()->GetNumberOfITSClusters(0) + InputEvent()->GetNumberOfITSClusters(1);
-  if (nITScluster > 64+4*multTKL) {
-    this->fDiscardedEvents->Fill(cDiscardEventReasons::tklClusterCut);
-    return false;
+  // ITSsa specific checks
+  if (this->fSettings.fIsITSsa) {
+    if ((InputEvent()->GetVZEROData()->GetV0CDecision() != 1) ||
+	(InputEvent()->GetVZEROData()->GetV0ADecision() != 1)) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::notV0AND);
+      return false;
+    }
+    //incomplete events
+    if (InputEvent()->GetHeader()->GetL0TriggerInputs() == 0 && !fMCEvent) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::isIncomplete);
+      return false;
+    }
+    //V0 asymmetry cut
+    if (this->IsAsymmetricV0()) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::v0asymmetryCut);
+      return false;
+    }
+    //trigger check; TODO: ask Katarina about "fMBtrigger" in her code!
+    if (TString firedTrigger = InputEvent()->GetFiredTriggerClasses()) {
+      // Make choice base on type of MB trigger?
+      if (!firedTrigger.Contains(this->fSettings.fTrigger)) {
+	this->fDiscardedEvents->Fill(cDiscardEventReasons::noTrigger);
+	return false;
+      }
+    }
+    //SPD vtx contributors (only aod events)
+    if (AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent)) {
+      if (aodEvent->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdVertexContributors);
+	return false;
+      }
+    }
+    //out-of-bunch 11 BC
+    if (IsOutOfBunchPileup()) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::isOutOfBunchPileup);
+      return false;
+    }
+    // Online-offline SPD fastor
+    // Taken from Leonardo/Katarina; TODO: Cross-check and understand these values!
+    if (AliVMultiplicity* mult = fInputEvent->GetMultiplicity()) {
+      if(mult->GetFastOrFiredChipMap().CountBits(400)
+	 <= -20.589 + 0.73664 * mult->GetFiredChipMap().CountBits(400)) {
+	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdFastOr);
+	return false;
+      }
+    }
+    // SPD pileup
+    if (AliAnalysisUtils* utils = new AliAnalysisUtils()) {
+      utils->SetMinPlpContribSPD(3);
+      utils->SetMinPlpContribMV(3);
+      if (utils->IsPileUpSPD(InputEvent())) {
+	this->fDiscardedEvents->Fill(cDiscardEventReasons::spdPipeup);
+	return false;
+      }
+    }
+    // tkl-cluster cut
+    Float_t multTKL = multSel->GetEstimator("SPDTracklets")->GetValue();
+    Int_t nITScluster = (InputEvent()->GetNumberOfITSClusters(0)
+			 + InputEvent()->GetNumberOfITSClusters(1));
+    if (nITScluster > 64+4*multTKL) {
+      this->fDiscardedEvents->Fill(cDiscardEventReasons::tklClusterCut);
+      return false;
+    }
   }
   this->fDiscardedEvents->Fill(cDiscardEventReasons::_eventIsValid);
   return true;
 }
 
 Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
-  AliAODTrack* aodTrack = dynamic_cast< AliAODTrack* >(particle);
-  AliAODMCParticle* mcParticle = dynamic_cast< AliAODMCParticle* >(particle);
-
   if (particle->Charge() == 0){
     this->fDiscardedTracks->Fill(cDiscardTrackReasons::neutralCharge);
     return false;
@@ -214,6 +215,7 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
   }
   // MC specific cuts
   if (this->fSettings.kMCTRUTH == this->fSettings.fDataType) {
+    AliAODMCParticle* mcParticle = dynamic_cast< AliAODMCParticle* >(particle);
     if (!mcParticle->IsPhysicalPrimary()) {
       this->fDiscardedTracks->Fill(cDiscardTrackReasons::notMCPrimary);
       return false;
@@ -221,14 +223,28 @@ Bool_t AliAnalysisTaskC2Base::IsValidParticle(AliVParticle *particle) {
   }
   // Reconstruction specific cuts
   if (this->fSettings.kRECON == this->fSettings.fDataType) {
-    if(!this->fitssatrackcuts->AcceptTrack(aodTrack)) {
-      this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedITSCut);
-      return false;
+    AliAODTrack* aodTrack = dynamic_cast< AliAODTrack* >(particle);
+    // ITSsa specific cuts
+    if(this->fSettings.fIsITSsa) {
+      if (!this->fitssatrackcuts->AcceptTrack(aodTrack)) {
+	this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedITSCut);
+	return false;
+      }
     }
-    // if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
-    //   this->fDiscardedTracks->Fill(cDiscardTrackReasons::notHybridGCG);
-    //   return false;
-    // }
+    // Normal (ie., not ITSsa cuts)
+    if (!this->fSettings.fIsITSsa) {
+      // IsHybridGlobalConstrainedGlobal() seems to be equivalent to TestFilterBit(768) == false
+      // at least on LHC10h AOD160
+      // if (!aodTrack->IsHybridGlobalConstrainedGlobal()) {
+      //   this->fDiscardedTracks->Fill(cDiscardTrackReasons::notHybridGCG);
+      //   return false;
+      // }
+      if (aodTrack->TestFilterBit(768) == false) {
+	this->fDiscardedTracks->Fill(cDiscardTrackReasons::failedFilterBits);
+	return false;
+      }
+    }
+
     if (aodTrack->GetType() != aodTrack->kPrimary) {
       this->fDiscardedTracks->Fill(cDiscardTrackReasons::notAODPrimary);
       return false;
