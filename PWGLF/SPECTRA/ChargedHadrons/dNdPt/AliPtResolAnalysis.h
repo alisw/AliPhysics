@@ -47,8 +47,6 @@ public :
   // Export objects to folder
   virtual TFolder *ExportToFolder(TObjArray * const array=0);
   TFolder* CreateFolder(TString name,TString title);
-  
-  void SetSigmaScale( Float_t scale)   { fsigmaScale = scale; }
 
   // Get analysis folder
   TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
@@ -62,12 +60,10 @@ private:
   THnSparseF *fTrackParamHist;  //-> sigma(1/pT):1/pT
   THnSparseF *fTrackParamHist2;  //-> sigma(1/pT)*pT:pT
 
-  Float_t fsigmaScale;
-
   AliPtResolAnalysis(const AliPtResolAnalysis&); // not implemented
   AliPtResolAnalysis& operator=(const AliPtResolAnalysis&); // not implemented
 
-  ClassDef(AliPtResolAnalysis,3);
+  ClassDef(AliPtResolAnalysis,2);
 };
 
 #endif

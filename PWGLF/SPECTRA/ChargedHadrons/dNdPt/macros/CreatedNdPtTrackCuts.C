@@ -9,7 +9,7 @@
 // added cut modes 200,201: replacing TPCNcluster cut
 
 
-AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Double_t scaleChi2 = 1, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
+AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 
@@ -1433,7 +1433,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
 
     // tpcc cut
     if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-    else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*36.);
+    else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*36.);
 
     // Geometrical-Length Cut
     esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
@@ -2029,9 +2029,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     // 7*(0.0026+0.0050/pt^1.01)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); 
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
-    // tpcc cut
-    if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-    else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*36.);
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); 
     
     // Geometrical-Length Cut
     esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
@@ -2048,12 +2046,12 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     if(cutMode==5007){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}
     if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}
     if(cutMode==5009){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*25.);
-    } 
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*25.); tag+= " Modified for Data";}
+    }
     if(cutMode==5010){
-      if(isMC) esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);
-      else     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(scaleChi2*49.);
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.2*49.); tag+= " Modified for Data";}
     }
     if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}
     if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}
@@ -2067,10 +2065,19 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
     if(cutMode==5019){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
     
     if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+    if(cutMode==5021){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.9,0.75);}   //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+    
+    if(cutMode==5022){
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.4*25.); tag+= " Modified for Data";}
+    }
+    if(cutMode==5023){
+      if(isMC){ esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
+      else{     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1.4*49.); tag+= " Modified for Data";}
     }
 
  
-
+}
 
 
 
