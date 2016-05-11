@@ -598,8 +598,8 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
   Double_t v0c3   = vzero->GetMRingV0C(3);
 
-  fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
-  fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
+  //fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
+  //fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
   if(fIsSelected) hstat->Fill(kEvAfterAsymCut);
   /*
     if (!fUseMC) {
@@ -668,7 +668,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     if (fUseMC) multV0 *= fMCV0Scale;
   }
   ((TH1*)fHistosCustom->UncheckedAt(kHV0NoSel))->Fill(multV0, fWeight);
-  if (fTrigSel)
+  if ( trg & fTrigSel)
     ((TH1*)fHistosCustom->UncheckedAt(kHV0Trig))->Fill(multV0, fWeight);
   //
   float nSPD2 = multESD->GetNumberOfITSClusters(1);
@@ -726,8 +726,8 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   //
   //  if (!fVtxOK || !fIsSelected) return;
 
-if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
-//((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+//if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
 
 
   if (fUseMC) {
@@ -1407,7 +1407,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
       dThetaX /= (sint*sint);
     }
 
-    if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
+     if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
     if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;
     //
     //    double phi    = mlt->GetPhi(itr);
