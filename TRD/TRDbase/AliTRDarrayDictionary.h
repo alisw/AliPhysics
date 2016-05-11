@@ -55,4 +55,36 @@ class AliTRDarrayDictionary: public TObject
   ClassDef(AliTRDarrayDictionary,7) //Dictionary container class
     
 };
+
+// inline definitions
+
+//________________________________________________________________________________
+inline Int_t AliTRDarrayDictionary::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
+{
+  //
+  // Get the data using the pad numbering.
+  // To access data using the mcm scheme use instead
+  // the method GetDataByAdcCol
+  //
+
+  Int_t corrcolumn = fgLutPadNumbering[ncol];
+
+  return fDictionary[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
+
+}
+//________________________________________________________________________________
+inline void AliTRDarrayDictionary::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Int_t value)
+{
+  //
+  // Set the data using the pad numbering.
+  // To write data using the mcm scheme use instead
+  // the method SetDataByAdcCol
+  //
+
+  Int_t colnumb = fgLutPadNumbering[ncol];
+
+  fDictionary[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
+
+}
+
 #endif
