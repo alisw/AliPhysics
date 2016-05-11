@@ -201,7 +201,7 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
   while (TObject* obj = nextTrack()){
     // The naming around VTrack, VParticle, AODTrack mcParticle is a mess!
     // Take-away message: They all derive from AliVParticle one way or another.
-    AliVParticle* particle = dynamic_cast< AliVParticle* >(obj);
+    AliVParticle* particle = static_cast< AliVParticle* >(obj);
     if (!this->IsValidParticle(particle)){
       continue;
     }

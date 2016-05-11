@@ -64,6 +64,8 @@ class AliAnalysisC2Settings : public TObject {
   //     fTrigger = fTriggerCint7;
   TString fTriggerCint7;
   TString fTriggerVhmV0M;
+  // ITS specific options needed for ITSsa runs
+  Bool_t fIsITSsa;
 
  private:
   ClassDef(AliAnalysisC2Settings, 1);
