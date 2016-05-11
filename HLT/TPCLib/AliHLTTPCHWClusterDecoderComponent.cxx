@@ -281,7 +281,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   static int nCluTotal = 0;
   static int nCluDeconvolutedTime = 0;
   static int nCluDeconvolutedPad = 0;
-  static int nCluDeconvolutedPadTime = 0;
+  static int nCluDeconvolutedPadAndTime = 0;
+  static int nCluDeconvolutedPadOrTime = 0;
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
      
@@ -364,10 +365,13 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 	  c.SetSigmaTime2(cl.GetSigmaZ2());
 	  c.SetQMax(cl.GetQMax());	  
 	  outputRaw->fCount++;
-	  nCluTotal ++;
-	  if( cl.IsDeconvolutedPad() ) nCluDeconvolutedPad++;
-	  if( cl.IsDeconvolutedTime() ) nCluDeconvolutedTime++;
-	  if( cl.IsDeconvolutedPad() && cl.IsDeconvolutedTime() ) nCluDeconvolutedPadTime++;
+	  if( 1 || cl.GetSigmaY2()>0 && cl.GetSigmaZ2()>0 ){
+	    nCluTotal ++;
+	    if( cl.IsDeconvolutedPad() ) nCluDeconvolutedPad++;
+	    if( cl.IsDeconvolutedTime() ) nCluDeconvolutedTime++;
+	    if( cl.IsDeconvolutedPad() && cl.IsDeconvolutedTime() ) nCluDeconvolutedPadAndTime++;
+	    if( cl.IsDeconvolutedPad() || cl.IsDeconvolutedTime() ) nCluDeconvolutedPadOrTime++;
+	  }
 	}	
       }
       // fill into HLT output data
@@ -387,8 +391,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
   double tmp = nCluTotal>0 ?100./nCluTotal :0;
 
-  HLTInfo(" decoded clusters total %d, deconvoluted pad %f\%, time %f\%, both %f\%",
-	  nCluTotal,(nCluDeconvolutedPad*tmp), (nCluDeconvolutedTime*tmp), (nCluDeconvolutedPadTime*tmp) );
+  HLTInfo(" decoded clusters total %d, deconvoluted pad %f\%, time %f\%, pd&&tm %f\%, pd||tm %f\%",
+	  nCluTotal,(nCluDeconvolutedPad*tmp), (nCluDeconvolutedTime*tmp), (nCluDeconvolutedPadAndTime*tmp), (nCluDeconvolutedPadOrTime*tmp) );
 
   if( fDoMerge && fpClusterMerger ){
     fpClusterMerger->Clear();
