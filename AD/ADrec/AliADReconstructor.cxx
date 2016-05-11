@@ -339,9 +339,9 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   TClonesArray *f_Int0 = new TClonesArray;
   TClonesArray *f_Int1 = new TClonesArray;
   Int_t chOffline=0, chOnline=0;
-  Float_t extrapolationThresholds[21];
-  Bool_t  doExtrapolation[21];
-  for (Int_t i=0; i<21; ++i) {
+  Float_t extrapolationThresholds[kADNClocks];
+  Bool_t  doExtrapolation[kADNClocks];
+  for (Int_t i=0; i<kADNClocks; ++i) {
     extrapolationThresholds[i] = -999.0f;
     doExtrapolation[i]         = kFALSE;
   }
@@ -408,15 +408,15 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
       if (imax != -1) {
 	const Float_t threshold = 20.0f;
 	Bool_t isPileUp = kFALSE;
-	for (Int_t bc=13; bc<20 && !isPileUp; ++bc)  
+	for (Int_t bc=13; bc<kADNClocks-1 && !isPileUp; ++bc)
 	  isPileUp |= (adcPedSub[bc+1] > adcPedSub[bc] + threshold);
     
-	for (Int_t iClock=14; iClock<=20; ++iClock)
+	for (Int_t iClock=14; iClock<kADNClocks; ++iClock)
 	  tail[pmNumber] += adcPedSub[iClock];
 
 	adcTrigger[pmNumber] = adcPedSub[10];
 
-	for (Int_t iClock=end+1; iClock<21; ++iClock)
+	for (Int_t iClock=end+1; iClock<kADNClocks; ++iClock)
 	  tailComplement[pmNumber] += adcPedSub[iClock];
 
 	if (fCorrectForSaturation) {
@@ -435,7 +435,6 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 								 ? f_Int1->At(iClock)
 								 : f_Int0->At(iClock))
 				       : NULL);
-	  doExtrapolation[iClock] &= (!isPileUp);
 	  correctedForSaturation  |= doExtrapolation[iClock];
 	  if (doExtrapolation[iClock] && tail[pmNumber] > extrapolationThresholds[iClock]) {
 	    AliDebug(3, Form("extrapolation[%2d] clock=%2d adcBefore=%.1f adcAfter=%.1f",
@@ -447,6 +446,10 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 						     : adcPedSub[iClock]
 						     );
 	}
+	// if the tail charge is biased by after-pulses/pileup it's sign is reversed
+	// (this implies also that the correction for ADC saturation is biased)
+	if (isPileUp)
+	  tail[pmNumber] *= -1;
       }
 
       AliDebug(3, Form("ADreco: GetRecoParam()->GetNPreClocks()=%d, GetRecoParam()->GetNPostClocks()=%d imax=%d maxadc=%.1f adc[%2d]=%.1f tail[%2d]=%.1f tailC=%.1f",
