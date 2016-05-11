@@ -61,7 +61,7 @@ struct AliHLTTPCHWCFClusterFragment
 {
   //* constructor **/
   AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fSlope(0), fIsDeconvolutedTime(0), fIsDeconvolutedPad(0), fMC()
+    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -78,9 +78,10 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt64_t fTMean;// mean time, used for merging neighbouring pads
   AliHLTUInt64_t fLastQ; // for merged fragments, charge of the last (highest pad value)
                          //    fragment bein merged, needed for deconvolution
+  AliHLTUInt32_t fNPads; // how many pads are in the cluster 
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
                          //   ( needed for deconvolution )
-  bool fIsDeconvolutedTime; // tag shows if the cluster has been split in several clusters in Time direction
+  AliHLTUInt32_t fNDeconvolutedTime; // how many cluster pads has been split in Time direction  
   bool fIsDeconvolutedPad; // tag shows if the cluster has been split in several clusters in Pad direction
   std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
