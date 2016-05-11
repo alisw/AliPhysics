@@ -9,6 +9,7 @@
 class TH1F;
 class TH2F;
 class TH3F;
+class AliITSCalibrationSSD;
 class TList;
 
 class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
@@ -28,18 +29,30 @@ class AliAnalysisTaskdEdxSSDQA : public AliAnalysisTaskSE {
   void SetDoChipCorretions(const char* filename);
  private:
 
+  TH1F*   fHistBadMods;   // bad module map
+  TH1F*   fHistBadPstr;   // bad p strip
+  TH1F*   fHistBadNstr;   // bad n strip
   TH2F*   fHist1;         // CR for each module
   TH2F*   fHist2;         // landau distributions for each module	
   TH3F*   fHist3;         // CR as function of Charge for the AliTrackPoint 
   TH2F*   fHist4;         // Q on chips
   TH2F*   fHist5;         // Q on chips corrected
   TH2F*   fHist6;         // QNvQP not corrected for track inclinaition 
+
+  TH2F*   fHist1sa;         // SA tracks: CR for each module
+  TH2F*   fHist2sa;         // SA tracks: landau distributions for each module	
+  TH3F*   fHist3sa;         // SA tracks: CR as function of Charge for the AliTrackPoint 
+  TH2F*   fHist4sa;         // SA tracks: Q on chips
+  TH2F*   fHist5sa;         // SA tracks: Q on chips corrected
+  TH2F*   fHist6sa;         // SA tracks: QNvQP not corrected for track inclinaition 
+
   TList*  fListOfHistos;  // output list	
   Float_t fPcut;          // Momentum cut
 
   Bool_t fdothecorrection; //do the correction  	
   Float_t fcorrections[20376] ; //[20376]chip corrections
-
+  Bool_t fInitCalib;        //flag for calib initialization
+  AliITSCalibrationSSD* fSSDCalibration; //SSD calibration object from OCDB
 
  AliAnalysisTaskdEdxSSDQA(const AliAnalysisTaskdEdxSSDQA&); // not implemented
  AliAnalysisTaskdEdxSSDQA& operator=(const AliAnalysisTaskdEdxSSDQA&); // not implemented
