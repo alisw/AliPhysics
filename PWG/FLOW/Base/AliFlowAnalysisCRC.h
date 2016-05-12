@@ -920,13 +920,13 @@ public:
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
   TProfile* GetFlowQCMetricCorProEG(Int_t const eg) const {return this->fFlowQCMetricCorProEG[eg];};
   void SetFlowQCMetricCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCMetricCorProEG[eg] = TP;};
-  TProfile2D* GetFlowQCMetric2DProEG(Int_t const eg) const {return this->fFlowQCMetric2DProEG[eg];};
-  void SetFlowQCMetric2DProEG(TProfile2D* const TP, Int_t const eg) {this->fFlowQCMetric2DProEG[eg] = TP;};
-  
   TH1D* GetFlowQCMetricCorHistEG(Int_t const eg) const {return this->fFlowQCMetricCorHistEG[eg];};
   void SetFlowQCMetricCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCMetricCorHistEG[eg] = TP;};
-  TH2D* GetFlowQCMetric2DHistEG(Int_t const eg) const {return this->fFlowQCMetric2DHistEG[eg];};
-  void SetFlowQCMetric2DHistEG(TH2D* const TP, Int_t const eg) {this->fFlowQCMetric2DHistEG[eg] = TP;};
+  
+  TProfile2D* GetFlowQCMetric2DProEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DProEG[eg][bng];};
+  void SetFlowQCMetric2DProEG(TProfile2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DProEG[eg][bng] = TP;};
+  TH2D* GetFlowQCMetric2DHistEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DHistEG[eg][bng];};
+  void SetFlowQCMetric2DHistEG(TH2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DHistEG[eg][bng] = TP;};
  
  void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
@@ -1595,9 +1595,9 @@ private:
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCMetricCorProEG[fFlowNHarm]; //!
-  TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm]; //!
   TH1D *fFlowQCMetricCorHistEG[fFlowNHarm]; //!
-  TH2D *fFlowQCMetric2DHistEG[fFlowNHarm]; //!
+  TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm][4]; //!
+  TH2D *fFlowQCMetric2DHistEG[fFlowNHarm][4]; //!
  
  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
  TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
