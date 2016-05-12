@@ -316,11 +316,11 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
     tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
     if (tmp) tmp->Fill(1);
   }
-  else if(trigger[1]==1) {
+  if(trigger[1]==1) {
     tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
     if (tmp) tmp->Fill(2);
   }
-  else if(trigger[2]==1) {
+  if(trigger[2]==1) {
     tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
     if (tmp) tmp->Fill(3);
   }
