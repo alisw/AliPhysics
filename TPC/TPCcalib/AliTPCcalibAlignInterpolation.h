@@ -54,7 +54,7 @@ public :
   static void MakeEventStatInfo(const char * inputList="cat residual.list", Int_t timeInterval=300, Int_t id=0, Int_t skip=1);
   static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t startTime=-1, Int_t stopTime=-1,  Int_t maxStat=1000000, Int_t selHist=-1,const char * residualInfoFile="residualInfo.root",Bool_t fixAlignmentBug=kTRUE);
   static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
-  static Bool_t FitDrift(double deltaT=120., double sigmaT=600.,  double time0=0., double time1=0.,Bool_t fixAlignmentBug=kTRUE);
+  static Bool_t FitDrift(double deltaT=120., double sigmaT=600.,  double time0=0., double time1=0.,Bool_t fixAlignmentBug=kTRUE, Bool_t tofBCValidation=kTRUE);
   static void MakeNDFit(const char * inputFile, const char * inputTree, Float_t sector0,  Float_t sector1,  Float_t theta0, Float_t theta1);
   static void MakeVDriftOCDB(const char *inputFile, Int_t run, TString  targetOCDBstorage="", const char * testDiffCDB=0);
   static Float_t  CalculateDistance(const TVectorF &track0, const TVectorF &track1, const TVectorF &vecSec, TVectorF &vecDelta, Int_t npValid, Float_t &rmsTrack,  Float_t &rmsCluster, Float_t lpNorm=1.5); 
