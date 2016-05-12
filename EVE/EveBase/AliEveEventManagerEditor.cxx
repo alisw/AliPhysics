@@ -359,9 +359,15 @@ void AliEveEventManagerWindow::DoRefresh()
     mv->DestroyAllGeometries();
     
     vector<string> detectorsList;
-    TSystemDirectory dir(Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")),
-                         Form("%s/../src/%s",gSystem->Getenv("ALICE_ROOT"),settings.GetValue("simple.geom.path","EVE/resources/geometry/run2/")));
-
+    string geomPath = settings.GetValue("simple.geom.path","${ALICE_ROOT}/EVE/resources/geometry/run2/");
+    string alirootBasePath = gSystem->Getenv("ALICE_ROOT");
+    size_t alirootPos = geomPath.find("${ALICE_ROOT}");
+    
+    if(alirootPos != string::npos){
+        geomPath.replace(alirootPos,alirootPos+13,alirootBasePath);
+    }
+    
+    TSystemDirectory dir(geomPath.c_str(),geomPath.c_str());
     TList *files = dir.GetListOfFiles();
     
     if (files)
@@ -384,6 +390,11 @@ void AliEveEventManagerWindow::DoRefresh()
             }
         }
     }
+    else{
+        cout<<"\n\nAliEveInit -- geometry files not found!!!"<<endl;
+        cout<<"Searched directory was:"<<endl;
+        dir.Print();
+    }
     
     for(int i=0;i<detectorsList.size();i++)
     {
@@ -392,12 +403,12 @@ void AliEveEventManagerWindow::DoRefresh()
             if(detectorsList[i]=="TPC" || detectorsList[i]=="MCH")
             {
                 // don't load MUON and standard TPC to R-Phi view
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),false);
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),true,false);
             }
             else if(detectorsList[i]=="RPH")
             {
                 // special TPC geom from R-Phi view
-                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),true,false);
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),false,true,false);
             }
             else
             {
@@ -405,6 +416,7 @@ void AliEveEventManagerWindow::DoRefresh()
             }
         }
     }
+
     
     AliEveInit::AddMacros();
     
@@ -425,8 +437,6 @@ void AliEveEventManagerWindow::DoRefresh()
     gEve->Redraw3D();
     
     Int_t ev = fM->GetEventId();
-//    fM->Close();
-//    fM->Open();
     AliEveDataSource *currentDataSource = fM->GetCurrentDataSource();
     currentDataSource->GotoEvent(ev);
 }

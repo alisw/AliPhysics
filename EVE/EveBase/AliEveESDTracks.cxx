@@ -749,12 +749,23 @@ TEveElementList* AliEveESDTracks::ByType()
     {
         at = esd->GetTrack(n);
         
-//        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
-        bool good_cont = at->IsOn(AliESDtrack::kTPCrefit) && at->IsOn(AliESDtrack::kITSrefit);
-
+        bool good_cont = true;
+        string trackSelection = settings.GetValue("tracks.selection","");
         
+        if(trackSelection == "ITSin_noTPCin"){
+            good_cont = at->IsOn(AliESDtrack::kITSin && !at->IsOn(AliESDtrack::kTPCin));
+        }
+        else if(trackSelection == "noTISpureSA"){
+            good_cont = !at->IsOn(AliESDtrack::kITSpureSA);
+        }
+        else if(trackSelection == "TPCrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit);
+        }
+        else if(trackSelection == "TPCrefit_ITSrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit) && at->IsOn(AliESDtrack::kITSrefit);
+        }
         
-        if(good_cont)// || fDrawNoRefit)
+        if(good_cont)
         {
             pid = at->GetPID();
  
@@ -770,7 +781,6 @@ TEveElementList* AliEveESDTracks::ByType()
                 shade++;
                 if(shade>3)shade=-3;
             }
-//            track->SetMainTransparency(50);
             track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
             tlist->AddElement(track);
         }
