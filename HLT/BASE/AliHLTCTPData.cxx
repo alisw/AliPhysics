@@ -574,3 +574,13 @@ int AliHLTCTPData::MatchTriggerRE(const char* restr) const
   }
   return 0;
 }
+
+void AliHLTCTPData::GetTriggerMaskAll(ULong64_t& low,ULong64_t& high) const
+{
+  low = 0; high = 0;
+  for (int i=0; i<50; i++) {
+    if (fMask[i]) { low |= 1<<i; }
+    if (fMask[i+50]) { high |= 1<<i; }
+  }
+}
+

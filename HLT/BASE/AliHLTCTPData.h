@@ -168,6 +168,11 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    */
   virtual void Print(Option_t* option = "") const;
 
+  /**
+   * this is for compatibility with ESD, fills 2 words with 50 bit trigger masks
+  */
+  void      GetTriggerMaskAll(ULong64_t& low,ULong64_t& high) const;
+
   AliHLTTriggerMask_t   Mask() const { return fMask; }
   AliHLTTriggerMask_t   Triggers() const { return fTriggers; }
   void                  SetTriggers(AliHLTTriggerMask_t triggers) { fTriggers=triggers; }
@@ -176,7 +181,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   AliHLTUInt64_t        Counter(int index) const;
   AliHLTUInt64_t        Counter(const char* classId) const;
   const char*           Name(int index) const;
-
+  
  protected:
  private:
   /// Helper                                                                          
