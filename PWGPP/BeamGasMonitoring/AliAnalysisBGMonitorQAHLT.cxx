@@ -310,10 +310,20 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
       firedTriggers->find("CVHMSH2-B-NOPF-CENTNOTRD")!=std::string::npos )
     trigger[2] = 1; // SH2 trigger
 
+  TH1* tmp = NULL;
   // count total event number (blim)
-  if(trigger[0]==1)((TH1F*)list->FindObject("hNumEvents"))->Fill(1);
-  if(trigger[1]==1)((TH1F*)list->FindObject("hNumEvents"))->Fill(2);
-  if(trigger[2]==1)((TH1F*)list->FindObject("hNumEvents"))->Fill(3);
+  if(trigger[0]==1) {
+    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
+    if (tmp) tmp->Fill(1);
+  }
+  if(trigger[1]==1) {
+    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
+    if (tmp) tmp->Fill(2);
+  }
+  if(trigger[2]==1) {
+    tmp = static_cast<TH1F*>(list->FindObject("hNumEvents"));
+    if (tmp) tmp->Fill(3);
+  }
 
   if (not (trigger[0] || trigger[1] || trigger[2])) {
     return;
@@ -324,8 +334,7 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
   if(trigger[1]) triggername.Form("V0M");
   if(trigger[2]) triggername.Form("SH2");
 
-  TH1F* tmp = NULL;
-  tmp = static_cast<TH1F*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s",triggername.Data())));
+  tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s",triggername.Data())));
   if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // No PF Selection
   
   Bool_t SelGoodEvent = 0;
@@ -365,11 +374,11 @@ void AliAnalysisBGMonitorQAHLT::FillHistograms( TList* list,
     //___________
     if(SelGoodEvent) {
       if(ii == 2){
-        tmp = static_cast<TH1F*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF2",triggername.Data())));
+        tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF2",triggername.Data())));
         if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // PF = 2 Condition
       }
       if(ii == 10){
-        tmp = static_cast<TH1F*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF10",triggername.Data())));
+        tmp = static_cast<TH1*>(list->FindObject(Form("hTotalTrkVsClsSPID_%s_PF10",triggername.Data())));
         if (tmp) tmp->Fill(nSPDtracklets, nSPDclusters); // PF = 10 Condition
       }
     }
