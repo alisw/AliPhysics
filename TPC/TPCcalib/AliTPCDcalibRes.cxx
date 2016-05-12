@@ -334,6 +334,8 @@ void AliTPCDcalibRes::CollectData(int mode)
   //
   CreateLocalResidualsTrees(mode);
   //
+  // if cheb object is present, do on-the-fly init to attach internal structures
+  if (fChebCorr) fChebCorr->Init();
   // prepare input tree
   TString  chunkList = gSystem->GetFromPipe(TString::Format("cat %s",fResidualList.Data()).Data());
   TObjArray *chunkArray= chunkList.Tokenize("\n");  
@@ -2120,7 +2122,7 @@ void AliTPCDcalibRes::WriteResTree()
   bres_t voxRes, *voxResP=&voxRes;
 
   AliSysInfo::AddStamp("ResTree",0,0,0,0);
-
+  if (fChebCorr) fChebCorr->Init();
   TFile* flOut = new TFile(Form("%sTree.root",kResOut),"recreate");
   TTree* resTree = new TTree("voxRes","final distortions, see GetListOfAliases");
   resTree->Branch("res", &voxRes);

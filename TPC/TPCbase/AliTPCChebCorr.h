@@ -31,6 +31,7 @@
 #include <TNamed.h>
 #include <time.h>
 #include "AliCheb2DStack.h"
+#include "AliLog.h"
 class TGraph;
 class TH1;
 
@@ -76,7 +77,7 @@ class AliTPCChebCorr : public TNamed
   Int_t    GetNRows()                            const {return fNRows;}
   Float_t  GetDeadZone()                         const {return fDeadZone;}
   //
-  const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
+  const AliCheb2DStack* GetParam(int id)         const;
   const AliCheb2DStack* GetParam(int sector, float y2x, float z) const;
   //
   time_t   GetTimeStampStart()                   const {return fTimeStampStart;}
@@ -109,6 +110,7 @@ class AliTPCChebCorr : public TNamed
   int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
   //
  protected:
+  Bool_t   fOnFlyInitDone;          //! flag that on-the-fly init was done
   Char_t   fFieldType;              // info about the field type
   Int_t    fRun;                    // run number used extract this map
   Int_t    fNRows;                  // number of slices along the radius (e.g. rows)
@@ -140,8 +142,16 @@ class AliTPCChebCorr : public TNamed
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
   AliTPCChebCorr& operator=(const AliTPCChebCorr& rhs); // dummy
   //
-  ClassDef(AliTPCChebCorr,6)
+  ClassDef(AliTPCChebCorr,7)
 };
+
+//_________________________________________________________________
+inline const AliCheb2DStack* AliTPCChebCorr::GetParam(int id) const 
+{
+  if (!fParams) return 0;
+  if (!fOnFlyInitDone) AliError("Attention: evalulation may be wrong: the object need to be initialized by Init()");
+  return (const AliCheb2DStack*) fParams[id];
+}
 
 //_________________________________________________________________
 inline const AliCheb2DStack* AliTPCChebCorr::GetParam(int sector, float y2x, float z) const
