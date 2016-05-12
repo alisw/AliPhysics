@@ -23,6 +23,8 @@ typedef struct AliHLTITSSAPTrackerData AliHLTITSSAPTrackerData;
 
 struct AliHLTITSSAPTrackerDataContainer {
   AliHLTUInt32_t fCount; // number of tracklets
+  AliHLTUInt32_t fNSPDtracklets;
+  AliHLTUInt32_t fNclusters[6];
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   AliHLTITSSAPTrackerData fTracks[1]; // array of tracklets
 #else

@@ -41,6 +41,7 @@
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include "AliITSSAPTracker.h"
+#include "AliITSSAPLayer.h"
 #include "AliHLTITSSpacePointData.h"
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTDataTypes.h"
@@ -552,6 +553,8 @@ int AliHLTITSSAPTrackerComponent::DoEvent
       blockSize = sizeof(AliHLTITSSAPTrackerDataContainer);
       AliHLTITSSAPTrackerDataContainer *data = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(outputPtr);
       data->fCount=0;
+      data->fNSPDtracklets = fTracker->GetNTracklets();
+      for (int i=AliITSSAPTracker::kNLrActive;i--;) data->fNclusters[i] = fTracker->GetLayer(i)->GetNClusters();
       for (int itr=0;itr<nFoundTracks;itr++) {
 	const AliITSSAPTracker::ITStrack_t& track = fTracker->GetTrack(itr);
 	// the track is just a struct of 2 AliExternalTrackParams (params at vertex and at the outer ITS layer)
