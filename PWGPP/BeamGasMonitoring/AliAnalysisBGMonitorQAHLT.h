@@ -3,6 +3,10 @@
 #include "AliAnalysisTask.h"
 class AliVEvent;
 class AliVfriendEvent;
+class AliVMultiplicity;
+class AliVVZERO;
+class AliVVZEROfriend;
+class TList;
 
 class AliAnalysisBGMonitorQAHLT : public AliAnalysisTask {
     public:
@@ -12,8 +16,16 @@ class AliAnalysisBGMonitorQAHLT : public AliAnalysisTask {
     virtual void                    CreateOutputObjects();
     virtual void                    Exec(Option_t* option);
     virtual void                    Terminate(Option_t* option);
-    virtual void                    DrawHist(Int_t* triggers, Int_t fSpdT, Int_t fSpdClusters, Int_t* BBFlagC, Int_t* BBFlagA);
-    // virtual void   Terminate(Option_t *);
+    virtual Bool_t                  ResetOutputData();
+    
+    static Int_t ResetHistograms(TList* list);
+    static void CreateHistograms(TList*& list, Option_t* options=NULL);
+    static void FillHistograms(TList* list,
+                               std::string* firedTriggerClasses,
+                               AliVMultiplicity* mult,
+                               AliVVZERO* vzero,
+                               AliVVZEROfriend* vzeroFriend );
+
     private:
     AliVEvent* fESD;        //! ESD event
     AliVfriendEvent* fESDfriend; //! ESDfriend
