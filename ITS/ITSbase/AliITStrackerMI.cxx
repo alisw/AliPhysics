@@ -548,6 +548,11 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fFlagFakes        = AliITSReconstructor::GetRecoParam()->GetFlagFakes();
   fUseImproveKalman = AliITSReconstructor::GetRecoParam()->GetUseImproveKalman();
   //
+  double minPtCut = AliITSReconstructor::GetRecoParam()->GetMinPtForProlongation();
+  // the pt cutoff is tuned for nominal 5kG field, scale it with real field
+  const double kNomField = 5.00668e+00;
+  minPtCut *= TMath::Abs(GetBz()/kNomField);
+  //
   TObjArray itsTracks(15000);
   fOriginal.Clear();
   fEsd = event;         // store pointer to the esd 
@@ -595,7 +600,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 	  delete t;
 	  continue;
 	}
-	if (t->Pt()<AliITSReconstructor::GetRecoParam()->GetMinPtForProlongation()) {
+	if (t->Pt()<minPtCut) {
 	  delete t;
 	  continue;
 	}
