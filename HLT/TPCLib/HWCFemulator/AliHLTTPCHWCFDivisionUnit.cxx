@@ -26,13 +26,14 @@
 //  @note 
 
 #include "AliHLTTPCHWCFDivisionUnit.h"
+#include "TFile.h"
 #include <iostream>
 #include <algorithm>
 
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0)
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0)
 {
   //constructor 
 }
@@ -45,7 +46,7 @@ AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0)
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0)
 {
 }
 
@@ -68,7 +69,7 @@ int AliHLTTPCHWCFDivisionUnit::InputStream( const AliHLTTPCHWCFClusterFragment *
 {
   // input stream of data
   fkInput = fragment;
-  if( fkInput && fDebug ){
+  if( fkInput && fDebug==1 ){
     std::cout<<"HWCF Division: input Br: "<<fragment->fBranch<<" F: "<<fragment->fFlag<<" R: "<<fragment->fRow
 	     <<" Q: "<<(fragment->fQ>>AliHLTTPCHWCFDefinitions::kFixedPoint)
 	     <<" P: "<<fragment->fPad<<" Tmean: "<<fragment->fTMean;	        
@@ -157,6 +158,19 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   for( unsigned int i=0; i<3 && i<labels.size(); i++ ){
     if( labels[i].fMCID <0 ) continue;
     fOutput.fMC.fClusterID[i] = labels[i];
+  }
+
+  if( fDebug==2 ){
+    if( !fDebugNtuple ){ 
+      cout<<"Create file.."<<endl;
+      TFile *f = new TFile("HWClustersDebug.root","RECREATE");
+      f->cd();
+      fDebugNtuple = new TNtuple("HWClusters", "HWClusters", "iNPads:iNSplitTime:iIsSplitPad");
+      if( fDebugNtuple ) fDebugNtuple->AutoSave();      
+    }
+    if( fDebugNtuple ){
+      fDebugNtuple->Fill(fkInput->fNPads, fkInput->fNDeconvolutedTime, fkInput->fIsDeconvolutedPad );
+    }
   }
 
   fkInput = 0;

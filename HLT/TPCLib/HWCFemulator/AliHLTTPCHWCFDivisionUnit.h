@@ -8,7 +8,7 @@
 #define ALIHLTTPCHWCFDIVISIONUNIT_H
 
 #include "AliHLTTPCHWCFDataTypes.h"
-
+#include "TNtuple.h"
 
 //  @class   AliHLTTPCHWCFDivisionUnit
 //  @author Sergey Gorbunov <sergey.gorbunov@fias.uni-frankfurt.de>
@@ -73,6 +73,7 @@ class AliHLTTPCHWCFDivisionUnit
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
   int  fDebug; // debug level
+  TNtuple *fDebugNtuple;
 };
 
 #endif
