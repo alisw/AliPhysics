@@ -16313,9 +16313,14 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
     fFlowQCIntCorProEG[i] = NULL;
     fFlowQCIntCorHistEG[i] = NULL;
     fFlowQCMetricCorProEG[i] = NULL;
-    fFlowQCMetric2DProEG[i] = NULL;
     fFlowQCMetricCorHistEG[i] = NULL;
-    fFlowQCMetric2DHistEG[i] = NULL;
+  }
+  
+  for(Int_t bng=0; bng<4; bng++) {
+    for(Int_t i=0; i<fFlowNHarm; i++) {
+      fFlowQCMetric2DProEG[i][bng] = NULL;
+      fFlowQCMetric2DHistEG[i][bng] = NULL;
+    }
   }
   
 } // end of AliFlowAnalysisCRC::InitializeArraysForFlowQC()
@@ -19706,7 +19711,10 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         Double_t IQC2EG = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
         fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG,IQM2EG);
         fFlowQCMetricCorProEG[hr]->Fill(fNewMetricLEBE,IQC2EG,IQM2EG);
-        fFlowQCMetric2DProEG[hr]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
+        fFlowQCMetric2DProEG[hr][0]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
+        fFlowQCMetric2DProEG[hr][1]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
+        fFlowQCMetric2DProEG[hr][2]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
+        fFlowQCMetric2DProEG[hr][3]->Fill(VZM,ZNM,IQC2EG,IQM2EG);
       }
     }
     
@@ -22082,34 +22090,36 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
       }
     } // end of for(Int_t pt=1;pt<=100;pt++)
     
-    for(Int_t x=1;x<=fFlowQCMetric2DProEG[hr]->GetNbinsX();x++) {
-      for(Int_t y=1;y<=fFlowQCMetric2DProEG[hr]->GetNbinsY();y++) {
-        
-        Double_t stats[9]={0.};
-        fFlowQCMetric2DProEG[hr]->GetXaxis()->SetRange(x,x);
-        fFlowQCMetric2DProEG[hr]->GetYaxis()->SetRange(y,y);
-        fFlowQCMetric2DProEG[hr]->GetStats(stats);
-        Double_t SumWeig   = stats[0];
-        Double_t SumWeigSq  = stats[1];
-        Double_t SumTwo  = stats[7];
-        Double_t SumTwoSq = stats[8];
-        
-        if(SumWeig>0.) {
-          Double_t Corr = SumTwo/SumWeig;
-          Double_t SqCorr = SumTwoSq/SumWeig;
-          Double_t Weig = SumWeig;
-          Double_t SqWeig = SumWeigSq;
-          Double_t spread=0., termA=0., termB=0.;
-          if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-          if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-          if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-          Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
-          if(Corr>0. && CorrErr>0.) {
-            fFlowQCMetric2DHistEG[hr]->SetBinContent(x,y,Corr);
-            fFlowQCMetric2DHistEG[hr]->SetBinError(x,y,CorrErr);
+    for(Int_t bng=0; bng<4; bng++) {
+      for(Int_t x=1;x<=fFlowQCMetric2DProEG[hr][bng]->GetNbinsX();x++) {
+        for(Int_t y=1;y<=fFlowQCMetric2DProEG[hr][bng]->GetNbinsY();y++) {
+          
+          Double_t stats[9]={0.};
+          fFlowQCMetric2DProEG[hr][bng]->GetXaxis()->SetRange(x,x);
+          fFlowQCMetric2DProEG[hr][bng]->GetYaxis()->SetRange(y,y);
+          fFlowQCMetric2DProEG[hr][bng]->GetStats(stats);
+          Double_t SumWeig   = stats[0];
+          Double_t SumWeigSq  = stats[1];
+          Double_t SumTwo  = stats[7];
+          Double_t SumTwoSq = stats[8];
+          
+          if(SumWeig>0.) {
+            Double_t Corr = SumTwo/SumWeig;
+            Double_t SqCorr = SumTwoSq/SumWeig;
+            Double_t Weig = SumWeig;
+            Double_t SqWeig = SumWeigSq;
+            Double_t spread=0., termA=0., termB=0.;
+            if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+            if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+            if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+            Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+            if(Corr>0. && CorrErr>0.) {
+              fFlowQCMetric2DHistEG[hr][bng]->SetBinContent(x,y,Corr);
+              fFlowQCMetric2DHistEG[hr][bng]->SetBinError(x,y,CorrErr);
+            }
           }
-        }
-      } // end of for(Int_t pt=1;pt<=100;pt++)
+        } // end of for(Int_t pt=1;pt<=100;pt++)
+      }
     }
   }
   
@@ -22268,17 +22278,19 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         fFlowQCMetricCorHistEG[hr]->SetBinError(pt,Flow2E);
       }
     }
-    for(Int_t x=1;x<=fFlowQCMetric2DHistEG[hr]->GetNbinsX();x++) {
-      for(Int_t y=1;y<=fFlowQCMetric2DHistEG[hr]->GetNbinsY();y++) {
-        Double_t QC2    = fFlowQCMetric2DHistEG[hr]->GetBinContent(x,y);
-        Double_t QC2Err = fFlowQCMetric2DHistEG[hr]->GetBinError(x,y);
-        if(QC2>0.) {
-          Double_t Flow2 = pow(QC2,0.5);
-          Double_t Flow2E = fabs(Flow2/(2.*QC2))*QC2Err;
-          fFlowQCMetric2DHistEG[hr]->SetBinContent(x,y,Flow2);
-          fFlowQCMetric2DHistEG[hr]->SetBinError(x,y,Flow2E);
-        }
-      } // end of for(Int_t pt=1;pt<=100;pt++)
+    for(Int_t bng=0; bng<4; bng++) {
+      for(Int_t x=1;x<=fFlowQCMetric2DHistEG[hr][bng]->GetNbinsX();x++) {
+        for(Int_t y=1;y<=fFlowQCMetric2DHistEG[hr][bng]->GetNbinsY();y++) {
+          Double_t QC2    = fFlowQCMetric2DHistEG[hr][bng]->GetBinContent(x,y);
+          Double_t QC2Err = fFlowQCMetric2DHistEG[hr][bng]->GetBinError(x,y);
+          if(QC2>0.) {
+            Double_t Flow2 = pow(QC2,0.5);
+            Double_t Flow2E = fabs(Flow2/(2.*QC2))*QC2Err;
+            fFlowQCMetric2DHistEG[hr][bng]->SetBinContent(x,y,Flow2);
+            fFlowQCMetric2DHistEG[hr][bng]->SetBinError(x,y,Flow2E);
+          }
+        } // end of for(Int_t pt=1;pt<=100;pt++)
+      }
     }
     
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
@@ -25085,15 +25097,20 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
     TProfile *FlowQCMetricCorProEG = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCMetricCorProEG[%d]",i)));
     if(FlowQCMetricCorProEG) { this->SetFlowQCMetricCorProEG(FlowQCMetricCorProEG,i); }
     else { cout<<"WARNING: FlowQCMetricCorProEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-    TProfile2D *FlowQCMetric2DProEG = dynamic_cast<TProfile2D*>(fFlowQCList->FindObject(Form("fFlowQCMetric2DProEG[%d]",i)));
-    if(FlowQCMetric2DProEG) { this->SetFlowQCMetric2DProEG(FlowQCMetric2DProEG,i); }
-    else { cout<<"WARNING: FlowQCMetric2DProEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
     TH1D *FlowQCMetricCorHistEG = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCMetricCorHistEG[%d]",i)));
     if(FlowQCMetricCorHistEG) { this->SetFlowQCMetricCorHistEG(FlowQCMetricCorHistEG,i); }
     else { cout<<"WARNING: FlowQCMetricCorHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
-    TH2D *FlowQCMetric2DHistEG = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCMetric2DHistEG[%d]",i)));
-    if(FlowQCMetric2DHistEG) { this->SetFlowQCMetric2DHistEG(FlowQCMetric2DHistEG,i); }
-    else { cout<<"WARNING: FlowQCMetric2DHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+  }
+  
+  for(Int_t bng=0; bng<4; bng++) {
+    for(Int_t i=0; i<fFlowNHarm; i++) {
+      TProfile2D *FlowQCMetric2DProEG = dynamic_cast<TProfile2D*>(fFlowQCList->FindObject(Form("fFlowQCMetric2DProEG[%d][%d]",i,bng)));
+      if(FlowQCMetric2DProEG) { this->SetFlowQCMetric2DProEG(FlowQCMetric2DProEG,i,bng); }
+      else { cout<<"WARNING: FlowQCMetric2DProEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      TH2D *FlowQCMetric2DHistEG = dynamic_cast<TH2D*>(fFlowQCList->FindObject(Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng)));
+      if(FlowQCMetric2DHistEG) { this->SetFlowQCMetric2DHistEG(FlowQCMetric2DHistEG,i,bng); }
+      else { cout<<"WARNING: FlowQCMetric2DHistEG is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+    }
   }
   
 } // end void AliFlowAnalysisCRC::GetPointersForFlowQC()
@@ -26451,16 +26468,21 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
     fFlowQCMetricCorProEG[i] = new TProfile(Form("fFlowQCMetricCorProEG[%d]",i),Form("fFlowQCMetricCorProEG[%d]",i),fZDCESENBins,0.,fZDCESELCtot,"s");
     fFlowQCMetricCorProEG[i]->Sumw2();
     fFlowQCList->Add(fFlowQCMetricCorProEG[i]);
-    fFlowQCMetric2DProEG[i] = new TProfile2D(Form("fFlowQCMetric2DProEG[%d]",i),Form("fFlowQCMetric2DProEG[%d]",i),200,0.,11000.,200,0.,100.);
-    fFlowQCMetric2DProEG[i]->SetErrorOption("s");
-    fFlowQCMetric2DProEG[i]->Sumw2();
-    fFlowQCList->Add(fFlowQCMetric2DProEG[i]);
     fFlowQCMetricCorHistEG[i] = new TH1D(Form("fFlowQCMetricCorHistEG[%d]",i),Form("fFlowQCMetricCorHistEG[%d]",i),fZDCESENBins,0.,fZDCESELCtot);
     fFlowQCMetricCorHistEG[i]->Sumw2();
     fFlowQCList->Add(fFlowQCMetricCorHistEG[i]);
-    fFlowQCMetric2DHistEG[i] = new TH2D(Form("fFlowQCMetric2DHistEG[%d]",i),Form("fFlowQCMetric2DHistEG[%d]",i),200,0.,11000.,200,0.,100.);
-    fFlowQCMetric2DHistEG[i]->Sumw2();
-    fFlowQCList->Add(fFlowQCMetric2DHistEG[i]);
+  }
+  
+  for(Int_t bng=0; bng<4; bng++) {
+    for(Int_t i=0; i<fFlowNHarm; i++) {
+      fFlowQCMetric2DProEG[i][bng] = new TProfile2D(Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),Form("fFlowQCMetric2DProEG[%d][%d]",i,bng),100*(bng+1),0.,11000.,100*(bng+1),0.,100.);
+      fFlowQCMetric2DProEG[i][bng]->SetErrorOption("s");
+      fFlowQCMetric2DProEG[i][bng]->Sumw2();
+      fFlowQCList->Add(fFlowQCMetric2DProEG[i][bng]);
+      fFlowQCMetric2DHistEG[i][bng] = new TH2D(Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),Form("fFlowQCMetric2DHistEG[%d][%d]",i,bng),100*(bng+1),0.,11000.,100*(bng+1),0.,100.);
+      fFlowQCMetric2DHistEG[i][bng]->Sumw2();
+      fFlowQCList->Add(fFlowQCMetric2DHistEG[i][bng]);
+    }
   }
   
 } // end of AliFlowAnalysisCRC::BookEverythingForFlowQC()
