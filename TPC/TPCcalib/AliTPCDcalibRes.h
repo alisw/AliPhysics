@@ -82,6 +82,7 @@ class AliTPCDcalibRes: public TNamed
     Float_t DS[kResDim];     // smoothed residual
     Float_t DC[kResDim];     // Cheb parameterized residual
     Float_t EXYCorr;         // correlation between extracted X and Y
+    Float_t dYSigMAD;        // MAD estimator of dY sigma (dispersion after slope removal)
     Float_t stat[kVoxHDim];  // statistics: averages of each voxel dimension + entries
     UChar_t bvox[kVoxDim];   // voxel identifier, here the bvox[0] shows number of Q bins used for Y
     UChar_t bsec;            // sector ID (0-35)

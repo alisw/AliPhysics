@@ -1168,6 +1168,7 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   voxRes.E[kResY] = TMath::Sqrt(err[0]);
   voxRes.E[kResZ] = zres[4];
   voxRes.EXYCorr  = corrErr;
+  voxRes.dYSigMAD = sigMAD;
   //
   // store the statistics
   ULong64_t binStat = GetBin2Fill(voxRes.bvox,kVoxV);
@@ -2133,8 +2134,14 @@ void AliTPCDcalibRes::WriteResTree()
   resTree->SetAlias(Form("%sAV",kVoxName[kVoxV]),Form("stat[%d]",kVoxV));
   for (int i=0;i<kResDim;i++) {
     resTree->SetAlias(kResName[i],Form("D[%d]",i));
+    resTree->SetAlias(Form("%sS",kResName[i]),Form("DS[%d]",i));
+    resTree->SetAlias(Form("%sC",kResName[i]),Form("DC[%d]",i));
     resTree->SetAlias(Form("%sE",kResName[i]),Form("E[%d]",i));
   }
+  //
+  resTree->SetAlias("fitOK",Form("(flags&0x%x)==0x%x",kDistDone,kDistDone));
+  resTree->SetAlias("dispOK",Form("(flags&0x%x)==0x%x",kDispDone,kDispDone));
+  resTree->SetAlias("smtOK",Form("(flags&0x%x)==0x%x",kSmoothDone,kSmoothDone));
   //
   for (int is=0;is<kNSect2;is++) { 
 
