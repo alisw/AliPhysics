@@ -72,6 +72,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALSimParam.h"
+#include "AliSort.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -352,8 +353,9 @@ void AliEMCALSDigitizer::Digitize(Option_t *option)
         }//fHits is not NULL
         else AliFatal("fHit is NULL!");
         
-				sdigits->Sort() ;
-				
+                // sdigits->Sort() ;
+                AliSort::TClonesArraySort<AliEMCALDigit>(sdigits);
+
 				nSdigits = sdigits->GetEntriesFast() ;
 				fSDigitsInRun += nSdigits ;  
 				

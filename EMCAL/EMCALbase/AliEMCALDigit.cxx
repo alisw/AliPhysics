@@ -232,28 +232,6 @@ void AliEMCALDigit::Clear(const Option_t*)
 
 }
 
-//____________________________________________________________________________
-Int_t AliEMCALDigit::Compare(const TObject * obj) const
-{
-  // Compares two digits with respect to its Id
-  // to sort according increasing Id
-
-  Int_t rv = 2 ;
-
-  AliEMCALDigit * digit = (AliEMCALDigit *)obj ; 
-
-  Int_t iddiff = fId - digit->GetId() ; 
-
-  if ( iddiff > 0 ) 
-    rv = 1 ;
-  else if ( iddiff < 0 )
-    rv = -1 ; 
-  else
-    rv = 0 ;
-  
-  return rv ; 
-
-}
 
 //____________________________________________________________________________
 Float_t AliEMCALDigit::GetEta() const
