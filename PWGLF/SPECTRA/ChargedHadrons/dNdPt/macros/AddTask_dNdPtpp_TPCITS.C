@@ -61,6 +61,9 @@ CheckLoadLibrary("libPWG0selectors");
   // Create standard esd track cuts
   //
   
+  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+
+  
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
   AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC,1.0);
   if (!esdTrackCuts) {
@@ -70,9 +73,7 @@ CheckLoadLibrary("libPWG0selectors");
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
-  
+ 
   TString stContainerName = Form("dNdPtpp_%d",cutMode);
   stContainerName += stParticleSelection;
   TString stCombinedName(suffix);
