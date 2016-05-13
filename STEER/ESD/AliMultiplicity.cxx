@@ -29,7 +29,8 @@ AliVMultiplicity("AliMultiplicity",""),  // must be named like that to be search
   fPhisingle(0),
   fLabelssingle(0),
   fFastOrFiredChips(1200),
-  fClusterFiredChips(1200)
+  fClusterFiredChips(1200),
+  fNtracksOnline(0)
 {
   // Default Constructor
   fFiredChips[0] = 0;
@@ -62,7 +63,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *th,  Float_t *ph, Float_t *
   fPhisingle(0),
   fLabelssingle(0),
   fFastOrFiredChips(1200),
-  fClusterFiredChips(1200)
+  fClusterFiredChips(1200),
+  fNtracksOnline(0)
 {
 // Standard constructor
   for (int il=2;il--;) fSCl2Tracks[il] = fTCl2Tracks[il][0] = fTCl2Tracks[il][1] = 0;
@@ -122,7 +124,8 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Int_t ns, Short_t nfcL1, Short_t nfc
   fPhisingle(0),
   fLabelssingle(0),
   fFastOrFiredChips(1200),
-  fClusterFiredChips(1200)
+  fClusterFiredChips(1200),
+  fNtracksOnline(0)
 {
   // Standard constructor to create the arrays w/o filling
   for (int il=2;il--;) fSCl2Tracks[il] = fTCl2Tracks[il][0] = fTCl2Tracks[il][1] = 0;
@@ -174,7 +177,8 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fPhisingle(0),
   fLabelssingle(0),
   fFastOrFiredChips(1200),
-  fClusterFiredChips(1200)
+  fClusterFiredChips(1200),
+  fNtracksOnline(0)
 {
   // copy constructor
   for (int il=2;il--;) fSCl2Tracks[il] = fTCl2Tracks[il][0] = fTCl2Tracks[il][1] = 0;
@@ -282,6 +286,7 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   fNStdDev       = m.fNStdDev;
   fFastOrFiredChips = m.fFastOrFiredChips;
   fClusterFiredChips = m.fClusterFiredChips;
+  fNtracksOnline = m.fNtracksOnline;
 }
 
 //______________________________________________________________________
@@ -331,6 +336,7 @@ void AliMultiplicity::Clear(Option_t*)
   fFiredChips[0] = fFiredChips[1] = 0;
   fFastOrFiredChips.ResetAllBits(kTRUE);
   fClusterFiredChips.ResetAllBits(kTRUE);
+  fNtracksOnline = 0;
   //
 }
 

@@ -353,6 +353,10 @@ public:
   void SetMultiplicity(const AliMultiplicity *mul);
 
   AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
+  Int_t GetMultiplicity( AliMultiplicity & mult ) const {
+    if( fSPDMult ){ mult=*fSPDMult; return 0; }
+    return -1;
+  }
   void   EstimateMultiplicity(Int_t &tracklets,Int_t &trITSTPC,Int_t &trITSSApure,
 			      Double_t eta=1.,Bool_t useDCAFlag=kTRUE,Bool_t useV0Flag=kTRUE) const;
 

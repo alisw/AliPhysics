@@ -340,8 +340,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
 
-  HLTInfo("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack", tracksTPC.size(), tracksITS.size(), tracksITSOut.size() );
-  
   // Set TPC MC labels to tracks
   for( UInt_t itr=0; itr < tracksTPC.size(); itr++) {
     AliHLTGlobalBarrelTrack &track = tracksTPC[itr];
@@ -375,6 +373,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
 
+  HLTInfo("converted %d TPC %d ITS %d ITSout track(s) to GlobalBarrelTrack, got %i ITS SAP tracks ", tracksTPC.size(), tracksITS.size(), tracksITSOut.size(), (dataSAP)?dataSAP->fCount:0 );
+  
 
   // ---------------------------------------------
   //
@@ -463,6 +463,27 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       }
     }
     
+    if( err ) break;
+
+    //fill the flat SPD multiplicity struct
+    {
+      if( dataSAP ){
+        AliFlatMultiplicity flatMult;
+        flatMult.SetNumberOfTracklets( dataSAP->fNSPDtracklets );
+        flatMult.SetITSClusters(dataSAP->fNclusters);
+        err = flatEsd->SetMultiplicity( &flatMult, freeSpace );
+        freeSpace = maxOutputSize - flatEsd->GetSize();
+        HLTInfo("filled multiplicity: %i %u %u %u %u %u %u", flatMult.GetNumberOfTracklets(), 
+            flatMult.GetITSClusters(0),
+            flatMult.GetITSClusters(1),
+            flatMult.GetITSClusters(2),
+            flatMult.GetITSClusters(3),
+            flatMult.GetITSClusters(4),
+            flatMult.GetITSClusters(5)
+            );
+      }
+    }
+
     if( err ) break;
 
     const AliESDVertex *primaryVertex = 0;

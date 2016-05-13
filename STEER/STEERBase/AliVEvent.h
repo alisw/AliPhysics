@@ -36,6 +36,7 @@ class AliESDkink;
 class AliESDv0;
 class AliESDVertex;
 class AliESDVZERO;
+class AliMultiplicity;
 class AliVTrack;
 class AliVAD;
 
@@ -233,6 +234,7 @@ public:
   virtual Int_t            GetNumberOfKinks() const { return 0; }
  
   virtual Int_t GetVZEROData( AliESDVZERO & ) const {return -1;}
+  virtual Int_t GetMultiplicity( AliMultiplicity & ) const {return -1;}
 
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}

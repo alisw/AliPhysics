@@ -13,6 +13,7 @@
 #include "AliVMisc.h"
 #include "AliVEvent.h"
 #include "AliFlatESDVZERO.h"
+#include "AliFlatMultiplicity.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDVertex.h"
 #include "AliFlatESDFriend.h"
@@ -64,6 +65,8 @@ class AliFlatESDEvent :public AliVEvent {
   
   using AliVEvent::GetVZEROData;
   Int_t GetVZEROData( AliESDVZERO & ) const ;
+  using AliVEvent::GetMultiplicity;
+  Int_t GetMultiplicity( AliMultiplicity & ) const;
   
   using AliVEvent::GetPrimaryVertex;
   using AliVEvent::GetPrimaryVertexTPC;
@@ -103,6 +106,8 @@ class AliFlatESDEvent :public AliVEvent {
   void  SetTriggerMaskNext50(ULong64_t n) { fTriggerMaskNext50 = n; }
   
   Int_t  SetVZEROData( const AliESDVZERO *v, size_t allocatedVtxMemory );
+  Int_t  SetMultiplicity( const AliMultiplicity *m, size_t allocatedMemory );
+  Int_t  SetMultiplicity( const AliFlatMultiplicity *m, size_t allocatedMemory );
 
   Int_t  SetPrimaryVertexTracks( const AliESDVertex *v, size_t allocatedVtxMemory );
   Int_t  SetPrimaryVertexSPD( const AliESDVertex *v, size_t allocatedVtxMemory  );
@@ -120,12 +125,20 @@ class AliFlatESDEvent :public AliVEvent {
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
-  const AliFlatESDVZERO *GetFlatVZERO() const { 
+  const AliFlatESDVZERO *GetFlatVZERO() const {
     return ( fVZEROPointer>=0 ) ?reinterpret_cast<const AliFlatESDVZERO*>( fContent + fVZEROPointer ) :NULL;
   }
-  
-  AliFlatESDVZERO *GetFlatVZERONonConst() { 
+ 
+  AliFlatESDVZERO *GetFlatVZERONonConst() {
     return ( fVZEROPointer>=0 ) ?reinterpret_cast<AliFlatESDVZERO*>( fContent + fVZEROPointer ) :NULL;
+  }
+
+  const AliFlatMultiplicity *GetFlatMultiplicity() const {
+    return ( fMultiplicityPointer>=0 ) ?reinterpret_cast<const AliFlatMultiplicity*>( fContent + fMultiplicityPointer ) :NULL;
+  }
+
+  AliFlatMultiplicity *GetFlatMultiplicityNonConst() {
+    return ( fMultiplicityPointer>=0 ) ?reinterpret_cast<AliFlatMultiplicity*>( fContent + fMultiplicityPointer ) :NULL;
   }
 
   const AliFlatESDVertex* GetFlatPrimaryVertexSPD() const ;
@@ -179,6 +192,7 @@ class AliFlatESDEvent :public AliVEvent {
   virtual Int_t EventIndexForPHOSCell(Int_t) const {return 0;}
   virtual Int_t EventIndexForEMCALCell(Int_t) const {return 0;}
   virtual AliVVZERO* GetVZEROData() const {return NULL;}
+  virtual AliVMultiplicity* GetMultiplicity() const {return NULL;}
   virtual AliVZDC   *GetZDCData() const {return NULL;}
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
@@ -206,11 +220,14 @@ class AliFlatESDEvent :public AliVEvent {
   UInt_t  fNTriggerClasses;  // N trigger classes
   UInt_t  fNTracks;          // Number of tracks in array
   UInt_t  fNV0s;             // Number of v0's
+  UInt_t  fNclustersITS[6];  // Number of ITS clusters per layer
+  UInt_t  fNtrackletsSPD;    // number of SPD tracklets
   
   // Pointers to specific data in fContent
   
   size_t fTriggerPointer;        // position of the first trigger description in fContent
   Long_t fVZEROPointer;        // position of the first trigger description in fContent
+  Long_t fMultiplicityPointer; //position of the SPD multiplicity in fContent
   size_t fPrimaryVertexTracksPointer; // position of primary vertex tracks in fContent
   size_t fPrimaryVertexTPCPointer; // position of primary vertex TPC in fContent
   size_t fPrimaryVertexSPDPointer;  // position of primary vertex SPD in fContent
@@ -350,6 +367,14 @@ inline Int_t AliFlatESDEvent::GetVZEROData( AliESDVZERO &v ) const
   const AliFlatESDVZERO* flatVZERO = GetFlatVZERO();
   if( !flatVZERO ) return -1;
   flatVZERO->GetESDVZERO( v );
+  return 0;
+}
+
+inline Int_t AliFlatESDEvent::GetMultiplicity( AliMultiplicity &m ) const
+{
+  const AliFlatMultiplicity* flatMult = GetFlatMultiplicity();
+  if (!flatMult) return -1;
+  flatMult->GetMultiplicity( m );
   return 0;
 }
 

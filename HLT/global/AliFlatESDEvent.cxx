@@ -60,6 +60,7 @@
 #include "Riostream.h"
 
 #include "AliFlatESDVZERO.h"
+#include "AliFlatMultiplicity.h"
 #include "AliFlatESDVertex.h"
 
 #include "AliFlatESDV0.h"
@@ -87,6 +88,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fNV0s(0),
   fTriggerPointer(0),
   fVZEROPointer(-1),
+  fMultiplicityPointer(-1),
   fPrimaryVertexTracksPointer(0),
   fPrimaryVertexTPCPointer(0),
   fPrimaryVertexSPDPointer(0),
@@ -105,7 +107,7 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
  fFriendEvent(NULL)
 {
   // Constructor for reinitialisation of vtable
-  
+
   // Reinitialise trigger information  
   {
     AliFlatESDTrigger * trigger =  reinterpret_cast< AliFlatESDTrigger*>( fContent + fTriggerPointer ); 
@@ -116,9 +118,15 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
   }
 
   // Reinitialise VZERO information  
-  {    
+  {
     AliFlatESDVZERO * vzero =  GetFlatVZERONonConst();
     if( vzero ) vzero->Reinitialize();    
+  }
+
+  // Reinitialise Multiplicity information
+  {
+    AliFlatMultiplicity * mult =  GetFlatMultiplicityNonConst();
+    if( mult ) mult->Reinitialize();
   }
 
   // Reinitialise primary vertices
@@ -200,6 +208,7 @@ void AliFlatESDEvent::Reset()
   fNV0s = 0;
   fTriggerPointer = 0;
   fVZEROPointer = -1;
+  fMultiplicityPointer = -1;
   fPrimaryVertexTracksPointer = 0;
   fPrimaryVertexTPCPointer = 0;
   fPrimaryVertexSPDPointer = 0;
@@ -220,6 +229,7 @@ void AliFlatESDEvent::Reset()
   size += esd->GetNumberOfTracks() * ( AliFlatESDTrack::EstimateSize() + sizeof(Long64_t) );
   size += AliESDRun::kNTriggerClasses * sizeof(AliFlatESDTrigger) ;
   if( esd->GetVZEROData() ) size += sizeof(AliFlatESDVZERO) ;
+  if( esd->GetMultiplicity() ) size += sizeof(AliFlatMultiplicity) ;
   if( fillV0s ) size += esd->GetNumberOfV0s()*sizeof(AliFlatESDV0);
   return size;
 }
@@ -234,6 +244,32 @@ Int_t AliFlatESDEvent::SetVZEROData( const AliESDVZERO *vzero, size_t allocatedV
   AliFlatESDVZERO *flatVZERO = reinterpret_cast<AliFlatESDVZERO*> (fContent + fVZEROPointer );
   flatVZERO->SetFromESDVZERO( *vzero );
   fContentSize += flatVZERO->GetSize();
+  return 0;
+}
+
+Int_t AliFlatESDEvent::SetMultiplicity( const AliMultiplicity *mult, size_t allocatedMemory )
+{
+  // fill Multiplicity info
+  fMultiplicityPointer = -1;
+  if( !mult ) return 0;
+  if( allocatedMemory < sizeof(AliFlatMultiplicity) ) return -1;
+  fMultiplicityPointer = fContentSize;
+  AliFlatMultiplicity *flatMult = reinterpret_cast<AliFlatMultiplicity*> (fContent + fMultiplicityPointer );
+  flatMult->SetFromMultiplicity( *mult );
+  fContentSize += flatMult->GetSize();
+  return 0;
+}
+
+Int_t AliFlatESDEvent::SetMultiplicity( const AliFlatMultiplicity *mult, size_t allocatedMemory )
+{
+  // fill Multiplicity info
+  fMultiplicityPointer = -1;
+  if( !mult ) return 0;
+  if( allocatedMemory < sizeof(AliFlatMultiplicity) ) return -1;
+  fMultiplicityPointer = fContentSize;
+  AliFlatMultiplicity *flatMult = reinterpret_cast<AliFlatMultiplicity*> (fContent + fMultiplicityPointer );
+  *flatMult = *mult;
+  fContentSize += flatMult->GetSize();
   return 0;
 }
 
@@ -338,6 +374,12 @@ Int_t AliFlatESDEvent::SetFromESD( const size_t allocatedMemorySize, const AliES
   if( err!=0 ) return err;
   freeSpace = allocatedMemorySize - GetSize();  
   
+  // fill Multiplicity info
+
+  err = SetMultiplicity( esd->GetMultiplicity(), freeSpace );
+  if( err!=0 ) return err;
+  freeSpace = allocatedMemorySize - GetSize();
+
   // fill primary vertices
 
   err = SetPrimaryVertexTracks( esd->GetPrimaryVertexTracks(), freeSpace );
@@ -450,6 +492,13 @@ void  AliFlatESDEvent::GetESDEvent( AliESDEvent *esd ) const
     if( GetVZEROData( v )>=0 ) esd->SetVZEROData( &v );
   }
   
+  // fill Multiplicity info
+
+  {
+    AliMultiplicity v;
+    if( GetMultiplicity( v )>=0 ) esd->SetMultiplicity( &v );
+  }
+
   // fill primary vertices
   {
     AliESDVertex v;
