@@ -135,7 +135,7 @@ fCashedTokens(new TList())
   fCashedTokens->SetOwner();
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat = new TH2F("fHistStatistics",";;",1,0,1,1,0,1);
+  fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
   fHistList.Add(fHistStat);
   TH1::AddDirectory(oldStatus);
   
