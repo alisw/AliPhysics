@@ -176,6 +176,16 @@ AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
 
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
+  fBBAThreshold = calibda.GetBBAThreshold();
+  fBBCThreshold = calibda.GetBBCThreshold();  
+  fBGAThreshold = calibda.GetBGAThreshold();  
+  fBGCThreshold = calibda.GetBGCThreshold();  
+  fBBAForBGThreshold = calibda.GetBBAForBGThreshold();  
+  fBBCForBGThreshold = calibda.GetBBCForBGThreshold();   
+  fMultADAThrLow = calibda.GetMultADAThrLow();  
+  fMultADAThrHigh = calibda.GetMultADAThrHigh();
+  fMultADCThrLow = calibda.GetMultADCThrLow();  
+  fMultADCThrHigh = calibda.GetMultADCThrHigh();
   
   for(int t=0; t<32; t++) { 
     fPedestal[t] = calibda.GetPedestal(t);
@@ -200,6 +210,31 @@ AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
     fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
     fRollOver[i] = calibda.GetRollOver(i);
   }
+  
+  for(int i=0; i<kNCIUBoards ;i++) {
+    fClk1Win1[i] = calibda.GetClk1Win1(i);
+    fClk1Win2[i] = calibda.GetClk1Win2(i);
+    fDelayClk1Win1[i] = calibda.GetDelayClk1Win1(i);
+    fDelayClk1Win2[i] = calibda.GetDelayClk1Win2(i);
+    fClk2Win1[i] = calibda.GetClk2Win1(i);
+    fClk2Win2[i] = calibda.GetClk2Win2(i);
+    fDelayClk2Win1[i] = calibda.GetDelayClk2Win1(i);
+    fDelayClk2Win2[i] = calibda.GetDelayClk2Win2(i);
+    fLatchWin1[i] = calibda.GetLatchWin1(i);
+    fLatchWin2[i] = calibda.GetLatchWin2(i);
+    fResetWin1[i] = calibda.GetResetWin1(i);
+    fResetWin2[i] = calibda.GetResetWin2(i);
+    fPedestalSubtraction[i] = GetPedestalSubtraction(i);
+  }
+  for(Int_t j = 0; j < 16; ++j) {
+    fEnableCharge[j] = calibda.GetEnableCharge(j);
+    fEnableTiming[j] = calibda.GetEnableTiming(j);
+    fPedestalOdd[j] = calibda.GetOnlinePedestal(0,j);
+    fPedestalEven[j] = calibda.GetOnlinePedestal(1,j);;
+    fPedestalCutOdd[j] = calibda.GetOnlinePedestalCut(0,j);
+    fPedestalCutEven[j] = calibda.GetOnlinePedestal(1,j);
+  }
+  for(Int_t i = 0; i < 5; ++i) fTriggerSelected[i] = calibda.GetTriggerSelected(i);
   
 }
 
@@ -233,6 +268,31 @@ AliADCalibData &AliADCalibData::operator =(const AliADCalibData& calibda)
     fTriggerCountOffset[i] = calibda.GetTriggerCountOffset(i);
     fRollOver[i] = calibda.GetRollOver(i);
   }
+  
+  for(int i=0; i<kNCIUBoards ;i++) {
+    fClk1Win1[i] = calibda.GetClk1Win1(i);
+    fClk1Win2[i] = calibda.GetClk1Win2(i);
+    fDelayClk1Win1[i] = calibda.GetDelayClk1Win1(i);
+    fDelayClk1Win2[i] = calibda.GetDelayClk1Win2(i);
+    fClk2Win1[i] = calibda.GetClk2Win1(i);
+    fClk2Win2[i] = calibda.GetClk2Win2(i);
+    fDelayClk2Win1[i] = calibda.GetDelayClk2Win1(i);
+    fDelayClk2Win2[i] = calibda.GetDelayClk2Win2(i);
+    fLatchWin1[i] = calibda.GetLatchWin1(i);
+    fLatchWin2[i] = calibda.GetLatchWin2(i);
+    fResetWin1[i] = calibda.GetResetWin1(i);
+    fResetWin2[i] = calibda.GetResetWin2(i);
+    fPedestalSubtraction[i] = GetPedestalSubtraction(i);
+  }
+  for(Int_t j = 0; j < 16; ++j) {
+    fEnableCharge[j] = calibda.GetEnableCharge(j);
+    fEnableTiming[j] = calibda.GetEnableTiming(j);
+    fPedestalOdd[j] = calibda.GetOnlinePedestal(0,j);
+    fPedestalEven[j] = calibda.GetOnlinePedestal(1,j);;
+    fPedestalCutOdd[j] = calibda.GetOnlinePedestalCut(0,j);
+    fPedestalCutEven[j] = calibda.GetOnlinePedestal(1,j);
+  }
+  for(Int_t i = 0; i < 5; ++i) fTriggerSelected[i] = calibda.GetTriggerSelected(i); 
    
   return *this;
   
