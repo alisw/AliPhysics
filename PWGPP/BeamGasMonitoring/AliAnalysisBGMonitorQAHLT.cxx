@@ -210,6 +210,13 @@ void AliAnalysisBGMonitorQAHLT::Exec(Option_t *)
   //--- SPD cluster and tracklets
   AliVMultiplicity* mult = fESD->GetMultiplicity();
   
+  //UNCOMMENT THIS WHEN ALIROOT TAG READY (and comment out the above line)
+  //AliMultiplicity tmpMult;
+  //AliVMultiplicity* mult = NULL;
+  //if (fESD->GetMultiplicity(tmpMult)==0) {
+  //  mult = &tmpMult;
+  //}
+
   //string with fired trigger classes
   std::string firedTriggerClasses = fESD->GetFiredTriggerClasses().Data();
   
