@@ -155,25 +155,19 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
 void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // creates the monitoring histograms 
   // dynamical range of histograms can be adapted for pp and pPb via isLowFlux flag)
-  // TODO check limits
-  
-  Int_t nBinsX = isLowFlux ?  400 :  300;
-  Int_t nBinsY = isLowFlux ? 4000 : 1000;
-  Float_t xMax = isLowFlux ?  400 : 2999.5;
-  Float_t yMax = isLowFlux ? 4000 : 9999.5;
   
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   fHistStat           = new TH1F("fHistStat","Accepted events;;",16384,-0.5,16383.5);
   fHistFiredBitsSPD   = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
-  fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
-  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",1000,0,2000,1000,0,10000);
-  fHistSPDOnVsOf      = new TH2F("fHistSPDOnVsOf",";Offline FOR;Online FOR",800,0,800,800,0,800);
+  fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters",400,0,isLowFlux?400:4000,500,0,isLowFlux?1000:10000);
+  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",300,0,isLowFlux?600:60000,600,0,isLowFlux?6000:60000);
+  fHistSPDOnVsOf      = new TH2F("fHistSPDOnVsOf",";Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
   fHistSPDVtxPileup   = new TH1F("fHistSPDVtxPileup",";SPD Vtx pileup",2,0,2);
   fHistVIRvsBCmod4pup = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
   fHistVIRvsBCmod4acc = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
-  fHistV0C3vs012      = new TH2F("fHistV0C3vs012",";V0C012 multiplicity;V0C3 multiplicity",800,0,800,300,0,300);
+  fHistV0C3vs012      = new TH2F("fHistV0C3vs012",";V0C012 multiplicity;V0C3 multiplicity",200,0,800,300,0,300);
   fHistBBAflags       = new TH1F("fHistBBAflags",";BBA flags;",33,-0.5,32.5);
   fHistBBCflags       = new TH1F("fHistBBCflags",";BBC flags;",33,-0.5,32.5);
   fHistBGAflags       = new TH1F("fHistBGAflags",";BGA flags;",33,-0.5,32.5);
