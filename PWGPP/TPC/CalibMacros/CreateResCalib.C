@@ -4,12 +4,14 @@ void CreateResCalib(int run=245231
 		    ,const char * resList="lst.txt"
 		    ,const char * cdb="raw://"
 		    ,int maxTracks = 4000000
+		    ,Bool_t useTOFBC = kFALSE
 	  )
 {
 
   AliTPCDcalibRes* clb = new AliTPCDcalibRes(run, tmin, tmax, resList);
   clb->SetOCDBPath(cdb);
-  clb->SetMaxTracks(maxTracks);
+  if (maxTracks>0) clb->SetMaxTracks(maxTracks);
+  clb->SetUseTOFBC(useTOFBC);
   clb->ProcessFromDeltaTrees();
   clb->Save();
 }
