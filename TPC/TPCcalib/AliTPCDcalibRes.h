@@ -200,7 +200,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetNXBins(int n=kNPadRows)            {fNXBins = n;}
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
   void     SetNZ2XBins(int n=10)                 {fNZ2XBins = n;}
-  void     SetMaxTracks(int n=10000000)          {fMaxTracks = n;}
+  void     SetMaxTracks(int n=4000000)           {fMaxTracks = n;}
   void     SetFixAligmentBug(Bool_t v=kTRUE)     {fFixAlignmentBug = v;}
   void     SetCacheLearnSize(int n=1)            {fLearnSize = n;}
   void     SetCacheInput(Int_t v=100)            {fCacheInp = v;}

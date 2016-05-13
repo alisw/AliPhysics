@@ -81,7 +81,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fTMax(tmax)
   ,fTMinGRP(0)
   ,fTMaxGRP(0)
-  ,fMaxTracks(9999999)
+  ,fMaxTracks(4000000)
   ,fCacheInp(100)
   ,fLearnSize(1)
   ,fBz(0)
