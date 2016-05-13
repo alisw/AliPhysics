@@ -63,6 +63,7 @@ ClassImp(AliMC)
 
 //_______________________________________________________________________
 AliMC::AliMC() :
+  fMC(0),
   fGenerator(0),
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
@@ -94,6 +95,7 @@ AliMC::AliMC() :
 //_______________________________________________________________________
 AliMC::AliMC(const char *name, const char *title) :
   TVirtualMCApplication(name, title),
+  fMC(0),
   fGenerator(0),
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
@@ -134,6 +136,25 @@ AliMC::~AliMC()
   delete fHitLists;
   delete fMonitor;
   // Delete track references
+}
+
+
+void AliMC::CacheVMCInstance()
+{
+  // cache the pointer to the VMC instance
+  // this is done in order to avoid penalties coming from the thread_local storage nature of TVirtualMC::GetMC()
+
+  // This instance is available only in functions called during event processing
+  // The global instance, gMC == TVirtualMC::GetMC() should be used in functions called in initialization
+  // (for geometry construction etc.)
+
+  fMC = TVirtualMC::GetMC();
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  AliInfo("CacheVMCInstance");
+  while((detector = static_cast<AliModule*>(next()))) {
+    detector->CacheVMCInstance(fMC);
+  }
 }
 
 //_______________________________________________________________________
@@ -1000,7 +1021,7 @@ void AliMC::Stepping()
   //verbose.Stepping();
 
   // a reference to our mc;
-  auto const mc = TVirtualMC::GetMC();
+  auto const mc = fMC;
 
   Int_t id = DetFromMate(mc->CurrentMedium());
   if (id < 0) return;
@@ -1449,6 +1470,9 @@ void AliMC::Init()
 
    // Register MC in configuration
    AliConfig::Instance()->Add(TVirtualMC::GetMC());
+
+   // cache the VMC pointer/instance
+   CacheVMCInstance();
 }
 
 //_______________________________________________________________________

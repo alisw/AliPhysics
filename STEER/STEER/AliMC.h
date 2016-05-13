@@ -21,6 +21,7 @@
 class TParticle;
 class TFile;
 class TTree;
+class TVirtualMC;
 
 class AliGenerator;
 class AliTrackReference;
@@ -125,8 +126,11 @@ public:
    AliMC& operator= (const AliMC&); // Not implemented
    void MakeTmpTrackRefsTree();
    void ReorderAndExpandTreeTR();
+   void CacheVMCInstance(); // Cache pointer to VMC object (to avoid _tls_ penalties)
+
  private:
    void RemapHits();
+   TVirtualMC    *fMC;                //! cached MC instance (to avoid calls to thread_local gMC=TVirtualMC::GetMC())
    AliGenerator  *fGenerator;         //  Generator used in the MC
    Bool_t         fSaveRndmStatus;    //! Options to save random engine status
    Bool_t         fSaveRndmEventStatus; //! Options to save random engine status for each event
