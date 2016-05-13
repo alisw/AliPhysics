@@ -18,7 +18,7 @@
 #include <TFile.h>
 #include <THashList.h>
 #include <TH2.h>
-#include <TH3.h>
+#include <THnSparse.h>
 #include <TList.h>
 #include <TF1.h>
 #include <TProfile.h>
@@ -51,7 +51,7 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   fBCRangeTail[0] = 14;
   fBCRangeTail[1] = 20;
 
-  fBCRangeExtrapolation[0] = 10;
+  fBCRangeExtrapolation[0] =  9;
   fBCRangeExtrapolation[1] = 13;
 
   fTimeResolution[0] = 25./256.;
@@ -79,9 +79,10 @@ Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y) {
 }
 Bool_t AliAnalysisTaskADCalib::FillHist(TString name, Double_t x, Double_t y, Double_t z) {
   if (NULL == fList) return kFALSE;
-  TH3* h = dynamic_cast<TH3*>(fList->FindObject(name.Data()));
+  THnSparse* h = dynamic_cast<THnSparse*>(fList->FindObject(name.Data()));
   if (NULL == h) return kFALSE;
-  h->Fill(x, y, z);
+  const Double_t xyz[3] = { x,y,z };
+  h->Fill(xyz);
   return kTRUE;
 }
 
@@ -150,8 +151,8 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
   fList->SetOwner(kTRUE);
 
   // (2) populate the list with histograms
-  Double_t tMin[2] = { 180.0, 170.0 };
-  Double_t tMax[2] = { 210.0, 200.0 };
+  Double_t tMin[2] = {   0.0,   0.0 };
+  Double_t tMax[2] = { 400.0, 400.0 };
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
     const Int_t    side = ch/8;
     const Double_t dt   = fTimeResolution[side];
@@ -165,11 +166,12 @@ void AliAnalysisTaskADCalib::UserCreateOutputObjects() {
  			    302, -1.0,  601.0,
   			    129, -4.0, 1028.0));
       }
-      fList->Add(new TH3I(GetHistName (ch, integrator),
-   			  GetHistTitle(ch, integrator),
-   			  304/2,  -2.0,     602.0,
-   			  tBins, tMin[side], tMax[side],
-   			  tBins, tMin[side], tMax[side]));
+      const Int_t   nBins[3] = { 5000,      tBins, tBins      };
+      const Double_t xMin[3] = {   -1, tMin[side], tMin[side] };
+      const Double_t xMax[3] = { 9999, tMax[side], tMax[side] };
+      fList->Add(new THnSparseI(GetHistName (ch, integrator),
+				GetHistTitle(ch, integrator),
+				3, nBins, xMin, xMax));
     }
   }
 
@@ -311,7 +313,9 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   TString qaFileName = fileName;
   qaFileName.ReplaceAll(".root", "_ADQA.root");
   TFile *fSave = TFile::Open(qaFileName, "RECREATE");
-  fList->Write("", TObject::kSingleKey | TObject::kWriteDelete);
+  fSave->mkdir("ADCalib");
+  fSave->cd("ADCalib");
+  fList->Write("ADCalibListHist", TObject::kSingleKey | TObject::kWriteDelete);
   fSave->Write();
   fSave->Close();
 
@@ -349,6 +353,7 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
 
   // (1a) set up the TF1 depending on BC
   switch (bc) {
+  case  9:
   case 10:
     f->SetParameters(0, 8);
     f->SetParNames("offset", "slope");
@@ -377,20 +382,26 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   TProfile *h_pfx = h->ProfileX();
   h_pfx->SetDirectory(NULL);
 
-  xMax = 50.0f;
-  for (Int_t i=1, n=h_pfx->GetNbinsX(); i<n; ++i) {
+  xMax = 40.0f;
+  for (Int_t i=2, n=h_pfx->GetNbinsX(); i<n; ++i) {
+    if (h_pfx->GetBinContent(i))
+      AliDebug(3, Form("%6.1f %f %f", h_pfx->GetXaxis()->GetBinUpEdge(i), h_pfx->GetBinContent(i), h_pfx->GetBinContent(i-1)));
     if (h_pfx->GetBinContent(i) <  10.0)
       continue;
     if (h_pfx->GetBinContent(i) > 750.0 ||
-	(xMax != 50.0 && h_pfx->GetBinContent(i) <  10.0))
+	(xMax != 40.0 && h_pfx->GetBinContent(i) <  10.0) ||
+	(h_pfx->GetBinContent(i) < h_pfx->GetBinContent(i-1)-0.1*h_pfx->GetBinContent(i)))
       break;
     xMax = h_pfx->GetXaxis()->GetBinUpEdge(i);
   }
   AliDebug(3, Form("ch=%02d bc=%2d xMax= %.1f", ch, bc, xMax));
+  if (xMax < 200 && bc != 10)
+    f->FixParameter(3, 0.0);
   h_pfx->Fit(f, "WQ0", "", 0, xMax);
 
   // update xMax based on the fit function
-  xMax = f->GetX(1024.0, 10.0, 590.0);
+  xMax = TMath::Min(xMax, f->GetX(1024.0, 10.0, 590.0));
+  Double_t yMax = f->Eval(xMax);
 
   // (3) cut outliers by adapting a TGutG to the fitted function
   const Int_t nInterations = 6;
@@ -398,8 +409,7 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     // (3a) make up a TCutG based on the last fit
     //      last iteraton: adapt dY to the slope
     const Double_t dX = 5.0;
-    const Double_t dY = (iteration > 0 ? 300.0 : 25.0*(1024.0/xMax)*TMath::Sqrt(TMath::Power(1024.0/xMax, -2) + 1.0));
-
+    const Double_t dY = 15*(iteration+1)*TMath::Sqrt(1+TMath::Power(yMax/xMax, 2));
     const Int_t  iMax = Int_t(xMax/dX);
     TString cutName = TString::Format("%s_cutg_%d", h->GetName(), iteration);
     TCutG *cutg = new TCutG(cutName, 2*(2+iMax)+1);
@@ -420,7 +430,9 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
 
     // (3c) fit the new profile and update xMax
     h_pfx->Fit(f, "WQ0", "", 0, xMax);
-    xMax = f->GetX(1024.0, 10.0, 590.0);
+//     xMax = f->GetX(1024.0, 10.0, 590.0);
+    xMax = TMath::Min(xMax, f->GetX(1024.0, 10.0, 590.0));
+    yMax = f->Eval(xMax);
   }
   return kTRUE;
 }
@@ -496,6 +508,7 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
       TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1))); // integrator1
       switch (bc) {
 	if (NULL != h0 && NULL != h1) {
+	case 9:
 	case 10: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
