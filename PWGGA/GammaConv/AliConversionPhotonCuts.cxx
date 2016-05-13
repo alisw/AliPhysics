@@ -2780,15 +2780,15 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     fDo2DPsiPairChi2 = kTRUE; //
     break;
   case 9:
-    if (fIsHeavyIon==1){
+    //   if (fIsHeavyIon==1){ //AM 2016-05-13
       fPsiPairCut = 0.1; //
       fDo2DPsiPairChi2 = kTRUE;
       fIncludeRejectedPsiPair = kTRUE;
       break;
-    } else {
-      fPsiPairCut = 0.5; //
-      break;
-    }
+    // } else {
+    //   fPsiPairCut = 0.5; //
+    //   break;
+    // }
   default:
     AliError(Form("PsiPairCut not defined %d",psiCut));
     return kFALSE;
