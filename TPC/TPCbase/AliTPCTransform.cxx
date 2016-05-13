@@ -122,8 +122,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCacheRef(transform.fCorrMapCacheRef),
   fCorrMapCache0(transform.fCorrMapCache0),
   fCorrMapCache1(transform.fCorrMapCache1),
-  fLumiGraphRun(fLumiGraphRun ? new TGraph(*fLumiGraphRun) : 0),
-  fLumiGraphMap(fLumiGraphMap ? new TGraph(*fLumiGraphMap) : 0),
+  fLumiGraphRun(transform.fLumiGraphRun ? new TGraph(*transform.fLumiGraphRun) : 0),
+  fLumiGraphMap(transform.fLumiGraphMap ? new TGraph(*transform.fLumiGraphMap) : 0),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
   fTimeDependentUpdated(transform.fTimeDependentUpdated),
