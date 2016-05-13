@@ -852,7 +852,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       {
         if (clusterID.Data().fTrackId>-1) continue;  //Cannot handle clusters associated to tracks yet
 
-        if (size + sizeof(AliHLTTPCClusterFlagsData) + nEntries * sizeof(tmpVal) > capacity)
+        if (size + sizeof(AliHLTTPCClusterFlagsData) + (nEntries + 2) * sizeof(tmpVal) > capacity)
         {
           iResult = -ENOSPC;
           break;
@@ -865,17 +865,17 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
         tmpVal |= tmpFlags << tmppos;
         tmppos += clusterFlagsData->fNumberOfFlags;
         nClusters++;
-        while (tmppos >= sizeof(tmpVal) * 8)
+        if (tmppos >= sizeof(tmpVal) * 8)
         {
           tmppos -= sizeof(tmpVal) * 8;
-          *((unsigned int*) &clusterFlagsData[nEntries++]) = tmpVal;
+          ((unsigned int*) clusterFlagsData->fData)[nEntries++] = tmpVal;
           tmpVal = 0;
           tmpVal |= tmpFlags >> (clusterFlagsData->fNumberOfFlags - tmppos);
         }
       }
       if (iResult >= 0)
       {
-        if (tmppos) *((unsigned int*) &clusterFlagsData[nEntries++]) = tmpVal;
+        if (tmppos) ((unsigned int*) clusterFlagsData->fData)[nEntries++] = tmpVal;
         clusterFlagsData->fNumberOfClusters = nClusters;
         bd.fSize = sizeof(AliHLTTPCClusterFlagsData) + nEntries * sizeof(tmpVal);
         outputBlocks.push_back(bd);
