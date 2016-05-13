@@ -139,6 +139,7 @@ public:
       void SetSigmaZ2(float sigmaZ2)   {if (fCluster) fCluster->SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fCluster) fCluster->SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fCluster) fCluster->SetQMax(qmax);}
+      void SetFlags(unsigned short flags) {if (fCluster) fCluster->SetFlags(flags);}
       void SetMC(const AliHLTTPCClusterMCLabel* pMC) {
 	if (!fCluster || !pMC) return;
       }

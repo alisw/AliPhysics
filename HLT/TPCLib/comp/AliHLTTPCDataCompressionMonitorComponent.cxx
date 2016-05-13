@@ -233,6 +233,12 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
     // read data
     AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
     decoder.Clear();
+
+    for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClustersFlagsDataType());
+	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
+      iResult=decoder.AddClusterFlags(pDesc);
+    }
+
     bool bHaveRawClusters=false;
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
@@ -1040,6 +1046,11 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillCharge(unsi
   unsigned index=kHistogramCharge;
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(charge);
+}
+
+void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillFlags(unsigned short flags, AliHLTUInt32_t /*clusterId*/)
+{
+  fCurrentCluster.SetFlags(flags);
 }
 
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillQMax(unsigned qmax, AliHLTUInt32_t /*clusterId*/)

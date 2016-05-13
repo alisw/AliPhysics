@@ -198,6 +198,7 @@ public:
       void SetSigmaY2(float sigmaY2)      {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId, fPartition);}
       void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
       void SetCharge(unsigned charge)     {if (fData) fData->FillCharge(charge, fClusterId);}
+      void SetFlags(unsigned short flags)   {if (fData) fData->FillFlags(flags, fClusterId);}
       void SetQMax(unsigned qmax)         {if (fData) {fData->FillQMax(qmax, fClusterId);fData->Fill(fSlice, fPartition, fClusterId);}}
       iterator& operator=(const AliHLTTPCRawCluster& cluster) {if (fData) {
 	  fData->FillPadRow(cluster.GetPadRow(), fSlice, fClusterId);
@@ -207,6 +208,7 @@ public:
 	  fData->FillSigmaZ2(cluster.GetSigmaTime2(), fClusterId);
 	  fData->FillCharge(cluster.GetCharge(), fClusterId);
 	  fData->FillQMax(cluster.GetQMax(), fClusterId);
+	  fData->FillFlags(cluster.GetFlags(), fClusterId);
 	  fData->Fill(fSlice, fPartition, fClusterId);
 	} return *this;}
       void SetMC(const AliHLTTPCClusterMCLabel* /*pMC*/) {/* nop */}
@@ -305,6 +307,7 @@ public:
     void FillSigmaZ2(float sigmaZ2, AliHLTUInt32_t clusterId);
     void FillCharge(unsigned charge, AliHLTUInt32_t clusterId);
     void FillQMax(unsigned qmax, AliHLTUInt32_t clusterId);
+    void FillFlags(unsigned short flags, AliHLTUInt32_t clusterId);
     void Fill(int slice, int partition, AliHLTUInt32_t clusterId);
 
   private:

@@ -212,6 +212,7 @@ public:
       void SetSigmaZ2(float sigmaZ2)      {(*fRef)[fClusterId].SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)     {(*fRef)[fClusterId].SetCharge(charge);}
       void SetQMax(unsigned qmax)         {(*fRef)[fClusterId].SetQMax(qmax);}
+      void SetFlags(unsigned short flags) {(*fRef)[fClusterId].SetFlags(flags);}
       void Set(const AliHLTTPCRawCluster& cl) {*this=cl;}
       iterator& operator=(const AliHLTTPCRawCluster& cluster) {
         (*fRef)[fClusterId]=cluster;

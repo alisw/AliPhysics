@@ -39,8 +39,13 @@ AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
   , fpDataInflaterTrack(NULL)
   , fpClusterMerger(NULL)
   , fPartitionClusterIds()
+  , fPartitionClusterFlags()
   , fTrackModelClusterIds()
   , fCurrentClusterIds(NULL)
+  , fCurrentClusterFlags(NULL)
+  , fDecodeFlagsTmpFlag(0)
+  , fDecodeFlagsTmpPos(0)
+  , fDecodeFlagsTmpEntries(0)
   , fClusterMCData()
 {
   /// constructor
@@ -144,6 +149,16 @@ int AliHLTTPCDataCompressionDecoder::InitPartitionClusterDecoding(AliHLTUInt32_t
     fCurrentClusterIds=&fPartitionClusterIds[index];
   else
     fCurrentClusterIds=NULL;
+
+  if (index<fPartitionClusterFlags.size())
+    fCurrentClusterFlags=fPartitionClusterFlags[index];
+  else
+    fCurrentClusterFlags=NULL;
+
+  fDecodeFlagsTmpFlag=0;
+  fDecodeFlagsTmpPos=0;
+  fDecodeFlagsTmpEntries=0;
+
   return 0;
 }
 
@@ -154,6 +169,11 @@ int AliHLTTPCDataCompressionDecoder::InitTrackModelClusterClusterDecoding()
     fCurrentClusterIds=&fTrackModelClusterIds;
   else
     fCurrentClusterIds=NULL;
+
+  fCurrentClusterFlags=NULL;
+  fDecodeFlagsTmpFlag=0;
+  fDecodeFlagsTmpPos=0;
+  fDecodeFlagsTmpEntries=0;
   return 0;
 }
 
@@ -241,6 +261,27 @@ int AliHLTTPCDataCompressionDecoder::AddClusterIds(const AliHLTComponentBlockDat
   return -ENODATA;
 }
 
+int AliHLTTPCDataCompressionDecoder::AddClusterFlags(const AliHLTComponentBlockData* pDesc)
+{
+  /// add cluster flag block for partition or track model clusters
+  if (!pDesc) return -EINVAL;
+  if (pDesc->fDataType==AliHLTTPCDefinitions::ClustersFlagsDataType()) {
+    AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(pDesc->fSpecification);
+    AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(pDesc->fSpecification);
+    unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
+    if (fPartitionClusterFlags.size()<=index) {
+      if ((int)fPartitionClusterFlags.size()<AliHLTTPCGeometry::GetNSlice()*AliHLTTPCGeometry::GetNumberOfPatches()) {
+	fPartitionClusterFlags.resize(AliHLTTPCGeometry::GetNSlice()*AliHLTTPCGeometry::GetNumberOfPatches());
+      } else {
+	fPartitionClusterFlags.resize(index+1);
+      }
+    }
+    fPartitionClusterFlags[index]=reinterpret_cast<AliHLTTPCClusterFlagsData*>(pDesc->fPtr);
+    return 0;
+  }
+  return -ENODATA;
+}
+
 AliHLTUInt32_t AliHLTTPCDataCompressionDecoder::GetClusterId(int clusterNo) const
 {
   /// get the cluster id from the current cluster id block
@@ -251,6 +292,35 @@ AliHLTUInt32_t AliHLTTPCDataCompressionDecoder::GetClusterId(int clusterNo) cons
       clusterNo<0)
     return kAliHLTVoidDataSpec;
   return fCurrentClusterIds->fIds[clusterNo];
+}
+
+unsigned short AliHLTTPCDataCompressionDecoder::GetNextClusterFlag()
+{
+  if (!fCurrentClusterFlags) return(0); //No data block with flags present
+  if (fCurrentClusterFlags->fVersion == 0) return(0); //Shipping of cluster flags was disabled during reconstruction
+  if (fCurrentClusterFlags->fVersion >= 2)
+  {
+    HLTError("Invalid version for compression of cluster flags. Version in the Data: %d, maximum version supported by this AliRoot Version: %d", fCurrentClusterFlags->fVersion, 2);
+    return(0);
+  }
+  if (fCurrentClusterFlags->fVersion == 1)
+  {
+    if (fDecodeFlagsTmpPos == 0) fDecodeFlagsTmpFlag = ((unsigned int*) fCurrentClusterFlags->fData)[fDecodeFlagsTmpEntries++];
+    unsigned short retVal = (fDecodeFlagsTmpFlag >> fDecodeFlagsTmpPos) & ((1 << fCurrentClusterFlags->fNumberOfFlags) - 1);
+    fDecodeFlagsTmpPos += fCurrentClusterFlags->fNumberOfFlags;
+    if (fDecodeFlagsTmpPos >= sizeof(fDecodeFlagsTmpFlag) * 8)
+    {
+      fDecodeFlagsTmpPos -= sizeof(fDecodeFlagsTmpFlag) * 8;
+      if (fDecodeFlagsTmpPos)
+      {
+        fDecodeFlagsTmpFlag = ((unsigned int*) fCurrentClusterFlags->fData)[fDecodeFlagsTmpEntries++];
+        retVal |= (fDecodeFlagsTmpFlag << (fCurrentClusterFlags->fNumberOfFlags - fDecodeFlagsTmpPos))& ((1 << fCurrentClusterFlags->fNumberOfFlags) - 1);
+      }
+    }
+    return(retVal);
+  }
+  HLTFatal("Internal Error"); //We should never reach this code
+  return(0);
 }
 
 const AliHLTTPCClusterMCLabel* AliHLTTPCDataCompressionDecoder::GetMCLabel(AliHLTUInt32_t clusterId) const
@@ -280,7 +350,12 @@ void AliHLTTPCDataCompressionDecoder::Clear(const char* option)
   if (fpDataInflaterTrack) fpDataInflaterTrack->Clear(option);
   if (fpClusterMerger) fpClusterMerger->Clear();
   fCurrentClusterIds=NULL;
+  fCurrentClusterFlags=NULL;
+  fDecodeFlagsTmpFlag=0;
+  fDecodeFlagsTmpPos=0;
+  fDecodeFlagsTmpEntries=0;
   fPartitionClusterIds.clear();
+  fPartitionClusterFlags.clear();
   fTrackModelClusterIds.Clear();
   fClusterMCData.clear();
   fUseClusterMerger = kTRUE;

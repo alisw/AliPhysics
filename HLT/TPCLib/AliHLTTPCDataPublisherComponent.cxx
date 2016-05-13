@@ -283,6 +283,12 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTInput(AliHLTTPCDataPublis
 	return iResult;
       }
     }
+    if (desc.fDataType==AliHLTTPCDefinitions::ClustersFlagsDataType()) {
+      // add cluster flags information
+      if ((iResult=decoder.AddClusterFlags(&desc))<0) {
+	return iResult;
+      }
+    }
   }
 
   vector<bool> bHavePartitionData(216, false);

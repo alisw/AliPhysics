@@ -120,6 +120,11 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
     AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
     decoder.Clear();
 
+    for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClustersFlagsDataType());
+         pDesc!=NULL; pDesc=GetNextInputBlock()) {
+      decoder.AddClusterFlags(pDesc);
+    }
+
     // first unpack track model clusters into temporary map and count clusters per
     // partition.
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());

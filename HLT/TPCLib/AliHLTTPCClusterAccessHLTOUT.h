@@ -160,6 +160,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       void SetSigmaZ2(float sigmaZ2)   {if (fEntry ) fEntry->fCluster.SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fEntry ) fEntry->fCluster.SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fEntry ) fEntry->fCluster.SetQMax(qmax);}
+      void SetFlags(unsigned short flags) {if (fEntry ) fEntry->fCluster.SetFlags(flags);}
       iterator& operator=(const AliHLTTPCRawCluster& rawcluster) {if (fEntry ) {
 	  memcpy(&fEntry->fCluster, &rawcluster, sizeof(AliHLTTPCRawCluster));
 	  // Note: offline code uses a different convention for row offset than the online code

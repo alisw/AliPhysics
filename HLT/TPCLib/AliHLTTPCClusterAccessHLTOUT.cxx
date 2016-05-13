@@ -286,6 +286,12 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 	return iResult;
       }
     }
+    if (desc.fDataType==AliHLTTPCDefinitions::ClustersFlagsDataType()) {
+      // add mc information
+      if ((iResult=decoder.AddClusterFlags(&desc))<0) {
+	return iResult;
+      }
+    }
   }
 
   vector<bool> bHavePartitionData(216, false);
@@ -537,6 +543,11 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
     pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaTime2());
     pCluster->SetQ(map[i].fCluster.GetCharge());
     pCluster->SetMax(map[i].fCluster.GetQMax());
+    /*pCluster->SetType(
+      map[i].fCluster.GetFlagSplitAny() ?
+      (map[i].fCluster.GetFlagSplitPad() || map[i].fCluster.GetFlagSplitTime() ? 100 : 101) :
+      0 //Not split, golden cluster
+    );*/
 
     for (int k=0; k<3; k++) {
       // TODO: sort the labels according to the weight in order to assign the most likely mc label
