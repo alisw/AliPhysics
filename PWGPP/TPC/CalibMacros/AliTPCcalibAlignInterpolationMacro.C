@@ -49,7 +49,7 @@ void AliTPCcalibAlignInterpolationLoop(Int_t nchunks, Int_t neventsMax);
 void CreateDistortionMapsFromFile(Int_t type, const char * inputFile, const char *outputFile, Int_t delta=1);
 
 
-void AliTPCcalibAlignInterpolationMacro(Int_t action, Int_t param0=0, Int_t param1=0){
+void AliTPCcalibAlignInterpolationMacro(Int_t action, Int_t param0=0, Int_t param1=0, Bool_t useTOFBC=kTRUE){
 
   Int_t isGrid = TString(gSystem->Getenv("onGrid")).Atoi();
   if (isGrid > 0) TGrid::Connect("alien://");
@@ -94,12 +94,22 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action, Int_t param0=0, Int_t para
   if (action == 6){  //fit drift velocity
     Int_t deltaT=TString(gSystem->Getenv("driftDeltaT" )).Atoi();
     Int_t sigmaT=TString(gSystem->Getenv("driftSigmaT" )).Atoi();
+    TString useTOFBCStr = gSystem->Getenv("useTOFBC");    
+    if (!useTOFBCStr.IsNull()) {
+      useTOFBCStr.ToLower();
+      if      (useTOFBCStr.Contains("true")) useTOFBC = kTRUE;
+      else if (useTOFBCStr.Contains("false")) useTOFBC = kFALSE;
+      else {
+	::Info("AliTPCcalibAlignInterpolation::FitDrift",
+	       "Cannot interpret Env.var {useTOFBC}=%s as true or false, keep default setting %d",gSystem->Getenv("useTOFBC"),useTOFBC);
+      }
+    }
     if (deltaT<=0 || sigmaT<=0){
-      ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT", deltaT, sigmaT);
+      ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT %d", deltaT, sigmaT);
       return;
     }
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","Begin");
-    AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT);
+    AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT,0,0,kTRUE,useTOFBC);
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","End");
   }
 
