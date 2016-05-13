@@ -19,6 +19,7 @@ class AliESDEvent;
 class TH1F;
 class TH2F;
 class TCollection;
+class TList;
 class TMap;
 
 class AliTriggerAnalysis : public AliOADBTriggerAnalysis{
