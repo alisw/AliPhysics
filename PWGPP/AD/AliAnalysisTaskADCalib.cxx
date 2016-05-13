@@ -267,6 +267,28 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
     fList = NULL;
   }
 
+  // (0) get and set up the OCDB manager
+  AliCDBManager *man = AliCDBManager::Instance();
+  if (NULL == man) {
+    fStatus = kInputError;
+    AliFatal("CDB manager not found");
+    return;
+  }
+
+  if (!man->IsDefaultStorageSet())
+    man->SetDefaultStorage("raw://");
+
+  man->SetRun(runNumber);
+
+  // (1a) Get the AD calibration data OCDB object
+  AliCDBEntry *entry = man->Get("AD/Calib/Data");
+  AliADCalibData* calibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
+  if (NULL == calibData) {
+    fStatus = kInputError;
+    AliFatal("No calibration data from calibration database");
+    return;
+  }
+
   // (1) open file
   TFile *f = TFile::Open(fileName);
   if (NULL == f || !f->IsOpen()) {
@@ -290,7 +312,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   }
 
   // (4) make the OCDB calibration TTree
-  TTree *tSat = MakeSaturationCalibObject();
+  TTree *tSat = MakeSaturationCalibObject(calibData);
   if (NULL == tSat) {
     AliError("Failed to make the AD saturation calibration OCDB object");
     fStatus = kMeasurementError;
@@ -299,7 +321,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   }
 
   // (5) update the gain parameterization
-  AliCDBEntry* gainOCDBObject = UpdateGainParameters(runNumber, tSat);
+  AliCDBEntry* gainOCDBObject = UpdateGainParameters(runNumber, tSat, calibData);
   if (NULL == gainOCDBObject) {
     AliError("Failed to generate the updated AD PM gain OCDB object");
     fStatus = kMeasurementError;
@@ -441,7 +463,7 @@ Int_t AliAnalysisTaskADCalib::GetStatus() const {
   return fStatus;
 }
 
-TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
+TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibData) {
   const Int_t gOffline2Online[16] = {
     15, 13, 11,  9, 14, 12, 10,  8,
      7,  5,  3,  1,  6,  4,  2,  0
@@ -482,10 +504,17 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     delete h1;
     delete hSum;
   }
-  const Double_t meanQuantiles[2] = { 
-    (Float_t)TMath::Mean(8, chargeQuantiles),
-    (Float_t)TMath::Mean(8, chargeQuantiles+8)
+  Double_t meanQuantiles[2] = { 0,0 };
+  Double_t nGood[2]         = { 0,0 };
+  for (Int_t ch=0; ch<16; ++ch) {
+    if (calibData->IsChannelDead(ch))
+      continue;
+    nGood[ch/8]         += 1 ;
+    meanQuantiles[ch/8] += chargeQuantiles[ch];
+    AliDebug(3, Form("chargeQuantiles[%02d] = %f", ch, chargeQuantiles[ch]));
   };
+  if (nGood[0]) meanQuantiles[0] /= nGood[0];
+  if (nGood[1]) meanQuantiles[1] /= nGood[1];
 
   // (2) compute charge equalization factors
   Float_t chargeEqualizationFactor = 1.0f;
@@ -499,7 +528,7 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     chOffline = ch;
     chOnline  = gOffline2Online[ch];
 
-    chargeEqualizationFactor = meanQuantiles[ch/8]/chargeQuantiles[ch];
+    chargeEqualizationFactor = (chargeQuantiles[ch] && meanQuantiles[ch/8] ? meanQuantiles[ch/8]/chargeQuantiles[ch] : 1.0 );
     AliInfo(Form("quantile[%2d] = %f f=%f", ch, chargeQuantiles[ch], chargeEqualizationFactor));
 
     const Double_t largeThr = 1e5;
@@ -557,15 +586,16 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
   return t;
 }
 
-AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree* tSat)
+AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree* tSat, AliADCalibData* calibData)
 {
   if (NULL == tSat) {
     AliError("NULL == tSat");
     return NULL;
   }
-  // (0) get and set up the OCDB manager
+
   AliCDBManager *man = AliCDBManager::Instance();
   if (NULL == man) {
+    fStatus = kInputError;
     AliFatal("CDB manager not found");
     return NULL;
   }
@@ -575,16 +605,8 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
 
   man->SetRun(runNumber);
 
-  // (1a) Get the AD calibration data OCDB object
-  AliCDBEntry *entry = man->Get("AD/Calib/Data");
-  AliADCalibData* calibData = dynamic_cast<AliADCalibData*>(entry->GetObject());
-  if (NULL == calibData) {
-    AliFatal("No calibration data from calibration database");
-    return NULL;
-  }
-
   // (1b) Get the AD PM gain calibration object (to be updated)
-  entry = man->Get("AD/Calib/PMGains");
+  AliCDBEntry *entry = man->Get("AD/Calib/PMGains");
   if (NULL == entry) {
     AliFatal("AD/Calib/Data not found");
     return NULL;
@@ -602,10 +624,17 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
     return NULL;
   }
   Double_t *eqFactors = tSat->GetV1();
-  const Float_t meanEq[2] = {
-    (Float_t)TMath::Mean(8, eqFactors),
-    (Float_t)TMath::Mean(8, eqFactors+8)
-  };
+  Double_t meanEq[2] = { 0,0 };
+  Double_t nGood[2]  = { 0,0 };
+  for (Int_t ch=0; ch<16; ++ch) {
+    if (calibData->IsChannelDead(ch))
+      continue;
+    nGood[ch/8]  += 1;
+    meanEq[ch/8] += eqFactors[ch];
+    AliDebug(3, Form("eqFactor[%02d] = %f", ch, eqFactors[ch]));
+  }
+  if (nGood[0]) meanEq[0] /= nGood[0];
+  if (nGood[1]) meanEq[1] /= nGood[1];
   AliInfo(Form("meanEq=%.3f %.3f", meanEq[0], meanEq[1]));
 
   // (2b) extract mip,hv,a,b and compute the mean MIP per side
@@ -627,6 +656,8 @@ AliCDBEntry* AliAnalysisTaskADCalib::UpdateGainParameters(Int_t runNumber, TTree
   
   // (3) update the a and b parameters in such a way to have the same MIP per side for the given HV
   for (Int_t ch=0; ch<16; ++ch) {
+    if (calibData->IsChannelDead(ch))
+      continue;
     a[ch] *= TMath::Power(meanEq[ch/8] * meanMIP[ch/8]/mip[ch], -1./b[ch]);
     AliInfo(Form("a=%.2f b=%.2f mip=%.3f mip'=%.3f",
 		 a[ch], b[ch], mip[ch], TMath::Power(hv[ch]/a[ch], b[ch])));
