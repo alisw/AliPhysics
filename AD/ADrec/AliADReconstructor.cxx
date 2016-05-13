@@ -254,10 +254,10 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
       const Float_t time      = rawStream.GetTime(iChannel)  * fCalibData->GetTimeResolution(board);
       const Float_t width     = rawStream.GetWidth(iChannel) * fCalibData->GetWidthResolution(board);
       // Add a digit
-      //if(!fCalibData->IsChannelDead(offlineCh)){ Off for the moment
+      if(!fCalibData->IsChannelDead(offlineCh)){
       new ((*fDigitsArray)[fDigitsArray->GetEntriesFast()])
 	AliADdigit(offlineCh, time, width,integrator, chargeADC, BBflag, BGflag);
-      //}
+      }
       
       fESDADfriend->SetBBScalers(offlineCh, rawStream.GetBBScalers(iChannel));
       fESDADfriend->SetBGScalers(offlineCh, rawStream.GetBGScalers(iChannel));
