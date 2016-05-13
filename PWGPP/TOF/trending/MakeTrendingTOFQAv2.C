@@ -1,5 +1,5 @@
 /*
-  fbellini@cern.ch - last update on 09/03/2016
+  fbellini@cern.ch - last update on 12/05/2016
   Macro to run the TOF QA trending by accessing the std QA output, 
   to be mainly used with the automatic scripts to fill the QA repository.
   Launch with 
@@ -7,29 +7,9 @@
   The macro produces a file containing the tree of trending variables and the main plots.
   A feature that displays the plots in canvases must be enable when needed.
 */
-/*
-#include "TCanvas.h"
-#include "TStyle.h"
-#include "TLegend.h"
-#include "TGrid.h"
-#include "TGaxis.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TF1.h"
-#include "TPaveText.h"
-#include "AliTOFcalib.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "TProfile.h"
-#include "AliTOFChannelOnlineStatusArray.h"
- 
-#include "AliTOFcalibHisto.h"
-*/
 
 ///Functions with default parameters
-Int_t MakeTrendingTOFQAv3(TString qafilename,                   //full path of the QA output;
+Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
 			  Int_t runNumber,                      //run number
 			  Bool_t isMC = kFALSE,                 //MC flag, to disable meaningless checks
 			  Bool_t checkPIDqa = kTRUE,            //set to kTRUE to check PIDqa output for TOF
@@ -38,7 +18,8 @@ Int_t MakeTrendingTOFQAv3(TString qafilename,                   //full path of t
 			  TString ocdbStorage = "raw://",       //set the default ocdb storage
 			  Bool_t drawAll = kFALSE,              //enable display plots on canvas and save png
 			  Bool_t saveHisto = kTRUE,             //set to kTRUE to save histograms in root file
-			  Bool_t savePng = kTRUE );             //set to kTRUE to save histogram to png image
+			  Bool_t savePng = kTRUE,               //set to kTRUE to save histogram to png image
+			  Bool_t isAutoTrend = kFALSE);         //set to kTRUE for automatic trending    
 
 Double_t GetGoodTOFChannelsRatio(Int_t run = -1, Bool_t saveMap = kFALSE, TString OCDBstorage = "raw://", Bool_t inEta08 = kFALSE);
 
@@ -102,7 +83,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 			  TString ocdbStorage,            //set the default ocdb storage
 			  Bool_t drawAll ,                //enable display plots on canvas and save png
 			  Bool_t saveHisto,               //set to kTRUE to save histograms in root file
-			  Bool_t savePng)                 //set to kTRUE to save histogram to png image
+			  Bool_t savePng,
+			  Bool_t isAutoTrend)                 //set to kTRUE to save histogram to png image
 {
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -125,7 +107,10 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TGaxis::SetMaxDigits(3);
   gStyle->SetOptStat(10);
 
-  TString treePostFileName=Form("trending_%i.root",runNumber);
+  TString treePostFileName;
+  if (!isAutoTrend) treePostFileName = Form("trending_%i.root",runNumber);
+  else treePostFileName = "trending.root";
+  
   TFile * fin = TFile::Open(qafilename,"r");
   if (!fin) {
     Printf("ERROR: QA output not found. Exiting...\n");
@@ -853,9 +838,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0A=(hT0A->GetFunction("gaus"))->GetParameter(2);
       peakT0AErr=(hT0A->GetFunction("gaus"))->GetParError(1);
       spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);	
-      // printf("Main peak T0A(gaus): mean = %f +- %f\n",peakT0A,peakT0AErr );
-      // printf("Main peak T0A (gaus): spread = %f +- %f\n",spreadT0A,spreadT0AErr );
-      //add integral of main peak over total
     }
   }
   MakeUpHisto(hT0A, "events", 8, kBlue);
@@ -870,9 +852,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0C=(hT0C->GetFunction("gaus"))->GetParameter(2);
       peakT0CErr=(hT0C->GetFunction("gaus"))->GetParError(1);
       spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);	
-      // printf("Main peak T0C(gaus): mean = %f +- %f\n",peakT0C,peakT0CErr );
-      // printf("Main peak T0C (gaus): spread = %f +- %f\n",spreadT0C,spreadT0CErr );
-      //add integral of main peak over total
     }
   }
   MakeUpHisto(hT0C, "events", 8, kGreen+1);
@@ -887,8 +866,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(2);
       peakT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(1);
       spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);	
-      // printf("Main peak T0AC(gaus): mean = %f +- %f\n",peakT0AC,peakT0ACErr );
-      // printf("Main peak T0AC (gaus): spread = %f +- %f\n",spreadT0AC,spreadT0ACErr );	 
     }
   }
   MakeUpHisto(hT0AC, "events", 8, kRed+1);
@@ -911,9 +888,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
       peakT0resErr=(hT0res->GetFunction("gaus"))->GetParError(1);
       spreadT0resErr=(hT0res->GetFunction("gaus"))->GetParError(2);	
-      // printf("Main peak T0res(gaus): mean = %f +- %f\n",peakT0res,peakT0resErr );
-      // printf("Main peak T0res (gaus): spread = %f +- %f\n",spreadT0res,spreadT0resErr );	 
-    //add integral of main peak over total
     }
   }
   TH1F*hT0fillRes=(TH1F*)timeZeroList->FindObject("hT0fillRes");
@@ -931,8 +905,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hT0A->Write();
     hT0C->Write();
     hT0res->Write();
-    //hT0fillRes->Write();
-    //hT0T0Res->Write();
   }	
   //Fill tree and save to file
   ttree->Fill();
@@ -984,25 +956,9 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hT0AC->SetTitle("timeZero measured by T0 detector");
     hT0A ->Draw("same");
     hT0C ->Draw("same");
-    //lT0->Draw();  
     cT0detector->cd(2);
     hT0res->Draw();
-
-    // TCanvas *cResiduals= new TCanvas("residuals","residuals", 900,500);
-    // cResiduals->Divide(2,1);
-    // cResiduals->cd(1);
-    // gPad->SetLogz();
-    // hDxPos4profile->GetYaxis()->SetRangeUser(-5.,5.);
-    // hDxPos4profile->Draw("colz");
-    // // profDxPos->SetLineColor(kRed);
-    // // profDxPos->Draw("same");
-    // cResiduals->cd(2);
-    // gPad->SetLogz();
-    // hDxNeg4profile->GetYaxis()->SetRangeUser(-5.,5.); 
-    // hDxNeg4profile->Draw("colz");
-    // // profDxNeg->SetLineColor(kBlue);
-    // // profDxNeg->Draw("same"); 
-
+    
     if (savePng) {
       cTrackProperties->Print(Form("%s/%i_TrackProperties.png",plotDir.Data(), runNumber));
       cPidPerformance->Print(Form("%s/%i_PID.png",plotDir.Data(), runNumber));
@@ -1043,7 +999,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
    
   if (savePng) {
     cProfile->Print(Form("%s/%i_ProfileDZvsStripNumber.png",plotDir.Data(), runNumber));
-    //cMatchingPerformance->Print(Form("%s/%i_Matching.png",plotDir.Data(), runNumber));
     cPidPerformance2->Print(Form("%s/%i_PID_ExpTimes.png",plotDir.Data(), runNumber));
   }
   return  0;
