@@ -53,15 +53,7 @@ Usage of a container can be best summarized using the specific example of access
  {
      // Use the iterator here
  }
- 
- // More traditional approach
- AliVTrack * track = 0;
- // Double paranthesis are needed to avoid compiler errors
- while ((track = tracks->GetNextAcceptTrack()))
- {
-     // Use the track(s) here
- }
- ~~~
+  ~~~
  
  Users can also access all tracks using AliEmcalContainer::all(), among other options. For more details on iteration techniques, see ``AliEmcalContainer``.
 
@@ -91,7 +83,7 @@ For more information, look at the base classes, ``AliAnalysisTaskEmcal`` and ``A
 
 The ``AddTask`` is used to setup your analysis task, allowing it to run. This code is interpreted through CINT (ie through ROOT), so it is best to avoid complicated code, as debugging can be rather difficult.
 
-Often, the ``AddTask`` is used to set properties such as the tracks or clusters. To handle this in a flexible manner, it is recommended to utilize the "usedefault" approach as demonstrated in many ``AddTask`` macros, such as ``AddTaskEmcalJet``. Doing so ensures that the proper collection of objects is loaded regardless of the type of file that is used. Alternatively, the containers can be setup in your ram macro or wagon.
+Often, the ``AddTask`` is used to set properties such as the tracks or clusters. To handle this in a flexible manner, it is recommended to utilize the "usedefault" approach as demonstrated in many ``AddTask`` macros, such as ``AddTaskEmcalJet``. Doing so ensures that the proper collection of objects is loaded regardless of the type of file that is used. Alternatively, the containers can be setup in your ram macro or wagon. To see the most up to date names for these collections, see ``AddTaskEmcalJetSample.C``.
 
 For examples, see ``AddTaskEmcalJet.C``, ``AddTaskEmcalJetQA.C``, or ``AddTaskEmcalJetSpectraQA.C``.
 
@@ -105,6 +97,8 @@ Once your have created your task, the next step is to run it. There are a few di
     A Run Macro enables two modes of operation:
      - Run locally to test code
      - Submit to the grid
+
+    NOTE: Since you will need to modify the run macro, it is highly recommended to copy the run macro to another location or to make a new branch for it!
 
 Regardless of method, there are a number of considerations to take into account. A few are listed below.
 
