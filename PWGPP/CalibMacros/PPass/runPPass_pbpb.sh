@@ -55,6 +55,7 @@ fi
 echo "runNumber=$runNumber"
 echo "ocdbPath=$ocdbPath"
 echo "nEvents=$nEvents"
+echo "additionalRecOptions=$additionalRecOptions"
 
 if [ "${CHUNKNAME:0:1}" = "/" ]; then
     FILENAME=${CHUNKNAME##*/}
@@ -93,9 +94,9 @@ fi
 
 
 echo "rec.C" >&2
-echo executing aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")"
+echo executing aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$additionalRecOptions\")"
 timeStart=`date +%s`
-time aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")" &> rec.log
+time aliroot -l -b -q -x "rec.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$additionalRecOptions\")" &> rec.log
 exitcode=$?
 timeEnd=`date +%s`
 timeUsed=$(( $timeUsed+$timeEnd-$timeStart ))

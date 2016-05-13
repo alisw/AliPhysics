@@ -100,6 +100,7 @@ echo "* nEvents: $nEvents"
 echo "* runNum: $runNum"
 echo "* ocdbPath: $ocdbPath"
 echo "* triggerOptions: $triggerOptions"
+echo "* additionalRecOptions: $additionalRecOptions"
 echo "* ************************"
 
 mkdir Barrel OuterDet
@@ -174,8 +175,8 @@ cd Barrel
 
 echo "* Running AliRoot to reconstruct barrel of $CHUNKNAME"
 
-echo executing aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
-time aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec.log
+echo executing aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\", \"$additionalRecOptions\")"
+time aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\", \"$additionalRecOptions\")" &> ../rec.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
@@ -280,8 +281,8 @@ cd OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
-echo executing aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")"
-time aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")" &> ../rec_Outer.log
+echo executing aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$additionalRecOptions\")"
+time aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$additionalRecOptions\")" &> ../rec_Outer.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
