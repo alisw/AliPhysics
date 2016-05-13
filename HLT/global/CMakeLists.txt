@@ -78,6 +78,7 @@ set(SRCS
     AliFlatESDTrigger.cxx
     AliFlatESDTrigger.h
     AliFlatESDVZERO.cxx
+    AliFlatMultiplicity.cxx
     AliFlatESDVZEROFriend.cxx
     AliFlatESDV0.cxx
     AliFlatESDV0.h
