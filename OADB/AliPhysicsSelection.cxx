@@ -500,17 +500,17 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t noSPDVtxPileup    = 0;
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
-
+    Float_t znInTime          = 0;
     Bool_t b[14];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
-      for (Int_t bit=0;bit<14;bit++) b[bit]=i & 1<<bit;
+      for (Int_t bit=0;bit<15;bit++) b[bit]=i & 1<<bit;
       if (b[ 5]) noSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
       if (b[ 6]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (b[ 7]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (b[ 8]) noSPDVtxPileup+=histStat->GetBinContent(i+1);
       if (b[ 9]) noV0PFPileup+=histStat->GetBinContent(i+1);
       if (b[10]) noV0Casym+=histStat->GetBinContent(i+1);
-      
+      if (b[14]) znInTime+=histStat->GetBinContent(i+1);
       if (!b[ 3]) continue;
       if (!b[ 4]) continue;
       v0and+=histStat->GetBinContent(i+1);
@@ -542,6 +542,7 @@ void AliPhysicsSelection::FillStatistics(){
     fHistStat->Fill("!SPDVtxPileup",trigger,noSPDVtxPileup);
     fHistStat->Fill("!V0PFPileup",trigger,noV0PFPileup);
     fHistStat->Fill("!V0Casym",trigger,noV0Casym);
+    fHistStat->Fill("ZN time",trigger,znInTime);
   }
 }
 

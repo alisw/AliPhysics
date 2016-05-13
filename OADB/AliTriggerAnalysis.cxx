@@ -159,10 +159,10 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   // do not add these hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHistStat           = new TH1F("fHistStat","Accepted events;;",16384,-0.5,16383.5);
+  fHistStat           = new TH1F("fHistStat","Accepted events;;",32768,-0.5,32767.5);
   fHistFiredBitsSPD   = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTkl    = new TH2F("fHistSPDClsVsTkl", "SPD Clusters vs Tracklets; n tracklets; n clusters",400,0,isLowFlux?400:4000,500,0,isLowFlux?1000:10000);
-  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",300,0,isLowFlux?600:60000,600,0,isLowFlux?6000:60000);
+  fHistV0MOnVsOf      = new TH2F("fHistV0MOnVsOf",";Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
   fHistSPDOnVsOf      = new TH2F("fHistSPDOnVsOf",";Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
   fHistSPDVtxPileup   = new TH1F("fHistSPDVtxPileup",";SPD Vtx pileup",2,0,2);
   fHistVIRvsBCmod4pup = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
@@ -1294,6 +1294,7 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, kTRUE);
   Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, kTRUE);
   Bool_t isZDCTDCTrigger   = ZDCTDCTrigger(event,kASide,kFALSE,kFALSE,kTRUE);
+  Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,kTRUE);
   Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event, kTRUE);
   Bool_t isV0MOnVsOfPileup = IsV0MOnVsOfPileup(event, kTRUE);
   Bool_t isSPDOnVsOfPileup = IsSPDOnVsOfPileup(event, kTRUE);
@@ -1319,6 +1320,7 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   if (isVHMTrigger)       accept |= 1 <<11;
   if (isV0MTrigger)       accept |= 1 <<12;
   if (isSH1Trigger)       accept |= 1 <<13;
+  if (isZDCTimeTrigger)   accept |= 1 <<14;
   if (accept) fHistStat->Fill(accept);
   
 //  TODO: Adjust for AOD
@@ -1414,47 +1416,7 @@ void AliTriggerAnalysis::Browse(TBrowser *b){
    // Browse this object.
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
-
-
-  static TObjString * strZDCCutRefSumCorr     =0;    
-  static TObjString * strZDCCutRefDeltaCorr   =0;  
-  static TObjString * strZDCCutSigmaSumCorr   =0;  
-  static TObjString * strZDCCutSigmaDeltaCorr =0;
-  static TObjString * strZDCCutZNATimeCorrMin =0;
-  static TObjString * strZDCCutZNATimeCorrMax =0;
-  static TObjString * strZDCCutZNCTimeCorrMin =0;
-  static TObjString * strZDCCutZNCTimeCorrMax =0;
-
-  if(strZDCCutRefSumCorr     ) delete strZDCCutRefSumCorr     ;
-  if(strZDCCutRefDeltaCorr   ) delete strZDCCutRefDeltaCorr   ;
-  if(strZDCCutSigmaSumCorr   ) delete strZDCCutSigmaSumCorr   ;
-  if(strZDCCutSigmaDeltaCorr ) delete strZDCCutSigmaDeltaCorr ;
-  if(strZDCCutZNATimeCorrMin ) delete strZDCCutZNATimeCorrMin ;
-  if(strZDCCutZNATimeCorrMax ) delete strZDCCutZNATimeCorrMax ;
-  if(strZDCCutZNCTimeCorrMin ) delete strZDCCutZNCTimeCorrMin ;
-  if(strZDCCutZNCTimeCorrMax ) delete strZDCCutZNCTimeCorrMax ;
-  
-  strZDCCutRefSumCorr     = new TObjString(Form("ZDCCutRefSumCorr     %f", fZDCCutRefSumCorr    )); 
-  strZDCCutRefDeltaCorr   = new TObjString(Form("ZDCCutRefDeltaCorr   %f", fZDCCutRefDeltaCorr  )); 
-  strZDCCutSigmaSumCorr   = new TObjString(Form("ZDCCutSigmaSumCorr   %f", fZDCCutSigmaSumCorr  )); 
-  strZDCCutSigmaDeltaCorr = new TObjString(Form("ZDCCutSigmaDeltaCorr %f", fZDCCutSigmaDeltaCorr)); 
-  strZDCCutZNATimeCorrMin = new TObjString(Form("ZDCCutZNATimeCorrMin %f", fZDCCutZNATimeCorrMin));
-  strZDCCutZNATimeCorrMax = new TObjString(Form("ZDCCutZNATimeCorrMax %f", fZDCCutZNATimeCorrMax));
-  strZDCCutZNCTimeCorrMin = new TObjString(Form("ZDCCutZNCTimeCorrMin %f", fZDCCutZNCTimeCorrMin));
-  strZDCCutZNCTimeCorrMax = new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax));
-
-  if (b) {
-    // Creates a folder for each beam type containing the list of corresponding bx ids
-    b->Add(strZDCCutRefSumCorr    );
-    b->Add(strZDCCutRefDeltaCorr  );
-    b->Add(strZDCCutSigmaSumCorr  );
-    b->Add(strZDCCutSigmaDeltaCorr);
-    b->Add(strZDCCutZNATimeCorrMin);
-    b->Add(strZDCCutZNATimeCorrMax);
-    b->Add(strZDCCutZNCTimeCorrMin);
-    b->Add(strZDCCutZNCTimeCorrMax);
-    b->Add(fHistList);
-  }     
-  else
-    TObject::Browse(b);
+  AliOADBTriggerAnalysis::Browse(b);
+  if (b) b->Add(fHistList);
+  else   TObject::Browse(b);
 }

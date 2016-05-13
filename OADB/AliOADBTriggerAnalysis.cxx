@@ -79,6 +79,7 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
   TObjArray* parArray = new TObjArray(50);
+  parArray->SetName("parameters");
   parArray->Add(new TObjString(Form("FMDLowCut            %f", fFMDLowCut           )));
   parArray->Add(new TObjString(Form("FMDHitCut            %f", fFMDHitCut           )));
   parArray->Add(new TObjString(Form("ZDCCutRefSum         %f", fZDCCutRefSum        )));
