@@ -23,12 +23,13 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TProfile.h"
-#include "AliTOFcalibHisto.h"
 #include "AliTOFChannelOnlineStatusArray.h"
+ 
+#include "AliTOFcalibHisto.h"
 */
 
 ///Functions with default parameters
-Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of the QA output;
+Int_t MakeTrendingTOFQAv3(TString qafilename,                   //full path of the QA output;
 			  Int_t runNumber,                      //run number
 			  Bool_t isMC = kFALSE,                 //MC flag, to disable meaningless checks
 			  Bool_t checkPIDqa = kTRUE,            //set to kTRUE to check PIDqa output for TOF
@@ -184,6 +185,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   Double_t avT0AC=-9999.,peakT0AC=-9999., spreadT0AC=-9999.,peakT0ACErr=-9999., spreadT0ACErr=-9999.;
   Double_t avT0res=-9999.,peakT0res=-9999., spreadT0res=-9999.,peakT0resErr=-9999., spreadT0resErr=-9999.;
   Double_t avT0fillRes=-9999., avT0T0Res=-9999.;
+  Double_t StartTime_pBestT0 = 0.0, StartTime_pBestT0Err = 0.0, StartTime_pFillT0 = 0.0, StartTime_pFillT0Err = 0.0, StartTime_pTOFT0 = 0.0, StartTime_pTOFT0Err = 0.0, StartTime_pT0ACT0 = 0.0, StartTime_pT0ACT0Err = 0.0, StartTime_pT0AT0 = 0.0, StartTime_pT0AT0Err = 0.0, StartTime_pT0CT0 = 0.0, StartTime_pT0CT0Err = 0.0;
+  Double_t StartTime_pBestT0_Res = 0.0, StartTime_pFillT0_Res = 0.0, StartTime_pTOFT0_Res = 0.0, StartTime_pT0ACT0_Res = 0.0, StartTime_pT0AT0_Res = 0.0, StartTime_pT0CT0_Res = 0.0;
   Float_t avMulti=0;
   Float_t fractionEventsWHits=-9999.;
   /*number of good (HW ok && efficient && !noisy) TOF channels from OCDB*/
@@ -255,7 +258,26 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   ttree->Branch("spreadT0resErr",&spreadT0resErr,"spreadT0resErr/D"); //spread of main peak of t0AC after fit
   ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
   ttree->Branch("avT0T0Res",&avT0T0Res,"avT0T0Res/D"); //t0 T0 res
-
+     
+  ttree->Branch("StartTime_pBestT0",&StartTime_pBestT0,"StartTime_pBestT0/D"); //T0Best
+  ttree->Branch("StartTime_pBestT0Err",&StartTime_pBestT0Err,"StartTime_pBestT0Err/D");                                    
+  ttree->Branch("StartTime_pFillT0",&StartTime_pFillT0,"StartTime_pFillT0/D"); //T0Fill
+  ttree->Branch("StartTime_pFillT0Err",&StartTime_pFillT0Err,"StartTime_pFillT0Err/D"); 
+  ttree->Branch("StartTime_pTOFT0",&StartTime_pTOFT0,"StartTime_pTOFT0/D"); //T0TOF
+  ttree->Branch("StartTime_pTOFT0Err",&StartTime_pTOFT0Err,"StartTime_pTOFT0Err/D"); //T0TOF
+  ttree->Branch("StartTime_pT0ACT0",&StartTime_pT0ACT0,"StartTime_pT0ACT0/D"); //T0AC
+  ttree->Branch("StartTime_pT0ACT0Err",&StartTime_pT0ACT0Err,"StartTime_pT0ACT0Err/D");
+  ttree->Branch("StartTime_pT0AT0",&StartTime_pT0AT0,"StartTime_pT0AT0/D"); //T0A
+  ttree->Branch("StartTime_pT0AT0Err",&StartTime_pT0AT0Err,"StartTime_pT0AT0Err/D");  
+  ttree->Branch("StartTime_pT0CT0",&StartTime_pT0CT0,"StartTime_pT0CT0/D"); //T0C
+  ttree->Branch("StartTime_pT0CT0Err",&StartTime_pT0CT0Err,"StartTime_pT0CT0Err/D"); 
+  ttree->Branch("StartTime_pBestT0_Res",&StartTime_pBestT0_Res,"StartTime_pBestT0_Res/D"); //T0Best res                       
+  ttree->Branch("StartTime_pFillT0_Res",&StartTime_pFillT0_Res,"StartTime_pFillT0_Res/D"); //T0Fill res
+  ttree->Branch("StartTime_pTOFT0_Res",&StartTime_pTOFT0_Res,"StartTime_pTOFT0_Res/D"); //T0TOF res
+  ttree->Branch("StartTime_pT0ACT0_Res",&StartTime_pT0ACT0_Res,"StartTime_pT0ACT0_Res/D"); //T0AC res
+  ttree->Branch("StartTime_pT0AT0_Res",&StartTime_pT0AT0_Res,"StartTime_pT0AT0_Res/D"); //T0A res
+  ttree->Branch("StartTime_pT0CT0_Res",&StartTime_pT0CT0_Res,"StartTime_pT0CT0_Res/D"); //T0C res
+  
   //save quantities for trending
   goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kFALSE);
   goodChannelRatioInAcc=(Double_t)GetGoodTOFChannelsRatio(runNumber, kFALSE, ocdbStorage, kTRUE);
@@ -522,6 +544,60 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   hStartTimeProfile->SetLineWidth(3);
   hStartTimeProfile->SetLineColor(1);  
 
+
+  Int_t binminstRes = hStartTimeRes->GetXaxis()->FindBin(-600.);
+  Int_t binmaxstRes = hStartTimeRes->GetXaxis()->FindBin(600.);
+
+  TProfile* hStartTimeResProfile = (TProfile*) hStartTimeRes->ProfileY("hStartTimeResProfile",binminstRes,binmaxstRes);
+  hStartTimeResProfile->SetFillStyle(0);
+  hStartTimeResProfile->SetLineWidth(3);
+  hStartTimeResProfile->SetLineColor(1);
+  
+
+  StartTime_pBestT0 = hStartTimeProfile->GetBinContent(1);
+  StartTime_pBestT0Err = hStartTimeProfile->GetBinError(1);
+
+  StartTime_pFillT0 = hStartTimeProfile->GetBinContent(2); 
+  StartTime_pFillT0Err = hStartTimeProfile->GetBinError(2); 
+  
+  StartTime_pTOFT0 = hStartTimeProfile->GetBinContent(3);
+  StartTime_pTOFT0Err = hStartTimeProfile->GetBinError(3);
+ 
+  StartTime_pT0ACT0 = hStartTimeProfile->GetBinContent(4);
+  StartTime_pT0ACT0Err = hStartTimeProfile->GetBinError(4);
+ 
+  StartTime_pT0AT0 = hStartTimeProfile->GetBinContent(5); 
+  StartTime_pT0AT0Err = hStartTimeProfile->GetBinError(5);
+  
+  StartTime_pT0CT0 = hStartTimeProfile->GetBinContent(6);
+  StartTime_pT0CT0Err = hStartTimeProfile->GetBinError(6);
+ 
+  StartTime_pBestT0_Res = hStartTimeResProfile->GetBinContent(1);
+  StartTime_pFillT0_Res = hStartTimeResProfile->GetBinContent(2);
+  StartTime_pTOFT0_Res = hStartTimeResProfile->GetBinContent(3);
+  StartTime_pT0ACT0_Res = hStartTimeResProfile->GetBinContent(4);
+  StartTime_pT0AT0_Res = hStartTimeResProfile->GetBinContent(5);
+  StartTime_pT0CT0_Res = hStartTimeResProfile->GetBinContent(6);
+
+  // cout << "StartTimeBest  " << StartTime_pBestT0 << " ps" << endl;
+  // cout << "StartTimeBestErr  " << StartTime_pBestT0Err << " ps" << endl;
+  // cout << "Res StartTimeBest  " << StartTime_pBestT0_Res << " ps" << endl;
+  // cout << "Res StartTimeBestErr  " << StartTime_pBestT0_ResErr << " ps" << endl;
+  // cout << "StartTimeFill  " << StartTime_pFillT0 << " ps" << endl;
+  // cout << "StartTimeFillErr  " << StartTime_pFillT0Err << " ps" << endl;
+  // cout << "Res StartTimeFill  " << StartTime_pFillT0_Res << " ps" << endl;
+  // cout << "Res StartTimeFillErr  " << StartTime_pFillT0_ResErr << " ps" << endl;
+  // cout << "StartTimeTOF  " << StartTime_pTOFT0 << " ps" << endl;
+  // cout << "Res StartTimeTOF  " << StartTime_pTOFT0_Res << " ps" << endl;
+  // cout << "StartTimeT0AC  " << StartTime_pT0ACT0 << " ps" << endl;
+  // cout << "Res StartTimeT0AC  " << StartTime_pT0ACT0_Res << " ps" << endl;
+  // cout << "Res StartTimeT0ACErr  " << StartTime_pT0ACT0_ResErr << " ps" << endl;
+  // cout << "StartTimeT0A  " << StartTime_pT0AT0 << " ps" << endl;
+  // cout << "Res StartTimeT0A  " << StartTime_pT0AT0_Res << " ps" << endl;
+  // cout << "Res StartTimeT0AErr  " << StartTime_pT0AT0_ResErr << " ps" << endl;
+  // cout << "StartTimeT0C  " << StartTime_pT0CT0 << " ps" << endl;
+  // cout << "Res StartTimeT0C  " << StartTime_pT0CT0_Res << " ps" << endl;
+
   TCanvas *cT0vsMultiplicty = new TCanvas("cT0vsMultiplicity","T0TOF,T0C,T0A,TOAC vs N_TOF,",1200,800);
   cT0vsMultiplicity->Divide(2,2);
   cT0vsMultiplicity->cd(1);
@@ -567,7 +643,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   gPad->SetGridx();
   gPad->SetGridy();
   hStartTime->Draw("colz");
-
   TString plotDir(".");
 
   if (savePng) {
@@ -588,6 +663,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hStartTime->Write();
     hStartTimeRes->Write();
     hStartTimeProfile->Write();
+    hStartTimeResProfile->Write();
   }
 
   //--------------------------------- NSigma PID from TOF QA ----------------------------------//
