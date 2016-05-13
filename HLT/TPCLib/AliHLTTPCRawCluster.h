@@ -83,6 +83,7 @@ struct AliHLTTPCRawCluster {
   Bool_t  GetFlagSplitPad() const {return (fFlags & (1 << 0));}
   Bool_t  GetFlagSplitTime() const {return (fFlags & (1 << 1));}
   Bool_t  GetFlagSplitAny() const {return (fFlags & 3);}
+  unsigned short GetFlags() const {return(fFlags);}
 
   void SetPadRow(Short_t padrow)  {fPadRow=padrow;}
   void SetPad(Float_t pad)     {fPad=pad;}
@@ -93,6 +94,7 @@ struct AliHLTTPCRawCluster {
   void SetQMax(UShort_t qmax)    {fQMax=qmax;}
 
   void ClearFlags() {fFlags = 0;}
+  void SetFlags(unsigned short flags) {fFlags = flags;}
   void SetFlagSplitPad() {fFlags |= (1 << 0);}
   void SetFlagSplitTime() {fFlags |= (1 << 1);}
 };
