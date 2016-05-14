@@ -709,7 +709,9 @@ int AliHLTReconstructor::BuildCTPTriggerClassString(TString& triggerclasses) con
       AliTriggerClass* trclass = NULL;
       if (classesArray.At(iclass) && (trclass=dynamic_cast<AliTriggerClass*>(classesArray.At(iclass)))!=NULL) {
 	TString entry;
-	int trindex = trclass->GetIndex();
+  //trigger classes in the OCDB start at offset 1, not zero we need to subtract 1 when constructing
+  //the ECS param string, this is done also in offline: Bool_t AliReconstruction::GetEventInfo()
+	int trindex = trclass->GetIndex()-1;
 	entry.Form("%02d:%s:", trindex, trclass->GetName());
 	AliTriggerCluster* cluster=NULL;
 	TObject* clusterobj=config->GetClusters().FindObject(trclass->GetCluster());
