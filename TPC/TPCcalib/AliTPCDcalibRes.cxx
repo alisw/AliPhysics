@@ -3,6 +3,7 @@
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
 #include "AliDAQ.h"
+#include <TKey.h>
 
 using std::swap;
 
@@ -73,7 +74,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fApplyZt2Zc(kTRUE)
 
   ,fChebZSlicePerSide(1)
-  ,fChebPhiSlicePerSector(2)
+  ,fChebPhiSlicePerSector(1)
   ,fChebCorr(0)
 
   ,fRun(run)
@@ -225,6 +226,53 @@ void AliTPCDcalibRes::ProcessFromLocalBinnedTrees()
   //
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
+}
+
+//________________________________________
+void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup)
+{
+  // reprocess starting from the raw data filled from existing resVox tree
+  TStopwatch sw;
+  sw.Start();
+  if (!LoadResTree(resTreeFile)) return;
+  ReProcessResiduals();
+  //
+  if (fChebCorr) delete fChebCorr;
+  //
+  CreateCorrectionObject();
+  //
+  if (backup) { 
+    TString inps = resTreeFile;
+    if (inps == GetVoxResFileName()) {
+      TString inpsb = resTreeFile;
+      inpsb.ReplaceAll(".root","_1.root");
+      rename(inps.Data(),inpsb.Data());
+      AliInfoF("Input file %s backed up to %s",inps.Data(),inpsb.Data());
+    }
+  }
+  WriteResTree();
+  //
+  sw.Stop();
+  AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
+}
+
+//________________________________________
+AliTPCDcalibRes* AliTPCDcalibRes::Load(const char* fname)
+{
+  // load AliTPCDcalibRes object from input file
+  TFile* fl = TFile::Open(fname);
+  if (!fl) {AliErrorClassF("Failed to open %s",fname); return 0;}
+  TList* lstk = fl->GetListOfKeys();
+  TIter next(lstk);
+  TKey* key = 0;
+  AliTPCDcalibRes* res = 0;
+  while (key=(TKey*)next()) {
+    TString keyt = key->GetTitle();
+    if (keyt == "AliTPCDcalibRes") {res = (AliTPCDcalibRes*)fl->Get(key->GetName()); break;}
+  }
+  if (!res) AliErrorClassF("Did not find AliTPCDcalibRes object in %s",fname);
+  return res;
+  //
 }
 
 //________________________________________
@@ -947,11 +995,10 @@ void AliTPCDcalibRes::ProcessSectorDispersions(int is)
   //
 }
 
-
 //_________________________________________________
 void AliTPCDcalibRes::ProcessSectorResiduals(int is)
 {
-  // process residuals for single sector
+  // process residuals for single sector staring from local binned per-sector trees
   //
   const int kMaxPnt = 30000000; // max points per sector to accept
   TStopwatch sw;  sw.Start();
@@ -1115,6 +1162,47 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   sw.Stop(); 
   AliInfoF("Sector %2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("ProcSectRes",is,1,0,0);
+  //
+}
+//________________________________________________
+void AliTPCDcalibRes::ReProcessResiduals()
+{
+  // reprocess residuals using raw voxel info filled from existing resVoxTree
+  // The raw data is already loaded from the tree
+  AliSysInfo::AddStamp("ReProcResid",0,0,0,0);
+  for (int is=0;is<kNSect2;is++) ReProcessSectorResiduals(is);
+  AliSysInfo::AddStamp("ReProcResid",1,0,0,0);
+}
+
+//_________________________________________________
+void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
+{
+  // Reprocess residuals for single sector filled from existing resVoxTree
+  // The raw data is already loaded from the tree
+  //
+  TStopwatch sw;  sw.Start();
+  AliSysInfo::AddStamp("RProcSectRes",is,0,0,0);
+  //
+  bres_t*  sectData = fSectGVoxRes[is];
+  if (!sectData) AliFatalF("No SectGVoxRes data for sector %d",is);
+  //
+  Smooth0(is); // smooth corrections
+  //
+  UChar_t bvox[kVoxDim];
+  // now smooth the dispersion
+  for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
+    for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+      for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
+	int binGlo = GetVoxGBin(bvox);
+	bres_t *voxRes = &sectData[binGlo];
+	Bool_t res = GetSmoothEstimateDim(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
+					  int(kResD), voxRes->DS[kResD]);
+      }
+    }
+  }
+  sw.Stop(); 
+  AliInfoF("Sector %2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
+  AliSysInfo::AddStamp("ReProcSectRes",is,1,0,0);
   //
 }
 
@@ -2124,7 +2212,7 @@ void AliTPCDcalibRes::WriteResTree()
 
   AliSysInfo::AddStamp("ResTree",0,0,0,0);
   if (fChebCorr) fChebCorr->Init();
-  TFile* flOut = new TFile(Form("%sTree.root",kResOut),"recreate");
+  TFile* flOut = new TFile(GetVoxResFileName(),"recreate");
   TTree* resTree = new TTree("voxRes","final distortions, see GetListOfAliases");
   resTree->Branch("res", &voxRes);
   for (int i=0;i<kVoxDim;i++) {
@@ -2189,18 +2277,18 @@ void AliTPCDcalibRes::WriteResTree()
 }
 
 //___________________________________________________________________
-void AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
+Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
 {
   // Fill voxels info from existing resVox tree for reprocessing
   TStopwatch sw;
   sw.Start();
   bres_t voxRes, *voxResP=&voxRes;
-
+  //
   TFile* flIn = new TFile(resTreeFile);
-  if (!flIn) {AliErrorF("Failed to open %s",resTreeFile); return;}
+  if (!flIn) {AliErrorF("Failed to open %s",resTreeFile); return kFALSE;}
   TTree* resTree = (TTree*) flIn->Get("voxRes");
-  if (!resTree) {AliErrorF("Failed to extract resTree from %s",resTreeFile); delete flIn; return;}
-  resTree->Branch("res", &voxRes);
+  if (!resTree) {AliErrorF("Failed to extract resTree from %s",resTreeFile); delete flIn; return kFALSE;}
+  resTree->SetBranchAddress("res", &voxResP);
   //
   int nent = resTree->GetEntries();
   if (nent != kNSect2*fNGVoxPerSector) AliFatalF("resTree from %s has %d voxels per sector, this object: %d",
@@ -2217,6 +2305,9 @@ void AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     int binGlo = GetVoxGBin(voxRes.bvox);
     bres_t *voxel = &sectData[binGlo];
     memcpy(voxel,&voxRes,sizeof(bres_t));
+    // the X distortion contribution was already subtracted from the Y,Z components, restore it
+    voxel->D[kResZ]  -= voxel->stat[kVoxZ]*voxel->DS[kResX];
+    voxel->DS[kResZ] -= voxel->stat[kVoxZ]*voxel->DS[kResX];
   } // end of sector loop
   //
   delete resTree;
@@ -2225,8 +2316,8 @@ void AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
   //
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
-  AliSysInfo::AddStamp("ResTree",1,0,0,0);
   //
+  return kTRUE;
 }
 
 
@@ -2327,6 +2418,7 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
       for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
 	int binGlo = GetVoxGBin(ix,ip,iz);
 	bres_t *vox = &sectData[binGlo];
+	vox->flags &= ~kSmoothDone;
 	Bool_t res = GetSmoothEstimate(vox->bsec,vox->stat[kVoxX],vox->stat[kVoxF],vox->stat[kVoxZ],
 				       BIT(kResX)|BIT(kResY)|BIT(kResZ), // at this moment we cannot smooth dispersion
 				       vox->DS);
@@ -3032,3 +3124,4 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   //
 }
 //======================================================================================
+

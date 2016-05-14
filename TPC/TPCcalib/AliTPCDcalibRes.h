@@ -98,6 +98,7 @@ class AliTPCDcalibRes: public TNamed
   
  void ProcessFromDeltaTrees();
  void ProcessFromLocalBinnedTrees();
+ void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
  void Save(const char* name=0);
 
  void Init();
@@ -107,8 +108,10 @@ class AliTPCDcalibRes: public TNamed
  void ClosureTest();
  void CreateLocalResidualsTrees(int mode);
  void ProcessResiduals();
+ void ReProcessResiduals();
  void ProcessDispersions();
  void ProcessSectorResiduals(int is);
+ void ReProcessSectorResiduals(int is);
  void ProcessSectorDispersions(int is);
  void ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes);
  void ProcessVoxelDispersions(int np, const float* tg, float *dy, bres_t& voxRes);
@@ -122,7 +125,7 @@ class AliTPCDcalibRes: public TNamed
  void WriteStatHistos();
  void LoadStatHistos();
  void WriteResTree();
- void LoadResTree(const char* resTreeFile);
+ Bool_t LoadResTree(const char* resTreeFile);
 
  void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
 
@@ -131,6 +134,7 @@ class AliTPCDcalibRes: public TNamed
 
  int    CheckResiduals(Bool_t* kill,float &rmsLongMA);
 
+ const char* GetVoxResFileName() const {return Form("%sTree.root",kResOut);}
 
  //------------------------------------ misc. stat. methods
 
@@ -261,7 +265,14 @@ class AliTPCDcalibRes: public TNamed
   Float_t  GetMaxRMSLong()                  const {return fMaxRMSLong;}
   Float_t  GetMaxRejFrac()                  const {return fMaxRejFrac;}
   Bool_t   GetFilterOutliers()              const {return fFilterOutliers;}
-
+  //
+  void     SetChebZSlicePerSide(int n=1)          {fChebZSlicePerSide = n;}
+  void     SetChebPhiSlicePerSector(int n=1)      {fChebPhiSlicePerSector = n;}
+  Int_t    GetChebZSlicePerSide()           const {return fChebZSlicePerSide;}
+  Int_t    GetChebPhiSlicePerSector()       const {return fChebPhiSlicePerSector;}
+  Int_t*   GetNPCheb(int dim)               const {return (Int_t*)fNPCheb[dim];}
+  Float_t* GetChebPrecD()                   const {return (Float_t*)fChebPrecD;}
+  //
   Bool_t   GetFixAlignmentBug()             const {return fFixAlignmentBug;}
   Bool_t   GetSwitchCache()                 const {return fSwitchCache;}
   Bool_t   GetApplyZt2Zc()                  const {return fApplyZt2Zc;}
@@ -272,7 +283,7 @@ class AliTPCDcalibRes: public TNamed
 
   const AliTPCChebCorr* GetChebCorrObject() const {return fChebCorr;}
 
-
+  static AliTPCDcalibRes* Load(const char* fname);
   static void SetUsedInstance(AliTPCDcalibRes* inst) {fgUsedInstance = inst;}
   static AliTPCDcalibRes* GetUsedInstance()          {return fgUsedInstance;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}
@@ -283,7 +294,6 @@ protected:
   Bool_t   fSwitchCache;                            // reset the cache when the reading mode is changing
   Bool_t   fFixAlignmentBug;                        // flag to apply the fix
   Bool_t   fApplyZt2Zc;                             // Apply fix for using Z_track instead of Z_cluster in the data
-
   // --------------------------------Chebyshev object creation 
   Int_t    fChebZSlicePerSide;                      // z partitions per side
   Int_t    fChebPhiSlicePerSector;                  // azimuthal partitions per sector
@@ -291,7 +301,6 @@ protected:
 
   Float_t  fChebPrecD[kResDim];                     // nominal precision per output dimension
   AliTPCChebCorr* fChebCorr;                        // final Chebyshev object
-
   // -------------------------------Task defintion
   Int_t    fRun;     // run number 
   Long64_t fTMin;    // time start for timebin
