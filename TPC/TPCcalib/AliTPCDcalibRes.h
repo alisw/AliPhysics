@@ -122,7 +122,7 @@ class AliTPCDcalibRes: public TNamed
  void WriteStatHistos();
  void LoadStatHistos();
  void WriteResTree();
- void LoadResTree(const char* resTreeFile)
+ void LoadResTree(const char* resTreeFile);
 
  void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
 
