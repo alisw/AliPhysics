@@ -171,7 +171,7 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   // see header file for function documentation
   if (!ctpString) return -EINVAL;
 
-  HLTDebug("Parameter: %s", ctpString);
+  HLTInfo("ECS Parameter: %s", ctpString);
 
   fMask=0;
   fClassIds.Delete();
@@ -584,3 +584,16 @@ void AliHLTCTPData::GetTriggerMaskAll(ULong64_t& low,ULong64_t& high) const
   }
 }
 
+int AliHLTCTPData::GetFiredTriggerClasses(std::string& string) const
+{
+  int nTrgClasses = 0;
+  string.clear();
+  AliHLTTriggerMask_t activeTriggers = fTriggers & fMask;
+  for (int index=0; index<gkNCTPTriggerClasses; index++) {
+    if (!activeTriggers.test(index)) continue;
+    string+=Name(index);
+    string+=" ";
+    nTrgClasses++;
+  }
+  return nTrgClasses;
+}
