@@ -44,6 +44,7 @@
 
 #include <AliLog.h>
 
+
 using namespace TMath;
 
 // General Parameters
@@ -207,10 +208,10 @@ const Double_t AliITSUv2Layer::fgkOBSFrameULegXPos    =  12.9  *fgkmm;
 //const Double_t AliITSUv2Layer::wrpZSpan[3] = {32.0, 90.1, 152.7};		// from CreateITSUv2.C
 // Inner Barrel
 const Double_t AliITSUv2Layer::fgkIBStaveLength       	=   29.0  *fgkcm;
-Double_t AliITSUv2Layer::fgkIBConnOffset        =   0.;
+Double_t AliITSUv2Layer::fgkIBConnOffset        		=   0.0; 
 //const Double_t AliITSUv2Layer::fgkIBConnOffset        =   15.0  *fgkcm;
 //const Double_t AliITSUv2Layer::fgkIBConnOffset        =   fZLength/2; don't work
-const Double_t AliITSUv2Layer::fgkIBConnOffsetExt 		= 	5.0	*fgkmm;
+const Double_t AliITSUv2Layer::fgkIBConnOffsetExt 		= 	5.0	*fgkmm; // -0.1 for avoid the overlaps with stave_struct
 
 // Inner Barrel - End Wheel 
 //const TGeoMedium *AliITSUv2Layer::fkIBEWheelMedium = gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$");
@@ -221,7 +222,8 @@ const Double_t AliITSUv2Layer::fkALC_0334_PlateRadius[3] = {27.9*fgkmm, 35.9*fgk
 const Double_t AliITSUv2Layer::fkALC_0334_PlateThick = 0.6*fgkmm;
 
 const Double_t AliITSUv2Layer::fkALC_0334_ContactDX[3] = {-7.*fgkmm, -9.5*fgkmm, -11.5*fgkmm};
-const Double_t AliITSUv2Layer::fkALC_0334_ContactDY[3] = {24.4*fgkmm, 32.1*fgkmm, 39.6*fgkmm};
+//const Double_t AliITSUv2Layer::fkALC_0334_ContactDY[3] = {24.4*fgkmm, 32.1*fgkmm, 39.6*fgkmm}; 
+const Double_t AliITSUv2Layer::fkALC_0334_ContactDY[3] = {(24.4*fgkmm)+(0.1*fgkmm), (32.1*fgkmm)+(0.1*fgkmm), (39.6*fgkmm)+(0.1*fgkmm)}; 
 
 const Double_t AliITSUv2Layer::fkALC_0334_HoleDia =   2.3*fgkmm;
 const Double_t AliITSUv2Layer::fkALC_0334_HoleFromEdge = 4.0*fgkmm;		// center-of-hole to inside-edge
@@ -236,7 +238,7 @@ const Double_t AliITSUv2Layer::fkThermalConnOffsetZ[3] = {+154.8845*fgkmm, +148.
 const Double_t AliITSUv2Layer::fkThermalConnOffsetY[3] = {+ 18.8926*fgkmm,  +41.4403*fgkmm,  +64.4276*fgkmm};
 
 const Double_t AliITSUv2Layer::fkDCDCOffsetZ[3] = { +98.9550*fgkmm, +94.5536*fgkmm, +87.7700*fgkmm};
-const Double_t AliITSUv2Layer::fkDCDCOffsetY[3] = { +14.4330*fgkmm, +26.4747*fgkmm, +37.6518*fgkmm};
+const Double_t AliITSUv2Layer::fkDCDCOffsetY[3] = { +14.4330*fgkmm, (+26.4747+1.0)*fgkmm, +37.6518*fgkmm};
 
 const Double_t AliITSUv2Layer::fkDCDCRotateBeta[3] = {5.1557, 17.0, 28.0};
 
@@ -281,7 +283,8 @@ AliITSUv2Layer::AliITSUv2Layer():
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
-  fN_SamtecCable_Created(0)
+  fN_SamtecCable_Created(0),
+  fN_SamtecCables_Created(0)  
 {
   //
   // Standard constructor
@@ -311,7 +314,8 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t debug):
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
-  fN_SamtecCable_Created(0)
+  fN_SamtecCable_Created(0),
+  fN_SamtecCables_Created(0)
 {
   //
   // Constructor setting debugging level
@@ -341,7 +345,9 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t lay, Int_t debug):
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
-  fN_SamtecCable_Created(0)
+  fN_SamtecCable_Created(0),
+  fN_SamtecCables_Created(0)
+
 {
   //
   // Constructor setting layer number and debugging level
@@ -371,7 +377,9 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t lay, Bool_t turbo, Int_t debug):
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
-  fN_SamtecCable_Created(0)
+  fN_SamtecCable_Created(0),
+  fN_SamtecCables_Created(0)
+
 {
   //
   // Constructor setting layer number and debugging level
@@ -402,7 +410,9 @@ AliITSUv2Layer::AliITSUv2Layer(const AliITSUv2Layer &s):
   fNHandleCreated(s.fNHandleCreated),
   fN_DCDC_Created(s.fN_DCDC_Created),
   fN_DCCNT_Created(s.fN_DCCNT_Created),
-  fN_SamtecCable_Created(s.fN_SamtecCable_Created)
+  fN_SamtecCable_Created(s.fN_SamtecCable_Created),
+  fN_SamtecCables_Created(s.fN_SamtecCables_Created)
+
 {
   //
   // Copy constructor
@@ -435,10 +445,15 @@ AliITSUv2Layer& AliITSUv2Layer::operator=(const AliITSUv2Layer &s)
   fChipTypeID  = s.fChipTypeID;
   fBuildLevel  = s.fBuildLevel;
   fStaveModel  = s.fStaveModel;
+
+  //
+  // #pnamwong
   fNHandleCreated = s.fNHandleCreated;
   fN_DCDC_Created = s.fN_DCDC_Created;
   fN_DCCNT_Created = s.fN_DCCNT_Created;
   fN_SamtecCable_Created = s.fN_SamtecCable_Created;
+  fN_SamtecCables_Created = s.fN_SamtecCables_Created;
+
   for (int i=kNHLevels;i--;) fHierarchy[i] = s.fHierarchy[i];
   //
   // #pnamwong
@@ -474,6 +489,7 @@ void AliITSUv2Layer::CreateLayer(TGeoVolume *moth){
   char volname[30];
   Double_t xpos, ypos, zpos;
   Double_t alpha;
+
 
 
   // Check if the user set the proper parameters
@@ -5105,7 +5121,8 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 
 	TGeoVolume *layVol = new TGeoVolumeAssembly(TString("Barrel") += fLayerNumber);
 	
-  if (fLayerNumber < fgkNumberOfInnerLayers)
+	  
+	if (fLayerNumber < fgkNumberOfInnerLayers)
 	{
 		
 		// half down barrel
@@ -5114,16 +5131,29 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 			//new TGeoRotation("", fgkBarrelRotateAlpha + 180.0, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));			
 		
 
+		// half barrel
+		layVol->AddNode(CreateInnerBEWheelA3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_PEEKCF30$")), 1,
+			new TGeoCombiTrans(0, 0, fgkIBConnOffset, 
+			new TGeoRotation("", 180, 0, 0)));			
+		layVol->AddNode(CreateInnerBEWheelC3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_PEEKCF30$")), 1,
+			new TGeoCombiTrans(0, 0, -fgkIBConnOffset, 
+			new TGeoRotation("", 180, 0, 0)));			
+		layVol->AddNode(CreateInnerDCDCLayer3(), 1,
+			new TGeoCombiTrans(0, 0, fgkIBConnOffset, 
+			new TGeoRotation("", 180, 0, 0)));			
 
-		layVol->AddNode(CreateInnerBEWheelA3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$")), 1,
+		// another half barrel
+		layVol->AddNode(CreateInnerBEWheelA3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_PEEKCF30$")), 1,
+			new TGeoCombiTrans(0, 0, fgkIBConnOffset, 
+			new TGeoRotation("", 0, 0, 0)));			
+		layVol->AddNode(CreateInnerBEWheelC3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_PEEKCF30$")), 1,
+			new TGeoCombiTrans(0, 0, -fgkIBConnOffset, 
+			new TGeoRotation("", 0, 0, 0)));			
+		layVol->AddNode(CreateInnerDCDCLayer3(), 1,
 			new TGeoCombiTrans(0, 0, fgkIBConnOffset, 
 			new TGeoRotation("", 0, 0, 0)));			
 
-		layVol->AddNode(CreateInnerBEWheelC3(kEWheelConeColor[(int)fLayerNumber], gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$")), 1,
-			new TGeoCombiTrans(0, 0, -fgkIBConnOffset, 
-			new TGeoRotation("", 0, 0, 0)));			
 
-			
 
 		// still not modify
 		//layVol->AddNode(CreateInnerBEWheelC2(kEWheelConeColor[(int)fLayerNumber],gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$")), 1, 
@@ -5215,8 +5245,6 @@ void AliITSUv2Layer::CreateBarrelLayer(TGeoVolume* moth){
 			new TGeoCombiTrans(fgkOuterBarrelOffsetX, fgkOuterBarrelOffsetY, fgkOuterBarrelOffsetZ, 
 			new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 	  */
-		if (fLayerNumber==6)
-			layVol->AddNode(CreateOuterBCShell(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 
 	}
 	
@@ -5233,13 +5261,27 @@ void AliITSUv2Layer::CreateBarrel(TGeoVolume* moth){
 
 	
 	// Supporter of inner barrel
-	moth->AddNode(CreateInnerBSupporterC(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ + (40.0*fgkcm)/2, new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
-	moth->AddNode(CreateInnerBSupporterA(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ - (13.0*fgkcm), new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateInnerBSupporterC(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ + (40.0*fgkcm)/2, 
+		new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateInnerBSupporterC(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ + (40.0*fgkcm)/2, 
+		new TGeoRotation("", fgkBarrelRotateAlpha + 180, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+
+	moth->AddNode(CreateInnerBSupporterA(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ - (13.0*fgkcm), 
+		new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateInnerBSupporterA(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ - (13.0*fgkcm), 
+		new TGeoRotation("", fgkBarrelRotateAlpha + 180, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 	
 	// Service Barrel
 	moth->AddNode(CreateInnerBServiceB2(), 1,
-			new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ +kHandleOffsetASide, 
-			new TGeoRotation("", fgkBarrelRotateAlpha + 180.0, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ +kHandleOffsetASide, 
+		new TGeoRotation("", fgkBarrelRotateAlpha + 180.0, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateInnerBServiceB2(), 1,
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ +kHandleOffsetASide, 
+		new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 	// moth-> CreateOutterServiceB() NOT YET DONE.
 
 	// -----------------------------------------------------------------
@@ -5247,10 +5289,19 @@ void AliITSUv2Layer::CreateBarrel(TGeoVolume* moth){
 	moth->AddNode(CreateInnerBCShell(), 1, 
 		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, 
 		new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateInnerBCShell(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, 
+		new TGeoRotation("", fgkBarrelRotateAlpha + 180, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 	
-	moth->AddNode(CreateOuterBCShell(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateOuterBCShell(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, 
+		new TGeoRotation("", fgkBarrelRotateAlpha, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
+	moth->AddNode(CreateOuterBCShell(), 1, 
+		new TGeoCombiTrans(fgkInnerBarrelOffsetX, fgkInnerBarrelOffsetY, fgkInnerBarrelOffsetZ, 
+		new TGeoRotation("", fgkBarrelRotateAlpha + 180, fgkBarrelRotateBetha, fgkBarrelRotateGamma)));
 
 	// -----------------------------------------------------------------
+	// ----- NOT USE ---- THIS IS A PROTOTYPE OF DCDC FOR TESTING ------
 	// DC set
 	// moth->AddNode(CreateDCSet(), 1, new TGeoCombiTrans(fgkInnerBarrelOffsetX*fgkmm, fgkInnerBarrelOffsetY-100*fgkmm, fgkInnerBarrelOffsetZ-690*fgkmm, new TGeoRotation("", fgkBarrelRotateAlpha+180, fgkBarrelRotateBetha+180+15, fgkBarrelRotateGamma)));
 
@@ -5373,7 +5424,7 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBEWheelA3(const Color_t color, const TGeo
 	TGeoVolume* vol;
 	TGeoShape* shp;
 
-	vol = Create_ALC_0336_xxA_ins(med);					// Plate inside wrap volume
+	vol = Create_ALC_0336_xxA_ins(med);					// Endwheel, inside the wrap volume
 	vol->SetFillColor(color);
 	vol->SetLineColor(color);
 	ewhVol->AddNode(vol, 1,	new TGeoCombiTrans(0, 0, -fkALC_0334_HoleFromEdge, new TGeoRotation("", 0, 0, 0)));			
@@ -5384,23 +5435,41 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBEWheelA3(const Color_t color, const TGeo
 		vol = Create_ALC_0334_xxA(med);
 		vol->SetFillColor(color);
 		vol->SetLineColor(color);
-		ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, 
-			new TGeoRotation("", 0, 0, -90. + (fkALC_0334_RotateAngle[fLayerNumber]*i) + fkALC_0334_RotateOffset[fLayerNumber])));			
-			
+		ewhVol->AddNode(vol, 1, 
+			new TGeoCombiTrans(0, 0, 0, 
+			new TGeoRotation("", 0, 0, -90. + (fkALC_0334_RotateAngle[fLayerNumber]*i) + fkALC_0334_RotateOffset[fLayerNumber])));						
+	}		
 
-		ewhVol->AddNode(CreateInnerDCCNT3(med), 1,		// Outer Connector, outside wrap volume
+	ewhVol->AddNode(Create_ALC_0336_xxA_ous(color, med), 1, // Endwheel, outside the wrap volume
+		new TGeoCombiTrans(0,0,0,
+		new TGeoRotation("", 0,0,0)));
+
+	//ewhVol->GetShape()->ComputeBBox(); //RS: enfore recompting of BBox
+	
+	return ewhVol;
+}
+
+TGeoVolume* AliITSUv2Layer::CreateInnerDCDCLayer3(const TGeoManager *mgr){
+	// DCDC Set of half barrel
+	//TGeoVolume *vALIC = gGeoManager->GetVolume("ALIC");
+	
+	TGeoVolume* ewhVol = new TGeoVolumeAssembly(TString("DCDCSET") += fLayerNumber);
+
+	TGeoVolume* vol;
+	TGeoShape* shp;
+
+	for (int i=0; i<fNStaves/2; i++)					// Handles
+	{
+		ewhVol->AddNode(CreateInnerDCCNT3(), 1,
 			new TGeoCombiTrans(0, 0, +fkThermalConnOffsetZ[fLayerNumber], 
 			new TGeoRotation("", 0, 0, -90. + (fkALC_0334_RotateAngle[fLayerNumber]*i) + fkALC_0334_RotateOffset[fLayerNumber])));			
 
-		ewhVol->AddNode(CreateInnerDCDC3(gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$")), 1,
+		ewhVol->AddNode(CreateInnerDCDC3(), 1,
 			new TGeoCombiTrans(0, 0, +fkDCDCOffsetZ[fLayerNumber], 
 			new TGeoRotation("", 0, 0, -90. + (fkALC_0334_RotateAngle[fLayerNumber]*i) + fkALC_0334_RotateOffset[fLayerNumber])));			
-			
+
 	}		
 
-	ewhVol->AddNode(Create_ALC_0336_xxA_ous(color, med), 1, // Endwheel, outside wrap volume
-		new TGeoCombiTrans(0,0,0,
-		new TGeoRotation("", 0,0,0)));
 
 
 	
@@ -5504,14 +5573,13 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBEWheelC3(const Color_t color, const TGeo
 		vol->SetLineColor(color);
 		ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, 
 			new TGeoRotation("", 0, 0, -90. + (fkALC_0334_RotateAngle[fLayerNumber]*i) + fkALC_0334_RotateOffset[fLayerNumber])));			
-
-
 	}		
 
 	ewhVol->AddNode(Create_ALC_0337_xxC_ous(color, med), 1, // Endwheel, outside wrap volume
 		new TGeoCombiTrans(0, 0, 0,
 		new TGeoRotation("", 0,0,0)));
 
+	//ewhVol->GetShape()->ComputeBBox(); //RS: enfore recompting of BBox
 
 	return ewhVol;
 }
@@ -7162,21 +7230,22 @@ TGeoVolume* AliITSUv2Layer::Create_ALC_0336_xxA_ous(const Int_t color, const TGe
 		vol->SetLineColor(color);
 	ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, new TGeoRotation("", 0, 0, 0)));
 	
+	// -- OVERLAPS WITH STAVE_STRUCT --
 	shp = new TGeoPcon(TString("WheelConeLA")+=fLayerNumber, 0, 180, kNumOfConeLSection);
 	for (int i=0; i<kNumOfConeLSection; i++)
 		((TGeoPcon*)shp)->DefineSection(i, kConeLArray[(int)fLayerNumber][i][0], kConeLArray[(int)fLayerNumber][i][1], kConeLArray[(int)fLayerNumber][i][2]);	
 	vol = new TGeoVolume(TString("WheelConeLA")+=fLayerNumber, shp, med);
-		vol->SetFillColor(color);
-		vol->SetLineColor(color);
+	vol->SetFillColor(color);	vol->SetLineColor(color);
 	ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, new TGeoRotation("", 0, 0, 0)));
 
-	shp = new TGeoPcon(TString("WheelConePPanelA")+=fLayerNumber, 0, 180, kNumOfConePPanelSection);
-	for (int i=0; i<kNumOfConePPanelSection; i++)
-		((TGeoPcon*)shp)->DefineSection(i, kConePPanelArray[(int)fLayerNumber][i][0], kConePPanelArray[(int)fLayerNumber][i][1], kConePPanelArray[(int)fLayerNumber][i][2]);	
-	vol = new TGeoVolume(TString("WheelConePPanelA")+=fLayerNumber, shp, med);
-		vol->SetFillColor(color);
-		vol->SetLineColor(color);
-	ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, new TGeoRotation("", 0, 0, 0)));
+	// Patch Panel
+	//shp = new TGeoPcon(TString("WheelConePPanelA")+=fLayerNumber, 0, 180, kNumOfConePPanelSection);
+	//for (int i=0; i<kNumOfConePPanelSection; i++)
+		//((TGeoPcon*)shp)->DefineSection(i, kConePPanelArray[(int)fLayerNumber][i][0], kConePPanelArray[(int)fLayerNumber][i][1], kConePPanelArray[(int)fLayerNumber][i][2]);	
+	//vol = new TGeoVolume(TString("WheelConePPanelA")+=fLayerNumber, shp, med);
+		//vol->SetFillColor(color);
+		//vol->SetLineColor(color);
+	//ewhVol->AddNode(vol, 1, new TGeoCombiTrans(0, 0, 0, new TGeoRotation("", 0, 0, 0)));
 	
 	//if (fLayerNumber==0)
 	//{
@@ -8154,7 +8223,7 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBSupporterA(const TGeoManager *mgr){
 	const Double_t kThick2 = 0.4*fgkmm;
 	const Double_t kLength2 = 3.0*fgkmm;
 
-	TGeoMedium *medium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+	TGeoMedium *medium = mgr->GetMedium("ITS_PEEKCF30$");
 
 	TGeoVolume* suppVol = new TGeoVolumeAssembly("InnerBSupporterA");
 		
@@ -8179,7 +8248,7 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBSupporterC(const TGeoManager *mgr){
 //
 //
 //
-	TGeoMedium *medium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+	TGeoMedium *medium = mgr->GetMedium("ITS_PEEKCF30$");
 
 	const Double_t kThick  = 1.00 *fgkmm;
 	const Double_t kLength = 10.0 *fgkmm;
@@ -8241,8 +8310,8 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBCShell(const TGeoManager *mgr){
 	const Double_t kSkinThick = 0.1*fgkmm;
 	const Double_t kCoreThick = 1.8*fgkmm;
 
-	TGeoMedium* skinMedium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
-	TGeoMedium* coreMedium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+	TGeoMedium* skinMedium = mgr->GetMedium("ITS_PEEKCF30$");
+	TGeoMedium* coreMedium = mgr->GetMedium("ITS_CarbonFoam$");
 
 	TGeoVolume* shellVol = new TGeoVolumeAssembly("InnerBCShell");
 	TGeoCombiTrans* combTrans = new TGeoCombiTrans( 0, 0, kLength/2 + (400.0*fgkmm - kLength)/2, new TGeoRotation("",0,0,180.0));
@@ -8283,8 +8352,8 @@ TGeoVolume* AliITSUv2Layer::CreateOuterBCShell(const TGeoManager *mgr){
 	const Double_t kSkinThick = 0.6*fgkmm;
 	const Double_t kCoreThick = 8.8*fgkmm;
 
-	TGeoMedium* skinMedium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
-	TGeoMedium* coreMedium = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
+	TGeoMedium* skinMedium = mgr->GetMedium("ITS_PEEKCF30$");
+	TGeoMedium* coreMedium = mgr->GetMedium("ITS_CarbonFoam$");
 
 	TGeoVolume* shellVol = new TGeoVolumeAssembly("OuterBCShell");
 	TGeoCombiTrans* combTrans = new TGeoCombiTrans( 0, 0, kLength/2, new TGeoRotation("",0,0,180.0));
@@ -8850,8 +8919,8 @@ TGeoVolume* AliITSUv2Layer::CreateInnerBServiceB2(const TGeoManager *mgr){
 
 	TGeoVolume* ewhVol = new TGeoVolumeAssembly("InnerBServiceB");
 	
-	TGeoMedium *MediumWall = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");	
-	TGeoMedium *MediumFoam = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");	
+	TGeoMedium *MediumWall = mgr->GetMedium("ITS_PEEKCF30$");	
+	TGeoMedium *MediumFoam = mgr->GetMedium("ITS_CarbonFoam$");	
 		
 	TGeoShape* shp;
 	TGeoVolume* vol;
@@ -9233,152 +9302,133 @@ TGeoVolume* AliITSUv2Layer::CreateDCBox1(const char *nid, const TGeoManager *mgr
 
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv2Layer::CreateInnerDCCNT3(const TGeoMedium* med){
+TGeoVolume* AliITSUv2Layer::CreateInnerDCCNT3(const TGeoManager *mgr){
 		
 	TString strName = (TString("DCCNT")+=fLayerNumber) + (TString("_")+=(int)fN_DCCNT_Created);
-	TGeoVolume* setVol = new TGeoVolumeAssembly(strName);
+	TString strObjName, strObjTran, strObjTran2;
+	
+	TGeoCombiTrans *cbtObj;	TGeoVolume* setVol = new TGeoVolumeAssembly(strName);
 	TGeoVolume* vol;
 
+	TString strVol = TString("(");
 
 	// -- Cooling Plate --
 	const Double_t kCPlateWidth = 15.0*fgkmm;
 	const Double_t kCPlateThick = 3.0*fgkmm;
 	const Double_t kCPlateLength = 21.22*fgkmm;
-	vol = new TGeoVolume(strName+TString("_CPlate"), new TGeoBBox(kCPlateWidth/2, kCPlateThick/2, kCPlateLength/2), med);
-	vol->SetFillColor(5);
-	vol->SetLineColor(5);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kCPlateLength/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +8.15*fgkmm, +kCPlateLength/2 /*+ 0.26*fgkmm*/, new TGeoRotation("", 0, 0, 0)));
-	
-	// -- Cooling Plate Tail --
-	const Double_t kCPlateTailWidth = 7.0*fgkmm;
-	const Double_t kCPlateTailThick = 3.0*fgkmm;
-	const Double_t kCPlateTailLength = 5.0*fgkmm;
-	vol = new TGeoVolume(strName+TString("_CPlateTail"), new TGeoBBox(kCPlateTailWidth/2, kCPlateTailThick/2, kCPlateTailLength/2), med);
-	vol->SetFillColor(5);
-	vol->SetLineColor(5);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kCPlateLength+kCPlateTailLength/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +8.15*fgkmm, +kCPlateLength + kCPlateTailLength/2, new TGeoRotation("", 0, 0, 0)));
 
+	vol = new TGeoVolume(strName+TString("_CPlate0Cnt"), new TGeoBBox(kCPlateWidth/2, kCPlateThick/2, kCPlateLength/2), gGeoManager->GetMedium("ITS_ALUMINUM$"));
+	vol->SetFillColor(5);	vol->SetLineColor(5);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kCPlateLength/2, new TGeoRotation("", 0, 0, 0)));
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +8.15*fgkmm, +kCPlateLength/2 /*+ 0.26*fgkmm*/, new TGeoRotation("", 0, 0, 0)));
+
+	strObjName = strName+TString("_CPlateCnt");
+	strObjTran = strObjName+TString("_tr");
+	new TGeoBBox(strObjName, kCPlateWidth/2, kCPlateThick/2, kCPlateLength/2);	
+	(new TGeoCombiTrans(strObjTran, 0, 0, +kCPlateLength/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += strObjName;	strVol += ":";	strVol += strObjTran;	
+	
 	// -- Cooling Pipe Hole  --	
 	const Double_t kCPipeHoleRadius = 1.0*fgkmm;
 	const Double_t kCPipeHoleExt = 2.0*fgkmm;
 	const Double_t kCPipeHoleLength = kCPlateLength + kCPipeHoleExt;
-	vol = new TGeoVolume(strName+TString("_CPipeHole"), new TGeoTube(0, kCPipeHoleRadius, kCPipeHoleLength/2), med);
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(+5.0*fgkmm, 0, +kCPipeHoleLength/2-kCPipeHoleExt/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(-5.0*fgkmm, 0, +kCPipeHoleLength/2-kCPipeHoleExt/2, new TGeoRotation("", 0, 0, 0)));
-
+	strObjName = strName+TString("_CPipeHoleCnt");
+	strObjTran = strObjName+TString("_tr");
+	strObjTran2 = strObjName+TString("_tr2");
+	new TGeoTube(strObjName, 0, kCPipeHoleRadius, kCPipeHoleLength/2);
+	(new TGeoCombiTrans(strObjTran, +5.0*fgkmm, 0, +kCPipeHoleLength/2-kCPipeHoleExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran;
+	(new TGeoCombiTrans(strObjTran2,-5.0*fgkmm, 0, +kCPipeHoleLength/2-kCPipeHoleExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran2;
+	
 	// -- Cooling Pipe Nook --
 	const Double_t kCPipeNookWidth = 2.5*fgkmm;
 	const Double_t kCPipeNookThick = 1.5*fgkmm;
 	const Double_t kCPipeNookExt = 2.0*fgkmm;
 	const Double_t kCPipeNookLength = kCPlateLength + kCPipeNookExt;
-	vol = new TGeoVolume(strName+TString("_CPipeNook"), new TGeoBBox(kCPipeNookWidth/2, kCPipeNookThick/2, kCPipeNookLength/2), med);
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(+kCPlateWidth/2 -kCPipeNookWidth/2 +0.5*fgkmm, 0, +kCPipeNookLength/2-kCPipeNookExt/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(-kCPlateWidth/2 +kCPipeNookWidth/2 -0.5*fgkmm, 0, +kCPipeNookLength/2-kCPipeNookExt/2, new TGeoRotation("", 0, 0, 0)));
+	strObjName = strName+TString("_CPipeNookCnt");
+	strObjTran = strObjName+TString("_tr");
+	new TGeoBBox(strObjName, kCPipeNookWidth/2, kCPipeNookThick/2, kCPipeNookLength/2);
+	(new TGeoCombiTrans(strObjTran, +kCPlateWidth/2 -kCPipeNookWidth/2 +0.5*fgkmm, 0, +kCPipeNookLength/2-kCPipeNookExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran;
+	strObjTran2 = strObjName+TString("_tr2");
+	(new TGeoCombiTrans(strObjTran2, -kCPlateWidth/2 +kCPipeNookWidth/2 -0.5*fgkmm, 0, +kCPipeNookLength/2-kCPipeNookExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran2;
 
-	// -- FPGA Connector Head --
-	const Double_t kFPGACNTHeadWidth = 8.0*fgkmm;
-	const Double_t kFPGACNTHeadThick = 0.44*fgkmm;
-	const Double_t kFPGACNTHeadLength = 3.5*fgkmm;
-	vol = new TGeoVolume(strName+TString("_FPGACNT"), new TGeoBBox(kFPGACNTHeadWidth/2, kFPGACNTHeadThick/2, kFPGACNTHeadLength/2), med);
-	vol->SetFillColor(4);
-	vol->SetLineColor(4);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +3.18*fgkmm, +kFPGACNTHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +11.42*fgkmm, +kFPGACNTHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -3.18*fgkmm, +kFPGACNTHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
+	strVol += ")";
+	vol = new TGeoVolume(strName+TString("_CoolingPlateCnt"), new TGeoCompositeShape("_", strVol), gGeoManager->GetMedium("ITS_ALUMINUM$"));
+	vol->SetFillColor(5);	vol->SetLineColor(5);
+	setVol->AddNode(vol, 0, 0);
+
+	// -- Cooling Pipes
+	const Double_t kCPipeThick = 0.4*fgkmm;
+	const Double_t kCPipeInnerRadius = 1.2*fgkmm/2;
+	const Double_t kCPipeCntLength = 51.24*fgkmm;
+	vol = new TGeoVolume(strName+TString("_CPipeCntRSide"), new TGeoTube(kCPipeInnerRadius, kCPipeInnerRadius+kCPipeThick, kCPipeCntLength/2), gGeoManager->GetMedium("ITS_PUR$"));
+	vol->SetFillColor(4);	vol->SetLineColor(4);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(+5.0*fgkmm, 0, +kCPipeCntLength/2 -(2.5*fgkmm), new TGeoRotation("", 0, 0, 0)));
+	vol = new TGeoVolume(strName+TString("_CPipeCntLSide"), new TGeoTube(kCPipeInnerRadius, kCPipeInnerRadius+kCPipeThick, kCPipeCntLength/2), gGeoManager->GetMedium("ITS_PUR$"));
+	vol->SetFillColor(2);	vol->SetLineColor(2);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(-5.0*fgkmm, 0, +kCPipeCntLength/2 -(2.5*fgkmm), new TGeoRotation("", 0, 0, 0)));
+
+	
+	// -- Cooling Plate Tail --
+	const Double_t kCPlateTailWidth = 7.0*fgkmm;
+	const Double_t kCPlateTailThick = 3.0*fgkmm;
+	const Double_t kCPlateTailLength = 5.0*fgkmm;
+	vol = new TGeoVolume(strName+TString("_CPlateCntTail"), new TGeoBBox(kCPlateTailWidth/2, kCPlateTailThick/2, kCPlateTailLength/2), gGeoManager->GetMedium("ITS_ALUMINUM$"));
+	vol->SetFillColor(5);	vol->SetLineColor(5);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kCPlateLength+kCPlateTailLength/2, new TGeoRotation("", 0, 0, 0)));
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +8.15*fgkmm, +kCPlateLength + kCPlateTailLength/2, new TGeoRotation("", 0, 0, 0)));
+
+	// -- FMC cable head --
+	//const Double_t kFmcCableHeadWidth = 8.0*fgkmm;
+	//const Double_t kFmcCableHeadThick = 0.44*fgkmm;
+	//const Double_t kFmcCableHeadLength = 3.5*fgkmm;
+	//vol = new TGeoVolume(strName+TString("_FmcCableHead"), new TGeoBBox(kFmcCableHeadWidth/2, kFmcCableHeadThick/2, kFmcCableHeadLength/2), gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$"));
+	//vol->SetFillColor(8);	vol->SetLineColor(8);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +3.18*fgkmm, +kFmcCableHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +11.42*fgkmm, +kFmcCableHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -3.18*fgkmm, +kFmcCableHeadLength/2+5.88*fgkmm, new TGeoRotation("", 0, 0, 0)));
+
+	// -- FMC cable --
+	//const Double_t kFmcCableWidth = 15.0*fgkmm;
+	//const Double_t kFmcCableThick = 0.44*fgkmm;
+	//const Double_t kFmcCableLength = 17.83*fgkmm;
+	//vol = new TGeoVolume(strName+TString("_FmcCable"), new TGeoBBox(kFmcCableWidth/2, kFmcCableThick/2, kFmcCableLength/2), gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$"));
+	//vol->SetFillColor(8);	vol->SetLineColor(8);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +3.18*fgkmm, +kFmcCableLength/2+5.88*fgkmm+kFmcCableHeadLength, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +11.42*fgkmm, +kFmcCableLength/2+5.88*fgkmm+kFmcCableHeadLength, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -3.18*fgkmm, +kFmcCableLength/2+5.88*fgkmm+kFmcCableHeadLength, new TGeoRotation("", 0, 0, 0)));
 	
 	// -- FPGA --
-	const Double_t kFPGAWidth = 16.0*fgkmm;
-	const Double_t kFPGAThick = 0.1*fgkmm;
-	const Double_t kFPGALength = 10.00*fgkmm;
-	vol = new TGeoVolume(strName+TString("_FPGA"), new TGeoBBox(kFPGAWidth/2, kFPGAThick/2, kFPGALength/2), med);
-	vol->SetFillColor(41);
-	vol->SetLineColor(41);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +1.55*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +9.70*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -1.55*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
+	//const Double_t kFPGAWidth = 16.0*fgkmm;
+	//const Double_t kFPGAThick = 0.1*fgkmm;
+	//const Double_t kFPGALength = 10.00*fgkmm;
+	//vol = new TGeoVolume(strName+TString("_FPGA"), new TGeoBBox(kFPGAWidth/2, kFPGAThick/2, kFPGALength/2), gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$"));
+	//vol->SetFillColor(43);	vol->SetLineColor(43);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +1.55*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +9.70*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -1.55*fgkmm, +kFPGALength/2, new TGeoRotation("", 0, 0, 0)));
 	
-	// -- FPGA Connector --
-	const Double_t kFPGACNTWidth = 15.0*fgkmm;
-	const Double_t kFPGACNTThick = 0.44*fgkmm;
-	const Double_t kFPGACNTLength = 17.83*fgkmm;
-	vol = new TGeoVolume(strName+TString("_FPGACNT"), new TGeoBBox(kFPGACNTWidth/2, kFPGACNTThick/2, kFPGACNTLength/2), med);
-	vol->SetFillColor(4);
-	vol->SetLineColor(4);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  +3.18*fgkmm, +kFPGACNTLength/2+5.88*fgkmm+kFPGACNTHeadLength, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +11.42*fgkmm, +kFPGACNTLength/2+5.88*fgkmm+kFPGACNTHeadLength, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0,  -3.18*fgkmm, +kFPGACNTLength/2+5.88*fgkmm+kFPGACNTHeadLength, new TGeoRotation("", 0, 0, 0)));
 	
-	// -- TBC Cable  --	
-	const Double_t kTBCCableRadius = 1.0*fgkmm;
-	const Double_t kTBCCableLength = 25.0*fgkmm;
-	vol = new TGeoVolume(strName+TString("_TBCCable"), new TGeoTube(0, kTBCCableRadius, kTBCCableLength/2), med);
-	vol->SetFillColor(6);
-	vol->SetLineColor(6);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +4.5*fgkmm, +kTBCCableLength/2+24.38*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -4.5*fgkmm, +kTBCCableLength/2+24.38*fgkmm, new TGeoRotation("", 0, 0, 0)));
+	// -- TBC Wire  --	
+	//const Double_t kTBCWireRadius = 1.0*fgkmm;
+	//const Double_t kTBCWireLength = 25.0*fgkmm;
+	//vol = new TGeoVolume(strName+TString("_TBCWire"), new TGeoTube(0, kTBCWireRadius, kTBCWireLength/2), gGeoManager->GetMedium("ITS_KAPTON(POLYCH2)$"));
+	//vol->SetFillColor(6);	vol->SetLineColor(6);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +4.5*fgkmm, +kTBCWireLength/2+24.38*fgkmm, new TGeoRotation("", 0, 0, 0)));
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -4.5*fgkmm, +kTBCWireLength/2+24.38*fgkmm, new TGeoRotation("", 0, 0, 0)));
 
-	// -- Samtec Cable --
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 4.12*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 2.47*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 0.82*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-0.83*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-2.48*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-4.13*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	// -- Samtec Cables --
+	setVol->AddNode(CreateSamtecCables(), 0, new TGeoCombiTrans( 0,  0,  0, new TGeoRotation("",0,0,0)));
 
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 4.12*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 2.47*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans( 0.82*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-0.83*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-2.48*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	setVol->AddNode(CreateSamtecCable(med), 0, new TGeoCombiTrans(-4.13*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
-	
-	// -- DCDC --
-	//const Double_t kDCDCWidth = 14.0*fgkmm;
-	//const Double_t kDCDCThick = 8.0*fgkmm;
-	//const Double_t kDCDCLength = 18.50*fgkmm;
-	//vol = new TGeoVolume(strName+TString("_DCDCUp"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), med);
-	//vol->SetFillColor(6);
-	//vol->SetLineColor(6);
-	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick+kDCDCThick/2, +kDCDCLength/2, new TGeoRotation("", 0, 0, 0)));
-	//vol = new TGeoVolume(strName+TString("_DCDCDn"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), med);
-	//vol->SetFillColor(6);
-	//vol->SetLineColor(6);
-	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCThick/2, +kDCDCLength/2+18.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
-
-	// -- DCDCx --
-	//const Double_t kDCDCxWidth = 16.0*fgkmm;
-	//const Double_t kDCDCxThick = 3.0*fgkmm;
-	//const Double_t kDCDCxLength = 9.0*fgkmm;
-	//vol = new TGeoVolume(strName+TString("_DCDCxUp"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), med);
-	//vol->SetFillColor(6);
-	//vol->SetLineColor(6);
-	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick+kDCDCxThick/2, +kDCDCxLength/2-9.0*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	//vol = new TGeoVolume(strName+TString("_DCDCxDn"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), med);
-	//vol->SetFillColor(6);
-	//vol->SetLineColor(6);
-	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCxThick/2, +kDCDCxLength/2+9.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
-
-	
-	// -- FPGA Connector
-	//const Double_t kCntOffsetZ = +kPipeLength/2 -7.0*fgkmm;
-	//const Double_t kCntOffsetY = 8.4*fgkmm +kWidthBtwnUDPlates/2 +kUpPlateThick -0.5*fgkmm; // 8.4 =DCBox, 0.5 = obj thick
-	//const Double_t kCntOffsetZ2 = 61.0*fgkmm;
-	//setVol->AddNode(CreateFPGAConnector("1"), 1, new TGeoTranslation(0, +kCntOffsetY, +kCntOffsetZ));
-	//setVol->AddNode(CreateFPGAConnector("2"), 1, new TGeoCombiTrans(0, +kCntOffsetY, -kCntOffsetZ2 +2*fgkmm, new TGeoRotation("",0,12,0)));
-	//setVol->AddNode(CreateFPGAConnector("3"), 1, new TGeoCombiTrans(0, +kCntOffsetY/2, -kCntOffsetZ2, new TGeoRotation("",0,12,0)));
-	
-	//TGeoVolume* newOffsetVol = new TGeoVolumeAssembly(TString("DCPS")+=(int)fLayerNumber);
-	//newOffsetVol->AddNode(setVol, 1, new TGeoTranslation(0, 0, 0));
 	
 	// This will offset only X-axis and Y-axis. the Z-axis is to be offset outside the function.
 	TGeoVolume* ofsVol = new TGeoVolumeAssembly(strName);
-	ofsVol->AddNode(setVol, 1, new TGeoCombiTrans(fkALC_0334_ContactDX[fLayerNumber], fkALC_0334_ContactDY[fLayerNumber]+fkThermalConnOffsetY[fLayerNumber], 0, new TGeoRotation("", 180.0, 0, 0)));
+	ofsVol->AddNode(setVol, 1, 
+		new TGeoCombiTrans(fkALC_0334_ContactDX[fLayerNumber], fkALC_0334_ContactDY[fLayerNumber]+fkThermalConnOffsetY[fLayerNumber], 0, 
+		new TGeoRotation("", 180.0, 0, 0)));
 	
 	fN_DCCNT_Created++;
 	
@@ -9388,83 +9438,116 @@ TGeoVolume* AliITSUv2Layer::CreateInnerDCCNT3(const TGeoMedium* med){
 
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv2Layer::CreateInnerDCDC3(const TGeoMedium* med){
-
+TGeoVolume* AliITSUv2Layer::CreateInnerDCDC3(const TGeoManager *mgr){
 	
 	TString strName = (TString("DCDC")+=fLayerNumber) + (TString("_")+=(int)fN_DCDC_Created);
+	TString strObjName, strObjTran;
+	
+	TGeoCombiTrans *cbtObj;
 	TGeoVolume* setVol = new TGeoVolumeAssembly(strName);
 	TGeoVolume* vol;
 
+
+	TString strVol = TString("(");
 
 	// -- Cooling Plate --
 	const Double_t kCPlateWidth = 16.0*fgkmm;
 	const Double_t kCPlateThick = 3.0*fgkmm;
 	const Double_t kCPlateLength = 36.75*fgkmm;
-	vol = new TGeoVolume(strName+TString("_CoolingPlate"), new TGeoBBox(kCPlateWidth/2, kCPlateThick/2, kCPlateLength/2), med);
-	vol->SetFillColor(11);
-	vol->SetLineColor(11);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kCPlateLength/2, new TGeoRotation("", 0, 0, 0)));
+	strObjName = strName+TString("_CPlate");
+	strObjTran = strObjName+TString("_tr");
+	new TGeoBBox(strObjName ,kCPlateWidth/2, kCPlateThick/2, kCPlateLength/2);	
+	(new TGeoCombiTrans(strObjTran, 0, 0, +kCPlateLength/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += strObjName;	strVol += ":";	strVol += strObjTran;
 
+	// -- Cooling Pipe Hole R-Side (Cold Pipe) --		
+	const Double_t kCPipeHoleRRadius = 1.0*fgkmm;
+	const Double_t kCPipeHoleRExt = 2.0*fgkmm;
+	const Double_t kCPipeHoleRLength = kCPlateLength + kCPipeHoleRExt;
+	strObjName = strName+TString("_CPipeHoleR");
+	strObjTran = strObjName+TString("_tr");
+	new TGeoTube(strObjName, 0, kCPipeHoleRRadius, kCPipeHoleRLength/2);
+	(new TGeoCombiTrans(strObjTran, +6.5*fgkmm, 0, +kCPipeHoleRLength/2-kCPipeHoleRExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran;
+
+	// -- Cooling Pipe Nook R-Side (Cold Pipe) --
+	const Double_t kCPipeNookRWidth = 3.0*fgkmm;
+	const Double_t kCPipeNookRThick = 1.8*fgkmm;
+	const Double_t kCPipeNookRExt = 2.0*fgkmm;
+	const Double_t kCPipeNookRLength = kCPlateLength + kCPipeNookRExt;
+	strObjName = strName+TString("_CPipeNook");
+	strObjTran = strObjName+TString("_tr");
+	new TGeoBBox(strObjName, kCPipeNookRWidth/2, kCPipeNookRThick/2, kCPipeNookRLength/2);
+	(new TGeoCombiTrans(strObjTran, +kCPlateWidth/2, 0, +kCPipeNookRLength/2-kCPipeNookRExt/2, new TGeoRotation("", 0, 0, 0)))->RegisterYourself();
+	strVol += " - ";	strVol += strObjName;	strVol += ":";	strVol += strObjTran;
+
+	// -- Combine: Cooling Plate - ( Pipe Hole + Pipe Nook ) -- (Cold Pipe)
+	strVol += ")";
+	vol = new TGeoVolume(strName+TString("_CoolingPlate"), new TGeoCompositeShape("_", strVol), gGeoManager->GetMedium("ITS_ALUMINUM$"));
+	vol->SetFillColor(11);	vol->SetLineColor(11);
+	setVol->AddNode(vol, 0, 0);
+	
+	// -- Cooling Pipe R-Side (Cold Pipe) --
+	const Double_t kCPipeThick = 0.4*fgkmm;
+	const Double_t kCPipeInnerRadius = 1.2*fgkmm/2;
+	const Double_t kCPipePlateRSideLength = 50.85*fgkmm + (11.0*fgkmm); // The same length as kPCBPlateUpLength - 21.0, 11.0 is just an extend.
+	vol = new TGeoVolume(strName+TString("_CPipeRSide"), new TGeoTube(kCPipeInnerRadius, kCPipeInnerRadius+kCPipeThick, kCPipePlateRSideLength/2), gGeoManager->GetMedium("ITS_PUR$"));
+	vol->SetFillColor(4);	vol->SetLineColor(4);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(+6.5*fgkmm, 0, +kCPipePlateRSideLength/2 - (11.0*fgkmm), new TGeoRotation("", 0, 0, 0)));
+
+	// -- Cooling Pipe L-Side (Hot Pipe) -- Head
+	const Double_t kCPipePlateLSideHeadLength = 10.0*fgkmm; 
+	vol = new TGeoVolume(strName+TString("_CPipeLSideHead"), new TGeoTube(kCPipeInnerRadius, kCPipeInnerRadius+kCPipeThick, kCPipePlateLSideHeadLength/2), gGeoManager->GetMedium("ITS_PUR$"));
+	vol->SetFillColor(2);	vol->SetLineColor(2);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(-6.5*fgkmm, 0, +kCPipePlateLSideHeadLength/2 - (11.0*fgkmm), new TGeoRotation("", 0, 0, 0)));
+
+	// -- Cooling Pipe L-Side (Hot Pipe) -- Tail
+	const Double_t kCPipePlateLSideTailLength = 13.10*fgkmm; // 50.85 - kCPlateLength - 1.0(offset)
+	vol = new TGeoVolume(strName+TString("_CPipeLSideTail"), new TGeoTube(kCPipeInnerRadius, kCPipeInnerRadius+kCPipeThick, kCPipePlateLSideTailLength/2), gGeoManager->GetMedium("ITS_PUR$"));
+	vol->SetFillColor(2);	vol->SetLineColor(2);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(-6.5*fgkmm, 0, +kCPipePlateLSideTailLength/2 + kCPlateLength + (1.0*fgkmm), new TGeoRotation("", 0, 0, 0)));
+		
+		
 	// -- PCB Plate --
 	const Double_t kPCBPlateWidth = 16.0*fgkmm;
 	const Double_t kPCBPlateThick = 0.1*fgkmm;
 	const Double_t kPCBPlateUpLength = 71.85*fgkmm;
+	vol = new TGeoVolume(strName+TString("_PCBPlateUp"), new TGeoBBox(kPCBPlateWidth/2, kPCBPlateThick/2, kPCBPlateUpLength/2), gGeoManager->GetMedium("ITS_G10FR4CU$"));
+	vol->SetFillColor(5);	vol->SetLineColor(5);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick/2, +kPCBPlateUpLength/2-21.0*fgkmm, new TGeoRotation("", 0, 0, 0)));	
 	const Double_t kPCBPlateDnLength = 58.20*fgkmm;
-	vol = new TGeoVolume(strName+TString("_PCBPlateUp"), new TGeoBBox(kPCBPlateWidth/2, kPCBPlateThick/2, kPCBPlateUpLength/2), med);
-	vol->SetFillColor(11);
-	vol->SetLineColor(11);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick/2, +kPCBPlateUpLength/2-21.0*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	vol = new TGeoVolume(strName+TString("_PCBPlateDn"), new TGeoBBox(kPCBPlateWidth/2, kPCBPlateThick/2, kPCBPlateDnLength/2), med);
-	vol->SetFillColor(5);
-	vol->SetLineColor(5);
+	vol = new TGeoVolume(strName+TString("_PCBPlateDn"), new TGeoBBox(kPCBPlateWidth/2, kPCBPlateThick/2, kPCBPlateDnLength/2), gGeoManager->GetMedium("ITS_G10FR4CU$"));
+	vol->SetFillColor(5);	vol->SetLineColor(5);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick/2, +kPCBPlateDnLength/2-7.45*fgkmm, new TGeoRotation("", 0, 0, 0)));
 	
 	// -- DCDC --
 	const Double_t kDCDCWidth = 14.0*fgkmm;
 	const Double_t kDCDCThick = 8.0*fgkmm;
 	const Double_t kDCDCLength = 18.50*fgkmm;
-	vol = new TGeoVolume(strName+TString("_DCDCUp"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), med);
-	vol->SetFillColor(6);
-	vol->SetLineColor(6);
+	vol = new TGeoVolume(strName+TString("_DCDC"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), gGeoManager->GetMedium("ITS_DCDCSHIELD$"));
+	vol->SetFillColor(6); vol->SetLineColor(6);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick+kDCDCThick/2, +kDCDCLength/2, new TGeoRotation("", 0, 0, 0)));
-	vol = new TGeoVolume(strName+TString("_DCDCDn"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), med);
-	vol->SetFillColor(6);
-	vol->SetLineColor(6);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCThick/2, +kDCDCLength/2+18.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
 
-	// -- DCDCx --
+	//vol = new TGeoVolume(strName+TString("_DCDCDn"), new TGeoBBox(kDCDCWidth/2, kDCDCThick/2, kDCDCLength/2), gGeoManager->GetMedium("ITS_DCDCSHIELD$"));
+	//vol->SetFillColor(6);	vol->SetLineColor(6);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCThick/2, +kDCDCLength/2+18.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
+
+	// -- DCDC Connectors / DCDCx --
 	const Double_t kDCDCxWidth = 16.0*fgkmm;
-	const Double_t kDCDCxThick = 3.0*fgkmm;
+	const Double_t kDCDCxThick = 2.3*fgkmm;
 	const Double_t kDCDCxLength = 9.0*fgkmm;
-	vol = new TGeoVolume(strName+TString("_DCDCxUp"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), med);
-	vol->SetFillColor(6);
-	vol->SetLineColor(6);
+	vol = new TGeoVolume(strName+TString("_DCDCx"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), gGeoManager->GetMedium("ITS_DCDCPASSCNT$"));
+	vol->SetFillColor(4);	vol->SetLineColor(4);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, +kCPlateThick/2+kPCBPlateThick+kDCDCxThick/2, +kDCDCxLength/2-9.0*fgkmm, new TGeoRotation("", 0, 0, 0)));
-	vol = new TGeoVolume(strName+TString("_DCDCxDn"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), med);
-	vol->SetFillColor(6);
-	vol->SetLineColor(6);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCxThick/2, +kDCDCxLength/2+9.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
 
-	// -- Cooling Pipe Hole R-Side --	
-	const Double_t kCPipeHoleRRadius = 1.0*fgkmm;
-	const Double_t kCPipeHoleRExt = 2.0*fgkmm;
-	const Double_t kCPipeHoleRLength = kCPlateLength + kCPipeHoleRExt;
-	vol = new TGeoVolume(strName+TString("_CPipeHoleR"), new TGeoTube(0, kCPipeHoleRRadius, kCPipeHoleRLength/2), med);
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(+6.5*fgkmm, 0, +kCPipeHoleRLength/2-kCPipeHoleRExt/2, new TGeoRotation("", 0, 0, 0)));
+	//vol = new TGeoVolume(strName+TString("_DCDCxDn"), new TGeoBBox(kDCDCxWidth/2, kDCDCxThick/2, kDCDCxLength/2), gGeoManager->GetMedium("ITS_DCDCPASSCNT$"));
+	//vol->SetFillColor(6);	vol->SetLineColor(6);
+	//setVol->AddNode(vol, 0, new TGeoCombiTrans(0, -kCPlateThick/2-kPCBPlateThick-kDCDCxThick/2, +kDCDCxLength/2+9.25*fgkmm, new TGeoRotation("", 0, 0, 0)));
 
-	// -- Cooling Pipe Nook R-Side --
-	const Double_t kCPipeNookRWidth = 3.0*fgkmm;
-	const Double_t kCPipeNookRThick = 1.8*fgkmm;
-	const Double_t kCPipeNookRExt = 2.0*fgkmm;
-	const Double_t kCPipeNookRLength = kCPlateLength + kCPipeNookRExt;
-	vol = new TGeoVolume(strName+TString("_CPipeNook"), new TGeoBBox(kCPipeNookRWidth/2, kCPipeNookRThick/2, kCPipeNookRLength/2), med);
-	vol->SetFillColor(4);
-	vol->SetLineColor(4);
-	setVol->AddNode(vol, 0, new TGeoCombiTrans(+kCPlateWidth/2, 0, +kCPipeNookRLength/2-kCPipeNookRExt/2, new TGeoRotation("", 0, 0, 0)));
 
-	// -- FPGA Connector
+	// -- FPGA Connector -- DO NOT USE IN THE LASTEST DESIGN
 	//const Double_t kCntOffsetZ = +kPipeLength/2 -7.0*fgkmm;
 	//const Double_t kCntOffsetY = 8.4*fgkmm +kWidthBtwnUDPlates/2 +kUpPlateThick -0.5*fgkmm; // 8.4 =DCBox, 0.5 = obj thick
 	//const Double_t kCntOffsetZ2 = 61.0*fgkmm;
@@ -9475,9 +9558,13 @@ TGeoVolume* AliITSUv2Layer::CreateInnerDCDC3(const TGeoMedium* med){
 	//TGeoVolume* newOffsetVol = new TGeoVolumeAssembly(TString("DCPS")+=(int)fLayerNumber);
 	//newOffsetVol->AddNode(setVol, 1, new TGeoTranslation(0, 0, 0));
 	//vALIC->AddNode(setVol, 1, new TGeoCombiTrans(0,0,0,new TGeoRotation("",0,0,0)));
-	// This will offset only X-axis and Y-axis. the Z-axis is to be offset outside the function.
+	
+	// This will offset only X-axis and Y-axis. 
+	// The Z-axis is to be offset outside the function.
 	TGeoVolume* ofsVol = new TGeoVolumeAssembly(strName);
-	ofsVol->AddNode(setVol, 1, new TGeoCombiTrans(fkALC_0334_ContactDX[fLayerNumber], fkALC_0334_ContactDY[fLayerNumber]+fkDCDCOffsetY[fLayerNumber], 0, new TGeoRotation("", 180.0, fkDCDCRotateBeta[fLayerNumber], 0)));
+	ofsVol->AddNode(setVol, 1, 
+		new TGeoCombiTrans(fkALC_0334_ContactDX[fLayerNumber], fkALC_0334_ContactDY[fLayerNumber]+fkDCDCOffsetY[fLayerNumber], 0, 
+		new TGeoRotation("", 180.0, fkDCDCRotateBeta[fLayerNumber], 0)));
 	
 	fN_DCDC_Created++;
 	
@@ -9498,8 +9585,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kPipeLength = 77.0*fgkmm;
 	const Double_t kWidthBtwnPipes = 12.4*fgkmm;
 	vol = new TGeoVolume("CoolingPipe", new TGeoTube(kPipeHoleRadius, kPipeHoleRadius+kPipeThick, kPipeLength/2), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(5);
-	vol->SetLineColor(5);
+	vol->SetFillColor(5);	vol->SetLineColor(5);
 	setVol->AddNode(vol, 0, new TGeoTranslation(- kWidthBtwnPipes/2, 0, 0));
 	setVol->AddNode(vol, 0, new TGeoTranslation(+ kWidthBtwnPipes/2, 0, 0));
 
@@ -9509,8 +9595,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kPlateWidth = kWidthBtwnPipes - 2*(kPipeHoleRadius + kPipeThick); // instead of using the composite object
 	const Double_t kPlateOffset = 2.5*fgkmm;
 	vol = new TGeoVolume("CoolingPlate", new TGeoBBox(kPlateWidth/2, kPlateThick/2, kPlateLength/2), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(5);
-	vol->SetLineColor(5);
+	vol->SetFillColor(5);	vol->SetLineColor(5);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, 0, -kPlateOffset));
 
 	// -- Up and Down Plates
@@ -9522,8 +9607,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kUpPlateWidth = 16.0*fgkmm;
 	const Double_t kUpPlateOffset = 4.5*fgkmm;
 	vol = new TGeoVolume("UpPlate", new TGeoBBox(kUpPlateWidth/2, kUpPlateThick/2, kUpPlateLength/2), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
+	vol->SetFillColor(2);	vol->SetLineColor(2);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, +kWidthBtwnUDPlates/2+kUpPlateThick/2, -(kPipeLength/2-kUpPlateLength/2)-kUpPlateOffset));
 
 	// -- Up Extend Plate 0 --
@@ -9531,8 +9615,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kUpEPlateThick = 0.1*fgkmm;
 	const Double_t kUpEPlateWidth = 16.0*fgkmm;
 	vol = new TGeoVolume("UpEPlate", new TGeoBBox(kUpEPlateWidth/2, kUpEPlateThick/2, kUpEPlateLength/2), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
+	vol->SetFillColor(2);	vol->SetLineColor(2);
 	TGeoVolume* asmVol = new TGeoVolumeAssembly("");
 	asmVol->AddNode(vol, 0, new TGeoTranslation(0, -kUpEPlateThick/2, +kUpEPlateLength/2));
 	setVol->AddNode(asmVol, 0, new TGeoCombiTrans(0, +kWidthBtwnUDPlates/2+kUpPlateThick/2 +kUpEPlateThick/2, -kPipeLength/2 -kUpPlateOffset +kUpPlateLength, new TGeoRotation("", 0, -13, 0)));
@@ -9543,8 +9626,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kDnPlateWidth = 16.0*fgkmm;
 	const Double_t kDnPlateOffset = 4.5*fgkmm;
 	vol = new TGeoVolume("DnPlate", new TGeoBBox(kDnPlateWidth/2, kDnPlateThick/2, kDnPlateLength/2), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(2);
-	vol->SetLineColor(2);
+	vol->SetFillColor(2);	vol->SetLineColor(2);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, -kWidthBtwnUDPlates/2-kDnPlateThick/2, -(kPipeLength/2-kDnPlateLength/2)-kDnPlateOffset));
 	
 	// -- Power Supply Box
@@ -9560,8 +9642,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kBoxUpOffset = 13.5*fgkmm; // offset from the A-Side of the edge of the pipe
 	const Double_t kBoxDnOffset = 22.5*fgkmm; // offset from the A-Side of the edge of the pipe
 	vol = new TGeoVolume("Box", new TGeoBBox(kBoxDX, kBoxDY, kBoxDZ), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(4);
-	vol->SetLineColor(4);
+	vol->SetFillColor(4);	vol->SetLineColor(4);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, +kBoxDY +kUpBoxOffset, +kBoxDZ +kBoxUpOffset -kPipeLength/2));
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, -kBoxDY -kDnBoxOffset, +kBoxDZ +kBoxDnOffset -kPipeLength/2));
 	
@@ -9572,8 +9653,7 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	const Double_t kBarUpOffset = kBoxUpOffset + kBoxDZ*2; // offset from the A-Side of the edge of the pipe
 	const Double_t kBarDnOffset = kBoxDnOffset + kBoxDZ*2; // offset from the A-Side of the edge of the pipe
 	vol = new TGeoVolume("Bar", new TGeoBBox(kBarDX, kBarDY, kBarDZ), mgr->GetMedium("ITS_KAPTON(POLYCH2)$"));
-	vol->SetFillColor(9);
-	vol->SetLineColor(9);
+	vol->SetFillColor(9);	vol->SetLineColor(9);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, +kBarDY +kUpBoxOffset, +kBarDZ +kBarUpOffset -kPipeLength/2));
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, -kBarDY -kDnBoxOffset, +kBarDZ +kBarDnOffset -kPipeLength/2));
 
@@ -9597,8 +9677,6 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	vol->SetLineColor(9);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, +kWidthBtwnUDPlates/2+kEPlate2Thick/2+kEPlate2Thick/2+kBoxDY*2, -(kPipeLength/2-kEPlate2Length/2)-kEPlate2Offset+kEPlate1Length));
 	
-	
-
 	// -- Pipes
 	//const Double_t kPipesOffsetZ = 0*fgkmm;
 	//const Double_t kPipesOffsetY = 8.5*fgkmm +kWidthBtwnUDPlates/2 +kUpPlateThick; // 8.5 = DCBox = 8.0 + 0.4 + empty space
@@ -9620,13 +9698,43 @@ TGeoVolume* AliITSUv2Layer::CreateDCPS2(const char *nid, const TGeoManager *mgr)
 	return newOffsetVol;
 }
 
+//________________________________________________________________________
+TGeoVolume* AliITSUv2Layer::CreateSamtecCables(const TGeoManager *mgr){
+	
+	TString strName = (TString("SamtecCables")+=fLayerNumber) + (TString("_")+=(int)fN_SamtecCables_Created);
+	TGeoVolume* setVol = new TGeoVolumeAssembly(strName);
+	TGeoVolume* vol;
+
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 4.12*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 2.47*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 0.82*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-0.83*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-2.48*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-4.13*fgkmm,  12.63*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 4.12*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 2.47*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans( 0.82*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-0.83*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-2.48*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(CreateSamtecCable(), 0, new TGeoCombiTrans(-4.13*fgkmm,  13.53*fgkmm,  11.60*fgkmm, new TGeoRotation("",0,0,0)));
+
+	fN_SamtecCables_Created++;
+	
+	return setVol;
+}
+
+
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv2Layer::CreateSamtecCable(const TGeoMedium* med){
+TGeoVolume* AliITSUv2Layer::CreateSamtecCable(const TGeoManager *mgr){
 	
 	TString strName = (TString("Samtec")+=fLayerNumber) + (TString("_")+=(int)fN_SamtecCable_Created);
 	TGeoVolume* setVol = new TGeoVolumeAssembly(strName);
 	TGeoVolume* vol;
+	
+	TGeoMedium *medInner      = mgr->GetMedium("ITS_COPPER$");
+	TGeoMedium *medOuter	  = mgr->GetMedium("ITS_PUR$");
 
 	const Double_t kHoleRadius = 0.125*fgkmm; 
 	
@@ -9634,29 +9742,35 @@ TGeoVolume* AliITSUv2Layer::CreateSamtecCable(const TGeoMedium* med){
 	const Double_t kPipeLength = 25.0*fgkmm;
 	const Double_t kWidthBtwnHoles = 0.65*fgkmm;
 	
-	// -- Middle Wall
-	vol = new TGeoVolume(strName+TString("_MidWall"), new TGeoBBox(kWidthBtwnHoles/2-kHoleRadius, kHoleRadius, kPipeLength/2), med);
-		vol->SetFillColor(41);
-		vol->SetLineColor(41);
+	// -- Middle Cable Wall
+	vol = new TGeoVolume(strName+TString("_MidleCableWall"), new TGeoBBox(kWidthBtwnHoles/2-kHoleRadius, kHoleRadius, kPipeLength/2), medOuter);
+	vol->SetFillColor(41);	vol->SetLineColor(41);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(0, 0, +kPipeLength/2, new TGeoRotation("",0,0,0)));
 	
-	// -- Pipe Wall --
-	vol = new TGeoVolume(strName+TString("_PipeWall"), new TGeoBBox(kWidthBtwnHoles/2, kPipeThick/2, kPipeLength/2), med);
-		vol->SetFillColor(41);
-		vol->SetLineColor(41);
+	// -- Outer Cable Wall --
+	vol = new TGeoVolume(strName+TString("_OuterCableWall"), new TGeoBBox(kWidthBtwnHoles/2, kPipeThick/2, kPipeLength/2), medOuter);
+	vol->SetFillColor(41);	vol->SetLineColor(41);
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, +kHoleRadius +kPipeThick/2, +kPipeLength/2));
 	setVol->AddNode(vol, 0, new TGeoTranslation(0, -kHoleRadius -kPipeThick/2, +kPipeLength/2));
 	
-	// -- Pipe Curve --
-	TGeoPcon *volObj = new TGeoPcon(strName+TString("_PipeCurveTube"), 0, 180, 2);
-		volObj->DefineSection(0, 0.0		, kHoleRadius, kHoleRadius + kPipeThick);
-		volObj->DefineSection(1, kPipeLength, kHoleRadius, kHoleRadius + kPipeThick);
-	vol = new TGeoVolume(strName+TString("_PipeCurve"), volObj, med);
-		vol->SetFillColor(41);
-		vol->SetLineColor(41);
+	// -- Outer cable --
+	TGeoPcon *volObj = new TGeoPcon(strName+TString("_OuterCableCurveTube"), 0, 180, 2);
+	volObj->DefineSection(0, 0.0		, kHoleRadius, kHoleRadius + kPipeThick);
+	volObj->DefineSection(1, kPipeLength, kHoleRadius, kHoleRadius + kPipeThick);
+	vol = new TGeoVolume(strName+TString("_OuterCableCurve"), volObj, medOuter);
+	vol->SetFillColor(41);	vol->SetLineColor(41);
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(-kWidthBtwnHoles/2, 0, 0, new TGeoRotation("",0,0,90)));
 	setVol->AddNode(vol, 0, new TGeoCombiTrans(+kWidthBtwnHoles/2, 0, 0, new TGeoRotation("",0,0,-90)));
-	
+
+	// -- Inner cable --
+	volObj = new TGeoPcon(strName+TString("_InnerCableTube"), 0, 360, 2);
+	volObj->DefineSection(0, 0.0		, 0, kHoleRadius);
+	volObj->DefineSection(1, kPipeLength, 0, kHoleRadius);
+	vol = new TGeoVolume(strName+TString("_InnerCable"), volObj, medInner);
+	vol->SetFillColor(46);	vol->SetLineColor(46);
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(-kWidthBtwnHoles/2, 0, 0, new TGeoRotation("",0,0,0)));
+	setVol->AddNode(vol, 0, new TGeoCombiTrans(+kWidthBtwnHoles/2, 0, 0, new TGeoRotation("",0,0,0)));
+
 	
 	fN_SamtecCable_Created++;
 	

@@ -157,15 +157,17 @@ class AliITSUv2Layer : public TObject {
 	TGeoVolume* Create_ALC_0337_xxC_ins(const TGeoMedium*);					// Inner Barrel End Wheel Plate inside the warp volume (in half stave)
 	TGeoVolume* Create_ALC_0337_xxC_ous(const Int_t, const TGeoMedium*);	// Inner Barrel End Wheel Plate inside the warp volume (in half stave)
 
-	TGeoVolume* CreateInnerDCDC3(const TGeoMedium*);
-	TGeoVolume* CreateInnerDCCNT3(const TGeoMedium*);
+	TGeoVolume* CreateInnerDCDCLayer3(const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateInnerDCDC3(const TGeoManager *mgr=gGeoManager);
+	TGeoVolume* CreateInnerDCCNT3(const TGeoManager *mgr=gGeoManager);
 	
 	TGeoVolume* CreateInnerBHandleC(const TGeoMedium*);
 
     TGeoVolume* CreateInnerBEWheelA0(const TGeoMedium*);
     TGeoVolume* CreateInnerBEWheelA1(const TGeoMedium*);
     
-    TGeoVolume* CreateSamtecCable(const TGeoMedium*);
+    TGeoVolume* CreateSamtecCables(const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateSamtecCable(const TGeoManager *mgr=gGeoManager);
     
     // CreateBarrel()
     static TGeoVolume* CreateInnerBSupporterA(const TGeoManager *mgr=gGeoManager);
@@ -236,6 +238,8 @@ class AliITSUv2Layer : public TObject {
     Int_t fN_DCDC_Created;  // Number of DCDCset which are created in hole geometry.	
     Int_t fN_DCCNT_Created; // Number of DC Connector which are created in hole geometry.
     Int_t fN_SamtecCable_Created;
+    Int_t fN_SamtecCables_Created;
+    
     // ---------------------------------    
 
     // Parameters for the Upgrade geometry

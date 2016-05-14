@@ -55,6 +55,7 @@
 #include "AliGeomManager.h"
 using namespace TMath;
 
+
 ClassImp(AliITSUv2)
 
 //______________________________________________________________________
@@ -638,7 +639,56 @@ void AliITSUv2::CreateMaterials() {
   AliMixture(21,"INOX304$",aInox304,zInox304,dInox304,4,wInox304);
   AliMedium(21, "INOX304$",21,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-	// need for ITS IB DCDC units. 
+	// --------------------------- 
+	// needed for ITS IB Endwheels & DC-DC units.
+	// #pnamwong
+	
+	// FR4 for PCB of DCDC, copied from AliITSv11
+    Float_t zG10FR4[14] = {14.00,	20.00,	13.00,	12.00,	5.00,	22.00,	11.00,	19.00,	26.00,	9.00,	8.00,	6.00,	7.00,	1.00};
+    Float_t aG10FR4[14] = {28.0855000,40.0780000,26.9815380,24.3050000,10.8110000,47.8670000,22.9897700,39.0983000,55.8450000,18.9984000,15.9994000,12.0107000,14.0067000,1.0079400};
+    Float_t wG10FR4[14] = {0.15144894,0.08147477,0.04128158,0.00904554,0.01397570,0.00287685,0.00445114,0.00498089,0.00209828,0.00420000,0.36043788,0.27529426,0.01415852,0.03427566};
+    Float_t densG10FR4= 1.8;
+    AliMixture(22,"G10FR4$",aG10FR4,zG10FR4,densG10FR4,14,wG10FR4);
+    AliMedium(22,"G10FR4$",22,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+    
+    // Polyeurethane (C3H8N20 for cooling pipe of DCDC, information from "www.chemnet.com"
+    Float_t aPUR[4] = { 12.0107, 1.00794, 14.00674, 15.9994};
+    Float_t zPUR[4] = { 6.     , 1.     ,  7.     ,  8.    };
+    Float_t wPUR[4] = { 3.     , 8.     ,  2.     ,  1.    };
+    Float_t dPUR    = 1.005;
+    AliMixture(23,"PUR$",aPUR,zPUR,dPUR,-4,wPUR);
+    AliMedium(23,"PUR$",23,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+	// FR4+CU for PCB of DCDC(DCDC-PCBCU), modified from G10FR4
+    Float_t zG10FR4CU[15] = {14.00,	20.00,	13.00,	12.00,	5.00,	22.00,	11.00,	19.00,	26.00,	9.00,	8.00,	6.00,	7.00,	1.00, 29.00};
+    Float_t aG10FR4CU[15] = {28.0855000,40.0780000,26.9815380,24.3050000,10.8110000,47.8670000,22.9897700,39.0983000,55.8450000,18.9984000,15.9994000,12.0107000,14.0067000,1.0079400,63.5460000};
+    Float_t wG10FR4CU[15] = {0.137785237,0.074124127,0.037557161,0.008229453,0.012714814,0.002617301,0.004049559,0.004531515,0.001908973,0.003821077,0.327919224,0.250457249,0.01288114,0.031183315,0.090219864};
+    Float_t densG10FR4CU= 2.527172093;
+    AliMixture(24,"G10FR4CU$",aG10FR4CU,zG10FR4CU,densG10FR4CU,15,wG10FR4CU);
+    AliMedium(24,"G10FR4CU$",24,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+	// Coil+Shield+Passive60%+Air for SHIELD of DCDC (DCDC-SHIELD).
+	// Still not include Gap Pad (Bergquist GP3000S30).
+    Float_t zDCDCSHIELD[20] = {29.00,		6.00,		 1.00,		  29.00,	   6.00,		1.00,		 29.00,		  13.00,	   8.00,		28.00,	  	 50.00,	  	  56.00,	   22.00,	    8.00,		 28.00,	  	  50.00,	   6.00,		7.00,		 8.00,		  18.00};
+    Float_t aDCDCSHIELD[20] = {63.54600000, 12.01070000, 1.007940000, 63.54600000, 12.01070000, 1.007940000, 63.54600000, 26.98200000, 15.99940000, 58.69340000, 118.7100000, 137.3270000, 47.86700000, 15.99940000, 58.69340000, 118.7100000, 12.01070000, 14.00670000, 15.99940000, 39.94800000};
+    Float_t wDCDCSHIELD[20] = {0.011184966, 0.160966032, 0.027016594, 0.013410143, 0.081330205, 0.013650490, 0.000891892, 0.000098852, 0.000087924, 0.000017375, 0.000013031, 0.009534679, 0.003323429, 0.003332538, 0.001506107, 0.001129580, 0.000083418, 0.508085744, 0.155924490, 0.008629022};
+    Float_t densDCDCSHIELD= 0.643338921;
+    AliMixture(25,"DCDCSHIELD$",aDCDCSHIELD,zDCDCSHIELD,densDCDCSHIELD,20,wDCDCSHIELD);
+    AliMedium(25,"DCDCSHIELD$",25,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+	// Passive40%+Connector for SHIELD of DCDC (DCDC-PASSCNT).
+    Float_t zDCDCPASSCNT[18] = {14.00,		29.00,		 13.00,		  8.00,	   	   28.00,		50.00,		 56.00,		  22.00,	   8.00,		28.00,	  	 50.00,	  	  6.00,	   	   1.00,	    29.00,		 6.00,		  7.00,		   8.00,		18.00};
+    Float_t aDCDCPASSCNT[18] = {28.08600000, 63.54600000, 26.98200000, 15.99940000, 58.69340000, 118.7100000, 137.3270000, 47.86700000, 15.99940000, 58.69340000, 118.7100000, 12.01070000, 1.007940000, 63.54600000, 12.01070000, 14.00670000, 15.99940000, 39.94800000};
+    Float_t wDCDCPASSCNT[18] = {0.005062500, 0.007129630, 0.000316083, 0.000281139, 0.000055556, 0.000041667, 0.030487431, 0.010626766, 0.010655893, 0.004815822, 0.003611867, 0.051287664, 0.008608169, 0.023958333, 0.000104540, 0.636736516, 0.195405633, 0.010813950};
+    Float_t densDCDCPASSCNT= 0.759649185;
+    AliMixture(26,"DCDCPASSCNT$",aDCDCPASSCNT,zDCDCPASSCNT,densDCDCPASSCNT,18,wDCDCPASSCNT);
+    AliMedium(26,"DCDCPASSCNT$",26,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+	// Carbon Foam
+	AliMaterial(27,"CarbonFoam$",12.0107,6,0.01,999,999);
+	AliMedium(27,  "CarbonFoam$",27,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
+
+	// --------------------------- 
 }
 
 //______________________________________________________________________
@@ -901,16 +951,6 @@ void AliITSUv2::StepManager()
   hit.SetPosition(position);
   hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
-
-
-  //
-  // pALPIDE chip simulation
-  //
-  hit.SetPID(TVirtualMC::GetMC()->TrackPid());
-  hit.SetTotalEnergy(TVirtualMC::GetMC()->Etot());
-  //////////////////////////////
-
-  
   hit.SetStatus(status);
   hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());
