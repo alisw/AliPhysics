@@ -128,7 +128,8 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   fHelix[0]=x*sn + fHelix[0]*cs;            // y0
   //fHelix[1]=                               // z0
   //  fHelix[2]=TMath::ASin(fHelix[2]) + alpha; // phi0
-  fHelix[2]=asinf(fHelix[2]) + alpha; // phi0 // RS : use float version
+  float sphi = TMath::Abs(fHelix[2])<kAlmost1 ? asinf(fHelix[2]) : TMath::Sign(TMath::Pi()/2, fHelix[2]);
+  fHelix[2]=sphi + alpha; // phi0 // RS : use float version
   //fHelix[3]=                               // tgl
   //
   //

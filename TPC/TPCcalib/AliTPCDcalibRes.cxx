@@ -2188,6 +2188,47 @@ void AliTPCDcalibRes::WriteResTree()
 
 }
 
+//___________________________________________________________________
+void AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
+{
+  // Fill voxels info from existing resVox tree for reprocessing
+  TStopwatch sw;
+  sw.Start();
+  bres_t voxRes, *voxResP=&voxRes;
+
+  TFile* flIn = new TFile(resTreeFile);
+  if (!flIn) {AliErrorF("Failed to open %s",resTreeFile); return;}
+  TTree* resTree = (TTree*) flIn->Get("voxRes");
+  if (!resTree) {AliErrorF("Failed to extract resTree from %s",resTreeFile); delete flIn; return;}
+  resTree->Branch("res", &voxRes);
+  //
+  int nent = resTree->GetEntries();
+  if (nent != kNSect2*fNGVoxPerSector) AliFatalF("resTree from %s has %d voxels per sector, this object: %d",
+						 resTreeFile,nent/kNSect2,fNGVoxPerSector);
+  //
+  for (int is=0;is<kNSect2;is++) { 
+    if (fSectGVoxRes[is]) delete[] fSectGVoxRes[is];
+    bres_t* sectData = fSectGVoxRes[is] = new bres_t[fNGVoxPerSector];
+  }
+  for (int ient=0;ient<nent;ient++) {
+    //
+    resTree->GetEntry(ient);
+    bres_t* sectData = fSectGVoxRes[voxRes.bsec];
+    int binGlo = GetVoxGBin(voxRes.bvox);
+    bres_t *voxel = &sectData[binGlo];
+    memcpy(voxel,&voxRes,sizeof(bres_t));
+  } // end of sector loop
+  //
+  delete resTree;
+  flIn->Close();
+  delete flIn;
+  //
+  sw.Stop();
+  AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
+  AliSysInfo::AddStamp("ResTree",1,0,0,0);
+  //
+}
+
 
 //=========================================================================
 //
