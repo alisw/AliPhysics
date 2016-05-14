@@ -365,7 +365,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 	  c.SetSigmaTime2(cl.GetSigmaZ2());
 	  c.SetQMax(cl.GetQMax());	  
 	  outputRaw->fCount++;
-	  if( 1 || cl.GetSigmaY2()>0 && cl.GetSigmaZ2()>0 ){
+	  //if( cl.GetSigmaY2()>0 && cl.GetSigmaZ2()>0 )
+	  {
 	    nCluTotal ++;
 	    c.ClearFlags();
 	    if( cl.IsDeconvolutedPad() )
