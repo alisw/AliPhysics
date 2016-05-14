@@ -65,6 +65,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliHLTLogging.h"
+#include "AliHLTCTPData.h"
 
 using namespace std;
 
@@ -248,6 +249,13 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
     fAnalysisInitialized = kTRUE;
   }
 
+  //Init the CTP data
+  if (SetupCTPData() == -ENOMEM) 
+  {
+    HLTError("could not SetupCTPData(); ENOMEM");
+    return -ENOMEM;
+  }
+
   return 0;
 }
 
@@ -400,6 +408,11 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
     if (eventData->fEvent) {HLTInfo("----> event %p has %d tracks: \n", eventData->fEvent, eventData->fEvent->GetNumberOfTracks());}
     if (eventData->fFriend) {HLTInfo("----> friend %p has %d tracks: \n", eventData->fFriend, eventData->fFriend->GetNumberOfTracks());}
+    const AliHLTCTPData* ctpData = CTPData();
+    std::string activeTriggers;
+    activeTriggers.reserve(1000);
+    ctpData->GetFiredTriggerClasses(activeTriggers);
+    HLTInfo("active triggers: %s", activeTriggers.c_str());
 
     if (eventData->fEvent->GetNumberOfTracks() >= fMinTracks)
     {
