@@ -148,6 +148,7 @@ public:
   virtual UShort_t  GetBunchCrossNumber() const = 0;
   virtual UInt_t    GetEventType()  const = 0;
   virtual ULong64_t GetTriggerMask() const = 0;
+  virtual ULong64_t GetTriggerMaskNext50() const {return 0;}
   virtual UChar_t   GetTriggerCluster() const = 0;
   virtual TString   GetFiredTriggerClasses() const = 0;
   virtual Bool_t    IsTriggerClassFired(const char* /*name*/) const {return 0;}
