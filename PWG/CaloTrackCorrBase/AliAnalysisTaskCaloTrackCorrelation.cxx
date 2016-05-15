@@ -240,9 +240,21 @@ void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
   TH2F *histStat = dynamic_cast<TH2F*>(inputH->GetStatistics());
   TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
   
-  if(histStat) fOutputContainer->Add(histStat);
-  else AliDebug(0,"Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists");
-  
-  if(histBin0) fOutputContainer->Add(histBin0);
+  if ( histStat ) 
+  {
+    if ( histStat == histBin0 ) histBin0 = 0 ;
+    
+    histStat  = (TH2F*) histStat->Clone(Form("%s_%s",histStat->GetName(),"CaloTrackCorr"));
+    
+    fOutputContainer->Add(histStat);
+    
+  }
+   
+  if ( histBin0 )
+  {
+    histBin0  = (TH2F*) histBin0->Clone(Form("%s_%s",histBin0->GetName(),"CaloTrackCorr"));
+
+    fOutputContainer->Add(histBin0);
+  }
 }
 
