@@ -259,19 +259,20 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     if (pHLTOUT->GetDataBlockDescription(desc.fDataType, desc.fSpecification)<0) {
       continue;
     }
-    if (desc.fDataType==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
-      // header      
-      if ((iResult=decoder.AddCompressionDescriptor(&desc))<0) {
-	return iResult;
-      }
-      bHavePartitionCompressedData = kTRUE;
-    }
     if (desc.fDataType==AliHLTTPCDefinitions::RawClustersDescriptorDataType()) {
       // header      
       if ((iResult=decoder.AddRawClustersDescriptor(&desc))<0) {
 	return iResult;
       }
       bHavePartitionRawData = kTRUE;
+    }
+    //CompressionDescriptor should have priority over rawcluster descriptor in case both are present, because this describes the actual compressed data.
+    if (desc.fDataType==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
+      // header      
+      if ((iResult=decoder.AddCompressionDescriptor(&desc))<0) {
+	return iResult;
+      }
+      bHavePartitionCompressedData = kTRUE;
     }
     if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
       // add mc information
