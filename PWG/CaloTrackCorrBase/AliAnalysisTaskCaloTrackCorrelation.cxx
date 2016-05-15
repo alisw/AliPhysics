@@ -45,7 +45,8 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation() :
   fConfigName(""), 
   fCuts(0x0),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0),
+  fStoreEventSummary(0)
 {
 }
 
@@ -59,7 +60,8 @@ AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const c
   fConfigName(""), 
   fCuts(0x0),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0),
+  fStoreEventSummary(0)
 {  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());  // will contain cuts or local params
@@ -227,6 +229,8 @@ void AliAnalysisTaskCaloTrackCorrelation::Terminate(Option_t */*option*/)
 //__________________________________________________________
 void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
 {
+  if ( !fStoreEventSummary ) return ;
+    
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   
   AliInputEventHandler *inputH = dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
@@ -236,9 +240,9 @@ void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
   TH2F *histStat = dynamic_cast<TH2F*>(inputH->GetStatistics());
   TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
   
-  if(histStat)fOutputContainer->Add(histStat);
+  if(histStat) fOutputContainer->Add(histStat);
   else AliDebug(0,"Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists");
   
-  if(histBin0)fOutputContainer->Add(histBin0);
+  if(histBin0) fOutputContainer->Add(histBin0);
 }
 
