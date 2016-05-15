@@ -57,7 +57,7 @@ void AliHLTTPCDataCompressionUnpackerComponent::GetInputDataTypes( AliHLTCompone
   list.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
-  list.push_back(AliHLTTPCDefinitions::RawClustersDescriptorDataType());
+  list.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
   list.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
 }
 
@@ -127,8 +127,8 @@ int AliHLTTPCDataCompressionUnpackerComponent::DoEvent( const AliHLTComponentEve
       decoder.AddClusterFlags(pDesc);
     }
 
-    if (pDesc = GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDescriptorDataType())) {
-        decoder.AddRawClustersDescriptor(pDesc);
+    if (pDesc = GetFirstInputBlock(AliHLTTPCDefinitions::DataCompressionDescriptorDataType())) {
+        decoder.AddCompressionDescriptor(pDesc);
     }
 
     // first unpack track model clusters into temporary map and count clusters per
