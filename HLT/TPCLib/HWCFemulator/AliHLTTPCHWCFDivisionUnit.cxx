@@ -26,6 +26,7 @@
 //  @note 
 
 #include "AliHLTTPCHWCFDivisionUnit.h"
+#include "AliHLTErrorGuard.h"
 #include "TFile.h"
 #include <iostream>
 #include <algorithm>
@@ -120,10 +121,24 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   fOutput.fQ = fkInput->fQ & 0x3FFFFFFF;
 
   // set is_deconvoluted flag at bit 31 for pad direction, at bit 30 for time direction
-
-  if( fTagDeconvolutedClusters ){
+  
+  switch( fTagDeconvolutedClusters ){
+  case 0:
+    break;
+  case 1:
     if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
     if( fkInput->fNDeconvolutedTime>0 ) fOutput.fQ += (0x1 << 30 );
+    break;
+  case 2:
+    if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
+    if( fkInput->fNPads>1 ){
+      if( fkInput->fConsecutiveTimeDeconvolution>=2 ) fOutput.fQ += (0x1 << 30 );
+    } else {
+      if( fkInput->fNDeconvolutedTime>0 ) fOutput.fQ += (0x1 << 30 ); 
+    }
+    break;
+  default:
+    HLTError("Unknown HW cluster tagging option %d",fTagDeconvolutedClusters);
   }
 
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
@@ -165,11 +180,11 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
       cout<<"Create file.."<<endl;
       TFile *f = new TFile("HWClustersDebug.root","RECREATE");
       f->cd();
-      fDebugNtuple = new TNtuple("HWClusters", "HWClusters", "iNPads:iNSplitTime:iIsSplitPad");
+      fDebugNtuple = new TNtuple("HWClusters", "HWClusters", "iNPads:iIsSplitPad:iNSplitTime:iIsConsSplitTime");
       if( fDebugNtuple ) fDebugNtuple->AutoSave();      
     }
     if( fDebugNtuple ){
-      fDebugNtuple->Fill(fkInput->fNPads, fkInput->fNDeconvolutedTime, fkInput->fIsDeconvolutedPad );
+      fDebugNtuple->Fill(fkInput->fNPads, fkInput->fIsDeconvolutedPad, fkInput->fNDeconvolutedTime, (fkInput->fConsecutiveTimeDeconvolution>=2));
     }
   }
 

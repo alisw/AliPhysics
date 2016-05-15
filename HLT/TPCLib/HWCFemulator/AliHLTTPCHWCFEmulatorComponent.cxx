@@ -367,7 +367,7 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
     if ( argument.CompareTo( "-rcu2-data" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fProcessingRCU2Data  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "Processing RCU2 data flag is set to: %d", fTagDeconvolutedClusters );
+      HLTInfo( "Processing RCU2 data flag is set to: %d", fProcessingRCU2Data );
       continue;
     }
    

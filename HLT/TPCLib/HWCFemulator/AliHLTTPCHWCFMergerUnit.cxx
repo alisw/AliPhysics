@@ -218,6 +218,9 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
       if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
       fInput.fNPads += s.fNPads;
+      if( s.fConsecutiveTimeDeconvolution == 2 ) fInput.fConsecutiveTimeDeconvolution = 2;
+      else if( s.fConsecutiveTimeDeconvolution > 0 && fInput.fConsecutiveTimeDeconvolution ==1 ) fInput.fConsecutiveTimeDeconvolution=s.fConsecutiveTimeDeconvolution+1;
+
       fInput.fNDeconvolutedTime += s.fNDeconvolutedTime; // count N deconvoluted 1-d fragments
       fInput.fQ += s.fQ;
       fInput.fT += s.fT;

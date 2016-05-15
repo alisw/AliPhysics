@@ -128,6 +128,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fNPads = 0;
   fOutput.fNDeconvolutedTime = 0;
   fOutput.fIsDeconvolutedPad = 0;
+  fOutput.fConsecutiveTimeDeconvolution = 0;
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
@@ -219,6 +220,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fTMean = fkBunch->fData[iPeak].fTime;
   fOutput.fNPads = 1;
   fOutput.fNDeconvolutedTime = ( fWasDeconvoluted || isDeconvoluted ) ?1 :0;
+  fOutput.fConsecutiveTimeDeconvolution = fOutput.fNDeconvolutedTime;
   fOutput.fMC.clear();
 
   fWasDeconvoluted = isDeconvoluted;  

@@ -61,7 +61,7 @@ struct AliHLTTPCHWCFClusterFragment
 {
   //* constructor **/
   AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0), fMC()
+    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0),fConsecutiveTimeDeconvolution(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -83,6 +83,7 @@ struct AliHLTTPCHWCFClusterFragment
                          //   ( needed for deconvolution )
   AliHLTUInt32_t fNDeconvolutedTime; // how many cluster pads has been split in Time direction  
   bool fIsDeconvolutedPad; // tag shows if the cluster has been split in several clusters in Pad direction
+  AliHLTUInt32_t fConsecutiveTimeDeconvolution; // ==2 when 2 or more cons. time sequences are deconvoluted
   std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
 typedef struct AliHLTTPCHWCFClusterFragment AliHLTTPCHWCFClusterFragment;

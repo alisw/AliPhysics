@@ -151,7 +151,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   bool           fUseTimeBinWindow; // use timebin window
   bool           fUseTimeFollow; // use time follow algorithm for merging pads  
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
-  Bool_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
+  AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
   Int_t fDebug; // debug level
   AliHLTTPCHWCFSupport fCFSupport;     // !transient
