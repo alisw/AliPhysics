@@ -28,7 +28,8 @@ struct AliHLTTPCRawCluster {
 		      float SigmaPad2,
 		      float SigmaTime2,
 		      unsigned short Charge,
-		      unsigned short QMax
+		      unsigned short QMax,
+		      unsigned short Flags
 		      )
     : fPadRow(PadRow)
     , fPad(Pad)
@@ -37,7 +38,7 @@ struct AliHLTTPCRawCluster {
     , fSigmaTime2(SigmaTime2)
     , fCharge(Charge)
     , fQMax(QMax)
-    , fFlags(0)
+    , fFlags(Flags)
   {}
 
   AliHLTTPCRawCluster(const AliHLTTPCRawCluster& other)
@@ -66,6 +67,7 @@ struct AliHLTTPCRawCluster {
   short fPadRow;
   unsigned short fFlags; //Flags: (1 << 0): Split in pad direction
                          //       (1 << 1): Split in time direction
+                         //During cluster merging, flags are or'd
   float fPad;
   float fTime;
   float fSigmaPad2;

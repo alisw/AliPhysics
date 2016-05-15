@@ -311,6 +311,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	c.SetSigmaZ2(mergedCluster.GetSigmaTime2());
 	c.SetCharge(mergedCluster.GetCharge());
 	c.SetQMax(mergedCluster.GetQMax());
+	c.SetFlags(mergedCluster.GetFlags());
 	c.SetMC(&mc);
 	outClusterCnt++;
 	remainingCnt++;
