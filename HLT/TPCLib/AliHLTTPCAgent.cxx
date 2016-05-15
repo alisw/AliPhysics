@@ -59,6 +59,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
+#include "AliHLTTPCClusterStatComponent.h"
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDataCompressionMonitorComponent.h"
 #include "AliHLTTPCDataCompressionUnpackerComponent.h"
@@ -419,6 +420,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
+  pHandler->AddComponent(new AliHLTTPCClusterStatComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionUnpackerComponent);
