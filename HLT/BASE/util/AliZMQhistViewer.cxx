@@ -219,7 +219,7 @@ int AliZMQhistViewer::GetData(void* socket)
     if (alizmq_msg_iter_check(i,kAliHLTDataTypeStreamerInfo)==0)
     {
       if (fVerbose) printf("extracting schema\n");
-      //alizmq_msg_iter_init_streamer_infos(i);
+      alizmq_msg_iter_init_streamer_infos(i);
       continue;
     }
 
