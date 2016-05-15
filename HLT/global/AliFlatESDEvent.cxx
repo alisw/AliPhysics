@@ -69,6 +69,8 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
+#include <bitset>
+
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() 
   :
