@@ -416,12 +416,14 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	int nTriggers = 0;
 	AliFlatESDTrigger *trigger = flatEsd->SetTriggersStart();
 	AliHLTTriggerMask_t mask = pCTPData->ActiveTriggers(trigData);
+  //mask &= pCTPData->Mask(); //mask out inactive triggers
 	for (int index=0; index<gkNCTPTriggerClasses; index++) {
-	  if ((mask&(AliHLTTriggerMask_t(0x1)<<index)) == 0) continue;
+	  if (!mask.test(index)) continue;
 	  const char* name = pCTPData->Name(index);
-	  if( name && name[0]!='\0' ){
+	  if( name && name[0]!='\0' && strncmp(name,"AliHLTReadoutList",17)!=0){
 	    err = trigger->SetTriggerClass( name, index, freeSpace );
 	    if( err != 0 ) break;
+      HLTInfo("filling %i %s",index,name);
 	    nTriggers++;
 	    freeSpace -= trigger->GetSize();
 	    triggerSize += trigger->GetSize();
@@ -430,12 +432,10 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	}    
 	flatEsd->SetTriggersEnd( nTriggers, triggerSize );
 	//first 50 triggers
-	AliHLTTriggerMask_t mask50;
-	mask50.set(); // set all bits
-	mask50 >>= 50; // shift 50 right
-	flatEsd->SetTriggerMask((mask&mask50).to_ulong());
-	//next 50
-	flatEsd->SetTriggerMaskNext50((mask>>50).to_ulong());
+	ULong64_t low,high;
+  pCTPData->GetTriggerMaskAll(low,high);
+	flatEsd->SetTriggerMask(low);
+	flatEsd->SetTriggerMaskNext50(high);
       }
     }
  

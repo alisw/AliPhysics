@@ -175,16 +175,15 @@ TString AliFlatESDEvent::GetFiredTriggerClasses() const
   // Fired trigger classes
   TString trclasses; 
   const AliFlatESDTrigger *tr = GetTriggerClasses();
-  ULong64_t mask = GetTriggerMask() | GetTriggerMaskNext50();
+  std::bitset<AliESDRun::kNTriggerClasses>  mask = GetTriggerMask() | (GetTriggerMaskNext50()<<50);
   for(Int_t i = 0; i < GetNumberOfTriggerClasses(); i++) {
     int index = tr->GetTriggerIndex();    
-    if( mask & (1ull<<index) ){
+    if( mask.test(index) ){
       trclasses += " ";
       trclasses += tr->GetTriggerClassName();
-      trclasses += " ";
     }
+    tr = tr->GetNextTrigger();
   }
-  tr = tr->GetNextTrigger();
   return trclasses;
 }
 

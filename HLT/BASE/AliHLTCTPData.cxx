@@ -578,17 +578,19 @@ int AliHLTCTPData::MatchTriggerRE(const char* restr) const
 void AliHLTCTPData::GetTriggerMaskAll(ULong64_t& low,ULong64_t& high) const
 {
   low = 0; high = 0;
-  for (int i=0; i<50; i++) {
-    if (fMask[i]) { low |= 1<<i; }
-    if (fMask[i+50]) { high |= 1<<i; }
-  }
+  AliHLTTriggerMask_t active = fTriggers;// & fMask;
+  AliHLTTriggerMask_t bh = active>>50;
+  high=bh.to_ulong();
+  AliHLTTriggerMask_t low50 = 0x3FFFFFFFFFFFF;
+  active &= low50;
+  low=active.to_ulong();
 }
 
 int AliHLTCTPData::GetFiredTriggerClasses(std::string& string) const
 {
   int nTrgClasses = 0;
   string.clear();
-  AliHLTTriggerMask_t activeTriggers = fTriggers & fMask;
+  AliHLTTriggerMask_t activeTriggers = fTriggers;// & fMask;
   for (int index=0; index<gkNCTPTriggerClasses; index++) {
     if (!activeTriggers.test(index)) continue;
     string+=Name(index);
