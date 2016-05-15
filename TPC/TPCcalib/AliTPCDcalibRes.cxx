@@ -1257,6 +1257,7 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   voxRes.E[kResZ] = zres[4];
   voxRes.EXYCorr  = corrErr;
   voxRes.dYSigMAD = sigMAD;
+  voxRes.dZSigLTM = zres[2];
   //
   // store the statistics
   ULong64_t binStat = GetBin2Fill(voxRes.bvox,kVoxV);
