@@ -870,7 +870,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
           tmppos -= sizeof(tmpVal) * 8;
           ((unsigned int*) clusterFlagsData->fData)[nEntries++] = tmpVal;
           tmpVal = 0;
-          tmpVal |= tmpFlags >> (clusterFlagsData->fNumberOfFlags - tmppos);
+          if (tmppos) tmpVal |= tmpFlags >> (clusterFlagsData->fNumberOfFlags - tmppos);
         }
       }
       if (iResult >= 0)
