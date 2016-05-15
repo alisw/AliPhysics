@@ -150,7 +150,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoInit( int argc, const char** argv )
   fAlreadyMerged = 0;
   fProcessingRCU2Data = 0;
 
-  if (iResult>=0) iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
+  if (iResult>=0) iResult = ConfigureFromCDBTObjString(fgkOCDBEntry, NULL, true);
 
   if (iResult>=0 && argc>0) iResult = ConfigureFromArgumentString(argc, argv);
 
@@ -250,8 +250,7 @@ void AliHLTTPCHWClusterDecoderComponent::GetOCDBObjectDescription( TMap* const t
   if (!targetMap) return;
   
   // OCDB entries for component arguments
-
-  targetMap->Add(new TObjString(fgkOCDBEntry), new TObjString("component argument for HW cluster decoder"));  
+  //targetMap->Add(new TObjString(fgkOCDBEntry), new TObjString("component argument for HW cluster decoder"));  //We do not require this, we fall back to config string "" if non-existing
 }
 
 
