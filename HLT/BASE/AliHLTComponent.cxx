@@ -573,7 +573,7 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
   return iResult;
 }
 
-int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char* key)
+int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char* key, bool defaultToEmptyString)
 {
   // load a list of OCDB objects and configure from the objects
   // can either be a TObjString or a TMap with a TObjString:TObjString key-value pair
@@ -615,7 +615,14 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
 	}
       } else {
 	HLTError("can not fetch object \"%s\" from OCDB", path);
-	iResult=-ENOENT;
+	if (defaultToEmptyString)
+	{
+	    arguments = "";
+	}
+	else
+	{
+	    iResult=-ENOENT;
+	}
       }
     }
     delete pTokens;
