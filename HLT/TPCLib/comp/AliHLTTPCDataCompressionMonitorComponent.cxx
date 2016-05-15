@@ -239,6 +239,18 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       iResult=decoder.AddClusterFlags(pDesc);
     }
+    
+    if (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDescriptorDataType())) {
+        if ((iResult=decoder.AddRawClustersDescriptor(pDesc))<0) {
+            return iResult;
+        }
+    }
+    //CompressionDescriptor should have priority over rawcluster descriptor in case both are present, because this describes the actual compressed data.
+    if (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::DataCompressionDescriptorDataType())) {
+        if ((iResult=decoder.AddCompressionDescriptor(pDesc))<0) {
+            return iResult;
+        }
+    }
 
     bool bHaveRawClusters=false;
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
