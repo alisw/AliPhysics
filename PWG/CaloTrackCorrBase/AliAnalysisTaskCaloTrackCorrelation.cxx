@@ -247,7 +247,6 @@ void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
     histStat  = (TH2F*) histStat->Clone(Form("%s_%s",histStat->GetName(),"CaloTrackCorr"));
     
     fOutputContainer->Add(histStat);
-    
   }
    
   if ( histBin0 )
