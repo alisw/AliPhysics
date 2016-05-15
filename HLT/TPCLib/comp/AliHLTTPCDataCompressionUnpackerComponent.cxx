@@ -58,6 +58,7 @@ void AliHLTTPCDataCompressionUnpackerComponent::GetInputDataTypes( AliHLTCompone
   list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
   list.push_back(AliHLTTPCDefinitions::RawClustersDescriptorDataType());
+  list.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
 }
 
 AliHLTComponentDataType AliHLTTPCDataCompressionUnpackerComponent::GetOutputDataType()
