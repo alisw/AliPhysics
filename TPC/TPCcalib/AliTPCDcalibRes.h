@@ -94,85 +94,89 @@ class AliTPCDcalibRes: public TNamed
  
  public:
 
- AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
- virtual ~AliTPCDcalibRes();
+  AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
+  virtual ~AliTPCDcalibRes();
   
- void ProcessFromDeltaTrees();
- void ProcessFromLocalBinnedTrees();
- void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
- void Save(const char* name=0);
+  void ProcessFromDeltaTrees();
+  void ProcessFromLocalBinnedTrees();
+  void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
+  void Save(const char* name=0);
 
- void Init();
- void CollectData(int mode = kExtractMode);
- void FillLocalResidualsTrees();
- void FillCorrectedResiduals();
- void ClosureTest();
- void CreateLocalResidualsTrees(int mode);
- void ProcessResiduals();
- void ReProcessResiduals();
- void ProcessDispersions();
- void ProcessSectorResiduals(int is);
- void ReProcessSectorResiduals(int is);
- void ProcessSectorDispersions(int is);
- void ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes);
- void ProcessVoxelDispersions(int np, const float* tg, float *dy, bres_t& voxRes);
- //
- void InitGeom();
- THnF* CreateVoxelStatHisto(int sect);
- void    LoadVDrift();
- Float_t GetDriftCorrection(float z, float x, float phi, int rocID);
- Float_t tgpXY(float x, float y, float q2p, float bz);
+  void Init();
+  void CollectData(int mode = kExtractMode);
+  void FillLocalResidualsTrees();
+  void FillCorrectedResiduals();
+  void ClosureTest();
+  void CreateLocalResidualsTrees(int mode);
+  void ProcessResiduals();
+  void ReProcessResiduals();
+  void ProcessDispersions();
+  void ProcessSectorResiduals(int is);
+  void ReProcessSectorResiduals(int is);
+  void ProcessSectorDispersions(int is);
+  void ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes);
+  void ProcessVoxelDispersions(int np, const float* tg, float *dy, bres_t& voxRes);
+  Int_t ValidateVoxels(int isect);
+  //
+  void InitGeom();
+  THnF* CreateVoxelStatHisto(int sect);
+  void    LoadVDrift();
+  Float_t GetDriftCorrection(float z, float x, float phi, int rocID);
+  Float_t tgpXY(float x, float y, float q2p, float bz);
   
- void WriteStatHistos();
- void LoadStatHistos();
- void WriteResTree();
- Bool_t LoadResTree(const char* resTreeFile);
+  void WriteStatHistos();
+  void LoadStatHistos();
+  void WriteResTree();
+  Bool_t LoadResTree(const char* resTreeFile);
 
- void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
+  void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
 
- Bool_t ValidateTrack();
- Bool_t CompareToHelix(float *resHelixY, float *resHelixZ);
+  Bool_t ValidateTrack();
+  Bool_t CompareToHelix(float *resHelixY, float *resHelixZ);
 
- int    CheckResiduals(Bool_t* kill,float &rmsLongMA);
+  int    CheckResiduals(Bool_t* kill,float &rmsLongMA);
 
- const char* GetVoxResFileName() const {return Form("%sTree.root",kResOut);}
+  const char* GetVoxResFileName() const {return Form("%sTree.root",kResOut);}
 
- //------------------------------------ misc. stat. methods
+  //------------------------------------ misc. stat. methods
 
- static void    FitCircle(int np, const float* x, const float* y, 
-			  double &xc, double &yc, double &r, float* dy=0);
- static void    DiffToMA(int np, const float *y, const int winLR, float* diffMA);
- static int     DiffToLocLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
- static int     DiffToMedLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
- static float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
- static Float_t SelKthMin(int k, int np, float* arr);
- static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
- static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7, Bool_t sorted=kFALSE);
- static Float_t MAD2Sigma(int np, float* y);
- static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
- static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
- static Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
- static void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
- static Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
+  static void    FitCircle(int np, const float* x, const float* y, 
+			   double &xc, double &yc, double &r, float* dy=0);
+  static void    DiffToMA(int np, const float *y, const int winLR, float* diffMA);
+  static int     DiffToLocLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
+  static int     DiffToMedLine(int np, const float* x, const float *y, const int nVoisin, float *diffY);
+  static float   RoFunc(int np, const float* x, const float* y, float b, float &aa);
+  static Float_t SelKthMin(int k, int np, float* arr);
+  static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
+  static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7, Bool_t sorted=kFALSE);
+  static Float_t MAD2Sigma(int np, float* y);
+  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
+  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
+  static Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
+  static void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
+  static Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
 
- //------------------------------------
+  //------------------------------------
   
 
- Int_t   Smooth0(int isect);
- Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
- Bool_t  GetSmoothEstimateDim(int isect, float x, float p, float z, int dim, float &res, float *deriv=0);
- void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.5, float bwP=2.5, float bwZ=2.1, 
-		       float scX=1.f,float scP=1.f,float scZ=1.f);
+  Int_t   Smooth0(int isect);
+  Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
+  Bool_t  GetSmoothEstimateDim(int isect, float x, float p, float z, int dim, float &res, float *deriv=0);
+  void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.5, float bwP=2.5, float bwZ=2.1, 
+			float scX=1.f,float scP=1.f,float scZ=1.f);
   
- void    CreateCorrectionObject();
- void    InitBinning();
- Int_t   GetXBin(float x);
- Int_t   GetRowID(float x);
+  void    CreateCorrectionObject();
+  void    InitBinning();
+  Int_t   GetXBin(float x);
+  Int_t   GetRowID(float x);
   
- Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
- TH1*    GetTracksRateHisto()   const {return fTracksRate;}
- TH1*    ExtractTrackRate() const;
-  
+  Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
+  TH1*    GetTracksRateHisto()   const {return fTracksRate;}
+  TH1*    ExtractTrackRate() const;
+  Float_t GetValidFracXBin(int sect, int bin) const {return fValidFracXBin[sect][bin];}
+  Int_t   GetNTracksUsed()   {return fNTrSelTot;}
+  Int_t   GetMinTrackToUse() const {return fMinTracksToUse;}
+  //
   Int_t   GetXBinExact(float x);
   Float_t GetY2X(int ix, int iy);
   Float_t GetY2XLow(int ix, int iy);
@@ -216,6 +220,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetOCDBPath(const char* l)            {fOCDBPath = l;}
   void     SetUseErrorInSmoothing(Bool_t v=kTRUE) {fUseErrInSmoothing = v;}
   void     SetNPrimTrackCuts(int n=600)          {fNPrimTracksCut = n;}
+  void     SetMinTrackToUse(int n=1000000)       {fMinTracksToUse = n;}
   void     SetMinEntriesVoxel(int n=15)          {fMinEntriesVoxel = n;}
   void     SetMinNClusters(int n=30)             {fMinNCl = n;}
   void     SetNVoisinMA(int n=3)                 {fNVoisinMA = n;}
@@ -231,13 +236,28 @@ class AliTPCDcalibRes: public TNamed
   void     SetMaxFitXErr2(float v=1.2)           {fMaxFitXErr2 = v;}
   void     SetMaxFitXYCorr(float v=0.95)         {fMaxFitXYCorr = v;}
   void     SetLTMCut(float v=0.75)               {fLTMCut = v;}
+
+  Bool_t   GetXBinIgnored(int sect, int bin) const           {return fXBinIgnore[sect].TestBitNumber(bin);}
+  void     SetXBinIgnored(int sect, int bin, Bool_t v=kTRUE) {fXBinIgnore[sect].SetBitNumber(bin,v);}
+  //
+  Float_t  GetMinValidVoxFracDrift()       const {return fMinValidVoxFracDrift;}
+  Float_t  GetMaxSigY()                    const {return fMaxSigY;}
+  Float_t  GetMaxSigZ()                    const {return fMaxSigZ;}
+  Int_t    GetMaxBadXBinsToCover()         const {return fMaxBadXBinsToCover;}
+  Int_t    GetMinGoodXBinsToCover()        const {return fMinGoodXBinsToCover;}
+  
+  void     SetMinValidVoxFracDrift(float v=0.5)  {fMinValidVoxFracDrift = v;}
+  void     SetMaxSigY(Float_t v=1.1)              {fMaxSigY = v;}
+  void     SetMaxSigZ(Float_t v=0.7)              {fMaxSigZ = v;}  
+  void     SetMaxBadXBinsToCover(int n=2)  {fMaxBadXBinsToCover = n;}
+  void     SetMinGoodXBinsToCover(int n=2)  {fMinGoodXBinsToCover = n;}
   //
   Bool_t   GetUseTOFBC()                   const {return fUseTOFBC;}
   Float_t  GetTOFBCMin()                   const {return fTOFBCMin;}
   Float_t  GetTOFBCMax()                   const {return fTOFBCMax;}
   void     SetUseTOFBC(Bool_t v)                 {fUseTOFBC = v;}
   void     SetTOFBCMin(Float_t v=-5.f)           {fTOFBCMin = v;}
-  void     SetTOFBCMax(Float_t v=25.f)           {fTOFBCMax = v;}
+  void     SetTOFBCMax(Float_t v=20.f)           {fTOFBCMax = v;}
   //
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
@@ -288,7 +308,7 @@ class AliTPCDcalibRes: public TNamed
   static void SetUsedInstance(AliTPCDcalibRes* inst) {fgUsedInstance = inst;}
   static AliTPCDcalibRes* GetUsedInstance()          {return fgUsedInstance;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}
-protected:
+ protected:
   //
   Bool_t   fInitDone;                               // init flag
   Bool_t   fUseErrInSmoothing;                      // weight kernel by point error
@@ -315,8 +335,8 @@ protected:
   Bool_t   fDeleteSectorTrees; // delete residuals trees once statistics tree is done
   TString  fResidualList;  // list of residuals tree
   TString  fOCDBPath;      // ocdb path
-
   // ------------------------------Selection/filtering cuts
+  Int_t    fMinTracksToUse;          // produce warning if n tracks is too low
   Int_t    fMinEntriesVoxel;         // min number of entries per voxel to consider
   Int_t    fNPrimTracksCut;          // of >0, cut on event multiplicity
   Float_t  fMinNCl;                  // min number of TPC clusters to consider
@@ -335,6 +355,13 @@ protected:
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
   Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
   Float_t  fLTMCut;                  // LTM cut for outliers suppression
+  //
+  //-------------------------------- voxel validation
+  Float_t  fMaxSigY;                 // cut on sigY (after slop removal) MAD estimator
+  Float_t  fMaxSigZ;                 // cut on sigZ LTM estimator
+  Float_t  fMinValidVoxFracDrift;    // smooth/parameterize only Xbins with fraction of valid voxels above the threshold
+  Int_t    fMaxBadXBinsToCover;      // do not extrapolate to more than this number of bad Xbins
+  Int_t    fMinGoodXBinsToCover;     // requre at least this amount of consecutive good bins to parameterize
 
   // -------------------------------Binning
   Int_t    fNY2XBins;    // y/x bins per sector
@@ -344,7 +371,6 @@ protected:
   Int_t    fNBins[kVoxDim]; // bins
   Bool_t   fUniformBins[kVoxDim]; // uniform binning? Currently only X may be non-uniform (per pad-row)
   
-
   Float_t  fDZ2X;            // Z2X bin size
   Float_t  fDX;            // X bin size
   Float_t  fDZ2XI;           // inverse Z2X bin size 
@@ -375,8 +401,9 @@ protected:
   Int_t    fNReadCallTot;   // read calls from input trees
   Long64_t fNBytesReadTot;  // total bytes read
   TH1F*    fTracksRate;     // accepted tracks per second
-
-
+  Float_t  fValidFracXBin[kNSect2][kNPadRows]; // fraction of voxels valid per padrow
+  TBits    fXBinIgnore[kNSect2];    // flag to ignore Xbin
+  
   // ------------------------------VDrift correction
   TVectorD     *fVDriftParam;
   TGraphErrors *fVDriftGraph;  
@@ -442,7 +469,7 @@ protected:
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,4);
+  ClassDef(AliTPCDcalibRes,5);
 };
 
 //________________________________________________________________

@@ -90,6 +90,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fResidualList(resList)
   ,fOCDBPath()
 
+  ,fMinTracksToUse(1000000)
   ,fMinEntriesVoxel(15)
   ,fNPrimTracksCut(600)
   ,fMinNCl(30)
@@ -101,13 +102,20 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxRMSLong(0.8)
   ,fMaxRejFrac(0.15)
   ,fTOFBCMin(-5.0)
-  ,fTOFBCMax(25.0)
+  ,fTOFBCMax(20.0)
   ,fUseTOFBC(kFALSE)
   ,fFilterOutliers(kTRUE) 
   ,fMaxFitYErr2(1.0)
   ,fMaxFitXErr2(1.2)
   ,fMaxFitXYCorr(0.95)
   ,fLTMCut(0.75)
+  //
+  ,fMaxSigY(1.1)
+  ,fMaxSigZ(0.7)
+  ,fMinValidVoxFracDrift(0.5)
+  ,fMaxBadXBinsToCover(2)
+  ,fMinGoodXBinsToCover(2)
+  //
   ,fNY2XBins(15)
   ,fNZ2XBins(10)
   ,fNXBins(-1)
@@ -171,6 +179,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
     fStatHist[i] = 0;
     fArrNDStat[i] = 0;
     fTmpFile[i] = 0;
+    memset(fValidFracXBin[i],0,kNPadRows*sizeof(float));
   }
   SetKernelType();
 }
@@ -202,6 +211,17 @@ void AliTPCDcalibRes::ProcessFromDeltaTrees()
   // select tracks matching to time window and write compact local trees
   CollectData(kExtractMode);
   //
+  if (fNTrSelTot<fMinTracksToUse) {
+    AliErrorF("Low statistics: number of contributing tracks %d, min.requested %d",fNTrSelTot,fMinTracksToUse);
+    TString stopOnLosStat = gSystem->Getenv("stopOnLowStat");
+    if (!stopOnLosStat.IsNull()) {
+      AliInfo("Stop on low statistics requested: abandoning map creation");
+      exit(1);
+    }
+    else {
+      AliInfo("No stop on low statistics requested: starting map creation");
+    }
+  }
   ProcessFromLocalBinnedTrees();
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
@@ -881,7 +901,7 @@ void AliTPCDcalibRes::ProcessResiduals()
 //________________________________________________
 void AliTPCDcalibRes::ProcessDispersions()
 {
-  // extract distortions of corrected Y residuals
+  // extract distortions of corrected Y residuals ||| DEPRECATED
   if (!fInitDone) Init(); //{AliError("Init not done"); return;}
   //
   LoadStatHistos();
@@ -899,7 +919,7 @@ void AliTPCDcalibRes::ProcessDispersions()
 //________________________________________________
 void AliTPCDcalibRes::ProcessSectorDispersions(int is)
 {
-  // extract dispersion of corrected residuals
+  // extract dispersion of corrected residuals ||| DEPRECATED
   const float kEps = 1e-6;
 
   if (!fInitDone) {AliError("Init not done"); return;}
@@ -978,8 +998,9 @@ void AliTPCDcalibRes::ProcessSectorDispersions(int is)
   delete sectFile;
   //
   // now smooth the dispersion
-  for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
-    for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+  for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+    if (GetXBinIgnored(is,bvox[kVoxX])) continue;
+    for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
@@ -990,7 +1011,7 @@ void AliTPCDcalibRes::ProcessSectorDispersions(int is)
   }
   //
   sw.Stop(); 
-  AliInfoF("Sector %2d | timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
+  AliInfoF("Sector%2d | timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("ProcessSectorDispersions",1,0,0,0);
   //
 }
@@ -1042,7 +1063,7 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   }
   if (npoints>kMaxPnt) npoints = kMaxPnt;
   sw.Stop();
-  AliInfoF("Sector %2d. Extracted %d points of unbinned data. Timing: real: %.3f cpu: %.3f",
+  AliInfoF("Sector%2d. Extracted %d points of unbinned data. Timing: real: %.3f cpu: %.3f",
 	   is, npoints, sw.RealTime(), sw.CpuTime());
   sw.Start(kFALSE);
   //
@@ -1100,14 +1121,16 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   }
   //
   sw.Stop();
-  AliInfoF("Sector %2d. Extracted residuals. Timing: real: %.3f cpu: %.3f",
+  AliInfoF("Sector%2d. Extracted residuals. Timing: real: %.3f cpu: %.3f",
 	   is, sw.RealTime(), sw.CpuTime());
   sw.Start(kFALSE);
-
-  Smooth0(is);
+  
+  int nrowOK = ValidateVoxels(is);
+  if (!nrowOK) AliWarningF("Sector%2d: all X-bins disabled, abandon smoothing",is);
+  else Smooth0(is);
   //
   sw.Stop();
-  AliInfoF("Sector %2d. Smoothed residuals. Timing: real: %.3f cpu: %.3f",
+  AliInfoF("Sector%2d. Smoothed residuals. Timing: real: %.3f cpu: %.3f",
 	   is, sw.RealTime(), sw.CpuTime());
   sw.Start(kFALSE);
 
@@ -1122,7 +1145,7 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
       if (npBin) {
 	bres_t& resVox = sectData[curBin];
 	GBin2Vox(curBin,resVox.bvox);  // parse voxel
-	ProcessVoxelDispersions(npBin,tg,dy,resVox);	
+	if (!GetXBinIgnored(is,resVox.bvox[kResX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);	
       }
       curBin = binArr[ip];
       npBin = 0;
@@ -1138,12 +1161,13 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   if (npBin) {
     bres_t& resVox = sectData[curBin];
     GBin2Vox(curBin,resVox.bvox);  // parse voxel
-    ProcessVoxelDispersions(npBin,tg,dy,resVox);
+    if (!GetXBinIgnored(is,resVox.bvox[kResX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);
   }
   //
   // now smooth the dispersion
-  for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
-    for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+  for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+    if (GetXBinIgnored(is,bvox[kVoxX])) continue;
+    for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
@@ -1160,7 +1184,7 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   delete[] index;
   //
   sw.Stop(); 
-  AliInfoF("Sector %2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
+  AliInfoF("Sector%2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("ProcSectRes",is,1,0,0);
   //
 }
@@ -1186,12 +1210,15 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
   bres_t*  sectData = fSectGVoxRes[is];
   if (!sectData) AliFatalF("No SectGVoxRes data for sector %d",is);
   //
-  Smooth0(is); // smooth corrections
+  int nrowOK = ValidateVoxels(is);
+  if (!nrowOK) AliWarningF("Sector%2d: all X-bins disabled, abandon smoothing",is);
+  else Smooth0(is);
   //
   UChar_t bvox[kVoxDim];
   // now smooth the dispersion
-  for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
-    for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+  for (bvox[kVoxX]=0;bvox[kVoxX]<fNXBins;bvox[kVoxX]++) { 
+    if (GetXBinIgnored(is,bvox[kVoxX])) continue;
+    for (bvox[kVoxZ]=0;bvox[kVoxZ]<fNZ2XBins;bvox[kVoxZ]++) {
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
@@ -1199,9 +1226,9 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
 					  int(kResD), voxRes->DS[kResD]);
       }
     }
-  }
+  } 
   sw.Stop(); 
-  AliInfoF("Sector %2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
+  AliInfoF("Sector%2d. Processed dispersion. Timing: real: %.3f cpu: %.3f",is, sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("ReProcSectRes",is,1,0,0);
   //
 }
@@ -1264,7 +1291,7 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   voxRes.stat[kVoxV] = fArrNDStat[voxRes.bsec]->At(binStat);
   for (int iv=kVoxDim;iv--;) voxRes.stat[iv] = fArrNDStat[voxRes.bsec]->At(binStat+iv-kVoxV);
   //
-  if (err[0]<fMaxFitYErr2 && err[2]<fMaxFitXErr2 && TMath::Abs(corrErr)<fMaxFitXYCorr) voxRes.flags |= kDistDone;
+  voxRes.flags |= kDistDone;
 }
 
 //_________________________________________________
@@ -2309,6 +2336,9 @@ Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     // the X distortion contribution was already subtracted from the Y,Z components, restore it
     voxel->D[kResZ]  -= voxel->stat[kVoxZ]*voxel->DS[kResX];
     voxel->DS[kResZ] -= voxel->stat[kVoxZ]*voxel->DS[kResX];
+    // reset smoothed params
+    voxel->flags &= ~(kSmoothDone);
+    for (int ir=kResDim;ir--;) voxel->DS[ir]=voxel->DC[ir]=0.f;
   } // end of sector loop
   //
   delete resTree;
@@ -2409,12 +2439,110 @@ Bool_t AliTPCDcalibRes::FitPoly1(const float* x,const float* y, const float* w, 
 }
 
 //________________________________
+Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
+{
+  // apply voxel validation cuts, calculate number of low stat or killed voxels
+  int cntKilled=0, cntInvalid=0;
+  //
+  fXBinIgnore[isect].ResetAllBits();
+  bres_t* sectData = fSectGVoxRes[isect];
+  for (int ix=0;ix<fNXBins;ix++) {
+    int nvalidXBin = 0;
+    for (int ip=0;ip<fNY2XBins;ip++) {
+      for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
+	int binGlo = GetVoxGBin(ix,ip,iz);
+	bres_t *voxRes = &sectData[binGlo];
+	Bool_t voxOK = voxRes->flags&kDistDone;
+	if (voxOK) {
+	  // check fit errors
+	  if (voxRes->E[kResY]*voxRes->E[kResY]>fMaxFitYErr2 ||
+	      voxRes->E[kResX]*voxRes->E[kResX]>fMaxFitXErr2 ||
+	      TMath::Abs(voxRes->EXYCorr)>fMaxFitXYCorr) voxOK = kFALSE;
+	  // check raw distributions sigmas
+	  if (voxRes->dYSigMAD > fMaxSigY || voxRes->dZSigLTM > fMaxSigZ) voxOK = kFALSE;
+	  if (!voxOK) cntKilled++;
+	}
+	if (voxOK) {
+	  nvalidXBin++;
+	  voxRes->flags |= kDistDone;
+	}
+	else {
+	  cntInvalid++;
+	  voxRes->flags &= ~kDistDone;
+	}
+      } // loop over Z
+    } // loop over Y
+    //
+    fValidFracXBin[isect][ix] = Float_t(nvalidXBin)/(fNY2XBins*fNZ2XBins);
+    if (fValidFracXBin[isect][ix]<fMinValidVoxFracDrift) {
+      AliWarningF("Sector%2d: Xbin%3d has %4.1f%% of voxels valid (%d out of %d)",
+		  isect,ix,100*fValidFracXBin[isect][ix],nvalidXBin,fNY2XBins*fNZ2XBins);
+    }
+    //
+  } // loop over X
+  //
+  // mask X-bins which cannot be smoothed
+  int nValidInPatch = 0;
+  // 1st loop: find bad regions
+  short nbadReg=0,badStart[kNPadRows],badEnd[kNPadRows];
+  Bool_t prevBad = kFALSE;
+  for (int ix=0;ix<fNXBins;ix++) {
+    if (fValidFracXBin[isect][ix]<fMinValidVoxFracDrift) {
+      if (prevBad) badEnd[nbadReg] = ix;
+      else {
+	badStart[nbadReg] = badEnd[nbadReg] = ix;
+	prevBad = kTRUE; 
+      }
+    }
+    else {
+      if (prevBad) {
+	prevBad = kFALSE;
+	nbadReg++;
+      }
+    }
+  }
+  if (prevBad) nbadReg++; // last bad region was not closed
+  //
+  // 2nd loop: disable those regions which cannot be smoothed
+  for (int ibad=0;ibad<nbadReg;ibad++) {
+    short badSize=badEnd[ibad]-badStart[ibad]+1,badSizeNext=ibad<(nbadReg-1) ? badEnd[ibad]-badStart[ibad]+1 : 0;
+    // disable too large bad patches
+    if (badSize>fMaxBadXBinsToCover) for (int i=0;i<badSize;i++) SetXBinIgnored(isect,badStart[ibad]+i);
+    // disable too small isolated good patches
+    if (badSizeNext>fMaxBadXBinsToCover && (badStart[ibad+1]-badEnd[ibad]-1)<fMinGoodXBinsToCover) {
+      for (int i=badEnd[ibad]+1;i<badStart[ibad+1];i++) SetXBinIgnored(isect,i);
+    }
+  }
+  if (nbadReg) {
+    int ib=0;
+    // is 1st good patch too small?
+    if (GetXBinIgnored(isect,badStart[0]) && badStart[ib]<fMinGoodXBinsToCover) {
+      for (int i=0;i<badStart[ib];i++) SetXBinIgnored(isect,i);
+    }
+     // last good patch is too small?
+    ib = nbadReg-1;
+    if (GetXBinIgnored(isect,badStart[ib]) && (fNXBins-badEnd[ib]-1)<fMinGoodXBinsToCover) {
+      for (int i=badEnd[ib]+1;i<fNXBins;i++) SetXBinIgnored(isect,i);
+    }
+  }
+  //
+  int nMaskedRows = fXBinIgnore[isect].CountBits();
+  AliInfoF("Sector%2d. Voxel stat: Killed: %5d(%07.3f%%) Invalid: %5d(%07.3f%%)  -> Masked %3d rows out of %3d",isect,
+	   cntKilled, 100*float(cntKilled)/fNGVoxPerSector,
+	   cntInvalid,100*float(cntInvalid)/fNGVoxPerSector,
+	   nMaskedRows,fNXBins);
+  //
+  return fNXBins-nMaskedRows;
+}
+
+//________________________________
 Int_t AliTPCDcalibRes::Smooth0(int isect)
 {
   // apply linear regression kernel smoother 
   int cnt = 0;
   bres_t* sectData = fSectGVoxRes[isect];
   for (int ix=0;ix<fNXBins;ix++) {
+    if (GetXBinIgnored(isect,ix)) continue;
     for (int ip=0;ip<fNY2XBins;ip++) {
       for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
 	int binGlo = GetVoxGBin(ix,ip,iz);
@@ -2444,8 +2572,9 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   //
   const int kMinPointsTot = 4; // we fit 12 paremeters, each point provides 3 values
   const int kMaxTrials = 5; // max allowed iterations if neighbours are missing
+  const int kMinPointsDir = 2; // need at least 2 points per direction
+  //
   const float kTrialStep = 0.5;
-  
   Bool_t doDim[kResDim] = {kFALSE};
   for (int i=0;i<kResDim;i++) {
     doDim[i] = (which&(0x1<<i))>0;
@@ -2469,19 +2598,23 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   int binCen = GetVoxGBin(ix0,ip0,iz0);  // global bin of nearest voxel
   bres_t* voxCen = &sectData[binCen]; // nearest voxel
   //
-  int trial = 0, nbOK = 0;
+  int trial[kVoxDim]={0};
   while(1)  {
     //
     memset(fLastSmoothingRes,0,kResDim*4*sizeof(double));
-    if (trial>kMaxTrials) {printf("Trials limit reached\n"); return kFALSE;}
-
+    for (int id=kVoxDim;id--;) 
+      if (trial[id]>fNBins[id]) {
+	AliErrorF("Trials limit reached: Z:%d F:%d X:%d",trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
+	return kFALSE;
+      }
+    //
     memset(cmat,0,kResDim*10*sizeof(double));
     //
-    nbOK=0; // accounted neighbours
+    int nbOK=0; // accounted neighbours
     //
-    float stepX = fStepKern[kVoxX]*(1. + kTrialStep*trial);
-    float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial);
-    float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial);
+    float stepX = fStepKern[kVoxX]*(1. + kTrialStep*trial[kVoxX]);
+    float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
+    float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
     if (!(voxCen->flags&kDistDone)) { // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
@@ -2587,14 +2720,17 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) npx++; 
     for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) npp++;
     for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) npz++;
-    if (npx<2 || npp<2 || npz<2 || nbOK<kMinPointsTot) {
-      trial++;
-      AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
+    Bool_t enoughPoints = kTRUE;
+    if (npx<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxX]++; enoughPoints=kFALSE;}
+    if (npp<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxF]++; enoughPoints=kFALSE;}
+    if (npz<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxZ]++; enoughPoints=kFALSE;}
+    /*
+    AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "trying to increase filter bandwidth (trial%d)\n",
-		  isect,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial);
-      continue;
-    }
+		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
+		  isect,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+    */
+    if (!enoughPoints) continue;
     //
     Bool_t fitRes = kTRUE;
     //
@@ -2611,11 +2747,11 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
       mat(3,0) = cmatD[kM30];   mat(3,1) = cmatD[kM31];  mat(3,2) = cmatD[kM32];  mat(3,3) = cmatD[kM33];
       fitRes &= mat.SolveChol(rhsD);
       if (!fitRes) {
-	trial++;
+	for (int i=kVoxDim;i--;) trial[i]++;
 	AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		    "neighbours range used %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		    "Solution for smoothing Failed, trying to increase filter bandwidth (trial%d)",
-		    isect,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial);
+		    "Solution for smoothing Failed, trying to increase filter bandwidth (trialXFZ: %d %d %d)",
+		    isect,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
 	continue;
       }
       res[id] = rhsD[0];
@@ -2624,7 +2760,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     //
     break; // success
   } // end of loop over allowed trials
-
+  
   return kTRUE;
 
 }
@@ -2639,6 +2775,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
   //
   const int kMinPointsTot = 4; // we fit 12 paremeters, each point provides 3 values
   const int kMaxTrials = 5; // max allowed iterations if neighbours are missing
+  const int kMinPointsDir = 2; // need at least 2 points per direction
   const float kTrialStep = 0.5;
 
   res = 0;
@@ -2660,17 +2797,22 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
   int binCen = GetVoxGBin(ix0,ip0,iz0);  // global bin of nearest voxel
   bres_t* voxCen = &sectData[binCen]; // nearest voxel
   //
-  int trial = 0, nbOK = 0;
+  int trial[kVoxDim]={0};
   while(1)  {
     //
     memset(rhs,0,4*sizeof(double));
-    if (trial>kMaxTrials) {printf("Trials limit reached\n"); return kFALSE;}
-    memset(cmat,0,10*sizeof(double));
-    nbOK=0; // accounted neighbours
+    for (int id=kVoxDim;id--;) 
+      if (trial[id]>fNBins[id]) {
+	AliErrorF("Trials limit reached: Z:%d F:%d X:%d",trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
+	return kFALSE;
+      }
     //
-    float stepX = fStepKern[kVoxX]*(1. + kTrialStep*trial);
-    float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial);
-    float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial);
+    memset(cmat,0,10*sizeof(double));
+    int nbOK=0; // accounted neighbours
+    //
+    float stepX = fStepKern[kVoxX]*(1. + kTrialStep*trial[kVoxX]);
+    float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
+    float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
     if (!(voxCen->flags&kDistDone)) { // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
@@ -2773,14 +2915,17 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
     for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) npx++; 
     for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) npp++;
     for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) npz++;
-    if (npx<2 || npp<2 || npz<2 || nbOK<kMinPointsTot) {
-      trial++;
+    Bool_t enoughPoints = kTRUE;
+    if (npx<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxX]++; enoughPoints=kFALSE;}
+    if (npp<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxF]++; enoughPoints=kFALSE;}
+    if (npz<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxZ]++; enoughPoints=kFALSE;}
+    /*
       AliWarningF("Sector:%2d Dim%d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "trying to increase filter bandwidth (trial%d)\n",
-		  isect,dim,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial);
-      continue;
-    }
+		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
+		  isect,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+    */
+    if (!enoughPoints) continue;
     //
     Bool_t fitRes = kTRUE;
     //
@@ -2792,11 +2937,11 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
     mat(3,0) = m30;   mat(3,1) = m31;  mat(3,2) = m32;  mat(3,3) = m33;
     fitRes &= mat.SolveChol(rhs);
     if (!fitRes) {
-      trial++;
+      for (int i=kVoxDim;i--;) trial[i]++;
       AliWarningF("Sector:%2d Dim%d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "neighbours range used %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "Solution for smoothing Failed, trying to increase filter bandwidth (trial%d)",
-		  isect,dim,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial);
+		  "Solution for smoothing Failed, trying to increase filter bandwidth (trialXFZ: %d %d %d)",
+		  isect,dim,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
       continue;
     }
     //
@@ -3072,23 +3217,27 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   static int sector=0;
   if (!tzLoc || !corrLoc) {
     sector = row%AliTPCDcalibRes::kNSect2; 
-    printf("training Sector %d\n",sector);
+    printf("training Sector%d\n",sector);
     return;
   }
   //
-  float x = AliTPCDcalibRes::GetTPCRowX(row);
-  float dist[AliTPCDcalibRes::kResDim], deriv[AliTPCDcalibRes::kResDim*3];
+  AliTPCDcalibRes* calib = AliTPCDcalibRes::GetUsedInstance();
 
+  float x = AliTPCDcalibRes::GetTPCRowX(row);
+  float dist[AliTPCDcalibRes::kResDim] = {0};
+  int xbin = calib->GetNXBins()==AliTPCDcalibRes::kNPadRows ? row : calib->GetXBin(x);
+  if (calib->GetXBinIgnored(sector,xbin)) return;
   float y2x = tzLoc[0];
   float z2x = tzLoc[1];
   //
-  Bool_t res = AliTPCDcalibRes::GetUsedInstance()->GetSmoothEstimate(sector, x, y2x, z2x, 
+  Bool_t res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 
 								     0xff, dist);
   if (!res) { printf("Failed to evaluate smooth distortion\n"); exit(1); }
 
   /*
   // Marian stored Z track coordinate instead of cluster one, need to correct for this
   if (fApplyZt2Zc) {
+    float deriv[AliTPCDcalibRes::kResDim*3];
     const double inversionEps = 20e-4; // when inverting, stop Newton-Raphson iterations at this eps
     const int    inversionMaxIt = 3; // when inverting, stop Newton-Raphson after some numbers of iterations
     double change = 0, xInv = 1./x;
