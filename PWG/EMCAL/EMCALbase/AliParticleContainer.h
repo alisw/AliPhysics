@@ -73,16 +73,6 @@ class AliParticleContainer : public AliEmcalContainer {
   const AliParticleIterableContainer      all() const;
   const AliParticleIterableContainer      accepted() const;
 
-  AliParticleIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliParticleIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliParticleIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliParticleIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliParticleIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliParticleIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliParticleIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliParticleIterableContainer::iterator  rend()          const { return all().rend()         ; }
-
  protected:
 
   Double_t                    fMinDistanceTPCSectorEdge;      ///< require minimum distance to edge of TPC sector edge

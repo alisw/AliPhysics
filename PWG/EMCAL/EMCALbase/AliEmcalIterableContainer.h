@@ -4,7 +4,6 @@
  * See cxx source for full Copyright notice                               */
 
 #include <iterator>
-
 #include <TArrayI.h>
 
 class AliEmcalContainer;
@@ -70,8 +69,8 @@ public:
    * In case of c++11 the iterator also allows range-based iteration.
    */
   class iterator : public std::iterator<std::bidirectional_iterator_tag,
-                                        TObject,std::ptrdiff_t,
-                                        TObject **, TObject *>{
+                                        T,std::ptrdiff_t,
+                                        T **, T *>{
   public:
     iterator(const AliEmcalIterableContainerT<T> *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
