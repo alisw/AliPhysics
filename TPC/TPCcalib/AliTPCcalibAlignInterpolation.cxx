@@ -1798,8 +1798,8 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   float bz = fixAlignmentBugForFile ? InitForAlignmentBugFix(runNumber) : 0;
 
   // check if TOF was present
-  const float tofBCMin = -5.f;
-  const float tofBCMax = 20.f;
+  const float tofBCMin = -25.f;
+  const float tofBCMax = 50.f;
   //
   if (tofBCValidation) {
     AliCDBManager* man = AliCDBManager::Instance();
@@ -1825,7 +1825,17 @@ Bool_t AliTPCcalibAlignInterpolation::FitDrift(double deltaT, double sigmaT, dou
   //
   Int_t entriesFit0 = chainDelta->Draw(toRead.Data(),cutEv.Data(),"goffpara",maxEntries); 
   chainDelta->PrintCacheStats();
-  Int_t entriesFit=entriesFit0/10;
+  AliInfoClassF("Selected %d points from first %d entries",entriesFit0,maxEntries);
+  
+  float lossFactorOK = 0.5f; // allowed loss factor
+  float lossFactor = entriesFit0*5./160./maxEntries;
+  int prescaling = 10;
+  if (lossFactor < lossFactorOK) {
+    prescaling = TMath::Max(lossFactor/lossFactorOK,2.0f);
+  }
+  Int_t entriesFit=entriesFit0/prescaling;
+  AliInfoClassF("Selection loss factor: %f -> random prescaling: %d -> entriesFit: %d",lossFactor,prescaling,entriesFit);
+
   AliSysInfo::AddStamp("FitDrift.EndCache",3,1,0);
 
   AliSysInfo::AddStamp("FitDrift.BeginFill",4,1,0);
