@@ -256,8 +256,8 @@ class AliTPCDcalibRes: public TNamed
   Float_t  GetTOFBCMin()                   const {return fTOFBCMin;}
   Float_t  GetTOFBCMax()                   const {return fTOFBCMax;}
   void     SetUseTOFBC(Bool_t v)                 {fUseTOFBC = v;}
-  void     SetTOFBCMin(Float_t v=-5.f)           {fTOFBCMin = v;}
-  void     SetTOFBCMax(Float_t v=20.f)           {fTOFBCMax = v;}
+  void     SetTOFBCMin(Float_t v=-25.f)           {fTOFBCMin = v;}
+  void     SetTOFBCMax(Float_t v=50.f)           {fTOFBCMax = v;}
   //
   Float_t  GetMaxFitYErr2()                 const {return fMaxFitYErr2;}
   Float_t  GetMaxFitXErr2()                 const {return fMaxFitXErr2;}
