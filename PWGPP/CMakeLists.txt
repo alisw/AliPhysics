@@ -383,6 +383,7 @@ install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
 install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
               BeamGasMonitoring/macros/AddTaskBGMonitorQA.C
+              BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 
 message(STATUS "PWGPP enabled")
