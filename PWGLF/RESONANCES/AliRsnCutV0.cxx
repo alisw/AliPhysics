@@ -179,7 +179,13 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
    AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
 
-   // check quality cuts
+    // filter like-sign V0
+   if ( TMath::Abs( ((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
+      AliDebugClass(2, "Failed like-sign V0 check");
+      return kFALSE;
+   }
+
+  // check quality cuts
    if (fESDtrackCuts) {
       AliDebugClass(2, "Checking quality cuts");
       if (!fESDtrackCuts->IsSelected(pTrack)) {
@@ -192,47 +198,41 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       }
    }
 
-   // filter like-sign V0
-   if ( TMath::Abs( ((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
-      AliDebugClass(2, "Failed like-sign V0 check");
+   // topological checks
+   if (TMath::Abs(v0->GetDcaV0Daughters()) > fMaxDaughtersDCA) {
+     AliDebugClass(2, "Failed check on DCA between daughters");
+     return kFALSE;
+   }
+   if (TMath::Abs(v0->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > fMaxDCAVertex) {
+     AliDebugClass(2, "Failed check on DCA to primary vertes");
+     return kFALSE;
+   }
+   //if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
+   if ( (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) || (TMath::Abs(v0->GetV0CosineOfPointingAngle()) >= 1 ) ) {
+     AliDebugClass(2, "Failed check on cosine of pointing angle");
+     return kFALSE;
+   }
+   if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
+      AliDebugClass(2, "Failed check on V0 rapidity");
       return kFALSE;
    }
-
-
-   // check compatibility with expected species hypothesis
+   //
+   Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
+   v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
+   Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
+   if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
+     AliDebugClass(2, "Failed fiducial volume");
+     return kFALSE;   
+   }
+    
+    // check compatibility with expected species hypothesis
    v0->ChangeMassHypothesis(fHypothesis);
    if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
       AliDebugClass(2, "V0 is not in the expected inv mass range");
       return kFALSE;
    }
 
-   // topological checks
-   if (TMath::Abs(v0->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > fMaxDCAVertex) {
-      AliDebugClass(2, "Failed check on DCA to primary vertes");
-      return kFALSE;
-   }
-      if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
-      AliDebugClass(2, "Failed check on cosine of pointing angle");
-      return kFALSE;
-   }
-   if (TMath::Abs(v0->GetDcaV0Daughters()) > fMaxDaughtersDCA) {
-      AliDebugClass(2, "Failed check on DCA between daughters");
-      return kFALSE;
-   }
-   if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
-      AliDebugClass(2, "Failed check on V0 rapidity");
-      return kFALSE;
-   }
-
-   Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
-  v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
-  Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
-  if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
-    AliDebugClass(2, "Failed fiducial volume");
-    return kFALSE;   
-  }
-    
-   // check PID on proton or antiproton from V0
+  // check PID on proton or antiproton from V0
 
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
@@ -279,10 +279,7 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
          return kFALSE;
       }
    }
-
-   //}
-
-   if(fHypothesis==kLambda0Bar) {
+   else if(fHypothesis==kLambda0Bar) {
       //if (isTOFneg) {
       // TPC: 5sigma cut for all
       //if (negnsTPC > 5.0) return kFALSE;
@@ -300,8 +297,27 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
          AliDebugClass(2, "Failed check on V0 PID");
          return kFALSE;
       }
+   }  
+   else if(fHypothesis==kK0Short) {
+      //if (isTOFneg) {
+      // TPC: 5sigma cut for all
+      //if (negnsTPC > 5.0) return kFALSE;
+      // TOF: 3sigma
+      // maxTOF = 3.0;
+      //return (negnsTOF <= maxTOF);
+      //} else {
+      // TPC:
+
+     
+         maxTPC = fPIDCutPion;
+         maxTPC2 = fPIDCutPion;
+
+      if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
+         AliDebugClass(2, "Failed check on V0 PID");
+         return kFALSE;
+      }
    }
-   //}
+  
 
 
    // if we reach this point, all checks were successful
@@ -393,6 +409,9 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    else if (fHypothesis==kLambda0Bar) {
       mass = v0->MassAntiLambda();
    }
+   else if (fHypothesis==kK0Short) {
+      mass = v0->MassK0Short();
+   }
    if ((TMath::Abs(mass - fMass)) > fTolerance) {
       AliDebugClass(2, Form("V0 is not in the expected inv mass range  Mass: %d %f %f", fHypothesis, fMass, mass));
       return kFALSE;
@@ -455,9 +474,16 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
        return kFALSE;
      }
    }
-   
-   if(fHypothesis==kLambda0Bar) {
+   else if(fHypothesis==kLambda0Bar) {
      maxTPC = fPIDCutProton;
+     maxTPC2 = fPIDCutPion;
+     if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
+       AliDebugClass(2, "Failed check on V0 PID");
+       return kFALSE;
+     }
+   }
+   else if(fHypothesis==kK0Short) {
+     maxTPC = fPIDCutPion;
      maxTPC2 = fPIDCutPion;
      if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
        AliDebugClass(2, "Failed check on V0 PID");

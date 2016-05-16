@@ -24,9 +24,9 @@ public:
    virtual Bool_t         IsSelected(TObject *obj);
 
    void           SetPIDCut(Double_t value)                    {fPIDCut = value;}
-   void           SetMinTPCcluster(Int_t value)                {fMinTPCcluster = value;}
+   //void           SetMinTPCcluster(Int_t value)                {fMinTPCcluster = value;}
    //void           SetDCARPtFormula(const char *formula)        {fDCARptFormula = formula;}
-   void           SetDCARmax(Double_t value)                   {fDCARmax = value;}
+   //void           SetDCARmax(Double_t value)                   {fDCARmax = value;}
     
 private:
    AliRsnCutDaughterSigmaStar2010PP(const AliRsnCutDaughterSigmaStar2010PP &copy); // Not implemented
@@ -40,8 +40,8 @@ private:
 protected:
 
    Double_t         fPIDCut;                    // nsigmas for pions
-   Int_t            fMinTPCcluster;             // min allowed TPC cluster
-   Double_t         fDCARmax;                    // max DCA for tracks
+   //Int_t            fMinTPCcluster;             // min allowed TPC cluster
+   // Double_t         fDCARmax;                    // max DCA for tracks
    //TString          fDCARptFormula;             // min DCAR pt dependent formula
 };
 
