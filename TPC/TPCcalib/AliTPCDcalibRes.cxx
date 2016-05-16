@@ -2617,7 +2617,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
     float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
-    if (!(voxCen->flags&kDistDone)) { // closest voxel has no data, increase smoothing step
+    if (!(voxCen->flags&kDistDone) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
       stepF+=kTrialStep*fStepKern[kVoxF];
       stepZ+=kTrialStep*fStepKern[kVoxZ];
@@ -2679,7 +2679,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	  //
 	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
 	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone)) continue; // skip voxels w/o data
+	  if (!(voxNb->flags&kDistDone) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
 	  // estimate weighted distance
 	  float dx = voxNb->stat[kVoxX]-x;
 	  float df = voxNb->stat[kVoxF]-p;
@@ -2815,7 +2815,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
     float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
     float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
-    if (!(voxCen->flags&kDistDone)) { // closest voxel has no data, increase smoothing step
+    if (!(voxCen->flags&kDistDone) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
       stepF+=kTrialStep*fStepKern[kVoxF];
       stepZ+=kTrialStep*fStepKern[kVoxZ];
@@ -2877,7 +2877,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
 	  //
 	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
 	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone)) continue; // skip voxels w/o data
+	  if (!(voxNb->flags&kDistDone) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
 	  // estimate weighted distance
 	  float dx = voxNb->stat[kVoxX]-x;
 	  float df = voxNb->stat[kVoxF]-p;
