@@ -16,6 +16,7 @@
 #include "TThread.h"
 #include <deque>
 #include "TQObject.h"
+#include "TObject.h"
 
 class TVirtualPad;
 class TString;
@@ -23,6 +24,8 @@ class TObject;
 class TPad;
 class TCanvas;
 class TPRegexp;
+class TCollection;
+class AliAnalysisDataContainer;
 
 struct ZMQviewerObject {
   TObject* object;
@@ -73,6 +76,8 @@ struct AliZMQhistViewer : public AliOptionParser, public TQObject {
   int Run(void* arg);
   int ProcessOption(TString option, TString value);
   void SetCanvas(TCanvas* canvas) {fCanvas = canvas;}
+  int GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
+  int GetObjects(TCollection* kont, std::vector<TObject*>* list, const char* prefix="");
 
   //signals
   void DataReady(); //*SIGNAL*

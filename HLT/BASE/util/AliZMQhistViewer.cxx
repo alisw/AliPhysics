@@ -32,9 +32,11 @@
 #include <map>
 #include "TSystem.h"
 #include "TStyle.h"
+#include "TNamed.h"
 #include "signal.h"
 #include "AliZMQhistViewer.h"
 #include "TThread.h"
+#include "AliAnalysisDataContainer.h"
 
 #define safename(i) (i->object)?i->object->GetName():"NULL"
 #define safetitle(i) (i->object)?i->object->GetTitle():"NULL"
@@ -228,14 +230,34 @@ int AliZMQhistViewer::GetData(void* socket)
       TObject* tmp = NULL;
       alizmq_msg_iter_data(i, tmp);
       if (!tmp) continue;
-      ZMQviewerObject object(tmp);
 
-      if (fVerbose) Printf("--in: %s (%s), %p", tmp->GetName(), tmp->ClassName(), tmp);
+      std::vector<TObject*> listOfObjects; listOfObjects.reserve(100);
+      AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
+      if (analKont) {
+        if (fVerbose) printf("--in AliAnalysisDataContainer %p\n",analKont);
+        GetObjects(analKont, &listOfObjects);
+        if (fVerbose) printf("  destroying anal container %p\n",tmp);
+        delete tmp;
+      } else {
+        TCollection* collection = dynamic_cast<TCollection*>(tmp);
+        if (collection) {
+          if (fVerbose) printf("--in TCollection %p\n",collection);
+          GetObjects(collection, &listOfObjects);
+        if (fVerbose) printf("  destroying collection %p\n",tmp);
+          delete tmp;
+        } else {
+          if (fVerbose) printf("--in TObject\n");
+          listOfObjects.push_back(tmp);
+        }
+      }
 
-      incomingObjects->push_back(object);
-
+      //add all extracted objects to the list of veiwer objects
+      for (auto i: listOfObjects) {
+        ZMQviewerObject object(i);
+        if (fVerbose) Printf("  adding: %s (%s), %p", i->GetName(), i->ClassName(), i);
+        incomingObjects->push_back(object);
+      }
     }
-
   } //for iterator i
   alizmq_msg_close(&message);
 
@@ -243,6 +265,63 @@ int AliZMQhistViewer::GetData(void* socket)
 
   DataReady(); //emit a signal
 
+  return 0;
+}
+
+//______________________________________________________________________________
+int AliZMQhistViewer::GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix)
+{
+  const char* analName = kont->GetName();
+  TObject* analData = kont->GetData();
+  std::string name = analName;
+  TCollection* collection = dynamic_cast<TCollection*>(analData);
+  if (collection) {
+    if (fVerbose) Printf("  have a collection %p",collection);
+    const char* collName = collection->GetName();
+    //name += "_";
+    //name += collName;
+    GetObjects(collection, list, name.c_str());
+    if (fVerbose) printf("  destroying collection %p\n",collection);
+    delete collection;
+    kont->SetDataOwned(kFALSE);
+  } else { //if (collection)
+    TNamed* named = dynamic_cast<TNamed*>(analData);
+    name += analData->GetName();
+    if (named) { named->SetName(name.c_str()); }
+    if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
+                         named->GetName(),
+                         named->ClassName(),
+                         named );
+    kont->SetDataOwned(kFALSE);
+    list->push_back(analData);
+  }
+  return 0;
+}
+
+//______________________________________________________________________________
+int AliZMQhistViewer::GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix)
+{
+  TIter next(collection);
+  while (TObject* tmp = next()) {
+    collection->Remove(tmp);
+    std::string name = tmp->GetName();
+    name = "_" + name;
+    name = prefix + name;
+    if (fVerbose) Printf("--in (from a TCollection): %s (%s), %p",
+                         tmp->GetName(), tmp->ClassName(), tmp);
+    AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
+    if (analKont) {
+      if (fVerbose) Printf("  have an analysis container %p",analKont);
+      GetObjects(analKont,list,name.c_str());
+      if (fVerbose) printf("  destroying anal container %p\n",analKont);
+      delete analKont;
+    } else {
+      TNamed* named = dynamic_cast<TNamed*>(tmp);
+      if (named) { named->SetName(name.c_str()); }
+      list->push_back(tmp);
+    }
+    collection->SetOwner(kTRUE);
+  } //while
   return 0;
 }
 
