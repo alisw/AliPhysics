@@ -28,80 +28,88 @@ Bool_t ConfigSigmaStar
 {
    // manage suffix
    if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
-   
-   // 
-   // -- Define track cuts -------------------------------------------------------------------------
+ 
+   /////////////////////////////////////////////////////
+   // selections for the pion from the decay of Sigma*
+   /////////////////////////////////////////////////////
    //
-
-   //TString s = ""; s+=trackDCAcut; s+="*(0.0026+0.0050/pt^1.01)";
-   //const char *formula = s;
-
-   // integrated pion cut
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
-   cutPi->SetPIDCut(piPIDCut);    // This is effective! fPIDCut used in IsSelected() after the call to cutQuality
-   //cutPi->SetMinTPCcluster(NTPCcluster);   // NOTE!!!! Not effective!! fMinTPCclsuter NOT USED in IsSelected()
+   cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to cutQuality
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
-   cutQuality->SetAODTestFilterBit(aodFilterBit);
-   cutQuality->SetDefaults2011();
-   //cutQuality->SetDCARPtFormula(formula);    
-   //cutQuality->SetDCARmax(trackDCAcut);	         
-   //cutQuality->SetDCARmin(0.01);	         
-    
-   // cut set
+   //cutQuality->SetDefaults2011();
+   cutQuality->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
+   // SetDefaults2010 contains the following selections:
+   //     SetPtRange(0.15, 1E+20);
+   //     SetEtaRange(-0.8, 0.8);
+   //     and from aliroot/master/src/ANALYSIS/ANALYSISalice/AliESDtrackCuts.cxx
+   //     AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(1,0)
+   //         esdTrackCuts->SetMinNClustersTPC(70);
+   //         esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+   //         esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+   //         esdTrackCuts->SetRequireTPCRefit(kTRUE);
+   //         esdTrackCuts->SetRequireITSRefit(kTRUE);
+   //         esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+   //         esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");    // NB. With pt_min=0.15 (see above) -> DCAxy_max = 0.2560
+   //         esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+   //         esdTrackCuts->SetMaxDCAToVertexZ(2);
+   //         esdTrackCuts->SetDCAToVertex2D(kFALSE);
+   //         esdTrackCuts->SetRequireSigmaToVertex(kFALSE);  
+   //         esdTrackCuts->SetMaxChi2PerClusterITS(36);
+   //  
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForSigmaStar", AliRsnTarget::kDaughter);
    cutSetPi->AddCut(cutPi);
    cutSetPi->SetCutScheme(cutPi->GetName());
-   // add to task
    Int_t iCutPi = task->AddTrackCuts(cutSetPi);
-   
-   // quality cuts
+   //
+   /////////////////////////////////////////////////////////////
+   // selections for Lambda and for the daughters of Lambda 
+   /////////////////////////////////////////////////////////////
+   // 
+   // selections for the proton and pion daugthers of Lambda and AntiLambda
    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterLambda");   
-   esdTrackCuts->SetAcceptKinkDaughters(0); // 0 = kFalse
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
+   esdTrackCuts->SetPtRange(0.15,1.E10);
+   esdTrackCuts->SetEtaRange(-0.8,0.8);
    esdTrackCuts->SetRequireTPCRefit();
-   esdTrackCuts->SetMinDCAToVertexXY(0.05);
-   
-   // cut lambda
+   esdTrackCuts->SetAcceptKinkDaughters(0); //
+   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
+   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+   esdTrackCuts->SetMinDCAToVertexXY(0.15);   
+   //
+   /////////////////////////////////////////////////
+   // selections for Lambda
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
-   cutLambda->SetESDtrackCuts(esdTrackCuts);
-   cutLambda->SetTolerance(massTol);
+   cutLambda->SetPIDCutProton(pPIDCut);       // PID for the proton daughter of Lambda
+   cutLambda->SetPIDCutPion(piPIDCut);        // PID for the pion daughter of Lambda 
+   cutLambda->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of Lambda
+   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
    cutLambda->SetMaxDCAVertex(lambdaDCA);
    cutLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-   cutLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
-   cutLambda->SetMinTPCcluster(NTPCcluster);
-   cutLambda->SetMaxRapidity(0.8);
-   // cutLambda->SetAODTestFilterBit(aodFilterBit);
-   cutLambda->SetPIDCutProton(pPIDCut);
-   cutLambda->SetPIDCutPion(piPIDCut);
-   
-   // cut set
+   cutLambda->SetTolerance(massTol);
+   cutLambda->SetMaxRapidity(0.5);
+   //
    AliRsnCutSet *cutSetLambda = new AliRsnCutSet("setLambda", AliRsnTarget::kDaughter);
    cutSetLambda->AddCut(cutLambda);
    cutSetLambda->SetCutScheme(cutLambda->GetName());
-   
-   // add to task
    Int_t iCutLambda = task->AddTrackCuts(cutSetLambda);
-   
-   // cut anti-AntiLambda
+   //
+   /////////////////////////////////////////////////
+   // selections for AntiLambda
    AliRsnCutV0 *cutAntiLambda = new AliRsnCutV0("cutAntiLambda", kLambda0Bar, AliPID::kProton, AliPID::kPion);
-   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
-   cutAntiLambda->SetTolerance(massTol);
-   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
-   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
-   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
-   cutAntiLambda->SetMinTPCcluster(NTPCcluster);
-   cutAntiLambda->SetMaxRapidity(0.8);
-   //cutAntiLambda->SetAODTestFilterBit(aodFilterBit);
    cutAntiLambda->SetPIDCutProton(pPIDCut);
    cutAntiLambda->SetPIDCutPion(piPIDCut);
-   
-   // cut set
+   cutAntiLambda->SetESDtrackCuts(esdTrackCuts);
+   cutAntiLambda->SetMaxDaughtersDCA(lambdaDaughDCA);
+   cutAntiLambda->SetMaxDCAVertex(lambdaDCA);
+   cutAntiLambda->SetMinCosPointingAngle(lambdaCosPoinAn);
+   cutAntiLambda->SetTolerance(massTol);
+   cutAntiLambda->SetMaxRapidity(0.5);
+   // 
    AliRsnCutSet *cutSetAntiLambda = new AliRsnCutSet("setAntiLambda", AliRsnTarget::kDaughter);
    cutSetAntiLambda->AddCut(cutAntiLambda);
    cutSetAntiLambda->SetCutScheme(cutAntiLambda->GetName());
-   // add to task
    Int_t iCutAntiLambda = task->AddTrackCuts(cutSetAntiLambda); 
+   //
+   /////////////////////////////////////////////////
    
    
    //######################################################################################################  
@@ -153,22 +161,29 @@ Bool_t ConfigSigmaStar
       out->SetPairCuts(cutsPair);
       // axis X: invmass
       if (useIM[i]) 
-         out->AddAxis(imID, 800, 1.2, 2.0);
+             out->AddAxis(imID, 800, 1.2, 2.0);
+      //  out->AddAxis(imID, 700, 1.2, 4.0);
       // axis Y: transverse momentum
-         out->AddAxis(ptID, 100, 0.0, 10.0);
+	  out->AddAxis(ptID, 100, 0.0, 10.0);
 	 //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
 	 
       if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
       
     } 
     
-   AddMonitorOutput_PionDCA(cutSetPi->GetMonitorOutput());
+   AddMonitorOutput_PionPt(cutSetPi->GetMonitorOutput());
+   AddMonitorOutput_PionEta(cutSetPi->GetMonitorOutput());
+   AddMonitorOutput_PionDCAxy(cutSetPi->GetMonitorOutput());
+   AddMonitorOutput_PionDCAz(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionPIDCut(cutSetPi->GetMonitorOutput());
    AddMonitorOutput_PionNTPC(cutSetPi->GetMonitorOutput());
+   AddMonitorOutput_PionTPCchi2(cutSetPi->GetMonitorOutput());
    
-   AddMonitorOutput_LambdaMass(cutSetLambda->GetMonitorOutput());
-   AddMonitorOutput_LambdaP(cutSetLambda->GetMonitorOutput());
+   // AddMonitorOutput_LambdaP(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPt(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaNegDaughPt(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaPosDaughPt(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaMass(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDCA(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaRadius(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDaughterDCA(cutSetLambda->GetMonitorOutput());
@@ -176,16 +191,20 @@ Bool_t ConfigSigmaStar
    AddMonitorOutput_LambdaProtonPID(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPionPID(cutSetLambda->GetMonitorOutput());
    
+   /*
    AddMonitorOutput_LambdaMass(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaP(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPt(cutSetAntiLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaNegDaughPt(cutSetAntiLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaPosDaughPt(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDCA(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaRadius(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDaughterDCA(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaCosPointAngle(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiProtonPID(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiPionPID(cutSetAntiLambda->GetMonitorOutput());
-   
+   */
+
    if (isMC) {
      
      TString mode = "HIST";
@@ -361,20 +380,71 @@ Bool_t ConfigSigmaStar
    return kTRUE;
 }
 
-void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdca=0)
+void AddMonitorOutput_PionPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ppt=0)
 {
 
    // PionDCA
-   AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(-0.5,0.5,0.001);
+   AliRsnValueDaughter *axisPionPt = new AliRsnValueDaughter("pion_pt", AliRsnValueDaughter::kPt);
+   axisPionPt->SetBins(0.,10.0,0.001);
 
    // output: 2D histogram
-   AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
-   outMonitorPionDCA->AddValue(axisPionDCA);
+   AliRsnListOutput *outMonitorPionPt = new AliRsnListOutput("Pion_Pt", AliRsnListOutput::kHistoDefault);
+   outMonitorPionPt->AddValue(axisPionPt);
 
    // add outputs to loop
-   if (mon) mon->Add(outMonitorPionDCA);
-   if (pdca) pdca->AddOutput(outMonitorPionDCA);
+   if (mon) mon->Add(outMonitorPionPt);
+   if (ppt) ppt->AddOutput(outMonitorPionPt);
+  
+}
+
+void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *peta=0)
+{
+
+   // PionDCA
+   AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
+   axisPionEta->SetBins(-2.,2.,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
+   outMonitorPionEta->AddValue(axisPionEta);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorPionEta);
+   if (peta) peta->AddOutput(outMonitorPionEta);
+  
+}
+
+void AddMonitorOutput_PionDCAxy(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaxy=0)
+{
+
+   // PionDCA
+   AliRsnValueDaughter *axisPionDCAxy = new AliRsnValueDaughter("pion_dcaxy", AliRsnValueDaughter::kDCAXY);
+   axisPionDCAxy->SetBins(-0.5,0.5,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorPionDCAxy = new AliRsnListOutput("Pion_DCAxy", AliRsnListOutput::kHistoDefault);
+   outMonitorPionDCAxy->AddValue(axisPionDCAxy);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorPionDCAxy);
+   if (pdcaxy) pdcaxy->AddOutput(outMonitorPionDCAxy);
+  
+}
+
+void AddMonitorOutput_PionDCAz(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *pdcaz=0)
+{
+
+   // PionDCA
+   AliRsnValueDaughter *axisPionDCAz = new AliRsnValueDaughter("pion_dcaz", AliRsnValueDaughter::kDCAZ);
+   axisPionDCAz->SetBins(-2.5,2.5,0.005);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorPionDCAz = new AliRsnListOutput("Pion_DCAz", AliRsnListOutput::kHistoDefault);
+   outMonitorPionDCAz->AddValue(axisPionDCAz);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorPionDCAz);
+   if (pdcaz) pdcaz->AddOutput(outMonitorPionDCAz);
   
 }
 
@@ -412,47 +482,99 @@ void AddMonitorOutput_PionNTPC(TObjArray *mon=0,TString opt="",AliRsnLoopDaughte
   
 }
 
+void AddMonitorOutput_PionTPCchi2(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *piTPCchi2=0)
+{
 
-void AddMonitorOutput_LambdaP(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+   // Pion PID Cut
+   AliRsnValueDaughter *axisPionTPCchi2 = new AliRsnValueDaughter("pionTPCchi2", AliRsnValueDaughter::kTPCchi2);
+   axisPionTPCchi2->SetBins(0.0,6,.1);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorPionTPCchi2 = new AliRsnListOutput("Pion_TPCchi2", AliRsnListOutput::kHistoDefault);
+   outMonitorPionTPCchi2->AddValue(axisPionTPCchi2);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorPionTPCchi2);
+   if (piTPCchi2) pTPCchi2->AddOutput(outMonitorPionTPCchi2);
+  
+}
+
+
+void AddMonitorOutput_LambdaP(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lp=0)
 {
 
    // Mass
-   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_momentum", AliRsnValueDaughter::kP);
-   axisMass->SetBins(0.,15.,0.001);
+   AliRsnValueDaughter *axisLambdaP = new AliRsnValueDaughter("lambda_momentum", AliRsnValueDaughter::kP);
+   axisLambdaP->SetBins(0.,15.,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorMom = new AliRsnListOutput("Lambda_Momentum", AliRsnListOutput::kHistoDefault);
-   outMonitorMom->AddValue(axisMass);
+   outMonitorMom->AddValue(axisLambdaP);
 
    // add outputs to loop
    if (mon) mon->Add(outMonitorMom);
-   if (lm) lm->AddOutput(outMonitorMom);
+   if (lp) lp->AddOutput(outMonitorMom);
   
 }
 
-void AddMonitorOutput_LambdaPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+void AddMonitorOutput_LambdaPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lpt=0)
 {
 
    // Mass
-   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_transversemomentum", AliRsnValueDaughter::kPt);
-   axisMass->SetBins(0.,15.,0.001);
+   AliRsnValueDaughter *axisLambdaPt = new AliRsnValueDaughter("lambda_transversemomentum", AliRsnValueDaughter::kV0Pt);
+   axisLambdaPt->SetBins(0.,15.,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("Lambda_TransverseMomentum", AliRsnListOutput::kHistoDefault);
-   outMonitorTrMom->AddValue(axisMass);
+   outMonitorTrMom->AddValue(axisLambdaPt);
 
    // add outputs to loop
    if (mon) mon->Add(outMonitorTrMom);
-   if (lm) lm->AddOutput(outMonitorTrMom);
+   if (lpt) lpt->AddOutput(outMonitorTrMom);
   
 }
+
+void AddMonitorOutput_LambdaNegDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lnpt=0)
+{
+
+   // Mass
+   AliRsnValueDaughter *axisLambdaNegDaughPt = new AliRsnValueDaughter("lambda_negdaugh_transversemomentum", AliRsnValueDaughter::kV0NPt);
+   axisLambdaNegDaughPt->SetBins(0.,15.,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorLambdaNegDaughTrMom = new AliRsnListOutput("Lambda_NegDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+   outMonitorLambdaNegDaughTrMom->AddValue(axisLambdaNegDaughPt);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorLambdaNegDaughTrMom);
+   if (lnpt) lnpt->AddOutput(outMonitorLambdaNegDaughTrMom);
+  
+}
+
+void AddMonitorOutput_LambdaPosDaughPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lppt=0)
+{
+
+   // Mass
+   AliRsnValueDaughter *axisLambdaPosDaughPt = new AliRsnValueDaughter("lambda_posdaugh_transversemomentum", AliRsnValueDaughter::kV0PPt);
+   axisLambdaPosDaughPt->SetBins(0.,15.,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorLambdaPosDaughTrMom = new AliRsnListOutput("Lambda_PosDaugh_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+   outMonitorLambdaPosDaughTrMom->AddValue(axisLambdaPosDaughPt);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorLambdaPosDaughTrMom);
+   if (lppt) lppt->AddOutput(outMonitorLambdaPosDaughTrMom);
+  
+}
+
 
 void AddMonitorOutput_LambdaMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 {
 
    // Mass
    AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_mass", AliRsnValueDaughter::kV0Mass);
-   axisMass->SetBins(0.7,1.5,0.001);
+   axisMass->SetBins(1.08,1.16,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorM = new AliRsnListOutput("Lambda_Mass", AliRsnListOutput::kHistoDefault);
@@ -512,7 +634,7 @@ void AddMonitorOutput_LambdaCosPointAngle(TObjArray *mon=0,TString opt="",AliRsn
 
    // Lambda Cosine of the Pointing Angle
    AliRsnValueDaughter *axisLambdaCPA = new AliRsnValueDaughter("lambda_cospointang", AliRsnValueDaughter::kCosPointAng);
-   axisLambdaCPA->SetBins(0.9,1.,0.0001);
+   axisLambdaCPA->SetBins(0.94,1.,0.0001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorLambdaCPA = new AliRsnListOutput("Lambda_CosineOfPointingAngle", AliRsnListOutput::kHistoDefault);
