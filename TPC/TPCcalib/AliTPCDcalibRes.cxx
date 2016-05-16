@@ -106,14 +106,14 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fUseTOFBC(kFALSE)
   ,fFilterOutliers(kTRUE) 
   ,fMaxFitYErr2(1.0)
-  ,fMaxFitXErr2(1.2)
+  ,fMaxFitXErr2(9.)
   ,fMaxFitXYCorr(0.95)
   ,fLTMCut(0.75)
   //
   ,fMaxSigY(1.1)
   ,fMaxSigZ(0.7)
-  ,fMinValidVoxFracDrift(0.5)
-  ,fMaxBadXBinsToCover(2)
+  ,fMinValidVoxFracDrift(0.4)
+  ,fMaxBadXBinsToCover(4)
   ,fMinGoodXBinsToCover(2)
   //
   ,fNY2XBins(15)

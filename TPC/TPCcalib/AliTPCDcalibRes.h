@@ -233,7 +233,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetFilterOutliers(Bool_t v=kTRUE)     {fFilterOutliers = v;}
 
   void     SetMaxFitYErr2(float v=1.0)           {fMaxFitYErr2 = v;}
-  void     SetMaxFitXErr2(float v=1.2)           {fMaxFitXErr2 = v;}
+  void     SetMaxFitXErr2(float v=9.0)           {fMaxFitXErr2 = v;}
   void     SetMaxFitXYCorr(float v=0.95)         {fMaxFitXYCorr = v;}
   void     SetLTMCut(float v=0.75)               {fLTMCut = v;}
 
@@ -246,10 +246,10 @@ class AliTPCDcalibRes: public TNamed
   Int_t    GetMaxBadXBinsToCover()         const {return fMaxBadXBinsToCover;}
   Int_t    GetMinGoodXBinsToCover()        const {return fMinGoodXBinsToCover;}
   
-  void     SetMinValidVoxFracDrift(float v=0.5)  {fMinValidVoxFracDrift = v;}
+  void     SetMinValidVoxFracDrift(float v=0.4)   {fMinValidVoxFracDrift = v;}
   void     SetMaxSigY(Float_t v=1.1)              {fMaxSigY = v;}
   void     SetMaxSigZ(Float_t v=0.7)              {fMaxSigZ = v;}  
-  void     SetMaxBadXBinsToCover(int n=2)  {fMaxBadXBinsToCover = n;}
+  void     SetMaxBadXBinsToCover(int n=4)  {fMaxBadXBinsToCover = n;}
   void     SetMinGoodXBinsToCover(int n=2)  {fMinGoodXBinsToCover = n;}
   //
   Bool_t   GetUseTOFBC()                   const {return fUseTOFBC;}
