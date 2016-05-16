@@ -467,13 +467,13 @@ int TestClusterContainerIterator(const AliClusterContainer *const cont, int iter
 
   if(!iteratorType){
     // test accept iterator
-    for(AliClusterIterableContainer::iterator iter = cont->accept_begin(); iter != cont->accept_end(); ++iter){
-      variation.push_back(*iter);
+    for(auto cluster : cont->accepted()){
+      variation.push_back(cluster);
     }
   } else {
     // test all iterator
-    for(AliClusterIterableContainer::iterator iter = cont->begin(); iter != cont->end(); ++iter){
-      variation.push_back(*iter);
+    for(auto cluster : cont->all()){
+      variation.push_back(cluster);
     }
   }
 

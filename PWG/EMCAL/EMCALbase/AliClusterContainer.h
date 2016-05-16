@@ -76,16 +76,6 @@ class AliClusterContainer : public AliEmcalContainer {
   const AliClusterIterableContainer      all() const;
   const AliClusterIterableContainer      accepted() const;
 
-  AliClusterIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliClusterIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliClusterIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliClusterIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliClusterIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliClusterIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliClusterIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliClusterIterableContainer::iterator  rend()          const { return all().rend()         ; }
-
  protected:
   
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters

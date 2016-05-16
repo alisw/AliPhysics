@@ -451,13 +451,13 @@ int TestParticleContainerIterator(const AliParticleContainer *const cont, int it
 
   if(!iteratorType){
     // test accept iterator
-    for(AliParticleIterableContainer::iterator iter = cont->accept_begin(); iter != cont->accept_end(); ++iter){
-      variation.push_back(*iter);
+    for(auto part : cont->accepted()){
+      variation.push_back(part);
     }
   } else {
     // test all iterator
-    for(AliParticleIterableContainer::iterator iter = cont->begin(); iter != cont->end(); ++iter){
-      variation.push_back(*iter);
+    for(auto part : cont->all()){
+      variation.push_back(part);
     }
   }
 

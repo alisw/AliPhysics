@@ -98,16 +98,6 @@ class AliTrackContainer : public AliParticleContainer {
   const AliTrackIterableContainer      all() const;
   const AliTrackIterableContainer      accepted() const;
 
-  AliTrackIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliTrackIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliTrackIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliTrackIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliTrackIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliTrackIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliTrackIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliTrackIterableContainer::iterator  rend()          const { return all().rend()         ; }
-
  protected:
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
 

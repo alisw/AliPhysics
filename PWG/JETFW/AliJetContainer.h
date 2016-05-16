@@ -179,16 +179,6 @@ class AliJetContainer : public AliParticleContainer {
   const AliJetIterableContainer      all() const;
   const AliJetIterableContainer      accepted() const;
 
-  AliJetIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
-  AliJetIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
-  AliJetIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
-  AliJetIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
-
-  AliJetIterableContainer::iterator  begin()         const { return all().begin()        ; }
-  AliJetIterableContainer::iterator  end()           const { return all().end()          ; }
-  AliJetIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
-  AliJetIterableContainer::iterator  rend()          const { return all().rend()         ; }
-
  protected:
   void SetEMCALGeometry();
   void SetAcceptanceCuts();
