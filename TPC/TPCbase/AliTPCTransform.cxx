@@ -766,10 +766,16 @@ void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
   // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
   EvalCorrectionMap(roc, row, xyzSect, fLastCorrRef, kTRUE);
   EvalCorrectionMap(roc, row, xyzSect, fLastCorr, kFALSE);
-  fLastCorr[3] = fLastCorr[3]>fLastCorrRef[3] ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
-  if (fCurrentMapScaling!=1.0f) {
-    for (int i=3;i--;) fLastCorr[i] = (fLastCorr[i]-fLastCorrRef[i])*fCurrentMapScaling + fLastCorrRef[i];
-    fLastCorr[3] *= fCurrentMapScaling;
+  if (fLastCorr[3]<1e-6) { // run specific map had no parameterization for this region, override by default
+    for (int i=3;i--;) fLastCorr[i] = fLastCorrRef[i];
+    fLastCorr[3] = 0.f;
+  }
+  else {
+    fLastCorr[3] = fLastCorr[3]>fLastCorrRef[3] ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
+    if (fCurrentMapScaling!=1.0f) {
+      for (int i=3;i--;) fLastCorr[i] = (fLastCorr[i]-fLastCorrRef[i])*fCurrentMapScaling + fLastCorrRef[i];
+      fLastCorr[3] *= fCurrentMapScaling;
+    }
   }
   for (int i=3;i--;) xyzSect[i] += fLastCorr[i];
   //
