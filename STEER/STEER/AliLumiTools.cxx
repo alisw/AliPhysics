@@ -193,6 +193,9 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
   grLumi->SetMarkerStyle(25);
   grLumi->SetMarkerSize(0.4);
   //
+  delete[] vtime;
+  delete[] vlumi;
+  delete[] vlumiErr;
   grLumi->SetUniqueID(run);
   return grLumi;
 }
