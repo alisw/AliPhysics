@@ -7,8 +7,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bCalculateCRC2=kFALSE,
                              Bool_t bUseCRCRecenter,
                              TString QVecWeightsFileName,
-                             Bool_t bUsePhiEtaWeights,
-                             TString PhiEtaWeightsFileName,
+                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
@@ -77,7 +76,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
  Float_t MaxDevZN=10.;
- Bool_t bCalculateCME=kFALSE;
+ Bool_t bUsePhiEtaWeights=kFALSE;
+ TString PhiEtaWeightsFileName="";
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -126,8 +126,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  if (analysisTypeUser != "") analysisType = analysisTypeUser;
  if (analysisTypeUser == "AOD") analysisType = "AUTOMATIC";
  taskFE->SetAnalysisType(analysisType);
- // add the task to the manager
- mgr->AddTask(taskFE);
  // set the trigger selection
  if (EvTrigger == "Cen")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -137,6 +135,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SelectCollisionCandidates(AliVEvent::kMB);
  else if (EvTrigger == "Any")
   taskFE->SelectCollisionCandidates(AliVEvent::kAny);
+  // add the task to the manager
+  mgr->AddTask(taskFE);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
