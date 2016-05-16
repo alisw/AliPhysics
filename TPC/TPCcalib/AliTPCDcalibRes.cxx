@@ -1055,7 +1055,8 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   sectTree->SetBranchAddress("dts",&dtsP);
   int npoints = sectTree->GetEntries();
   if (!npoints) {
-    AliWarningF("No entries for sector %d",is);
+    AliWarningF("No entries for sector %d, masking all rows",is);
+    for (int ix=fNXBins;ix--;) SetXBinIgnored(is,ix);
     delete sectTree;
     sectFile->Close(); // to reconsider: reuse the file
     delete sectFile;
@@ -1145,7 +1146,7 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
       if (npBin) {
 	bres_t& resVox = sectData[curBin];
 	GBin2Vox(curBin,resVox.bvox);  // parse voxel
-	if (!GetXBinIgnored(is,resVox.bvox[kResX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);	
+	if (!GetXBinIgnored(is,resVox.bvox[kVoxX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);	
       }
       curBin = binArr[ip];
       npBin = 0;
@@ -1161,7 +1162,7 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   if (npBin) {
     bres_t& resVox = sectData[curBin];
     GBin2Vox(curBin,resVox.bvox);  // parse voxel
-    if (!GetXBinIgnored(is,resVox.bvox[kResX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);
+    if (!GetXBinIgnored(is,resVox.bvox[kVoxX])) ProcessVoxelDispersions(npBin,tg,dy,resVox);
   }
   //
   // now smooth the dispersion
