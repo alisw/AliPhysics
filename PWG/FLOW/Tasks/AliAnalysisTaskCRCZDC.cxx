@@ -712,7 +712,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
   fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
-  fFlowEvent->SetCentralityVar(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
+  fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
+  fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
+  fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
    
    Double_t vtxpos[3]={0.,0.,0.};
    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();

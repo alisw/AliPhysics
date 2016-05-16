@@ -126,8 +126,12 @@ class AliFlowEventSimple: public TObject {
 
   void SetCentrality(Double_t c) {fCentrality=c;}
   Double_t GetCentrality() const {return fCentrality;}
-  void SetCentralityVar(Double_t c) {fCentralityVar=c;}
-  Double_t GetCentralityVar() const {return fCentralityVar;}
+  void SetCentralityCL1(Double_t c) {fCentralityCL1=c;}
+  Double_t GetCentralityCL1() const {return fCentralityCL1;}
+  void SetNITSCL1(Double_t c) {fNITSCL1=c;}
+  Double_t GetNITSCL1() const {return fNITSCL1;}
+  void SetCentralityTRK(Double_t c) {fCentralityTRK=c;}
+  Double_t GetCentralityTRK() const {return fCentralityTRK;}
   void SetRun(Int_t const run) {fRun = run;};
   Int_t GetRun() const {return fRun;};
 
@@ -165,7 +169,9 @@ class AliFlowEventSimple: public TObject {
   Bool_t                  fShuffleTracks;             // do we shuffle tracks on get?
   TObjArray*              fMothersCollection;         //!cache the particles with daughters
   Double_t                fCentrality;                // centrality
-  Double_t                fCentralityVar;             // centrality (alternative estimation)
+  Double_t                fCentralityCL1;             // centrality (CL1)
+  Double_t                fNITSCL1;                   // number of clusters in ITS layer 1
+  Double_t                fCentralityTRK;             // centrality (TRK)
   Int_t                   fRun;                       // run number
   Double_t                fZNCQ[2];                   // Q_1 vector from ZDCN-C
   Double_t                fZNAQ[2];                   // Q_1 vector from ZDCN-A
@@ -177,7 +183,7 @@ class AliFlowEventSimple: public TObject {
   Int_t                   fNumberOfPOItypes;    // how many different flow particle types do we have? (RP,POI,POI_2,...)
   Int_t*                  fNumberOfPOIs;          //[fNumberOfPOItypes] number of tracks that have passed the POI selection
 
-  ClassDef(AliFlowEventSimple,4)
+  ClassDef(AliFlowEventSimple,5)
 };
 
 #endif
