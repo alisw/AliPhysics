@@ -1079,25 +1079,25 @@ void AliADv1::StepManager()
       
       
    // Get sensitive volumes id (scintillator pads)
-   static Int_t idADA  = gMC->VolId( "ADApad" );
-   static Int_t idADC  = gMC->VolId( "ADCpad" );
-   // static Int_t idADCh = gMC->VolId( "ADCpadH" );
+   static Int_t idADA  = fMC->VolId( "ADApad" );
+   static Int_t idADC  = fMC->VolId( "ADCpad" );
+   // static Int_t idADCh = fMC->VolId( "ADCpadH" );
    
    static Bool_t fOnlyOnce = kTRUE;
    if (fOnlyOnce) {
-     //printf("  gMC->VolId(\"ADApad\" ) = %3d\n", idADA);
-     //printf("  gMC->VolId(\"ADCpad\" ) = %3d\n", idADC);
-     // printf("  gMC->VolId(\"ADCpadH\") = %3d\n", idADCh);
+     //printf("  fMC->VolId(\"ADApad\" ) = %3d\n", idADA);
+     //printf("  fMC->VolId(\"ADCpad\" ) = %3d\n", idADC);
+     // printf("  fMC->VolId(\"ADCpadH\") = %3d\n", idADCh);
      fOnlyOnce = kFALSE;
    }
 
    // We keep only charged tracks : 
-   // if ( !gMC->TrackCharge() || !gMC->IsTrackAlive() ) return;   
+   // if ( !fMC->TrackCharge() || !fMC->IsTrackAlive() ) return;
    // We keep charged and non-charged tracks : 
-   if ( !gMC->IsTrackAlive() ) return;   
+   if ( !fMC->IsTrackAlive() ) return;
    
    Int_t copy;
-   Int_t current_volid = gMC->CurrentVolID( copy );
+   Int_t current_volid = fMC->CurrentVolID( copy );
 
    // check is the track is in a sensitive volume
    // if( current_volid != idADA && current_volid != idADC && current_volid != idADCh ) {
@@ -1108,16 +1108,16 @@ void AliADv1::StepManager()
    // First read the position, otherwise weird results! //ecv
    Double_t s[3];
    Float_t  x[3];
-   gMC->TrackPosition( s[0], s[1], s[2] );
+   fMC->TrackPosition( s[0], s[1], s[2] );
    for ( Int_t j=0; j<3; j++ ) x[j] = s[j];
    
    // Get sector copy (1,2,3,4) ( 1 level up from pad )
    Int_t sect;
-   gMC->CurrentVolOffID( 1, sect );
+   fMC->CurrentVolOffID( 1, sect );
    
    // Get Detector copy (1,2) ( 2 levels up from pad )
    Int_t detc;
-   gMC->CurrentVolOffID( 2, detc );
+   fMC->CurrentVolOffID( 2, detc );
 
    // Set detector type: ADA or ADC
    Int_t ADlayer = (current_volid == idADC ) ? 0 : 2;
@@ -1147,8 +1147,8 @@ void AliADv1::StepManager()
       photoCathodeEfficiency = fADAPhotoCathodeEfficiency;
    }
       
-   Float_t destep_ad = gMC->Edep();
-   Float_t step_ad   = gMC->TrackStep();
+   Float_t destep_ad = fMC->Edep();
+   Float_t step_ad   = fMC->TrackStep();
    Int_t  nPhotonsInStep_ad = Int_t( destep_ad / (lightYield_ad * 1e-9) ); 
    nPhotonsInStep_ad = gRandom->Poisson( nPhotonsInStep_ad );
    
@@ -1161,10 +1161,10 @@ void AliADv1::StepManager()
    eloss_ad   += destep_ad;
    tlength_ad += step_ad;  
  
-   if ( gMC->IsTrackEntering() ) { 
+   if ( fMC->IsTrackEntering() ) {
       nPhotons_ad = nPhotonsInStep_ad;
       Double_t p[4];
-      gMC->TrackMomentum( p[0], p[1], p[2], p[3] );
+      fMC->TrackMomentum( p[0], p[1], p[2], p[3] );
       Float_t pt  = TMath::Sqrt( p[0]*p[0] + p[1]*p[1] + p[2]*p[2] ); 
       TParticle *par = gAlice->GetMCApp()->Particle(gAlice->GetMCApp()->GetCurrentTrackNumber());
       Int_t imo = par->GetFirstMother();
@@ -1187,7 +1187,7 @@ void AliADv1::StepManager()
       hits_ad[5]  = p[0];     // Px
       hits_ad[6]  = p[1];     // Py
       hits_ad[7]  = p[2];     // Pz
-      hits_ad[8]  = 1.0e09*gMC->TrackTime(); // in ns!
+      hits_ad[8]  = 1.0e09*fMC->TrackTime(); // in ns!
   
       tlength_ad = 0.0;
       eloss_ad   = 0.0; 
@@ -1197,7 +1197,7 @@ void AliADv1::StepManager()
    
    nPhotons_ad += nPhotonsInStep_ad;
 
-   if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared() ) {
+   if( fMC->IsTrackExiting() || fMC->IsTrackStop() || fMC->IsTrackDisappeared() ) {
 
       // Set integer values
       vol_ad[3]  = nPhotons_ad;
@@ -1215,7 +1215,7 @@ void AliADv1::StepManager()
    }
        
     //Track reference   
-    if( gMC->IsTrackEntering() || gMC->IsTrackExiting() ) AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kAD);
+    if( fMC->IsTrackEntering() || fMC->IsTrackExiting() ) AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kAD);
 }
 //_________________________________________________________
 void AliADv1::AddHit(Int_t track, Int_t *vol, Float_t *hits)

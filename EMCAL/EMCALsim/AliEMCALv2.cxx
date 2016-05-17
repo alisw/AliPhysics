@@ -142,22 +142,22 @@ void AliEMCALv2::StepManager(void){
 
   if(keyGeom == 0) {
     keyGeom = 2;
-    if(TVirtualMC::GetMC()->VolId("PBMO")==0 || TVirtualMC::GetMC()->VolId("WSUC")==1) {
+    if(fMC->VolId("PBMO")==0 || fMC->VolId("WSUC")==1) {
       vn      = "SCMX";   // old TRD2(TRD1) or WSUC
       keyGeom = 1;
     }    
     printf("AliEMCALv2::StepManager():  keyGeom %i : Sensetive volume %s \n", 
     keyGeom, vn); 
-    if(TVirtualMC::GetMC()->VolId("WSUC")==1) printf(" WSUC - cosmic ray stand geometry \n");
+    if(fMC->VolId("WSUC")==1) printf(" WSUC - cosmic ray stand geometry \n");
   }
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
   Int_t parent=0;
   TParticle* part=0;
 
-  curVolName = TVirtualMC::GetMC()->CurrentVolName();
+  curVolName = fMC->CurrentVolName();
   if(curVolName.Contains(vn) || curVolName.Contains("SCX")) { // We are in a scintillator layer; SCX for 3X3
     
-    if( ((depositedEnergy = TVirtualMC::GetMC()->Edep()) > 0.)  && (TVirtualMC::GetMC()->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
+    if( ((depositedEnergy = fMC->Edep()) > 0.)  && (fMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
       //       Info("StepManager "," entry %i DE %f",++ientry, depositedEnergy); // for testing
        if (fCurPrimary==-1) 
 	fCurPrimary=gAlice->GetMCApp()->GetPrimary(tracknumber);
@@ -203,13 +203,13 @@ void AliEMCALv2::StepManager(void){
 	}
 	fCurTrack=tracknumber;
       }    
-      TVirtualMC::GetMC()->TrackPosition(pos);
+      fMC->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
       xyzte[2] = pos[2];
-      xyzte[3] = TVirtualMC::GetMC()->TrackTime() ;       
+      xyzte[3] = fMC->TrackTime() ;
       
-      TVirtualMC::GetMC()->TrackMomentum(mom);
+      fMC->TrackMomentum(mom);
       pmom[0] = mom[0];
       pmom[1] = mom[1];
       pmom[2] = mom[2];
@@ -218,35 +218,35 @@ void AliEMCALv2::StepManager(void){
       //      if(ientry%200 > 0) return; // testing
       supModuleNumber = moduleNumber = yNumber = xNumber = absid = 0;
       if(keyGeom >= 1) { // TRD1 case now
-        TVirtualMC::GetMC()->CurrentVolOffID(4, supModuleNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(3, moduleNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(1, yNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(0, xNumber); // really x number now
+        fMC->CurrentVolOffID(4, supModuleNumber);
+        fMC->CurrentVolOffID(3, moduleNumber);
+        fMC->CurrentVolOffID(1, yNumber);
+        fMC->CurrentVolOffID(0, xNumber); // really x number now
         Int_t CurrentSMType = 0;
-        if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"SMOD")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Standard ;
-        else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"SM10")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Half ;
-        else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"SM3rd")==0) CurrentSMType = AliEMCALGeometry::kEMCAL_3rd  ;
-        else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"DCSM")==0)  CurrentSMType = AliEMCALGeometry::kDCAL_Standard ;
-        else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"DCEXT")==0) CurrentSMType = AliEMCALGeometry::kDCAL_Ext   ;
+        if(strcmp(fMC->CurrentVolOffName(4),"SMOD")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Standard ;
+        else if(strcmp(fMC->CurrentVolOffName(4),"SM10")==0)  CurrentSMType = AliEMCALGeometry::kEMCAL_Half ;
+        else if(strcmp(fMC->CurrentVolOffName(4),"SM3rd")==0) CurrentSMType = AliEMCALGeometry::kEMCAL_3rd  ;
+        else if(strcmp(fMC->CurrentVolOffName(4),"DCSM")==0)  CurrentSMType = AliEMCALGeometry::kDCAL_Standard ;
+        else if(strcmp(fMC->CurrentVolOffName(4),"DCEXT")==0) CurrentSMType = AliEMCALGeometry::kDCAL_Ext   ;
         else AliError("Unkown SM Type!!");
 
         Int_t preSM = 0;
         while( fGeometry->GetSMType(preSM) != CurrentSMType ) preSM++;
         supModuleNumber += preSM;
 	// Nov 10,2006
-        if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(0),vn) != 0) { // 3X3 case
-          if     (strcmp(TVirtualMC::GetMC()->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
-          else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
-          else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
-          else Fatal("StepManager()", "Wrong name of sensitive volume in 3X3 case : %s ", TVirtualMC::GetMC()->CurrentVolOffName(0));
+        if(strcmp(fMC->CurrentVolOffName(0),vn) != 0) { // 3X3 case
+          if     (strcmp(fMC->CurrentVolOffName(0),"SCX1")==0) xNumber=1;
+          else if(strcmp(fMC->CurrentVolOffName(0),"SCX2")==0) xNumber=2;
+          else if(strcmp(fMC->CurrentVolOffName(0),"SCX3")==0) xNumber=3;
+          else Fatal("StepManager()", "Wrong name of sensitive volume in 3X3 case : %s ", fMC->CurrentVolOffName(0));
 	}
       } else {
-        TVirtualMC::GetMC()->CurrentVolOffID(5, supModuleNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(4, moduleNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(1, yNumber);
-        TVirtualMC::GetMC()->CurrentVolOffID(0, xNumber);
-        if     (strcmp(TVirtualMC::GetMC()->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = 2*(supModuleNumber-1)+1;
-        else if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(5),"SMON")==0) supModuleNumber = 2*(supModuleNumber-1)+2;
+        fMC->CurrentVolOffID(5, supModuleNumber);
+        fMC->CurrentVolOffID(4, moduleNumber);
+        fMC->CurrentVolOffID(1, yNumber);
+        fMC->CurrentVolOffID(0, xNumber);
+        if     (strcmp(fMC->CurrentVolOffName(5),"SMOP")==0) supModuleNumber = 2*(supModuleNumber-1)+1;
+        else if(strcmp(fMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = 2*(supModuleNumber-1)+2;
         else   assert(0); // something wrong
       }
 		
@@ -260,13 +260,13 @@ void AliEMCALv2::StepManager(void){
       Int_t smType   = 1;
       fGeometry->GetCellPhiEtaIndexInSModule(smNumber,moduleNumber-1,yNumber-1,xNumber-1, iphi, ieta);
       if (smNumber%2 == 0) {
-	if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"DCSM")==0) smType = 3; //DCal supermodule. previous design/idea
+    if(strcmp(fMC->CurrentVolOffName(4),"DCSM")==0) smType = 3; //DCal supermodule. previous design/idea
         else smType = 2;
 	ieta = ((fGeometry->GetCentersOfCellsEtaDir()).GetSize()* 2/smType -1)-ieta;// 47/31-ieta, revert the ordering on A side in order to keep convention.
       } else {  
-	if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
-	if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
-	if(strcmp(TVirtualMC::GetMC()->CurrentVolOffName(4),"DCEXT")==0) smType = 3 ; //one third (installed in 2012) supermodule
+    if(strcmp(fMC->CurrentVolOffName(4),"SM10")==0) smType = 2 ; //half supermodule. previous design/idea
+    if(strcmp(fMC->CurrentVolOffName(4),"SM3rd")==0) smType = 3 ; //one third (installed in 2012) supermodule
+    if(strcmp(fMC->CurrentVolOffName(4),"DCEXT")==0) smType = 3 ; //one third (installed in 2012) supermodule
 	iphi= ((fGeometry->GetCentersOfCellsPhiDir()).GetSize()/smType-1)-iphi;// 23/7-iphi, revert the ordering on C side in order to keep convention.
       }
       
@@ -282,15 +282,15 @@ void AliEMCALv2::StepManager(void){
       Float_t lightYield =  depositedEnergy ;
       // Apply Birk's law (copied from G3BIRK)
 
-      if (TVirtualMC::GetMC()->TrackCharge()!=0) { // Check
+      if (fMC->TrackCharge()!=0) { // Check
 	  Float_t birkC1Mod = 0;
 	if (fBirkC0==1){ // Apply correction for higher charge states
-	  if (TMath::Abs(TVirtualMC::GetMC()->TrackCharge())>=2) birkC1Mod = fBirkC1*7.2/12.6;
+      if (TMath::Abs(fMC->TrackCharge())>=2) birkC1Mod = fBirkC1*7.2/12.6;
 	  else                                   birkC1Mod = fBirkC1;
 	}
 
 	Float_t dedxcm=0.;
-	if (TVirtualMC::GetMC()->TrackStep()>0)  dedxcm=1000.*TVirtualMC::GetMC()->Edep()/TVirtualMC::GetMC()->TrackStep();
+    if (fMC->TrackStep()>0)  dedxcm=1000.*fMC->Edep()/fMC->TrackStep();
 	else                     dedxcm=0;
 	lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);
       } 

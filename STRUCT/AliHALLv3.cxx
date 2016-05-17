@@ -527,15 +527,15 @@ void AliHALLv3::StepManager()
   
   //
   // Only charged tracks
-  if( !(TVirtualMC::GetMC()->TrackCharge()) ) return; 
+  if( !(fMC->TrackCharge()) ) return;
   //
   // Only tracks entering mother volume
   // 
 
-  id=TVirtualMC::GetMC()->CurrentVolID(copy);
+  id=fMC->CurrentVolID(copy);
 
   if ((id != fRefVolumeId))   return;
-  if(!TVirtualMC::GetMC()->IsTrackEntering()) return;
+  if(!fMC->IsTrackEntering()) return;
   //
   // Add the reference track
   //

@@ -2255,22 +2255,22 @@ void AliZDCv3::StepManager()
   Float_t hits[14], x[3], xdet[3]={999.,999.,999.}, um[3], ud[3];
   Float_t destep=0., be=0., out=0.;
   Double_t s[3], p[4];
-  const char *knamed = (TVirtualMC::GetMC())->CurrentVolName();
-  //Int_t  mid = TVirtualMC::GetMC()->CurrentMedium();
-  TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+  const char *knamed = (fMC)->CurrentVolName();
+  //Int_t  mid = fMC->CurrentMedium();
+  fMC->TrackPosition(s[0],s[1],s[2]);
   //printf("\tZDC::StepManager\t volume %s medium %d (x,y,z) = (%f, %f, %f)\n", knamed, mid, s[0], s[1], s[2]);
   //
   for(j=0;j<14;j++) hits[j]=-999.;
   //
   // --- This part is for no shower developement in beam pipe, TDI, VColl
   // If particle interacts with beam pipe, TDI, VColl -> return
-  if(fNoShower==1 && ((TVirtualMC::GetMC()->CurrentMedium() == fMedSensPI) || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensTDI) ||  
-     (TVirtualMC::GetMC()->CurrentMedium() == fMedSensVColl || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensLumi)))){ 
+  if(fNoShower==1 && ((fMC->CurrentMedium() == fMedSensPI) || (fMC->CurrentMedium() == fMedSensTDI) ||
+     (fMC->CurrentMedium() == fMedSensVColl || (fMC->CurrentMedium() == fMedSensLumi)))){
     
     // If option NoShower is set -> StopTrack
 
     Int_t ipr = 0; 
-      if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensPI){
+      if(fMC->CurrentMedium() == fMedSensPI){
         if(!strncmp(knamed,"YMQ",3)){
 	  if(s[2]<0) fpLostITC += 1;
 	  else fpLostITA += 1;
@@ -2282,7 +2282,7 @@ void AliZDCv3::StepManager()
 	  ipr=1;
 	}
       }
-      else if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensTDI){ 
+      else if(fMC->CurrentMedium() == fMedSensTDI){
         if(!strncmp(knamed,"MD1",3)){
 	  if(s[2]<0) fpLostD1C += 1;
 	  else  fpLostD1A += 1;
@@ -2290,15 +2290,15 @@ void AliZDCv3::StepManager()
         }
 	else if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
       }
-      else if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensVColl){ 
+      else if(fMC->CurrentMedium() == fMedSensVColl){
         if(!strncmp(knamed,"QCVC",4)) fpcVCollC++;
  	else if(!strncmp(knamed,"QCVA",4))  fpcVCollA++;
 	ipr=1;
       }
       //
-      //TVirtualMC::GetMC()->TrackMomentum(p[0], p[1], p[2], p[3]);
+      //fMC->TrackMomentum(p[0], p[1], p[2], p[3]);
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
-      //     TVirtualMC::GetMC()->TrackMass(), p[3], p[2], TVirtualMC::GetMC()->CurrentVolName());
+      //     fMC->TrackMass(), p[3], p[2], fMC->CurrentVolName());
       //
       if(ipr!=0){
         printf("\n\t **********************************\n");
@@ -2313,13 +2313,13 @@ void AliZDCv3::StepManager()
         printf("\t # of particles in VColl = %d\n",fpcVCollA);
         printf("\t **********************************\n");
       }
-      TVirtualMC::GetMC()->StopTrack();
+      fMC->StopTrack();
       return;
   }
   
-  if((TVirtualMC::GetMC()->CurrentMedium() == fMedSensZN) || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensZP) ||
-     (TVirtualMC::GetMC()->CurrentMedium() == fMedSensGR) || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensF1) ||
-     (TVirtualMC::GetMC()->CurrentMedium() == fMedSensF2) || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensZEM)){
+  if((fMC->CurrentMedium() == fMedSensZN) || (fMC->CurrentMedium() == fMedSensZP) ||
+     (fMC->CurrentMedium() == fMedSensGR) || (fMC->CurrentMedium() == fMedSensF1) ||
+     (fMC->CurrentMedium() == fMedSensF2) || (fMC->CurrentMedium() == fMedSensZEM)){
 
     
   //Particle coordinates 
@@ -2426,9 +2426,9 @@ void AliZDCv3::StepManager()
     
     // Store impact point and kinetic energy of the ENTERING particle
     
-    if(TVirtualMC::GetMC()->IsTrackEntering()){
+    if(fMC->IsTrackEntering()){
       //Particle energy
-      TVirtualMC::GetMC()->TrackMomentum(p[0],p[1],p[2],p[3]);
+      fMC->TrackMomentum(p[0],p[1],p[2],p[3]);
       hits[3] = p[3];
       
       // Impact point on ZDC
@@ -2459,7 +2459,7 @@ void AliZDCv3::StepManager()
       }
       else hits[11]=0;
       //
-      hits[12] = 1.0e09*TVirtualMC::GetMC()->TrackTime(); // in ns!
+      hits[12] = 1.0e09*fMC->TrackTime(); // in ns!
       //printf("\t TrackTime = %f\n", hits[12]);
       hits[13] = part->Eta();
 
@@ -2484,16 +2484,16 @@ void AliZDCv3::StepManager()
         }
     	//
         //printf("\t Pc: x %1.2f y %1.2f z %1.2f  E %1.2f GeV pz = %1.2f GeV in volume %s\n", 
-        //   x[0],x[1],x[3],p[3],p[2],TVirtualMC::GetMC()->CurrentVolName());
+        //   x[0],x[1],x[3],p[3],p[2],fMC->CurrentVolName());
         //
-        TVirtualMC::GetMC()->StopTrack();
+        fMC->StopTrack();
         return;
       }
     }
     	   
     // Particle energy loss
-    if(TVirtualMC::GetMC()->Edep() != 0){
-      hits[9] = TVirtualMC::GetMC()->Edep();
+    if(fMC->Edep() != 0){
+      hits[9] = fMC->Edep();
       hits[7] = 0.;
       hits[8] = 0.;
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
@@ -2502,14 +2502,14 @@ void AliZDCv3::StepManager()
  
 
   // *** Light production in fibres 
-  if((TVirtualMC::GetMC()->CurrentMedium() == fMedSensF1) || (TVirtualMC::GetMC()->CurrentMedium() == fMedSensF2)){
+  if((fMC->CurrentMedium() == fMedSensF1) || (fMC->CurrentMedium() == fMedSensF2)){
 
      //Select charged particles
-     if((destep=TVirtualMC::GetMC()->Edep())){
+     if((destep=fMC->Edep())){
 
        // Particle velocity
        Float_t beta = 0.;
-       TVirtualMC::GetMC()->TrackMomentum(p[0],p[1],p[2],p[3]);
+       fMC->TrackMomentum(p[0],p[1],p[2],p[3]);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        if(p[3] > 0.00001) beta =  ptot/p[3];
        else return;
@@ -2524,7 +2524,7 @@ void AliZDCv3::StepManager()
        um[0] = p[0]/ptot;
        um[1] = p[1]/ptot;
        um[2] = p[2]/ptot;
-       TVirtualMC::GetMC()->Gmtod(um,ud,2);
+       fMC->Gmtod(um,ud,2);
        // 2 -> Angle < limit angle
        Double_t alfar = TMath::ACos(ud[2]);
        Double_t alfa = alfar*kRaddeg;
@@ -2536,7 +2536,7 @@ void AliZDCv3::StepManager()
        for(j=0; j<=2; j++){
    	  x[j] = s[j];
        }
-       TVirtualMC::GetMC()->Gmtod(x,xdet,1);
+       fMC->Gmtod(x,xdet,1);
        if(TMath::Abs(ud[0])>0.00001){
          Float_t dcoeff = ud[1]/ud[0];
          be = TMath::Abs((xdet[1]-dcoeff*xdet[0])/TMath::Sqrt(dcoeff*dcoeff+1.));
@@ -2548,7 +2548,7 @@ void AliZDCv3::StepManager()
        ibe = Int_t(be*1000.+1);
   
        //Looking into the light tables 
-       Float_t charge = TVirtualMC::GetMC()->TrackCharge();
+       Float_t charge = fMC->TrackCharge();
        
        if(vol[0]==1 || vol[0]==4) {	// (1)  ZN fibres
          if(ibe>fNben) ibe=fNben;
@@ -2557,7 +2557,7 @@ void AliZDCv3::StepManager()
 	 // Ch. debug
          //if(ibeta==3) printf("\t %f \t %f \t %f\n",alfa, be, out);
 	 //printf("\t ibeta = %d, ialfa = %d, ibe = %d -> nphe = %d\n\n",ibeta,ialfa,ibe,nphe);
-	 if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensF1){
+     if(fMC->CurrentMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
@@ -2574,7 +2574,7 @@ void AliZDCv3::StepManager()
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
-	 if(TVirtualMC::GetMC()->CurrentMedium() == fMedSensF1){
+     if(fMC->CurrentMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;

@@ -2293,28 +2293,28 @@ void AliZDCv4::StepManager()
   //
   Float_t hits[14];
   for(int j=0; j<14; j++) hits[j]=-999.;
-  const char *knamed = (TVirtualMC::GetMC())->CurrentVolName();
-  Int_t  mid = TVirtualMC::GetMC()->CurrentMedium();
-  TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+  const char *knamed = (fMC)->CurrentVolName();
+  Int_t  mid = fMC->CurrentMedium();
+  fMC->TrackPosition(s[0],s[1],s[2]);
   //printf("\tZDC::StepManager\t volume %s medium %d (x,y,z) = (%f, %f, %f)\n", knamed, mid, s[0], s[1], s[2]);
   
   // Study spectator protons distributions at TDI z
-  /*TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+  /*fMC->TrackPosition(s[0],s[1],s[2]);
   if(s[2]>=7813.30 && s[2]<=8353.30){
      printf(" \t**** particle in vol. %s\n ",knamed);  
-     TVirtualMC::GetMC()->TrackMomentum(p[0], p[1], p[2], p[3]);
+     fMC->TrackMomentum(p[0], p[1], p[2], p[3]);
      Int_t ctrack = gAlice->GetMCApp()->GetCurrentTrackNumber();
      TParticle *cpart = gAlice->GetMCApp()->Particle(ctrack);
      printf("\t TDIpc  %d %f %f %f %f \n", cpart->GetPdgCode(), s[0],s[1],s[2],p[3]);
   }
   else if(s[2]>=8353.30 && s[2]<=8403.30){
-     TVirtualMC::GetMC()->TrackMomentum(p[0], p[1], p[2], p[3]);
+     fMC->TrackMomentum(p[0], p[1], p[2], p[3]);
      Int_t ctrack = gAlice->GetMCApp()->GetCurrentTrackNumber();
      TParticle *cpart = gAlice->GetMCApp()->Particle(ctrack);
      printf("\t TDIpc  %d %f %f %f %f \n", cpart->GetPdgCode(), s[0],s[1],s[2],p[3]);
   }
   else if(s[2]>8403.30){ 
-     TVirtualMC::GetMC()->StopTrack();
+     fMC->StopTrack();
      return;
   }*/
   //
@@ -2331,9 +2331,9 @@ void AliZDCv4::StepManager()
     //printf(" \t**** particle in vol. %s\n ",knamed);  
     
     Int_t ipr = 0; 
-      TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+      fMC->TrackPosition(s[0],s[1],s[2]);
       //printf("\t\t(x,y,z) = (%f, %f, %f)\n", s[0], s[1], s[2]);
-      TVirtualMC::GetMC()->TrackMomentum(p[0], p[1], p[2], p[3]);
+      fMC->TrackMomentum(p[0], p[1], p[2], p[3]);
       
       if(mid == fMedSensPI){
         if(!strncmp(knamed,"YMQ",3)){
@@ -2375,7 +2375,7 @@ void AliZDCv4::StepManager()
 	ipr=1;
       }
       //
-      //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", TVirtualMC::GetMC()->TrackMass(), p[3], p[2], knamed);
+      //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", fMC->TrackMass(), p[3], p[2], knamed);
       //
       if(ipr<0){
         printf("\n\t **********************************\n");
@@ -2390,7 +2390,7 @@ void AliZDCv4::StepManager()
         printf("\t # of particles in VColl = %d\n",fpcVCollA);
         printf("\t **********************************\n");
       }
-      TVirtualMC::GetMC()->StopTrack();
+      fMC->StopTrack();
       return;
      }
   }
@@ -2403,7 +2403,7 @@ void AliZDCv4::StepManager()
     //printf(" ** pc. track %d in vol. %s \n",gAlice->GetMCApp()->GetCurrentTrackNumber(), knamed);
     
   //Particle coordinates 
-    TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+    fMC->TrackPosition(s[0],s[1],s[2]);
     for(int j=0; j<=2; j++) x[j] = s[j];
     hits[0] = x[0];
     hits[1] = x[1];
@@ -2421,7 +2421,7 @@ void AliZDCv4::StepManager()
     else if(!strncmp(knamed,"ZE",2)) vol[0]=3; //ZEM
     
     // February 2015: Adding TrackReference
-    if(fSwitchOnTrackRef==kTRUE && (TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting())) {
+    if(fSwitchOnTrackRef==kTRUE && (fMC->IsTrackEntering() || fMC->IsTrackExiting())) {
        AliTrackReference* trackRef = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kZDC);
        if(vol[0]>0){
          trackRef->SetUserId(vol[0]);
@@ -2514,9 +2514,9 @@ void AliZDCv4::StepManager()
     
     // Store impact point and kinetic energy of the ENTERING particle
     
-    if(TVirtualMC::GetMC()->IsTrackEntering()){
+    if(fMC->IsTrackEntering()){
       //Particle energy
-      TVirtualMC::GetMC()->TrackMomentum(p[0],p[1],p[2],p[3]);
+      fMC->TrackMomentum(p[0],p[1],p[2],p[3]);
       hits[3] = p[3];
       
       // Impact point on ZDC
@@ -2539,7 +2539,7 @@ void AliZDCv4::StepManager()
       TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
       hits[10] = part->GetPdgCode();
       hits[11] = 0;
-      hits[12] = 1.0e09*TVirtualMC::GetMC()->TrackTime(); // in ns!
+      hits[12] = 1.0e09*fMC->TrackTime(); // in ns!
       hits[13] = part->Eta();
       //
       if(fFindMother){
@@ -2594,14 +2594,14 @@ void AliZDCv4::StepManager()
         //printf("\t Track %d: pc %d  E %1.2f GeV pz = %1.2f GeV in volume %s -> det %d\n", 
            //gAlice->GetMCApp()->GetCurrentTrackNumber(),part->GetPdgCode(),p[3],p[2],knamed, vol[0]);
         //
-        TVirtualMC::GetMC()->StopTrack();
+        fMC->StopTrack();
         return;
       }
     }
     	   
     // Particle energy loss
-    if(TVirtualMC::GetMC()->Edep() != 0){
-      hits[9] = TVirtualMC::GetMC()->Edep();
+    if(fMC->Edep() != 0){
+      hits[9] = fMC->Edep();
       hits[7] = 0.;
       hits[8] = 0.;
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
@@ -2612,11 +2612,11 @@ void AliZDCv4::StepManager()
   if((mid == fMedSensF1) || (mid == fMedSensF2)){
 
      //Select charged particles
-     if((destep=TVirtualMC::GetMC()->Edep())){
+     if((destep=fMC->Edep())){
 
        // Particle velocity
        Float_t beta = 0.;
-       TVirtualMC::GetMC()->TrackMomentum(p[0],p[1],p[2],p[3]);
+       fMC->TrackMomentum(p[0],p[1],p[2],p[3]);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        if(p[3] > 0.00001) beta =  ptot/p[3];
        else return;
@@ -2631,7 +2631,7 @@ void AliZDCv4::StepManager()
        um[0] = p[0]/ptot;
        um[1] = p[1]/ptot;
        um[2] = p[2]/ptot;
-       TVirtualMC::GetMC()->Gmtod(um,ud,2);
+       fMC->Gmtod(um,ud,2);
        // 2 -> Angle < limit angle
        Double_t alfar = TMath::ACos(ud[2]);
        Double_t alfa = alfar*kRaddeg;
@@ -2640,11 +2640,11 @@ void AliZDCv4::StepManager()
        ialfa = Int_t(1.+alfa/2.);
  
        // Distance between particle trajectory and fibre axis
-       TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+       fMC->TrackPosition(s[0],s[1],s[2]);
        for(int j=0; j<=2; j++){
    	  x[j] = s[j];
        }
-       TVirtualMC::GetMC()->Gmtod(x,xdet,1);
+       fMC->Gmtod(x,xdet,1);
        if(TMath::Abs(ud[0])>0.00001){
          Float_t dcoeff = ud[1]/ud[0];
          be = TMath::Abs((xdet[1]-dcoeff*xdet[0])/TMath::Sqrt(dcoeff*dcoeff+1.));
@@ -2660,7 +2660,7 @@ void AliZDCv4::StepManager()
        Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
        TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
        Int_t pdgCode = part->GetPdgCode();
-       if(pdgCode<10000) charge = TVirtualMC::GetMC()->TrackCharge();
+       if(pdgCode<10000) charge = fMC->TrackCharge();
        else{
           float z = (pdgCode/10000-100000);
           charge = TMath::Abs(z);
@@ -2707,7 +2707,7 @@ void AliZDCv4::StepManager()
        else if(vol[0]==3) {	// (3) ZEM fibres
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
-	 TVirtualMC::GetMC()->TrackPosition(s[0],s[1],s[2]);
+     fMC->TrackPosition(s[0],s[1],s[2]);
 	 Float_t xalic[3];
          for(int j=0; j<3; j++){
             xalic[j] = s[j];

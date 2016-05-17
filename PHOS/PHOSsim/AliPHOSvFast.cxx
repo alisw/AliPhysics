@@ -422,23 +422,23 @@ void AliPHOSvFast::StepManager(void)
   // Only verifies if the particle reaches PHOS and stops the tracking 
 
   TLorentzVector lv ; 
-  TVirtualMC::GetMC()->TrackPosition(lv) ;
+  fMC->TrackPosition(lv) ;
   TVector3 pos = lv.Vect() ; 
   Int_t modid  ; 
-  TVirtualMC::GetMC()->CurrentVolID(modid);
+  fMC->CurrentVolID(modid);
   
-  Float_t energy = TVirtualMC::GetMC()->Etot() ; //Total energy of current track
+  Float_t energy = fMC->Etot() ; //Total energy of current track
 
   //Calculating mass of current particle
   TDatabasePDG * pdg = TDatabasePDG::Instance() ;
-  TParticlePDG * partPDG = pdg->GetParticle(TVirtualMC::GetMC()->TrackPid()) ;
+  TParticlePDG * partPDG = pdg->GetParticle(fMC->TrackPid()) ;
   Float_t mass = partPDG->Mass() ;
 
   if(energy > mass){
     pos.SetMag(TMath::Sqrt(energy*energy-mass*mass)) ;
     TLorentzVector pTrack(pos, energy) ;  
 
-    TParticle * part = new TParticle(TVirtualMC::GetMC()->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
+    TParticle * part = new TParticle(fMC->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
         
     AliPHOSFastRecParticle rp(*part) ;
 
@@ -453,7 +453,7 @@ void AliPHOSvFast::StepManager(void)
   }
   // stop the track as soon PHOS is reached
   
-  TVirtualMC::GetMC()->StopTrack() ; 
+  fMC->StopTrack() ;
 
 }
 

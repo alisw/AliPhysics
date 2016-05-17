@@ -188,18 +188,18 @@ void AliPHOSv1::StepManager(void)
   
   static Int_t idPCPQ = -1;
   if (fCreateCPV) 
-    idPCPQ = TVirtualMC::GetMC()->VolId("PCPQ");
+    idPCPQ = fMC->VolId("PCPQ");
 
-  if( TVirtualMC::GetMC()->CurrentVolID(copy) == idPCPQ &&
-     (TVirtualMC::GetMC()->IsTrackEntering() ) &&
-      TVirtualMC::GetMC()->TrackCharge() != 0) {      
+  if( fMC->CurrentVolID(copy) == idPCPQ &&
+     (fMC->IsTrackEntering() ) &&
+      fMC->TrackCharge() != 0) {
     
-    TVirtualMC::GetMC() -> TrackPosition(pos);
+    fMC -> TrackPosition(pos);
 
     Float_t xyzm[3], xyzd[3] ;
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
-    TVirtualMC::GetMC() -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system    
+    fMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
 
 
     Float_t        xyd[3]={0,0,0}   ;   //local position of the entering
@@ -209,12 +209,12 @@ void AliPHOSv1::StepManager(void)
     
     // Current momentum of the hit's track in the local ref. system
     TLorentzVector pmom     ;        //momentum of the particle initiated hit
-    TVirtualMC::GetMC() -> TrackMomentum(pmom);
+    fMC -> TrackMomentum(pmom);
     Float_t pm[3], pd[3];
     for (i=0; i<3; i++)  
       pm[i]   = pmom[i];
     
-    TVirtualMC::GetMC() -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
+    fMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
     pmom[0] = pd[0];
     pmom[1] =-pd[1];
     pmom[2] =-pd[2];
@@ -222,7 +222,7 @@ void AliPHOSv1::StepManager(void)
     // Digitize the current CPV hit:
     
     // 1. find pad response and    
-    TVirtualMC::GetMC()->CurrentVolOffID(3,moduleNumber);
+    fMC->CurrentVolOffID(3,moduleNumber);
     moduleNumber--;
     
 //     TClonesArray *cpvDigits = new TClonesArray("AliPHOSCPVDigit",0);   // array of digits for current hit
@@ -268,7 +268,7 @@ void AliPHOSv1::StepManager(void)
       
       // add current digit to the temporary hit list
 
-      xyzte[3] = TVirtualMC::GetMC()->TrackTime() ;
+      xyzte[3] = fMC->TrackTime() ;
       xyzte[4] = cpvDigit->GetQpad() ;                          // amplitude in a pad
 
       Int_t primary  =  gAlice->GetMCApp()->GetPrimary( gAlice->GetMCApp()->GetCurrentTrackNumber() ); 
@@ -284,20 +284,20 @@ void AliPHOSv1::StepManager(void)
   }
 
  
-  static Int_t idPXTL = TVirtualMC::GetMC()->VolId("PXTL");  
-  if(TVirtualMC::GetMC()->CurrentVolID(copy) == idPXTL ) { //  We are inside a PBWO crystal
+  static Int_t idPXTL = fMC->VolId("PXTL");
+  if(fMC->CurrentVolID(copy) == idPXTL ) { //  We are inside a PBWO crystal
 
-    TVirtualMC::GetMC()->TrackPosition(pos) ;
+    fMC->TrackPosition(pos) ;
     xyzte[0] = pos[0] ;
     xyzte[1] = pos[1] ;
     xyzte[2] = pos[2] ;
 
-    Float_t lostenergy = TVirtualMC::GetMC()->Edep(); 
+    Float_t lostenergy = fMC->Edep();
     
     //Put in the TreeK particle entering PHOS and all its parents
-    if ( TVirtualMC::GetMC()->IsTrackEntering() ){
+    if ( fMC->IsTrackEntering() ){
       Float_t xyzd[3] ;
-      TVirtualMC::GetMC() -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system    
+      fMC -> Gmtod (xyzte, xyzd, 1);    // transform coordinate from master to daughter system
       if (xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2.+0.1){   //Entered close to forward surface  
 	Int_t parent = gAlice->GetMCApp()->GetCurrentTrackNumber() ; 
 	TParticle * part = gAlice->GetMCApp()->Particle(parent) ; 
@@ -305,7 +305,7 @@ void AliPHOSv1::StepManager(void)
 	vert[0]=part->Vx() ;
 	vert[1]=part->Vy() ;
 	vert[2]=part->Vz() ;
-	TVirtualMC::GetMC() -> Gmtod (vert, vertd, 1);    // transform coordinate from master to daughter system
+    fMC -> Gmtod (vert, vertd, 1);    // transform coordinate from master to daughter system
 	if(vertd[1]<-GetGeometry()->GetCrystalSize(1)/2.-0.1){ //Particle is created in foront of PHOS 
 	                                                       //0.1 to get rid of numerical errors 
 	  part->SetBit(kKeepBit);
@@ -318,14 +318,14 @@ void AliPHOSv1::StepManager(void)
       }
     }
     if ( lostenergy != 0 ) {  // Track is inside the crystal and deposits some energy 
-      xyzte[3] = TVirtualMC::GetMC()->TrackTime() ;     
+      xyzte[3] = fMC->TrackTime() ;
       
-      TVirtualMC::GetMC()->CurrentVolOffID(10, moduleNumber) ; // get the PHOS module number ;
+      fMC->CurrentVolOffID(10, moduleNumber) ; // get the PHOS module number ;
       
       Int_t strip ;
-      TVirtualMC::GetMC()->CurrentVolOffID(3, strip);
+      fMC->CurrentVolOffID(3, strip);
       Int_t cell ;
-      TVirtualMC::GetMC()->CurrentVolOffID(2, cell);
+      fMC->CurrentVolOffID(2, cell);
       
       //Old formula for row is wrong. For example, I have strip 56 (28 for 2 x 8), row must be 1.
       //But row == 1 + 56 - 56 % 56 == 57 (row == 1 + 28 - 28 % 28 == 29)

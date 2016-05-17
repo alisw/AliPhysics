@@ -262,7 +262,7 @@ void AliMUONv1::StepManager()
 /// Step manager for the chambers
 
   // Only charged tracks
-  if( !(TVirtualMC::GetMC()->TrackCharge()) ) return; 
+  if( !(fMC->TrackCharge()) ) return;
   // Only charged tracks
   
   // Only gas gap inside chamber
@@ -275,7 +275,7 @@ void AliMUONv1::StepManager()
   //
   // Only gas gap inside chamber
   // Tag chambers and record hits when track enters 
-  Int_t id=TVirtualMC::GetMC()->CurrentVolID(copy);
+  Int_t id=fMC->CurrentVolID(copy);
   Int_t iGeomModule = GetGeomModuleId(id);
   if (iGeomModule == -1) return;
 
@@ -306,7 +306,7 @@ void AliMUONv1::StepManager()
   	 << setw(5) << detElemId 
          << endl;
     Double_t x, y, z;
-    TVirtualMC::GetMC()->TrackPosition(x, y, z);	 
+    fMC->TrackPosition(x, y, z);
     AliErrorStream() 
          << "	global position: "
   	 << x << ", " << y << ", " << z
@@ -318,54 +318,54 @@ void AliMUONv1::StepManager()
   idvol = iChamber -1;
     
   // Filling TrackRefs file for MUON. Our Track references are the active volume of the chambers
-  if ( (TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting() ) ) {
+  if ( (fMC->IsTrackEntering() || fMC->IsTrackExiting() ) ) {
     AliTrackReference* trackReference    
       = AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kMUON);
     trackReference->SetUserId(detElemId);
   }  
   
-  if( TVirtualMC::GetMC()->IsTrackEntering() ) {
+  if( fMC->IsTrackEntering() ) {
      Float_t theta = fTrackMomentum.Theta();
      if ( fIsMaxStep && (TMath::Pi()-theta)*kRaddeg>=15. ) {
-       TVirtualMC::GetMC()->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
+       fMC->SetMaxStep(fStepMaxInActiveGas); // We use Pi-theta because z is negative
      }  
      iEnter = 1;
-     TVirtualMC::GetMC()->TrackPosition(xyzEnter[0], xyzEnter[1], xyzEnter[2]); // save coordinates of entrance point
+     fMC->TrackPosition(xyzEnter[0], xyzEnter[1], xyzEnter[2]); // save coordinates of entrance point
   }
 
    //   AliDebug(1,
    //	    Form("Active volume found %d chamber %d Z chamber is %f ",idvol,iChamber,
    //		 ( (AliMUONChamber*)(*fChambers)[idvol])->Z())) ;
   // Particule id and mass, 
-  Int_t     ipart = TVirtualMC::GetMC()->TrackPid();
-  Float_t   mass  = TVirtualMC::GetMC()->TrackMass();
+  Int_t     ipart = fMC->TrackPid();
+  Float_t   mass  = fMC->TrackMass();
 
-  fDestepSum[idvol]+=TVirtualMC::GetMC()->Edep();
+  fDestepSum[idvol]+=fMC->Edep();
   // Get current particle id (ipart), track position (pos)  and momentum (mom)
-  if ( fStepSum[idvol]==0.0 )  TVirtualMC::GetMC()->TrackMomentum(fTrackMomentum);
-  fStepSum[idvol]+=TVirtualMC::GetMC()->TrackStep();
+  if ( fStepSum[idvol]==0.0 )  fMC->TrackMomentum(fTrackMomentum);
+  fStepSum[idvol]+=fMC->TrackStep();
   
   //  if (AliDebugLevel()) {
   //   AliDebug(1,Form("Step, iChamber %d, Particle %d, theta %f phi %f mass %f StepSum %f eloss %g",
   //		     iChamber,ipart, fTrackMomentum.Theta()*kRaddeg, fTrackMomentum.Phi()*kRaddeg,
-  //	     mass, fStepSum[idvol], TVirtualMC::GetMC()->Edep()));
+  //	     mass, fStepSum[idvol], fMC->Edep()));
   // AliDebug(1,Form("Step:Track Momentum %f %f %f", fTrackMomentum.X(), fTrackMomentum.Y(), 
   //	     fTrackMomentum.Z()));
-  // TVirtualMC::GetMC()->TrackPosition(fTrackPosition);
+  // fMC->TrackPosition(fTrackPosition);
   // AliDebug(1,Form("Step: Track Position %f %f %f",fTrackPosition.X(),
   //	     fTrackPosition.Y(),fTrackPosition.Z())) ;
   //}
 
   // Track left chamber or StepSum larger than fStepMaxInActiveGas
-  if ( TVirtualMC::GetMC()->IsTrackExiting() || 
-       TVirtualMC::GetMC()->IsTrackStop() || 
-       TVirtualMC::GetMC()->IsTrackDisappeared()||
+  if ( fMC->IsTrackExiting() ||
+       fMC->IsTrackStop() ||
+       fMC->IsTrackDisappeared()||
        (fStepSum[idvol]>fStepMaxInActiveGas) ) {
     
     if   ( fIsMaxStep && 
-           ( TVirtualMC::GetMC()->IsTrackExiting() || 
-             TVirtualMC::GetMC()->IsTrackStop() || 
-             TVirtualMC::GetMC()->IsTrackDisappeared() ) ) TVirtualMC::GetMC()->SetMaxStep(kBig);
+           ( fMC->IsTrackExiting() ||
+             fMC->IsTrackStop() ||
+             fMC->IsTrackDisappeared() ) ) fMC->SetMaxStep(kBig);
     if (fDestepSum[idvol] == 0) {
       // AZ - no energy release
       fStepSum[idvol] = 0; // Reset for the next event
@@ -373,13 +373,13 @@ void AliMUONv1::StepManager()
       return; 
     }
 
-    TVirtualMC::GetMC()->TrackPosition(fTrackPosition);
+    fMC->TrackPosition(fTrackPosition);
     Float_t theta = fTrackMomentum.Theta();
     Float_t phi   = fTrackMomentum.Phi();
     
     Int_t merge = 0;
     Double_t xyz0[3]={0}, xyz1[3]={0}, tmp[3]={0};
-    if (TVirtualMC::GetMC()->IsTrackExiting() && iEnter != 0) {
+    if (fMC->IsTrackExiting() && iEnter != 0) {
       // AZ - this code is to avoid artificial hit splitting at the
       // "fake" boundary inside the same chamber. It will still produce 
       // 2 hits but with the same coordinates (at the wire) to allow 
@@ -387,10 +387,10 @@ void AliMUONv1::StepManager()
 
       // Only for a track going from the entrance to the exit from the volume
       // Get local coordinates
-      TVirtualMC::GetMC()->Gmtod(xyzEnter, xyz0, 1); // local coord. at the entrance
+      fMC->Gmtod(xyzEnter, xyz0, 1); // local coord. at the entrance
 
       fTrackPosition.Vect().GetXYZ(tmp);
-      TVirtualMC::GetMC()->Gmtod(tmp, xyz1, 1); // local coord. at the exit
+      fMC->Gmtod(tmp, xyz1, 1); // local coord. at the exit
       Float_t dx = xyz0[0] - xyz1[0];
       Float_t dy = xyz0[1] - xyz1[1];
       Float_t thLoc = TMath::ATan2 (TMath::Sqrt(dx*dx+dy*dy), TMath::Abs(xyz0[2]-xyz1[2]));
@@ -403,14 +403,14 @@ void AliMUONv1::StepManager()
       tmp[0] = xyz0[0] - (xyz1[0] - xyz0[0]) * dz; // local coord. at the wire
       tmp[1] = xyz0[1] - (xyz1[1] - xyz0[1]) * dz;
       tmp[2] = xyz0[2] - (xyz1[2] - xyz0[2]) * dz;
-      TVirtualMC::GetMC()->Gdtom(tmp, xyz1, 1); // global coord. at the wire
+      fMC->Gdtom(tmp, xyz1, 1); // global coord. at the wire
       fTrackPosition.SetXYZT(xyz1[0], xyz1[1], xyz1[2], fTrackPosition.T());
     } else {
       TLorentzVector backToWire( fStepSum[idvol]/2.*sin(theta)*cos(phi),
 				 fStepSum[idvol]/2.*sin(theta)*sin(phi),
 				 fStepSum[idvol]/2.*cos(theta),0.0       );
       fTrackPosition-=backToWire;
-      //printf(" %d %d %d %f %d \n", TVirtualMC::GetMC()->IsTrackExiting(), TVirtualMC::GetMC()->IsTrackStop(), TVirtualMC::GetMC()->IsTrackDisappeared(), fStepSum[idvol], iEnter);
+      //printf(" %d %d %d %f %d \n", fMC->IsTrackExiting(), fMC->IsTrackStop(), fMC->IsTrackDisappeared(), fStepSum[idvol], iEnter);
       //    AliDebug(1,
       //     Form("Track Position %f %f %f",fTrackPosition.X(),fTrackPosition.Y(),fTrackPosition.Z()));
       // AliDebug(1,
@@ -464,7 +464,7 @@ void AliMUONv1::StepManager()
 		   fTrackPosition.X(), 
 		   fTrackPosition.Y()+yAngleEffect, 
 		   fTrackPosition.Z(), 
-		   TVirtualMC::GetMC()->TrackTime(),
+           fMC->TrackTime(),
 		   fTrackMomentum.P(),
 		   theta, 
 		   phi, 
