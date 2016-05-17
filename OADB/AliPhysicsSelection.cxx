@@ -501,7 +501,7 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
     Float_t znInTime          = 0;
-    Bool_t b[14];
+    Bool_t b[15];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
       for (Int_t bit=0;bit<15;bit++) b[bit]=i & 1<<bit;
       if (b[ 5]) noSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
