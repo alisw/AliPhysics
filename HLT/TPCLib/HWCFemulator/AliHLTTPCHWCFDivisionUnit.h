@@ -9,7 +9,8 @@
 
 #include "AliHLTTPCHWCFDataTypes.h"
 #include "AliHLTLogging.h"
-#include "TNtuple.h"
+class TNtuple;
+class TFile;
 
 //  @class   AliHLTTPCHWCFDivisionUnit
 //  @author Sergey Gorbunov <sergey.gorbunov@fias.uni-frankfurt.de>
@@ -77,7 +78,8 @@ class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
   int  fDebug; // debug level
-  TNtuple *fDebugNtuple;
+  TNtuple *fDebugNtuple; // ntuple with some cluster parameters for debugging
+  TFile * fDebugFile; // file with debug ntuple
 };
 
 #endif

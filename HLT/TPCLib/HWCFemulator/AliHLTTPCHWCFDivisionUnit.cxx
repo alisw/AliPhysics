@@ -27,6 +27,7 @@
 
 #include "AliHLTTPCHWCFDivisionUnit.h"
 #include "AliHLTErrorGuard.h"
+#include "TNtuple.h"
 #include "TFile.h"
 #include <iostream>
 #include <algorithm>
@@ -34,7 +35,7 @@
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0)
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
 {
   //constructor 
 }
@@ -42,12 +43,17 @@ AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 {   
-  //destructor 
+  if( fDebugNtuple ) fDebugNtuple->Write();
+  if( fDebugFile ){
+    fDebugFile->Write();
+    fDebugFile->Close();
+  }
+//destructor 
 }
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0)
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
 {
 }
 
@@ -177,9 +183,9 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
 
   if( fDebug==2 ){
     if( !fDebugNtuple ){ 
-      cout<<"Create file.."<<endl;
-      TFile *f = new TFile("HWClustersDebug.root","RECREATE");
-      f->cd();
+      cout<<"HW clusterfinder emulator: Create cluster debug file 'HWClustersDebug.root' .."<<endl;
+      fDebugFile = new TFile("HWClustersDebug.root","RECREATE");
+      fDebugFile->cd();
       fDebugNtuple = new TNtuple("HWClusters", "HWClusters", "iNPads:iIsSplitPad:iNSplitTime:iIsConsSplitTime");
       if( fDebugNtuple ) fDebugNtuple->AutoSave();      
     }
