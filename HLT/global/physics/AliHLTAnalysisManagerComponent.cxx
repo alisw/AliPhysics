@@ -66,6 +66,8 @@
 #include "AliCDBManager.h"
 #include "AliHLTLogging.h"
 #include "AliHLTCTPData.h"
+#include "TClass.h"
+#include "TDataMember.h"
 
 using namespace std;
 
@@ -255,6 +257,17 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
     HLTError("could not SetupCTPData(); ENOMEM");
     return -ENOMEM;
   }
+
+  //this disables streaming of the fProducer and fConsumers data members of
+  //AliAnalysisDataContainer.
+  //It is needed to avoid memory leaks downstream.
+  //Proper fix in the container itself may be too dangerous
+  TClass::GetClass("AliAnalysisDataContainer")->
+    GetDataMember("fProducer")->
+    SetBit(BIT(2),0);
+  TClass::GetClass("AliAnalysisDataContainer")->
+    GetDataMember("fConsumers")->
+    SetBit(BIT(2),0);
 
   return 0;
 }
