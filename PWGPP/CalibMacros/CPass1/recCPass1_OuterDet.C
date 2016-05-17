@@ -1,5 +1,5 @@
 /*
-   rec.C to be used for pass0
+   rec.C to be used for pass1 (outer detectors)
    - reconstruction of raw data
    - QA information switched off
    - store all friends
@@ -9,7 +9,7 @@
    aliroot -b -q 'recCPass1.C("raw.root",100)'
 */
 
-void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://")
+void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", TString additionalRecOptions="")
 {
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location
@@ -35,6 +35,24 @@ void recCPass1_OuterDet(const char *filename="raw.root",Int_t nevents=-1, const 
   TString newfilename = filename;
   newfilename += "?Trigger=kCalibOuter";
   rec.SetInput(newfilename.Data());
+
+  // Set additional reconstruction options.
+  // They are in the form "Detector:value;Detector2:value" in a single string.
+  // For instance: additionalRecOptions="TPC:useHLTorRAW"
+  {
+    TIter nexttok( additionalRecOptions.Tokenize(";") );
+    while (( os = (TObjString *)nexttok() )) {
+      TString detOpt = os->String();
+      Ssiz_t idx = detOpt.Index(":");
+      if (idx < 0) continue;
+      TString detOptKey = detOpt(0,idx);
+      TString detOptVal = detOpt(idx+1,999);
+      if (detOptKey.IsNull() || detOptVal.IsNull()) continue;
+      printf("Setting additional reconstruction option: %s --> %s\n", detOptKey.Data(),
+                                                                      detOptVal.Data());
+      rec.SetOption(detOptKey.Data(), detOptVal.Data());
+    }
+  }
 
   // Set protection against too many events in a chunk (should not happen)
   if (nevents>0) rec.SetEventRange(0,nevents);

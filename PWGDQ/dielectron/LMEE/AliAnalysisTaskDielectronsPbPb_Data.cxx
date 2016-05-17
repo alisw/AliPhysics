@@ -53,7 +53,8 @@ fnsigmaTOF_max(0),
 fnsigmaITS_max(0),
 fnsigmaTPC_min(0),
 fnsigmaTPC_max(0),
-fMassLim(0),
+fMassMin(0),
+fMassMax(0),
 fPhivLim(0),
 fPtMin(0),
 fPtMax(0),
@@ -95,7 +96,8 @@ fnsigmaTOF_max(0),
 fnsigmaITS_max(0),
 fnsigmaTPC_min(0),
 fnsigmaTPC_max(0),
-fMassLim(0),
+fMassMin(0),
+fMassMax(0),
 fPhivLim(0),
 fPtMin(0),
 fPtMax(0),
@@ -257,8 +259,8 @@ void AliAnalysisTaskDielectronsPbPb_Data::UserExec(Option_t *)
             Double_t phiV = GetPhiV (esdtrack1,esdtrack2);
             
             //Pre-filtering Cuts
-            if ( mass<=fMassLim && phiV<=fPhivLim)          { IsConversionCandidate = true; break; }
-            if ( mass<=fMassLim && phiV>=(180.0-fPhivLim))  { IsConversionCandidate = true; break; }
+            if ( mass>=fMassMin && mass<=fMassMax && phiV<=fPhivLim )         { IsConversionCandidate = true; break; }
+            if ( mass>=fMassMin && mass<=fMassMax && phiV>=(180.0-fPhivLim) ) { IsConversionCandidate = true; break; }
         }
         
         if (IsConversionCandidate) continue;//Skip Conversion Candidates
@@ -465,7 +467,7 @@ Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedTrackQualityCutsMultiplicity (
 Bool_t AliAnalysisTaskDielectronsPbPb_Data::PassedLooseTrackQualityCuts (AliESDtrack* track)  {
     
     fESDTrackCuts_Loose -> SetMinNCrossedRowsTPC(70);
-    fESDTrackCuts_Loose -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fESDTrackCuts_Loose -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
     fESDTrackCuts_Loose -> SetMaxChi2PerClusterTPC(4);
     fESDTrackCuts_Loose -> SetAcceptKinkDaughters(false);
     fESDTrackCuts_Loose -> SetRequireTPCRefit(true);

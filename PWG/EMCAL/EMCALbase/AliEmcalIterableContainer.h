@@ -6,7 +6,6 @@
 #include <iterator>
 
 #include <TArrayI.h>
-#include <TObject.h>
 
 class AliEmcalContainer;
 
@@ -51,7 +50,7 @@ class AliEmcalContainer;
  */
 
 template <class T>
-class AliEmcalIterableContainerT : public TObject {
+class AliEmcalIterableContainerT {
 public:
   /**
    * @class iterator
@@ -166,7 +165,6 @@ private:
  */
 template <class T>
 AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT():
-  TObject(),
   fkContainer(NULL),
   fAcceptIndices(),
   fUseAccepted(kFALSE)
@@ -182,7 +180,6 @@ AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT():
  */
 template <class T>
 AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept):
-  TObject(),
   fkContainer(cont),
   fAcceptIndices(),
   fUseAccepted(useAccept)
@@ -197,7 +194,6 @@ AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalContaine
  */
 template <class T>
 AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T> &ref):
-  TObject(ref),
   fkContainer(ref.fkContainer),
   fAcceptIndices(ref.fAcceptIndices),
   fUseAccepted(ref.fUseAccepted)
@@ -213,7 +209,6 @@ AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalIterable
  */
 template <class T>
 AliEmcalIterableContainerT<T> &AliEmcalIterableContainerT<T>::operator=(const AliEmcalIterableContainerT<T>& ref) {
-  TObject::operator=(ref);
   if(this != &ref){
     fkContainer = ref.fkContainer;
     fAcceptIndices = ref.fAcceptIndices;

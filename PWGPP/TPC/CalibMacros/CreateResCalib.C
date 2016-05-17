@@ -1,13 +1,17 @@
 void CreateResCalib(int run=245231
-	  ,Long64_t tmin=0
-	  ,Long64_t tmax= 9999999999
-	  ,const char * resList="lst.txt"
-	  ,const char * cdb="raw://"
+		    ,Long64_t tmin=0
+		    ,Long64_t tmax= 9999999999
+		    ,const char * resList="lst.txt"
+		    ,const char * cdb="raw://"
+		    ,int maxTracks = 4000000
+		    ,Bool_t useTOFBC = kFALSE
 	  )
 {
 
   AliTPCDcalibRes* clb = new AliTPCDcalibRes(run, tmin, tmax, resList);
   clb->SetOCDBPath(cdb);
+  if (maxTracks>0) clb->SetMaxTracks(maxTracks);
+  clb->SetUseTOFBC(useTOFBC);
   clb->ProcessFromDeltaTrees();
   clb->Save();
 }

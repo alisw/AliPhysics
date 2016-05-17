@@ -9,6 +9,7 @@
 #include "TFolder.h"
 #include <iostream>
 #include "TObjString.h"
+#include "TObjArray.h"
 
 using namespace std;
 
@@ -31,10 +32,10 @@ fZDCCutZNCTimeCorrMin(0.0),
 fZDCCutZNCTimeCorrMax(5.0),
 fSPDClsVsTklA(65),
 fSPDClsVsTklB(4),
-fV0MOnVsOfA(-1200.),
-fV0MOnVsOfB(8.),
-fSPDOnVsOfA(-20.),
-fSPDOnVsOfB(1.0),
+fV0MOnVsOfA(-145.),
+fV0MOnVsOfB(7.2),
+fSPDOnVsOfA(-4.16),
+fSPDOnVsOfB(0.84),
 fVtxMinContributors(3),
 fVtxMinZdist(0.8),
 fVtxNSigmaZdist(3.),
@@ -77,61 +78,119 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
    // Browse this object.
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
-
-
-  static TObjString * strZDCCutRefSumCorr     =0;    
-  static TObjString * strZDCCutRefDeltaCorr   =0;  
-  static TObjString * strZDCCutSigmaSumCorr   =0;  
-  static TObjString * strZDCCutSigmaDeltaCorr =0;
-  static TObjString * strZDCCutZNATimeCorrMin =0;
-  static TObjString * strZDCCutZNATimeCorrMax =0;
-  static TObjString * strZDCCutZNCTimeCorrMin =0;
-  static TObjString * strZDCCutZNCTimeCorrMax =0;
-
-  if(strZDCCutRefSumCorr     ) delete strZDCCutRefSumCorr     ;
-  if(strZDCCutRefDeltaCorr   ) delete strZDCCutRefDeltaCorr   ;
-  if(strZDCCutSigmaSumCorr   ) delete strZDCCutSigmaSumCorr   ;
-  if(strZDCCutSigmaDeltaCorr ) delete strZDCCutSigmaDeltaCorr ;
-  if(strZDCCutZNATimeCorrMin ) delete strZDCCutZNATimeCorrMin ;
-  if(strZDCCutZNATimeCorrMax ) delete strZDCCutZNATimeCorrMax ;
-  if(strZDCCutZNCTimeCorrMin ) delete strZDCCutZNCTimeCorrMin ;
-  if(strZDCCutZNCTimeCorrMax ) delete strZDCCutZNCTimeCorrMax ;
+  TObjArray* parArray = new TObjArray(50);
+  parArray->SetName("parameters");
+  parArray->Add(new TObjString(Form("FMDLowCut            %f", fFMDLowCut           )));
+  parArray->Add(new TObjString(Form("FMDHitCut            %f", fFMDHitCut           )));
+  parArray->Add(new TObjString(Form("ZDCCutRefSum         %f", fZDCCutRefSum        )));
+  parArray->Add(new TObjString(Form("ZDCCutRefDelta       %f", fZDCCutRefDelta      )));
+  parArray->Add(new TObjString(Form("ZDCCutSigmaSum       %f", fZDCCutSigmaSum      )));
+  parArray->Add(new TObjString(Form("ZDCCutSigmaDelta     %f", fZDCCutSigmaDelta    )));
+  parArray->Add(new TObjString(Form("ZDCCutRefSumCorr     %f", fZDCCutRefSumCorr    )));
+  parArray->Add(new TObjString(Form("ZDCCutRefDeltaCorr   %f", fZDCCutRefDeltaCorr  )));
+  parArray->Add(new TObjString(Form("ZDCCutSigmaSumCorr   %f", fZDCCutSigmaSumCorr  )));
+  parArray->Add(new TObjString(Form("ZDCCutSigmaDeltaCorr %f", fZDCCutSigmaDeltaCorr)));
+  parArray->Add(new TObjString(Form("ZDCCutZNATimeCorrMin %f", fZDCCutZNATimeCorrMin)));
+  parArray->Add(new TObjString(Form("ZDCCutZNATimeCorrMax %f", fZDCCutZNATimeCorrMax)));
+  parArray->Add(new TObjString(Form("ZDCCutZNCTimeCorrMin %f", fZDCCutZNCTimeCorrMin)));
+  parArray->Add(new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax)));
+  parArray->Add(new TObjString(Form("SPDClsVsTklA         %f", fSPDClsVsTklA        )));
+  parArray->Add(new TObjString(Form("SPDClsVsTklB         %f", fSPDClsVsTklB        )));
+  parArray->Add(new TObjString(Form("V0MOnVsOfA           %f", fV0MOnVsOfA          )));
+  parArray->Add(new TObjString(Form("V0MOnVsOfB           %f", fV0MOnVsOfB          )));
+  parArray->Add(new TObjString(Form("SPDOnVsOfA           %f", fSPDOnVsOfA          )));
+  parArray->Add(new TObjString(Form("SPDOnVsOfB           %f", fSPDOnVsOfB          )));
+  parArray->Add(new TObjString(Form("VtxMinContributors   %i", fVtxMinContributors  )));
+  parArray->Add(new TObjString(Form("VtxMinZdist          %f", fVtxMinZdist         )));
+  parArray->Add(new TObjString(Form("VtxNSigmaZdist       %f", fVtxNSigmaZdist      )));
+  parArray->Add(new TObjString(Form("VtxNSigmaDiamXY      %f", fVtxNSigmaDiamXY     )));
+  parArray->Add(new TObjString(Form("VtxNSigmaDiamZ       %f", fVtxNSigmaDiamZ      )));
+  parArray->Add(new TObjString(Form("V0CasymA             %f", fV0CasymA            )));
+  parArray->Add(new TObjString(Form("V0CasymB             %f", fV0CasymB            )));
+  parArray->Add(new TObjString(Form("NBCsPast             %i", fNBCsPast            )));
+  parArray->Add(new TObjString(Form("NBCsFuture           %i", fNBCsFuture          )));
+  parArray->Add(new TObjString(Form("VHMBBAflags          %i", fVHMBBAflags         )));
+  parArray->Add(new TObjString(Form("VHMBBCflags          %i", fVHMBBCflags         )));
+  parArray->Add(new TObjString(Form("VHMBGAflags          %i", fVHMBGAflags         )));
+  parArray->Add(new TObjString(Form("VHMBGCflags          %i", fVHMBGCflags         )));
+  parArray->Add(new TObjString(Form("VIRBBAflags          %i", fVIRBBAflags         )));
+  parArray->Add(new TObjString(Form("VIRBBCflags          %i", fVIRBBCflags         )));
+  parArray->Add(new TObjString(Form("VIRBGAflags          %i", fVIRBGAflags         )));
+  parArray->Add(new TObjString(Form("VIRBGCflags          %i", fVIRBGCflags         )));
+  parArray->Add(new TObjString(Form("V0MOnThreshold       %i", fV0MOnThreshold      )));
+  parArray->Add(new TObjString(Form("V0MOfThreshold       %f", fV0MOfThreshold      )));
+  parArray->Add(new TObjString(Form("SPDGFOThreshold      %i", fSPDGFOThreshold     )));
+  parArray->Add(new TObjString(Form("SH1OuterThreshold    %i", fSH1OuterThreshold   )));
+  parArray->Add(new TObjString(Form("SH2OuterThreshold    %i", fSH2OuterThreshold   )));
+  parArray->Add(new TObjString(Form("TRDptHSE             %f", fTRDptHSE            )));
+  parArray->Add(new TObjString(Form("TRDpidHSE            %i", fTRDpidHSE           )));
+  parArray->Add(new TObjString(Form("TRDptHQU             %f", fTRDptHQU            )));
+  parArray->Add(new TObjString(Form("TRDpidHQU            %i", fTRDpidHQU           )));
+  parArray->Add(new TObjString(Form("TRDptHEE             %f", fTRDptHEE            )));
+  parArray->Add(new TObjString(Form("TRDpidHEE            %i", fTRDpidHEE           )));
+  parArray->Add(new TObjString(Form("TRDminSectorHEE      %f", fTRDminSectorHEE     )));
+  parArray->Add(new TObjString(Form("TRDmaxSectorHEE      %f", fTRDmaxSectorHEE     )));
+  parArray->Add(new TObjString(Form("TRDptHJT             %f", fTRDptHJT            )));
+  parArray->Add(new TObjString(Form("TRDnHJT              %i", fTRDnHJT             )));
   
-  strZDCCutRefSumCorr     = new TObjString(Form("ZDCCutRefSumCorr     %f", fZDCCutRefSumCorr    )); 
-  strZDCCutRefDeltaCorr   = new TObjString(Form("ZDCCutRefDeltaCorr   %f", fZDCCutRefDeltaCorr  )); 
-  strZDCCutSigmaSumCorr   = new TObjString(Form("ZDCCutSigmaSumCorr   %f", fZDCCutSigmaSumCorr  )); 
-  strZDCCutSigmaDeltaCorr = new TObjString(Form("ZDCCutSigmaDeltaCorr %f", fZDCCutSigmaDeltaCorr)); 
-  strZDCCutZNATimeCorrMin = new TObjString(Form("ZDCCutZNATimeCorrMin %f", fZDCCutZNATimeCorrMin));
-  strZDCCutZNATimeCorrMax = new TObjString(Form("ZDCCutZNATimeCorrMax %f", fZDCCutZNATimeCorrMax));
-  strZDCCutZNCTimeCorrMin = new TObjString(Form("ZDCCutZNCTimeCorrMin %f", fZDCCutZNCTimeCorrMin));
-  strZDCCutZNCTimeCorrMax = new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax));
-
-  if (b) {
-    // Creates a folder for each beam type containing the list of corresponding bx ids
-    b->Add(strZDCCutRefSumCorr    );
-    b->Add(strZDCCutRefDeltaCorr  );
-    b->Add(strZDCCutSigmaSumCorr  );
-    b->Add(strZDCCutSigmaDeltaCorr);
-    b->Add(strZDCCutZNATimeCorrMin);
-    b->Add(strZDCCutZNATimeCorrMax);
-    b->Add(strZDCCutZNCTimeCorrMin);
-    b->Add(strZDCCutZNCTimeCorrMax);
-  }     
-  else
-    TObject::Browse(b);
+  if (b) b->Add(parArray);
+  else TObject::Browse(b);
 }
 
 void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   // Print Class contents
-  // Option is passed to TMap::Print
-  cout << "ZDC configuration" << endl;
-  cout << " - ZDCCutRefSumCorr     "<< fZDCCutRefSumCorr     << endl;
-  cout << " - ZDCCutRefDeltaCorr   "<< fZDCCutRefDeltaCorr   << endl;
-  cout << " - ZDCCutSigmaSumCorr   "<< fZDCCutSigmaSumCorr   << endl;
-  cout << " - ZDCCutSigmaDeltaCorr "<< fZDCCutSigmaDeltaCorr << endl;
-  cout << " - ZDCCutZNATimeCorrMin "<< fZDCCutZNATimeCorrMin << endl;
-  cout << " - ZDCCutZNATimeCorrMax "<< fZDCCutZNATimeCorrMax << endl;
-  cout << " - ZDCCutZNCTimeCorrMin "<< fZDCCutZNCTimeCorrMin << endl;
-  cout << " - ZDCCutZNCTimeCorrMax "<< fZDCCutZNCTimeCorrMax << endl;
-  cout << option << endl;
+  printf("Physics selection cut settings:\n");
+  printf(Form("  FMDLowCut            %f\n", fFMDLowCut           ));
+  printf(Form("  FMDHitCut            %f\n", fFMDHitCut           ));
+  printf(Form("  ZDCCutRefSum         %f\n", fZDCCutRefSum        ));
+  printf(Form("  ZDCCutRefDelta       %f\n", fZDCCutRefDelta      ));
+  printf(Form("  ZDCCutSigmaSum       %f\n", fZDCCutSigmaSum      ));
+  printf(Form("  ZDCCutSigmaDelta     %f\n", fZDCCutSigmaDelta    ));
+  printf(Form("  ZDCCutRefSumCorr     %f\n", fZDCCutRefSumCorr    ));
+  printf(Form("  ZDCCutRefDeltaCorr   %f\n", fZDCCutRefDeltaCorr  ));
+  printf(Form("  ZDCCutSigmaSumCorr   %f\n", fZDCCutSigmaSumCorr  ));
+  printf(Form("  ZDCCutSigmaDeltaCorr %f\n", fZDCCutSigmaDeltaCorr));
+  printf(Form("  ZDCCutZNATimeCorrMin %f\n", fZDCCutZNATimeCorrMin));
+  printf(Form("  ZDCCutZNATimeCorrMax %f\n", fZDCCutZNATimeCorrMax));
+  printf(Form("  ZDCCutZNCTimeCorrMin %f\n", fZDCCutZNCTimeCorrMin));
+  printf(Form("  ZDCCutZNCTimeCorrMax %f\n", fZDCCutZNCTimeCorrMax));
+  printf(Form("  SPDClsVsTklA         %f\n", fSPDClsVsTklA        ));
+  printf(Form("  SPDClsVsTklB         %f\n", fSPDClsVsTklB        ));
+  printf(Form("  V0MOnVsOfA           %f\n", fV0MOnVsOfA          ));
+  printf(Form("  V0MOnVsOfB           %f\n", fV0MOnVsOfB          ));
+  printf(Form("  SPDOnVsOfA           %f\n", fSPDOnVsOfA          ));
+  printf(Form("  SPDOnVsOfB           %f\n", fSPDOnVsOfB          ));
+  printf(Form("  VtxMinContributors   %i\n", fVtxMinContributors  ));
+  printf(Form("  VtxMinZdist          %f\n", fVtxMinZdist         ));
+  printf(Form("  VtxNSigmaZdist       %f\n", fVtxNSigmaZdist      ));
+  printf(Form("  VtxNSigmaDiamXY      %f\n", fVtxNSigmaDiamXY     ));
+  printf(Form("  VtxNSigmaDiamZ       %f\n", fVtxNSigmaDiamZ      ));
+  printf(Form("  V0CasymA             %f\n", fV0CasymA            ));
+  printf(Form("  V0CasymB             %f\n", fV0CasymB            ));
+  printf(Form("  NBCsPast             %i\n", fNBCsPast            ));
+  printf(Form("  NBCsFuture           %i\n", fNBCsFuture          ));
+  printf(Form("  VHMBBAflags          %i\n", fVHMBBAflags         ));
+  printf(Form("  VHMBBCflags          %i\n", fVHMBBCflags         ));
+  printf(Form("  VHMBGAflags          %i\n", fVHMBGAflags         ));
+  printf(Form("  VHMBGCflags          %i\n", fVHMBGCflags         ));
+  printf(Form("  VIRBBAflags          %i\n", fVIRBBAflags         ));
+  printf(Form("  VIRBBCflags          %i\n", fVIRBBCflags         ));
+  printf(Form("  VIRBGAflags          %i\n", fVIRBGAflags         ));
+  printf(Form("  VIRBGCflags          %i\n", fVIRBGCflags         ));
+  printf(Form("  V0MOnThreshold       %i\n", fV0MOnThreshold      ));
+  printf(Form("  V0MOfThreshold       %f\n", fV0MOfThreshold      ));
+  printf(Form("  SPDGFOThreshold      %i\n", fSPDGFOThreshold     ));
+  printf(Form("  SH1OuterThreshold    %i\n", fSH1OuterThreshold   ));
+  printf(Form("  SH2OuterThreshold    %i\n", fSH2OuterThreshold   ));
+  printf(Form("  TRDptHSE             %f\n", fTRDptHSE            ));
+  printf(Form("  TRDpidHSE            %i\n", fTRDpidHSE           ));
+  printf(Form("  TRDptHQU             %f\n", fTRDptHQU            ));
+  printf(Form("  TRDpidHQU            %i\n", fTRDpidHQU           ));
+  printf(Form("  TRDptHEE             %f\n", fTRDptHEE            ));
+  printf(Form("  TRDpidHEE            %i\n", fTRDpidHEE           ));
+  printf(Form("  TRDminSectorHEE      %f\n", fTRDminSectorHEE     ));
+  printf(Form("  TRDmaxSectorHEE      %f\n", fTRDmaxSectorHEE     ));
+  printf(Form("  TRDptHJT             %f\n", fTRDptHJT            ));
+  printf(Form("  TRDnHJT              %i\n", fTRDnHJT             ));
 }
+

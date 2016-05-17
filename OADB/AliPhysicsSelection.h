@@ -72,7 +72,7 @@ public:
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
   void SetCustomOADBObjects(AliOADBPhysicsSelection * oadbPS, AliOADBFillingScheme * oadbFS, AliOADBTriggerAnalysis * oadbTA = 0) { fPSOADB = oadbPS; fFillOADB = oadbFS; fTriggerOADB = oadbTA; fUsingCustomClasses = kTRUE;}
   
-  virtual TObject *GetStatistics(const Option_t *option) const { AliError("This method is deprecated"); return 0; }
+  virtual TObject *GetStatistics(const Option_t *option) const { return fHistList.FindObject("fHistStat"); }
   void SetBin0Callback( const char * cb) { AliError("This method is deprecated"); } 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) { AliError("This method is deprecated"); }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { AliError("This method is deprecated"); }
@@ -99,14 +99,14 @@ protected:
   TList fHistList;            // list of output histos
   TH2F* fHistStat;            //!
   
-  AliOADBPhysicsSelection* fPSOADB;      //! Physics selection OADB object
-  AliOADBFillingScheme*    fFillOADB;    //! Filling scheme OADB object
-  AliOADBTriggerAnalysis*  fTriggerOADB; //! Trigger analysis OADB object
+  AliOADBPhysicsSelection* fPSOADB;      // Physics selection OADB object
+  AliOADBFillingScheme*    fFillOADB;    // Filling scheme OADB object
+  AliOADBTriggerAnalysis*  fTriggerOADB; // Trigger analysis OADB object
 
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 19)
+  ClassDef(AliPhysicsSelection, 20)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);

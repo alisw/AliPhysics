@@ -84,3 +84,6 @@ JetEtaCut               0.25
 
 #======= Level of used quality control histograms =======
 QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added
+
+#======= Acceptance correction =======
+HitsPerBinAcceptance   500 # Number of hits per bin required for acceptance correction histograms
