@@ -40,8 +40,6 @@
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
-#include "AliRecoParam.h"
-#include "AliADRecoParam.h"
 
 ClassImp(AliAnalysisTaskADCalib);
 
@@ -143,28 +141,6 @@ void AliAnalysisTaskADCalib::NotifyRun() {
   fTimeResolution[0] = calibData->GetTimeResolution(0);
   fTimeResolution[1] = calibData->GetTimeResolution(1);
   AliInfo(Form("timeResolution: %f %f", fTimeResolution[0], fTimeResolution[1]));
-
-  entry = man->Get("AD/Calib/RecoParam");
-  const TObjArray *recoParamArray =  dynamic_cast<const TObjArray*>(entry->GetObject());
-  if (NULL == recoParamArray) {
-    AliFatal("NULL == recoParamArray");
-    return;
-  }
-  const AliADRecoParam *recoParam = NULL;
-  for (Int_t i=0, n=recoParamArray->GetEntries(); i<n; ++i) {
-    recoParam = dynamic_cast<const AliADRecoParam*>(recoParamArray->At(i));
-    if (NULL == recoParam)
-      continue;
-    if ((recoParam->GetEventSpecie() & AliRecoParam::kDefault) != 0)
-      break;
-  }
-  if (NULL == recoParam) {
-    AliFatal("NULL == recoParam");
-    return;
-  }
-  fBCRangeTail[0] = recoParam->GetTailBegin();
-  fBCRangeTail[1] = recoParam->GetTailEnd();
-  AliInfo(Form("BCRangeTail: [%2d,%2d]", fBCRangeTail[0], fBCRangeTail[1]));
 }
 
 void AliAnalysisTaskADCalib::UserCreateOutputObjects() {

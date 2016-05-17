@@ -1,8 +1,10 @@
 // -*- C++ -*-
 // $Id$
 
-AliAnalysisTaskADCalib* AddTaskADCalib(Int_t bcExtrapolationMin=9,
-				       Int_t bcExtrapolationMax=15) {  
+AliAnalysisTaskADCalib* AddTaskADCalib(Int_t bcTailMin=16,
+				       Int_t bcTailMax=20,
+				       Int_t bcExtrapolationMin=10,
+				       Int_t bcExtrapolationMax=13) {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_ADCalib", "No analysis manager found.");
@@ -15,6 +17,7 @@ AliAnalysisTaskADCalib* AddTaskADCalib(Int_t bcExtrapolationMin=9,
   }
       
   AliAnalysisTaskADCalib *task = new AliAnalysisTaskADCalib();
+  task->SetBCRangeTail(bcTailMin, bcTailMax);
   task->SetBCRangeExtrapolation(bcExtrapolationMin, bcExtrapolationMax);
   mgr->AddTask(task);
   
