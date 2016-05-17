@@ -1741,8 +1741,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 
 //   histQmax->GetXaxis()->SetRange(1,3);
 //   histQtot->GetXaxis()->SetRange(1,3);
-  TGraphErrors *fitPadRegionQmax = AliTPCcalibBase::FitSlices(histQmax,1000,10,.3,.7);
-  TGraphErrors *fitPadRegionQtot = AliTPCcalibBase::FitSlices(histQtot,1000,10,.3,.7);
+  TGraphErrors *fitPadRegionQmax = AliTPCcalibBase::FitSlices(histQmax,200,1,.15,.85);
+  TGraphErrors *fitPadRegionQtot = AliTPCcalibBase::FitSlices(histQtot,200,1,.15,.85);
   histQmax->GetXaxis()->SetRange(0,-1);
   histQtot->GetXaxis()->SetRange(0,-1);
   fitPadRegionQmax->RemovePoint(3);
@@ -1848,8 +1848,10 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
     return kFALSE;
   }
 
-  TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
-  TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+//   TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+//   TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+  TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
+  TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
 
   //
   const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
