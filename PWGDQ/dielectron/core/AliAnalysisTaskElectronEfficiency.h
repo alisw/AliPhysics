@@ -197,36 +197,27 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<TH2F*>              fvRecoPairs_diffMothers;
   std::vector<TH2F*>              fvRecoPairs_poslabel_diffMothers;
   
-  
   Bool_t                          fCalcResolution;
   
   TH2D*                           fPrecOverPgen_PGen;
   TH2D*                           fPtRecOverPtGen_PtGen;
   TH2D*                           f1PGenOver1PRec_1PGen;
   TH2D*                           f1PtGenOver1PtRec_1PtGen;
-  TH2D*                           fPrecOverPgen_PGen_poslabel;
-  TH2D*                           fPtRecOverPtGen_PtGen_poslabel;
-  TH2D*                           f1PGenOver1PRec_1PGen_poslabel;
-  TH2D*                           f1PtGenOver1PtRec_1PtGen_poslabel;
   
   TH2D*                           fPrecOverPgen_PGen_pions;
   TH2D*                           fPtRecOverPtGen_PtGen_pions;
   TH2D*                           f1PGenOver1PRec_1PGen_pions;
   TH2D*                           f1PtGenOver1PtRec_1PtGen_pions;
-  TH2D*                           fPrecOverPgen_PGen_poslabel_pions;
-  TH2D*                           fPtRecOverPtGen_PtGen_poslabel_pions;
-  TH2D*                           f1PGenOver1PRec_1PGen_poslabel_pions;
-  TH2D*                           f1PtGenOver1PtRec_1PtGen_poslabel_pions;
   
   TH2F*                           fEtaGen_EtaRec;
   TH2F*                           fPhiGen_PhiRec;
-  THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;
-  THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
   
   TH2D*                           fOpeningAngleGen_OpeningAngleRecUS;
   TH2D*                           fOpeningAngleGen_OpeningAngleRecLS;
   TH2D*                           fOpeningAngleGen_OpeningAngleResolutionUS;
   TH2D*                           fOpeningAngleGen_OpeningAngleResolutionLS;
+  
+  THnSparseF*                           fMgen_PtGen_mRes_ptRes;
   
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.

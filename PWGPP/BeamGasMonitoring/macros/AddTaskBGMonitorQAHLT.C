@@ -22,6 +22,6 @@ AliAnalysisBGMonitorQAHLT* AddTaskBGMonitorQAHLT(Bool_t UseTree = kFALSE)
     mgr->AddTask(taskBGMonitorQA);
     mgr->ConnectInput(taskBGMonitorQA,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskBGMonitorQA,1,mgr->CreateContainer("cOutputH", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName())));
-    mgr->ConnectOutput(taskBGMonitorQA,0,mgr->CreateContainer("cOutputT", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName())));
+    //mgr->ConnectOutput(taskBGMonitorQA,0,mgr->CreateContainer("cOutputT", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName())));
     return taskBGMonitorQA;
 }

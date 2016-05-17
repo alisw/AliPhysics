@@ -10,11 +10,12 @@
 class TList;
 class TTree;
 class TH2;
-class TH3;
+class THnSparse;
 class TF1;
 class AliCDBStorage;
 class AliCDBEntry;
 class ADESDFriendUtils;
+class AliADCalibData;
 
 #include <TString.h>
 
@@ -30,10 +31,6 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
 
-  void SetBCRangeTail(Int_t bcMin, Int_t bcMax) {
-    fBCRangeTail[0] = bcMin;
-    fBCRangeTail[1] = bcMax;
-  }
   void SetBCRangeExtrapolation(Int_t bcMin, Int_t bcMax) {
     fBCRangeExtrapolation[0] = bcMin;
     fBCRangeExtrapolation[1] = bcMax;
@@ -44,17 +41,17 @@ public:
 
 protected:
   Bool_t  FillHist(TString name, Double_t x, Double_t y);             // TH2
-  Bool_t  FillHist(TString name, Double_t x, Double_t y, Double_t z); // TH3
+  Bool_t  FillHist(TString name, Double_t x, Double_t y, Double_t z); // THnSparse
   TString GetHistName (Int_t ch, Int_t bc, Bool_t integrator) const;  // for TH2
-  TString GetHistName (Int_t ch, Bool_t integrator) const;            // for TH3
+  TString GetHistName (Int_t ch, Bool_t integrator) const;            // for THnSparse
   TString GetFcnName  (Int_t ch, Int_t bc, Bool_t integrator) const;
   TString GetHistTitle(Int_t ch, Int_t bc, Bool_t integrator) const;  // for TH2
-  TString GetHistTitle(Int_t ch, Bool_t integrator) const;            // for TH3
+  TString GetHistTitle(Int_t ch, Bool_t integrator) const;            // for THnSparse
   Bool_t  MakeExtrapolationFit(TH2* h, TF1* f, Int_t ch, Int_t bc, Double_t &xMax);
 
 private:
-  TTree*       MakeSaturationCalibObject();
-  AliCDBEntry* UpdateGainParameters(Int_t runNumber, TTree *t);
+  TTree*       MakeSaturationCalibObject(AliADCalibData*);
+  AliCDBEntry* UpdateGainParameters(Int_t runNumber, TTree *t, AliADCalibData*);
 
   // not implemented:
   AliAnalysisTaskADCalib(const AliAnalysisTaskADCalib&);
@@ -68,7 +65,7 @@ private:
   ADESDFriendUtils *fADESDFriendUtils; //! AD ESD friend helper 
   TList            *fList;             //! output histograms
                                        // TH2s (charge in a BC vs. tail charge)
-                                       // TH3s (time1,time2,tail charge)
+                                       // THnSparse (time1,time2,tail charge)
 
   enum EStatusCode_t {
     kOk,

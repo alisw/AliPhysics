@@ -30,6 +30,8 @@ bool DEFAULT_DO_KT = kFALSE;
 struct MacroParams {
   std::vector<int> centrality_ranges;
   std::vector<unsigned char> pair_codes;
+  float qinv_bin_size_MeV;
+  float qinv_max_GeV;
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -67,6 +69,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
   macro_config.do_ylm_cf = false;
+  macro_config.qinv_bin_size_MeV = 5.0f;
+  macro_config.qinv_max_GeV = 1.0f;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -174,7 +178,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_qinv_cf) {
         TString cf_title = TString("_qinv_") + pair_type_str;
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), 100, 0.0, 1.2);
+        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         analysis->AddCorrFctn(cf);
       }
 

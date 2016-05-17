@@ -27,27 +27,24 @@ public:
 
   void ReadMixedEventHistograms(const char *fileName);      // Read acceptance histograms from input file
   double GetAcceptanceCorrectionTriangle(double deltaEta);  // Calculate acceptance correction from deltaEta triangle
-  double GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin);  // Calculate the acceptance correction from a one dimensional input histogram
-  double GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin);  // Calculate the acceptance correction from a two dimensional input histogram
+  double GetAcceptanceCorrectionTriangleInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin);  // Calculate the acceptance correction from a one dimensional input histogram
+  double GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional input histogram
   double GetAcceptanceCorrection3DNearSideCalculation(double deltaEta, double deltaPhi); // Calculate the acceptance correction from geometry for 3D near side
   double GetAcceptanceCorrection3DNearSideInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional histogram
 
-  double GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin);  // Acceptance correction for traditional near side
+  double GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for traditional near side
   double GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for 3D near side
   
-  double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin, int assocBin);  // Acceptance correction using near side and sampling definitions as given in parameters
+  double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction using near side and sampling definitions as given in parameters
   
   AliJAcceptanceCorrection& operator=(const AliJAcceptanceCorrection& a); // Equal sign operator
   TH2D *GetAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptanceCalculation;} // Getter for calculated acceptance
 
-  void SetMinCountsPerBin3DNearSideInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBin3DNearSideInclusive
-  
-  AliJTH1D GetTraditionalAcceptanceHistogram(){return fDEtaNearAcceptance;} // getter for traditional acceptance histogram
-  AliJTH2D GetTraditionalAcceptanceHistogram2D(){return fDEtaDPhiNearAcceptance;} // getter for traditional 2D acceptance histogram
-  AliJTH2D Get3DNearSideAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptance;} // getter for 3D near side acceptance histogram
+  void SetMinCountsPerBinInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBinInclusive
 
 private:
   void NormalizeAcceptanceTraditional(AliJTH1D &acceptanceHisto, corrType assocType); // Normalize one dimensional histograms to interval [0,1]
+  void NormalizeAcceptanceInclusive(AliJTH2D &acceptanceHisto, corrType assocType, double peakValue); // Normalize two dimensional histograms to interval [0,peakValue]
   void NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional histograms to interval [0,1]
   void NormalizeAcceptance3DNearSideInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional 3D near side histograms according to acceptance limits
   void Generate3DAcceptanceCorrection(); // Calculate 3D near side acceptance correction and store it in 2D histogram

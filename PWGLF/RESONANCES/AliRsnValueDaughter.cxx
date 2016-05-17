@@ -136,6 +136,8 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kV0Mass:        	        return "V0Mass";
       case kV0P:        	        return "V0Momentum";
       case kV0Pt:        	        return "V0TransverseMomentum";
+      case kV0NPt:        	        return "V0NegativeDaughterTransverseMomentum";
+      case kV0PPt:        	        return "V0PositiveDaughterTransverseMomentum";
       case kDaughterDCA:  	        return "V0DaughterDCA";
       case kCosPointAng:  	        return "V0CosineOfPointingAngle";
       case kLambdaProtonPIDCut:         return "V0LambdaProtonNsigma";
@@ -602,6 +604,40 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        return kTRUE;
      }
      else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+
+   case kV0NPt:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       Double_t px, py, pz;
+       v0ESD->GetNPxPyPz(px, py, pz);
+       fComputedValue = TMath::Sqrt(px*px+py*py);
+       return kTRUE;
+     }
+     if(v0aod) {// NOTE. Not implemented for AOD
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+
+   case kV0PPt:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       Double_t px, py, pz;
+       v0ESD->GetPPxPyPz(px, py, pz);
+       fComputedValue = TMath::Sqrt(px*px+py*py);
+       return kTRUE;
+     }
+     if(v0aod) {// NOTE. Not implemented for AOD
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+     else { 
        fComputedValue = -999;
        return kFALSE;
      }	 	 
