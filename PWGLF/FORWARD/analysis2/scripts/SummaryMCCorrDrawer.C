@@ -149,7 +149,7 @@ protected:
     
     TCollection* c = GetCollection(parent, folder);
     if (!c) 
-      Warning("DrawVertexBins", "List %s not found", folder.Data());
+      Warning("GetVertexList", "List %s not found", folder.Data());
 	
     return c;
   }

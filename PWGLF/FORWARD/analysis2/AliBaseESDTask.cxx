@@ -130,7 +130,23 @@ AliBaseESDTask::SetDebug(Int_t dbg)
   //
   GetEventInspector().SetDebug(dbg);
 }
-
+//____________________________________________________________________
+void
+AliBaseESDTask::SetIPzMethod(const char* str)
+{
+  AliFMDEventInspector::EVtxType meth = AliFMDEventInspector::kNormal;
+  TString s(str);
+  s.ToLower();
+  if      (s.Contains("normal")) meth = AliFMDEventInspector::kNormal;
+  else if (s.Contains("pa2012")) meth = AliFMDEventInspector::kpA2012;
+  else if (s.Contains("pa2013")) meth = AliFMDEventInspector::kpA2013;
+  else if (s.Contains("ud"))     meth = AliFMDEventInspector::kPWGUD;
+  else if (s.Contains("disp") || s.Contains("sat"))
+    meth = AliFMDEventInspector::kDisplaced;
+  else
+    AliWarningF("Unknown IPz method: %s, using normal", str);
+  GetEventInspector().SetVertexMethod(meth);
+}
 
 //____________________________________________________________________
 Bool_t 
@@ -297,9 +313,9 @@ AliBaseESDTask::CheckCorrections(UInt_t what) const
 //____________________________________________________________________
 Bool_t
 AliBaseESDTask::ReadCorrections(const TAxis*& pe, 
-			       const TAxis*& pv, 
-			       Bool_t        mc,
-			       Bool_t        sat)
+				const TAxis*& pv, 
+				Bool_t        mc,
+				Bool_t        sat)
 {
   //
   // Read corrections

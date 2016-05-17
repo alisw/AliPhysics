@@ -18,6 +18,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODForwardMult.h"
+#include "AliForwardUtil.h"
 #include <TH1.h>
 #include <TH2D.h>
 #include <TH2F.h>
@@ -80,7 +81,15 @@ AliBaseMCCorrectionsTask::AliBaseMCCorrectionsTask(const char* name,
     "AliESDFMD.,SPDVertex.,PrimaryVertex.";
 }
 
-
+//____________________________________________________________________
+void
+AliBaseMCCorrectionsTask::SetSatellite(Bool_t sat)
+{
+  if (!sat) return;
+  SetVertexAxis(*AliForwardUtil::MakeFullIpZAxis(20));
+  SetEtaAxis(240, -6, 6);
+  SetIPzMethod("displaced");
+}
 //____________________________________________________________________
 void
 AliBaseMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min, 
@@ -117,7 +126,10 @@ AliBaseMCCorrectionsTask::SetVertexAxis(const TAxis& axis)
   // Parameters:
   //    axis Axis
   //
-  SetVertexAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
+  if (axis.GetXbins() && axis.GetXbins()->GetArray())
+    fVtxAxis.Set(axis.GetNbins(),axis.GetXbins()->GetArray());
+  else 
+    SetVertexAxis(axis.GetNbins(),axis.GetXmin(),axis.GetXmax());
 }
 
 //____________________________________________________________________
@@ -185,11 +197,26 @@ AliBaseMCCorrectionsTask::Book()
   fNeededCorrections = 0;
   fExtraCorrections  = 0;
 
-  fHEvents = new TH1I(GetEventName(false,false),
-		      "Number of all events", 
-		      fVtxAxis.GetNbins(), 
-		      fVtxAxis.GetXmin(), 
-		      fVtxAxis.GetXmax());
+  fHEvents = 0;
+  TH1* vtxAxis = 0;
+  if (fVtxAxis.GetXbins() && fVtxAxis.GetXbins()->GetArray()) {
+    vtxAxis = new TH1D("vtxAxis", "Vertex axis", 
+		       fVtxAxis.GetNbins(), fVtxAxis.GetXbins()->GetArray()); 
+    fHEvents = new TH1I(GetEventName(false,false),
+			"Number of all events", 
+			fVtxAxis.GetNbins(), fVtxAxis.GetXbins()->GetArray()); 
+  }
+  else {
+    vtxAxis = new TH1D("vtxAxis", "Vertex axis", 
+		       fVtxAxis.GetNbins(), 
+		       fVtxAxis.GetXmin(), 
+		       fVtxAxis.GetXmax());
+    fHEvents = new TH1I(GetEventName(false,false),
+			"Number of all events", 
+			fVtxAxis.GetNbins(), 
+			fVtxAxis.GetXmin(), 
+			fVtxAxis.GetXmax());
+  }
   fHEvents->SetXTitle("v_{z} [cm]");
   fHEvents->SetYTitle("# of events");
   fHEvents->SetFillColor(kBlue+1);
@@ -197,39 +224,28 @@ AliBaseMCCorrectionsTask::Book()
   fHEvents->SetDirectory(0);
   fList->Add(fHEvents);
 
-  fHEventsTr = new TH1I(GetEventName(true, false), 
-			"Number of triggered events",
-			fVtxAxis.GetNbins(), 
-			fVtxAxis.GetXmin(), 
-			fVtxAxis.GetXmax());
-  fHEventsTr->SetXTitle("v_{z} [cm]");
-  fHEventsTr->SetYTitle("# of events");
+  fHEventsTr = static_cast<TH1I*>(fHEvents->Clone(GetEventName(true, false)));
+  fHEventsTr->SetTitle("Number of triggered events");
   fHEventsTr->SetFillColor(kRed+1);
-  fHEventsTr->SetFillStyle(3001);
   fHEventsTr->SetDirectory(0);
   fList->Add(fHEventsTr);
-
-  fHEventsTrVtx = new TH1I(GetEventName(true,true),
-			   "Number of events w/trigger and vertex", 
-			   fVtxAxis.GetNbins(), 
-			   fVtxAxis.GetXmin(), 
-			   fVtxAxis.GetXmax());
-  fHEventsTrVtx->SetXTitle("v_{z} [cm]");
-  fHEventsTrVtx->SetYTitle("# of events");
-  fHEventsTrVtx->SetFillColor(kBlue+1);
-  fHEventsTrVtx->SetFillStyle(3001);
+  
+  fHEventsTrVtx = static_cast<TH1I*>(fHEvents->Clone(GetEventName(true,true)));
+  fHEventsTrVtx->SetTitle("Number of events w/trigger and vertex");
+  fHEventsTrVtx->SetFillColor(kMagenta+1);
   fHEventsTrVtx->SetDirectory(0);
   fList->Add(fHEventsTrVtx);
 
   // Copy axis objects to output 
-  TH1* vtxAxis = new TH1D("vtxAxis", "Vertex axis", 
-			  fVtxAxis.GetNbins(), 
-			  fVtxAxis.GetXmin(), 
-			  fVtxAxis.GetXmax());
   TH1* etaAxis = new TH1D("etaAxis", "Eta axis", 
 			  fEtaAxis.GetNbins(), 
 			  fEtaAxis.GetXmin(), 
 			  fEtaAxis.GetXmax());
+  vtxAxis->SetXTitle("IP_{#it{z}}");
+  vtxAxis->SetYTitle("dummy");
+  etaAxis->SetXTitle("#eta");
+  etaAxis->SetYTitle("dummy");
+  
   fList->Add(vtxAxis);
   fList->Add(etaAxis);
 
@@ -316,7 +332,7 @@ AliBaseMCCorrectionsTask::Event(AliESDEvent& esd)
   if (usedZbin > 0 && usedZbin <= fVtxAxis.GetNbins()) 
     bin = static_cast<VtxBin*>(fVtxBins->At(usedZbin));
   if (!bin) { 
-    // AliError(Form("No vertex bin object @ %d (%f)", iVzMc, ipMc.Z()));
+    AliErrorF("No vertex bin object @ %d (%f)", iVzMc, ipMc.Z());
     return false;
   }
 

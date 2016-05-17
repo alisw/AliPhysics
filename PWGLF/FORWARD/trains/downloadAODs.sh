@@ -12,6 +12,38 @@ delay=0.1
 # Storage elements to skip 
 skip=
 
+# --- Output file name function --------------------------------------
+outputName()
+{
+    echo $1 | sed 's,.*/\([^/]*\)/\([^/]*\)/\(.*\)\.\(root\|zip\),\3_\1_\2.\4,'
+    # local src=$1
+    # local dir=`dirname $1`
+    # local base=`basename $1 .root`
+    # local par=`basename $dir`
+    # local grnd=`basename $(dirname $dir)` 
+    # local dest=${base}_${grnd}_${par}.root
+    # echo $dest
+}
+
+# --- Filter existing function ---------------------------------------
+filterExisting()
+{
+    # local total=0
+    # local toget=0
+    while read line ; do
+	dest=`outputName $line`
+	# total=$(($total+1))
+	if test -f $dest ; then
+	    continue ;
+	fi
+	echo $line > /dev/stdout
+	# toget=$(($toget+1))
+	# printf "%5d/%5d %s\n" $toget $total $dest >/dev/stderr 
+    done
+    # printf "\rGet %5d out of %5d%30s\n" $toget $total "" > /dev/stderr 
+    return 0
+}
+
 # --- Download function ----------------------------------------------
 #
 # Function to download a single file and store it with a unique name
@@ -21,15 +53,13 @@ copyit()
 {
     local src=$1
     local dir=`dirname $1`
-    local base=`basename $1 .root`
-    local par=`basename $dir`
-    local grnd=`basename $(dirname $dir)` 
-    local dest=${base}_${grnd}_${par}.root
+    local dest=`outputName $src`
     # mkdir -p ${par}
     if test -f $dest ; then
 	# echo "$src -> $dest ... exists"
 	return
     fi
+    echo "Copy $src -> $dest"  > /dev/stderr 
     # Below can be used to filter on specific locations
     local at=
     if test "x$skip" != "x" ; then 
@@ -41,12 +71,15 @@ copyit()
 		break
 	    fi
 	done
-    fi 
+    fi
+    echo -e "=================================\n" \
+	 "alien_cp -s alien:${src}${at} file:${dest}" >> download.log 
     alien_cp -s alien:${src}${at} file:${dest} >> download.log 2>&1 
-    sleep $delay
+    # sleep $delay
 }
 # Export the function
 export -f copyit
+export -f outputName
 
 # --- Help function --------------------------------------------------
 usage()
@@ -75,7 +108,7 @@ start=0
 stop=10000
 file=
 dir=
-zen=
+zen=0
 jobs=4
 while test $# -gt 0 ; do
     case $1 in
@@ -150,15 +183,17 @@ if test $zen -gt 0 ; then
 	tr -d ' ' | \
 	head -n $stop | \
 	tail -n $n | \
-	parallel --eta --bar -j ${jobs} copyit {} \
-		 2> >(zenity --width=700 --height=100 --progress --auto-close --time-remaining --no-cancel)
+	filterExisting | \
+	parallel --bar --delay ${delay} -j ${jobs} copyit {} \
+		 2> >(zenity --width=800 --height=100 --progress --auto-close --time-remaining --no-cancel)
 else 
     alien_find $dir $file | \
 	grep .${suf} | \
 	tr -d ' ' | \
 	head -n $stop | \
 	tail -n $n | \
-	parallel --eta --bar -j ${jobs} copyit {}
+	filterExisting | \
+	parallel --bar --delay ${delay} -j ${jobs} copyit {}
 fi 
 
 # --- End of job -----------------------------------------------------

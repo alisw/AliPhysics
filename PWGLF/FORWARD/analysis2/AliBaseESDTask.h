@@ -211,6 +211,7 @@ public:
     AliAnalysisTaskSE::SetDebugLevel(dbg); 
     SetDebug(dbg);
   }
+  void SetIPzMethod(const char* str);
   /* @} */
   // --- Configuration etc -------------------------------------------
   /** @{ 
