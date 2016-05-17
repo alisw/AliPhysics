@@ -235,17 +235,17 @@ AliBaseMCTrackDensity::GetTrackRefTheta(const AliTrackReference* ref) const
 				    
 //____________________________________________________________________
 const AliMCParticle*
-AliBaseMCTrackDensity::GetMother(Int_t     iTr,
-				const AliMCEvent& event) const
+AliBaseMCTrackDensity::GetMother(Int_t iTr, const AliMCEvent& event) const
 {
   // 
   // Track down primary mother 
   // 
-  Int_t  i                       = iTr;
+  Int_t                i         = iTr;
   Bool_t               gammaSeen = false;
   const AliMCParticle* candidate = 0;
   do { 
     const AliMCParticle* p = static_cast<AliMCParticle*>(event.GetTrack(i));
+    if (!p) break;
     if (gammaSeen && TMath::Abs(p->PdgCode()) == 111) 
       // If we're looking for a mother pi0 of gamma, and we find it
       // here, we return it - irrespective of whether it's flagged as
@@ -253,15 +253,14 @@ AliBaseMCTrackDensity::GetMother(Int_t     iTr,
       return p;
 
     if (const_cast<AliMCEvent&>(event).Stack()->IsPhysicalPrimary(i)) {
-      if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22) {
+      candidate = p;
+      if (fTrackGammaToPi0 && TMath::Abs(p->PdgCode()) == 22) 
 	// If we want to track gammas back to a possible pi0, we flag
 	// the gamma seen, and store it as a candidate in case we do
 	// not find a pi0 in the stack
-	candidate = p;
 	gammaSeen = true;
-      }
       else 
-	return p;
+	break;
     }
     
     // We get here if the current track isn't a primary, or it was a

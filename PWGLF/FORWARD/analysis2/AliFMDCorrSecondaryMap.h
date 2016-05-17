@@ -240,7 +240,10 @@ AliFMDCorrSecondaryMap::SetVertexAxis(Int_t nBins, Double_t min, Double_t max)
 inline void 
 AliFMDCorrSecondaryMap::SetVertexAxis(const TAxis& e)
 {
-  fVertexAxis.Set(e.GetNbins(), e.GetXmin(), e.GetXmax());
+  if (e.GetXbins() && e.GetXbins()->GetArray())
+    fVertexAxis.Set(e.GetNbins(), e.GetXbins()->GetArray());
+  else 
+    fVertexAxis.Set(e.GetNbins(), e.GetXmin(), e.GetXmax());
 }
 //____________________________________________________________________
 inline void 

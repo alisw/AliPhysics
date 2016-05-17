@@ -312,7 +312,9 @@ AliFMDEventInspector::CacheConfiguredTriggerClasses(TList& cache,
   //                  |  '-' words
   //   words          := word 
   //                  |  word ',' words 
-  //   
+  //
+  Printf("Inspecting physics selection: %p", o);
+  o->Print();
   while ((trigClass = static_cast<TObjString*>(nextClass()))) {
     // Tokenize on space to get positive and negative parts 
     TString     side   = o->GetBeamSide(trigClass->String());
@@ -456,14 +458,22 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
       limits[i] = fMinCent + i - .5;
     }
   }
-      
-  fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
+
+  if (vtxAxis.GetXbins() && vtxAxis.GetXbins()->GetArray()) 
+    fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray());
+  else 
+    fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
-  fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
-			4*vtxAxis.GetNbins(), 
-			2*vtxAxis.GetXmin(), 
-			2*vtxAxis.GetXmax());
+  fHEventsTr = 0;
+  if (vtxAxis.GetXbins() && vtxAxis.GetXbins()->GetArray()) 
+    fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger",
+			  vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray());
+  else 
+    fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
+			  4*vtxAxis.GetNbins(), 
+			  2*vtxAxis.GetXmin(), 
+			  2*vtxAxis.GetXmax());  
   fHEventsTr->SetXTitle("v_{z} [cm]");
   fHEventsTr->SetYTitle("# of events");
   fHEventsTr->SetFillColor(kRed+1);
@@ -479,11 +489,19 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   // fHEventsTrVtx->Sumw2();
   fList->Add(fHEventsTrVtx);
 
-  fHEventsAccepted = new TH1I("nEventsAccepted", 
-			      "Number of events  w/trigger and vertex in range",
-			      2*vtxAxis.GetNbins(), 
-			      2*vtxAxis.GetXmin(), 
-			      2*vtxAxis.GetXmax());
+  fHEventsAccepted = 0;
+  if (vtxAxis.GetXbins() && vtxAxis.GetXbins()->GetArray()) 
+    fHEventsAccepted =
+      new TH1I("nEventsAccepted", 
+	       "Number of events w/trigger and vertex in range",
+	       vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray());
+  else 
+    fHEventsAccepted =
+      new TH1I("nEventsAccepted", 
+	       "Number of events w/trigger and vertex in range",
+	       2*vtxAxis.GetNbins(), 
+	       2*vtxAxis.GetXmin(), 
+	       2*vtxAxis.GetXmax());
   fHEventsAccepted->SetXTitle("v_{z} [cm]");
   fHEventsAccepted->SetYTitle("# of events");
   fHEventsAccepted->SetFillColor(kGreen+1);
