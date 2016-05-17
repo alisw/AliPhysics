@@ -27,6 +27,7 @@
 #include "AliTrackletWeights.C"
 #include <TUrl.h>
 #include <TFile.h>
+#include <TGraphErrors.h>
 #else
 // class AliAODTracklet;
 class AliTrackletWeights;
@@ -297,6 +298,12 @@ public:
    * @param x Value 
    */
   void SetTailDelta(Double_t x=5) { fTailDelta = x; }
+  /**
+   * Set lower cut on tail of @f$\Delta@f$ distributions 
+   *
+   * @param x Value 
+   */
+  void SetTailMaximum(Double_t x=-1) { fTailMax = x; }
   /** 
    * Set the very least centrality to consider.  This is for cases
    * where the centrality calibration of simulated data doesn't really
@@ -400,12 +407,14 @@ public:
      * @param parent  Parent container 
      * @param ipz     Distribution of interaction point Z coordinate
      * @param tailCut Cut on tails 
+     * @param tailMax Maximum to integrate tail to
      * 
-     * @return 
+     * @return true on success
      */
     virtual Bool_t MasterFinalize(Container* parent,
 				  TH1*       ipz,
-				  Double_t   tailCut) = 0;
+				  Double_t   tailCut,
+				  Double_t   tailMax) = 0;
     /** 
      * Set debug flag 
      *
@@ -579,12 +588,14 @@ public:
      * @param parent  Parent container 
      * @param ipz     Interaction point Z coordinate distribution
      * @param tailCut Cut on tails 
+     * @param tailMax Maximum to integrate tail to
      * 
      * @return true on success
      */
     Bool_t MasterFinalize(Container* parent,
 			  TH1*       ipz,
-			  Double_t   tailCut);
+			  Double_t   tailCut,
+			  Double_t   tailMax);
 
     UChar_t GetMask() const { return fMask; }
     UChar_t GetVeto() const { return fVeto; }
@@ -638,6 +649,7 @@ public:
 	fHigh(0),
 	fIPz(0),
 	fCent(0),
+	fCentIPz(0),
 	fMeasured(0),
 	fInjection(0)
     {
@@ -660,6 +672,7 @@ public:
 	fLow(o.fLow),
 	fIPz(0),
 	fCent(0),
+	fCentIPz(0),
 	fHigh(o.fHigh),
 	fMeasured(0),
 	fInjection(0)	
@@ -743,12 +756,14 @@ public:
      * @param parent  Parent container 
      * @param ipz     Z-coordinate of the IP
      * @param tailCut Cut on tails 
+     * @param tailMax Maximum to integrate tail to
      * 
-     * @return 
+     * @return true on success
      */
     Bool_t MasterFinalize(Container* parent,
 			  TH1*       ipz,
-			  Double_t   tailCut);
+			  Double_t   tailCut,
+			  Double_t   tailMax);
     /** 
      * Estimate the background a given histogram set 
      * 
@@ -757,6 +772,7 @@ public:
      * @param genCont  The generator results (if applicable)
      * @param h        The histogram container 
      * @param tailCut  Cut on the tail distribution 
+     * @param tailMax  Maximum to integrate tail to
      * 
      * @return true on success 
      */
@@ -764,7 +780,8 @@ public:
 			      Container* measCont,
 			      Container* genCont,
 			      Histos*    h,
-			      Double_t   tailCut);
+			      Double_t   tailCut,
+			      Double_t   tailMax);
     /** 
      * Print information to standard output 
      * 
@@ -778,15 +795,16 @@ public:
      */
     virtual void SetDebug(UShort_t lvl);
   protected:
-    Container* fSubs;
-    Double_t   fLow;
-    Double_t   fHigh;
-    TH1*       fIPz;  //! 
-    TH1*       fCent; //! 
-    Histos*    fMeasured; 
-    Histos*    fInjection;
+    Container*  fSubs;
+    Double_t    fLow;
+    Double_t    fHigh;
+    TH1*        fIPz;  //! 
+    TH1*        fCent; //!
+    TProfile*   fCentIPz; //! 
+    Histos*     fMeasured; 
+    Histos*     fInjection;
 
-    ClassDef(CentBin,1);
+    ClassDef(CentBin,2);
   };
 
 protected:
@@ -1020,9 +1038,15 @@ protected:
   /** Histogram of all eta phi */
   TH2* fEtaPhi;    //!
   /** Histogram of centrality, nTracklets correlation */
-  TProfile* fCentTracklets; //! 
+  TProfile* fCentTracklets; //!
+  /** Histogram of centrality vs average mult estimator */
+  TProfile* fCentEst; //!
   /** Centrality method to use */
   TString    fCentMethod;
+  /** Cached index of centrality estimator */
+  Int_t      fCentIdx;
+  /** Cached index of tracklet estimator */
+  Int_t      fTrkIdx;
   /** Centrality axis */
   TAxis      fCentAxis;
   /** Interaction point Z axis */
@@ -1035,6 +1059,8 @@ protected:
   Double_t   fMaxDelta;
   /** Least value of @f$\Delta@f$ considered background tail */
   Double_t   fTailDelta;
+  /** Largest value of @f$\Delta@f$ considered background tail */
+  Double_t   fTailMax;
   /** Shift @f$\delta_{\phi}@f$ of @f$\Delta\phi@f$ */
   Double_t   fDPhiShift;
   /** Signal cut on @f$\Delta\phi-\delta_{\phi}@f$ */
@@ -1302,13 +1328,17 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fStatus(0),
     fEtaPhi(0),
     fCentTracklets(0),
+    fCentEst(0),
     fCentMethod(""),
+    fCentIdx(-1),
+    fTrkIdx(-1),
     fCentAxis(1,0,0),
     fIPzAxis(1,0,0),
     fEtaAxis(1,0,0),
     fPhiAxis(1,0,0),
     fMaxDelta(0),
     fTailDelta(0),
+    fTailMax(-1),
     fDPhiShift(0),
     fShiftedDPhiCut(0),
     fDeltaCut(0),
@@ -1324,13 +1354,17 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fStatus(0),
     fEtaPhi(0),
     fCentTracklets(0),
+    fCentEst(0),
     fCentMethod("V0M"),
+    fCentIdx(-1),
+    fTrkIdx(-1),
     fCentAxis(10,0,100),
     fIPzAxis(30,-15,+15),
     fEtaAxis(16,-2,+2),
     fPhiAxis(100,0,TMath::TwoPi()),
     fMaxDelta(25),
     fTailDelta(5),
+    fTailMax(-1),
     fDPhiShift(0.0045),
     fShiftedDPhiCut(-1),
     fDeltaCut(1.5),
@@ -1354,13 +1388,17 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fStatus(0),
     fEtaPhi(0),
     fCentTracklets(0),
+    fCentEst(0),
     fCentMethod(o.fCentMethod),
+    fCentIdx(o.fCentIdx),
+    fTrkIdx(o.fTrkIdx),
     fCentAxis(o.fCentAxis),
     fIPzAxis(o.fIPzAxis),
     fEtaAxis(o.fEtaAxis),
     fPhiAxis(o.fPhiAxis),
     fMaxDelta(o.fMaxDelta),
     fTailDelta(o.fTailDelta),
+    fTailMax(o.fTailMax),
     fDPhiShift(o.fDPhiShift),
     fShiftedDPhiCut(o.fShiftedDPhiCut),
     fDeltaCut(o.fDeltaCut),
@@ -1382,12 +1420,15 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   fIPz            = 0;
   fCent           = 0;
   fCentMethod     = o.fCentMethod;
+  fCentIdx        = o.fCentIdx;
+  fTrkIdx         = o.fTrkIdx;
   fCentAxis       = o.fCentAxis;
   fIPzAxis        = o.fIPzAxis;
   fEtaAxis        = o.fEtaAxis;
   fPhiAxis        = o.fPhiAxis;
   fMaxDelta       = o.fMaxDelta;
   fTailDelta      = o.fTailDelta;
+  fTailMax        = o.fTailMax;
   fDPhiShift      = o.fDPhiShift;
   fShiftedDPhiCut = o.fShiftedDPhiCut;
   fDeltaCut       = o.fDeltaCut;
@@ -1457,6 +1498,8 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
 {
   Double_t shiftedDPhiCut = fShiftedDPhiCut;
   if (shiftedDPhiCut < 0) shiftedDPhiCut = TMath::Sqrt(fDeltaCut)*0.06;
+  Double_t tailMax = fTailMax;
+  if (tailMax < 0) tailMax = fMaxDelta;
   
   Printf("%s: %s", ClassName(), GetName());
   Printf(" %22s: 0x%08x", "Off-line trigger mask", fOfflineTriggerMask);
@@ -1465,7 +1508,8 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "Delta cut",	           fDeltaCut);
   Printf(" %22s: %f",   "max Delta",	           fMaxDelta);
   Printf(" %22s: %f",   "tail Delta",	           fTailDelta);
-  Printf(" %22s: %f%%", "Absolute least c",     fAbsMinCent);
+  Printf(" %22s: %f",   "tail maximum",	           tailMax);
+  Printf(" %22s: %f%%", "Absolute least c",        fAbsMinCent);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
   PrintAxis(fIPzAxis,1,"IPz");
@@ -1555,6 +1599,8 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
 {
   if (DebugLevel() > 1) Printf("Initialising on worker");
   if (fShiftedDPhiCut < 0) fShiftedDPhiCut = TMath::Sqrt(fDeltaCut)*0.06;
+  if (fTailMax        < 0) fTailMax        = fMaxDelta;
+  
   fContainer = new Container;
   fContainer->SetName(Form("%sSums", GetName()));
   fContainer->SetOwner();
@@ -1572,6 +1618,8 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fCentTracklets->SetMarkerColor(kMagenta+2);
   fCentTracklets->SetLineColor(kMagenta+2);
   fContainer->Add(fCentTracklets);
+  fCentEst = Make1P(fContainer,"centEstimator","",kMagenta+2, 20, fCentAxis);
+  fCentEst->SetYTitle(Form("#LT%s%GT",fCentMethod.Data()));
 
   fStatus = new TH1F("status", "Status of task",
 		     kCompleted, .5, kCompleted+.5);
@@ -1607,6 +1655,7 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   params->Add(new DP("DeltaCut",       fDeltaCut,       'f'));
   params->Add(new DP("MaxDelta",       fMaxDelta,       'f'));
   params->Add(new DP("TailDelta",      fTailDelta,      'f'));
+  params->Add(new DP("TailMax",        fTailMax,        'f'));
   params->Add(new DP("AbsMinCent",     fAbsMinCent,     'f'));
   // Create our centrality bins 
   if (!InitCentBins(0)) {
@@ -1691,6 +1740,7 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
     fHigh(c2),
     fIPz(0),
     fCent(0),
+    fCentIPz(0),
     fMeasured(0),
     fInjection(0)
 {
@@ -1772,7 +1822,9 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
   fCent      = Make1D(fContainer,"cent","Centrality [%]",
 		      kMagenta+2,20,centAxis);
   fIPz       = Make1D(fContainer,"ipz","IP_{#it{z}} [cm]",kRed+2,20,ipzAxis);
-
+  fCentIPz   = Make1P(fContainer,"centIpz","#LTc#GT vs IP_{#it{z}}",kPink+2,
+		      20,ipzAxis);
+  fCentIPz->SetYTitle("#LTc#GT");
   TIter   next(fSubs);
   Histos* h = 0;
   while ((h = static_cast<Histos*>(next()))) {
@@ -2074,11 +2126,35 @@ Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
     event->GetList()->Print();
     return -1;
   }
-  AliMultEstimator* estTracklets = cent->GetEstimator("SPDTracklets");
-  if (estTracklets)    
-    nTracklets = estTracklets->GetValue();
+  if (fCentIdx < 0) {
+    TString trkName("SPDTracklets");
+    for (Int_t i = 0; i < cent->GetNEstimators(); i++) {
+      AliMultEstimator* e = cent->GetEstimator(i);
+      if (!e) continue;
+      if (fCentMethod.EqualTo(e->GetName())) fCentIdx = i;
+      if (trkName.EqualTo(e->GetName()))     fTrkIdx  = i;
+    }
+  }
+  if (fCentIdx < 0) {
+    AliWarningF("Centrality estimator %s not found", fCentMethod.Data());
+    return -1;
+  }
 
-  return cent->GetMultiplicityPercentile(fCentMethod);
+  // Use cached index to look up the estimator 
+  AliMultEstimator* estCent = cent->GetEstimator(fCentIdx);
+  if (!estCent) {
+    AliWarningF("Centrality estimator %s not available for this event",
+		fCentMethod.Data());
+    return -1;
+  }
+  fCentEst->Fill(estCent->GetPercentile(), estCent->GetValue());
+
+  // Now look up tracklet value using cached index 
+  if (fTrkIdx < 0) return estCent->GetPercentile();  
+  AliMultEstimator* estTracklets = cent->GetEstimator(fTrkIdx);
+  if (estTracklets) nTracklets = estTracklets->GetValue();
+
+  return estCent->GetPercentile();
 }
   
 //____________________________________________________________________
@@ -2186,8 +2262,9 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
 Bool_t AliTrackletAODdNdeta::CentBin::Accept(Double_t cent, Double_t ipz)
 {
   if (cent < fLow || cent >= fHigh) return false;
-  fCent->Fill(cent);
-  fIPz ->Fill(ipz);
+  fCent   ->Fill(cent);
+  fIPz    ->Fill(ipz);
+  fCentIPz->Fill(ipz, cent);
   return true;
 }
 
@@ -2303,6 +2380,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
   fContainer     = GetC(parent, fName);
   fCent          = GetH1(fContainer, "cent");
   fIPz           = GetH1(fContainer, "ipz");
+  fCentIPz       = GetP1(fContainer, "centIpz");
   if (!fContainer || !fCent || !fIPz) return false;
   TIter next(fSubs);
   Histos* h = 0;
@@ -2340,6 +2418,9 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   fCentTracklets =
     static_cast<TProfile*>(CloneAndAdd(results,GetP(fContainer,
 						    "centTracklets")));
+  fCentEst =
+    static_cast<TProfile*>(CloneAndAdd(results,GetP(fContainer,
+						    "centEstimator")));
   Double_t nEvents = fIPz->GetEntries();
   Printf("Event summary:");
   for (Int_t i = 1; i <= fStatus->GetNbinsX(); i++) 
@@ -2358,10 +2439,11 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   fStatus->Scale(1./fStatus->GetBinContent(1));
   fEtaPhi->Scale(1./nEvents);
 
+  if (fTailMax < 0) fTailMax = fMaxDelta;
   TIter    next(fCentBins);
   CentBin* bin = 0;
   while ((bin = static_cast<CentBin*>(next()))) {
-    if (!bin->MasterFinalize(results, 0, fTailDelta)) {
+    if (!bin->MasterFinalize(results, 0, fTailDelta, fTailMax)) {
       AliWarningF("Failed to finalize %s", bin->GetName());
       return false;
     }
@@ -2394,7 +2476,8 @@ Bool_t AliTrackletAODWeightedMCdNdeta::MasterFinalize(Container* results)
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 						     TH1*       ,
-						     Double_t   tailDelta)
+						     Double_t   tailDelta,
+						     Double_t   tailMax)
 {
   Container* result = new Container;
   result->SetName(fName);
@@ -2409,6 +2492,8 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   TH1* cent = static_cast<TH1*>(CloneAndAdd(result, fCent));
   cent->Scale(1./nEvents);
 
+  CloneAndAdd(result, fCentIPz);
+
   Container* measCont = 0;
   Container* genCont  = 0;
   TIter      next(fSubs);
@@ -2417,7 +2502,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
     if (h->GetMask() != AliAODTracklet::kInjection &&
 	h->GetMask() != AliAODTracklet::kCombinatorics) {
       // For the anything but injection or MC-labels, we just finalize
-      if (!h->MasterFinalize(result, fIPz, tailDelta)) {
+      if (!h->MasterFinalize(result, fIPz, tailDelta, tailMax)) {
 	AliWarningF("Failed to finalize %s/%s", GetName(), h->GetName());
 	return false;
       }
@@ -2428,7 +2513,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 	measCont = GetC(result, h->GetName());	
       continue;
     }
-    if (!EstimateBackground(result, measCont, genCont, h, tailDelta)) {
+    if (!EstimateBackground(result, measCont, genCont, h, tailDelta, tailMax)) {
       AliWarningF("Failed to estimate Bg in %s/%s", GetName(), h->GetName());
       return false;
     }      
@@ -2440,7 +2525,8 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 Bool_t 
 AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
 					     TH1*       ipz,
-					     Double_t   tailDelta)
+					     Double_t   tailDelta,
+					     Double_t   tailMax)
 {
   Container* result = new Container;
   result->SetName(fName);
@@ -2463,6 +2549,119 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaPdg->SetDirectory(0);
     etaPdg->Scale(1. / nEvents, "width");
     result->Add(etaPdg);
+
+    // Loop over PDG types and create 2D and 1D distributions 
+    TAxis*     yaxis  = etaPdg->GetYaxis();
+    Int_t      first  = yaxis->GetFirst();
+    Int_t      last   = yaxis->GetLast();
+    THStack*   pdgs   = new THStack("all","");
+    THStack*   toPion = new THStack("toPion", "");
+    THStack*   toAll  = new THStack("toAll", "");
+    TH1*       pion   = 0;
+    Container* pdgOut = new Container();
+    pdgOut->SetName("mix");
+    result->Add(pdgOut);
+    pdgOut->Add(pdgs);
+    pdgOut->Add(toPion);
+    pdgOut->Add(toAll);
+
+    TH1* all = static_cast<TH1*>(etaPdg->ProjectionX("total",
+						     1,etaPdg->GetNbinsY()));
+    all->SetDirectory(0);
+    all->SetName("total");
+    all->SetTitle("All");
+    all->SetYTitle(Form("d#it{N}_{%s}/d#eta", "all"));
+    all->SetFillColor(kBlack);
+    all->SetMarkerColor(kBlack);
+    all->SetLineColor(kBlack);
+    all->SetMarkerStyle(20);
+    all->SetFillStyle(0);
+    all->SetFillColor(0);
+    all->Reset();
+    pdgs->Add(all);
+    for (Int_t i = 1; i <= etaPdg->GetNbinsY(); i++) {
+      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+      TString nme;
+      Style_t sty;
+      Color_t col;
+      PdgAttr(pdg, nme, col, sty);
+      if (pdg < 0) pdg = 0;
+      if (pdg == 22) continue; // Ignore photons 
+
+      TH1*   h1    = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
+      if (h1->GetEntries() <= 0) continue; // Do not store if empty
+      h1->SetDirectory(0);
+      h1->SetName(Form("eta_%d", pdg));
+      h1->SetTitle(nme);
+      h1->SetYTitle(Form("d#it{N}_{%s}/d#eta", nme.Data()));
+      h1->SetFillColor(col);
+      h1->SetMarkerColor(col);
+      h1->SetLineColor(col);
+      h1->SetMarkerStyle(sty);
+      h1->SetFillStyle(0);
+      h1->SetFillColor(0);
+      h1->SetBinContent(0,0);
+      all->Add(h1);
+      pdgs->Add(h1);
+      switch (pdg) {
+      case 321:  h1->SetBinContent(0, 0.15);   break; // PRC88,044910
+      case 2212: h1->SetBinContent(0, 0.05);   break; // PRC88,044910
+      case 310:  h1->SetBinContent(0, 0.075);  break; // PRL111,222301
+      case 3122: h1->SetBinContent(0, 0.018);  break; // PRL111,222301
+      case 3212: h1->SetBinContent(0, 0.0055); break; // NPA904,539
+      case 3322: h1->SetBinContent(0, 0.005);  break; // PLB734,409
+      case 211:  h1->SetBinContent(0, 1);      break; // it self 
+      default:   h1->SetBinContent(0, -1);     break; // Unknown
+      }
+      pdgOut->Add(h1);
+      
+      if (pdg == 211) pion = h1;
+    }
+    if (pdgs->GetHists()) {
+      TIter    next(pdgs->GetHists());
+      TH1*     tmp  = 0;
+      Double_t rmin = +1e9;
+      Double_t rmax = -1e9;
+      while ((tmp = static_cast<TH1*>(next()))) {
+	if (tmp == all)  continue;
+	// Calculate ratio to all
+	TH1* rat = static_cast<TH1*>(tmp->Clone());
+	rat->Divide(all);
+	rat->SetDirectory(0);
+	rat->SetTitle(Form("%s / all", tmp->GetTitle()));
+	toAll->Add(rat);
+	
+	if (tmp == pion) continue;
+	Double_t r276 = tmp->GetBinContent(0);
+	if (r276 < 0 || r276 >= 1) continue;
+	
+	// Calulate ratio to pions 
+	rat = static_cast<TH1*>(tmp->Clone());
+	rat->Divide(pion);
+	rat->SetTitle(Form("%s / %s", tmp->GetTitle(), pion->GetTitle()));
+	rat->SetDirectory(0);
+
+	TGraphErrors* g = new TGraphErrors(1);
+	g->SetName(Form("%s_2760", rat->GetName()));
+	g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", rat->GetTitle()));
+	g->SetPoint(0,0,r276);
+	g->SetPointError(0,.5,0);
+	g->SetLineColor(rat->GetLineColor());
+	g->SetLineStyle(rat->GetLineStyle());
+	g->SetMarkerColor(rat->GetMarkerColor());
+	g->SetMarkerStyle(rat->GetMarkerStyle());
+	g->SetMarkerSize(1.5*rat->GetMarkerSize());
+	rat->GetListOfFunctions()->Add(g,"p");
+	rat->SetMaximum(TMath::Max(rat->GetMaximum(),r276));
+	rat->SetMinimum(TMath::Min(rat->GetMinimum(),r276));
+	rmin = TMath::Min(rat->GetMinimum(),rmin);
+	rmax = TMath::Max(rat->GetMaximum(),rmax);
+	
+	toPion->Add(rat);
+      }
+      // toPion->SetMinimum(rmin);
+      toPion->SetMaximum(1.1*rmax);
+    }
   }
 
   // Scale distribution of Pt to number of events and bin width
@@ -2471,7 +2670,8 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaPt->SetDirectory(0);
     etaPt->Scale(1. / nEvents, "width");
     result->Add(etaPt);
-  }
+
+   }
   
   // Short-hand-name
   TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
@@ -2561,7 +2761,8 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   // PArameters of integrals
   Double_t maxDelta = etaDeltaIPz->GetYaxis()->GetXmax();
   Int_t    lowBin   = etaDeltaIPz->GetYaxis()->FindBin(tailDelta);
-  Int_t    highBin  = etaDeltaIPz->GetYaxis()->GetNbins();  
+  Int_t    highBin  = TMath::Min(etaDeltaIPz->GetYaxis()->FindBin(tailMax),
+				 etaDeltaIPz->GetYaxis()->GetNbins());  
 
   
   TH1* etaDeltaTail    = etaDelta->ProjectionX("etaDeltaTail");
@@ -2628,14 +2829,15 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
 							 Container* measCont,
 							 Container* genCont,
 							 Histos*    h,
-							 Double_t   tailCut)
+							 Double_t   tailCut,
+							 Double_t   tailMax)
 {
   if (!h || !measCont) {
     AliWarningF("No sub-histos or measured container in %s", GetName());
     return false;
   }
 
-  if (!h->MasterFinalize(result, fIPz, tailCut)) { 
+  if (!h->MasterFinalize(result, fIPz, tailCut,tailMax)) { 
     AliWarningF("Failed to finalize %s/%s", GetName(), h->GetName());
     return false;
   }

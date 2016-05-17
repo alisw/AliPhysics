@@ -28,6 +28,8 @@
 #include <TProfile.h>
 #include <TFitResult.h>
 #include <TF1.h>
+#include <TSystem.h>
+#include <TProfile2D.h>
 #else
 class TPad;
 class TLatex;
@@ -44,6 +46,7 @@ class TFile;
 class TAxis;
 class TLegend;
 class TDirectory;
+class TProfile2D;
 #endif
 
 //====================================================================
@@ -173,9 +176,9 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @param shortTitle Page short title
    * @param size       Size of title 
    */
-  void PrintCanvas(const TString& title,
-		   const TString& shortTitle="page",
-		   Float_t        size=.7);
+  void PrintCanvas(const char* title,
+		   const char* shortTitle="page",
+		   Float_t     size=.7);
   //____________________________________________________________________
   /** 
    * Draw an object in a sub-pad 
@@ -686,7 +689,7 @@ void AliTrackletdNdeta::CreateCanvas(const TString& outputName)
     fCanvas->Print(Form("%s.pdf[", outputName.Data()),
 		   Form("pdf %s", (fViz & kLandscape) ? "Landscape" : ""));
   }
-  if (fVis & kPNG) {
+  if (fViz & kPNG) {
     gSystem->mkdir(outputName.Data(),1);
   }
   fCanvas->SetLeftMargin  (0.10);
@@ -739,9 +742,9 @@ void AliTrackletdNdeta::CloseCanvas()
 }
 
 //____________________________________________________________________
-void AliTrackletdNdeta::PrintCanvas(const TString& title,
-				    const TString& shortTitle,
-				    Float_t        size)
+void AliTrackletdNdeta::PrintCanvas(const char* title,
+				    const char* shortTitle,
+				    Float_t     size)
 {
   static Int_t cnt = 0;
   if (fTop) {
@@ -755,8 +758,7 @@ void AliTrackletdNdeta::PrintCanvas(const TString& title,
 
   if (fViz & kPDF) {
     TString tit;
-    tit.Form("pdf %s Title:%s", (fViz & kLandscape) ? "Landscape" : "",
-	     title.Data());
+    tit.Form("pdf %s Title:%s", (fViz & kLandscape) ? "Landscape" : "", title);
     // Suppress prints
     SuppressGuard g;
     fCanvas->Print(Form("%s.pdf", fCanvas->GetTitle()), tit);
@@ -1450,7 +1452,7 @@ void AliTrackletdNdeta::DrawScalars(Container* realList, Container* simList)
   ModLegend(bot->GetPad(1),l,.4,.1,.75,.4);
 
   PrintCanvas(Form("%s - #it{k}", fLastBin.Data()),
-	      Form("%s_scalar", realList->GetName());
+	      Form("%s_scalar", realList->GetName()));
 }
 
 //____________________________________________________________________
@@ -1570,7 +1572,7 @@ void AliTrackletdNdeta::DrawBackground(Container* realList,
     i++;
   }
   PrintCanvas(Form("%s - backgrounds", fLastBin.Data()),
-	      Form("%s_background", realList->GetName());
+	      Form("%s_background", realList->GetName()));
 }
 //____________________________________________________________________
 void PrintH(TH2* h, Int_t prec=2)
@@ -1650,7 +1652,7 @@ void AliTrackletdNdeta::DrawAlpha(Container* realList, Container* simList)
   DrawInPad(fBody,2,ltx,"");
   
   PrintCanvas(Form("%s - #alpha", fLastBin.Data()),
-	      Form("%s_alpha", realList->GetName());
+	      Form("%s_alpha", realList->GetName()));
 }
 //____________________________________________________________________
 Style_t AliTrackletdNdeta::MS(Int_t what, Bool_t sim, Bool_t alt) const
@@ -2062,7 +2064,8 @@ TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
     simIPz      ->Write();
     trueIPz     ->Write();
   }
-  PrintCanvas(Form("%s - %s", fLastBin.Data(),ObsTitle()));
+  PrintCanvas(Form("%s - %s", fLastBin.Data(),ObsTitle()),
+	      Form("%s_summary", realList->GetName()));
 
   return f;
 }
@@ -2218,7 +2221,7 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   }
   ClearCanvas();
   DrawInPad(fBody,0,mid,"E");
-  PrintCanvas(mid->GetTitle());
+  PrintCanvas(mid->GetTitle(),"mid");
 
   if (stack->GetHists() && stack->GetHists()->GetEntries() > 0) {
     ClearCanvas();
@@ -2239,7 +2242,7 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
       out->cd();
       other->Write();
     }
-    PrintCanvas(ObsTitle());
+    PrintCanvas(ObsTitle(),"result");
   }
   Printf("Results stored in %s", out->GetName());
   out->Write();

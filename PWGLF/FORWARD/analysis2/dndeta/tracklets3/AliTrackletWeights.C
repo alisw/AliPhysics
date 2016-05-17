@@ -198,6 +198,16 @@ public:
    * @return true on success
    */
   Bool_t Retrieve(TCollection* in);
+
+  Double_t GetAbundanceWeight(UShort_t apdg, Double_t cent) const
+  {
+    return GetPdgWeight(fAbundance, apdg, cent);
+  }
+  Double_t GetStrangenessWeight(UShort_t apdg, Double_t cent) const
+  {
+    return GetPdgWeight(fStrangeness, apdg, cent);
+  }
+
 protected:
   
   /** 
