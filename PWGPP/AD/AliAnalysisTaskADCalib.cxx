@@ -40,6 +40,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
+#include "AliRecoParam.h"
 #include "AliADRecoParam.h"
 
 ClassImp(AliAnalysisTaskADCalib);
@@ -143,12 +144,6 @@ void AliAnalysisTaskADCalib::NotifyRun() {
   fTimeResolution[1] = calibData->GetTimeResolution(1);
   AliInfo(Form("timeResolution: %f %f", fTimeResolution[0], fTimeResolution[1]));
 
-  // get the event specie from AliESDEvent
-  AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (NULL == esdEvent) {
-    AliFatal("NULL == esdEvent");
-    return;
-  }
   entry = man->Get("AD/Calib/RecoParam");
   const TObjArray *recoParamArray =  dynamic_cast<const TObjArray*>(entry->GetObject());
   if (NULL == recoParamArray) {
@@ -160,7 +155,7 @@ void AliAnalysisTaskADCalib::NotifyRun() {
     recoParam = dynamic_cast<const AliADRecoParam*>(recoParamArray->At(i));
     if (NULL == recoParam)
       continue;
-    if ((recoParam->GetEventSpecie() & esdEvent->GetEventSpecie()) != 0)
+    if ((recoParam->GetEventSpecie() & AliRecoParam::kDefault) != 0)
       break;
   }
   if (NULL == recoParam) {
