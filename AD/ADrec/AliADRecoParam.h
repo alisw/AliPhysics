@@ -41,6 +41,9 @@ class AliADRecoParam : public AliDetectorRecoParam
   void SetMaxResid (Float_t val) { fMaxResid  = val; }
   void SetResidRise (Float_t val) { fResidRise  = val; }
 
+  void SetTailBegin(Int_t tailBegin) { fTailBegin = tailBegin; }
+  void SetTailEnd(Int_t tailEnd)     { fTailEnd   = tailEnd;   }
+
   Float_t GetNSigmaPed() const { return fNSigmaPed; }
   Int_t  GetStartClock() const { return fStartClock; }
   Int_t  GetEndClock() const { return fEndClock; }
@@ -57,6 +60,9 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t  GetTimeWindowBGCUp () const { return fTimeWindowBGCUp ; }
   Float_t  GetMaxResid () const { return fMaxResid; }
   Float_t  GetResidRise () const { return fResidRise; } 
+
+  Int_t    GetTailBegin() const { return fTailBegin; }
+  Int_t    GetTailEnd()   const { return fTailEnd;   }
   
  private:
 
@@ -65,6 +71,8 @@ class AliADRecoParam : public AliDetectorRecoParam
   Int_t fEndClock;     // End clock for max adc search
   Int_t fNPreClocks;   // Number of pre-clocks used in adc charge sum
   Int_t fNPostClocks;  // Number of post-clocks used in adc charge sum
+  Int_t fTailBegin;    // tail charge begin (BC)
+  Int_t fTailEnd;      // tail charge end (BC)
   
   // Cuts used in the trigger mask creation
   Float_t fAdcThresHold;      // Threshold on the ADC
@@ -79,6 +87,6 @@ class AliADRecoParam : public AliDetectorRecoParam
   Float_t fMaxResid;   	      // Maximum residual of a single channel time
   Float_t fResidRise;	      // Rise of the early hit cut
   
-  ClassDef(AliADRecoParam, 4)
+  ClassDef(AliADRecoParam, 5)
 };
 #endif

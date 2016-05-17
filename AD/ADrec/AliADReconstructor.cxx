@@ -392,7 +392,11 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
       // start and end BCs for charge integration
       const Int_t start = TMath::Max( 0, imax - GetRecoParam()->GetNPreClocks());
       const Int_t end   = TMath::Min(20, imax + GetRecoParam()->GetNPostClocks());
-      
+
+      // start and end BCs for tail charge integration
+      const Int_t tailBegin = GetRecoParam()->GetTailBegin();
+      const Int_t tailEnd   = GetRecoParam()->GetTailEnd();
+
       // integrated charge without saturation correction
       adc[pmNumber] = 0.0f;
       for (Int_t iClock=start; iClock<=end; ++iClock)
@@ -411,7 +415,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	for (Int_t bc=13; bc<kADNClocks-1 && !isPileUp; ++bc)
 	  isPileUp |= (adcPedSub[bc+1] > adcPedSub[bc] + threshold);
     
-	for (Int_t iClock=16; iClock<kADNClocks; ++iClock)
+	 
+	for (Int_t iClock=tailBegin; iClock<=tailEnd; ++iClock)
 	  tail[pmNumber] += adcPedSub[iClock];
 
 	adcTrigger[pmNumber] = adcPedSub[10];
