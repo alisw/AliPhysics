@@ -66,6 +66,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fProcessingRCU2Data(0),
+  fNoiseSuppression(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -343,6 +344,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
     
+    if ( argument.CompareTo( "-noise-suppression" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fNoiseSuppression  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Noise Suppression is set to: %d", fNoiseSuppression );
+      continue;
+    }
+
     if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -566,6 +574,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
       fCFEmulator.SetTagDeconvolutedClusters( fTagDeconvolutedClusters );
       fCFEmulator.SetProcessingRCU2Data( fProcessingRCU2Data );
+      fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
 
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

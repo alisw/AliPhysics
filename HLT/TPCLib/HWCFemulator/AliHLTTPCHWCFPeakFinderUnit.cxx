@@ -35,6 +35,7 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit()
   fOutput(),
   fkBunch(0),
   fChargeFluctuation(0),
+  fNoiseSuppression(0),
   fDebug(0)
 {
   //constructor 
@@ -115,16 +116,19 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   bool slope = 0;
   AliHLTUInt32_t qLast = 0;
   AliHLTUInt32_t n = fOutput.fData.size();
+  AliHLTUInt32_t qPeak = 0;
   
   for( AliHLTUInt32_t i=0; i<n; i++ ){
     AliHLTUInt32_t q = fOutput.fData[i].fQ;    
     if( !slope ){
-      if(q + fChargeFluctuation < qLast   ){ // peak
+      if(fNoiseSuppression ? (q + fNoiseSuppression < qPeak) : (q + fChargeFluctuation < qLast) ){ // peak
 	slope = 1;
 	if( i>0 ) fOutput.fData[i-1].fPeak = 1;
       }
+      if (q > qPeak) qPeak = q;
     }else if( q > qLast + fChargeFluctuation ){ // minimum
       slope = 0;
+      qPeak = 0;
       if( i>0 ) fOutput.fData[i-1].fPeak = 2;
     }
     qLast = q;
