@@ -66,6 +66,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetsTreeBuffer(0),
   fExtractionPercentage(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -103,6 +104,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetsTreeBuffer(0),
   fExtractionPercentage(0),
   fExtractionMinPt(0),
+  fExtractionMaxPt(0),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -504,7 +506,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
 {
   // Check pT threshold
-  if( (jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt )
+  if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
     return;
 
   // Discard jets statistically

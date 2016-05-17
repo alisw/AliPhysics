@@ -40,7 +40,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading, Double_t dphi) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading; fEventCriteriumMinJetDeltaPhi = dphi;}
   void                        SetEventCriteriumSelection(Int_t type);
 
-  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt;}
+  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
 
  protected:
   void                        ExecOnce();
@@ -63,6 +63,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
   Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
   Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
+  Double_t                    fExtractionMaxPt;                         ///< maximum pt of recorded jets
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
