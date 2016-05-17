@@ -1,13 +1,3 @@
-
-
-
-
-
-
-
-
-
-
 //____________________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTask *AddTaskDielectronsPbPb_Data (
                                               
@@ -40,8 +30,9 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Data (
                                               Double_t nsigmaITS_max = 1.0,
                                               Double_t nsigmaTPC_min = -3.0,
                                               Double_t nsigmaTPC_max = 3.0,
-                                              Double_t massLim = 0.02,
-                                              Double_t phivLim = 60.0,
+                                              Double_t massMin = 0.005,
+                                              Double_t massMax = 0.015,
+                                              Double_t phivLim = 40.0,
                                               Double_t ptMin = 0.4,
                                               Double_t ptMax = 5.0,
                                               Double_t etaLim = 0.8
@@ -70,7 +61,6 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Data (
     //Task Name,InputBox & Output File
     const char *TaskName =   Form("DielectronTask_Data_Set%d_%s_MagField_%s",iset,centrality,magfield);
     const char *InputBox =   Form("Input_%d_%s_%s",iset,centrality,magfield);
-    //const char *OutputFile = Form("InputFile_DielectronsPbPb_Data_Set%d_%s_MagField_%s.root",iset,centrality,magfield);
     const char *OutputFile = ("LMEEoutput.root");
     
     
@@ -85,7 +75,7 @@ AliAnalysisTask *AddTaskDielectronsPbPb_Data (
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetTrackCuts        (ITS_minNcls,TPC_minNcls,TPC_nClsdEdx,TPC_minCr,MinCrOverFindableCls,MaxGoldenChi2,MaxTPCchi2,
                                                                       MaxITSchi2,MaxFracSharedCls,ITSreq);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetPIDCuts          (nsigmaTOF_max,nsigmaITS_max,nsigmaTPC_min,nsigmaTPC_max);
-    task -> AliAnalysisTaskDielectronsPbPb_Data::SetPrefilterCuts    (massLim,phivLim);
+    task -> AliAnalysisTaskDielectronsPbPb_Data::SetPrefilterCuts    (massMin,massMax,phivLim);
     task -> AliAnalysisTaskDielectronsPbPb_Data::SetKinematicCuts    (ptMin,ptMax,etaLim);
     task -> AliAnalysisTaskDielectronsPbPb_Data::EventMixingSettings (MaxNumberEvts,MaxNumberTrks,NumberEvtsToMix,NcentralityBins,NvertexBins,NeventPlaneBins);
     mgr -> AddTask(task);
