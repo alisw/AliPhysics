@@ -133,26 +133,17 @@ fPrecOverPgen_PGen(0x0),
 fPtRecOverPtGen_PtGen(0x0),
 f1PGenOver1PRec_1PGen(0x0),
 f1PtGenOver1PtRec_1PtGen(0x0),
-fPrecOverPgen_PGen_poslabel(0x0),
-fPtRecOverPtGen_PtGen_poslabel(0x0),
-f1PGenOver1PRec_1PGen_poslabel(0x0),
-f1PtGenOver1PtRec_1PtGen_poslabel(0x0),
 fPrecOverPgen_PGen_pions(0x0),
 fPtRecOverPtGen_PtGen_pions(0x0),
 f1PGenOver1PRec_1PGen_pions(0x0),
 f1PtGenOver1PtRec_1PtGen_pions(0x0),
-fPrecOverPgen_PGen_poslabel_pions(0x0),
-fPtRecOverPtGen_PtGen_poslabel_pions(0x0),
-f1PGenOver1PRec_1PGen_poslabel_pions(0x0),
-f1PtGenOver1PtRec_1PtGen_poslabel_pions(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
-fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
-fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fOpeningAngleGen_OpeningAngleRecUS(0x0),
 fOpeningAngleGen_OpeningAngleRecLS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionLS(0x0),
+fMgen_PtGen_mRes_ptRes(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -277,26 +268,17 @@ fPrecOverPgen_PGen(0x0),
 fPtRecOverPtGen_PtGen(0x0),
 f1PGenOver1PRec_1PGen(0x0),
 f1PtGenOver1PtRec_1PtGen(0x0),
-fPrecOverPgen_PGen_poslabel(0x0),
-fPtRecOverPtGen_PtGen_poslabel(0x0),
-f1PGenOver1PRec_1PGen_poslabel(0x0),
-f1PtGenOver1PtRec_1PtGen_poslabel(0x0),
 fPrecOverPgen_PGen_pions(0x0),
 fPtRecOverPtGen_PtGen_pions(0x0),
 f1PGenOver1PRec_1PGen_pions(0x0),
 f1PtGenOver1PtRec_1PtGen_pions(0x0),
-fPrecOverPgen_PGen_poslabel_pions(0x0),
-fPtRecOverPtGen_PtGen_poslabel_pions(0x0),
-f1PGenOver1PRec_1PGen_poslabel_pions(0x0),
-f1PtGenOver1PtRec_1PtGen_poslabel_pions(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
-fEtaGen_EtaRec_PhiGen_PhiRec(0x0),
-fEtaGen_EtaRec_PhiGen_PhiRec_poslabel(0x0),
 fOpeningAngleGen_OpeningAngleRecUS(0x0),
 fOpeningAngleGen_OpeningAngleRecLS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionLS(0x0),
+fMgen_PtGen_mRes_ptRes(0x0),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -443,10 +425,10 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList = new TList();
     resolutionList->SetName("resolution");
     resolutionList->SetOwner();
-    fPrecOverPgen_PGen                = new TH2D("PrecOverPgen_Pgen",               "",500,0.,10.,301,0.,2.);
-    fPtRecOverPtGen_PtGen             = new TH2D("PtRecOverPtGen_PtGen",            "",500,0.,10.,301,0.,2.);
-    f1PGenOver1PRec_1PGen             = new TH2D("1PgenOver1Prec_1Pgen",            "",1500,0.,15.,601,0.,6.);
-    f1PtGenOver1PtRec_1PtGen          = new TH2D("1PtGenOver1PtRec_1PtGen",         "",1500,0.,15.,601,0.,6.);
+    fPrecOverPgen_PGen                = new TH2D("PrecOverPgen_Pgen",               "",500,0.,10.,201,0.,2.);
+    fPtRecOverPtGen_PtGen             = new TH2D("PtRecOverPtGen_PtGen",            "",500,0.,10.,201,0.,2.);
+    f1PGenOver1PRec_1PGen             = new TH2D("1PgenOver1Prec_1Pgen",            "",750,0.,15.,300,0.,6.);
+    f1PtGenOver1PtRec_1PtGen          = new TH2D("1PtGenOver1PtRec_1PtGen",         "",750,0.,15.,300,0.,6.);
     
     fPrecOverPgen_PGen                    ->Sumw2();
     fPtRecOverPtGen_PtGen                 ->Sumw2();
@@ -462,34 +444,18 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     f1PtGenOver1PtRec_1PtGen->GetXaxis()->SetTitle("1/p^{gen}_{T} (GeV/c)");
     f1PtGenOver1PtRec_1PtGen->GetYaxis()->SetTitle("1/p^{rec}_{T} / 1/p^{gen}_{T} (GeV/c)");
     
-    fPrecOverPgen_PGen_poslabel       = static_cast<TH2D*> (fPrecOverPgen_PGen      ->Clone(Form("%s_poslabel",fPrecOverPgen_PGen      ->GetName())));
-    fPtRecOverPtGen_PtGen_poslabel    = static_cast<TH2D*> (fPtRecOverPtGen_PtGen   ->Clone(Form("%s_poslabel",fPtRecOverPtGen_PtGen   ->GetName())));
-    f1PGenOver1PRec_1PGen_poslabel    = static_cast<TH2D*> (f1PGenOver1PRec_1PGen   ->Clone(Form("%s_poslabel",f1PGenOver1PRec_1PGen   ->GetName())));
-    f1PtGenOver1PtRec_1PtGen_poslabel = static_cast<TH2D*> (f1PtGenOver1PtRec_1PtGen->Clone(Form("%s_poslabel",f1PtGenOver1PtRec_1PtGen->GetName())));
-
     fPrecOverPgen_PGen_pions          = static_cast<TH2D*> (fPrecOverPgen_PGen      ->Clone(Form("%s_pions",fPrecOverPgen_PGen      ->GetName())));
     fPtRecOverPtGen_PtGen_pions       = static_cast<TH2D*> (fPtRecOverPtGen_PtGen   ->Clone(Form("%s_pions",fPtRecOverPtGen_PtGen   ->GetName())));      
     f1PGenOver1PRec_1PGen_pions       = static_cast<TH2D*> (f1PGenOver1PRec_1PGen   ->Clone(Form("%s_pions",f1PGenOver1PRec_1PGen   ->GetName())));      
     f1PtGenOver1PtRec_1PtGen_pions    = static_cast<TH2D*> (f1PtGenOver1PtRec_1PtGen->Clone(Form("%s_pions",f1PtGenOver1PtRec_1PtGen->GetName())));  
-         
-    fPrecOverPgen_PGen_poslabel_pions       = static_cast<TH2D*> (fPrecOverPgen_PGen_pions      ->Clone(Form("%s_poslabel",fPrecOverPgen_PGen_pions      ->GetName())));
-    fPtRecOverPtGen_PtGen_poslabel_pions    = static_cast<TH2D*> (fPtRecOverPtGen_PtGen_pions   ->Clone(Form("%s_poslabel",fPtRecOverPtGen_PtGen         ->GetName())));
-    f1PGenOver1PRec_1PGen_poslabel_pions    = static_cast<TH2D*> (f1PGenOver1PRec_1PGen_pions   ->Clone(Form("%s_poslabel",f1PGenOver1PRec_1PGen_pions   ->GetName()))); 
-    f1PtGenOver1PtRec_1PtGen_poslabel_pions = static_cast<TH2D*> (f1PtGenOver1PtRec_1PtGen_pions->Clone(Form("%s_poslabel",f1PtGenOver1PtRec_1PtGen_pions->GetName())));
     
     fEtaGen_EtaRec        = new TH2F("etaGen_etaRec",       "", 30,-1.,1., 30,-1.,1.);
     fPhiGen_PhiRec        = new TH2F("phiGen_phiRec",       "", 80,-0.2*TMath::Pi(),2.2*TMath::Pi(), 80,-0.2*TMath::Pi(),2.2*TMath::Pi());
     
-    Int_t bins[4] = {30,30,80,80};
-    Double_t min[4] = {-1.1,-1.1,-0.2*TMath::Pi(),-0.2*TMath::Pi()};
-    Double_t max[4] = { 1.1, 1.1, 2.2*TMath::Pi(), 2.2*TMath::Pi()};
-    fEtaGen_EtaRec_PhiGen_PhiRec          = new THnF("etaGen_etaRec_phiGen_phiRec",         "",4,bins,min,max);
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel = new THnF("etaGen_etaRec_phiGen_phiRec_poslabel","",4,bins,min,max);
-    
-    fOpeningAngleGen_OpeningAngleRecUS        = new TH2D("OpeningAngleGen_OpeningAngleRecUS","",       3300,-0.1,3.2,3300,-0.1,3.2);
-    fOpeningAngleGen_OpeningAngleRecLS        = new TH2D("OpeningAngleGen_OpeningAngleRecLS","",       3300,-0.1,3.2,3300,-0.1,3.2);
-    fOpeningAngleGen_OpeningAngleResolutionUS = new TH2D("OpeningAngleGen_OpeningAngleResolutionUS","",3300,-0.1,3.2,2000, 0.0,2.0);
-    fOpeningAngleGen_OpeningAngleResolutionLS = new TH2D("OpeningAngleGen_OpeningAngleResolutionLS","",3300,-0.1,3.2,2000, 0.0,2.0);
+    fOpeningAngleGen_OpeningAngleRecUS        = new TH2D("OpeningAngleGen_OpeningAngleRecUS","",       330,-0.1,3.2, 330,-0.1,3.2);
+    fOpeningAngleGen_OpeningAngleRecLS        = new TH2D("OpeningAngleGen_OpeningAngleRecLS","",       330,-0.1,3.2, 330,-0.1,3.2);
+    fOpeningAngleGen_OpeningAngleResolutionUS = new TH2D("OpeningAngleGen_OpeningAngleResolutionUS","",330,-0.1,3.2, 300, 0.0,3.0);
+    fOpeningAngleGen_OpeningAngleResolutionLS = new TH2D("OpeningAngleGen_OpeningAngleResolutionLS","",330,-0.1,3.2, 300, 0.0,3.0);
     
     resolutionList->Add(fPrecOverPgen_PGen             );
     resolutionList->Add(fPtRecOverPtGen_PtGen          );
@@ -503,29 +469,22 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     resolutionList->Add(fEtaGen_EtaRec);
     resolutionList->Add(fPhiGen_PhiRec);
-    resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec);
-    
-    resolutionList->Add(fPrecOverPgen_PGen_poslabel    );
-    resolutionList->Add(fPtRecOverPtGen_PtGen_poslabel );
-    resolutionList->Add(f1PGenOver1PRec_1PGen_poslabel );
-    resolutionList->Add(f1PtGenOver1PtRec_1PtGen_poslabel);
-    
-    resolutionList->Add(fPrecOverPgen_PGen_poslabel_pions);
-    resolutionList->Add(fPtRecOverPtGen_PtGen_poslabel_pions);
-    resolutionList->Add(f1PGenOver1PRec_1PGen_poslabel_pions);
-    resolutionList->Add(f1PtGenOver1PtRec_1PtGen_poslabel_pions);    
-
-    resolutionList->Add(fEtaGen_EtaRec_PhiGen_PhiRec_poslabel);
-   
+       
     resolutionList->Add(fOpeningAngleGen_OpeningAngleRecUS       );
     resolutionList->Add(fOpeningAngleGen_OpeningAngleRecLS       );
     resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionUS);
     resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionLS);   
    
-    fEtaGen_EtaRec                        ->Sumw2();
-    fPhiGen_PhiRec                        ->Sumw2();
-    fEtaGen_EtaRec_PhiGen_PhiRec          ->Sumw2();
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Sumw2();
+    Int_t bins[4] = {50,60,200,200};
+    Double_t min[4] = { 0., 0., 0., 0. };
+    Double_t max[4] = { 5., 6., 2., 2. };
+    fMgen_PtGen_mRes_ptRes          = new THnSparseF("Mgen_PtGen_mRes_ptRes","",4,bins,min,max);
+    resolutionList->Add(fMgen_PtGen_mRes_ptRes);
+     
+   
+    fEtaGen_EtaRec           ->Sumw2();
+    fPhiGen_PhiRec           ->Sumw2();
+    fMgen_PtGen_mRes_ptRes   ->Sumw2();
     
     fOpeningAngleGen_OpeningAngleRecUS        ->Sumw2();     
     fOpeningAngleGen_OpeningAngleRecLS        ->Sumw2();     
@@ -546,22 +505,17 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fEtaGen_EtaRec->GetYaxis()->SetTitle("#eta^{rec}");                   
     fPhiGen_PhiRec->GetXaxis()->SetTitle("#varphi^{gen} (rad)");
     fPhiGen_PhiRec->GetYaxis()->SetTitle("#varphi^{rec} (rad)");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(0)->SetTitle("#eta^{gen}");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(1)->SetTitle("#eta^{rec}");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(2)->SetTitle("#varphi^{gen}");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(3)->SetTitle("#varphi^{rec}");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(0)->SetTitle("#eta^{gen}");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(1)->SetTitle("#eta^{rec}");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(2)->SetTitle("#varphi^{gen}");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(3)->SetTitle("#varphi^{rec}");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(0)->SetName("eta_gen");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(1)->SetName("eta_rec");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(2)->SetName("phi_gen");
-    fEtaGen_EtaRec_PhiGen_PhiRec->GetAxis(3)->SetName("phi_rec");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(0)->SetName("eta_gen");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(1)->SetName("eta_rec");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(2)->SetName("phi_gen");
-    fEtaGen_EtaRec_PhiGen_PhiRec_poslabel->GetAxis(3)->SetName("phi_rec");
+    
+    fMgen_PtGen_mRes_ptRes->GetAxis(0)->SetTitle("m_{ee}^{gen}");
+    fMgen_PtGen_mRes_ptRes->GetAxis(1)->SetTitle("p_{T,ee}^{gen}");
+    fMgen_PtGen_mRes_ptRes->GetAxis(2)->SetTitle("m_{ee}^{rec} / m_{ee}^{gen}");
+    fMgen_PtGen_mRes_ptRes->GetAxis(3)->SetTitle("p_{T,ee}^{rec} / p_{T,ee}^{gen}");
+
+    fMgen_PtGen_mRes_ptRes->GetAxis(0)->SetName("m_gen");
+    fMgen_PtGen_mRes_ptRes->GetAxis(1)->SetName("pt_gen");
+    fMgen_PtGen_mRes_ptRes->GetAxis(2)->SetName("mResolution");
+    fMgen_PtGen_mRes_ptRes->GetAxis(3)->SetName("ptResolution");
+
     
   }
   
@@ -1119,9 +1073,18 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           Double_t OpeningAngleGen = l1Gen.Angle(l2Gen.Vect());
           Double_t OpeningAngleRec = l1Rec.Angle(l2Rec.Vect());
           Double_t OpeningAngleResolution = (OpeningAngleGen > 0.) ? OpeningAngleRec/OpeningAngleGen : -1.;
+     
+          Double_t vals[4];
+          vals[0] = (l1Gen+l2Gen).M();
+          vals[2] = (vals[0] > 0.) ? (l1Rec+l2Rec).M()/vals[0] : -1.;
+          
+          vals[1] = (l1Gen+l2Gen).Pt();
+          vals[3] = (vals[1] > 0.) ? (l1Rec+l2Rec).Pt()/vals[1] : -1.;
+          
           if(part->Charge() != part2->Charge()){
             fOpeningAngleGen_OpeningAngleRecUS        ->Fill(OpeningAngleGen,OpeningAngleRec);
             fOpeningAngleGen_OpeningAngleResolutionUS ->Fill(OpeningAngleGen,OpeningAngleResolution);
+            if(pdg == 11 && pdg2 == 11) fMgen_PtGen_mRes_ptRes->Fill(vals);
           }
           else{
             fOpeningAngleGen_OpeningAngleRecLS        ->Fill(OpeningAngleGen,OpeningAngleRec);
@@ -1132,8 +1095,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t mcP    = part->P();
         Double_t recPt  = track->Pt();
         Double_t recP   = track->P();
-
-        Double_t vals[4] = {part->Eta(),track->Eta(),part->Phi(),track->Phi()};
         
         if(mcP > 0. && mcPt > 0. && TMath::Abs(part->Eta()) < 0.8){
           if(pdg == 11){
@@ -1141,29 +1102,15 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             fPtRecOverPtGen_PtGen->Fill(mcPt,recPt/mcPt);
             f1PGenOver1PRec_1PGen->Fill(1./mcP,mcP/recP);
             f1PtGenOver1PtRec_1PtGen->Fill(1./mcPt,mcPt/recPt);
-            if(label > 0){
-              fPrecOverPgen_PGen_poslabel   ->Fill(mcP,recP/mcP);
-              fPtRecOverPtGen_PtGen_poslabel->Fill(mcPt,recPt/mcPt);
-              f1PGenOver1PRec_1PGen_poslabel->Fill(1./mcP,mcP/recP);
-              f1PtGenOver1PtRec_1PtGen_poslabel->Fill(1./mcPt,mcPt/recPt);
-            }
           } else if(pdg == 211){
             fPrecOverPgen_PGen_pions   ->Fill(mcP,recP/mcP);
             fPtRecOverPtGen_PtGen_pions->Fill(mcPt,recPt/mcPt);
             f1PGenOver1PRec_1PGen_pions->Fill(1./mcP,mcP/recP);
             f1PtGenOver1PtRec_1PtGen_pions->Fill(1./mcPt,mcPt/recPt);
-            if(label > 0){
-              fPrecOverPgen_PGen_poslabel_pions   ->Fill(mcP,recP/mcP);
-              fPtRecOverPtGen_PtGen_poslabel_pions->Fill(mcPt,recPt/mcPt);
-              f1PGenOver1PRec_1PGen_poslabel_pions->Fill(1./mcP,mcP/recP);
-              f1PtGenOver1PtRec_1PtGen_poslabel_pions->Fill(1./mcPt,mcPt/recPt);
-            }
           }
         }
-        fEtaGen_EtaRec               ->Fill(vals[0],vals[1]);
-        fPhiGen_PhiRec               ->Fill(vals[2],vals[3]);
-        fEtaGen_EtaRec_PhiGen_PhiRec ->Fill(vals);
-        if(label > 0) fEtaGen_EtaRec_PhiGen_PhiRec_poslabel ->Fill(vals);
+        fEtaGen_EtaRec               ->Fill(part->Eta(),track->Eta());
+        fPhiGen_PhiRec               ->Fill(part->Phi(),track->Phi());
          
       }
     }
