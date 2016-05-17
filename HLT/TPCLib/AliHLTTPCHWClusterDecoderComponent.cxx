@@ -176,7 +176,7 @@ int AliHLTTPCHWClusterDecoderComponent::Reconfigure(const char* /*cdbEntry*/, co
   fAlreadyMerged = 0;
   fProcessingRCU2Data = 0;
   int iResult = 0;
-  iResult = ConfigureFromCDBTObjString(fgkOCDBEntry);
+  iResult = ConfigureFromCDBTObjString( fgkOCDBEntry, NULL, true );
   if ( iResult>=0 ) iResult = InitClusterMerger();  
   return iResult;
 }
