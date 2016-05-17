@@ -47,12 +47,13 @@ struct Canvas
       fBody(0)
   {
     gStyle->SetPalette(1);
-    gStyle->SetTitleX(.10);
+    gStyle->SetTitleX(.50);
     gStyle->SetTitleY(.99);
     gStyle->SetTitleW(.85);
     gStyle->SetTitleH(.085);
-    gStyle->SetTitleFillColor(0);
-    gStyle->SetTitleBorderSize(0);
+    gStyle->SetTitleAlign(23);
+    gStyle->SetTitleFillColor(kWhite);
+    gStyle->SetTitleBorderSize(1);
   }
   //____________________________________________________________________
   /** 
@@ -63,7 +64,9 @@ struct Canvas
   {
     fCanvas = new TCanvas(fName, fTitle, 800, TMath::Sqrt(2)*800);
     fCanvas->SetFillColor(0);
-  
+    fCanvas->SetLeftMargin(0.15);
+    fCanvas->SetBottomMargin(0.15);
+    
     fCanvas->Print("comparison.pdf[", "pdf");
   }
   //____________________________________________________________________
@@ -77,7 +80,7 @@ struct Canvas
    * @return Pointer to pad 
    */
   TPad* 
-  Clear(UShort_t nPad, UShort_t d, Char_t r)
+  Clear(UShort_t nPad, UShort_t d, Char_t r, Bool_t flush=false)
   {
     fCanvas->Clear();
     TPad* top = new TPad("top", "Top", 0, .95, 1, 1, 0, 0);
@@ -95,7 +98,9 @@ struct Canvas
     fBody = new TPad("body", "Body", 0, 0, 1, .95, 0, 0);
     fBody->SetTopMargin(0.05);
     fBody->SetRightMargin(0.05);
-    fBody->Divide(2, (nPad+1)/2, 0.001, 0.001);
+    Int_t nCol = Int_t(TMath::Sqrt(nPad));
+    Int_t nRow = Int_t(Float_t(nPad)/nCol+.5);
+    fBody->Divide(nCol, nRow, flush ? 0 : 0.001, flush ? 0 : 0.001);
     fBody->Draw();
     
     return fBody;
@@ -152,6 +157,7 @@ struct Canvas
 };
 
 //======================================================================
+
 /** 
  * 
  * 
@@ -164,7 +170,7 @@ struct Canvas
  * @ingroup pwglf_forward_scripts_corr
  */
 void
-GetObjects(UShort_t    what, 
+GetObjects(const char* what, 
 	   const char* fn1, const char* fn2, 
 	   TObject*&   o1,  TObject*&   o2)
 {
@@ -183,24 +189,53 @@ GetObjects(UShort_t    what,
   }
   
   // --- Find Objects ------------------------------------------------
-  AliForwardCorrectionManager::ECorrection ewhat = what;
-  // (AliForwardCorrectionManager::ECorrection)what;
-  const char* objName = 
-    AliForwardCorrectionManager::Instance().GetObjectName(ewhat);
-  
+  const char* objName = what;
   o1 = file1->Get(objName);
   o2 = file2->Get(objName);
   
   if (!o1) {
+    TList* l = static_cast<TList*>(file1->Get("ForwardCorrResults"));
+    if (l) o1 = l->FindObject(objName);
+  }
+  if (!o1) {				   
     Error("CompareSecMaps", "File %s does not contain an object named %s", 
 	  fn1, objName);
     return;
+  }
+  if (!o2) {
+    TList* l = static_cast<TList*>(file2->Get("ForwardCorrResults"));
+    if (l) o2 = l->FindObject(objName);
   }
   if (!o2) {
     Error("CompareSecMaps", "File %s does not contain an object named %s", 
 	  fn2, objName);
     return;
   }
+};
+
+/** 
+ * 
+ * 
+ * @param what 
+ * @param fn1 
+ * @param fn2 
+ * @param o1 
+ * @param o2 
+ *
+ * @ingroup pwglf_forward_scripts_corr
+ */
+void
+GetObjects(UShort_t    what, 
+	   const char* fn1, const char* fn2, 
+	   TObject*&   o1,  TObject*&   o2)
+{
+  // --- Find Objects ------------------------------------------------
+  AliForwardCorrectionManager::ECorrection ewhat = what;
+  // (AliForwardCorrectionManager::ECorrection)what;
+  const char* objName = 
+    AliForwardCorrectionManager::Instance().GetObjectName(ewhat);
+
+  GetObjects(objName,fn1,fn2,o1,o2);
 };
 
 
