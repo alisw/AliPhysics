@@ -407,6 +407,7 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
   //        3 - LTM sigma
   //        4 - Gaus fit mean  - on LTM range
   //        5 - Gaus fit sigma - on LTM  range
+  //        6 - Robust bin median
   // 
   TAxis * xaxis  = his->GetXaxis();
   Int_t   nbinx  = xaxis->GetNbins();
@@ -434,15 +435,15 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
       stat = projection->GetMean();
       err  = projection->GetMeanError();
     }
-    if (returnType==1) {
+    else if (returnType==1) {
       stat = projection->GetRMS();
       err = projection->GetRMSError();
     }
-    if (returnType==2 || returnType==3){
+    else if (returnType==2 || returnType==3){
       if (returnType==2) {stat= vecLTM[1];  err =projection->GetRMSError();}
 	if (returnType==3) {stat= vecLTM[2];	 err =projection->GetRMSError();}
     }
-    if (returnType==4|| returnType==5){
+    else if (returnType==4|| returnType==5){
       f1.SetParameters(vecLTM[0], vecLTM[1], vecLTM[2]+0.05);
       projection->Fit(&f1,"QN","QN", vecLTM[7]-vecLTM[2], vecLTM[8]+vecLTM[2]);
       if (returnType==4) {
@@ -454,6 +455,10 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
 	err=f1.GetParError(2);
       }
     }
+    else if (returnType==6) {
+      stat=RobustBinMedian(projection,fraction);
+    }
+
     vecX[icount]=xcenter;
     vecY[icount]=stat;
     vecYErr[icount]=err;
@@ -466,8 +471,33 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
   return graph;
 }
 
+Double_t TStatToolkit::RobustBinMedian(TH1* hist, Double_t fractionCut/*=1.*/)
+{
+  // Robust median with average from neighbouring bins
+  const Int_t nbins1D=hist->GetNbinsX();
+  Double_t binMedian=0;
+  Double_t limits[2]={hist->GetBinCenter(1), hist->GetBinCenter(nbins1D)};
 
+  Double_t* integral=hist->GetIntegral();
+  for (Int_t i=1; i<nbins1D-1; i++){
+    if (integral[i-1]<0.5 && integral[i]>=0.5){
+      if (hist->GetBinContent(i-1)+hist->GetBinContent(i)>0){
+        binMedian=hist->GetBinCenter(i);
+        Double_t dIdx=-(integral[i-1]-integral[i]);
+        Double_t dx=(0.5+(0.5-integral[i])/dIdx)*hist->GetBinWidth(i);
+        binMedian+=dx;
+      }
+    }
+    if (integral[i-1]<fractionCut && integral[i]>=fractionCut){
+      limits[0]=hist->GetBinCenter(i-1)-hist->GetBinWidth(i);
+    }
+    if (integral[i]<1-fractionCut && integral[i+1]>=1-fractionCut){
+      limits[1]=hist->GetBinCenter(i+1)+hist->GetBinWidth(i);
+    }
+  }
 
+  return binMedian;
+}
 
 
 TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints, TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac, Int_t start, Int_t stop,Bool_t fix0){

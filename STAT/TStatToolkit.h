@@ -82,6 +82,8 @@ namespace TStatToolkit
 
   TGraph2D *  MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type);
   TGraphErrors *  MakeStat1D(TH2 * his, Int_t deltaBin, Double_t fraction, Int_t returnType, Int_t markerStyle, Int_t markerColor);
+
+  Double_t RobustBinMedian(TH1* hist, Double_t fractionCut=1.);
   //
   // Graph tools
   //
