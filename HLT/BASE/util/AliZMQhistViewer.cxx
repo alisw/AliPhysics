@@ -274,20 +274,23 @@ int AliZMQhistViewer::GetObjects(AliAnalysisDataContainer* kont, std::vector<TOb
   const char* analName = kont->GetName();
   TObject* analData = kont->GetData();
   std::string name = analName;
+  std::string namePrefix = "[" + name + "] ";
   TCollection* collection = dynamic_cast<TCollection*>(analData);
   if (collection) {
     if (fVerbose) Printf("  have a collection %p",collection);
     const char* collName = collection->GetName();
-    //name += "_";
-    //name += collName;
-    GetObjects(collection, list, name.c_str());
+    GetObjects(collection, list, namePrefix.c_str());
     if (fVerbose) printf("  destroying collection %p\n",collection);
     delete collection;
     kont->SetDataOwned(kFALSE);
   } else { //if (collection)
     TNamed* named = dynamic_cast<TNamed*>(analData);
-    name += analData->GetName();
-    if (named) { named->SetName(name.c_str()); }
+    name = namePrefix + analData->GetName();
+    std::string title = namePrefix + analData->GetTitle();
+    if (named) {
+      named->SetName(name.c_str());
+      named->SetTitle(title.c_str());
+    }
     if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
                          named->GetName(),
                          named->ClassName(),
@@ -305,7 +308,6 @@ int AliZMQhistViewer::GetObjects(TCollection* collection, std::vector<TObject*>*
   while (TObject* tmp = next()) {
     collection->Remove(tmp);
     std::string name = tmp->GetName();
-    name = "_" + name;
     name = prefix + name;
     if (fVerbose) Printf("--in (from a TCollection): %s (%s), %p",
                          tmp->GetName(), tmp->ClassName(), tmp);
@@ -317,7 +319,14 @@ int AliZMQhistViewer::GetObjects(TCollection* collection, std::vector<TObject*>*
       delete analKont;
     } else {
       TNamed* named = dynamic_cast<TNamed*>(tmp);
-      if (named) { named->SetName(name.c_str()); }
+      if (named) {
+        name = named->GetName();
+        name = prefix + name;
+        std::string title = named->GetTitle();
+        title = prefix + title;
+        named->SetName(name.c_str());
+        named->SetTitle(title.c_str());
+      }
       list->push_back(tmp);
     }
     collection->SetOwner(kTRUE);
