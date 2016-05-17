@@ -157,10 +157,14 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   Int_t    maxPart = 450;
   Int_t    maxBin  = 225;
   Int_t    maxB    = 25;
-  Int_t    nVtx = vtxAxis.GetNbins();
-  Double_t lVtx = vtxAxis.GetXmin();
-  Double_t hVtx = vtxAxis.GetXmax();
-  fHVertex = new TH1F("vertex", "True vertex distribution", nVtx, lVtx, hVtx);
+  fHVertex = 0;
+  if (vtxAxis.GetXbins() && vtxAxis.GetXbins()->GetArray())
+    fHVertex = new TH1F("vertex", "True vertex distribution",
+			vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray());    
+  else 
+    fHVertex = new TH1F("vertex", "True vertex distribution",
+			vtxAxis.GetNbins(), vtxAxis.GetXmin(),
+			vtxAxis.GetXmax());
   fHVertex->SetXTitle("v_{z} [cm]");
   fHVertex->SetYTitle("# of events");
   fHVertex->SetFillColor(kGreen+1);
@@ -223,8 +227,16 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fList->Add(fHBvsCent);
   
   
-  fHVzComp = new TH2F("vzComparison", "v_{z} truth vs reconstructed",
-		      10*nVtx, lVtx, hVtx, 10*nVtx, lVtx, hVtx);
+  fHVzComp = 0;
+  if (vtxAxis.GetXbins() && vtxAxis.GetXbins()->GetArray())
+    fHVzComp = new TH2F("vzComparison", "v_{z} truth vs reconstructed",
+			vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray(),
+			vtxAxis.GetNbins(), vtxAxis.GetXbins()->GetArray());
+  else 
+    fHVzComp = new TH2F("vzComparison", "v_{z} truth vs reconstructed",
+			10*vtxAxis.GetNbins(), vtxAxis.GetXmin(),
+			vtxAxis.GetXmax(), 10*vtxAxis.GetNbins(),
+			vtxAxis.GetXmin(), vtxAxis.GetXmax());
   fHVzComp->SetXTitle("True v_{z} [cm]");
   fHVzComp->SetYTitle("Reconstructed v_{z} [cm]");
   fHVzComp->SetZTitle("Events");
@@ -346,7 +358,8 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     AliWarning("No MC event found for input event");
     return kNoEvent;
   }
-
+  // MC events are _always_ B collisions
+  triggers |= AliAODForwardMult::kB;
   //Assign MC only triggers : True NSD etc.
   AliHeader*               header          = event->Header();
   AliGenEventHeader*       genHeader       = header->GenEventHeader();
@@ -525,7 +538,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   genHeader->PrimaryVertex(vtx);
   ip.SetXYZ(vtx[0], vtx[1], vtx[2]);
 
-  DMSG(fDebug, 0, "ip=(%f,%f,%f), phiR=%f, b=%f, npart=%d, nbin=%d", 
+  DMSG(fDebug, 1, "ip=(%f,%f,%f), phiR=%f, b=%f, npart=%d, nbin=%d", 
        vtx[0], vtx[1], vtx[2], phiR, b, npart, nbin);
 
   fHVertex->Fill(vtx[2]);
