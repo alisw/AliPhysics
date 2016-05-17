@@ -220,6 +220,9 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "LEGO2", 500, 0., 5000., fNumberOfCentralityBins, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hJetCount", "Number of jets in acceptance vs. centrality", "LEGO2", 100, 0., 100., fNumberOfCentralityBins, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
   AddHistogram2D<TH2D>("hFakeFactor", "Fake factor distribution", "LEGO2", 1000, 0., 100., fNumberOfCentralityBins, 0, 100, "Fake factor","Centrality", "dN^{Jets}/df");
+  AddHistogram2D<TH2D>("hFakeFactorJetPt_Cent0_100", "Fake factor distribution vs. jet p_{T}", "LEGO2", 1000, 0., 100., 400, -100., 300., "Fake factor","Jet p_{T} (GeV/c)", "dN^{Jets}/df");
+  AddHistogram2D<TH2D>("hFakeFactorJetPt_Cent0_10",  "Fake factor distribution vs. jet p_{T}", "LEGO2", 1000, 0., 100., 400, -100., 300., "Fake factor","Jet p_{T} (GeV/c)", "dN^{Jets}/df");
+
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., fNumberOfCentralityBins, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
   AddHistogram2D<TH2D>("hBackgroundPtJetPt_Cent0_100", "Background p_{T} distribution vs. jet p_{T}", "", 150, 0., 150.,  400, -100., 300., "Background p_{T} (GeV/c)", "Jet p_{T} (GeV/c)", "dN^{Events}/dp_{T}");
   AddHistogram2D<TH2D>("hBackgroundPtJetPt_Cent0_10", "Background p_{T} distribution vs. jet p_{T}", "", 150, 0., 150.,  400, -100., 300., "Background p_{T} (GeV/c)", "Jet p_{T} (GeV/c)", "dN^{Events}/dp_{T}");
@@ -346,12 +349,9 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetSelected(AliEmcalJet* jet)
     if(jet!=fSubleadingJet)
       return kFALSE;
   }
-  // Fake jet rejection (0810.1219)
 /*
   if(fFakeFactorCutProfile)
   {
-    Double_t fakeFactor = CalculateFakeFactor(jet);
-    FillHistogram("hFakeFactor", fakeFactor, fCent);
     if( (fakeFactor >= fMinFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) && (fakeFactor < fMaxFakeFactorPercentage*fFakeFactorCutProfile->GetBinContent(fFakeFactorCutProfile->GetXaxis()->FindBin(fCent))) )
       return kFALSE;
   }
@@ -406,6 +406,14 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet)
     FillHistogram("hBackgroundPtJetPt_Cent0_100",  fJetsCont->GetRhoVal(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
     if( (fCent >= 0) && (fCent < 10) )
       FillHistogram("hBackgroundPtJetPt_Cent0_10",  fJetsCont->GetRhoVal(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+
+    // Fake jet rejection (0810.1219)
+    Double_t fakeFactor = CalculateFakeFactor(jet);
+    FillHistogram("hFakeFactor", fakeFactor, fCent);
+    FillHistogram("hFakeFactorJetPt_Cent0_100",  fakeFactor, jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+    if( (fCent >= 0) && (fCent < 10) )
+      FillHistogram("hFakeFactorJetPt_Cent0_10",  fakeFactor, jet->Pt() - fJetsCont->GetRhoVal()*jet->Area()); 
+
 
     // Leading jet plots
     if(jet==fLeadingJet)
