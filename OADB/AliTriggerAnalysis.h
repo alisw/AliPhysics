@@ -88,6 +88,7 @@ public:
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
   
   TObject* GetHistogram(const char* histName);
+  TList* GetHistList() { return fHistList; }
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms() const;
