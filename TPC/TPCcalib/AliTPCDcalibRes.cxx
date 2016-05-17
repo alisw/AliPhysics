@@ -180,6 +180,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
     fArrNDStat[i] = 0;
     fTmpFile[i] = 0;
     memset(fValidFracXBin[i],0,kNPadRows*sizeof(float));
+    fNSmoothingFailedBins[i] = 0;
   }
   SetKernelType();
 }
@@ -257,7 +258,7 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
   if (!LoadResTree(resTreeFile)) return;
   ReProcessResiduals();
   //
-  if (fChebCorr) delete fChebCorr;
+  if (fChebCorr) delete fChebCorr; fChebCorr = 0;
   //
   CreateCorrectionObject();
   //
@@ -878,6 +879,10 @@ void AliTPCDcalibRes::ClosureTest()
   // correct distortions
   TStopwatch sw;
   sw.Start();
+  if (fChebCorr) {
+    AliError("Chebyshev correction object was not created, cannot run closure test");
+    return;
+  }
   CollectData(kClosureTestMode);
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
@@ -1024,6 +1029,8 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
   const int kMaxPnt = 30000000; // max points per sector to accept
   TStopwatch sw;  sw.Start();
   AliSysInfo::AddStamp("ProcSectRes",is,0,0,0);
+  //
+  fNSmoothingFailedBins[is] = 0;
   //
   TString sectFileName = Form("%s%d.root",kLocalResFileName,is);
   TFile* sectFile = TFile::Open(sectFileName.Data());
@@ -1208,6 +1215,7 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
   TStopwatch sw;  sw.Start();
   AliSysInfo::AddStamp("RProcSectRes",is,0,0,0);
   //
+  fNSmoothingFailedBins[is] = 0;
   bres_t*  sectData = fSectGVoxRes[is];
   if (!sectData) AliFatalF("No SectGVoxRes data for sector %d",is);
   //
@@ -2259,6 +2267,7 @@ void AliTPCDcalibRes::WriteResTree()
   resTree->SetAlias("fitOK",Form("(flags&0x%x)==0x%x",kDistDone,kDistDone));
   resTree->SetAlias("dispOK",Form("(flags&0x%x)==0x%x",kDispDone,kDispDone));
   resTree->SetAlias("smtOK",Form("(flags&0x%x)==0x%x",kSmoothDone,kSmoothDone));
+  resTree->SetAlias("killed",Form("(flags&0x%x)==0x%x",kKilled,kKilled));
   //
   for (int is=0;is<kNSect2;is++) { 
 
@@ -2338,7 +2347,7 @@ Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     voxel->D[kResZ]  -= voxel->stat[kVoxZ]*voxel->DS[kResX];
     voxel->DS[kResZ] -= voxel->stat[kVoxZ]*voxel->DS[kResX];
     // reset smoothed params
-    voxel->flags &= ~(kSmoothDone);
+    voxel->flags &= ~(kSmoothDone|kKilled);
     for (int ir=kResDim;ir--;) voxel->DS[ir]=voxel->DC[ir]=0.f;
   } // end of sector loop
   //
@@ -2453,7 +2462,7 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
       for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
 	int binGlo = GetVoxGBin(ix,ip,iz);
 	bres_t *voxRes = &sectData[binGlo];
-	Bool_t voxOK = voxRes->flags&kDistDone;
+	Bool_t voxOK = voxRes->flags&kDistDone && !(voxRes->flags&kKilled);
 	if (voxOK) {
 	  // check fit errors
 	  if (voxRes->E[kResY]*voxRes->E[kResY]>fMaxFitYErr2 ||
@@ -2469,7 +2478,7 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
 	}
 	else {
 	  cntInvalid++;
-	  voxRes->flags &= ~kDistDone;
+	  voxRes->flags |= kKilled;
 	}
       } // loop over Z
     } // loop over Y
@@ -2558,6 +2567,7 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 	  vox->flags |= kSmoothDone;
 	  cnt++;
 	}
+	else fNSmoothingFailedBins[isect]++;
       }
     }
   }
@@ -2599,15 +2609,15 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   int binCen = GetVoxGBin(ix0,ip0,iz0);  // global bin of nearest voxel
   bres_t* voxCen = &sectData[binCen]; // nearest voxel
   //
+  int maxTrials[kVoxDim];
+  maxTrials[kVoxZ] = fNBins[kVoxZ]/2;
+  maxTrials[kVoxF] = fNBins[kVoxF]/2;
+  maxTrials[kVoxX] = fMaxBadXBinsToCover*2;
+
   int trial[kVoxDim]={0};
   while(1)  {
     //
     memset(fLastSmoothingRes,0,kResDim*4*sizeof(double));
-    for (int id=kVoxDim;id--;) 
-      if (trial[id]>fNBins[id]) {
-	AliErrorF("Trials limit reached: Z:%d F:%d X:%d",trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
-	return kFALSE;
-      }
     //
     memset(cmat,0,kResDim*10*sizeof(double));
     //
@@ -2617,7 +2627,8 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
     float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
-    if (!(voxCen->flags&kDistDone) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
+    if (!(voxCen->flags&kDistDone) || (voxCen->flags&kKilled) || GetXBinIgnored(isect,ix0)) { 
+      // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
       stepF+=kTrialStep*fStepKern[kVoxF];
       stepZ+=kTrialStep*fStepKern[kVoxZ];
@@ -2679,7 +2690,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	  //
 	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
 	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
+	  if (!(voxNb->flags&kDistDone) || (voxNb->flags&kKilled) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
 	  // estimate weighted distance
 	  float dx = voxNb->stat[kVoxX]-x;
 	  float df = voxNb->stat[kVoxF]-p;
@@ -2717,21 +2728,43 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     }
   
     // check if we have enough points in every dimension
-    int npx=0,npp=0,npz=0;
-    for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) npx++; 
-    for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) npp++;
-    for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) npz++;
-    Bool_t enoughPoints = kTRUE;
-    if (npx<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxX]++; enoughPoints=kFALSE;}
-    if (npp<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxF]++; enoughPoints=kFALSE;}
-    if (npz<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxZ]++; enoughPoints=kFALSE;}
-    /*
-    AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
+    int np[kVoxDim]={0};
+    for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) np[kVoxX]++; 
+    for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) np[kVoxF]++;
+    for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) np[kVoxZ]++;
+    Bool_t enoughPoints = kTRUE, incrDone[kVoxDim] = {0};
+    for (int i=0;i<kVoxDim;i++) {
+      if (np[i]<kMinPointsDir || nbOK<kMinPointsTot) { // need to extend smoothing neighborhood
+	enoughPoints=kFALSE;
+	if (trial[i]<maxTrials[i] && !incrDone[i]) { //try to increment only missing direction
+	  trial[i]++; incrDone[i]=kTRUE;
+	} 
+	else if (trial[i]==maxTrials[i]) { // cannot increment missing direction, try others
+	  for (int j=kVoxDim;j--;) {
+	    if (i!=j && trial[j]<maxTrials[j] && !incrDone[j]) {
+	      trial[j]++; incrDone[j]=kTRUE;
+	    }
+	  }
+	}
+      }
+    }
+    if (!enoughPoints) {
+      if (!(incrDone[kVoxX]||incrDone[kVoxF]||incrDone[kVoxZ])) {
+	AliErrorF("Voxel Z:%d F:%d X:%d Trials limit reached: Z:%d F:%d X:%d",
+		  voxCen->bvox[kVoxZ],voxCen->bvox[kVoxF],voxCen->bvox[kVoxX],
+		  trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
+	return kFALSE;
+      }
+      /*
+      AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
 		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
-		  isect,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
-    */
-    if (!enoughPoints) continue;
+		  isect,x,p,z,ix0,ip0,iz0,2,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,
+		  trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+      */
+      continue;
+    }
+
     //
     Bool_t fitRes = kTRUE;
     //
@@ -2752,7 +2785,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		    "neighbours range used %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
 		    "Solution for smoothing Failed, trying to increase filter bandwidth (trialXFZ: %d %d %d)",
-		    isect,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+		    isect,x,p,z,ix0,ip0,iz0,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
 	continue;
       }
       res[id] = rhsD[0];
@@ -2798,15 +2831,15 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
   int binCen = GetVoxGBin(ix0,ip0,iz0);  // global bin of nearest voxel
   bres_t* voxCen = &sectData[binCen]; // nearest voxel
   //
+  int maxTrials[kVoxDim];
+  maxTrials[kVoxZ] = fNBins[kVoxZ]/2;
+  maxTrials[kVoxF] = fNBins[kVoxF]/2;
+  maxTrials[kVoxX] = fMaxBadXBinsToCover*2;
+
   int trial[kVoxDim]={0};
   while(1)  {
     //
     memset(rhs,0,4*sizeof(double));
-    for (int id=kVoxDim;id--;) 
-      if (trial[id]>fNBins[id]) {
-	AliErrorF("Trials limit reached: Z:%d F:%d X:%d",trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
-	return kFALSE;
-      }
     //
     memset(cmat,0,10*sizeof(double));
     int nbOK=0; // accounted neighbours
@@ -2815,7 +2848,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
     float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
     float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
-    if (!(voxCen->flags&kDistDone) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
+    if (!(voxCen->flags&kDistDone) || (voxCen->flags&kKilled) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
       stepF+=kTrialStep*fStepKern[kVoxF];
       stepZ+=kTrialStep*fStepKern[kVoxZ];
@@ -2877,7 +2910,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
 	  //
 	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
 	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
+	  if (!(voxNb->flags&kDistDone) || (voxNb->flags&kKilled) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
 	  // estimate weighted distance
 	  float dx = voxNb->stat[kVoxX]-x;
 	  float df = voxNb->stat[kVoxF]-p;
@@ -2910,23 +2943,45 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
 	}
       }
     }
-    //  
+
     // check if we have enough points in every dimension
-    int npx=0,npp=0,npz=0;
-    for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) npx++; 
-    for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) npp++;
-    for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) npz++;
-    Bool_t enoughPoints = kTRUE;
-    if (npx<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxX]++; enoughPoints=kFALSE;}
-    if (npp<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxF]++; enoughPoints=kFALSE;}
-    if (npz<kMinPointsDir || nbOK<kMinPointsTot) {trial[kVoxZ]++; enoughPoints=kFALSE;}
-    /*
-      AliWarningF("Sector:%2d Dim%d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
+    int np[kVoxDim]={0};
+    for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) np[kVoxX]++; 
+    for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) np[kVoxF]++;
+    for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) np[kVoxZ]++;
+    Bool_t enoughPoints = kTRUE, incrDone[kVoxDim] = {0};
+    for (int i=0;i<kVoxDim;i++) {
+      if (np[i]<kMinPointsDir || nbOK<kMinPointsTot) { // need to extend smoothing neighborhood
+	enoughPoints=kFALSE;
+	if (trial[i]<maxTrials[i] && !incrDone[i]) { //try to increment only missing direction
+	  trial[i]++; incrDone[i]=kTRUE;
+	} 
+	else if (trial[i]==maxTrials[i]) { // cannot increment missing direction, try others
+	  for (int j=kVoxDim;j--;) {
+	    if (i!=j && trial[j]<maxTrials[j] && !incrDone[j]) {
+	      trial[j]++; incrDone[j]=kTRUE;
+	    }
+	  }
+	}
+      }
+    }
+    if (!enoughPoints) {
+      if (!(incrDone[kVoxX]||incrDone[kVoxF]||incrDone[kVoxZ])) {
+	AliErrorF("Voxel Z:%d F:%d X:%d Trials limit reached: Z:%d F:%d X:%d",
+		  voxCen->bvox[kVoxZ],voxCen->bvox[kVoxF],voxCen->bvox[kVoxX],
+		  trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
+	return kFALSE;
+      }
+      /*
+      AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
 		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
-		  isect,x,p,z,ix0,ip0,iz0,2,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
-    */
-    if (!enoughPoints) continue;
+		  isect,x,p,z,ix0,ip0,iz0,2,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,
+		  trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+      */
+      continue;
+    }
+
     //
     Bool_t fitRes = kTRUE;
     //
@@ -2942,7 +2997,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float 
       AliWarningF("Sector:%2d Dim%d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
 		  "neighbours range used %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
 		  "Solution for smoothing Failed, trying to increase filter bandwidth (trialXFZ: %d %d %d)",
-		  isect,dim,x,p,z,ix0,ip0,iz0,npx,npp,npz,nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+		  isect,dim,x,p,z,ix0,ip0,iz0,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
       continue;
     }
     //
@@ -3018,7 +3073,21 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   // create correction object for given time slice
 
   AliSysInfo::AddStamp("CreateCorrectionObject",0,0,0,0);
-  
+  //  
+  // check if there are failures
+  Bool_t create = kTRUE;
+  for (int i=0;i<kNSect2;i++) {
+    if (fNSmoothingFailedBins[i]>0) {
+      AliErrorF("%d failed voxels in sector %d",fNSmoothingFailedBins[i],i); 
+      create = kFALSE;
+    }
+  }
+  //
+  if (!create) {
+    AliError("ATTENTION: MAP WILL NOT BE CREATED");
+    return;
+  }
+  //
   TString name = Form("run%d_%lld_%lld",fRun,fTMin,fTMax);
   fChebCorr = new AliTPCChebCorr(name.Data(),name.Data(),
 				 fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
@@ -3231,8 +3300,7 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   float y2x = tzLoc[0];
   float z2x = tzLoc[1];
   //
-  Bool_t res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 
-								     0xff, dist);
+  Bool_t res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, dist);
   if (!res) { printf("Failed to evaluate smooth distortion\n"); exit(1); }
 
   /*

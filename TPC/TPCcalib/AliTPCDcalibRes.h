@@ -39,7 +39,7 @@ class AliTPCDcalibRes: public TNamed
   enum {kNSect=18,kNSect2=2*kNSect,kNROC=4*kNSect,kNPadRows=159, kNRowIROC=63, kNRowOROC1=64, kNRowOROC2=32};
   enum {kAlignmentBugFixedBit = AliTPCcalibAlignInterpolation::kAlignmentBugFixedBit};
   enum {kExtractMode, kClosureTestMode};
-  enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2)};
+  enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
   
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates
@@ -174,6 +174,7 @@ class AliTPCDcalibRes: public TNamed
   TH1*    GetTracksRateHisto()   const {return fTracksRate;}
   TH1*    ExtractTrackRate() const;
   Float_t GetValidFracXBin(int sect, int bin) const {return fValidFracXBin[sect][bin];}
+  Int_t   GetNSmoothingFailed(int sect) const {return fNSmoothingFailedBins[sect];}
   Int_t   GetNTracksUsed()   {return fNTrSelTot;}
   Int_t   GetMinTrackToUse() const {return fMinTracksToUse;}
   //
@@ -402,6 +403,7 @@ class AliTPCDcalibRes: public TNamed
   Long64_t fNBytesReadTot;  // total bytes read
   TH1F*    fTracksRate;     // accepted tracks per second
   Float_t  fValidFracXBin[kNSect2][kNPadRows]; // fraction of voxels valid per padrow
+  Int_t    fNSmoothingFailedBins[kNSect2];     // number of failed bins/sector, should be 0 to produce parameterization
   TBits    fXBinIgnore[kNSect2];    // flag to ignore Xbin
   
   // ------------------------------VDrift correction
