@@ -53,7 +53,7 @@ AliAnalysisTaskADCalib::AliAnalysisTaskADCalib(const char *name)
   fBCRangeTail[1] = 20;
 
   fBCRangeExtrapolation[0] =  9;
-  fBCRangeExtrapolation[1] = 13;
+  fBCRangeExtrapolation[1] = 15;
 
   fTimeResolution[0] = 25./256.;
   fTimeResolution[1] = 25./256.;
@@ -397,6 +397,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
 }
 
 Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, Int_t bc, Double_t &xMax) {
+  Printf("XXX ch=%02d bc=%2d %p %p", ch, bc, h, f);
   if (NULL == h || NULL == f) {
     xMax = -999.9f;
     return kFALSE;
@@ -413,6 +414,8 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
   case 11:
   case 12:
   case 13:
+  case 14:
+  case 15:
     f->SetParameters(0, 2, 0, 2);
     f->SetParNames("offset", "slope", "p_{0}", "power");
     f->SetParLimits(0,-20.0,20.0);
@@ -584,7 +587,9 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject(AliADCalibData* calibDa
 	}
 	case 11:
 	case 12:
-	case 13: {
+	case 13:
+	case 14:
+	case 15: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
