@@ -1,4 +1,4 @@
-AliAnalysisV0Lam *AddTaskLamLam(Int_t sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents)
+AliAnalysisV0Lam *AddTaskLamLam(Int_t sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents = 5)
 {
   // Adds the Lambda-Lambda femtoscopy task to the manger
 
