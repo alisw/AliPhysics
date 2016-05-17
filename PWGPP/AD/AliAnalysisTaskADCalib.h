@@ -31,6 +31,10 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
 
+  void SetBCRangeTail(Int_t bcMin, Int_t bcMax) {
+    fBCRangeTail[0] = bcMin;
+    fBCRangeTail[1] = bcMax;
+  }
   void SetBCRangeExtrapolation(Int_t bcMin, Int_t bcMax) {
     fBCRangeExtrapolation[0] = bcMin;
     fBCRangeExtrapolation[1] = bcMax;
