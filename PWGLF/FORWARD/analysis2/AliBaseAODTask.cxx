@@ -413,6 +413,7 @@ AliBaseAODTask::GetCentrality(AliAODEvent& event,
   Int_t    qual = 0;
   Double_t cent = GetCentrality(event, forward, qual);
   if (qual > 0)   forward->SetTriggerBits(AliAODForwardMult::kCentNoCalib);
+  return cent;
 }
 
 //____________________________________________________________________

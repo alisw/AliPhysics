@@ -370,7 +370,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					triggerMask, marker, color, mclist, 
 					truthlist);
 
-  TH1* h = EmpiricalCorrection(results);
+  // TH1* h = EmpiricalCorrection(results);
 
   if (!IsAllBin()) return;
   TFile* file = TFile::Open("forward.root", "READ");
