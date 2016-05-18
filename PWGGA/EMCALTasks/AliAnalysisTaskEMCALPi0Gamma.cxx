@@ -651,12 +651,13 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
   TH1::SetDefaultSumw2(kTRUE);
   Bool_t th2 =   TH2::GetDefaultSumw2();
   TH2::SetDefaultSumw2(kTRUE);
-  fHCuts = new TH1F("hEventCuts","",5,0.5,5.5);
+  fHCuts = new TH1F("hEventCuts","",6,0.5,6.5);
   fHCuts->GetXaxis()->SetBinLabel(1,"All");
   fHCuts->GetXaxis()->SetBinLabel(2,"PS");
   fHCuts->GetXaxis()->SetBinLabel(3,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
-  fHCuts->GetXaxis()->SetBinLabel(4,"QFlag");
-  fHCuts->GetXaxis()->SetBinLabel(5,Form("zvtx: %.0f-%.0f",fVtxZMin,fVtxZMax));
+  fHCuts->GetXaxis()->SetBinLabel(4,"Trig");
+  fHCuts->GetXaxis()->SetBinLabel(5,"QFlag");
+  fHCuts->GetXaxis()->SetBinLabel(6,Form("zvtx: %.0f-%.0f",fVtxZMin,fVtxZMax));
   fOutput->Add(fHCuts);
   fHVertexZ = new TH1F("hVertexZBeforeCut","",100,-25,25);
   fHVertexZ->SetXTitle("z [cm]");
@@ -1580,8 +1581,8 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
   //  }
   //  }
   
-  if (fDoPSel && offtrigger==0)
-    return;
+//  if (fDoPSel && offtrigger==0)
+//    return;
   
   // cut on certain events
   if(fEsdEv){
@@ -1591,22 +1592,14 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
       AliWarning("No vertex contributor");
       return;
     }
-    TString trigClasses = fEsdEv->GetFiredTriggerClasses();
-    // remove "fast cluster events":
-    if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")){
-      AliWarning("fast cluster event");
-      return;
-    }
+    //    TString trigClasses = fEsdEv->GetFiredTriggerClasses();
+    //    // remove "fast cluster events":
+    //    if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")){
+    //      AliWarning("fast cluster event");
+    //      return;
+    //    }
     if(!(fEsdEv->GetPrimaryVertex()->GetStatus())){
       AliWarning("No vertex");
-      return;
-    }
-  }
-  else if(fAodEv){
-    TString trigClasses = fAodEv->GetFiredTriggerClasses();
-    // remove "fast cluster events":
-    if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")){
-      AliWarning("fast cluster event");
       return;
     }
   }
@@ -1648,8 +1641,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
       return;
     }
   }
-  
-  
+
   fHCuts->Fill(cut++);
   
   
@@ -1672,13 +1664,35 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
   }
   fHCent->Fill(cent);
   if (cent<fCentFrom||cent>=fCentTo)
-     return;
+  return;
   
   fHCuts->Fill(cut++);
   
+  // cut on certain events  - LHC11a and LHC13g so far
+  if( ((runnumber>=144871) && (runnumber<=146860)) || ((runnumber>=197470) && (runnumber<=197692))){
+    
+    if(fEsdEv){
+      TString trigClasses = fEsdEv->GetFiredTriggerClasses();
+      // remove "fast cluster events":
+      if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")){
+        AliWarning("fast cluster event");
+        return;
+      }
+    }
+    else if(fAodEv){
+      TString trigClasses = fAodEv->GetFiredTriggerClasses();
+      // remove "fast cluster events":
+      if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL")){
+        AliWarning("fast cluster event");
+        return;
+      }
+    }
+  }
+  fHCuts->Fill(cut++);
+  
   if (fUseQualFlag) {
-//    if (centP->GetQuality()>0)
-//      return;
+    //    if (centP->GetQuality()>0)
+    //      return;
   }
   
   fHCentQual->Fill(cent);
