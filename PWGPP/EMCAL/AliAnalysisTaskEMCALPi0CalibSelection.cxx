@@ -56,7 +56,9 @@ fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
 fNbins(300),              
-fMinBin(0.),              fMaxBin(300.),   
+fMinBin(0.),              fMaxBin(300.),
+fNEnergybins(1000),
+fMinEnergyBin(0.),        fMaxEnergyBin(100.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
 // Temporal
 fMomentum1(),             fMomentum2(),             fMomentum12(),
@@ -75,6 +77,7 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
       for(Int_t iZ=0; iZ<48; iZ++)
       {
         fHmpi0[iMod][iZ][iX]   = 0 ;
+        fhEnergy[iMod][iZ][iX] = 0 ;
       }
     } 
   }
@@ -128,6 +131,14 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
+    fhTopoClusterAmpCase0[iSM]       =0;
+    fhTopoClusterAmpCase1[iSM]       =0;
+    fhTopoClusterAmpCase2[iSM]       =0;
+    fhTopoClusterAmpCase3[iSM]       =0;
+    fhTopoClusterAmpFractionCase0[iSM] = 0;
+    fhTopoClusterAmpFractionCase1[iSM] = 0;
+    fhTopoClusterAmpFractionCase2[iSM] = 0;
+    fhTopoClusterAmpFractionCase3[iSM] = 0;
     fhClusterPairDiffTimeSameSM[iSM] = 0;
   }
 }
@@ -160,7 +171,9 @@ fNMaskCellColumns(11),    fMaskCellColumns(0x0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
 fNbins(300),              
-fMinBin(0.),              fMaxBin(300.),   
+fMinBin(0.),              fMaxBin(300.),
+fNEnergybins(1000),
+fMinEnergyBin(0.),        fMaxEnergyBin(100.),
 fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
 // Temporal
 fMomentum1(),             fMomentum2(),             fMomentum12(),
@@ -179,6 +192,7 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
       for(Int_t iZ=0; iZ<48; iZ++)
       {
         fHmpi0[iMod][iZ][iX]   = 0 ;
+        fhEnergy[iMod][iZ][iX] = 0 ;
       }
     } 
   }
@@ -232,6 +246,14 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
+    fhTopoClusterAmpCase0[iSM]       =0;
+    fhTopoClusterAmpCase1[iSM]       =0;
+    fhTopoClusterAmpCase2[iSM]       =0;
+    fhTopoClusterAmpCase3[iSM]       =0;
+    fhTopoClusterAmpFractionCase0[iSM] = 0;
+    fhTopoClusterAmpFractionCase1[iSM] = 0;
+    fhTopoClusterAmpFractionCase2[iSM] = 0;
+    fhTopoClusterAmpFractionCase3[iSM] = 0;
     fhClusterPairDiffTimeSameSM[iSM] = 0;
   }
     
@@ -380,10 +402,48 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     Double_t time1 = c1->GetTOF()*1.e9;
     
-    if(time1 > fTimeMax || time1 < fTimeMin) continue;
+    if(fSelectOnlyCellSignalOutOfCollision && (time1 < fTimeMax || time1 > fTimeMin)) continue;
+    else if(!fSelectOnlyCellSignalOutOfCollision && (time1 > fTimeMax || time1 < fTimeMin)) continue;
     
     fhClusterTime            ->Fill(c1->E(),time1);
     fhClusterTimeSM[iSupMod1]->Fill(c1->E(),time1);
+    
+    if(fClusterTopology)
+    {
+      Int_t iPosInNoisyQuartet = FindPositionInNoisyQuartet(iphi1,ieta1,iSupMod1);
+      AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+      
+      for(Int_t iCell = 0; iCell < c1->GetNCells(); iCell++)
+      {
+        Int_t iSupMod = -1, iIeta =-1, iIphi =-1, iTower =-1;
+        
+        Int_t CellID = c1->GetCellsAbsId()[iCell];
+        geom->GetCellIndex(CellID,iSupMod,iTower,iIphi,iIeta);
+        Float_t AmpFraction = c1->GetCellAmplitudeFraction(CellID);
+        Float_t amp = fEMCALCells->GetCellAmplitude(CellID);
+        
+        switch (iPosInNoisyQuartet) {
+          case 0:
+            fhTopoClusterAmpCase0[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
+            fhTopoClusterAmpFractionCase0[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            break;
+          case 1:
+            fhTopoClusterAmpCase1[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
+            fhTopoClusterAmpFractionCase1[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            break;
+          case 2:
+            fhTopoClusterAmpCase2[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
+            fhTopoClusterAmpFractionCase2[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            break;
+          case 3:
+            fhTopoClusterAmpCase3[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
+            fhTopoClusterAmpFractionCase3[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            break;
+          default:
+            break;
+        }
+      }
+    }
     
     // Combine cluster with other clusters and get the invariant mass
     for (Int_t jClu=iClu+1; jClu < fCaloClustersArr->GetEntriesFast(); jClu++) 
@@ -415,7 +475,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       //Time cut
       Double_t time2 = c2->GetTOF()*1.e9;
       
-      if(time2 > fTimeMax || time2 < fTimeMin) continue;
+      if(fSelectOnlyCellSignalOutOfCollision && (time2 < fTimeMax || time2 > fTimeMin)) continue;
+      else if(!fSelectOnlyCellSignalOutOfCollision && (time2 > fTimeMax || time2 < fTimeMin)) continue;
       
       fhClusterPairDiffTime->Fill(fMomentum12.E(),time1-time2);
       if(TMath::Abs(time1-time2) > fDTimeCut) continue;
@@ -428,6 +489,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         // Clusters not facing frame structures
         Bool_t mask2 = MaskFrameCluster(iSupMod2, ieta2);         
         //if(mask2) printf("Reject eta %d SM %d\n",ieta2, iSupMod2);
+        
+        if(fSelectOnlyPhotonsInDifferentSM && (iSupMod1 == iSupMod2)) continue;
         
         if(in1 && in2)
         {
@@ -576,6 +639,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
           fHmpi0[iSupMod1][ieta1][iphi1]->Fill(invmass);
           fHmpi0[iSupMod2][ieta2][iphi2]->Fill(invmass);
           
+          if (fCellEnergyHiso) fhEnergy[iSupMod1][ieta1][iphi1]->Fill(fMomentum1.E());
+          if (fCellEnergyHiso) fhEnergy[iSupMod2][ieta2][iphi2]->Fill(fMomentum2.E());
+          
           if(invmass > fInvMassCutMin && invmass < fInvMassCutMax)//restrict to clusters really close to pi0 peak
           {
             fhTowerDecayPhotonHit      [iSupMod1]->Fill(ieta1,iphi1);
@@ -617,11 +683,13 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
               if(ok1 && (ieta1+i >= 0) && (iphi1+j >= 0) && (ieta1+i < 48) && (iphi1+j < 24))
               {
                 fHmpi0[iSupMod1][ieta1+i][iphi1+j]->Fill(invmass);
+                if(fCellEnergyHiso) fhEnergy[iSupMod1][ieta1+i][iphi1+j]->Fill(fMomentum1.E());
               }
                 
               if(ok2 && (ieta2+i >= 0) && (iphi2+j >= 0) && (ieta2+i < 48) && (iphi2+j < 24))
               {
                 fHmpi0[iSupMod2][ieta2+i][iphi2+j]->Fill(invmass);
+                if(fCellEnergyHiso) fhEnergy[iSupMod2][ieta2+i][iphi2+j]->Fill(fMomentum2.E());
               }
             }// j loop
           }//i loop
@@ -856,7 +924,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   
   fOutputContainer = new TList();
   const Int_t buffersize = 255;
-  char hname[buffersize], htitl[buffersize];
+  char hname[buffersize], htitl[buffersize], htitlEnergy[buffersize];
   
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
@@ -1086,6 +1154,68 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fhClusterPairDiffTimeSameSM[iSM]->SetXTitle("E (GeV)");
     fhClusterPairDiffTimeSameSM[iSM]->SetYTitle("#Delta t (ns)");
     fOutputContainer->Add(fhClusterPairDiffTimeSameSM[iSM]);
+
+    
+    if(fClusterTopology)
+    {
+      
+      fhTopoClusterAmpCase0[iSM] = new TH2F(Form("hTopoClusterAmpCase0SM%d",iSM),
+                                            Form("cluster topology for cluster in position 0 in noisy quartet, SM %d",iSM),
+                                            20,-10,10, 20,-10,10);
+      fhTopoClusterAmpCase0[iSM]->SetXTitle("column");
+      fhTopoClusterAmpCase0[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpCase0[iSM]);
+      
+      fhTopoClusterAmpCase1[iSM] = new TH2F(Form("hTopoClusterAmpCase1SM%d",iSM),
+                                            Form("cluster topology for cluster in position 1 in noisy quartet, SM %d",iSM),
+                                            20,-10,10, 20,-10,10);
+      fhTopoClusterAmpCase1[iSM]->SetXTitle("column");
+      fhTopoClusterAmpCase1[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpCase1[iSM]);
+      
+      fhTopoClusterAmpCase2[iSM] = new TH2F(Form("hTopoClusterAmpCase2SM%d",iSM),
+                                            Form("cluster topology for cluster in position 2 in noisy quartet, SM %d",iSM),
+                                            20,-10,10, 20,-10,10);
+      fhTopoClusterAmpCase2[iSM]->SetXTitle("column");
+      fhTopoClusterAmpCase2[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpCase2[iSM]);
+      
+      fhTopoClusterAmpCase3[iSM] = new TH2F(Form("hTopoClusterAmpCase3SM%d",iSM),
+                                            Form("cluster topology for cluster in position 3 in noisy quartet, SM %d",iSM),
+                                            20,-10,10, 20,-10,10);
+      fhTopoClusterAmpCase3[iSM]->SetXTitle("column");
+      fhTopoClusterAmpCase3[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpCase3[iSM]);
+      
+      
+      fhTopoClusterAmpFractionCase0[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase0SM%d",iSM),
+                                                    Form("cluster topology for cluster in position 0 in noisy quartet, SM %d",iSM),
+                                                    20,-10,10, 20,-10,10);
+      fhTopoClusterAmpFractionCase0[iSM]->SetXTitle("column");
+      fhTopoClusterAmpFractionCase0[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpFractionCase0[iSM]);
+      
+      fhTopoClusterAmpFractionCase1[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase1SM%d",iSM),
+                                                    Form("cluster topology for cluster in position 1 in noisy quartet, SM %d",iSM),
+                                                    20,-10,10, 20,-10,10);
+      fhTopoClusterAmpFractionCase1[iSM]->SetXTitle("column");
+      fhTopoClusterAmpFractionCase1[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpFractionCase1[iSM]);
+      
+      fhTopoClusterAmpFractionCase2[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase2SM%d",iSM),
+                                                    Form("cluster topology for cluster in position 2 in noisy quartet, SM %d",iSM),
+                                                    20,-10,10, 20,-10,10);
+      fhTopoClusterAmpFractionCase2[iSM]->SetXTitle("column");
+      fhTopoClusterAmpFractionCase2[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpFractionCase2[iSM]);
+      
+      fhTopoClusterAmpFractionCase3[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase3SM%d",iSM),
+                                                    Form("cluster topology for cluster in position 3 in noisy quartet, SM %d",iSM),
+                                                    20,-10,10, 20,-10,10);
+      fhTopoClusterAmpFractionCase3[iSM]->SetXTitle("column");
+      fhTopoClusterAmpFractionCase3[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterAmpFractionCase3[iSM]);
+    }
   }  
   
   Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
@@ -1119,6 +1249,14 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
         fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
         fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
         fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
+        
+        if(fCellEnergyHiso)
+        {
+          snprintf(htitlEnergy,buffersize, "Energy for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
+          fhEnergy[iMod][iCol][iRow] = new TH1F(hname,htitlEnergy,fNEnergybins,fMinEnergyBin,fMaxEnergyBin);
+          fhEnergy[iMod][iCol][iRow]->SetXTitle("E (GeV)");
+          fOutputContainer->Add(fhEnergy[iMod][iCol][iRow]);
+        }
       }
     }
   }
@@ -1595,6 +1733,45 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetMaskCellColumn(Int_t ipos, Int_t 
 {
     if(ipos < fNMaskCellColumns) fMaskCellColumns[ipos] = icol            ;
     else AliWarning("Mask column not set, position larger than allocated set size first") ;
+}
+
+///
+/// Find which is the position of the cell in noisy quartet (will be used for cluster topology)
+/// \param irow: row number of the cell.
+/// \param icol: column number of the cell.
+/// \param iSM:  SM number of the cell.
+//___________________________________________________________________________________
+Int_t AliAnalysisTaskEMCALPi0CalibSelection::FindPositionInNoisyQuartet(Int_t irow, Int_t icol, Int_t iSM)
+{
+  Int_t iPos;
+  
+  if(icol%2 == 0)
+  {
+    if(irow%8 < 4)
+    {
+      iPos = 0;
+    }
+    else if(irow%8 < 8)
+    {
+      iPos = 2;
+    }
+    else iPos = -1;
+    
+  }
+  else
+  {
+    if(irow%8 < 4)
+    {
+      iPos = 1;
+    }
+    else if(irow%8 < 8)
+    {
+      iPos = 3;
+    }
+    else iPos = -1;
+  }
+  
+  return iPos;
 }
 
 ///
