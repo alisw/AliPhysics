@@ -35,6 +35,7 @@ ClassImp(AliAnalysisV0Lam)
 //________________________________________________________________________
 AliAnalysisV0Lam::AliAnalysisV0Lam():
 AliAnalysisTaskSE(),
+  nEventsToMix(5),
   fAOD(0),
   fOutputList(0),
   fpidAOD(0),
@@ -116,8 +117,9 @@ AliAnalysisTaskSE(),
 }
 //________________________________________________________________________
 
-AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent):
+AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents):
   AliAnalysisTaskSE(name), 
+  nEventsToMix(nMixingEvents),
   fAOD(0), 
   fOutputList(0),
   fpidAOD(0),

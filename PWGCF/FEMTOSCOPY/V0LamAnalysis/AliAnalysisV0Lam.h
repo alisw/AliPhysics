@@ -28,7 +28,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
 		    kTopologicalStudy = 1,
 		    kTwoTrackStudy = 2};
     AliAnalysisV0Lam();
-    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent);
+    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents);
     virtual ~AliAnalysisV0Lam();
     virtual void UserCreateOutputObjects();
     virtual void Exec(Option_t *option);
@@ -36,10 +36,9 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     enum 
     {
       nCentBins   = 20,
-      zVertexBins = 10,
-      nEventsToMix =  5
+      zVertexBins = 10
     };
-
+    Int_t nEventsToMix;
   
   private:
 
