@@ -18,6 +18,7 @@ AliAnalysisManager* runEMCalSampleTask(
     const char   *cRunPeriod     = "LHC11h",                                // set the run period
     const char   *cLocalFiles    = "fileLists/files_LHC11h_2_AOD145.txt",   // set the local list file
     const UInt_t  iNumEvents     = 5000,                                    // number of events to be analyzed
+    UInt_t        iDebugLevel    = 0,                                       // debug level
     const UInt_t  kPhysSel       = AliVEvent::kAnyINT |
     AliVEvent::kCentral | AliVEvent::kSemiCentral,                          // physics selection
     const char   *cTaskName      = "EMCalAna",                              // sets name of analysis manager
@@ -209,7 +210,12 @@ AliAnalysisManager* runEMCalSampleTask(
   if (!pMgr->InitAnalysis()) return 0;
   pMgr->PrintStatus();
     
-  pMgr->SetUseProgressBar(kTRUE, 250);
+  if (iDebugLevel == 0) {
+    pMgr->SetUseProgressBar(kTRUE, 250);
+  }
+  else {
+    pMgr->SetDebugLevel(iDebugLevel);
+  }
   
   TFile *pOutFile = new TFile("train.root","RECREATE");
   pOutFile->cd();
