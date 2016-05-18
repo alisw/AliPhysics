@@ -103,6 +103,17 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
+  switch (jetType) {
+  case AliJetContainer::kChargedJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kCharged);
+    break;
+  case AliJetContainer::kNeutralJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kNeutral);
+    break;
+  default:
+    break;
+  }
+
   TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
 
   Printf("Jet task name: %s", name.Data());

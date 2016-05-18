@@ -33,7 +33,7 @@ ClassImp(AliParticleContainer);
 AliParticleContainer::AliParticleContainer():
   AliEmcalContainer(),
   fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
+  fChargeCut(kNoChargeCut),
   fGeneratorIndex(-1)
 {
   fBaseClassName = "AliVParticle";
@@ -47,7 +47,7 @@ AliParticleContainer::AliParticleContainer():
 AliParticleContainer::AliParticleContainer(const char *name) :
   AliEmcalContainer(name),
   fMinDistanceTPCSectorEdge(-1),
-  fCharge(-1),
+  fChargeCut(kNoChargeCut),
   fGeneratorIndex(-1)
 {
   fBaseClassName = "AliVParticle";
@@ -338,9 +338,37 @@ Bool_t AliParticleContainer::ApplyParticleCuts(const AliVParticle* vp, UInt_t &r
     return kFALSE;
   }
 
-  if (fCharge>=0 && fCharge != vp->Charge()) {
-    rejectionReason |= kChargeCut;
-    return kFALSE;
+  switch (fChargeCut) {
+  case kCharged:
+    if (vp->Charge() == 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kNeutral:
+    if (vp->Charge() != 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kPositiveCharge:
+    if (vp->Charge() <= 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  case kNegativeCharge:
+    if (vp->Charge() >= 0) {
+      rejectionReason |= kChargeCut;
+      return kFALSE;
+    }
+    break;
+
+  default:
+    break;
   }
 
   if (fGeneratorIndex >= 0 && fGeneratorIndex != vp->GetGeneratorIndex()) {

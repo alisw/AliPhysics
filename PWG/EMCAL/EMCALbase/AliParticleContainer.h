@@ -27,6 +27,8 @@ typedef AliEmcalIterableContainerT<AliVParticle,true> AliParticleIterableMomentu
  */
 class AliParticleContainer : public AliEmcalContainer {
  public:
+  enum EChargeCut_t { kNoChargeCut, kCharged, kNeutral, kPositiveCharge, kNegativeCharge };
+
   AliParticleContainer();
   AliParticleContainer(const char *name);
   virtual ~AliParticleContainer(){;}
@@ -67,7 +69,7 @@ class AliParticleContainer : public AliEmcalContainer {
   Int_t                       GetNParticles()                           const   {return GetNEntries();}
   Int_t                       GetNAcceptedParticles()                   const;
   void                        SetMinDistanceTPCSectorEdge(Double_t min)         { fMinDistanceTPCSectorEdge = min; }
-  void                        SetCharge(Short_t c)                              { fCharge = c         ; }
+  void                        SetCharge(EChargeCut_t c)                         { fChargeCut = c       ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
   void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
 
@@ -84,7 +86,7 @@ class AliParticleContainer : public AliEmcalContainer {
  protected:
 
   Double_t                    fMinDistanceTPCSectorEdge;      ///< require minimum distance to edge of TPC sector edge
-  Short_t                     fCharge;                        ///< select particles with charge=fCharge
+  EChargeCut_t                fChargeCut;                     ///< select particles according to their charge
   Short_t                     fGeneratorIndex;                ///< select MC particles with generator index (default = -1 = switch off selection)
 
  private:
