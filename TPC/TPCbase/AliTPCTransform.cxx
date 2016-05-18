@@ -791,6 +791,7 @@ Float_t AliTPCTransform::GetCorrMapComponent(int roc, int row, const double xyz[
     float corrRef =  EvalCorrectionMap(roc, row, xyz, dimOut, kTRUE); // ref correction
     if (dimOut<3) corr = (corr-corrRef)*fCurrentMapScaling + corrRef;    // rescale with lumi
   }
+  return corr;
 }
 
 //______________________________________________________
