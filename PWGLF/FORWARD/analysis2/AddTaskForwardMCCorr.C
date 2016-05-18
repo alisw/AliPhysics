@@ -45,11 +45,25 @@ AddTaskForwardMCCorr(Bool_t   satellite=false,
     AliSimplePidWeights* w = new AliSimplePidWeights();
     if (rflags & 0x4) {
       // Realistic weights
-      w->AddPDGCode(321, 1.5,true); // kaons
+      // Based on measurements in Pb-Pb @ 2.76
+      //
+      //  Ratio to pi+-  Reference       Value [%]
+      //  -------------+---------------+----------
+      //  p/pbar       | PRC88,044910  |  4.57      
+      //  K+-          | PRC88,044910  | 14.88
+      //  K^0_S        | PRL111,222301 |  7.51
+      //  Lambda       | PRL111,222301 |  1.77
+      //  Xi^0         | -             |  -
+      //
+      // WA98 Xi-/Lambda ~ 0.15 ->
+      //    Xi- / pi = Xi-/Lambda Lambda / pi = 0.14 * 1.77 = 0.25%
+      // WA98 Omega-/Xi- ~ 0.25
+      //    Omega- / pi- = Omega-/Xi- Xi-/pi = 0.25 * 0.25 = 0.06%
+      w->AddPDGCode(321, 2.0,true); // kaons
       w->AddPDGCode(310, 1.5,true); // K0s
       w->AddPDGCode(3122,1.5,true); // Lambda 
       w->AddPDGCode(3212,1.5,true); // Sigma0
-      w->AddPDGCode(3322,1.5,true); // Xi0
+      w->AddPDGCode(3322,6.0,true); // Xi0
     }
     else {
       // Roberto's analysis of Pb-Pb @ 5.02TeV
