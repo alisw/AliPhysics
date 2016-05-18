@@ -168,7 +168,16 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 	   const char* dataName = "data.root",
 	   const char* simName  = "sim.root",
 	   const char* output   = 0);
-
+  /** 
+   * Process the data 
+   * 
+   * @param realTop Top-level container of real data 
+   * @param simTop  Top-level container of simulated data 
+   * @param outTop  Top-level output directory 
+   * @param maxBins Maximum number of bins to process 
+   * 
+   * @return true on success
+   */
   Bool_t Process(Container*  realTop,
 		 Container*  simTop,
 		 TDirectory* outTop,
@@ -424,12 +433,30 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @{ 
    * @name Visualization functions 
    */
+  /** 
+   * Visualize the results 
+   * 
+   * @param realSums Top-level container of real data sums 
+   * @param simSums  Top-level container of simulated data sums 
+   * @param realRess Top-level container of real data results
+   * @param simRess  Top-level container of simulated data results 
+   * @param outTop   Top-level directory of output
+   * @param maxBins  Maximum number of bins to visualize 
+   * 
+   * @return true on success 
+   */
   Bool_t Visualize(Container*  realSums,
 		   Container*  simSums,
 		   Container*  realRess,
 		   Container*  simRess,
 		   TDirectory* outTop,
 		   Int_t       maxBins);
+  /** 
+   * Visualize the general stuff 
+   * 
+   * @param realList Real data output list 
+   * @param simList  Simulated data output list
+   */
   void   VisualizeGeneral(Container* realList, Container* simList);
   /** 
    * Draw the used simulation weights
@@ -437,14 +464,60 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @param simList Simulation list 
    */
   void VisualizeWeights(Container* simList);
+  /** 
+   * Visualize the final output 
+   * 
+   * @param outDir Output directory 
+   * @param i      Bin number 
+   */
   void VisualizeFinal(TDirectory* outDir, Int_t i);
+  /** 
+   * Visualize a centrality bin 
+   * 
+   * @param c1       Lowest centrality limit 
+   * @param c2       Highest centrality limit 
+   * @param simList  Simulated data output 
+   * @param outTop   Output top directory 
+   * 
+   * @return true on success 
+   */
   Bool_t VisualizeBin(Double_t    c1,
 		      Double_t    c2,
 		      Container*  simList, 
 		      TDirectory* outTop);
+  /** 
+   * Visualize species from simulation
+   * 
+   * @param simCont Centrality container of simulated data
+   * 
+   * @return true on success 
+   */
   Bool_t VisualizeSpecies(Container* simCont);
+  /** 
+   * Visualize primary particles 
+   * 
+   * @param simCont Centrality container of simulated data
+   * 
+   * @return true on success 
+   */
   Bool_t VisualizePrimary(Container* simCont);
+  /** 
+   * Visualize the @f$\Delta@f$ distributions 
+   * 
+   * @param outTop Output top directory 
+   * @param dimen  The dimension to show 
+   * 
+   * @return true on success 
+   */
   Bool_t VisualizeDelta(TDirectory* outTop, Int_t dimen);
+  /** 
+   * Visualize the @f$ dN_{\mathrm{ch}/d\eta@f$ and components
+   * 
+   * @param outTop Output top directory 
+   * @param dimen  The dimension to show 
+   * 
+   * @return true on success 
+   */
   Bool_t VisualizeResult(TDirectory* outTop,  Int_t       dimen);
   /* @} */
   //____________________________________________________________________
@@ -570,15 +643,27 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
   /* @} */
 };
 
-//====================================================================  
+//====================================================================
+/** 
+ * A guard to suppress messages 
+ */
 struct SuppressGuard
 {
+  /** The previous message level */
   Int_t save = 0;
+  /** 
+   * Constructor 
+   * 
+   * @param lvl Level to suppress to 
+   */
   SuppressGuard(Int_t lvl=2000)
   {
     save = gErrorIgnoreLevel;
     gErrorIgnoreLevel = lvl;
   }
+  /** 
+   * Destructor 
+   */
   ~SuppressGuard()
   {
     gErrorIgnoreLevel = save;
@@ -1741,7 +1826,7 @@ void AliTrackletdNdeta2::VisualizeGeneral(Container* realList,
 namespace {
   void SetCentColors(THStack* s, TH1* dist=0)
   {
-    if (!s->GetHists()) return;
+    if (!s || !s->GetHists()) return;
 
     const Color_t cc[] = { kMagenta+2, // 0
 			   kBlue+2,    // 1
@@ -1788,6 +1873,10 @@ namespace {
     TIter    n(c);
     while ((h = static_cast<TH1*>(n()))) s->Add(h);
 
+    if (!s->GetHists() || s->GetHists()->GetEntries() <= 0) {
+      delete s;
+      s = 0;
+    }
     return s;
   }
 }
@@ -1810,9 +1899,9 @@ void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
 		  right, pp[i]->GetYlowNDC()+pp[i]->GetHNDC());
     pp[i]->Modified();
   }
-  
+  TH2*     hp = GetH2(w,      "centPt");
   THStack* ef = new THStack(GetP2(simList,"etaWeight"),"x","effWeights","");
-  THStack* pt = new THStack(GetH2(w,      "centPt"),   "y","pt","");
+  THStack* pt = hp ? new THStack(hp,   "y","pt","") : 0;
   THStack* ab = GetPdgStack(w, "abundance");
   THStack* st = GetPdgStack(w, "strangeness");
   SetCentColors(ef, c);
@@ -1823,20 +1912,24 @@ void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
   ef->SetMinimum(0.98);
   ef->SetMaximum(1.02);
   TLegend* l = DrawInPad(fBody, 1, ef, "nostack leg");
-  DrawInPad(fBody, 2, pt, "nostack");
-  ef->GetHistogram()->SetYTitle("Average weight");
-  ef->GetHistogram()->SetXTitle("#eta");
-  pt->GetHistogram()->SetYTitle("Weight");
-  pt->GetHistogram()->SetXTitle("#it{p}_{T}");
+  if (pt) {
+    DrawInPad(fBody, 2, pt, "nostack");
+    ef->GetHistogram()->SetYTitle("Average weight");
+    ef->GetHistogram()->SetXTitle("#eta");
+    pt->GetHistogram()->SetYTitle("Weight");
+    pt->GetHistogram()->SetXTitle("#it{p}_{T}");
 
-  fBody->GetPad(1)->GetListOfPrimitives()->Remove(l);
-  fBody->GetPad(1)->Modified();
-
+    fBody->GetPad(1)->GetListOfPrimitives()->Remove(l);
+    fBody->GetPad(1)->Modified();
+  }
+  
   fBody->cd();
-  l->Draw();
-  ModLegend(fBody, l, right, pp[1]->GetYlowNDC(),
-	    .99, 1-fBody->GetTopMargin());
-  fBody->Modified();
+  if (l) {
+    l->Draw();
+    ModLegend(fBody, l, right, pp[1]->GetYlowNDC(),
+	      .99, 1-fBody->GetTopMargin());
+    fBody->Modified();
+  }
   
   TVirtualPad* p3 = fBody->GetPad(3);
   p3->SetTopMargin(0.01);
@@ -1850,11 +1943,14 @@ void AliTrackletdNdeta2::VisualizeWeights(Container* simList)
   DrawInPad(p3, 1, ab, "nostack leg");
   DrawInPad(p3, 2, st, "nostack leg");
 
-  ab->GetHistogram()->SetYTitle("Weight");
-  ab->GetHistogram()->SetXTitle("Centrality [%]");
-  st->GetHistogram()->SetYTitle("Weight");
-  st->GetHistogram()->SetXTitle("Centrality [%]");
-
+  if (ab) {
+    ab->GetHistogram()->SetYTitle("Weight");
+    ab->GetHistogram()->SetXTitle("Centrality [%]");
+  }
+  if (st) {
+    st->GetHistogram()->SetYTitle("Weight");
+    st->GetHistogram()->SetXTitle("Centrality [%]");
+  }
   p3->GetPad(1)->Modified();
   p3->GetPad(2)->Modified(); 
   
@@ -2150,6 +2246,24 @@ Bool_t AliTrackletdNdeta2::VisualizePrimary(Container* simCont)
   pt->GetXaxis()->SetLabelSize(0.08);
   pt->GetXaxis()->SetTitleOffset(0.6);  
 
+  TIter next(toPion->GetHists());
+  TH1*  rat = 0;
+  while ((rat = static_cast<TH1*>(next()))) {
+    TGraphErrors* g =
+      static_cast<TGraphErrors*>(rat->GetListOfFunctions()
+				 ->FindObject(Form("%s_2760",rat->GetName())));
+    TF1* f = new TF1("fit", "pol0", -.5, +.5);
+    rat->Fit(f, "Q0R+", "", -.5, +.5);
+    Double_t re, r = RatioE(f->GetParameter(0), f->GetParError(0),
+			    g->GetY()[0], g->GetEY()[0], re);
+    Printf("%10s:  2760: %6.4f +/- %6.4f  Here: %6.4f +/- %6.4f  "
+	   "Ratio: %6.4f +/- %6.4f",
+	   rat->GetName(), g->GetY()[0], g->GetEY()[0],
+	   f->GetParameter(0), f->GetParError(0), r, re);
+    f->SetLineColor(rat->GetLineColor());
+    f->SetLineStyle(7);
+  }
+  
   TPad* p1 = new TPad("p1","p1",0,.3,1,1);
   p1->SetTopMargin(.01);
   p1->SetRightMargin(.01);

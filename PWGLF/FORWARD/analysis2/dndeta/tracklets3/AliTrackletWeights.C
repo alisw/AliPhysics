@@ -394,8 +394,7 @@ Bool_t AliTrackletWeights::SetPtWeight(const TH2D* h, UShort_t mode)
 //____________________________________________________________________
 void AliTrackletWeights::SetPtMode(UShort_t mode)
 {
-  if (!fPt) return;
-  fPt->SetBit(mode);
+  if (fPt) fPt->SetBit(mode);
 }
 //____________________________________________________________________
 void AliTrackletWeights::SetPdgMode(PdgMap&  m,
@@ -403,8 +402,7 @@ void AliTrackletWeights::SetPdgMode(PdgMap&  m,
 				    UShort_t mode)
 {
   TH1* h = GetPdgHist(m, pdg);
-  if (!h) return;
-  h->SetBit(mode);
+  if (h) h->SetBit(mode);
 }
 //____________________________________________________________________
 TH1D* AliTrackletWeights::GetPdgHist(const PdgMap&  m, Short_t pdg) const
@@ -420,6 +418,7 @@ Double_t AliTrackletWeights::GetPdgWeight(const PdgMap&  m,
 					  UShort_t       apdg,
 					  Double_t       cent) const
 {
+  if (m.size() < 1) return 1;
   TH1D* h = GetPdgHist(m, apdg);
   if (!h || h->TestBit(kDisabled)) return 1;
 
@@ -546,14 +545,14 @@ AliTrackletWeights::Retrieve(TCollection* parent)
     return false;
   }
   fPt        = static_cast<TH2D*>(top->FindObject("centPt"));
-  if (!fPt) {
+  if (!fPt)
     Warning("Retrieve","centPt histogram not found in %s", GetName());
-    return false;
+  else {
+    fPt->SetDirectory(0);
+    Double_t scale = fPt->GetBinContent(0,0);
+    fPt->Scale(1/scale); // Counting merges
+    // fPt->SetBinContent(0,0,1); // Zero merger count 
   }
-  fPt->SetDirectory(0);
-  Double_t scale = fPt->GetBinContent(0,0);
-  fPt->Scale(1/scale); // Counting merges
-  
   if (!RetrieveMap(top, "abundance",   fAbundance)) return false;
   if (!RetrieveMap(top, "strangeness", fStrangeness)) return false;
 
@@ -570,8 +569,7 @@ AliTrackletWeights::RetrieveMap(TCollection* parent,
   if (!top) {
     Warning("RetrieveMap",
 	    "Collection %s not found in %s", name, parent->GetName());
-    parent->ls();
-    return false;
+    return true;
   }
   TIter    next(top);
   TObject* o = 0;
@@ -581,6 +579,7 @@ AliTrackletWeights::RetrieveMap(TCollection* parent,
     copy->SetDirectory(0);
     Double_t scale = copy->GetBinContent(0); 
     copy->Scale(1/scale); // Counting merges
+    // copy->SetBinContent(0,1); // Zero merger count 
     TString nme(copy->GetName());
     nme.Remove(0,1);
     Int_t apdg = nme.Atoi();
@@ -606,27 +605,31 @@ AliTrackletWeights::Draw(Option_t*)
     master->GetPad(1)->BuildLegend();
   }
 
-  THStack* ha = new THStack("abundance", "Abundance weights");
-  for (PdgMap::const_iterator i = fAbundance.begin();
-       i != fAbundance.end(); ++i) {
-    ha->Add(i->second);
+  if (fAbundance.size() > 0) {
+    THStack* ha = new THStack("abundance", "Abundance weights");
+    for (PdgMap::const_iterator i = fAbundance.begin();
+	 i != fAbundance.end(); ++i) {
+      ha->Add(i->second);
+    }
+    ModStack(ha);
+    master->cd(2);
+    ha->Draw("nostack");
+    ha->GetHistogram()->SetXTitle("Centrality [%]");
+    master->GetPad(2)->BuildLegend();
   }
-  ModStack(ha);
-  master->cd(2);
-  ha->Draw("nostack");
-  ha->GetHistogram()->SetXTitle("Centrality [%]");
-  master->GetPad(2)->BuildLegend();
 
-  THStack* hs = new THStack("strangeness", "Strangeness weights");
-  for (PdgMap::const_iterator i = fStrangeness.begin();
-       i != fStrangeness.end(); ++i) {
-    hs->Add(i->second);
+  if (fStrangeness.size() > 0) {
+    THStack* hs = new THStack("strangeness", "Strangeness weights");
+    for (PdgMap::const_iterator i = fStrangeness.begin();
+	 i != fStrangeness.end(); ++i) {
+      hs->Add(i->second);
+    }
+    ModStack(hs);
+    master->cd(3);
+    hs->Draw("nostack");
+    hs->GetHistogram()->SetXTitle("Centrality [%]");
+    master->GetPad(3)->BuildLegend();
   }
-  ModStack(hs);
-  master->cd(3);
-  hs->Draw("nostack");
-  hs->GetHistogram()->SetXTitle("Centrality [%]");
-  master->GetPad(3)->BuildLegend();
 }
 
 //____________________________________________________________________
