@@ -123,7 +123,10 @@ class AliTPCDcalibRes: public TNamed
   void    LoadVDrift();
   Float_t GetDriftCorrection(float z, float x, float phi, int rocID);
   Float_t tgpXY(float x, float y, float q2p, float bz);
-  
+
+  TVectorD*     GetVDriftParam() const {return (TVectorD*)fVDriftParam;}
+  TGraphErrors* GetVDriftGraph() const {return (TGraphErrors*)fVDriftGraph;}
+
   void WriteStatHistos();
   void LoadStatHistos();
   void WriteResTree();
@@ -472,7 +475,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,5);
+  ClassDef(AliTPCDcalibRes,6);
 };
 
 //________________________________________________________________
