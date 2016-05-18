@@ -3250,13 +3250,14 @@ Bool_t AliTrackletdNdetaMCTask::FillPrimaries(Double_t cent,
     Double_t      weight = particle->GetWeight();
     Int_t         pdgID  = TMath::Abs(particle->GetPdgCode());
     TParticlePDG* pdg    = particle->GetPDG();
+    Bool_t        charge = (pdg ? pdg->Charge() != 0 : false);
     // @todo Fill pT spectra of charged here
       
     TIter nextB(&toRun);
     while ((bin = static_cast<CentBin*>(nextB()))) {
       // AliInfoF("Filling track %6d into %s", trackNo, bin->Name());
       bin->FillPrimary(dataOK ? ipZ : -1000, genIPz,
-		       eta, pdg->Charge()!=0,pdgID, weight);
+		       eta, charge, pdgID, weight);
     }
   }
   return true;
