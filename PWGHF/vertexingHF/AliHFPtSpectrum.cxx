@@ -52,6 +52,9 @@
 #include "AliHFSystErr.h"
 #include "AliHFPtSpectrum.h"
 
+using std::cout;
+using std::endl;
+
 /// \cond CLASSIMP
 ClassImp(AliHFPtSpectrum);
 /// \endcond
