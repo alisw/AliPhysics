@@ -143,10 +143,12 @@ protected:
   TH1F* fHistV0AAcc;         //! V0A timing for events accepted by basic cuts
   TH1F* fHistV0CAll;         //! V0C timing for all events
   TH1F* fHistV0CAcc;         //! V0C timing for events accepted by basic cuts
-  TH1F* fHistZDC;            //! histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
-  TH1F* fHistTDCZDC;         //! histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
-  TH2F* fHistTimeZDC;        //! ZDC TDC timing
-  TH2F* fHistTimeCorrZDC;    //! ZDC Corrected TDC timing
+  TH1F* fHistZDC;            //! fired bits (6 bins)
+  TH1F* fHistTimeZNA;        //! ZNA time distribution
+  TH1F* fHistTimeZNC;        //! ZNC time distribution
+  TH1F* fHistTDCZDC;         //! TDC bits (32 bins)
+  TH2F* fHistTimeZNSumVsDif; //! (ZNC-ZNA) vs (ZNC+ZNA) corrected times zoomed
+  TH2F* fHistTimeCorrZDC;    //! (ZNC-ZNA) vs (ZNC+ZNA) corrected times large scale
   TH1F* fHistFMDA;           //! number of hit combination above threshold
   TH1F* fHistFMDC;           //! number of hit combination above threshold
   TH1F* fHistFMDSingle;      //! single mult value (more than one entry per event)
@@ -154,7 +156,7 @@ protected:
   TH1F* fHistT0;             //! bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 29)
+  ClassDef(AliTriggerAnalysis, 30)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

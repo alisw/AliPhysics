@@ -30,6 +30,7 @@
 #include "TParameter.h"
 #include "TMap.h"
 #include "TRandom.h"
+#include "TEllipse.h"
 #include "AliTriggerAnalysis.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -92,9 +93,11 @@ fHistV0AAll(0),
 fHistV0AAcc(0),
 fHistV0CAll(0),
 fHistV0CAcc(0),
+fHistTimeZNA(0),
+fHistTimeZNC(0),
 fHistZDC(0),
 fHistTDCZDC(0),
-fHistTimeZDC(0),
+fHistTimeZNSumVsDif(0),
 fHistTimeCorrZDC(0),
 fHistFMDA(0),
 fHistFMDC(0),
@@ -110,6 +113,7 @@ fMC(kFALSE)
   fTriggerClasses->SetOwner();
 }
 
+//-------------------------------------------------------------------------------------------------
 void AliTriggerAnalysis::SetParameters(AliOADBTriggerAnalysis* oadb){
   fZDCCutRefSumCorr     = oadb->GetZDCCutRefSumCorr();
   fZDCCutRefDeltaCorr   = oadb->GetZDCCutRefDeltaCorr();
@@ -217,29 +221,36 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistV0CAcc          = new TH1F("fHistV0CAcc","Accepted events;V0C mean time (ns);", 400, -100, 100);
   fHistZDC             = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   fHistTDCZDC          = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
-  fHistTimeZDC         = new TH2F("fHistTimeZDC", "ZDC;TDC timing C-A;TDC timing C+A", 120,-30,30,120,-600,-540);
-  fHistTimeCorrZDC     = new TH2F("fHistTimeCorrZDC", "ZDC;Corrected TDC timing C-A; Corrected TDC timing C+A", 120,-30,30,260,-100,30);
+  fHistTimeZNA         = new TH1F("fHistTimeZNA",";Corrected ZNA time (ns);",200,-10,10);
+  fHistTimeZNC         = new TH1F("fHistTimeZNC",";Corrected ZNC time (ns);",200,-10,10);
+  fHistTimeZNSumVsDif  = new TH2F("fHistTimeZNSumVsDif",";Corrected ZNC-ZNA time (ns);Corrected ZNC+ZNA time (ns)", 100, -5, 5,100,  -5, 5);
+  fHistTimeCorrZDC     = new TH2F("fHistTimeCorrZDC"   ,";Corrected ZNC-ZNA time (ns);Corrected ZNC+ZNA time (ns)", 160,-320,320,160,-320,320);
   fHistFMDA            = new TH1F("fHistFMDA", "FMDA;combinations above threshold;", 102, -1.5, 100.5);
   fHistFMDC            = new TH1F("fHistFMDC", "FMDC;combinations above threshold;", 102, -1.5, 100.5);
   fHistFMDSingle       = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;", 1000, 0, 10);
   fHistFMDSum          = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
   fHistT0              = new TH1F("fHistT0", ";T0 time (ns);", 100, -25, 25);
 
-  TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,2000);
+  TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,fHistSPDClsVsTklCln->GetXaxis()->GetXmax());
   fFuncSPDClsVsTkl->SetParameters(fSPDClsVsTklA,fSPDClsVsTklB);
   fHistSPDClsVsTklCln->GetListOfFunctions()->Add(fFuncSPDClsVsTkl);
 
-  TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,2000);
+  TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,fHistV0MOnVsOfCln->GetXaxis()->GetXmax());
   fFuncV0MOnVsOf->SetParameters(fV0MOnVsOfA,fV0MOnVsOfB);
   fHistV0MOnVsOfCln->GetListOfFunctions()->Add(fFuncV0MOnVsOf);
 
-  TF1* fFuncSPDOnVsOf = new TF1("fFuncSPDOnVsOf","[0]+[1]*x",0,800);
+  TF1* fFuncSPDOnVsOf = new TF1("fFuncSPDOnVsOf","[0]+[1]*x",0,fHistSPDOnVsOfCln->GetXaxis()->GetXmax());
   fFuncSPDOnVsOf->SetParameters(fSPDOnVsOfA,fSPDOnVsOfB);
   fHistSPDOnVsOfCln->GetListOfFunctions()->Add(fFuncSPDOnVsOf);
 
-  TF1* fFuncV0C3vs012 = new TF1("fFuncV0C3vs012","[0]+[1]*x",0,800);
+  TF1* fFuncV0C3vs012 = new TF1("fFuncV0C3vs012","[0]+[1]*x",0,fHistV0C3vs012Cln->GetXaxis()->GetXmax());
   fFuncV0C3vs012->SetParameters(fV0CasymA,fV0CasymB);
   fHistV0C3vs012Cln->GetListOfFunctions()->Add(fFuncV0C3vs012);
+  
+  TEllipse* ellipse = new TEllipse(fZDCCutRefDeltaCorr,fZDCCutRefSumCorr,fZDCCutSigmaDeltaCorr,fZDCCutSigmaSumCorr);
+  ellipse->SetFillStyle(0);
+  ellipse->SetLineColor(kMagenta);
+  fHistTimeZNSumVsDif->GetListOfFunctions()->Add(ellipse);
   
   fHistList->Add(fHistStat);
   fHistList->Add(fHistFiredBitsSPD);
@@ -282,7 +293,9 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistV0CAcc);
   fHistList->Add(fHistZDC);
   fHistList->Add(fHistTDCZDC);
-  fHistList->Add(fHistTimeZDC);
+  fHistList->Add(fHistTimeZNA);
+  fHistList->Add(fHistTimeZNC);
+  fHistList->Add(fHistTimeZNSumVsDif);
   fHistList->Add(fHistTimeCorrZDC);
   fHistList->Add(fHistFMDA);
   fHistList->Add(fHistFMDC);
@@ -713,13 +726,6 @@ AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliVEvent* ev
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side, Bool_t useZN, Bool_t useZP, Int_t fillHists) const{
   // Returns if ZDC triggered, based on TDC information 
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTDCTrigger method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC *esdZDC = aEsd->GetESDZDC();
   
   Bool_t zdcNA = kFALSE;
   Bool_t zdcNC = kFALSE;
@@ -728,25 +734,35 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side,
   
   if (fMC) { // If it's MC, we use the energy
     Double_t minEnergy = 0;
-    zdcNA = esdZDC->GetZDCN2Energy()>minEnergy;
-    zdcNC = esdZDC->GetZDCN1Energy()>minEnergy;
-    zdcPA = esdZDC->GetZDCP2Energy()>minEnergy;
-    zdcPC = esdZDC->GetZDCP1Energy()>minEnergy;
-  }
-  else {
-    Bool_t tdc[32] = {kFALSE};
-    for(Int_t itdc=0; itdc<32; itdc++){
-      for(Int_t i=0; i<4; i++) tdc[itdc] |= esdZDC->GetZDCTDCData(itdc, i)!=0;
-      if(fillHists && tdc[itdc]) fHistTDCZDC->Fill(itdc);
+    zdcNA = event->GetZDCN2Energy()>minEnergy;
+    zdcNC = event->GetZDCN1Energy()>minEnergy;
+    zdcPA = event->GetZDCP2Energy()>minEnergy;
+    zdcPC = event->GetZDCP1Energy()>minEnergy;
+  } else if (event->GetDataLayoutType()==AliVEvent::kESD){
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
+    for (Int_t i=0;i<4;i++){
+      zdcNA|= esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i)!=0;
+      zdcNC|= esdZDC->GetZDCTDCData(esdZDC->GetZNCTDCChannel(),i)!=0;
+      zdcPA|= esdZDC->GetZDCTDCData(esdZDC->GetZPATDCChannel(),i)!=0;
+      zdcPC|= esdZDC->GetZDCTDCData(esdZDC->GetZPCTDCChannel(),i)!=0;
     }
-    zdcNA = tdc[esdZDC->GetZNATDCChannel()];
-    zdcNC = tdc[esdZDC->GetZNCTDCChannel()];
-    zdcPA = tdc[esdZDC->GetZPATDCChannel()];
-    zdcPC = tdc[esdZDC->GetZPCTDCChannel()];
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++){
+      // 999 is set if corresponding esdZDC->GetZDCTDCData(ch,i) is 0
+      zdcNA|= aodZDC->GetZNATDCm(i)<998;
+      zdcNC|= aodZDC->GetZNCTDCm(i)<998;
+      zdcPA|= aodZDC->GetZPATDCm(i)<998;
+      zdcPC|= aodZDC->GetZPCTDCm(i)<998;
+    }
+  } else {
+    return kFALSE;
   }
   
-  if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA)); 
-  if (side == kCSide) return ((useZP && zdcPC) || (useZN && zdcNC)); 
+  if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA));
+  if (side == kCSide) return ((useZP && zdcPC) || (useZN && zdcNC));
   return kFALSE;
 }
 
@@ -755,50 +771,56 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliVEvent* event, AliceSide side,
 Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHists) const {
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTimeTrigger method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC *esdZDC = aEsd->GetESDZDC();
+  // usage of uncorrected timings is deprecated
+  // TODO: implement selection on AOD in MC
   if(fMC) {
-    UInt_t esdFlag =  esdZDC->GetESDQuality();
-    Bool_t znaFired  = (esdFlag & 0x01) == 0x01;
-    Bool_t zncFired  = (esdFlag & 0x10) == 0x10;
-    return znaFired | zncFired;
+    if (event->GetDataLayoutType()==AliVEvent::kESD) {
+      const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+      AliESDZDC *esdZDC = esd->GetESDZDC();
+      UInt_t esdFlag = esdZDC->GetESDQuality();
+      Bool_t znaFired = (esdFlag & 0x01) == 0x01;
+      Bool_t zncFired = (esdFlag & 0x10) == 0x10;
+      return znaFired | zncFired;
+    } else {
+      return kTRUE;
+    }
   }
-  else {
+  
+  Float_t zna[4]={0};
+  Float_t znc[4]={0};
+
+  if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
-    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
-    
-    if (aEsd->GetRunNumber()>=245726 && aEsd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
-    
-    for(Int_t i=0;i<4;++i) {
-      if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
-      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(detChZNC,i)-esdZDC->GetZDCTDCData(detChGate,i)); 
-      Float_t tdcCcorr = esdZDC->GetZDCTDCCorrected(detChZNC,i); 
-      for(Int_t j=0;j<4;++j) {
-        if (esdZDC->GetZDCTDCData(detChZNA,j)==0) continue;
-        Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(detChZNA,j)-esdZDC->GetZDCTDCData(detChGate,j));
-        Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(detChZNA,j);
-        if(fillHists) {
-          fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
-          fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
-        }
-        if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA == 10) {
-          if (TMath::Power((tdcCcorr-tdcAcorr-123.1)/2.2,2.)+
-              TMath::Power((tdcCcorr+tdcAcorr+123.1)/2.2,2.) < 1.) return kTRUE;
-        } else if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled) && detChZNA!=10) {
-          if (TMath::Power((tdcCcorr-tdcAcorr-fZDCCutRefDeltaCorr)/fZDCCutSigmaDeltaCorr,2.)+
-              TMath::Power((tdcCcorr+tdcAcorr-fZDCCutRefSumCorr  )/fZDCCutSigmaSumCorr,2.) < 1.) return kTRUE;
-        }
-        else {
-          if (TMath::Power((tdcC-tdcA-fZDCCutRefDelta)/fZDCCutSigmaDelta,2.)+
-              TMath::Power((tdcC+tdcA-fZDCCutRefSum  )/fZDCCutSigmaSum,2.  )<1.0) return kTRUE;
-        }
+    if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++) zna[i]=aodZDC->GetZNATDCm(i);
+    for (Int_t i=0;i<4;i++) znc[i]=aodZDC->GetZNCTDCm(i);
+  } else {
+    return kFALSE;
+  }
+  
+  if(fillHists) {
+    for (Int_t i=0;i<4;i++) {
+      fHistTimeZNA->Fill(zna[i]);
+      fHistTimeZNC->Fill(znc[i]);
+      for (Int_t j=0;j<4;j++) {
+        fHistTimeCorrZDC->Fill(znc[i]-zna[j],znc[i]+zna[j]);
+        fHistTimeZNSumVsDif->Fill(znc[i]-zna[j],znc[i]+zna[j]);
       }
+    }
+  }
+  
+  for (Int_t i=0;i<4;i++) {
+    for (Int_t j=0;j<4;j++) {
+      if (TMath::Power((znc[i]-zna[j]-fZDCCutRefDeltaCorr)/fZDCCutSigmaDeltaCorr,2)+
+          TMath::Power((znc[i]+zna[j]-fZDCCutRefSumCorr  )/fZDCCutSigmaSumCorr  ,2)<1.0) return kTRUE;
     }
   }
   return kFALSE;
@@ -810,31 +832,34 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliVEvent* event, AliceSide si
   // This method implements a selection based on the timing in zdcN
   // It can be used in order to flag background
   if(fMC) return kFALSE;
+
+  Float_t zna[4]={0};
+  Float_t znc[4]={0};
   
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-//    AliError("ZDCTimeBGTrigger method implemented for ESDs only");
+  if (event->GetDataLayoutType()==AliVEvent::kESD) {
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    for (Int_t i=0;i<4;i++) zna[i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    for (Int_t i=0;i<4;i++) znc[i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+  } else if (event->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(event);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++) zna[i] = aodZDC->GetZNATDCm(i);
+    for (Int_t i=0;i<4;i++) znc[i] = aodZDC->GetZNCTDCm(i);
+  } else {
     return kFALSE;
   }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  AliESDZDC* zdcData = aEsd->GetESDZDC();
+  
   Bool_t znabadhit = kFALSE;
   Bool_t zncbadhit = kFALSE;
   
-  Float_t tdcCcorr=999, tdcAcorr=999;
-  
-  Int_t detChZNA  = zdcData->GetZNATDCChannel();
-  Int_t detChZNC  = zdcData->GetZNCTDCChannel();
-
   for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(detChZNC,i)==0) continue;
-    tdcCcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNC,i));
-    if(tdcCcorr<fZDCCutZNCTimeCorrMax && tdcCcorr>fZDCCutZNCTimeCorrMin) zncbadhit = kTRUE;
-  }
-  for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(detChZNA,i)==0) continue;
-    tdcAcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNA,i));
-    if(tdcAcorr<fZDCCutZNATimeCorrMax && tdcAcorr>fZDCCutZNATimeCorrMin) znabadhit = kTRUE;
+    Float_t absZNA = TMath::Abs(zna[i]);
+    Float_t absZNC = TMath::Abs(znc[i]);
+    if(absZNA<fZDCCutZNATimeCorrMax && absZNA>fZDCCutZNATimeCorrMin) znabadhit = kTRUE;
+    if(absZNC<fZDCCutZNCTimeCorrMax && absZNC>fZDCCutZNCTimeCorrMin) zncbadhit = kTRUE;
   }
   
   if (side == kASide) return znabadhit;
@@ -1398,7 +1423,6 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
   Bool_t isTKLTrigger      = TKLTrigger(event,1);
-  Bool_t isZDCTDCTrigger   = ZDCTDCTrigger(event,kASide,kFALSE,kFALSE,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
   Bool_t isV0A             = decisionV0A==kV0BB;
   Bool_t isV0C             = decisionV0C==kV0BB;
