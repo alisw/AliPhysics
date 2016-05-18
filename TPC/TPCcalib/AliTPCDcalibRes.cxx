@@ -879,7 +879,7 @@ void AliTPCDcalibRes::ClosureTest()
   // correct distortions
   TStopwatch sw;
   sw.Start();
-  if (fChebCorr) {
+  if (!fChebCorr) {
     AliError("Chebyshev correction object was not created, cannot run closure test");
     return;
   }

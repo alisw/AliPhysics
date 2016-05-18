@@ -172,6 +172,7 @@ class AliTPCDcalibRes: public TNamed
   
   Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
   TH1*    GetTracksRateHisto()   const {return fTracksRate;}
+  void    SetTracksRateHisto(TH1F* h)  {fTracksRate = h;}   // needed for hacks
   TH1*    ExtractTrackRate() const;
   Float_t GetValidFracXBin(int sect, int bin) const {return fValidFracXBin[sect][bin];}
   Int_t   GetNSmoothingFailed(int sect) const {return fNSmoothingFailedBins[sect];}
