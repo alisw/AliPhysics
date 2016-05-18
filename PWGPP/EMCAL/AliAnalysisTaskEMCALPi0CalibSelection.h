@@ -68,6 +68,8 @@ public:
   void    Terminate(Option_t* opt);
   
   void    GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
+  
+  Int_t   FindPositionInNoisyQuartet(Int_t irow, Int_t icol, Int_t iSM);
     
   // Analysis parameter setting
   
@@ -104,6 +106,22 @@ public:
   void    UseNormalEventAsInput()                        { fFilteredInput = kFALSE   ; }
   
   void    SetTriggerName(TString name)                   { fTriggerName = name       ; }
+  
+  void    SwitchOffSelectOnlyCellSignalOutOfCollision()  { fSelectOnlyCellSignalOutOfCollision = kFALSE ; }
+  
+  void    SwitchOnSelectOnlyCellSignalOutOfCollision()   { fSelectOnlyCellSignalOutOfCollision = kTRUE ; }
+  
+  void    SwitchOffCellEnergyHisto()                     { fCellEnergyHiso = kFALSE ; }
+  
+  void    SwitchOnCellEnergyHisto()                      { fCellEnergyHiso = kTRUE ; }
+  
+  void    SwitchOffTopoClusterHisto()                     { fClusterTopology = kFALSE ; }
+  
+  void    SwitchOnTopoClusterHisto()                      { fClusterTopology = kTRUE ; }
+  
+  void    SwitchOffSelectOnlyPhotonsInDifferentSM()       { fSelectOnlyPhotonsInDifferentSM = kFALSE ; }
+  
+  void    SwitchOnSelectOnlyPhotonsInDifferentSM()        { fSelectOnlyPhotonsInDifferentSM = kTRUE ; }
 
   // Geometry setters
   
@@ -137,6 +155,9 @@ public:
   
   void    SetInvariantMassHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
                                         fNbins     = nBins ; fMinBin     = minbin ; fMaxBin     = maxbin ; }
+  
+  void    SetEnergyHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
+    fNEnergybins     = nBins ; fMinEnergyBin     = minbin ; fMaxEnergyBin     = maxbin ; }
 
   void    SetTimeHistoBinRange         (Int_t nBins, Float_t minbin, Float_t maxbin){
                                         fNTimeBins = nBins ; fMinTimeBin = minbin ; fMaxTimeBin = maxbin ; }
@@ -234,7 +255,15 @@ private:
   Bool_t              fSameSM;           ///<  Combine clusters in channels on same SM.
 
   Int_t               fNMaskCellColumns; ///<  Number of masked columns.
-    
+  
+  Bool_t              fSelectOnlyCellSignalOutOfCollision; ///< Select cells / clusters that are due to noise, i.e. signal in EMCal that happens not during collisions
+  
+  Bool_t              fCellEnergyHiso;   ///< Draw cell ernergy histo
+  
+  Bool_t              fClusterTopology;  ///< Draw cluster topology histo
+  
+  Bool_t              fSelectOnlyPhotonsInDifferentSM; ///<Select only pairs of photons that are not in the same SM
+  
   ///< List the masked columns.
   Int_t*              fMaskCellColumns;  //[fNMaskCellColumns]
     
@@ -251,6 +280,10 @@ private:
   Float_t             fMinTimeBin;       ///<  Minimum time bins of invariant mass histograms.
   Float_t             fMaxTimeBin;       ///<  Maximum time bins of invariant mass histograms.
   
+  Int_t               fNEnergybins;            ///<  N       energy bins of cell energy histograms.
+  Float_t             fMinEnergyBin;           ///<  Minimum energy bins of cell energy histograms.
+  Float_t             fMaxEnergyBin;           ///<  Maximum energy bins of cell energy histograms.
+  
   // Temporal TLorentzVectors, avoir recreation per event 
     
   TLorentzVector      fMomentum1 ;       ///<  Cluster kinematics, temporal
@@ -261,7 +294,8 @@ private:
 
   ///< Two-cluster invariant mass assigned to each cell.
   TH1F*     fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; //!
-
+  TH1F*     fhEnergy[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];     //!<! Energy distribution for each cell.
+  
   TH2F*     fHmgg;                                                                 //!<! Two-cluster invariant mass vs pt of pair.
   TH2F*     fHmggDifferentSM;                                                      //!<! Two-cluster invariant mass vs pt of pair, each cluster in different SM.
   TH2F*     fHmggSM[AliEMCALGeoParams::fgkEMCALModules];                           //!<! Two-cluster invariant mass per SM.
@@ -272,6 +306,15 @@ private:
   TH2F*     fHmggSM_Zone5[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 5.
   TH2F*     fHmggSM_Zone6[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 6.
   TH2F*     fHmggSM_Zone7[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 7.
+  TH2F*     fhTopoClusterAmpCase0[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 0 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpCase1[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 1 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpCase2[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 2 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpCase3[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 3 cluster in noisy quartet
+  
+  TH2F*     fhTopoClusterAmpFractionCase0[AliEMCALGeoParams::fgkEMCALModules];     //!<! Cell amplitude fraction map for type 0 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpFractionCase1[AliEMCALGeoParams::fgkEMCALModules];     //!<! Cell amplitude fraction map for type 1 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpFractionCase2[AliEMCALGeoParams::fgkEMCALModules];     //!<! Cell amplitude fraction map for type 2 cluster in noisy quartet
+  TH2F*     fhTopoClusterAmpFractionCase3[AliEMCALGeoParams::fgkEMCALModules];     //!<! Cell amplitude fraction map for type 3 cluster in noisy quartet
   TH2F*     fHmggPairSameSectorSM[AliEMCALGeoParams::fgkEMCALModules/2];           //!<! Two-cluster invariant mass per Pair.
   TH2F*     fHmggPairSameSideSM  [AliEMCALGeoParams::fgkEMCALModules-2];           //!<! Two-cluster invariant mass per Pair.
   
