@@ -55,6 +55,7 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   , fClusters(NULL)
   , fCurrentSector(-1)
   , fCurrentRow(-1)
+  , fPropagateSplitClusterFlag(0)
   , fpDecoder(NULL)
   , fTPCParam(NULL)
 {
@@ -123,7 +124,7 @@ TObject* AliHLTTPCClusterAccessHLTOUT::FindObject(const char *name) const
   /// inherited from TObject: return the cluster array if name id "clusterarray"
   if (strcmp(name, "clusterarray")==0) {
     if (fCurrentSector<0) return NULL;
-    return fClusters->GetSectorArray(fCurrentSector);
+    return fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag);
   }
   return TObject::FindObject(name);
 }
@@ -133,7 +134,7 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
   /// inherited from TObject: supports writing of data to AliTPCClustersRow
   AliTPCClustersRow* rowcl=dynamic_cast<AliTPCClustersRow*>(&object);
   if (rowcl) {
-    fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow);
+    fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow, fPropagateSplitClusterFlag);
     return;
   }
   return TObject::Copy(object);
@@ -208,7 +209,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 
   if (fClusters->HaveData()) {
     // cluster container already filled
-//     TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
+//     TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag);
 //     if (!pArray) {
 //       AliError(Form("can not get cluster array for sector %d", sector));
 //       return -ENOBUFS;
@@ -231,6 +232,18 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 
   if (!fpDecoder) {
     fpDecoder=new AliHLTTPCDataCompressionDecoder;
+    
+    //Also load config objects together with fpDecoder
+    TString cdbPath("HLT/ConfigTPC/TPCClusterAccessHLTOUT");
+    TObject* pConf=AliHLTMisc::Instance().ExtractObject(AliHLTMisc::Instance().LoadOCDBEntry(cdbPath));
+    if (pConf)
+    {
+      TObjString* pStr = dynamic_cast<TObjString*>(pConf);
+      if (pStr)
+      {
+        if (pStr->GetString().Contains("-propagate-split-cluster-flag")) fPropagateSplitClusterFlag = 1;
+      }
+    }
   }
 
   if (!fpDecoder) {
@@ -288,7 +301,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       }
     }
     if (desc.fDataType==AliHLTTPCDefinitions::ClustersFlagsDataType()) {
-      // add mc information
+      // add cluster flag information
       if ((iResult=decoder.AddClusterFlags(&desc))<0) {
 	return iResult;
       }
@@ -411,7 +424,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 //   if (fVerbosity>0) {
 //     int nConvertedClusters=0;
 //     for (int s=0; s<72; s++) {
-//       TObjArray* pArray=fClusters->GetSectorArray(s);
+//       TObjArray* pArray=fClusters->GetSectorArray(s, fPropagateSplitClusterFlag);
 //       if (!pArray) continue;
 //       nConvertedClusters+=pArray->GetEntriesFast();
 //     }
@@ -419,7 +432,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 //   }
 
   fClusters->MarkValid();
-//   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
+//   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag);
 //   if (!pArray) {
 //     AliError(Form("can not get cluster array for sector %d", sector));
 //     return -ENOBUFS;
@@ -512,18 +525,18 @@ void  AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Clear(Option_t* opti
   }
 }
 
-TObjArray* AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::GetSectorArray(unsigned sector) const
+TObjArray* AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::GetSectorArray(unsigned sector, int propagateSplitClusterFlag) const
 {
   /// get the cluster array for a sector
   if (fClusterMaps.size()<=sector) return NULL;
   if (fSectorArray &&
-      FillSectorArray(fSectorArray, sector)<0) {
+      FillSectorArray(fSectorArray, sector, -1, propagateSplitClusterFlag)<0) {
     fSectorArray->Clear();
   }
   return fSectorArray;
 }
 
-int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row) const
+int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row, int propagateSplitClusterFlag) const
 {
   /// fill the cluster array for a sector and specific row if specified
   if (!pSectorArray) return -EINVAL;
@@ -544,11 +557,10 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
     pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaTime2());
     pCluster->SetQ(map[i].fCluster.GetCharge());
     pCluster->SetMax(map[i].fCluster.GetQMax());
-    /*pCluster->SetType(
-      map[i].fCluster.GetFlagSplitAny() ?
-      (map[i].fCluster.GetFlagSplitPad() || map[i].fCluster.GetFlagSplitTime() ? 100 : 101) :
-      0 //Not split, golden cluster
-    );*/
+    if (propagateSplitClusterFlag)
+    {
+      pCluster->SetType((int) map[i].fCluster.GetFlagSplitPad() + ((int) map[i].fCluster.GetFlagSplitTime() << 1));
+    }
 
     for (int k=0; k<3; k++) {
       // TODO: sort the labels according to the weight in order to assign the most likely mc label

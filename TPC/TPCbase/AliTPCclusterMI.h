@@ -86,7 +86,9 @@ private:
   Float_t   fPad;  ///< pad coordinate
   Short_t   fQ ;       ///< Q of cluster (in ADC counts)
   Short_t   fMax;      ///< maximal amplitude in cluster
-  Char_t    fType;     ///< type of the cluster 0 means golden
+  Char_t    fType;     ///< different meaning depending on whether hlt of offline cluster finder was used:
+                       //   offline: type of the cluster 0 means golden
+                       //   hlt: 0 = Not Split, 1 = Split in Pad Direction, 2 = Split in Time Direction, 3 = Split in both directions
   Char_t    fUsed;     ///< counter of usage
   UChar_t   fDisp;     ///< dispersion of applied correction
   UChar_t   fDetector; ///< detector  number

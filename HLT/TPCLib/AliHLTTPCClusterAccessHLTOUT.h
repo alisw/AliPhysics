@@ -201,9 +201,9 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
     /// get the cluster array for a sector
-    TObjArray* GetSectorArray(unsigned sector) const;
+    TObjArray* GetSectorArray(unsigned sector, int propagateSplitClusterFlag = 0) const;
     /// fill the cluster array for a sector and specific row if specified
-    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1) const;
+    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1, int propagateSplitClusterFlag = 0) const;
     /// print info
     virtual void Print(Option_t *option=NULL) const;
 
@@ -240,6 +240,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   AliRawClusterContainer* fClusters; //! cluster container
   int fCurrentSector; //! current sector
   int fCurrentRow; //! current row
+  int fPropagateSplitClusterFlag; //! propagate flags for split clusters
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
   AliTPCParam* fTPCParam; //! pointer to TPC param
 
