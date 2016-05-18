@@ -254,7 +254,7 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
 // Merge a list of containers with this one. Containers in the list must have
 // data of the same type.
    if (!list || !fData) return 0;
-   AliInfo(Form("Merging %d containers %s\n", list->GetSize()+1, GetName()));
+   AliInfo(Form("Merging %d containers %s\n", list->GetEntries(), GetName()));
    TMethodCall callEnv;
    if (fData->IsA())
       callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");
