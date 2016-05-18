@@ -17,6 +17,7 @@
 #include <map>
 #include "AliZMQhelpers.h"
 #include "TTimeStamp.h"
+#include "TCollection.h"
 #include "AliLog.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
@@ -418,6 +419,9 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 
   if (object)
   {
+    TCollection* collection = dynamic_cast<TCollection*>(object);
+    if (collection) { collection->SetOwner(kTRUE); }
+
     const char* name = object->GetName();
     TList* mergingList = static_cast<TList*>(fMergeListMap.GetValue(name));
     TPair* entry = static_cast<TPair*>(fMergeObjectMap.FindObject(name));
