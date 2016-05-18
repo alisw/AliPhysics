@@ -65,6 +65,8 @@ public:
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
   const momentum_object_pair& operator*() const { return fCurrentElement; }
+  const momentum_object_pair* operator->() const { return &(fCurrentElement); }
+
 protected:
   momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
 };
@@ -79,6 +81,7 @@ public:
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
   T* operator*() const { return fCurrentElement.second; }
+  T** operator->() const { return &(fCurrentElement.second); }
 
 protected:
   momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
@@ -89,7 +92,7 @@ template <typename T, bool mom = false>
 class AliEmcalIterableContainerT {
 public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
-  typedef typename std::conditional<mom, const momentum_object_pair&, T*>::type value_type;
+  typedef typename std::conditional<mom, momentum_object_pair, T*>::type value_type;
 
   /**
    * @class iterator
@@ -108,8 +111,8 @@ public:
    *
    * In case of c++11 the iterator also allows range-based iteration.
    */
-  class iterator : public EMCALIterableContainer::operator_star<T,mom>, public std::iterator<std::bidirectional_iterator_tag,
-                                        value_type,std::ptrdiff_t> {
+  class iterator : public std::iterator<std::bidirectional_iterator_tag, value_type, std::ptrdiff_t>,
+                   public EMCALIterableContainer::operator_star<T,mom> {
   public:
     iterator(const AliEmcalIterableContainerT<T, mom> *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
