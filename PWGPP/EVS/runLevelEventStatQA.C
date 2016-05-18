@@ -373,6 +373,71 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
     TH1F* hV0MOnAcc        = (TH1F*) list->FindObject("fHistV0MOnAcc");
     TH1F* hV0MOfAll        = (TH1F*) list->FindObject("fHistV0MOfAll");
     TH1F* hV0MOfAcc        = (TH1F*) list->FindObject("fHistV0MOfAcc");
+    TH1F* hFiredBitsSPD    = (TH1F*) list->FindObject("fHistFiredBitsSPD");
+    TH2F* hSPDClsVsTklAll  = (TH2F*) list->FindObject("fHistSPDClsVsTklAll");
+    TH2F* hSPDClsVsTklCln  = (TH2F*) list->FindObject("fHistSPDClsVsTklCln");
+    TH2F* hV0MOnVsOfAll    = (TH2F*) list->FindObject("fHistV0MOnVsOfAll");
+    TH2F* hV0MOnVsOfCln    = (TH2F*) list->FindObject("fHistV0MOnVsOfCln");
+    TH2F* hSPDOnVsOfAll    = (TH2F*) list->FindObject("fHistSPDOnVsOfAll");
+    TH2F* hSPDOnVsOfCln    = (TH2F*) list->FindObject("fHistSPDOnVsOfCln");
+    TH2F* hV0C3vs012All    = (TH2F*) list->FindObject("fHistV0C3vs012All");
+    TH2F* hV0C3vs012Cln    = (TH2F*) list->FindObject("fHistV0C3vs012Cln");
+    TH1F* hSPDVtxPileupAll = (TH1F*) list->FindObject("fHistSPDVtxPileupAll");
+    TH1F* hSPDVtxPileupCln = (TH1F*) list->FindObject("fHistSPDVtxPileupCln");
+    TH2F* hVIRvsBCmod4pup  = (TH2F*) list->FindObject("fHistVIRvsBCmod4pup");
+    TH2F* hVIRvsBCmod4acc  = (TH2F*) list->FindObject("fHistVIRvsBCmod4acc");
+    TH1F* hOFOAll          = (TH1F*) list->FindObject("fHistOFOAll");
+    TH1F* hOFOAcc          = (TH1F*) list->FindObject("fHistOFOAcc");
+    TH1F* hTKLAll          = (TH1F*) list->FindObject("fHistTKLAll");
+    TH1F* hTKLAcc          = (TH1F*) list->FindObject("fHistTKLAcc");
+    TH2F* hAD              = (TH2F*) list->FindObject("fHistAD");
+    TH1F* hTimeZNA         = (TH1F*) list->FindObject("fHistTimeZNA");
+    TH1F* hTimeZNC         = (TH1F*) list->FindObject("fHistTimeZNC");
+    TH2F* hTimeZNSumVsDif  = (TH2F*) list->FindObject("fHistTimeZNSumVsDif");
+    TH2F* hTimeCorrZDC     = (TH2F*) list->FindObject("fHistTimeCorrZDC");
+    
+    if (hSPDClsVsTklAll && hSPDClsVsTklCln) {
+      TCanvas* cClsVsTkl = new TCanvas(Form("cClsVsTkl_%s",bitName),Form("cClsVsTkl_%s",bitName),1800,800);
+      cClsVsTkl->Divide(2,1,0.001,0.001);
+      cClsVsTkl->cd(1);
+      gPad->SetLogz();
+      hSPDClsVsTklAll->SetTitle(Form("%s",bitName));
+      hSPDClsVsTklAll->Draw("colz");
+      cClsVsTkl->cd(2);
+      gPad->SetLogz();
+      hSPDClsVsTklCln->SetTitle(Form("%s",bitName));
+      hSPDClsVsTklCln->Draw("colz");
+      cClsVsTkl->Print(Form("%s_ClsVsTkl.pdf",bitName));
+    } else printf("QA histogram not found\n");
+
+    if (hV0MOnVsOfAll && hV0MOnVsOfCln) {
+      TCanvas* cV0MOnVsOf = new TCanvas(Form("cV0MOnVsOf_%s",bitName),Form("cV0MOnVsOf_%s",bitName),1800,800);
+      cV0MOnVsOf->Divide(2,1,0.001,0.001);
+      cV0MOnVsOf->cd(1);
+      gPad->SetLogz();
+      hV0MOnVsOfAll->SetTitle(Form("%s",bitName));
+      hV0MOnVsOfAll->Draw("colz");
+      cV0MOnVsOf->cd(2);
+      gPad->SetLogz();
+      hV0MOnVsOfCln->SetTitle(Form("%s",bitName));
+      hV0MOnVsOfCln->Draw("colz");
+      cV0MOnVsOf->Print(Form("%s_V0MOnVsOf.pdf",bitName));
+    } else printf("QA histogram not found\n");
+
+    if (hSPDOnVsOfAll && hSPDOnVsOfCln) {
+      TCanvas* cSPDOnVsOf = new TCanvas(Form("cSPDOnVsOf_%s",bitName),Form("cSPDOnVsOf_%s",bitName),1800,800);
+      cSPDOnVsOf->Divide(2,1,0.001,0.001);
+      cSPDOnVsOf->cd(1);
+      gPad->SetLogz();
+      hSPDOnVsOfAll->SetTitle(Form("%s",bitName));
+      hSPDOnVsOfAll->Draw("colz");
+      cSPDOnVsOf->cd(2);
+      gPad->SetLogz();
+      hSPDOnVsOfCln->SetTitle(Form("%s",bitName));
+      hSPDOnVsOfCln->Draw("colz");
+      cSPDOnVsOf->Print(Form("%s_SPDOnVsOf.pdf",bitName));
+    } else printf("QA histogram not found\n");
+
     
     if (hBBAflagsAll && hBBAflagsAcc && hBBCflagsAll && hBBCflagsAcc && hBGAflagsAll && hBGAflagsAcc && hBGCflagsAll && hBGCflagsAcc) {
       TCanvas* cV0flags = new TCanvas(Form("V0flags_%s",bitName),Form("cV0flags_%s",bitName),1000,900);
@@ -413,6 +478,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       hBGCflagsAcc->SetFillColor(kBlue);
       hBGCflagsAll->Draw();
       hBGCflagsAcc->Draw("same");
+      cV0flags->Print(Form("%s_V0flags.pdf",bitName));
     }
 
     if (hV0AAll && hV0AAcc && hV0CAll && hV0CAcc) {
@@ -441,8 +507,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       hV0CAcc->SetLineColor(kBlue);
       hV0CAcc->SetFillColor(kBlue);
       hV0CAcc->Draw("same");
-      cV0->Print(Form("%s_V0.pdf",bitName));
       leg->Draw();
+      cV0->Print(Form("%s_V0.pdf",bitName));
 
     } else printf("QA histogram not found\n");
 
@@ -472,10 +538,46 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       hADCAcc->SetLineColor(kBlue);
       hADCAcc->SetFillColor(kBlue);
       hADCAcc->Draw("same");
-      cAD->Print(Form("%s_AD.pdf",bitName));
       leg->Draw();
-
+      cAD->Print(Form("%s_AD.pdf",bitName));
     } else printf("QA histogram not found\n"); 
+    
+    if (hV0MOnAll && hV0MOfAll && hV0MOnAcc && hV0MOfAcc) {
+      TCanvas* cV0M = new TCanvas(Form("V0M_%s",bitName),Form("cV0M_%s",bitName),1800,800);
+      cV0M->Divide(2,1,0.001,0.001);
+      cV0M->cd(1);
+      gPad->SetLogy();
+      hV0MOnAll->SetTitle(Form("%s",bitName));
+      hV0MOnAll->SetLineWidth(2);
+      hV0MOnAll->SetLineColor(kBlack);
+      hV0MOnAll->Draw();
+      hV0MOnAcc->SetMarkerColor(kBlue);
+      hV0MOnAcc->SetLineColor(kBlue);
+      hV0MOnAcc->SetFillColor(kBlue);
+      hV0MOnAcc->Draw("same");
+      TLegend* leg1 = new TLegend(0.40,0.8,0.97,0.9);
+      leg1->SetBorderSize(0);
+      leg1->AddEntry(hV0MOnAll,Form("All events: %.0f",hV0MOnAll->Integral(0,hV0MOnAll->GetNbinsX()+1)));
+      leg1->AddEntry(hV0MOnAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOnAcc->Integral(0,hV0MOnAcc->GetNbinsX()+1),hV0MOnAcc->GetMean()));
+      leg1->Draw();
+      cV0M->cd(2);
+      gPad->SetLogy();
+      hV0MOfAll->SetTitle(Form("%s",bitName));
+      hV0MOfAll->SetLineWidth(2);
+      hV0MOfAll->SetLineColor(kBlack);
+      hV0MOfAll->Draw();
+      hV0MOfAcc->SetMarkerColor(kBlue);
+      hV0MOfAcc->SetLineColor(kBlue);
+      hV0MOfAcc->SetFillColor(kBlue);
+      hV0MOfAcc->Draw("same");
+      TLegend* leg2 = new TLegend(0.40,0.8,0.97,0.9);
+      leg2->SetBorderSize(0);
+      leg2->AddEntry(hV0MOfAll,Form("All events: %.0f",hV0MOfAll->Integral(0,hV0MOfAll->GetNbinsX()+1)));
+      leg2->AddEntry(hV0MOfAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOfAcc->Integral(0,hV0MOfAcc->GetNbinsX()+1),hV0MOfAcc->GetMean()));
+      leg2->Draw();
+      cV0M->Print(Form("%s_V0M.pdf",bitName));
+    } else printf("QA histogram not found\n");
+    
     
     //    TH2F* hAD           = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistAD"          ,label.Data()));
     //    TH1F* hADA          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistADA"         ,label.Data()));
