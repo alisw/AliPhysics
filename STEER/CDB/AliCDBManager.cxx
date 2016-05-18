@@ -1906,6 +1906,7 @@ ULong64_t AliCDBManager::SetLock(Bool_t lock, ULong64_t key){
 // To lock/unlock user must provide the key. A new key is provided after
 // each successful lock. User should always backup the returned key and
 // use it on next access.
+  ULong64_t msk=0x0000000ffffffff;
   if (fLock == lock) return 0;  // nothing to be done
   if (lock) {
     // User wants to lock - check his identity
@@ -1919,6 +1920,8 @@ ULong64_t AliCDBManager::SetLock(Bool_t lock, ULong64_t key){
     // Provide new key
     fKey = gSystem->Now();
     fLock = kTRUE;
+    // give to experts possibility to unlock the CDB
+    SetUniqueID(UInt_t(fKey&msk));
     return fKey;
   }
   // User wants to unlock - check the provided key
