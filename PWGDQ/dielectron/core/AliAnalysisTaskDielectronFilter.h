@@ -55,7 +55,7 @@ public:
   UInt_t GetExcludeTriggerMask() const { return fExcludeTriggerMask; }
   void SetTriggerLogic(ETriggerLogig log) {fTriggerLogic=log;}
   ETriggerLogig GetTriggerLogic() const {return fTriggerLogic;}
-  
+
 
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
 
@@ -68,7 +68,10 @@ public:
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
 
 private:
-  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};  
+  enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
+
+	void SetHeaderData(AliAODHeader* hin, AliAODHeader* hout, Double_t values[AliDielectronVarManager::kNMaxValues]);
+
 
   AliDielectron *fDielectron;             // J/psi framework object
 
@@ -88,12 +91,16 @@ private:
   Bool_t fStoreRotatedPairs;    // flag to store rotation
   Bool_t fStoreEventsWithSingleTracks;    // flag to store events with a least one reconstructed track 
   Bool_t fCreateNanoAOD;        // flag to create nanoAODs 
-  Bool_t fStoreHeader;          // flag to store header for all events 
+  Bool_t fStoreHeader;          // flag to store header for all events
+  Bool_t AddMetadataToUserInfo(); // Function to add ProdInfo to Nano AOD Tree
+  Bool_t Notify();				// Function to add ProdInfo to Nano AOD Tree
+
 
   AliAnalysisCuts *fEventFilter;     // event filter
   
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);
+
   
   ClassDef(AliAnalysisTaskDielectronFilter, 1);
 };
