@@ -211,6 +211,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   TH2F*                           fEtaGen_EtaRec;
   TH2F*                           fPhiGen_PhiRec;
+  TH1D*                           fDeltaPhi;
   
   TH2D*                           fOpeningAngleGen_OpeningAngleRecUS;
   TH2D*                           fOpeningAngleGen_OpeningAngleRecLS;
