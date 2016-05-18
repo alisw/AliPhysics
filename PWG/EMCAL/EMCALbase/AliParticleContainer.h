@@ -11,7 +11,10 @@ class AliTLorentzVector;
 
 #include "AliEmcalContainer.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef AliEmcalIterableContainerT<AliVParticle> AliParticleIterableContainer;
+typedef AliEmcalIterableContainerT<AliVParticle,true> AliParticleIterableMomentumContainer;
+#endif
 
 /**
  * @class AliParticleContainer
@@ -70,8 +73,13 @@ class AliParticleContainer : public AliEmcalContainer {
 
   const char*                 GetTitle() const;
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliParticleIterableContainer      all() const;
   const AliParticleIterableContainer      accepted() const;
+
+  const AliParticleIterableMomentumContainer      all_momentum() const;
+  const AliParticleIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
 

@@ -1065,6 +1065,24 @@ const AliJetIterableContainer AliJetContainer::accepted() const {
 }
 
 /**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliJetIterableMomentumContainer AliJetContainer::all_momentum() const {
+  return AliJetIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliJetIterableMomentumContainer AliJetContainer::accepted_momentum() const {
+  return AliJetIterableMomentumContainer(this, true);
+}
+
+/**
  * Generates a title for this container. The title is generated putting together the jet branch
  * name and the pT cut.
  * @return A pointer to a statically allocated string which contains the title.

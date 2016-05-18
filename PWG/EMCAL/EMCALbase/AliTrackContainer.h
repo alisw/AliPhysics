@@ -14,7 +14,10 @@ class AliTLorentzVector;
 #include "AliEmcalTrackSelection.h"
 #include "AliParticleContainer.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef AliEmcalIterableContainerT<AliVTrack> AliTrackIterableContainer;
+typedef AliEmcalIterableContainerT<AliVTrack,true> AliTrackIterableMomentumContainer;
+#endif
 
 /**
  * @class AliTrackContainer
@@ -95,8 +98,13 @@ class AliTrackContainer : public AliParticleContainer {
 
   const char*                 GetTitle() const;
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliTrackIterableContainer      all() const;
   const AliTrackIterableContainer      accepted() const;
+
+  const AliTrackIterableMomentumContainer      all_momentum() const;
+  const AliTrackIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts

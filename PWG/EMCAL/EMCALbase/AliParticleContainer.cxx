@@ -433,6 +433,24 @@ const AliParticleIterableContainer AliParticleContainer::accepted() const {
   return AliParticleIterableContainer(this, true);
 }
 
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliParticleIterableMomentumContainer AliParticleContainer::all_momentum() const {
+  return AliParticleIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliParticleIterableMomentumContainer AliParticleContainer::accepted_momentum() const {
+  return AliParticleIterableMomentumContainer(this, true);
+}
+
 /******************************************
  * Unit tests                             *
  ******************************************/

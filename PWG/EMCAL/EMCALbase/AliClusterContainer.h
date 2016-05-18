@@ -12,7 +12,10 @@ class AliVEvent;
 
 #include "AliEmcalContainer.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef AliEmcalIterableContainerT<AliVCluster> AliClusterIterableContainer;
+typedef AliEmcalIterableContainerT<AliVCluster,true> AliClusterIterableMomentumContainer;
+#endif
 
 /**
  * @class AliClusterContainer
@@ -73,8 +76,14 @@ class AliClusterContainer : public AliEmcalContainer {
 
   const char*                 GetTitle() const;
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliClusterIterableContainer      all() const;
   const AliClusterIterableContainer      accepted() const;
+
+  const AliClusterIterableMomentumContainer      all_momentum() const;
+  const AliClusterIterableMomentumContainer      accepted_momentum() const;
+
+#endif
 
  protected:
   

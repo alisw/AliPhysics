@@ -280,6 +280,24 @@ const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
 }
 
 /**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliEmcalIterableMomentumContainer AliEmcalContainer::all_momentum() const {
+  return AliEmcalIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliEmcalIterableMomentumContainer AliEmcalContainer::accepted_momentum() const {
+  return AliEmcalIterableMomentumContainer(this, true);
+}
+
+/**
  * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
  * @param mphi First angle value
  * @param vphi Second angle value

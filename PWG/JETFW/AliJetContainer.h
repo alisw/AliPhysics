@@ -21,7 +21,10 @@ class AliLocalRhoParameter;
 #include "AliVEvent.h"
 #include "AliEmcalJet.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef AliEmcalIterableContainerT<AliEmcalJet> AliJetIterableContainer;
+typedef AliEmcalIterableContainerT<AliEmcalJet,true> AliJetIterableMomentumContainer;
+#endif
 
 /**
  * @class AliJetContainer
@@ -176,8 +179,13 @@ class AliJetContainer : public AliParticleContainer {
 
   static TString              GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliJetIterableContainer      all() const;
   const AliJetIterableContainer      accepted() const;
+
+  const AliJetIterableMomentumContainer      all_momentum() const;
+  const AliJetIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
   void SetEMCALGeometry();

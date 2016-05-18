@@ -429,6 +429,24 @@ const AliClusterIterableContainer AliClusterContainer::accepted() const {
   return AliClusterIterableContainer(this, true);
 }
 
+/**
+ * Create an iterable container interface over all objects in the
+ * EMCAL container.
+ * @return iterable container over all objects in the EMCAL container
+ */
+const AliClusterIterableMomentumContainer AliClusterContainer::all_momentum() const {
+  return AliClusterIterableMomentumContainer(this, false);
+}
+
+/**
+ * Create an iterable container interface over accepted objects in the
+ * EMCAL container.
+ * @return iterable container over accepted objects in the EMCAL container
+ */
+const AliClusterIterableMomentumContainer AliClusterContainer::accepted_momentum() const {
+  return AliClusterIterableMomentumContainer(this, true);
+}
+
 const char* AliClusterContainer::GetTitle() const
 {
   static TString clusterString;

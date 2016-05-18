@@ -10,7 +10,10 @@ class AliTLorentzVector;
 #include "AliAODMCParticle.h"
 #include "AliParticleContainer.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef AliEmcalIterableContainerT<AliAODMCParticle> AliMCParticleIterableContainer;
+typedef AliEmcalIterableContainerT<AliAODMCParticle,true> AliMCParticleIterableMomentumContainer;
+#endif
 
 /**
  * @class AliMCParticleContainer
@@ -49,8 +52,13 @@ class AliMCParticleContainer : public AliParticleContainer {
 
   const char*                 GetTitle() const;
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
   const AliMCParticleIterableContainer      all() const;
   const AliMCParticleIterableContainer      accepted() const;
+
+  const AliMCParticleIterableMomentumContainer      all_momentum() const;
+  const AliMCParticleIterableMomentumContainer      accepted_momentum() const;
+#endif
 
  protected:
   UInt_t                      fMCFlag;                        ///< select MC particles with flags
