@@ -10,25 +10,25 @@
 AlianalysisTaskDptPID *AddTaskDptpid_pPb
 (
  int    system                  = 0, 
- int    singlesOnly             = 0,
- int    useWeights              = 1, 
- int    centralityMethod        = 4, 
+ int    singlesOnly             = 1,
+ int    useWeights              = 0, 
+ int    centralityMethod        = 7, 
  int    chargeSet               = 1,
  double zMin                    = -10.0, 
  double zMax                    =  10.0,
  int    trackFilterBit          = 1,
  int    nClusterMin             = 80, 
- double eta1Min                 = -0.8,
- double eta1Max                 = 0.8,
- double eta2Min                 = -0.8,
- double eta2Max                 = 0.8,
+ double eta1Min                 = -1.0,
+ double eta1Max                 = 1.0,
+ double eta2Min                 = -1.0,
+ double eta2Max                 = 1.0,
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  double ptMin                   =  0.2,
  double ptMax                   =  2.0,
- int nCentrality                =  3,
+ int nCentrality                =  4,
  Bool_t trigger                 = kTRUE,
  const char* taskname           = "WgtPM",
  char *inputHistogramFileName   = "/Users/pujahari/DataAnalysis/Eta08/MgFN/Calib/weight_MgFN_set1.root")
@@ -41,17 +41,17 @@ AlianalysisTaskDptPID *AddTaskDptpid_pPb
   
   //----------------------------------------------------  
   //int    nCentrality;
-  double minCentrality[3];
-  double maxCentrality[3];
+  double minCentrality[4];
+  double maxCentrality[4];
   
   if (system==0) // PbPb
     {
       if (centralityMethod == 7 )
 	{
-	  minCentrality[0] = 0.0;   maxCentrality[0]   = 10.0; 
-	  minCentrality[1] = 10.0;  maxCentrality[1]   = 20.0; 
-	  minCentrality[2] = 20.0;  maxCentrality[2]   = 30.0;
-	  minCentrality[3] = 30.0;  maxCentrality[3]   = 40.0;
+	  minCentrality[0] = 0.0;  maxCentrality[0]   = 10.0; 
+	  minCentrality[1] = 10.0; maxCentrality[1]   = 20.0; 
+	  minCentrality[2] = 20.0; maxCentrality[2]   = 30.0;
+	  minCentrality[3] = 30.0; maxCentrality[3]   = 40.0;
 	  
 	}
     }
@@ -60,20 +60,32 @@ AlianalysisTaskDptPID *AddTaskDptpid_pPb
     {
       if (centralityMethod == 7)
 	{
-	  minCentrality[0] = 40.0; maxCentrality[0]  = 50.0;
-	  minCentrality[1] = 50.0; maxCentrality[1]  = 60.0;
-	  minCentrality[2] = 60.0; maxCentrality[2]  = 70.0;
-	  minCentrality[3] = 70.0; maxCentrality[3]  = 80.0;
+	  minCentrality[0] = 40.0;  maxCentrality[0]   = 50.0; 
+	  minCentrality[1] = 50.0; maxCentrality[1]    = 60.0; 
+	  minCentrality[2] = 60.0; maxCentrality[2]    = 70.0;
+	  minCentrality[3] = 70.0; maxCentrality[3]    = 80.0;
 	}
     }
+
   if (system==2)
     {
       if (centralityMethod == 7)
 	{
-	  minCentrality[0] = 0.0;  maxCentrality[0]  = 20.0;
-	  minCentrality[1] = 20.0; maxCentrality[1]  = 40.0;
-	  minCentrality[2] = 40.0; maxCentrality[2]  = 60.0;
-	  minCentrality[3] = 60.0; maxCentrality[2]  = 80.0;
+	  minCentrality[0] = 0.0;  maxCentrality[0]   = 20.0; 
+	  minCentrality[1] = 20.0; maxCentrality[1]   = 40.0; 
+	  minCentrality[2] = 40.0; maxCentrality[2]   = 60.0;
+	  minCentrality[3] = 60.0; maxCentrality[3]   = 100.0;
+
+	}
+    }
+  if (system==3)
+    {
+      if (centralityMethod == 7)
+	{
+	  minCentrality[0] = 0.0; maxCentrality[0]   = 5.0;
+	  minCentrality[1] = 5.0; maxCentrality[1]   = 10.0;
+	  minCentrality[2] = 20.0; maxCentrality[2]  = 25.0;
+	  minCentrality[3] = 30.0; maxCentrality[3]  = 35.0;
 	}
     }
   
@@ -114,11 +126,11 @@ TString outputHistogramFileName;
 
 // Create the task and add subtask.
 // ===========================================================================
-int iTask = 0; // task counter
-  AliAnalysisDataContainer *taskInputContainer;
-AliAnalysisDataContainer *taskOutputContainer;
-AlianalysisTaskDptPID* task;
-
+ int iTask = 0; // task counter
+ AliAnalysisDataContainer *taskInputContainer;
+ AliAnalysisDataContainer *taskOutputContainer;
+ AlianalysisTaskDptPID* task;
+ 
 for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
   {
     switch (chargeSet)
