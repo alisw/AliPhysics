@@ -74,34 +74,24 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
   TString option(opt);
   option.ToLower();
 
-  Int_t tempID = fCurrentID;
-  ResetCurrentID();
-
-  AliVCluster *clusterMax = GetNextAcceptCluster();
-  AliVCluster *cluster = 0;
+  double (AliTLorentzVector::*momentum)() const = 0;
 
   if (option.Contains("e")) {
-    while ((cluster = GetNextAcceptCluster())) {
-      if (cluster->E() > clusterMax->E()) clusterMax = cluster;
-    }
+    momentum = &AliTLorentzVector::E;
   }
   else {
-    Double_t et = 0;
-    Double_t etmax = 0;
-    while ((cluster = GetNextAcceptCluster())) {
-      TLorentzVector mom;
-      cluster->GetMomentum(mom,const_cast<Double_t*>(fVertex));
-      et = mom.Et();
-      if (et > etmax) { 
-	clusterMax = cluster;
-	etmax = et;
-      }
+    momentum = &AliTLorentzVector::Et;
+  }
+
+  AliClusterIterableMomentumContainer::momentum_object_pair clusterMax;
+
+  for (auto cluster : accepted_momentum()) {
+    if ((clusterMax.first.*momentum)() < (cluster.first.*momentum)()) {
+      clusterMax = cluster;
     }
   }
 
-  fCurrentID = tempID;
-
-  return clusterMax;
+  return clusterMax.second;
 }
 
 /**
