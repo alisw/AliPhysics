@@ -61,7 +61,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void SetTimeStampRange(UInt_t min, UInt_t max)    { fMinTimeStamp            = min ; fMaxTimeStamp = max; }
   void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
-  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)    { return fEMCALTriggerQA && i >= 0 && i < fEMCALTriggerQA->GetEntriesFast() ? static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA->At(i)) : 0; }
+  AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fEMCALTriggerQA.GetEntriesFast() ? static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA.At(i)) : 0; }
 
  protected:
   void                                      UserCreateOutputObjects();
@@ -71,7 +71,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void                                      FillEventQA();
 
   TString                                   fTriggerPatchesName;         ///< name of input trigger array
-  TObjArray                                *fEMCALTriggerQA;             ///< produces the QA histograms
+  TObjArray                                 fEMCALTriggerQA;             ///< produces the QA histograms
   Int_t                                     fADCperBin;                  ///< ADC counts per bin
   Int_t                                     fMinAmplitude;               ///< Minimum trigger patch amplitude
   Bool_t                                    fDCalPlots;                  ///< Whether to add DCal QA plots
@@ -87,7 +87,7 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   AliEmcalTriggerQATask &operator=(const AliEmcalTriggerQATask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalTriggerQATask, 4);
+  ClassDef(AliEmcalTriggerQATask, 5);
   /// \endcond
 };
 
