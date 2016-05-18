@@ -802,7 +802,7 @@ int main(Int_t argc, char** argv)
 
   //switch off logging if not verbose
   if (!fVerbose) {
-    AliLog::SetGlobalLogLevel(AliLog::kFatal);
+    AliLog::SetGlobalLogLevel(AliLog::kWarning);
   }
 
   //the context
