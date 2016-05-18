@@ -17,6 +17,7 @@
 #include <map>
 #include "AliZMQhelpers.h"
 #include "TTimeStamp.h"
+#include "AliLog.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -793,6 +794,11 @@ int main(Int_t argc, char** argv)
   {
     printf("%s",fUSAGE);
     return 1;
+  }
+
+  //switch off logging if not verbose
+  if (!fVerbose) {
+    AliLog::SetGlobalLogLevel(AliLog::kFatal);
   }
 
   //the context
