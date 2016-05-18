@@ -93,7 +93,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
   grLumi->SetTitle(Form("Rate estimator Run %d",run));
   grLumi->GetXaxis()->SetTitle("time");
   grLumi->GetXaxis()->SetTimeDisplay(1);
-  grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/ub)");
+  grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/mb)");
   grLumi->SetMarkerStyle(25);
   grLumi->SetMarkerSize(0.4);
   grLumi->SetUniqueID(run);
@@ -145,21 +145,34 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     AliErrorClassF("Did not find reference trigger %s",refClassName.Data());
     return 0;
   }
-  AliTriggerBCMask* bcmask = (AliTriggerBCMask*) cl->GetBCMask();
-  Int_t nBCs = bcmask->GetNUnmaskedBCs();
 
-  TString activeDetectorsString = cfg->GetActiveDetectors();
   // use explicit run number since we may query for run other than in CDB cache  
   AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers",run)->GetObject();
+  Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
+  UInt_t t1 = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
+  UInt_t t2 = scalers->GetScalersRecord(nEntries-1)->GetTimeStamp()->GetSeconds();
+  double run_duration = double(t2) - double(t1);
+  if (run_duration<1.0) {
+    AliErrorClassF("Run duration from scalers is %f (%d : %d)",run_duration,t1,t2);
+    return 0;
+  }
+  //
+  const Double_t orbitRate = 11245.;
+  TString activeDetectorsString = cfg->GetActiveDetectors();
   TString refCluster = cl->GetCluster()->GetName();
   Bool_t useLM = activeDetectorsString.Contains("TRD") && (refCluster.EqualTo("CENT") || refCluster.EqualTo("ALL") || refCluster.EqualTo("FAST"));
-
-  Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
-  Double_t orbitRate = 11245.;
   
+  AliTriggerBCMask* bcmask = (AliTriggerBCMask*) cl->GetBCMask();
+  Int_t nBCs = bcmask->GetNUnmaskedBCs();
+  if (nBCs<1) {
+    AliWarningClass("Number of BCs is 0");
+    return 0;
+  }
+    
   Double_t* vtime = new Double_t[nEntries];
   Double_t* vlumi = new Double_t[nEntries-1];
   Double_t* vlumiErr = new Double_t[nEntries-1];
+  int nAcc = 0;
   for (Int_t r=0;r<nEntries-1;r++){
     // Get scaler records
     AliTriggerScalersRecord* record1 = scalers->GetScalersRecord(r);
@@ -170,24 +183,28 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     UInt_t counts1 = useLM ? scaler1->GetLMCB() : scaler1->GetLOCB();
     UInt_t counts2 = useLM ? scaler2->GetLMCB() : scaler2->GetLOCB();
     UInt_t refCounts = (counts2>counts1) ?counts2-counts1 :  counts2+(0xffffffff-counts1)+1;
-    Double_t t1 = record1->GetTimeStamp()->GetSeconds()+1e-6*record1->GetTimeStamp()->GetMicroSecs();
-    Double_t t2 = record2->GetTimeStamp()->GetSeconds()+1e-6*record2->GetTimeStamp()->GetMicroSecs();
-    Double_t duration = t2-t1;
+    UInt_t t1 = record1->GetTimeStamp()->GetSeconds()+1e-6*record1->GetTimeStamp()->GetMicroSecs();
+    UInt_t t2 = record2->GetTimeStamp()->GetSeconds()+1e-6*record2->GetTimeStamp()->GetMicroSecs();
+    Double_t duration = double(t2)-double(t1);
+    if (duration<1e-6) {
+      AliWarningClassF("Time duration between scalers %d %d is %.f, skip",t1,t2,duration);
+      continue;
+    }
     Double_t totalBCs = duration*orbitRate*nBCs;
     Double_t refMu = -TMath::Log(1-Double_t(refCounts)/totalBCs);
     Double_t refRate = refMu*orbitRate*nBCs;
     Double_t refLumi = refRate/refSigma;
     //printf("%f %f\n",t2,refLumi);
-    if (r==0) vtime[0]=Double_t(t1);
-    vtime[r+1]=Double_t(t2);
-    vlumi[r]=refLumi; 
-    vlumiErr[r]=refCounts > 0 ? refLumi/TMath::Sqrt(refCounts) : 0.0;
+    if (nAcc==0) vtime[nAcc]=Double_t(t1);
+    vlumi[nAcc]=refLumi; 
+    vlumiErr[nAcc]=refCounts > 0 ? refLumi/TMath::Sqrt(refCounts) : 0.0;   
+    vtime[++nAcc]=Double_t(t2);
   }
   
-  TGraphErrors* grLumi=new TGraphErrors(nEntries-1, vtime,vlumi,0,vlumiErr);
+  TGraphErrors* grLumi=new TGraphErrors(nAcc, vtime,vlumi,0,vlumiErr);
   grLumi->SetName(TString::Format("InstLuminosityEstimator%s",refClassName.Data()).Data());
   grLumi->SetTitle(TString::Format("Inst. luminosity. Run=%d Estimator: %s",run, refClassName.Data()).Data());
-  grLumi->GetYaxis()->SetTitle("Inst lumi (Hz/b)");
+  grLumi->GetYaxis()->SetTitle("Inst lumi (Hz/mb)");
   grLumi->GetXaxis()->SetTitle("time");
   grLumi->GetXaxis()->SetTimeDisplay(1);
   grLumi->SetMarkerStyle(25);
