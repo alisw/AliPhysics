@@ -471,11 +471,15 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // {'CLSTRKCM':'TPC '}
   // {'REMCLIDS':'TPC '}
   // {'CLIDSTRK':'TPC '}
+  // {'CLSFLAGS':'TPC '}
+  // {'COMPDESC':'TPC '}
   if (dt==AliHLTTPCDefinitions::RawClustersDataType() ||
       dt==AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
       dt==AliHLTTPCDefinitions::HWClustersDataType() ||
       dt==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
-      dt==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {
+      dt==AliHLTTPCDefinitions::ClusterTracksCompressedDataType() ||
+      dt==AliHLTTPCDefinitions::ClustersFlagsDataType() ||
+      dt==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
       desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
       return 1;
   }
