@@ -21,6 +21,7 @@
 class TH1D;
 class TH2D;
 class TH3D;
+class TF1;
 class THnSparse;
 class TList;
 class TObjArray;
@@ -82,6 +83,9 @@ public:
                                                                                                fNLMCut = NLMCut;}
     void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
     void                     SetTMClusterRejectioninCone (Bool_t tm)                         { fTMClusterInConeRejected = tm;}
+    void                     SetRejectEventWithoutTracks(Bool_t revwotr)                     { fRejectionEventWithoutTracks = revwotr;}
+    void                     SetAnalysispPb(Bool_t ana)                                      { fAnalysispPb = ana;}
+    void                     SetTriggerLevel1(Int_t L)                                       { fTriggerLevel1 = L;}
 
 protected:
 
@@ -103,7 +107,7 @@ protected:
     Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
     Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
     Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
-    void                     FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index);
+    void                     FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation);
    // void                     FillNCOutput(AliVCluster *COI, TLorentzVector vecCOI, Int_t index);
 
     Double_t*                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max) const;
@@ -111,7 +115,7 @@ protected:
     Bool_t                   Run();
     void                     AnalyzeMC();
     void                     LookforParticle(Int_t, Double_t, Double_t, Double_t,Double_t,Double_t, Double_t);
-
+    Bool_t                   MCSimTrigger(AliVEvent *eventIn, Int_t triggerLevel=0); // for the trigger level 1 = EMCEGA1 level 2 = EMCEGA2
 
     using AliAnalysisTaskEmcal::FillGeneralHistograms;
     Bool_t FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
@@ -141,7 +145,7 @@ protected:
     TH2D        *fEtaPhiCell;                     //!EMCAL Active Cells Distribution EtaPhi ---QA
     TH2D        *fEtaPhiClus;                     //!EMCAL Cluster Distribution EtaPhi ---QA
     TH2D        *fClusEvsClusT;                   //!Cluster Energy vs Cluster Time ---QA
-    TH1F        *fVz;                             //! Veretex Z distribution
+    TH1D        *fVz;                             //! Veretex Z distribution
     TH1D        *fEvents;                         //! Number of Events
     TH1D        *fPT;                             //!Pt distribution
     TH1D        *fE;                              //!E distribution
@@ -186,9 +190,16 @@ protected:
     TH2D        *fTestEtaPhiCone;
     TH3D        *fInvMassM02iso;
     TH3D        *fInvMassM02noiso;
+    TH3D        *fPtvsM02vsSumPi0;
+    TH3D        *fPtvsM02vsSumEta;
     TH3D        *fPtvsM02vsSum;
+    TH3D        *fPtvsM02vsSumUE;
+    TH3D        *fTrackMultvsSumChargedvsUE;
+    TH2D        *fTrackMultvsPt;
     TH3D        *fTracksConeEtaPt;
     TH3D        *fTracksConeEtaM02;
+    TH1         *fHistXsection;
+    TH1         *fHistTrials;
 
     THnSparse   *fOutputTHnS;                    //! 1st Method 4 Output
     THnSparse   *fOutMCTruth;                    //! 1st Method 4 MC truth Output //Isolation on pTMax
@@ -226,6 +237,9 @@ protected:
     Int_t       fNLMCut;                         // number of NLM cut
     Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
     Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
+    Bool_t      fRejectionEventWithoutTracks;    // able/disable rejction of events without tracks
+    Bool_t      fAnalysispPb;                    // able/disable the pPb analysis facilities
+    Int_t       fTriggerLevel1;                  // enable to choose the trigger L1 gamma to "simulate" for the MC 1 = EMCEGA1 and 2 = EMCEGA2
     Int_t       fTest1;
     Int_t       fTest2;
 
