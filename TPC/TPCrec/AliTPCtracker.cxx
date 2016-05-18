@@ -4361,7 +4361,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
        
 	//if (dsec==0) {
 	  FollowProlongation(*track, (i1+i2)/2,1);
-	  Int_t foundable,found,shared;
+	  Int_t foundable,found,shared;	  
 	  GetSeedClusterStatistic(track,(i1+i2)/2,i1, found, foundable, shared, kTRUE); //RS: seeds don't keep their clusters
 	  //RS track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
 	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
@@ -4689,7 +4689,8 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	//if (dsec==0) {
 	  FollowProlongation(*track, (i1+i2)/2,1);
 	  Int_t foundable,found,shared;
-	  track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
+	  GetSeedClusterStatistic(track,(i1+i2)/2,i1, found, foundable, shared, kTRUE); //RS: seeds don't keep their clusters
+	  //RS track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
 	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
 	    MarkSeedFree(seed); seed = 0;
 	    continue;
