@@ -250,9 +250,10 @@ void AliAnalysisTaskEmcalSample::DoTrackLoop()
   while ((partCont = static_cast<AliParticleContainer*>(next()))) {
     groupname = partCont->GetName();
     UInt_t count = 0;
-    for(auto it : partCont->accepted()) {
+    for(auto part : partCont->accepted()) {
+      if (!part) continue;
+
       count++;
-      const AliVParticle* part = static_cast<const AliVParticle*>(it);
 
       histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, part->Pt());
@@ -306,8 +307,8 @@ void AliAnalysisTaskEmcalSample::DoClusterLoop()
   while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
     groupname = clusCont->GetName();
 
-    for(auto it : clusCont->all()) {
-      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
+    for(auto cluster : clusCont->all()) {
+      if (!cluster) continue;
 
       if (cluster->GetIsExotic()) {
         histname = TString::Format("%s/histClusterEnergyExotic_%d", groupname.Data(), fCentBin);
@@ -316,9 +317,11 @@ void AliAnalysisTaskEmcalSample::DoClusterLoop()
     }
 
     UInt_t count = 0;
-    for(auto it : clusCont->accepted()) {
+    for(auto cluster : clusCont->accepted()) {
+      if (!cluster) continue;
+
       count++;
-      const AliVCluster* cluster = static_cast<const AliVCluster*>(it);
+
       AliTLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
 
