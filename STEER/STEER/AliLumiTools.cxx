@@ -160,6 +160,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
   Double_t* vtime = new Double_t[nEntries];
   Double_t* vlumi = new Double_t[nEntries-1];
   Double_t* vlumiErr = new Double_t[nEntries-1];
+  int nacc = 0;
   for (Int_t r=0;r<nEntries-1;r++){
     // Get scaler records
     AliTriggerScalersRecord* record1 = scalers->GetScalersRecord(r);
@@ -174,17 +175,22 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     Double_t t2 = record2->GetTimeStamp()->GetSeconds()+1e-6*record2->GetTimeStamp()->GetMicroSecs();
     Double_t duration = t2-t1;
     Double_t totalBCs = duration*orbitRate*nBCs;
+    if (refCounts<=0) {
+      AliErrorClassF("refCount for record %d is %d (count1:%d count2:%d), skip",r,refCounts,counts1,counts2);
+      continue;
+    }
     Double_t refMu = -TMath::Log(1-Double_t(refCounts)/totalBCs);
     Double_t refRate = refMu*orbitRate*nBCs;
     Double_t refLumi = refRate/refSigma;
     //printf("%f %f\n",t2,refLumi);
     if (r==0) vtime[0]=Double_t(t1);
-    vtime[r+1]=Double_t(t2);
-    vlumi[r]=refLumi; 
-    vlumiErr[r]=refLumi/TMath::Sqrt(refCounts);
+    vtime[nacc+1]=Double_t(t2);
+    vlumi[nacc]=refLumi; 
+    vlumiErr[nacc]=refLumi/TMath::Sqrt(refCounts);
+    nacc++;
   }
   
-  TGraphErrors* grLumi=new TGraphErrors(nEntries-1, vtime,vlumi,0,vlumiErr);
+  TGraphErrors* grLumi=new TGraphErrors(nacc, vtime,vlumi,0,vlumiErr);
   grLumi->SetName(TString::Format("InstLuminosityEstimator%s",refClassName.Data()).Data());
   grLumi->SetTitle(TString::Format("Inst. luminosity. Run=%d Estimator: %s",run, refClassName.Data()).Data());
   grLumi->GetYaxis()->SetTitle("Inst lumi (Hz/b)");
