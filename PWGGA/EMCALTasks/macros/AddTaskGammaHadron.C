@@ -106,7 +106,13 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   }
   if(AnalysisTask->GetClusterContainer(clusName))
   {
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);  //by default set to 0.15 always
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(0); //by default set to 0
+	  //AnalysisTask->GetClusterContainer(clusName)->SetClusHadCorrEnergyCut(clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
+	  //AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
   }
 
   /*
