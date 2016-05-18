@@ -121,6 +121,10 @@ void AliAnalysisTaskEmcalSample::AllocateClusterHistograms()
       histtitle = TString::Format("%s;#it{#eta}_{custer};counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, fNbins / 6, -1, 1);
 
+      histname = TString::Format("%s/histLeadingClusterEnergy_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{E}_{cluster}^{leading} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+
       histname = TString::Format("%s/histNClusters_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;number of clusters;events", histname.Data());
       if (fForceBeamType != kpp) {
@@ -343,6 +347,13 @@ void AliAnalysisTaskEmcalSample::DoClusterLoop()
 
     histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
     fHistManager.FillTH1(histname, count);
+
+    AliVCluster* maxCluster = clusCont->GetLeadingCluster();
+
+    if (maxCluster) {
+      histname = TString::Format("%s/histLeadingClusterEnergy_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, maxCluster->GetUserDefEnergy(clusCont->GetDefaultClusterEnergy()));
+    }
   }
 }
 
