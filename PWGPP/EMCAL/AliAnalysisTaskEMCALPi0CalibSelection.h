@@ -357,7 +357,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,23) ;
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,24) ;
   /// \endcond
 
 };
