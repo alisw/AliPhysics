@@ -334,7 +334,7 @@ AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype) const{
        Warning("GetSegmentationModel","fSegmentation is 0!");
        return 0; 
    } 
-   return (AliITSsegmentation*)(fSegmentation->At(dettype));
+   return (AliITSsegmentation*)(fSegmentation->UncheckedAt(dettype));
 }
 //_______________________________________________________________________
 AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module) const{

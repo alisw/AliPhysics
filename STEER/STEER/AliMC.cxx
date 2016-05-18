@@ -1008,7 +1008,7 @@ void AliMC::PreTrack()
      AliModule *module;
 
      for (Int_t i = 0; i <= gAlice->GetNdets(); i++)
-       if ((module = static_cast<AliModule *>(dets[i])))
+       if ((module = static_cast<AliModule *>(dets.UncheckedAt(i))))
          module->PreTrack();
 }
 
@@ -1074,7 +1074,7 @@ void AliMC::Stepping()
     }
 
     //Call the appropriate stepping routine;
-    AliModule *det = static_cast<AliModule*>(gAlice->Modules()->At(id));
+    AliModule *det = static_cast<AliModule*>(gAlice->Modules()->UncheckedAt(id));
     if(det && det->StepManagerIsEnabled()) {
       det->StepManager();
     }
@@ -1299,7 +1299,7 @@ void AliMC::PostTrack()
   AliModule *module;
 
   for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-    if((module = static_cast<AliModule*>(dets[i])))
+    if((module = static_cast<AliModule*>(dets.UncheckedAt(i))))
       module->PostTrack();
 }
 
