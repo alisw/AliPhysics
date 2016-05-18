@@ -1143,7 +1143,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fhTowerDecayPhotonHitMaskFrame[iSM]->SetXTitle("column (eta direction)");
     fOutputContainer->Add(fhTowerDecayPhotonHitMaskFrame[iSM]);
     
-    fhClusterTimeSM[iSM] = new TH2F(Form("hClusterTime_SM%d",iSM),"cluster time vs E",100,0,10, 100,0,1000);
+    fhClusterTimeSM[iSM] = new TH2F(Form("hClusterTime_SM%d",iSM),"cluster time vs E",100,0,10, 200,-1000,1000);
     fhClusterTimeSM[iSM]->SetXTitle("E (GeV)");
     fhClusterTimeSM[iSM]->SetYTitle("t (ns)");
     fOutputContainer->Add(fhClusterTimeSM[iSM]);
