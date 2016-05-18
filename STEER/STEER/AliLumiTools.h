@@ -18,7 +18,7 @@ class AliLumiTools : public TObject
   //
  protected:
   static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma);
-
+  static TObject* GetCDBObjectForRun(int run, const char* path, const char* ocdbPathDef);
  private:
   AliLumiTools(const AliLumiTools& src);
   AliLumiTools& operator=(const AliLumiTools& src) const;

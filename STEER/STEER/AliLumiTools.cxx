@@ -46,7 +46,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
   if (run<0) run = man->GetRun();
   //
   // use explicit run number since we may query for run other than in CDB cache
-  AliLHCData* lhcData = (AliLHCData*)(man->Get(AliCDBPath("GRP/GRP/LHCData"),run)->GetObject());
+  AliLHCData* lhcData = (AliLHCData*)GetCDBObjectForRun(run,"GRP/GRP/LHCData",ocdbPathDef);
 
   Int_t nRec = lhcData->GetNLumiAliceSBDelivered();
   Double_t vecIntLuminosity[nRec];
@@ -128,7 +128,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
   //
   // use explicit run number since we may query for run other than in CDB cache  
   // Get trigger config 
-  AliTriggerConfiguration* cfg = (AliTriggerConfiguration*) man->Get(AliCDBPath("GRP/CTP/Config"),run)->GetObject();
+  AliTriggerConfiguration* cfg = (AliTriggerConfiguration*)GetCDBObjectForRun(run,"GRP/CTP/Config",ocdbPathDef);
   //
   TString refClassAuto="";
   double refSigmaAuto=-1;
@@ -147,7 +147,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
   }
 
   // use explicit run number since we may query for run other than in CDB cache  
-  AliTriggerRunScalers* scalers = (AliTriggerRunScalers*) man->Get("GRP/CTP/Scalers",run)->GetObject();
+  AliTriggerRunScalers* scalers = (AliTriggerRunScalers*)GetCDBObjectForRun(run,"GRP/CTP/Scalers",ocdbPathDef);
   Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
   UInt_t t1 = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
   UInt_t t2 = scalers->GetScalersRecord(nEntries-1)->GetTimeStamp()->GetSeconds();
@@ -297,4 +297,32 @@ Bool_t AliLumiTools::GetLumiCTPRefClass(int run, TString& refClass, double &refS
     return kFALSE;
   }
   return kTRUE;
+}
+
+//______________________________________________________
+TObject* AliLumiTools::GetCDBObjectForRun(int run, const char* path, const char* ocdbPathDef)
+{
+  // returns requested cdb object for requested run, even if cdbManager is already initialized/locked to other run
+  // The cache is not affected and in case the CDB is locked to different run, the requested one should be from the same year
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) {
+    if (run<0) AliErrorClass("OCDB cannot be configured since run number is not provided"); return 0;
+    man->SetDefaultStorage(ocdbPathDef);
+    man->SetRun(run);
+  }
+  // check if locked and run number is different
+  if (run<0) run = man->GetRun();
+  Bool_t lock = man->GetLock();
+  ULong64_t key = 0;
+  if (run!=man->GetRun() && lock) { // CDB was locked to different run, need to unlock temporarily
+    key = gSystem->Now();
+    ULong64_t mskU=0xffffffff00000000;
+    key = (key&mskU)|ULong64_t(man->GetUniqueID());
+    man->SetLock(kFALSE,key);
+  }
+  TObject* obj = man->Get(AliCDBPath(path),run)->GetObject();
+  //
+  // if needed, lock back
+  if (lock) man->SetLock(kTRUE,key);
+  return obj;
 }
