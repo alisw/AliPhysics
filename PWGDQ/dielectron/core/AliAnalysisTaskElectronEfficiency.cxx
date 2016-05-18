@@ -139,6 +139,7 @@ f1PGenOver1PRec_1PGen_pions(0x0),
 f1PtGenOver1PtRec_1PtGen_pions(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
+fDeltaPhi(0x0),
 fOpeningAngleGen_OpeningAngleRecUS(0x0),
 fOpeningAngleGen_OpeningAngleRecLS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
@@ -274,6 +275,7 @@ f1PGenOver1PRec_1PGen_pions(0x0),
 f1PtGenOver1PtRec_1PtGen_pions(0x0),
 fEtaGen_EtaRec(0x0),
 fPhiGen_PhiRec(0x0),
+fDeltaPhi(0x0),
 fOpeningAngleGen_OpeningAngleRecUS(0x0),
 fOpeningAngleGen_OpeningAngleRecLS(0x0),
 fOpeningAngleGen_OpeningAngleResolutionUS(0x0),
@@ -452,6 +454,13 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fEtaGen_EtaRec        = new TH2F("etaGen_etaRec",       "", 30,-1.,1., 30,-1.,1.);
     fPhiGen_PhiRec        = new TH2F("phiGen_phiRec",       "", 80,-0.2*TMath::Pi(),2.2*TMath::Pi(), 80,-0.2*TMath::Pi(),2.2*TMath::Pi());
     
+    fDeltaPhi = new TH1D("DeltaPhi","",320,-0.1,6.4);
+    fDeltaPhi->GetXaxis()->SetTitle("#varphi_{gen} - #varphi_{rec}");
+    fDeltaPhi->Sumw2();
+    fDeltaPhi->SetMarkerStyle(20);
+    fDeltaPhi->SetMarkerColor(kBlack);
+    fDeltaPhi->SetLineColor(kBlack);
+ 
     fOpeningAngleGen_OpeningAngleRecUS        = new TH2D("OpeningAngleGen_OpeningAngleRecUS","",       330,-0.1,3.2, 330,-0.1,3.2);
     fOpeningAngleGen_OpeningAngleRecLS        = new TH2D("OpeningAngleGen_OpeningAngleRecLS","",       330,-0.1,3.2, 330,-0.1,3.2);
     fOpeningAngleGen_OpeningAngleResolutionUS = new TH2D("OpeningAngleGen_OpeningAngleResolutionUS","",330,-0.1,3.2, 300, 0.0,3.0);
@@ -469,13 +478,14 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     resolutionList->Add(fEtaGen_EtaRec);
     resolutionList->Add(fPhiGen_PhiRec);
-       
+    resolutionList->Add(fDeltaPhi);
+    
     resolutionList->Add(fOpeningAngleGen_OpeningAngleRecUS       );
     resolutionList->Add(fOpeningAngleGen_OpeningAngleRecLS       );
     resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionUS);
     resolutionList->Add(fOpeningAngleGen_OpeningAngleResolutionLS);   
    
-    Int_t bins[4] = {50,60,200,200};
+    Int_t bins[4] = {50,60,100,100};
     Double_t min[4] = { 0., 0., 0., 0. };
     Double_t max[4] = { 5., 6., 2., 2. };
     fMgen_PtGen_mRes_ptRes          = new THnSparseF("Mgen_PtGen_mRes_ptRes","",4,bins,min,max);
@@ -1047,6 +1057,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           AliMCParticle *mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part->GetMother()));
           if(!mother || mother->PdgCode() == 22) continue;
         }
+        Double_t deltaPhi = TMath::Abs(part->Phi() - track->Phi());
         l1Gen.SetPtEtaPhiM(part ->Pt(),part ->Eta(),part ->Phi(),AliPID::ParticleMass(AliPID::kElectron));
         l1Rec.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),AliPID::ParticleMass(AliPID::kElectron));
         for(Int_t iTracks2 = iTracks; iTracks2 < fESD->GetNumberOfTracks(); iTracks2++){
@@ -1068,6 +1079,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             AliMCParticle *mother2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(part2->GetMother()));
             if(!mother2 || mother2->PdgCode() == 22) continue;
           }
+          Double_t deltaPhi2 = TMath::Abs(part2->Phi() - track2->Phi());
           l2Gen.SetPtEtaPhiM(part2 ->Pt(),part2 ->Eta(),part2 ->Phi(),AliPID::ParticleMass(AliPID::kElectron));
           l2Rec.SetPtEtaPhiM(track2->Pt(),track2->Eta(),track2->Phi(),AliPID::ParticleMass(AliPID::kElectron));
           Double_t OpeningAngleGen = l1Gen.Angle(l2Gen.Vect());
@@ -1080,22 +1092,23 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           
           vals[1] = (l1Gen+l2Gen).Pt();
           vals[3] = (vals[1] > 0.) ? (l1Rec+l2Rec).Pt()/vals[1] : -1.;
-          
+          if((deltaPhi < 2.5 || deltaPhi > 3.9) && (deltaPhi2 < 2.5 || deltaPhi2 > 3.9)  && pdg == 11 && pdg2 == 11){
           if(part->Charge() != part2->Charge()){
             fOpeningAngleGen_OpeningAngleRecUS        ->Fill(OpeningAngleGen,OpeningAngleRec);
             fOpeningAngleGen_OpeningAngleResolutionUS ->Fill(OpeningAngleGen,OpeningAngleResolution);
-            if(pdg == 11 && pdg2 == 11) fMgen_PtGen_mRes_ptRes->Fill(vals);
+            fMgen_PtGen_mRes_ptRes->Fill(vals);
           }
           else{
             fOpeningAngleGen_OpeningAngleRecLS        ->Fill(OpeningAngleGen,OpeningAngleRec);
             fOpeningAngleGen_OpeningAngleResolutionLS ->Fill(OpeningAngleGen,OpeningAngleResolution);
+          }
           }
         }
         Double_t mcPt   = part->Pt();
         Double_t mcP    = part->P();
         Double_t recPt  = track->Pt();
         Double_t recP   = track->P();
-        
+        if(deltaPhi < 2.5 || deltaPhi > 3.9){
         if(mcP > 0. && mcPt > 0. && TMath::Abs(part->Eta()) < 0.8){
           if(pdg == 11){
             fPrecOverPgen_PGen   ->Fill(mcP,recP/mcP);
@@ -1111,7 +1124,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         }
         fEtaGen_EtaRec               ->Fill(part->Eta(),track->Eta());
         fPhiGen_PhiRec               ->Fill(part->Phi(),track->Phi());
-         
+        }
+        
+        fDeltaPhi->Fill(deltaPhi);
+ 
       }
     }
   } //MC loop
