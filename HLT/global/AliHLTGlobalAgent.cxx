@@ -152,7 +152,6 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
     delete pTokens;
     pTokens=NULL;
   }
-  cout<<endl<<"\n\nConfiguring inputs to global HLT Vertexer: "<<vertexerInputs.Data()<<endl<<endl;
   if (!vertexerInputs.IsNull()) {
     HLTInfo("\n\nConfiguring inputs to global HLT Vertexer: %s\n\n", vertexerInputs.Data());
     pHandler->CreateConfiguration("GLOBAL-vertexer","GlobalVertexer",vertexerInputs,"");
