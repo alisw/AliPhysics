@@ -534,7 +534,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const {
 
       TPaveText text(0.20,0.50,0.99,0.99,"NDC");   
       text.AddText(Form("Check if entries are on diagonal")); 
-      text.AddText(Form("Report readout problem to the T0 on-call expert")); 
+      text.AddText(Form("If NOT - report readout problem to the T0 on-call expert")); 
       text.SetBorderSize(0);
       text.SetFillStyle(0);
       hBCID->GetListOfFunctions()->Add((TPaveText*)text.Clone());	      
