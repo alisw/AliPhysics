@@ -121,7 +121,6 @@ Double_t AliAnaWeights::GetWeight()
 //_____________________________________________
 Double_t AliAnaWeights::GetPythiaCrossSection()
 {
-  
   Float_t xsection  = 0;
   Float_t trials    = 1;
   Float_t avgTrials = 0;
@@ -170,7 +169,7 @@ Double_t AliAnaWeights::GetPythiaCrossSection()
   }
     
   fhXsec->Fill("<#sigma>",xsection);
-  printf("Histo content %f\n",fhXsec->GetBinContent(1));
+
   // average number of trials
   Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
     
