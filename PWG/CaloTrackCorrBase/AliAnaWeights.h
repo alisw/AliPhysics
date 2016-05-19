@@ -25,6 +25,7 @@
 
 class TH1F;
 class TList;
+class AliGenPythiaEventHeader;
 
 #include <TObject.h>
 
@@ -68,11 +69,19 @@ class AliAnaWeights : public TObject {
   virtual Double_t GetWeight() ;
     
   Bool_t           IsMCCrossSectionCalculationOn()   const { return fCheckMCCrossSection   ; }
+  Bool_t           IsMCCrossSectionJustHistoFillOn() const { return fJustFillCrossSecHist  ; }
     
   void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
-    
   void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
 
+  void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
+  
+  void             SetPythiaEventHeader(AliGenPythiaEventHeader* py) { fPyEventHeader = py    ; }
+
+  void             SwitchOnMCCrossSectionFromEventHeader() { fCheckPythiaEventHeader = kTRUE  ; }
+  void             SwitchOffMCCrossSectionFromEventHeader(){ fCheckPythiaEventHeader = kFALSE ; }
+
+  
   //
   // General
   //
@@ -86,6 +95,8 @@ class AliAnaWeights : public TObject {
     
  private:
     
+  Int_t            fDebug ;               ///< Debug level.
+  
   //
   // Centrality weights
   //
@@ -106,13 +117,16 @@ class AliAnaWeights : public TObject {
 
   Bool_t           fCheckMCCrossSection ; ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
   
+  Bool_t           fJustFillCrossSecHist; ///< Do not provide a weight, just fill cross section histograms
+  
   TH1F *           fhXsec   ;             //!<! Cross section in PYTHIA.
    
   TH1F *           fhTrials ;             //!<! Number of event trials in PYTHIA.
     
- 
-  Int_t            fDebug ;               ///< Debug level.
-    
+  AliGenPythiaEventHeader * fPyEventHeader ; //!<! Pythia event header, needed to retrieve cross section, only in recent MC
+  
+  Bool_t           fCheckPythiaEventHeader ; ///< Get cross section from pythia event header 
+  
   /// Copy constructor not implemented.
   AliAnaWeights(           const AliAnaWeights&); 
   
@@ -120,7 +134,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 1) ;
+  ClassDef(AliAnaWeights, 2) ;
   /// \endcond
   
 } ;
