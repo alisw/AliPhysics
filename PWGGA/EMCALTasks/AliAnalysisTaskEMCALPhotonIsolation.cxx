@@ -39,7 +39,6 @@
 #include "AliLog.h"
 #include "TF1.h"
 #include "Riostream.h"
-#include "AliCalorimeterUtils.h"
 #include "TRandom3.h"
 
 
@@ -61,7 +60,7 @@ fNCluster(0),
 fAODMCParticles(0),
 fTracksAna(0),
 fStack(0),
-//fEMCALRecoUtils(new AliEMCALRecoUtils),
+fEMCALRecoUtils(new AliEMCALRecoUtils),
 fWho(-1),
 fSSsmearing(0),
 fSSsmearwidth(0),
@@ -205,7 +204,7 @@ fNCluster(0),
 fAODMCParticles(0),
 fTracksAna(0),
 fStack(0),
-//fEMCALRecoUtils(new AliEMCALRecoUtils),
+fEMCALRecoUtils(new AliEMCALRecoUtils),
 fWho(-1),
 fSSsmearing(0),
 fSSsmearwidth(0),
@@ -1040,9 +1039,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
       if(fCaloCells)
       {
-          //nlm = GetNLM(coi,fCaloCells);
-        AliCalorimeterUtils *cu=new AliCalorimeterUtils();
-        nlm=cu->GetNumberOfLocalMaxima(coi, fCaloCells);
+        nlm = GetNLM(coi,fCaloCells);
         Printf("Number of local maxima for this cluster: %d",nlm);
         AliDebug(1,Form("NLM = %d",nlm));
         
@@ -1248,7 +1245,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   }
   return kFALSE;
 }
-/*
+
   //_____________________________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster *coi, AliVCaloCells* cells){
     // find the number of local maxima of a cluster adapted from AliCalorimeterUtils
@@ -1503,7 +1500,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi,
   Printf("recalculated energy: %.4f",energy);
   return energy;
 }
-*/
+
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Double_t &etIso, Double_t &phiBandcells){
     // Underlying events study with EMCAL cells in phi band // have to be tested
