@@ -577,8 +577,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       Float_t tpcDeDx[3]={0,0,0};
       
       if( ndEdxTPC>0 ){ 	
-	if( tpcID < ndEdxTPC ){
-	  AliHLTFloat32_t *val = &(dEdxTPC[3*tpcID]);
+	if( tpcIter < ndEdxTPC ){
+	  AliHLTFloat32_t *val = &(dEdxTPC[3*tpcIter]);
 	  tpcDeDx[0] = val[0];
 	  tpcDeDx[1] = val[1];
 	  tpcDeDx[2] = val[2];

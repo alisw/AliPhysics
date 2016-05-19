@@ -654,8 +654,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
+      int iTrack = 0;
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
-	   element!=tracks.end(); element++) {
+	   element!=tracks.end(); element++, iTrack++ ) {
 	Float_t points[4] = {
 	  static_cast<Float_t>(element->GetX()),
 	  static_cast<Float_t>(element->GetY()),
@@ -711,8 +712,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// TPC cluster
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
-	if( element->TrackID()<ndEdxTPC ){
-	  AliHLTFloat32_t *val = &(dEdxTPC[3*element->TrackID()]);
+	if( iTrack < ndEdxTPC ){
+	  AliHLTFloat32_t *val = &(dEdxTPC[3*iTrack]);
 	  iotrack.SetTPCsignal( val[0], val[1], (UChar_t) val[2] ); 
 	  //AliTPCseed s;
 	  //s.Set( element->GetX(), element->GetAlpha(),
