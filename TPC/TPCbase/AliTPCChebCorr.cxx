@@ -21,6 +21,7 @@
 #include <TH1.h>
 #include <TAxis.h>
 #include <TGraph.h>
+#include <TBits.h>
 
 ClassImp(AliTPCChebCorr)
 
@@ -310,4 +311,27 @@ Int_t AliTPCChebCorr::GetRun() const
   while (*nm && isdigit(*nm)){ runstr += *nm;nm++;}
   if (!runstr.IsDigit()) return -1;
   return runstr.Atoi();
+}
+
+//__________________________________________
+Bool_t AliTPCChebCorr::IsRowMasked(int sector72,int row) const
+{
+  // check if row was masked (sector 0-71, IROC/OROC rows convention
+  if (sector72>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  float tz[2] = {0.f,((sector72/kNSectors)&0x1) ? -0.1f:0.1f}; // where to query
+  const AliCheb2DStack* par = GetParam(sector72,tz[0],tz[1]);
+  if (!par) return kTRUE;
+  return par->Eval(row,par->GetDimOut()-1,tz)<1e-6; // blocked rows have dispersion set to 0
+}
+
+//__________________________________________
+Int_t AliTPCChebCorr::GetNMaskedRows(int sector72,TBits* masked) const
+{
+  // count masked rows, if TBits provided, set the masked rows bits
+  int nmasked = 0;
+  int nr = (sector72/kNSectorsIROC)==0 ? kNRowsIROC : kNRows-kNRowsIROC;
+  for (int ir=nr;ir--;) {
+    if (IsRowMasked(sector72,ir)) {nmasked++; if (masked) masked->SetBitNumber(ir);}
+  }
+  return nmasked;
 }
