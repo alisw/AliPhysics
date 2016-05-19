@@ -68,6 +68,7 @@ fHistSPDVtxPileupAll(0),
 fHistSPDVtxPileupCln(0),
 fHistV0MOnAll(0),
 fHistV0MOnAcc(0),
+fHistV0MOnVHM(0),
 fHistV0MOfAll(0),
 fHistV0MOfAcc(0),
 fHistOFOAll(0),
@@ -202,8 +203,9 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistBGAflagsAcc     = new TH1F("fHistBGAflagsAcc",";BGA flags;",33,-0.5,32.5);
   fHistBGCflagsAll     = new TH1F("fHistBGCflagsAll",";BGC flags;",33,-0.5,32.5);
   fHistBGCflagsAcc     = new TH1F("fHistBGCflagsAcc",";BGC flags;",33,-0.5,32.5);
-  fHistV0MOnAll        = new TH1F("fHistV0MOnAll",     "All events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
-  fHistV0MOnAcc        = new TH1F("fHistV0MOnAcc","Accepted events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnAll        = new TH1F("fHistV0MOnAll",              "All events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnAcc        = new TH1F("fHistV0MOnAcc",         "Accepted events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnVHM        = new TH1F("fHistV0MOnAcc","Events with VHM clean up;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
   fHistV0MOfAll        = new TH1F("fHistV0MOfAll",     "All events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
   fHistV0MOfAcc        = new TH1F("fHistV0MOfAcc","Accepted events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
   fHistOFOAll          = new TH1F("fHistOFOAll"  ,     "All events;Online outer FO chips",800,0,800);
@@ -276,6 +278,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistBGCflagsAcc);
   fHistList->Add(fHistV0MOnAll);
   fHistList->Add(fHistV0MOnAcc);
+  fHistList->Add(fHistV0MOnVHM);
   fHistList->Add(fHistV0MOfAll);
   fHistList->Add(fHistV0MOfAcc);
   fHistList->Add(fHistOFOAll);
@@ -1310,6 +1313,10 @@ Bool_t AliTriggerAnalysis::VHMTrigger(const AliVEvent* event, Int_t fillHists){
   vhm *= nBBC>=fVHMBBCflags;
   vhm *= nBGA<=fVHMBGAflags;
   vhm *= nBGC<=fVHMBGCflags;
+  if (fillHists==1 && vhm) {
+    Float_t on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
+    fHistV0MOnVHM->Fill(on);
+  }
   
   return vhm;
 }

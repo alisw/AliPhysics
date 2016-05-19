@@ -128,6 +128,7 @@ protected:
   TH1F* fHistBGCflagsAcc;    //! Number of beam-gas V0C flags fired (max 32) for events accepted by basic cuts
   TH1F* fHistV0MOnAll;       //! Online V0M (V0A123+V0C) distribution for all events
   TH1F* fHistV0MOnAcc;       //! Online V0M (V0A123+V0C) distribution for events accepted by basic cuts
+  TH1F* fHistV0MOnVHM;       //! Online V0M (V0A123+V0C) distribution for all events with VHM clean up
   TH1F* fHistV0MOfAll;       //! Offline V0M (V0A+V0C) distribution for all events
   TH1F* fHistV0MOfAcc;       //! Offline V0M (V0A+V0C) distribution for events accepted by basic cuts
   TH1F* fHistOFOAll;         //! Outer FO chip distribution for all events
@@ -156,7 +157,7 @@ protected:
   TH1F* fHistT0;             //! bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 30)
+  ClassDef(AliTriggerAnalysis, 31)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
