@@ -549,9 +549,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227302008860400000", "0152103500000000"); //variation chi2 20 psi pair 0.05 2D
     cuts.AddCut("00010113", "00200009227302008250400000", "0252103500000000"); //variation BG scheme track mult
   } else if (trainConfig == 70) {
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
     cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND
-    cuts.AddCut("00000113", "00200008386302001200400000", "0152103500000000"); //Old standard cut for 7TeV analysis V0OR
+	cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000"); //8TeV V0AND with Double count rejection
+	cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+	cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
   } else if (trainConfig == 71) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
     cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
@@ -588,6 +589,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009227302008250400000", "0152109500000000"); // 0.65, 1.2
   } else if (trainConfig == 78) { //pp 8TeV cuts with EMC triggers
     cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // standard cut 8tev
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000","1111111063032230000"); // standard cut 8tev + double counting
     cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEMC7
     cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEGA7
     //---------systematic studies July 2015--------------------------//
