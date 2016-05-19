@@ -634,6 +634,17 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       frecpoints.SetMultC(Float_t(amplitudeNew[25]) );
       //      printf ("Reconstruct :::  T0 MPDA %i MPDC %i", amplitude[24], amplitude[25]);
 
+      //FIT CFD
+      Double32_t timeFIT=0;
+      for (int i=0; i<4; i++) {
+       	for (Int_t iHit=0; iHit<5; iHit++) {	
+	  if(alldata[i+211][iHit]>9000 && alldata[i+211][iHit]<12000) {
+	    timeFIT=  Double32_t(alldata[i+211][iHit]);
+	    frecpoints.SetFITTime(i, timeFIT);
+	    break;
+	  }
+	}
+      }
       
     } // if (else )raw data
   recTree->Fill();
@@ -747,12 +758,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     fESDTZERO->SetOrA(iHit,frecpoints.GetOrA(iHit));
     fESDTZERO->SetOrC(iHit,frecpoints.GetOrC(iHit));
     
-    for (Int_t i0=0; i0<24; i0++) {
-	fESDTZERO->SetTimeFull(i0, iHit,frecpoints.GetTimeFull(i0,iHit));
-	
-    }	     	     
-  }
-  
+    for (Int_t i0=0; i0<24; i0++) 
+	fESDTZERO->SetTimeFull(i0, iHit,frecpoints.GetTimeFull(i0,iHit));	
+    //FIT CFD
+    for (Int_t i0=0; i0<4; i0++) 
+     fESDTZERO->SetPileupTime(i0, frecpoints.GetFITTime(i0)); //// 19.05.2016
+   
   AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 best %f #ps T0signal %f ps OrA %f ps OrC %f ps T0trig %i\n",shift, zPosition, timemean[0], timeClock[0], timeClock[1], timeClock[2], trig));
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -766,8 +777,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   TBits pileout =fESDTZERO-> GetT0PileupBits();
   pileout.Print();
 
-  for (Int_t i=0; i<5; i++) {
-    fESDTZERO->SetPileupTime(i, frecpoints.GetTVDC(i) ) ;
+  //  for (Int_t i=0; i<5; i++) {
+  // fESDTZERO->SetPileupTime(i, frecpoints.GetTVDC(i) ) ;
     //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints.GetTVDC(i));
   }
   Bool_t sat  = SatelliteFlag();

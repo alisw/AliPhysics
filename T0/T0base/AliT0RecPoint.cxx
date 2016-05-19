@@ -47,19 +47,22 @@ ClassImp(AliT0RecPoint)
 				   fPileup(kFALSE),
 				   fSattelite(kFALSE),
 				   fTime1stA(99999),
-				   fTime1stC(99999)
+                                   fTime1stC(99999)
+
     
 
 {
   //ctor
-  for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;
+  for (Int_t i=0; i<24; i++) { 
+    fTime[i]=0; fADC[i]=0; fADCLED[i]=0;
     for(Int_t iHit=0; iHit<5; iHit++) {
       fTimeFull[i][iHit] = 0;   
       fOrA[iHit] = 0; 
       fOrC[iHit] = 0;  
       fTVDC[iHit] = 0; 
     }
- }
+  }
+  for (Int_t i=0; i<4; i++) ftimeFIT[i]=0; 
 }
 //_____________________________________________________________________________
 
@@ -93,6 +96,7 @@ AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
       fTVDC[iHit] = r.fTVDC[iHit]; 
     }
   }
+  for (Int_t i=0; i<4; i++) r.ftimeFIT[i]; 
   //  ((AliT0RecPoint &) r).Copy(*this);
 
 }
