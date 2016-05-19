@@ -71,23 +71,26 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(const Option_t*);
   
-  void          SetDoPairing(Bool_t b=kTRUE)                  {fDoPairing=b;}
-  void          SetCalcResolution(Bool_t b=kTRUE)             {fCalcResolution=b;}
-  void          SetResolutionCuts(AliAnalysisFilter *cuts)    {fResolutionCuts=cuts;}
-  void          SetKineTrackCuts(AliAnalysisFilter *cuts)     {fKineTrackCuts=cuts;}
-  //void        SetPairCuts(AliAnalysisFilter *cuts)          {fPairCuts=cuts;}
-  void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
-  void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
-  void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
-  void          SetCentralityRange(Double_t min, Double_t max){fCentMin=min; fCentMax=max;}
-  void          SetCutInjectedSignal(Bool_t bCutInj)          { return; } //obsolete.
-  void          SetNminEleInEventForRej(UInt_t nEle)          {fNminEleInEventForRej=nEle;}
-  void          SetEtaRangeGEN(Double_t min, Double_t max)    {fEtaMinGEN=min; fEtaMaxGEN=max;}
-  void          SetPtRangeGEN(Double_t min, Double_t max)     {fPtMinGEN=min; fPtMaxGEN=max;}
-  void          SetSupportedCutInstance(Int_t supp)           {fSupportedCutInstance=supp;}
-  void          SetWriteTree(Bool_t write)                    {fWriteTree=write;}
-  void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
-  void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
+  void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
+  void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
+  void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
+  void          SetKineTrackCuts(AliAnalysisFilter *cuts)           {fKineTrackCuts=cuts;}
+  //void        SetPairCuts(AliAnalysisFilter *cuts)                {fPairCuts=cuts;}
+  void          UsePhysicsSelection(Bool_t phy=kTRUE)               {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
+  void          SetTriggerMask(ULong64_t mask)                      {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
+  void          SetEventFilter(AliAnalysisCuts * const filter)      {fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
+  void          SetCentralityRange(Double_t min, Double_t max)      {fCentMin=min; fCentMax=max;}
+  void          SetCutInjectedSignal(Bool_t bCutInj)                { return; } //obsolete.
+  void          SetNminEleInEventForRej(UInt_t nEle)                {fNminEleInEventForRej=nEle;}
+  void          SetEtaRangeGEN(Double_t min, Double_t max)          {fEtaMinGEN=min; fEtaMaxGEN=max;}
+  void          SetPtRangeGEN(Double_t min, Double_t max)           {fPtMinGEN=min; fPtMaxGEN=max;}
+  void          SetSupportedCutInstance(Int_t supp)                 {fSupportedCutInstance=supp;}
+  void          SetWriteTree(Bool_t write)                          {fWriteTree=write;}
+  void          SetPIDResponse(AliPIDResponse *fPIDRespIn)          {fPIDResponse=fPIDRespIn;}
+  void          SetRandomizeDaughters(Bool_t random=kTRUE)          {fRandomizeDaughters=random;}
+  void          SetResolution(TObjArray *PresArr,TObjArray *ThetaResArr,TObjArray *PhiResArr) {fPResArr=PresArr; fThetaResArr=ThetaResArr; fPhiResArr=PhiResArr;}
+  void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
+  void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
   
   void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
   void          SetCentroidCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -127,6 +130,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
     /**/          return Form("%d", pdg);
     /**/        }
   TVectorD*     GetPDGcodes();
+  Double_t      GetSmearing(TObjArray *arr, Double_t x);
   
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
@@ -163,6 +167,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*         fEtaBins;                 //! ("!" to avoid streamer error)
   Double_t*         fPhiBins;                 //! ("!" to avoid streamer error)
   TString           fsRunBins;                // for run dependency histograms
+  Bool_t            fCalcEfficiencyRec;
+  Bool_t            fCalcEfficiencyPoslabel;
+  
   
   //Cut Settings
   std::vector<AliAnalysisFilter*> fvTrackCuts;
@@ -185,6 +192,14 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //std::vector<TH3F*>             fvReco_Kao; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
   
+  // histograms with reconstructed observables
+  TH3F*                           fNgen_Rec_Ele;
+  std::vector<TH3F*>              fvReco_Rec_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3F*>              fvReco_Rec_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  TH3F*                           fNgen_Rec_Pos;
+  std::vector<TH3F*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3F*>              fvReco_Rec_Pos_poslabel;
+  
   Int_t                           fNmeeBins;
   Int_t                           fNpteeBins;
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
@@ -197,28 +212,40 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<TH2F*>              fvRecoPairs_diffMothers;
   std::vector<TH2F*>              fvRecoPairs_poslabel_diffMothers;
   
+  
+  // resolutions
   Bool_t                          fCalcResolution;
   
-  TH2D*                           fPrecOverPgen_PGen;
-  TH2D*                           fPtRecOverPtGen_PtGen;
-  TH2D*                           f1PGenOver1PRec_1PGen;
-  TH2D*                           f1PtGenOver1PtRec_1PtGen;
-  
-  TH2D*                           fPrecOverPgen_PGen_pions;
-  TH2D*                           fPtRecOverPtGen_PtGen_pions;
-  TH2D*                           f1PGenOver1PRec_1PGen_pions;
-  TH2D*                           f1PtGenOver1PtRec_1PtGen_pions;
-  
-  TH2F*                           fEtaGen_EtaRec;
-  TH2F*                           fPhiGen_PhiRec;
+  TH1D*                           fDeltaPhiAll;
   TH1D*                           fDeltaPhi;
+  TH2D*                           fDeltaPhi_alpha;
+  TH2D*                           fDeltaPhi_pt;
+  TH2D*                           fDeltaPhi_eta;
+  TH2D*                           fDeltaPhi_MCcharge;
+  TH2D*                           fDeltaPhi_charge;
   
-  TH2D*                           fOpeningAngleGen_OpeningAngleRecUS;
-  TH2D*                           fOpeningAngleGen_OpeningAngleRecLS;
-  TH2D*                           fOpeningAngleGen_OpeningAngleResolutionUS;
-  TH2D*                           fOpeningAngleGen_OpeningAngleResolutionLS;
+  TH2D*                           fPGen_DeltaP;
+  TH2D*                           fPtGen_DeltaPt;
+  TH2D*                           fEtaGen_DeltaEta;
+  TH2D*                           fThetaGen_DeltaTheta;
+  TH2D*                           fPhiGen_DeltaPhi;
+  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS;
+  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS;
   
-  THnSparseF*                           fMgen_PtGen_mRes_ptRes;
+  TH2D*                           fPGen_DeltaP_pions;
+  TH2D*                           fPtGen_DeltaPt_pions;
+  TH2D*                           fEtaGen_DeltaEta_pions;
+  TH2D*                           fThetaGen_DeltaTheta_pions;
+  TH2D*                           fPhiGen_DeltaPhi_pions;
+  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS_pions;
+  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS_pions;  
+  
+  THnSparseF*                     fMgen_PtGen_mRes_ptRes;
+  
+  // external resolutions
+  TObjArray*                      fPResArr; 
+  TObjArray*                      fThetaResArr;
+  TObjArray*                      fPhiResArr;
   
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
