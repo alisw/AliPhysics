@@ -256,7 +256,8 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     
     fhPtHard->Fill(pTHard);
     
-    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() )     
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
       fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
   }
   
@@ -509,7 +510,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
   fOutputContainer->Add(fhPtHard);
 
-  if ( GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn() )
+  if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+      !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
   {
     fhPtHardWeighted  = new TH1F("hPtHardWeighted"," #it{p}_{T}-hard for selected triggers, weighted by cross section",150,0,300); 
     fhPtHardWeighted->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
