@@ -278,6 +278,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
   fout->cd();
   
   for (Int_t j=1;j<=h->GetNbinsY();j++){
+    if (j!=3) continue;
     TString label = h->GetYaxis()->GetBinLabel(j);
     if (label.Length()<2) continue;
     // skip background triggers
@@ -352,7 +353,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
     // Fill run QA histograms
     const char* bitName = bitNames[ibit].Data();
     TList* list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
-
+    gSystem->mkdir(bitName);
+    gSystem->cd(bitName);
     TH1F* hV0AAll          = (TH1F*) list->FindObject("fHistV0AAll");
     TH1F* hV0AAcc          = (TH1F*) list->FindObject("fHistV0AAcc");
     TH1F* hV0CAll          = (TH1F*) list->FindObject("fHistV0CAll");
@@ -396,6 +398,83 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
     TH2F* hTimeZNSumVsDif  = (TH2F*) list->FindObject("fHistTimeZNSumVsDif");
     TH2F* hTimeCorrZDC     = (TH2F*) list->FindObject("fHistTimeCorrZDC");
     
+    TH1F* hFitResults = (TH1F*) hV0MOnVsOfCln->ProjectionX("hFitResults");
+    TF1* fExp = new TF1("fExp","exp(-([0]-x)*[1])",0,10000);
+    TF1* fPol1 = new TF1("fPol1","pol1",0,hV0MOnVsOfCln->GetXaxis()->GetXmax());
+    fExp->SetLineColor(kMagenta);
+    hFitResults->Reset();
+    if (0 && hV0MOnVsOfAll && hV0MOnVsOfCln) {
+      TCanvas* cV0MOnVsOf = new TCanvas(Form("cV0MOnVsOf_%s",bitName),Form("cV0MOnVsOf_%s",bitName),1800,800);
+      cV0MOnVsOf->Divide(2,1,0.001,0.001);
+      cV0MOnVsOf->cd(1);
+      gPad->SetLeftMargin(0.11);
+      gPad->SetRightMargin(0.11);
+      gPad->SetLogz();
+      hV0MOnVsOfAll->SetTitle(Form("%s",bitName));
+      hV0MOnVsOfAll->GetYaxis()->SetTitleOffset(1.7);
+      hV0MOnVsOfAll->Draw("colz");
+      cV0MOnVsOf->cd(2);
+      gPad->SetLogz();
+      gPad->SetLeftMargin(0.11);
+      gPad->SetRightMargin(0.11);
+      hV0MOnVsOfCln->SetTitle(Form("%s",bitName));
+      hV0MOnVsOfCln->GetYaxis()->SetTitleOffset(1.7);
+      hV0MOnVsOfCln->Draw("colz");
+      cV0MOnVsOf->Print(Form("%s_V0MOnVsOf.pdf",bitName));
+      hV0MOnVsOfCln->Sumw2();
+      TCanvas* cV0MOnVsOfFit = new TCanvas(Form("cV0MOnVsOfFit_%s",bitName),Form("cV0MOnVsOfFit_%s",bitName),1800,800);
+      cV0MOnVsOfFit->Divide(2,1,0.001,0.001);
+      cV0MOnVsOfFit->cd(1);
+      gPad->SetLogy();
+      TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
+      leg->SetBorderSize(0);
+      for (Int_t i=1;i<=hV0MOnVsOfCln->GetNbinsX();i++){
+        TH1D* hProj = hV0MOnVsOfCln->ProjectionY(Form("projV0MOnVsOf%i",i),i,i);
+        hProj->GetXaxis()->SetTitleOffset(1.0);
+        hProj->SetTitle(Form("%s;Online V0M;",bitName));
+        Float_t integ = hProj->Integral();
+        if (integ<200) continue;
+        Double_t mMax = hProj->GetBinLowEdge(hProj->GetMaximumBin()-1);
+        Double_t mMin = hProj->GetBinLowEdge(hProj->GetMaximumBin()-6);
+        fExp->SetRange(mMin,mMax);
+        hProj->Fit("fExp","QN","",mMin,mMax);
+        if (i==20 || i==40 || i==60 || i==80 || i==100) {
+          hProj->SetLineColor(i/20);
+          hProj->DrawCopy(i==20 ? "" : "same");
+          fExp->DrawCopy("lsame");
+
+          leg->AddEntry(hProj,Form("Offline V0M = %.0f",hV0MOnVsOfCln->GetXaxis()->GetBinCenter(i)));
+        }
+        
+        Double_t x0     = fExp->GetParameter(0);
+        Double_t lambda = 1/fExp->GetParameter(1);
+        Double_t x0err  = fExp->GetParError(0);
+        Double_t lambdaerr = lambda*fExp->GetParError(1)/fExp->GetParameter(1);
+        hFitResults->SetBinContent(i,x0-7*lambda);
+        hFitResults->SetBinError(i,x0err+7*lambdaerr);
+//        gPad->Print("fit.png");
+      }
+      leg->Draw();
+      
+      cV0MOnVsOfFit->cd(2);
+      gPad->SetLogz();
+      gPad->SetLeftMargin(0.11);
+      gPad->SetRightMargin(0.11);
+      hV0MOnVsOfCln->GetListOfFunctions()->Clear();
+      hV0MOnVsOfCln->DrawCopy("colz");
+      hFitResults->SetLineWidth(2);
+      hFitResults->SetLineColor(kMagenta+1);
+      hFitResults->SetMarkerColor(kMagenta+1);
+      hFitResults->SetMarkerStyle(kOpenCircle);
+      hFitResults->DrawCopy("psame");
+      hFitResults->Fit(fPol1,"QN","",50,hV0MOnVsOfCln->GetXaxis()->GetXmax());
+      printf("par[0]=%f\n",fPol1->GetParameter(0));
+      printf("par[1]=%f\n",fPol1->GetParameter(1));
+      fPol1->Draw("same");
+      cV0MOnVsOfFit->Print(Form("%s_V0MOnVsOfFit.pdf",bitName));
+      
+    } else printf("QA histogram not found\n");
+    
     if (hSPDClsVsTklAll && hSPDClsVsTklCln) {
       TCanvas* cClsVsTkl = new TCanvas(Form("cClsVsTkl_%s",bitName),Form("cClsVsTkl_%s",bitName),1800,800);
       cClsVsTkl->Divide(2,1,0.001,0.001);
@@ -409,21 +488,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       hSPDClsVsTklCln->Draw("colz");
       cClsVsTkl->Print(Form("%s_ClsVsTkl.pdf",bitName));
     } else printf("QA histogram not found\n");
-
-    if (hV0MOnVsOfAll && hV0MOnVsOfCln) {
-      TCanvas* cV0MOnVsOf = new TCanvas(Form("cV0MOnVsOf_%s",bitName),Form("cV0MOnVsOf_%s",bitName),1800,800);
-      cV0MOnVsOf->Divide(2,1,0.001,0.001);
-      cV0MOnVsOf->cd(1);
-      gPad->SetLogz();
-      hV0MOnVsOfAll->SetTitle(Form("%s",bitName));
-      hV0MOnVsOfAll->Draw("colz");
-      cV0MOnVsOf->cd(2);
-      gPad->SetLogz();
-      hV0MOnVsOfCln->SetTitle(Form("%s",bitName));
-      hV0MOnVsOfCln->Draw("colz");
-      cV0MOnVsOf->Print(Form("%s_V0MOnVsOf.pdf",bitName));
-    } else printf("QA histogram not found\n");
-
+    
     if (hSPDOnVsOfAll && hSPDOnVsOfCln) {
       TCanvas* cSPDOnVsOf = new TCanvas(Form("cSPDOnVsOf_%s",bitName),Form("cSPDOnVsOf_%s",bitName),1800,800);
       cSPDOnVsOf->Divide(2,1,0.001,0.001);
@@ -509,7 +574,6 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       hV0CAcc->Draw("same");
       leg->Draw();
       cV0->Print(Form("%s_V0.pdf",bitName));
-
     } else printf("QA histogram not found\n");
 
     if (hADAAll && hADAAcc && hADCAll && hADCAcc) {
@@ -541,16 +605,25 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       leg->Draw();
       cAD->Print(Form("%s_AD.pdf",bitName));
     } else printf("QA histogram not found\n"); 
-    
+
+    TH1F* hV0MOnNorm = new TH1F("hV0MOnNorm",";Online V0M/<V0M>;",50,0,10);
+    TH1F* hV0MOfNorm = new TH1F("hV0MOfNorm",";Offline V0M/<V0M>;",50,0,10);
+    hV0MOnNorm->SetLineWidth(2);
+    hV0MOfNorm->SetLineWidth(2);
+    hV0MOnNorm->SetLineColor(kBlue);
+    hV0MOfNorm->SetLineWidth(kBlue);
+
     if (hV0MOnAll && hV0MOfAll && hV0MOnAcc && hV0MOfAcc) {
-      TCanvas* cV0M = new TCanvas(Form("V0M_%s",bitName),Form("cV0M_%s",bitName),1800,800);
-      cV0M->Divide(2,1,0.001,0.001);
+      TCanvas* cV0M = new TCanvas(Form("V0M_%s",bitName),Form("cV0M_%s",bitName),1800,1100);
+      cV0M->Divide(2,2,0.001,0.001);
+      
       cV0M->cd(1);
       gPad->SetLogy();
       hV0MOnAll->SetTitle(Form("%s",bitName));
       hV0MOnAll->SetLineWidth(2);
       hV0MOnAll->SetLineColor(kBlack);
       hV0MOnAll->Draw();
+      hV0MOnAcc->SetLineWidth(2);
       hV0MOnAcc->SetMarkerColor(kBlue);
       hV0MOnAcc->SetLineColor(kBlue);
       hV0MOnAcc->SetFillColor(kBlue);
@@ -558,14 +631,16 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       TLegend* leg1 = new TLegend(0.40,0.8,0.97,0.9);
       leg1->SetBorderSize(0);
       leg1->AddEntry(hV0MOnAll,Form("All events: %.0f",hV0MOnAll->Integral(0,hV0MOnAll->GetNbinsX()+1)));
-      leg1->AddEntry(hV0MOnAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOnAcc->Integral(0,hV0MOnAcc->GetNbinsX()+1),hV0MOnAcc->GetMean()));
+      leg1->AddEntry(hV0MOnAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOnAcc->Integral(0,hV0MOnAcc->GetNbinsX()+1),hV0MOnAcc->GetMean()),"l");
       leg1->Draw();
+      
       cV0M->cd(2);
       gPad->SetLogy();
       hV0MOfAll->SetTitle(Form("%s",bitName));
       hV0MOfAll->SetLineWidth(2);
       hV0MOfAll->SetLineColor(kBlack);
       hV0MOfAll->Draw();
+      hV0MOfAcc->SetLineWidth(2);
       hV0MOfAcc->SetMarkerColor(kBlue);
       hV0MOfAcc->SetLineColor(kBlue);
       hV0MOfAcc->SetFillColor(kBlue);
@@ -573,11 +648,200 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
       TLegend* leg2 = new TLegend(0.40,0.8,0.97,0.9);
       leg2->SetBorderSize(0);
       leg2->AddEntry(hV0MOfAll,Form("All events: %.0f",hV0MOfAll->Integral(0,hV0MOfAll->GetNbinsX()+1)));
-      leg2->AddEntry(hV0MOfAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOfAcc->Integral(0,hV0MOfAcc->GetNbinsX()+1),hV0MOfAcc->GetMean()));
+      leg2->AddEntry(hV0MOfAcc,Form("Accepted events: %.0f, <V0M>=%.1f",hV0MOfAcc->Integral(0,hV0MOfAcc->GetNbinsX()+1),hV0MOfAcc->GetMean()),"l");
       leg2->Draw();
-      cV0M->Print(Form("%s_V0M.pdf",bitName));
+      
+      cV0M->cd(3);
+      gPad->SetLogy();
+      hV0MOnNorm->SetTitle(Form("%s",bitName));
+      Float_t meanV0MOn = hV0MOnAcc->GetMean();
+      for (Int_t i=1;i<=hV0MOnAcc->GetNbinsX();i++){
+        Float_t binCenter  = hV0MOnAcc->GetXaxis()->GetBinCenter(i);
+        Float_t binContent = hV0MOnAcc->GetBinContent(i);
+        hV0MOnNorm->Fill(binCenter/meanV0MOn,binContent);
+      }
+      hV0MOnNorm->DrawCopy();
+      cV0M->cd(4);
+      gPad->SetLogy();
+      hV0MOfNorm->SetTitle(Form("%s",bitName));
+      Float_t meanV0MOf = hV0MOfAcc->GetMean();
+      for (Int_t i=1;i<=hV0MOfAcc->GetNbinsX();i++){
+        Float_t binCenter  = hV0MOfAcc->GetXaxis()->GetBinCenter(i);
+        Float_t binContent = hV0MOfAcc->GetBinContent(i);
+        hV0MOfNorm->Fill(binCenter/meanV0MOf,binContent);
+      }
+      hV0MOfNorm->DrawCopy();
+      
+      cV0M->Print(Form("%s_V0M.pdf(",bitName));
+      
+      TCanvas* cV0Mcum = new TCanvas(Form("V0Mcum_%s",bitName),Form("cV0Mcum_%s",bitName),1800,1100);
+      cV0Mcum->Divide(2,2,0.001,0.001);
+      cV0Mcum->cd(1);
+      gPad->SetLogy();
+      TH1F* hV0MOnAllCum = (TH1F*) hV0MOnAll->GetCumulative(kFALSE);
+      TH1F* hV0MOnAccCum = (TH1F*) hV0MOnAcc->GetCumulative(kFALSE);
+      hV0MOnAllCum->Scale(1./hV0MOnAllCum->GetBinContent(1));
+      hV0MOnAccCum->Scale(1./hV0MOnAccCum->GetBinContent(1));
+      hV0MOnAllCum->SetTitle(Form("%s: cumulative",bitName));
+      hV0MOnAllCum->DrawCopy();
+      hV0MOnAccCum->SetFillStyle(0);
+      hV0MOnAccCum->DrawCopy("same");
+      leg1->Draw();
+      cV0Mcum->cd(2);
+      gPad->SetLogy();
+      TH1F* hV0MOfAllCum = hV0MOfAll->GetCumulative(kFALSE);
+      TH1F* hV0MOfAccCum = hV0MOfAcc->GetCumulative(kFALSE);
+      hV0MOfAllCum->Scale(1./hV0MOfAllCum->GetBinContent(1));
+      hV0MOfAccCum->Scale(1./hV0MOfAccCum->GetBinContent(1));
+      hV0MOfAllCum->SetTitle(Form("%s: cumulative",bitName));
+      hV0MOfAllCum->DrawCopy();
+      hV0MOfAccCum->SetFillStyle(0);
+      hV0MOfAccCum->DrawCopy("same");
+      leg2->Draw();
+      cV0Mcum->cd(3);
+      gPad->SetLogy();
+      TH1F* hV0MOnNormCum = hV0MOnNorm->GetCumulative(kFALSE);
+      hV0MOnNormCum->Scale(1./hV0MOnNormCum->GetBinContent(1));
+      hV0MOnNormCum->SetTitle(Form("%s: cumulative",bitName));
+      hV0MOnNormCum->DrawCopy();
+      cV0Mcum->cd(4);
+      gPad->SetLogy();
+      TH1F* hV0MOfNormCum = hV0MOfNorm->GetCumulative(kFALSE);
+      hV0MOfNormCum->Scale(1./hV0MOfNormCum->GetBinContent(1));
+      hV0MOfNormCum->SetTitle(Form("%s: cumulative",bitName));
+      hV0MOfNormCum->DrawCopy();
+      cV0Mcum->Print(Form("%s_V0M.pdf)",bitName));
     } else printf("QA histogram not found\n");
     
+    TH1F* hOFONorm = new TH1F("hOFONorm",";Outer FO/<Outer FO>;",50,0,10);
+    TH1F* hTKLNorm = new TH1F("hTKLNorm",";TKL/<TKL>;",50,0,10);
+    hOFONorm->SetLineWidth(2);
+    hTKLNorm->SetLineWidth(2);
+    hOFONorm->SetLineColor(kBlue);
+    hTKLNorm->SetLineWidth(kBlue);
+
+    if (hOFOAll && hTKLAll && hOFOAcc && hTKLAcc) {
+      TCanvas* cSPD = new TCanvas(Form("SPD_%s",bitName),Form("cSPD_%s",bitName),1800,1100);
+      cSPD->Divide(2,2,0.001,0.001);
+      
+      cSPD->cd(1);
+      gPad->SetLogy();
+      hOFOAll->SetTitle(Form("%s",bitName));
+      hOFOAll->SetLineWidth(2);
+      hOFOAll->SetLineColor(kBlack);
+      hOFOAll->Draw();
+      hOFOAcc->SetLineWidth(2);
+      hOFOAcc->SetMarkerColor(kBlue);
+      hOFOAcc->SetLineColor(kBlue);
+      hOFOAcc->SetFillColor(kBlue);
+      hOFOAcc->Draw("same");
+      TLegend* leg1 = new TLegend(0.40,0.8,0.97,0.9);
+      leg1->SetBorderSize(0);
+      leg1->AddEntry(hOFOAll,Form("All events: %.0f",hOFOAll->Integral(0,hOFOAll->GetNbinsX()+1)));
+      leg1->AddEntry(hOFOAcc,Form("Accepted events: %.0f, <OFO>=%.1f",hOFOAcc->Integral(0,hOFOAcc->GetNbinsX()+1),hOFOAcc->GetMean()),"l");
+      leg1->Draw();
+      
+      cSPD->cd(2);
+      gPad->SetLogy();
+      hTKLAll->SetTitle(Form("%s",bitName));
+      hTKLAll->SetLineWidth(2);
+      hTKLAll->SetLineColor(kBlack);
+      hTKLAll->Draw();
+      hTKLAcc->SetLineWidth(2);
+      hTKLAcc->SetMarkerColor(kBlue);
+      hTKLAcc->SetLineColor(kBlue);
+      hTKLAcc->SetFillColor(kBlue);
+      hTKLAcc->Draw("same");
+      TLegend* leg2 = new TLegend(0.40,0.8,0.97,0.9);
+      leg2->SetBorderSize(0);
+      leg2->AddEntry(hTKLAll,Form("All events: %.0f",hTKLAll->Integral(0,hTKLAll->GetNbinsX()+1)));
+      leg2->AddEntry(hTKLAcc,Form("Accepted events: %.0f, <TKL>=%.1f",hTKLAcc->Integral(0,hTKLAcc->GetNbinsX()+1),hTKLAcc->GetMean()),"l");
+      leg2->Draw();
+      
+      cSPD->cd(3);
+      gPad->SetLogy();
+      hOFONorm->SetTitle(Form("%s",bitName));
+      Float_t meanOFO = hOFOAcc->GetMean();
+      for (Int_t i=1;i<=hOFOAcc->GetNbinsX();i++){
+        Float_t binCenter  = hOFOAcc->GetXaxis()->GetBinCenter(i);
+        Float_t binContent = hOFOAcc->GetBinContent(i);
+        hOFONorm->Fill(binCenter/meanOFO,binContent);
+      }
+      hOFONorm->DrawCopy();
+      cSPD->cd(4);
+      gPad->SetLogy();
+      hTKLNorm->SetTitle(Form("%s",bitName));
+      Float_t meanTKL = hTKLAcc->GetMean();
+      for (Int_t i=1;i<=hTKLAcc->GetNbinsX();i++){
+        Float_t binCenter  = hTKLAcc->GetXaxis()->GetBinCenter(i);
+        Float_t binContent = hTKLAcc->GetBinContent(i);
+        hTKLNorm->Fill(binCenter/meanTKL,binContent);
+      }
+      hTKLNorm->DrawCopy();
+      
+      cSPD->Print(Form("%s_SPD.pdf(",bitName));
+      
+      TCanvas* cSPDcum = new TCanvas(Form("SPDcum_%s",bitName),Form("cSPDcum_%s",bitName),1800,1100);
+      cSPDcum->Divide(2,2,0.001,0.001);
+      cSPDcum->cd(1);
+      gPad->SetLogy();
+      TH1F* hOFOAllCum = hOFOAll->GetCumulative(kFALSE);
+      TH1F* hOFOAccCum = hOFOAcc->GetCumulative(kFALSE);
+      hOFOAllCum->Scale(1./hOFOAllCum->GetBinContent(1));
+      hOFOAccCum->Scale(1./hOFOAccCum->GetBinContent(1));
+      hOFOAllCum->SetTitle(Form("%s: cumulative",bitName));
+      hOFOAllCum->DrawCopy();
+      hOFOAccCum->SetFillStyle(0);
+      hOFOAccCum->DrawCopy("same");
+      leg1->Draw();
+      cSPDcum->cd(2);
+      gPad->SetLogy();
+      TH1F* hTKLAllCum = hTKLAll->GetCumulative(kFALSE);
+      TH1F* hTKLAccCum = hTKLAcc->GetCumulative(kFALSE);
+      hTKLAllCum->Scale(1./hTKLAllCum->GetBinContent(1));
+      hTKLAccCum->Scale(1./hTKLAccCum->GetBinContent(1));
+      hTKLAllCum->SetTitle(Form("%s: cumulative",bitName));
+      hTKLAllCum->DrawCopy();
+      hTKLAccCum->SetFillStyle(0);
+      hTKLAccCum->DrawCopy("same");
+      leg2->Draw();
+      cSPDcum->cd(3);
+      gPad->SetLogy();
+      TH1F* hOFONormCum = hOFONorm->GetCumulative(kFALSE);
+      hOFONormCum->Scale(1./hOFONormCum->GetBinContent(1));
+      hOFONormCum->SetTitle(Form("%s: cumulative",bitName));
+      hOFONormCum->DrawCopy();
+      cSPDcum->cd(4);
+      gPad->SetLogy();
+      TH1F* hTKLNormCum = hTKLNorm->GetCumulative(kFALSE);
+      hTKLNormCum->Scale(1./hTKLNormCum->GetBinContent(1));
+      hTKLNormCum->SetTitle(Form("%s: cumulative",bitName));
+      hTKLNormCum->DrawCopy();
+      cSPDcum->Print(Form("%s_SPD.pdf)",bitName));
+    } else printf("QA histogram not found\n");
+
+    if (hTimeZNA && hTimeZNC && hTimeZNSumVsDif && hTimeCorrZDC) {
+      TCanvas* cZDC = new TCanvas(Form("cZDC_%s",bitName),Form("cZDC_%s",bitName),1800,800);
+      cZDC->Divide(2,2,0.001,0.001);
+      cZDC->cd(1);
+      gPad->SetLogy();
+      hTimeZNA->SetTitle(Form("%s",bitName));
+      hTimeZNA->Draw();
+      cZDC->cd(2);
+      gPad->SetLogy();
+      hTimeZNC->SetTitle(Form("%s",bitName));
+      hTimeZNC->Draw();
+      cZDC->Print(Form("%s_ZDC.pdf",bitName));
+      cZDC->cd(3);
+      gPad->SetLogz();
+      hTimeCorrZDC->SetTitle(Form("%s",bitName));
+      hTimeCorrZDC->Draw("colz");
+      cZDC->cd(4);
+      gPad->SetLogz();
+      hTimeZNSumVsDif->SetTitle(Form("%s",bitName));
+      hTimeZNSumVsDif->Draw("colz");
+      cZDC->Print(Form("%s_ZDC.pdf",bitName));
+    } else printf("QA histogram not found\n");
     
     //    TH2F* hAD           = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistAD"          ,label.Data()));
     //    TH1F* hADA          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistADA"         ,label.Data()));
@@ -704,7 +968,7 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254394
 //      gPad->Print(Form("%s_TimeCorrZDC.pdf",bitName));
 //      hTimeCorrZDC->Write(Form("%s_TimeCorrZDC",bitName));
 //    } else printf("QA histogram not found\n"); 
-
+    gSystem->cd("..");
   }
   
   t->Fill();

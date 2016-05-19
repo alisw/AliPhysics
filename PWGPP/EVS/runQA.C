@@ -2,25 +2,23 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TSystem.h"
-void runQA(TString fileList="all.list"){
-  TString outDir = fileList;
-  outDir.ReplaceAll(".list","");
-  gSystem->mkdir(outDir.Data());
+void runQA(TString path="/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16h/manual/"){
+  gSystem->Exec(Form("ls %s > run.list",path.Data()));
   ifstream f;
-  f.open(fileList);
+  f.open("run.list");
   Char_t buffer[1000];
-  gSystem->Exec("rm trending.root");
   while (!f.eof()){
     f >> buffer;
     Int_t run = TString(buffer).Atoi();
     printf("%i\n",run);
-    TString statfile = "";
-    gSystem->Exec(Form("aliroot -b -q 'runLevelEventStatQA.C\(\"%s\",%i\)'",statfile.Data(),run));
-    gSystem->mkdir(Form("%s/%i",outDir.Data(),run));
-    gSystem->Exec(Form("mv trending.root %s/%i/trending.root",outDir.Data(),run));
+    TString statfile = "event_stat.root";
+    gSystem->Exec(Form("cp triggerInfo.C %s/000%i/",path.Data(),run));
+    gSystem->Exec(Form("cp runLevelEventStatQA.C %s/000%i/",path.Data(),run));
+//    gSystem->Exec(Form("cd %s/000%i",path.Data(),run));
+    gSystem->Exec(Form("cd %s/000%i; aliroot -b -q 'runLevelEventStatQA.C\(\"%s\",%i\,\"raw://\")'",path.Data(),run,statfile.Data(),run));
   }
   f.close();
-  
-  gSystem->Exec(Form("hadd -f trending.root %s/*/trending.root",outDir.Data()));
-  gSystem->Exec("aliroot -b -q periodLevelQA.C");
+  gSystem->Exec(Form("cd %s; hadd -f trending.root */trending.root",path.Data()));
+  gSystem->Exec(Form("cp periodLevelQA.C %s/",path.Data()));
+  gSystem->Exec(Form("cd %s; aliroot -b -q periodLevelQA.C",path.Data()));
 }
