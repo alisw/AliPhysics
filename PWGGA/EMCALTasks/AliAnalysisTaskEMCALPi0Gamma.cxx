@@ -80,7 +80,6 @@ fVtxZMax(+10),
 fUseQualFlag(1),
 fClusName(),
 fDoNtuple(0),
-fDoConvAna(0),
 fDoAfterburner(0),
 fAsymMax1(0.3),
 fAsymMax2(0.7),
@@ -158,7 +157,6 @@ fHClustEnergySigma(0x0),
 fHClustSigmaSigma(0x0),
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
-fHConvEnergyPt(0x0),
 fHPrimTrackPt(0x0),
 fHPrimTrackEta(0x0),
 fHPrimTrackPhi(0x0),
@@ -205,38 +203,22 @@ fHPionInvMassesMixDCalCalib(0x0),
 //fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
-fHPionEtaPhiConv(0x0),
-fHPionMggPtConv(0x0),
-fHPionMggAsymConv(0x0),
-fHPionMggDggConv(0x0),
-fHPionInvMassesConv(0x0),
-fHPionInvMassesConvMix(0x0),
-fHPionEtaPhiConvConv(0x0),
-fHPionMggPtConvConv(0x0),
-fHPionMggAsymConvConv(0x0),
-fHPionMggDggConvConv(0x0),
-fHPionInvMassesConvConv(0x0),
-fHPionInvMassesConvConvMix(0x0),
 fHConversionPoint(0),
 fHPionTruthPt(),
 fHPionTruthPtIn(),
 fHPionTruthPtAcc(),
-fHPionTruthPtConvAcc(),
 fHEtaTruthPt(),
 fHEtaTruthPtIn(),
 fHEtaTruthPtAcc(),
-fHEtaTruthPtConvAcc(),
 fHGamTruthPt(),
 fHGamTruthPtIn(),
 fHGamTruthPtAcc(),
 fHPionTruthPtAdd(),
 fHPionTruthPtInAdd(),
 fHPionTruthPtAccAdd(),
-fHPionTruthPtConvAccAdd(),
 fHEtaTruthPtAdd(),
 fHEtaTruthPtInAdd(),
 fHEtaTruthPtAccAdd(),
-fHEtaTruthPtConvAccAdd(),
 fHNMothers(0x0),
 //fHMixRotation(),
 ipymin(0),
@@ -245,7 +227,6 @@ ipi0min(0),
 ipi0max(0),
 ietamin(0),
 ietamax(0),
-fReaderGammas(0),
 eventHeader(0),
 pythiaHeader(0),
 addedPi0Header(0),
@@ -279,7 +260,7 @@ fHWgt(0)
       for(int k=0;k<nPtClass;k++){
         iEvt[i][j][k] = 0;
         for(int l=0;l<nEvt;l++){
-          EmcEventList[i][j][k][l].SetGlobalInfo(0,0,0.,0.);
+          EmcEventList[i][j][k][l].SetGlobalInfo(0,0.,0.);
         }
       }
     }
@@ -298,7 +279,6 @@ fVtxZMax(+10),
 fUseQualFlag(1),
 fClusName(),
 fDoNtuple(0),
-fDoConvAna(0),
 fDoAfterburner(0),
 fAsymMax1(0.3),
 fAsymMax2(0.7),
@@ -376,7 +356,6 @@ fHClustEnergySigma(0x0),
 fHClustSigmaSigma(0x0),
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
-fHConvEnergyPt(0x0),
 fHPrimTrackPt(0x0),
 fHPrimTrackEta(0x0),
 fHPrimTrackPhi(0x0),
@@ -417,38 +396,22 @@ fHPionInvMassesMixDCalCalib(0x0),
 //fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
-fHPionEtaPhiConv(0x0),
-fHPionMggPtConv(0x0),
-fHPionMggAsymConv(0x0),
-fHPionMggDggConv(0x0),
-fHPionInvMassesConv(0x0),
-fHPionInvMassesConvMix(0x0),
-fHPionEtaPhiConvConv(0x0),
-fHPionMggPtConvConv(0x0),
-fHPionMggAsymConvConv(0x0),
-fHPionMggDggConvConv(0x0),
-fHPionInvMassesConvConv(0x0),
-fHPionInvMassesConvConvMix(0x0),
 fHConversionPoint(0),
 fHPionTruthPt(),
 fHPionTruthPtIn(),
 fHPionTruthPtAcc(),
-fHPionTruthPtConvAcc(),
 fHEtaTruthPt(),
 fHEtaTruthPtIn(),
 fHEtaTruthPtAcc(),
-fHEtaTruthPtConvAcc(),
 fHGamTruthPt(),
 fHGamTruthPtIn(),
 fHGamTruthPtAcc(),
 fHPionTruthPtAdd(),
 fHPionTruthPtInAdd(),
 fHPionTruthPtAccAdd(),
-fHPionTruthPtConvAccAdd(),
 fHEtaTruthPtAdd(),
 fHEtaTruthPtInAdd(),
 fHEtaTruthPtAccAdd(),
-fHEtaTruthPtConvAccAdd(),
 fHNMothers(0x0),
 //fHMixRotation(),
 ipymin(0),
@@ -457,7 +420,6 @@ ipi0min(0),
 ipi0max(0),
 ietamin(0),
 ietamax(0),
-fReaderGammas(0),
 eventHeader(0),
 pythiaHeader(0),
 addedPi0Header(0),
@@ -498,7 +460,7 @@ fHWgt(0)
       for(int k=0;k<nPtClass;k++){
         iEvt[i][j][k] = 0;
         for(int l=0;l<nEvt;l++){
-          EmcEventList[i][j][k][l].SetGlobalInfo(0,0,0.,0.);
+          EmcEventList[i][j][k][l].SetGlobalInfo(0,0.,0.);
         }
       }
     }
@@ -759,13 +721,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHClustEnergyNCell);
   }
   
-  if(fDoConvAna){
-    // histogram for conversion photons
-    fHConvEnergyPt = new TH2F("hConvEnergyPt","",250,0,50,250,0,50);
-    fHConvEnergyPt->SetXTitle("E [GeV]");
-    fHConvEnergyPt->SetYTitle("p_{T} [GeV/c]");
-    fOutput->Add(fHConvEnergyPt);
-  }
   
   // histograms for primary tracks
   fHPrimTrackPt = new TH1F("hPrimTrackPt",";p_{T} [GeV/c]",500,0,50);
@@ -824,40 +779,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionMggDgg->SetYTitle("opening angle [grad]");
     fOutput->Add(fHPionMggDgg);
     
-    if(fDoConvAna){
-      fHPionEtaPhiConv = new TH2F("hPionEtaPhiConv","",100,-0.8,0.8,100*nsm,phimin,phimax);
-      fHPionEtaPhiConv->SetXTitle("#eta_{#gamma#gamma}");
-      fHPionEtaPhiConv->SetYTitle("#varphi_{#gamma#gamma}");
-      fOutput->Add(fHPionEtaPhiConv);
-      fHPionMggPtConv = new TH2F("hPionMggPtConv","",500,0,1,100,0,20.0);
-      fHPionMggPtConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggPtConv->SetYTitle("p_{T}^{#gamma#gamma} [GeV/c]");
-      fOutput->Add(fHPionMggPtConv);
-      fHPionMggAsymConv = new TH2F("hPionMggAsymConv","",500,0,1,100,0,1);
-      fHPionMggAsymConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggAsymConv->SetYTitle("Z_{#gamma#gamma} [GeV]");
-      fOutput->Add(fHPionMggAsymConv);
-      fHPionMggDggConv = new TH2F("hPionMggDggConv","",500,0,1,100,0,10);
-      fHPionMggDggConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggDggConv->SetYTitle("opening angle [grad]");
-      fOutput->Add(fHPionMggDggConv);
-      fHPionEtaPhiConvConv = new TH2F("hPionEtaPhiConvConv","",100,-0.8,0.8,100*nsm,phimin,phimax);
-      fHPionEtaPhiConvConv->SetXTitle("#eta_{#gamma#gamma}");
-      fHPionEtaPhiConvConv->SetYTitle("#varphi_{#gamma#gamma}");
-      fOutput->Add(fHPionEtaPhiConvConv);
-      fHPionMggPtConvConv = new TH2F("hPionMggPtConvConv","",500,0,1,100,0,20.0);
-      fHPionMggPtConvConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggPtConvConv->SetYTitle("p_{T}^{#gamma#gamma} [GeV/c]");
-      fOutput->Add(fHPionMggPtConvConv);
-      fHPionMggAsymConvConv = new TH2F("hPionMggAsymConvConv","",500,0,1,100,0,1);
-      fHPionMggAsymConvConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggAsymConvConv->SetYTitle("Z_{#gamma#gamma} [GeV]");
-      fOutput->Add(fHPionMggAsymConvConv);
-      fHPionMggDggConvConv = new TH2F("hPionMggDggConvConv","",500,0,1,100,0,10);
-      fHPionMggDggConvConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionMggDggConvConv->SetYTitle("opening angle [grad]");
-      fOutput->Add(fHPionMggDggConvConv);
-    }
     //  const Int_t nbins = 300;
     //  const Int_t ptmax = 30;
     //    Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,12.5,15,20,25,50};
@@ -1034,13 +955,13 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHPionInvMassesMixDCal);
  
     // EMCal+DCal real events
-    fHPionInvMassesEMCalDCal = new TH2F("hPionInvMassEMCalDCal","hPionInvMassEMCalDCal",300,0,150,50,0,50);
+    fHPionInvMassesEMCalDCal = new TH2F("hPionInvMassEMCalDCal","hPionInvMassEMCalDCal",100,0,10,60,0,30);
     fHPionInvMassesEMCalDCal->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesEMCalDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesEMCalDCal);
     
     // EMCal+DCal mixed events
-    fHPionInvMassesMixEMCalDCal = new TH2F("hPionInvMassMixEMCalDCal","hPionInvMassMixEMCalDCal",300,0,150,50,0,50);
+    fHPionInvMassesMixEMCalDCal = new TH2F("hPionInvMassMixEMCalDCal","hPionInvMassMixEMCalDCal",100,0,10,60,0,30);
     fHPionInvMassesMixEMCalDCal->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     fHPionInvMassesMixEMCalDCal->SetYTitle("p_{T} [GeV/c]");
     fOutput->Add(fHPionInvMassesMixEMCalDCal);
@@ -1083,28 +1004,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
       fHPrimPionInvMassesAsym->SetYTitle("p_{T} [GeV/c]");
       fOutput->Add(fHPrimPionInvMassesAsym);
       
-    }
-    
-    if(fDoConvAna){
-      fHPionInvMassesConv = new TH2F("hPionInvMassConv","hPionInvMassConv",500,0,1,nbins,0,ptmax);
-      fHPionInvMassesConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesConv->SetYTitle("p_{T} [GeV/c]");
-      fOutput->Add(fHPionInvMassesConv);
-      
-      fHPionInvMassesConvMix = new TH2F("hPionInvMassConvMix","hPionInvMassConvMix",500,0,1,nbins,0,ptmax);
-      fHPionInvMassesConvMix->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesConvMix->SetYTitle("p_{T} [GeV/c]");
-      fOutput->Add(fHPionInvMassesConvMix);
-      
-      fHPionInvMassesConvConv = new TH2F("hPionInvMassConvConv","hPionInvMassConvConv",500,0,1,nbins,0,ptmax);
-      fHPionInvMassesConvConv->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesConvConv->SetYTitle("p_{T} [GeV/c]");
-      fOutput->Add(fHPionInvMassesConvConv);
-      
-      fHPionInvMassesConvConvMix = new TH2F("hPionInvMassConvConvMix","hPionInvMassConvConvMix",500,0,1,nbins,0,ptmax);
-      fHPionInvMassesConvConvMix->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-      fHPionInvMassesConvConvMix->SetYTitle("p_{T} [GeV/c]");
-      fOutput->Add(fHPionInvMassesConvConvMix);
     }
     
     // histogram for conversion point
@@ -1156,10 +1055,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionTruthPtAcc->SetXTitle("p_{T}");
     fOutput->Add(fHPionTruthPtAcc);
     
-    fHPionTruthPtConvAcc = new TH1F("hPionTruthPtConvAcc","pi0 truth pT from MC within acceptance (eta<0.8 for converted)",nbins,0,ptmax);
-    fHPionTruthPtConvAcc->SetXTitle("p_{T}");
-    fOutput->Add(fHPionTruthPtConvAcc);
-    
     // eta
     fHEtaTruthPt = new TH1F("hEtaTruthPt","eta truth pT from MC",nbins,0,ptmax);
     fHEtaTruthPt->SetXTitle("p_{T}");
@@ -1172,10 +1067,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHEtaTruthPtAcc = new TH1F("hEtaTruthPtAcc","eta truth pT from MC within acceptance",nbins,0,ptmax);
     fHEtaTruthPtAcc->SetXTitle("p_{T}");
     fOutput->Add(fHEtaTruthPtAcc);
-    
-    fHEtaTruthPtConvAcc = new TH1F("hEtaTruthPtConvAcc","eta truth pT from MC within acceptance (eta<0.8 for converted)",nbins,0,ptmax);
-    fHEtaTruthPtConvAcc->SetXTitle("p_{T}");
-    fOutput->Add(fHEtaTruthPtConvAcc);
     
     // direct photons
     fHGamTruthPt = new TH1F("hGamTruthPt","gamma truth pT from MC",nbins,0,ptmax);
@@ -1207,10 +1098,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHPionTruthPtAccAdd->Sumw2();
     fOutput->Add(fHPionTruthPtAccAdd);
     
-    fHPionTruthPtConvAccAdd = new TH1F("hPionTruthPtConvAccAdd","added pi0 truth pT from MC within acceptance (eta<0.8 for converted)",nbins,0,ptmax);
-    fHPionTruthPtConvAccAdd->SetXTitle("p_{T}");
-    fOutput->Add(fHPionTruthPtConvAccAdd);
-    
     // eta
     fHEtaTruthPtAdd = new TH1F("hEtaTruthPtAdd","added eta truth pT from MC",nbins,0,ptmax);
     fHEtaTruthPtAdd->SetXTitle("p_{T}");
@@ -1226,10 +1113,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHEtaTruthPtAccAdd->SetXTitle("p_{T}");
     fHEtaTruthPtAccAdd->Sumw2();
     fOutput->Add(fHEtaTruthPtAccAdd);
-    
-    fHEtaTruthPtConvAccAdd = new TH1F("hEtaTruthPtConvAccAdd","added eta truth pT from MC within acceptance (eta<0.8 for converted)",nbins,0,ptmax);
-    fHEtaTruthPtConvAccAdd->SetXTitle("p_{T}");
-    fOutput->Add(fHEtaTruthPtConvAccAdd);
     
     // particle information
     fHMCpartfrac = new TH2F("hMCpartfrac","fraction of most energy MC particle vs. fraction of this particle to all",100,0,2,100,0.8,1.2);
@@ -1793,18 +1676,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     AliFatal("Impossible to not have either pointer to ESD or AOD event");
   }
   
-  // need to get converted photons from something, maybe apply quality cuts, and then use them for invariant mass calculation
-  // also need space in event mixing to store all those candidates
-  //fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-  //if(!fV0Reader){printf("Error: No V0 Reader");} // GetV0Reader
-  //Int_t eventQuality = ((AliConversionCuts*)fV0Reader->GetConversionCuts())->GetEventQuality();
-  
-  //if(fV0Reader)
-  //fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut // GetGoodGammas instead?
-  //cout << "number of conversion photons: " << fV0Reader->GetNReconstructedGammas() << endl;
-  
-  //else
-  fReaderGammas = NULL;
   
   if (1) {
     AliDebug(2,Form("fRecPoints   set: %p", fRecPoints));
@@ -1829,7 +1700,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
   if(vertex->GetZ()>fVtxZMin && vertex->GetZ()<=fVtxZMin+vtxcuts) vtxClass=0;
   else if(vertex->GetZ()>fVtxZMin+vtxcuts && vertex->GetZ()<=fVtxZMin+2*vtxcuts) vtxClass=1;
   else if(vertex->GetZ()>fVtxZMin+2*vtxcuts && vertex->GetZ()<=fVtxZMin+3*vtxcuts) vtxClass=2;
-  else if(vertex->GetZ()>fVtxZMin+3*vtxcuts && vertex->GetZ()<=fVtxZMin+4*vtxcuts) vtxClass=3;
+  //  else if(vertex->GetZ()>fVtxZMin+3*vtxcuts && vertex->GetZ()<=fVtxZMin+4*vtxcuts) vtxClass=3;
   //  else if(vertex->GetZ()>fVtxZMin+4*vtxcuts && vertex->GetZ()<fVtxZMax) vtxClass=4;
   
   //    vtxClass = 0;
@@ -1846,7 +1717,6 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     
     
     pt_max = FillClusHists(phitrig, thetatrig);
-    //FillConvHists();
     
     if(pt_max > 1 && pt_max<=3) ptClass = 1;
     else if(pt_max > 3 && pt_max<=6) ptClass = 2;
@@ -1856,15 +1726,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     
     // these are where the pi0 stuff is filled
     FillPionHists();
-    if(fDoConvAna){
-      FillPionConv();
-      FillConvConv();
-    }
     FillMixHists(MulClass,vtxClass,ptClass,phitrig,thetatrig);
-    if(fDoConvAna){
-      FillMixConv(MulClass,vtxClass,ptClass);
-      FillMixConvConv(MulClass,vtxClass,ptClass);
-    }
     
     FillOtherHists();
   }
@@ -2032,10 +1894,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   fHClustNoEvt->Fill(nclus);
-  thisEvent.SetGlobalInfo(0,0,0,0);
+  thisEvent.SetGlobalInfo(0,0,0);
   
-  if(nclus > 700){
-    AliError("Attention! More than 500 clusters in event!");
+  if(nclus > 800){
+    AliError("Attention! More than 700 clusters in event!");
     return 0;
   }
   
@@ -2499,7 +2361,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   } // end cluster loop
   fHMeanClusterNumber->Fill(runnumber,nclusters);
   fHClustAccEvt->Fill(nclusters);
-  thisEvent.SetGlobalInfo(nclusters,0,max_phi,max_theta);
+  thisEvent.SetGlobalInfo(nclusters,max_phi,max_theta);
   if(bprint){
     thisEvent.Print();
     cout << " " << endl;
@@ -2508,29 +2370,6 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   //  return max_pt;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillConvHists()
-{
-  // Fill histograms related to cluster properties.
-  TLorentzVector clusterVec;
-  
-  Double_t vertex[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
-  if(fReaderGammas){
-    for(Int_t j = 0; j < fReaderGammas->GetEntriesFast(); j++){
-      AliAODConversionPhoton* PhotonCandidate = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(j);
-      Double_t x = PhotonCandidate->GetConversionX();
-      Double_t y = PhotonCandidate->GetConversionY();
-      fHConversionPoint->Fill(x,y);
-      if(!PhotonCandidate) continue;
-      clusterVec.SetPxPyPzE(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(),PhotonCandidate->GetPz(),PhotonCandidate->GetPhotonP());
-      fHConvEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
-      //cout << "photon converted at (" << x << "," << y << ")" << endl;
-    }
-  }
-  
-}
 
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
@@ -2766,7 +2605,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
     
     // check it particle decays into two photons (binp), decay photons are in acceptance (bacc/baccconv)
     bool bacc = true;
-    bool baccconv = true;
     for (Int_t i=d1;i<=d2;++i) {
       const AliMCParticle *dmc = static_cast<const AliMCParticle *>(mcEvent->GetTrack(i));
       Double_t eta_d = dmc->Eta();
@@ -2776,12 +2614,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       }
       if(!(dmc->PdgCode()==22 && eta_d>etamin && eta_d<etamax && phi_d>phimin && phi_d<phimax)){
         bacc = false;
-      }
-      if(i==d1 &&!(dmc->PdgCode()==22 && eta_d>-0.8 && eta_d<0.8)){
-        baccconv = false;
-      }
-      if(i==d2 &&!(dmc->PdgCode()==22 && eta_d>etamin && eta_d<etamax && phi_d>phimin && phi_d<phimax)){
-        baccconv = false;
       }
     }
     
@@ -2795,13 +2627,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
         if(mcP->PdgCode() == 221 && bacc){
           fHEtaTruthPtAcc->Fill(mcP->Pt());
         }
-        
-        if(mcP->PdgCode() == 111 && baccconv){
-          fHPionTruthPtConvAcc->Fill(mcP->Pt());
-        }
-        if(mcP->PdgCode() == 221 && baccconv){
-          fHEtaTruthPtConvAcc->Fill(mcP->Pt());
-        }
       }
     }
     
@@ -2811,10 +2636,6 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
       if(binp){
         if(mcP->PdgCode() == 111 && bacc){
           fHPionTruthPtAccAdd->Fill(mcP->Pt(),wgt2);
-        }
-        
-        if(mcP->PdgCode() == 111 && baccconv){
-          fHPionTruthPtConvAccAdd->Fill(mcP->Pt(),wgt2);
         }
       }
     }
@@ -2826,11 +2647,8 @@ void AliAnalysisTaskEMCALPi0Gamma::CalcMcInfo()
         if(mcP->PdgCode() == 221 && bacc){
           fHEtaTruthPtAccAdd->Fill(mcP->Pt(),wgt2);
         }
-        if(mcP->PdgCode() == 221 && baccconv){
-          fHEtaTruthPtConvAccAdd->Fill(mcP->Pt(),wgt2);
-        }
       }
-      
+
     }
     ProcessDaughters(mcP, iTrack, mcEvent);
   }
@@ -3481,112 +3299,6 @@ void AliAnalysisTaskEMCALPi0Gamma::FillPionHists()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillPionConv()
-{
-  // Fill histograms related to pions.
-  
-  Double_t vertex[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
-  TObjArray *clusters = fEsdClusters;
-  if (!clusters)
-    clusters = fAodClusters;
-  
-  
-  if (clusters) {
-    TLorentzVector clusterVec1;
-    TLorentzVector clusterVec2;
-    TLorentzVector pionVec;
-    
-    Int_t nclus = clusters->GetEntries();
-    for (Int_t i = 0; i<nclus; ++i) {
-      AliVCluster *clus1 = static_cast<AliVCluster*>(clusters->At(i));
-      if (!clus1)
-        continue;
-      if (!clus1->IsEMCAL())
-        continue;
-      if (clus1->E()<fMinE)
-        continue;
-      if (clus1->GetNCells()<fNminCells)
-        continue;
-      if (GetMaxCellEnergy(clus1)/clus1->E()<fMinErat)
-        continue;
-      //      if (clus1->Chi2()<fMinEcc) // eccentricity cut
-      //        continue;
-      clus1->GetMomentum(clusterVec1,vertex);
-      //      Double_t ecorr = 1;
-      //Double_t ecorr = fcorrect->Eval(2.0*clusterVec1.E());
-      //      TLorentzVector clusterVecCorr1;
-      //      clusterVecCorr1.SetPxPyPzE(clusterVec1.Px()*ecorr,clusterVec1.Py()*ecorr,clusterVec1.Pz()*ecorr,clusterVec1.E()*ecorr);
-      
-      if(fReaderGammas){
-        for(Int_t j = 0; j < fReaderGammas->GetEntriesFast(); j++){
-          AliAODConversionPhoton* PhotonCandidate = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(j);
-          if(!PhotonCandidate) continue;
-          clusterVec2.SetPxPyPzE(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(),PhotonCandidate->GetPz(),PhotonCandidate->GetPhotonP());
-          if (clusterVec2.E()<fMinE)
-            continue;
-          pionVec = clusterVec1 + clusterVec2;
-          Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-          Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
-          if (pionZgg < fAsymMax2) {
-            fHPionEtaPhiConv->Fill(pionVec.Eta(),pionVec.Phi());
-            fHPionMggPtConv->Fill(pionVec.M(),pionVec.Pt());
-            fHPionMggAsymConv->Fill(pionVec.M(),pionZgg);
-            fHPionMggDggConv->Fill(pionVec.M(),pionOpeningAngle);
-            //            Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-            fHPionInvMassesConv->Fill(pionVec.M(),pionVec.Pt());
-          }
-        }
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillConvConv()
-{
-  // Fill histograms related to pions.
-  
-  Double_t vertex[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
-  TLorentzVector clusterVec1;
-  TLorentzVector clusterVec2;
-  TLorentzVector pionVec;
-  
-  if(fReaderGammas){
-    Int_t nclus = fReaderGammas->GetEntriesFast();
-    for (Int_t i = 0; i<nclus; ++i) {
-      AliAODConversionPhoton* PhotonCandidate1 = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(i);
-      if(!PhotonCandidate1) continue;
-      clusterVec1.SetPxPyPzE(PhotonCandidate1->GetPx(),PhotonCandidate1->GetPy(),PhotonCandidate1->GetPz(),PhotonCandidate1->GetPhotonP());
-      if (clusterVec1.E()<fMinE)
-        continue;
-      
-      for(Int_t j = 0; j < fReaderGammas->GetEntriesFast(); j++){
-        AliAODConversionPhoton* PhotonCandidate2 = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(j);
-        if(!PhotonCandidate2) continue;
-        clusterVec2.SetPxPyPzE(PhotonCandidate2->GetPx(),PhotonCandidate2->GetPy(),PhotonCandidate2->GetPz(),PhotonCandidate2->GetPhotonP());
-        if (clusterVec2.E()<fMinE)
-          continue;
-        pionVec = clusterVec1 + clusterVec2;
-        Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-        Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
-        if (pionZgg < fAsymMax2) {
-          fHPionEtaPhiConvConv->Fill(pionVec.Eta(),pionVec.Phi());
-          fHPionMggPtConvConv->Fill(pionVec.M(),pionVec.Pt());
-          fHPionMggAsymConvConv->Fill(pionVec.M(),pionZgg);
-          fHPionMggDggConvConv->Fill(pionVec.M(),pionOpeningAngle);
-          //            Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-          fHPionInvMassesConvConv->Fill(pionVec.M(),pionVec.Pt());
-        }
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_t vtxClass, const Int_t PtClass, Double_t phi0, Double_t theta0)
 {
   // Fill histograms related to pions.
@@ -3707,148 +3419,6 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
                 fHPionInvMassesMixEMCalDCal->Fill(pionVec.M(),pionVec.Pt());
               }
             }
-          }
-        }
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillMixConv(const Int_t MulClass, const Int_t vtxClass, const Int_t PtClass)
-{
-  // Fill histograms related to pions.
-  
-  Double_t vertex[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
-  TObjArray *clusters = fEsdClusters;
-  if (!clusters)
-    clusters = fAodClusters;
-  
-  if (clusters) {
-    TLorentzVector clusterVec1;
-    TLorentzVector clusterVec2;
-    TLorentzVector pionVec;
-    
-    Int_t nclus = thisEvent.nHits;
-    
-    // use clusters from "this" event and pair with v0 from old events
-    // Int_t nclus = clusters->GetEntries();
-    
-    for (Int_t i = 0; i<nclus; ++i) {
-      //      AliVCluster *clus1 = static_cast<AliVCluster*>(clusters->At(i));
-      //      if (!clus1)
-      //        continue;
-      //      if (!clus1->IsEMCAL())
-      //        continue;
-      //      if (clus1->E()<fMinE)
-      //        continue;
-      //      if (clus1->GetNCells()<fNminCells)
-      //        continue;
-      //      if (GetMaxCellEnergy(clus1)/clus1->E()<fMinErat)
-      //        continue;
-      //      if (clus1->Chi2()<fMinEcc) // eccentricity cut
-      //        continue;
-      //      clus1->GetMomentum(clusterVec1,vertex);
-      //      Double_t ecorr = 1;
-      //Double_t ecorr = fcorrect->Eval(2.0*clusterVec1.E());
-      //      TLorentzVector clusterVecCorr1;
-      //      clusterVecCorr1.SetPxPyPzE(clusterVec1.Px()*ecorr,clusterVec1.Py()*ecorr,clusterVec1.Pz()*ecorr,clusterVec1.E()*ecorr);
-      
-      
-      // loop over old events
-      for (Int_t iOld=0;iOld<nEvt;iOld++){
-        EmcEvent OldEvent = EmcEventList[MulClass][vtxClass][PtClass][iOld];
-        Int_t nclusold = OldEvent.nV0Hits;
-        for (Int_t j = 0; j<nclusold; ++j) {
-          clusterVec2 = OldEvent.hitv0[j].thishit;
-          pionVec = clusterVec1 + clusterVec2;
-          Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-          //                    Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
-          if (pionZgg < fAsymMax2) {
-            /*
-             fHPionEtaPhiMix->Fill(pionVec.Eta(),pionVec.Phi());
-             fHPionMggPtMix->Fill(pionVec.M(),pionVec.Pt());
-             fHPionMggAsymMix->Fill(pionVec.M(),pionZgg);
-             fHPionMggDggMix->Fill(pionVec.M(),pionOpeningAngle);
-             */
-            //            Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-            fHPionInvMassesConvMix->Fill(pionVec.M(),pionVec.Pt());
-          }
-        }
-      }
-    }
-    // also loop over v0 from "this" event and pair with old clusters?
-    if(fReaderGammas){
-      for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
-        AliAODConversionPhoton* PhotonCandidate = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(i);
-        if(!PhotonCandidate) continue;
-        clusterVec1.SetPxPyPzE(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(),PhotonCandidate->GetPz(),PhotonCandidate->GetPhotonP());
-        if (clusterVec1.E()<fMinE)
-          continue;
-        
-        // loop over old events
-        for (Int_t iOld=0;iOld<nEvt;iOld++){
-          EmcEvent OldEvent = EmcEventList[MulClass][vtxClass][PtClass][iOld];
-          Int_t nclusold = OldEvent.nHits;
-          for (Int_t j = 0; j<nclusold; ++j) {
-            clusterVec2 = OldEvent.hit[j].thishit;
-            pionVec = clusterVec1 + clusterVec2;
-            Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-            //                    Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
-            if (pionZgg < fAsymMax2) {
-              //              Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-              fHPionInvMassesConvMix->Fill(pionVec.M(),pionVec.Pt());
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillMixConvConv(const Int_t MulClass, const Int_t vtxClass, const Int_t PtClass)
-{
-  // Fill histograms related to pions.
-  
-  Double_t vertex[3] = {0};
-  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-  
-  if(fReaderGammas){
-    
-    TLorentzVector clusterVec1;
-    TLorentzVector clusterVec2;
-    TLorentzVector pionVec;
-    
-    // use v0 from "this" event and pair with v0 from old events
-    Int_t nclus = fReaderGammas->GetEntriesFast();
-    for (Int_t i = 0; i<nclus; ++i) {
-      AliAODConversionPhoton* PhotonCandidate1 = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(i);
-      if(!PhotonCandidate1) continue;
-      clusterVec1.SetPxPyPzE(PhotonCandidate1->GetPx(),PhotonCandidate1->GetPy(),PhotonCandidate1->GetPz(),PhotonCandidate1->GetPhotonP());
-      if (clusterVec1.E()<fMinE)
-        continue;
-      
-      // loop over old events
-      for (Int_t iOld=0;iOld<nEvt;iOld++){
-        EmcEvent OldEvent = EmcEventList[MulClass][vtxClass][PtClass][iOld];
-        Int_t nclusold = OldEvent.nV0Hits;
-        for (Int_t j = 0; j<nclusold; ++j) {
-          clusterVec2 = OldEvent.hitv0[j].thishit;
-          pionVec = clusterVec1 + clusterVec2;
-          Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-          //                    Double_t pionOpeningAngle = clusterVec1.Angle(clusterVec2.Vect());
-          if (pionZgg < fAsymMax2) {
-            /*
-             fHPionEtaPhiMix->Fill(pionVec.Eta(),pionVec.Phi());
-             fHPionMggPtMix->Fill(pionVec.M(),pionVec.Pt());
-             fHPionMggAsymMix->Fill(pionVec.M(),pionZgg);
-             fHPionMggDggMix->Fill(pionVec.M(),pionOpeningAngle);
-             */
-            //            Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-            fHPionInvMassesConvConvMix->Fill(pionVec.M(),pionVec.Pt());
           }
         }
       }
@@ -4481,7 +4051,7 @@ void AliAnalysisTaskEMCALPi0Gamma::GetMulClass(Int_t& imcl)
     nclus = clusters->GetEntries();
   
   //const int MultCut[8] = {5, 15, 30, 50, 80, 120, 300, 9999};
-  const int MultCut[nMulClass] = {5, 12, 20, 9999};
+  const int MultCut[nMulClass] = {5, 12, 20 ,50, 9999};
   
   imcl=0;
   
@@ -4513,14 +4083,6 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
     //    nclus = evt.nMaxHit;
   }
   
-  
-  Int_t nv0 = 0;
-  if(fReaderGammas)
-    nv0 = fReaderGammas->GetEntriesFast();
-  
-  // add new event
-  //	evt.SetGlobalInfo(MulClass, vtxClass, nclus, nv0, phitrig, thetatrig);
-  //	evt.SetGlobalInfo(nclus, nv0, phitrig, thetatrig);
   
   //  if (clusters) {
   //    int ncl = 0;
@@ -4554,7 +4116,7 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
   //  }
   
   //cout << Form("%d, %d, %d, %d",MulClass,vtxClass,PtClass,iEvent) << endl;
-  thisEvent.SetGlobalInfo(nclus,nv0,phitrig,thetatrig);
+  thisEvent.SetGlobalInfo(nclus,phitrig,thetatrig);
   EmcEventList[MulClass][vtxClass][PtClass][iEvent] = thisEvent;
   
   //  for(int i=0;i<nclus;i++){
@@ -4566,17 +4128,6 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
   //  }
   
   iEvent++;
-  if(fReaderGammas){
-    for(Int_t j = 0; j < fReaderGammas->GetEntriesFast(); j++){
-      AliAODConversionPhoton* PhotonCandidate = NULL;//(AliAODConversionPhoton*) fReaderGammas->At(j);
-      if(!PhotonCandidate) continue;
-      TLorentzVector clusterVec2;
-      clusterVec2.SetPxPyPzE(PhotonCandidate->GetPx(),PhotonCandidate->GetPy(),PhotonCandidate->GetPz(),PhotonCandidate->GetPhotonP());
-      if (clusterVec2.E()<fMinE)
-        continue;
-      evt.hitv0[j].thishit=clusterVec2;
-    }
-  }
   return;
 }
 
@@ -4793,12 +4344,10 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::PrivateEnergyRecal(Double_t energy, Int_t
 //__________________________________________________________________________________________________
 EmcEvent::EmcEvent()
 : nHits(0),
-nV0Hits(0),
 TrigPhi(0),
 TrigTheta(0)
 {
   nHits = 0;
-  nV0Hits = 0;
   TrigPhi = 0;
   TrigTheta = 0;
 }
@@ -4806,12 +4355,10 @@ TrigTheta(0)
 //__________________________________________________________________________________________________
 EmcEvent::EmcEvent(const EmcEvent &obj)
 : nHits(0),
-nV0Hits(0),
 TrigPhi(0),
 TrigTheta(0)
 {
   nHits = obj.nHits;
-  nV0Hits = obj.nV0Hits;
   TrigPhi = obj.TrigPhi;
   TrigTheta = obj.TrigTheta;
   // copy all hits
@@ -4826,19 +4373,18 @@ TrigTheta(0)
 
 
 //__________________________________________________________________________________________________
-void EmcEvent::SetGlobalInfo(const Int_t& Size, const Int_t& V0Size, const Float_t& phiTrig, const Float_t& thetaTrig)
+void EmcEvent::SetGlobalInfo(const Int_t& Size, const Float_t& phiTrig, const Float_t& thetaTrig)
 {
   //    fCenPercent = centPer;
   //    fVtx = vtxPos;
   nHits = Size;
-  nV0Hits = V0Size;
   TrigPhi = phiTrig;
   TrigTheta = thetaTrig;
 }
 
 void EmcEvent::Print()
 {
-  Printf("%d hits, %d v0 hits",nHits,nV0Hits);
+  Printf("%d hits",nHits);
   for(int i=0;i<nHits;i++){
     hit[i].thishit.Print();
   }
@@ -4870,11 +4416,5 @@ weight(1),
 bclean(1)
 {
 }  
-
-//__________________________________________________________________________________________________
-V0Hit::V0Hit()
-: thishit()
-{
-}
 
 
