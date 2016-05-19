@@ -205,7 +205,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistBGCflagsAcc     = new TH1F("fHistBGCflagsAcc",";BGC flags;",33,-0.5,32.5);
   fHistV0MOnAll        = new TH1F("fHistV0MOnAll",              "All events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
   fHistV0MOnAcc        = new TH1F("fHistV0MOnAcc",         "Accepted events;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
-  fHistV0MOnVHM        = new TH1F("fHistV0MOnAcc","Events with VHM clean up;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
+  fHistV0MOnVHM        = new TH1F("fHistV0MOnVHM","Events with VHM clean up;Online V0M;",isLowFlux?8000:40000,0,isLowFlux?8000:40000);
   fHistV0MOfAll        = new TH1F("fHistV0MOfAll",     "All events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
   fHistV0MOfAcc        = new TH1F("fHistV0MOfAcc","Accepted events;Offline V0M;",isLowFlux?1000:50000,0,isLowFlux?1000:50000);
   fHistOFOAll          = new TH1F("fHistOFOAll"  ,     "All events;Online outer FO chips",800,0,800);
