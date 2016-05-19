@@ -106,12 +106,12 @@ protected:
   void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   
   Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
-    //copy-pasted from AliEMCALRecoUtils TO BE CHANGED IN ORDER TO NOT DUPLICATE CODE
-//  Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
-//  Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
-//  Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
-//  Float_t                  RecalEnClust(AliVCluster* cluster, AliVCaloCells * cells);
-//  void                     RecalAmpCell(Float_t  & amp, Int_t absId) const ;
+
+  Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
+  Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
+  Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
+  Float_t                  RecalEnClust(AliVCluster* cluster, AliVCaloCells * cells);
+  void                     RecalAmpCell(Float_t  & amp, Int_t absId) const ;
   
   Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
   void                     FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation);
@@ -136,7 +136,7 @@ protected:
   TClonesArray               *fAODMCParticles; //!
   TClonesArray               *fTracksAna;             //! hybrid track array in
   AliStack                   *fStack;//!
-//  AliEMCALRecoUtils          *fEMCALRecoUtils;  //!  EMCAL utils for cluster rereconstruction.
+  AliEMCALRecoUtils          *fEMCALRecoUtils;  //!  EMCAL utils for cluster rereconstruction.
   
   Int_t       fWho;           // MODE for the Output Object (TTree or THnSparse)
   Bool_t      fSSsmearing;
