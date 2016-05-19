@@ -86,6 +86,12 @@ public:
   void                     SetRejectEventWithoutTracks(Bool_t revwotr)                     { fRejectionEventWithoutTracks = revwotr;}
   void                     SetAnalysispPb(Bool_t ana)                                      { fAnalysispPb = ana;}
   void                     SetTriggerLevel1(Int_t L)                                       { fTriggerLevel1 = L;}
+  void                     SetM02Smearing(Bool_t smear)                                    {
+    fSSsmearing = smear;}
+  void                     SetWidth4Smear(Float_t width)                                   {
+    fSSsmearwidth = width;}
+  void                     SetMean4Smear(Float_t mean)                                     {
+    fSSsmear_mean = mean;}
   
 protected:
   
@@ -101,11 +107,11 @@ protected:
   
   Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
     //copy-pasted from AliEMCALRecoUtils TO BE CHANGED IN ORDER TO NOT DUPLICATE CODE
-  Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
-  Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
-  Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
-  Float_t                  RecalEnClust(AliVCluster* cluster, AliVCaloCells * cells);
-  void                     RecalAmpCell(Float_t  & amp, Int_t absId) const ;
+//  Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
+//  Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
+//  Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
+//  Float_t                  RecalEnClust(AliVCluster* cluster, AliVCaloCells * cells);
+//  void                     RecalAmpCell(Float_t  & amp, Int_t absId) const ;
   
   Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
   void                     FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation);
@@ -130,10 +136,12 @@ protected:
   TClonesArray               *fAODMCParticles; //!
   TClonesArray               *fTracksAna;             //! hybrid track array in
   AliStack                   *fStack;//!
-  AliEMCALRecoUtils          *fEMCALRecoUtils;  //!  EMCAL utils for cluster rereconstruction.
+//  AliEMCALRecoUtils          *fEMCALRecoUtils;  //!  EMCAL utils for cluster rereconstruction.
   
   Int_t       fWho;           // MODE for the Output Object (TTree or THnSparse)
-  
+  Bool_t      fSSsmearing;
+  Float_t     fSSsmearwidth;
+  Float_t     fSSsmear_mean;
   
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
     //    TList       *fOutputList; //! Output list
@@ -278,7 +286,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 3);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 4);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif

@@ -39,6 +39,8 @@
 #include "AliLog.h"
 #include "TF1.h"
 #include "Riostream.h"
+#include "AliCalorimeterUtils.h"
+#include "TRandom3.h"
 
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
@@ -59,8 +61,11 @@ fNCluster(0),
 fAODMCParticles(0),
 fTracksAna(0),
 fStack(0),
-fEMCALRecoUtils(new AliEMCALRecoUtils),
+//fEMCALRecoUtils(new AliEMCALRecoUtils),
 fWho(-1),
+fSSsmearing(0),
+fSSsmearwidth(0),
+fSSsmear_mean(0),
   //fOutputList(0),
 fTrackMult(0),
 fTrackMultEMCAL(0),
@@ -200,8 +205,11 @@ fNCluster(0),
 fAODMCParticles(0),
 fTracksAna(0),
 fStack(0),
-fEMCALRecoUtils(new AliEMCALRecoUtils),
+//fEMCALRecoUtils(new AliEMCALRecoUtils),
 fWho(-1),
+fSSsmearing(0),
+fSSsmearwidth(0),
+fSSsmear_mean(0),
   //fOutputList(0),
 fTrackMult(0),
 fTrackMultEMCAL(0),
@@ -1032,8 +1040,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
       if(fCaloCells)
       {
-        nlm = GetNLM(coi,fCaloCells);
-        
+          //nlm = GetNLM(coi,fCaloCells);
+        AliCalorimeterUtils *cu=new AliCalorimeterUtils();
+        nlm=cu->GetNumberOfLocalMaxima(coi, fCaloCells);
         Printf("Number of local maxima for this cluster: %d",nlm);
         AliDebug(1,Form("NLM = %d",nlm));
         
@@ -1239,7 +1248,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   }
   return kFALSE;
 }
-
+/*
   //_____________________________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster *coi, AliVCaloCells* cells){
     // find the number of local maxima of a cluster adapted from AliCalorimeterUtils
@@ -1494,7 +1503,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi,
   Printf("recalculated energy: %.4f",energy);
   return energy;
 }
-
+*/
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Double_t &etIso, Double_t &phiBandcells){
     // Underlying events study with EMCAL cells in phi band // have to be tested
@@ -2446,7 +2455,21 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   Double_t outputValues[ndims];
   
   eTCOI = vecCOI.Et();
+  
+  if(fSSsmearing){
+    if((fSSsmearwidth != 0.)){
+      TRandom3 *ran=new TRandom3();
+      coi->SetM02(coi->GetM02()+ ran->Landau(fSSsmear_mean,fSSsmearwidth));
+    }
+    else
+      AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
+  }
+  else
+    AliWarning("Smearing not SET!");
+  
   m02COI = coi->GetM02();
+  
+  
   
     //AliInfo(Form("M02 value: %lf\n",m02COI));
   
