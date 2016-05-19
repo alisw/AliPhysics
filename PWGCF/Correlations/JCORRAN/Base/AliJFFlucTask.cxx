@@ -61,6 +61,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fEffFilterBit=0;	
 	fPt_min=0;
 	fPt_max=0;
+	fCentDetName="V0M";
 	fInFileName="";
 	IsMC = kFALSE;
 	IsKineOnly = kFALSE;
@@ -100,6 +101,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	fPt_min=0;
 	fPt_max=0;
 	fInFileName="";
+	fCentDetName="V0M";
 	IsMC = kFALSE;
 	IsKineOnly = kFALSE;
 	IsExcludeWeakDecay = kFALSE;
@@ -248,7 +250,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		fFFlucAna->UserExec(""); // doing some analysis here. 
 	} else { // Kine
 		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-		fCent = ReadAODCentrality( currentEvent, "V0M"  ) ; 
+		fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ; 
 		if( fEvtNum == 1 ){
 			int runN = currentEvent->GetRunNumber();
 			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );

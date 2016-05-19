@@ -106,7 +106,8 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 */
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
-
+  void SetCentDetName( TString CentName ){ fCentDetName = CentName; 
+					cout << "setting : Cenetrality determination =" << fCentDetName.Data() << endl; };
 
 
  private:
@@ -124,6 +125,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fPt_min;
   double fPt_max;
   double fzvtxCut;
+  TString fCentDetName;
   TString fInFileName;
   Bool_t IsMC;
   Bool_t IsKineOnly;
