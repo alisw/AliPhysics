@@ -30,6 +30,7 @@
 #include "AliAnaCaloTrackCorrBaseClass.h"
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
+#include "AliGenPythiaEventHeader.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrMaker) ;
@@ -53,6 +54,7 @@ fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
 fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExotic(0),
+fhPtHard(0),                  fhPtHardWeighted(0),
 fhPileUpClusterMult(0),       fhPileUpClusterMultAndSPDPileUp(0),
 fhTrackMult(0),
 fhCentrality(0),              fhEventPlaneAngle(0),
@@ -232,17 +234,32 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   fhTrackMult      ->Fill(fReader->GetTrackMultiplicity());
   fhCentrality     ->Fill(fReader->GetEventCentrality  ());
   fhEventPlaneAngle->Fill(fReader->GetEventPlaneAngle  ());
-  
-  if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
-  {
-    Float_t eventWeight = GetReader()->GetEventWeight();
       
+  if ( fReader->GetWeightUtils()->IsCentralityWeightOn() )
+  {      
+    Float_t eventWeight = fReader->GetEventWeight();
+
     fhNEventsWeighted        ->Fill(0.,                             eventWeight);
     fhTrackMultWeighted      ->Fill(fReader->GetTrackMultiplicity(),eventWeight);
     fhCentralityWeighted     ->Fill(fReader->GetEventCentrality  (),eventWeight);
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
+  
+  // Check the pT hard in MC
+  if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  {
+    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
     
+    Float_t pTHard = pygeh->GetPtHard();
+    
+    //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
+    
+    fhPtHard->Fill(pTHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() )     
+      fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+  }
+  
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())
@@ -487,7 +504,18 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhTrackMult    = new TH1F("hTrackMult", "Number of tracks per events", 2000 , 0 , 2000) ;
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
+  
+  fhPtHard  = new TH1F("hPtHard"," #it{p}_{T}-hard for selected triggers",150,0,300); 
+  fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+  fOutputContainer->Add(fhPtHard);
 
+  if ( GetReader()->GetWeightUtils()->IsMCCrossSectionCalculationOn() )
+  {
+    fhPtHardWeighted  = new TH1F("hPtHardWeighted"," #it{p}_{T}-hard for selected triggers, weighted by cross section",150,0,300); 
+    fhPtHardWeighted->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fOutputContainer->Add(fhPtHardWeighted);
+  }
+  
   if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
   {
     fhNEventsWeighted         = new TH1F("hNEventsWeighted",   "Number of analyzed events weighted by centrality", 1 , 0 , 1  ) ;

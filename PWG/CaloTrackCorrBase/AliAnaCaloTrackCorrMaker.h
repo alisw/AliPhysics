@@ -139,6 +139,9 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhYVertexExotic;                          //!<! Y Vertex distribution of exotic event.
   TH1F *   fhZVertexExotic;                          //!<! Z Vertex distribution of exotic event.
   
+  TH1F *   fhPtHard;                                 //!<! pt of parton, only for MC generation (pythia jet-jet/gamma-jet)
+  TH1F *   fhPtHardWeighted;                         //!<! pt of parton, only for MC generation (pythia jet-jet/gamma-jet), weighted by cross section
+  
   TH1F *   fhPileUpClusterMult;                      //!<! N clusters with high time.
   TH1F *   fhPileUpClusterMultAndSPDPileUp;          //!<! N clusters with high time in events tagged as pile-up by SPD.
     
@@ -190,7 +193,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,24) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,25) ;
   /// \endcond
 
 } ;
