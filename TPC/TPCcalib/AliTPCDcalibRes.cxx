@@ -112,9 +112,10 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   //
   ,fMaxSigY(1.1)
   ,fMaxSigZ(0.7)
-  ,fMinValidVoxFracDrift(0.4)
+  ,fMinValidVoxFracDrift(0.65)
   ,fMaxBadXBinsToCover(4)
-  ,fMinGoodXBinsToCover(2)
+  ,fMinGoodXBinsToCover(3)
+  ,fMaxBadRowsPerSector(0.4)
   //
   ,fNY2XBins(15)
   ,fNZ2XBins(10)
@@ -2496,8 +2497,10 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
   // 1st loop: find bad regions
   short nbadReg=0,badStart[kNPadRows],badEnd[kNPadRows];
   Bool_t prevBad = kFALSE;
+  float fracBadRows = 0;
   for (int ix=0;ix<fNXBins;ix++) {
     if (fValidFracXBin[isect][ix]<fMinValidVoxFracDrift) {
+      fracBadRows++;
       if (prevBad) badEnd[nbadReg] = ix;
       else {
 	badStart[nbadReg] = badEnd[nbadReg] = ix;
@@ -2513,31 +2516,41 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
   }
   if (prevBad) nbadReg++; // last bad region was not closed
   //
-  // 2nd loop: disable those regions which cannot be smoothed
-  for (int ibad=0;ibad<nbadReg;ibad++) {
-    short badSize=badEnd[ibad]-badStart[ibad]+1,badSizeNext=ibad<(nbadReg-1) ? badEnd[ibad]-badStart[ibad]+1 : 0;
-    // disable too large bad patches
-    if (badSize>fMaxBadXBinsToCover) for (int i=0;i<badSize;i++) SetXBinIgnored(isect,badStart[ibad]+i);
-    // disable too small isolated good patches
-    if (badSizeNext>fMaxBadXBinsToCover && (badStart[ibad+1]-badEnd[ibad]-1)<fMinGoodXBinsToCover) {
-      for (int i=badEnd[ibad]+1;i<badStart[ibad+1];i++) SetXBinIgnored(isect,i);
-    }
+  fracBadRows /= fNXBins;
+  if (fracBadRows>fMaxBadRowsPerSector) {
+    AliWarningF("Sector%2d: Fraction of bad X-bins %.3f > %.3f: masking whole sector",
+		isect,fracBadRows,fMaxBadRowsPerSector);
+    for (int ix=0;ix<fNXBins;ix++) SetXBinIgnored(isect,ix);
   }
-  if (nbadReg) {
-    int ib=0;
-    // is 1st good patch too small?
-    if (GetXBinIgnored(isect,badStart[0]) && badStart[ib]<fMinGoodXBinsToCover) {
-      for (int i=0;i<badStart[ib];i++) SetXBinIgnored(isect,i);
+  else {
+  //
+  // 2nd loop: disable those regions which cannot be smoothed
+    for (int ibad=0;ibad<nbadReg;ibad++) {
+      short badSize=badEnd[ibad]-badStart[ibad]+1,badSizeNext=ibad<(nbadReg-1) ? badEnd[ibad]-badStart[ibad]+1 : 0;
+      // disable too large bad patches
+      if (badSize>fMaxBadXBinsToCover) for (int i=0;i<badSize;i++) SetXBinIgnored(isect,badStart[ibad]+i);
+      // disable too small isolated good patches
+      if (badSizeNext>fMaxBadXBinsToCover && (badStart[ibad+1]-badEnd[ibad]-1)<fMinGoodXBinsToCover) {
+	for (int i=badEnd[ibad]+1;i<badStart[ibad+1];i++) SetXBinIgnored(isect,i);
+      }
     }
-     // last good patch is too small?
-    ib = nbadReg-1;
-    if (GetXBinIgnored(isect,badStart[ib]) && (fNXBins-badEnd[ib]-1)<fMinGoodXBinsToCover) {
-      for (int i=badEnd[ib]+1;i<fNXBins;i++) SetXBinIgnored(isect,i);
+    if (nbadReg) {
+      int ib=0;
+      // is 1st good patch too small?
+      if (GetXBinIgnored(isect,badStart[0]) && badStart[ib]<fMinGoodXBinsToCover) {
+	for (int i=0;i<badStart[ib];i++) SetXBinIgnored(isect,i);
+      }
+      // last good patch is too small?
+      ib = nbadReg-1;
+      if (GetXBinIgnored(isect,badStart[ib]) && (fNXBins-badEnd[ib]-1)<fMinGoodXBinsToCover) {
+	for (int i=badEnd[ib]+1;i<fNXBins;i++) SetXBinIgnored(isect,i);
+      }
     }
+    //
   }
   //
   int nMaskedRows = fXBinIgnore[isect].CountBits();
-  AliInfoF("Sector%2d. Voxel stat: Killed: %5d(%07.3f%%) Invalid: %5d(%07.3f%%)  -> Masked %3d rows out of %3d",isect,
+  AliInfoF("Sector%2d: Voxel stat: Killed: %5d(%07.3f%%) Invalid: %5d(%07.3f%%)  -> Masked %3d rows out of %3d",isect,
 	   cntKilled, 100*float(cntKilled)/fNGVoxPerSector,
 	   cntInvalid,100*float(cntInvalid)/fNGVoxPerSector,
 	   nMaskedRows,fNXBins);
@@ -2582,8 +2595,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   // smoothing results also saved in the fLastSmoothingRes (allow derivative calculation)
   //
   const int kMinPointsTot = 4; // we fit 12 paremeters, each point provides 3 values
-  const int kMaxTrials = 5; // max allowed iterations if neighbours are missing
-  const int kMinPointsDir = 2; // need at least 2 points per direction
+  const int kMinPointsDir = 3; // need at least 2 points per direction
   //
   const float kTrialStep = 0.5;
   Bool_t doDim[kResDim] = {kFALSE};
