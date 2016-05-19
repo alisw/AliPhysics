@@ -452,6 +452,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistSDDclusters_SDDrawSize,SDD clusters vs SDD raw size,rawSizeSDD,nClustersSDD");
   NewHistogram(",fHistSSDclusters_SSDrawSize,SSD clusters vs SSD raw size,rawSizeSSD,nClustersSSD");
   NewHistogram(",fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
+  NewHistogram(",fHistITSSAtracks_SSDclusters,ITSSAP tracks vs SSD clusters,nClustersSSD,nITSSAPtracks");
   NewHistogram(",fHistSPDclusters_SSDclusters,SSD clusters vs SPD clusters,nClustersSPD,nClustersSSD");
   NewHistogram(",fHistSPDclusters_SDDclusters,SDD clusters vs SPD clusters,nClustersSPD,nClustersSDD");
   NewHistogram(",fHistSSDclusters_SDDclusters,SDD clusters vs SSD clusters,nClustersSSD,nClustersSDD");
