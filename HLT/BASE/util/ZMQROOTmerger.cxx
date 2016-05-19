@@ -48,6 +48,7 @@ void ClearMergeListMap();
 Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
 int RemoveEntry(TPair* entry, TMap* map);
+Int_t AddObject(TObject* object);
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
@@ -67,6 +68,8 @@ Bool_t  fAllowControlSequences=kTRUE;
 Bool_t  fAllowResetOnRequest=kTRUE;
 Bool_t  fAllowResetAtSOR=kTRUE;
 Bool_t  fAllowClearAtSOR=kFALSE;
+
+Bool_t  fUnpackCollections = kFALSE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -127,6 +130,7 @@ const char* fUSAGE =
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
+    " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
     ;
 
 void* work(void* /*param*/)
@@ -405,6 +409,62 @@ int RemoveEntry(TPair* entry, TMap* map)
 }
 
 //_____________________________________________________________________
+Int_t AddObject(TObject* object)
+{
+  if (!object)
+  {
+    if (fVerbose) Printf("no object!");
+    return -1;
+  }
+
+  const char* name = object->GetName();
+  TList* mergingList = static_cast<TList*>(fMergeListMap.GetValue(name));
+  TPair* entry = static_cast<TPair*>(fMergeObjectMap.FindObject(name));
+  if (!entry)
+  {
+    if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
+    AddNewObject(name, object, &fMergeObjectMap);
+  }
+  else if (!mergingList && !fCacheOnly) 
+  {
+    if (fVerbose) Printf("adding a new list %s to fMergeListMap", name);
+    mergingList = new TList();
+    mergingList->SetOwner();
+    AddNewObject(name, mergingList, &fMergeListMap);
+  }
+  else
+  {
+    //add object and maybe merge
+    if (fCacheOnly)
+    {
+      if (fVerbose) Printf("caching  %s's",name);
+      RemoveEntry(entry, &fMergeObjectMap);
+      AddNewObject(name, object, &fMergeObjectMap);
+    }
+    else
+    {
+      mergingList->AddLast(object);
+      if (mergingList->GetEntries() >= fMaxObjects)
+      {
+        if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
+        TObject* mergingObject = entry->Value();
+        int rc = Merge(mergingObject, mergingList);
+        if (rc<0)
+        {
+          if (fVerbose) Printf("Merging failed, replacing with new object %s",name);
+          RemoveEntry(entry, &fMergeObjectMap);
+          mergingList->Remove(object);
+          //if the merging list has more objects, flush the list to avoid problems
+          if (mergingList->GetEntries()>0) mergingList->Delete();
+          AddNewObject(name, object, &fMergeObjectMap);
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+//_____________________________________________________________________
 Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 {
   //handle the message
@@ -417,61 +477,24 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   TObject* object = NULL;
   alizmq_msg_iter_data(block, object);
 
-  if (object)
-  {
-    TCollection* collection = dynamic_cast<TCollection*>(object);
-    if (collection) { collection->SetOwner(kTRUE); }
+  TCollection* collection = dynamic_cast<TCollection*>(object);
+  if (collection) {
+    if (fUnpackCollections) {
+      if (fVerbose) printf("unpacking collection %s\n", collection->GetName());
+      TIter iter(collection);
+      while (TObject* obj = iter()) {
+        AddObject(obj);
+      }
+      collection->SetOwner(kFALSE);
+      delete collection;
+    } else {
+      collection->SetOwner(kTRUE);
+      AddObject(collection);
+    }
+  } else {
+    AddObject(object);
+  }
 
-    const char* name = object->GetName();
-    TList* mergingList = static_cast<TList*>(fMergeListMap.GetValue(name));
-    TPair* entry = static_cast<TPair*>(fMergeObjectMap.FindObject(name));
-    if (!entry)
-    {
-      if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
-      AddNewObject(name, object, &fMergeObjectMap);
-    }
-    else if (!mergingList && !fCacheOnly) 
-    {
-      if (fVerbose) Printf("adding a new list %s to fMergeListMap", name);
-      mergingList = new TList();
-      mergingList->SetOwner();
-      AddNewObject(name, mergingList, &fMergeListMap);
-    }
-    else
-    {
-      //add object and maybe merge
-      if (fCacheOnly)
-      {
-        if (fVerbose) Printf("caching  %s's",name);
-        RemoveEntry(entry, &fMergeObjectMap);
-        AddNewObject(name, object, &fMergeObjectMap);
-      }
-      else
-      {
-        mergingList->AddLast(object);
-        if (mergingList->GetEntries() >= fMaxObjects)
-        {
-          if (fVerbose) Printf("%i %s's in, merging",mergingList->GetEntries(),name);
-          TObject* mergingObject = entry->Value();
-          int rc = Merge(mergingObject, mergingList);
-          if (rc<0)
-          {
-            if (fVerbose) Printf("Merging failed, replacing with new object %s",name);
-            RemoveEntry(entry, &fMergeObjectMap);
-            mergingList->Remove(object);
-            //if the merging list has more objects, flush the list to avoid problems
-            if (mergingList->GetEntries()>0) mergingList->Delete();
-            AddNewObject(name, object, &fMergeObjectMap);
-          }
-        }
-      }
-    }
-  }
-  else
-  {
-    if (fVerbose) Printf("no object!");
-  }
-  
   if (fPushbackPeriod>=0)
   {
     TTimeStamp time;
@@ -773,6 +796,10 @@ Int_t ProcessOptionString(TString arguments)
     {
       if (!fSchema) fSchema = new aliZMQrootStreamerInfo;
       fSchemaOnSend = (value.Contains("0"))?false:true;
+    }
+    else if (option.EqualTo("UnpackCollections"))
+    {
+      fUnpackCollections = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
