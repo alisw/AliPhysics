@@ -163,7 +163,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 			fHv[iAlias]->Fill(values[iValue]);
    			iValue++;
     			}      
-    	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
+    	CreateGraph(iAlias, iValue, times, values); // fill graphs 
 
   	// calculate mean and rms of the first two histos
 	Int_t iChannel	   = iAlias;	
@@ -188,7 +188,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
    	               times[iValue] = (Double_t) (currentTime);
 		       iValue++;
 	               }
-	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs
+	CreateGraph(iAlias, iValue, times, values); // fill graphs
         } 
       else { // Treating FEE Parameters
 		AliDCSValue * lastVal = NULL;

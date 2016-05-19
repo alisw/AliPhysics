@@ -15,7 +15,7 @@ void ADTestPreprocessor()
 
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
-  AliTestShuttle* shuttle = new AliTestShuttle(666, 0, 123450);
+  AliTestShuttle* shuttle = new AliTestShuttle(254487, 0, 323450);
 
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
@@ -82,6 +82,7 @@ void ADTestPreprocessor()
   // using GetRunParameter function.
   shuttle->AddInputRunParameter("totalEvents", "30000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "15");
+  shuttle->AddInputRunParameter("LHCBeamMode", "NO BEAM");
 
   // TODO(5)
   //
@@ -156,7 +157,7 @@ TMap* CreateDCSAliasMap()
 		
 		
 		if(aliasName.Contains("HV")) {
-			for(int i=0;i<20;i++){
+			for(int i=0;i<200;i++){
 				dcsVal = new AliDCSValue((Float_t) (val+random.Gaus(0,val*0.1)), timeStamp+10*i);
 				valueSet->Add(dcsVal);
 			}

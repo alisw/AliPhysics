@@ -86,6 +86,8 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
 
   // *** GET RUN TYPE ***
   TString runType = GetRunType();
+  TString beamMode = GetRunParameter("LHCBeamMode");
+  Log(Form("Run type: %s, Beam mode: %s",runType.Data(), beamMode.Data()));
 
 
   // *** REFERENCE DATA *** 
@@ -160,7 +162,7 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
   }
   if(resECal==kFALSE ) result = 1;
     
-  if(runType == "PHYSICS") ProcessTimeSlewing();
+  if(runType == "PHYSICS" && beamMode != "NO BEAM") ProcessTimeSlewing();
   
   if(sourceList && sourceList->GetEntries()>0) calibData->PrintConfigShuttle();
   
@@ -229,7 +231,8 @@ UInt_t AliADPreprocessor::ProcessTrendings()
 {
 
   // *************** HV From DCS ******************
-  TClonesArray *fGraphs = fDCSData->GetGraphs();
+  TClonesArray *fGraphs = 0x0;
+  fGraphs = fDCSData->GetGraphs();
   
   Bool_t result = 0;
   Bool_t resECal=kFALSE;
