@@ -1,4 +1,4 @@
-TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20;test");
+TString names=("pt200_cut1;pt200_cut2;pt200_cut3;pt200_cut4;pt200_cut5;pt200_cut6;pt200_cut7;pt200_cut8;pt200_cut9;pt200_cut10;pt200_cut11;pt200_cut12;pt200_cut13;pt200_cut14;pt200_cut15;pt200_cut16;pt200_cut17;pt200_cut18;pt200_cut19;pt200_cut20;basti");
 
 
 TObjArray*  arrNames=names.Tokenize(";");
@@ -27,8 +27,12 @@ const Double_t PtBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,10.0,20.0
 };
+
+TString resolutionfile = "";
+Bool_t CalcEfficiencyRec = kTRUE;
+Bool_t CalcEfficiencyPoslabel = kTRUE;
 Bool_t CalcResolution = kTRUE;
-Bool_t doPairing = kTRUE;
+Bool_t doPairing = kFALSE;
 // mee bins
 const Double_t MeeMin    = 0.;
 const Double_t MeeMax    = 5.;
@@ -171,7 +175,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance)
   noconv->AddCut(AliDielectronVarManager::kM,                             0.0,   0.10, kFALSE);
   noconv->AddCut(AliDielectronVarManager::kArmPt,                         0.0,   0.05, kFALSE);
   // selection or rejection of V0 tracks
-  if(cutInstance < 20)  
+  if(cutInstance < 21)  
   anaFilter->AddCuts( noconv );
   
   
@@ -459,7 +463,14 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
     fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
   }
-
+  if(cutInstance == 20){
+    fesdTrackCuts->SetMinNClustersITS(4);
+    fesdTrackCuts->SetMinNClustersTPC(80);
+    fesdTrackCuts->SetMinNCrossedRowsTPC(100);
+    fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.5);
+    fesdTrackCuts->SetMaxChi2PerClusterTPC(3);
+    fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+  }
   return fesdTrackCuts;
 }
 
@@ -601,7 +612,10 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -0.5,4. ,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
   }
   if(cutInstance == 20){
-    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -50.,50.,0.0, 100., kFALSE,AliDielectronPID::kRequire    ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -100. ,4. ,0.0, 100., kTRUE ,AliDielectronPID::kRequire ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3. ,3. ,0.0, 100., kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kITS,AliPID::kElectron,  -4. ,1.5,0.0, 100., kFALSE,AliDielectronPID::kRequire ,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5,3. ,0.0, 100., kFALSE,AliDielectronPID::kRequire ,AliDielectronVarManager::kPt);
   }
   pidCuts = pid;   
   return pidCuts;

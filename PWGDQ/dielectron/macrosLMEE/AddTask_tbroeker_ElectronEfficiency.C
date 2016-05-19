@@ -43,12 +43,15 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   
-//   if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
-//     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-//     TObjArray *arr = (TObjArray*) fRes->Get("ptSlices");
-//     task->SetResolution(arr);
-//   }
-  
+  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+    TObjArray *PResolutionArray     = (TObjArray*) fRes->Get("PResArr");
+    TObjArray *ThetaResolutionArray = (TObjArray*) fRes->Get("ThetaResArr");
+    TObjArray *PhiResolutionArray   = (TObjArray*) fRes->Get("PhiResArr");
+    task->SetResolution(PResolutionArray,ThetaResolutionArray,PhiResolutionArray);
+  }
+  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
   SetupMCSignals(task);
   //event related
   task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config. //cutlib->GetEventCuts(LMEECutLib::kPbPb2011_TPCTOF_Semi1)
