@@ -71,6 +71,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillEMCALRegionSSHistograms()  { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kFALSE ; }  
+
+  void         SwitchOnFillConversionVertexHistograms()  { fFillConversionVertexHisto = kTRUE  ; }
+  void         SwitchOffFillConversionVertexHistograms() { fFillConversionVertexHisto = kFALSE ; }  
   
   void         SwitchOnOnlySimpleSSHistoFill()        { fFillOnlySimpleSSHisto = kTRUE  ; }
   void         SwitchOffOnlySimpleHistoFill()         { fFillOnlySimpleSSHisto = kFALSE ; }
@@ -159,6 +162,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     
+  Bool_t   fFillConversionVertexHisto   ;           ///<  Fill histograms depending on the conversion vertex
+  
   Bool_t   fFillOnlySimpleSSHisto;                  ///<  Fill selected cluster histograms, selected SS histograms
     
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
