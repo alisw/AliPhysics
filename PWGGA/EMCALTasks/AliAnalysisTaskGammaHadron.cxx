@@ -1011,7 +1011,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliVCluster* cluster)
 	Bool_t Accepted=0; //By default rejceted
 
 	//double check these cuts carefully with the experts
-	if(cluster->E()>0.3 && cluster->GetNCells()>1)
+	if(cluster->GetNCells()>1)
 	{
 		//--Now accept the cluster as a good candidate for your analysis
 		Accepted=1;
