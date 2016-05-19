@@ -7,6 +7,7 @@ class TH3;
 class THnSparse;
 class AliEmcalJet;
 class AliEventPoolManager;
+class AliTLorentzVector;
 
 #include "AliAnalysisTaskEmcalJet.h"
 
@@ -72,7 +73,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   virtual Int_t          GetJetPtBin(Double_t pt) const;
   // Helper functions
   void                   InitializeArraysToZero();
-  void                   GetDeltaEtaDeltaPhiDeltaR(AliVParticle * particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
+  void                   GetDeltaEtaDeltaPhiDeltaR(AliTLorentzVector & particleOne, AliVParticle * particleTwo, Double_t & deltaEta, Double_t & deltaPhi, Double_t & deltaR);
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
