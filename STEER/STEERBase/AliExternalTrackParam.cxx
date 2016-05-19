@@ -1562,6 +1562,9 @@ static void Evaluate(const Double_t *h, Double_t t,
   if (TMath::Abs(h[4])>kAlmost0) {
      r[0] += (sn - h[6])/h[4];
      r[1] -= (cs - h[7])/h[4];  
+  } else {
+     r[0] += t*cs;
+     r[1] -= -t*sn;  
   }
   r[2] = h[1] + h[3]*t;
 
