@@ -594,6 +594,85 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   return fOutputContainer ;
 }
 
+//_____________________________________________________
+/// Save parameters used for analysis in a string.
+//_____________________________________________________
+TObjString *  AliCaloTrackReader::GetListOfParameters()
+{
+  TString parList ; //this will be list of parameters used for this analysis.
+
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  
+  snprintf(onePar,buffersize,"--- Reader ---:") ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Data type: %d; zvertex cut %2.2f; EMC cluster name: <%s> ",fDataType, fZvtxCut, fEMCALClustersListName.Data()) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Use detector: EMC %d, DCA %d, PHOS %d, CTS %d, EMCcells %d, PHOScells %d ; ",
+           fFillEMCAL,fFillDCAL,fFillPHOS,fFillCTS,fFillEMCALCells,fFillPHOSCells) ;
+  snprintf(onePar,buffersize,"E-pT window: EMC (%2.1f,%2.1f), PHOS (%2.1f,%2.1f), CTS (%2.1f,%2.1f); ",
+           fEMCALPtMin,fEMCALPtMax,fPHOSPtMin,fPHOSPtMax,fCTSPtMin,fCTSPtMax) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Dist to bad channel: EMC > %2.1f, PHOS > %2.1f; ",fEMCALBadChMinDist,fPHOSBadChMinDist) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"N cells: EMC > %d, PHOS > %d; ",fEMCALNCellsCut,fPHOSNCellsCut) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"EMC time cut single window (%2.2f,%2.2f); ",fEMCALTimeCutMin,fEMCALTimeCutMax) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Check: calo fid cut %d; ",fCheckFidCut) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Track: status %d, multip. eta cut %1.1f, SPD hit %d; ",(Int_t) fTrackStatus, fTrackMultEtaCut, fSelectSPDHitTracks) ;
+  parList+=onePar ;
+
+  if(fUseTrackDCACut)
+  {
+    snprintf(onePar,buffersize,"DCA cut ON, param (%2.4f,%2.4f,%2.4f); ",fTrackDCACut[0],fTrackDCACut[1],fTrackDCACut[2]) ;
+    parList+=onePar ;
+  }
+  
+  snprintf(onePar,buffersize,"Recalculate Clusters = %d, E linearity = %d; ",fRecalculateClusters, fCorrectELinearity) ;
+  parList+=onePar ;
+  
+  snprintf(onePar,buffersize,"SE trigger sel. %d, not? trigger Mask? %d, MB Trigger Mask for mixed %d; ",
+           fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
+  parList+=onePar ;
+  
+  snprintf(onePar,buffersize,"Select fired trigger %s; Remove Bad trigger event %d, unmatched %d; Accept fastcluster %d, Reject LED %d ",
+          fFiredTriggerClassName.Data(), fRemoveBadTriggerEvents, fRemoveUnMatchedTriggers, fAcceptFastCluster, fRemoveLEDEvents);
+  parList+=onePar ;
+  
+  if(fAcceptOnlyHIJINGLabels)
+  {
+    snprintf(onePar,buffersize,"Accept HIJING only labels; ");
+    parList+=onePar ;
+  }
+  
+  if(fSmearShowerShape)
+  {
+    snprintf(onePar,buffersize,"EMC M02 smear ON, function %d, param %2.4f; ",fSmearingFunction,fSmearShowerShapeWidth) ;
+    parList+=onePar ;
+  }
+  
+  if(fComparePtHardAndClusterPt)
+  {
+    snprintf(onePar,buffersize,"jet pt / pt hard < %2.1f; ",fPtHardAndJetPtFactor);
+    parList+=onePar ;
+  }
+  
+  if(fComparePtHardAndClusterPt)
+  {
+    snprintf(onePar,buffersize,"cluster pt / pt hard < %2.2f",fPtHardAndClusterPtFactor);
+    parList+=onePar ;
+  }
+  
+  snprintf(onePar,buffersize,"Centrality: Class %s, Option %d, Bin [%d,%d]; New centrality %d; Event plane method %s; ", 
+           fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1],fUseAliCentrality,fEventPlaneMethod.Data()) ;
+  parList+=onePar ;
+  
+  return new TObjString(parList) ;
+}
+
+
 //____________________________________________
 /// \return pointer to stack (AliStack)
 //____________________________________________
@@ -2847,9 +2926,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n",     fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n",     fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
-  //printf("AODs Track filter mask  =  %d or hybrid %d (if filter bit comp %d), select : SPD hit %d, primary %d\n",
-  //       (Int_t) fTrackFilterMask, fSelectHybridTracks, (Int_t) fTrackFilterMaskComplementary, fSelectSPDHitTracks,fSelectPrimaryTracks) ;
-  printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
+
+  printf("Track Mult Eta Cut =  %2.2f\n",  fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n",     fWriteOutputDeltaAOD) ;
   printf("Recalculate Clusters = %d, E linearity = %d\n",    fRecalculateClusters, fCorrectELinearity) ;
   

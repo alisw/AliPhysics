@@ -454,12 +454,17 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
 //_______________________________________________________
 TList * AliAnaCaloTrackCorrMaker::GetListOfAnalysisCuts()
 {
+  // Reader cuts
+  TObjString * objstring = fReader->GetListOfParameters();
+  fCuts->Add(objstring);
+  
+  // Analysis wagons cuts
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
-    TObjString * objstring = ana->GetAnalysisCuts();
+    objstring = ana->GetAnalysisCuts();
     
-    if(objstring)fCuts->Add(objstring);
+    if ( objstring ) fCuts->Add(objstring);
   }
   
   return fCuts ;

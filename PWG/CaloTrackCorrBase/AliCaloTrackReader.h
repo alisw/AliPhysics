@@ -84,6 +84,8 @@ public:
 
   virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
 	
+  virtual TObjString *  GetListOfParameters() ;
+  
   TString         GetTaskName()                      const { return fTaskName              ; }
   void            SetTaskName(TString name)                { fTaskName = name              ; }
     
@@ -157,16 +159,11 @@ public:
 
   // Number of cells in cluster cut
   
-  Int_t            GetEMCALNCellsCut()               const { return fEMCALNCellsCut     ; }
-  Int_t            GetPHOSNCellsCut()                const { return fPHOSNCellsCut      ; }
-  
-  void             SetEMCALNCellsCut(Int_t nc)             { fEMCALNCellsCut = nc       ; }
-  void             SetPHOSNCellsCut (Int_t nc)             { fPHOSNCellsCut  = nc       ; }
-  
-  // Shower shape smearing function
-  
-  void             SetSmearingFunction(Float_t smearfunct) {fSmearingFunction = smearfunct ; }
-  Float_t          GetSmearingFunction()             const {return fSmearingFunction       ; }
+  Int_t            GetEMCALNCellsCut()               const { return fEMCALNCellsCut       ; }
+  Int_t            GetPHOSNCellsCut()                const { return fPHOSNCellsCut        ; }
+    
+  void             SetEMCALNCellsCut(Int_t nc)             { fEMCALNCellsCut = nc         ; }
+  void             SetPHOSNCellsCut (Int_t nc)             { fPHOSNCellsCut  = nc         ; }
   
   // Track DCA cut
   
@@ -258,15 +255,20 @@ public:
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
 
+  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
+  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
+  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
+
+  // Shower shape smearing function
+  
+  void             SetSmearingFunction(Int_t smfu)        { fSmearingFunction = smfu      ; }
+  Int_t            GetSmearingFunction()           const  { return fSmearingFunction      ; }
+  
   Bool_t           IsShowerShapeSmeared()            const { return fSmearShowerShape      ; }
   void             SwitchOnShowerShapeSmearing()           { fSmearShowerShape = kTRUE     ; }
   void             SwitchOffShowerShapeSmearing()          { fSmearShowerShape = kFALSE    ; }
   
   void             SetShowerShapeSmearWidth(Float_t w )    { fSmearShowerShapeWidth = w    ; }
-
-  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
-  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
-  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
   
   // Filling/ filtering / detector information access methods
   
@@ -729,8 +731,6 @@ public:
   Int_t            fEMCALNCellsCut ;               ///<  Accept for the analysis EMCAL clusters with more than fNCellsCut cells
   Int_t            fPHOSNCellsCut ;                ///<  Accept for the analysis PHOS clusters with more than fNCellsCut cells
   
-  Float_t          fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05).
-  
   Bool_t           fUseEMCALTimeCut;               ///<  Do time cut selection.
   Bool_t           fUseParamTimeCut;               ///<  Use simple or parametrized time cut.
   Bool_t           fUseTrackTimeCut;               ///<  Do time cut selection.
@@ -780,7 +780,8 @@ public:
   Bool_t           fSmearShowerShape;              ///<  Smear shower shape (use in MC).
   Float_t          fSmearShowerShapeWidth;         ///<  Smear shower shape landau function "width" (use in MC).
   TRandom3         fRandom ;                       //!<! Random generator.
-  
+  Int_t            fSmearingFunction;              ///<  Choice of smearing function. 0 no smearing. 1 smearing from Gustavo (Landau center at 0). 2 smearing from Astrid (Landau center at 0.05). See enum smearingFunction 
+
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
   Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
   Int_t            fTrackMult          ;           ///<  Track multiplicity.
@@ -914,12 +915,15 @@ public:
   Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1.
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
+    
+  // cut control histograms
   
-  TList *          fOutputContainer;              //!<! Output container with cut control histograms.
-  
+  TList *          fOutputContainer;               //!<! Output container with cut control histograms.
+
   TH1F  *          fhEMCALClusterCutsE[8];         //!<! Control histogram on the different EMCal cluster selection cuts, E
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+ 
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   
