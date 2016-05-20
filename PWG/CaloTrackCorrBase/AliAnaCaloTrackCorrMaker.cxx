@@ -842,15 +842,39 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
       fOutputContainer->Add(templist->At(1));
     }
   }
+  
+  // --------------------------------
+  // Add control histograms in Reader
+  // --------------------------------
+  
+  TList * templist =  fReader->GetCreateControlHistograms();
+  templist->SetOwner(kFALSE); //Owner is fOutputContainer.
     
+  for(Int_t ih = 0; ih < templist->GetEntries() ; ih++)
+  {        
+    //if ( fSumw2 ) ((TH1*) templist->At(ih))->Sumw2();
+    
+    //printf("histo %d %p %s\n",ih,templist->At(ih), templist->At(ih)->GetName());
+    
+    //Add histogram to general container
+    fOutputContainer->Add(templist->At(ih)) ;
+  }
+  
+  delete templist;
+  
+  // ------------------------
+  // Add analysis histograms
+  // ------------------------
+
   if(!fAnalysisContainer || fAnalysisContainer->GetEntries()==0)
   {
     AliWarning("Analysis job list not initialized!!!");
     return fOutputContainer;
   }
-  
+
   const Int_t buffersize = 255;
   char newname[buffersize];
+
   for(Int_t iana = 0; iana <  fAnalysisContainer->GetEntries(); iana++)
   {
     AliAnaCaloTrackCorrBaseClass * ana =  ((AliAnaCaloTrackCorrBaseClass *) fAnalysisContainer->At(iana)) ;
@@ -858,7 +882,7 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     if(fMakeHisto) // Analysis with histograms as output on
     {
       //Fill container with appropriate histograms
-      TList * templist =  ana->GetCreateOutputObjects();
+      templist =  ana->GetCreateOutputObjects();
       templist->SetOwner(kFALSE); //Owner is fOutputContainer.
       
       for(Int_t i = 0; i < templist->GetEntries(); i++)
@@ -887,9 +911,8 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   // Initialize calorimeters  geometry pointers
   //GetCaloUtils()->InitPHOSGeometry();
   //GetCaloUtils()->InitEMCALGeometry();
-    
-  return fOutputContainer;
   
+  return fOutputContainer;
 }
 
 //___________________________________
