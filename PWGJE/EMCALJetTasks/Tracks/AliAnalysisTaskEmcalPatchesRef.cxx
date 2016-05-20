@@ -298,6 +298,8 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     energy = patch->GetPatchE();
     eta = patch->GetEtaGeo();
     phi = patch->GetPhiGeo();
+    col = patch->GetColStart();
+    row = patch->GetRowStart();
     et = patch->GetLorentzVectorCenterGeo().Et();
 
     // fill histograms allEta
@@ -389,7 +391,7 @@ void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, T
   for(int ien = 0; ien < 5; ien++){
     if(energy > encuts[ien]){
       fHistos->FillTH2(Form("h%sEtaPhi%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), eta, phi);
-      fHistos->FillTH2(Form("h%sEtaPhi%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), col, row);
+      fHistos->FillTH2(Form("h%sColRow%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), col, row);
     }
   }
 }
