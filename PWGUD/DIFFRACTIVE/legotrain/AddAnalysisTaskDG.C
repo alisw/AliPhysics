@@ -16,6 +16,9 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
     mgr->SetMCtruthEventHandler(handler);
   }
 
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AddTaskPIDResponse(isMC,kTRUE,kTRUE,2,kFALSE,"",kTRUE,kTRUE,2);
+
   AliAnalysisTaskDG* task = new AliAnalysisTaskDG;
   // task->SelectCollisionCandidates(AliVEvent::kMB);
 
