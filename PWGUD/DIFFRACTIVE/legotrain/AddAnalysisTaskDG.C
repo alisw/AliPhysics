@@ -29,10 +29,11 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
 
   // OUTPUT --------------------------------------------------------------------
   AliAnalysisDataContainer* output1 =
-    mgr->CreateContainer(task->GetListName(), TList::Class(), AliAnalysisManager::kOutputContainer, task->GetResultsFileName());
+    mgr->CreateContainer(task->GetListName(), TList::Class(), AliAnalysisManager::kOutputContainer,
+			 TString(AliAnalysisManager::GetCommonFileName())+":"+task->GetResultsFileName());
   AliAnalysisDataContainer* output2 =
-    mgr->CreateContainer(task->GetTreeName(), TTree::Class(), AliAnalysisManager::kOutputContainer, task->GetResultsFileName());
-  
+    mgr->CreateContainer(task->GetTreeName(), TTree::Class(), AliAnalysisManager::kOutputContainer,
+			 TString(AliAnalysisManager::GetCommonFileName())+":"+task->GetResultsFileName());  
   mgr->AddTask(task);
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
