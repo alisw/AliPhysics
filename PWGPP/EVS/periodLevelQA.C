@@ -81,6 +81,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   ULong64_t alias_recorded[NBITS]          = {0};
   ULong64_t alias_reconstructed[NBITS]     = {0};
   ULong64_t alias_accepted[NBITS]          = {0};
+  ULong64_t alias_acc_step1[NBITS]         = {0};
+  ULong64_t alias_acc_step2[NBITS]         = {0};
+  ULong64_t alias_acc_step3[NBITS]         = {0};
+  ULong64_t alias_acc_step4[NBITS]         = {0};
+  ULong64_t alias_acc_step5[NBITS]         = {0};
+  ULong64_t alias_acc_step6[NBITS]         = {0};
+  ULong64_t alias_acc_step7[NBITS]         = {0};
   Double_t alias_l0b_rate[NBITS]           = {0};
   Double_t alias_lifetime[NBITS]           = {0};
   Double_t alias_lumi_recorded[NBITS]      = {0};
@@ -88,6 +95,11 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Double_t alias_lumi_accepted[NBITS]      = {0};
   Int_t timeStart = 0;
   Int_t timeEnd = 0;
+  Double_t meanV0MOn = 0;
+  Double_t meanV0MOf = 0;
+  Double_t meanOFO = 0;
+  Double_t meanTKL = 0;
+  TH2F* hHistStat = new TH2F();
   
   t->SetBranchAddress("run",&run);
   t->SetBranchAddress("fill",&fill);
@@ -109,6 +121,14 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("alias_recorded",&alias_recorded);
   t->SetBranchAddress("alias_reconstructed",&alias_reconstructed);
   t->SetBranchAddress("alias_accepted",&alias_accepted);
+  t->SetBranchAddress("alias_acc_step1",&alias_acc_step1);
+  t->SetBranchAddress("alias_acc_step2",&alias_acc_step2);
+  t->SetBranchAddress("alias_acc_step3",&alias_acc_step3);
+  t->SetBranchAddress("alias_acc_step4",&alias_acc_step4);
+  t->SetBranchAddress("alias_acc_step5",&alias_acc_step5);
+  t->SetBranchAddress("alias_acc_step6",&alias_acc_step6);
+  t->SetBranchAddress("alias_acc_step7",&alias_acc_step7);
+
   t->SetBranchAddress("alias_l0b_rate",&alias_lifetime);
   t->SetBranchAddress("alias_lifetime",&alias_lifetime);
   t->SetBranchAddress("alias_lumi_recorded",&alias_lumi_recorded);
@@ -120,6 +140,11 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("lhcPeriod",&lhcPeriod);
   t->SetBranchAddress("timeStart",&timeStart);
   t->SetBranchAddress("timeEnd",&timeEnd);
+  t->SetBranchAddress("meanV0MOn",&meanV0MOn);
+  t->SetBranchAddress("meanV0MOf",&meanV0MOf);
+  t->SetBranchAddress("meanOFO",&meanOFO);
+  t->SetBranchAddress("meanTKL",&meanTKL);
+  t->SetBranchAddress("hHistStat",&hHistStat);
 
   Int_t nRuns = t->GetEntries();
   const Int_t nDetectors=19;
@@ -136,10 +161,21 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TH2D* hRecorded           = new TH2D("hRecorded","Recorded",nRuns,0,nRuns,1,0,1);  
   TH2D* hReconstructed      = new TH2D("hReconstructed","Reconstructed",nRuns,0,nRuns,1,0,1);  
   TH2D* hAccepted           = new TH2D("hAccepted","Accepted",nRuns,0,nRuns,1,0,1);  
+  TH2D* hAccStep1           = new TH2D("hAccStep1","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep2           = new TH2D("hAccStep2","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep3           = new TH2D("hAccStep3","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep4           = new TH2D("hAccStep4","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep5           = new TH2D("hAccStep5","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep6           = new TH2D("hAccStep6","",nRuns,0,nRuns,1,0,1);
+  TH2D* hAccStep7           = new TH2D("hAccStep7","",nRuns,0,nRuns,1,0,1);
   TH2D* hLumiRecorded       = new TH2D("hLumiRecorded","Lumi recorded",nRuns,0,nRuns,1,0,1);  
   TH2D* hLumiReconstructed  = new TH2D("hLumiReconstructed","Lumi reconstructed",nRuns,0,nRuns,1,0,1);  
   TH2D* hLumiAccepted       = new TH2D("hLumiAccepted","Lumi accepted",nRuns,0,nRuns,1,0,1);  
-
+  TH1D* hMeanV0MOn          = new TH1D("hMeanV0MOn","Mean V0M online in kINT7",nRuns,0,nRuns);
+  TH1D* hMeanV0MOf          = new TH1D("hMeanV0MOf","Mean V0M offline in kINT7",nRuns,0,nRuns);
+  TH1D* hMeanOFO            = new TH1D("hMeanOFO","Mean fired outer FO chips in kINT7",nRuns,0,nRuns);
+  TH1D* hMeanTKL            = new TH1D("hMeanTKL","Mean number of tracklets in kINT7",nRuns,0,nRuns);
+  
   map<Int_t,Int_t> fills;
 
   TString detName[nDetectors]={"ACORDE","PMD","FMD","HMPID","CPV","PHOS","EMCAL","MUONTRK","MUONTRG","T0","VZERO","AD","ZDC","ITSSPD","ITSSDD","ITSSSD","TPC","TRD","TOF"};
@@ -166,6 +202,11 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hBCs            ->Fill(srun,nBCsPerOrbit);
     hDuration       ->Fill(srun,run_duration);
     hLumiSeen       ->Fill(srun,lumi_seen);
+    hMeanV0MOn      ->Fill(srun,meanV0MOn);
+    hMeanV0MOf      ->Fill(srun,meanV0MOf);
+    hMeanOFO        ->Fill(srun,meanOFO);
+    hMeanTKL        ->Fill(srun,meanTKL);
+    
     fills[run]=fill;
     for (Int_t iDet=0;iDet<nDetectors;iDet++) {
      hActiveDetectors->Fill(srun,detName[iDet].Data(),activeDetectors->String().Contains(detName[iDet].Data()));
@@ -192,6 +233,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
       hRecorded         ->Fill(srun,bitNames[ibit],alias_recorded[ibit]);
       hReconstructed    ->Fill(srun,bitNames[ibit],alias_reconstructed[ibit]);
       hAccepted         ->Fill(srun,bitNames[ibit],alias_accepted[ibit]);
+      hAccStep1         ->Fill(srun,bitNames[ibit],alias_acc_step1[ibit]);
+      hAccStep2         ->Fill(srun,bitNames[ibit],alias_acc_step2[ibit]);
+      hAccStep3         ->Fill(srun,bitNames[ibit],alias_acc_step3[ibit]);
+      hAccStep4         ->Fill(srun,bitNames[ibit],alias_acc_step4[ibit]);
+      hAccStep5         ->Fill(srun,bitNames[ibit],alias_acc_step5[ibit]);
+      hAccStep6         ->Fill(srun,bitNames[ibit],alias_acc_step6[ibit]);
+      hAccStep7         ->Fill(srun,bitNames[ibit],alias_acc_step7[ibit]);
       hLumiRecorded     ->Fill(srun,bitNames[ibit],alias_lumi_recorded[ibit]);
       hLumiReconstructed->Fill(srun,bitNames[ibit],alias_lumi_reconstructed[ibit]);
       hLumiAccepted     ->Fill(srun,bitNames[ibit],alias_lumi_accepted[ibit]);
@@ -203,6 +251,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hDuration          ->LabelsDeflate("X");
   hLumiSeen          ->LabelsDeflate("X");
   hActiveDetectors   ->LabelsDeflate("X");
+  hMeanV0MOn         ->LabelsDeflate("X");
+  hMeanV0MOf         ->LabelsDeflate("X");
+  hMeanOFO           ->LabelsDeflate("X");
+  hMeanTKL           ->LabelsDeflate("X");
   hClassL0BvsRun     ->LabelsDeflate("XY");
   hClassL2AvsRun     ->LabelsDeflate("XY");
   hClassLifetimeVsRun->LabelsDeflate("XY");
@@ -210,6 +262,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hRecorded          ->LabelsDeflate("XY");
   hReconstructed     ->LabelsDeflate("XY");
   hAccepted          ->LabelsDeflate("XY");
+  hAccStep1          ->LabelsDeflate("XY");
+  hAccStep2          ->LabelsDeflate("XY");
+  hAccStep3          ->LabelsDeflate("XY");
+  hAccStep4          ->LabelsDeflate("XY");
+  hAccStep5          ->LabelsDeflate("XY");
+  hAccStep6          ->LabelsDeflate("XY");
+  hAccStep7          ->LabelsDeflate("XY");
   hLumiRecorded      ->LabelsDeflate("XY");
   hLumiReconstructed ->LabelsDeflate("XY");
   hLumiAccepted      ->LabelsDeflate("XY");
@@ -220,6 +279,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   SetHisto(hBCs);
   SetHisto(hDuration);
   SetHisto(hLumiSeen);
+  SetHisto(hMeanV0MOn);
+  SetHisto(hMeanV0MOf);
+  SetHisto(hMeanOFO);
+  SetHisto(hMeanTKL);
   SetHisto(hClassL0BvsRun);
   SetHisto(hClassL2AvsRun);
   SetHisto(hClassLifetimeVsRun);
@@ -227,10 +290,17 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   SetHisto(hRecorded);
   SetHisto(hReconstructed);
   SetHisto(hAccepted);
+  SetHisto(hAccStep1);
+  SetHisto(hAccStep2);
+  SetHisto(hAccStep3);
+  SetHisto(hAccStep4);
+  SetHisto(hAccStep5);
+  SetHisto(hAccStep6);
+  SetHisto(hAccStep7);
   SetHisto(hLumiRecorded);
   SetHisto(hLumiReconstructed);
   SetHisto(hLumiAccepted);
-  
+
   TCanvas* cActiveDetectors = new TCanvas("active_detectors","Active Detectors",1800,500);
   cActiveDetectors->SetMargin(0.05,0.01,0.18,0.06);
   hActiveDetectors->GetYaxis()->SetLabelOffset(0.001);
@@ -276,6 +346,41 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.3f",hLumiSeen->Integral()));
   hLumiSeen->Draw("h");
   AddFillSeparationLines(hLumiSeen,fills);
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanV0MOn = new TCanvas("meanV0MOn","meanV0MOn",1800,500);
+  cMeanV0MOn->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanV0MOn->SetFillColor(0);
+  hMeanV0MOn->Draw("");
+  AddFillSeparationLines(hMeanV0MOn,fills);
+  gPad->Print("meanV0MOn.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanV0MOf = new TCanvas("meanV0MOf","meanV0MOf",1800,500);
+  cMeanV0MOf->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanV0MOf->SetFillColor(0);
+  hMeanV0MOf->Draw("");
+  AddFillSeparationLines(hMeanV0MOf,fills);
+  gPad->Print("meanV0MOf.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanOFO = new TCanvas("meanOFO","meanOFO",1800,500);
+  cMeanOFO->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanOFO->SetFillColor(0);
+  hMeanOFO->Draw("");
+  AddFillSeparationLines(hMeanOFO,fills);
+  gPad->Print("meanOFO.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanTKL = new TCanvas("meanTKL","meanTKL",1800,500);
+  cMeanTKL->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanTKL->SetFillColor(0);
+  hMeanTKL->Draw("");
+  AddFillSeparationLines(hMeanTKL,fills);
+  gPad->Print("meanTKL.png");
+  gPad->Print("global_properties.pdf");
+
+  
   gPad->Print("global_properties.pdf)");
   
   TFile* fglobal = new TFile("global_properties.root","recreate");
@@ -392,7 +497,15 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     printf("bit=%i %s\n",i,bitName);
     TH1D* hRecorded1D = hRecorded->ProjectionX(Form("hRecorded%02i",i),i,i);
     TH1D* hReconstructed1D = hReconstructed->ProjectionX(Form("hReconstructed%02i",i),i,i);
-    TH1D* hAccepted1D = hAccepted->ProjectionX(Form("hAccepted%02i",i),i,i);
+    TH1D* hAccepted1D  = hAccepted->ProjectionX(Form("hAccepted%02i",i),i,i);
+    TH1D* hAccStep1_1D = hAccStep1->ProjectionX(Form("hAccStep1_%02i",i),i,i);
+    TH1D* hAccStep2_1D = hAccStep2->ProjectionX(Form("hAccStep2_%02i",i),i,i);
+    TH1D* hAccStep3_1D = hAccStep3->ProjectionX(Form("hAccStep3_%02i",i),i,i);
+    TH1D* hAccStep4_1D = hAccStep4->ProjectionX(Form("hAccStep4_%02i",i),i,i);
+    TH1D* hAccStep5_1D = hAccStep5->ProjectionX(Form("hAccStep5_%02i",i),i,i);
+    TH1D* hAccStep6_1D = hAccStep6->ProjectionX(Form("hAccStep6_%02i",i),i,i);
+    TH1D* hAccStep7_1D = hAccStep7->ProjectionX(Form("hAccStep7_%02i",i),i,i);
+    
     TH1D* hRejected1D = hReconstructed->ProjectionX(Form("hRejected1D%02i",i),i,i);
     TH1D* hLumiRecorded1D = hLumiRecorded->ProjectionX(Form("hLumiRecorded%02i",i),i,i);
     TH1D* hLumiReconstructed1D = hLumiReconstructed->ProjectionX(Form("hLumiReconstructed%02i",i),i,i);
@@ -402,6 +515,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     SetHisto(hRecorded1D);
     SetHisto(hReconstructed1D);
     SetHisto(hAccepted1D);
+    SetHisto(hAccStep1_1D);
+    SetHisto(hAccStep2_1D);
+    SetHisto(hAccStep3_1D);
+    SetHisto(hAccStep4_1D);
+    SetHisto(hAccStep5_1D);
+    SetHisto(hAccStep6_1D);
+    SetHisto(hAccStep7_1D);
     SetHisto(hRejected1D);
     SetHisto(hLumiRecorded1D);
     SetHisto(hLumiReconstructed1D);
@@ -442,20 +562,71 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     gPad->Print("alias_lumi_statistics.pdf");
 
     if (hReconstructed1D->Integral()<1) continue;
-    hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction%02i",ibit));
+    TH1D* hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction%02i",ibit));
+    TH1D* hAccStep1Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep1Fraction%02i",ibit));
+    TH1D* hAccStep2Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep2Fraction%02i",ibit));
+    TH1D* hAccStep3Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep3Fraction%02i",ibit));
+    TH1D* hAccStep4Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep4Fraction%02i",ibit));
+    TH1D* hAccStep5Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep5Fraction%02i",ibit));
+    TH1D* hAccStep6Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep61raction%02i",ibit));
+    TH1D* hAccStep7Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep71raction%02i",ibit));
     hAcceptedFraction->SetTitle(Form("Accepted fraction: %s",bitName));
     hAcceptedFraction->Divide(hAccepted1D,hReconstructed1D,1,1,"B");
+    hAccStep1Fraction->Divide(hAccStep1_1D,hReconstructed1D,1,1,"B");
+    hAccStep2Fraction->Divide(hAccStep2_1D,hReconstructed1D,1,1,"B");
+    hAccStep3Fraction->Divide(hAccStep3_1D,hReconstructed1D,1,1,"B");
+    hAccStep4Fraction->Divide(hAccStep4_1D,hReconstructed1D,1,1,"B");
+    hAccStep5Fraction->Divide(hAccStep5_1D,hReconstructed1D,1,1,"B");
+    hAccStep6Fraction->Divide(hAccStep6_1D,hReconstructed1D,1,1,"B");
+    hAccStep7Fraction->Divide(hAccStep7_1D,hReconstructed1D,1,1,"B");
     hAcceptedFraction->SetFillColor(0);
     hAcceptedFraction->SetLineWidth(2);
-    hRejectedFraction = (TH1D*) hReconstructed1D->Clone(Form("hRejectedFraction%02i",ibit));
+    TH1D* hRejectedFraction = (TH1D*) hReconstructed1D->Clone(Form("hRejectedFraction%02i",ibit));
     hRejectedFraction->SetTitle(Form("Rejected fraction: %s",bitName));
     hRejectedFraction->Divide(hRejected1D,hReconstructed1D,1,1,"B");
     hRejectedFraction->SetFillColor(0);
     hRejectedFraction->SetLineWidth(2);
-
+    hAccStep1Fraction->SetLineColor(kBlue);
+    hAccStep2Fraction->SetLineColor(kRed);
+    hAccStep3Fraction->SetLineColor(kMagenta);
+    hAccStep4Fraction->SetLineColor(kBlue+2);
+    hAccStep5Fraction->SetLineColor(kRed+2);
+    hAccStep6Fraction->SetLineColor(kMagenta+2);
+    hAccStep7Fraction->SetLineColor(kGreen+2);
     cAcceptedFraction->cd();
     hAcceptedFraction->SetTitle(Form("%s: average accepted fraction = %.3f",bitName,hAccepted1D->Integral()/hReconstructed1D->Integral()));
+    Float_t min[8];
+    min[0] = hAcceptedFraction->GetBinContent(hAcceptedFraction->GetMinimumBin());
+    min[1] = hAccStep1Fraction->GetBinContent(hAccStep1Fraction->GetMinimumBin());
+    min[2] = hAccStep2Fraction->GetBinContent(hAccStep2Fraction->GetMinimumBin());
+    min[3] = hAccStep3Fraction->GetBinContent(hAccStep3Fraction->GetMinimumBin());
+    min[4] = hAccStep4Fraction->GetBinContent(hAccStep4Fraction->GetMinimumBin());
+    min[5] = hAccStep5Fraction->GetBinContent(hAccStep5Fraction->GetMinimumBin());
+    min[6] = hAccStep6Fraction->GetBinContent(hAccStep6Fraction->GetMinimumBin());
+    min[7] = hAccStep7Fraction->GetBinContent(hAccStep7Fraction->GetMinimumBin());
+    Float_t max[8];
+    max[0] = hAcceptedFraction->GetBinContent(hAcceptedFraction->GetMaximumBin());
+    max[1] = hAccStep1Fraction->GetBinContent(hAccStep1Fraction->GetMaximumBin());
+    max[2] = hAccStep2Fraction->GetBinContent(hAccStep2Fraction->GetMaximumBin());
+    max[3] = hAccStep3Fraction->GetBinContent(hAccStep3Fraction->GetMaximumBin());
+    max[4] = hAccStep4Fraction->GetBinContent(hAccStep4Fraction->GetMaximumBin());
+    max[5] = hAccStep5Fraction->GetBinContent(hAccStep5Fraction->GetMaximumBin());
+    max[6] = hAccStep6Fraction->GetBinContent(hAccStep6Fraction->GetMaximumBin());
+    max[7] = hAccStep7Fraction->GetBinContent(hAccStep7Fraction->GetMaximumBin());
+    
+    Float_t elmax = TMath::MaxElement(8,max);
+    Float_t elmin = TMath::MinElement(8,min);
+    
+    hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
+    hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
     hAcceptedFraction->Draw();
+    hAccStep1Fraction->Draw("same");
+    hAccStep2Fraction->Draw("same");
+    hAccStep3Fraction->Draw("same");
+    hAccStep4Fraction->Draw("same");
+    hAccStep5Fraction->Draw("same");
+    hAccStep6Fraction->Draw("same");
+    hAccStep7Fraction->Draw("same");
     AddFillSeparationLines(hAcceptedFraction,fills);
     gPad->Print("accepted_fraction.pdf");
     
@@ -470,6 +641,13 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hReconstructed1D->Write();
     hAccepted1D->Write();
     hAcceptedFraction->Write();
+    hAccStep1Fraction->Write();
+    hAccStep2Fraction->Write();
+    hAccStep3Fraction->Write();
+    hAccStep4Fraction->Write();
+    hAccStep5Fraction->Write();
+    hAccStep6Fraction->Write();
+    hAccStep7Fraction->Write();
     hRejectedFraction->Write();
   }
   dummy->Print("alias_event_statistics.pdf]");
@@ -495,7 +673,7 @@ void SetHisto(TH1D* h){
   h->SetFillColor(kBlue);
   h->LabelsOption("av");
   h->SetLineWidth(2);
-  h->SetMinimum(0);
+//  h->SetMinimum(0);
 }
 
 void SetHisto(TH2D* h){
