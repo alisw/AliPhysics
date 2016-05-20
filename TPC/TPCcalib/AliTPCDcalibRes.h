@@ -257,7 +257,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetMaxSigZ(Float_t v=0.7)              {fMaxSigZ = v;}  
   void     SetMaxBadXBinsToCover(int n=4)         {fMaxBadXBinsToCover = n;}
   void     SetMinGoodXBinsToCover(int n=2)        {fMinGoodXBinsToCover = n;}
-  void     SetMaxBadRowsPerSector(float v=0.4)    {fMaxBadRowsPerSector = v;}
+  void     SetMaxBadRowsPerSector(float v=0.5)    {fMaxBadRowsPerSector = v;}
   //
   Bool_t   GetUseTOFBC()                   const {return fUseTOFBC;}
   Float_t  GetTOFBCMin()                   const {return fTOFBCMin;}
