@@ -6,6 +6,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include <iterator>
+#include <type_traits>
 #include <TArrayI.h>
 #include "AliTLorentzVector.h"
 
@@ -61,6 +62,7 @@ public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
 
   operator_star() : fCurrentElement() {}
+  virtual ~operator_star() {}
   operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
@@ -77,6 +79,7 @@ public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
 
   operator_star() : fCurrentElement() {}
+  virtual ~operator_star() {}
   operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
