@@ -31,7 +31,7 @@ AlianalysisTaskDptPID *AddTaskDptpid_pPb
  int nCentrality                =  4,
  Bool_t trigger                 = kTRUE,
  const char* taskname           = "WgtPM",
- char *inputHistogramFileName   = "/Users/pujahari/DataAnalysis/Eta08/MgFN/Calib/weight_MgFN_set1.root")
+ char *inputHistogramFileName   = "alien///alice/cern.ch/Users/pujahari/DataAnalysis/Eta08/MgFN/Calib/weight_MgFN_set1.root")
 {
   // Set Default Configuration of this analysis
   int    debugLevel             = 0;
@@ -168,11 +168,10 @@ for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     TH3F   * weight_2   = 0;
     if (useWeights)
       {
-        //TGrid::Connect("alien:");
+        TGrid::Connect("alien:");
         inputFile = TFile::Open(inputHistogramFileName,"OLD");
         if (!inputFile)
           {
-	    //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
 	    return;
           }
         TString nameHistoBase = "correction_";
