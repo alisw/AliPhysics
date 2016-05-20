@@ -18,9 +18,9 @@
 #include <stdio.h>
 #include <TRandom3.h>  //FK//
 
-#include  <AliJConst.h>
 #include "AliJHistos.h"
 #include "AliJAcceptanceCorrection.h"
+#include "AliJCorrelationInterface.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ class AliJHistos;
 class AliJBaseTrack;
 class AliJCard;
 
-class AliJCorrelations {
+class AliJCorrelations : public AliJCorrelationInterface{
   
 public:
   

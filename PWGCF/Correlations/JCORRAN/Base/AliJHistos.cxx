@@ -25,21 +25,7 @@
 
 //______________________________________________________________________________
 AliJHistos::AliJHistos(AliJCard* cardP) :
-  fCard(cardP),
-  fHMG(NULL),
-  fCentBin(),
-  fVtxBin(),
-  fPTtBin(),
-  fPTaBin(),
-  fXEBin(),
-  fKLongBin(),
-  fRGapBin(),
-  fEtaGapBin(),
-  fPhiGapBin(),
-  fMassBin(),
-  fTypBin(),
-  fTypBin3(),
-  fPairPtBin(),
+  AliJHistogramInterface(cardP),
   fhMixStat(),
   fTestHist(),
   fhPtNear(),
@@ -197,13 +183,11 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhPerpConeActivity(),
   fhPerpConeActivityIsolated(),
   fhV0AMult(),
-  fhZVertRaw(),
   fhZVertRawErr(),
   fhZVert(),
   fhCentr(),
   fhiCentr(),
   fhEventPerRun(),
-  fhVertexZTriggVtx(),
   fhIsolatedLPpt(),
   fhBkgActivity(),
   fhDphiLPJet(),
@@ -239,15 +223,12 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhAcceptanceTraditional(),
   fhAcceptanceTraditional2D(),
   fhAcceptance3DNearSide(),
-  fhTrackSelection(),
   fNJacek(0),
   fPttJacek(0),
   fNEta(0),
   fEta(0),
   fNJanFiete(0),
   fJanFiete(0),
-  fhEvents(),
-  fhEventTrigger(),
   fmaxEtaRange(0),
   fmaxTriggEtaRange(0),
   ftriggFiducCut(0),
@@ -262,24 +243,6 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
     fmaxEtaRange = fCard->Get("EtaRange");
     ftriggFiducCut =  fCard->Get("TriggerFiducialEtaCut"); //FK// Fiduc cut 
     fmaxTriggEtaRange =  fmaxEtaRange - ftriggFiducCut; //FK// Trigger range
-
-    fHMG = new AliJHistManager( "HistManager","AliJHistos");
-    //for (int hiklong = 0; hiklong < fCard->GetNoOfBins(kLongType); hiklong++)
-    //kRGapType kEtaGapType
-    fCentBin   .Set("Cent",   "C", "Cend:%2.0f-%2.0f%%" ).SetBin( fCard->GetVector("CentBinBorders"));
-    fVtxBin    .Set("Vtx",    "V", "Vtx:%2.0f-%2.0f" ).SetBin(fCard->GetVector("zVertBins"));
-    fPTtBin    .Set("PTt",    "T", "%.2f<p_{Tt}<%.2f").SetBin(fCard->GetVector("TriggPtBorders"));
-    fPTaBin    .Set("PTa",    "A", "%.2f<p_{Ta}<%.2f").SetBin(fCard->GetVector("AssocPtBorders"));
-    fXEBin     .Set("XE",     "X", "%.1f<x_{E}<%.1f" ).SetBin(fCard->GetVector("xEBorders"));
-    fKLongBin  .Set("KLong", "L",  "%.1f<k_{#parallel}<%.1f").SetBin(fCard->GetVector("KlongBorders"));
-    fRGapBin   .Set("RGap",  "R",  "%.1f<R_{gap}<%.1f").SetBin(fCard->GetVector("RGapThresholds"));
-    fEtaGapBin .Set("EtaGap", "E", "%.1f<#eta_{gap}<%.1f").SetBin(fCard->GetVector("EtaGapThresholds"));
-    fPhiGapBin .Set("PhiGap", "P", "%.1f<#phi_{gap}<%.1f" ).SetBin(fCard->GetVector("EtaGapThresholds"));
-    fMassBin   .Set("Mass",   "M", "%.1f<M_{jj}<%.1f").SetBin(fCard->GetVector("PairInvariantMassBins"));
-    fTypBin    .Set("Type",   "D", "", AliJBin::kSingle ).SetBin( "0 1" );
-    fTypBin3    .Set("Type3",   "D", "", AliJBin::kSingle ).SetBin( "0 1 2 3" );
-    //card->IsLessThanUpperPairPtCut(-ipairpt)
-    fPairPtBin .Set("PairPt", "", AliJBin::kSingle ).SetBin( fCard->GetN("UpperPairPtCut") );
 
     const int nJacek =  73 ;
     double pttJacek[nJacek+1] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
@@ -329,22 +292,8 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
 }
 
 //______________________________________________________________________________
-AliJHistos::AliJHistos(const AliJHistos& obj) : 
-  fCard(obj.fCard),
-  fHMG(obj.fHMG),
-  fCentBin(obj.fCentBin),
-  fVtxBin(obj.fVtxBin),
-  fPTtBin(obj.fPTtBin),
-  fPTaBin(obj.fPTaBin),
-  fXEBin(obj.fXEBin),
-  fKLongBin(obj.fKLongBin),
-  fRGapBin(obj.fRGapBin),
-  fEtaGapBin(obj.fEtaGapBin),
-  fPhiGapBin(obj.fPhiGapBin),
-  fMassBin(obj.fMassBin),
-  fTypBin(obj.fTypBin),
-  fTypBin3(obj.fTypBin3),
-  fPairPtBin(obj.fPairPtBin),
+AliJHistos::AliJHistos(const AliJHistos& obj) :
+  AliJHistogramInterface(obj),
   fhMixStat(obj.fhMixStat),
   fTestHist(obj.fTestHist),
   fhPtNear(obj.fhPtNear),
@@ -502,13 +451,11 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhPerpConeActivity(obj.fhPerpConeActivity),
   fhPerpConeActivityIsolated(obj.fhPerpConeActivityIsolated),
   fhV0AMult(obj.fhV0AMult),
-  fhZVertRaw(obj.fhZVertRaw),
   fhZVertRawErr(obj.fhZVertRawErr),
   fhZVert(obj.fhZVert),
   fhCentr(obj.fhCentr),
   fhiCentr(obj.fhiCentr),
   fhEventPerRun(obj.fhEventPerRun),
-  fhVertexZTriggVtx(obj.fhVertexZTriggVtx),
   fhIsolatedLPpt(obj.fhIsolatedLPpt),
   fhBkgActivity(obj.fhBkgActivity),
   fhDphiLPJet(obj.fhDphiLPJet),
@@ -544,15 +491,12 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhAcceptanceTraditional(obj.fhAcceptanceTraditional),
   fhAcceptanceTraditional2D(obj.fhAcceptanceTraditional2D),
   fhAcceptance3DNearSide(obj.fhAcceptance3DNearSide),
-  fhTrackSelection(obj.fhTrackSelection),
   fNJacek(obj.fNJacek),
   fPttJacek(obj.fPttJacek),
   fNEta(obj.fNEta),
   fEta(obj.fEta),
   fNJanFiete(obj.fNJanFiete),
   fJanFiete(obj.fJanFiete),
-  fhEvents(obj.fhEvents),
-  fhEventTrigger(obj.fhEventTrigger),
   fmaxEtaRange(obj.fmaxEtaRange),
   fmaxTriggEtaRange(obj.fmaxTriggEtaRange),
   ftriggFiducCut(obj.ftriggFiducCut),

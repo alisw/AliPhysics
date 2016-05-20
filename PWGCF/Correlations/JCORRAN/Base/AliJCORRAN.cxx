@@ -216,15 +216,19 @@ void AliJCORRAN::UserCreateOutputObjects(){
   fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
   fIsolationR = fcard->Get("IsolationR");
   
+  cout << "Create new AliJHistos" << endl;
   fhistos = new AliJHistos( fcard );
+  cout << "AliJHistos created" << endl;
   if(fcard->Get("QualityControlLevel")>1) fhistos->Set2DHistoCreate(true);
   if(fcard->Get("QualityControlLevel")>0) fhistos->SetAcceptanceCorrectionQA(true);
   fhistos->CreateEventTrackHistos();
   fhistos->CreateAzimuthCorrHistos();
+  cout << "First histos created" << endl;
   //fhistos->CreateIAAMoons();
   fhistos->CreateXEHistos();
   fhistos->CreateXtHistos();
   //fhistos->CreatePairPtCosThetaStar();
+  cout << "All histos created" << endl;
   
   fhistos->fHMG->Print();
   
