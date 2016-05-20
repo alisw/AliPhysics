@@ -422,6 +422,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         Float_t AmpFraction = c1->GetCellAmplitudeFraction(CellID);
         Float_t amp = fEMCALCells->GetCellAmplitude(CellID);
         
+        AliDebug(0,Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iIphi,iIeta,amp,AmpFraction));
+        
         switch (iPosInNoisyQuartet) {
           case 0:
             fhTopoClusterAmpCase0[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
@@ -1253,7 +1255,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
         if(fCellEnergyHiso)
         {
           snprintf(htitlEnergy,buffersize, "Energy for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
-          fhEnergy[iMod][iCol][iRow] = new TH1F(hname,htitlEnergy,fNEnergybins,fMinEnergyBin,fMaxEnergyBin);
+          fhEnergy[iMod][iCol][iRow] = new TH1F(Form("E_%s",hname),htitlEnergy,fNEnergybins,fMinEnergyBin,fMaxEnergyBin);
           fhEnergy[iMod][iCol][iRow]->SetXTitle("E (GeV)");
           fOutputContainer->Add(fhEnergy[iMod][iCol][iRow]);
         }
