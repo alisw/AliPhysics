@@ -10,6 +10,7 @@ void runQA(TString path="/afs/cern.ch/work/a/aliqaevs/www/data/2016/LHC16h/manua
   while (!f.eof()){
     f >> buffer;
     Int_t run = TString(buffer).Atoi();
+    if (run<99999) continue;
     printf("%i\n",run);
     TString statfile = "event_stat.root";
     gSystem->Exec(Form("cp triggerInfo.C %s/000%i/",path.Data(),run));
