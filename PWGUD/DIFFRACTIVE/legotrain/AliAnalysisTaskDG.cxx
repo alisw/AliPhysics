@@ -51,7 +51,7 @@ void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
 }
 
-void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
   fDecisionOnline[0]  = trigAna.ADTrigger(esdEvent, AliTriggerAnalysis::kCSide, kFALSE);
   fDecisionOnline[1]  = trigAna.ADTrigger(esdEvent, AliTriggerAnalysis::kASide, kFALSE);
 
@@ -72,7 +72,7 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnal
     fBG[ch/8] += esdAD->GetBGFlag(ch);
   }
 }
-void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
   fDecisionOnline[0]  = trigAna.V0Trigger(esdEvent, AliTriggerAnalysis::kCSide, kFALSE);
   fDecisionOnline[1]  = trigAna.V0Trigger(esdEvent, AliTriggerAnalysis::kASide, kFALSE);
 
@@ -250,7 +250,7 @@ void AliAnalysisTaskDG::NotifyRun()
 {
   AliInfo(Form("run %d %s", fCurrentRunNumber, fCDBStorage.Data()));
   fUseTriggerMask = (fTriggerSelection != "");
-  if (fUseTriggerMask) {
+  if (fUseTriggerMask && fCDBStorage != "NONE") {
     fClassMask = fClassMaskNext50 = 0ULL;
 
     AliCDBManager *man = AliCDBManager::Instance();
@@ -265,7 +265,7 @@ void AliAnalysisTaskDG::NotifyRun()
       AliFatal("NULL == triggerConfig");
     }
  
-    TObjArray *split = fTriggerSelection.Tokenize("|");
+    std::auto_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
     const TObjArray &classes = triggerConfig->GetClasses();
     for (Int_t i=0, n=classes.GetEntries(); i<n; ++i) {
       const AliTriggerClass *c = dynamic_cast<const AliTriggerClass*>(classes.At(i));
@@ -279,7 +279,6 @@ void AliAnalysisTaskDG::NotifyRun()
 	}
       }
     }
-    delete split;
   }
 }
 
@@ -346,12 +345,23 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   AliInfo(Form("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50));
   if (fUseTriggerMask) {
-    if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
-	(esdHeader->GetTriggerMaskNext50() & fClassMaskNext50) == 0LL) {
-      AliInfo(Form("not selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
-      return;
-    } else {
-      AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
+    if (fCDBStorage != "NONE") { // OCDB used
+      if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
+	  (esdHeader->GetTriggerMaskNext50() & fClassMaskNext50) == 0LL) {
+	AliInfo(Form("not selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
+	return;
+      } else {
+	AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
+      }
+    } else { // no OCDB used
+      std::auto_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+      Bool_t selected = kFALSE;
+      for (Int_t i=0, n=split->GetEntries(); i<n && !selected; ++i)
+	selected = esdEvent->GetFiredTriggerClasses().Contains(split->At(i)->GetName());
+      
+      AliInfo(Form("selected: %d %s", selected, esdEvent->GetFiredTriggerClasses().Data()));
+      if (!selected)
+	return;
     }
   }
 
@@ -383,7 +393,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   fTreeData.fEventInfo.fnTrklet = mult->GetNumberOfTracklets();
 
-  TObjArray* oa = fTrackCuts->GetAcceptedTracks(esdEvent);
+  std::auto_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
   fTreeData.fEventInfo.fnTrk = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
@@ -394,7 +404,6 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTrackSave); i<n; ++i)
       new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
-  delete oa;
 
   if (fIsMC) {
     AliMCEvent *mcEvent = MCEvent();
