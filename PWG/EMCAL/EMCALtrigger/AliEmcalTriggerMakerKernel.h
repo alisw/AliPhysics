@@ -181,6 +181,13 @@ public:
   void ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   /**
+   * Set the maximum time of the cell allowed to contribute to an offline
+   * trigger patch.
+   * @param[in] maxCellTime Maximum accepted value of the absolute cell time
+   */
+  void SetMaxAbsCellTime(Double_t maxCellTime) { fMaxAbsCellTime = maxCellTime; }
+
+  /**
    * Reset data grids
    */
   void Reset();
@@ -315,6 +322,7 @@ protected:
   Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
+  Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)

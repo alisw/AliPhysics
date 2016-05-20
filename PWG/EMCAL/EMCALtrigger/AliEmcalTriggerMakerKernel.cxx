@@ -57,6 +57,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0Threshold(0),
   fIsMC(kFALSE),
   fDebugLevel(0),
+  fMaxAbsCellTime(1.),
   fGeometry(NULL),
   fPatchAmplitudes(NULL),
   fPatchADCSimple(NULL),
@@ -344,7 +345,9 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
       continue;
     }
 
-    Double_t amp = cells->GetAmplitude(iCell);
+    Double_t amp = cells->GetAmplitude(iCell),
+             celltime = cells->GetTime(iCell);
+    if(TMath::Abs(celltime) > fMaxAbsCellTime) continue;
     // get position
     Int_t absId=-1;
     fGeometry->GetFastORIndexFromCellIndex(cellId, absId);
