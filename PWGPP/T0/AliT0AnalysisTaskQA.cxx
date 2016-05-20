@@ -91,7 +91,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[kNPMT0];
 
  for (Int_t i=0; i<kNPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,10000,12000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,9000,11000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
@@ -101,9 +101,9 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",100,-2000,2000);// or C spectrum
   fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,500,2000,1000);  // 
   fSPDVertexVST0Vertex = new TH2F("fSPDVertexVST0Vertex","fSPDVertexVST0Vertex",30,-30,30,30,-30,30);
-  fOrAvsNtracks = new TH2F("fAvstracks", "A vs tracks",200, 0, 1000, 200, -1000, 1000);
-  fOrCvsNtracks = new TH2F("fCvstracks", "C vs tracks",200, 0, 1000, 200, -1000, 1000);
-  fT0vsNtracks  = new TH2F("fT0ACvstrackes", "T0AC vs tracks",200, 0, 1000, 200, -1000, 1000); 
+  fOrAvsNtracks = new TH2F("fAvstracks", "A vs tracks",100, 0, 100, 200, -1000, 1000);
+  fOrCvsNtracks = new TH2F("fCvstracks", "C vs tracks",100, 0, 100, 200, -1000, 1000);
+  fT0vsNtracks  = new TH2F("fT0ACvstrackes", "T0AC vs tracks",100, 0, 100, 200, -1000, 1000); 
   fT0TimevsT0Tof = new TH2F("fT0TimevsT0Tof", "fT0TimevsT0Tof",50, -1000,1000, 50, -1000,1000); 
   f0TVX        = new TH1F("f0TVX","0TVX position [channels]",200,-500,500);// or C spectrum
 
