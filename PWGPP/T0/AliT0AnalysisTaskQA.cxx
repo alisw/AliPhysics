@@ -91,7 +91,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[kNPMT0];
 
  for (Int_t i=0; i<kNPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,9000,10000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",600, -10, 50,500,10000,12000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
@@ -101,9 +101,9 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",100,-2000,2000);// or C spectrum
   fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,500,2000,1000);  // 
   fSPDVertexVST0Vertex = new TH2F("fSPDVertexVST0Vertex","fSPDVertexVST0Vertex",30,-30,30,30,-30,30);
-  fOrAvsNtracks = new TH2F("fAvstracks", "A vs tracks",100, 0, 100, 200, -1000, 1000);
-  fOrCvsNtracks = new TH2F("fCvstracks", "C vs tracks",100, 0, 100, 200, -1000, 1000);
-  fT0vsNtracks  = new TH2F("fT0ACvstrackes", "T0AC vs tracks",100, 0, 100, 200, -1000, 1000); 
+  fOrAvsNtracks = new TH2F("fAvstracks", "A vs tracks",200, 0, 1000, 200, -1000, 1000);
+  fOrCvsNtracks = new TH2F("fCvstracks", "C vs tracks",200, 0, 1000, 200, -1000, 1000);
+  fT0vsNtracks  = new TH2F("fT0ACvstrackes", "T0AC vs tracks",200, 0, 1000, 200, -1000, 1000); 
   fT0TimevsT0Tof = new TH2F("fT0TimevsT0Tof", "fT0TimevsT0Tof",50, -1000,1000, 50, -1000,1000); 
   f0TVX        = new TH1F("f0TVX","0TVX position [channels]",200,-500,500);// or C spectrum
 
@@ -192,31 +192,11 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
     fT0vsNtracks->Fill(ntracksMatchedToTOF, mean[0]);
   }
 
-  //number of good TOF tracks
-  Int_t TofTrk=0, CutTrk=0, ntracksMatchedToTOF=0;
-  Int_t ntracks = fESD->GetNumberOfTracks();
-  for(Int_t itrk=0;itrk<ntracks;itrk++){
-    AliVParticle *trk = fESD->GetTrack(itrk);
-    AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(trk);
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(trk);
-    if( ( (Vtrack->GetStatus() & AliVTrack::kTOFout) ==
-	  AliVTrack::kTOFout) && ((Vtrack->GetStatus() & AliVTrack::kTIME) ==
-				  AliVTrack::kTIME )  ) {TofTrk++;} else {continue;}
-    if (!fESDtrackCuts->AcceptTrack(esdtrack)) {
-      continue;}
-    CutTrk++;
-    Float_t feta=Vtrack->Eta();// return pseudorapidity return
-    if(TMath::Abs(feta)<0.9)
-      {
-	ntracksMatchedToTOF++;} 
-    else {continue;};
-  }
   if(fESDpid){ //get T0_TOF 
     fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);
-    Float_t t0tofTrack =(Float_t) ntracksMatchedToTOF;
-      //(fESDpid->GetTOFResponse().GetStartTime(10.0)); //Get start time from all tracks 
+    Float_t t0tofTrack =(Float_t) (fESDpid->GetTOFResponse().GetStartTime(10.0)); //Get start time from all tracks 
     if (t0tofTrack !=0) fTzeroTof->Fill(t0tofTrack);
-    
+
     if(orA<9999 && orC<9999 && t0tofTrack !=0){ // T0 time  and  TOF time simultaneously
       fT0TimevsT0Tof->Fill(t0tofTrack, mean[0]);
     }
