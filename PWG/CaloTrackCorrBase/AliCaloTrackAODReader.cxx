@@ -111,6 +111,31 @@ TList * AliCaloTrackAODReader::GetCreateControlHistograms()
   return fOutputContainer ;
 }
 
+//________________________________________________________
+/// Save parameters used for analysis in a string.
+//________________________________________________________
+TObjString *  AliCaloTrackAODReader::GetListOfParameters()
+{
+  // Recover the string from the mother class
+  TString parList = (AliCaloTrackReader::GetListOfParameters())->GetString();
+  
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  
+  snprintf(onePar,buffersize,"AOD Track: Hybrid %d, Filter bit %d, Complementary bit %d, Primary %d; ", 
+           fSelectHybridTracks, (Int_t)fTrackFilterMask, (Int_t)fTrackFilterMaskComplementary, fSelectPrimaryTracks) ;
+  parList+=onePar ;
+  
+  if(fSelectFractionTPCSharedClusters)
+  {
+    snprintf(onePar,buffersize,"Fraction of TPC shared clusters ON: %2.2f ", fCutTPCSharedClustersFraction) ;
+    parList+=onePar ;
+  }
+  
+  return new TObjString(parList) ;
+
+}
+
 //____________________________________________________________
 /// \return list of MC particles in AOD. Do it for the corresponding input event.
 //____________________________________________________________
