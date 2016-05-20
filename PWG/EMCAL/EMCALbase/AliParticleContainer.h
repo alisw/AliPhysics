@@ -94,7 +94,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliParticleContainer,9);
+  ClassDef(AliParticleContainer,10);
   /// \endcond
 
 };
