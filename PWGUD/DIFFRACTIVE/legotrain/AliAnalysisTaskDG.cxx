@@ -27,7 +27,6 @@
 #include "AliCDBEntry.h"
 #include "AliTriggerConfiguration.h"
 #include "AliTriggerClass.h"
-#include <memory>
 
 ClassImp(AliAnalysisTaskDG);
 ClassImp(AliAnalysisTaskDG::TreeData);
