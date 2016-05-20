@@ -913,13 +913,13 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       offlineCh = kOfflineChannel[iChannel];
 		   
       // Fill Pedestal histograms
-	   
-      for(Int_t j=0; j<6; j++) {
+      iFlag = 0;   
+      for(Int_t j=0; j<=20; j++) {
 	if((rawStream->GetBGFlag(iChannel,j) || rawStream->GetBBFlag(iChannel,j))) iFlag++;
       }
 
       if(iFlag == 0){ //No Flag found
-	for(Int_t j=0; j<6; j++){
+	for(Int_t j=11; j<=17; j++){
 	  pedestal= (Int_t) rawStream->GetPedestal(iChannel, j);
 	  integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel, j);
 	  OCDBdiff = pedestal - fCalibData->GetPedestal(offlineCh+16*integrator[offlineCh]);
