@@ -1,4 +1,4 @@
-/*! \page PWG-FLOW The FLOW package manual
+/*! \page pwgcf The FLOW package manual
   
 Written and adapted for the big screen by Redmer Bertens
 with excerpts from other manuals, authors of those are mentioned in text.
@@ -8,6 +8,7 @@ here and there parsing errors may (probably do) still exist.
 What is considered the `FLOW package` is all code in 
 - libPWGflowBase
 - libPWGflowTasks
+
 This manual will explain how the framework is designed and how
 it can be used to do analysis in either ROOT or AliROOT. 
 
@@ -101,7 +102,7 @@ steps we take when performing an analysis on data[3]:
     event (collision) and actually do the analysis
 
 6.  Finish the analysis, which will calculate the final
-    *v*<sub>*n*</sub> values
+    v<sub>n</sub> values
 
 7.  Write the results to an output file
 
