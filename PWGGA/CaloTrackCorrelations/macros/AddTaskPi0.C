@@ -239,6 +239,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   reader->SetDebug(debug);//10 for lots of messages
   
+  reader->SetControlHistogramEnergyBinning(80,0, 40) ; // Energy and pt histograms
   //
   // MC settings
   //
@@ -290,6 +291,12 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
 
+//  reader->SetEMCALNCellsCut(1); 
+//  reader->SetPHOSNCellsCut(2); 
+//  
+//  reader->SetEMCALBadChannelMinDist(2);
+//  reader->SetPHOSBadChannelMinDist(2);
+  
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
   
