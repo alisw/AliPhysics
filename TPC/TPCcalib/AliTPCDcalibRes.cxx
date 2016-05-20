@@ -78,6 +78,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fChebCorr(0)
 
   ,fRun(run)
+  ,fExtDet(kUseTRDonly)
   ,fTMin(tmin)
   ,fTMax(tmax)
   ,fTMinGRP(0)
@@ -204,6 +205,18 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
   }
   delete fTracksRate;
 }
+
+//________________________________________
+void AliTPCDcalibRes::SetExternalDetectors(int det)
+{
+  // set external detectos choice
+  if (det<0 || det>=kNExtDetComb) {
+    AliErrorF("Invalid external detector %d, allowed range 0:%d, see header file enum{...kNExtDetComb}",det,kNExtDetComb-1);
+    return;
+  }
+  fExtDet = det;
+}
+
 
 //________________________________________
 void AliTPCDcalibRes::ProcessFromDeltaTrees()
@@ -388,10 +401,10 @@ void AliTPCDcalibRes::CollectData(int mode)
   if (!fInitDone) Init();
   if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
   //  gEnv->SetValue("TFile.AsyncPrefetching", 1);
-  TVectorF *vecDY=0,*vecDZ=0,*vecZ=0,*vecR=0,*vecSec=0,*vecPhi=0, *vecDYITS=0,*vecDZITS=0;
+  TVectorF *vecDYTRD=0,*vecDZTRD=0,*vecDYITS=0,*vecDZITS=0,*vecDYTOF=0,*vecDZTOF=0,*vecZ=0,*vecR=0,*vecSec=0,*vecPhi=0;
   UShort_t npValid = 0;
   Int_t nPrimTracks = 0;
-  Char_t trdOK=0,tofOK=0;
+  Char_t trdOK=0,tofOK=0,itsOK=0;
   Double_t tofBC = 0.0;
   AliExternalTrackParam* param = 0;
   //
@@ -412,7 +425,10 @@ void AliTPCDcalibRes::CollectData(int mode)
   Int_t nChunks = chunkArray->GetEntriesFast();  
   //
   AliSysInfo::AddStamp("ProjInit",0,0,0,0);
-
+  //
+  Bool_t needTRD = fExtDet==kUseTRDorTOF || fExtDet==kUseTRDonly;
+  Bool_t needTOF = fExtDet==kUseTRDorTOF || fExtDet==kUseTOFonly;
+  //
   for (int ichunk=0;ichunk<nChunks;ichunk++) {
     //
     int ntrSelChunkWO=0, ntrSelChunk=0,nReadCallsChunk=0,nBytesReadChunk=0;
@@ -432,20 +448,22 @@ void AliTPCDcalibRes::CollectData(int mode)
     tree->SetBranchStatus("*",kFALSE);
     if (fNPrimTracksCut>0) tree->SetBranchStatus("nPrimTracks",kTRUE);
     tree->SetBranchStatus("timeStamp",kTRUE);
+    tree->SetBranchStatus("itsOK",kTRUE);
     tree->SetBranchStatus("trdOK",kTRUE);
+    tree->SetBranchStatus("tofOK",kTRUE);
     tree->SetBranchStatus("vecR.",kTRUE);
     tree->SetBranchStatus("vecSec.",kTRUE);
     tree->SetBranchStatus("vecPhi.",kTRUE);
     tree->SetBranchStatus("vecZ.",kTRUE);
     tree->SetBranchStatus("track.*",kTRUE);      
     tree->SetBranchStatus("npValid",kTRUE);
-    tree->SetBranchStatus("trd0.",kTRUE);
-    tree->SetBranchStatus("trd1.",kTRUE);
     tree->SetBranchStatus("its0.",kTRUE);
     tree->SetBranchStatus("its1.",kTRUE);
     //
     tree->SetBranchAddress("timeStamp",&fTimeStamp);
+    tree->SetBranchAddress("itsOK",&itsOK);
     tree->SetBranchAddress("trdOK",&trdOK);
+    tree->SetBranchAddress("tofOK",&tofOK);
     if (fNPrimTracksCut>0) tree->SetBranchAddress("nPrimTracks",&nPrimTracks);
     tree->SetBranchAddress("vecR.",&vecR);
     tree->SetBranchAddress("vecSec.",&vecSec);
@@ -453,15 +471,24 @@ void AliTPCDcalibRes::CollectData(int mode)
     tree->SetBranchAddress("vecZ.",&vecZ);
     tree->SetBranchAddress("track.",&param);
     tree->SetBranchAddress("npValid",&npValid);
-    tree->SetBranchAddress("trd0.",&vecDY);
-    tree->SetBranchAddress("trd1.",&vecDZ);
     tree->SetBranchAddress("its0.",&vecDYITS);
     tree->SetBranchAddress("its1.",&vecDZITS);
     //
+    if (needTRD) {
+      tree->SetBranchStatus("trd0.",kTRUE);
+      tree->SetBranchStatus("trd1.",kTRUE);
+      tree->SetBranchAddress("trd0.",&vecDYTRD);
+      tree->SetBranchAddress("trd1.",&vecDZTRD);
+    }
+    if (needTOF) {
+      tree->SetBranchStatus("tof0.",kTRUE);
+      tree->SetBranchStatus("tof1.",kTRUE);
+      tree->SetBranchAddress("tof0.",&vecDYTOF);
+      tree->SetBranchAddress("tof1.",&vecDZTOF);
+    }
+    //
     if (fUseTOFBC) {
-      tree->SetBranchStatus("tofOK",kTRUE);
       tree->SetBranchStatus("tofBC",kTRUE);
-      tree->SetBranchAddress("tofOK",&tofOK);
       tree->SetBranchAddress("tofBC",&tofBC);
     }
     //
@@ -470,11 +497,10 @@ void AliTPCDcalibRes::CollectData(int mode)
 
     TBranch* brTime = tree->GetBranch("timeStamp");
     TBranch* brTRDOK = tree->GetBranch("trdOK");
-    TBranch* brTOFOK=0, *brTOFBC=0;
-    if (fUseTOFBC) {
-      brTOFOK = tree->GetBranch("tofOK");
-      brTOFBC = tree->GetBranch("tofBC");
-    }
+    TBranch* brTOFOK = tree->GetBranch("tofOK");
+    TBranch* brITSOK = tree->GetBranch("itsOK");
+    TBranch* brTOFBC = 0;
+    if (fUseTOFBC) brTOFBC = tree->GetBranch("tofBC");
     //
     int nTracks = tree->GetEntries();
     AliInfoF("Processing %d tracks of %s",nTracks,fileNameString.Data());
@@ -494,10 +520,14 @@ void AliTPCDcalibRes::CollectData(int mode)
 	continue;	
       }
       //
+      brITSOK->GetEntry(itr);
       brTRDOK->GetEntry(itr);
-      if (!trdOK) continue;
+      brTOFOK->GetEntry(itr);
+      if (!itsOK) continue;     
+      if (!trdOK && fExtDet==kUseTRDonly) continue;
+      if (!tofOK && fExtDet==kUseTOFonly) continue;
+      if (!tofOK && !trdOK && fExtDet!=kUseITSonly) continue;
       //
-      if (brTOFOK && brTOFOK->GetEntry(itr) && !tofOK) continue;
       if (brTOFBC && brTOFBC->GetEntry(itr) && (tofBC<fTOFBCMin || tofBC>fTOFBCMax)) continue;      
       //
       if (!lastReadMatched && fSwitchCache) { // reset the cache before switching to event reading mode
@@ -516,10 +546,22 @@ void AliTPCDcalibRes::CollectData(int mode)
       const Float_t *vPhi= vecPhi->GetMatrixArray();
       const Float_t *vR  = vecR->GetMatrixArray();
       const Float_t *vZ  = vecZ->GetMatrixArray();
-      const Float_t *vDY = vecDY->GetMatrixArray();
-      const Float_t *vDZ = vecDZ->GetMatrixArray();
       const Float_t *vDYITS = vecDYITS->GetMatrixArray();
       const Float_t *vDZITS = vecDZITS->GetMatrixArray();
+      //
+      const Float_t *vDY=0,*vDZ = 0;
+      if (fExtDet==kUseTRDonly || (fExtDet==kUseTRDorTOF && trdOK)) {
+	vDY = vecDYTRD->GetMatrixArray();
+	vDZ = vecDZTRD->GetMatrixArray();
+      }
+      else if (fExtDet==kUseITSonly) {  // ignore other detectos
+	vDY = vecDYITS->GetMatrixArray();
+	vDZ = vecDZITS->GetMatrixArray();
+      }
+      else { // only TOF
+	vDY = vecDYTOF->GetMatrixArray();
+	vDZ = vecDZTOF->GetMatrixArray();	
+      }
       //
       fCorrTime = (fVDriftGraph!=NULL) ? fVDriftGraph->Eval(fTimeStamp):0; // for VDrift correction
       //

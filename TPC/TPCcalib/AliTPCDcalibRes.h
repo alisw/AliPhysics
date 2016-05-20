@@ -40,6 +40,7 @@ class AliTPCDcalibRes: public TNamed
   enum {kAlignmentBugFixedBit = AliTPCcalibAlignInterpolation::kAlignmentBugFixedBit};
   enum {kExtractMode, kClosureTestMode};
   enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
+  enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates
@@ -293,6 +294,9 @@ class AliTPCDcalibRes: public TNamed
   Float_t  GetMaxRMSLong()                  const {return fMaxRMSLong;}
   Float_t  GetMaxRejFrac()                  const {return fMaxRejFrac;}
   Bool_t   GetFilterOutliers()              const {return fFilterOutliers;}
+  Int_t    GetExternalDetectors()           const {return fExtDet;}
+  void     SetExternalDetectors(int det=kUseTRDonly);
+
   //
   void     SetChebZSlicePerSide(int n=1)          {fChebZSlicePerSide = n;}
   void     SetChebPhiSlicePerSector(int n=1)      {fChebPhiSlicePerSector = n;}
@@ -331,6 +335,7 @@ class AliTPCDcalibRes: public TNamed
   AliTPCChebCorr* fChebCorr;                        // final Chebyshev object
   // -------------------------------Task defintion
   Int_t    fRun;     // run number 
+  Int_t    fExtDet;  // external detectors to use
   Long64_t fTMin;    // time start for timebin
   Long64_t fTMax;    // time stop for timebin
   Long64_t fTMinGRP;    // time start from GRP
@@ -478,7 +483,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,7);
+  ClassDef(AliTPCDcalibRes,8);
 };
 
 //________________________________________________________________
