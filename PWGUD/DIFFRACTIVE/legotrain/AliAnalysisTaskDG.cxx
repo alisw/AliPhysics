@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <TRandom.h>
 #include <TTree.h>
 #include <TList.h>
@@ -265,7 +267,7 @@ void AliAnalysisTaskDG::NotifyRun()
       AliFatal("NULL == triggerConfig");
     }
  
-    std::auto_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+    std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
     const TObjArray &classes = triggerConfig->GetClasses();
     for (Int_t i=0, n=classes.GetEntries(); i<n; ++i) {
       const AliTriggerClass *c = dynamic_cast<const AliTriggerClass*>(classes.At(i));
@@ -354,7 +356,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
       }
     } else { // no OCDB used
-      std::auto_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+      std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
       Bool_t selected = kFALSE;
       for (Int_t i=0, n=split->GetEntries(); i<n && !selected; ++i)
 	selected = esdEvent->GetFiredTriggerClasses().Contains(split->At(i)->GetName());
@@ -393,7 +395,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   fTreeData.fEventInfo.fnTrklet = mult->GetNumberOfTracklets();
 
-  std::auto_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
+  std::unique_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
   fTreeData.fEventInfo.fnTrk = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
