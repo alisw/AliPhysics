@@ -36,7 +36,7 @@
 #include <TVirtualMC.h>
 #include <TMCVerbose.h>
 #include <TTree.h>
- 
+
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -136,7 +136,7 @@ AliMC::~AliMC()
 }
 
 //_______________________________________________________________________
-void  AliMC::ConstructGeometry() 
+void  AliMC::ConstructGeometry()
 {
   //
   // Either load geometry from file or create it through usual
@@ -182,14 +182,14 @@ void  AliMC::ConstructGeometry()
 		   detector->GetName(),stw.RealTime(),stw.CpuTime()));
     }
   }
-  
+
 }
 
 //_______________________________________________________________________
-Bool_t  AliMC::MisalignGeometry() 
+Bool_t  AliMC::MisalignGeometry()
 {
   // Call misalignment code if AliSimulation object was defined.
-  
+
   if(!AliSimulation::Instance()->IsGeometryFromFile()){
     //Set alignable volumes for the whole geometry
     SetAllAlignableVolumes();
@@ -199,15 +199,15 @@ Bool_t  AliMC::MisalignGeometry()
   AliGeomManager::SetGeometry(gGeoManager);
   if(!AliGeomManager::CheckSymNamesLUT("ALL"))
     AliFatal("Current loaded geometry differs in the definition of symbolic names!");
-  
+
   return AliSimulation::Instance()->MisalignGeometry(AliRunLoader::Instance());
-}   
+}
 
 //_______________________________________________________________________
-void  AliMC::ConstructOpGeometry() 
+void  AliMC::ConstructOpGeometry()
 {
   //
-  // Loop all detector modules and call DefineOpticalProperties() method 
+  // Loop all detector modules and call DefineOpticalProperties() method
   //
 
   TIter next(gAlice->Modules());
@@ -218,7 +218,7 @@ void  AliMC::ConstructOpGeometry()
     if(AliSimulation::Instance()->IsGeometryFromFile()) detector->CreateMaterials();
     // Initialise detector optical properties
     detector->DefineOpticalProperties();
-  }  
+  }
 }
 
 #include <TPDGCode.h>
@@ -228,7 +228,7 @@ void  AliMC::AddParticles()
   //
   // Add particles (not present in Geant3 or Geant4)
   //
-  
+
   cout << "########## AliMC::AddParticles"  << endl;
 
   //Hypertriton
@@ -246,7 +246,7 @@ void  AliMC::AddParticles()
   //Anti-Hyper helium 4
   TVirtualMC::GetMC()->DefineParticle(-1010020040, "AntiHyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
 
-  //Lambda-Neutron 
+  //Lambda-Neutron
   TVirtualMC::GetMC()->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Anti-Lambda-Neutron
@@ -254,21 +254,53 @@ void  AliMC::AddParticles()
 
   //H-Dibaryon
   TVirtualMC::GetMC()->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.23, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
   //Anti-H-Dibaryon
   TVirtualMC::GetMC()->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.23, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Xi-Proton
-  TVirtualMC::GetMC()->DefineParticle(1030000020, "Xi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1020010020, "Xi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Anti-Xi-Proton
-  TVirtualMC::GetMC()->DefineParticle(-1030000020, "AntiXi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
-  
+  TVirtualMC::GetMC()->DefineParticle(-1020010020, "AntiXi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
   //Lambda-Neutron-Neutron
   TVirtualMC::GetMC()->DefineParticle(1010000030, "LambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
-  
+
   //Anti-Lambda-Neutron-Neutron
   TVirtualMC::GetMC()->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
-  
+
+	//Omega-Proton
+  TVirtualMC::GetMC()->DefineParticle(1030000020, "OmegaProton", kPTHadron, 2.592, 0.0, 2.632e-10,"Hadron", 0.0, 2, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Anti-Omega-Proton
+  TVirtualMC::GetMC()->DefineParticle(-1030000020, "AntiOmegaProton", kPTHadron, 2.592, 0.0, 2.632e-10,"Hadron", 0.0, 2, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Omega-Neutron
+  TVirtualMC::GetMC()->DefineParticle(1030010020, "OmegaNeutron", kPTHadron, 2.472, 1.0, 2.190e-22,"Hadron", 0.0, 2, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Anti-Omega-Neutron
+  TVirtualMC::GetMC()->DefineParticle(-1030010020, "AntiOmegaNeutron", kPTHadron, 2.472, 1.0, 2.190e-22,"Hadron", 0.0, 2, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Omega-Omega
+  TVirtualMC::GetMC()->DefineParticle(1060020020, "OmegaOmega", kPTHadron, 3.229, 2.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Anti-Omega-Omega
+  TVirtualMC::GetMC()->DefineParticle(-1060020020, "AntiOmegaOmega", kPTHadron, 3.229, 2.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Lambda(1405)-Proton
+  TVirtualMC::GetMC()->DefineParticle(1010010021, "Lambda1405Proton", kPTHadron, 2.295, 1.0, 1.316e-23,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Anti-Lambda(1405)-Proton
+  TVirtualMC::GetMC()->DefineParticle(-1010010021, "AntiLambda1405Proton", kPTHadron, 2.295, 1.0, 1.316e-23,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Lambda(1405)-Lambda(1405)
+  TVirtualMC::GetMC()->DefineParticle(1020000021, "Lambda1405Lambda1405", kPTHadron, 2.693, 0.0, 1.316e-23,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+	//Anti-Lambda(1405)-Lambda(1405)
+  TVirtualMC::GetMC()->DefineParticle(-1020000021, "AntiLambda1405Lambda1405", kPTHadron, 2.693, 0.0, 1.316e-23,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+
   //Resonances not in Generators
   // f0(980) assume 70 MeV as width (PDG: 40 to 100 MeV)
   TVirtualMC::GetMC()->DefineParticle(9010221, "f0_980", kPTNeutron, 0.98 , 0.0, 9.403e-24,"Hadron", 7e-2, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
@@ -277,7 +309,7 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->DefineParticle(225, "f2_1270", kPTNeutron, 1.275 , 0.0, 3.558e-24,"Hadron", 0.185, 0, 0, 0, 0, 0, 0, 0, 0, kTRUE);
 
   // Define the 2- and 3-body phase space decay for the Hyper-Triton
-  Int_t mode[6][3];                  
+  Int_t mode[6][3];
   Float_t bratio[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -287,11 +319,11 @@ void  AliMC::AddParticles()
      mode[kz][2] = 0;
   }
   bratio[0] = 50.;
-  mode[0][0] = 1000020030; // Helium3 
+  mode[0][0] = 1000020030; // Helium3
   mode[0][1] = -211; // negative pion
-  
+
   bratio[1] = 50.;
-  mode[1][0] = 1000010020; // deuteron 
+  mode[1][0] = 1000010020; // deuteron
   mode[1][1] = 2212; // proton
   mode[1][2] = -211; // negative pion
 
@@ -300,7 +332,7 @@ void  AliMC::AddParticles()
 
 
   // Define the 2- and 3-body phase space decay for the Anti-Hyper-Triton
-  Int_t amode[6][3];                  
+  Int_t amode[6][3];
   Float_t abratio[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -310,20 +342,20 @@ void  AliMC::AddParticles()
      amode[kz][2] = 0;
   }
   abratio[0] = 50.;
-  amode[0][0] = -1000020030; // anti- Helium3 
+  amode[0][0] = -1000020030; // anti- Helium3
   amode[0][1] = 211; // positive pion
   abratio[1] = 50.;
-  amode[1][0] = -1000010020; // anti-deuteron 
+  amode[1][0] = -1000010020; // anti-deuteron
   amode[1][1] = -2212; // anti-proton
   amode[1][2] = 211; // positive pion
 
   TVirtualMC::GetMC()->SetDecayMode(-1010010030,abratio,amode);
-  
+
   ////// ----------Hypernuclei with Mass=4 ----------- //////////
-  
+
    // Define the 2- and 3-body phase space decay for the Hyper Hydrogen 4
-   
-  Int_t mode3[6][3];                  
+
+  Int_t mode3[6][3];
   Float_t bratio3[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -333,9 +365,9 @@ void  AliMC::AddParticles()
      mode3[kz][2] = 0;
   }
   bratio3[0] = 50.;
-  mode3[0][0] = 1000020040; // Helium4 
+  mode3[0][0] = 1000020040; // Helium4
   mode3[0][1] = -211; // negative pion
-  
+
   bratio3[1] = 50.;
   mode3[1][0] = 1000010030; // tritium
   mode3[1][1] = 2212; // proton
@@ -345,7 +377,7 @@ void  AliMC::AddParticles()
 
 
   // Define the 2- and 3-body phase space decay for the Hyper Hydrogen 4
-  Int_t amode3[6][3];                  
+  Int_t amode3[6][3];
   Float_t abratio3[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -355,7 +387,7 @@ void  AliMC::AddParticles()
      amode3[kz][2] = 0;
   }
   abratio3[0] = 50.;
-  amode3[0][0] = -1000020040; // anti- Helium4 
+  amode3[0][0] = -1000020040; // anti- Helium4
   amode3[0][1] = 211; // positive pion
   abratio3[1] = 50.;
   amode3[1][0] = -1000010030; // anti-tritium
@@ -363,10 +395,10 @@ void  AliMC::AddParticles()
   amode3[1][2] = 211; // positive pion
 
   TVirtualMC::GetMC()->SetDecayMode(-1010010040,abratio3,amode3);
-  
-  
+
+
    // Define the 3-body phase space decay for the Hyper Helium 4
-  Int_t mode4[6][3];                  
+  Int_t mode4[6][3];
   Float_t bratio4[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -376,15 +408,15 @@ void  AliMC::AddParticles()
      mode4[kz][2] = 0;
   }
   bratio4[0] = 100.;
-  mode4[0][0] = 1000020030; // Helium3 
+  mode4[0][0] = 1000020030; // Helium3
   mode4[0][1] = -211; // negative pion
   mode4[0][2] = 2212; // proton
-  
+
   TVirtualMC::GetMC()->SetDecayMode(1010020040,bratio4,mode4);
 
 
   // Define the 2-body phase space decay for the Anti-Hyper Helium 4
-  Int_t amode4[6][3];                  
+  Int_t amode4[6][3];
   Float_t abratio4[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -400,9 +432,9 @@ void  AliMC::AddParticles()
 
   TVirtualMC::GetMC()->SetDecayMode(-1010020040,abratio4,amode4);
 
-  
+
   // Define the 2-body phase space decay for the Lambda-neutron boundstate
-  Int_t mode1[6][3];                  
+  Int_t mode1[6][3];
   Float_t bratio1[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -412,14 +444,14 @@ void  AliMC::AddParticles()
      mode1[kz][2] = 0;
   }
   bratio1[0] = 100.;
-  mode1[0][0] = 1000010020; // deuteron 
+  mode1[0][0] = 1000010020; // deuteron
   mode1[0][1] = -211; // negative pion
 
   TVirtualMC::GetMC()->SetDecayMode(1010000020,bratio1,mode1);
 
 
   // Define the 2-body phase space decay for the Anti-Lambda-neutron boundstate
-  Int_t amode1[6][3];                  
+  Int_t amode1[6][3];
   Float_t abratio1[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -429,13 +461,13 @@ void  AliMC::AddParticles()
      amode1[kz][2] = 0;
   }
   abratio1[0] = 100.;
-  amode1[0][0] = -1000010020; // anti-deuteron 
+  amode1[0][0] = -1000010020; // anti-deuteron
   amode1[0][1] = 211; // positive pion
 
   TVirtualMC::GetMC()->SetDecayMode(-1010000020,abratio1,amode1);
 
   // Define the 2-body phase space decay for the H-Dibaryon
-  Int_t mode2[6][3];                  
+  Int_t mode2[6][3];
   Float_t bratio2[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -445,14 +477,14 @@ void  AliMC::AddParticles()
      mode2[kz][2] = 0;
   }
   bratio2[0] = 100.;
-  mode2[0][0] = 3122; // Lambda 
+  mode2[0][0] = 3122; // Lambda
   mode2[0][1] = 2212; // proton
   mode2[0][2] = -211; // negative pion
 
   TVirtualMC::GetMC()->SetDecayMode(1020000020,bratio2,mode2);
 
   // Define the 2-body phase space decay for the Anti-H-Dibaryon
-  Int_t amode2[6][3];                  
+  Int_t amode2[6][3];
   Float_t abratio2[6];
 
   for (Int_t kz = 0; kz < 6; kz++) {
@@ -462,7 +494,7 @@ void  AliMC::AddParticles()
      amode2[kz][2] = 0;
   }
   abratio2[0] = 100.;
-  amode2[0][0] = -3122; // anti-deuteron 
+  amode2[0][0] = -3122; // anti-deuteron
   amode2[0][1] = -2212; // anti-proton
   amode2[0][2] = 211; // positive pion
 
@@ -471,7 +503,7 @@ void  AliMC::AddParticles()
   // Define the 2-body phase space decay for the Xi0P
   Int_t mode5[6][3];
   Float_t bratio5[6];
-  
+
   for (Int_t kz = 0; kz < 6; kz++) {
     bratio5[kz] = 0.;
     mode5[kz][0] = 0;
@@ -481,9 +513,9 @@ void  AliMC::AddParticles()
   bratio5[0] = 100.;
   mode5[0][0] = 3122; // Lambda
   mode5[0][1] = 2212; // proton
-  
-  TVirtualMC::GetMC()->SetDecayMode(1030000020,bratio5,mode5);
-  
+
+  TVirtualMC::GetMC()->SetDecayMode(1020010020,bratio5,mode5);
+
   // Define the 2-body phase space decay for the Anti-Xi0P
   Int_t amode5[6][3];
   Float_t abratio5[6];
@@ -497,9 +529,9 @@ void  AliMC::AddParticles()
   abratio5[0] = 100.;
   amode5[0][0] = -3122; // anti-Lambda
   amode5[0][1] = -2212; // anti-proton
-  
-  TVirtualMC::GetMC()->SetDecayMode(-1030000020,abratio5,amode5);
-  
+
+  TVirtualMC::GetMC()->SetDecayMode(-1020010020,abratio5,amode5);
+
   // Define the 2-body phase space decay for the Lambda-Neutron-Neutron
   Int_t mode6[6][3];
   Float_t bratio6[6];
@@ -513,13 +545,13 @@ void  AliMC::AddParticles()
   bratio6[0] = 100.;
   mode6[0][0] = 1000010030; // triton
   mode6[0][1] = -211; // pion
-  
+
   TVirtualMC::GetMC()->SetDecayMode(1010000030,bratio6,mode6);
-  
+
   // Define the 2-body phase space decay for the Anti-Lambda-Neutron-Neutron
   Int_t amode6[6][3];
   Float_t abratio6[6];
-  
+
   for (Int_t kz = 0; kz < 6; kz++) {
     abratio6[kz] = 0.;
     amode6[kz][0] = 0;
@@ -529,11 +561,191 @@ void  AliMC::AddParticles()
   abratio6[0] = 100.;
   amode6[0][0] = -1000010030; // anti-triton
   amode6[0][1] = 211; // pion
-  
+
   TVirtualMC::GetMC()->SetDecayMode(-1010000030,abratio6,amode6);
 
+
+  // Define the 3-body phase space decay for the Omega-Proton
+  Int_t mode7[6][3];
+  Float_t bratio7[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio7[kz] = 0.;
+     mode7[kz][0] = 0;
+     mode7[kz][1] = 0;
+     mode7[kz][2] = 0;
+  }
+  bratio7[0] = 100.;
+  mode7[0][0] = 3122; // Lambda
+  mode7[0][1] = -321; // negative Kaon
+  mode7[0][2] = 2212; // proton
+
+  TVirtualMC::GetMC()->SetDecayMode(1030000020,bratio7,mode7);
+
+  // Define the 3-body phase space decay for the Anti-Omega-Proton
+  Int_t amode7[6][3];
+  Float_t abratio7[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio7[kz] = 0.;
+     amode7[kz][0] = 0;
+     amode7[kz][1] = 0;
+     amode7[kz][2] = 0;
+  }
+  abratio7[0] = 100.;
+  amode7[0][0] = -3122; // anti-Lambda
+  amode7[0][1] = 321;   // positive kaon
+  amode7[0][2] = -2212; // anti-proton
+
+  TVirtualMC::GetMC()->SetDecayMode(-1030000020,abratio7,amode7);
+
+  // Define the 2-body phase space decay for the Omega-Neutron
+  Int_t mode8[6][3];
+  Float_t bratio8[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio8[kz] = 0.;
+     mode8[kz][0] = 0;
+     mode8[kz][1] = 0;
+     mode8[kz][2] = 0;
+  }
+  bratio8[0] = 100.;
+  mode8[0][0] = 3122; // Lambda
+  mode8[0][1] = 3312; // negative Xi
+
+  TVirtualMC::GetMC()->SetDecayMode(1030010020,bratio8,mode8);
+
+  // Define the 2-body phase space decay for the Anti-Omega-Neutron
+  Int_t amode8[6][3];
+  Float_t abratio8[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio8[kz] = 0.;
+     amode8[kz][0] = 0;
+     amode8[kz][1] = 0;
+     amode8[kz][2] = 0;
+  }
+  abratio8[0] = 100.;
+  amode8[0][0] = -3122; // anti-Lambda
+  amode8[0][1] = -3312; // positive Xi
+
+  TVirtualMC::GetMC()->SetDecayMode(-1030010020,abratio8,amode8);
+
+  // Define the 3-body phase space decay for the Omega-Omega
+  Int_t mode9[6][3];
+  Float_t bratio9[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio9[kz] = 0.;
+     mode9[kz][0] = 0;
+     mode9[kz][1] = 0;
+     mode9[kz][2] = 0;
+  }
+  bratio9[0] = 100.;
+  mode9[0][0] = 3334; // negative Omega
+  mode9[0][1] = 3312; // negative Xi
+
+  TVirtualMC::GetMC()->SetDecayMode(1060020020,bratio9,mode9);
+
+  // Define the 3-body phase space decay for the Anti-Omega-Omega
+  Int_t amode9[6][3];
+  Float_t abratio9[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio9[kz] = 0.;
+     amode9[kz][0] = 0;
+     amode9[kz][1] = 0;
+     amode9[kz][2] = 0;
+  }
+  abratio9[0] = 100.;
+  amode9[0][0] = -3334; // positive Omega
+  amode9[0][1] = -3312; // positive Xi
+
+  TVirtualMC::GetMC()->SetDecayMode(-1060020020,abratio9,amode9);
+
+  // Define the 2- and 3-body phase space decay for the Lambda(1405)-Proton
+  Int_t mode10[6][3];
+  Float_t bratio10[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio10[kz] = 0.;
+     mode10[kz][0] = 0;
+     mode10[kz][1] = 0;
+     mode10[kz][2] = 0;
+  }
+  bratio10[0] = 50.;
+  mode10[0][0] = 3122; // Lambda
+  mode10[0][1] = 2212; // proton
+  bratio10[1] = 50.;
+  mode10[1][0] = 2212; // proton
+  mode10[1][1] = -211; // negative pion
+  mode10[1][2] = 2212; // proton
+
+  TVirtualMC::GetMC()->SetDecayMode(1010010021,bratio10,mode10);
+
+  // Define the 2- and 3-body phase space decay for the Anti-Lambda(1405)-Proton
+  Int_t amode10[6][3];
+  Float_t abratio10[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio10[kz] = 0.;
+     amode10[kz][0] = 0;
+     amode10[kz][1] = 0;
+     amode10[kz][2] = 0;
+  }
+  abratio10[0] = 50.;
+  amode10[0][0] = -3122; // anti-Lambda
+  amode10[0][1] = -2212; // anti-proton
+  abratio10[1] = 50.;
+  amode10[1][0] = -2212; // anti-proton
+  amode10[1][1] = 211;   // positive pion
+  amode10[1][2] = -2212; // anti-proton
+
+  TVirtualMC::GetMC()->SetDecayMode(-1010010021,abratio10,amode10);
+
+  // Define the 3-body phase space decay for the Lambda(1405)-Lambda(1405)
+  Int_t mode11[6][3];
+  Float_t bratio11[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     bratio11[kz] = 0.;
+     mode11[kz][0] = 0;
+     mode11[kz][1] = 0;
+     mode11[kz][2] = 0;
+  }
+  bratio11[0] = 50.;
+  mode11[0][0] = 3122; // Lambda
+  mode11[0][1] = 3122; // Lambda
+  bratio11[1] = 50.;
+  mode11[1][0] = 3122; // Lambda
+  mode11[1][1] = 2212; // proton
+  mode11[1][2] = -211; // negative pion
+
+  TVirtualMC::GetMC()->SetDecayMode(1020000021,bratio11,mode11);
+
+  // Define the 3-body phase space decay for the Anti-Lambda(1405)-Lambda(1405)
+  Int_t amode11[6][3];
+  Float_t abratio11[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+     abratio11[kz] = 0.;
+     amode11[kz][0] = 0;
+     amode11[kz][1] = 0;
+     amode11[kz][2] = 0;
+  }
+  abratio11[0] = 50.;
+  amode11[0][0] = -3122; // anti-Lambda
+  amode11[0][1] = -3122; // anti-Lambda
+  abratio11[1] = 50.;
+  amode11[1][0] = -3122; // anti-Lambda
+  amode11[1][1] = -2212; // anti-proton
+  amode11[1][2] = 211;   // positive pion
+
+  TVirtualMC::GetMC()->SetDecayMode(-1020000021,abratio11,amode11);
+
+
   ///////////////////////////////////////////////////////////////////
-  
+
   // Define the 2-body phase space decay for the f0(980)
 //  Int_t mode[6][3];
 //  Float_t bratio[6];
@@ -547,7 +759,7 @@ void  AliMC::AddParticles()
   bratio[0] = 100.;
   mode[0][0] = 211; // pion
   mode[0][1] = -211; // pion
-  
+
   TVirtualMC::GetMC()->SetDecayMode(9010221,bratio,mode);
 
     // Define the 2-body phase space decay for the f2(1270)
@@ -563,7 +775,7 @@ void  AliMC::AddParticles()
   bratio[0] = 100.;
   mode[0][0] = 211; // pion
   mode[0][1] = -211; // pion
-  
+
   TVirtualMC::GetMC()->SetDecayMode(225,bratio,mode);
 
   // Lambda1520/Lambda1520bar
@@ -640,11 +852,11 @@ void  AliMC::AddParticles()
   TVirtualMC::GetMC()->SetDecayMode(-3124,bratio,mode);
 
   // --------------------------------------------------------------------
-}  
-  
+}
+
 //_______________________________________________________________________
 void  AliMC::InitGeometry()
-{ 
+{
   //
   // Initialize detectors
   //
@@ -681,7 +893,7 @@ Bool_t AliMC::IsGeometryFromCDB() const
 
 //_______________________________________________________________________
 void  AliMC::SetAllAlignableVolumes()
-{ 
+{
   //
   // Add alignable volumes (TGeoPNEntries) looping on all
   // active modules
@@ -696,8 +908,8 @@ void  AliMC::SetAllAlignableVolumes()
 }
 
 //_______________________________________________________________________
-void  AliMC::GeneratePrimaries() 
-{ 
+void  AliMC::GeneratePrimaries()
+{
   //
   // Generate primary particles and fill them in the stack.
   //
@@ -739,12 +951,12 @@ void AliMC::FinishRun()
   // Clean generator information
   AliDebug(1, "fGenerator->FinishRun()");
   fGenerator->FinishRun();
-  
+
   // Monitoring information
   if (fMonitor) {
     fMonitor->Print();
     fMonitor->Export("timing.root");
-  }  
+  }
 
   //Output energy summary tables
   AliDebug(1, "EnergySummary()");
@@ -757,7 +969,7 @@ void AliMC::BeginPrimary()
   //
   // Called  at the beginning of each primary track
   //
-  
+
   // Reset Hits info
   ResetHits();
   ResetTrackReferences();
@@ -779,7 +991,7 @@ void AliMC::PreTrack()
 }
 
 //_______________________________________________________________________
-void AliMC::Stepping() 
+void AliMC::Stepping()
 {
   //
   // Called at every step during transport
@@ -790,21 +1002,21 @@ void AliMC::Stepping()
   if (id < 0) return;
 
 
-  if ( TVirtualMC::GetMC()->IsNewTrack()            && 
+  if ( TVirtualMC::GetMC()->IsNewTrack()            &&
        TVirtualMC::GetMC()->TrackTime() == 0.       &&
-       fRDecayMin >= 0.             &&  
+       fRDecayMin >= 0.             &&
        fRDecayMax > fRDecayMin      &&
-       TVirtualMC::GetMC()->TrackPid() == fDecayPdg ) 
+       TVirtualMC::GetMC()->TrackPid() == fDecayPdg )
   {
       FixParticleDecaytime();
-  } 
-    
+  }
+
   // --- If monitoring timing was requested, monitor the step
   if (fUseMonitoring) {
     if (!fMonitor) {
       fMonitor = new AliTransportMonitor(TVirtualMC::GetMC()->NofVolumes()+1);
       fMonitor->Start();
-    }  
+    }
     if (TVirtualMC::GetMC()->IsNewTrack() || TVirtualMC::GetMC()->TrackTime() == 0. || TVirtualMC::GetMC()->TrackStep()<1.1E-10) {
       fMonitor->DummyStep();
     } else {
@@ -816,10 +1028,10 @@ void AliMC::Stepping()
       TVirtualMC::GetMC()->TrackPosition(xyz);
       TVirtualMC::GetMC()->TrackMomentum(pxpypz);
       fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
-    }  
+    }
   }
   //
-  // --- If lego option, do it and leave 
+  // --- If lego option, do it and leave
   if (AliSimulation::Instance()->Lego())
     AliSimulation::Instance()->Lego()->StepManager();
   else {
@@ -829,10 +1041,10 @@ void AliMC::Stepping()
     //
     // write tracke reference for track which is dissapearing - MI
 
-    if (TVirtualMC::GetMC()->IsTrackDisappeared() && !(TVirtualMC::GetMC()->IsTrackAlive())) {      
-	if (TVirtualMC::GetMC()->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(), 
+    if (TVirtualMC::GetMC()->IsTrackDisappeared() && !(TVirtualMC::GetMC()->IsTrackAlive())) {
+	if (TVirtualMC::GetMC()->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
 						AliTrackReference::kDisappeared);
-	
+
 
     }
 
@@ -870,7 +1082,7 @@ void AliMC::EnergySummary()
 	  ed2=fSum2Energy[kn];
 	  ed2=ed2/ievent;
 	  ed2=100*TMath::Sqrt(TMath::Max(ed2-ed*ed,kzero))/ed;
-	} else 
+	} else
 	  ed2=99;
 	fSummEnergy[ndep]=ed;
 	fSum2Energy[ndep]=TMath::Min(static_cast<Float_t>(99.),TMath::Max(ed2,kzero));
@@ -900,7 +1112,7 @@ void AliMC::EnergySummary()
       }
       printf("\n");
     }
-    for(kn=0;kn<75;kn++) printf("*"); 
+    for(kn=0;kn<75;kn++) printf("*");
     printf("\n");
   }
   //
@@ -926,28 +1138,28 @@ void AliMC::BeginEvent()
 
   AliRunLoader *runloader=AliRunLoader::Instance();
 
-  /*******************************/    
+  /*******************************/
   /*   Clean after eventual      */
   /*   previous event            */
-  /*******************************/    
+  /*******************************/
 
-  
+
   //Set the next event in Run Loader -> Cleans trees (TreeK and all trees in detectors),
   gAlice->SetEventNrInRun(gAlice->GetEventNrInRun()+1);
-  runloader->SetEventNumber(gAlice->GetEventNrInRun());// sets new files, cleans the previous event stuff, if necessary, etc.,  
+  runloader->SetEventNumber(gAlice->GetEventNrInRun());// sets new files, cleans the previous event stuff, if necessary, etc.,
   AliDebug(1, Form("EventNr is %d",gAlice->GetEventNrInRun()));
-     
-  fEventEnergy.Reset();  
+
+  fEventEnergy.Reset();
     // Clean detector information
-  
+
   if (runloader->Stack())
       runloader->Stack()->Reset();//clean stack -> tree is unloaded
   else
       runloader->MakeStack();//or make a new one
-  
+
   // Random engine status
   //
-  
+
   if ( fSaveRndmStatus || fSaveRndmEventStatus) {
     TString fileName="random";
     if ( fSaveRndmEventStatus ) {
@@ -955,52 +1167,52 @@ void AliMC::BeginEvent()
       fileName += gAlice->GetEventNrInRun();
     }
     fileName += ".root";
-       
+
     // write ROOT random engine status
     cout << "Saving random engine status in " << fileName.Data() << endl;
     TFile f(fileName.Data(),"RECREATE");
     gRandom->Write(fileName.Data());
-  }     
+  }
 
   if ( fReadRndmStatus ) {
     //read ROOT random engine status
     cout << "Reading random engine status from " << fRndmFileName.Data() << endl;
     TFile f(fRndmFileName.Data());
-    gRandom->Read(fRndmFileName.Data());    
-  }       
+    gRandom->Read(fRndmFileName.Data());
+  }
 
   if(AliSimulation::Instance()->Lego() == 0x0)
-  { 
+  {
       AliDebug(1, "fRunLoader->MakeTree(K)");
       runloader->MakeTree("K");
   }
-  
+
   AliDebug(1, "TVirtualMC::GetMC()->SetStack(fRunLoader->Stack())");
-  TVirtualMC::GetMC()->SetStack(runloader->Stack());//Was in InitMC - but was moved here 
-                                     //because we don't have guarantee that 
+  TVirtualMC::GetMC()->SetStack(runloader->Stack());//Was in InitMC - but was moved here
+                                     //because we don't have guarantee that
                                      //stack pointer is not going to change from event to event
 	                 //since it bellobgs to header and is obtained via RunLoader
   //
   //  Reset all Detectors & kinematics & make/reset trees
   //
-    
+
   runloader->GetHeader()->Reset(AliCDBManager::Instance()->GetRun(),gAlice->GetEvNumber(),
 				gAlice->GetEventNrInRun());
 //  fRunLoader->WriteKinematics("OVERWRITE");  is there any reason to rewrite here since MakeTree does so
 
-  if(AliSimulation::Instance()->Lego()) 
+  if(AliSimulation::Instance()->Lego())
   {
       AliSimulation::Instance()->Lego()->BeginEvent();
       return;
   }
-  
+
 
   AliDebug(1, "ResetHits()");
   ResetHits();
-  
+
   AliDebug(1, "fRunLoader->MakeTree(H)");
   runloader->MakeTree("H");
-  
+
 
 
   MakeTmpTrackRefsTree();
@@ -1010,7 +1222,7 @@ void AliMC::BeginEvent()
   while((detector = (AliModule*)next()))
    {
        AliDebug(2, Form("%s->MakeBranch(H)",detector->GetName()));
-       detector->MakeBranch("H"); 
+       detector->MakeBranch("H");
    }
 }
 
@@ -1060,7 +1272,7 @@ void AliMC::PostTrack()
 
   TObjArray &dets = *gAlice->Modules();
   AliModule *module;
-  
+
   for(Int_t i=0; i<=gAlice->GetNdets(); i++)
     if((module = dynamic_cast<AliModule*>(dets[i])))
       module->PostTrack();
@@ -1083,7 +1295,7 @@ void AliMC::FinishPrimary()
   }
 #endif
   if (runloader->Stack()->PurifyKine()) RemapHits();
-  
+
   TIter next(gAlice->Modules());
   AliModule *detector;
   while((detector = dynamic_cast<AliModule*>(next()))) {
@@ -1102,14 +1314,14 @@ void AliMC::FinishPrimary()
 
 void AliMC::RemapHits()
 {
-//    
+//
 // Remaps the track labels of the hits
     AliRunLoader *runloader=AliRunLoader::Instance();
     AliStack* stack = runloader->Stack();
     TList* hitLists = GetHitLists();
     TIter next(hitLists);
     TCollection *hitList;
-    
+
     while((hitList = dynamic_cast<TCollection*>(next()))) {
 	TIter nexthit(hitList);
 	AliHit *hit;
@@ -1117,13 +1329,13 @@ void AliMC::RemapHits()
 	    hit->SetTrack(stack->TrackLabel(hit->GetTrack()));
 	}
     }
-    
-    // 
+
+    //
     // This for detectors which have a special mapping mechanism
     // for hits, such as TPC and TRD
     //
 
-    
+
     TObjArray* modules = gAlice->Modules();
     TIter nextmod(modules);
     AliModule *module;
@@ -1141,7 +1353,7 @@ void AliMC::FinishEvent()
   //
   // Called at the end of the event.
   //
-    
+
   if(AliSimulation::Instance()->Lego()) AliSimulation::Instance()->Lego()->FinishEvent();
 
   TIter next(gAlice->Modules());
@@ -1152,7 +1364,7 @@ void AliMC::FinishEvent()
 
   //Update the energy deposit tables
   Int_t i;
-  for(i=0;i<fEventEnergy.GetSize();i++) 
+  for(i=0;i<fEventEnergy.GetSize();i++)
    {
     fSummEnergy[i]+=fEventEnergy[i];
     fSum2Energy[i]+=fEventEnergy[i]*fEventEnergy[i];
@@ -1166,10 +1378,10 @@ void AliMC::FinishEvent()
    {//check if we got header and stack. If not cry and exit aliroot
     AliFatal("Can not get the stack or header from LOADER");
     return;//never reached
-   }  
-  // Update Header information 
+   }
+  // Update Header information
   header->SetNprimary(stack->GetNprimary());
-  header->SetNtrack(stack->GetNtrack());  
+  header->SetNtrack(stack->GetNtrack());
   header->SetTimeStamp(AliSimulation::Instance()->GenerateTimeStamp());
 
   // Write out the kinematics
@@ -1177,10 +1389,10 @@ void AliMC::FinishEvent()
 
   // Synchronize the TreeTR with TreeK
   if (fTmpTreeTR) ReorderAndExpandTreeTR();
-   
+
   // Write out the event Header information
   TTree* treeE = runloader->TreeE();
-  if (treeE) 
+  if (treeE)
    {
       header->SetStack(stack);
       treeE->Fill();
@@ -1189,14 +1401,14 @@ void AliMC::FinishEvent()
    {
     AliError("Can not get TreeE from RL");
    }
-  
+
   if(AliSimulation::Instance()->Lego() == 0x0)
    {
      runloader->WriteKinematics("OVERWRITE");
      runloader->WriteTrackRefs("OVERWRITE");
      runloader->WriteHits("OVERWRITE");
    }
-   
+
   AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   AliDebug(1, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -1225,13 +1437,13 @@ void AliMC::Init()
 
    //Compute cross-sections
    TVirtualMC::GetMC()->BuildPhysics();
-   
+
    //Initialise geometry deposition table
    fEventEnergy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
    fSummEnergy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
    fSum2Energy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
 
-   // Register MC in configuration 
+   // Register MC in configuration
    AliConfig::Instance()->Add(TVirtualMC::GetMC());
 }
 
@@ -1253,9 +1465,9 @@ void AliMC::MediaTable()
   for (kz=0;kz<ndets;kz++) {
     // If detector is defined
     if((det=dynamic_cast<AliModule*>(dets[kz]))) {
-        TArrayI &idtmed = *(det->GetIdtmed()); 
+        TArrayI &idtmed = *(det->GetIdtmed());
         for(nz=0;nz<100;nz++) {
-	    
+
 	// Find max and min material number
 	if((idt=idtmed[nz])) {
 	  det->LoMedium() = det->LoMedium() < idt ? det->LoMedium() : idt;
@@ -1479,7 +1691,7 @@ Int_t AliMC::GetPrimary(Int_t track) const
     nprimary = runloader->Stack()->GetPrimary(track);
   return nprimary;
 }
- 
+
 //_______________________________________________________________________
 TParticle* AliMC::Particle(Int_t i) const
 {
@@ -1489,7 +1701,7 @@ TParticle* AliMC::Particle(Int_t i) const
   if (runloader)
    if (runloader->Stack())
     return runloader->Stack()->Particle(i);
-  return 0x0;   
+  return 0x0;
 }
 
 //_______________________________________________________________________
@@ -1508,7 +1720,7 @@ const TObjArray* AliMC::Particles() const {
 void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg, const Float_t *pmom,
                       const Float_t *vpos, const Float_t *polar, Float_t tof,
                       TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is) const
-{ 
+{
 // Delegate to stack
 //
   AliRunLoader * runloader = AliRunLoader::Instance();
@@ -1524,7 +1736,7 @@ void AliMC::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   		      Double_t vx, Double_t vy, Double_t vz, Double_t tof,
 		      Double_t polx, Double_t poly, Double_t polz,
 		      TMCProcess mech, Int_t &ntr, Float_t weight, Int_t is) const
-{ 
+{
   // Delegate to stack
   //
   AliRunLoader * runloader = AliRunLoader::Instance();
@@ -1547,7 +1759,7 @@ void AliMC::SetHighWaterMark(Int_t nt) const
 
 //_______________________________________________________________________
 void AliMC::KeepTrack(Int_t track) const
-{ 
+{
   //
   // Delegate to stack
   //
@@ -1556,7 +1768,7 @@ void AliMC::KeepTrack(Int_t track) const
     if (runloader->Stack())
       runloader->Stack()->KeepTrack(track);
 }
- 
+
 //_______________________________________________________________________
 void AliMC::FlagTrack(Int_t track) const
 {
@@ -1570,18 +1782,18 @@ void AliMC::FlagTrack(Int_t track) const
 
 //_______________________________________________________________________
 void AliMC::SetCurrentTrack(Int_t track) const
-{ 
+{
   //
   // Set current track number
   //
   AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
-      runloader->Stack()->SetCurrentTrack(track); 
+      runloader->Stack()->SetCurrentTrack(track);
 }
 
 //_______________________________________________________________________
-AliTrackReference*  AliMC::AddTrackReference(Int_t label, Int_t id) 
+AliTrackReference*  AliMC::AddTrackReference(Int_t label, Int_t id)
 {
   //
   // add a trackrefernce to the list
@@ -1606,11 +1818,11 @@ void AliMC::ResetTrackReferences()
 //_______________________________________________________________________
 void AliMC::RemapTrackReferencesIDs(const Int_t *map)
 {
-  // 
+  //
   // Remapping track reference
   // Called at finish primary
   //
-    
+
   Int_t nEntries = fTmpTrackReferences.GetEntries();
   for (Int_t i=0; i < nEntries; i++){
       AliTrackReference * ref = dynamic_cast<AliTrackReference*>(fTmpTrackReferences.UncheckedAt(i));
@@ -1619,8 +1831,8 @@ void AliMC::RemapTrackReferencesIDs(const Int_t *map)
 	  if (newID>=0) ref->SetTrack(newID);
 	  else {
 	      ref->SetBit(kNotDeleted,kFALSE);
-	      fTmpTrackReferences.RemoveAt(i);  
-	  }      
+	      fTmpTrackReferences.RemoveAt(i);
+	  }
       } // if ref
   }
   fTmpTrackReferences.Compress();
@@ -1638,34 +1850,34 @@ void AliMC::FixParticleDecaytime()
     Double_t tmin, tmax;
     Double_t b;
 
-    // Transverse velocity 
+    // Transverse velocity
     Double_t vt    = p.Pt() / p.E();
-    
+
     if ((b = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField()) > 0.) {     // [kG]
 
 	// Radius of helix
-	
+
 	Double_t rho   = p.Pt() / 0.0003 / b; // [cm]
-	
+
 	// Revolution frequency
-	
+
 	Double_t omega = vt / rho;
-	
+
 	// Maximum and minimum decay time
 	//
 	// Check for curlers first
 	const Double_t kOvRhoSqr2 = 1./(rho*TMath::Sqrt(2.));
 	if (fRDecayMax * kOvRhoSqr2 > 1.) return;
-	
+
 	//
- 
+
 	tmax  = TMath::ACos((1.-fRDecayMax*kOvRhoSqr2)*(1.+fRDecayMax*kOvRhoSqr2)) / omega;   // [ct]
 	tmin  = TMath::ACos((1.-fRDecayMin*kOvRhoSqr2)*(1.+fRDecayMin*kOvRhoSqr2)) / omega;   // [ct]
     } else {
-	tmax =  fRDecayMax / vt;                                                      // [ct] 
+	tmax =  fRDecayMax / vt;                                                      // [ct]
 	tmin =  fRDecayMin / vt;	                                              // [ct]
     }
-    
+
     //
     // Dial t using the two limits
     Double_t t = tmin + (tmax - tmin) * gRandom->Rndm();                              // [ct]
@@ -1696,7 +1908,7 @@ void AliMC::ReorderAndExpandTreeTR()
 //
 //  TreeTR
     AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");
-    rl->MakeTrackRefsContainer(); 
+    rl->MakeTrackRefsContainer();
     TTree * treeTR = rl->TreeTR();
 	// make branch for central track references
 	TClonesArray* pRef = &fTrackReferences;
@@ -1712,7 +1924,7 @@ void AliMC::ReorderAndExpandTreeTR()
     for (Int_t ip = np - 1; ip > -1; ip--) {
 	TParticle *part = stack->Particle(ip);
 	//printf("Particle %5d %5d %5d %5d %5d \n", ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), part->GetLastDaughter());
-	
+
 	// Skip primaries that have not been transported
 	Int_t dau1  = part->GetFirstDaughter();
 	Int_t dau2  = -1;
@@ -1740,7 +1952,7 @@ void AliMC::ReorderAndExpandTreeTR()
 	    } // find upper bound
 	}  // dau2 < 0
 //	printf("Check (1) %5d %5d %5d %5d %5d \n", ip, np, it, dau1, dau2);
-	// 
+	//
 	// Loop over reference hits and find secondary label
 	for (Int_t id = dau1; (id <= dau2) && (dau1 > -1); id++) {
 	    for (Int_t ih = 0; ih < nh; ih++) {
@@ -1748,7 +1960,7 @@ void AliMC::ReorderAndExpandTreeTR()
 		Int_t label = tr->Label();
 		// Skip primaries
 		if (label == ip) continue;
-		if (label > dau2 || label < dau1) 
+		if (label > dau2 || label < dau1)
 		    AliWarning(Form("Track Reference Label out of range !: %5d %5d %5d \n", label, dau1, dau2));
 		if (label == id) {
 		    // secondary found
@@ -1766,13 +1978,13 @@ void AliMC::ReorderAndExpandTreeTR()
     it = nt - 1;
     for (Int_t ip = 0; ip < np; ip++) {
 	TParticle* part = stack->Particle(ip);
-//	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np) 
+//	if ((part->GetFirstDaughter() == -1 && part->GetStatusCode() <= 1) || part->GetFirstDaughter() >= np)
 	if (part->TestBit(kTransportBit))
 	{
 	    // Skip particles that have not been transported
 	    fTmpTreeTR->GetEntry(it--);
 	    Int_t nh = fTmpTrackReferences.GetEntries();
-	    // 
+	    //
 	    // Loop over reference hits and find primary labels
 	    for (Int_t ih = 0; ih < nh; ih++) {
 		AliTrackReference* tr = (AliTrackReference*)  fTmpTrackReferences.At(ih);
@@ -1781,14 +1993,14 @@ void AliMC::ReorderAndExpandTreeTR()
 		    Int_t nref = fTrackReferences.GetEntriesFast();
 		    new(fTrackReferences[nref]) AliTrackReference(*tr);
 		}
-	    } 
+	    }
 	}
 	treeTR->Fill();
 	fTrackReferences.Clear();
 	ifills++;
     } // tracks
     // Check
-    if (ifills != stack->GetNtrack()) 
+    if (ifills != stack->GetNtrack())
 	AliWarning(Form("Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", ifills, stack->GetNtrack()));
 //
 //  Clean-up
@@ -1798,4 +2010,3 @@ void AliMC::ReorderAndExpandTreeTR()
     fTmpTrackReferences.Clear();
     gSystem->Exec("rm -rf TrackRefsTmp.root");
 }
-

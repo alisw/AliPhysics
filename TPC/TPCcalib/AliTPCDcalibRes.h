@@ -250,12 +250,14 @@ class AliTPCDcalibRes: public TNamed
   Float_t  GetMaxSigZ()                    const {return fMaxSigZ;}
   Int_t    GetMaxBadXBinsToCover()         const {return fMaxBadXBinsToCover;}
   Int_t    GetMinGoodXBinsToCover()        const {return fMinGoodXBinsToCover;}
+  Int_t    GetMaxBadRowsPerSector()        const {return fMaxBadRowsPerSector;}
   
-  void     SetMinValidVoxFracDrift(float v=0.4)   {fMinValidVoxFracDrift = v;}
+  void     SetMinValidVoxFracDrift(float v=0.65)  {fMinValidVoxFracDrift = v;}
   void     SetMaxSigY(Float_t v=1.1)              {fMaxSigY = v;}
   void     SetMaxSigZ(Float_t v=0.7)              {fMaxSigZ = v;}  
-  void     SetMaxBadXBinsToCover(int n=4)  {fMaxBadXBinsToCover = n;}
-  void     SetMinGoodXBinsToCover(int n=2)  {fMinGoodXBinsToCover = n;}
+  void     SetMaxBadXBinsToCover(int n=4)         {fMaxBadXBinsToCover = n;}
+  void     SetMinGoodXBinsToCover(int n=2)        {fMinGoodXBinsToCover = n;}
+  void     SetMaxBadRowsPerSector(float v=0.5)    {fMaxBadRowsPerSector = v;}
   //
   Bool_t   GetUseTOFBC()                   const {return fUseTOFBC;}
   Float_t  GetTOFBCMin()                   const {return fTOFBCMin;}
@@ -367,6 +369,7 @@ class AliTPCDcalibRes: public TNamed
   Float_t  fMinValidVoxFracDrift;    // smooth/parameterize only Xbins with fraction of valid voxels above the threshold
   Int_t    fMaxBadXBinsToCover;      // do not extrapolate to more than this number of bad Xbins
   Int_t    fMinGoodXBinsToCover;     // requre at least this amount of consecutive good bins to parameterize
+  Float_t  fMaxBadRowsPerSector;     // block whole sector once the fraction of bad Xbins exceeds
 
   // -------------------------------Binning
   Int_t    fNY2XBins;    // y/x bins per sector
@@ -475,7 +478,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,6);
+  ClassDef(AliTPCDcalibRes,7);
 };
 
 //________________________________________________________________

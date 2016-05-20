@@ -62,7 +62,9 @@ class AliT0RecPoint: public TObject  {
     void SetOrC (Int_t hit, Float_t time) { fOrC[hit] = time;}
     void SetTVDC(Int_t hit, Float_t time) { fTVDC[hit] = time;}
 
-  private: 
+    void    SetFITTime (Int_t ipmt, Double32_t time) { ftimeFIT[ipmt] = time;}
+    Double32_t GetFITTime (Int_t ipmt)const { return ftimeFIT[ipmt];}
+ private: 
     Double32_t fTimeAverage;     // Average time with best particles
     Int_t   fTimeOnlineMean; // online mean signal
     Double32_t fVertexPosition;     // Diffrence time between C and A
@@ -86,8 +88,9 @@ class AliT0RecPoint: public TObject  {
     Bool_t fSattelite;
     Double32_t fTime1stA;   //TOF first particle on the A
     Double32_t fTime1stC;    //TOF first particle on the C
+    Float_t ftimeFIT[4];      // time signals from FIT MCP PMT 
 
-    ClassDef(AliT0RecPoint,8)  // RecPoints (Header) object for set:T0
+    ClassDef(AliT0RecPoint,9)  // RecPoints (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility

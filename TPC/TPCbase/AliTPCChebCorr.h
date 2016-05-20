@@ -34,6 +34,7 @@
 #include "AliLog.h"
 class TGraph;
 class TH1;
+class TBits;
 
 class AliTPCChebCorr : public TNamed
 {
@@ -91,6 +92,8 @@ class AliTPCChebCorr : public TNamed
   void     Eval(int sector, int row, float tz[2], float *corr)       const;
   Float_t  Eval(int sector, int row, float y2x, float z, int dimOut) const;
   Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
+  Bool_t   IsRowMasked(int sector72,int row)                         const;
+  Int_t    GetNMaskedRows(int sector72, TBits* masked=0)             const;
   void     Init();
   Int_t    GetDimOut() const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
