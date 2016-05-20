@@ -244,7 +244,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   }
 
   // Retrieve tracks
-  AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
+  AliTrackContainer * tracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracksForCorrelations"));
   if (!tracks) {
     AliError(Form("%s: Unable to retrieve tracks!", GetName()));
     return kTRUE;
