@@ -1,10 +1,11 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 
-// Container class for histograms needed in the analysis.
+// Interface for all analysis histograms.
+// This is the minimum amount of histograms all analysis must have defined
 
 //===========================================================
-// AliJHistos.h
+// AliJHistogramInterface.h
 //
 //   J
 //===========================================================
@@ -25,6 +26,7 @@
 #include <TLorentzVector.h>
 
 #include "AliJConst.h"
+#include "AliJHistogramInterface.h"
 #include "AliJHistManager.h"
 
 class AliJCard;
@@ -34,14 +36,7 @@ class AliJTrack;
 
 using namespace std;
 
-inline ostream &operator << (ostream &out_file, const TLorentzVector &Vec)
-{
-  out_file<<"Px="<<Vec.Px()<<" Py="<<Vec.Py()<<" Pz="<<Vec.Pz()<<" E="<<Vec.E()<<" M="<<Vec.M()<<endl;
-  out_file<<"Theta="<<Vec.Theta()<<" Phi="<<Vec.Phi()<<" p="<<Vec.Rho()<<endl;
-  return(out_file);
-}
-
-class AliJHistos {
+class AliJHistos : public AliJHistogramInterface {
   
 public:
   AliJHistos(AliJCard* cardP); //constructor
@@ -69,22 +64,6 @@ public:
   void SetAcceptanceCorrectionQA(bool isenable) { fEnableAcceptanceQAHistos = isenable; }
   
 public:
-  AliJCard  *fCard;       // card
-  
-  AliJHistManager * fHMG; // Histogram manager
-  AliJBin fCentBin;       // Bin of Centrality
-  AliJBin fVtxBin;        // Bin of Z-vertex Bin
-  AliJBin fPTtBin;        // Bin of pT Trigged
-  AliJBin fPTaBin;        // Bin of pT Associated
-  AliJBin fXEBin;         // Bin of XE
-  AliJBin fKLongBin;      // Bin of Klong
-  AliJBin fRGapBin;       // Bin of R-gap
-  AliJBin fEtaGapBin;     // Bin of Eta-gap
-  AliJBin fPhiGapBin;     // Bin of Phi-gap
-  AliJBin fMassBin;       // Bin of Mass
-  AliJBin fTypBin;        // Bin of type ( data, mixed ), but is being used for any 2 dimension
-  AliJBin fTypBin3;       // Bin of type3, is being used for any 3 dimension
-  AliJBin fPairPtBin;     // Bin of pT pair
   
   AliJTProfile fhMixStat; // comment me
   
@@ -295,13 +274,11 @@ public:
   
   AliJTH1D  fhV0AMult; // comment needed
   
-  AliJTH1D fhZVertRaw; // comment me
   AliJTH1D fhZVertRawErr; // comment me
   AliJTH1D fhZVert; // comment me
   AliJTH1D fhCentr; // comment me
   AliJTH1D fhiCentr; // comment me
   AliJTH1D fhEventPerRun; // comment me
-  AliJTH2D fhVertexZTriggVtx; // comment me
   
   AliJTH1D fhIsolatedLPpt; // comment me
   AliJTH1D fhBkgActivity; // comment me
@@ -372,20 +349,6 @@ public:
   AliJTH1D fhAcceptanceTraditional;
   AliJTH2D fhAcceptanceTraditional2D;
   AliJTH2D fhAcceptance3DNearSide;
-
-  AliJTH1D fhTrackSelection; // checking bit convention
-  
-  // Manual bin definitions
-  int fNJacek;        // Number of bins in Jacek binning
-  double *fPttJacek;  // Bin borders in Jacek binning
-  int fNEta;          // Number of bins in eta binning
-  double *fEta;       // Bin borders in eta binning
-  int fNJanFiete;     // Number of bins in JanFiete binning
-  double *fJanFiete;  // Bin borders in JanFiete binning
-  
-  // additional histos
-  AliJTH1D fhEvents; // comment needed
-  AliJTH1D fhEventTrigger; // comment needed
   
 protected:
   double fmaxEtaRange;                       // maximum eta range
@@ -396,6 +359,14 @@ protected:
   double fLowRange, fHighRange;              // lower and upper range for dphi histos
   bool fenable2DHistos;                      // enable the filling of two dimensional histograms
   bool fEnableAcceptanceQAHistos;            // enable the filling of acceptance correction quality control histograms
+  
+  // Manual bin definitions
+  int fNJacek;        // Number of bins in Jacek binning
+  double *fPttJacek;  // Bin borders in Jacek binning
+  int fNEta;          // Number of bins in eta binning
+  double *fEta;       // Bin borders in eta binning
+  int fNJanFiete;     // Number of bins in JanFiete binning
+  double *fJanFiete;  // Bin borders in JanFiete binning
   
 private:
   void NormalizeAcceptanceHistos(AliJTH1D &acceptanceHisto, corrType assocType);
