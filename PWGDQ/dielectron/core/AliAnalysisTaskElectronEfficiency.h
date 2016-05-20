@@ -179,38 +179,40 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<Double_t>           fvRejCutTheta;
   std::vector<Double_t>           fvRejCutPhiV;
   //Efficiency Histograms
-  TH3F*                           fNgen_Ele;
-  std::vector<TH3F*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
-  std::vector<TH3F*>              fvReco_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  TH3F*                           fNgen_Pos;
-  std::vector<TH3F*>              fvReco_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
-  std::vector<TH3F*>              fvReco_Pos_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  std::vector<TH3F*>              fvAllPionsForRej;     // testparticles for prefilter efficiency determination.
-  std::vector<TH3F*>              fvPionsRejByAllSigns;
-  std::vector<TH3F*>              fvPionsRejByUnlike;
+  TH3D*                           fNgen_Ele;
+  std::vector<TH3D*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3D*>              fvReco_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  TH3D*                           fNgen_Pos;
+  std::vector<TH3D*>              fvReco_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3D*>              fvReco_Pos_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  std::vector<TH3D*>              fvAllPionsForRej;     // testparticles for prefilter efficiency determination.
+  std::vector<TH3D*>              fvPionsRejByAllSigns;
+  std::vector<TH3D*>              fvPionsRejByUnlike;
   //std::vector<TH3F*>             fvReco_Pio; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Kao; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
   
   // histograms with reconstructed observables
-  TH3F*                           fNgen_Rec_Ele;
-  std::vector<TH3F*>              fvReco_Rec_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
-  std::vector<TH3F*>              fvReco_Rec_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  TH3F*                           fNgen_Rec_Pos;
-  std::vector<TH3F*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
-  std::vector<TH3F*>              fvReco_Rec_Pos_poslabel;
+  TH3D*                           fNgen_Rec_Ele;
+  TH3D*                           fNgen2_Rec_Ele;
+  std::vector<TH3D*>              fvReco_Rec_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3D*>              fvReco_Rec_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
+  TH3D*                           fNgen_Rec_Pos;
+  TH3D*                           fNgen2_Rec_Pos;
+  std::vector<TH3D*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
+  std::vector<TH3D*>              fvReco_Rec_Pos_poslabel;
   
   Int_t                           fNmeeBins;
   Int_t                           fNpteeBins;
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
   
-  TH2F*                           fNgenPairs_sameMother;
-  std::vector<TH2F*>              fvRecoPairs_sameMother;
-  std::vector<TH2F*>              fvRecoPairs_poslabel_sameMother;
-  TH2F*                           fNgenPairs_diffMothers;
-  std::vector<TH2F*>              fvRecoPairs_diffMothers;
-  std::vector<TH2F*>              fvRecoPairs_poslabel_diffMothers;
+  TH2D*                           fNgenPairs_sameMother;
+  std::vector<TH2D*>              fvRecoPairs_sameMother;
+  std::vector<TH2D*>              fvRecoPairs_poslabel_sameMother;
+  TH2D*                           fNgenPairs_diffMothers;
+  std::vector<TH2D*>              fvRecoPairs_diffMothers;
+  std::vector<TH2D*>              fvRecoPairs_poslabel_diffMothers;
   
   
   // resolutions
