@@ -170,8 +170,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
     
     // Just fill cross section and trials histograms.
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
+    
+    // Add control histogram with pT hard to control aplication of weights 
+    maker->SwitchOnPtHardHistogram();
   }
-  
+
   if(printSettings) maker->Print("");
   
   printf("<< End Configuration of %d analysis for calorimeter %s >>\n",n, calorimeter.Data());
