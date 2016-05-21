@@ -10,6 +10,7 @@ class AliEmcalJetTask;
 class AliEmcalJet;
 class AliFJWrapper;
 class AliRhoParameter;
+class TClonesArray;
 
 class AliEmcalJetUtilitySoftDrop : public AliEmcalJetUtility
 {
