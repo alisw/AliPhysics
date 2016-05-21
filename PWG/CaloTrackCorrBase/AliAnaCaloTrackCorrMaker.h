@@ -49,7 +49,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   void    FillTriggerControlHistograms();
   
-  TList * GetListOfAnalysisContainers() { return fAnalysisContainer ; }
+  TList * GetListOfAnalysisContainers()    { return fAnalysisContainer ; }
   
   TList * GetListOfAnalysisCuts();
   
@@ -57,38 +57,39 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   TList * FillAndGetAODBranchList();
   
-  Int_t   GetAnaDebug()           const { return fAnaDebug    ; }
-  void    SetAnaDebug(Int_t d)          { fAnaDebug = d       ; }
+  Int_t   GetAnaDebug()              const { return fAnaDebug      ; }
+  void    SetAnaDebug(Int_t d)             { fAnaDebug = d         ; }
 	
-  Bool_t  AreHistogramsMade()     const { return fMakeHisto   ; }
-  void    SwitchOnHistogramsMaker()     { fMakeHisto = kTRUE  ; }
-  void    SwitchOffHistogramsMaker()    { fMakeHisto = kFALSE ; }
+  Bool_t  AreHistogramsMade()        const { return fMakeHisto     ; }
+  void    SwitchOnHistogramsMaker()        { fMakeHisto = kTRUE    ; }
+  void    SwitchOffHistogramsMaker()       { fMakeHisto = kFALSE   ; }
  
-  Bool_t  AreAODsMade()           const { return fMakeAOD     ; }
-  void    SwitchOnAODsMaker()           { fMakeAOD = kTRUE    ; }
-  void    SwitchOffAODsMaker()          { fMakeAOD = kFALSE   ; }
+  Bool_t  AreAODsMade()              const { return fMakeAOD       ; }
+  void    SwitchOnAODsMaker()              { fMakeAOD = kTRUE      ; }
+  void    SwitchOffAODsMaker()             { fMakeAOD = kFALSE     ; }
   	
   void    SwitchOnDataControlHistograms()  { fFillDataControlHisto = kTRUE  ; }
   void    SwitchOffDataControlHistograms() { fFillDataControlHisto = kFALSE ; }
 
-  void    SwitchOnSumw2Histograms()     { fSumw2 = kTRUE      ; }
-  void    SwitchOffSumw2Histograms()    { fSumw2 = kFALSE     ; }
+  void    SwitchOnSumw2Histograms()        { fSumw2 = kTRUE        ; }
+  void    SwitchOffSumw2Histograms()       { fSumw2 = kFALSE       ; }
 
-  void    SwitchOnPtHardHistogram()     { fCheckPtHard = kTRUE  ; }
-  void    SwitchOffPtHardHistogram()    { fCheckPtHard = kFALSE ; }
+  void    SwitchOnPtHardHistogram()        { fCheckPtHard = kTRUE  ; }
+  void    SwitchOffPtHardHistogram()       { fCheckPtHard = kFALSE ; }
+
+  void    SetScaleFactor(Double_t scale)   { fScaleFactor = scale  ; } 
+
+  void    SetCaloUtils(AliCalorimeterUtils * cu) { fCaloUtils = cu ; }
+  void    SetReader(AliCaloTrackReader * re)     { fReader = re    ; }
 
   
-  AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
-                                                                        return fReader    ; }
-  void                  SetReader(AliCaloTrackReader * reader)        { fReader = reader  ; }
+  AliCaloTrackReader  * GetReader()        { if (!fReader)    fReader    = new AliCaloTrackReader () ;
+                                             return fReader        ; }
   	
-  AliCalorimeterUtils * GetCaloUtils()                                { if(!fCaloUtils) fCaloUtils = new AliCalorimeterUtils(); 
-                                                                        return fCaloUtils      ; }
-  void                  SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
+  AliCalorimeterUtils * GetCaloUtils()     { if (!fCaloUtils) fCaloUtils = new AliCalorimeterUtils() ; 
+                                             return fCaloUtils     ; }
 	
-  void                  SetScaleFactor(Double_t scale)                { fScaleFactor = scale   ; } 
 
-  
   // Main general methods
   
   void    Init();
