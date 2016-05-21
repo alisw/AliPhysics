@@ -25,7 +25,8 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   // if < -999 use default values
   int nBinsZ=-1000,nBinsY=-1000,nMaxTracks=-1000,nMinTracks=-1000;
   int kernelType=-1000;
-  float kernelWX=2.5,kernelWY=2.5,kernelWZ=2.1;
+  int xSmtPol2=-1000,ySmtPol2=-1000,zSmtPol2=-1000;
+  float kernelWX=2.1,kernelWY=2.1,kernelWZ=1.7;
   //
   // binning >>>>>>>>>>>>>>>>>>>>>>>>>
   envs = gSystem->Getenv("distNBinsZ");
@@ -58,6 +59,15 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   envs = gSystem->Getenv("distKernelWZ");
   if (envs.IsFloat()) kernelWZ = envs.Atof();  
   //
+  envs = gSystem->Getenv("distKernelPol2X");
+  if (envs.IsDigit()) xSmtPol2 = envs.Atoi();  
+  //
+  envs = gSystem->Getenv("distKernelPol2Y");
+  if (envs.IsDigit()) ySmtPol2 = envs.Atoi();  
+  //
+  envs = gSystem->Getenv("distKernelPol2Z");
+  if (envs.IsDigit()) zSmtPol2 = envs.Atoi();  
+  //
   // Kernel Smoother settings <<<<<<<<
   //
   // set values
@@ -87,6 +97,21 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
     ::Info("CreateResCalib","SetKernelType(%d,%.2f,%.2f,%.2f)",
 	   kernelType,kernelWX,kernelWY,kernelWZ);
     clb->SetKernelType(kernelType,kernelWX,kernelWY,kernelWZ);
+  }
+  //
+  if (xSmtPol2>=0) {
+    ::Info("CreateResCalib","SetSmoothPol2(%d,%d)",AliTPCDcalibRes::kVoxX,xSmtPol2>0);
+    clb->SetSmoothPol2(AliTPCDcalibRes::kVoxX,xSmtPol2>0);
+  }
+  //
+  if (ySmtPol2>=0) {
+    ::Info("CreateResCalib","SetSmoothPol2(%d,%d)",AliTPCDcalibRes::kVoxF,ySmtPol2>0);
+    clb->SetSmoothPol2(AliTPCDcalibRes::kVoxF,ySmtPol2>0);
+  }
+  //
+  if (xSmtPol2>=0) {
+    ::Info("CreateResCalib","SetSmoothPol2(%d,%d)",AliTPCDcalibRes::kVoxZ,zSmtPol2>0);
+    clb->SetSmoothPol2(AliTPCDcalibRes::kVoxZ,zSmtPol2>0);
   }
   //
   TString useTOFBCStr = gSystem->Getenv("useTOFBC");    
