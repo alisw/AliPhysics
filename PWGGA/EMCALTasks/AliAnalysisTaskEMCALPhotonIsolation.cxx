@@ -1011,25 +1011,25 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       if(vecCOI.Et()<5.) continue;
         //Printf("cluster with energy %lf",vecCOI.Et());
       
-      Printf("cluster time %lf",coiTOF);
+      //Printf("cluster time %lf",coiTOF);
       if(!fIsMC){
         if(coiTOF< -30. || coiTOF > 30.)
           continue;
       }
-      Printf("Cluster time OK!!!");
+      //Printf("Cluster time OK!!!");
       fPtaftTime->Fill(vecCOI.Pt());
-      Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
+      //Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
       
       if((coi->GetNCells() < 2)) continue;
       if((coi->GetDistanceToBadChannel() < 2)) continue;
       
-      Printf("Cluster with NCell %d",coi->GetNCells());
+     // Printf("Cluster with NCell %d",coi->GetNCells());
       
       if(fTMClusterRejected)
       {
-        Printf("CT Matching from Run");
+        //Printf("CT Matching from Run");
         if(ClustTrackMatching(coi)){
-          Printf("Cluster Matched with a Track");
+          //Printf("Cluster Matched with a Track");
           continue;
         }
         fPtaftTM->Fill(vecCOI.Pt());
@@ -1040,7 +1040,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       if(fCaloCells)
       {
         nlm = GetNLM(coi,fCaloCells);
-        Printf("Number of local maxima for this cluster: %d",nlm);
+        //Printf("Number of local maxima for this cluster: %d",nlm);
         AliDebug(1,Form("NLM = %d",nlm));
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
@@ -1060,7 +1060,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         //      Printf("Cluster number: %d; \t Cluster ToF: %lf ;\tCluster M02:%lf\n",index,coiTOF,coiM02);
       
       if(!CheckBoundaries(vecCOI)){
-        Printf("Outside the boundaries");
+        //Printf("Outside the boundaries");
         continue;
       }
       
@@ -1449,8 +1449,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::RecalAmpCell(Float_t & amp, Int_t id) 
   fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphi,ieta);
   
   amp *= fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-  if(ampold!=amp)
-    Printf("Inside cell id %d\t\tOld Amp %.4f and recalculated amplitude: %.4f",id, ampold, amp);
+ // if(ampold!=amp)
+  //  Printf("Inside cell id %d\t\tOld Amp %.4f and recalculated amplitude: %.4f",id, ampold, amp);
   
 }
 
@@ -1460,7 +1460,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::RecalAmpCell(Float_t & amp, Int_t id) 
 Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi,
                                                           AliVCaloCells * cells)
 {
-  Printf("Inside clust Recal");
+  //Printf("Inside clust Recal");
     // Initialize some used variables
   Float_t frac  = 0., energy = 0.;
   
@@ -1485,7 +1485,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi,
       Float_t amp = cells->GetCellAmplitude(absId);
       RecalAmpCell(amp, absId);
       
-      Printf("Recalibrate cell: EMCAL, cell fraction %f, cell energy: before cal %f; after cal %f",frac,cells->GetCellAmplitude(absId),amp);
+      //Printf("Recalibrate cell: EMCAL, cell fraction %f, cell energy: before cal %f; after cal %f",frac,cells->GetCellAmplitude(absId),amp);
       
       energy += amp*frac;
     }
@@ -1497,7 +1497,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi,
   {
     AliFatal("Cells pointer does not exist!");
   }
-  Printf("recalculated energy: %.4f",energy);
+  //Printf("recalculated energy: %.4f",energy);
   return energy;
 }
 
