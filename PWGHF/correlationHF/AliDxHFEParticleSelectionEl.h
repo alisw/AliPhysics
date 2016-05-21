@@ -29,7 +29,9 @@
 
 #include "AliHFEcuts.h" // need to directly include to avoid compilation error in the dictionary
 #include "AliHFEpid.h"  // need to directly include to avoid compilation error in the dictionary
+#include "AliAODTrack.h"
 
+class AliAODTrack;
 class AliPID;
 class AliPIDResponse;
 class AliHFEvarManager;
@@ -73,6 +75,8 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
     kPIDTOF,
     kPIDTPC,
     kPIDTOFTPC,
+    kRejPi,
+    kRejProton,
     kINVMASS,
     kSelected,
     kNCutLabels
@@ -113,6 +117,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Int_t GetLastSurvivedCutsStep() const{return fSurvivedCutStep;}
 
  protected:
+  Bool_t CheckTOFPIDStatus(AliAODTrack *track) const;
 
  private:
 
@@ -151,6 +156,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
   Bool_t        fSetFilterBit;       // Whether or not to use filter bits 
   Int_t         fBit;                // Which bit to use
   Double_t      fMaxPtCombinedPID;   // Max pt for the combined PID of TPC and TOF (default = 999, thus combined for all pt)
+  Double_t      fMaxPTOFWhenPresent; // Max p for using tof when present (without tofmatching requirements). Default -1
   Bool_t        fUseEMCAL;           // Whether or not to use EMCAL PID
   Double_t      fMinM20;             // Lower cut value for Shower shape, EMCAL, M20
   Double_t      fMaxM20;             // Upper cut value for Shower shape, EMCAL, M20
@@ -165,7 +171,7 @@ class AliDxHFEParticleSelectionEl : public AliDxHFEParticleSelection {
 
   static const char* fgkCutBinNames[]; //! bin labels for cuts histogram
   
-  ClassDef(AliDxHFEParticleSelectionEl, 6); 
+  ClassDef(AliDxHFEParticleSelectionEl, 7); 
 };
 
 #endif

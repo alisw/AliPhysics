@@ -538,7 +538,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 		
     // loop on events in the pool; if it is SE analysis, stops at one
     for (Int_t jMix =0; jMix < NofEventsinPool; jMix++){
-      Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix, associatedTracks);
+      Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix, associatedTracks); //[FIXME] This line causes a segfault from AliHFCorrelator in some cases. Needs to be understood
 			
       if(!analyzetracks) {
 	AliError("AliHFCorrelator::Cannot process the track array");
