@@ -326,7 +326,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
       const int paramSize=4;
       Double_t params[paramSize];
       memset(params, 0, sizeof(Double_t)*paramSize);
-      params[0]=-1.;
+      params[0]=-3.; //[FIXME] Should be -1 for 2010pp, loosened up for pPb
 
       if(!bUseEMCAL)
 	{
