@@ -211,6 +211,6 @@ protected:
   bool fUseKine;           //  For looping over stack directly
   bool fRemoveSecondary;   // whether or not to remove secondary tracks
 
-  ClassDef(AliDxHFEToolsMC, 3);
+  ClassDef(AliDxHFEToolsMC, 4);
 };
 #endif
