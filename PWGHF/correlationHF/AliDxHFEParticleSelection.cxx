@@ -212,12 +212,24 @@ THnSparse* AliDxHFEParticleSelection::DefineTHnSparse()
 
   const double Pi=TMath::Pi();
   TString name;
-  //     		            0    1       2
-  // 	 	                    Pt   Phi    Eta
-  int         thnBins [thnSize] = { 1000,  200, 500};
-  double      thnMin  [thnSize] = {    0,    0, -1.};
-  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  int thnBins [thnSize];
+  double thnMin [thnSize];
+  double thnMax [thnSize];
   const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
+
+  if(2==fSystem){ //Reduced bins for p-Pb
+    //     		            0    1       2
+    // 	 	                    Pt   Phi    Eta
+    int thnBins [thnSize] = { 80,  100, 125};
+    double thnMin [thnSize] = {    0,    0, -1.};
+    double thnMax [thnSize] = {  16, 2*Pi,  1.};
+  } else{
+    //     		            0    1       2
+    // 	 	                    Pt   Phi    Eta
+    int         thnBins [thnSize] = { 1000,  200, 500};
+    double      thnMin  [thnSize] = {    0,    0, -1.};
+    double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  }
 
   name.Form("%s info", GetName());
 

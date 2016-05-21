@@ -182,9 +182,9 @@ class AliDxHFECorrelation : public TNamed {
   Bool_t fUseTrackEfficiency;    // Whether or not to correct for single track efficiency
   Bool_t fUseD0Efficiency;       // Whether or not to correct for D0 efficiency
   Int_t fRunMode;                // Which mode to run in (bigger thnsparse)
-
+  Short_t fUseCentrality;        // Using centrality or not
   static const char* fgkEventControlBinNames[];
 
-  ClassDef(AliDxHFECorrelation, 5)
+  ClassDef(AliDxHFECorrelation, 6)
 };
 #endif
