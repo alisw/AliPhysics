@@ -70,6 +70,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   /// overloaded from TObject: get option
   virtual Option_t* GetOption() const { return fOption;}
   Bool_t GetUseMC() const {return fUseMC;}
+  virtual void SetPIDResponse(const AliPIDResponse* const pidresp){fpidResponse=(AliPIDResponse*)(pidresp);}
 
   //TODO: Use enums in AliDxHFECorrelation
   enum {
@@ -111,8 +112,9 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   TString fCorrelationArguments;         // String argument for correlation
   Bool_t fStoreSeparateOrigins;          // Whether to create correlation objects for various origins
   Bool_t fReqD0InEvent;                  // Whether or not to search for a MC truth D0 in the event
+  AliPIDResponse* fpidResponse;          // PIDResponse
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 7);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 8);
 };
 
 #endif

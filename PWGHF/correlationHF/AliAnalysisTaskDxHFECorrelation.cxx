@@ -94,6 +94,7 @@ AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt
   , fCorrelationArguments("")
   , fStoreSeparateOrigins(kFALSE)
   , fReqD0InEvent(kFALSE)
+  , fpidResponse(NULL)
 {
   // constructor
   //
@@ -153,6 +154,8 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   if(fMCArray) delete fMCArray;
   fMCArray=NULL;
 
+  if(fpidResponse) delete fpidResponse;
+  fpidResponse=NULL;
 
 }
 
@@ -168,6 +171,14 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
+  // Gets the PID response from the input handler
+  fpidResponse = fInputHandler->GetPIDResponse();
+  if(!fpidResponse){
+    // TODO: consider issuing fatal instead of debug in case pidresponse not available
+    AliDebug(1, "Using default PID Response");
+    fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+  }
+
   // D0s ===============================================
   if(fUseMC) fD0s=new AliDxHFEParticleSelectionMCD0(fOption);
   else fD0s=new AliDxHFEParticleSelectionD0(fOption);
@@ -182,6 +193,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   if(fUseMC) fElectrons=new AliDxHFEParticleSelectionMCEl(fOption);
   else fElectrons=new AliDxHFEParticleSelectionEl(fOption);
   fElectrons->SetCuts(fListHFE, AliDxHFEParticleSelectionEl::kCutList);
+  fElectrons->SetPIDResponse(fpidResponse);
   iResult=fElectrons->Init();
   if (iResult<0) {
     AliFatal(Form("initialization of worker class instance fElectrons failed with error %d", iResult));
@@ -374,14 +386,6 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
     AliInfo(Form("Centrality is %f", MultipOrCent));
   }
-
-  // Gets the PID response from the analysis manager
-  AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
-  if(!pidResponse){
-    // TODO: consider issuing fatal instead of debug in case pidresponse not available
-    AliDebug(1, "Using default PID Response");
-    pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
-  }
   
   // Fetching the PID objects from the list, checks if the objects are AliHFEpids
   // If so, checks if they are initialized and also sets the pidresponse
@@ -394,12 +398,10 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
 	AliWarning("PID not initialised, get from Run no");
 	pidObj->InitializePID(pEvent->GetRunNumber());
       }
-      pidObj->SetPIDResponse(pidResponse);
+      pidObj->SetPIDResponse(fpidResponse);
     }
   }
 
-  // Also sends the pidresponse to the particle selection class for electron
-  fElectrons->SetPIDResponse(pidResponse); 
 
   // Retrieving process from the AODMCHeader. 
   // TODO: Move it somewhere else? (keep it here for the moment since only need to read once pr event)

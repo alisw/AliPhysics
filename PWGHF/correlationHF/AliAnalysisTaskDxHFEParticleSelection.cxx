@@ -66,6 +66,7 @@ AliAnalysisTaskDxHFEParticleSelection::AliAnalysisTaskDxHFEParticleSelection(con
   , fParticleType(kD0)
   , fSystem(0)
   , fUseKine(kFALSE)
+  , fpidResponse(NULL)
 {
   // constructor
   //
@@ -110,7 +111,8 @@ AliAnalysisTaskDxHFEParticleSelection::~AliAnalysisTaskDxHFEParticleSelection()
   fMCArray=NULL;
   // external object, do not delete
   fCutsD0=NULL;
-
+  if(fpidResponse) delete fpidResponse;
+  fpidResponse=NULL;
 }
 
 void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
@@ -122,6 +124,13 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
+  // Gets the PID response from the input handler
+  fpidResponse = fInputHandler->GetPIDResponse();
+  if(!fpidResponse){
+    // TODO: consider issuing fatal instead of debug in case pidresponse not available
+    AliDebug(1, "Using default PID Response");
+    fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
+  }
   ParseArguments(fOption.Data());
 
   // REVIEW: this has only effect if the list is deleted, it should
@@ -136,6 +145,7 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
     if(fUseMC) fSelector=new AliDxHFEParticleSelectionMCD0(fOption);
     else fSelector=new AliDxHFEParticleSelectionD0(fOption);
     fSelector->SetCuts(fCutList,AliDxHFEParticleSelectionD0::kCutList);
+    fSelector->SetPIDResponse(fpidResponse);
     iResult=fSelector->Init();
 
     TObject *obj=NULL;
@@ -165,7 +175,6 @@ void AliAnalysisTaskDxHFEParticleSelection::UserCreateOutputObjects()
       {
 	cuts->SetTriggerMask(AliVEvent::kINT7); //pPb
 	cuts->SetTriggerClass(""); //pPb  
-	printf("Using pPb trigger setup\n");
       }
   }
   
@@ -257,14 +266,6 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
   if (fSelectedTracks) delete fSelectedTracks;
 
   if(fParticleType==kElectron){
-    // Gets the PID response from the analysis manager
-    AliPIDResponse *pidResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler())->GetPIDResponse();
-    if(!pidResponse){
-      // TODO: consider issuing fatal instead of debug in case pidresponse not available
-      AliDebug(1, "Using default PID Response");
-      pidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class()); 
-    }
-  
     // Fetching the PID objects from the list, checks if the objects are AliHFEpids
     // If so, checks if they are initialized and also sets the pidresponse
     TObject *obj=NULL;
@@ -276,12 +277,12 @@ void AliAnalysisTaskDxHFEParticleSelection::UserExec(Option_t* /*option*/)
 	  AliWarning("PID not initialised, get from Run no");
 	  pidObj->InitializePID(pEvent->GetRunNumber());
 	}
-	pidObj->SetPIDResponse(pidResponse);
+	pidObj->SetPIDResponse(fpidResponse);
       }
     }
 
     // Also sends the pidresponse to the particle selection class for electron
-    fSelector->SetPIDResponse(pidResponse); 
+    fSelector->SetPIDResponse(fpidResponse); 
 
     if(fUseKine) fSelectedTracks=(fSelector->Select(fMCArray, pEvent));
     else fSelectedTracks=(fSelector->Select(pEvent));

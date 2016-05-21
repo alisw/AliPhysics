@@ -320,7 +320,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (!pidTask) {
     gROOT->LoadMacro(pidTaskMacro);
     TString pidFunction;
-    pidFunction.Form("AddTaskPIDResponse(%d, %d)", bUseMC, kTRUE,bTuneOnData);
+    pidFunction.Form("AddTaskPIDResponse(%d, %d, %d, %d, %d, %s, %d, %d, -1)", bUseMC, kTRUE, bTuneOnData, 2, kFALSE,"\"\"" ,kTRUE, kTRUE);
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
       ::Error("AddTaskDxHFECorrelation", Form("failed to add PID task '%s' from macro '%s'",

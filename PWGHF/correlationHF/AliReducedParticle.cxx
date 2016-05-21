@@ -147,28 +147,6 @@ fOriginMother(originmother)
 	//
 }
 
-
-AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int originmother, int generator) : 
-fEta(eta), 
-fPhi(phi), 
-fpT(pt), 
-fMcLabel(0),
-fid(0),
-fImpPar(0.),
-fCheckSoftPi(kFALSE),
-fCharge(charge),
-fInvMass(0),
-fWeight(1.),
-fPtBin(-1),
-fOriginMother(originmother),
-fGenerator(generator)
-{
-	//
-	// default constructor
-	//
-}
-
-
 AliReducedParticle::AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int originmother) : 
 fEta(eta), 
 fPhi(phi), 
