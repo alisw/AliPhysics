@@ -474,7 +474,8 @@ void AliDxHFEParticleSelectionMCEl::Clear(const char* option)
 AliVParticle *AliDxHFEParticleSelectionMCEl::CreateParticle(AliVParticle* track)
 {
 
-  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother,fGenerator);
+  //  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother,fGenerator);
+  AliReducedParticle *part = new AliReducedParticle(track->Eta(), track->Phi(), track->Pt(),track->Charge(),fOriginMother);//Removed ",fGenerator);" as there doesn't seem to be such an AliReduced Particle version. [FIXME] Re-implement properly
 
   return part;
 

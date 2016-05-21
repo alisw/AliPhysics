@@ -17,6 +17,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
 
+class AliPIDResponse;
 class AliDxHFEParticleSelection;
 class AliAnalysisCuts;
 class TList;
@@ -85,8 +86,9 @@ class AliAnalysisTaskDxHFEParticleSelection : public AliAnalysisTaskSE {
   Int_t fParticleType;                   // Holds which particle to run on
   Int_t fSystem;                        // holds collisions system (0=pp, 1=PbPb(,2=pPb))
   Bool_t fUseKine;                      // Whether or not to run on MC stack
+  AliPIDResponse* fpidResponse;         // PIDResponse
 
-  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 5);
+  ClassDef(AliAnalysisTaskDxHFEParticleSelection, 6);
 };
 
 #endif
