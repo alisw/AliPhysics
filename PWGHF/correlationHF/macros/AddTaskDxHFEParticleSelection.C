@@ -88,6 +88,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   }
   TString cutFilename="";
   Bool_t bUseMC=kFALSE;
+  Bool_t bTuneOnData=kFALSE;
   TString ofilename;
   Int_t system=0; 
   TString poolConfigFile="";
@@ -140,6 +141,7 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	  }
 	  if (argument.BeginsWith("mc")) {
 	    bUseMC=kTRUE;
+	    bTuneOnData=kTRUE; //Consider separating these, but for now this is default when using mc 
 	    taskOptions+=" mc";
 	    continue;
 	  }
@@ -239,7 +241,8 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
   if (!pidTask) {
     gROOT->LoadMacro(pidTaskMacro);
     TString pidFunction;
-    pidFunction.Form("AddTaskPIDResponse(%d, %d)", bUseMC, kTRUE);
+    // isMC, autoMCeds, tuneOnData, recoPass, cachePID, detResponse, useTPCEtaCorrection, useTPCMultiplicityCorrection, recoDataPass //Warning, multcorrection seems to not work for LHC13b2_efix
+    pidFunction.Form("AddTaskPIDResponse(%d, %d, %d, %d, %d, %s, %d, %d, -1)", bUseMC, kTRUE, bTuneOnData, 2, kFALSE,"\"\"" ,kTRUE, !bUseMC); //PIL IMPORTANT! "!bUseMC" is only like this at the moment since lhc13b2_efix doesnt support tpcmultcorrection...
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
       ::Error("AddTaskDxHFEParticleSelection", Form("failed to add PID task '%s' from macro '%s'",

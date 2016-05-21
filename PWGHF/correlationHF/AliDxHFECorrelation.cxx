@@ -103,6 +103,7 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
   // destructor of TList
   if (fControlObjects) delete fControlObjects;
   fControlObjects=NULL;
+  if (fCorrProperties) delete fCorrProperties;
   fCorrProperties=NULL;
   fhEventControlCorr=NULL;
   if(fCorrelator) delete fCorrelator;
@@ -570,8 +571,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	}
 
 	FillParticleProperties(ptrigger,assoc,ParticleProperties(),GetDimTHnSparse());
-	fCorrProperties->Fill(ParticleProperties(),1./weight);
-
+	if(weight!=0){ fCorrProperties->Fill(ParticleProperties(),1./weight);} //Due to possibility of empty regions in eff-map, weights may come out as 0, which crashes the code here.
       } // loop over electron tracks in event
     } // loop over events in pool
   } // loop over trigger particle
