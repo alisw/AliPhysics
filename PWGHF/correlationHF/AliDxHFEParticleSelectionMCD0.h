@@ -77,8 +77,9 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   Bool_t fStoreOnlyMCD0;     // Store only MC truth D0s, discard the rest
   Int_t fMCInfo;             // What to check and in which order
   Bool_t fRequireD0toKpi;    // Only take D0 to Kpi
-
-  ClassDef(AliDxHFEParticleSelectionMCD0, 3);
+  Short_t fSystem;           // Which system pp/PbPb
+  Short_t fUseCentrality;    // Using centrality or not
+  ClassDef(AliDxHFEParticleSelectionMCD0, 4);
 };
 
 #endif

@@ -53,6 +53,8 @@ AliDxHFEParticleSelectionMCD0::AliDxHFEParticleSelectionMCD0(const char* opt)
   , fStoreOnlyMCD0(kFALSE)
   , fMCInfo(kMCLast)
   , fRequireD0toKpi(kFALSE)
+  , fSystem(0)
+  , fUseCentrality(0)
 {
   // constructor
   // 
@@ -112,26 +114,46 @@ THnSparse* AliDxHFEParticleSelectionMCD0::DefineTHnSparse()
   TString name;
   name.Form("%s info", GetName());
 
-  // 			             0     1      2       3        4     5
-  // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta   mother 
-  int         thnBins [thnSize2] = {1000, 200,   15,     200,     500,    10  };
-  double      thnMin  [thnSize2] = {   0,  0,     0,    1.5648,   -1.,  -1.5  };
-  double      thnMax  [thnSize2] = { 100, 2*Pi,  14,    2.1648,    1.,   8.5  };
-  const char* thnNames[thnSize2] = {
-    "Pt",
-    "Phi",
-    "Ptbin", 
-    "D0InvMass", 
-    "Eta",
-    "Mother of D0"  // Bin -1 = not MC truth D0, rest OK
-  };
-
-  // Add Histo displaying pdg of D0 candidates not passing MatchToMC()
-  // TODO: Add it to the TList of D0 main class
-  fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
-  AddControlObject(fPDGnotMCD0);
-
-  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+  if(2==fSystem){//Reduced binning for p-Pb
+    // 			             0     1      2       3        4     5
+    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  mother 
+    int         thnBins [thnSize2] = {80, 100,   15,     100,     125,  10  };
+    double      thnMin  [thnSize2] = {   0,  0,     0,    1.5648,   -1., -1.5  };
+    double      thnMax  [thnSize2] = { 16, 2*Pi,  14,    2.1648,    1.,  8.5  };
+    const char* thnNames[thnSize2] = {
+      "Pt",
+      "Phi",
+      "Ptbin", 
+      "D0InvMass", 
+      "Eta",
+      "Mother of D0"  // Bin -1 = not MC truth D0, rest OK
+    };
+    // Add Histo displaying pdg of D0 candidates not passing MatchToMC()
+    // TODO: Add it to the TList of D0 main class
+    fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
+    AddControlObject(fPDGnotMCD0);
+    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+  }
+  else{
+    // 			             0     1      2       3        4     5
+    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  mother 
+    int         thnBins [thnSize2] = {1000, 200,   15,     200,     500,  10  };
+    double      thnMin  [thnSize2] = {   0,  0,     0,    1.5648,   -1., -1.5  };
+    double      thnMax  [thnSize2] = { 100, 2*Pi,  14,    2.1648,    1.,  8.5  };
+    const char* thnNames[thnSize2] = {
+      "Pt",
+      "Phi",
+      "Ptbin", 
+      "D0InvMass", 
+      "Eta",
+      "Mother of D0"  // Bin -1 = not MC truth D0, rest OK
+    };
+    // Add Histo displaying pdg of D0 candidates not passing MatchToMC()
+    // TODO: Add it to the TList of D0 main class
+    fPDGnotMCD0= new TH1F("fPDGnotMCD0","PDG of track not MC truth D0",1002,-2.5,999.5);
+    AddControlObject(fPDGnotMCD0);
+    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+  }
 }
 
 int AliDxHFEParticleSelectionMCD0::HistogramParticleProperties(AliVParticle* p, int selectionCode)
@@ -427,6 +449,18 @@ int AliDxHFEParticleSelectionMCD0::ParseArguments(const char* arguments)
     if(argument.BeginsWith("mc-last")){
       AliInfo("Do test on MC info last");
       fMCInfo=kMCLast;
+      continue;
+    }
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0) {fSystem=0; fUseCentrality=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1; fUseCentrality=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2; fUseCentrality=0;}
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
       continue;
     }
     AliDxHFEParticleSelection::ParseArguments(argument);

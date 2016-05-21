@@ -73,7 +73,7 @@ class AliDxHFECorrelationMC : public AliDxHFECorrelation {
   int fStoreOriginEl;// Which origin to store for electrons
   int fStoreOriginD; // Which origin to store for Ds
   Int_t fRunMode;    // Which mode to run in (bigger thnsparse)
-
-  ClassDef(AliDxHFECorrelationMC, 2)
+  Short_t fSystem;               // Which system pp/PbPb
+  ClassDef(AliDxHFECorrelationMC, 3)
 };
 #endif
