@@ -73,6 +73,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
 
   void    SwitchOnSumw2Histograms()     { fSumw2 = kTRUE      ; }
   void    SwitchOffSumw2Histograms()    { fSumw2 = kFALSE     ; }
+
+  void    SwitchOnPtHardHistogram()     { fCheckPtHard = kTRUE  ; }
+  void    SwitchOffPtHardHistogram()    { fCheckPtHard = kFALSE ; }
+
   
   AliCaloTrackReader  * GetReader()                                   { if(!fReader) fReader = new AliCaloTrackReader ();
                                                                         return fReader    ; }
@@ -123,6 +127,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
     
   Bool_t   fSumw2 ;                                  ///<  Call the histograms method Sumw2() after initialization, off by default, too large memory booking, use carefully
     
+  Bool_t   fCheckPtHard ;                            ///< For MC done in pT-Hard bins, plot specific histogram
+  
   // Control histograms
   
   TH1F *   fhNEventsIn;                              //!<! Number of input events counter histogram.
@@ -193,7 +199,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCaloTrackCorrMaker,25) ;
+  ClassDef(AliAnaCaloTrackCorrMaker,26) ;
   /// \endcond
 
 } ;
