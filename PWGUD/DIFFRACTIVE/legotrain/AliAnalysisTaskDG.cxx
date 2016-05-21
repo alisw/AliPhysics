@@ -34,18 +34,24 @@ ClassImp(AliAnalysisTaskDG);
 ClassImp(AliAnalysisTaskDG::TreeData);
 ClassImp(AliAnalysisTaskDG::TrackData);
 
-void AliAnalysisTaskDG::EventInfo::Fill(const AliESDHeader* esdHeader) {
-   fClassMask       = esdHeader->GetTriggerMask();
-   fClassMaskNext50 = esdHeader->GetTriggerMaskNext50();
+void AliAnalysisTaskDG::EventInfo::Fill(const AliESDEvent* esdEvent) {
+  const AliESDHeader *esdHeader = esdEvent->GetHeader();
+  if (NULL == esdHeader) // this is already dealt with in UserExec
+    return;
 
-   fL0Inputs        = esdHeader->GetL0TriggerInputs();
-   fL1Inputs        = esdHeader->GetL1TriggerInputs();
-   fL2Inputs        = esdHeader->GetL2TriggerInputs();
-
-   fBCID            = esdHeader->GetBunchCrossNumber();
-   fOrbitID         = esdHeader->GetOrbitNumber();
-   fPeriod          = esdHeader->GetPeriodNumber();
-   fTimeStamp       = esdHeader->GetTimeStamp();
+  fClassMask       = esdHeader->GetTriggerMask();
+  fClassMaskNext50 = esdHeader->GetTriggerMaskNext50();
+  
+  fRunNumber       = esdEvent->GetRunNumber();
+  
+  fL0Inputs        = esdHeader->GetL0TriggerInputs();
+  fL1Inputs        = esdHeader->GetL1TriggerInputs();
+  fL2Inputs        = esdHeader->GetL2TriggerInputs();
+  
+  fBCID            = esdHeader->GetBunchCrossNumber();
+  fOrbitID         = esdHeader->GetOrbitNumber();
+  fPeriod          = esdHeader->GetPeriodNumber();
+  fTimeStamp       = esdHeader->GetTimeStamp();
 }
 
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
@@ -103,7 +109,7 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
     AliError(Form("tr=%p pidResponse=%p", tr, pidResponse));
     return;
   }
-  fSign = Int_t(tr->GetSign());
+  fSign = tr->GetSign();
   fPx   = tr->Px();
   fPy   = tr->Py();  
   fPz   = tr->Pz();  
@@ -367,7 +373,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     }
   }
 
-  fTreeData.fEventInfo.Fill(esdHeader);
+  fTreeData.fEventInfo.Fill(esdEvent);
 
   fTreeData.fIsIncompleteDAQ          = esdEvent->IsIncompleteDAQ();
   fTreeData.fIsSPDClusterVsTrackletBG = fAnalysisUtils.IsSPDClusterVsTrackletBG(esdEvent);

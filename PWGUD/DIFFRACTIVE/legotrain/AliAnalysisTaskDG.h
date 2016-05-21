@@ -57,13 +57,14 @@ public:
       , fTimeStamp(0)
       , fL0Inputs(0)
       , fL1Inputs(0)
+      , fRunNumber(0)
       , fnTrk(0)
       , fnTrklet(0)
       , fCharge(0)
       , fL2Inputs(0)
       , fOrbitID(0) {}
 
-    void Fill(const AliESDHeader *);
+    void Fill(const AliESDEvent *);
 
     ULong64_t fClassMask;
     ULong64_t fClassMaskNext50;
@@ -72,9 +73,10 @@ public:
     UInt_t    fTimeStamp;
     UInt_t    fL0Inputs;
     UInt_t    fL1Inputs;
-    UInt_t    fnTrk;
-    UInt_t    fnTrklet;
-    Int_t     fCharge;
+    Int_t     fRunNumber;
+    UShort_t  fnTrk;
+    UShort_t  fnTrklet;
+    Char_t    fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;  
 
@@ -99,11 +101,11 @@ public:
 
     void FillInvalid();
 
-    Float_t  fTime[2];            //
-    Char_t   fBB[2];              // 
-    Char_t   fBG[2];              //
-    Char_t   fDecisionOnline[2];  //
-    Char_t   fDecisionOffline[2]; //
+    Float_t    fTime[2];            //
+    Char_t     fBB[2];              // 
+    Char_t     fBG[2];              //
+    Double32_t fDecisionOnline[2];  //[-1,3,2]
+    Double32_t fDecisionOffline[2]; //[-1,3,2]
 
   } ;
 
@@ -139,20 +141,20 @@ public:
       , fTOFsignal(0) {
       fPIDStatus[0] = fPIDStatus[1] = fPIDStatus[2] = AliPIDResponse::kDetNoSignal;
       for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
-	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -999.0f;
+	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
       }
       Fill(tr, pidResponse);
     }
 
     void Fill(AliESDtrack *, AliPIDResponse*);
 
-    Int_t   fSign;
-    Float_t fPx,fPy,fPz;
-    Float_t fITSsignal, fTPCsignal, fTOFsignal;
-    Float_t fNumSigmaITS[AliPID::kSPECIES];
-    Float_t fNumSigmaTPC[AliPID::kSPECIES];
-    Float_t fNumSigmaTOF[AliPID::kSPECIES];
-    Char_t  fPIDStatus[3]; // ITS,TPC,TOF
+    Double32_t fSign;                          //[-1,1,2]
+    Float_t    fPx,fPy,fPz;
+    Float_t    fITSsignal, fTPCsignal, fTOFsignal;
+    Double32_t fNumSigmaITS[AliPID::kSPECIES]; //[-32,32,8]
+    Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
+    Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
+    Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
     ClassDef(TrackData, 1);
   } ;
 
@@ -200,7 +202,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 2);
+  ClassDef(AliAnalysisTaskDG, 3);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
