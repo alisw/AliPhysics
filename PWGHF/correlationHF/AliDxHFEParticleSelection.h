@@ -214,7 +214,7 @@ class AliDxHFEParticleSelection : public TNamed {
   static const char* fgkEventControlBinNames[]; //! bin labels for event control histogram
   static const char* fgkTrackControlBinNames[]; //! bin labels for track control histogram
 
-  ClassDef(AliDxHFEParticleSelection, 5);
+  ClassDef(AliDxHFEParticleSelection, 6);
 
 };
 
