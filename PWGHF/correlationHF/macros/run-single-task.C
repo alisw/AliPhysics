@@ -129,13 +129,20 @@
 //
 int macroVerbosity=0;
 const char* defaultAnalysisName="myanalysis";
-const char* includePath="-I. -I$ROOTSYS/include -I$ALICE_ROOT/include";
+const char* includePath="-I. -I$ROOTSYS/include -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS/TPC -I$ALICE_PHYSICS/CONTAINERS -I$ALICE_PHYSICS/STEER/STEER -I$ALICE_PHYSICS/STEER/STEERBase -I$ALICE_PHYSICS/STEER/ESD -I$ALICE_PHYSICS/STEER/AOD -I$ALICE_PHYSICS/TRD -I$ALICE_PHYSICS/macros -I$ALICE_PHYSICS/ANALYSIS  -I$ALICE_PHYSICS/OADB -I$ALICE_PHYSICS/PWGPP -g";
 const char* libraryDependencies=
+  "libTree.so "
+  "libGeom.so "
+  "libPhysics.so "
+  "libVMC.so "
+  "libMinuit.so "
   "libSTEERBase.so "
   "libESD.so "
   "libAOD.so "
   "libANALYSIS.so "
+  "libOADB.so "
   "libANALYSISalice.so "
+  "libCORRFW.so "
   ;
 
 TString BuildJDLName(const char* analysisName);
@@ -444,6 +451,7 @@ void run_single_task(const char* mode,
     cout << " alienAPIVersion          =" << alienAPIVersion     << endl;
     cout << " alienROOTVersion         =" << alienROOTVersion    << endl;
     cout << " alienAliROOTVersion      =" << alienAliROOTVersion << endl;
+    cout << " alienAliPhysicsersion    =" << alienAliPhysicsVersion << endl;
     cout << " defaultGridDataDir       =" << defaultGridDataDir  << endl;
     cout << " defaultDataPattern       =" << defaultDataPattern  << endl;
     cout << " defaultFriendDataPattern =" << defaultFriendDataPattern  << endl;
@@ -622,6 +630,7 @@ void run_single_task(const char* mode,
     alienHandler->SetAPIVersion(alienAPIVersion);
     alienHandler->SetROOTVersion(alienROOTVersion);
     alienHandler->SetAliROOTVersion(alienAliROOTVersion);
+    alienHandler->SetAliPhysicsVersion(alienAliPhysicsVersion);
     }
 
     // using only default output
@@ -816,7 +825,6 @@ void run_single_task(const char* mode,
   }
   if (nevents<0) nevents=1000000000;
   pManager->PrintStatus();
-  //  pManager->AddClassDebug("AliCFSingleTrackEfficiencyTask",3);
   if (!bRunAnalysis) return;
   if (bRunLocal) {
     pManager->StartAnalysis("local", chain, nevents);

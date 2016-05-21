@@ -343,7 +343,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     TString path("AddTaskD0Mass.C");
     if (gSystem->AccessPathName(path)!=0) {
       // first try local macro, than AliRoot default path
-      path="$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskD0Mass.C";
+      path="$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskD0Mass.C";
     }
     if (gSystem->AccessPathName(path)==0) {
       cout << "Setting up D0Mass reference task " << path << endl;
