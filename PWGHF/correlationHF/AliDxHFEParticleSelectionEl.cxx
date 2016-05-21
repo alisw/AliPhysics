@@ -207,6 +207,7 @@ int AliDxHFEParticleSelectionEl::Init()
     fCuts->CreateStandardCuts();
   }
   // TODO: error handling?
+  fCuts->SetPIDResponse(fPIDResponse);
   fCuts->Initialize(fCFM);
 
   if(fUseInvMassCut>kNoInvMass)  AliDebug(2,Form("Setting up with invariant mass cut of %f",fInvMassLow));
@@ -406,6 +407,9 @@ TObjArray* AliDxHFEParticleSelectionEl::Select(const AliVEvent* pEvent)
   fSelNHFE->SetPIDresponse(fPIDResponse);
   // TODO: move out to analysis task
   fPIDTPC->SetPIDResponse(fPIDResponse);
+  //Previously only fPIDTPC had fPIDResponse set.
+  fPIDTOFTPC->SetPIDResponse(fPIDResponse); 
+  fPIDTOF->SetPIDResponse(fPIDResponse);
   TObjArray* finalTracks=new TObjArray;
   if (!finalTracks) return NULL;
   finalTracks->SetOwner(kFALSE); // creating new track objects below
