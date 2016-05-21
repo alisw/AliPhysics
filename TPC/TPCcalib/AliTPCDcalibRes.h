@@ -41,7 +41,8 @@ class AliTPCDcalibRes: public TNamed
   enum {kExtractMode, kClosureTestMode};
   enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
-  
+  enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
+
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates
 	kVoxF,   // y/x in sector coordinates
@@ -165,10 +166,11 @@ class AliTPCDcalibRes: public TNamed
 
   Int_t   Smooth0(int isect);
   Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
-  Bool_t  GetSmoothEstimateDim(int isect, float x, float p, float z, int dim, float &res, float *deriv=0);
-  void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.5, float bwP=2.5, float bwZ=2.1, 
+  void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
 			float scX=1.f,float scP=1.f,float scZ=1.f);
-  
+  Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
+  void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
+  //  
   void    CreateCorrectionObject();
   void    InitBinning();
   Int_t   GetXBin(float x);
@@ -225,8 +227,8 @@ class AliTPCDcalibRes: public TNamed
   void     SetResidualList(const char* l)        {fResidualList = l;}
   void     SetOCDBPath(const char* l)            {fOCDBPath = l;}
   void     SetUseErrorInSmoothing(Bool_t v=kTRUE) {fUseErrInSmoothing = v;}
-  void     SetNPrimTrackCuts(int n=600)          {fNPrimTracksCut = n;}
-  void     SetMinTrackToUse(int n=1000000)       {fMinTracksToUse = n;}
+  void     SetNPrimTrackCuts(int n=400)          {fNPrimTracksCut = n;}
+  void     SetMinTrackToUse(int n=600000)        {fMinTracksToUse = n;}
   void     SetMinEntriesVoxel(int n=15)          {fMinEntriesVoxel = n;}
   void     SetMinNClusters(int n=30)             {fMinNCl = n;}
   void     SetNVoisinMA(int n=3)                 {fNVoisinMA = n;}
@@ -400,13 +402,13 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fBins[kVoxDim];        // binning in voxel variables
 
   // ------------------------------Smoothing
-  Int_t    fNMaxNeighb;        // max neighbours to loop for smoothing
   Int_t    fKernelType;        // kernel type
   Int_t    fStepKern[kVoxDim]; // N bins to consider with given kernel settings
   Float_t  fKernelWInv[kVoxDim];      // inverse kernel width in bins
   Float_t  fKernelScaleEdge[kVoxDim]; // optional scaling factors for kernel width on the edge
+  Bool_t   fSmoothPol2[kVoxDim];      // option for use pol1 or pol2 in each direction (no x-terms)
   // result of last kernel minimization: value and dV/dX,dV/dY,dV/dZ for each dim
-  Double_t fLastSmoothingRes[kResDim*4];  
+  Double_t fLastSmoothingRes[kResDim*kMaxSmtDim];  //! results of last smoothing
 
   // ------------------------------Selection Stats
   Int_t    fNTrSelTot;      // selected tracks
@@ -483,7 +485,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,8);
+  ClassDef(AliTPCDcalibRes,9);
 };
 
 //________________________________________________________________

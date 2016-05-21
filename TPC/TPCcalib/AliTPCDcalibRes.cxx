@@ -91,9 +91,9 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fResidualList(resList)
   ,fOCDBPath()
 
-  ,fMinTracksToUse(1000000)
+  ,fMinTracksToUse(600000)
   ,fMinEntriesVoxel(15)
-  ,fNPrimTracksCut(600)
+  ,fNPrimTracksCut(400)
   ,fMinNCl(30)
   ,fMaxDevYHelix(0.3)
   ,fMaxDevZHelix(0.3) // !!! VDrift calib. screas up the Z fit, 0.3 w/o vdrift
@@ -132,9 +132,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fDY2X(0)
   ,fDY2XI(0)
 
-  ,fNMaxNeighb(0)
   ,fKernelType(kGaussianKernel)
-  
 
   ,fNTrSelTot(0)
   ,fNTrSelTotWO(0)
@@ -159,7 +157,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
 
 {
   for (int i=0;i<kResDim;i++) {
-    for (int j=0;j<2;j++) fNPCheb[i][j] = 15;
+    for (int j=0;j<2;j++) fNPCheb[i][j] = -1; //determine from job binning// 15;
     fChebPrecD[i] = 100e-4;
   }
 
@@ -170,8 +168,11 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
     fKernelScaleEdge[i] = 1.0f;
     fStepKern[i] = 1;
     fKernelWInv[i] = 0; // calculated later
+    fSmoothPol2[i] = kFALSE;
   }
-
+  fSmoothPol2[kVoxX] = kTRUE;
+  fSmoothPol2[kVoxF] = kTRUE;
+  //
   for (int i=kVoxHDim;i--;) fNBProdSt[i] = 0;
   for (int i=kVoxDim;i--;) fNBProdSectG[i] = 0;
   //
@@ -1052,8 +1053,8 @@ void AliTPCDcalibRes::ProcessSectorDispersions(int is)
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
-	Bool_t res = GetSmoothEstimateDim(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
-					  int(kResD), voxRes->DS[kResD]);
+	Bool_t res = GetSmoothEstimate(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
+				       BIT(kResD), voxRes->DS);
       }
     }
   }
@@ -1222,8 +1223,8 @@ void AliTPCDcalibRes::ProcessSectorResiduals(int is)
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
-	Bool_t res = GetSmoothEstimateDim(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
-					  int(kResD), voxRes->DS[kResD]);
+	Bool_t res = GetSmoothEstimate(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
+				       BIT(kResD), voxRes->DS);
       }
     }
   }
@@ -1274,8 +1275,8 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
       for (bvox[kVoxF]=0;bvox[kVoxF]<fNY2XBins;bvox[kVoxF]++) {
 	int binGlo = GetVoxGBin(bvox);
 	bres_t *voxRes = &sectData[binGlo];
-	Bool_t res = GetSmoothEstimateDim(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
-					  int(kResD), voxRes->DS[kResD]);
+	Bool_t res = GetSmoothEstimate(is,voxRes->stat[kVoxX],voxRes->stat[kVoxF],voxRes->stat[kVoxZ],
+				       BIT(kResD), voxRes->DS);
       }
     }
   } 
@@ -1335,7 +1336,7 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   voxRes.E[kResY] = TMath::Sqrt(err[0]);
   voxRes.E[kResZ] = zres[4];
   voxRes.EXYCorr  = corrErr;
-  voxRes.dYSigMAD = sigMAD;
+  voxRes.D[kResD] = voxRes.dYSigMAD = sigMAD; // later will be overriden by real dispersion
   voxRes.dZSigLTM = zres[2];
   //
   // store the statistics
@@ -2388,7 +2389,6 @@ Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     memcpy(voxel,&voxRes,sizeof(bres_t));
     // the X distortion contribution was already subtracted from the Y,Z components, restore it
     voxel->D[kResZ]  -= voxel->stat[kVoxZ]*voxel->DS[kResX];
-    voxel->DS[kResZ] -= voxel->stat[kVoxZ]*voxel->DS[kResX];
     // reset smoothed params
     voxel->flags &= ~(kSmoothDone|kKilled);
     for (int ir=kResDim;ir--;) voxel->DS[ir]=voxel->DC[ir]=0.f;
@@ -2616,13 +2616,20 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 	Bool_t res = GetSmoothEstimate(vox->bsec,vox->stat[kVoxX],vox->stat[kVoxF],vox->stat[kVoxZ],
 				       BIT(kResX)|BIT(kResY)|BIT(kResZ), // at this moment we cannot smooth dispersion
 				       vox->DS);
-	if (res) { 
-	  vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
-	  vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX];
-	  vox->flags |= kSmoothDone;
-	  cnt++;
-	}
-	else fNSmoothingFailedBins[isect]++;
+	if (!res) fNSmoothingFailedBins[isect]++;
+      }
+    }
+  }
+  // now subtract the dX contribution to DZ
+  for (int ix=0;ix<fNXBins;ix++) {
+    if (GetXBinIgnored(isect,ix)) continue;
+    for (int ip=0;ip<fNY2XBins;ip++) {
+      for (int iz=0;iz<fNZ2XBins;iz++) {
+	int binGlo = GetVoxGBin(ix,ip,iz);
+	bres_t *vox = &sectData[binGlo];
+	if (!(vox->flags&kSmoothDone)) continue;
+	vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
+	vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
       }
     }
   }
@@ -2636,8 +2643,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   // get smooth estimate of distortions mentioned in "which" bit pattern for point in sector coordinates (x,y/x,z/x)
   // smoothing results also saved in the fLastSmoothingRes (allow derivative calculation)
   //
-  const int kMinPointsTot = 4; // we fit 12 paremeters, each point provides 3 values
-  const int kMinPointsDir = 3; // need at least 2 points per direction
+  int minPointsDir[kVoxDim]={0}; // min number of points per direction
   //
   const float kTrialStep = 0.5;
   Bool_t doDim[kResDim] = {kFALSE};
@@ -2646,16 +2652,22 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     if (doDim[i]) res[i] = 0;
   }
   //
-  enum {kM00,
-	kM10,kM11,
-	kM20,kM21,kM22,
-	kM30,kM31,kM32,kM33,kMN};
-  double cmat[kResDim][kMN];
-
+  // extimate smoothing matrix size and min number of points
+  int matSize = kSmtLinDim;
+  for (int i=0;i<kVoxDim;i++) {
+    minPointsDir[i] = 3; // for pol1 smoothing require at least 3 points 
+    if (fSmoothPol2[i]) {
+      minPointsDir[i]++;
+      matSize++;
+    }
+  } 
+  double cmat[kResDim][kMaxSmtDim*(kMaxSmtDim+1)/2];
+  static int maxNeighb = 10*10*10;
+  static bres_t **currClus = new bres_t*[maxNeighb];
+  static float* currCache = new float[maxNeighb*kVoxHDim];
+  //
   //loop over neighbours which can contribute
   //
-  bres_t *currClus[fNMaxNeighb];
-  double *rhsX=&fLastSmoothingRes[0],*rhsY=&fLastSmoothingRes[4],*rhsZ=&fLastSmoothingRes[8],*rhsD=&fLastSmoothingRes[12];
   //
   int ix0,ip0,iz0;
   FindVoxel(x,p, isect<kNSect ? z : -z, ix0,ip0,iz0); // find nearest voxel
@@ -2671,9 +2683,8 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   int trial[kVoxDim]={0};
   while(1)  {
     //
-    memset(fLastSmoothingRes,0,kResDim*4*sizeof(double));
-    //
-    memset(cmat,0,kResDim*10*sizeof(double));
+    memset(fLastSmoothingRes,0,kResDim*kMaxSmtDim*sizeof(double));
+    memset(cmat,0,kResDim*kMaxSmtDim*(kMaxSmtDim+1)/2*sizeof(double));
     //
     int nbOK=0; // accounted neighbours
     //
@@ -2734,10 +2745,23 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     //
     int nOccX[ixMx-ixMn+1],nOccF[ipMx-ipMn+1],nOccZ[izMx-izMn+1];
     //
+    // check if cache arrays should be expanded
+    int nbCheck = (ixMx-ixMn+1)*(ipMx-ipMn+1)*(izMx-izMn+1);
+    if (nbCheck>=maxNeighb) { // need to expand caches
+      int mxNb = nbCheck+100;
+      delete[] currClus;
+      delete[] currCache;
+      currClus = new bres_t*[mxNb];
+      currCache= new float[mxNb*kVoxHDim];
+      maxNeighb = mxNb;
+    }
+    //
     for (int i=ixMx-ixMn+1;i--;) nOccX[i]=0;
     for (int i=ipMx-ipMn+1;i--;) nOccF[i]=0;
     for (int i=izMx-izMn+1;i--;) nOccZ[i]=0;
     double u2Vec[3];
+    //1st loop, check presence of enough points, cache precalculated values
+    float *cacheVal = currCache;
     for (int ix=ixMn;ix<=ixMx;ix++) {
       for (int ip=ipMn;ip<=ipMx;ip++) {
 	for (int iz=izMn;iz<=izMx;iz++) {
@@ -2754,33 +2778,22 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	  u2Vec[1] = dfw*dfw;
 	  u2Vec[2] = dzw*dzw;
 	  double kernW = GetKernelWeight(u2Vec,3);
-	  if (kernW<kZeroK) continue;
+	  if (kernW<kZeroK) continue; 
+	  // new point is validated	  
 	  nOccX[ix-ixMn]++;
 	  nOccF[ip-ipMn]++;
 	  nOccZ[iz-izMn]++;
-	  //
-	  for (int id=0;id<kResDim;id++) {
-	    if (!doDim[id]) continue;
-	    double kernWD = kernW;
-	    if (fUseErrInSmoothing) kernWD /= (voxNb->E[id]*voxNb->E[id]); // apart from the kernel value, account for the point error
-	    double *cmatD = cmat[id];
-	    cmatD[kM00] += kernWD;
-	    cmatD[kM10] += kernWD*dx;   cmatD[kM11] += kernWD*dx*dx;
-	    cmatD[kM20] += kernWD*df;   cmatD[kM21] += kernWD*dx*df;  cmatD[kM22] += kernWD*df*df;
-	    cmatD[kM30] += kernWD*dz;   cmatD[kM31] += kernWD*dx*dz;  cmatD[kM32] += kernWD*df*dz;   cmatD[kM33] += kernWD*dz*dz;
-	    double *rhsD = &fLastSmoothingRes[id*4];
-	    rhsD[0] += kernWD*voxNb->D[id];
-	    rhsD[1] += kernWD*voxNb->D[id]*dx;
-	    rhsD[2] += kernWD*voxNb->D[id]*df;
-	    rhsD[3] += kernWD*voxNb->D[id]*dz;	      
-	  }
-	  //
 	  currClus[nbOK] = voxNb;
+	  cacheVal[kVoxX] = dx;
+	  cacheVal[kVoxF] = df;
+	  cacheVal[kVoxZ] = dz;
+	  cacheVal[kVoxV] = kernW;
+	  cacheVal += kVoxHDim;
 	  nbOK++;
 	}
       }
     }
-  
+    //
     // check if we have enough points in every dimension
     int np[kVoxDim]={0};
     for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) np[kVoxX]++; 
@@ -2788,7 +2801,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) np[kVoxZ]++;
     Bool_t enoughPoints = kTRUE, incrDone[kVoxDim] = {0};
     for (int i=0;i<kVoxDim;i++) {
-      if (np[i]<kMinPointsDir || nbOK<kMinPointsTot) { // need to extend smoothing neighborhood
+      if (np[i]<minPointsDir[i]) { // need to extend smoothing neighborhood
 	enoughPoints=kFALSE;
 	if (trial[i]<maxTrials[i] && !incrDone[i]) { //try to increment only missing direction
 	  trial[i]++; incrDone[i]=kTRUE;
@@ -2810,29 +2823,90 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	return kFALSE;
       }
       /*
-      AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
-		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
-		  isect,x,p,z,ix0,ip0,iz0,2,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,
-		  trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
+	AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
+	"not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
+	"trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
+	isect,x,p,z,ix0,ip0,iz0,2,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,
+	trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
       */
       continue;
     }
-
+    //
+    // now fill the matrices and solve 
+    cacheVal = currCache;
+    for (int ib=0;ib<nbOK;ib++) {
+      double kernW = cacheVal[kVoxV];
+      double dx=cacheVal[kVoxX], df=cacheVal[kVoxF], dz=cacheVal[kVoxZ],dx2=dx*dx, df2=df*df, dz2 = dz*dz;
+      cacheVal += kVoxHDim;
+      const bres_t* voxNb = currClus[ib];
+      for (int id=0;id<kResDim;id++) {
+	if (!doDim[id]) continue;
+	double kernWD = kernW;
+	if (fUseErrInSmoothing) kernWD /= (voxNb->E[id]*voxNb->E[id]); // apart from the kernel value, account for the point error
+	double *cmatD = cmat[id];
+	double *rhsD = &fLastSmoothingRes[id*kMaxSmtDim];
+	//
+	double kernWDx=kernWD*dx, kernWDf=kernWD*df, kernWDz=kernWD*dz;
+	double kernWDx2=kernWDx*dx, kernWDf2=kernWDf*df, kernWDz2=kernWDz*dz;
+	//
+	// linear part
+	int el=-1,elR=-1;
+	cmatD[++el] += kernWD;
+	rhsD[++elR] += kernWD*voxNb->D[id];
+	//
+	cmatD[++el] += kernWDx;   cmatD[++el] += kernWDx2;
+	rhsD[++elR] += kernWDx*voxNb->D[id];
+	//
+	cmatD[++el] += kernWDf;   cmatD[++el] += kernWDx*df;  cmatD[++el] += kernWDf2;
+	rhsD[++elR] += kernWDf*voxNb->D[id];
+	//
+	cmatD[++el] += kernWDz;   cmatD[++el] += kernWDx*dz;  cmatD[++el] += kernWDf*dz;   cmatD[++el] += kernWDz2;
+	rhsD[++elR] += kernWDz*voxNb->D[id];	      
+	//
+	// check if quadratic part is needed
+	if (fSmoothPol2[kVoxX]) {
+	  cmatD[++el] += kernWDx2;   cmatD[++el] += kernWDx2*dx; cmatD[++el] += kernWDf*dx2; cmatD[++el] += kernWDz*dx2; cmatD[++el] += kernWDx2*dx2;
+	  rhsD[++elR] += kernWDx2*voxNb->D[id];
+	}
+	if (fSmoothPol2[kVoxF]) {
+	  cmatD[++el] += kernWDf2;   cmatD[++el] += kernWDx*df2; cmatD[++el] += kernWDf*df2; cmatD[++el] += kernWDz*df2; cmatD[++el] += kernWDx2*df2; cmatD[++el] += kernWDf2*df2;
+	  rhsD[++elR] += kernWDf2*voxNb->D[id];
+	}
+	if (fSmoothPol2[kVoxZ]) {
+	  cmatD[++el] += kernWDz2;   cmatD[++el] += kernWDx*dz2; cmatD[++el] += kernWDf*dz2; cmatD[++el] += kernWDz*dz2; cmatD[++el] += kernWDx2*dz2; cmatD[++el] += kernWDf2*dz2; cmatD[++el] += kernWDz2*dz2;
+	  rhsD[++elR] += kernWDz2*voxNb->D[id];
+	}
+      }
+    }
     //
     Bool_t fitRes = kTRUE;
     //
     // solve system of linear equations
-    AliSymMatrix mat(4);
+    AliSymMatrix mat(matSize);
     for (int id=0;id<kResDim;id++) {
       if (!doDim[id]) continue;
       mat.Reset();
       double *cmatD = cmat[id];
-      double *rhsD = &fLastSmoothingRes[id*4];
-      mat(0,0) = cmatD[kM00];
-      mat(1,0) = cmatD[kM10];   mat(1,1) = cmatD[kM11];
-      mat(2,0) = cmatD[kM20];   mat(2,1) = cmatD[kM21];  mat(2,2) = cmatD[kM22]; 
-      mat(3,0) = cmatD[kM30];   mat(3,1) = cmatD[kM31];  mat(3,2) = cmatD[kM32];  mat(3,3) = cmatD[kM33];
+      double *rhsD = &fLastSmoothingRes[id*kMaxSmtDim];
+      int el=-1,elR=-1,row=-1;
+      mat(++row,0) = cmatD[++el];
+      mat(++row,0) = cmatD[++el];   mat(row,1) = cmatD[++el];
+      mat(++row,0) = cmatD[++el];   mat(row,1) = cmatD[++el];  mat(row,2) = cmatD[++el]; 
+      mat(++row,0) = cmatD[++el];   mat(row,1) = cmatD[++el];  mat(row,2) = cmatD[++el];  mat(row,3) = cmatD[++el];
+      // pol2 elements if needed
+      if (fSmoothPol2[kVoxX]) {
+	const int colLim = (++row)+1;
+	for (int col=0;col<colLim;col++) mat(row,col) = cmatD[++el];
+      }
+      if (fSmoothPol2[kVoxF]) {
+	const int colLim = (++row)+1;
+	for (int col=0;col<colLim;col++) mat(row,col) = cmatD[++el];
+      }
+      if (fSmoothPol2[kVoxZ]) {
+	const int colLim = (++row)+1;
+	for (int col=0;col<colLim;col++) mat(row,col) = cmatD[++el];
+      }
+      //
       fitRes &= mat.SolveChol(rhsD);
       if (!fitRes) {
 	for (int i=kVoxDim;i--;) trial[i]++;
@@ -2843,7 +2917,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	continue;
       }
       res[id] = rhsD[0];
-      if (deriv) for (int j=0;j<3;j++) deriv[id*3 +j] = rhsD[j+1];
+      if (deriv) for (int j=0;j<3;j++) deriv[id*3 +j] = rhsD[j+1]; // ignore eventual pol2 term
     }
     //
     break; // success
@@ -2851,217 +2925,6 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
   
   return kTRUE;
 
-}
-
-
-//________________________________________________________________
-Bool_t AliTPCDcalibRes::GetSmoothEstimateDim(int isect, float x, float p, float z, int dim, 
-					     float& res, float *deriv)
-{
-  // get smooth estimate of single dimension dim for point in sector coordinates (x,y/x,z/x)
-  // smoothing results also saved in the fLastSmoothingRes (allow derivative calculation)
-  //
-  const int kMinPointsTot = 4; // we fit 12 paremeters, each point provides 3 values
-  const int kMaxTrials = 5; // max allowed iterations if neighbours are missing
-  const int kMinPointsDir = 2; // need at least 2 points per direction
-  const float kTrialStep = 0.5;
-
-  res = 0;
-  //
-  double cmat[10];
-  double &m00=cmat[0], 
-    &m10=cmat[1], &m11=cmat[2], 
-    &m20=cmat[3], &m21=cmat[4], &m22=cmat[5], 
-    &m30=cmat[6], &m31=cmat[7], &m32=cmat[8], &m33=cmat[9];
-
-  //loop over neighbours which can contribute
-  //
-  bres_t *currClus[fNMaxNeighb];
-  double *rhs = &fLastSmoothingRes[dim*4];
-  //
-  int ix0,ip0,iz0;
-  FindVoxel(x,p, isect<kNSect ? z : -z, ix0,ip0,iz0); // find nearest voxel
-  bres_t* sectData = fSectGVoxRes[isect];
-  int binCen = GetVoxGBin(ix0,ip0,iz0);  // global bin of nearest voxel
-  bres_t* voxCen = &sectData[binCen]; // nearest voxel
-  //
-  int maxTrials[kVoxDim];
-  maxTrials[kVoxZ] = fNBins[kVoxZ]/2;
-  maxTrials[kVoxF] = fNBins[kVoxF]/2;
-  maxTrials[kVoxX] = fMaxBadXBinsToCover*2;
-
-  int trial[kVoxDim]={0};
-  while(1)  {
-    //
-    memset(rhs,0,4*sizeof(double));
-    //
-    memset(cmat,0,10*sizeof(double));
-    int nbOK=0; // accounted neighbours
-    //
-    float stepX = fStepKern[kVoxX]*(1. + kTrialStep*trial[kVoxX]);
-    float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
-    float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
-    //
-    if (!(voxCen->flags&kDistDone) || (voxCen->flags&kKilled) || GetXBinIgnored(isect,ix0)) { // closest voxel has no data, increase smoothing step
-      stepX+=kTrialStep*fStepKern[kVoxX];
-      stepF+=kTrialStep*fStepKern[kVoxF];
-      stepZ+=kTrialStep*fStepKern[kVoxZ];
-    }
-    //
-    // effective kernel widths accounting for the increased bandwidth at the edges and missing data
-    float kWXI = GetDXI(ix0)  *fKernelWInv[kVoxX]*fStepKern[kVoxX]/stepX;
-    float kWFI = GetDY2XI(ix0)*fKernelWInv[kVoxF]*fStepKern[kVoxF]/stepF;
-    float kWZI = GetDZ2XI()   *fKernelWInv[kVoxZ]*fStepKern[kVoxZ]/stepZ;
-    int istepX = TMath::Nint(stepX+0.5);
-    int istepF = TMath::Nint(stepF+0.5);
-    int istepZ = TMath::Nint(stepZ+0.5);
-    // for edge bins increase kernel size and neighbours search
-    int ixMn=ix0-istepX,ixMx=ix0+istepX;
-    if (ixMn<0) {
-      ixMn = 0;
-      ixMx = TMath::Min(TMath::Nint(ix0+stepX*fKernelScaleEdge[kVoxX]),fNXBins-1);
-      kWXI /= fKernelScaleEdge[kVoxX];
-    }
-    if (ixMx>=fNXBins) {
-      ixMx = fNXBins-1;
-      ixMn = TMath::Max(TMath::Nint(ix0-stepX*fKernelScaleEdge[kVoxX]),0);
-      kWXI /= fKernelScaleEdge[kVoxX];
-    }
-    //
-    int ipMn=ip0-istepF,ipMx=ip0+istepF;
-    if (ipMn<0) {
-      ipMn = 0;
-      ipMx = TMath::Min(TMath::Nint(ip0+stepF*fKernelScaleEdge[kVoxF]),fNY2XBins-1);
-      kWFI /= fKernelScaleEdge[kVoxF];
-    }
-    if (ipMx>=fNY2XBins) {
-      ipMx = fNY2XBins-1; 
-      ipMn = TMath::Max(TMath::Nint(ip0-stepF*fKernelScaleEdge[kVoxF]),0);
-      kWFI /= fKernelScaleEdge[kVoxF];
-    }
-    //
-    int izMn=iz0-istepZ,izMx=iz0+istepZ;
-    if (izMn<0) {
-      izMn = 0;
-      izMx = TMath::Min(TMath::Nint(iz0+stepZ*fKernelScaleEdge[kVoxZ]),fNZ2XBins-1);
-      kWZI /= fKernelScaleEdge[kVoxZ];
-    }
-    if (izMx>=fNZ2XBins) {
-      izMx = fNZ2XBins-1;
-      izMn = TMath::Max(TMath::Nint(iz0-stepZ*fKernelScaleEdge[kVoxZ]),0);
-      kWZI /= fKernelScaleEdge[kVoxZ];
-    }
-    //
-    int nOccX[ixMx-ixMn+1],nOccF[ipMx-ipMn+1],nOccZ[izMx-izMn+1];
-    //
-    for (int i=ixMx-ixMn+1;i--;) nOccX[i]=0;
-    for (int i=ipMx-ipMn+1;i--;) nOccF[i]=0;
-    for (int i=izMx-izMn+1;i--;) nOccZ[i]=0;
-    double u2Vec[3];
-    for (int ix=ixMn;ix<=ixMx;ix++) {
-      for (int ip=ipMn;ip<=ipMx;ip++) {
-	for (int iz=izMn;iz<=izMx;iz++) {
-	  //
-	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
-	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone) || (voxNb->flags&kKilled) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
-	  // estimate weighted distance
-	  float dx = voxNb->stat[kVoxX]-x;
-	  float df = voxNb->stat[kVoxF]-p;
-	  float dz = voxNb->stat[kVoxZ]-z;
-	  float dxw = dx*kWXI, dfw = df*kWFI, dzw = dz*kWZI;
-	  u2Vec[0] = dxw*dxw;
-	  u2Vec[1] = dfw*dfw;
-	  u2Vec[2] = dzw*dzw;
-	  double kernW = GetKernelWeight(u2Vec,3);
-	  if (kernW<kZeroK) continue;
-	  nOccX[ix-ixMn]++;
-	  nOccF[ip-ipMn]++;
-	  nOccZ[iz-izMn]++;
-	  //
-	  // apart from the kernel value, we may account for the point error
-	  if (fUseErrInSmoothing) kernW /= (voxNb->E[dim]*voxNb->E[dim]);
-	  //
-	  m00 += kernW;
-	  m10 += kernW*dx;   m11 += kernW*dx*dx;
-	  m20 += kernW*df;   m21 += kernW*dx*df;  m22 += kernW*df*df;
-	  m30 += kernW*dz;   m31 += kernW*dx*dz;  m32 += kernW*df*dz;   m33 += kernW*dz*dz;
-	  //
-	  rhs[0] += kernW*voxNb->D[dim];
-	  rhs[1] += kernW*voxNb->D[dim]*dx;
-	  rhs[2] += kernW*voxNb->D[dim]*df;
-	  rhs[3] += kernW*voxNb->D[dim]*dz;
-	  //
-	  currClus[nbOK] = voxNb;
-	  nbOK++;
-	}
-      }
-    }
-
-    // check if we have enough points in every dimension
-    int np[kVoxDim]={0};
-    for (int i=ixMx-ixMn+1;i--;) if (nOccX[i]) np[kVoxX]++; 
-    for (int i=ipMx-ipMn+1;i--;) if (nOccF[i]) np[kVoxF]++;
-    for (int i=izMx-izMn+1;i--;) if (nOccZ[i]) np[kVoxZ]++;
-    Bool_t enoughPoints = kTRUE, incrDone[kVoxDim] = {0};
-    for (int i=0;i<kVoxDim;i++) {
-      if (np[i]<kMinPointsDir || nbOK<kMinPointsTot) { // need to extend smoothing neighborhood
-	enoughPoints=kFALSE;
-	if (trial[i]<maxTrials[i] && !incrDone[i]) { //try to increment only missing direction
-	  trial[i]++; incrDone[i]=kTRUE;
-	} 
-	else if (trial[i]==maxTrials[i]) { // cannot increment missing direction, try others
-	  for (int j=kVoxDim;j--;) {
-	    if (i!=j && trial[j]<maxTrials[j] && !incrDone[j]) {
-	      trial[j]++; incrDone[j]=kTRUE;
-	    }
-	  }
-	}
-      }
-    }
-    if (!enoughPoints) {
-      if (!(incrDone[kVoxX]||incrDone[kVoxF]||incrDone[kVoxZ])) {
-	AliErrorF("Voxel Z:%d F:%d X:%d Trials limit reached: Z:%d F:%d X:%d",
-		  voxCen->bvox[kVoxZ],voxCen->bvox[kVoxF],voxCen->bvox[kVoxX],
-		  trial[kVoxZ],trial[kVoxF],trial[kVoxX]);
-	return kFALSE;
-      }
-      /*
-      AliWarningF("Sector:%2d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
-		  "not enough neighbours (need min %d) %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "trying to increase filter bandwidth (trialXFZ:%d %d %d)\n",
-		  isect,x,p,z,ix0,ip0,iz0,2,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,
-		  trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
-      */
-      continue;
-    }
-
-    //
-    Bool_t fitRes = kTRUE;
-    //
-    // solve system of linear equations
-    AliSymMatrix mat(4);
-    mat(0,0) = m00;
-    mat(1,0) = m10;   mat(1,1) = m11;
-    mat(2,0) = m20;   mat(2,1) = m21;  mat(2,2) = m22; 
-    mat(3,0) = m30;   mat(3,1) = m31;  mat(3,2) = m32;  mat(3,3) = m33;
-    fitRes &= mat.SolveChol(rhs);
-    if (!fitRes) {
-      for (int i=kVoxDim;i--;) trial[i]++;
-      AliWarningF("Sector:%2d Dim%d x=%.3f y/x=%.3f z/x=%.3f (iX:%d iY2X:%d iZ2X:%d)\n"
-		  "neighbours range used %d %d %d (tot: %d) | Steps: %.1f %.1f %.1f\n"
-		  "Solution for smoothing Failed, trying to increase filter bandwidth (trialXFZ: %d %d %d)",
-		  isect,dim,x,p,z,ix0,ip0,iz0,np[kVoxX],np[kVoxF],np[kVoxZ],nbOK,stepX,stepF,stepZ,trial[kVoxX],trial[kVoxF],trial[kVoxZ]);
-      continue;
-    }
-    //
-    break; // success
-  } // end of loop over allowed trials
-  res = rhs[0];
-  //
-  if (deriv) for (int j=0;j<3;j++) deriv[j] = rhs[j+1]; // derivatives are requested
-
-  return kTRUE;
 }
 
 
@@ -3115,7 +2978,7 @@ void AliTPCDcalibRes::SetKernelType(int tp, float bwX, float bwP, float bwZ, flo
     AliFatalF("Kernel type %d is not defined",fKernelType);
   }
   for (int i=kVoxDim;i--;) if (fStepKern[i]<1) fStepKern[i] = 1;
-  fNMaxNeighb = 2*(2*fStepKern[kVoxX]+1)*(2*fStepKern[kVoxF]+1)*(2*fStepKern[kVoxZ]+1);
+  //
 }
 
 
@@ -3158,7 +3021,22 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   // Note: to create universal map, set manually SetFieldType(AliTPCChebCorr::kFieldAny)
 
   SetUsedInstance(this);
-  fChebCorr->Parameterize(trainCorr,kResDim,fNPCheb,fChebPrecD);
+  int npCheb[kResDim][2];
+  for (int i=0;i<kResDim;i++) { // do we need to determine N nodes automatically?
+    int nbFauto = TMath::Max(int(fNY2XBins*1.2),fNY2XBins+3);
+    int nbZauto = TMath::Max(int(fNZ2XBins*1.2),fNZ2XBins+3);
+    npCheb[i][0] = fNPCheb[i][0];
+    npCheb[i][1] = fNPCheb[i][1];
+    if (npCheb[i][0]<1) {
+      npCheb[i][0] = nbFauto; // 1st dimension: sector coordinate y/x
+      AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxF],nbFauto);
+    }
+    if (npCheb[i][1]<1) {
+      npCheb[i][1] = nbZauto; // 2nd dimension: z/x
+      AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxZ],nbZauto);
+    }
+  }
+  fChebCorr->Parameterize(trainCorr,kResDim,npCheb,fChebPrecD);
   //
   // register tracks rate for lumi weighting
   fChebCorr->SetTracksRate(ExtractTrackRate());
