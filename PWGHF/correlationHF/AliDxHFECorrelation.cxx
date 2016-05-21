@@ -77,6 +77,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fUseTrackEfficiency(kFALSE)
   , fUseD0Efficiency(kFALSE)
   , fRunMode(kReducedMode)
+  , fUseCentrality(0)
 {
   // default constructor
   // 
@@ -168,7 +169,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
     return -EINVAL;
   }
   cuts->Print("");
-  fCorrelator = new AliHFCorrelator("Correlator", cuts, fSystem); 
+  fCorrelator = new AliHFCorrelator("Correlator", cuts, fUseCentrality); 
   fCorrelator->SetDeltaPhiInterval(fMinPhi,fMaxPhi); //Correct Phi Interval
   fCorrelator->SetEventMixing(fUseEventMixing);      // mixing Off/On 
   fCorrelator->SetAssociatedParticleType(AliHFCorrelator::kElectron);
@@ -203,8 +204,8 @@ int AliDxHFECorrelation::Init(const char* arguments)
 
   Int_t nofEventPropBins =0;
 
-  if(fSystem) nofEventPropBins = 100; // PbPb centrality
-  if(!fSystem) nofEventPropBins = NofCentBins; // pp multiplicity
+  if(fUseCentrality) nofEventPropBins = 100; // PbPb centrality
+  if(!fUseCentrality) nofEventPropBins = NofCentBins; // pp multiplicity
 
   Double_t minvalue = CentBins[0];
   Double_t maxvalue = CentBins[NofCentBins];
@@ -290,9 +291,9 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
     }
     if (argument.BeginsWith("system=")) {
       argument.ReplaceAll("system=", "");
-      if (argument.CompareTo("pp")==0) fSystem=0;
-      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
-      else if (argument.CompareTo("p-Pb")==0) fSystem=0; //Temporary set to the same as pp. Should be fixed. -Pil
+      if (argument.CompareTo("pp")==0) {fSystem=0; fUseCentrality=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1; fUseCentrality=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2; fUseCentrality=0;}
       else {
 	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
 	// TODO: check what makes sense
@@ -372,6 +373,22 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
       "#Delta#eta"
     };
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+  }
+  else if(2==fSystem){ //Reduced bins for p-Pb
+    // 			                                   0          1      2       3      4
+    // 			                                D0invmass   PtD0     Pte    dphi   deta   
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   100,      80,   50,   16,    25};
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,      0,      0,  fMinPhi,  -2};
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,      16,    10,  fMaxPhi,   2}; 
+    const char* nameEventdphiRed[sizeEventdphiReduced] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
+
   }
   else{
     // 			                                   0          1      2       3      4 
@@ -728,11 +745,11 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
   Double_t MultipOrCent = -1;
 	
   // get the pool for event mixing
-  if(!fSystem){ // pp
+  if(!fUseCentrality){ // pp
     multiplicity = AOD->GetNumberOfTracks();
     MultipOrCent = multiplicity; // convert from Int_t to Double_t
   }
-  if(fSystem){ // PbPb		
+  if(fUseCentrality){ // PbPb		
     centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
     MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
     AliInfo(Form("Centrality is %f", MultipOrCent));

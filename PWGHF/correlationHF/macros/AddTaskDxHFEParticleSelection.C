@@ -211,6 +211,9 @@ int AddTaskDxHFEParticleSelection(TString configuration="",TString analysisName=
 	    else if(argument.CompareTo("kEMC7")==0) triggerMask=AliVEvent::kEMC7;
 	    else if(argument.CompareTo("kEMC8")==0) triggerMask=AliVEvent::kEMC8;
 	    else if(argument.CompareTo("allEMCAL")==0) triggerMask=(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8);
+	    else if(argument.CompareTo("kEMCEGA")==0) (triggerMask=AliVEvent::kEMCEGA);
+	    else if(argument.CompareTo("kAnyInt")==0) (triggerMask=AliVEvent::kAnyINT);
+	    else if(argument.CompareTo("kMB")==0) (triggerMask=AliVEvent::kMB);
 	    else ::Fatal("AddTaskDxHFECorrelation",Form("trigger argument not known %s",argument));
 	    continue;
 	  }

@@ -60,6 +60,8 @@ AliDxHFEParticleSelectionD0::AliDxHFEParticleSelectionD0(const char* opt)
   , fHistoList(NULL)
   , fUseD0Efficiency(kFALSE)
   , fMultEv(0)
+  , fSystem(0)
+  , fUseCentrality(0)
 {
   // constructor
   // 
@@ -124,8 +126,10 @@ int AliDxHFEParticleSelectionD0::InitControlObjects()
   AddControlObject(fD0Properties);
 
   //Adding control objects for the daughters
+  if (0==fSystem || 1==fSystem ){//Exclude for pPb
   InitControlObjectsDaughters("pi information",0);
   InitControlObjectsDaughters("K information",1);
+  }
   AliInfo(Form("D0 filling scheme: %d\n",fFillOnlyD0D0bar));
 
   fHistoList=new TList;
@@ -152,15 +156,24 @@ THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse()
   const double Pi=TMath::Pi();
   TString name;
   name.Form("%s info", GetName());
+  if(2==fSystem){//Reduced binning for p-Pb
+    // 			             0     1     2       3         4
+    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta
+    int         thnBins [thnSize2] = {80, 100,  15,     100,     125};
+    double      thnMin  [thnSize2] = {  0,    0,   0,    1.5648,   -1.};
+    double      thnMax  [thnSize2] = { 16, 2*Pi, 14,    2.1648,    1.};
+    const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
+    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+  } else {
+    // 			             0     1     2       3         4
+    // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  
+    int         thnBins [thnSize2] = {1000, 200,  15,     200,     500 };
+    double      thnMin  [thnSize2] = {  0,    0,   0,    1.5648,   -1. };
+    double      thnMax  [thnSize2] = { 100, 2*Pi, 14,    2.1648,    1. };
+    const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
 
-  // 			             0     1     2       3         4
-  // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta  
-  int         thnBins [thnSize2] = {1000, 200,  15,     200,     500 };
-  double      thnMin  [thnSize2] = {  0,    0,   0,    1.5648,   -1. };
-  double      thnMax  [thnSize2] = { 100, 2*Pi, 14,    2.1648,    1. };
-  const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
-
-  return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+    return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
+  }
 }
 
 int AliDxHFEParticleSelectionD0::FillParticleProperties(AliVParticle* p, Double_t* data, int dimension) const
@@ -251,6 +264,7 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
   Double_t D0eff=1;
   if(fUseD0Efficiency){
     D0eff=GetD0Eff(part);
+    if(D0eff==0){return 0;} //[FIXME]Temporary solution to avoid crash due to empty bins in d0 effmap
   }
   // Fills only for D0 or both.. 
   if ((selectionCode==1 || selectionCode==3) && fFillOnlyD0D0bar<2) {
@@ -260,8 +274,10 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
       FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
       fD0Properties->Fill(ParticleProperties(),1./D0eff);
     }
-    if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
-    if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    if(2!=fSystem){//Exclude for pPb
+      if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
+      if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    }
   }
   // Checks for D0bar (or hypothesis both)
   if ((selectionCode==2 || selectionCode==3) && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) {
@@ -272,8 +288,10 @@ int AliDxHFEParticleSelectionD0::HistogramParticleProperties(AliVParticle* p, in
       FillParticleProperties(p, ParticleProperties(), GetDimTHnSparse());
       fD0Properties->Fill(ParticleProperties(),1./D0eff);
     }
-    if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
-    if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    if(2!=fSystem){//Exclude for pPb
+      if(fD0Daughter0) fD0Daughter0->Fill(piProperties);
+      if(fD0Daughter1) fD0Daughter1->Fill(KProperties);
+    }
     //reset value to InvMassD0 for when CreateParticle() is called
     fD0InvMass= part->InvMassD0();
     
@@ -450,6 +468,18 @@ int AliDxHFEParticleSelectionD0::ParseArguments(const char* arguments)
       else {
 	AliWarning(Form("can not set D0 filling scheme, unknown parameter '%s'", argument.Data()));
 	fFillOnlyD0D0bar=0;
+      }
+      continue;
+    }
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0) {fSystem=0; fUseCentrality=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1; fUseCentrality=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2; fUseCentrality=0;}
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
       }
       continue;
     }
