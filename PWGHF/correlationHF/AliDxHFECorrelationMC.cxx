@@ -60,6 +60,7 @@ AliDxHFECorrelationMC::AliDxHFECorrelationMC(const char* name)
   , fStoreOriginEl(kAll)
   , fStoreOriginD(kAll)
   , fRunMode(kReducedModeFullMCInfo)
+  , fSystem(0)
 {
   // default constructor
   // 
@@ -121,22 +122,42 @@ THnSparse* AliDxHFECorrelationMC::DefineTHnSparse()
     thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
   }
   else if(fRunMode==kReducedModeFullMCInfo){
-    InitTHnSparseArray(sizeEventdphiRedMC);
-    // 			                                       0        1    2     3      4      5       6          7
-    // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
-    int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10, nrMotherEl+1,    4 };
-    double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
-    double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
-    const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
-      "D0InvMass",
-      "PtD0",
-      "PtEl",
-      "#Delta#Phi",
-      "#Delta#eta", 
-      "Origin D0", 
-      "Origin Electron",
-    };
-    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+    if(2==fSystem){//Reduced bins for pPb due to memory consumption
+      InitTHnSparseArray(sizeEventdphiRedMC);
+      // 			                                       0        1    2     3      4      5       6          7
+      // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
+      int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   100,    80,   50,  16,     25,   10, nrMotherEl+1,    4 };
+      double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
+      double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    16,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
+      const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
+	"D0InvMass",
+	"PtD0",
+	"PtEl",
+	"#Delta#Phi",
+	"#Delta#eta", 
+	"Origin D0", 
+	"Origin Electron",
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+    }
+    else{
+      InitTHnSparseArray(sizeEventdphiRedMC);
+      // 			                                       0        1    2     3      4      5       6          7
+      // 			                                  D0invmass  PtD0   Pte   dphi    dEta OrigD0 origEl    generatorEl
+      int         binsEventdphiRedMC[sizeEventdphiRedMC] = {   200,    100,   100,  64,     100,   10, nrMotherEl+1,    4 };
+      double      minEventdphiRedMC [sizeEventdphiRedMC] = { 1.5648,     0,     0, minPhi, -2.0, -1.5,   -1.5,       -1.5 };
+      double      maxEventdphiRedMC [sizeEventdphiRedMC] = { 2.1648,    50,    10, maxPhi,  2.0,  8.5, nrMotherEl-0.5,2.5 };
+      const char* nameEventdphiRedMC[sizeEventdphiRedMC] = {
+	"D0InvMass",
+	"PtD0",
+	"PtEl",
+	"#Delta#Phi",
+	"#Delta#eta", 
+	"Origin D0", 
+	"Origin Electron",
+      };
+      thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiRedMC,binsEventdphiRedMC,minEventdphiRedMC,maxEventdphiRedMC,nameEventdphiRedMC);
+    }
   }
   else{
     InitTHnSparseArray(sizeEventdphiReduced);
@@ -355,7 +376,18 @@ int AliDxHFECorrelationMC::ParseArguments(const char* arguments)
       AliInfo("Running in Reduced mode with MC info stored as well");
       continue;
     }
-
+    if (argument.BeginsWith("system=")) {
+      argument.ReplaceAll("system=", "");
+      if (argument.CompareTo("pp")==0) {fSystem=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2;}
+      else {
+	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
+	// TODO: check what makes sense
+	fSystem=0;
+      }
+      continue;
+    }
     //    AliWarning(Form("unknown argument '%s'", argument.Data()));
     AliDxHFECorrelation::ParseArguments(argument);      
   }

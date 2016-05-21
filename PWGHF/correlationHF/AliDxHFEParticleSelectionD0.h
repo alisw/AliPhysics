@@ -114,6 +114,8 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   TList*    fHistoList;         // list of histograms
   Bool_t    fUseD0Efficiency;   // Whether or not to correct for D0 efficiency
   Double_t  fMultEv;            // multiplicity of event
+  Short_t fSystem;              // Which system pp/PbPb
+  Short_t fUseCentrality;       // Using centrality or not
 
   static const char* fgkDgTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkCutBinNames[];            //! bin labels for cut histogram
@@ -122,7 +124,7 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   // needs to be consolidated
   // TODO: one might need particle properties of all and/or at different cut stages
 
-  ClassDef(AliDxHFEParticleSelectionD0, 3);
+  ClassDef(AliDxHFEParticleSelectionD0, 4);
 };
 
 #endif
