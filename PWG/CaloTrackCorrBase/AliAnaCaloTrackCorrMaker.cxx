@@ -48,6 +48,7 @@ fMakeHisto(kFALSE),           fMakeAOD(kFALSE),
 fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fFillDataControlHisto(kTRUE), fSumw2(0),
+fCheckPtHard(0),
 // Control histograms
 fhNEventsIn(0),               fhNEvents(0),
 fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
@@ -246,19 +247,22 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   }
   
   // Check the pT hard in MC
-  if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+  if ( fCheckPtHard && fReader->GetGenEventHeader()  )
   {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
-    
-    Float_t pTHard = pygeh->GetPtHard();
-    
-    //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
-    
-    fhPtHard->Fill(pTHard);
-    
-    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
-        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
-      fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
+    {
+      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
+      
+      Float_t pTHard = pygeh->GetPtHard();
+      
+      //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
+      
+      fhPtHard->Fill(pTHard);
+      
+      if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+          !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+        fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    }
   }
   
   if(fFillDataControlHisto)
@@ -511,16 +515,19 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   fhTrackMult->SetXTitle("# tracks");
   fOutputContainer->Add(fhTrackMult);
   
-  fhPtHard  = new TH1F("hPtHard"," #it{p}_{T}-hard for selected triggers",150,0,300); 
-  fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-  fOutputContainer->Add(fhPtHard);
-
-  if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
-      !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+  if(fCheckPtHard)
   {
-    fhPtHardWeighted  = new TH1F("hPtHardWeighted"," #it{p}_{T}-hard for selected triggers, weighted by cross section",150,0,300); 
-    fhPtHardWeighted->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
-    fOutputContainer->Add(fhPtHardWeighted);
+    fhPtHard  = new TH1F("hPtHard"," #it{p}_{T}-hard for selected triggers",300,0,300); 
+    fhPtHard->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+    fOutputContainer->Add(fhPtHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+    {
+      fhPtHardWeighted  = new TH1F("hPtHardWeighted"," #it{p}_{T}-hard for selected triggers, weighted by cross section",300,0,300); 
+      fhPtHardWeighted->SetXTitle("#it{p}_{T}^{hard} (GeV/#it{c})");
+      fOutputContainer->Add(fhPtHardWeighted);
+    }
   }
   
   if ( GetReader()->GetWeightUtils()->IsCentralityWeightOn() )
