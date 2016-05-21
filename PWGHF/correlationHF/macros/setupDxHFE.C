@@ -32,7 +32,7 @@
 // environment specific for DxHFE
 //
 const char* analysisName="DxHFECorrelation";
-const char* includePath="-I$ALICE_ROOT/PWGHF/correlationHF -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/hfe";
+const char* includePath="-I$ALICE_PHYSICS/PWGHF/correlationHF -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWGHF/hfe -I$ALICE_PHYSICS/include";
 const char* libraryDependencies=
   "libSTEERBase "
   "libESD "
@@ -84,7 +84,7 @@ void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* l
     //
     TString alienHandlerName(analysisName); alienHandlerName+="Handler";
     AliAnalysisAlien* alienHandler=new AliAnalysisAlien(alienHandlerName);
-    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddGoodRuns.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/AddGoodRuns.C");
     int nruns=AddGoodRuns(alienHandler, lhcPeriod, mcProd);
     if (nruns<=0) {
       ::Error("setupDxHFE.C", Form("can not find any good runs for period %s", lhcPeriod));
@@ -99,7 +99,7 @@ void setupDxHFE(const char* localAodDirectory, int nofDirectories, const char* l
     // the created object is added automatically to gDirectory and can be fetched
     // from there later
     //
-    gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/MakeAODInputChain.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/../src/PWGHF/vertexingHF/MakeAODInputChain.C");
     TString aodPathName(localAodDirectory);
     if (!aodPathName.EndsWith("/")) aodPathName+="/";
     aodPathName+="AliAOD.root";

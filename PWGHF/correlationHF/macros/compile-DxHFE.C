@@ -17,21 +17,21 @@ void compile_DxHFE(Bool_t bUseLocalDir=kFALSE){
   {
 
     //----------- Loading the required libraries ---------//
-    gInterpreter->ExecuteMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/LoadLibraries.C");
+    gInterpreter->ExecuteMacro("$ALICE_PHYSICS/../src/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gSystem->Load("libPWGHFhfe.so");
+    gSystem->Load("libPWGHFhfe");
     gSystem->Load("libCORRFW");
-    gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/vertexingHF -I$ALICE_ROOT/PWGHF/base -I$ALICE_ROOT/PWGHF/hfe ");
+    gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/PWGHF/vertexingHF -I$ALICE_PHYSICS/PWGHF/base -I$ALICE_PHYSICS/PWGHF/hfe ");
 
     if(bUseLocalDir)
       TString dir("./");
     else
-      TString dir("$ALICE_ROOT/PWGHF/correlationHF/");
+      TString dir("$ALICE_PHYSICS/PWGHF/correlationHF/");
 
     gROOT->LoadMacro(dir+"AliHFAssociatedTrackCuts.cxx+");
     gROOT->LoadMacro(dir+"AliReducedParticle.cxx+");
@@ -46,8 +46,6 @@ void compile_DxHFE(Bool_t bUseLocalDir=kFALSE){
     gROOT->LoadMacro(dir+"AliDxHFECorrelationMC.cxx+");
     gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFEParticleSelection.cxx+");
     gROOT->LoadMacro(dir+"AliAnalysisTaskDxHFECorrelation.cxx+");
-    gROOT->LoadMacro(dir+"AliSingleTrackEffCuts.cxx+");
-    gROOT->LoadMacro(dir+"AliCFSingleTrackEfficiencyTask.cxx+");
 
   }
 #elif
