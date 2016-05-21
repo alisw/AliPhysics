@@ -57,6 +57,7 @@
 #include "AliHFEcuts.h"
 #include "AliHFEtools.h"
 #include "TObject.h"
+#include "TProfile.h"
 #include "TChain.h"
 #include "TSystem.h"
 #include "AliReducedParticle.h"
@@ -72,6 +73,7 @@ ClassImp(AliAnalysisTaskDxHFECorrelation)
 AliAnalysisTaskDxHFECorrelation::AliAnalysisTaskDxHFECorrelation(const char* opt)
   : AliAnalysisTaskSE("AliAnalysisTaskDxHFECorrelation")
   , fOutput(0)
+  , fQASelection(0)
   , fOption(opt)
   , fCorrelation(NULL)
   , fCorrelationCharm(NULL)
@@ -110,6 +112,8 @@ int AliAnalysisTaskDxHFECorrelation::DefineSlots()
   DefineOutput(2,AliRDHFCutsD0toKpi::Class());
   DefineOutput(3,TList::Class());
   DefineOutput(4,AliHFAssociatedTrackCuts::Class());
+  DefineOutput(5, TList::Class());
+
   return 0;
 }
 
@@ -125,6 +129,10 @@ AliAnalysisTaskDxHFECorrelation::~AliAnalysisTaskDxHFECorrelation()
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
+  }
+  if (fQASelection && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fQASelection;
+    fQASelection = 0;
   }
   if (fD0s) delete fD0s;
   fD0s=NULL;
@@ -171,6 +179,9 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
+  fQASelection = new TList;
+  fQASelection->SetName("QA histos");
+  fQASelection->SetOwner();
   // Gets the PID response from the input handler
   fpidResponse = fInputHandler->GetPIDResponse();
   if(!fpidResponse){
@@ -300,7 +311,26 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
     AliFatal(Form("cut object list for D0 missing"));
     return;
   }
- 
+
+  //[FIXME]Under development. At the moment the run ranges are set to the LHC13b and c ranges
+  TProfile * numD0EvtRnAll = new TProfile("numD0EvtRnAll", "Number of D0 per Event vs Run Number, All Events", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnCan = new TProfile("numD0EvtRnCan", "Number of D0 per Event vs Run Number, All D0toKpi", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnSel = new TProfile("numD0EvtRnSel", "Number of D0 per Event vs Run Number, Selected D0", 400, 195300, 195700, 0, 1000);
+  TProfile * numD0EvtRnCorr = new TProfile("numD0EvtRnCorr", "Number of D0 per Event vs Run Number, Correlated D0", 400, 195300, 195700, 0, 1000);
+
+  TProfile * numElEvtRnSel = new TProfile("numElEvtRnSel", "Number of El per Event vs Run Number, Selected El", 400, 195300, 195700, 0, 1000);
+  TProfile * numElEvtRnTrig = new TProfile("numElEvtRnTrig", "Number of El per Event vs Run Number, Triggered El", 400, 195300, 195700, 0, 1000);
+  TProfile * numElEvtRnCorr = new TProfile("numElEvtRnCorr", "Number of El per Event vs Run Number, Correlated El", 400, 195300, 195700, 0, 1000);
+
+  fQASelection->Add(numD0EvtRnAll);
+  fQASelection->Add(numD0EvtRnCan);
+  fQASelection->Add(numD0EvtRnSel);
+  fQASelection->Add(numD0EvtRnCorr);
+
+  fQASelection->Add(numElEvtRnSel);
+  fQASelection->Add(numElEvtRnTrig);
+  fQASelection->Add(numElEvtRnCorr);
+
   // Fetching out the RDHF-cut objects for D0 to store in output stream
   TObject *obj2=NULL;
   TIter next2(fCutsD0);
@@ -317,6 +347,7 @@ void AliAnalysisTaskDxHFECorrelation::UserCreateOutputObjects()
   PostData(2,copyfCuts);
   PostData(3,fListHFE);
   PostData(4,fCuts);
+  PostData(5,fQASelection);
 }
 
 void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
@@ -328,6 +359,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     return;
   }
   AliVEvent *pEvent = dynamic_cast<AliVEvent*>(pInput);
+  Int_t runNumber=pEvent->GetRunNumber();
   TClonesArray *inputArray=0;
 
   fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsAll);
@@ -348,6 +380,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
   } else if(pEvent) {
     inputArray=(TClonesArray*)pEvent->GetList()->FindObject("D0toKpi");
+    ((TProfile*)fQASelection->FindObject("numD0EvtRnAll"))->Fill(runNumber, (Int_t*)inputArray->GetEntriesFast());
   }
   if(!inputArray || !pEvent) {
     AliError("Input branch not found!\n");
@@ -424,7 +457,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
 
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
-
+  ((TProfile*)fQASelection->FindObject("numD0EvtRnCan"))->Fill(runNumber, nInD0toKpi);
 
   //For studies reco/kine ratio -> select only events where there is a MC truth D0
   if(fUseMC && fReqD0InEvent){
@@ -457,6 +490,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
 
     nElSelected =  fSelectedElectrons->GetEntriesFast();
+    ((TProfile*)fQASelection->FindObject("numElEvtRnTrig"))->Fill(runNumber, nElSelected);
 
     // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
     if(!fUseEventMixing && nElSelected==0){
@@ -478,6 +512,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     return;
   }
   Int_t nD0Selected = fSelectedD0s->GetEntriesFast();
+  ((TProfile*)fQASelection->FindObject("numD0EvtRnSel"))->Fill(runNumber, nD0Selected);
 
   // When not using EventMixing, no need to go further if no D0s are found.
   // For Event Mixing, need to store all found electrons in the pool
@@ -501,6 +536,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
 
     nElSelected =  fSelectedElectrons->GetEntriesFast();
+    ((TProfile*)fQASelection->FindObject("numElEvtRnSel"))->Fill(runNumber, nElSelected);
 
     // No need to go further if no electrons are found, except for event mixing. Will here anyway correlate D0s with electrons from previous events
     if(!fUseEventMixing && nElSelected==0){
@@ -516,9 +552,11 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
   
   AliDebug(4,Form("Number of D0->Kpi Start: %d , End: %d    Electrons Selected: %d\n", nInD0toKpi, nD0Selected, nElSelected));
-
-  if(nD0Selected >0 && nElSelected>0) fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
-
+  if(nD0Selected >0 && nElSelected>0){
+    fCorrelation->HistogramEventProperties(AliDxHFECorrelation::kEventsCorrelated);
+    ((TProfile*)fQASelection->FindObject("numD0EvtRnCorr"))->Fill(runNumber, nD0Selected);
+    ((TProfile*)fQASelection->FindObject("numElEvtRnCorr"))->Fill(runNumber, nElSelected);
+  }
   int iResult=0;
   if(fTriggerParticle==AliDxHFECorrelation::kD){ 
     fCorrelation->Fill(fSelectedD0s, fSelectedElectrons, pEvent);
@@ -543,6 +581,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
   }
 
   PostData(1, fOutput);
+  PostData(5, fQASelection);
   return;
 
 }

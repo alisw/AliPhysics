@@ -90,6 +90,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   int DefineSlots();
 
   TList* fOutput;                        //! list send on output slot 1
+  TList* fQASelection;                   //! list send on output slot 5
   TString fOption;                       //  option string
   AliDxHFECorrelation* fCorrelation;     //  correlation worker class
   AliDxHFECorrelation* fCorrelationCharm;//  correlation worker class - kine only store C
@@ -114,7 +115,7 @@ class AliAnalysisTaskDxHFECorrelation : public AliAnalysisTaskSE {
   Bool_t fReqD0InEvent;                  // Whether or not to search for a MC truth D0 in the event
   AliPIDResponse* fpidResponse;          // PIDResponse
 
-  ClassDef(AliAnalysisTaskDxHFECorrelation, 8);
+  ClassDef(AliAnalysisTaskDxHFECorrelation, 9);
 };
 
 #endif

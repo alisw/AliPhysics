@@ -286,10 +286,10 @@ int AliDxHFECorrelationMC::FillParticleProperties(AliVParticle* tr, AliVParticle
       data[i++]=ptrigger->GetOriginMother();
     }
     if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
-      data[i++]=assoc->GetGenerator();
+      data[i++]=assoc->GetGeneratorIndex();//[FIXME] This should be "GetGenerator()" once the changes in AliReducedParticle are in place
     }
     else {
-      data[i++]=ptrigger->GetGenerator();
+      data[i++]=ptrigger->GetGeneratorIndex();//[FIXME] This should be "GetGenerator()" once the changes in AliReducedParticle are in place
     }
   }
   if(fRunMode==kFullMode ) data[i++]=fMCEventType;

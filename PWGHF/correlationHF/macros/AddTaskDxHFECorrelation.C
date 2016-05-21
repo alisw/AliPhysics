@@ -332,6 +332,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   if (!pidTask) {
     gROOT->LoadMacro(pidTaskMacro);
     TString pidFunction;
+    // isMC, autoMCeds, tuneOnData, recoPass, cachePID, detResponse, useTPCEtaCorrection, recoDataPass
     pidFunction.Form("AddTaskPIDResponse(%d, %d, %d, %d, %d, %s, %d, %d, -1)", bUseMC, kTRUE, bTuneOnData, 2, kFALSE,"\"\"" ,kTRUE, kTRUE);
     gROOT->ProcessLine(pidFunction);
     if (pManager->GetTask(pidTaskName)==NULL) {
@@ -831,6 +832,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   TString cutnameD0="cutsD0Corr";
   TString cutnameEl="cutsElCorr";
   TString cutnamePool="PoolInfo";
+  TString QASelName="QASelection";
   if(triggerParticle==AliDxHFECorrelation::kElectron){
     cutnameD0+="Eltrigg";
     cutnameEl+="Eltrigg";
@@ -851,6 +853,7 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
     cutnameD0+="ME";
     cutnameEl+="ME";
     cutnamePool+="ME";
+    QASelName+="ME";
   }
 
   if(bEventMixing) ::Info("AddTaskDxHFECorrelation", Form("\ninitializing analysis '%s'%s, output file '%s', Event Mixing Analysis\n", analysisName.Data(), bUseMC?" (using MC)":"", ofilename.Data()));
@@ -861,12 +864,14 @@ int AddTaskDxHFECorrelation(TString configuration="", TString analysisName="PWGH
   AliAnalysisDataContainer *pContainer2=pManager->CreateContainer(cutnameD0,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts D0
   AliAnalysisDataContainer *pContainer3=pManager->CreateContainer(cutnameEl,TList::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); //cuts El
   AliAnalysisDataContainer *pContainer4=pManager->CreateContainer(cutnamePool,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, ofilename.Data()); // contains event pool info
+  AliAnalysisDataContainer *pContainer5=pManager->CreateContainer(QASelName, TList::Class(), AliAnalysisManager::kOutputContainer, ofilename.Data());    
 
   pManager->ConnectInput(pTask,0,pManager->GetCommonInputContainer());
   pManager->ConnectOutput(pTask,1,pContainer);
   pManager->ConnectOutput(pTask,2,pContainer2);
   pManager->ConnectOutput(pTask,3,pContainer3);
   pManager->ConnectOutput(pTask,4,pContainer4);
+  pManager->ConnectOutput(pTask,5,pContainer5);
 
   return 1;
 }
