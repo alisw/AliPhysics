@@ -193,7 +193,7 @@ Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
 		   part->GetOriginMother()==AliDxHFEToolsMC::kOriginGluonBeauty);
 
   if(id==kD){
-    if(!fStoreOriginD==kAll){
+    if(!(fStoreOriginD==kAll)){
       if(fStoreOriginD==kC ){
 	// Test if particle really is from C
 	if(!isCharm)
@@ -214,7 +214,7 @@ Bool_t AliDxHFECorrelationMC::TestParticle(AliVParticle* p, Int_t id){
   //TODO add for background from HF
   // Test to see if test for D/el and whether to do further selection
   if(id==kElectron){
-    if(!fStoreOriginEl==kAll){
+    if(!(fStoreOriginEl==kAll)){
       if(fStoreOriginEl==kC){ // Test if particle really is from C
 	if(!isCharm)
 	  selected =kFALSE;

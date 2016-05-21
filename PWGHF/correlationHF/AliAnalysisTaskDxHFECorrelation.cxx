@@ -380,7 +380,7 @@ void AliAnalysisTaskDxHFECorrelation::UserExec(Option_t* /*option*/)
     }
   } else if(pEvent) {
     inputArray=(TClonesArray*)pEvent->GetList()->FindObject("D0toKpi");
-    ((TProfile*)fQASelection->FindObject("numD0EvtRnAll"))->Fill(runNumber, (Int_t*)inputArray->GetEntriesFast());
+    ((TProfile*)fQASelection->FindObject("numD0EvtRnAll"))->Fill(runNumber, inputArray->GetEntriesFast());
   }
   if(!inputArray || !pEvent) {
     AliError("Input branch not found!\n");

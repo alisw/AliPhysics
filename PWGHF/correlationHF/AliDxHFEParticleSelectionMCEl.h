@@ -114,7 +114,7 @@ class AliDxHFEParticleSelectionMCEl : public AliDxHFEParticleSelectionEl {
   Int_t fGenerator;                    // which generator was used to produce particle
 
 
-  ClassDef(AliDxHFEParticleSelectionMCEl, 4);
+  ClassDef(AliDxHFEParticleSelectionMCEl, 5);
 };
 
 #endif
