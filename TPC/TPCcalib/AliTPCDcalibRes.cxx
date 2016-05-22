@@ -119,7 +119,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fMaxBadRowsPerSector(0.4)
   //
   ,fNY2XBins(15)
-  ,fNZ2XBins(10)
+  ,fNZ2XBins(5)
   ,fNXBins(-1)
   ,fNXYBinsProd(0)
   ,fDZ2X(0)
@@ -2617,6 +2617,7 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 				       BIT(kResX)|BIT(kResY)|BIT(kResZ), // at this moment we cannot smooth dispersion
 				       vox->DS);
 	if (!res) fNSmoothingFailedBins[isect]++;
+	else vox->flags |= kSmoothDone;
       }
     }
   }
@@ -2628,8 +2629,8 @@ Int_t AliTPCDcalibRes::Smooth0(int isect)
 	int binGlo = GetVoxGBin(ix,ip,iz);
 	bres_t *vox = &sectData[binGlo];
 	if (!(vox->flags&kSmoothDone)) continue;
-	vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
-	vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from account from DZ
+	vox->DS[kResZ] += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from DZ
+	vox->D[kResZ]  += vox->stat[kVoxZ]*vox->DS[kResX]; // remove slope*dx contribution from DZ
       }
     }
   }

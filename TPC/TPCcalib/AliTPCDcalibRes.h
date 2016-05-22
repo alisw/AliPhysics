@@ -217,7 +217,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetTMinMaxGRP(Long64_t tmin=0, Long64_t tmax=9999999999) {fTMinGRP=tmin; fTMaxGRP=tmax;}
   void     SetNXBins(int n=kNPadRows)            {fNXBins = n;}
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
-  void     SetNZ2XBins(int n=10)                 {fNZ2XBins = n;}
+  void     SetNZ2XBins(int n=5)                  {fNZ2XBins = n;}
   void     SetMaxTracks(int n=4000000)           {fMaxTracks = n;}
   void     SetFixAligmentBug(Bool_t v=kTRUE)     {fFixAlignmentBug = v;}
   void     SetCacheLearnSize(int n=1)            {fLearnSize = n;}
@@ -317,7 +317,7 @@ class AliTPCDcalibRes: public TNamed
 
   const AliTPCChebCorr* GetChebCorrObject() const {return fChebCorr;}
 
-  static AliTPCDcalibRes* Load(const char* fname);
+  static AliTPCDcalibRes* Load(const char* fname="alitpcdcalibres.root");
   static void SetUsedInstance(AliTPCDcalibRes* inst) {fgUsedInstance = inst;}
   static AliTPCDcalibRes* GetUsedInstance()          {return fgUsedInstance;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}
