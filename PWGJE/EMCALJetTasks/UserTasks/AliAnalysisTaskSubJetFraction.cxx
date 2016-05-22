@@ -110,10 +110,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhJetRadius(0x0),
   fhJetRadius_1(0x0),
   fhJetRadius_2(0x0),
-  fhJetAngularity(0x0),
-  fhJetAngularityJetPt(0x0),
-  fhJetPTD(0x0),
-  fhJetPTDJetPt(0x0),
   fhJetCounter(0x0),
   fhJetCounter_1(0x0),
   fhJetCounter_2(0x0),
@@ -135,27 +131,10 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhNumberOfSubJetTracks(0x0),
   fhNumberOfSubJetTracks_1(0x0),
   fhNumberOfSubJetTracks_2(0x0),
-  fhSubJetPtFrac(0x0),
-  fhSubJetPtFrac2(0x0),
-  fhSubJetPtLoss(0x0),
-  fhSubJetPtLoss2(0x0),
-  fhSubJetEnergyFrac(0x0),
-  fhSubJetEnergyFrac2(0x0),
-  fhSubJetEnergyLoss(0x0),
-  fhSubJetEnergyLoss2(0x0),
   fh2PtRatio(0x0),
-  fhSubJetiness1(0x0),
-  fhSubJetiness1JetPt(0x0),
-  fhSubJetiness2(0x0),
-  fhSubJetiness2JetPt(0x0),
-  fh2to1SubJetinessRatio(0x0),
-  fh2to1SubJetinessRatioJetPt(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
   fhEventCounter_2(0x0),
-  fhJetPtJetEta(0x0),
-  fhSubJetiness2Distance(0x0),
-  fh2JetTracksEtaPhiPt(0x0),
   fhSubJettiness1CheckRatio_FJ_AKT(0x0),
   fhSubJettiness1CheckRatio_FJ_KT(0x0),
   fhSubJettiness1CheckRatio_FJ_CA(0x0),
@@ -249,10 +228,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhJetRadius(0x0),
   fhJetRadius_1(0x0),
   fhJetRadius_2(0x0),
-  fhJetAngularity(0x0),
-  fhJetAngularityJetPt(0x0),
-  fhJetPTD(0x0),
-  fhJetPTDJetPt(0x0),
   fhJetCounter(0x0),
   fhJetCounter_1(0x0),
   fhJetCounter_2(0x0),
@@ -274,27 +249,10 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhNumberOfSubJetTracks(0x0),
   fhNumberOfSubJetTracks_1(0x0),
   fhNumberOfSubJetTracks_2(0x0),
-  fhSubJetPtFrac(0x0),
-  fhSubJetPtFrac2(0x0),
-  fhSubJetPtLoss(0x0),
-  fhSubJetPtLoss2(0x0),
-  fhSubJetEnergyFrac(0x0),
-  fhSubJetEnergyFrac2(0x0),
-  fhSubJetEnergyLoss(0x0),
-  fhSubJetEnergyLoss2(0x0),
   fh2PtRatio(0x0),
-  fhSubJetiness1(0x0),
-  fhSubJetiness1JetPt(0x0),
-  fhSubJetiness2(0x0),
-  fhSubJetiness2JetPt(0x0),
-  fh2to1SubJetinessRatio(0x0),
-  fh2to1SubJetinessRatioJetPt(0x0),
   fhEventCounter(0x0),
   fhEventCounter_1(0x0),
   fhEventCounter_2(0x0),
-  fhJetPtJetEta(0x0),
-  fhSubJetiness2Distance(0x0),
-  fh2JetTracksEtaPhiPt(0x0),
   fhSubJettiness1CheckRatio_FJ_AKT(0x0),
   fhSubJettiness1CheckRatio_FJ_KT(0x0),
   fhSubJettiness1CheckRatio_FJ_CA(0x0),
@@ -453,46 +411,6 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhEventCounter);
   }
   if(fJetShapeType==AliAnalysisTaskSubJetFraction::kSim || fJetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
-    fhJetAngularity= new TH1F("fhJetAngularity", "Jet Angularity", 400, -2,2);
-    fOutput->Add(fhJetAngularity);
-    fhJetAngularityJetPt= new TH2F("fhJetAngularityJetPt", "Jet Angularity vs Jet Pt", 1500, -0.5, 149.50, 400, -2,2);
-    fOutput->Add(fhJetAngularityJetPt);
-    fhJetPTD= new TH1F("fhJetPTD", "Jet PTD", 400, -2,2);
-    fOutput->Add(fhJetPTD);
-    fhJetPTDJetPt= new TH2F("fhJetPTDJetPt", "Jet PTD vs Jet Pt", 1500, -0.5, 149.50, 400, -2,2);
-    fOutput->Add(fhJetPTDJetPt);
-    fhSubJetPtFrac= new TH1F("fhSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtFrac);
-    fhSubJetPtFrac2= new TH1F("fhSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtFrac2);
-    fhSubJetPtLoss= new TH1F("fhSubJetPtLoss", "Pt Difference of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtLoss);
-    fhSubJetPtLoss2= new TH1F("fhSubJetPtLoss2", "Pt Difference of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetPtLoss2);
-    fhSubJetEnergyFrac= new TH1F("fhSubJetEnergyFrac", "Energy Fraction of Most Energetic Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyFrac);
-    fhSubJetEnergyFrac2= new TH1F("fhSubJetEnergyFrac2", "Energy Fraction of Two Most Energetic Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyFrac2);
-    fhSubJetEnergyLoss= new TH1F("fhSubJetEnergyLoss", "Energy Difference of Most Energetic Subjet compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyLoss);
-    fhSubJetEnergyLoss2= new TH1F("fhSubJetEnergyLoss2", "Pt Difference of Two Most Energetic Subjets compared to original Jet",101, -0.05,1.05);
-    fOutput->Add(fhSubJetEnergyLoss2);
-    fhSubJetiness1= new TH1F("fhSubjetiness1", "Tau 1 value",101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness1);
-    fhSubJetiness1JetPt= new TH2F("fhSubjetiness1JetPt", "Tau 1 value vs Jet Pt",1500, -0.5, 149.5, 101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness1JetPt);
-    fhSubJetiness2= new TH1F("fhSubjetiness2", "Tau 2 value",101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness2);
-    fhSubJetiness2JetPt= new TH2F("fhSubjetiness2JetPt", "Tau 2 value vs Jet Pt",1500, -0.5, 149.5, 101, -0.05,1.05);
-    fOutput->Add(fhSubJetiness2JetPt);
-    fh2to1SubJetinessRatio= new TH1F("fh2to1SubJetinessRatio", "Ratio of #tau 1 to #tau 2",200, -0.5,1.5);
-    fOutput->Add(fh2to1SubJetinessRatio);
-    fh2to1SubJetinessRatioJetPt= new TH2F("fh2to1SubJetinessRatioJetPt", "Ratio of #tau 1 to #tau 2 vs Jet Pt", 1500, -0.5, 149.5, 200, -0.5,1.5);
-    fOutput->Add(fh2to1SubJetinessRatioJetPt);
-    fhJetPtJetEta = new TH2F("fhJetPtJetEta", "Jet Pt vs Jet Eta", 1500,-0.5,150,Eta_Bins, Eta_Low, Eta_Up);
-    fOutput->Add(fhJetPtJetEta);
-    fhSubJetiness2Distance = new TH2F("fhSubJetiness2Distance", "#tau 2 as a function of distance between subject axis",100,0,10,101,-0.05,1.05);
-    fOutput->Add(fhSubJetiness2Distance);
     fhSubJettiness1_FJ_KT= new TH1D("fhSubJettiness1_FJ_KT","fhSubJettiness1_FJ_KT",400,-2,2);
     fOutput->Add(fhSubJettiness1_FJ_KT);
     fhSubJettiness1_FJ_MIN= new TH1D("fhSubJettiness1_FJ_MIN","fhSubJettiness1_FJ_MIN",400,-2,2);
@@ -501,8 +419,6 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJettiness2_FJ_KT);
     fhSubJettiness2_FJ_MIN= new TH1D("fhSubJettiness2_FJ_MIN","fhSubJettiness2_FJ_MIN",400,-2,2);
     fOutput->Add(fhSubJettiness2_FJ_MIN);
-    fh2JetTracksEtaPhiPt = new TH2D("fh3JetTracksEtaPhiPt","fh3JetTracksEtaPgiPt",Eta_Bins, Eta_Low, Eta_Up,360 , -1.5*(TMath::Pi()), 1.5*(TMath::Pi()));
-    fOutput->Add(fh2JetTracksEtaPhiPt);
     fhSubJettiness1CheckRatio_FJ_AKT = new TH2D("fhSubJettiness1CheckRatio_FJ_AKT","fhSubJettiness1CheckRatio_FJ_AKT",400,-2,2,300,-1,2);
     fOutput->Add(fhSubJettiness1CheckRatio_FJ_AKT);
     fhSubJettiness1CheckRatio_FJ_KT= new TH2D("fhSubJettiness1CheckRatio_FJ_KT","fhSubJettiness1CheckRatio_FJ_KT",400,-2,2,300,-1,2);
@@ -1462,20 +1378,12 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
     fhJetPhi->Scale(Phi_Bins/((Phi_Up-Phi_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetEta->Scale(Eta_Bins/((Eta_Up-Eta_Low)*((fhEventCounter->GetBinContent(1)))));
     fhJetRadius->Scale(100/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4???? 
-    fhJetAngularity->Scale(100/(fhEventCounter->GetBinContent(4)));
-    fhJetPTD->Scale(100/(fhEventCounter->GetBinContent(4)));
     fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));
-    fhSubJetPtFrac->Scale(100/(fhEventCounter->GetBinContent(8)));
-    fhSubJetPtFrac2->Scale(100/(fhEventCounter->GetBinContent(9)));
-    fhSubJetEnergyFrac->Scale(100/(fhEventCounter->GetBinContent(8)));
-    fhSubJetEnergyFrac2->Scale(100/(fhEventCounter->GetBinContent(9)));
+
     fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?
    
 
  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));
-    fhSubJetiness1->Scale(100/(fhEventCounter->GetBinContent(12)));
-    fhSubJetiness2->Scale(100/(fhEventCounter->GetBinContent(12)));
-    fh2to1SubJetinessRatio->Scale(100/(fhEventCounter->GetBinContent(12)));
 
     */
     /*  
@@ -1485,19 +1393,10 @@ void AliAnalysisTaskSubJetFraction::Terminate(Option_t *)
   fhJetMass->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                                                     
   fhJetPhi->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                               
   fhJetEta->Scale(1.0/(fhEventCounter->GetBinContent(1)));                                                                                               
-  fhJetRadius->Scale(1.0/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4????                                                        
-  fhJetAngularity->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                  
-  fhJetPTD->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                         
-  fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                              
-  fhSubJetPtFrac->Scale(1.0/(fhEventCounter->GetBinContent(8)));                                                                                                                   
-  fhSubJetPtFrac2->Scale(1.0/(fhEventCounter->GetBinContent(9)));                                                                                                                  
-  fhSubJetEnergyFrac->Scale(1.0/(fhEventCounter->GetBinContent(8)));                                                                                                               
-  fhSubJetEnergyFrac2->Scale(1.0/(fhEventCounter->GetBinContent(9)));                                                                                                              
+  fhJetRadius->Scale(1.0/(fhEventCounter->GetBinContent(4)));  //should this and JetAngularity be divided by Bin 1 or 4????                                                                                                                                                                                                                                           
+  fhNumberOfJetTracks->Scale(1.0/(fhEventCounter->GetBinContent(4)));                                                                                                                                                                                                                           
   fhJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(1)));  //is the first bin the correct one to look at?                                                                     
-  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));                                                                                                            
-  fhSubJetiness1->Scale(1.0/(fhEventCounter->GetBinContent(12)));                                                                                                                  
-  fhSubJetiness2->Scale(1.0/(fhEventCounter->GetBinContent(12)));                                                                                                                  
-  fh2to1SubJetinessRatio->Scale(1.0/(fhEventCounter->GetBinContent(12)));            
+  fhSubJetCounter->Scale(1.0/(fhEventCounter->GetBinContent(5)));            
     */
   }
   
