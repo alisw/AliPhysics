@@ -2975,7 +2975,8 @@ Int_t AliTPCtracker::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
  
   } else {
     if (fIteration==0){
-      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16 + fExtraClErrYZ2 )) t.SetRemoval(10);      
+      //RS: with distortions related cluster errors the track error may grow, don't use this cut
+      //if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16 + fExtraClErrYZ2 )) t.SetRemoval(10); 
       if ( t.GetNumberOfClusters()>18 && t.GetChi2()/t.GetNumberOfClusters()>6 ) t.SetRemoval(10);      
 
       if (( (t.GetNFoundable()*0.5 > t.GetNumberOfClusters()) || t.GetNoCluster()>15)) t.SetRemoval(10);
@@ -4691,7 +4692,9 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	  Int_t foundable,found,shared;
 	  GetSeedClusterStatistic(track,(i1+i2)/2,i1, found, foundable, shared, kTRUE); //RS: seeds don't keep their clusters
 	  //RS track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
-	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
+	  if ((found<0.55*foundable)  || shared>0.5*found) {
+	    //RS: with distortions related cluster errors the track error may grow, don't use this cut
+	    //|| (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
 	    MarkSeedFree(seed); seed = 0;
 	    continue;
 	  }
@@ -5280,7 +5283,9 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       nin++;      
       FollowProlongation(*track, i1-7,1);
       if (track->GetNumberOfClusters() < track->GetNFoundable()*0.75 || 
-	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6){
+	  track->GetNShared()>0.6*track->GetNumberOfClusters()) {
+	//RS: with distortions related cluster errors the track error may grow, don't use this cut
+	//|| ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6){
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
@@ -5294,7 +5299,9 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       
       if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
 	  track->GetNumberOfClusters()<track->GetNFoundable()*0.7 || 
-	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5 ) {
+	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6) {
+	//RS: with distortions related cluster errors the track error may grow, don't use this cut
+	//|| ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5 ) {
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
