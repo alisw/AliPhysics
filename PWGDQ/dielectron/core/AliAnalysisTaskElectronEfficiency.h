@@ -248,6 +248,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TObjArray*                      fPResArr; 
   TObjArray*                      fThetaResArr;
   TObjArray*                      fPhiResArr;
+  TH1D*                           fSmearing[3];
   
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
