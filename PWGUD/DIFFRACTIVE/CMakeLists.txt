@@ -21,6 +21,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -46,6 +47,7 @@ set(SRCS
     xsAndTwoProng/AliCDMesonBase.cxx
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
+    DGTrigger/AliTriggerStudy0STP.cxx
    )
 
 # Headers from sources
