@@ -1267,14 +1267,14 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt ->Fill(mcPt,recPt - mcPt);
           fEtaGen_DeltaEta     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta ->Fill(part->Theta(),track->Theta() - part->Theta());
-          fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         } 
         else if(pdg == 211){
           if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP_pions   ->Fill(mcP,recP - mcP);
           if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt_pions ->Fill(mcPt,recPt - mcPt);
           fEtaGen_DeltaEta_pions     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta_pions ->Fill(part->Theta(),track->Theta() - part->Theta());
-          fPhiGen_DeltaPhi_pions     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi_pions     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         }
         fDeltaPhi->Fill(deltaPhi);
       } // track loop
