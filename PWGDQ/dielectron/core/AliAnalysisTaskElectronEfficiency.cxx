@@ -164,6 +164,7 @@ fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
 fThetaResArr(0x0),
 fPhiResArr(0x0),
+fSmearing(),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -319,6 +320,7 @@ fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
 fThetaResArr(0x0),
 fPhiResArr(0x0),
+fSmearing(),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -602,9 +604,15 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   singleEffList->Add(singleEffGenList);
   
   if(fCalcEfficiencyRec){
+    fSmearing[0] = new TH1D("smearingValues_P","",1000,-10.,10.);
+    fSmearing[1] = new TH1D("smearingValues_theta","",300,-1.5,1.5);
+    fSmearing[2] = new TH1D("smearingValues_phi","",300,-1.5,1.5);
     TList *singleEffRecList = new TList();
     singleEffRecList->SetName("reconstructedBinning");
     singleEffRecList->SetOwner();
+    singleEffRecList->Add(fSmearing[0]);
+    singleEffRecList->Add(fSmearing[1]);
+    singleEffRecList->Add(fSmearing[2]);
     singleEffRecList->Add(fNgen_Rec_Ele);
     singleEffRecList->Add(fNgen2_Rec_Ele);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
@@ -844,6 +852,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       
       AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
       if (!mctrack) continue;
+      Double_t mcP     = mctrack->P();
       Double_t mcPt    = mctrack->Pt(); 
       Double_t mcEta   = mctrack->Eta();
       Double_t mcTheta = mctrack->Theta(); 
@@ -1037,14 +1046,24 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       } // reco track loop
       if(!bFilled1 || !bFilled2){
         // smear generated but not reconstructed particles with external response matrix
-        if(fPResArr)   
-          mcPt    = mcPt    + GetSmearing(fPResArr,mcPt);
-        if(fPhiResArr) 
-          mcPhi   = mcPhi   + GetSmearing(fPhiResArr,mcPhi);
+        if(fPhiResArr){
+          Double_t phiSmearing =  GetSmearing(fPhiResArr,mcPhi);
+          fSmearing[2]->Fill(phiSmearing);
+          mcPhi = mcPhi + phiSmearing;
+        }
         if(fThetaResArr){ 
-          mcTheta = mcTheta + GetSmearing(fThetaResArr,mcTheta);
+          Double_t thetaSmearing = GetSmearing(fThetaResArr,mcTheta);
+          fSmearing[1]->Fill(thetaSmearing);
+          mcTheta = mcTheta + thetaSmearing;
           mcEta = -TMath::Log(TMath::Tan(mcTheta/2));
         }
+        if(fPResArr){  
+          Double_t pSmearing = GetSmearing(fPResArr,mcP);
+          fSmearing[0]->Fill(pSmearing);
+          mcP = mcP + pSmearing;
+          mcPt = TMath::Sin(mcTheta) * mcP;
+        }
+        
         if(mctrack->Charge() < 0){ 
           if(!bFilled1) fNgen_Rec_Ele ->Fill(mcPt,mcEta,mcPhi);
           if(!bFilled2) fNgen2_Rec_Ele->Fill(mcPt,mcEta,mcPhi); 
@@ -2119,6 +2138,6 @@ Double_t AliAnalysisTaskElectronEfficiency::GetSmearing(TObjArray *arr, Double_t
   // get smear parameter via random selection from the x slices retreived from the deltax plot
   Double_t smearing(0.);
   if(hisSlice) smearing = hisSlice->GetRandom();
-
+  
   return smearing;
 }
