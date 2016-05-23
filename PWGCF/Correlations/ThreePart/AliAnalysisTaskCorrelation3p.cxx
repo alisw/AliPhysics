@@ -742,8 +742,8 @@ else{
     Double_t kVeryBigno = 1000000;
     if(AODt->PropagateToDCA(fVertexobj,fBzkg,kVeryBigno,dca,dcacov)){DCAtang=dca[0];DCAlong = dca[1];}
     else{DCAtang = -999;DCAlong=-999;}
-    delete dca;
-    delete dcacov;
+    delete[] dca;
+    delete[] dcacov;
     }
   }
 } 
