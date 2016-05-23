@@ -1254,7 +1254,7 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 /// Calculate calibration constants per SM (equivalent of L1 phase)
 /// input - root file with calibration constants from 1st pass
 /// output - root file with histograms for given run offset per SM 
-void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile,TString outputFile, Bool_t offset100){
+void AliAnalysisTaskEMCALTimeCalib::ProduceOffsetForSMsV2(Int_t runNumber,TString inputFile,TString outputFile, Bool_t offset100, Bool_t justL1phase){
 
 const  Double_t lowerLimit[]={
     0,
@@ -1355,7 +1355,8 @@ const  Double_t upperLimit[]={
     if(TMath::Abs(minimumValue/25-(Int_t)(minimumValue/25)-0.5)<0.05)
       printf("Run %d, SM %d, min %f, next_min %f, next+1_min %f, next+2_min %f, min/25 %f, min%%25 %d, next_min/25 %f, next+1_min/25 %f, next+2_min/25 %f, SMmin %d\n",runNumber,i,minimumValue,meanBC[(minimumIndex+1)%4],meanBC[(minimumIndex+2)%4],meanBC[(minimumIndex+3)%4],minimumValue/25., (Int_t)((Int_t)minimumValue%25), meanBC[(minimumIndex+1)%4]/25., meanBC[(minimumIndex+2)%4]/25., meanBC[(minimumIndex+3)%4]/25., L1shift*25);
 
-    totalValue = L1shift<<2 | minimumIndex ;
+    if(justL1phase) totalValue = minimumIndex;
+    else totalValue = L1shift<<2 | minimumIndex ;
     //printf("L1 phase %d, L1 shift %d *25ns= %d, L1p+L1s %d, total %d, L1pback %d, L1sback %d\n",minimumIndex,L1shift,L1shift*25,minimumIndex+L1shift,totalValue,totalValue&3,totalValue>>2);
 
     hRun->SetBinContent(i,totalValue);
