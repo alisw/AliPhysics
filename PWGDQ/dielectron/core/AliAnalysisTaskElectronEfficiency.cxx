@@ -166,7 +166,8 @@ fPtResArr(0x0),
 fThetaResArr(0x0),
 fEtaResArr(0x0),
 fPhiResArr(0x0),
-fSmearing(),
+fSmearing_Ele(),
+fSmearing_Pos(),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -324,7 +325,8 @@ fPtResArr(0x0),
 fThetaResArr(0x0),
 fEtaResArr(0x0),
 fPhiResArr(0x0),
-fSmearing(),
+fSmearing_Ele(),
+fSmearing_Pos(),
 fResolutionCuts(0x0),
 fKineTrackCuts(0x0),
 //fPairCuts(0x0),
@@ -616,20 +618,48 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   singleEffList->Add(singleEffGenList);
   
   if(fCalcEfficiencyRec){
-    if(fPResArr)        fSmearing[0] = new TH1D("smearingValues_P","",1000,-10.,10.);
-    else if(fPtResArr)  fSmearing[0] = new TH1D("smearingValues_Pt","",1000,-10.,10.);
-    if(fThetaResArr)    fSmearing[1] = new TH1D("smearingValues_theta","",300,-1.5,1.5);
-    else if(fEtaResArr) fSmearing[1] = new TH1D("smearingValues_eta","",300,-1.5,1.5);
-    if(fPhiResArr)      fSmearing[2] = new TH1D("smearingValues_phi","",300,-1.5,1.5);
+    if(fPResArr)        {
+      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_P","",1000,-10.,10.);    
+      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_P","",1000,-10.,10.);
+      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_P","",1000,-10.,10.);    
+      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_P","",1000,-10.,10.);
+    }
+    else if(fPtResArr)  {
+      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_Pt","",1000,-10.,10.);    
+      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_Pt","",1000,-10.,10.);
+      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_Pt","",1000,-10.,10.);    
+      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_Pt","",1000,-10.,10.);
+    }
+    if(fThetaResArr)    {
+      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_theta","",300,-1.5,1.5); 
+      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_theta","",300,-1.5,1.5);
+      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_theta","",300,-1.5,1.5); 
+      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_theta","",300,-1.5,1.5);
+    }
+    else if(fEtaResArr) {
+      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_eta","",300,-1.5,1.5); 
+      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_eta","",300,-1.5,1.5);
+      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_eta","",300,-1.5,1.5); 
+      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_eta","",300,-1.5,1.5);
+    }
+    if(fPhiResArr)      {
+      fSmearing_Ele[4] = new TH1D("smearingValues1_Ele_phi","",300,-1.5,1.5); 
+      fSmearing_Ele[5] = new TH1D("smearingValues2_Ele_phi","",300,-1.5,1.5);
+      fSmearing_Pos[4] = new TH1D("smearingValues1_Pos_phi","",300,-1.5,1.5); 
+      fSmearing_Pos[5] = new TH1D("smearingValues2_Pos_phi","",300,-1.5,1.5);
+    }
     TList *singleEffRecList = new TList();
     singleEffRecList->SetName("reconstructedBinning");
     singleEffRecList->SetOwner();
     TList *smearingList = new TList();
     smearingList->SetName("smearing");
     smearingList->SetOwner();
-    if(fPResArr || fPtResArr)      smearingList->Add(fSmearing[0]);
-    if(fThetaResArr || fEtaResArr) smearingList->Add(fSmearing[1]);
-    if(fPhiResArr)                 smearingList->Add(fSmearing[2]);
+    if(fPResArr || fPtResArr)     { smearingList->Add(fSmearing_Ele[0]); smearingList->Add(fSmearing_Ele[1]);}
+    if(fThetaResArr || fEtaResArr){ smearingList->Add(fSmearing_Ele[2]); smearingList->Add(fSmearing_Ele[3]);}
+    if(fPhiResArr)                { smearingList->Add(fSmearing_Ele[4]); smearingList->Add(fSmearing_Ele[5]);}
+    if(fPResArr || fPtResArr)     { smearingList->Add(fSmearing_Pos[0]); smearingList->Add(fSmearing_Pos[1]);}
+    if(fThetaResArr || fEtaResArr){ smearingList->Add(fSmearing_Pos[2]); smearingList->Add(fSmearing_Pos[3]);}
+    if(fPhiResArr)                { smearingList->Add(fSmearing_Pos[4]); smearingList->Add(fSmearing_Pos[5]);}
     if(smearingList->GetEntries() > 0) 
       singleEffRecList->Add(smearingList);
       
@@ -1069,27 +1099,62 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         // smear generated but not reconstructed particles with external response matrix
         if(fPhiResArr){
           Double_t phiSmearing =  GetSmearing(fPhiResArr,mcPhi);
-          fSmearing[2]->Fill(phiSmearing);
+          if(mctrack->Charge() < 0){
+            if(!bFilled1) fSmearing_Ele[4]->Fill(phiSmearing);
+            if(!bFilled2) fSmearing_Ele[5]->Fill(phiSmearing);
+          }
+          else{
+            if(!bFilled1) fSmearing_Pos[4]->Fill(phiSmearing);
+            if(!bFilled2) fSmearing_Pos[5]->Fill(phiSmearing);
+          }
           mcPhi = mcPhi + phiSmearing;
         }
         if(fThetaResArr){ 
           Double_t thetaSmearing = GetSmearing(fThetaResArr,mcTheta);
-          fSmearing[1]->Fill(thetaSmearing);
+          if(mctrack->Charge() < 0){
+            if(!bFilled1) fSmearing_Ele[2]->Fill(thetaSmearing);
+            if(!bFilled2) fSmearing_Ele[3]->Fill(thetaSmearing);
+          }
+          else{
+            if(!bFilled1) fSmearing_Pos[2]->Fill(thetaSmearing);
+            if(!bFilled2) fSmearing_Pos[3]->Fill(thetaSmearing);
+          }
           mcTheta = mcTheta + thetaSmearing;
           mcEta = -TMath::Log(TMath::Tan(mcTheta/2));
         } else if(fEtaResArr){
           Double_t etaSmearing = GetSmearing(fEtaResArr,mcEta);
-          fSmearing[1]->Fill(etaSmearing);
+          if(mctrack->Charge() < 0){
+            if(!bFilled1) fSmearing_Ele[2]->Fill(etaSmearing);
+            if(!bFilled2) fSmearing_Ele[3]->Fill(etaSmearing);
+          }
+          else{
+            if(!bFilled1) fSmearing_Pos[2]->Fill(etaSmearing);
+            if(!bFilled2) fSmearing_Pos[3]->Fill(etaSmearing);
+          }
           mcEta = mcEta + etaSmearing;
         }
         if(fPResArr){  
           Double_t pSmearing = GetSmearing(fPResArr,mcP);
-          fSmearing[0]->Fill(pSmearing);
+          if(mctrack->Charge() < 0){
+            if(!bFilled1) fSmearing_Ele[0]->Fill(pSmearing);
+            if(!bFilled2) fSmearing_Ele[1]->Fill(pSmearing);
+          }
+          else{
+            if(!bFilled1) fSmearing_Pos[0]->Fill(pSmearing);
+            if(!bFilled2) fSmearing_Pos[1]->Fill(pSmearing);
+          }
           mcP = mcP + pSmearing;
           mcPt = TMath::Sin(mcTheta) * mcP;
         } else if(fPtResArr){
           Double_t ptSmearing = GetSmearing(fPtResArr,mcPt);
-          fSmearing[0]->Fill(ptSmearing);
+          if(mctrack->Charge() < 0){
+            if(!bFilled1) fSmearing_Ele[0]->Fill(ptSmearing);
+            if(!bFilled2) fSmearing_Ele[1]->Fill(ptSmearing);
+          }
+          else{
+            if(!bFilled1) fSmearing_Pos[0]->Fill(ptSmearing);
+            if(!bFilled2) fSmearing_Pos[1]->Fill(ptSmearing);
+          }
           mcPt = mcPt + ptSmearing;
         }
         
@@ -1680,8 +1745,8 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
   fNgen_Ele                 = new TH3D("Ngen_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   fNgen_Pos                 = new TH3D("Ngen_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   if(fCalcEfficiencyRec){
-    fNgen_Rec_Ele   = new TH3D("Ngen_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
-    fNgen_Rec_Pos   = new TH3D("Ngen_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+    fNgen_Rec_Ele   = new TH3D("Ngen1_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+    fNgen_Rec_Pos   = new TH3D("Ngen1_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     fNgen2_Rec_Ele  = new TH3D("Ngen2_Rec_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     fNgen2_Rec_Pos  = new TH3D("Ngen2_Rec_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   }
