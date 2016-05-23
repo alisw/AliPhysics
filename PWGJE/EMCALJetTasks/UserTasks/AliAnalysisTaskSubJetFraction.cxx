@@ -1147,10 +1147,17 @@ AliEmcalJetFinder *AliAnalysisTaskSubJetFraction::Recluster(AliEmcalJet *Jet, In
   Reclusterer->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt
   Reclusterer->SetJetMaxEta(0.9);
   Reclusterer->SetRecombSheme(0);
-  const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
-  Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-  if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer                            
+  if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+    Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+    if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
+  }
+  else{
+    Double_t dVtx[3]={0,0,0};
+    if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
+  }
   return Reclusterer;
+  
 }
 
 
@@ -1336,9 +1343,15 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
       JetFinder->SetRecombSheme(0);
       JetFinder->SetJetMinPt(Jet->Pt());
-      const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
-      Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
-      return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      if(fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+	const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+	Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      }
+      else{
+	Double_t dVtx[3]={0,0,0};
+	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
+      }
     }
   }
   else return -2;
