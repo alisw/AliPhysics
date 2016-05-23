@@ -121,7 +121,8 @@ else()
   endif()
 
   # Make a few common warnings errors
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=mismatched-new-delete")
+  # Does not work on ubuntu, remove for now.
+  #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=mismatched-new-delete")
 
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
