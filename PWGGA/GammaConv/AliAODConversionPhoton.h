@@ -67,6 +67,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     void SetCaloPhotonMCFlagsAOD(AliVEvent* event);
     void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
     Long_t GetCaloClusterRef()const {return fCaloClusterRef;}
+    void PrintCaloMCLabelsAndInfo(AliStack *MCStack);
+    void PrintCaloMCFlags ();
     
     //Calo cluster MC identifiers
     Bool_t IsLargestComponentPhoton(){return fCaloPhotonMCFlags&kIsPhoton;}                       // largest contribution to cluster is photon
