@@ -2255,15 +2255,23 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   Double_t dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
   Double_t dist23=TMath::Sqrt((vertexp2n1->GetX()-pos[0])*(vertexp2n1->GetX()-pos[0])+(vertexp2n1->GetY()-pos[1])*(vertexp2n1->GetY()-pos[1])+(vertexp2n1->GetZ()-pos[2])*(vertexp2n1->GetZ()-pos[2]));
   Short_t charge=(Short_t)(postrack1->Charge()+postrack2->Charge()+negtrack->Charge());
-  AliAODRecoDecayHF3Prong *the3Prong = new AliAODRecoDecayHF3Prong(secVert,px,py,pz,d0,d0err,dca,dispersion,dist12,dist23,charge);
+
+
+  // construct the candidate passing a NULL pointer for the secondary vertex to avoid creation of TRef
+  AliAODRecoDecayHF3Prong *the3Prong = new AliAODRecoDecayHF3Prong(0x0,px,py,pz,d0,d0err,dca,dispersion,dist12,dist23,charge);
   the3Prong->SetOwnPrimaryVtx(primVertexAOD);
+  // add a pointer to the secondary vertex via SetOwnSecondaryVtx (no TRef created)
+  AliAODVertex* ownsecv=secVert->CloneWithoutRefs();
+  the3Prong->SetOwnSecondaryVtx(ownsecv);
   UShort_t id[3]={(UShort_t)postrack1->GetID(),(UShort_t)negtrack->GetID(),(UShort_t)postrack2->GetID()};
   the3Prong->SetProngIDs(3,id);
 
   delete primVertexAOD; primVertexAOD=NULL;
 
-  // Add daughter references already here
-  if(fInputAOD) AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
+  // disable PID, which requires the TRefs to the daughter tracks
+  fCutsDplustoKpipi->SetUsePID(kFALSE);
+  fCutsDstoKKpi->SetUsePID(kFALSE);
+  fCutsLctopKpi->SetUsePID(kFALSE);
 
   // select D+->Kpipi, Ds->KKpi, Lc->pKpi
   if(f3Prong) {
@@ -2287,9 +2295,15 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
     }
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
-
+  the3Prong->UnsetOwnSecondaryVtx();
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx && !fMixEvent) {
     the3Prong->UnsetOwnPrimaryVtx();
+  }
+
+  // Add TRefs to secondary vertex and daughter tracks only for candidates passing the filtering cuts
+  if(ok3Prong && fInputAOD){
+    the3Prong->SetSecondaryVtx(secVert);
+    AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
   }
 
   // get PID info from ESD
