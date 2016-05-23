@@ -71,7 +71,8 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    enableTriggerOverlapRej     = kFALSE,              // enable trigger overlap rejection
                                   Float_t   maxFacPtHard                = 3.,                // maximum factor between hardest jet and ptHard generated
                                   TString   periodNameV0Reader          = "",                // period Name for respective period selected in V0Reader
-                                  Int_t     selectedMeson               = 1 
+                                  Int_t     selectedMeson               = 1,
+                                  Bool_t    enableDetailedPrintout      = kFALSE
 ) {
   
   Int_t isHeavyIon = 0;
@@ -468,6 +469,10 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121063032200000","1111121063022000001","0163300000000000"); // EMC7
     cuts.AddCut("00085013","1111121063032200000","1111121063022000001","0163300000000000"); // EG2
     cuts.AddCut("00083013","1111121063032200000","1111121063022000001","0163300000000000"); // EG1
+  } else if (trainConfig == 78){  // testing
+    cuts.AddCut("00010113","1111121063032200000","1111121063022000001","0163300000000000"); // INT7
+  } else if (trainConfig == 79){  // testing closed
+    cuts.AddCut("00010113","1111121063032200000","1111121063022210001","0163301100000000"); // INT7
     
     // LHC12
     // default with three cuts
@@ -635,7 +640,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);//Attention new switch small for Cluster QA
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
-  
+  if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("GammaCaloMerged_%i",trainConfig), TList::Class(),
