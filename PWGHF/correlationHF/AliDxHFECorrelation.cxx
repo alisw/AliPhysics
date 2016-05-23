@@ -377,9 +377,9 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
   else if(2==fSystem){ //Reduced bins for p-Pb
     // 			                                   0          1      2       3      4
     // 			                                D0invmass   PtD0     Pte    dphi   deta   
-    int         binsEventdphiRed[sizeEventdphiReduced] = {   100,      80,   50,   16,    25};
-    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,      0,      0,  fMinPhi,  -2};
-    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,      16,    10,  fMaxPhi,   2}; 
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   170,      80,   50,   16,    25};
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.6458,      0,      0,  fMinPhi,  -2};
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1558,      16,    10,  fMaxPhi,   2}; 
     const char* nameEventdphiRed[sizeEventdphiReduced] = {
       "D0InvMass",
       "PtD0",

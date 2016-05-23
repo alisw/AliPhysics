@@ -159,9 +159,9 @@ THnSparse* AliDxHFEParticleSelectionD0::DefineTHnSparse()
   if(2==fSystem){//Reduced binning for p-Pb
     // 			             0     1     2       3         4
     // 	 	                     Pt   Phi   Ptbin  D0InvMass  Eta
-    int         thnBins [thnSize2] = {80, 100,  15,     100,     125};
-    double      thnMin  [thnSize2] = {  0,    0,   0,    1.5648,   -1.};
-    double      thnMax  [thnSize2] = { 16, 2*Pi, 14,    2.1648,    1.};
+    int         thnBins [thnSize2] = {80, 100,  15,     170,     125};
+    double      thnMin  [thnSize2] = {  0,    0,   0,    1.6458,   -1.};
+    double      thnMax  [thnSize2] = { 16, 2*Pi, 14,    2.1558,    1.};
     const char* thnNames[thnSize2] = {"Pt", "Phi","Ptbin","D0InvMass","Eta"};
     return CreateControlTHnSparse(name,thnSize2,thnBins,thnMin,thnMax,thnNames);
   } else {
