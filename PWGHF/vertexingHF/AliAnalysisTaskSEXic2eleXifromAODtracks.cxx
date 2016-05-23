@@ -324,7 +324,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fNCentBins					(0),
 	fNOfPools(1),
 	fEventBuffer(0x0),
-	fEventInfo(0x0),
+	fEventInfo(new TObjString("")),
 	fElectronTracks(0x0),
 	fCascadeTracks1(0x0),
 	fCascadeTracks2(0x0),
@@ -587,7 +587,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fNCentBins					(0),
 	fNOfPools(1),
 	fEventBuffer(0x0),
-	fEventInfo(0x0),
+	fEventInfo(new TObjString("")),
 	fElectronTracks(0x0),
 	fCascadeTracks1(0x0),
 	fCascadeTracks2(0x0),
@@ -4200,7 +4200,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
 
 //			Double_t minmass = 9999.;
 //			Bool_t isconv = fAnalCuts->TagConversions(aodt,fGTIndex,(AliAODEvent*)event,trkEntries,minmass);
-//			fHistoMassConversionsMin->Fill(minmass);
+			fHistoMassConversionsMin->Fill(minmass_ee);
 //			if(isconv) seleFlags[i] = kFALSE;
 
 //      if(fMixWithoutConversionFlag){
@@ -4211,7 +4211,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::SelectTrack( const AliVEvent *even
 
 //      Double_t minmasslike = 9999.;
 //      fAnalCuts->TagConversionsSameSign(aodt,fGTIndex,(AliAODEvent*)event,trkEntries,minmasslike);
-//      fHistoMassConversionsSameSignMin->Fill(minmasslike);
+      fHistoMassConversionsSameSignMin->Fill(minmasslike_ee);
     }
   } // end loop on tracks
 }
