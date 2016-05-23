@@ -605,7 +605,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   if(fCalcEfficiencyPoslabel)   
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
       singleEffGenList->Add(fvReco_Ele_poslabel.at(iCut));
-    
+  
+  singleEffGenList->Add(fNgen_Pos);     
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffGenList->Add(fvReco_Pos.at(iCut));
   if(fCalcEfficiencyPoslabel) 
