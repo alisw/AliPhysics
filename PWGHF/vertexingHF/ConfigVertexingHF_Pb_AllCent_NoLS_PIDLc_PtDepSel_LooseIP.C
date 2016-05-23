@@ -141,6 +141,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpi->SetStandardCutsPbPb2010();
   cutsD0toKpi->SetMinPtCandidate(0.);
   cutsD0toKpi->SetUsePID(kFALSE);
+  cutsD0toKpi->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsD0toKpi->SetUseSpecialCuts(kFALSE);
   cutsD0toKpi->SetUsePhysicsSelection(kFALSE);
   cutsD0toKpi->SetMaxCentrality(90.);
@@ -157,6 +158,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetCutsJpsitoee(cutsJpsitoee);
   AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
   cutsDplustoKpipi->SetStandardCutsPbPb2010();
+  cutsDplustoKpipi->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsDplustoKpipi->SetUsePID(kFALSE);
   Float_t cutsArrayDplustoKpipi[14]={0.25,0.3,0.3,0.,0.,0.01,0.05,0.05,0.,0.88,0.,10000000000.,3.,0.};
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
@@ -166,6 +168,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
   cutsDstoKKpi->SetStandardCutsPbPb2010();
+  cutsDstoKKpi->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsDstoKKpi->SetUsePID(kFALSE);
   Float_t cutsArrayDstoKKpi[20]={0.3,0.3,0.3,0.,0.,0.,0.06,0.02,0.,0.9,0.,100000.,0.03,0.0001,-1.,1.,0.,0.,0.,-1.};
   cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
@@ -175,6 +178,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
   cutsLctopKpi->SetStandardCutsPbPb2010();
+  cutsLctopKpi->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsLctopKpi->SetUsePID(kFALSE);
   Float_t cutsArrayLctopKpi[13]={0.13,0.5,0.5,0.,0.,0.,0.06,0.,0.,0.,0.,0.05,0.5};
   cutsLctopKpi->SetPtBins(nptbins,ptlimits);
@@ -192,6 +196,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
  // D* pt dependent cuts ------------------------------------------
 
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  cutsDStartoKpipi->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsDStartoKpipi->SetUsePID(kFALSE);
   const Int_t nvars=16;
   const Int_t nptbinsDst=2;
