@@ -109,7 +109,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG && !TPCHVdip");
   
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kINT8,"+CINT8-[B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kINT8,"+C[INT8|0TVX]-[B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !TPCHVdip");
   
