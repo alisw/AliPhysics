@@ -13,39 +13,39 @@ using namespace std;
 #define NMAXCLASSES 100
 
 TString bitNames[NBITS] = {
-"kINT1",
-"kINT7",
-"kMUON",
-"kHighMult",
-"kEMC1",
-"kINT5",
-"kCMUS5",
-"kMuonSingleHighPt7",
-"kMuonLikeLowPt7",
-"kMuonUnlikeLowPt7",
-"kEMC7",
-"kMuonSingleLowPt7",
-"kPHI1",
-"kPHI78",
-"kEMCEJE",
-"kEMCEGA",
-"kCentral",
-"kSemiCentral",
-"kDG5",
-"kZED",
-"kSPI78",
-"kINT8",
-"kMuonSingleLowPt8",
-"kMuonSingleHighPt8",
-"kMuonLikeLowPt8",
-"kMuonUnlikeLowPt8",
-"kMuonUnlikeLowPt0",
-"kUserDefined",
-"kTRD"
+    "kINT1",
+    "kINT7",
+    "kMUON",
+    "kHighMultSPD",
+    "kEMC1",
+    "kINT5",
+    "kINT7inMUFAST",
+    "kMuonSingleHighPt7",
+    "kMuonLikeLowPt7",
+    "kMuonUnlikeLowPt7",
+    "kEMC7",
+    "kMuonSingleLowPt7",
+    "kPHI1",
+    "kPHI78",
+    "kEMCEJE",
+    "kEMCEGA",
+    "kHighMultV0",
+    "kSemiCentral",
+    "kDG5",
+    "kZED",
+    "kSPI78",
+    "kINT8",
+    "kMuonSingleLowPt8",
+    "kMuonSingleHighPt8",
+    "kMuonLikeLowPt8",
+    "kMuonUnlikeLowPt8",
+    "kMuonUnlikeLowPt0",
+    "kUserDefined",
+    "kTRD"
 };
 
-void SetHisto(TH1D* h);
-void SetHisto(TH2D* h);
+void SetHisto(TH1D* h, Bool_t setMinimumToZero=0);
+void SetHisto(TH2D* h, Bool_t setMinimumToZero=0);
 void AddFillSeparationLines(TH1D* h, map<Int_t,Int_t> &fills);
 
 //void periodLevelQA(TString inputFileName ="/afs/cern.ch/work/a/aliqaevs/www/data/2012/LHC12h/pass1/trending.root"){
@@ -99,6 +99,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Double_t meanV0MOf = 0;
   Double_t meanOFO = 0;
   Double_t meanTKL = 0;
+  Double_t meanErrV0MOn = 0;
+  Double_t meanErrV0MOf = 0;
+  Double_t meanErrOFO = 0;
+  Double_t meanErrTKL = 0;
   TH2F* hHistStat = new TH2F();
   
   t->SetBranchAddress("run",&run);
@@ -144,6 +148,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("meanV0MOf",&meanV0MOf);
   t->SetBranchAddress("meanOFO",&meanOFO);
   t->SetBranchAddress("meanTKL",&meanTKL);
+  t->SetBranchAddress("meanErrV0MOn",&meanErrV0MOn);
+  t->SetBranchAddress("meanErrV0MOf",&meanErrV0MOf);
+  t->SetBranchAddress("meanErrOFO",&meanErrOFO);
+  t->SetBranchAddress("meanErrTKL",&meanErrTKL);
   t->SetBranchAddress("hHistStat",&hHistStat);
 
   Int_t nRuns = t->GetEntries();
@@ -206,6 +214,10 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hMeanV0MOf      ->Fill(srun,meanV0MOf);
     hMeanOFO        ->Fill(srun,meanOFO);
     hMeanTKL        ->Fill(srun,meanTKL);
+    hMeanV0MOn->SetBinError(hMeanV0MOn->GetXaxis()->FindBin(srun),meanErrV0MOn);
+    hMeanV0MOf->SetBinError(hMeanV0MOf->GetXaxis()->FindBin(srun),meanErrV0MOf);
+    hMeanOFO  ->SetBinError(hMeanOFO->GetXaxis()->FindBin(srun)  ,meanErrOFO);
+    hMeanTKL  ->SetBinError(hMeanTKL->GetXaxis()->FindBin(srun)  ,meanErrTKL);
     
     fills[run]=fill;
     for (Int_t iDet=0;iDet<nDetectors;iDet++) {
@@ -273,12 +285,12 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hLumiReconstructed ->LabelsDeflate("XY");
   hLumiAccepted      ->LabelsDeflate("XY");
   
-  SetHisto(hActiveDetectors);
-  SetHisto(hInteractionRate);
+  SetHisto(hActiveDetectors,1);
+  SetHisto(hInteractionRate,1);
   SetHisto(hMu);
-  SetHisto(hBCs);
-  SetHisto(hDuration);
-  SetHisto(hLumiSeen);
+  SetHisto(hBCs,1);
+  SetHisto(hDuration,1);
+  SetHisto(hLumiSeen,1);
   SetHisto(hMeanV0MOn);
   SetHisto(hMeanV0MOf);
   SetHisto(hMeanOFO);
@@ -378,8 +390,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hMeanTKL->Draw("");
   AddFillSeparationLines(hMeanTKL,fills);
   gPad->Print("meanTKL.png");
-  gPad->Print("global_properties.pdf");
-
   
   gPad->Print("global_properties.pdf)");
   
@@ -657,7 +667,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   fstat->Close();
 }
 
-void SetHisto(TH1D* h){
+void SetHisto(TH1D* h, Bool_t setMinimumToZero){
   h->SetTitleFont(43);
   h->SetTitleSize(25);
   h->GetYaxis()->SetTitleFont(43);
@@ -673,10 +683,10 @@ void SetHisto(TH1D* h){
   h->SetFillColor(kBlue);
   h->LabelsOption("av");
   h->SetLineWidth(2);
-//  h->SetMinimum(0);
+  if (setMinimumToZero) h->SetMinimum(0);
 }
 
-void SetHisto(TH2D* h){
+void SetHisto(TH2D* h, Bool_t setMinimumToZero){
   h->SetTitleFont(43);
   h->SetTitleSize(15);
   h->GetYaxis()->SetTitleFont(43);
@@ -690,10 +700,10 @@ void SetHisto(TH2D* h){
   h->GetYaxis()->SetTickLength(0.01);
   h->GetYaxis()->SetDecimals(1);
   h->GetXaxis()->LabelsOption("av");
-  h->GetYaxis()->LabelsOption("a");
+//  h->GetYaxis()->LabelsOption("a");
   h->SetLineWidth(2);
   h->SetLineColor(kBlue);
-  h->SetMinimum(0);
+  if (setMinimumToZero) h->SetMinimum(0);
 }
 
 void AddFillSeparationLines(TH1D* h, map<Int_t,Int_t> &fills){
