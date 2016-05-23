@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: November 13th, 2015.							      //
+	//		version: May 23th, 2016.      							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -91,6 +91,9 @@ public:
 	void SetCorrelationAnalysis(Bool_t CorrelationFlag=kTRUE) {fCorrelationFlag = CorrelationFlag;};
 	void SetMCanalysis() {fIsMC = kTRUE;};
 	void SetPPanalysis(Bool_t Ispp = kFALSE) {fIspp = Ispp;};
+		//centrality
+	void SetCentralitySys(Bool_t IsCentralitySys = kFALSE) {fIsCentralitySys = IsCentralitySys;};
+	
 	void SetCentrality(Double_t CentralityMin, Double_t CentralityMax) { fCentralityMin = CentralityMin; fCentralityMax = CentralityMax; fHasCentralitySelection = kTRUE; };
 	void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
 	void SetEventMixing(Bool_t EventMixingFlag) { fEventMixingFlag = EventMixingFlag;};
@@ -168,6 +171,7 @@ private:
 	//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIspp;
+	Bool_t				fIsCentralitySys;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
 	Bool_t				fUseTrigger;
@@ -246,6 +250,19 @@ private:
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
 	
+	//centrality
+	TH1F				*fPtElec_ULS_0;
+	TH1F				*fPtElec_LS_0;
+	TH1F				*fPtElec_ULS_1;
+	TH1F				*fPtElec_LS_1;
+	TH1F				*fPtElec_ULS_2;
+	TH1F				*fPtElec_LS_2;
+	TH1F				*fPtElec_ULS_3;
+	TH1F				*fPtElec_LS_3;
+	TH1F				*fPtElec_ULS_4;
+	TH1F				*fPtElec_LS_4;
+	
+	
 	TH1F				*fPtElec_ULS_NoPid;
 	TH1F				*fPtElec_LS_NoPid;
 	
@@ -254,6 +271,19 @@ private:
 	
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
+	
+		//centrality
+	TH1F				*fPtElec_ULS2_0;
+	TH1F				*fPtElec_LS2_0;
+	TH1F				*fPtElec_ULS2_1;
+	TH1F				*fPtElec_LS2_1;
+	TH1F				*fPtElec_ULS2_2;
+	TH1F				*fPtElec_LS2_2;
+	TH1F				*fPtElec_ULS2_3;
+	TH1F				*fPtElec_LS2_3;
+	TH1F				*fPtElec_ULS2_4;
+	TH1F				*fPtElec_LS2_4;
+	
 	
 	//mc closure
 	TH1F				*fPtElec_ULS_mc_closure;
@@ -309,6 +339,13 @@ private:
 	TH2F				*fEoverP_pt_true_electrons0;
 	TH2F				*fEoverP_pt_true_hadrons0;
 	TH2F				**fEoverP_pt;
+	
+	//centrality
+	TH2F				*fEoverP_pt_0;
+	TH2F				*fEoverP_pt_1;
+	TH2F				*fEoverP_pt_2;
+	TH2F				*fEoverP_pt_3;
+	TH2F				*fEoverP_pt_4;
 	
 	TH2F				*fEoverP_pt_highE0;
 	TH2F				*fEoverP_pt_highE1;
@@ -436,6 +473,14 @@ private:
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
 	TH2F				*fEoverP_pt_pions2;
+		//centrality
+	TH2F				*fEoverP_pt_pions2_0;
+	TH2F				*fEoverP_pt_pions2_1;
+	TH2F				*fEoverP_pt_pions2_2;
+	TH2F				*fEoverP_pt_pions2_3;
+	TH2F				*fEoverP_pt_pions2_4;
+	
+	
 	TH2F				*fEoverP_pt_pions3;
 	
 	TH2F				*fEoverP_pt_pions2_highE0;
@@ -501,6 +546,19 @@ private:
 	//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
 	TH1F				*fPtBackgroundBeforeReco2;
+		//centrality
+	TH1F				*fPtBackgroundBeforeReco_0;
+	TH1F				*fPtBackgroundBeforeReco2_0;
+	TH1F				*fPtBackgroundBeforeReco_1;
+	TH1F				*fPtBackgroundBeforeReco2_1;
+	TH1F				*fPtBackgroundBeforeReco_2;
+	TH1F				*fPtBackgroundBeforeReco2_2;
+	TH1F				*fPtBackgroundBeforeReco_3;
+	TH1F				*fPtBackgroundBeforeReco2_3;
+	TH1F				*fPtBackgroundBeforeReco_4;
+	TH1F				*fPtBackgroundBeforeReco2_4;
+	
+		// 
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
 	TH2F				*fpT_m_electron;
@@ -516,11 +574,29 @@ private:
 	TH1F				*fPtMCparticleReco;
 	TH1F				*fPtMCparticleReco_nonPrimary;
 	TH1F				*fPtMCparticleAllHfe1;
+	
+	//centrality
+	TH1F				*fPtMCparticleAllHfe1_0;
+	TH1F				*fPtMCparticleAllHfe1_1;
+	TH1F				*fPtMCparticleAllHfe1_2;
+	TH1F				*fPtMCparticleAllHfe1_3;
+	TH1F				*fPtMCparticleAllHfe1_4;
+	
+	
 	TH1F				*fPtMCparticleRecoHfe1;
 	TH1F				*fPtMCparticleAllHfe2;
 	TH1F				*fPtMCparticleRecoHfe2;
 	TH1F				*fPtMCelectronAfterAll;
 	TH1F				*fPtMCelectronAfterAll_unfolding;
+	
+	//centrality
+	TH1F				*fPtMCelectronAfterAll_unfolding_0;
+	TH1F				*fPtMCelectronAfterAll_unfolding_1;
+	TH1F				*fPtMCelectronAfterAll_unfolding_2;
+	TH1F				*fPtMCelectronAfterAll_unfolding_3;
+	TH1F				*fPtMCelectronAfterAll_unfolding_4;
+	
+	
 	TH1F				*fPtMCelectronAfterAll_nonPrimary;
 	TH1F				*fPtMCelectronAfterAll_Primary;
 	
