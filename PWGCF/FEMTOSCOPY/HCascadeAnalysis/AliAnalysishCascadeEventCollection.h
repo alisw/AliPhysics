@@ -22,8 +22,8 @@ using namespace std;
 
 //   AliReconstructedProton(const AliReconstructedProton&);
 //   AliReconstructedProton & operator=(const AliReconstructedProton&);
-
-   enum MCProtonOrigin_t {kUnassigned, kFake, kFakeP, kPrimaryP, kPrimaryL, kOtherOriginP, kPrimaryAntiP, kPrimaryAntiL, kOtherOriginAntiP};
+ 
+   enum MCProtonOrigin_t {kUnassigned, kPrimaryP, kSecondaryWeak, kMaterial};
    double pMomentum[3]; // 3 reconstructed momentum
    double pMomentumTruth[3]; // 3 true momentum, used in momentum smearing analysis
    double pPt;
@@ -59,7 +59,7 @@ using namespace std;
 //   AliReconstructedXi(const AliReconstructedXi&);
 //   AliReconstructedXi & operator=(const AliReconstructedXi&);
 
-   enum MCXiOrigin_t {kUnassigned, kFake, kFakeXi, kPrimaryXi, kPrimaryOmega, kOtherOriginXi, kPrimaryAntiOmega, kOtherOriginAntiXi};
+   enum MCXiOrigin_t {kUnassigned, kFake, kFakeXi, kPrimaryXi, kPrimaryOmega, kOtherOriginXi, kPrimaryAntiXi, kPrimaryAntiOmega, kOtherOriginAntiXi, kSecondaryXi, kSecondaryOmega,kSecondaryAntiXi, kSecondaryAntiOmega};
    double xiMomentum[3]; // reconstructed momentum
    double xiMomentumTruth[3]; //true momentum, used in momentum smearing analysis
    double xiPt;
