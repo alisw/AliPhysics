@@ -43,12 +43,14 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("tbroeker_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
   
-  if(!resolutionfile.IsNull() && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
+  if(CalcEfficiencyRec && !resolutionfile.IsNull() && 
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    TObjArray *PResolutionArray     = (TObjArray*) fRes->Get("PResArr");
-    TObjArray *ThetaResolutionArray = (TObjArray*) fRes->Get("ThetaResArr");
-    TObjArray *PhiResolutionArray   = (TObjArray*) fRes->Get("PhiResArr");
-    task->SetResolution(PResolutionArray,ThetaResolutionArray,PhiResolutionArray);
+    if(bUsePtResolution){  task->SetResolutionPt( (TObjArray*) fRes->Get("PtResArr") ); }
+    else                {  task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr") ); }
+    if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
+    else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
+    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiResArr") ); 
   }
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
