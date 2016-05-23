@@ -1792,8 +1792,8 @@ void AliAODTrackCutsDiHadronPID::SetXaxisAcceptedFilterBits() {
 	fRelevantBitsArray = new TArrayI(fullArraySize, fullArray);
 
 	// Delete the temporary arrays.
-	delete baseArray;
-	delete fullArray;
+	delete []baseArray;
+	delete []fullArray;
 
 }
 

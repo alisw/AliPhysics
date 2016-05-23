@@ -878,7 +878,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   else {
     Print("First fit background function not present");
     delete funcbkg;
-    delete parBackInit;
+    delete[] parBackInit;
     return kFALSE;
   }
 
@@ -1003,7 +1003,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   if (status != 0){
     cout<<"Minuit returned "<<status<<endl;
     delete funcbkg;
-    delete parBackInit;
+    delete[] parBackInit;
     return kFALSE;
   }
   Printf("Fitted");
@@ -1034,7 +1034,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   if(funcmass->GetParameter(fNparBack+2) <0 || funcmass->GetParameter(fNparBack+1) <0 || funcmass->GetParameter(fNparBack) <0 ) {
     cout<<"IntS or mean or sigma negative. You may tray to SetInitialGaussianSigma(..) and SetInitialGaussianMean(..)"<<endl;
     delete funcbkg;
-    delete parBackInit;
+    delete[] parBackInit;
     delete funcmass;
     return kFALSE;
   }
@@ -1043,7 +1043,7 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   fcounter++;
 
   
-  delete parBackInit;
+  delete[] parBackInit;
   delete funcbkg;
   delete funcmass;
   
