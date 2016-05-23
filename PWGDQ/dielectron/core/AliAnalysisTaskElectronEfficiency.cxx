@@ -162,7 +162,9 @@ fOpeningAngleGen_DeltaOpeningAngleUS_pions(0x0),
 fOpeningAngleGen_DeltaOpeningAngleLS_pions(0x0),
 fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
+fPtResArr(0x0),
 fThetaResArr(0x0),
+fEtaResArr(0x0),
 fPhiResArr(0x0),
 fSmearing(),
 fResolutionCuts(0x0),
@@ -318,7 +320,9 @@ fOpeningAngleGen_DeltaOpeningAngleUS_pions(0x0),
 fOpeningAngleGen_DeltaOpeningAngleLS_pions(0x0),
 fMgen_PtGen_mRes_ptRes(0x0),
 fPResArr(0x0),
+fPtResArr(0x0),
 fThetaResArr(0x0),
+fEtaResArr(0x0),
 fPhiResArr(0x0),
 fSmearing(),
 fResolutionCuts(0x0),
@@ -421,7 +425,14 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   /// Called once
 	AliInfo("Create the output objects. Do other one-time tasks.");
 	Printf("Now running: CreateOutputObjects()");
-  
+  if(fCalcEfficiencyRec){
+    Printf("Calculating efficiency in reconstructed binning! ");
+    std::cout << "  pResArr:     " << fPResArr << std::endl;
+    std::cout << "  ptResArr:    " << fPtResArr << std::endl;
+    std::cout << "  thetaResArr: " << fThetaResArr << std::endl;
+    std::cout << "  etaResArr:   " << fEtaResArr << std::endl;
+    std::cout << "  phiResArr:   " << fPhiResArr << std::endl;
+  }
   /// Check if an MC signal was attached
   if(!fSignalsMC) {
     AliFatal("Task needs an AliDielectronSignalMC as basis for the electron selection!"
@@ -604,15 +615,23 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   singleEffList->Add(singleEffGenList);
   
   if(fCalcEfficiencyRec){
-    fSmearing[0] = new TH1D("smearingValues_P","",1000,-10.,10.);
-    fSmearing[1] = new TH1D("smearingValues_theta","",300,-1.5,1.5);
-    fSmearing[2] = new TH1D("smearingValues_phi","",300,-1.5,1.5);
+    if(fPResArr)        fSmearing[0] = new TH1D("smearingValues_P","",1000,-10.,10.);
+    else if(fPtResArr)  fSmearing[0] = new TH1D("smearingValues_Pt","",1000,-10.,10.);
+    if(fThetaResArr)    fSmearing[1] = new TH1D("smearingValues_theta","",300,-1.5,1.5);
+    else if(fEtaResArr) fSmearing[1] = new TH1D("smearingValues_eta","",300,-1.5,1.5);
+    if(fPhiResArr)      fSmearing[2] = new TH1D("smearingValues_phi","",300,-1.5,1.5);
     TList *singleEffRecList = new TList();
     singleEffRecList->SetName("reconstructedBinning");
     singleEffRecList->SetOwner();
-    singleEffRecList->Add(fSmearing[0]);
-    singleEffRecList->Add(fSmearing[1]);
-    singleEffRecList->Add(fSmearing[2]);
+    TList *smearingList = new TList();
+    smearingList->SetName("smearing");
+    smearingList->SetOwner();
+    if(fPResArr || fPtResArr)      smearingList->Add(fSmearing[0]);
+    if(fThetaResArr || fEtaResArr) smearingList->Add(fSmearing[1]);
+    if(fPhiResArr)                 smearingList->Add(fSmearing[2]);
+    if(smearingList->GetEntries() > 0) 
+      singleEffRecList->Add(smearingList);
+      
     singleEffRecList->Add(fNgen_Rec_Ele);
     singleEffRecList->Add(fNgen2_Rec_Ele);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
@@ -724,6 +743,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 {
+
   /// Strategy:  Process one cutInstance (or multiple ones) for analysis tracking&PID efficiency (as usual).
   ///            Process optional, separate cutInstance for prefilter efficiencies: it also produces the usual tracking&PID efficiency
   ///            (but of course for the specified prefilter track sample, so mainly for convenience and curiosity),
@@ -1056,12 +1076,20 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           fSmearing[1]->Fill(thetaSmearing);
           mcTheta = mcTheta + thetaSmearing;
           mcEta = -TMath::Log(TMath::Tan(mcTheta/2));
+        } else if(fEtaResArr){
+          Double_t etaSmearing = GetSmearing(fEtaResArr,mcEta);
+          fSmearing[1]->Fill(etaSmearing);
+          mcEta = mcEta + etaSmearing;
         }
         if(fPResArr){  
           Double_t pSmearing = GetSmearing(fPResArr,mcP);
           fSmearing[0]->Fill(pSmearing);
           mcP = mcP + pSmearing;
           mcPt = TMath::Sin(mcTheta) * mcP;
+        } else if(fPtResArr){
+          Double_t ptSmearing = GetSmearing(fPtResArr,mcPt);
+          fSmearing[0]->Fill(ptSmearing);
+          mcPt = mcPt + ptSmearing;
         }
         
         if(mctrack->Charge() < 0){ 

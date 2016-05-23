@@ -29,7 +29,9 @@ const Double_t PtBins[] = {
 };
 
 TString resolutionfile = "";
-Bool_t CalcEfficiencyRec = kTRUE;
+Bool_t bUsePtResolution = kFALSE;
+Bool_t bUseEtaResolution = kFALSE;
+Bool_t CalcEfficiencyRec = kFALSE;
 Bool_t CalcEfficiencyPoslabel = kTRUE;
 Bool_t CalcResolution = kTRUE;
 Bool_t doPairing = kFALSE;

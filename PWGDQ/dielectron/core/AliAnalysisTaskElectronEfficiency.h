@@ -88,7 +88,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                          {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)          {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)          {fRandomizeDaughters=random;}
-  void          SetResolution(TObjArray *PresArr,TObjArray *ThetaResArr,TObjArray *PhiResArr) {fPResArr=PresArr; fThetaResArr=ThetaResArr; fPhiResArr=PhiResArr;}
+  void          SetResolutionP(TObjArray *resArr)                   {fPResArr=resArr;}
+  void          SetResolutionPt(TObjArray *resArr)                  {fPtResArr=resArr;}
+  void          SetResolutionTheta(TObjArray *resArr)               {fThetaResArr=resArr;}
+  void          SetResolutionEta(TObjArray *resArr)                 {fEtaResArr=resArr;}
+  void          SetResolutionPhi(TObjArray *resArr)                 {fPhiResArr=resArr;}
   void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
   void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
   
@@ -246,7 +250,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   
   // external resolutions
   TObjArray*                      fPResArr; 
+  TObjArray*                      fPtResArr; 
   TObjArray*                      fThetaResArr;
+  TObjArray*                      fEtaResArr;
   TObjArray*                      fPhiResArr;
   TH1D*                           fSmearing[3];
   
