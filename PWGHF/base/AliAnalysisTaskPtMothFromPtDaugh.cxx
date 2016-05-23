@@ -118,7 +118,8 @@ void AliAnalysisTaskPtMothFromPtDaugh::UserCreateOutputObjects()
      Fatal("UserCreateOutputObjects", "This task needs a MC handler");
      return;
      }
-    fDecayKine=new TNtuple("DecayKine","Decay kinematics","pdgM:pxM:pyM:pzM:yM:etaM:pdgD:pxD:pyD:pzD:yD:etaD");
+    fDecayKine=new TNtuple("DecayKine","Decay kinematics","pdgM:pxM:pyM:pzM:yM:etaM:pvtxM:pvtyM:pvtzM:pdgD:pxD:pyD:pzD:yD:etaD:pvtxD:pvtyD:pvtzD:dvtxD:dvtyD:dvtzD");
+    //fDecayKine=new TNtuple("DecayKine","Decay kinematics","pdgM:pxM:pyM:pzM:yM:etaM:pdgD:pxD:pyD:pzD:yD:etaD");
     return;
 }
 
@@ -135,22 +136,32 @@ void AliAnalysisTaskPtMothFromPtDaugh::UserExec(Option_t */*option*/)
     //                    pz      "
     //                  rapidity  "
     //                   eta      "
+    //            prod. vtx X      "
+    //            prod. vtx Y      "
+    //            prod. vtx Z      "
     //                   pdg of Daughter
     //                    px      "
     //                    py      "
     //                    pz      "
     //                  rapidity  "
     //                   eta      "         
+    //            prod. vtx X      "
+    //            prod. vtx Y      "
+    //            prod. vtx Z      "
+    //            decay vtx X      "
+    //            decay vtx Y      "
+    //            decay vtx Z      "
     //
-    AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    /*AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if(!mcHandler) {AliError("Could not get MC event handler!"); return; }
     mcHandler->SetReadTR(kFALSE);
-    AliMCEvent* mcEvent = mcHandler->MCEvent();
+    AliMCEvent* mcEvent = mcHandler->MCEvent();//old approach  */
+    AliMCEvent* mcEvent = MCEvent();  
     if(!mcEvent){ AliError("Could not get MC event!"); return; }
     AliStack* stack = mcEvent->Stack();
     if(!stack){ AliError("Could not get stack!"); return; }
     Int_t nPrims = stack->GetNprimary();
-    float *inf = new float[12];
+    float *inf = new float[21];
     for (Int_t iTrack = 0; iTrack < nPrims; ++iTrack) {
     TParticle *part = stack->Particle(iTrack);
     Int_t pdg=TMath::Abs(part->GetPdgCode());
@@ -171,12 +182,29 @@ void AliAnalysisTaskPtMothFromPtDaugh::UserExec(Option_t */*option*/)
            inf[3]=part->Pz();
            inf[4]=y;
            inf[5]=part->Eta();
-           inf[6]=pDaugh->GetPdgCode();
-           inf[7]=pDaugh->Px();
-           inf[8]=pDaugh->Py();
-           inf[9]=pDaugh->Pz();
-           inf[10]=y2;
-           inf[11]=pDaugh->Eta();
+           inf[6]=part->Vx();
+           inf[7]=part->Vy();
+           inf[8]=part->Vz();
+           inf[9]=pDaugh->GetPdgCode();
+           inf[10]=pDaugh->Px();
+           inf[11]=pDaugh->Py();
+           inf[12]=pDaugh->Pz();
+           inf[13]=y2;
+           inf[14]=pDaugh->Eta();
+           inf[15]=pDaugh->Vx();
+           inf[16]=pDaugh->Vy();
+           inf[17]=pDaugh->Vz();
+           if(pDaugh->GetNDaughters()<=0 ) { // It is a stable particle (e.g. electron or muon)
+             inf[18]=999999.;
+             inf[19]=999999.;
+             inf[20]=999999.;
+           } else { // get Decay Vertex of Daughter particle from production vertex of first Daughter
+             Int_t ifirstD=pDaugh->GetFirstDaughter();
+             inf[18]=((TParticle*)stack->Particle(ifirstD)) -> Vx() ;
+             inf[19]=((TParticle*)stack->Particle(ifirstD)) -> Vy() ;
+             inf[20]=((TParticle*)stack->Particle(ifirstD)) -> Vz() ;
+           }
+           
            fDecayKine->Fill(inf);
          } //close if statement for mothers particles
         } //end of tracks loop
