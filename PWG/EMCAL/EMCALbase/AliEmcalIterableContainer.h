@@ -6,9 +6,16 @@
  * See cxx source for full Copyright notice                               */
 
 #include <iterator>
+#include <vector>
 #include <type_traits>
 #include <TArrayI.h>
 #include "AliTLorentzVector.h"
+
+#ifdef __CINT__
+#define ALICE_FINAL
+#else 
+#define ALICE_FINAL final
+#endif
 
 class AliEmcalContainer;
 
@@ -62,7 +69,7 @@ public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
 
   operator_star() : fCurrentElement() {}
-  virtual ~operator_star() {}
+  ~operator_star() {}
   operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
@@ -79,7 +86,7 @@ public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
 
   operator_star() : fCurrentElement() {}
-  virtual ~operator_star() {}
+  ~operator_star() {}
   operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
   operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
 
@@ -92,7 +99,7 @@ protected:
 }
 
 template <typename T, bool mom = false>
-class AliEmcalIterableContainerT {
+class AliEmcalIterableContainerT ALICE_FINAL {
 public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
   typedef typename std::conditional<mom, momentum_object_pair, T*>::type value_type;
@@ -114,13 +121,15 @@ public:
    *
    * In case of c++11 the iterator also allows range-based iteration.
    */
-  class iterator : public std::iterator<std::bidirectional_iterator_tag, value_type, std::ptrdiff_t>,
-                   public EMCALIterableContainer::operator_star<T,mom> {
+  class iterator;
+  friend class iterator;
+  class iterator ALICE_FINAL : public std::iterator<std::bidirectional_iterator_tag, value_type, std::ptrdiff_t>,
+                               public EMCALIterableContainer::operator_star<T,mom> {
   public:
     iterator(const AliEmcalIterableContainerT<T, mom> *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
     iterator &operator=(const iterator &ref);
-    virtual ~iterator(){}
+    ~iterator(){}
 
     bool operator!=(const iterator &ref) const;
 
@@ -153,7 +162,7 @@ public:
   /**
    * Destructor
    */
-  virtual ~AliEmcalIterableContainerT() {}
+  ~AliEmcalIterableContainerT() {}
 
   T *operator[](int index) const;
 
