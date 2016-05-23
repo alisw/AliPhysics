@@ -458,7 +458,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   static int evCnt=0;
   Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParamNonConst()->GetUseComposedCorrection();
   transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(kFALSE);
-  
+  Bool_t backupUseCorrectionMaps = transform->GetCurrentRecoParamNonConst()->GetUseCorrectionMap();
+  transform->GetCurrentRecoParamNonConst()->SetUseCorrectionMap(kFALSE);
+  Bool_t backupAccountDistortions = transform->GetCurrentRecoParamNonConst()->GetAccountDistortions();
+  transform->GetCurrentRecoParamNonConst()->SetAccountDistortions(kFALSE);
+
   for (Int_t iTrack=0;iTrack<nTracks;iTrack++){ // Track loop
     // 0.) For each track in each event, get the AliESDfriendTrack
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
@@ -734,6 +738,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     ip->SetBit(kAlignmentBugFixedBit,saveBit);
   }
   transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection( backupUseComposedCorrection);
+  transform->GetCurrentRecoParamNonConst()->SetUseCorrectionMap(backupUseCorrectionMaps);
+  transform->GetCurrentRecoParamNonConst()->SetAccountDistortions(backupAccountDistortions);
+
   //
  // end of track loop
 }
