@@ -95,8 +95,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionR;                //!  
 		TH2F**            hESDConversionAsymP;            //!  
 		TH1F**            hESDConversionMidPtR;           //!
-		TH3F**            hESDConversionRInBins;
-		TH3F**            hESDConversionPhiInBins;
+		TH3F**            hESDConversionRInBins;          //!
+		TH3F**            hESDConversionPhiInBins;        //!
 		TH1F**            hESDConversionEta;              //!  
 		TH1F**            hESDConversionMidPtEta;         //!
 		TH1F**            hESDConversionPt;              //!
