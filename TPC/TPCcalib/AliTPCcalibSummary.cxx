@@ -61,6 +61,8 @@ delete calibSummary;
 #include "AliTPCCalibGlobalMisalignment.h"
 #include "AliTPCExBTwist.h"
 #include "AliTPCComposedCorrection.h"
+#include "AliLHCData.h"
+
 //
 //
 //
@@ -261,6 +263,11 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
   Int_t nalien=0,nRawAlien=0,nlocal=0,nRawLocal=0;
   //run type
   TObjString runType(AliTPCcalibDB::GetRunType(irun).Data());
+  // ===| LHC data |===========================================================
+  //
+  //
+  TVectorF vecMeanLHCBckgAlice(AliLHCData::kNBGs);
+  GetAverageLHCData(vecMeanLHCBckgAlice);
   //
   //
   //
@@ -450,6 +457,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     //ProcessDriftCERef();
     //ProcessPulserRef();
     //ProcessCurrent(irun,itime);
+    ProcessLHCData(irun, itime);
 
 
     (*fPcstream)<<"dcs"<<	
@@ -519,6 +527,10 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "pulserNpadsOutOneTB=" << npadsOutOneTB       << // Number of pads with Pulser time var >#pm 1 tb to ROC mean;Pulser
       "pulserNpadsOffAdd="   << npadsOffAdd         << // Number of pads without signal but signal in ref;Pulser
       "driftCorrCosmAll="    << dvCorr              <<
+      //
+      // LHCData
+      //
+      "meanBckgAlice.="       << &vecMeanLHCBckgAlice <<
       "\n";
   }//end run loop
 }
@@ -1339,6 +1351,23 @@ void AliTPCcalibSummary::ProcessCurrent(Int_t irun, Int_t itime){
 
 }
 
+void AliTPCcalibSummary::ProcessLHCData(Int_t irun, Int_t itime)
+{
+  // itime
+  static TVectorF vecLHCBckgAlice(AliLHCData::kNBGs);
+
+  // ---| fill data if lhcData object exists |---
+  const AliLHCData *lhcData=GetLHCdata();
+
+  for (Int_t i=0; i<Int_t(AliLHCData::kNBGs); ++i) {
+    vecLHCBckgAlice[i]=lhcData?lhcData->GetBckgAlice(i,Double_t(itime)):-1.f;
+  }
+
+  (*fPcstream)<<"dcs"<<     // current information
+  "bckgAlice.=" << &vecLHCBckgAlice;
+
+}
+
 void AliTPCcalibSummary::AddMetadataRawQA(TTree * treeRawQATPC){
   //
   // Make Aliases and description for Raw QA trending
@@ -1379,6 +1408,63 @@ void AliTPCcalibSummary::AddMetadata(TTree * tree){
   AddMetadataRawQA(tree);
   AddMetadataGain(tree);
   
+}
+
+AliLHCData* AliTPCcalibSummary::GetLHCdata()
+{
+  static AliCDBEntry *cdbLHCData=0x0;
+  static AliLHCData *lhcData=0x0;
+
+  AliCDBManager *man=AliCDBManager::Instance();
+
+  // ===| get LHCData OCDB object |============================================
+
+  // ===| check if we already have the latest object |=========================
+  const Int_t currentRun=man->GetRun();
+  if (cdbLHCData && cdbLHCData->GetId().GetAliCDBRunRange().Comprises(AliCDBRunRange(currentRun, currentRun))) {
+    return lhcData;
+  }
+
+  // ---| if not, load the object |---------------------------------------------
+  cdbLHCData=man->Get("GRP/GRP/LHCData");
+
+  if (!cdbLHCData) {
+    AliError("Could not get LHCData");
+    return lhcData;
+  }
+
+  lhcData=static_cast<AliLHCData*>(cdbLHCData->GetObject());
+  return lhcData;
+}
+
+void AliTPCcalibSummary::GetAverageLHCData(TVectorF &valsBckgAlice)
+{
+  // average Alice background
+  const AliLHCData *lhcData=GetLHCdata();
+  valsBckgAlice.ResizeTo(AliLHCData::kNBGs);
+
+  // ===| reset to -1 |---
+  for (Int_t i=0; i<Int_t(AliLHCData::kNBGs); ++i) {
+    valsBckgAlice[i]=-1.f;
+  }
+
+  // ===| exit if lhcData does not exist |===
+  if (!lhcData) {
+    return;
+  }
+
+  // ===| build simple average per background estimator |===
+  for (Int_t ibckg=0; ibckg<Int_t(AliLHCData::kNBGs); ++ibckg) {
+    const Int_t nValues=lhcData->GetNBckgAlice(ibckg);
+    if (nValues<=0) { continue; }
+    Double_t sum=0.;
+    for (Int_t ivalue=0; ivalue<nValues; ++ivalue ) {
+      sum+=lhcData->GetBckgAlice(ibckg,ivalue)->GetValue();
+    }
+    sum/=Double_t(nValues);
+    valsBckgAlice[ibckg]=sum;
+  }
+
 }
 
 // TCanvas * DrawCEDiff(TTree * tree){

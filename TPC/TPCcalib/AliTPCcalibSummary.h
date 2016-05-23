@@ -11,9 +11,11 @@
 
  
 #include "TNamed.h"
+#include "TVectorFfwd.h"
 class AliTPCcalibDB;
 class AliTPCcalibDButil;
 class TTreeSRedirector;
+class AliLHCData;
 
 class AliTPCcalibSummary : public TNamed {
 
@@ -31,6 +33,9 @@ public:
   void ProcessAlign(Int_t run, Int_t timeStamp);
   void ProcessGain(Int_t run, Int_t timeStamp);
   void ProcessCurrent(Int_t irun,Int_t itime);
+  void ProcessLHCData(Int_t irun, Int_t itime);
+
+  void GetAverageLHCData(TVectorF &valsBckgAlice);
 
   void ProcessDriftCERef();
   void ProcessPulserRef();
@@ -39,6 +44,8 @@ public:
   static void AddMetadataRawQA(TTree * tree);
   static void AddMetadataGain(TTree * tree);
 
+  AliLHCData *GetLHCdata();
+  
 protected:
   AliTPCcalibDB     *fCalibDB;      //! pointer to the TPC calib manager
   AliTPCcalibDButil *fDButil;       //! pointer to the TPC calib db utils
