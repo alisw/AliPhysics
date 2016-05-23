@@ -32,6 +32,8 @@ fZDCCutZNCTimeCorrMin(5.0),
 fZDCCutZNCTimeCorrMax(100.0),
 fSPDClsVsTklA(65),
 fSPDClsVsTklB(4),
+fV0C012vsTklA(150),
+fV0C012vsTklB(20),
 fV0MOnVsOfA(-145.),
 fV0MOnVsOfB(7.2),
 fSPDOnVsOfA(-4.16),
@@ -54,10 +56,11 @@ fVIRBBCflags(10),
 fVIRBGAflags(33),
 fVIRBGCflags(33),
 fV0MOnThreshold(-1),
-fV0MOfThreshold(400),
+fV0MOfThreshold(-1),
 fSPDGFOThreshold(2),
 fSH1OuterThreshold(-1),
 fSH2OuterThreshold(-1),
+fTklThreshold(-1),
 fTRDptHSE(3.),
 fTRDpidHSE(144),
 fTRDptHQU(2.),
@@ -96,6 +99,8 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
   parArray->Add(new TObjString(Form("ZDCCutZNCTimeCorrMax %f", fZDCCutZNCTimeCorrMax)));
   parArray->Add(new TObjString(Form("SPDClsVsTklA         %f", fSPDClsVsTklA        )));
   parArray->Add(new TObjString(Form("SPDClsVsTklB         %f", fSPDClsVsTklB        )));
+  parArray->Add(new TObjString(Form("V0C012vsTklA         %f", fV0C012vsTklA        )));
+  parArray->Add(new TObjString(Form("V0C012vsTklB         %f", fV0C012vsTklB        )));
   parArray->Add(new TObjString(Form("V0MOnVsOfA           %f", fV0MOnVsOfA          )));
   parArray->Add(new TObjString(Form("V0MOnVsOfB           %f", fV0MOnVsOfB          )));
   parArray->Add(new TObjString(Form("SPDOnVsOfA           %f", fSPDOnVsOfA          )));
@@ -122,6 +127,7 @@ void AliOADBTriggerAnalysis::Browse(TBrowser *b){
   parArray->Add(new TObjString(Form("SPDGFOThreshold      %i", fSPDGFOThreshold     )));
   parArray->Add(new TObjString(Form("SH1OuterThreshold    %i", fSH1OuterThreshold   )));
   parArray->Add(new TObjString(Form("SH2OuterThreshold    %i", fSH2OuterThreshold   )));
+  parArray->Add(new TObjString(Form("TklThreshold         %i", fTklThreshold        )));
   parArray->Add(new TObjString(Form("TRDptHSE             %f", fTRDptHSE            )));
   parArray->Add(new TObjString(Form("TRDpidHSE            %i", fTRDpidHSE           )));
   parArray->Add(new TObjString(Form("TRDptHQU             %f", fTRDptHQU            )));
@@ -156,6 +162,8 @@ void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   printf(Form("  ZDCCutZNCTimeCorrMax %f\n", fZDCCutZNCTimeCorrMax));
   printf(Form("  SPDClsVsTklA         %f\n", fSPDClsVsTklA        ));
   printf(Form("  SPDClsVsTklB         %f\n", fSPDClsVsTklB        ));
+  printf(Form("  V0C012vsTklA         %f\n", fV0C012vsTklA        ));
+  printf(Form("  V0C012vsTklB         %f\n", fV0C012vsTklB        ));
   printf(Form("  V0MOnVsOfA           %f\n", fV0MOnVsOfA          ));
   printf(Form("  V0MOnVsOfB           %f\n", fV0MOnVsOfB          ));
   printf(Form("  SPDOnVsOfA           %f\n", fSPDOnVsOfA          ));
@@ -182,6 +190,7 @@ void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   printf(Form("  SPDGFOThreshold      %i\n", fSPDGFOThreshold     ));
   printf(Form("  SH1OuterThreshold    %i\n", fSH1OuterThreshold   ));
   printf(Form("  SH2OuterThreshold    %i\n", fSH2OuterThreshold   ));
+  printf(Form("  TklThreshold         %i\n", fTklThreshold        ));
   printf(Form("  TRDptHSE             %f\n", fTRDptHSE            ));
   printf(Form("  TRDpidHSE            %i\n", fTRDpidHSE           ));
   printf(Form("  TRDptHQU             %f\n", fTRDptHQU            ));

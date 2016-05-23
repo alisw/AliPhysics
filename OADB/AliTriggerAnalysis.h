@@ -31,7 +31,7 @@ public:
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
-    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,
+    kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,kV0C012vsTklBG,
     kVHM,kV0M,kSH1,kSH2,kTKL,
     kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
@@ -68,6 +68,7 @@ public:
   Bool_t IsV0PFPileup            (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t IsSPDVtxPileup          (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t IsV0Casym               (const AliVEvent* event, Int_t fillHists = 0);
+  Bool_t IsV0C012vsTklBG         (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t VHMTrigger              (const AliVEvent* event, Int_t fillHists = 0);
   Bool_t V0MTrigger              (const AliVEvent* event, Bool_t online, Int_t fillHists = 0);
   Bool_t SH1Trigger              (const AliVEvent* event, Int_t fillHists = 0);
@@ -108,6 +109,8 @@ protected:
   TH1F* fHistFiredBitsSPD;   //! fired hardware bits
   TH2F* fHistSPDClsVsTklAll; //! Cluster-vs-tracklet correlation for all events
   TH2F* fHistSPDClsVsTklCln; //! Cluster-vs-tracklet correlation for events accepted by basic cuts apart from SPDClusterVsTrackletBG
+  TH2F* fHistV0C012vsTklAll; //! Offline multiplicity in V0C012(rings 0,1,2) vs tracklets for all events
+  TH2F* fHistV0C012vsTklCln; //! Offline multiplicity in V0C012(rings 0,1,2) vs tracklets events accepted by basic cuts apart from V0C012vsTklBG
   TH2F* fHistV0MOnVsOfAll;   //! Online V0M (V0A123+V0C) vs offline V0A123+V0C correlation for all events
   TH2F* fHistV0MOnVsOfCln;   //! Online V0M (V0A123+V0C) vs offline V0A123+V0C correlation for events accepted by basic cuts apart from V0MOnVsOfPileup
   TH2F* fHistSPDOnVsOfAll;   //! Online-FO vs offline-FO correlation  for all events
@@ -157,7 +160,7 @@ protected:
   TH1F* fHistT0;             //! bb triggers
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 31)
+  ClassDef(AliTriggerAnalysis, 32)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

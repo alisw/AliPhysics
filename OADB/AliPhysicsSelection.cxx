@@ -489,54 +489,61 @@ void AliPhysicsSelection::FillStatistics(){
     Float_t accepted            = histStat->GetBinContent(4);
     Float_t v0and = 0;
     Float_t plusNoSPDClsVsTrkBG   = 0;
+    Float_t plusNoV0C012vsTklBG   = 0;
     Float_t plusNoV0MOnVsOfPileup = 0;
     Float_t plusNoSPDOnVsOfPileup = 0;
     Float_t plusNoSPDVtxPileup    = 0;
     Float_t plusNoV0PFPileup      = 0;
     Float_t plusNoV0Casym         = 0;
     Float_t noSPDClsVsTrkBG   = 0;
+    Float_t noV0C012vsTklBG   = 0;
     Float_t noV0MOnVsOfPileup = 0;
     Float_t noSPDOnVsOfPileup = 0;
     Float_t noSPDVtxPileup    = 0;
     Float_t noV0PFPileup      = 0;
     Float_t noV0Casym         = 0;
     Float_t znInTime          = 0;
-    Bool_t b[15];
+    Bool_t b[16];
     for (Int_t i=4;i<histStat->GetNbinsX();i++){
-      for (Int_t bit=0;bit<15;bit++) b[bit]=i & 1<<bit;
-      if (b[ 5]) noSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
-      if (b[ 6]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
-      if (b[ 7]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
-      if (b[ 8]) noSPDVtxPileup+=histStat->GetBinContent(i+1);
-      if (b[ 9]) noV0PFPileup+=histStat->GetBinContent(i+1);
-      if (b[10]) noV0Casym+=histStat->GetBinContent(i+1);
-      if (b[14]) znInTime+=histStat->GetBinContent(i+1);
+      for (Int_t bit=0;bit<16;bit++) b[bit]=i & 1<<bit;
+      if (b[ 5]) noSPDClsVsTrkBG  +=histStat->GetBinContent(i+1);
+      if (b[ 6]) noV0C012vsTklBG  +=histStat->GetBinContent(i+1);
+      if (b[ 7]) noV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 8]) noSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      if (b[ 9]) noSPDVtxPileup   +=histStat->GetBinContent(i+1);
+      if (b[10]) noV0PFPileup     +=histStat->GetBinContent(i+1);
+      if (b[11]) noV0Casym        +=histStat->GetBinContent(i+1);
+      if (b[15]) znInTime         +=histStat->GetBinContent(i+1);
       if (!b[ 3]) continue;
       if (!b[ 4]) continue;
       v0and+=histStat->GetBinContent(i+1);
       if (!b[ 5]) continue;
       plusNoSPDClsVsTrkBG+=histStat->GetBinContent(i+1);
       if (!b[ 6]) continue;
-      plusNoV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
+      plusNoV0C012vsTklBG+=histStat->GetBinContent(i+1);
       if (!b[ 7]) continue;
-      plusNoSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
+      plusNoV0MOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (!b[ 8]) continue;
-      plusNoSPDVtxPileup+=histStat->GetBinContent(i+1);
+      plusNoSPDOnVsOfPileup+=histStat->GetBinContent(i+1);
       if (!b[ 9]) continue;
-      plusNoV0PFPileup+=histStat->GetBinContent(i+1);
+      plusNoSPDVtxPileup+=histStat->GetBinContent(i+1);
       if (!b[10]) continue;
+      plusNoV0PFPileup+=histStat->GetBinContent(i+1);
+      if (!b[11]) continue;
       plusNoV0Casym+=histStat->GetBinContent(i+1);
     }
     fHistStat->Fill("all",trigger,all);
     fHistStat->Fill("accepted",trigger,accepted);
     fHistStat->Fill("V0A & V0C",trigger,v0and);
     fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
+    fHistStat->Fill("+ !V0C012vsTklBG",trigger,plusNoV0C012vsTklBG);
     fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
     fHistStat->Fill("+ !SPDOnVsOfPileup",trigger,plusNoSPDOnVsOfPileup);
     fHistStat->Fill("+ !SPDVtxPileup",trigger,plusNoSPDVtxPileup);
     fHistStat->Fill("+ !V0PFPileup",trigger,plusNoV0PFPileup);
     fHistStat->Fill("+ !V0Casym",trigger,plusNoV0Casym);
     fHistStat->Fill("!SPDClsVsTrkBG",trigger,noSPDClsVsTrkBG);
+    fHistStat->Fill("!V0C012vsTklBG",trigger,noV0C012vsTklBG);
     fHistStat->Fill("!V0MOnVsOfPileup",trigger,noV0MOnVsOfPileup);
     fHistStat->Fill("!SPDOnVsOfPileup",trigger,noSPDOnVsOfPileup);
     fHistStat->Fill("!SPDVtxPileup",trigger,noSPDVtxPileup);
@@ -544,6 +551,8 @@ void AliPhysicsSelection::FillStatistics(){
     fHistStat->Fill("!V0Casym",trigger,noV0Casym);
     fHistStat->Fill("ZN time",trigger,znInTime);
   }
+  fHistStat->LabelsDeflate("X");
+  fHistStat->LabelsDeflate("Y");
 }
 
 void AliPhysicsSelection::Print(const Option_t *option) const{
