@@ -27,7 +27,16 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   int kernelType=-1000;
   int xSmtPol2=-1000,ySmtPol2=-1000,zSmtPol2=-1000;
   float kernelWX=2.1,kernelWY=2.1,kernelWZ=1.7;
+  int detToUse = AliTPCDcalibRes::kUseTRDonly;
   //
+
+  // detectors to use >>>>>>>>>>>>>>>>
+  envs = gSystem->Getenv("distUseDet");
+  if (envs.IsDigit()) detToUse = envs.Atoi();
+  //
+  // detectors to use <<<<<<<<<<<<<<<<
+
+
   // binning >>>>>>>>>>>>>>>>>>>>>>>>>
   envs = gSystem->Getenv("distNBinsZ");
   if (envs.IsDigit()) nBinsZ = envs.Atoi();
@@ -71,6 +80,15 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   // Kernel Smoother settings <<<<<<<<
   //
   // set values
+
+  if (detToUse>=0 && detToUse<AliTPCDcalibRes::kNExtDetComb) {
+    ::Info("CreateResCalib","SetExternalDetectors %d",detToUse);
+    clb->SetExternalDetectors(detToUse);
+  }
+  else {
+    ::Info("CreateResCalib","Invalid value for distUseDet=%d, keep default %d",detToUse,clb->GetExternalDetectors());
+  }
+
   if (nMaxTracks>0) {
     ::Info("CreateResCalib","SetMaxTracks %d",nMaxTracks);
     clb->SetMaxTracks(nMaxTracks);
