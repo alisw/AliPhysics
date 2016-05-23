@@ -16,6 +16,8 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -55,7 +57,6 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fSelectedShapes(0),
@@ -85,7 +86,11 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fTreeObservableTagging(0)
 
 {
+   for(Int_t i=0;i<14;i++){
+    fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -96,7 +101,6 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fSelectedShapes(0), 
@@ -127,11 +131,12 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   
 {
   // Standard constructor.
-  
+  for(Int_t i=0;i<14;i++){
+    fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
-
-  DefineOutput(1, TTree::Class());
-
+  
+ DefineOutput(1, TList::Class());
+ DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -150,57 +155,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
- const Int_t nVar = 14;
- const Int_t nVarless = 10;
- 
-
-
-  fShapesVar = new Float_t [nVar]; 
-  TString *fShapesVarNames = new TString [nVar];
-
-  fShapesVarNames[0] = "partonCode"; 
-  fShapesVarNames[1] = "ptJet"; 
-  fShapesVarNames[2] = "ptDJet"; 
-  fShapesVarNames[3] = "mJet";
-  // fShapesVarNames[4] = "nbOfConst";
-  fShapesVarNames[4] = "angularity";
-  fShapesVarNames[5] = "circularity";
-  fShapesVarNames[6] = "lesub";
-  //fShapesVarNames[6] = "sigma2";
-
-  fShapesVarNames[7] = "ptJetMatch"; 
-  fShapesVarNames[8] = "ptDJetMatch"; 
-  fShapesVarNames[9] = "mJetMatch";
-  // fShapesVarNames[12] = "nbOfConstMatch";
-  fShapesVarNames[10] = "angularityMatch";
-  fShapesVarNames[11] = "circularityMatch";
-  fShapesVarNames[12] = "lesubMatch";
-  //fShapesVarNames[12] = "sigma2Match";
-  fShapesVarNames[13]="weightPythia";
-
-   for(Int_t ivar=0; ivar < nVar; ivar++){
-    cout<<"looping over variables"<<endl;
-    fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));}
-
-
 
 
  
-
-
-
-
-
-
-
-
-
- 
-   
-
-  
-
   fh2ResponseUW= new TH2F("fh2ResponseUW", "fh2ResponseUW", 100, 0, 200,  100, 0, 200); 
   fOutput->Add(fh2ResponseUW);
   fh2ResponseW= new TH2F("fh2ResponseW", "fh2ResponseW", 100, 0, 200,  100, 0, 200);
@@ -230,10 +187,54 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
   fOutput->Add(fNbOfConstvspT);
   
-  fOutput->Add(fTreeObservableTagging);
-  TH1::AddDirectory(oldStatus);
-  PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+  // =========== Switch on Sumw2 for all histos ===========
+  for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
+    TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
+    if (h1){
+      h1->Sumw2();
+      continue;
+    }
+    THnSparse *hn = dynamic_cast<THnSparse*>(fOutput->At(i));
+    if(hn)hn->Sumw2();
+  }
 
+    TH1::AddDirectory(oldStatus);
+    const Int_t nVar = 14;
+    const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
+    fTreeObservableTagging = new TTree(nameoutput, nameoutput);
+  
+ 
+ 
+  TString *fShapesVarNames = new TString [nVar];
+
+  fShapesVarNames[0] = "partonCode"; 
+  fShapesVarNames[1] = "ptJet"; 
+  fShapesVarNames[2] = "ptDJet"; 
+  fShapesVarNames[3] = "mJet";
+  // fShapesVarNames[4] = "nbOfConst";
+  fShapesVarNames[4] = "angularity";
+  fShapesVarNames[5] = "circularity";
+  fShapesVarNames[6] = "lesub";
+  //fShapesVarNames[6] = "sigma2";
+
+  fShapesVarNames[7] = "ptJetMatch"; 
+  fShapesVarNames[8] = "ptDJetMatch"; 
+  fShapesVarNames[9] = "mJetMatch";
+  // fShapesVarNames[12] = "nbOfConstMatch";
+  fShapesVarNames[10] = "angularityMatch";
+  fShapesVarNames[11] = "circularityMatch";
+  fShapesVarNames[12] = "lesubMatch";
+  //fShapesVarNames[12] = "sigma2Match";
+  fShapesVarNames[13]="weightPythia";
+
+   for(Int_t ivar=0; ivar < nVar; ivar++){
+    cout<<"looping over variables"<<endl;
+    fTreeObservableTagging->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/F", fShapesVarNames[ivar].Data()));}
+ 
+  PostData(1,fOutput);
+  PostData(2,fTreeObservableTagging);
+
+   delete [] fShapesVarNames;
 }
 
 //________________________________________________________________________
