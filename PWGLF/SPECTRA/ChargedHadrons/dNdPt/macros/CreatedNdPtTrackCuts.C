@@ -1906,7 +1906,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
 
 
   // TPC+ITS combine tracking + DCAr(pt) (2011)
-  if ((cutMode >= 2000) && (cutMode <= 2100))
+  if ((cutMode >= 2000) && (cutMode <= 2099))
   {
     //Int_t    minclsTPC=70;
     Float_t minNCrossedRowsTPC = 120;
