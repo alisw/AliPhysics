@@ -177,7 +177,7 @@ public:
   // Time Recalibration  
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
-  void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon) const;
+  void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon = kFALSE) const;
   
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
   void     SwitchOffTimeRecalibration()                  { fTimeRecalibration = kFALSE ; }
@@ -186,7 +186,7 @@ public:
   void     InitEMCALTimeRecalibrationFactors() ;
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
-  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon) const { 
+  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon = kFALSE) const { 
     if(fEMCALTimeRecalibrationFactors) 
       return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID); 
     else return 0 ; } 
