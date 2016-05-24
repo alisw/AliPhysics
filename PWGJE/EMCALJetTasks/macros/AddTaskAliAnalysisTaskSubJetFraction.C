@@ -275,7 +275,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,2,coutput2);
