@@ -306,6 +306,10 @@ private:
   TH2F*     fHmggSM_Zone5[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 5.
   TH2F*     fHmggSM_Zone6[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 6.
   TH2F*     fHmggSM_Zone7[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 7.
+  TH2F*     fhTopoClusterCase0[AliEMCALGeoParams::fgkEMCALModules];                //!<! Cell amplitude map for type 0 cluster in noisy quartet
+  TH2F*     fhTopoClusterCase1[AliEMCALGeoParams::fgkEMCALModules];                //!<! Cell amplitude map for type 1 cluster in noisy quartet
+  TH2F*     fhTopoClusterCase2[AliEMCALGeoParams::fgkEMCALModules];                //!<! Cell amplitude map for type 2 cluster in noisy quartet
+  TH2F*     fhTopoClusterCase3[AliEMCALGeoParams::fgkEMCALModules];                //!<! Cell amplitude map for type 3 cluster in noisy quartet
   TH2F*     fhTopoClusterAmpCase0[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 0 cluster in noisy quartet
   TH2F*     fhTopoClusterAmpCase1[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 1 cluster in noisy quartet
   TH2F*     fhTopoClusterAmpCase2[AliEMCALGeoParams::fgkEMCALModules];             //!<! Cell amplitude map for type 2 cluster in noisy quartet
