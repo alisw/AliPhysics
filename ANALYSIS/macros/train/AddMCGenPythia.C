@@ -12,7 +12,8 @@ AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Dou
 
 AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr,Float_t ptWeight) {
     
-  gSystem->Load("libpythia6_4_28");
+  if(tune==3)  gSystem->Load("libpythia6_4_28");
+   if(tune<3)  gSystem->Load("libpythia6_4_25");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6");
 
