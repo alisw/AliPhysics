@@ -1700,14 +1700,14 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
       {9999,9999}, // 0 ///1550 changed to 9999 on 9 Dec
       {1166,1168}, // 5
       { 953, 928}, // 10
-      { 995, 795}, // 15
-      { 817, 658}, // 20
-      { 666, 538}, // 25
-      { 536, 435}, // 30
-      { 428, 350}, // 35
-      { 337, 276}, // 40
-      { 260, 214},  // 45
-      { 0, 162}// 50 only max accessible
+      { 805, 795}, // 15
+      { 655, 658}, // 20
+      { 535, 538}, // 25
+      { 435, 435}, // 30
+      { 349, 350}, // 35
+      { 275, 276}, // 40
+      { 214, 214},  // 45
+      { 165, 162}// 50 only max accessible
     };
   Int_t PrimaryTracks5b[11][2] =
     {
@@ -1720,6 +1720,20 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
       {  34,  29}, // 75
       {  21,  18}, // 80
       {  13,  11}, // 85
+      {   0,   0},  // 90
+      {   0,   0}// 100 only max accessible
+    };
+  Int_t PrimaryTracksLHC11h5b[11][2] =
+    {
+      { 214, 214}, // 45
+      { 165, 162}, // 50
+      { 127, 125}, // 55
+      {  93, 100}, // 60
+      {  64,  63}, // 65
+      {  44,  44}, // 70
+      {  30,  29}, // 75
+      {  18,  18}, // 80
+      {  11,  11}, // 85
       {   0,   0},  // 90
       {   0,   0}// 100 only max accessible
     };
@@ -1767,9 +1781,15 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
   }
   else if (fModCentralityClass ==5){
     if(fMCEvent){
-      if(nprimaryTracks > PrimaryTracks5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5b[fCentralityMin][column])
-        return kTRUE;
-      else return kFALSE;
+      if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
+        if(nprimaryTracks > PrimaryTracksLHC11h5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC11h5b[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
+      } else {
+        if(nprimaryTracks > PrimaryTracks5b[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks5b[fCentralityMin][column])
+          return kTRUE;
+        else return kFALSE;
+      }
     }
     else{
       centralityC= Int_t(centrality);

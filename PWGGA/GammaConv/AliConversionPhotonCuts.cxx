@@ -2721,7 +2721,11 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     fChi2CutConversion = 200.;
     break;
   case 4:
-    fChi2CutConversion = 500.;
+    if (fIsHeavyIon==1){
+      fChi2CutConversion = 7.;
+    } else {
+      fChi2CutConversion = 500.;
+    }
     break;
   case 5:
     fChi2CutConversion = 100000.;
@@ -2772,7 +2776,11 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     fDo2DPsiPairChi2 = kTRUE;
     break;
   case 7:
-    fPsiPairCut = 0.035; //
+    if (fIsHeavyIon==1){
+      fPsiPairCut = 0.07; //
+    } else {
+      fPsiPairCut = 0.035; //
+    }
     fDo2DPsiPairChi2 = kTRUE;
     break;
   case 8:
