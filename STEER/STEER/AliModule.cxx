@@ -326,9 +326,9 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
 } 
  
 //_______________________________________________________________________
-void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
-                          Float_t theta2, Float_t phi2, Float_t theta3,
-                          Float_t phi3) const
+void AliModule::AliMatrix(Int_t &nmat, Double_t theta1, Double_t phi1,
+                          Double_t theta2, Double_t phi2, Double_t theta3,
+                          Double_t phi3) const
 {
   // 
   // Define a rotation matrix. Angles are in degrees.

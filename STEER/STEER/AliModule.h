@@ -72,9 +72,9 @@ public:
                           Float_t tmaxfd, Float_t stemax, Float_t deemax,
                           Float_t epsil, Float_t stmin, Float_t *ubuf=0,
                           Int_t nbuf=0) const;
-  virtual void AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
-                          Float_t theta2, Float_t phi2, Float_t theta3,
-                          Float_t phi3) const;
+  void AliMatrix(Int_t &nmat, Double_t theta1, Double_t phi1,
+                 Double_t theta2, Double_t phi2, Double_t theta3,
+                 Double_t phi3) const;
   
   // Virtual methods
   virtual void  BuildGeometry() {};
