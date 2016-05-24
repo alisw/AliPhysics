@@ -149,6 +149,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
 
   ,fDTS()
   ,fDTC()
+  ,fDeltaStr()
 
   ,fTimeStamp(0)
   ,fNCl(0)
@@ -365,8 +366,9 @@ void AliTPCDcalibRes::Init()
   }
 
   // init histo for track rate
-  Long64_t tmn = fTMinGRP-fTMin>1000 ? fTMinGRP-100 : fTMin;
-  Long64_t tmx = fTMax-fTMaxGRP>1000 ? fTMaxGRP+100 : fTMax;
+  const Long64_t kLargeTimeDiff = 1000*3600; // to allow process close runs together in special mode
+  Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
+  Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
   fTracksRate = new TH1F("TracksRate","TracksRate", 1+tmx-tmn, -0.5+tmn,0.5+tmx);
   fTracksRate->SetDirectory(0);
   //
@@ -395,19 +397,108 @@ void AliTPCDcalibRes::Init()
 }
 
 //_____________________________________________________
+void AliTPCDcalibRes::CloseDeltaFile(TTree* dtree)
+{
+  // close input delta chunk
+  TFile* fl = 0;
+  TDirectory* dir = dtree->GetDirectory();
+  if (dir) fl = dir->GetFile();
+  delete dtree;
+  if (fl) fl->Close();
+  delete fl;
+}
+
+//_____________________________________________________
+TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const char* treeName) 
+{
+  // init residuals delta file, attach necessary branches
+  // 
+  static delta_t *delta = &fDeltaStr;
+  TString fileNameString(name);
+  if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
+  TFile* file = TFile::Open(fileNameString.Data());
+  if (!file) {
+    AliErrorF("Cannot open file %s",fileNameString.Data());
+    return 0;
+  }
+  TTree* tree = (TTree*)file->Get(treeName);
+  if (!tree) {
+    AliErrorF("No tree %s in %s",treeName,fileNameString.Data());
+    delete file; file = 0;
+    return 0;
+  }
+  //
+  if (!connect) return tree;
+  //
+  Bool_t needTRD = fExtDet==kUseTRDorTOF || fExtDet==kUseTRDonly;
+  Bool_t needTOF = fExtDet==kUseTRDorTOF || fExtDet==kUseTOFonly;
+  //
+  tree->SetCacheLearnEntries(fLearnSize);
+  tree->SetCacheSize(0);
+  tree->SetCacheSize(fCacheInp*kMByte);
+  //
+  tree->SetBranchStatus("*",kFALSE);
+  tree->SetBranchStatus("timeStamp",kTRUE);
+  tree->SetBranchStatus("itsOK",kTRUE);
+  tree->SetBranchStatus("trdOK",kTRUE);
+  tree->SetBranchStatus("tofOK",kTRUE);
+  tree->SetBranchStatus("vecR.",kTRUE);
+  tree->SetBranchStatus("vecSec.",kTRUE);
+  tree->SetBranchStatus("vecPhi.",kTRUE);
+  tree->SetBranchStatus("vecZ.",kTRUE);
+  tree->SetBranchStatus("track.*",kTRUE);      
+  tree->SetBranchStatus("npValid",kTRUE);
+  tree->SetBranchStatus("its0.",kTRUE);
+  tree->SetBranchStatus("its1.",kTRUE);
+  //
+  tree->SetBranchAddress("timeStamp",&fDeltaStr.timeStamp);
+  tree->SetBranchAddress("itsOK",&fDeltaStr.itsOK);
+  tree->SetBranchAddress("trdOK",&fDeltaStr.trdOK);
+  tree->SetBranchAddress("tofOK",&fDeltaStr.tofOK);
+  tree->SetBranchAddress("vecR.",&fDeltaStr.vecR);
+  tree->SetBranchAddress("vecSec.",&fDeltaStr.vecSec);
+  tree->SetBranchAddress("vecPhi.",&fDeltaStr.vecPhi);
+  tree->SetBranchAddress("vecZ.",&fDeltaStr.vecZ);
+  tree->SetBranchAddress("track.",&fDeltaStr.param);
+  tree->SetBranchAddress("npValid",&fDeltaStr.npValid);
+  tree->SetBranchAddress("its0.",&fDeltaStr.vecDYITS);
+  tree->SetBranchAddress("its1.",&fDeltaStr.vecDZITS);
+  //
+  if (fNPrimTracksCut>0) {
+    tree->SetBranchStatus("nPrimTracks",kTRUE);
+    tree->SetBranchAddress("nPrimTracks",&fDeltaStr.nPrimTracks);
+  }
+  //
+  if (needTRD) {
+    tree->SetBranchStatus("trd0.",kTRUE);
+    tree->SetBranchStatus("trd1.",kTRUE);
+    tree->SetBranchAddress("trd0.",&fDeltaStr.vecDYTRD);
+    tree->SetBranchAddress("trd1.",&fDeltaStr.vecDZTRD);
+  }
+  if (needTOF) {
+    tree->SetBranchStatus("tof0.",kTRUE);
+    tree->SetBranchStatus("tof1.",kTRUE);
+    tree->SetBranchAddress("tof0.",&fDeltaStr.vecDYTOF);
+    tree->SetBranchAddress("tof1.",&fDeltaStr.vecDZTOF);
+  }
+  //
+  if (fUseTOFBC) {
+    tree->SetBranchStatus("tofBC",kTRUE);
+    tree->SetBranchAddress("tofBC",&fDeltaStr.tofBC);
+  }
+  //
+  tree->GetEntry(0);
+  //
+  return tree;
+}
+
+//_____________________________________________________
 void AliTPCDcalibRes::CollectData(int mode) 
 {
   const float kEps = 1e-6;
   const float q2ptIniTolerance = 1.5;
   if (!fInitDone) Init();
   if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
-  //  gEnv->SetValue("TFile.AsyncPrefetching", 1);
-  TVectorF *vecDYTRD=0,*vecDZTRD=0,*vecDYITS=0,*vecDZITS=0,*vecDYTOF=0,*vecDZTOF=0,*vecZ=0,*vecR=0,*vecSec=0,*vecPhi=0;
-  UShort_t npValid = 0;
-  Int_t nPrimTracks = 0;
-  Char_t trdOK=0,tofOK=0,itsOK=0;
-  Double_t tofBC = 0.0;
-  AliExternalTrackParam* param = 0;
   //
   TStopwatch swTot;
   swTot.Start();
@@ -427,75 +518,16 @@ void AliTPCDcalibRes::CollectData(int mode)
   //
   AliSysInfo::AddStamp("ProjInit",0,0,0,0);
   //
-  Bool_t needTRD = fExtDet==kUseTRDorTOF || fExtDet==kUseTRDonly;
-  Bool_t needTOF = fExtDet==kUseTRDorTOF || fExtDet==kUseTOFonly;
-  //
   for (int ichunk=0;ichunk<nChunks;ichunk++) {
     //
     int ntrSelChunkWO=0, ntrSelChunk=0,nReadCallsChunk=0,nBytesReadChunk=0;
     //
     TStopwatch swc;
     swc.Start();
-    TString fileNameString(chunkArray->At(ichunk)->GetName());
-    if (fileNameString.Contains("alien://") && (!gGrid || (gGrid && !gGrid->IsConnected()))) TGrid::Connect("alien://");
-    TFile *chunkFile = TFile::Open(fileNameString.Data());
-    if (!chunkFile) continue;
-    TTree *tree = (TTree*)chunkFile->Get("delta");
-    if (!tree) {AliWarningF("No delta tree in %s",fileNameString.Data());continue;}
-    tree->SetCacheLearnEntries(fLearnSize);
-    tree->SetCacheSize(0);
-    tree->SetCacheSize(fCacheInp*kMByte);
+    TString deltaFName = chunkArray->At(ichunk)->GetName();
+    TTree *tree = InitDeltaFile(deltaFName.Data());
+    if (!tree) continue;
     //
-    tree->SetBranchStatus("*",kFALSE);
-    if (fNPrimTracksCut>0) tree->SetBranchStatus("nPrimTracks",kTRUE);
-    tree->SetBranchStatus("timeStamp",kTRUE);
-    tree->SetBranchStatus("itsOK",kTRUE);
-    tree->SetBranchStatus("trdOK",kTRUE);
-    tree->SetBranchStatus("tofOK",kTRUE);
-    tree->SetBranchStatus("vecR.",kTRUE);
-    tree->SetBranchStatus("vecSec.",kTRUE);
-    tree->SetBranchStatus("vecPhi.",kTRUE);
-    tree->SetBranchStatus("vecZ.",kTRUE);
-    tree->SetBranchStatus("track.*",kTRUE);      
-    tree->SetBranchStatus("npValid",kTRUE);
-    tree->SetBranchStatus("its0.",kTRUE);
-    tree->SetBranchStatus("its1.",kTRUE);
-    //
-    tree->SetBranchAddress("timeStamp",&fTimeStamp);
-    tree->SetBranchAddress("itsOK",&itsOK);
-    tree->SetBranchAddress("trdOK",&trdOK);
-    tree->SetBranchAddress("tofOK",&tofOK);
-    if (fNPrimTracksCut>0) tree->SetBranchAddress("nPrimTracks",&nPrimTracks);
-    tree->SetBranchAddress("vecR.",&vecR);
-    tree->SetBranchAddress("vecSec.",&vecSec);
-    tree->SetBranchAddress("vecPhi.",&vecPhi);
-    tree->SetBranchAddress("vecZ.",&vecZ);
-    tree->SetBranchAddress("track.",&param);
-    tree->SetBranchAddress("npValid",&npValid);
-    tree->SetBranchAddress("its0.",&vecDYITS);
-    tree->SetBranchAddress("its1.",&vecDZITS);
-    //
-    if (needTRD) {
-      tree->SetBranchStatus("trd0.",kTRUE);
-      tree->SetBranchStatus("trd1.",kTRUE);
-      tree->SetBranchAddress("trd0.",&vecDYTRD);
-      tree->SetBranchAddress("trd1.",&vecDZTRD);
-    }
-    if (needTOF) {
-      tree->SetBranchStatus("tof0.",kTRUE);
-      tree->SetBranchStatus("tof1.",kTRUE);
-      tree->SetBranchAddress("tof0.",&vecDYTOF);
-      tree->SetBranchAddress("tof1.",&vecDZTOF);
-    }
-    //
-    if (fUseTOFBC) {
-      tree->SetBranchStatus("tofBC",kTRUE);
-      tree->SetBranchAddress("tofBC",&tofBC);
-    }
-    //
-
-    tree->GetEntry(0);
-
     TBranch* brTime = tree->GetBranch("timeStamp");
     TBranch* brTRDOK = tree->GetBranch("trdOK");
     TBranch* brTOFOK = tree->GetBranch("tofOK");
@@ -504,7 +536,7 @@ void AliTPCDcalibRes::CollectData(int mode)
     if (fUseTOFBC) brTOFBC = tree->GetBranch("tofBC");
     //
     int nTracks = tree->GetEntries();
-    AliInfoF("Processing %d tracks of %s",nTracks,fileNameString.Data());
+    AliInfoF("Processing %d tracks of %s",nTracks,deltaFName.Data());
 
     float residHelixY[kNPadRows],residHelixZ[kNPadRows];
     //
@@ -512,6 +544,7 @@ void AliTPCDcalibRes::CollectData(int mode)
     Bool_t lastReadMatched = kFALSE; 
     for (int itr=0;itr<nTracks;itr++) {
       nBytesReadChunk += brTime->GetEntry(itr);
+      fTimeStamp = fDeltaStr.timeStamp;
       if (fTimeStamp<fTMin  || fTimeStamp>fTMax) {
 	if (lastReadMatched && fSwitchCache) { // reset the cache
 	  tree->SetCacheSize(0);
@@ -524,12 +557,12 @@ void AliTPCDcalibRes::CollectData(int mode)
       brITSOK->GetEntry(itr);
       brTRDOK->GetEntry(itr);
       brTOFOK->GetEntry(itr);
-      if (!itsOK) continue;     
-      if (!trdOK && fExtDet==kUseTRDonly) continue;
-      if (!tofOK && fExtDet==kUseTOFonly) continue;
-      if (!tofOK && !trdOK && fExtDet!=kUseITSonly) continue;
+      if (!fDeltaStr.itsOK) continue;     
+      if (!fDeltaStr.trdOK && fExtDet==kUseTRDonly) continue;
+      if (!fDeltaStr.tofOK && fExtDet==kUseTOFonly) continue;
+      if (!fDeltaStr.tofOK && !fDeltaStr.trdOK && fExtDet!=kUseITSonly) continue;
       //
-      if (brTOFBC && brTOFBC->GetEntry(itr) && (tofBC<fTOFBCMin || tofBC>fTOFBCMax)) continue;      
+      if (brTOFBC && brTOFBC->GetEntry(itr) && (fDeltaStr.tofBC<fTOFBCMin || fDeltaStr.tofBC>fTOFBCMax)) continue;      
       //
       if (!lastReadMatched && fSwitchCache) { // reset the cache before switching to event reading mode
 	tree->SetCacheSize(0);
@@ -537,38 +570,38 @@ void AliTPCDcalibRes::CollectData(int mode)
       }
       lastReadMatched = kTRUE;
       nBytesReadChunk += tree->GetEntry(itr);
-      if (fNPrimTracksCut>0 && nPrimTracks>fNPrimTracksCut) continue;
+      if (fNPrimTracksCut>0 && fDeltaStr.nPrimTracks>fNPrimTracksCut) continue;
       //
-      fQ2Pt = param->GetParameter()[4];
-      fTgLam = param->GetParameter()[3];
+      fQ2Pt = fDeltaStr.param->GetParameter()[4];
+      fTgLam = fDeltaStr.param->GetParameter()[3];
       if (TMath::Abs(fQ2Pt)>kMaxQ2Pt*q2ptIniTolerance) continue;
       //
-      const Float_t *vSec= vecSec->GetMatrixArray();
-      const Float_t *vPhi= vecPhi->GetMatrixArray();
-      const Float_t *vR  = vecR->GetMatrixArray();
-      const Float_t *vZ  = vecZ->GetMatrixArray();
-      const Float_t *vDYITS = vecDYITS->GetMatrixArray();
-      const Float_t *vDZITS = vecDZITS->GetMatrixArray();
+      const Float_t *vSec= fDeltaStr.vecSec->GetMatrixArray();
+      const Float_t *vPhi= fDeltaStr.vecPhi->GetMatrixArray();
+      const Float_t *vR  = fDeltaStr.vecR->GetMatrixArray();
+      const Float_t *vZ  = fDeltaStr.vecZ->GetMatrixArray();
+      const Float_t *vDYITS = fDeltaStr.vecDYITS->GetMatrixArray();
+      const Float_t *vDZITS = fDeltaStr.vecDZITS->GetMatrixArray();
       //
       const Float_t *vDY=0,*vDZ = 0;
-      if (fExtDet==kUseTRDonly || (fExtDet==kUseTRDorTOF && trdOK)) {
-	vDY = vecDYTRD->GetMatrixArray();
-	vDZ = vecDZTRD->GetMatrixArray();
+      if (fExtDet==kUseTRDonly || (fExtDet==kUseTRDorTOF && fDeltaStr.trdOK)) {
+	vDY = fDeltaStr.vecDYTRD->GetMatrixArray();
+	vDZ = fDeltaStr.vecDZTRD->GetMatrixArray();
       }
       else if (fExtDet==kUseITSonly) {  // ignore other detectos
-	vDY = vecDYITS->GetMatrixArray();
-	vDZ = vecDZITS->GetMatrixArray();
+	vDY = fDeltaStr.vecDYITS->GetMatrixArray();
+	vDZ = fDeltaStr.vecDZITS->GetMatrixArray();
       }
       else { // only TOF
-	vDY = vecDYTOF->GetMatrixArray();
-	vDZ = vecDZTOF->GetMatrixArray();	
+	vDY = fDeltaStr.vecDYTOF->GetMatrixArray();
+	vDZ = fDeltaStr.vecDZTOF->GetMatrixArray();	
       }
       //
       fCorrTime = (fVDriftGraph!=NULL) ? fVDriftGraph->Eval(fTimeStamp):0; // for VDrift correction
       //
       fNCl = 0;
       // 1st iteration: collect data in cluster frame
-      for (int ip=0;ip<npValid;ip++) { // 1st fill selected track data to buffer for eventual outlier rejection
+      for (int ip=0;ip<fDeltaStr.npValid;ip++) { // 1st fill selected track data to buffer for eventual outlier rejection
 	if (vR[ip]<kInvalidR || vDY[ip]<kInvalidRes || vDYITS[ip]<kInvalidRes) continue;
 	//
 	fArrX[fNCl]   = vR[ip];  // X (R) is the same for cluster and track
@@ -581,7 +614,7 @@ void AliTPCDcalibRes::CollectData(int mode)
 	// !!! fArrZTr corresponds to ITS track Z, we need that of TRD-ITS
 	fArrZTr[fNCl] += fArrDZ[fNCl] - vDZITS[ip]; // recover ITS-TRD track position from ITS and deltas
 	
-	if (fFixAlignmentBug && !param->TestBit(kAlignmentBugFixedBit)) {
+	if (fFixAlignmentBug && !fDeltaStr.param->TestBit(kAlignmentBugFixedBit)) {
 	  FixAlignmentBug(rocID, fQ2Pt, fBz, fArrPhi[fNCl], fArrX[fNCl], fArrZTr[fNCl], fArrDY[fNCl],fArrDZ[fNCl]);
 	}
 	if (fArrPhi[fNCl]<0) fArrPhi[fNCl] += 2.*TMath::Pi();
@@ -675,7 +708,8 @@ void AliTPCDcalibRes::CollectData(int mode)
     } // loop over tracks
     //
     swc.Stop();
-    nReadCallsChunk =  chunkFile->GetReadCalls();
+    TFile* chunkFile = tree->GetDirectory()?tree->GetDirectory()->GetFile():0;
+    nReadCallsChunk =  chunkFile ? chunkFile->GetReadCalls():0;
     AliInfoF("Chunk%3d: selected %d tracks (%d with outliers) from chunk %d | %.1f MB read in %d read calls",
 	     ichunk,ntrSelChunk,ntrSelChunkWO, ichunk,float(nBytesReadChunk)/kMByte,nReadCallsChunk); swc.Print();
     fNTrSelTot += ntrSelChunk;
@@ -683,10 +717,7 @@ void AliTPCDcalibRes::CollectData(int mode)
     fNReadCallTot += nReadCallsChunk;
     fNBytesReadTot += nBytesReadChunk;
     //
-    delete tree;
-    chunkFile->Close();
-    delete chunkFile;
-    //
+    CloseDeltaFile(tree);
     AliSysInfo::AddStamp("ProjTreeLoc", ichunk ,fNTrSelTot,fNTrSelTot,fNReadCallTot );
     //
     if (fNTrSelTot > fMaxTracks) {

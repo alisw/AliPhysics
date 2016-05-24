@@ -94,6 +94,17 @@ class AliTPCDcalibRes: public TNamed
     bres_t() {memset(this,0,sizeof(bres_t));}
   };
  
+  struct delta_t { // structure to organized the input from delta trees
+    TVectorF *vecDYTRD,*vecDZTRD,*vecDYITS,*vecDZITS,*vecDYTOF,*vecDZTOF,*vecZ,*vecR,*vecSec,*vecPhi;
+    AliExternalTrackParam* param;
+    Double_t tofBC;
+    Int_t nPrimTracks;
+    Int_t timeStamp;
+    UShort_t npValid;
+    Char_t trdOK,tofOK,itsOK;
+    delta_t() {memset(this,0,sizeof(delta_t));}
+  };
+
  public:
 
   AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
@@ -104,6 +115,8 @@ class AliTPCDcalibRes: public TNamed
   void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
   void Save(const char* name=0);
 
+  TTree* InitDeltaFile(const char* name, Bool_t connect=kTRUE, const char* treeName="delta");
+  void CloseDeltaFile(TTree* dtree);
   void Init();
   void CollectData(int mode = kExtractMode);
   void FillLocalResidualsTrees();
@@ -440,6 +453,7 @@ class AliTPCDcalibRes: public TNamed
   // ----------------------------data exchange structures for trees and between routines
   dts_t fDTS;                            //! binned residuals
   dtc_t fDTC;                            //! corrected residuals for closure test
+  delta_t fDeltaStr;                     //! input from delta tree
   //
   // ---------------------------track data-----------------------------------
   int   fTimeStamp;                       //! time stamp
