@@ -56,7 +56,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction(0),               fNonLinearThreshold(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
-  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       
+  fConstantTimeShift(0),                  fTimeRecalibration(kFALSE),             fEMCALTimeRecalibrationFactors(),       fLowGain(kFALSE),
   fUseL1PhaseInTimeRecalibration(kFALSE), fEMCALL1PhaseInTimeRecalibration(),
   fUseRunCorrectionFactors(kFALSE),       
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
@@ -101,6 +101,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
   fConstantTimeShift(reco.fConstantTimeShift),  
   fTimeRecalibration(reco.fTimeRecalibration),               fEMCALTimeRecalibrationFactors(reco.fEMCALTimeRecalibrationFactors),
+  fLowGain(reco.fLowGain),
   fUseL1PhaseInTimeRecalibration(reco.fUseL1PhaseInTimeRecalibration), 
   fEMCALL1PhaseInTimeRecalibration(reco.fEMCALL1PhaseInTimeRecalibration),
   fUseRunCorrectionFactors(reco.fUseRunCorrectionFactors),   
@@ -164,7 +165,8 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fConstantTimeShift         = reco.fConstantTimeShift;
   fTimeRecalibration         = reco.fTimeRecalibration;
   fEMCALTimeRecalibrationFactors = reco.fEMCALTimeRecalibrationFactors;
-  
+  fLowGain                   = reco.fLowGain;
+
   fUseL1PhaseInTimeRecalibration   = reco.fUseL1PhaseInTimeRecalibration;
   fEMCALL1PhaseInTimeRecalibration = reco.fEMCALL1PhaseInTimeRecalibration;
   
@@ -364,8 +366,9 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   // Recalibrate time
   time = cells->GetCellTime(absID);
   time-=fConstantTimeShift*1e-9; // only in case of old Run1 simulation
-  
-  RecalibrateCellTime(absID,bc,time);
+  Bool_t isLowGain = !(cells->GetCellHighGain(absID));//HG = false -> LG = true
+
+  RecalibrateCellTime(absID,bc,time,isLowGain);
   
   //Recalibrate time with L1 phase 
   RecalibrateCellTimeL1Phase(imod, bc, time);
@@ -1315,17 +1318,31 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  fEMCALTimeRecalibrationFactors = new TObjArray(4);
+  if(fLowGain) fEMCALTimeRecalibrationFactors = new TObjArray(8);
+  else fEMCALTimeRecalibrationFactors = new TObjArray(4);
+
   for (int i = 0; i < 4; i++) 
     fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
                                                  48*24*22,0.,48*24*22)          );
-  // Init the histograms with 1
-  for (Int_t bc = 0; bc < 4; bc++) 
+  // Init the histograms with 0
+  for (Int_t iBC = 0; iBC < 4; iBC++) 
   {
-    for (Int_t i = 0; i < 48*24*22; i++) 
-      SetEMCALChannelTimeRecalibrationFactor(bc,i,0.);
+    for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+      SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kFALSE);
   }
+
+  if(fLowGain) {
+    for (int iBC = 0; iBC < 4; iBC++) {
+      fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvLGBC%d",iBC),
+						   Form("hAllTimeAvLGBC%d",iBC),  
+						   48*24*22,0.,48*24*22)        );
+      for (Int_t iCh = 0; iCh < 48*24*22; iCh++) 
+	SetEMCALChannelTimeRecalibrationFactor(iBC,iCh,0.,kTRUE);
+    }
+  }
+
+
   
   fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
   fEMCALTimeRecalibrationFactors->Compress();
@@ -1456,10 +1473,11 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(const AliEMCALGeometry* geom,
   
   // Recalculate time of cluster
   Double_t timeorg = cluster->GetTOF();
-  
+  Bool_t isLowGain = !(cells->GetCellHighGain(absIdMax));//HG = false -> LG = true
+
   Double_t time = cells->GetCellTime(absIdMax);
   if (!fCellsRecalibrated && IsTimeRecalibrationOn())
-    RecalibrateCellTime(absIdMax,bc,time);
+    RecalibrateCellTime(absIdMax,bc,time,isLowGain);
   time-=fConstantTimeShift*1e-9; // only in case of Run1 old simulations
   
   // Recalibrate time with L1 phase 
@@ -1526,10 +1544,14 @@ void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc)
 /// \param celltime: cell time to be returned calibrated
 ///
 //_______________________________________________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & celltime) const
+void AliEMCALRecoUtils::RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & celltime, Bool_t isLGon) const
 {  
-  if (!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0) 
-    celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9;    ;  
+  if (!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0) {
+    if(fLowGain)
+      celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId,isLGon)*1.e-9;
+    else
+      celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId,kFALSE)*1.e-9;
+  }
 }
 
 ///
@@ -1908,6 +1930,7 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
   Double_t tCell       = 0.;
   Float_t  fraction    = 1.;
   Float_t  recalFactor = 1.;
+  Bool_t   isLowGain   = kFALSE;
 
   Int_t    iSupMod = -1;
   Int_t    iTower  = -1;
@@ -1955,8 +1978,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
-    
-    RecalibrateCellTime(absId, bc, tCell);
+    isLowGain = !(cells->GetCellHighGain(absId));//HG = false -> LG = true
+
+    RecalibrateCellTime(absId, bc, tCell,isLowGain);
     tCell*=1e9;
     tCell-=fConstantTimeShift;
 
@@ -1985,8 +2009,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
-    
-    RecalibrateCellTime(absId, bc, tCell);
+    isLowGain = !(cells->GetCellHighGain(absId));//HG = false -> LG = true
+
+    RecalibrateCellTime(absId, bc, tCell,isLowGain);
     tCell*=1e9;
     tCell-=fConstantTimeShift;
     
@@ -2044,8 +2069,9 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParametersWithCellCuts(cons
     
     eCell  = cells->GetCellAmplitude(absId)*fraction*recalFactor;
     tCell  = cells->GetCellTime     (absId);
-    
-    RecalibrateCellTime(absId, bc, tCell);
+    isLowGain = !(cells->GetCellHighGain(absId));//HG = false -> LG = true
+
+    RecalibrateCellTime(absId, bc, tCell,isLowGain);
     tCell*=1e9;
     tCell-=fConstantTimeShift;
 

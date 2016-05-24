@@ -177,7 +177,7 @@ public:
   // Time Recalibration  
   void     SetConstantTimeShift(Float_t shift)           { fConstantTimeShift = shift  ; }
 
-  void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time) const;
+  void     RecalibrateCellTime(Int_t absId, Int_t bc, Double_t & time,Bool_t isLGon) const;
   
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
   void     SwitchOffTimeRecalibration()                  { fTimeRecalibration = kFALSE ; }
@@ -186,18 +186,23 @@ public:
   void     InitEMCALTimeRecalibrationFactors() ;
   TObjArray* GetEMCALTimeRecalibrationFactorsArray() const { return fEMCALTimeRecalibrationFactors ; }
 
-  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID) const { 
+  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Bool_t isLGon) const { 
     if(fEMCALTimeRecalibrationFactors) 
-      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->GetBinContent(absID); 
+      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->GetBinContent(absID); 
     else return 0 ; } 
-  void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0) { 
+  void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID, Double_t c = 0, Bool_t isLGon=kFALSE) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
-    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->SetBinContent(absID,c) ; }  
+    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
   TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
   void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALTimeRecalibrationFactors = map                 ; }
   void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
-  
+
+  Bool_t   IsLGOn()const { return fLowGain   ; }
+  void     SwitchOffLG() { fLowGain = kFALSE ; }
+  void     SwitchOnLG()  { fLowGain = kTRUE  ; }
+
+
   // Time Recalibration with L1 phase
   Bool_t   IsL1PhaseInTimeRecalibrationOn()          const { return fUseL1PhaseInTimeRecalibration   ; }
   void     SwitchOffL1PhaseInTimeRecalibration()           { fUseL1PhaseInTimeRecalibration = kFALSE ; }
@@ -433,6 +438,7 @@ private:
   Float_t    fConstantTimeShift;         ///< Apply a 600 ns (+15.8) time shift in case of simulation, shift in ns.
   Bool_t     fTimeRecalibration;         ///< Switch on or off the time recalibration
   TObjArray* fEMCALTimeRecalibrationFactors;   ///< Array of histograms with map of time recalibration factors, EMCAL
+  Bool_t     fLowGain;                   ///< Switch on or off calibration with low gain channels
 
   // Time Recalibration with L1 phase 
   Bool_t     fUseL1PhaseInTimeRecalibration;   ///< Switch on or off the L1 phase in time recalibration
