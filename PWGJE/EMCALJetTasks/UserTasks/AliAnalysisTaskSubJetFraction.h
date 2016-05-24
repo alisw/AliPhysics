@@ -17,7 +17,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-
+const Int_t nVar = 18;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -97,8 +97,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
-  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Double_t                            *fShapesVar;                  // jet shapes used for the tagging
+  JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
+  Double_t                            fShapesVar[nVar];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
 

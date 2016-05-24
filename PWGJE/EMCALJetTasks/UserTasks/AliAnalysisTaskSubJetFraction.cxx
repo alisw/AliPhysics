@@ -17,6 +17,8 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include "TMatrixD.h"
 #include "TMatrixDSym.h"
 #include "TMatrixDSymEigen.h"
@@ -75,7 +77,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fminpTTrig(20.),
@@ -182,7 +183,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fTreeResponseMatrixAxis(0)
 
 {
+  for(Int_t i=0;i<nVar;i++){
+    fShapesVar[i]=0;
+  }
   SetMakeGeneralHistograms(kTRUE);
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -193,7 +199,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fJetShapeType(kData),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fminpTTrig(20.),
@@ -301,11 +306,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   
 {
   // Standard constructor.
-  
+  for(Int_t i=0;i<nVar;i++){
+    fShapesVar[i]=0;
+  }
   SetMakeGeneralHistograms(kTRUE);
-
-  DefineOutput(1, TTree::Class());
-
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -323,12 +329,11 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  TH1::AddDirectory(oldStatus);
   //create a tree used for the MC data and making a 4D response matrix
-  fTreeResponseMatrixAxis = new TTree("fTreeJetShape", "fTreeJetShape");
+  const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
+  fTreeResponseMatrixAxis = new TTree(nameoutput, nameoutput);
   if (fFullTree){
-    const Int_t nVar = 18;
-    fShapesVar = new Double_t [nVar]; //shapes used for tagging   
     TString *fShapesVarNames = new TString [nVar];
   
     fShapesVarNames[0] = "Pt";
@@ -356,9 +361,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
   }
   
   if (!fFullTree){
-    const Int_t nVar = 12;
-    fShapesVar = new Double_t [nVar]; //shapes used for tagging   
-    TString *fShapesVarNames = new TString [nVar];
+    const Int_t nVarMin = 12; 
+    TString *fShapesVarNames = new TString [nVarMin];
   
     fShapesVarNames[0] = "Pt";
     fShapesVarNames[1] = "Pt_Truth";
@@ -372,7 +376,7 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[9] = "OpeningAngle_Truth";
     fShapesVarNames[10] = "JetMultiplicity";
     fShapesVarNames[11] = "JetMultiplicity_Truth";
-    for(Int_t ivar=0; ivar < nVar; ivar++){
+    for(Int_t ivar=0; ivar < nVarMin; ivar++){
       cout<<"looping over variables"<<endl;
       fTreeResponseMatrixAxis->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar], Form("%s/D", fShapesVarNames[ivar].Data()));
     }
@@ -560,9 +564,10 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fhEventCounter= new TH1F("fhEventCounter", "Event Counter", 15,0.5,15.5);
     fOutput->Add(fhEventCounter);
   }
-  fOutput->Add(fTreeResponseMatrixAxis);
-  TH1::AddDirectory(oldStatus);
-  PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+  
+  PostData(1,fOutput);
+  PostData(2,fTreeResponseMatrixAxis);
+  // delete [] fShapesVarNames;
 }
 
 //________________________________________________________________________
