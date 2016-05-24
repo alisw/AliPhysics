@@ -131,6 +131,10 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
+    fhTopoClusterCase0[iSM]          =0;
+    fhTopoClusterCase1[iSM]          =0;
+    fhTopoClusterCase2[iSM]          =0;
+    fhTopoClusterCase3[iSM]          =0;
     fhTopoClusterAmpCase0[iSM]       =0;
     fhTopoClusterAmpCase1[iSM]       =0;
     fhTopoClusterAmpCase2[iSM]       =0;
@@ -246,6 +250,10 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
     fMatrix[iSM]                     = 0x0;
     fhClusterTimeSM[iSM]             = 0;
+    fhTopoClusterCase0[iSM]          =0;
+    fhTopoClusterCase1[iSM]          =0;
+    fhTopoClusterCase2[iSM]          =0;
+    fhTopoClusterCase3[iSM]          =0;
     fhTopoClusterAmpCase0[iSM]       =0;
     fhTopoClusterAmpCase1[iSM]       =0;
     fhTopoClusterAmpCase2[iSM]       =0;
@@ -415,31 +423,38 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       
       for(Int_t iCell = 0; iCell < c1->GetNCells(); iCell++)
       {
-        Int_t iSupMod = -1, iIeta =-1, iIphi =-1, iTower =-1;
+        Int_t iSupMod = -1, iIeta =-1, iIphi =-1, iTower =-1, ietaCell =-1, iphiCell =-1;
         
         Int_t CellID = c1->GetCellsAbsId()[iCell];
         geom->GetCellIndex(CellID,iSupMod,iTower,iIphi,iIeta);
-        Float_t AmpFraction = c1->GetCellAmplitudeFraction(CellID);
+        geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta,iphiCell,ietaCell);
+//        Float_t AmpFraction = c1->GetCellAmplitudeFraction(CellID);
         Float_t amp = fEMCALCells->GetCellAmplitude(CellID);
+        
+        Float_t AmpFraction = amp / e1i;
         
         AliDebug(0,Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iIphi,iIeta,amp,AmpFraction));
         
         switch (iPosInNoisyQuartet) {
           case 0:
-            fhTopoClusterAmpCase0[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
-            fhTopoClusterAmpFractionCase0[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            fhTopoClusterCase0[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1);
+            fhTopoClusterAmpCase0[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,amp);
+            fhTopoClusterAmpFractionCase0[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,AmpFraction);
             break;
           case 1:
-            fhTopoClusterAmpCase1[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
-            fhTopoClusterAmpFractionCase1[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            fhTopoClusterCase1[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1);
+            fhTopoClusterAmpCase1[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,amp);
+            fhTopoClusterAmpFractionCase1[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,AmpFraction);
             break;
           case 2:
-            fhTopoClusterAmpCase2[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
-            fhTopoClusterAmpFractionCase2[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            fhTopoClusterCase2[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1);
+            fhTopoClusterAmpCase2[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,amp);
+            fhTopoClusterAmpFractionCase2[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,AmpFraction);
             break;
           case 3:
-            fhTopoClusterAmpCase3[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,amp);
-            fhTopoClusterAmpFractionCase3[iSupMod1]->Fill(iIeta-ieta1,iIphi-iphi1,AmpFraction);
+            fhTopoClusterCase3[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1);
+            fhTopoClusterAmpCase3[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,amp);
+            fhTopoClusterAmpFractionCase3[iSupMod1]->Fill(ietaCell-ieta1,iphiCell-iphi1,AmpFraction);
             break;
           default:
             break;
@@ -492,7 +507,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         Bool_t mask2 = MaskFrameCluster(iSupMod2, ieta2);         
         //if(mask2) printf("Reject eta %d SM %d\n",ieta2, iSupMod2);
         
-        if(fSelectOnlyPhotonsInDifferentSM && (iSupMod1 == iSupMod2)) continue;
+        
         
         if(in1 && in2)
         {
@@ -635,6 +650,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         
         //In case of filling only channels with second cluster in same SM
         if(fSameSM && iSupMod1!=iSupMod2) continue;
+        if(fSelectOnlyPhotonsInDifferentSM && (iSupMod1 == iSupMod2)) continue;
         
         if (fGroupNCells == 0)
         {
@@ -1161,30 +1177,58 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     if(fClusterTopology)
     {
       
+      fhTopoClusterCase0[iSM] = new TH2F(Form("hTopoClusterCase0SM%d",iSM),
+                                           Form("cluster topology for cluster in position 0 in noisy quartet, SM %d",iSM),
+                                           21,-10.5,10.5, 21,-10.5,10.5);
+      fhTopoClusterCase0[iSM]->SetXTitle("column");
+      fhTopoClusterCase0[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterCase0[iSM]);
+      
+      fhTopoClusterCase1[iSM] = new TH2F(Form("hTopoClusterCase1SM%d",iSM),
+                                            Form("cluster topology for cluster in position 1 in noisy quartet, SM %d",iSM),
+                                            21,-10.5,10.5, 21,-10.5,10.5);
+      fhTopoClusterCase1[iSM]->SetXTitle("column");
+      fhTopoClusterCase1[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterCase1[iSM]);
+      
+      fhTopoClusterCase2[iSM] = new TH2F(Form("hTopoClusterCase2SM%d",iSM),
+                                            Form("cluster topology for cluster in position 2 in noisy quartet, SM %d",iSM),
+                                            21,-10.5,10.5, 21,-10.5,10.5);
+      fhTopoClusterCase2[iSM]->SetXTitle("column");
+      fhTopoClusterCase2[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterCase2[iSM]);
+      
+      fhTopoClusterCase3[iSM] = new TH2F(Form("hTopoClusterCase3SM%d",iSM),
+                                            Form("cluster topology for cluster in position 3 in noisy quartet, SM %d",iSM),
+                                            21,-10.5,10.5, 21,-10.5,10.5);
+      fhTopoClusterCase3[iSM]->SetXTitle("column");
+      fhTopoClusterCase3[iSM]->SetYTitle("row");
+      fOutputContainer->Add(fhTopoClusterCase3[iSM]);
+      
       fhTopoClusterAmpCase0[iSM] = new TH2F(Form("hTopoClusterAmpCase0SM%d",iSM),
                                             Form("cluster topology for cluster in position 0 in noisy quartet, SM %d",iSM),
-                                            20,-10,10, 20,-10,10);
+                                            21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpCase0[iSM]->SetXTitle("column");
       fhTopoClusterAmpCase0[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpCase0[iSM]);
       
       fhTopoClusterAmpCase1[iSM] = new TH2F(Form("hTopoClusterAmpCase1SM%d",iSM),
                                             Form("cluster topology for cluster in position 1 in noisy quartet, SM %d",iSM),
-                                            20,-10,10, 20,-10,10);
+                                            21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpCase1[iSM]->SetXTitle("column");
       fhTopoClusterAmpCase1[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpCase1[iSM]);
       
       fhTopoClusterAmpCase2[iSM] = new TH2F(Form("hTopoClusterAmpCase2SM%d",iSM),
                                             Form("cluster topology for cluster in position 2 in noisy quartet, SM %d",iSM),
-                                            20,-10,10, 20,-10,10);
+                                            21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpCase2[iSM]->SetXTitle("column");
       fhTopoClusterAmpCase2[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpCase2[iSM]);
       
       fhTopoClusterAmpCase3[iSM] = new TH2F(Form("hTopoClusterAmpCase3SM%d",iSM),
                                             Form("cluster topology for cluster in position 3 in noisy quartet, SM %d",iSM),
-                                            20,-10,10, 20,-10,10);
+                                            21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpCase3[iSM]->SetXTitle("column");
       fhTopoClusterAmpCase3[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpCase3[iSM]);
@@ -1192,28 +1236,28 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
       
       fhTopoClusterAmpFractionCase0[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase0SM%d",iSM),
                                                     Form("cluster topology for cluster in position 0 in noisy quartet, SM %d",iSM),
-                                                    20,-10,10, 20,-10,10);
+                                                    21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpFractionCase0[iSM]->SetXTitle("column");
       fhTopoClusterAmpFractionCase0[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpFractionCase0[iSM]);
       
       fhTopoClusterAmpFractionCase1[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase1SM%d",iSM),
                                                     Form("cluster topology for cluster in position 1 in noisy quartet, SM %d",iSM),
-                                                    20,-10,10, 20,-10,10);
+                                                    21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpFractionCase1[iSM]->SetXTitle("column");
       fhTopoClusterAmpFractionCase1[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpFractionCase1[iSM]);
       
       fhTopoClusterAmpFractionCase2[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase2SM%d",iSM),
                                                     Form("cluster topology for cluster in position 2 in noisy quartet, SM %d",iSM),
-                                                    20,-10,10, 20,-10,10);
+                                                    21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpFractionCase2[iSM]->SetXTitle("column");
       fhTopoClusterAmpFractionCase2[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpFractionCase2[iSM]);
       
       fhTopoClusterAmpFractionCase3[iSM] = new TH2F(Form("hTopoClusterAmpFractionCase3SM%d",iSM),
                                                     Form("cluster topology for cluster in position 3 in noisy quartet, SM %d",iSM),
-                                                    20,-10,10, 20,-10,10);
+                                                    21,-10.5,10.5, 21,-10.5,10.5);
       fhTopoClusterAmpFractionCase3[iSM]->SetXTitle("column");
       fhTopoClusterAmpFractionCase3[iSM]->SetYTitle("row");
       fOutputContainer->Add(fhTopoClusterAmpFractionCase3[iSM]);
