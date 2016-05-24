@@ -697,15 +697,7 @@ void AliTPCDcalibRes::CollectData(int mode)
   } // loop over chunks
   //
   // write/close local trees
-  for (int is=0;is<kNSect2;is++) {
-    fTmpFile[is]->cd();
-    fTmpTree[is]->Write("", TObject::kOverwrite);
-    delete fTmpTree[is];
-    fTmpTree[is] = 0;
-    fTmpFile[is]->Close();
-    delete fTmpFile[is];
-    fTmpFile[is] = 0;
-  }
+  CloseLocalResidualsTrees(mode);
   //
   AliInfoF("Summary: selected %d tracks (%d with outliers) | %.1f MB read in %d read calls",
 	   fNTrSelTot,fNTrSelTotWO,float(fNBytesReadTot)/kMByte,fNReadCallTot); 
@@ -815,6 +807,24 @@ void AliTPCDcalibRes::CreateLocalResidualsTrees(int mode)
       fTmpTree[is]->Branch("dtc", &dtcP);
     }
   }
+}
+
+//________________________________________________
+void AliTPCDcalibRes::CloseLocalResidualsTrees(int /*mode*/)
+{
+  // close trees for local delta's storage
+  //
+  for (int is=0;is<kNSect2;is++) {
+    if (!fTmpFile[is]) continue;
+    fTmpFile[is]->cd();
+    fTmpTree[is]->Write("", TObject::kOverwrite);
+    delete fTmpTree[is];
+    fTmpTree[is] = 0;
+    fTmpFile[is]->Close();
+    delete fTmpFile[is];
+    fTmpFile[is] = 0;
+  }
+  //
 }
 
 //__________________________________________________________________________________

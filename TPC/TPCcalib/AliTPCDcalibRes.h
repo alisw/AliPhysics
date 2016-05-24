@@ -110,6 +110,7 @@ class AliTPCDcalibRes: public TNamed
   void FillCorrectedResiduals();
   void ClosureTest();
   void CreateLocalResidualsTrees(int mode);
+  void CloseLocalResidualsTrees(int mode);
   void ProcessResiduals();
   void ReProcessResiduals();
   void ProcessDispersions();
