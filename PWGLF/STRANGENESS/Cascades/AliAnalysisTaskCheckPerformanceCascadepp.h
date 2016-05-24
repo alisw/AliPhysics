@@ -161,39 +161,55 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F   *fHistPosV0TPCClusters;                                //! TPC clusters distribution for Positive V0 daughter track
          TH1F   *fHistNegV0TPCClusters;                                //! TPC clusters distribution for Negative V0 daughter track
          TH1F   *fHistBachTPCClusters;                                 //! TPC clusters distribution for Bachelor V0 daughter track
-         // - Plots before Physics Selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_A;    // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_A;       // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_A;     // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_A;        // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_A; // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_A;    // Before any event selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_A;  // Before any event selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_A;     // Before any event selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_B;    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_B;       // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_B;     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_B;        // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_B; // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_B;    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_B;  // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_B;     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_C;    // After physics selection
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_C;       // After physics selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_C;     // After physics selection
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_C;        // After physics selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_C; // After physics selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_C;    // After physics selection 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_C;  // After physics selection 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_C;     // After physics selection
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_D;    // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_D;       // After all event selections
-         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_D;     // After all event selections
-         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_D;        // After all event selections 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_D; // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_D;    // After all event selections 
-         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_D;  // After all event selections 
-         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_D;     // After all event selections 
+         // - Plots for the efficiency denominator + checks on the event selection
+            // - Step A) filled before all the selections 
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_A;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_A;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_A;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_A;   
+            // - Step B) filled after the pre-trigger selection (DAQ incomplete, SPD background, Pile-up) --> Needed for the efficiency calculation in method 1
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_B;    
+         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_B;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_B;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_B;        
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_B; 
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_B;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_B;  
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_B;     
+            // - Step C) filled after the trigger selection (Physics selection)
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_C;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_C;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_C;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_C;   
+            // - Step D) filled after the revertexing of the V0 and cascades
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_D;    
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_D;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_D; 
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_D;  
+            // - Step E) filled after the request of the presence of the vertex SPD and not only the one from the tracks
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_E;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_E;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_E;   
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_E;   
+            // - Step F) filled after the request on the vertex resolution and dispersion
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_F;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_F;      
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_F;   
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_F;    
+            // - Step G) filled after the request on the vertices proximity
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_G;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_G;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_G;  
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_G;   
+            // - Step H) filled after the request on |Zpv| < 10 cm that means after all the event selections
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiMinus_H;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiMinus_H;       
+         TH3D *f3dHistGenPtVsGenYvsNtracksXiPlus_H;     
+         TH3D *f3dHistGenPtVsGenctauvsYXiPlus_H;         
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaMinus_H;  
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaMinus_H;     
+         TH3D *f3dHistGenPtVsGenYvsNtracksOmegaPlus_H;   
+         TH3D *f3dHistGenPtVsGenctauvsYOmegaPlus_H;      
          // - Generated cascade plots
          // After all the event selections 
          //Xi-

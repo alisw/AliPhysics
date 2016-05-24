@@ -55,6 +55,7 @@
 //               May 2016
 //               - move the "fCollidingSystem" from TString to Int_t
 //               - add fSuffix for the LEGO train usage
+//               - More checks on the event selections
 //
 //-----------------------------------------------------------------
 
@@ -183,38 +184,54 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistNegV0TPCClusters(0),
       fHistBachTPCClusters(0),
       // -- Plots needed for efficiency denominator calculation
-      f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),    // Before any event selection 
-      f3dHistGenPtVsGenctauvsYXiMinus_A(0),       // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksXiPlus_A(0),     // Before any event selection 
-      f3dHistGenPtVsGenctauvsYXiPlus_A(0),        // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_A(0), // Before any event selection 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_A(0),    // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_A(0),  // Before any event selection 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_A(0),     // Before any event selection
-      f3dHistGenPtVsGenYvsNtracksXiMinus_B(0),    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup 
-      f3dHistGenPtVsGenctauvsYXiMinus_B(0),       // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksXiPlus_B(0),     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYXiPlus_B(0),        // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_B(0), // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYOmegaMinus_B(0),    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_B(0),  // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYOmegaPlus_B(0),     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksXiMinus_C(0),    // After physics selection
-      f3dHistGenPtVsGenctauvsYXiMinus_C(0),       // After physics selection
-      f3dHistGenPtVsGenYvsNtracksXiPlus_C(0),     // After physics selection
-      f3dHistGenPtVsGenctauvsYXiPlus_C(0),        // After physics selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_C(0), // After physics selection 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_C(0),    // After physics selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_C(0),  // After physics selection 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_C(0),     // After physics selection
-      f3dHistGenPtVsGenYvsNtracksXiMinus_D(0),    // After all event selections 
-      f3dHistGenPtVsGenctauvsYXiMinus_D(0),       // After all event selections
-      f3dHistGenPtVsGenYvsNtracksXiPlus_D(0),     // After all event selections
-      f3dHistGenPtVsGenctauvsYXiPlus_D(0),        // After all event selections 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_D(0), // After all event selections 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_D(0),    // After all event selections 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_D(0),  // After all event selections 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_D(0),     // After all event selections 
+        // - Step A) filled before all the selections 
+      f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),     
+      f3dHistGenPtVsGenYvsNtracksXiPlus_A(0),      
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_A(0),  
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_A(0),  
+        // - Step B) filled after the pre-trigger selection (DAQ incomplete, SPD background, Pile-up) --> Needed for the efficiency calculation in method 1
+      f3dHistGenPtVsGenYvsNtracksXiMinus_B(0),     
+      f3dHistGenPtVsGenctauvsYXiMinus_B(0),       
+      f3dHistGenPtVsGenYvsNtracksXiPlus_B(0),     
+      f3dHistGenPtVsGenctauvsYXiPlus_B(0),        
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_B(0), 
+      f3dHistGenPtVsGenctauvsYOmegaMinus_B(0),    
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_B(0),  
+      f3dHistGenPtVsGenctauvsYOmegaPlus_B(0),
+        // - Step C) filled after the trigger selection (Physics selection)
+      f3dHistGenPtVsGenYvsNtracksXiMinus_C(0),    
+      f3dHistGenPtVsGenYvsNtracksXiPlus_C(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_C(0),                           
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_C(0),       
+        // - Step D) filled after the revertexing of the V0 and cascades
+      f3dHistGenPtVsGenYvsNtracksXiMinus_D(0),    
+      f3dHistGenPtVsGenYvsNtracksXiPlus_D(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_D(0),  
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_D(0),   
+        // - Step E) filled after the request of the presence of the vertex SPD and not only the one from the tracks
+      f3dHistGenPtVsGenYvsNtracksXiMinus_E(0),     
+      f3dHistGenPtVsGenYvsNtracksXiPlus_E(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_E(0),  
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_E(0), 
+        // - Step F) filled after the request on the vertex resolution and dispersion
+      f3dHistGenPtVsGenYvsNtracksXiMinus_F(0),                                 
+      f3dHistGenPtVsGenYvsNtracksXiPlus_F(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_F(0),                              
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_F(0),   
+        // - Step G) filled after the request on the vertices proximity
+      f3dHistGenPtVsGenYvsNtracksXiMinus_G(0),                                 
+      f3dHistGenPtVsGenYvsNtracksXiPlus_G(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_G(0),                              
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_G(0),   
+        // - Step H) filled after the request on |Zpv| < 10 cm that means after all the event selections
+      f3dHistGenPtVsGenYvsNtracksXiMinus_H(0),                                                                                                
+      f3dHistGenPtVsGenctauvsYXiMinus_H(0),       
+      f3dHistGenPtVsGenYvsNtracksXiPlus_H(0),     
+      f3dHistGenPtVsGenctauvsYXiPlus_H(0),        
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_H(0), 
+      f3dHistGenPtVsGenctauvsYOmegaMinus_H(0),    
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_H(0),  
+      f3dHistGenPtVsGenctauvsYOmegaPlus_H(0),  
       // - Plots for generated cascades (after all the event selections)
       fHistEtaGenCascXiMinus(0),                // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiMinus(0),              // In all the eta and pt range (as they are generated)
@@ -416,38 +433,54 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistNegV0TPCClusters(0),
       fHistBachTPCClusters(0),
       // -- Plots needed for efficiency denominator calculation
-      f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),    // Before any event selection 
-      f3dHistGenPtVsGenctauvsYXiMinus_A(0),       // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksXiPlus_A(0),     // Before any event selection 
-      f3dHistGenPtVsGenctauvsYXiPlus_A(0),        // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_A(0), // Before any event selection 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_A(0),    // Before any event selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_A(0),  // Before any event selection 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_A(0),     // Before any event selection
-      f3dHistGenPtVsGenYvsNtracksXiMinus_B(0),    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup 
-      f3dHistGenPtVsGenctauvsYXiMinus_B(0),       // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksXiPlus_B(0),     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYXiPlus_B(0),        // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_B(0), // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYOmegaMinus_B(0),    // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_B(0),  // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenctauvsYOmegaPlus_B(0),     // After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup
-      f3dHistGenPtVsGenYvsNtracksXiMinus_C(0),    // After physics selection
-      f3dHistGenPtVsGenctauvsYXiMinus_C(0),       // After physics selection
-      f3dHistGenPtVsGenYvsNtracksXiPlus_C(0),     // After physics selection
-      f3dHistGenPtVsGenctauvsYXiPlus_C(0),        // After physics selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_C(0), // After physics selection 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_C(0),    // After physics selection 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_C(0),  // After physics selection 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_C(0),     // After physics selection
-      f3dHistGenPtVsGenYvsNtracksXiMinus_D(0),    // After all event selections 
-      f3dHistGenPtVsGenctauvsYXiMinus_D(0),       // After all event selections
-      f3dHistGenPtVsGenYvsNtracksXiPlus_D(0),     // After all event selections
-      f3dHistGenPtVsGenctauvsYXiPlus_D(0),        // After all event selections 
-      f3dHistGenPtVsGenYvsNtracksOmegaMinus_D(0), // After all event selections 
-      f3dHistGenPtVsGenctauvsYOmegaMinus_D(0),    // After all event selections 
-      f3dHistGenPtVsGenYvsNtracksOmegaPlus_D(0),  // After all event selections 
-      f3dHistGenPtVsGenctauvsYOmegaPlus_D(0),     // After all event selections
+        // - Step A) filled before all the selections 
+      f3dHistGenPtVsGenYvsNtracksXiMinus_A(0),      
+      f3dHistGenPtVsGenYvsNtracksXiPlus_A(0),                                  
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_A(0),                              
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_A(0),                               
+        // - Step B) filled after the pre-trigger selection (DAQ incomplete, SPD background, Pile-up) --> Needed for the efficiency calculation in method 1
+      f3dHistGenPtVsGenYvsNtracksXiMinus_B(0),                                                                                                
+      f3dHistGenPtVsGenctauvsYXiMinus_B(0),       
+      f3dHistGenPtVsGenYvsNtracksXiPlus_B(0),     
+      f3dHistGenPtVsGenctauvsYXiPlus_B(0),        
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_B(0), 
+      f3dHistGenPtVsGenctauvsYOmegaMinus_B(0),    
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_B(0),  
+      f3dHistGenPtVsGenctauvsYOmegaPlus_B(0),     
+        // - Step C) filled after the trigger selection (Physics selection)
+      f3dHistGenPtVsGenYvsNtracksXiMinus_C(0),
+      f3dHistGenPtVsGenYvsNtracksXiPlus_C(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_C(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_C(0),  
+        // - Step D) filled after the revertexing of the V0 and cascades
+      f3dHistGenPtVsGenYvsNtracksXiMinus_D(0),    
+      f3dHistGenPtVsGenYvsNtracksXiPlus_D(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_D(0),                           
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_D(0),                            
+        // - Step E) filled after the request of the presence of the vertex SPD and not only the one from the tracks
+      f3dHistGenPtVsGenYvsNtracksXiMinus_E(0),                                 
+      f3dHistGenPtVsGenYvsNtracksXiPlus_E(0),     
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_E(0),                              
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_E(0),    
+        // - Step F) filled after the request on the vertex resolution and dispersion
+      f3dHistGenPtVsGenYvsNtracksXiMinus_F(0),
+      f3dHistGenPtVsGenYvsNtracksXiPlus_F(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_F(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_F(0),   
+        // - Step G) filled after the request on the vertices proximity
+      f3dHistGenPtVsGenYvsNtracksXiMinus_G(0),
+      f3dHistGenPtVsGenYvsNtracksXiPlus_G(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_G(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_G(0),   
+        // - Step H) filled after the request on |Zpv| < 10 cm that means after all the event selections
+      f3dHistGenPtVsGenYvsNtracksXiMinus_H(0),
+      f3dHistGenPtVsGenctauvsYXiMinus_H(0),
+      f3dHistGenPtVsGenYvsNtracksXiPlus_H(0),
+      f3dHistGenPtVsGenctauvsYXiPlus_H(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaMinus_H(0),
+      f3dHistGenPtVsGenctauvsYOmegaMinus_H(0),
+      f3dHistGenPtVsGenYvsNtracksOmegaPlus_H(0),
+      f3dHistGenPtVsGenctauvsYOmegaPlus_H(0),
       // - Plots for generated cascades (after all the event selections)
       fHistEtaGenCascXiMinus(0),                // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiMinus(0),              // In all the eta and pt range (as they are generated)
@@ -827,22 +860,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         f3dHistGenPtVsGenYvsNtracksOmegaPlus_A = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_A", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
         fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_A);
    }
-   if (! f3dHistGenPtVsGenctauvsYXiMinus_A) {
-        f3dHistGenPtVsGenctauvsYXiMinus_A = new TH3D("f3dHistGenPtVsGenctauvsYXiMinus_A", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinus_A);
-   }
-   if (! f3dHistGenPtVsGenctauvsYXiPlus_A) {
-        f3dHistGenPtVsGenctauvsYXiPlus_A = new TH3D("f3dHistGenPtVsGenctauvsYXiPlus_A", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlus_A);
-   }
-   if (! f3dHistGenPtVsGenctauvsYOmegaMinus_A) {
-        f3dHistGenPtVsGenctauvsYOmegaMinus_A = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinus_A", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinus_A);
-   }
-   if (! f3dHistGenPtVsGenctauvsYOmegaPlus_A) {
-        f3dHistGenPtVsGenctauvsYOmegaPlus_A = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlus_A", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_A);
-   } 
    // -- (B) After preliminary event selections (IsIncompleteDAQ, Tracklet vs Clusters Cut, SPD Pileup 
    if (! f3dHistGenPtVsGenYvsNtracksXiMinus_B) {
         f3dHistGenPtVsGenYvsNtracksXiMinus_B = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_B", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
@@ -876,7 +893,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         f3dHistGenPtVsGenctauvsYOmegaPlus_B = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlus_B", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
         fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_B);
    }
-   // -- (C) After physics selection 
+   // -- (C) After physics selection
    if (! f3dHistGenPtVsGenYvsNtracksXiMinus_C) {
         f3dHistGenPtVsGenYvsNtracksXiMinus_C = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_C", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
         fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_C);
@@ -893,23 +910,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         f3dHistGenPtVsGenYvsNtracksOmegaPlus_C = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_C", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
         fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_C);
    }
-   if (! f3dHistGenPtVsGenctauvsYXiMinus_C) {
-        f3dHistGenPtVsGenctauvsYXiMinus_C = new TH3D("f3dHistGenPtVsGenctauvsYXiMinus_C", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinus_C);
-   } 
-   if (! f3dHistGenPtVsGenctauvsYXiPlus_C) {
-        f3dHistGenPtVsGenctauvsYXiPlus_C = new TH3D("f3dHistGenPtVsGenctauvsYXiPlus_C", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlus_C);
-   }  
-   if (! f3dHistGenPtVsGenctauvsYOmegaMinus_C) {
-        f3dHistGenPtVsGenctauvsYOmegaMinus_C = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinus_C", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinus_C);
-   }
-   if (! f3dHistGenPtVsGenctauvsYOmegaPlus_C) {
-        f3dHistGenPtVsGenctauvsYOmegaPlus_C = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlus_C", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_C);
-   }
-   // -- (D) After all event selections 
+   // -- (D) After re-vertexing
    if (! f3dHistGenPtVsGenYvsNtracksXiMinus_D) {
         f3dHistGenPtVsGenYvsNtracksXiMinus_D = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_D", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
         fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_D);
@@ -926,21 +927,89 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         f3dHistGenPtVsGenYvsNtracksOmegaPlus_D = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_D", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
         fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_D);
    }
-   if (! f3dHistGenPtVsGenctauvsYXiMinus_D) {
-        f3dHistGenPtVsGenctauvsYXiMinus_D = new TH3D("f3dHistGenPtVsGenctauvsYXiMinus_D", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinus_D);
+   // -- (E)  
+   if (! f3dHistGenPtVsGenYvsNtracksXiMinus_E) {
+        f3dHistGenPtVsGenYvsNtracksXiMinus_E = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_E", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_E);
    }
-   if (! f3dHistGenPtVsGenctauvsYXiPlus_D) {
-        f3dHistGenPtVsGenctauvsYXiPlus_D = new TH3D("f3dHistGenPtVsGenctauvsYXiPlus_D", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlus_D);
+   if (! f3dHistGenPtVsGenYvsNtracksXiPlus_E) {
+        f3dHistGenPtVsGenYvsNtracksXiPlus_E = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlus_E", "MC P_{t} Vs MC Y of Gen #Xi^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlus_E);
    }
-   if (! f3dHistGenPtVsGenctauvsYOmegaMinus_D) {
-        f3dHistGenPtVsGenctauvsYOmegaMinus_D = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinus_D", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinus_D);
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaMinus_E) {
+        f3dHistGenPtVsGenYvsNtracksOmegaMinus_E = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinus_E", "MC P_{t} Vs MC Y of Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinus_E);
    }
-   if (! f3dHistGenPtVsGenctauvsYOmegaPlus_D) {
-        f3dHistGenPtVsGenctauvsYOmegaPlus_D = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlus_D", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
-        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_D);
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaPlus_E) {
+        f3dHistGenPtVsGenYvsNtracksOmegaPlus_E = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_E", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_E);
+   }
+   // -- (F)  
+   if (! f3dHistGenPtVsGenYvsNtracksXiMinus_F) {
+        f3dHistGenPtVsGenYvsNtracksXiMinus_F = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_F", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_F);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksXiPlus_F) {
+        f3dHistGenPtVsGenYvsNtracksXiPlus_F = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlus_F", "MC P_{t} Vs MC Y of Gen #Xi^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlus_F);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaMinus_F) {
+        f3dHistGenPtVsGenYvsNtracksOmegaMinus_F = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinus_F", "MC P_{t} Vs MC Y of Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinus_F);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaPlus_F) {
+        f3dHistGenPtVsGenYvsNtracksOmegaPlus_F = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_F", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_F);
+   }
+   // -- (G)  
+   if (! f3dHistGenPtVsGenYvsNtracksXiMinus_G) {
+        f3dHistGenPtVsGenYvsNtracksXiMinus_G = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_G", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_G);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksXiPlus_G) {
+        f3dHistGenPtVsGenYvsNtracksXiPlus_G = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlus_G", "MC P_{t} Vs MC Y of Gen #Xi^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlus_G);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaMinus_G) {
+        f3dHistGenPtVsGenYvsNtracksOmegaMinus_G = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinus_G", "MC P_{t} Vs MC Y of Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinus_G);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaPlus_G) {
+        f3dHistGenPtVsGenYvsNtracksOmegaPlus_G = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_G", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_G);
+   }
+   // -- (H)
+   if (! f3dHistGenPtVsGenYvsNtracksXiMinus_H) {
+        f3dHistGenPtVsGenYvsNtracksXiMinus_H = new TH3D("f3dHistGenPtVsGenYvsNtracksXiMinus_H", "MC P_{t} Vs MC Y of Gen #Xi^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiMinus_H);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksXiPlus_H) {
+        f3dHistGenPtVsGenYvsNtracksXiPlus_H = new TH3D("f3dHistGenPtVsGenYvsNtracksXiPlus_H", "MC P_{t} Vs MC Y of Gen #Xi^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksXiPlus_H);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaMinus_H) {
+        f3dHistGenPtVsGenYvsNtracksOmegaMinus_H = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaMinus_H", "MC P_{t} Vs MC Y of Gen #Omega^{-}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaMinus_H);
+   }
+   if (! f3dHistGenPtVsGenYvsNtracksOmegaPlus_H) {
+        f3dHistGenPtVsGenYvsNtracksOmegaPlus_H = new TH3D("f3dHistGenPtVsGenYvsNtracksOmegaPlus_H", "MC P_{t} Vs MC Y of Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 110, -1.1, 1.1, 200, 0., 200.);
+        fListHistCascade->Add(f3dHistGenPtVsGenYvsNtracksOmegaPlus_H);
+   }
+   if (! f3dHistGenPtVsGenctauvsYXiMinus_H) {
+        f3dHistGenPtVsGenctauvsYXiMinus_H = new TH3D("f3dHistGenPtVsGenctauvsYXiMinus_H", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiMinus_H);
+   }
+   if (! f3dHistGenPtVsGenctauvsYXiPlus_H) {
+        f3dHistGenPtVsGenctauvsYXiPlus_H = new TH3D("f3dHistGenPtVsGenctauvsYXiPlus_H", "MC P_{t} Vs MC ctau Vs Y of Gen #Xi^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYXiPlus_H);
+   }
+   if (! f3dHistGenPtVsGenctauvsYOmegaMinus_H) {
+        f3dHistGenPtVsGenctauvsYOmegaMinus_H = new TH3D("f3dHistGenPtVsGenctauvsYOmegaMinus_H", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{-}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaMinus_H);
+   }
+   if (! f3dHistGenPtVsGenctauvsYOmegaPlus_H) {
+        f3dHistGenPtVsGenctauvsYOmegaPlus_H = new TH3D("f3dHistGenPtVsGenctauvsYOmegaPlus_H", "MC P_{t} Vs MC ctau Vs Y of Gen #Omega^{+}", 100, ptBinLimits, 111, ctauBinLimits, 110, yBinLimits);
+        fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_H);
    }
    // - Many observable distributions for mother and daugthers: pseudo-rapidity, theta, Pt vs Y, Pt
    if (! fHistEtaGenCascXiMinus) {
@@ -1636,22 +1705,32 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
   ///////////////////
   // In order:
   // 0) SDD status 
-  //    <---------- (A) Fill the efficiency denominator before all the event selections
-  // 1) Incomplete DAQ events (introduced for Run2 2015 data)
-  // 2) Background rejection based on SPD cluster vs tracklet correlation
-  // 3) Pileup
-  //    <---------- (B) Fill the efficiency denominator before the physics selection
-  // 4) Physics
-  //    <---------- (C) Fill the efficiency denominator after the physics selection
-  // 5) Well-established PV
-  // 6) |PV_Z| < 10 cm
-  //    <---------- (D) Fill the efficiency denominator after all the event selections
+  //       <---------- (A) Check generated particle pT spectra before all the event selections
+  // 1) Pre-Trigger selections
+  //     1.1) Incomplete DAQ events (introduced for Run2 2015 data)
+  //     1.2) Background rejection based on SPD cluster vs tracklet correlation
+  //     1.3) Pileup
+  //       <---------- (B) Fill efficiency denominator + check generated particle pT spectra before the physics selection
+  // 2) Trigger selection (Physics selection)
+  //       <---------- (C) Check generated particle pT spectra  after the physics selection
+  // -) Cascade and V0 re-vertexer
+  //       <---------- (D) Check generated particle pT spectra after the re-vertexing
+  // 3) Well-established PV
+  //     3.1) not only TPC vertex
+  //       <---------- (E) Check generated particle pT spectra after the request on both SPD and TPC vertices
+  //     3.2) requirement on the resolution and dispersion
+  //       <---------- (F) Check generated particle pT spectra after the requests on resolution and dispersion
+  //     3.2) distance between the two vertices
+  //       <---------- (G) Check generated particle pT spectra after the vertices proximity check
+  //     3.4) |Zpv| < 10 cm
+  //    <---------- (H) Fill the efficiency denominator after all the event selections
   // - Define useful variables
   Int_t ncascades          = 0;
   Int_t nTrackMultiplicity = 0;
     
-   //---------------------------------------------------------
+   //=======================================================
    // Load the InputEvent and check it (for the ESD and AOD)
+   //=======================================================
    if (fAnalysisType == "ESD") {
        lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
        if (!lESDevent) {
@@ -1685,10 +1764,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
        return;
    }
 
-   //------------------------------
-   // - Plots Before any selections
-   //------------------------------
-   // - Define variables
+   //============================
+   // Plots Before any selections
+   //============================
    if (fAnalysisType == "ESD") {
        nTrackMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5);
        ncascades = lESDevent->GetNumberOfCascades();
@@ -1700,10 +1778,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistCascadeMultiplicityBeforeAnySel->Fill(ncascades);
    
 
-   //------------------------
+   //========================
    // 0) SDD status selection
-   //------------------------
-   // - Selection for ESD and AOD
+   //========================
    if (fApplyEvSelSDDstatus && fCollidingSystem == 0) {
         TString trcl = " ";
         if      (fAnalysisType == "ESD") trcl = lESDevent->GetFiredTriggerClasses();
@@ -1731,70 +1808,37 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterSDDstatusSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterSDDstatusSel->Fill(ncascades);
 
-   //---------------------------------------------------------
-   // - (A) Efficiency denominator before any event selections
-   //---------------------------------------------------------
+   // - (A) Check generated particle pT spectra before all the event selections
    Int_t lNbMCPrimary_A = 0;   lNbMCPrimary_A = lMCstack->GetNprimary();
    Int_t lPrimaryTrackMultiplicity_A = nTrackMultiplicity;
-   Double_t partEnergy_A, partPz_A, partP_A, partPt_A, partVx_A, partVy_A, partVz_A, bacVx_A, bacVy_A, bacVz_A, partMass_A, lRapXiMC_A, lctau_A;
+   Double_t partEnergy_A, partPz_A, partPt_A, lRapXiMC_A;
    Int_t PDGcode_A;
-   TParticle* lCurrentParticlePrimary_A = 0x0;     TParticle *mcBach_A = 0x0;   
-   AliAODMCParticle *lCurrentParticleaod_A = 0x0;  AliAODMCParticle *mcBachaod_A = 0x0;
+   TParticle* lCurrentParticlePrimary_A = 0x0;        
+   AliAODMCParticle *lCurrentParticleaod_A = 0x0;
    for (Int_t iCurrentLabelStack_A = 0; iCurrentLabelStack_A < lNbMCPrimary_A; iCurrentLabelStack_A++) {
-         partEnergy_A = 0.;  partPz_A = 0.;  partP_A    = 0.;  partPt_A  = 0.;
-         partVx_A     = 0.;  partVy_A = 0.;  partVz_A   = 0.;  bacVx_A   = 0.;
-         bacVy_A      = 0.;  bacVz_A  = 0.;  partMass_A = 0.;  PDGcode_A = 0;
+         partEnergy_A = 0.;  partPz_A = 0.;  partPt_A  = 0.;  PDGcode_A = 0;
          if (fAnalysisType == "ESD") {
               lCurrentParticlePrimary_A = 0x0;  lCurrentParticlePrimary_A = lMCstack->Particle(iCurrentLabelStack_A);        
               if (!lCurrentParticlePrimary_A) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
               if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_A)) continue;
-              partEnergy_A = lCurrentParticlePrimary_A->Energy();   partPz_A = lCurrentParticlePrimary_A->Pz();  partPt_A = lCurrentParticlePrimary_A->Pt();  partP_A  = lCurrentParticlePrimary_A->P();
-              partMass_A   = lCurrentParticlePrimary_A->GetMass();  partVx_A = lCurrentParticlePrimary_A->Vx();  partVy_A = lCurrentParticlePrimary_A->Vy();  partVz_A = lCurrentParticlePrimary_A->Vz();
-              PDGcode_A = lCurrentParticlePrimary_A->GetPdgCode();
-              if (lCurrentParticlePrimary_A->GetDaughter(0) >= 0) {
-                  mcBach_A = 0x0;  mcBach_A = lMCstack->Particle(lCurrentParticlePrimary_A->GetDaughter(0));
-                  if (mcBach_A) { bacVx_A = mcBach_A->Vx();  bacVy_A = mcBach_A->Vy();  bacVz_A = mcBach_A->Vz(); }
-              }
+              partEnergy_A = lCurrentParticlePrimary_A->Energy();   partPz_A = lCurrentParticlePrimary_A->Pz();  partPt_A = lCurrentParticlePrimary_A->Pt();  PDGcode_A = lCurrentParticlePrimary_A->GetPdgCode();
          } else if (fAnalysisType == "AOD") {
               lCurrentParticleaod_A = 0x0;  lCurrentParticleaod_A = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_A);
               if (!lCurrentParticleaod_A) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
               if (!lCurrentParticleaod_A->IsPhysicalPrimary()) continue;
-              partEnergy_A = lCurrentParticleaod_A->E();  partPz_A = lCurrentParticleaod_A->Pz();  partP_A  = lCurrentParticleaod_A->P();   partPt_A = lCurrentParticleaod_A->Pt();
-              partMass_A   = lCurrentParticleaod_A->M();  partVx_A = lCurrentParticleaod_A->Xv();  partVy_A = lCurrentParticleaod_A->Yv();  partVz_A = lCurrentParticleaod_A->Zv();
-              PDGcode_A = lCurrentParticleaod_A->GetPdgCode();
-              if (lCurrentParticleaod_A->GetDaughter(0) >= 0) {
-                   mcBachaod_A = 0x0;  mcBachaod_A = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod_A->GetDaughter(0));
-                   if (mcBachaod_A) { bacVx_A = mcBachaod_A->Xv();  bacVy_A = mcBachaod_A->Yv();  bacVz_A = mcBachaod_A->Zv(); }
-              }
+              partEnergy_A = lCurrentParticleaod_A->E();  partPz_A = lCurrentParticleaod_A->Pz();  partPt_A = lCurrentParticleaod_A->Pt();  PDGcode_A = lCurrentParticleaod_A->GetPdgCode();
          }
          lRapXiMC_A = 0.5*TMath::Log((partEnergy_A + partPz_A) / (partEnergy_A - partPz_A + 1.e-13));
-         lctau_A    = TMath::Sqrt((partVx_A-bacVx_A)*(partVx_A-bacVx_A)+(partVy_A-bacVy_A)*(partVy_A-bacVy_A)+(partVz_A-bacVz_A)*(partVz_A-bacVz_A));
-         if (partP_A != 0.) lctau_A = lctau_A*partMass_A/partP_A;
-         else               lctau_A = -1.;
-         // - Fill Histograms
-         if (PDGcode_A ==  3312) {
-             f3dHistGenPtVsGenYvsNtracksXiMinus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
-             f3dHistGenPtVsGenctauvsYXiMinus_A->Fill(partPt_A, lctau_A, lRapXiMC_A);
-         }
-         if (PDGcode_A == -3312) {
-             f3dHistGenPtVsGenYvsNtracksXiPlus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
-             f3dHistGenPtVsGenctauvsYXiPlus_A->Fill(partPt_A, lctau_A, lRapXiMC_A);
-         }
-         if (PDGcode_A ==  3334) {
-             f3dHistGenPtVsGenYvsNtracksOmegaMinus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
-             f3dHistGenPtVsGenctauvsYOmegaMinus_A->Fill(partPt_A, lctau_A, lRapXiMC_A);
-         }
-         if (PDGcode_A == -3334) {
-             f3dHistGenPtVsGenYvsNtracksOmegaPlus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
-             f3dHistGenPtVsGenctauvsYOmegaPlus_A->Fill(partPt_A, lctau_A, lRapXiMC_A);
-         }
+         if (PDGcode_A ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
+         if (PDGcode_A == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
+         if (PDGcode_A ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
+         if (PDGcode_A == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_A->Fill(partPt_A, lRapXiMC_A, lPrimaryTrackMultiplicity_A);
    }
 
-   //------------------------------------
-   // 1) Removal of incomplete DAQ events
-   //------------------------------------
+   //======================================
+   // 1.1) Removal of incomplete DAQ events
+   //======================================
    // - Incomplete DAQ events rejection Run2 data 2015
-   // - Selection for ESD
    Bool_t IncompleteDAQ = kFALSE;
    if (fAnalysisType == "ESD") IncompleteDAQ = lESDevent->IsIncompleteDAQ();
    if (fApplyEvSelDAQincomplete && IncompleteDAQ){
@@ -1810,9 +1854,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterDAQincompleteEvRej->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterDAQincompleteEvRej->Fill(ncascades);
 
-   //---------------------------------------------------------------------
-   // 2) Background rejection based on SPD cluster vs tracklet correlation
-   //---------------------------------------------------------------------
+   //=======================================================================
+   // 1.2) Background rejection based on SPD cluster vs tracklet correlation
+   //=======================================================================
    if(fApplyEvSelSPDclustervstracklet){
       if (fAnalysisType == "ESD" && fUtils->IsSPDClusterVsTrackletBG(lESDevent)) {
               AliWarning("Pb / Is background based on SPD cluster vs tracklet correlation... return!");
@@ -1828,9 +1872,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterSPDclustervstrackletSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterSPDclustervstrackletSel->Fill(ncascades);
 
-   //--------------------
+   //====================
    // 3) Pileup selection
-   //--------------------
+   //====================
    if (fApplyEvSelPileup && fCollidingSystem == 0) {
       if (fAnalysisType == "ESD") {
            if(lESDevent->IsPileupFromSPD(fSPDPileUpminContributors)){
@@ -1859,11 +1903,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterPileupRej->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterPileupRej->Fill(ncascades);
 
-
-
-   //------------------------------------------------------
    // - (B) Efficiency denominator before physics selection 
-   //------------------------------------------------------
    Int_t lNbMCPrimary_B = 0;   lNbMCPrimary_B = lMCstack->GetNprimary();
    Int_t lPrimaryTrackMultiplicity_B = nTrackMultiplicity;
    Double_t partEnergy_B, partPz_B, partP_B, partPt_B, partVx_B, partVy_B, partVz_B, bacVx_B, bacVy_B, bacVz_B, partMass_B, lRapXiMC_B, lctau_B;
@@ -1901,7 +1941,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
          lctau_B    = TMath::Sqrt((partVx_B-bacVx_B)*(partVx_B-bacVx_B)+(partVy_B-bacVy_B)*(partVy_B-bacVy_B)+(partVz_B-bacVz_B)*(partVz_B-bacVz_B));
          if (partP_B != 0.) lctau_B = lctau_B*partMass_B/partP_B;
          else               lctau_B = -1.;
-         // - Fill Histograms
          if (PDGcode_B ==  3312) {
              f3dHistGenPtVsGenYvsNtracksXiMinus_B->Fill(partPt_B, lRapXiMC_B, lPrimaryTrackMultiplicity_B);
              f3dHistGenPtVsGenctauvsYXiMinus_B->Fill(partPt_B, lctau_B, lRapXiMC_B);
@@ -1920,9 +1959,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
          }
    }
 
-   //---------------------
+   //=====================
    // 4) Physics selection 
-   //---------------------
+   //=====================
    if (fApplyEvSelPhysicsSel) {
        UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
        Bool_t isSelected = 0;
@@ -1941,69 +1980,36 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterPhysicsSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterPhysicsSel->Fill(ncascades);
 
-   //-----------------------------------------------------
    // - (C) Efficiency denominator after physics selection 
-   //-----------------------------------------------------
    Int_t lNbMCPrimary_C = 0;   lNbMCPrimary_C = lMCstack->GetNprimary();
    Int_t lPrimaryTrackMultiplicity_C = nTrackMultiplicity;
-   Double_t partEnergy_C, partPz_C, partP_C, partPt_C, partVx_C, partVy_C, partVz_C, bacVx_C, bacVy_C, bacVz_C, partMass_C, lRapXiMC_C, lctau_C;
+   Double_t partEnergy_C, partPz_C, partPt_C, lRapXiMC_C;
    Int_t PDGcode_C;
-   TParticle* lCurrentParticlePrimary_C = 0x0;     TParticle *mcBach_C = 0x0;
-   AliAODMCParticle *lCurrentParticleaod_C = 0x0;  AliAODMCParticle *mcBachaod_C = 0x0;
+   TParticle* lCurrentParticlePrimary_C = 0x0;                               
+   AliAODMCParticle *lCurrentParticleaod_C = 0x0;  
    for (Int_t iCurrentLabelStack_C = 0; iCurrentLabelStack_C < lNbMCPrimary_C; iCurrentLabelStack_C++) {
-         partEnergy_C = 0.;  partPz_C = 0.;  partP_C    = 0.;  partPt_C  = 0.;
-         partVx_C     = 0.;  partVy_C = 0.;  partVz_C   = 0.;  bacVx_C   = 0.;
-         bacVy_C      = 0.;  bacVz_C  = 0.;  partMass_C = 0.;  PDGcode_C = 0;
+         partEnergy_C = 0.;  partPz_C = 0.;  partPt_C = 0.;  PDGcode_C = 0;
          if (fAnalysisType == "ESD") {
               lCurrentParticlePrimary_C = 0x0;  lCurrentParticlePrimary_C = lMCstack->Particle(iCurrentLabelStack_C);
               if (!lCurrentParticlePrimary_C) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
               if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_C)) continue;
-              partEnergy_C = lCurrentParticlePrimary_C->Energy();   partPz_C = lCurrentParticlePrimary_C->Pz();  partPt_C = lCurrentParticlePrimary_C->Pt();  partP_C  = lCurrentParticlePrimary_C->P();
-              partMass_C   = lCurrentParticlePrimary_C->GetMass();  partVx_C = lCurrentParticlePrimary_C->Vx();  partVy_C = lCurrentParticlePrimary_C->Vy();  partVz_C = lCurrentParticlePrimary_C->Vz();
-              PDGcode_C = lCurrentParticlePrimary_C->GetPdgCode();
-              if (lCurrentParticlePrimary_C->GetDaughter(0) >= 0) {
-                  mcBach_C = 0x0;  mcBach_C = lMCstack->Particle(lCurrentParticlePrimary_C->GetDaughter(0));
-                  if (mcBach_C) { bacVx_C = mcBach_C->Vx();  bacVy_C = mcBach_C->Vy();  bacVz_C = mcBach_C->Vz(); }
-              }
+              partEnergy_C = lCurrentParticlePrimary_A->Energy();  partPz_C = lCurrentParticlePrimary_C->Pz();  partPt_C = lCurrentParticlePrimary_C->Pt();  PDGcode_C = lCurrentParticlePrimary_C->GetPdgCode();
          } else if (fAnalysisType == "AOD") {
               lCurrentParticleaod_C = 0x0;  lCurrentParticleaod_C = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_C);
               if (!lCurrentParticleaod_C) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
               if (!lCurrentParticleaod_C->IsPhysicalPrimary()) continue;
-              partEnergy_C = lCurrentParticleaod_C->E();  partPz_C = lCurrentParticleaod_C->Pz();  partP_C  = lCurrentParticleaod_C->P();   partPt_C = lCurrentParticleaod_C->Pt();
-              partMass_C   = lCurrentParticleaod_C->M();  partVx_C = lCurrentParticleaod_C->Xv();  partVy_C = lCurrentParticleaod_C->Yv();  partVz_C = lCurrentParticleaod_C->Zv();
-              PDGcode_C = lCurrentParticleaod_C->GetPdgCode();
-              if (lCurrentParticleaod_C->GetDaughter(0) >= 0) {
-                   mcBachaod_C = 0x0;  mcBachaod_C = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod_C->GetDaughter(0));
-                   if (mcBachaod_C) { bacVx_C = mcBachaod_C->Xv();  bacVy_C = mcBachaod_C->Yv();  bacVz_C = mcBachaod_C->Zv(); }
-              }
+              partEnergy_C = lCurrentParticleaod_C->E();  partPz_C = lCurrentParticleaod_C->Pz();  partPt_C = lCurrentParticleaod_C->Pt();  PDGcode_C = lCurrentParticleaod_C->GetPdgCode();
          }
          lRapXiMC_C = 0.5*TMath::Log((partEnergy_C + partPz_C) / (partEnergy_C - partPz_C + 1.e-13));
-         lctau_C    = TMath::Sqrt((partVx_C-bacVx_C)*(partVx_C-bacVx_C)+(partVy_C-bacVy_C)*(partVy_C-bacVy_C)+(partVz_C-bacVz_C)*(partVz_C-bacVz_C));
-         if (partP_C != 0.) lctau_C = lctau_C*partMass_C/partP_C;
-         else               lctau_C = -1.;
-         // - Fill Histograms
-         if (PDGcode_C ==  3312) {
-             f3dHistGenPtVsGenYvsNtracksXiMinus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
-             f3dHistGenPtVsGenctauvsYXiMinus_C->Fill(partPt_C, lctau_C, lRapXiMC_C);
-         }
-         if (PDGcode_C == -3312) {
-             f3dHistGenPtVsGenYvsNtracksXiPlus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
-             f3dHistGenPtVsGenctauvsYXiPlus_C->Fill(partPt_C, lctau_C, lRapXiMC_C);
-         }
-         if (PDGcode_C ==  3334) {
-             f3dHistGenPtVsGenYvsNtracksOmegaMinus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
-             f3dHistGenPtVsGenctauvsYOmegaMinus_C->Fill(partPt_C, lctau_C, lRapXiMC_C);
-         }
-         if (PDGcode_C == -3334) {
-             f3dHistGenPtVsGenYvsNtracksOmegaPlus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
-             f3dHistGenPtVsGenctauvsYOmegaPlus_C->Fill(partPt_C, lctau_C, lRapXiMC_C);
-         }
+         if (PDGcode_C ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
+         if (PDGcode_C == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
+         if (PDGcode_C ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
+         if (PDGcode_C == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_C->Fill(partPt_C, lRapXiMC_C, lPrimaryTrackMultiplicity_C);
    }
 
-   //---------------------------------------
-   // Re-run cascade vertexer (only for ESD)
-   //---------------------------------------
-   // Relaunch V0 and Cascade vertexer
+   //===============================================
+   // Re-run V0 and cascade vertexers (only for ESD)
+   //===============================================
    if (fAnalysisType == "ESD" && fRerunV0CascVertexers) {
            lESDevent->ResetCascades();
            lESDevent->ResetV0s();
@@ -2019,22 +2025,53 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
            //delete lCascVtxer; 
    }
 
-   //---------------------------------
+   // - (D) Efficiency denominator after Re-vertexing
+   Int_t lNbMCPrimary_D = 0;   lNbMCPrimary_D = lMCstack->GetNprimary();
+   Int_t lPrimaryTrackMultiplicity_D = nTrackMultiplicity;
+   Double_t partEnergy_D, partPz_D, partPt_D, lRapXiMC_D;
+   Int_t PDGcode_D;
+   TParticle* lCurrentParticlePrimary_D = 0x0;                               
+   AliAODMCParticle *lCurrentParticleaod_D = 0x0;  
+   for (Int_t iCurrentLabelStack_D = 0; iCurrentLabelStack_D < lNbMCPrimary_D; iCurrentLabelStack_D++) {
+         partEnergy_D = 0.;  partPz_D = 0.;  partPt_D  = 0.;  PDGcode_D = 0;
+         if (fAnalysisType == "ESD") {
+              lCurrentParticlePrimary_D = 0x0;  lCurrentParticlePrimary_D = lMCstack->Particle(iCurrentLabelStack_D);
+              if (!lCurrentParticlePrimary_D) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_D)) continue;
+              partEnergy_D = lCurrentParticlePrimary_D->Energy();  partPz_D = lCurrentParticlePrimary_D->Pz();  partPt_D = lCurrentParticlePrimary_D->Pt();  PDGcode_D = lCurrentParticlePrimary_D->GetPdgCode();
+         } else if (fAnalysisType == "AOD") {
+              lCurrentParticleaod_D = 0x0;  lCurrentParticleaod_D = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_D);
+              if (!lCurrentParticleaod_D) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lCurrentParticleaod_D->IsPhysicalPrimary()) continue;
+              partEnergy_D = lCurrentParticleaod_D->E();  partPz_D = lCurrentParticleaod_D->Pz();  partPt_D = lCurrentParticleaod_D->Pt();  PDGcode_D = lCurrentParticleaod_D->GetPdgCode();
+         }
+         lRapXiMC_D = 0.5*TMath::Log((partEnergy_D + partPz_D) / (partEnergy_D - partPz_D + 1.e-13));
+         if (PDGcode_D ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_D->Fill(partPt_D, lRapXiMC_D, lPrimaryTrackMultiplicity_D);
+         if (PDGcode_D == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_D->Fill(partPt_D, lRapXiMC_D, lPrimaryTrackMultiplicity_D);
+         if (PDGcode_D ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_D->Fill(partPt_D, lRapXiMC_D, lPrimaryTrackMultiplicity_D);
+         if (PDGcode_D == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_D->Fill(partPt_D, lRapXiMC_D, lPrimaryTrackMultiplicity_D);
+   }
+
+   //=================================
    // 4) Well-established PV selection
-   //---------------------------------
-   if (fCollidingSystem == 0) {
-       const AliESDVertex *lESDPrimaryTrackingVtx = 0x0;
-       const AliESDVertex *lESDPrimarySPDVtx      = 0x0;
-       const AliAODVertex *lAODPrimaryTrackingVtx = 0x0;
-       const AliAODVertex *lAODPrimarySPDVtx      = 0x0;
-       if (fAnalysisType == "ESD") {
-           lESDPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();
-           lESDPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
-       } else if (fAnalysisType == "AOD") {
-           lAODPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
-           lAODPrimaryTrackingVtx = lAODevent->GetPrimaryVertex();
-       }
-       // 4.1) reject events if both are explicitly requested and none is available
+   //=================================
+   // - Just take the vertices
+   const AliESDVertex *lESDPrimaryTrackingVtx = 0x0;
+   const AliESDVertex *lESDPrimarySPDVtx      = 0x0;
+   const AliAODVertex *lAODPrimaryTrackingVtx = 0x0;
+   const AliAODVertex *lAODPrimarySPDVtx      = 0x0;
+   if (fAnalysisType == "ESD") {
+       lESDPrimaryTrackingVtx = lESDevent->GetPrimaryVertexTracks();
+       lESDPrimarySPDVtx = lESDevent->GetPrimaryVertexSPD();
+   } else if (fAnalysisType == "AOD") {
+       lAODPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
+       lAODPrimaryTrackingVtx = lAODevent->GetPrimaryVertex();
+   }
+ 
+   //===============================================================================================
+   // 4.1) reject events if both SPD and TPC vertices are explicitly requested and none is available
+   //===============================================================================================
+   if (fCollidingSystem == 0) {    
        if (fApplyEvSelNoTPConlyPrimVtx) {
             if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus()) && fAnalysisType == "ESD"){
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -2057,7 +2094,39 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                   return;
              }
         }
-        // 4.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
+   }
+
+   // - (E) Efficiency denominator after Re-vertexing
+   Int_t lNbMCPrimary_E = 0;  lNbMCPrimary_E = lMCstack->GetNprimary();
+   Int_t lPrimaryTrackMultiplicity_E = nTrackMultiplicity;
+   Double_t partEnergy_E, partPz_E, partPt_E, lRapXiMC_E;
+   Int_t PDGcode_E;
+   TParticle* lCurrentParticlePrimary_E = 0x0;
+   AliAODMCParticle *lCurrentParticleaod_E = 0x0;
+   for (Int_t iCurrentLabelStack_E = 0; iCurrentLabelStack_E < lNbMCPrimary_E; iCurrentLabelStack_E++) {
+         partEnergy_E = 0.;  partPz_E = 0.;  partPt_E = 0.;  PDGcode_E = 0;
+         if (fAnalysisType == "ESD") {
+              lCurrentParticlePrimary_E = 0x0;  lCurrentParticlePrimary_E = lMCstack->Particle(iCurrentLabelStack_E);
+              if (!lCurrentParticlePrimary_E) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_E)) continue;
+              partEnergy_E = lCurrentParticlePrimary_E->Energy();  partPz_E = lCurrentParticlePrimary_E->Pz();  partPt_E = lCurrentParticlePrimary_E->Pt();  PDGcode_E = lCurrentParticlePrimary_E->GetPdgCode();
+         } else if (fAnalysisType == "AOD") {
+              lCurrentParticleaod_E = 0x0;  lCurrentParticleaod_E = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_E);
+              if (!lCurrentParticleaod_E) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lCurrentParticleaod_E->IsPhysicalPrimary()) continue;
+              partEnergy_E = lCurrentParticleaod_E->E();  partPz_E = lCurrentParticleaod_E->Pz();  partPt_E = lCurrentParticleaod_E->Pt();  PDGcode_E = lCurrentParticleaod_E->GetPdgCode();
+         }
+         lRapXiMC_E = 0.5*TMath::Log((partEnergy_E + partPz_E) / (partEnergy_E - partPz_E + 1.e-13));
+         if (PDGcode_E ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_E->Fill(partPt_E, lRapXiMC_E, lPrimaryTrackMultiplicity_E);
+         if (PDGcode_E == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_E->Fill(partPt_E, lRapXiMC_E, lPrimaryTrackMultiplicity_E);
+         if (PDGcode_E ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_E->Fill(partPt_E, lRapXiMC_E, lPrimaryTrackMultiplicity_E);
+         if (PDGcode_E == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_E->Fill(partPt_E, lRapXiMC_E, lPrimaryTrackMultiplicity_E);
+   }
+
+   //=================================================================
+   // 4.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
+   //=================================================================
+   if (fCollidingSystem == 0) {
         if (fApplyEvSelSPDvtxres) {
              if (!lESDPrimarySPDVtx->GetStatus()) {
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -2080,7 +2149,39 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                   return;
              }
         }
-        // 4.3) check the proximity between the spd vertex and trak vertex, and reject if not satisfied 
+   }
+
+   // - (F) Efficiency denominator after Re-vertexing
+   Int_t lNbMCPrimary_F = 0;   lNbMCPrimary_F = lMCstack->GetNprimary();
+   Int_t lPrimaryTrackMultiplicity_F = nTrackMultiplicity;
+   Double_t partEnergy_F, partPz_F, partPt_F, lRapXiMC_F;
+   Int_t PDGcode_F;
+   TParticle* lCurrentParticlePrimary_F = 0x0;
+   AliAODMCParticle *lCurrentParticleaod_F = 0x0;
+   for (Int_t iCurrentLabelStack_F = 0; iCurrentLabelStack_F < lNbMCPrimary_F; iCurrentLabelStack_F++) {
+         partEnergy_F = 0.;  partPz_F = 0.;  partPt_F = 0.;  PDGcode_F = 0;
+         if (fAnalysisType == "ESD") {
+              lCurrentParticlePrimary_F = 0x0;  lCurrentParticlePrimary_F = lMCstack->Particle(iCurrentLabelStack_F);
+              if (!lCurrentParticlePrimary_F) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_F)) continue;
+              partEnergy_F = lCurrentParticlePrimary_F->Energy();  partPz_F = lCurrentParticlePrimary_F->Pz();  partPt_F = lCurrentParticlePrimary_F->Pt();  PDGcode_F = lCurrentParticlePrimary_F->GetPdgCode();
+         } else if (fAnalysisType == "AOD") {
+              lCurrentParticleaod_F = 0x0;  lCurrentParticleaod_F = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_F);
+              if (!lCurrentParticleaod_F) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lCurrentParticleaod_F->IsPhysicalPrimary()) continue;
+              partEnergy_F = lCurrentParticleaod_F->E();  partPz_F = lCurrentParticleaod_F->Pz();  partPt_F = lCurrentParticleaod_F->Pt();  PDGcode_F = lCurrentParticleaod_F->GetPdgCode();
+         }
+         lRapXiMC_F = 0.5*TMath::Log((partEnergy_F + partPz_F) / (partEnergy_F - partPz_F + 1.e-13));
+         if (PDGcode_F ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_F->Fill(partPt_F, lRapXiMC_F, lPrimaryTrackMultiplicity_F);
+         if (PDGcode_F == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_F->Fill(partPt_F, lRapXiMC_F, lPrimaryTrackMultiplicity_F);
+         if (PDGcode_F ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_F->Fill(partPt_F, lRapXiMC_F, lPrimaryTrackMultiplicity_F);
+         if (PDGcode_F == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_F->Fill(partPt_F, lRapXiMC_F, lPrimaryTrackMultiplicity_F);
+   }
+
+   //==============================================================================================
+   // 4.3) check the proximity between the spd vertex and track vertex, and reject if not satisfied
+   //============================================================================================== 
+   if (fCollidingSystem == 0) {
         if (fApplyEvSelVtxProximity) {
             if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus())) {
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -2173,9 +2274,37 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascades);
    fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicity);
 
-   //-------------------------------------------------------
+   // - (G) Efficiency denominator after proximity check for the vertices
+   Int_t lNbMCPrimary_G = 0;   lNbMCPrimary_G = lMCstack->GetNprimary();
+   Int_t lPrimaryTrackMultiplicity_G = nTrackMultiplicity;
+   Double_t partEnergy_G, partPz_G, partPt_G, lRapXiMC_G;
+   Int_t PDGcode_G;
+   TParticle* lCurrentParticlePrimary_G = 0x0;
+   AliAODMCParticle *lCurrentParticleaod_G = 0x0;
+   for (Int_t iCurrentLabelStack_G = 0; iCurrentLabelStack_G < lNbMCPrimary_G; iCurrentLabelStack_G++) {
+         partEnergy_G = 0.;  partPz_G = 0.;  partPt_G = 0.;  PDGcode_G = 0;
+         if (fAnalysisType == "ESD") {
+              lCurrentParticlePrimary_G = 0x0;  lCurrentParticlePrimary_G = lMCstack->Particle(iCurrentLabelStack_G);
+              if (!lCurrentParticlePrimary_G) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack_G)) continue;
+              partEnergy_G = lCurrentParticlePrimary_G->Energy();  partPz_G = lCurrentParticlePrimary_G->Pz();  partPt_G = lCurrentParticlePrimary_G->Pt();  PDGcode_G = lCurrentParticlePrimary_G->GetPdgCode();
+         } else if (fAnalysisType == "AOD") {
+              lCurrentParticleaod_G = 0x0;  lCurrentParticleaod_G = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack_G);
+              if (!lCurrentParticleaod_G) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
+              if (!lCurrentParticleaod_G->IsPhysicalPrimary()) continue;
+              partEnergy_G = lCurrentParticleaod_G->E();  partPz_G = lCurrentParticleaod_G->Pz();  partPt_G = lCurrentParticleaod_G->Pt();  PDGcode_G = lCurrentParticleaod_G->GetPdgCode();
+         }
+         lRapXiMC_G = 0.5*TMath::Log((partEnergy_G + partPz_G) / (partEnergy_G - partPz_G + 1.e-13));
+         if (PDGcode_G ==  3312)  f3dHistGenPtVsGenYvsNtracksXiMinus_G->Fill(partPt_G, lRapXiMC_G, lPrimaryTrackMultiplicity_G);
+         if (PDGcode_G == -3312)  f3dHistGenPtVsGenYvsNtracksXiPlus_G->Fill(partPt_G, lRapXiMC_G, lPrimaryTrackMultiplicity_G);
+         if (PDGcode_G ==  3334)  f3dHistGenPtVsGenYvsNtracksOmegaMinus_G->Fill(partPt_G, lRapXiMC_G, lPrimaryTrackMultiplicity_G);
+         if (PDGcode_G == -3334)  f3dHistGenPtVsGenYvsNtracksOmegaPlus_G->Fill(partPt_G, lRapXiMC_G, lPrimaryTrackMultiplicity_G);
+   }
+
+
+   //=======================================================
    // 7) Vertex Z position selection (+ magnetic field info)
-   //-------------------------------------------------------
+   //=======================================================
    // - Vertex coordinates: get the best primary vertex available for the event
    Double_t lBestPrimaryVtxPos[3]  = {-100.0, -100.0, -100.0};
    Double_t tPrimaryVtxPosition[3] = {-100.0, -100.0, -100.0};
@@ -2269,17 +2398,15 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistPVyAnalysis->Fill( tPrimaryVtxPosition[1] );
    fHistPVzAnalysis->Fill( tPrimaryVtxPosition[2] );
 
-   //-----------------
+   //=================
    // - Magnetic field
-   //-----------------
+   //=================
    Double_t lMagneticField = -10.;
    if      (fAnalysisType == "ESD") lMagneticField = lESDevent->GetMagneticField();
    else if (fAnalysisType == "AOD") lMagneticField = lAODevent->GetMagneticField();
    //if(TMath::Abs(lMagneticField ) < 10e-6) continue;    
 
-   //------------------------------------------------------------------------------------------------------
-   // - (D) Efficiency denominator after all event selections + QA plots on Generated particle disributions
-   //------------------------------------------------------------------------------------------------------
+   // - (H) Efficiency denominator after all event selections + QA plots on Generated particle disributions
    // - Initialisation of useful local variables		
    Int_t lPdgCodeCasc = 0, lPdgCodeBach = 0, lPdgCodeLambda = 0, lPdgCodeDghtMesV0 = 0, lPdgCodeDghtBarV0 = 0, ncascperev = 0, ncascperevtot =0, lPrimaryTrackMultiplicity = 0;	
    TH1F *lHistEtaGenCasc = 0, *lHistThetaGenCasc = 0, *lHistThetaLambda = 0, *lHistThetaBach = 0, *lHistThetaBarDghter = 0, *lHistThetaMesDghter = 0, *lHistPtBach = 0, *lHistPtBarDghter = 0, *lHistPtMesDghter = 0;
@@ -2292,7 +2419,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
              *lBach = 0x0, *lDghtBarV0 = 0x0, *lDghtMesV0 = 0x0, *lDght0ofLambda = 0x0, *lDght1ofLambda = 0x0;
    AliAODMCParticle *lCurrentParticleaod = 0x0, *xiMCaod = 0x0, *mcBachaod = 0x0, *lDght0ofXiaod = 0x0, *lDght1ofXiaod = 0x0, *lLambdaaod = 0x0, 
                     *lBachaod = 0x0, *lDghtBarV0aod = 0x0, *lDghtMesV0aod = 0x0, *lDght0ofLambdaaod = 0x0, *lDght1ofLambdaaod = 0x0;
-   Int_t lNbMCPrimary_D = 0;  lNbMCPrimary_D = lMCstack->GetNprimary();
+   Int_t lNbMCPrimary_H = 0;  lNbMCPrimary_H = lMCstack->GetNprimary();
    // - Start loop over different kind of cascades (Xi-+, Omega-+)
    for (Int_t iCascType = 1; iCascType < 5; iCascType++) { 
          ncascperev = 0;
@@ -2307,8 +2434,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                lPdgCodeDghtBarV0           = 2212;                                 // Proton pdg code
                lHistEtaGenCasc             = fHistEtaGenCascXiMinus;               // this plot for any Xi- 
   	       lHistThetaGenCasc           = fHistThetaGenCascXiMinus;             // cascades generated within acceptance (cut in pt + theta)
-               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksXiMinus_D; //
-               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYXiMinus_D;    //
+               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksXiMinus_H; //
+               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYXiMinus_H;    //
 	       l2dHistGenPtVsGenYFdbl      = f2dHistGenPtVsGenYFdblXiMinus;        //
 	       lHistThetaLambda            = fHistThetaLambdaXiMinus;              // 
 	       lHistThetaBach              = fHistThetaBachXiMinus;                // 
@@ -2326,8 +2453,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                lPdgCodeDghtBarV0           = -2212;                               // AntiProton pdg code 
       	       lHistEtaGenCasc             = fHistEtaGenCascXiPlus;               // this plot for any Xi+
 	       lHistThetaGenCasc           = fHistThetaGenCascXiPlus;             // cascades generated within acceptance (cut in pt + theta)
-               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksXiPlus_D; //
-               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYXiPlus_D;    //
+               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksXiPlus_H; //
+               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYXiPlus_H;    //
 	       l2dHistGenPtVsGenYFdbl      = f2dHistGenPtVsGenYFdblXiPlus;        //
 	       lHistThetaLambda            = fHistThetaLambdaXiPlus;              //
 	       lHistThetaBach              = fHistThetaBachXiPlus;                //
@@ -2346,8 +2473,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistEtaGenCasc             = fHistEtaGenCascOmegaMinus;               // this plot for any Omega+	 	
 	       lHistThetaGenCasc           = fHistThetaGenCascOmegaMinus;             // cascades generated within acceptance (cut in pt + theta)
 	       l2dHistGenPtVsGenYFdbl      = f2dHistGenPtVsGenYFdblOmegaMinus;        //
-               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksOmegaMinus_D; //
-               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYOmegaMinus_D;    //
+               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksOmegaMinus_H; //
+               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYOmegaMinus_H;    //
 	       lHistThetaLambda            = fHistThetaLambdaOmegaMinus;              //
 	       lHistThetaBach              = fHistThetaBachOmegaMinus;                //
 	       lHistThetaBarDghter         = fHistThetaBarDghterOmegaMinus;           //
@@ -2365,8 +2492,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistEtaGenCasc             = fHistEtaGenCascOmegaPlus;               // this plot for any Omega-
 	       lHistThetaGenCasc           = fHistThetaGenCascOmegaPlus;             // cascades generated within acceptance (cut in pt + theta)
 	       l2dHistGenPtVsGenYFdbl      = f2dHistGenPtVsGenYFdblOmegaPlus;        //
-               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksOmegaPlus_D; //
-               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYOmegaPlus_D;    //
+               l3dHistGenPtVsGenYvsNtracks = f3dHistGenPtVsGenYvsNtracksOmegaPlus_H; //
+               l3dHistGenPtVsGenctauvsY    = f3dHistGenPtVsGenctauvsYOmegaPlus_H;    //
 	       lHistThetaLambda            = fHistThetaLambdaOmegaPlus;              //
 	       lHistThetaBach              = fHistThetaBachOmegaPlus;                //
 	       lHistThetaBarDghter         = fHistThetaBarDghterOmegaPlus;           //
@@ -2377,7 +2504,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                break;
          }
          // - Start loop on primaries
-         for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary_D; iCurrentLabelStack++) {
+         for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary_H; iCurrentLabelStack++) {
                partEnergy = 0.;   partPz = 0.;  partEta = 0.;  partTheta = 0.;  partP = 0.;  partPt = 0.;
                partVx     = 0.;   partVy = 0.;  partVz = 0.;   bacVx = 0.;      bacVy = 0.;  bacVz  = 0.; partMass   = 0.;
                if ( fAnalysisType == "ESD" ) {      
@@ -2385,7 +2512,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     if (!lCurrentParticle) { AliWarning("Generated cascade loop - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n");  continue; }
                     if (!lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) continue; 
                     if (lCurrentParticle->GetPdgCode() == lPdgCodeCasc) {	
-                         partEnergy = lCurrentParticle->Energy(); partPz   = lCurrentParticle->Pz(); partEta = lCurrentParticle->Eta(); partP  = lCurrentParticle->P();  partPt = lCurrentParticle->Pt();
+                         partEnergy = lCurrentParticle->Energy(); partPz   = lCurrentParticle->Pz();       partEta = lCurrentParticle->Eta(); partP  = lCurrentParticle->P();  partPt = lCurrentParticle->Pt();
                          partTheta  = lCurrentParticle->Theta();  partMass = lCurrentParticle->GetMass();  partVx = lCurrentParticle->Vx();   partVy = lCurrentParticle->Vy(); partVz = lCurrentParticle->Vz();
                          if (lCurrentParticle->GetDaughter(0) >= 0) {
                               mcBach = 0x0;  mcBach = lMCstack->Particle(lCurrentParticle->GetDaughter(0));
