@@ -66,6 +66,7 @@ TString fCDBpath = "local://$ALICE_ROOT/OCDB";
 string fECSstring;
 string fINFOstring;
 string fConfigMacro;
+string fHLToptions;
 
 bool fRequestGRP = false;
 bool fUsePromptCDBcache = false;
@@ -88,6 +89,7 @@ const char* fUSAGE =
     " -requestGRP : request an on-the-fly GRP from upstream\n"
     " -cdbPath : the path to the default CDB storage\n"
     " -localGRPcache : location of prompt GRP storage (local://OCDB)\n"
+    " -HLToptions : options passed to AliHLTSystem\n"
     " -config : ROOT macro defining the HLT chain.\n"
     "           a \"source\" component is provided, use as first parent\n"
     "           a \"sink\" component needs to be defined (last in chain)\n"
@@ -274,9 +276,8 @@ int Run()
                 fParticipatingDetectors, detectorList.Data());
           }
 
-          TString opt = "ECS=";
-          opt += fECSstring;
-          system->ScanOptions(opt.Data());
+          string opt = "ECS="+fECSstring + " " + fHLToptions;
+          system->ScanOptions(opt.c_str());
 
           ecsRunNumber = atoi(ecsParamMap["RUN_NUMBER"].c_str());
           if (fVerbose) printf("ECS string RUN_NUMBER: %i\n", ecsRunNumber);
