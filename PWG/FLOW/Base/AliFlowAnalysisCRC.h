@@ -1140,7 +1140,10 @@ private:
  Double_t fNumberOfPOIsEBE; // # of Particles of Interest
  Double_t fReferenceMultiplicityEBE; // reference multiplicity
  Double_t fCentralityEBE; // centrality percentile
- Double_t fNewMetricLEBE; // new metric D
+ Double_t fNewMetricLEBE; // new metric L
+ Double_t fNewMetricDEBE; // new metric D
+  Double_t fNewMetricL2EBE; // new metric L
+  Double_t fNewMetricD2EBE; // new metric D
  Double_t fCentralityCL1EBE; // centrality (CL1) percentile
  Double_t fNITSCL1EBE; // centrality (TRK) percentile
  Double_t fCentralityTRKEBE; // centrality (TRK) percentile
@@ -1624,7 +1627,7 @@ private:
  Double_t *fCRCPtBins; //!
  Int_t fZDCESENBins;
  Double_t fZDCESELCtot;
- Double_t fZDCESELAtot;
+ Double_t fZDCESELC2tot;
  Double_t *fCorrMap; //!
  Double_t fCenWeightEbE;
  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
@@ -1646,8 +1649,7 @@ private:
   TF1 *fPolDer[2]; //!
   TF1 *fPolInt[2]; //!
   TF1 *fPolDist[2]; //!
-  TF1 *fPolMinMetric[2]; //!
-  TF1 *fPolMaxMetric[2]; //!
+  TF1 *fPolSlope[2]; //!
   
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
@@ -1657,7 +1659,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 11);
+ ClassDef(AliFlowAnalysisCRC, 12);
  
 };
 
