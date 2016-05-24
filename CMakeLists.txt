@@ -50,6 +50,8 @@ set(CMAKE_MODULE_PATH "${AliPhysics_SOURCE_DIR}/cmake")
 # ALIPHYSICS_SERIAL
 include(CheckGitVersion)
 
+include(CheckCXXCompilerFlag)
+
 #       - CLANG_MAJOR.CLANG_MINOR or
 #       - GCC_MAJOR.GCC_MINOR.GCC_PATCH
 include(CheckCompiler)
@@ -120,9 +122,11 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
   endif()
 
-  # Make a few common warnings errors
-  # Does not work on ubuntu, remove for now.
-  #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=mismatched-new-delete")
+  # Turn some common warnings into errors
+  check_cxx_compiler_flag(-Werror=mismatched-new-delete CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
+  if(CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=mismatched-new-delete")
+  endif()
 
   # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
