@@ -132,8 +132,17 @@ public:
   void         SetAddedSignal(Bool_t b)                       { fAddedSignal   = b;         }
   void         SetDataPeriod(Int_t b)                         { fDataPeriod   = b;         }
   void         SetDoManualRecal(Bool_t b)                     { fDoManualRecal = b;         }
-  void         SetDoCalibRun(Bool_t b)                     { fCalibRun = b;         }
+  void         SetDoCalibRun(Bool_t b)                        { fCalibRun = b;         }
+  void         SetManualBadMap(Bool_t b)                      { fApplyBadMapManually = b;}
   void         SetDnDpT(Int_t i, Double_t par0, Double_t par1, Double_t par2, Double_t par3, Double_t par4);
+  
+  void SetBadMap(TH1D * h)
+		{
+      if(fBadMap) delete fBadMap;
+      fBadMap=new TH1D(*h) ;
+      printf("Set %s \n",fBadMap->GetName());
+    }
+
   
 protected:
   
@@ -170,11 +179,14 @@ protected:
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
   Int_t        GetModuleNumber(AliVCluster * cluster)                                                     const;
-  void         FillCellQAHists(AliVCluster *);
+  void         FillCellQAHists(AliVCluster *, Bool_t isDcal=0);
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
   // spectral shape
   Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
 
+  // bad map
+  TH1D *fBadMap;
+  
   // input members
   TString                fCentVar;                // variable for centrality determination
   Double_t               fCentFrom;               // min centrality (def=0)
@@ -219,7 +231,8 @@ protected:
   Bool_t                 fRotateMixed;            // rotates the events before mixing such that the highest pT cluster has same phi as in real event
   Bool_t                 fAddedSignal;            // added signals in MC?
   Int_t                  fDataPeriod;             // which period(s)
-
+  Bool_t                 fApplyBadMapManually;    // manual bad map?
+  
   // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events
   TList                 *fOutput;                 //!container of output histograms
@@ -264,6 +277,10 @@ protected:
   // histogram for cells
   TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
   
+  // histogram for emcal and dcal
+//  TH1                   *fHCellIndexEMCAL;      //!histo for cell energy vs cell number
+//  TH1                   *fHCellIndexDCAL;       //!histo for cell energy vs cell number
+  
   // histograms for clusters
   TH1                   *fHClusters;                  //!histo for cuts
   TH1                   *fHClustAllEtaPhi;        //!histo for all clusters eta and phi
@@ -271,6 +288,7 @@ protected:
   TH1                   *fHClustAccEvt;            //!histo for number of clusters after cuts in event
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2                   *fHClustEtaPhi;           //!histo for cluster eta vs. phi
+  TH2                   *fHClustEtaPhiAll;           //!histo for cluster eta vs. phi
   TH2                   *fHClustEnergyPt;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergyPtDCal;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
@@ -417,7 +435,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 15) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 16) // Analysis task for neutral pions in Pb+Pb
 };
 
 

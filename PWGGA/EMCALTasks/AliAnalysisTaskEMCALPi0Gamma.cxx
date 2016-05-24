@@ -92,6 +92,7 @@ fMinEcc(-1),
 fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fCalibRun(0),
+fApplyBadMapManually(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
 fIsoDist(0.2),
@@ -144,12 +145,15 @@ fHCentQual(0x0),
 fHMeanClusterEnergy(0x0),
 fHMeanClusterNumber(0x0),
 fHCellIndexEnergy(0x0),
+//fHCellIndexEMCAL(0x0),
+//fHCellIndexDCAL(0x0),
 fHClusters(0x0),
 fHClustAllEtaPhi(0x0),
 fHClustNoEvt(0),
 fHClustAccEvt(0),
 fHClustEccentricity(0),
 fHClustEtaPhi(0x0),
+fHClustEtaPhiAll(0x0),
 fHClustEnergyPt(0x0),
 fHClustEnergyPtDCal(0x0),
 fHClustEnergySM(0x0),
@@ -265,6 +269,11 @@ fHWgt(0)
       }
     }
   }
+  // Set bad channel map
+  Char_t key[55] ;
+  snprintf(key,55,"BadMap") ;
+  fBadMap=new TH1D(key,"Bad Modules map",18000,0.5,18000.5) ;
+
   // Constructor.
 }
 
@@ -291,6 +300,7 @@ fMinEcc(-1),
 fDoTrMtSmpl(0),
 fDoManualRecal(0),
 fCalibRun(0),
+fApplyBadMapManually(0),
 fGeoName("EMCAL_FIRSTYEARV1"),
 fMinNClusPerTr(50),
 fIsoDist(0.2),
@@ -343,12 +353,15 @@ fHCentQual(0x0),
 fHMeanClusterEnergy(0x0),
 fHMeanClusterNumber(0x0),
 fHCellIndexEnergy(0x0),
+//fHCellIndexEMCAL(0x0),
+//fHCellIndexDCAL(0x0),
 fHClusters(0x0),
 fHClustAllEtaPhi(0x0),
 fHClustNoEvt(0),
 fHClustAccEvt(0),
 fHClustEccentricity(0),
 fHClustEtaPhi(0x0),
+fHClustEtaPhiAll(0x0),
 fHClustEnergyPt(0x0),
 fHClustEnergyPtDCal(0x0),
 fHClustEnergySM(0x0),
@@ -465,7 +478,11 @@ fHWgt(0)
       }
     }
   }
-  
+  // Set bad channel map
+  Char_t key[55] ;
+  snprintf(key,55,"BadMap") ;
+  fBadMap=new TH1D(key,"Bad Modules map",18000,0.5,18000.5) ;
+ 
   DefineOutput(1, TList::Class());
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks,EMCALTrigger.,SPDPileupVertices,TrkPileupVertices "
   "AOD:header,vertices,emcalCells,tracks";
@@ -662,14 +679,23 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHCellIndexEnergy->SetXTitle("Cell #");
     fHCellIndexEnergy->SetYTitle("E [GeV/c]");
     fOutput->Add(fHCellIndexEnergy);
+
+//    fHCellIndexEMCAL = new TH1F("hCellIndexEMCAL","",18001,-0.5,18000.5);
+//    fHCellIndexEMCAL->SetXTitle("CellID");
+//    fOutput->Add(fHCellIndexEMCAL);
+//    
+//    fHCellIndexDCAL = new TH1F("hCellIndexDCAL","",18001,-0.5,18000.5);
+//    fHCellIndexDCAL->SetXTitle("CellID");
+//    fOutput->Add(fHCellIndexDCAL);
     
-    fHClusters = new TH1F("hClusters","",6,0.5,6.5);
+    fHClusters = new TH1F("hClusters","",7,0.5,7.5);
     fHClusters->GetXaxis()->SetBinLabel(1,"All");
-    fHClusters->GetXaxis()->SetBinLabel(2,"Min E");
-    fHClusters->GetXaxis()->SetBinLabel(3,"NCells");
-    fHClusters->GetXaxis()->SetBinLabel(4,"E Ratio");
-    fHClusters->GetXaxis()->SetBinLabel(5,"Eccentricity");
-    fHClusters->GetXaxis()->SetBinLabel(6,"M02");
+    fHClusters->GetXaxis()->SetBinLabel(2,"Bad Cell");
+    fHClusters->GetXaxis()->SetBinLabel(3,"Min E");
+    fHClusters->GetXaxis()->SetBinLabel(4,"NCells");
+    fHClusters->GetXaxis()->SetBinLabel(5,"E Ratio");
+    fHClusters->GetXaxis()->SetBinLabel(6,"Eccentricity");
+    fHClusters->GetXaxis()->SetBinLabel(7,"M02");
     fOutput->Add(fHClusters);
     
     
@@ -691,6 +717,12 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHClustEtaPhi->SetXTitle("#eta");
     fHClustEtaPhi->SetYTitle("#varphi");
     fOutput->Add(fHClustEtaPhi);
+    
+    fHClustEtaPhiAll = new TH2F("hClustEtaPhiAll","",160,-0.8,0.8,100*nsm,-3.15,3.15);
+    fHClustEtaPhiAll->SetXTitle("#eta");
+    fHClustEtaPhiAll->SetYTitle("#varphi");
+    fOutput->Add(fHClustEtaPhiAll);
+    
     fHClustEnergyPt = new TH2F("hClustEnergyPt","",250,0,50,250,0,50);
     fHClustEnergyPt->SetXTitle("E [GeV]");
     fHClustEnergyPt->SetYTitle("p_{T} [GeV/c]");
@@ -1921,11 +1953,11 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
       continue;
     }
     
-    FillCellQAHists(clus);
-    
     if ( (clusterVec.Phi() < 1.2 && clusterVec.Phi() > -2.8) ){
       bdcal = 1;
     }
+
+    FillCellQAHists(clus,bdcal);
     
     //if(bdcal) continue;
 
@@ -1941,9 +1973,39 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
      }
      */
     // fill clusters into this event
-    Int_t cluster = 1;
-    fHClusters->Fill(cluster++);
     
+    // see clusters in the beginning
+    
+    fHClustEtaPhiAll->Fill(clusterVec.Eta(),clusterVec.Phi());
+    
+    Int_t cluster = 1;
+
+    fHClusters->Fill(cluster++);
+    // look if cluster is on bad cell
+    if(fApplyBadMapManually) {
+      UShort_t* CellsID = clus->GetCellsAbsId();
+      
+      // Find Max Contributing Cell
+      AliVCaloCells *vcells = fEsdCells;
+      if (!vcells)
+        vcells = fAodCells;
+      
+      Float_t cellEnergy = 0.0;
+      Float_t maxEnergy = 0.0;
+      Int_t maxID = -1;
+      
+      for(Int_t kk=0; kk < clus->GetNCells(); kk++) {
+        cellEnergy = vcells->GetCellAmplitude(CellsID[kk]);
+        if(cellEnergy > maxEnergy) {
+          maxEnergy = cellEnergy;
+          maxID = CellsID[kk];
+        }
+      }
+      if(fBadMap->GetBinContent(maxID)>0)
+        continue;
+    }
+
+    fHClusters->Fill(cluster++);
     // apply cluster cuts first
     if (clus->E()<fMinE)
       continue;
@@ -4132,7 +4194,7 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
 }
 
 //_____________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster)
+void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster, Bool_t isDcal)
 {
 
   UShort_t* CellsID = virCluster->GetCellsAbsId();
@@ -4161,6 +4223,11 @@ void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster)
   
   fHCellIndexEnergy->Fill(maxID, maxEnergy);
  
+//  if(!isDcal)
+//    fHCellIndexEMCAL->Fill(maxID);
+//  else
+//    fHCellIndexDCAL->Fill(maxID);
+  
   return;
 }
 
