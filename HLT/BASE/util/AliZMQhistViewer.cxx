@@ -274,7 +274,7 @@ int AliZMQhistViewer::GetObjects(AliAnalysisDataContainer* kont, std::vector<TOb
   const char* analName = kont->GetName();
   TObject* analData = kont->GetData();
   std::string name = analName;
-  std::string namePrefix = "[" + name + "] ";
+  std::string namePrefix = name + "/";
   TCollection* collection = dynamic_cast<TCollection*>(analData);
   if (collection) {
     if (fVerbose) Printf("  have a collection %p",collection);
