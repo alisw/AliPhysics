@@ -450,6 +450,8 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
   tree->SetBranchStatus("npValid",kTRUE);
   tree->SetBranchStatus("its0.",kTRUE);
   tree->SetBranchStatus("its1.",kTRUE);
+  tree->SetBranchStatus("tofBC",kTRUE);
+  tree->SetBranchStatus("nPrimTracks",kTRUE);
   //
   tree->SetBranchAddress("timeStamp",&fDeltaStr.timeStamp);
   tree->SetBranchAddress("itsOK",&fDeltaStr.itsOK);
@@ -463,11 +465,8 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
   tree->SetBranchAddress("npValid",&fDeltaStr.npValid);
   tree->SetBranchAddress("its0.",&fDeltaStr.vecDYITS);
   tree->SetBranchAddress("its1.",&fDeltaStr.vecDZITS);
-  //
-  if (fNPrimTracksCut>0) {
-    tree->SetBranchStatus("nPrimTracks",kTRUE);
-    tree->SetBranchAddress("nPrimTracks",&fDeltaStr.nPrimTracks);
-  }
+  tree->SetBranchAddress("tofBC",&fDeltaStr.tofBC);
+  tree->SetBranchAddress("nPrimTracks",&fDeltaStr.nPrimTracks);
   //
   if (needTRD) {
     tree->SetBranchStatus("trd0.",kTRUE);
@@ -480,11 +479,6 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
     tree->SetBranchStatus("tof1.",kTRUE);
     tree->SetBranchAddress("tof0.",&fDeltaStr.vecDYTOF);
     tree->SetBranchAddress("tof1.",&fDeltaStr.vecDZTOF);
-  }
-  //
-  if (fUseTOFBC) {
-    tree->SetBranchStatus("tofBC",kTRUE);
-    tree->SetBranchAddress("tofBC",&fDeltaStr.tofBC);
   }
   //
   tree->GetEntry(0);
