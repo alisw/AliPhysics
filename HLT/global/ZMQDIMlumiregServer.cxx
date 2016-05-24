@@ -421,7 +421,7 @@ void AliHLTDCSPublisherServer::InitLumiRegionAsInvalid(AliLuminosityRegion& lumi
 	lumiRegion.fSizeY = -1000.;
 	lumiRegion.fSizeZ = -1000.;
 	lumiRegion.fDxdz = 1000.;
-	lumiRegion.fDydz = 1000.;
+	lumiRegion.fDydz = -1000.;
 }
 
 
