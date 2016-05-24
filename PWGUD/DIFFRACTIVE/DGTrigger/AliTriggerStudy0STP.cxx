@@ -1,6 +1,8 @@
 // -*- C++ -*-
 // $Id$
 
+#include <TBits.h>
+
 #include "AliLog.h"
 #include "AliTriggerStudy0STP.h"
 
@@ -12,11 +14,6 @@ Bool_t AliTriggerStudy0STP::CheckForTrackletPair(const TBits* mult, std::bitset<
   
   const std::bitset<20> phi_L0 = ExtractPhi_L0(mult);
   const std::bitset<40> phi_L1 = ExtractPhi_L1(mult);
-  
-  const Int_t nOuter = mult->CountBits(400);
-  const Int_t nInner = mult->CountBits()-nOuter;
-   if (nOuter > 7 || nInner > 7)
-     return false;
   
   for (std::vector<TablePhi>::const_iterator i=fLookupTablePhi.begin(), iend=fLookupTablePhi.end(); i!=iend; ++i) {
     if ((i->p.first  & phi_L0).any() &&
@@ -33,6 +30,51 @@ Bool_t AliTriggerStudy0STP::CheckForTrackletPair(const TBits* mult, std::bitset<
   }
   
   return false;
+}
+
+Bool_t AliTriggerStudy0STP::CheckForTrackletPairFPGA(const TBits* mult) const
+{
+  const std::bitset<20> phi_L0 = ExtractPhi_L0(mult);
+  const std::bitset<40> phi_L1 = ExtractPhi_L1(mult);
+
+  AliDebug(3, Form("CheckForTrackletPair: L1  %s", phi_L1.to_string().c_str()));
+  AliDebug(3, Form("CheckForTrackletPair: L0  %s", phi_L0.to_string().c_str()));
+
+  std::bitset<21> v_coinc;
+  for (Int_t d_phi_outer=3; d_phi_outer<=20; ++d_phi_outer) {
+    v_coinc[d_phi_outer] = 0;
+
+    for (Int_t idxOuter=0; idxOuter<40; ++idxOuter) {
+      const Int_t idxInner  = idxOuter/2;
+      const Int_t idxInnerC = ((idxOuter+d_phi_outer)%40)/2;
+      const Bool_t coinc_inner0 = ( phi_L0[ idxInner        ] |
+				    phi_L0[(idxInner+1) % 20] );
+
+      const Bool_t coinc_inner1 = ( phi_L0[(idxInnerC    ) % 20] |
+				    phi_L0[(idxInnerC + 1) % 20] );
+
+      const Bool_t coinc_inner = (coinc_inner0 & coinc_inner1);
+
+      const Bool_t coinc_outer0 = (phi_L1[(idxOuter    )%40] |
+				   phi_L1[(idxOuter + 1)%40] |
+				   phi_L1[(idxOuter + 2)%40]);
+
+      const Bool_t coinc_outer1 = (phi_L1[(idxOuter+d_phi_outer    ) % 40] |
+				   phi_L1[(idxOuter+d_phi_outer + 1) % 40] |
+				   phi_L1[(idxOuter+d_phi_outer + 2) % 40]);
+
+      const Bool_t coinc_outer = (coinc_outer0 & coinc_outer1);
+
+      if ((coinc_inner & coinc_outer))
+	AliDebug(3, Form("ZZ %d %d %d", d_phi_outer, idxInner, idxOuter ));
+
+      v_coinc[d_phi_outer] = v_coinc[d_phi_outer] | (coinc_inner & coinc_outer);
+    }
+  }
+  AliDebug(3, Form("YY %s %s",
+		   v_coinc.to_string().c_str(),
+		   fMask.to_string().c_str()));
+  return (v_coinc & fMask).any();
 }
 
 std::bitset<20> AliTriggerStudy0STP::CheckForVertex(const TBits* mult, const std::bitset<40> &phi, std::vector<int>& v) const
