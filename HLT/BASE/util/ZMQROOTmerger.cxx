@@ -19,6 +19,7 @@
 #include "TTimeStamp.h"
 #include "TCollection.h"
 #include "AliLog.h"
+#include "AliAnalysisDataContainer.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -40,6 +41,8 @@ Int_t DoSend(void* socket);
 Int_t DoReply(aliZMQmsg::iterator block, void* socket);
 Int_t DoRequest(void* /*socket*/);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
+Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
+Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
@@ -70,6 +73,7 @@ Bool_t  fAllowResetAtSOR=kTRUE;
 Bool_t  fAllowClearAtSOR=kFALSE;
 
 Bool_t  fUnpackCollections = kFALSE;
+Bool_t  fUnpackContainers = kFALSE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -85,6 +89,7 @@ std::string fInfo;           //cache for the info string
 TMap fMergeObjectMap;        //map of the merged objects, all incoming stuff is merged into these
 TMap fMergeListMap;          //map with the lists of objects to be merged in
 Int_t fMaxObjects = 1;        //trigger merge after this many messages
+std::vector<TObject*> fListOfObjects;
 
 long fPushbackPeriod = -1;        //in seconds, -1 means never
 TTimeStamp fLastPushBackTime;
@@ -131,6 +136,7 @@ const char* fUSAGE =
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
     " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
+    " -UnpackContainers : unpack the contents of AliAnalysisDataContainers\n"
     ;
 
 void* work(void* /*param*/)
@@ -473,27 +479,48 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   AliHLTDataTopic dataTopic;
   alizmq_msg_iter_topic(block, dataTopic);
 
-  if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(), zmq_msg_size(block->second));
+  if (fVerbose) Printf("in: data: %s, size: %zu bytes", dataTopic.Description().c_str(),
+                       zmq_msg_size(block->second));
   TObject* object = NULL;
   alizmq_msg_iter_data(block, object);
 
-  TCollection* collection = dynamic_cast<TCollection*>(object);
-  if (collection) {
-    if (fUnpackCollections) {
-      if (fVerbose) printf("unpacking collection %s\n", collection->GetName());
-      TIter iter(collection);
-      while (TObject* obj = iter()) {
-        AddObject(obj);
-      }
-      collection->SetOwner(kFALSE);
-      delete collection;
-    } else {
-      collection->SetOwner(kTRUE);
-      AddObject(collection);
+  //if we get a collection, always set ownership to prevent mem leaks
+  //if we request unpacking: unpack what was requestd, otherwise just add
+  do {
+    if (fUnpackContainers) {
+      AliAnalysisDataContainer* container = dynamic_cast<AliAnalysisDataContainer*>(object);
+      if (container) {
+        //unpack an analysis data container
+        if (fVerbose) printf("unpacking analysis container %s %p\n", container->GetName(), container);
+        GetObjects(container, &fListOfObjects);      
+        delete container;
+        break;
+      } 
     }
-  } else {
-    AddObject(object);
+
+    if (TCollection* collection = dynamic_cast<TCollection*>(object)) {
+      //unpack a collection
+      if (fUnpackCollections) {
+        if (fVerbose) printf("unpacking collection %s %p\n", collection->GetName(), collection);
+        GetObjects(collection, &fListOfObjects);      
+        delete collection;
+        break;
+      } else {
+        collection->SetOwner(kTRUE);
+        fListOfObjects.push_back(collection);
+        break;
+      }
+    } else {
+      fListOfObjects.push_back(object);
+      break;
+    }
+  } while (false);
+
+  //add all extracted objects to the list of veiwer objects
+  for (auto i: fListOfObjects) {
+    AddObject(i);
   }
+  fListOfObjects.clear();
 
   if (fPushbackPeriod>=0)
   {
@@ -799,7 +826,11 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("UnpackCollections"))
     {
-      fUnpackCollections = (value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
+      fUnpackCollections = (value.Contains("0") || value.Contains("no"))?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("UnpackContainers"))
+    {
+      fUnpackContainers = (value.Contains("0") || value.Contains("no"))?kFALSE:kTRUE;
     }
     else
     {
@@ -841,6 +872,9 @@ int main(Int_t argc, char** argv)
     return 1;
   }
 
+  //init other stuff
+  fListOfObjects.reserve(100);
+
   Run();
 
   //destroy ZMQ sockets
@@ -851,4 +885,71 @@ int main(Int_t argc, char** argv)
   zmq_ctx_destroy(fZMQcontext);
   return mainReturnCode;
 }
+
+//______________________________________________________________________________
+Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix)
+{
+  const char* analName = kont->GetName();
+  TObject* analData = kont->GetData();
+  std::string name = analName;
+  std::string namePrefix = name + "/";
+  TCollection* collection = dynamic_cast<TCollection*>(analData);
+  if (collection) {
+    if (fVerbose) Printf("  have a collection %p",collection);
+    const char* collName = collection->GetName();
+    GetObjects(collection, list, namePrefix.c_str());
+    if (fVerbose) printf("  destroying collection %p\n",collection);
+    delete collection;
+    kont->SetDataOwned(kFALSE);
+  } else { //if (collection)
+    TNamed* named = dynamic_cast<TNamed*>(analData);
+    name = namePrefix + analData->GetName();
+    std::string title = namePrefix + analData->GetTitle();
+    if (named) {
+      named->SetName(name.c_str());
+      named->SetTitle(title.c_str());
+    }
+    if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
+                         named->GetName(),
+                         named->ClassName(),
+                         named );
+    kont->SetDataOwned(kFALSE);
+    list->push_back(analData);
+  }
+  return 0;
+}
+
+//______________________________________________________________________________
+Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix)
+{
+  TIter next(collection);
+  while (TObject* tmp = next()) {
+    collection->Remove(tmp);
+    std::string name = tmp->GetName();
+    name = prefix + name;
+    if (fVerbose) Printf("--in (from a TCollection): %s (%s), %p",
+                         tmp->GetName(), tmp->ClassName(), tmp);
+    AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
+    if (analKont) {
+      if (fVerbose) Printf("  have an analysis container %p",analKont);
+      GetObjects(analKont,list,name.c_str());
+      if (fVerbose) printf("  destroying anal container %p\n",analKont);
+      delete analKont;
+    } else {
+      TNamed* named = dynamic_cast<TNamed*>(tmp);
+      if (named) {
+        name = named->GetName();
+        name = prefix + name;
+        std::string title = named->GetTitle();
+        title = prefix + title;
+        named->SetName(name.c_str());
+        named->SetTitle(title.c_str());
+      }
+      list->push_back(tmp);
+    }
+    collection->SetOwner(kTRUE);
+  } //while
+  return 0;
+}
+
 

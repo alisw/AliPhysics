@@ -24,6 +24,7 @@
 #include "TTimeStamp.h"
 #include "TSystem.h"
 #include "TObjArray.h"
+#include "AliAnalysisDataContainer.h"
 
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
@@ -46,6 +47,7 @@ aliZMQrootStreamerInfo* fSchema = NULL;
 bool fVerbose = false;
 int fCompression = 0;
 TObjArray* fCollection = NULL;
+AliAnalysisDataContainer* fAnalContainer = NULL;
     
 const char* fUSAGE = 
     "ZMQhstSource: send a randomly filled ROOT histogram\n"
@@ -62,6 +64,7 @@ const char* fUSAGE =
     " -schema : include the streamer infos in the message\n"
     " -run : run number\n"
     " -collection : wrap all histograms in a TObjArray\n"
+    " -analysisContainer : wrap the collection in an AliAnalysisDataContainer\n"
     //" -compression : compression level (0|1)\n"
     ;
 
@@ -101,6 +104,11 @@ int main(int argc, char** argv)
       fCollection->Add(fHistograms[i]);
     }
   }
+
+  if (fCollection && fAnalContainer)
+  {
+    fAnalContainer->SetData(fCollection);
+  }
   
   if (fSchema) {
     if (fVerbose) printf("enabling schema for AliHLTMessage\n");
@@ -136,9 +144,15 @@ int main(int argc, char** argv)
     }
 
     aliZMQmsg message;
-    if (fCollection)
+    if (fCollection && !fAnalContainer)
     {
       rc = alizmq_msg_add(&message, &topic, fCollection, fCompression, fSchema);
+      if (rc < 0)
+        printf("unable to send\n");
+    }
+    else if (fCollection && fAnalContainer)
+    {
+      rc = alizmq_msg_add(&message, &topic, fAnalContainer, fCompression, fSchema);
       if (rc < 0)
         printf("unable to send\n");
     }
@@ -202,7 +216,13 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("collection"))
     {
       fCollection = new TObjArray(100);
-      fCollection->SetOwner(kFALSE);
+      fCollection->SetOwner(kTRUE);
+    }
+    else if (option.EqualTo("analysisContainer"))
+    {
+      fAnalContainer = new AliAnalysisDataContainer("container",TObjArray::Class());
+      if (!fCollection) fCollection = new TObjArray(100);
+      fCollection->SetOwner(kTRUE);
     }
     else if (option.EqualTo("range"))
     {
