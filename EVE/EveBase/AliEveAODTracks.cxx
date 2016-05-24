@@ -151,9 +151,23 @@ TEveElementList* AliEveAODTracks::ByPID()
     {
         at = (AliAODTrack*)aod->GetTrack(n);
         
-        bool good_cont = (at->IsOn(AliAODTrack::kITSin) && (!at->IsOn(AliAODTrack::kTPCin)));
+        bool good_cont = true;
+        string trackSelection = settings.GetValue("tracks.selection","");
         
-        if(good_cont || fDrawNoRefit)
+        if(trackSelection == "ITSin_noTPCin"){
+            good_cont = at->IsOn(AliESDtrack::kITSin && !at->IsOn(AliESDtrack::kTPCin));
+        }
+        else if(trackSelection == "noTISpureSA"){
+            good_cont = !at->IsOn(AliESDtrack::kITSpureSA);
+        }
+        else if(trackSelection == "TPCrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit);
+        }
+        else if(trackSelection == "TPCrefit_ITSrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit) && at->IsOn(AliESDtrack::kITSrefit);
+        }
+        
+        if(good_cont)
         {
             pid = at->GetMostProbablePID();
             TEveTrackList* tlist = tl[pid];
