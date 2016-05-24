@@ -312,9 +312,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
-  taskQC->SetFlowQCCenBin(NumCenBins);
+ taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
- taskQC->SetUseZDC(bUseZDC);
+ taskQC->SetUseZDC(kTRUE);
  taskQC->SetRecenterZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
