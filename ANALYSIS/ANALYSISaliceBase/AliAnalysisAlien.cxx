@@ -1275,7 +1275,8 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
             //TGridResult *res = gGrid->Command(command);
             //if (res) delete res;
             // Write standard output to file
-            gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
+	    // Write standard error to null device
+            gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
             //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage, file.Data()));
             Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
             Bool_t nullFile = kFALSE;
@@ -1372,7 +1373,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                //if (res) delete res;
                // Write standard output to file
                //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
-               gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
+               gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
                Bool_t nullFile = kFALSE;
                if (!hasGrep) {
@@ -1523,7 +1524,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                //TGridResult *res = gGrid->Command(command);
                //if (res) delete res;
                // Write standard output to file
-               gSystem->Exec(Form("%s > __tmp%d__%s", command.Data(), stage, file.Data()));
+               gSystem->Exec(Form("%s > __tmp%d__%s 2>/dev/null", command.Data(), stage, file.Data()));
                //gROOT->ProcessLine(Form("gGrid->Stdout(); > __tmp%d__%s", stage,file.Data()));
                Bool_t hasGrep = (gSystem->Exec("grep --version 2>/dev/null > /dev/null")==0)?kTRUE:kFALSE;
                Bool_t nullFile = kFALSE;
