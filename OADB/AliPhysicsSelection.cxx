@@ -101,6 +101,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
 #include "AliVZEROTriggerData.h"
@@ -333,7 +334,7 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
   } else {
     AliCDBManager* man = AliCDBManager::Instance();
     if (man) {
-      man->SetDefaultStorage("raw://");
+      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
       man->SetRun(event->GetRunNumber());
       AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
       if (grp) fIsPP = !grp->GetBeamType().EqualTo("A-A");
@@ -408,6 +409,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
     {
       AliInfo("Setting V0 online thresholds from OCDB");
       AliCDBManager* man = AliCDBManager::Instance();
+      if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
       man->SetRun(runNumber);
       AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
       AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
@@ -446,7 +448,9 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
         ){
       AliInfo("Setting FO online thresholds from OCDB");
       AliITSOnlineCalibrationSPDhandler h;
-      h.ReadPITConditionsFromDB(runNumber,"raw://") ;
+      AliCDBManager* man = AliCDBManager::Instance();
+      if (!man->IsDefaultStorageSet()) h.ReadPITConditionsFromDB(runNumber,"raw://");
+      else h.ReadPITConditionsFromDB(runNumber,man->GetDefaultStorage()->GetURI().Data());
       AliITSTriggerConditions* tri = h.GetTriggerConditions();
       if (tri) {
         Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
