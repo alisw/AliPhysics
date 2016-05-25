@@ -1615,6 +1615,9 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
   Float_t val=0;
   const TString sensorNameString(sensorName);
   AliDCSSensor *sensor = arr->GetSensor(sensorNameString);
+  const Int_t startTime = Int_t(sensor->GetStartTime());
+  const Int_t endTime   = Int_t(sensor->GetEndTime());
+
   if (!sensor) return val;
   //use the dcs graph if possible
   TGraph *gr=sensor->GetGraph();
@@ -1622,30 +1625,32 @@ Float_t AliTPCcalibDB::GetDCSSensorValue(AliDCSSensorArray *arr, Int_t timeStamp
     for (Int_t ipoint=0;ipoint<gr->GetN();++ipoint){
       Double_t x,y;
       gr->GetPoint(ipoint,x,y);
-      Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
-      if (time<timeStamp) continue;
-      val=y;
+      const Int_t time=TMath::Nint(startTime+x*3600.); //time in graph is hours
+      if (time<=timeStamp && timeStamp<=endTime) {
+        val=y;
+        continue;
+      }
       break;
     }
-    //if val is still 0, test if if the requested time if within 5min of the first/last
-    //data point. If this is the case return the firs/last entry
+    //if val is still 0, test if if the requested time is within 5min of the first/last
+    //data point or start/end time of the sensor. If this is the case return the firs/last entry
     //the timestamps might not be syncronised for all calibration types, sometimes a 'pre'
     //and 'pos' period is requested. Especially to the HV this is not the case!
     //first point
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(0,x,y);
-      const Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
+      const Int_t time=TMath::Min(TMath::Nint(startTime+x*3600.), startTime); //time in graph is hours
       const Int_t dtime=time-timeStamp;
-      if ( (dtime>0) && (dtime<5*60) ) val=y;
+      if ( (dtime>=0) && (dtime<5*60) ) val=y;
     }
     //last point
     if (val==0 ){
       Double_t x,y;
       gr->GetPoint(gr->GetN()-1,x,y);
-      const Int_t time=TMath::Nint(sensor->GetStartTime()+x*3600); //time in graph is hours
+      const Int_t time=TMath::Max(TMath::Nint(startTime+x*3600.), endTime); //time in graph is hours
       const Int_t dtime=timeStamp-time;
-      if ( (dtime>0) && (dtime<5*60) ) val=y;
+      if ( (dtime>=0) && (dtime<5*60) ) val=y;
     }
   } else {
     val=sensor->GetValue(timeStamp);
