@@ -927,6 +927,9 @@ public:
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
   
+  TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
+
+  
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -934,7 +937,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,73) ;
+  ClassDef(AliCaloTrackReader,74) ;
   /// \endcond
 
 } ;
