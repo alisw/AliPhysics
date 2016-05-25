@@ -190,8 +190,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_kt_qinv) {
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", new AliFemtoQinvCorrFctn(*(AliFemtoQinvCorrFctn*)cf));
-        binned->AddKtRange(0.2, 0.4);
-        binned->AddKtRange(0.4, 0.6);
+        binned->AddKtRange(0.2, 0.3);
+        binned->AddKtRange(0.3, 0.4);
+        binned->AddKtRange(0.4, 0.5);
+        binned->AddKtRange(0.5, 0.6);
         binned->AddKtRange(0.6, 1.0);
         analysis->AddCorrFctn(binned);
       }
