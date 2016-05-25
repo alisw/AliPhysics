@@ -39,6 +39,8 @@
 ///
 AliAnalysisTaskFemto* AddTaskPiLam(TString params,
                                    TString macro_filename="",
+                                   TString output_filename="",
+                                   TString output_container="PWG2FEMTO",
                                    TString subwagon_suffix="")
 { // Adds a Pion-Lambda Femtoscopy task to the manager
 
@@ -91,8 +93,11 @@ AliAnalysisTaskFemto* AddTaskPiLam(TString params,
 
   mgr->AddTask(taskfemto);
 
-  const char *filename = AliAnalysisManager::GetCommonFileName();
-  const TString outputfile = TString::Format("%s:%s", filename, "PWG2FEMTO");
+  if (output_filename == "") {
+    output_filename = AliAnalysisManager::GetCommonFileName();
+  }
+
+  const TString outputfile = TString::Format("%s:%s", output_filename.Data(), output_container.Data());
 
   AliAnalysisDataContainer *cout_femto = mgr->CreateContainer("femtolist",
                                                               TList::Class(),
