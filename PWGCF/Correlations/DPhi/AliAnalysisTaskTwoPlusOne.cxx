@@ -125,6 +125,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(new TH2F("nCollCent_T1", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("nCollCent_all", ";N_{coll};centrality", 2500, 0, 2500, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("nMultCent", ";multiplicity;centrality", 2500, 0, 2500, 201, 0, 100.5));
 
   PostData(1,fListOfHistos);
 
@@ -342,6 +343,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
       found_1plus1_trigger = fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::k1plus1, tracksClone, tracksClone, tracksClone, tracksClone, 1.0, kTRUE, kFALSE, applyEfficiency);//get number of possible away side triggers in the trigger area and outside of it
 
       ((TH1F*) fListOfHistos->FindObject("nCollCent_all"))->Fill(n_coll, centrality);
+      ((TH1F*) fListOfHistos->FindObject("nMultCent"))->Fill(tracksClone->GetEntriesFast(), centrality);
       if(found_1plus1_trigger>0)
 	((TH1F*) fListOfHistos->FindObject("nCollCent_T1"))->Fill(n_coll, centrality);
     }
