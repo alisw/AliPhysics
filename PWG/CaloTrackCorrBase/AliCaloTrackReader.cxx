@@ -134,7 +134,8 @@ fNonStandardJets(new TClonesArray("AliAODJet",100)),          fInputNonStandardJ
 fFillInputBackgroundJetBranch(kFALSE), 
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
-fMomentum(),                 fOutputContainer(0x0),           fEnergyHistogramNbins(0)
+fMomentum(),                 fOutputContainer(0x0),           fEnergyHistogramNbins(0),
+fhNEventsAfterCut(0)
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
@@ -316,6 +317,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       AliDebug(1,"Accepted triggered event");
   }
   
+  fhNEventsAfterCut->Fill(1.5);
+  
   //-----------------------------------------------------------
   // Reject events depending on the event species type
   //-----------------------------------------------------------
@@ -351,6 +354,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   
   AliDebug(1,"Pass event species selection");
 
+  fhNEventsAfterCut->Fill(2.5);
+  
   //-----------------------------------------------------------------
   // In case of mixing analysis, select here the trigger of the event
   //-----------------------------------------------------------------
@@ -375,9 +380,12 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if(!isTrigger && !isMB) return kFALSE;
     
     //printf("Selected triggered event : %s\n",GetFiredTriggerClasses().Data());
-    AliDebug(0,"Pass uninteresting triggered events rejection in case of mixing analysis");
+    AliDebug(0,"Pass uninteresting triggered events rejection in case of mixing analysis");  
+    
+    fhNEventsAfterCut->Fill(3.5);
   }
 
+  
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
@@ -390,6 +398,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   if(!okA || !okR) return kFALSE;
   
   AliDebug(1,"Pass event bit rejection");
+  
+  fhNEventsAfterCut->Fill(4.5);
   
   //----------------------------------------------------------------------
   // Do not count events that were likely triggered by an exotic cluster
@@ -431,7 +441,9 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       AliDebug(1,Form("\t *** YES for %s",GetFiredTriggerClasses().Data()));
     }
     
-   AliDebug(1,"Pass EMCal triggered event rejection \n");
+    AliDebug(1,"Pass EMCal triggered event rejection \n"); 
+    
+    fhNEventsAfterCut->Fill(5.5);
   }
   
   //-------------------------------------------------------------------------------------
@@ -442,6 +454,8 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   {
     AliDebug(1,Form("Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data()));
     return kFALSE;
+    
+    fhNEventsAfterCut->Fill(6.5);
   }
   
   //-------------------------------------------------------------------------------------
@@ -459,8 +473,10 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     if(reject) return kFALSE;
     
     AliDebug(1,"Pass LED event rejection");
+    
+    fhNEventsAfterCut->Fill(7.5);
   } // Remove LED events
-  
+
   // All selection criteria passed, accept the event
   return kTRUE ;
 }
@@ -545,6 +561,31 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
 //___________________________________________________
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
+  
+  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 18, 0, 18) ;
+  //fhNEventsAfterCut->SetXTitle("Selection");
+  fhNEventsAfterCut->SetYTitle("# events");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(2 ,"2=Trigger string");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(3 ,"3=Event Type");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(4 ,"4=Mixing Event");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(5 ,"5=Trigger Bit");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=Good EMC Trigger");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=!Fast Cluster");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(8 ,"8=!LED");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=PtHard-Jet");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=PtHard-Cluster"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Time stamp"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Z vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=Primary vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=Pile-up"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=V0AND"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=Centrality"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=Track multi."); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=TOF BC"); 
+  fOutputContainer->Add(fhNEventsAfterCut);
+
+  
   if(fFillEMCAL)
   {
     for(Int_t i = 0; i < 8; i++)
@@ -1267,6 +1308,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     return kFALSE;
   }
   
+  fhNEventsAfterCut->Fill(0.5);
+  
   //-----------------------------------------------
   // Select the event depending on the trigger type
   // and other event characteristics
@@ -1287,14 +1330,16 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   {
     if(!ComparePtHardAndJetPt()) return kFALSE ;
     AliDebug(1,"Pass Pt Hard - Jet rejection");
+    fhNEventsAfterCut->Fill(8.5);
   }
   
   if(fComparePtHardAndClusterPt)
   {
     if(!ComparePtHardAndClusterPt()) return kFALSE ;
     AliDebug(1,"Pass Pt Hard - Cluster rejection");
+    fhNEventsAfterCut->Fill(9.5);
   }
-  
+
   //------------------------------------------------------
   // Event rejection depending on time stamp
   //------------------------------------------------------
@@ -1313,8 +1358,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     }
     
     AliDebug(1,"Pass Time Stamp rejection");
+    fhNEventsAfterCut->Fill(10.5);
   }
-  
+
   //------------------------------------------------------
   // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
@@ -1324,6 +1370,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
   if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
+  fhNEventsAfterCut->Fill(11.5);
+
   if(fUseEventsWithPrimaryVertex)
   {
     if( !CheckForPrimaryVertex() )              return kFALSE; // algorithm in ESD/AOD Readers
@@ -1334,6 +1382,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   AliDebug(1,"Pass primary vertex rejection");
   
+  fhNEventsAfterCut->Fill(12.5);
+
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
   if(fDoPileUpEventRejection)
@@ -1345,6 +1395,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(bPileup) return kFALSE;
     
     AliDebug(1,"Pass Pile-Up event rejection");
+    
+    fhNEventsAfterCut->Fill(13.5);
   }
   
   if(fDoV0ANDEventSelection)
@@ -1362,6 +1414,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     }
     
     AliDebug(1,"Pass V0AND event rejection");
+    
+    fhNEventsAfterCut->Fill(14.5);
   }
 
   //------------------------------------------------------
@@ -1378,8 +1432,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass centrality rejection");
+    
+    fhNEventsAfterCut->Fill(15.5);
   }
-  
+    
   // Recover the weight assigned to the event, if provided
   // right now only for pT-hard bins and centrality depedent weights
   if ( fWeightUtils->IsWeightSettingOn() )
@@ -1414,6 +1470,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     //Accept events with at least one track
     if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
     
+    fhNEventsAfterCut->Fill(16.5);
+    
     AliDebug(1,"Pass rejection of null track events");
   }
   
@@ -1422,6 +1480,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if(fVertexBC != 0 && fVertexBC != AliVTrack::kTOFBCNA) return kFALSE ;
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
+    
+    fhNEventsAfterCut->Fill(17.5);
   }
   
   if(fFillEMCALCells)
