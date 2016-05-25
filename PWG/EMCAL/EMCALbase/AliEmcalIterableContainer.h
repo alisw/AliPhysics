@@ -11,13 +11,33 @@
 #include <TArrayI.h>
 #include "AliTLorentzVector.h"
 
-#ifdef __CINT__
-#define ALICE_FINAL
-#else 
-#define ALICE_FINAL final
-#endif
-
 class AliEmcalContainer;
+
+namespace EMCALIterableContainer {
+
+template <typename T>
+class operator_star_pair {
+public:
+  typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
+  typedef const momentum_object_pair& star_return_type;
+  typedef const momentum_object_pair* arrow_return_type;
+  typedef momentum_object_pair iterator_type;
+
+  static star_return_type star(momentum_object_pair* ptr) { return *ptr; }
+  static arrow_return_type arrow(momentum_object_pair* ptr) { return ptr; }
+};
+
+template <typename T>
+class operator_star_object {
+public:
+  typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
+  typedef T* star_return_type;
+  typedef T** arrow_return_type;
+  typedef T* iterator_type;
+
+  static star_return_type star(momentum_object_pair* ptr) { return ptr->second; }
+  static arrow_return_type arrow(momentum_object_pair* ptr) { return &(ptr->second); }
+};
 
 /**
  * @class AliEmcalIterableContainer
@@ -58,51 +78,10 @@ class AliEmcalContainer;
  * }
  * ~~~
  */
-
-namespace EMCALIterableContainer {
-template <typename _T, bool _mom>
-class operator_star {};
-
-template <typename T>
-class operator_star<T, true> {
+template <typename T, typename STAR=operator_star_object<T> >
+class AliEmcalIterableContainerT final {
 public:
   typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
-
-  operator_star() : fCurrentElement() {}
-  ~operator_star() {}
-  operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
-  operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
-
-  const momentum_object_pair& operator*() const { return fCurrentElement; }
-  const momentum_object_pair* operator->() const { return &(fCurrentElement); }
-
-protected:
-  momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
-};
-
-template <typename T>
-class operator_star<T, false> {
-public:
-  typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
-
-  operator_star() : fCurrentElement() {}
-  ~operator_star() {}
-  operator_star(const operator_star &ref) : fCurrentElement(ref.fCurrentElement) {}
-  operator_star &operator=(const operator_star &ref) { fCurrentElement = ref.fCurrentElement; return *this; }
-
-  T* operator*() const { return fCurrentElement.second; }
-  T** operator->() const { return &(fCurrentElement.second); }
-
-protected:
-  momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
-};
-}
-
-template <typename T, bool mom = false>
-class AliEmcalIterableContainerT ALICE_FINAL {
-public:
-  typedef typename std::pair<AliTLorentzVector, T*> momentum_object_pair;
-  typedef typename std::conditional<mom, momentum_object_pair, T*>::type value_type;
 
   /**
    * @class iterator
@@ -123,10 +102,9 @@ public:
    */
   class iterator;
   friend class iterator;
-  class iterator ALICE_FINAL : public std::iterator<std::bidirectional_iterator_tag, value_type, std::ptrdiff_t>,
-                               public EMCALIterableContainer::operator_star<T,mom> {
+  class iterator final : public std::iterator<std::bidirectional_iterator_tag, typename STAR::iterator_type, std::ptrdiff_t> {
   public:
-    iterator(const AliEmcalIterableContainerT<T, mom> *cont, int currentpos, bool forward = true);
+    iterator(const AliEmcalIterableContainerT<T, STAR> *cont, int currentpos, bool forward = true);
     iterator(const iterator &ref);
     iterator &operator=(const iterator &ref);
     ~iterator(){}
@@ -138,15 +116,19 @@ public:
     iterator &operator--();
     iterator operator--(int);
 
+    typename STAR::star_return_type operator*() { return STAR::star(&(this->fCurrentElement)); }
+    typename STAR::arrow_return_type operator->() { return STAR::arrow(&(this->fCurrentElement)); }
+
     int current_index() const { return fkData->GetInternalIndex(fCurrent); }
     const AliTLorentzVector& get_momentum() const { return this->fCurrentElement.first; }
 
   private:
     iterator();
 
-    const AliEmcalIterableContainerT<T, mom>*fkData;          ///< container with data
+    const AliEmcalIterableContainerT<T, STAR>*fkData;          ///< container with data
     int                                      fCurrent;        ///< current index in the container
     bool                                     fForward;        ///< use forward or backward direction
+    momentum_object_pair                     fCurrentElement; ///< current element pair (momentum, pointer object)
 
     inline void update_current_element() {
       this->fCurrentElement.second = (*fkData)[fCurrent];
@@ -156,8 +138,8 @@ public:
 
   AliEmcalIterableContainerT();
   AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept);
-  AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T, mom> &ref);
-  AliEmcalIterableContainerT &operator=(const AliEmcalIterableContainerT<T, mom> &ref);
+  AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T, STAR> &ref);
+  AliEmcalIterableContainerT &operator=(const AliEmcalIterableContainerT<T, STAR> &ref);
 
   /**
    * Destructor
@@ -225,14 +207,16 @@ private:
     }
   }
 };
+}
 
 #include "AliEmcalContainer.h"
 
+namespace EMCALIterableContainer {
 /**
  * Default (I/O) constructor
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT():
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR>::AliEmcalIterableContainerT():
   fkContainer(NULL),
   fAcceptIndices(),
   fUseAccepted(kFALSE)
@@ -246,8 +230,8 @@ AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT():
  * @param[in] cont EMCAL container to iterate over
  * @param[in] useAccept If true accepted objects are used in the iteration, otherwise all objects
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept):
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR>::AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept):
   fkContainer(cont),
   fAcceptIndices(),
   fUseAccepted(useAccept)
@@ -260,8 +244,8 @@ AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT(const AliEmcalCon
  * container is not owner over its input container only pointers are copied.
  * @param[in] ref Reference for the copy
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T, mom> &ref):
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR>::AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T, STAR> &ref):
   fkContainer(ref.fkContainer),
   fAcceptIndices(ref.fAcceptIndices),
   fUseAccepted(ref.fUseAccepted)
@@ -275,8 +259,8 @@ AliEmcalIterableContainerT<T, mom>::AliEmcalIterableContainerT(const AliEmcalIte
  * @param[in] ref Reference for assignment
  * @return Object after assignment
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom> &AliEmcalIterableContainerT<T, mom>::operator=(const AliEmcalIterableContainerT<T, mom>& ref) {
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR> &AliEmcalIterableContainerT<T, STAR>::operator=(const AliEmcalIterableContainerT<T, STAR>& ref) {
   if(this != &ref){
     fkContainer = ref.fkContainer;
     fAcceptIndices = ref.fAcceptIndices;
@@ -290,8 +274,8 @@ AliEmcalIterableContainerT<T, mom> &AliEmcalIterableContainerT<T, mom>::operator
  * iterator loops over all or only accepted objects)
  * @return Number of iterable objects in container
  */
-template <typename T, bool mom>
-int AliEmcalIterableContainerT<T, mom>::GetEntries() const {
+template <typename T, typename STAR>
+int AliEmcalIterableContainerT<T, STAR>::GetEntries() const {
   return fUseAccepted ? fAcceptIndices.GetSize() : fkContainer->GetNEntries();
 }
 
@@ -310,8 +294,8 @@ int AliEmcalIterableContainerT<T, mom>::GetEntries() const {
  * @param[in] index Index of the object inside the container to access
  * @return The object at the given index (NULL if the index is out of range)
  */
-template <typename T, bool mom>
-T *AliEmcalIterableContainerT<T, mom>::operator[](int index) const {
+template <typename T, typename STAR>
+T *AliEmcalIterableContainerT<T, STAR>::operator[](int index) const {
   const AliEmcalContainer &contref = *fkContainer;
   int _index = GetInternalIndex(index);
   if(_index < 0 || _index >= contref.GetNEntries()) return NULL;
@@ -323,8 +307,8 @@ T *AliEmcalIterableContainerT<T, mom>::operator[](int index) const {
  * For this all objects inside the container are checked
  * for being accepted or not.
  */
-template <typename T, bool mom>
-void AliEmcalIterableContainerT<T, mom>::BuildAcceptIndices(){
+template <typename T, typename STAR>
+void AliEmcalIterableContainerT<T, STAR>::BuildAcceptIndices(){
   fAcceptIndices.Set(fkContainer->GetNAcceptEntries());
   int acceptCounter = 0;
   for(int index = 0; index < fkContainer->GetNEntries(); index++){
@@ -334,7 +318,7 @@ void AliEmcalIterableContainerT<T, mom>::BuildAcceptIndices(){
 }
 
 ///////////////////////////////////////////////////////////////////////
-/// Content of class AliEmcalIterableContainerT<T, mom>::Iterator            ///
+/// Content of class AliEmcalIterableContainerT<T, STAR>::Iterator            ///
 ///////////////////////////////////////////////////////////////////////
 
 /**
@@ -349,12 +333,12 @@ void AliEmcalIterableContainerT<T, mom>::BuildAcceptIndices(){
  * @param[in] forward Direction of the iteration. If true, the iteration is
  * performed in forward direction, otherwise in backward direction.
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom>::iterator::iterator(const AliEmcalIterableContainerT<T, mom> *cont, int currentpos, bool forward):
-  EMCALIterableContainer::operator_star<T, mom>(),
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR>::iterator::iterator(const AliEmcalIterableContainerT<T, STAR> *cont, int currentpos, bool forward):
   fkData(cont),
   fCurrent(currentpos),
-  fForward(forward)
+  fForward(forward),
+  fCurrentElement()
 {
   update_current_element();
 }
@@ -364,12 +348,12 @@ AliEmcalIterableContainerT<T, mom>::iterator::iterator(const AliEmcalIterableCon
  * iterator does not own its container.
  * @param[in] ref Reference for the copy
  */
-template <typename T, bool mom>
-AliEmcalIterableContainerT<T, mom>::iterator::iterator(const AliEmcalIterableContainerT<T, mom>::iterator &ref):
-  EMCALIterableContainer::operator_star<T, mom>(ref),
+template <typename T, typename STAR>
+AliEmcalIterableContainerT<T, STAR>::iterator::iterator(const AliEmcalIterableContainerT<T, STAR>::iterator &ref):
   fkData(ref.fkData),
   fCurrent(ref.fCurrent),
-  fForward(ref.fForward)
+  fForward(ref.fForward),
+  fCurrentElement()
 {
   update_current_element();
 }
@@ -380,13 +364,13 @@ AliEmcalIterableContainerT<T, mom>::iterator::iterator(const AliEmcalIterableCon
  * @param[in] ref Reference for the assignment
  * @return This iterator after assignment
  */
-template <typename T, bool mom>
-typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainerT<T, mom>::iterator::operator=(const AliEmcalIterableContainerT<T, mom>::iterator &ref){
-  this->EMCALIterableContainer::operator_star<T, mom>::operator=(ref);
+template <typename T, typename STAR>
+typename AliEmcalIterableContainerT<T, STAR>::iterator &AliEmcalIterableContainerT<T, STAR>::iterator::operator=(const AliEmcalIterableContainerT<T, STAR>::iterator &ref){
   if(this != &ref){
     fkData = ref.fkData;
     fCurrent = ref.fCurrent;
     fForward = ref.fForward;
+    update_current_element();
   }
   return *this;
 }
@@ -396,8 +380,8 @@ typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainer
  * @param[in] ref Reference for comparison
  * @return True if the position does not match, false otherwise
  */
-template <typename T, bool mom>
-bool AliEmcalIterableContainerT<T, mom>::iterator::operator!=(const AliEmcalIterableContainerT<T, mom>::iterator &ref) const{
+template <typename T, typename STAR>
+bool AliEmcalIterableContainerT<T, STAR>::iterator::operator!=(const AliEmcalIterableContainerT<T, STAR>::iterator &ref) const{
   return fCurrent != ref.fCurrent;
 }
 
@@ -406,8 +390,8 @@ bool AliEmcalIterableContainerT<T, mom>::iterator::operator!=(const AliEmcalIter
  * iterator based on the direction.
  * @return Status of the operator before incrementation.
  */
-template <typename T, bool mom>
-typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainerT<T, mom>::iterator::operator++(){
+template <typename T, typename STAR>
+typename AliEmcalIterableContainerT<T, STAR>::iterator &AliEmcalIterableContainerT<T, STAR>::iterator::operator++(){
   if(fForward) fCurrent++;
   else fCurrent--;
 
@@ -421,8 +405,8 @@ typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainer
  * iterator based on the direction.
  * @return Status of the iterator before decrementation.
  */
-template <typename T, bool mom>
-typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainerT<T, mom>::iterator::operator--(){
+template <typename T, typename STAR>
+typename AliEmcalIterableContainerT<T, STAR>::iterator &AliEmcalIterableContainerT<T, STAR>::iterator::operator--(){
   if(fForward) fCurrent--;
   else fCurrent++;
 
@@ -438,9 +422,9 @@ typename AliEmcalIterableContainerT<T, mom>::iterator &AliEmcalIterableContainer
  * @param[in] index Not used
  * @return State of the iterator before incrementation
  */
-template <typename T, bool mom>
-typename AliEmcalIterableContainerT<T, mom>::iterator AliEmcalIterableContainerT<T, mom>::iterator::operator++(int index){
-  AliEmcalIterableContainerT<T, mom>::iterator tmp(*this);
+template <typename T, typename STAR>
+typename AliEmcalIterableContainerT<T, STAR>::iterator AliEmcalIterableContainerT<T, STAR>::iterator::operator++(int index){
+  AliEmcalIterableContainerT<T, STAR>::iterator tmp(*this);
   operator++();
   return tmp;
 }
@@ -452,11 +436,13 @@ typename AliEmcalIterableContainerT<T, mom>::iterator AliEmcalIterableContainerT
  * @param[in] index Not used
  * @return State of the iterator before decrementation.
  */
-template <typename T, bool mom>
-typename AliEmcalIterableContainerT<T, mom>::iterator AliEmcalIterableContainerT<T, mom>::iterator::operator--(int index){
-  AliEmcalIterableContainerT<T, mom>::iterator tmp(*this);
+template <typename T, typename STAR>
+typename AliEmcalIterableContainerT<T, STAR>::iterator AliEmcalIterableContainerT<T, STAR>::iterator::operator--(int index){
+  AliEmcalIterableContainerT<T, STAR>::iterator tmp(*this);
   operator--();
   return tmp;
+}
+
 }
 
 #endif

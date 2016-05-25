@@ -11,8 +11,8 @@ class AliTLorentzVector;
 #include "AliParticleContainer.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-typedef AliEmcalIterableContainerT<AliAODMCParticle> AliMCParticleIterableContainer;
-typedef AliEmcalIterableContainerT<AliAODMCParticle,true> AliMCParticleIterableMomentumContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliAODMCParticle, EMCALIterableContainer::operator_star_object<AliAODMCParticle> > AliMCParticleIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliAODMCParticle, EMCALIterableContainer::operator_star_pair<AliAODMCParticle> > AliMCParticleIterableMomentumContainer;
 #endif
 
 /**

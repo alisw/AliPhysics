@@ -13,8 +13,8 @@ class AliVEvent;
 #include "AliEmcalContainer.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-typedef AliEmcalIterableContainerT<AliVCluster> AliClusterIterableContainer;
-typedef AliEmcalIterableContainerT<AliVCluster,true> AliClusterIterableMomentumContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVCluster, EMCALIterableContainer::operator_star_object<AliVCluster> > AliClusterIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVCluster, EMCALIterableContainer::operator_star_pair<AliVCluster> > AliClusterIterableMomentumContainer;
 #endif
 
 /**

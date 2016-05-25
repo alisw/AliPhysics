@@ -15,8 +15,8 @@ class AliVParticle;
 #include <TClonesArray.h>
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-typedef AliEmcalIterableContainerT<TObject> AliEmcalIterableContainer;
-typedef AliEmcalIterableContainerT<TObject,true> AliEmcalIterableMomentumContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<TObject, EMCALIterableContainer::operator_star_object<TObject> > AliEmcalIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<TObject, EMCALIterableContainer::operator_star_pair<TObject> > AliEmcalIterableMomentumContainer;
 #endif
 
 /**
