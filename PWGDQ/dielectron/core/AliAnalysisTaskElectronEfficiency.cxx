@@ -1095,7 +1095,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(73)))->Fill(pdgmotherT, pdggrandmotherT);//hPdgCodeM_GM
         } //fSupportedCutInstance
       } // reco track loop
-      if(!bFilled1 || !bFilled2){
+      if(fCalcEfficiencyRec && (!bFilled1 || !bFilled2)){
         // smear generated but not reconstructed particles with external response matrix
         if(fPhiResArr){
           Double_t phiSmearing =  GetSmearing(fPhiResArr,mcPhi);
