@@ -24,7 +24,7 @@ To use the Jet Framework, the user implements an analysis task, usually named ``
 
 Containers are a central concept in the EMCal framework. To conduct an analysis, a user needs access to objects such as clusters, tracks, or jets. Containers are wrappers around these collections, allowing a consistent interface regardless of the underlying object. Furthermore, the containers help apply and manage cuts and selections.
 
-To learn about containers, including a usage example, looking the EMCal framework page on containers, available [here](\ref EMCALContainers).
+To learn about containers, including a usage example, looking the EMCal framework page on containers, available [here](\ref READMEcontainers).
 
 For more information on the containers, see the base class, ``AliEmcalContainer``, as well as the particular containers, ``AliClusterContainer``, ``AliParticleContainer``, ``AliTrackContainer``, ``AliMCParticleContainer``, and ``AliJetContainer``.
 

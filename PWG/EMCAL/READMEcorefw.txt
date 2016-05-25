@@ -62,5 +62,5 @@ Information about the cell and cluster corrections is available at \subpage READ
 
 # How to transition from old to new framework
 
-Here you find detailed information which compares old and new framework and tells you the things you have to keep in mind when using the “new EMCal framework”. Please read \subpage READMEchangefw.  
+Here you find detailed information which compares old and new framework and tells you the things you have to keep in mind when using the new EMCal framework. Please read \subpage READMEchangefw.  
 */

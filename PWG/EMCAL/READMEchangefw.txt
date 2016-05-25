@@ -1,4 +1,4 @@
-/*! \page READMEchangefw The “new EMCal framework”
+/*! \page READMEchangefw Transitioning from the old to new EMCal framework
 
 # Introduction
 
@@ -7,127 +7,106 @@ While the old framework produced a new cluster container for each correction
 that was applied to the clusters, the new framework works with only one cluster
 container. In contrast to the old framework in the new framework specific energy fields of the cluster container are set to keep track of modifications to the cluster energy.
 
-
-| After the Task        | Function to get the correct energy <br> (new framework) | Output ClusterName <br> (old framework)  |
-| -------------               |-------------|                       -----|
-| AddTaskClusterizerFast      | E(), raw energy       | CaloClusters     |
-| AddTaskEmcalClusterMaker    | GetNonLinCorrEnergy() |  EmcCaloClusters |
-| AddTaskHadCorr              | GetHadCorrEnergy()    | CaloClustersCorr |
-
-
 # How to switch from old to new framework?
 
-The following things need to be changed in order to work with the “new EMCal framework”.<br>
-Adapt your run macro, the wagons in your train, your add task macro, and maybe your analysis task.
+The following things need to be changed in order to work with the new EMCal framework:
+
+- [Your run macro](\ref changeFrameworkRunMacro)
+- [Your add task macro](\ref changeFrameworkAddTask)
+- [Potentially your analysis task](\ref changeFrameworkAnalysisTask)
+
+Generally, it is recommended to read the documentation on containers, available [here](\ref READMEcontainers).
  
-### Run Macro
+# Run Macro            {#changeFrameworkRunMacro}
 
-The main changes in the run macro account for the input and output cluster names which are used in the different tasks.<br>
-Old:<br>
-Each task needs the specific name of the container that contains the applied energy corrections. See table above.<br>
-New:<br>
-Use "usedefault" as input name for tasks and leave output name (if present) empty "".<br>
-For example see:<br>
-NewRunMacro: `runEMCalJetSampleTask.C`
+The main changes in the run macro account for the input and output cluster names which are used in the different tasks.
 
-In your run macro you have to call now:<br>
-`AliTrackContainer::SetDefTrackCutsPeriod(sRunPeriod);` <br>
-This function has to be called only once. All the AliParticleContainer objects created after this, will have the correct settings to properly filter tracks in that particular dataset.
+## Old framework
 
-Don't forget to change the cluster names in your wagons in the train as well!
+Each task needs the specific name of the container that contains the applied energy corrections, as described in the table below
 
-### AddTask macro
+| After the Task              | Function to get the correct energy <br> (new framework) | Output ClusterName <br> (old framework)  |
+| --------------------------- | ------------------------------------------------------- | ---------------------------------------- |
+| AddTaskClusterizerFast      | E(), raw energy                                         | CaloClusters                             |
+| AddTaskEmcalClusterMaker    | GetNonLinCorrEnergy()                                   | EmcCaloClusters                          |
+| AddTaskHadCorr              | GetHadCorrEnergy()                                      | CaloClustersCorr                         |
 
-Since the new framework works with only one cluster container, you don't need to set a specific name in the input arguments of your Addtask macro. Your Addtask macro should now use the "usedefault" containers as input arguments. In your macro they then can be se to "tracks" and "caloClusters" (in most of the cases). See as an example `AddTaskEmcalJetSample.C` around line 44.
+## New framework
 
-Second thing you should set in your AddTask macro is the default energy you want to use in the container (could also be set in the run macro).
-This needs to be specified, otherwise the raw energy is used by default in the ClusterContainer.
+Use containers to manage access to cells, clusters, and tracks. For more information on the containers, see the [containers](\ref READMEcontainers) page. Generally, use the "usedefault" pattern (described on the containers page) to manage the names of the various objects. Note that for shared tasks which have been updated to the new framework, the run macro should use "usedefault" as input name for tasks and leave output name (if present) empty "". 
 
-Eg.<br>
+In addition to generally using containers, the track container needs to be properly intialized. To properly intialiaze the track container, the macro must set:
 ~~~{.cxx}
-Task->GetClusterContainer(clusName)->SetClusECut(0);  //by default set to 0.15 always
-Task->GetClusterContainer(clusName)->SetClusPtCut(0); //by default set to 0
-Task->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,clusptcut);
-Task->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+AliTrackContainer::SetDefTrackCutsPeriod(sRunPeriod)
+~~~
+This function only has to be called once. All track containers (created via AliParticleContainer) created after this will have the correct settings to properly filter tracks in that particular dataset.
+
+For an example of an updated run macro, see ``runEMCalJetSampleTask.C``.
+
+In addition, Don't forget to change the cluster names in your wagons in the train as well!
+
+# AddTask macro                    {#changeFrameworkAddTask}
+
+Since the new framework corrects clusters in place (adding the correction into a new field in the cluster), you will not need to keep track of changing cluster names. Instead, there is a name for each object (clusters, tracks) that will be consistent through a run macro. Consequently, the best way to set the names is by using the "usedefault" pattern as described in the [containers page](\ref READMEcontainers).
+
+Your AddTask macro should also set the default energy you want to use in the container (it could also be set in the run macro). This needs to be specified, otherwise the raw energy is used by default in the ClusterContainer. A possible configuration example is below
+
+~~~{.cxx}
+task->GetClusterContainer(clusName)->SetClusECut(0);  //by default set to 0.15
+task->GetClusterContainer(clusName)->SetClusPtCut(0); //by default set to 0
+task->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr, 0.15);
+task->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
 ~~~
 
-Available options are (`VCluUserDefEnergy`)
-~~~{.cxx}
-AliVCluster:: kNonLinCorr
-AliVCluster:: kHadCorr
-AliVCluster:: kUserDefEnergy1
-AliVCluster:: kUserDefEnergy2
-AliVCluster:: kLastUserDefEnergy
-~~~
+Possible default energy options are available [here](\ref emcalContainerClusterEnergyCorrections).
 
-### Changes in the Analysis Task
+After making changes to the Add Task, remember to make the appropriate changes to your train wagons!
+
+# Changes in the Analysis Task                    {#changeFrameworkAnalysisTask}
 
 As there are now multiple possibilities for the cluster energy in one cluster object and
 in the container, you explicitly need to specify which energy you want to use in your analysis.
-Eg.<br>
-`cluster->E()` will always give you the raw energy<br>
-`cluster->GetMomentum(Vector,Vertex)` will give you the raw energy.<br>
-No matter what default energy you have set for your cluster container!
-
-Better to use the two following functions:<br>
-`cluster->GetMomentum(Vector,Vertex, VCluUserDefEnergy_t t)`  (see available options above for VCluUserDefEnergy).<br>
-`clusterContainer->GetMomentum(Vector,Cluster)` (This option uses the default cluster energy)
-
-New useful methods of the cluster container:<br>
+Specifically, 
 ~~~{.cxx}
-SetDefaultClusterEnergy(AliVCluster::ToBeSpecified);
-SetClusUserDefEnergyCut(AliVCluster::ToBeSpecified);
+cluster->E() // Will always give you the raw energy!
+cluster->GetMomentum(Vector,Vertex) // Will give you the raw energy!
 ~~~
+**No matter what default energy you have set for your cluster container!**
 
-New useful methods of the clusters:
-~~~{.cxx}
-GetUserDefEnergy(AliVCluster::ToBeSpecified)
-GetMomentum (AliTLorentzVector&, const Double_t*, AliVCluster::VCluUserDefEnergy_t);
-GetHadCorrEnergy()
-GetNonLinCorrEnergy() 
-~~~
+For the various approaches to getting the desired cluster energy, see [here](\ref emcalContainerClusterEnergyCorrections).
 
-# Important: Things to keep in mind about the new framework
+For information on accessing the containers in your analysis task (including best practices), see [container access techniques](\ref emcalContainerIterateTechniques).
+
+## Important things to keep in mind about the new framework
 
 Now you carefully have to reevaluate which energy you use in your tasks. This
 might not be the one you think it is. Old functions to retrieve the energy might not
 give you back what you expect. See information above.
 
-The `GetAccCluster()` function (calls `AliClusterContainer::ApplyClusterCuts`)
-will loop over all energy cuts, no matter which default you have specified in your task.
-So if you want to cut only on the hadcorr energy eg. make sure the other ones are set to zero.
+Some other notes:
 
-Iterator: Strongly discouraged are: `GetNext{Particle,Cluster,Jet}`.
-A better method to use is `clusters->GetCluster(index)` or `clusters->GetAcceptCluster(index)`.
-Even better is the new C++11 syntax:<br>
-<b>Needs to be updated here</b>
+- The `GetAccCluster()` function (which calls `AliClusterContainer::ApplyClusterCuts()`)
+will loop over all possible energy cuts, no matter which default you have specified in your task.
+So if you want to cut only on, for example, the hadcorr energy, make sure the other ones are set to zero.
 
-If you get the container by index, be careful as `AddTrackContainer()` and `AddParPcleContainer()` will both increase the same index.
+- Containers are **configured independently for each task**. You always need to specify cuts and default energy each time!
 
-Containers are configured independently for each task. You always need to specify cuts and default energy each time!
+- It is strongly encouraged to the container by name. If you get the container by index, be careful as ``AliAnalysisTaskEmcal::AddTrackContainer()`` and ``AliAnalysisTaskEmcal::AddParticleContainer()`` will both increase the same index.
 
-It is encouraged to use the `GetContainer(name/index)` function with name and not with index.
- 
-If you add a container with<br>
-`task->AddParticleContainer(…)`
-you can not retrieve it with<br>
-`mytask->GetTrackContainer(0)`
-If you add it with<br>
-`task->AddTrackContainer(…)`
-you can nevertheless retrieve it with<br>
-`mytask->GetParticleContainer(0)`
- 
+## Additional Material:
 
-### Additional Material:
+Mini tutorials and slides:
 
-Mini tutorials and slides<br>
-https://indico.cern.ch/event/525454/contributions/2152155/attachments/1267654/1877240/2016-05-03-EMCalJetFrameworkTutorial.pdf<br>
-https://indico.cern.ch/event/463551/contributions/1138526/attachments/1193228/1732592/2015-11-24-EMCalJetFrameworkUpdate.pdf<br>
-E-mails:<br>
-Salvatore 9th of December 2015<br>
-Salvatore 1st February 2016<br>
-Salvatore 17th February 2016<br>
-Joel 26 April 2016<br>
-Salvatore 5th May 2016<br>
+- https://indico.cern.ch/event/525454/contributions/2152155/attachments/1267654/1877240/2016-05-03-EMCalJetFrameworkTutorial.pdf
+- https://indico.cern.ch/event/463551/contributions/1138526/attachments/1193228/1732592/2015-11-24-EMCalJetFrameworkUpdate.pdf
+
+E-mails:
+
+- Salvatore 9th of December 2015<br>
+- Salvatore 1st February 2016<br>
+- Salvatore 17th February 2016<br>
+- Joel 26 April 2016<br>
+- Salvatore 5th May 2016<br>
+
 */
 
