@@ -122,9 +122,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
   
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000000000000000500000000";
-  //00000070000000000500004000   V0 Reader cuts in GammaConv PbPb task 
-  TString cutnumberEvent = "10000103"; 
-  //10000003
+  TString cutnumberEvent = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 
@@ -206,8 +204,8 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig                 = 1,      
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
 
   CutHandlerConv cuts;
-  if(trainConfig == 1){
-    cuts.AddCut("20010103", "00000009247602008250404000"); // INT7, CL1
+   if(trainConfig == 1){
+     cuts.AddCut("10000013", "00000009247602008250404000"); // kMB, V0M
 
     // Offline V0Finder is used
 
