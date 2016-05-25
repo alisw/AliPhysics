@@ -42,7 +42,8 @@ class AliTPCDcalibRes: public TNamed
   enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
-
+  enum {kCtrITS,kCtrTRD,kCtrTOF,kCtrBC0,kCtrNtr,kCtrNbr}; // control branches for test stat
+ 
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates
 	kVoxF,   // y/x in sector coordinates
@@ -117,6 +118,7 @@ class AliTPCDcalibRes: public TNamed
 
   TTree* InitDeltaFile(const char* name, Bool_t connect=kTRUE, const char* treeName="delta");
   Bool_t EstimateStatistics();
+  Int_t  ParseInputList();
   void CloseDeltaFile(TTree* dtree);
   void Init();
   void CollectData(int mode = kExtractMode);
@@ -193,12 +195,16 @@ class AliTPCDcalibRes: public TNamed
   
   Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
   TH1*    GetTracksRateHisto()   const {return fTracksRate;}
+  TH1*    GetTOFBCHisto()          const {return fTOFBCTestH;}
   void    SetTracksRateHisto(TH1F* h)  {fTracksRate = h;}   // needed for hacks
   TH1*    ExtractTrackRate() const;
   Float_t GetValidFracXBin(int sect, int bin) const {return fValidFracXBin[sect][bin];}
   Int_t   GetNSmoothingFailed(int sect) const {return fNSmoothingFailedBins[sect];}
-  Int_t   GetNTracksUsed()   {return fNTrSelTot;}
-  Int_t   GetMinTrackToUse() const {return fMinTracksToUse;}
+  Int_t   GetNTracksUsed()              const {return fNTrSelTot;}
+  Int_t   GetNTracksWithOutliers()      const {return fNTrSelTotWO;}
+  Int_t   GetMinTrackToUse()            const {return fMinTracksToUse;}
+  Int_t     GetNTestTracks()            const {return fNTestTracks;}
+  Float_t GetTestStat(int row, int col) const {return fTestStat[row][col];}
   //
   Int_t   GetXBinExact(float x);
   Float_t GetY2X(int ix, int iy);
@@ -362,7 +368,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fLearnSize;     // event to learn for the cache
   Float_t  fBz;            // B field
   Bool_t   fDeleteSectorTrees; // delete residuals trees once statistics tree is done
-  TString  fResidualList;  // list of residuals tree
+  TString  fResidualList;  // text file with list of residuals tree
+  TObjArray* fInputChunks;  // list of input files used
   TString  fOCDBPath;      // ocdb path
   // ------------------------------Selection/filtering cuts
   Int_t    fMinTracksToUse;          // produce warning if n tracks is too low
@@ -424,13 +431,15 @@ class AliTPCDcalibRes: public TNamed
   Bool_t   fSmoothPol2[kVoxDim];      // option for use pol1 or pol2 in each direction (no x-terms)
   // result of last kernel minimization: value and dV/dX,dV/dY,dV/dZ for each dim
   Double_t fLastSmoothingRes[kResDim*kMaxSmtDim];  //! results of last smoothing
-
   // ------------------------------Selection Stats
   Int_t    fNTrSelTot;      // selected tracks
   Int_t    fNTrSelTotWO;    // would be selected w/o outliers rejection
   Int_t    fNReadCallTot;   // read calls from input trees
   Long64_t fNBytesReadTot;  // total bytes read
+  Int_t     fNTestTracks;                       // number of control tracks in test stat
+  Float_t  fTestStat[kCtrNbr][kCtrNbr]; // control statistics (fraction to fNTestTracks) 
   TH1F*    fTracksRate;     // accepted tracks per second
+  TH1F*    fTOFBCTestH;     // TOF BC (ns) for test fNTestTracks tracks
   Float_t  fValidFracXBin[kNSect2][kNPadRows]; // fraction of voxels valid per padrow
   Int_t    fNSmoothingFailedBins[kNSect2];     // number of failed bins/sector, should be 0 to produce parameterization
   TBits    fXBinIgnore[kNSect2];    // flag to ignore Xbin
@@ -494,14 +503,14 @@ class AliTPCDcalibRes: public TNamed
   static const float kInvalidRes; // to signal invalid residual
   static const ULong64_t kMByte;
   static const Float_t kZeroK; // zero kernel weight
-
+  static const char* kControlBr[];
   static const char* kVoxName[];
   static const char* kResName[];
   
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,9);
+  ClassDef(AliTPCDcalibRes,10);
 };
 
 //________________________________________________________________
