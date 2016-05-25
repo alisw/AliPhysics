@@ -328,6 +328,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     static TVectorF voltagesIROCCurrentNominal(36);
     static TVectorF voltagesIROCStatus(36);
     static TVectorF voltagesIROCGoodFraction(36);
+    static TVectorF gainCorrIROCHVandPT(36);
     //
     static TVectorF voltagesOROC(36);
     static TVectorF voltagesOROCMedian(36);
@@ -335,7 +336,8 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
     static TVectorF voltagesOROCCurrentNominal(36);
     static TVectorF voltagesOROCStatus(36);
     static TVectorF voltagesOROCGoodFraction(36);
-    
+    static TVectorF gainCorrOROCHVandPT(36);
+
     for(Int_t j=0; j<36; j++){
       voltagesIROC[j]               = fCalibDB->GetChamberHighVoltage(irun, j,itime);
       voltagesIROCMedian[j]         = fCalibDB->GetChamberHighVoltageMedian(j);
@@ -343,6 +345,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       voltagesIROCCurrentNominal[j] = fCalibDB->GetChamberCurrentNominalHighVoltage(j);
       voltagesIROCStatus[j]         = fCalibDB->GetChamberHVStatus(j);
       voltagesIROCGoodFraction[j]   = fCalibDB->GetChamberGoodHighVoltageFraction(j);
+      gainCorrIROCHVandPT[j]        = fCalibDB->GetGainCorrectionHVandPT(itime, irun, j, 5, 1);
     }
     
     for(Int_t j=36; j<72; j++) {
@@ -352,6 +355,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       voltagesOROCCurrentNominal[j-36] = fCalibDB->GetChamberCurrentNominalHighVoltage(j);
       voltagesOROCStatus[j-36]         = fCalibDB->GetChamberHVStatus(j);
       voltagesOROCGoodFraction[j-36]   = fCalibDB->GetChamberGoodHighVoltageFraction(j);
+      gainCorrOROCHVandPT[j-36]        = fCalibDB->GetGainCorrectionHVandPT(itime, irun, j, 5, 1);
     }
     
     Double_t voltIROC = TMath::Median(36, voltagesIROC.GetMatrixArray());
@@ -404,6 +408,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "VIROCCurrentNominal.=" << &voltagesIROCCurrentNominal << // IROC anode voltage [current nominal] (V);HV;Sector
       "VIROCGoodHVFraction.=" << &voltagesIROCGoodFraction   << // IROC anode voltage [fraction of good settings];-;HV;Sector
       "VIROCStatus.="         << &voltagesIROCStatus         << // IROC HV status;-;HV;Sector
+      "gainCorrIROCHVandPT.=" << &gainCorrIROCHVandPT        << // IROC gain correction factor using HV, P and T
       //
       "VOROC.="               << &voltagesOROC               << // OROC anode voltage [calib interval] (V);HV;Sector
       "VOROCMedian.="         << &voltagesOROCMedian         << // OROC anode voltage [Median of run] (V);HV;Sector
@@ -411,6 +416,7 @@ void AliTPCcalibSummary::ProcessRun(Int_t irun, Int_t startTime, Int_t endTime){
       "VOROCCurrentNominal.=" << &voltagesOROCCurrentNominal << // OROC anode voltage [current nominal] (V);HV;Sector
       "VOROCGoodHVFraction.=" << &voltagesOROCGoodFraction   << // OROC anode voltage [fraction of good settings];-;HV;Sector
       "VOROCStatus.="         << &voltagesOROCStatus         << // OROC HV status;-;HV;Sector
+      "gainCorrOROCHVandPT.=" << &gainCorrOROCHVandPT        << // OROC gain correction factor using HV, P and T
       //
       "medianVIROC="          << voltIROC                    << // IROC anode voltage [median of all IROCs] (V);HV
       "medianVOROC="          << voltOROC                    << // OROC anode voltage [median of all OROCs] (V);HV
