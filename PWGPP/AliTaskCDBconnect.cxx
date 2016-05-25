@@ -48,6 +48,7 @@ AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_
 // Default constructor
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storage);
+  if (gSystem->AccessPathName("OCDB.root",kFileExists)==0) cdb->SetSnapshotMode("OCDB.root"); 
   DefineInput (0, TChain::Class());
   if (run>0) InitGRP();
 }
