@@ -20,6 +20,10 @@
 #include "TCollection.h"
 #include "AliLog.h"
 #include "AliAnalysisDataContainer.h"
+#include "TFile.h"
+#include "TKey.h"
+#include "TSystem.h"
+#include "signal.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -30,7 +34,6 @@
 //methods
 Int_t ProcessOptionString(TString arguments);
 Int_t InitZMQ();
-void* work(void* param);
 Int_t Run();
 
 Int_t HandleDataIn(aliZMQmsg::iterator block, void* /*socket*/=NULL);
@@ -43,6 +46,8 @@ Int_t DoRequest(void* /*socket*/);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
 Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
+Int_t ReadFromFile(std::string file);
+Int_t DumpToFile(std::string file);
 
 //merger private functions
 int ResetOutputData(Bool_t force=kFALSE);
@@ -62,6 +67,7 @@ TString fZMQconfigMON  = "REP";
 TString fZMQconfigSYNC  = "";
 Int_t   fZMQmaxQueueSize = 10;
 Int_t   fZMQtimeout = -1;
+std::string fInitFile = "";
 
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
@@ -98,6 +104,7 @@ aliZMQrootStreamerInfo* fSchema = NULL;
 bool fSchemaOnRequest = false;
 bool fSchemaOnSend = false;
 int fCompression = 1;
+bool fgTerminationSignaled=false;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -137,11 +144,14 @@ const char* fUSAGE =
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
     " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
     " -UnpackContainers : unpack the contents of AliAnalysisDataContainers\n"
+    " -statefile : save/restore state on exit/start\n"
     ;
-
-void* work(void* /*param*/)
+//_______________________________________________________________________________________
+void sig_handler(int signo)
 {
-  return NULL;
+  if (signo == SIGINT)
+    printf("received signal\n");
+  fgTerminationSignaled=true;
 }
 
 //_______________________________________________________________________________________
@@ -150,7 +160,7 @@ Int_t Run()
   fMergeListMap.SetOwnerKeyValue(kTRUE,kTRUE);
 
   //main loop
-  while(1)
+  while(!fgTerminationSignaled)
   {
     Int_t nSockets=4;
     zmq_pollitem_t sockets[] = { 
@@ -832,6 +842,10 @@ Int_t ProcessOptionString(TString arguments)
     {
       fUnpackContainers = (value.Contains("0") || value.Contains("no"))?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("statefile"))
+    {
+      fInitFile = value.Data();
+    }
     else
     {
       Printf("unrecognized option |%s|",option.Data());
@@ -849,6 +863,16 @@ Int_t ProcessOptionString(TString arguments)
 int main(Int_t argc, char** argv)
 {
   Int_t mainReturnCode=0;
+
+  //catch signals
+  if (signal(SIGHUP, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGHUP\n");
+  if (signal(SIGINT, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGINT\n");
+  if (signal(SIGQUIT, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGQUIT\n");
+  if (signal(SIGTERM, sig_handler) == SIG_ERR)
+  printf("\ncan't catch SIGTERM\n");  
 
   //process args
   TString argString = AliOptionParser::GetFullArgString(argc,argv);
@@ -875,7 +899,11 @@ int main(Int_t argc, char** argv)
   //init other stuff
   fListOfObjects.reserve(100);
 
+  ReadFromFile(fInitFile);
+
   Run();
+
+  DumpToFile(fInitFile);
 
   //destroy ZMQ sockets
   zmq_close(fZMQmon);
@@ -952,4 +980,69 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const cha
   return 0;
 }
 
+//______________________________________________________________________________
+Int_t ReadFromFile(std::string file)
+{
+  TDirectory::AddDirectory(kFALSE);
+  TH1::AddDirectory(kFALSE);
+
+  if (gSystem->AccessPathName(file.c_str())) { return -1; }
+  TFile f (file.c_str(),"read");
+  if (f.IsZombie()) { return -1; }
+
+  TList* listOfKeys = f.GetListOfKeys();
+  TIter keys(listOfKeys);
+  while (TKey* key = static_cast<TKey*>(keys.Next()))
+  {
+    string objectName = key->GetName();
+
+    //read and attach object
+    TObject* object = key->ReadObj();
+
+    //restore the metadata (runnumberr)
+    if (objectName=="ZMQROOTmerger_internal_fInfo") {
+      TObjString* objstr = dynamic_cast<TObjString*>(object);
+      if (objstr) {
+        fInfo = objstr->String();
+        fRunNumber = atoi(GetParamString("run",fInfo).c_str());
+      }
+      if (fVerbose) printf("restoring metadata: %s\n", fInfo.c_str());
+      delete objstr;
+      continue;
+    }
+
+    if (object)
+    {
+      if (fVerbose) Printf("file (%s): attaching %s",file.c_str(),objectName.c_str());
+      AddObject(object);
+    }
+  }
+  f.Close();
+  return 0;
+}
+
+//______________________________________________________________________________
+Int_t DumpToFile(std::string file)
+{
+  int rc = 0;
+  TFile f(file.c_str(),"recreate");
+  if (f.IsZombie()) { return -1; }
+
+  TIter mapIter(&fMergeObjectMap);
+  while (TKey* key = static_cast<TKey*>(mapIter.Next()))
+  {
+    //the data
+    TObject* object = fMergeObjectMap.GetValue(key);
+    if (!object) continue;
+    if (fVerbose) printf("dumping %s to file %s\n", object->GetName(), file.c_str());
+    rc = object->Write(object->GetName(),TObject::kOverwrite);
+    if (rc<0) { rc=-1; }
+  }
+
+  TObjString info(fInfo.c_str());
+  info.Write("ZMQROOTmerger_internal_fInfo", TObject::kOverwrite);
+
+  f.Close();
+  return 0;
+}
 
