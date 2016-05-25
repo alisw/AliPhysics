@@ -23,7 +23,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       const char cent[] = "V0M",
                                       Bool_t doCalibRun = 0,
                                       Bool_t doManualBadmap = 0,
-                                      TString badMapName = "EMCALBadMap_v0")
+                                      TString badMapName = "defaultTender")
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -66,7 +66,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   
   TString pathToBadMap;
   
-  if (badMapName !="defaultTenderBM") {
+  if (badMapName !="defaultTender") {
     gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/b/bsahlmul/%s.root .",badMapName.Data()));
     pathToBadMap = Form("%s/",gSystem->pwd());
     pathToBadMap += badMapName;
@@ -99,12 +99,12 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetManualBadMap(doManualBadmap);
   
   if(doManualBadmap) {
-    if (badMapName == "defaultTenderBM") AliError("Cannot apply default tender bad map in task, now applying empty bad map. Specify own bad map to fix it.");
+    if (badMapName == "defaultTender") AliError("Cannot apply default tender bad map in task, now applying empty bad map. Specify own bad map to fix it.");
     else {
       TFile *fBadMap = TFile::Open(pathToBadMap.Data());
       
       if(fBadMap->IsOpen()){
-        printf("\n\n...Adding PHOS bad channel map (MANUALY) \n") ;
+        printf("\n\n...Adding bad channel map (MANUALY) \n") ;
         gROOT->cd();
         Char_t key[55] ;
         sprintf(key,"hresult") ;

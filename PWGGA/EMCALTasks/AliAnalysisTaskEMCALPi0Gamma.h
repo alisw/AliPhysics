@@ -179,7 +179,7 @@ protected:
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
   Int_t        GetModuleNumber(AliVCluster * cluster)                                                     const;
-  void         FillCellQAHists(AliVCluster *, Bool_t isDcal=0);
+  void         FillCellQAHists(AliVCluster *, Bool_t isDcal=0, Bool_t isAfter=0);
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
   // spectral shape
   Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
@@ -276,6 +276,7 @@ protected:
   
   // histogram for cells
   TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
+  TH2                   *fHCellIndexEnergyAfterCuts;      //!histo for cell energy vs cell number
   
   // histogram for emcal and dcal
 //  TH1                   *fHCellIndexEMCAL;      //!histo for cell energy vs cell number
@@ -435,7 +436,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 16) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 17) // Analysis task for neutral pions in Pb+Pb
 };
 
 

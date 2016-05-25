@@ -145,6 +145,7 @@ fHCentQual(0x0),
 fHMeanClusterEnergy(0x0),
 fHMeanClusterNumber(0x0),
 fHCellIndexEnergy(0x0),
+fHCellIndexEnergyAfterCuts(0x0),
 //fHCellIndexEMCAL(0x0),
 //fHCellIndexDCAL(0x0),
 fHClusters(0x0),
@@ -353,6 +354,7 @@ fHCentQual(0x0),
 fHMeanClusterEnergy(0x0),
 fHMeanClusterNumber(0x0),
 fHCellIndexEnergy(0x0),
+fHCellIndexEnergyAfterCuts(0x0),
 //fHCellIndexEMCAL(0x0),
 //fHCellIndexDCAL(0x0),
 fHClusters(0x0),
@@ -679,6 +681,11 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHCellIndexEnergy->SetXTitle("Cell #");
     fHCellIndexEnergy->SetYTitle("E [GeV/c]");
     fOutput->Add(fHCellIndexEnergy);
+
+    fHCellIndexEnergyAfterCuts= new TH2F("hCellIndexEnergyAfterCuts","",18001,-0.5,18000.5,50,0,25);
+    fHCellIndexEnergyAfterCuts->SetXTitle("Cell #");
+    fHCellIndexEnergyAfterCuts->SetYTitle("E [GeV/c]");
+    fOutput->Add(fHCellIndexEnergyAfterCuts);
 
 //    fHCellIndexEMCAL = new TH1F("hCellIndexEMCAL","",18001,-0.5,18000.5);
 //    fHCellIndexEMCAL->SetXTitle("CellID");
@@ -1956,8 +1963,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     if ( (clusterVec.Phi() < 1.2 && clusterVec.Phi() > -2.8) ){
       bdcal = 1;
     }
-
-    FillCellQAHists(clus,bdcal);
+    
+    FillCellQAHists(clus,bdcal,0);
     
     //if(bdcal) continue;
 
@@ -2001,7 +2008,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           maxID = CellsID[kk];
         }
       }
-      if(fBadMap->GetBinContent(maxID)>0)
+      if(fBadMap->GetBinContent(maxID+1)>0)
         continue;
     }
 
@@ -2034,7 +2041,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     //    }
     fHClusters->Fill(cluster++);
     
-    
+    FillCellQAHists(clus,bdcal,1);
+
     if(bprint)
       clusterVec.Print();
     //  if(bDirGam){
@@ -4194,7 +4202,7 @@ void AliAnalysisTaskEMCALPi0Gamma::AddMixEvent(const Int_t MulClass, const Int_t
 }
 
 //_____________________________________________________________________
-void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster, Bool_t isDcal)
+void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster, Bool_t isDcal, Bool_t isAfter)
 {
 
   UShort_t* CellsID = virCluster->GetCellsAbsId();
@@ -4221,8 +4229,12 @@ void AliAnalysisTaskEMCALPi0Gamma::FillCellQAHists(AliVCluster* virCluster, Bool
   //fPHOSGeo->RelToAbsNumbering(relId, cellClusterPosAbsID); //Get AbsID of Cell in which the ClusterPosition is
   Double_t cellClusterPosE = vcells->GetCellAmplitude(maxID); //Get Energy of that cell
   
-  fHCellIndexEnergy->Fill(maxID, maxEnergy);
- 
+  if(!isAfter)
+    fHCellIndexEnergy->Fill(maxID, maxEnergy);
+  else
+    fHCellIndexEnergyAfterCuts->Fill(maxID,maxEnergy);
+
+  
 //  if(!isDcal)
 //    fHCellIndexEMCAL->Fill(maxID);
 //  else
