@@ -3333,6 +3333,28 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
     if (!cluster->IsEMCAL()) 
       continue;
     
+    //
+    // Remove old matches in cluster
+    //
+    if(cluster->GetNTracksMatched() > 0)
+    {
+      if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
+      {
+        TArrayI arrayTrackMatched(0);
+        ((AliESDCaloCluster*)cluster)->AddTracksMatched(arrayTrackMatched);
+      }
+      else
+      {
+        for(Int_t iTrack = 0; iTrack < cluster->GetNTracksMatched(); iTrack++)
+        {
+          ((AliAODCaloCluster*)cluster)->RemoveTrackMatched((TObject*)((AliAODCaloCluster*)cluster)->GetTrackMatched(iTrack));
+        }
+      }
+    }
+    
+    //
+    // Find new matches and put them in the cluster
+    //
     Int_t nTracks = event->GetNumberOfTracks();
     TArrayI arrayTrackMatched(nTracks);
     
@@ -3361,7 +3383,7 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
       }
     }
     
-    //printf("Tender::SetTracksMatchedToCluster - cluster E %f, N matches %d, first match %d\n",cluster->E(),nMatched,arrayTrackMatched[0]);
+    AliDebug(2,Form("cluster E %f, N matches %d, first match %d\n",cluster->E(),nMatched,arrayTrackMatched[0]));
     
     arrayTrackMatched.Set(nMatched);
     AliESDCaloCluster *esdcluster = dynamic_cast<AliESDCaloCluster*>(cluster);
@@ -3371,7 +3393,12 @@ void AliEMCALRecoUtils::SetTracksMatchedToCluster(const AliVEvent *event)
     {
       AliAODCaloCluster *aodcluster = dynamic_cast<AliAODCaloCluster*>(cluster);
       if (aodcluster)
+      {
         aodcluster->AddTrackMatched(event->GetTrack(arrayTrackMatched.At(0)));
+        //AliAODTrack *aodtrack=dynamic_cast<AliAODTrack*>(event->GetTrack(arrayTrackMatched.At(0)));
+        //printf("Is the closest matching track with ID %d a 128? %d what's its full filter map? %u\n",aodtrack->GetID(), aodtrack->TestFilterBit(128),aodtrack->GetFilterMap());
+        //printf("With specs: pt %.4f, eta %.4f, phi %.4f\n",aodtrack->Pt(),aodtrack->Eta(), aodtrack->Phi());
+      }
     }
     
     Float_t eta= -999, phi = -999;
