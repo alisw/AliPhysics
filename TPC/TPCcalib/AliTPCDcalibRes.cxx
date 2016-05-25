@@ -226,6 +226,8 @@ void AliTPCDcalibRes::ProcessFromDeltaTrees()
   // process from residual trees
   TStopwatch sw;
   // select tracks matching to time window and write compact local trees
+  EstimateStatistics();
+  //
   CollectData(kExtractMode);
   //
   if (fNTrSelTot<fMinTracksToUse) {
@@ -487,6 +489,62 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
 }
 
 //_____________________________________________________
+Bool_t AliTPCDcalibRes::EstimateStatistics()
+{
+  // make rough estimate of statistics with different options
+  AliInfo("Performing rough statistics check");
+  if (!fInitDone) Init();
+  if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
+  // 
+  // pick 1st chunk
+  TString  chunkList = gSystem->GetFromPipe(TString::Format("cat %s",fResidualList.Data()).Data());
+  TObjArray *chunkArray= chunkList.Tokenize("\n");  
+  Int_t nChunks = chunkArray->GetEntriesFast();
+  //
+  TTree *tree = 0;
+  int chunk=0; // read 1st accessible chunk
+  while ( !(tree=InitDeltaFile(chunkArray->At(chunk)->GetName())) && ++chunk<nChunks) {}
+  delete chunkArray;
+  if (!tree) {
+    AliError("No data chunk was accessible");
+    return kFALSE;
+  }
+  //
+  // make sure these branches are always connected in InitDeltaFile
+  enum {kITS,kTRD,kTOF,kBC0,kNtr,kNbr};
+  const char* kNeedBr[]={"itsOK","trdOK","tofOK","tofBC","nPrimTracks"}; 
+  TBranch* br[kNbr];
+  for (int i=0;i<kNbr;i++) {
+    br[i] = tree->GetBranch(kNeedBr[i]);
+    if (!br[i]) AliFatalF("Control branch %s is not in the delta tree",kNeedBr[i]);
+    if (!br[i]->GetAddress()) AliFatalF("Control branch %s address is not set",kNeedBr[i]);
+    if (!tree->GetBranchStatus(kNeedBr[i])) AliFatalF("Control branch %s is not active",kNeedBr[i]);
+  }	       
+  int nTracks = tree->GetEntries();
+  int nStatOK[kNbr][kNbr] = {0};
+  Bool_t condOK[kNbr];
+  for (int itr=0;itr<nTracks;itr++) {
+    for (int ib=kNbr;ib--;) br[ib]->GetEntry(itr);
+    condOK[kITS] = fDeltaStr.itsOK;
+    condOK[kTRD] = fDeltaStr.trdOK;
+    condOK[kTOF] = fDeltaStr.tofOK;
+    condOK[kBC0] = fDeltaStr.tofBC>fTOFBCMin && fDeltaStr.tofBC<=fTOFBCMax;
+    condOK[kNtr] = fNPrimTracksCut<0 || fDeltaStr.nPrimTracks<=fNPrimTracksCut;
+    for (int i=kNbr;i--;) for (int j=kNbr;j--;) if (condOK[i]&&condOK[j]) nStatOK[i][j]++;
+  }
+  AliInfoF("Statistics %d tracks in chunk id=%d (out %d)",nTracks,chunk,nChunks);
+  printf(" %12s",""); for (int i=0;i<kNbr;i++) printf("  %12s",kNeedBr[i]); printf("\n");
+  for (int i=0;i<kNbr;i++) {
+    printf("*%12s",kNeedBr[i]);
+    for (int j=0;j<kNbr;j++) printf("  %12d",nStatOK[i][j]);
+    printf("\n");
+  }
+  //
+  CloseDeltaFile(tree);
+  return kTRUE;
+}
+
+//_____________________________________________________
 void AliTPCDcalibRes::CollectData(int mode) 
 {
   const float kEps = 1e-6;
@@ -723,6 +781,7 @@ void AliTPCDcalibRes::CollectData(int mode)
   //
   // write/close local trees
   CloseLocalResidualsTrees(mode);
+  delete chunkArray;
   //
   AliInfoF("Summary: selected %d tracks (%d with outliers) | %.1f MB read in %d read calls",
 	   fNTrSelTot,fNTrSelTotWO,float(fNBytesReadTot)/kMByte,fNReadCallTot); 

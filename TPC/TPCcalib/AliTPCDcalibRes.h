@@ -116,6 +116,7 @@ class AliTPCDcalibRes: public TNamed
   void Save(const char* name=0);
 
   TTree* InitDeltaFile(const char* name, Bool_t connect=kTRUE, const char* treeName="delta");
+  Bool_t EstimateStatistics();
   void CloseDeltaFile(TTree* dtree);
   void Init();
   void CollectData(int mode = kExtractMode);
