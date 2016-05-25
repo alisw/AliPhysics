@@ -22,8 +22,8 @@ class AliLocalRhoParameter;
 #include "AliEmcalJet.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-typedef AliEmcalIterableContainerT<AliEmcalJet> AliJetIterableContainer;
-typedef AliEmcalIterableContainerT<AliEmcalJet,true> AliJetIterableMomentumContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliEmcalJet, EMCALIterableContainer::operator_star_object<AliEmcalJet> > AliJetIterableContainer;
+typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliEmcalJet, EMCALIterableContainer::operator_star_pair<AliEmcalJet> > AliJetIterableMomentumContainer;
 #endif
 
 /**
