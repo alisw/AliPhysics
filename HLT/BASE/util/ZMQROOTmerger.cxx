@@ -1000,7 +1000,7 @@ Int_t ReadFromFile(std::string file)
     TObject* object = key->ReadObj();
 
     //restore the metadata (runnumberr)
-    if (objectName=="ZMQROOTmerger_internal_fInfo") {
+    if (objectName=="_ZMQ_internal_fInfo") {
       TObjString* objstr = dynamic_cast<TObjString*>(object);
       if (objstr) {
         fInfo = objstr->String();
@@ -1014,7 +1014,11 @@ Int_t ReadFromFile(std::string file)
     if (object)
     {
       if (fVerbose) Printf("file (%s): attaching %s",file.c_str(),objectName.c_str());
+      //prevent annotations to be added on top of the old ones
+      TString oldAnn = fTitleAnnotation;
+      fTitleAnnotation="";
       AddObject(object);
+      fTitleAnnotation=oldAnn;
     }
   }
   f.Close();
@@ -1040,7 +1044,7 @@ Int_t DumpToFile(std::string file)
   }
 
   TObjString info(fInfo.c_str());
-  info.Write("ZMQROOTmerger_internal_fInfo", TObject::kOverwrite);
+  info.Write("_ZMQ_internal_fInfo", TObject::kOverwrite);
 
   f.Close();
   return 0;
