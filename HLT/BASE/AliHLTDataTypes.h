@@ -818,7 +818,11 @@ extern "C" {
   {
     for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
     {
-      if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
+      if (!(topic[i]=='*' || reference[i]=='*' || 
+            topic[i]=='\0' || reference[i]=='\0' || 
+            topic[i]==reference[i])) {
+        return false;
+      }
     }
     return true;
   }
@@ -875,7 +879,7 @@ extern "C" {
     bool operator==( const AliHLTDataTopic& dt )
     {
       bool topicMatch = Topicncmp(dt.fTopic, fTopic);
-      return dt.fSpecification==fSpecification && topicMatch;
+      return topicMatch;
     }
 
     std::string Description() const
