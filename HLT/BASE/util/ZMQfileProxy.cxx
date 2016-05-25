@@ -280,7 +280,7 @@ void* runToFile(void* arg)
       //count ROOT objects
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_msg_iter_check(i, "ROOT")==0) fNumberOfTObjectsInMessage++;
+        if (alizmq_msg_iter_check_id(i, "ROOT")==0) fNumberOfTObjectsInMessage++;
       }
 
       //process
@@ -288,7 +288,7 @@ void* runToFile(void* arg)
       {
         TObject* object = NULL;
         string name;
-        if (alizmq_msg_iter_check(i, "INFO")==0)
+        if (alizmq_msg_iter_check_id(i, "INFO")==0)
         {
           //check if we have a runnumber in the string
           alizmq_msg_iter_data(i,fInfo);

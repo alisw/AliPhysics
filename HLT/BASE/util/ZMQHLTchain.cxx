@@ -259,7 +259,7 @@ int Run()
           if (fVerbose) printf("block kAliHLTDataTypeGlobalTrigger found\n");
         }
         //get the ECS param string
-        else if (alizmq_msg_iter_check(i, kAliHLTDataTypeECSParam)==0)
+        else if (alizmq_msg_iter_check_id(i, kAliHLTDataTypeECSParam)==0)
         {
           alizmq_msg_iter_data(i, fECSstring);
           stringMap ecsParamMap = ParseParamString(fECSstring);
@@ -284,13 +284,13 @@ int Run()
           fRunNumber = ecsRunNumber;
         }
         //get the GRP
-        else if (alizmq_msg_iter_check(i, kAliHLTDataTypeCDBEntry)==0)
+        else if (alizmq_msg_iter_check_id(i, kAliHLTDataTypeCDBEntry)==0)
         {
           printf("GRP received\n");
           alizmq_msg_iter_data(i, grpEntry);
         }
         //get the INFO block
-        else if (alizmq_msg_iter_check(i, "INFO")==0)
+        else if (alizmq_msg_iter_check_id(i, "INFO")==0)
         {
           alizmq_msg_iter_data(i, fINFOstring);
           stringMap infoParams = ParseParamString(fINFOstring);
@@ -302,7 +302,7 @@ int Run()
           }
         }
         //get the event info
-        else if (alizmq_msg_iter_check(i, "EVENTTYP")==0)
+        else if (alizmq_msg_iter_check_id(i, "EVENTTYP")==0)
         {
           AliHLTDataTopic topic;
           alizmq_msg_iter_topic(i, topic);

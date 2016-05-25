@@ -709,11 +709,12 @@ int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topi
 }
 
 //_______________________________________________________________________________________
-int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic)
+int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const std::string& topic)
 {
-  std::string actualTopic;
+  AliHLTDataTopic actualTopic;
   alizmq_msg_iter_topic(it, actualTopic);
-  return actualTopic.compare(0,topic.size(),topic);
+  std::string topicID = actualTopic.GetID();
+  return topicID.compare(0,topic.size(),topic);
 }
 
 //_______________________________________________________________________________________
