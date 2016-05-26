@@ -1144,6 +1144,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
   
   // loop over cascades to search for candidates Lc->p+K0S
 
+  Int_t mcLabel = -1;
   for (Int_t iLctopK0s = 0; iLctopK0s < nCascades; iLctopK0s++) {
 
     // Lc candidates and K0s from Lc
@@ -1225,7 +1226,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       Int_t pdgCode = -2;
 
       // find associated MC particle for Lc -> p+K0 and K0S->pi+pi
-      Int_t mcLabel = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
+      mcLabel = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
       if (mcLabel>=0) {
 	AliDebug(2,Form(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cascade number %d (total cascade number = %d)", iLctopK0s, nCascades));
 
@@ -1302,7 +1303,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       }
     }
 
-    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
+    //FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
+    FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, mcLabel);
     
   }
   
@@ -1565,15 +1567,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   nSigmaTOFpi = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kPion));
   nSigmaTOFka = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kKaon));
   nSigmaTOFpr = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kProton));
-
+  
+  Double_t ptLcMC=-1;
   Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
 
   if (fUseMCInfo) {
-    weightPythia = fFuncWeightPythia->Eval(part->Pt());
-    weight5LHC13d3 = fFuncWeightFONLL5overLHC13d3->Eval(part->Pt());
-    weight5LHC13d3Lc = fFuncWeightFONLL5overLHC13d3Lc->Eval(part->Pt());
+    if (iLctopK0s >= 0) {
+      AliAODMCParticle *partLcMC = (AliAODMCParticle*)mcArray->At(iLctopK0s);
+      ptLcMC = partLcMC->Pt();
+      //Printf("--------------------- Reco pt = %f, MC particle pt = %f", part->Pt(), ptLcMC);
+      weightPythia = fFuncWeightPythia->Eval(ptLcMC);
+      weight5LHC13d3 = fFuncWeightFONLL5overLHC13d3->Eval(ptLcMC);
+      weight5LHC13d3Lc = fFuncWeightFONLL5overLHC13d3Lc->Eval(ptLcMC);
+    }
   }
-
+  
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
 
