@@ -241,7 +241,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
       hClassLumiVsRun    ->Fill(srun,className.Data(),class_lumi[i]);
     }
     for (Int_t ibit=0;ibit<NBITS;ibit++) {
-      if (alias_recorded[ibit]<1) continue;
+      if (alias_reconstructed[ibit]<1) continue;
       hRecorded         ->Fill(srun,bitNames[ibit],alias_recorded[ibit]);
       hReconstructed    ->Fill(srun,bitNames[ibit],alias_reconstructed[ibit]);
       hAccepted         ->Fill(srun,bitNames[ibit],alias_accepted[ibit]);
@@ -324,7 +324,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cInteractionRate = new TCanvas("cInteractionRate","Interaction Rate",1800,500);
   cInteractionRate->SetMargin(0.05,0.01,0.18,0.06);
-  hInteractionRate->SetFillColor(0);
   hInteractionRate->Draw();
   AddFillSeparationLines(hMu,fills);
   gPad->Print("rate.png");
@@ -332,7 +331,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cMu = new TCanvas("mu","mu",1800,500);
   cMu->SetMargin(0.05,0.01,0.18,0.06);
-  hMu->SetFillColor(0);
   hMu->Draw("h");
   AddFillSeparationLines(hMu,fills);
   gPad->Print("mu.png");
@@ -340,7 +338,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cBCs = new TCanvas("bcs","bcs",1800,500);
   cBCs->SetMargin(0.05,0.01,0.18,0.06);
-  hBCs->SetFillColor(0);
   hBCs->Draw("h");
   AddFillSeparationLines(hBCs,fills);
   gPad->Print("bcs.png");
@@ -349,6 +346,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TCanvas* cDuration = new TCanvas("duration","duration",1800,500);
   cDuration->SetMargin(0.05,0.01,0.18,0.06);
   hDuration->SetTitle(Form("Duration in seconds: total= %.0f s = %.0f h",hDuration->Integral(),hDuration->Integral()/3600));
+  hDuration->SetFillColor(kBlue);
   hDuration->Draw("h");
   AddFillSeparationLines(hDuration,fills);
   gPad->Print("global_properties.pdf");
@@ -356,6 +354,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TCanvas* cLumiSeen = new TCanvas("lumiseen","lumi seen",1800,500);
   cLumiSeen->SetMargin(0.05,0.01,0.18,0.06);
   hLumiSeen->SetTitle(Form("Luminosity seen [1/ub]: total= %.3f",hLumiSeen->Integral()));
+  hLumiSeen->SetFillColor(kBlue);
   hLumiSeen->Draw("h");
   AddFillSeparationLines(hLumiSeen,fills);
   gPad->Print("global_properties.pdf");
@@ -370,7 +369,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cMeanV0MOf = new TCanvas("meanV0MOf","meanV0MOf",1800,500);
   cMeanV0MOf->SetMargin(0.05,0.01,0.18,0.06);
-  hMeanV0MOf->SetFillColor(0);
   hMeanV0MOf->Draw("");
   AddFillSeparationLines(hMeanV0MOf,fills);
   gPad->Print("meanV0MOf.png");
@@ -378,7 +376,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cMeanOFO = new TCanvas("meanOFO","meanOFO",1800,500);
   cMeanOFO->SetMargin(0.05,0.01,0.18,0.06);
-  hMeanOFO->SetFillColor(0);
   hMeanOFO->Draw("");
   AddFillSeparationLines(hMeanOFO,fills);
   gPad->Print("meanOFO.png");
@@ -386,7 +383,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 
   TCanvas* cMeanTKL = new TCanvas("meanTKL","meanTKL",1800,500);
   cMeanTKL->SetMargin(0.05,0.01,0.18,0.06);
-  hMeanTKL->SetFillColor(0);
   hMeanTKL->Draw("");
   AddFillSeparationLines(hMeanTKL,fills);
   gPad->Print("meanTKL.png");
@@ -454,7 +450,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     TH1D* h = (TH1D*) hClassLifetimeVsRun->ProjectionX(Form("hClassLifetimeVsRun_%02i",i),i,i);
     h->SetTitle(Form("%s lifetime",hClassLifetimeVsRun->GetYaxis()->GetBinLabel(i)));
     SetHisto(h);
-    h->SetFillColor(0);
     h->Draw("");
     AddFillSeparationLines(h,fills);
     gPad->Print("class_lifetime.pdf");
@@ -462,8 +457,6 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   }
   gPad->Print("class_lifetime.pdf]");
   fclassLifetime->Close();
-  
-//  return;
   
   TFile* fclassLumi = new TFile("class_lumi.root","recreate");
   TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
@@ -521,7 +514,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     TH1D* hLumiReconstructed1D = hLumiReconstructed->ProjectionX(Form("hLumiReconstructed%02i",i),i,i);
     TH1D* hLumiAccepted1D = hLumiAccepted->ProjectionX(Form("hLumiAccepted%02i",i),i,i);
     hRejected1D->Add(hAccepted1D,-1);
-    if (hRecorded1D->Integral()<1) continue;
+    
+    if (hReconstructed1D->Integral()<1) continue;
     SetHisto(hRecorded1D);
     SetHisto(hReconstructed1D);
     SetHisto(hAccepted1D);
@@ -543,7 +537,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hRecorded1D->SetLineColor(kRed+2);
     hRecorded1D->SetFillColor(kRed+2);
     hReconstructed1D->SetLineColor(kBlue);
-    hReconstructed1D->SetFillColor(kBlue);
+    hReconstructed1D->SetFillColor(0);
     hAccepted1D->SetLineColor(kGreen+2);
     hAccepted1D->SetFillColor(kGreen+2);
     hLumiRecorded1D->SetLineColor(kRed+2);
@@ -552,26 +546,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hLumiReconstructed1D->SetFillColor(kBlue);
     hLumiAccepted1D->SetLineColor(kGreen+2);
     hLumiAccepted1D->SetFillColor(kGreen+2);
-    
-    cCounts->cd();
-    hRecorded1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
-    hRecorded1D->Draw("h");
-    hReconstructed1D->Draw("h same");
-    hAccepted1D->Draw("h same");
-    AddFillSeparationLines(hAccepted1D,fills);
-    gPad->RedrawAxis();
-    gPad->Print("alias_event_statistics.pdf");
 
-    cLumi->cd();
-    hLumiRecorded1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
-    hLumiRecorded1D->Draw("h");
-    hLumiReconstructed1D->Draw("h same");
-    hLumiAccepted1D->Draw("h same");
-    AddFillSeparationLines(hLumiAccepted1D,fills);
-    gPad->RedrawAxis();
-    gPad->Print("alias_lumi_statistics.pdf");
-
-    if (hReconstructed1D->Integral()<1) continue;
     TH1D* hAcceptedFraction = (TH1D*) hReconstructed1D->Clone(Form("hAcceptedFraction%02i",ibit));
     TH1D* hAccStep1Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep1Fraction%02i",ibit));
     TH1D* hAccStep2Fraction = (TH1D*) hReconstructed1D->Clone(Form("hAccStep2Fraction%02i",ibit));
@@ -637,7 +612,38 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hAccStep5Fraction->Draw("same");
     hAccStep6Fraction->Draw("same");
     hAccStep7Fraction->Draw("same");
+    
     AddFillSeparationLines(hAcceptedFraction,fills);
+
+    TLegend* legAcc = new TLegend(0.08,0.22,0.25,0.6);
+    legAcc->AddEntry(hAcceptedFraction,"accepted");
+    legAcc->AddEntry(hAccStep1Fraction,"V0A & V0C");
+    legAcc->AddEntry(hAccStep2Fraction,"+ no ClsVsTklBG");
+    legAcc->AddEntry(hAccStep3Fraction,"+ no V0C012vsTklBG");
+    legAcc->AddEntry(hAccStep4Fraction,"+ no V0MOnVsOfPileup");
+    legAcc->AddEntry(hAccStep5Fraction,"+ no SPDOnVsOfPileup");
+    legAcc->AddEntry(hAccStep6Fraction,"+ no SPDVtxPileup");
+    legAcc->AddEntry(hAccStep7Fraction,"+ no V0PFPileup");
+    legAcc->Draw();
+
+//    alias_acc_step1[ibit]     = Int_t(hHistStat->GetBinContent(3,j));
+//    alias_acc_step2[ibit]     = Int_t(hHistStat->GetBinContent(4,j));
+//    alias_acc_step3[ibit]     = Int_t(hHistStat->GetBinContent(5,j));
+//    alias_acc_step4[ibit]     = Int_t(hHistStat->GetBinContent(6,j));
+//    alias_acc_step5[ibit]     = Int_t(hHistStat->GetBinContent(7,j));
+//    alias_acc_step6[ibit]     = Int_t(hHistStat->GetBinContent(8,j));
+//    alias_acc_step7[ibit]     = Int_t(hHistStat->GetBinContent(9,j));
+//    fHistStat->Fill("all",trigger,all);
+//    fHistStat->Fill("accepted",trigger,accepted);
+//    fHistStat->Fill("V0A & V0C",trigger,v0and);
+//    fHistStat->Fill("+ !SPDClsVsTrkBG",trigger,plusNoSPDClsVsTrkBG);
+//    fHistStat->Fill("+ !V0C012vsTklBG",trigger,plusNoV0C012vsTklBG);
+//    fHistStat->Fill("+ !V0MOnVsOfPileup",trigger,plusNoV0MOnVsOfPileup);
+//    fHistStat->Fill("+ !SPDOnVsOfPileup",trigger,plusNoSPDOnVsOfPileup);
+//    fHistStat->Fill("+ !SPDVtxPileup",trigger,plusNoSPDVtxPileup);
+//    fHistStat->Fill("+ !V0PFPileup",trigger,plusNoV0PFPileup);
+//    fHistStat->Fill("+ !V0Casym",trigger,plusNoV0Casym);
+
     gPad->Print("accepted_fraction.pdf");
     
     cRejectedFraction->cd();
@@ -659,6 +665,27 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hAccStep6Fraction->Write();
     hAccStep7Fraction->Write();
     hRejectedFraction->Write();
+
+    
+    if (hRecorded1D->Integral()<1) continue;
+    
+    cCounts->cd();
+    hRecorded1D->SetTitle(Form("%s trigger counts: recorded=%0.f, total=%.0f, accepted=%.0f",bitName,hRecorded1D->Integral(),hReconstructed1D->Integral(),hAccepted1D->Integral()));
+    hRecorded1D->Draw("h");
+    hReconstructed1D->Draw("h same");
+    hAccepted1D->Draw("h same");
+    AddFillSeparationLines(hAccepted1D,fills);
+    gPad->RedrawAxis();
+    gPad->Print("alias_event_statistics.pdf");
+
+    cLumi->cd();
+    hLumiRecorded1D->SetTitle(Form("%s luminosity [ub-1]: recorded=%.0g, total=%.0g, accepted=%.0g",bitName,hLumiRecorded1D->Integral(),hLumiReconstructed1D->Integral(),hLumiAccepted1D->Integral()));
+    hLumiRecorded1D->Draw("h");
+    hLumiReconstructed1D->Draw("h same");
+    hLumiAccepted1D->Draw("h same");
+    AddFillSeparationLines(hLumiAccepted1D,fills);
+    gPad->RedrawAxis();
+    gPad->Print("alias_lumi_statistics.pdf");
   }
   dummy->Print("alias_event_statistics.pdf]");
   dummy->Print("alias_lumi_statistics.pdf]");
@@ -680,7 +707,7 @@ void SetHisto(TH1D* h, Bool_t setMinimumToZero){
   h->GetYaxis()->SetTitleOffset(0.6);
   h->GetYaxis()->SetDecimals(1);
   h->SetLineColor(kBlue);
-  h->SetFillColor(kBlue);
+  h->SetFillColor(0);
   h->LabelsOption("av");
   h->SetLineWidth(2);
   if (setMinimumToZero) h->SetMinimum(0);
