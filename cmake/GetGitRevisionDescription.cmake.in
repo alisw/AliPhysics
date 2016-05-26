@@ -26,6 +26,11 @@ if(HEAD_CONTENTS MATCHES "ref")
 	elseif(EXISTS "@GIT_DIR@/logs/${HEAD_REF}")
 		configure_file("@GIT_DIR@/logs/${HEAD_REF}" "@GIT_DATA@/head-ref" COPYONLY)
 		set(HEAD_HASH "${HEAD_REF}")
+    elseif(EXISTS "@GIT_DIR@/commondir")
+        # worktree
+        file(STRINGS "@GIT_DIR@/commondir" COMMON_DIR LIMIT_COUNT 1)
+        get_filename_component(COMMON_DIR_ABSPATH "${COMMON_DIR}" ABSOLUTE BASE_DIR ${GIT_DIR})
+        configure_file("${COMMON_DIR_ABSPATH}/${HEAD_REF}" "@GIT_DATA@/head-ref" COPYONLY)
 	endif()
 else()
 	# detached HEAD
