@@ -63,6 +63,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     void SetNCaloPhotonMCLabels(Int_t nLabels){fNCaloPhotonMCLabels = nLabels;}
     Int_t GetNCaloPhotonMCLabels(){return fNCaloPhotonMCLabels;}
     Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
+    Int_t GetCaloPhotonMotherMCLabel(Int_t i){return fCaloPhotonMotherMCLabels[i];}
+    
     void SetCaloPhotonMCFlags(AliStack *MCStack);
     void SetCaloPhotonMCFlagsAOD(AliVEvent* event);
     void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
@@ -98,8 +100,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Float_t fInvMassPair;
     Int_t fNCaloPhotonMotherMCLabels;
     Int_t fCaloPhotonMCFlags;
-    Int_t fCaloPhotonMCLabels[20];
-    Int_t fCaloPhotonMotherMCLabels[20];
+    Long_t fCaloPhotonMCLabels[50];
+    Long_t fCaloPhotonMotherMCLabels[20];
       
 	
 	ClassDef(AliAODConversionPhoton,4)
