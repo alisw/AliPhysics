@@ -1054,24 +1054,28 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   // EVENT SELECTIONS
   ///////////////////
   // In order:
-  // 1) SDD status 
-  // 2) incomplete DAQ events (introduced for Run2 2015 data)
-  // 3) Background rejection based on SPD cluster vs tracklet correlation
-  // 4) Pileup
-  // 5) Physics
-  // 6) Well-established PV
-  // 7) |PV_Z| < 10 cm
-  // 
+  // 0) SDD status 
+  // 1) Pre-Trigger selections
+  //     1.1) Incomplete DAQ events (introduced for Run2 2015 data)
+  //     1.2) Background rejection based on SPD cluster vs tracklet correlation
+  //     1.3) Pileup
+  // 2) Trigger selection (Physics selection)
+  // -) Cascade and V0 re-vertexer
+  // 3) Well-established PV
+  //     3.1) not only TPC vertex
+  //     3.2) requirement on the resolution and dispersion
+  //     3.2) distance between the two vertices
+  //     3.4) |Zpv| < 10 cm
+  // - Define useful variables
+
   // - Define useful variables
   Int_t ncascades = 0;
   Int_t nTrackMultiplicity = 0;
 
-  //----------------------
-  // Before any selections
-  //----------------------
-  //- Define the variables
+  //============================
+  // Plots before any selections
+  //============================
   if (fAnalysisType == "ESD") {
-      // - Load the InputEvent and check
       lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
       if (!lESDevent) {
          AliWarning("ERROR: lESDevent not available \n");
@@ -1080,7 +1084,6 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
       ncascades          = lESDevent->GetNumberOfCascades();
       nTrackMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
   } else if (fAnalysisType == "AOD") {
-      // - Load the InputEvent and check
       lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
       if (!lAODevent) {
           AliWarning("ERROR: lAODevent not available \n");
@@ -1095,9 +1098,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityBeforeAnySel->Fill(ncascades);
   fHistTrackMultiplicityBeforeAnySel->Fill(nTrackMultiplicity);
 
-  //------------------------
-  // 1) SDD status selection
-  //------------------------
+  //========================
+  // 0) SDD status selection
+  //========================
   if (fApplyEvSelSDDstatus && fCollidingSystem == 0) {
        if (fAnalysisType == "ESD") {
            TString trcl = lESDevent->GetFiredTriggerClasses();
@@ -1146,10 +1149,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterSDDstatusSel->Fill(ncascades);
   fHistTrackMultiplicityAfterSDDstatusSel->Fill(nTrackMultiplicity);
 
-  //------------------------------------
-  // 2) Removal of incomplete DAQ events
-  //------------------------------------
-  // - Incomplete DAQ events rejection Run2 data 2015
+  //======================================
+  // 1.1) Removal of incomplete DAQ events
+  //======================================
   Bool_t IncompleteDAQ = kFALSE;
   if (fAnalysisType == "ESD") IncompleteDAQ = lESDevent->IsIncompleteDAQ();
   if (fApplyEvSelDAQincomplete && IncompleteDAQ){
@@ -1165,9 +1167,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterDAQincompleteEvRej->Fill(ncascades);
   fHistTrackMultiplicityAfterDAQincompleteEvRej->Fill(nTrackMultiplicity);
 
-  //---------------------------------------------------------------------
-  // 3) Background rejection based on SPD cluster vs tracklet correlation
-  //---------------------------------------------------------------------
+  //=======================================================================
+  // 1.2) Background rejection based on SPD cluster vs tracklet correlation
+  //=======================================================================
   if(fApplyEvSelSPDclustervstracklet){
       if (fAnalysisType == "ESD" && fUtils->IsSPDClusterVsTrackletBG(lESDevent)) {
               AliWarning("Pb / Is background based on SPD cluster vs tracklet correlation... return!");
@@ -1183,9 +1185,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterSPDclustervstrackletSel->Fill(ncascades);
   fHistTrackMultiplicityAfterSPDclustervstrackletSel->Fill(nTrackMultiplicity);
 
-  //--------------------
-  // 4) Pileup selection
-  //--------------------
+  //======================
+  // 1.3) Pileup selection
+  //======================
   if (fApplyEvSelPileup && fCollidingSystem == 0) {
       if (fAnalysisType == "ESD") {
            if(lESDevent->IsPileupFromSPD(fSPDPileUpminContributors)){
@@ -1214,9 +1216,10 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterPileupRej->Fill(ncascades);
   fHistTrackMultiplicityAfterPileupRej->Fill(nTrackMultiplicity);
 
-  //-------------------------------------------
-  // Multiplicity estimators for pPb collisions  //FIXME: not implemented at the moment
-  //-------------------------------------------
+  //========================
+  // Multiplicity estimators   //FIXME: not implemented at the moment
+  //========================
+  // For the pPb collisions
   //AliCentrality* centrality = 0;
   //if      (fAnalysisType == "ESD" && (fCollidingSystem == 1)) centrality = lESDevent->GetCentrality();
   //else if (fAnalysisType == "AOD" && (fCollidingSystem == 1)) centrality = lAODevent->GetCentrality();
@@ -1236,9 +1239,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   //     //}
   //} else if (fCollidingSystem == 0) lcentrality = 0.;  
 
-  //---------------------
-  // 5) Physics selection 
-  //---------------------
+  //=====================
+  // 2) Physics selection 
+  //=====================
   if (fApplyEvSelPhysicsSel) {
       UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
       Bool_t isSelected = 0;
@@ -1257,9 +1260,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterPhysicsSel->Fill(ncascades);
   fHistTrackMultiplicityAfterPhysicsSel->Fill(nTrackMultiplicity);
 
-  //---------------------------------------
-  // Re-run cascade vertexer (only for ESD)
-  //---------------------------------------
+  //=========================================
+  // - Re-run cascade vertexer (only for ESD)
+  //=========================================
   if (fAnalysisType == "ESD" && fRerunV0CascVertexers) {
        lESDevent->ResetCascades();
        lESDevent->ResetV0s();
@@ -1275,9 +1278,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
        //delete lCascVtxer;
   }
 
-  //------------------------------------
-  // 6) Primary Vertex quality selection
-  //------------------------------------
+  //====================================
+  // 3) Primary Vertex quality selection
+  //====================================
   if (fCollidingSystem == 0) {
        const AliESDVertex *lESDPrimaryTrackingVtx = 0x0;
        const AliESDVertex *lESDPrimarySPDVtx      = 0x0;
@@ -1290,7 +1293,7 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
            lAODPrimarySPDVtx = lAODevent->GetPrimaryVertexSPD();
            lAODPrimaryTrackingVtx = lAODevent->GetPrimaryVertex(); 
        }
-       // 4.1) reject events if both are explicitly requested and none is available
+       // 3.1) reject events if both are explicitly requested and none is available
        if (fApplyEvSelNoTPConlyPrimVtx) {
             if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus()) && fAnalysisType == "ESD"){
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -1313,8 +1316,8 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                   return;
              }
         }
-        // 4.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
-        if (fApplyEvSelSPDvtxres) {
+        // 3.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
+        if (!lESDPrimaryTrackingVtx->GetStatus()) {
              if (!lESDPrimarySPDVtx->GetStatus()) {
                   AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
                   PostData(1, fListHistCascade);
@@ -1325,7 +1328,18 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                   PostData(6, fCFContCascadeCuts);
                   return;
              }
-             if (lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
+             if (fApplyEvSelSPDvtxres && lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
+                  AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
+                  PostData(1, fListHistCascade);
+                  PostData(2, fCFContCascadePIDXiMinus);
+                  PostData(3, fCFContCascadePIDXiPlus);
+                  PostData(4, fCFContCascadePIDOmegaMinus);
+                  PostData(5, fCFContCascadePIDOmegaPlus);
+                  PostData(6, fCFContCascadeCuts);
+                  return;
+             }
+        } else {
+             if (fApplyEvSelSPDvtxres && lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
                   AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
                   PostData(1, fListHistCascade);
                   PostData(2, fCFContCascadePIDXiMinus);
@@ -1336,10 +1350,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                   return;
              }
         }
-        // 4.3) check the proximity between the spd vertex and trak vertex, and reject if not satisfied 
-        if (fApplyEvSelVtxProximity) { 
-            if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus())) {
-                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+        // 3.3) check the proximity between the spd vertex and trak vertex, and reject if not satisfied 
+        if (lESDPrimaryTrackingVtx->GetStatus() && lESDPrimarySPDVtx->GetStatus()) {
+             if (fApplyEvSelVtxProximity && (TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5)) {
                   PostData(1, fListHistCascade);
                   PostData(2, fCFContCascadePIDXiMinus);
                   PostData(3, fCFContCascadePIDXiPlus);
@@ -1347,16 +1360,6 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
                   PostData(5, fCFContCascadePIDOmegaPlus);
                   PostData(6, fCFContCascadeCuts);
                   return;
-             }
-             if (lESDPrimarySPDVtx->IsFromVertexerZ() && (TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5)) {
-                  AliWarning("Pb / The Z coordinated of the SPD and tracks vertex are more than 0.5 cm away ... return !");
-                     PostData(1, fListHistCascade);
-                     PostData(2, fCFContCascadePIDXiMinus);
-                     PostData(3, fCFContCascadePIDXiPlus);
-                     PostData(4, fCFContCascadePIDOmegaMinus);
-                     PostData(5, fCFContCascadePIDOmegaPlus);
-                     PostData(6, fCFContCascadeCuts);
-                     return;
              }
         }
   } else if (fCollidingSystem == 1) { //FIXME: the "activation" variable ares not used
@@ -1429,9 +1432,9 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascades);
   fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicity);
  
-  //-------------------------------------------------------
-  // 7) Vertex Z position selection (+ magnetic field info)
-  //-------------------------------------------------------
+  //=========================================================
+  // 3.4) Vertex Z position selection (+ magnetic field info)
+  //=========================================================
   Double_t lBestPrimaryVtxPos[3]  = {-100.0, -100.0, -100.0};
   Double_t tPrimaryVtxPosition[3] = {-100.0, -100.0, -100.0};
   if (fAnalysisType == "ESD") {
