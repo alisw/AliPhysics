@@ -200,6 +200,16 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
     fHistManager.CreateHistoGroup(cont->GetArrayName());
     for (Int_t i = 0; i < fNcentBins; i++) {
+      fHistManager.CreateHistoGroup("BySM", cont->GetArrayName());
+
+      const Int_t nSM = 20;
+
+      for (Int_t sm = 0; sm < nSM; sm++) {
+        histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", cont->GetArrayName().Data(), sm, i);
+        title = histname + ";#it{E}_{cluster} (GeV);counts";
+        fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
+      }
+
       histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
       title = histname + ";Rejection reason;#it{E}_{cluster} (GeV);counts";
       TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
@@ -765,6 +775,15 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
       if (it->second->GetHadCorrEnergy() > 0.) {
         histname = TString::Format("%s/fHistClusHadCorrEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
         fHistManager.FillTH1(histname, it->second->GetHadCorrEnergy());
+      }
+
+      Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+      if (sm >=0 && sm < 20) {
+        histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", clusters->GetArrayName().Data(), sm, fCentBin);
+        fHistManager.FillTH1(histname, it->second->E());
+      }
+      else {
+        AliError(Form("Supermodule %d does not exist!", sm));
       }
 
       fNTotClusters[isDcal]++;
