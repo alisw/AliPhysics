@@ -124,6 +124,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 
   //..some additional input for the analysis
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
+
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
