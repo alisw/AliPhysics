@@ -147,33 +147,33 @@ class AliOADBTriggerAnalysis : public TNamed {
   Float_t fSPDClsVsTklB;          // slope for the linear cut in SPD clusters vs tracklets
   Float_t fV0C012vsTklA;          // constant for the linear cut in V0C012 vs tracklets
   Float_t fV0C012vsTklB;          // slope for the linear cut in V0C012 vs tracklets
-  Float_t fV0MOnVsOfA;            // 
-  Float_t fV0MOnVsOfB;            // 
-  Float_t fSPDOnVsOfA;            // 
-  Float_t fSPDOnVsOfB;            // 
-  Int_t   fVtxMinContributors;    // 
-  Float_t fVtxMinZdist;           //
-  Float_t fVtxNSigmaZdist;        //
-  Float_t fVtxNSigmaDiamXY;       // 
-  Float_t fVtxNSigmaDiamZ;        //
-  Float_t fV0CasymA;              // 
-  Float_t fV0CasymB;              // 
-  Int_t fNBCsPast;                // 
-  Int_t fNBCsFuture;              // 
-  Int_t fVIRBBAflags;             // 
-  Int_t fVIRBBCflags;             // 
-  Int_t fVIRBGAflags;             // 
-  Int_t fVIRBGCflags;             // 
-  Int_t fVHMBBAflags;             // 
-  Int_t fVHMBBCflags;             // 
-  Int_t fVHMBGAflags;             // 
-  Int_t fVHMBGCflags;             // 
-  Int_t fV0MOnThreshold;          // 
-  Float_t fV0MOfThreshold;        // 
-  Int_t fSPDGFOThreshold;         // number of chips to accept a SPD GF0 trigger
-  Int_t fSH1OuterThreshold;       //
-  Int_t fSH2OuterThreshold;       //
-  Int_t fTklThreshold;            //
+  Float_t fV0MOnVsOfA;            // constant for the linear pileup cut in Online vs Offline V0M
+  Float_t fV0MOnVsOfB;            // slope for the linear pileup cut in Online vs Offline V0M
+  Float_t fSPDOnVsOfA;            // constant for the linear pileup cut in Online vs Offline SPD
+  Float_t fSPDOnVsOfB;            // slope for the linear pileup cut in Online vs Offline SPD
+  Int_t   fVtxMinContributors;    // SPD vertex pileup cut: minimum number of contributors
+  Float_t fVtxMinZdist;           // SPD vertex pileup cut: minimum z-vertex distance
+  Float_t fVtxNSigmaZdist;        // SPD vertex pileup cut: n sigma distrance
+  Float_t fVtxNSigmaDiamXY;       // SPD vertex pileup cut: n sigma xy diam
+  Float_t fVtxNSigmaDiamZ;        // SPD vertex pileup cut: n sigma z diam
+  Float_t fV0CasymA;              // constant for the linear cut on V0C012 vs V0C3 asymmetry
+  Float_t fV0CasymB;              // slope for the linear cut on V0C012 vs V0C3 asymmetry
+  Int_t fNBCsPast;                // VIR past-future protection: number of past BCs (BC%4=0)
+  Int_t fNBCsFuture;              // VIR past-future protection: number of future BCs (BC%4=0)
+  Int_t fVIRBBAflags;             // VIR past-future protection: min number of BBA flags in VIR definition
+  Int_t fVIRBBCflags;             // VIR past-future protection: min number of BBC flags in VIR definition
+  Int_t fVIRBGAflags;             // VIR past-future protection: min number of BGA flags in VIR definition
+  Int_t fVIRBGCflags;             // VIR past-future protection: min number of BGC flags in VIR definition
+  Int_t fVHMBBAflags;             // VHM trigger: min number of BBA flags (read out from OCDB)
+  Int_t fVHMBBCflags;             // VHM trigger: min number of BBC flags (read out from OCDB)
+  Int_t fVHMBGAflags;             // VHM trigger: min number of BGA flags (read out from OCDB)
+  Int_t fVHMBGCflags;             // VHM trigger: min number of BGC flags (read out from OCDB)
+  Int_t fV0MOnThreshold;          // V0M HM trigger: min V0M threshold (read out from OCDB)
+  Float_t fV0MOfThreshold;        // V0M HM offline: min V0M threshold
+  Int_t fSPDGFOThreshold;         // SPD GFO trigger: min number of outer chips
+  Int_t fSH1OuterThreshold;       // SPD 0SH1 trigger: min number of outer chips
+  Int_t fSH2OuterThreshold;       // SPD 0SH2 trigger: min number of outer chips
+  Int_t fTklThreshold;            // Offline cut on number of tracklets (for high-multiplicity SPD trigger)
   Float_t fTRDptHSE;              // pt threshold for HSE trigger
   UChar_t fTRDpidHSE;             // PID threshold for HSE trigger
   Float_t fTRDptHQU;              // pt threshold for HQU trigger

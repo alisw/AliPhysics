@@ -244,6 +244,10 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fFuncSPDClsVsTkl->SetParameters(fSPDClsVsTklA,fSPDClsVsTklB);
   fHistSPDClsVsTklCln->GetListOfFunctions()->Add(fFuncSPDClsVsTkl);
 
+  TF1* fFuncV0C012vsTkl = new TF1("fFuncV0C012vsTkl","[0]+[1]*x",0,6);
+  fFuncV0C012vsTkl->SetParameters(fV0C012vsTklA,fV0C012vsTklB);
+  fHistV0C012vsTklCln->GetListOfFunctions()->Add(fFuncV0C012vsTkl);
+  
   TF1* fFuncV0MOnVsOf = new TF1("fFuncV0MOnVsOf","[0]+[1]*x",0,fHistV0MOnVsOfCln->GetXaxis()->GetXmax());
   fFuncV0MOnVsOf->SetParameters(fV0MOnVsOfA,fV0MOnVsOfB);
   fHistV0MOnVsOfCln->GetListOfFunctions()->Add(fFuncV0MOnVsOf);
@@ -1499,14 +1503,14 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   acceptDefault &= !isV0MOnVsOfPileup;
   acceptDefault &= !isSPDOnVsOfPileup;
   acceptDefault &= !isV0Casym;
-  
+
   // Fill histograms for cleaned events
-  if (acceptDefault | isSPDClsVsTklBG  ) IsSPDClusterVsTrackletBG(event,2);
-  if (acceptDefault | isV0C012vsTklBG  ) IsV0C012vsTklBG(event,2);
-  if (acceptDefault | isV0MOnVsOfPileup) IsV0MOnVsOfPileup(event,2);
-  if (acceptDefault | isSPDOnVsOfPileup) IsSPDOnVsOfPileup(event,2);
-  if (acceptDefault | isSPDVtxPileup   ) IsSPDVtxPileup(event,2);
-  if (acceptDefault | isV0Casym        ) IsV0Casym(event,2);
+  if (isV0A & isV0C & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDClusterVsTrackletBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0C012vsTklBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0MOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup &!isV0Casym) IsSPDOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDVtxPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup) IsV0Casym(event,2);
 
   // Fill distributions for events accepted by general cuts
   if (acceptDefault){
