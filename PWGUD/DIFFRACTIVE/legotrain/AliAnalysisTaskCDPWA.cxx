@@ -219,6 +219,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 				fTwoPionBayesProb_ITS[i][j] = 0;
 				fTwoPionBayesProb_TRD[i][j] = 0;
 				fTwoPionBayesProb_tot[i][j] = 0;
+				fTwoPionTPCProb[i][j] = 0;
+				fTwoPionTOFProb[i][j] = 0;
+				fTwoPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -241,6 +244,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 				fFourPionBayesProb_ITS[i][j] = 0;
 				fFourPionBayesProb_TRD[i][j] = 0;
 				fFourPionBayesProb_tot[i][j] = 0;
+				fFourPionTPCProb[i][j] = 0;
+				fFourPionTOFProb[i][j] = 0;
+				fFourPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -429,6 +435,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 				fTwoPionBayesProb_ITS[i][j] = 0;
 				fTwoPionBayesProb_TRD[i][j] = 0;
 				fTwoPionBayesProb_tot[i][j] = 0;
+				fTwoPionTPCProb[i][j] = 0;
+				fTwoPionTOFProb[i][j] = 0;
+				fTwoPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -451,6 +460,9 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 				fFourPionBayesProb_ITS[i][j] = 0;
 				fFourPionBayesProb_TRD[i][j] = 0;
 				fFourPionBayesProb_tot[i][j] = 0;
+				fFourPionTPCProb[i][j] = 0;
+				fFourPionTOFProb[i][j] = 0;
+				fFourPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -621,6 +633,9 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 				fTree->Branch(Form("TwoPionBayesProb_ITS_%d_%d",i,j),&fTwoPionBayesProb_ITS[i][j]);
 				fTree->Branch(Form("TwoPionBayesProb_TRD_%d_%d",i,j),&fTwoPionBayesProb_TRD[i][j]);
 				fTree->Branch(Form("TwoPionBayesProb_tot_%d_%d",i,j),&fTwoPionBayesProb_tot[i][j]);
+				fTree->Branch(Form("TwoPionTPCProb_%d_%d",i,j),&fTwoPionTPCProb[i][j]);
+				fTree->Branch(Form("TwoPionTOFProb_%d_%d",i,j),&fTwoPionTOFProb[i][j]);
+				fTree->Branch(Form("TwoPionITSProb_%d_%d",i,j),&fTwoPionITSProb[i][j]);
 			}
 		}
 	}
@@ -643,6 +658,9 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 				fTree->Branch(Form("FourPionBayesProb_ITS_%d_%d",i,j),&fFourPionBayesProb_ITS[i][j]);
 				fTree->Branch(Form("FourPionBayesProb_TRD_%d_%d",i,j),&fFourPionBayesProb_TRD[i][j]);
 				fTree->Branch(Form("FourPionBayesProb_tot_%d_%d",i,j),&fFourPionBayesProb_tot[i][j]);
+				fTree->Branch(Form("FourPionTPCProb_%d_%d",i,j),&fFourPionTPCProb[i][j]);
+				fTree->Branch(Form("FourPionTOFProb_%d_%d",i,j),&fFourPionTOFProb[i][j]);
+				fTree->Branch(Form("FourPionITSProb_%d_%d",i,j),&fFourPionITSProb[i][j]);
 			}
 		}
 	}
@@ -725,6 +743,9 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fHistEvent->GetXaxis()->SetBinLabel(kMBAND_AD+1,"MBAND_AD");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBOR_Global+1,"MBOR_Global");
 		fHistEvent->GetXaxis()->SetBinLabel(kMBAND_Global+1,"MBAND_Global");
+		fHistEvent->GetXaxis()->SetBinLabel(kNG_Data+1,"No-gap");
+		fHistEvent->GetXaxis()->SetBinLabel(kSGA_Data+1,"Single-gap A");
+		fHistEvent->GetXaxis()->SetBinLabel(kSGC_Data+1,"Single-gap C");
 		fHistEvent->GetXaxis()->SetBinLabel(kDGV0+1,"DG_V0");
 		fHistEvent->GetXaxis()->SetBinLabel(kDGAD+1,"DG_AD");
 		fHistEvent->GetXaxis()->SetBinLabel(kDGV0SPD+1,"DG_V0SPD");
@@ -1130,6 +1151,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fTwoPionBayesProb_ITS[i][j] = 0;
 				fTwoPionBayesProb_TRD[i][j] = 0;
 				fTwoPionBayesProb_tot[i][j] = 0;
+				fTwoPionTPCProb[i][j] = 0;
+				fTwoPionTOFProb[i][j] = 0;
+				fTwoPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -1152,6 +1176,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 				fFourPionBayesProb_ITS[i][j] = 0;
 				fFourPionBayesProb_TRD[i][j] = 0;
 				fFourPionBayesProb_tot[i][j] = 0;
+				fFourPionTPCProb[i][j] = 0;
+				fFourPionTOFProb[i][j] = 0;
+				fFourPionITSProb[i][j] = 0;
 			}
 		}
 	}
@@ -1532,9 +1559,18 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	Bool_t IsGapA = kFALSE;
 	Bool_t IsGapC = kFALSE;
 
-	if (IsV0A && !IsV0C) IsGapC = kTRUE;
-	if (IsV0C && !IsV0A) IsGapA = kTRUE;
-	if (!IsGapC && !IsGapA && !fDGV0SPD) IsNG = kTRUE;
+	if (IsV0A && !IsV0C) {
+		IsGapC = kTRUE;
+		fHistEvent->Fill(kSGC_Data);
+	}
+	if (IsV0C && !IsV0A) {
+		IsGapA = kTRUE;
+		fHistEvent->Fill(kSGA_Data);
+	}
+	if (!IsGapC && !IsGapA && !fDGV0SPD) {
+		IsNG = kTRUE;
+		fHistEvent->Fill(kNG_Data);
+	}
 	//-------------------------------------------------------------------------
 
 	// Track cuts by Martin's selection----------------------------------------
@@ -1767,6 +1803,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fTwoPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
 			fTwoPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
 			fTwoPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fTwoPionTPCProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fTwoPionTOFProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fTwoPionITSProb[i]);
+
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
@@ -1830,6 +1871,10 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			fFourPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
 			fFourPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
 			fFourPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fFourPionTPCProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fFourPionTOFProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fFourPionITSProb[i]);
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
