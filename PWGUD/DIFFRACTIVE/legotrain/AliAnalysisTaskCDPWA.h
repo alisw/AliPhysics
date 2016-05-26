@@ -107,6 +107,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kMBAND_AD, //ADA && ADC
 			kMBOR_Global, //V0A || V0C || ADA || ADC || SPD
 			kMBAND_Global, //(V0A || ADA) && (V0C || ADC)
+			kNG_Data,
+			kSGA_Data,
+			kSGC_Data,
 			kDGV0,//!V0A && !V0C
 			kDGAD,//!ADA && !ADC
 			kDGV0SPD, //!V0A && !V0C && SPD
@@ -227,6 +230,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Double_t fTwoPionBayesProb_TRD[2][5]; //!Bayesian probabilities for TRD
 		Double_t fTwoPionBayesProb_tot[2][5]; //!Bayesian probabilities for tot
 		Double_t fTwoPionTrack_ITSSA[2][10]; //! Two track(ITSSA) Momentum, Energy and Sign
+		Double_t fTwoPionTPCProb[2][5];//!
+		Double_t fTwoPionTOFProb[2][5];//!
+		Double_t fTwoPionITSProb[2][5];//!
 
 		Double_t fFourPionTrack[4][10]; //! Four track Momentum, Energy and Sign
 		Double_t fFourPionTPCSigma[4][10]; //! Four track Momentum, Energy and Sign
@@ -244,6 +250,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Double_t fFourPionBayesProb_TRD[4][5]; //!Bayesian probabilities for TRD
 		Double_t fFourPionBayesProb_tot[4][5]; //!Bayesian probabilities for tot
 		Double_t fFourPionTrack_ITSSA[4][10];//!
+		Double_t fFourPionTPCProb[4][5];//!
+		Double_t fFourPionTOFProb[4][5];//!
+		Double_t fFourPionITSProb[4][5];//!
 
 		Double_t fMCGenProtonTrack[4][5]; //! Info of generated Proton 1 after scattering
 		Double_t fMCGenPionTrack[4][5]; //! Info of generated Pion 1 after scattering
