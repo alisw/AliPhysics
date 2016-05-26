@@ -25,6 +25,7 @@ const float AliTPCDcalibRes::kMinX = 85.0f;
 const float AliTPCDcalibRes::kMaxX = 246.0f;
 const float AliTPCDcalibRes::kMaxZ2X = 1.0f;
 const float AliTPCDcalibRes::kZLim[2] = {2.49725e+02,2.49698e+02};
+const char* AliTPCDcalibRes::kDriftResFileName  = "tmpDriftTree";
 const char* AliTPCDcalibRes::kLocalResFileName  = "tmpDeltaSect";
 const char* AliTPCDcalibRes::kClosureTestFileName  = "closureTestSect";
 const char* AliTPCDcalibRes::kStatOut      = "voxelStat";
@@ -107,7 +108,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fTOFBCMin(-25.0)
   ,fTOFBCMax(50.0)
   ,fUseTOFBC(kFALSE)
-  ,fFilterOutliers(kTRUE) 
+  ,fFilterOutliers(kTRUE)
+  ,fFatalOnMissingDrift(kTRUE)
   ,fMaxFitYErr2(1.0)
   ,fMaxFitXErr2(9.)
   ,fMaxFitXYCorr(0.95)
@@ -148,11 +150,10 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fCorrTime(0)
 
   ,fStatTree(0)
-  ,fHDelY(0)
-  ,fHDelZ(0)
 
   ,fDTS()
   ,fDTC()
+  ,fDTV()
   ,fDeltaStr()
 
   ,fTimeStamp(0)
@@ -202,13 +203,12 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
   delete[] fDY2XI;
   delete fVDriftParam;
   delete fVDriftGraph;
-  delete fHDelY;
-  delete fHDelZ;
   for (int i=0;i<kNSect2;i++) {
     delete fSectGVoxRes[i];
     delete fStatHist[i];
   }
   delete fTracksRate;
+  delete fTOFBCTestH;
   delete fInputChunks;
 }
 
@@ -223,6 +223,20 @@ void AliTPCDcalibRes::SetExternalDetectors(int det)
   fExtDet = det;
 }
 
+//________________________________________
+void AliTPCDcalibRes::CalibrateVDrift()
+{
+  // run VDrift calibration from residual trees
+  TStopwatch sw;
+  // select tracks matching to time window and write compact local trees
+  //  EstimateStatistics();
+  //
+  CollectData(kVDriftCalibMode);
+  //
+  sw.Stop();
+  AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
+  //
+}
 
 //________________________________________
 void AliTPCDcalibRes::ProcessFromDeltaTrees()
@@ -232,7 +246,7 @@ void AliTPCDcalibRes::ProcessFromDeltaTrees()
   // select tracks matching to time window and write compact local trees
   EstimateStatistics();
   //
-  CollectData(kExtractMode);
+  CollectData(kDistExtractMode);
   //
   if (fNTrSelTot<fMinTracksToUse) {
     AliErrorF("Low statistics: number of contributing tracks %d, min.requested %d",fNTrSelTot,fMinTracksToUse);
@@ -254,7 +268,7 @@ void AliTPCDcalibRes::ProcessFromDeltaTrees()
 //________________________________________
 void AliTPCDcalibRes::ProcessFromLocalBinnedTrees()
 {
-  // process starting from local binned trees created by CollectData(kExtractMode)
+  // process starting from local binned trees created by CollectData(kDistExtractMode)
   TStopwatch sw;
   sw.Start();
 
@@ -532,8 +546,8 @@ Bool_t AliTPCDcalibRes::EstimateStatistics()
   }	       
   int nTracks = tree->GetEntries();
   memset(fTestStat,0,kCtrNbr*kCtrNbr*sizeof(float));
-  if (!fTOFBCTestH) fTOFBCTestH = new TH1F("TOFBCtest",Form("TOF BC for %d tracks",nTracks),1000,-500.,500.);
-  else fTOFBCTestH->Reset();
+  if (fTOFBCTestH) delete fTOFBCTestH;
+  fTOFBCTestH = new TH1F("TOFBCtest",Form("TOF BC for %d tracks",nTracks),1000,-500.,500.);
   fTOFBCTestH->SetDirectory(0);
   Bool_t condOK[kCtrNbr];
   for (int itr=0;itr<nTracks;itr++) {
@@ -560,7 +574,7 @@ Bool_t AliTPCDcalibRes::EstimateStatistics()
 }
 
 //_____________________________________________________
-void AliTPCDcalibRes::CollectData(int mode) 
+void AliTPCDcalibRes::CollectData(const int mode) 
 {
   const float kEps = 1e-6;
   const float q2ptIniTolerance = 1.5;
@@ -574,6 +588,18 @@ void AliTPCDcalibRes::CollectData(int mode)
   fNReadCallTot = 0;
   fNBytesReadTot = 0;
   //
+  Bool_t correctVDrift = kTRUE;
+  if (mode==kVDriftCalibMode) {
+    AliInfo("VDrift calibration mode: drift correction disabled");
+    correctVDrift = kFALSE;
+  }
+  else {
+    if (!fVDriftGraph || !fVDriftParam) {
+      AliErrorF("We are in mode %d but DriftGraph=%p or VDriftParam=%p missing",
+		mode,fVDriftGraph,fVDriftParam);
+      if (fFatalOnMissingDrift) AliFatal("Aborting...");
+    }
+  }
   CreateLocalResidualsTrees(mode);
   //
   // if cheb object is present, do on-the-fly init to attach internal structures
@@ -662,14 +688,15 @@ void AliTPCDcalibRes::CollectData(int mode)
 	vDZ = fDeltaStr.vecDZTOF->GetMatrixArray();	
       }
       //
-      fCorrTime = (fVDriftGraph!=NULL) ? fVDriftGraph->Eval(fTimeStamp):0; // for VDrift correction
+      fCorrTime = (correctVDrift && fVDriftGraph) ? fVDriftGraph->Eval(fTimeStamp):0; // for VDrift correction
       //
       fNCl = 0;
       // 1st iteration: collect data in cluster frame
       for (int ip=0;ip<fDeltaStr.npValid;ip++) { // 1st fill selected track data to buffer for eventual outlier rejection
 	if (vR[ip]<kInvalidR || vDY[ip]<kInvalidRes || vDYITS[ip]<kInvalidRes) continue;
 	//
-	fArrX[fNCl]   = vR[ip];  // X (R) is the same for cluster and track
+	fArrX[fNCl]   = -1;
+	fArrR[fNCl]   = vR[ip];  // X (R) is the same for cluster and track
 	fArrZTr[fNCl] = vZ[ip];  // Z of ITS track was stored!!
 	fArrDY[fNCl]  = vDY[ip]; // this is also the track coordinate in cluster frame
 	fArrDZ[fNCl]  = vDZ[ip];
@@ -680,14 +707,12 @@ void AliTPCDcalibRes::CollectData(int mode)
 	fArrZTr[fNCl] += fArrDZ[fNCl] - vDZITS[ip]; // recover ITS-TRD track position from ITS and deltas
 	
 	if (fFixAlignmentBug && !fDeltaStr.param->TestBit(kAlignmentBugFixedBit)) {
-	  FixAlignmentBug(rocID, fQ2Pt, fBz, fArrPhi[fNCl], fArrX[fNCl], fArrZTr[fNCl], fArrDY[fNCl],fArrDZ[fNCl]);
+	  FixAlignmentBug(rocID, fQ2Pt, fBz, fArrPhi[fNCl], fArrR[fNCl], fArrZTr[fNCl], fArrDY[fNCl],fArrDZ[fNCl]);
 	}
 	if (fArrPhi[fNCl]<0) fArrPhi[fNCl] += 2.*TMath::Pi();
 	//
-	// calculate drift velocity calibration if available
-	float dzDrift = GetDriftCorrection(fArrZTr[fNCl],fArrX[fNCl],fArrPhi[fNCl],rocID);
-	// apply drift velocity calibration if available
-	fArrDZ[fNCl] += dzDrift;
+	// correct for drift velocity calibration if needed
+	if (correctVDrift) fArrDZ[fNCl] += GetDriftCorrection(fArrZTr[fNCl],fArrR[fNCl],fArrPhi[fNCl],rocID);
 	//
 	fArrSectID[fNCl] = rocID%kNSect2; // 0-36 for sectors from A0 to C17
 	//
@@ -721,10 +746,10 @@ void AliTPCDcalibRes::CollectData(int mode)
 	//
 	// by using propagation in cluster frame in AliTPCcalibAlignInterpolation::Process,
 	// the X of the track is evaluated not at the pad-row x=r*csa but at x=r*sca-dy*sna
-	double xrow = fArrX[ip]*csa;
+	double xrow = fArrR[ip]*csa;
 	double dx   = fArrDY[ip]*sna;
 	double xtr  = xrow - dx;
-	double ycl  = fArrX[ip]*sna;      // cluster Y in the sector frame
+	double ycl  = fArrR[ip]*sna;      // cluster Y in the sector frame
 	double ytr  = ycl + fArrDY[ip]*csa; // track Y in the sector frame at x=xtr is 
 	//
 	double ztr  = fArrZTr[ip];          // Z of the track at x=xtr
@@ -763,13 +788,13 @@ void AliTPCDcalibRes::CollectData(int mode)
       if (fFilterOutliers && !ValidateTrack()) continue;
 
       ntrSelChunk++;
-
-      if (mode==kExtractMode) {
-	FillLocalResidualsTrees();
-      }
-      else if (mode==kClosureTestMode) {
-	FillCorrectedResiduals();
-      }
+      
+      switch(mode) {
+      case kVDriftCalibMode:     FillDriftResidualsTrees(); break;
+      case kDistExtractMode:     FillLocalResidualsTrees(); break;
+      case kDistClosureTestMode: FillCorrectedResiduals();  break;
+      default: AliFatalF("Uknown mode %d",mode);
+      };
     } // loop over tracks
     //
     swc.Stop();
@@ -801,7 +826,26 @@ void AliTPCDcalibRes::CollectData(int mode)
 
   AliSysInfo::AddStamp("ProjTreeLocSave");
 
-  if (mode==kExtractMode) WriteStatHistos();
+  if (mode==kDistExtractMode) WriteStatHistos();
+  //
+}
+
+//________________________________________________
+void AliTPCDcalibRes::FillDriftResidualsTrees()
+{
+  // fill local trees for vdrift calibration
+  fDTV.t = fTimeStamp;
+  for (int icl=fNCl;icl--;) {
+    if (fArrR[icl]<kInvalidR) continue; // rejected outlier
+    Bool_t isCside = ((fArrSectID[icl]/kNSect)&0x1);
+    fDTV.side  = isCside ? -1:1;
+    fDTV.dz    = fArrDZ[icl];
+    fDTV.drift = kZLim[isCside] - fDTV.side*fArrZCl[icl];
+    fDTV.ylab  = fArrR[icl]*TMath::Sin(fArrPhi[icl]);
+    // 
+    fTmpTree[0]->Fill();
+  }
+  if (fTracksRate) fTracksRate->Fill(fTimeStamp); // register track time
   //
 }
 
@@ -845,6 +889,10 @@ void AliTPCDcalibRes::FillCorrectedResiduals()
   // fill local trees result of closure test: corrected distortions
   
   float voxVars[kVoxHDim]={0}; // voxel variables (unbinned)
+  fDTC.t = fTimeStamp;
+  fDTC.q2pt   = fQ2Pt;
+  fDTC.tgLam  = fTgLam;
+  //
   for (int icl=fNCl;icl--;) {
     if (fArrX[icl]<kInvalidR) continue; // rejected outlier
     int sectID = fArrSectID[icl]; // 0-35 numbering
@@ -858,15 +906,12 @@ void AliTPCDcalibRes::FillCorrectedResiduals()
 
     fChebCorr->Eval(sectID, row159, fArrYCl[icl]/fArrX[icl], fArrZCl[icl]/fArrX[icl], corr);
     // 
-    fDTC.t   = fTimeStamp;
     fDTC.dyR = fArrDY[icl];
     fDTC.dzR = fArrDZ[icl];
 
     fDTC.dyC = fArrDY[icl] - (corr[kResY]-corr[kResX]*fArrTgSlp[icl]);
     fDTC.dzC = fArrDZ[icl] - (corr[kResZ]-corr[kResX]*fTgLam); // we evaluate at pad-row
 
-    fDTC.q2pt   = fQ2Pt;
-    fDTC.tgLam  = fTgLam;
     fDTC.tgSlp  = fArrTgSlp[icl];
     fDTC.x      = fArrX[icl];
     fDTC.y      = fArrYCl[icl];
@@ -884,25 +929,35 @@ void AliTPCDcalibRes::CreateLocalResidualsTrees(int mode)
   //
   static dts_t *dtsP = &fDTS;
   static dtc_t *dtcP = &fDTC;
+  static dtv_t *dtvP = &fDTV;
   TString namef;
-  for (int is=0;is<kNSect2;is++) {
-    if      (mode==kExtractMode)     namef = Form("%s%d.root",kLocalResFileName,is);
-    else if (mode==kClosureTestMode) namef = Form("%s%d.root",kClosureTestFileName,is);
-    else AliFatalF("unknown mode: %d",mode);
-    fTmpFile[is] = TFile::Open(namef.Data(),"recreate");
-    fTmpTree[is] = new TTree(Form("ts%d",is),"");
-    //
-    if (mode==kExtractMode) {
-      fTmpTree[is]->Branch("dts", &dtsP);
-      //fTmpTree[is]->SetAutoFlush(150000);
+  if (mode==kVDriftCalibMode) {
+    namef = Form("%s.root",kDriftResFileName);
+    fTmpFile[0] = TFile::Open(namef.Data(),"recreate");
+    fTmpTree[0] = new TTree("resdrift","");
+    fTmpTree[0]->Branch("dtv", &dtvP);
+  }
+  else if (mode==kDistExtractMode||mode==kDistClosureTestMode) {    
+    for (int is=0;is<kNSect2;is++) {
+      if      (mode==kDistExtractMode)         namef = Form("%s%d.root",kLocalResFileName,is);
+      else /*if (mode==kDistClosureTestMode)*/ namef = Form("%s%d.root",kClosureTestFileName,is);
+      fTmpFile[is] = TFile::Open(namef.Data(),"recreate");
+      fTmpTree[is] = new TTree(Form("ts%d",is),"");
       //
-      fStatHist[is] = CreateVoxelStatHisto(is);
-      fArrNDStat[is] = (TNDArrayT<float>*)&fStatHist[is]->GetArray();
-    }
-    else if (mode==kClosureTestMode) {
-      fTmpTree[is]->Branch("dtc", &dtcP);
+      if (mode==kDistExtractMode) {
+	fTmpTree[is]->Branch("dts", &dtsP);
+	//fTmpTree[is]->SetAutoFlush(150000);
+	//
+	fStatHist[is] = CreateVoxelStatHisto(is);
+	fArrNDStat[is] = (TNDArrayT<float>*)&fStatHist[is]->GetArray();
+      }
+      else if (mode==kDistClosureTestMode) {
+	fTmpTree[is]->Branch("dtc", &dtcP);
+      }
     }
   }
+  else AliFatalF("Unknown mode %d",mode);
+  //
 }
 
 //________________________________________________
@@ -928,7 +983,7 @@ Bool_t AliTPCDcalibRes::CompareToHelix(float *resHelixY, float *resHelixZ)
 {
   // compare track to helix, refit q/pt and tgLambda and build array of tg(slope) at pad-rows
   const double kEps = 1e-12;
-  float xlab[kNPadRows],ylab[kNPadRows],spath[kNPadRows];
+  float xlab[kNPadRows],ylab[kNPadRows],spath[kNPadRows]; // lab X,Y rotated to for sectort of 1st cluster
   // fill lab coordinates
   float crv = TMath::Abs(fQ2Pt*fBz*0.299792458e-3f), cs,sn;
   int sectPrev=-1,sect0 = fArrSectID[0]%kNSect; // align to the sector of 1st point
@@ -939,8 +994,8 @@ Bool_t AliTPCDcalibRes::CompareToHelix(float *resHelixY, float *resHelixZ)
   for (int ip=0;ip<fNCl;ip++) {
     cs = TMath::Cos(fArrPhi[ip]-phiSect);
     sn = TMath::Sin(fArrPhi[ip]-phiSect);
-    xlab[ip] = fArrX[ip]*cs - fArrDY[ip]*sn;
-    ylab[ip] = fArrDY[ip]*cs + fArrX[ip]*sn;
+    xlab[ip] = fArrR[ip]*cs - fArrDY[ip]*sn;
+    ylab[ip] = fArrDY[ip]*cs + fArrR[ip]*sn;
     if (ip) {
       float dx = xlab[ip]-xlab[ip-1];
       float dy = ylab[ip]-ylab[ip-1];
@@ -1006,7 +1061,7 @@ Bool_t AliTPCDcalibRes::CompareToHelix(float *resHelixY, float *resHelixZ)
     // The circle and padrow at X cross at cos(tau) = (X-xc*csa+yc*sna)/R
     // Hence the derivative of y vs x in sector frame:
     cs = TMath::Cos(fArrPhi[ip]-phiSect);
-    double xRow = fArrX[ip]*cs; 
+    double xRow = fArrR[ip]*cs; 
     double cstalp = (xRow - xcSec)/r;
     if (TMath::Abs(cstalp)>1.-kEps) { // track cannot reach this padrow
       cstalp = TMath::Sign(1.-kEps,cstalp);
@@ -1033,7 +1088,7 @@ void AliTPCDcalibRes::ClosureTest()
     AliError("Chebyshev correction object was not created, cannot run closure test");
     return;
   }
-  CollectData(kClosureTestMode);
+  CollectData(kDistClosureTestMode);
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
   //
@@ -1701,7 +1756,7 @@ Bool_t AliTPCDcalibRes::ValidateTrack()
   if (rmsLong>fMaxRMSLong) return kFALSE;
   //
   // flag outliers
-  for (int i=fNCl;i--;) if (rejCl[i]) fArrX[i] = -1;
+  for (int i=fNCl;i--;) if (rejCl[i]) fArrR[i] = fArrX[i] = -1;
 
   return kTRUE;
 }
@@ -2281,33 +2336,25 @@ void AliTPCDcalibRes::LoadVDrift()
   // load vdrift params
   fVDriftGraph = 0;
   fVDriftParam = 0;
-  TFile *fdrift = TFile::Open(Form("%s.root",kDriftFileName));
-  if (fdrift) {
-    TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
-    if (tree==NULL) {
-      ::Error("LoadDriftCalibration FAILED", "tree fitTimeStat not avaliable in file %s.root",kDriftFileName);
-    }
-    else {      
-      tree->SetBranchAddress("grTRDReg.",&fVDriftGraph);
-      tree->SetBranchAddress("paramRobust.",&fVDriftParam);
+  TString vdname = Form("%s.root",kDriftFileName);
+  TFile *fdrift = 0;
+  if (gSystem->AccessPathName(vdname.Data()) || !(fdrift=TFile::Open(vdname.Data())) ) {
+    AliWarningF("vdrift file %s not accessible",vdname.Data());
+    return;
+  }
+  TTree * tree = (TTree*)fdrift->Get("fitTimeStat");
+  if (!tree) AliWarningF("tree fitTimeStat not avaliable in file %s.root",kDriftFileName);
+  else {      
+    tree->SetBranchAddress("grTRDReg.",&fVDriftGraph);
+    tree->SetBranchAddress("paramRobust.",&fVDriftParam);
+    tree->GetEntry(0);
+    if (fVDriftGraph==NULL || fVDriftGraph->GetN()<=0) {
+      AliWarning("ITS/TRD drift calibration not availalble. Trying ITS/TOF");
+      tree->SetBranchAddress("grTOFReg.",&fVDriftGraph);
       tree->GetEntry(0);
-      if (fVDriftGraph==NULL || fVDriftGraph->GetN()<=0) {
-	AliInfo("ITS/TRD drift calibration not availalble. Trying ITS/TOF");
-	tree->SetBranchAddress("grTOFReg.",&fVDriftGraph);
-	tree->GetEntry(0);
-      }
-      /*
-      else {
-	::Info("LoadDriftCalibration", "tree fitTimeStat not avaliable in file %s.root",kDriftFileName);
-      }
-      */
     }
-    delete tree;
   }
-  else {
-    ::Error("LoadDriftCalibration FAILED", "fitDrift.root not present");
-  }
-  if (fdrift) fdrift->Close();
+  delete tree;
   delete fdrift;
 }
 
@@ -2315,6 +2362,7 @@ void AliTPCDcalibRes::LoadVDrift()
 float AliTPCDcalibRes::GetDriftCorrection(float z, float x, float phi, int rocID)
 {
   // apply vdrift correction
+  if (!fVDriftParam) return 0.f;
   int side = ((rocID/kNSect)&0x1) ? -1:1; // C:A
   float drift = side>0 ? kZLim[0]-z : z+kZLim[1];
   float gy    = TMath::Sin(phi)*x;
@@ -3152,10 +3200,10 @@ void AliTPCDcalibRes::CreateCorrectionObject()
 }
 
 //________________________________________________________________
-TH1* AliTPCDcalibRes::ExtractTrackRate() const
+TH1F* AliTPCDcalibRes::ExtractTrackRate() const
 {
   // create histo with used tracks per timestamp
-  TH1* hTr = 0;
+  TH1F* hTr = 0;
   if (fTracksRate) { 
     const float *tarr = fTracksRate->GetArray();
     int nb = fTracksRate->GetNbinsX();
@@ -3382,4 +3430,3 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   //
 }
 //======================================================================================
-

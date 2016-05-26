@@ -18,7 +18,7 @@
 #include "AliTPCChebCorr.h"
 #include "AliLog.h"
 #include <TMath.h>
-#include <TH1.h>
+#include <TH1F.h>
 #include <TAxis.h>
 #include <TGraph.h>
 #include <TBits.h>

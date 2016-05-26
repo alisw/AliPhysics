@@ -144,6 +144,16 @@
 #pragma link C++ class AliTPCSAMPAEmulator+;   //UTIL SAMPA emulator
 
 #pragma link C++ class AliTPCChebCorr+;       // Wrapper for Chebyshev-parameterized corrections
+
+// at some point root started to complain on having persistent pointer on abstract class TH1
+#pragma read \
+  sourceClass="AliTPCChebCorr" \
+  targetClass="AliTPCChebCorr" \
+  source="TH1* fTracksRate" \
+  version="[-7]" \
+  target="fTracksRate" \
+  targetType="TH1F*" \
+  code="{fTracksRate=(TH1F*)onfile.fTracksRate;onfile.fTracksRate=0;}"
 #pragma link C++ class AliTPCChebDist+;       // Wrapper for Chebyshev-parameterized distortions
 
 #endif

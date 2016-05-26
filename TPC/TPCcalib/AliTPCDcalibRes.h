@@ -38,7 +38,7 @@ class AliTPCDcalibRes: public TNamed
   enum {kEpanechnikovKernel, kGaussianKernel};  // defined kernels
   enum {kNSect=18,kNSect2=2*kNSect,kNROC=4*kNSect,kNPadRows=159, kNRowIROC=63, kNRowOROC1=64, kNRowOROC2=32};
   enum {kAlignmentBugFixedBit = AliTPCcalibAlignInterpolation::kAlignmentBugFixedBit};
-  enum {kExtractMode, kClosureTestMode};
+  enum {kVDriftCalibMode, kDistExtractMode, kDistClosureTestMode};
   enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
@@ -53,11 +53,23 @@ class AliTPCDcalibRes: public TNamed
 
   enum {kResX,kResY,kResZ,kResD,kResDim,kResDimG=kResDim-1}; // output dimensions
   //
+  struct dtv_t {  // struct for vdrift calibration loca residual
+    Char_t  side;   // +/- for A/C
+    Float_t dz;     // dz 
+    Float_t drift;  // drift distance
+    Float_t ylab;   // y coordinate
+    Int_t   t;      // time stamp
+    //
+    dtv_t() {memset(this,0,sizeof(dtv_t));}
+  };
+  //
   struct dts_t {  // struct for basic local residual
     Double32_t dy; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
     Double32_t dz; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
     Double32_t tgSlp; //[-2,2,14]  //[kMaxTgSlp,kMaxTgSlp,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: VoxF,kVoxX,kVoxZ
+    //
+    dts_t() {memset(this,0,sizeof(dts_t));}
   };
 
   // structure for closure test residuals
@@ -103,6 +115,7 @@ class AliTPCDcalibRes: public TNamed
     Int_t timeStamp;
     UShort_t npValid;
     Char_t trdOK,tofOK,itsOK;
+    //
     delta_t() {memset(this,0,sizeof(delta_t));}
   };
 
@@ -111,6 +124,7 @@ class AliTPCDcalibRes: public TNamed
   AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
   virtual ~AliTPCDcalibRes();
   
+  void CalibrateVDrift();
   void ProcessFromDeltaTrees();
   void ProcessFromLocalBinnedTrees();
   void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
@@ -121,9 +135,10 @@ class AliTPCDcalibRes: public TNamed
   Int_t  ParseInputList();
   void CloseDeltaFile(TTree* dtree);
   void Init();
-  void CollectData(int mode = kExtractMode);
+  void CollectData(const int mode = kDistExtractMode);
   void FillLocalResidualsTrees();
   void FillCorrectedResiduals();
+  void FillDriftResidualsTrees();
   void ClosureTest();
   void CreateLocalResidualsTrees(int mode);
   void CloseLocalResidualsTrees(int mode);
@@ -194,10 +209,10 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetRowID(float x);
   
   Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
-  TH1*    GetTracksRateHisto()   const {return fTracksRate;}
-  TH1*    GetTOFBCHisto()          const {return fTOFBCTestH;}
+  TH1F*   GetTracksRateHisto()          const {return fTracksRate;}
+  TH1F*   GetTOFBCHisto()               const {return fTOFBCTestH;}
   void    SetTracksRateHisto(TH1F* h)  {fTracksRate = h;}   // needed for hacks
-  TH1*    ExtractTrackRate() const;
+  TH1F*   ExtractTrackRate() const;
   Float_t GetValidFracXBin(int sect, int bin) const {return fValidFracXBin[sect][bin];}
   Int_t   GetNSmoothingFailed(int sect) const {return fNSmoothingFailedBins[sect];}
   Int_t   GetNTracksUsed()              const {return fNTrSelTot;}
@@ -387,6 +402,7 @@ class AliTPCDcalibRes: public TNamed
   Float_t  fTOFBCMax;                // max dTOF cut in ns if validation requested
   Bool_t   fUseTOFBC;                // require TOF BC validation
   Bool_t   fFilterOutliers;          // reject outliers
+  Bool_t   fFatalOnMissingDrift;     // if vdrift is needed by absent, produce fatal
   Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
   Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
@@ -436,7 +452,7 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fNTrSelTotWO;    // would be selected w/o outliers rejection
   Int_t    fNReadCallTot;   // read calls from input trees
   Long64_t fNBytesReadTot;  // total bytes read
-  Int_t     fNTestTracks;                       // number of control tracks in test stat
+  Int_t    fNTestTracks;                // number of control tracks in test stat
   Float_t  fTestStat[kCtrNbr][kCtrNbr]; // control statistics (fraction to fNTestTracks) 
   TH1F*    fTracksRate;     // accepted tracks per second
   TH1F*    fTOFBCTestH;     // TOF BC (ns) for test fNTestTracks tracks
@@ -447,7 +463,7 @@ class AliTPCDcalibRes: public TNamed
   // ------------------------------VDrift correction
   TVectorD     *fVDriftParam;
   TGraphErrors *fVDriftGraph;  
-  Float_t      fCorrTime;   //! 
+  Float_t       fCorrTime;   //! 
 
   // -----------------------------Results of processing
   bres_t *fSectGVoxRes[kNSect2];         //! [fNGVoxPerSector] sectors results for geometric voxel
@@ -456,13 +472,11 @@ class AliTPCDcalibRes: public TNamed
   TFile* fTmpFile[kNSect2];              //! file for fTmpTree
   THnF*  fStatHist[kNSect2];             //! histos for statistics bins
   TNDArrayT<float> *fArrNDStat[kNSect2]; //! alias arrays for fast access to fStatHist
-
-  TH1F* fHDelY;                          //! work histo for delta Y fits
-  TH1F* fHDelZ;                          //! work histo for delta Z fits
   //
   // ----------------------------data exchange structures for trees and between routines
   dts_t fDTS;                            //! binned residuals
   dtc_t fDTC;                            //! corrected residuals for closure test
+  dtv_t fDTV;                            //! vdrift residuals
   delta_t fDeltaStr;                     //! input from delta tree
   //
   // ---------------------------track data-----------------------------------
@@ -473,11 +487,12 @@ class AliTPCDcalibRes: public TNamed
   float fArrPhi[kNPadRows];               //! cluster phi
   float fArrDY[kNPadRows];                //! cluster residual Y
   float fArrDZ[kNPadRows];                //! cluster residual Z
-  float fArrX[kNPadRows];                 //! cluster X (row)
-  float fArrYCl[kNPadRows];               //! cluster Y
+  float fArrR[kNPadRows];                 //! cluster R 
+  float fArrX[kNPadRows];                 //! cluster X in sector coordinates (row) 
+  float fArrYCl[kNPadRows];               //! cluster Y in sector coordinates
   float fArrZCl[kNPadRows];               //! cluster Z
-  float fArrYTr[kNPadRows];               //! ref track Y
-  float fArrZTr[kNPadRows];               //! ref tracz Z
+  float fArrYTr[kNPadRows];               //! ref track Y in sector coordinates
+  float fArrZTr[kNPadRows];               //! ref tracz Z in sector coordinates
   float fArrTgSlp[kNPadRows];             //! track inclination at padrow
   int   fArrSectID[kNPadRows];            //! cluster sector id 
   //
@@ -493,6 +508,7 @@ class AliTPCDcalibRes: public TNamed
   static const float kMaxX;   // max X to cover
   static const float kMaxZ2X;   // max z/x
   static const float kZLim[2];   // endcap positions
+  static const char* kDriftResFileName;
   static const char* kLocalResFileName;
   static const char* kClosureTestFileName;
   static const char* kStatOut;
@@ -510,7 +526,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,10);
+  ClassDef(AliTPCDcalibRes,11);
 };
 
 //________________________________________________________________
