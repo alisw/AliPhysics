@@ -348,6 +348,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					NbadChannels++;
 					}
 				}
+			delete histoRate;
 			if(NbadChannels != 0){
 				QAbox->Clear();
 				QAbox->SetFillColor(kRed); 
@@ -386,6 +387,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					NbadChannels++;
 					}
 				}
+			delete histoRate;
 			if(NbadChannels != 0){
 				QAbox->Clear();
 				QAbox->SetFillColor(kRed); 
@@ -431,6 +433,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					highVar = kTRUE;
 					}
 				}
+			delete histoRate;
 			if(highVar){
 				QAbox->Clear();
 				QAbox->SetFillColor(kYellow); 
@@ -476,6 +479,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					highVar = kTRUE;
 					}
 				}
+			delete histoRate;
 			if(highVar){
 				QAbox->Clear();
 				QAbox->SetFillColor(kYellow); 
@@ -527,6 +531,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					hugeSat = kTRUE;
 					}
 				}
+			delete hChargeSlice;
 			if(!medSat && !highSat && !hugeSat){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
@@ -588,6 +593,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i<8)notSynchADC = kTRUE;
 					}
 				}
+			delete hClockSlice;
 			if(notConfgADA || notConfgADC){
 				QAbox->Clear();
         			QAbox->SetFillColor(kViolet);
@@ -656,6 +662,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					if(i<8)notSynchADC = kTRUE;
 					}
 				  }
+			  delete hClockSlice;
 			  if(notConfgADA || notConfgADC){
 				  QAbox->Clear();
         			  QAbox->SetFillColor(kViolet);
@@ -715,6 +722,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					}
 				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
 				}
+			delete hPedestalSlice;
 			if(NbadChannels == 0){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
@@ -753,6 +761,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 					}
 				if(NbadChannels != 0 && i==15) QAbox->AddText(badChannels.Data());
 				}
+			delete hPedestalSlice;
 			if(NbadChannels == 0){
 				QAbox->Clear();
         			QAbox->SetFillColor(kGreen);
