@@ -189,6 +189,9 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	TF1 *fFuncWeightFONLL7overLHC10f6a; //!<! weight function for FONLL vs p prod.
 	TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
 	TF1 *fFuncWeightFONLL5overLHC10f6a; //!<! weight function for FONLL vs p prod.
+	TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod. Lc
+	TF1 *fFuncWeightFONLL7overLHC11b2Lc; //!<! weight function for FONLL vs p prod. Lc
+	TF1 *fFuncWeightFONLL7overLHC10f7aLc; //!<! weight function for FONLL vs p prod. Lc
   Float_t fCutsKF[2]; /// cuts with KF vertexer
   Int_t fIsLc; /// is MC Lc - 0=not Lc, 1=Lc from c, 2=Lc from b
   Int_t fIsLcResonant; /// is Lc resonant - 1=non resonant, 2=via L1520 + pi, 3=via K* + p, 4=via Delta++ + K
@@ -219,7 +222,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
 	AliVertexingHFUtils *fVertUtil;         /// vertexing HF Util
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELambdacTMVA,8); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdacTMVA,9); /// AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
   /// \endcond
 };
 
