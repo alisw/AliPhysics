@@ -1055,7 +1055,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 // 			cout << clus->GetNLabels() << endl;
 			if (clus->GetNLabels()>0){
 				for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-					if (k< 20)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+					if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 // 					Int_t pdgCode = fMCStack->Particle(mclabelsCluster[k])->GetPdgCode();
 // 					cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 				}	
