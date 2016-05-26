@@ -1872,9 +1872,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    fHistTrackMultiplicityAfterSPDclustervstrackletSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterSPDclustervstrackletSel->Fill(ncascades);
 
-   //====================
-   // 3) Pileup selection
-   //====================
+   //======================
+   // 1.3) Pileup selection
+   //======================
    if (fApplyEvSelPileup && fCollidingSystem == 0) {
       if (fAnalysisType == "ESD") {
            if(lESDevent->IsPileupFromSPD(fSPDPileUpminContributors)){
@@ -1960,7 +1960,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
    //=====================
-   // 4) Physics selection 
+   // 2) Physics selection 
    //=====================
    if (fApplyEvSelPhysicsSel) {
        UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -2008,7 +2008,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
    //===============================================
-   // Re-run V0 and cascade vertexers (only for ESD)
+   // - Re-run V0 and cascade vertexers (only for ESD)
    //===============================================
    if (fAnalysisType == "ESD" && fRerunV0CascVertexers) {
            lESDevent->ResetCascades();
@@ -2053,7 +2053,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
    //=================================
-   // 4) Well-established PV selection
+   // 3) Well-established PV selection
    //=================================
    // - Just take the vertices
    const AliESDVertex *lESDPrimaryTrackingVtx = 0x0;
@@ -2069,7 +2069,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
  
    //===============================================================================================
-   // 4.1) reject events if both SPD and TPC vertices are explicitly requested and none is available
+   // 3.1) reject events if both SPD and TPC vertices are explicitly requested and none is available
    //===============================================================================================
    if (fCollidingSystem == 0) {    
        if (fApplyEvSelNoTPConlyPrimVtx) {
@@ -2096,7 +2096,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
         }
    }
 
-   // - (E) Efficiency denominator after Re-vertexing
+   // - (E) Efficiency denominator after rejection of events that has only vertex from TPC
    Int_t lNbMCPrimary_E = 0;  lNbMCPrimary_E = lMCstack->GetNprimary();
    Int_t lPrimaryTrackMultiplicity_E = nTrackMultiplicity;
    Double_t partEnergy_E, partPz_E, partPt_E, lRapXiMC_E;
@@ -2124,34 +2124,43 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
    //=================================================================
-   // 4.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
+   // 3.2) check the spd vertex resolution and reject if not satisfied //FIXME: only for ESD
    //=================================================================
-   if (fCollidingSystem == 0) {
-        if (fApplyEvSelSPDvtxres) {
-             if (!lESDPrimarySPDVtx->GetStatus()) {
-                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
-                  PostData(1, fListHistCascade);
-                  PostData(2, fCFContCascadePIDAsXiMinus);
-                  PostData(3, fCFContCascadePIDAsXiPlus);
-                  PostData(4, fCFContCascadePIDAsOmegaMinus);
-                  PostData(5, fCFContCascadePIDAsOmegaPlus);
-                  PostData(6, fCFContAsCascadeCuts);
-                  return;
-             }
-             if (lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
-                  AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
-                  PostData(1, fListHistCascade);
-                  PostData(2, fCFContCascadePIDAsXiMinus);
-                  PostData(3, fCFContCascadePIDAsXiPlus);
-                  PostData(4, fCFContCascadePIDAsOmegaMinus);
-                  PostData(5, fCFContCascadePIDAsOmegaPlus);
-                  PostData(6, fCFContAsCascadeCuts);
-                  return;
-             }
+   if (!lESDPrimaryTrackingVtx->GetStatus()) {
+        if (!lESDPrimarySPDVtx->GetStatus()) {
+             AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+             PostData(1, fListHistCascade);
+             PostData(2, fCFContCascadePIDAsXiMinus);
+             PostData(3, fCFContCascadePIDAsXiPlus);
+             PostData(4, fCFContCascadePIDAsOmegaMinus);
+             PostData(5, fCFContCascadePIDAsOmegaPlus);
+             PostData(6, fCFContAsCascadeCuts);
+             return;
+        }
+        if (fApplyEvSelSPDvtxres && lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
+             AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
+             PostData(1, fListHistCascade);
+             PostData(2, fCFContCascadePIDAsXiMinus);
+             PostData(3, fCFContCascadePIDAsXiPlus);
+             PostData(4, fCFContCascadePIDAsOmegaMinus);
+             PostData(5, fCFContCascadePIDAsOmegaPlus);
+             PostData(6, fCFContAsCascadeCuts);
+             return;
+        }
+   } else {
+        if (fApplyEvSelSPDvtxres && lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion()<0.04 && lESDPrimarySPDVtx->GetZRes()<0.25)) {
+             AliWarning("Pb / The SPD prim. vertex has a Z resolution > 0.25 and dispersion > 0.04 ... return !");
+             PostData(1, fListHistCascade);
+             PostData(2, fCFContCascadePIDAsXiMinus);
+             PostData(3, fCFContCascadePIDAsXiPlus);
+             PostData(4, fCFContCascadePIDAsOmegaMinus);
+             PostData(5, fCFContCascadePIDAsOmegaPlus);
+             PostData(6, fCFContAsCascadeCuts);
+             return;
         }
    }
 
-   // - (F) Efficiency denominator after Re-vertexing
+   // - (F) Efficiency denominator after the rejection of events that do not satisfy the request on the dispersion and resolution of the SPD vertex
    Int_t lNbMCPrimary_F = 0;   lNbMCPrimary_F = lMCstack->GetNprimary();
    Int_t lPrimaryTrackMultiplicity_F = nTrackMultiplicity;
    Double_t partEnergy_F, partPz_F, partPt_F, lRapXiMC_F;
@@ -2179,12 +2188,11 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
    //==============================================================================================
-   // 4.3) check the proximity between the spd vertex and track vertex, and reject if not satisfied
+   // 3.3) check the proximity between the spd vertex and track vertex, and reject if not satisfied
    //============================================================================================== 
    if (fCollidingSystem == 0) {
-        if (fApplyEvSelVtxProximity) {
-            if (!(lESDPrimarySPDVtx->GetStatus() && lESDPrimaryTrackingVtx->GetStatus())) {
-                  AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
+        if (lESDPrimaryTrackingVtx->GetStatus() && lESDPrimarySPDVtx->GetStatus()) {
+             if (fApplyEvSelVtxProximity && (TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5)) {
                   PostData(1, fListHistCascade);
                   PostData(2, fCFContCascadePIDAsXiMinus);
                   PostData(3, fCFContCascadePIDAsXiPlus);
@@ -2193,18 +2201,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                   PostData(6, fCFContAsCascadeCuts);
                   return;
              }
-             if (lESDPrimarySPDVtx->IsFromVertexerZ() && (TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5)) {
-                  AliWarning("Pb / The Z coordinated of the SPD and tracks vertex are more than 0.5 cm away ... return !");
-                     PostData(1, fListHistCascade);
-                     PostData(2, fCFContCascadePIDAsXiMinus);
-                     PostData(3, fCFContCascadePIDAsXiPlus);
-                     PostData(4, fCFContCascadePIDAsOmegaMinus);
-                     PostData(5, fCFContCascadePIDAsOmegaPlus);
-                     PostData(6, fCFContAsCascadeCuts);
-                     return;
-             }
         }
-   } else if (fCollidingSystem == 1) {
+   } 
+   // - vertex selection for pPb analysis
+   else if (fCollidingSystem == 1) {
           if (fAnalysisType == "ESD") {
               Bool_t fHasVertex = kFALSE;
               const AliESDVertex *vertex = lESDevent->GetPrimaryVertexTracks();
@@ -2302,9 +2302,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    }
 
 
-   //=======================================================
-   // 7) Vertex Z position selection (+ magnetic field info)
-   //=======================================================
+   //=========================================================
+   // 3.4) Vertex Z position selection (+ magnetic field info)
+   //=========================================================
    // - Vertex coordinates: get the best primary vertex available for the event
    Double_t lBestPrimaryVtxPos[3]  = {-100.0, -100.0, -100.0};
    Double_t tPrimaryVtxPosition[3] = {-100.0, -100.0, -100.0};
@@ -2406,7 +2406,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    else if (fAnalysisType == "AOD") lMagneticField = lAODevent->GetMagneticField();
    //if(TMath::Abs(lMagneticField ) < 10e-6) continue;    
 
-   // - (H) Efficiency denominator after all event selections + QA plots on Generated particle disributions
+   // - (H) Efficiency denominator after all event selections + QA plots on Generated particle distributions
    // - Initialisation of useful local variables		
    Int_t lPdgCodeCasc = 0, lPdgCodeBach = 0, lPdgCodeLambda = 0, lPdgCodeDghtMesV0 = 0, lPdgCodeDghtBarV0 = 0, ncascperev = 0, ncascperevtot =0, lPrimaryTrackMultiplicity = 0;	
    TH1F *lHistEtaGenCasc = 0, *lHistThetaGenCasc = 0, *lHistThetaLambda = 0, *lHistThetaBach = 0, *lHistThetaBarDghter = 0, *lHistThetaMesDghter = 0, *lHistPtBach = 0, *lHistPtBarDghter = 0, *lHistPtMesDghter = 0;
