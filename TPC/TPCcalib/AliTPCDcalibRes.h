@@ -39,7 +39,7 @@ class AliTPCDcalibRes: public TNamed
   enum {kNSect=18,kNSect2=2*kNSect,kNROC=4*kNSect,kNPadRows=159, kNRowIROC=63, kNRowOROC1=64, kNRowOROC2=32};
   enum {kAlignmentBugFixedBit = AliTPCcalibAlignInterpolation::kAlignmentBugFixedBit};
   enum {kVDriftCalibMode, kDistExtractMode, kDistClosureTestMode};
-  enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kKilled=BIT(7)};
+  enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kMasked=BIT(7)};
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
   enum {kCtrITS,kCtrTRD,kCtrTOF,kCtrBC0,kCtrNtr,kCtrNbr}; // control branches for test stat
@@ -171,7 +171,7 @@ class AliTPCDcalibRes: public TNamed
   Bool_t ValidateTrack();
   Bool_t CompareToHelix(float *resHelixY, float *resHelixZ);
 
-  int    CheckResiduals(Bool_t* kill,float &rmsLongMA);
+  int    CheckResiduals(Bool_t* mask,float &rmsLongMA);
 
   const char* GetVoxResFileName() const {return Form("%sTree.root",kResOut);}
 

@@ -1822,7 +1822,7 @@ void AliTPCDcalibRes::FixAlignmentBug(int sect, float q2pt, float bz, float& alp
 
 
 //_______________________________________________________________
-int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
+int AliTPCDcalibRes::CheckResiduals(Bool_t* mask, float &rmsLongMA)
 {
 
   int ip0=0,ip1;
@@ -1837,7 +1837,7 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
   
   rmsLongMA = 0.f;
 
-  memset(kill,0,fNCl*sizeof(Bool_t));
+  memset(mask,0,fNCl*sizeof(Bool_t));
   for (int i=0;i<fNCl;i++) {
     if (fArrSectID[i]==sec0 && i<npLast) continue;
     //
@@ -1863,8 +1863,8 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
   //
   // estimate rms on 90% smallest deviations
   int kmnY = 0.9*naccY,kmnZ = 0.9*naccZ;
-  if (naccY<nMinAcc || naccZ<nMinAcc) { // kill all
-    for (int i=fNCl;i--;) kill[i] = kTRUE;
+  if (naccY<nMinAcc || naccZ<nMinAcc) { // mask all
+    for (int i=fNCl;i--;) mask[i] = kTRUE;
     return fNCl;
   }
 
@@ -1878,7 +1878,7 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
   //
   if (rmsKY<1e-6 || rmsKZ<1e-6) {
     AliWarningF("Too small RMS: %f %f",rmsKY,rmsKZ);
-    for (int i=fNCl;i--;) kill[i] = kTRUE;
+    for (int i=fNCl;i--;) mask[i] = kTRUE;
     return fNCl;
   }
   //
@@ -1887,7 +1887,7 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
   //
   float rmsKYI = 1./rmsKY;
   float rmsKZI = 1./rmsKZ;
-  int nKill=0, nacc = 0;
+  int nMask=0, nacc = 0;
   float yacc[kNPadRows],yDiffLong[kNPadRows];
   for (int ip=0;ip<fNCl;ip++) {
 
@@ -1895,8 +1895,8 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
     zDiffLL[ip] *= rmsKZI;
     float dy = yDiffLL[ip], dz = zDiffLL[ip];
     if (dy*dy+dz*dz>fMaxStdDevMA) {
-      kill[ip] = kTRUE;
-      nKill++;
+      mask[ip] = kTRUE;
+      nMask++;
     }
     else yacc[nacc++] = fArrDY[ip];
   }
@@ -1912,7 +1912,7 @@ int AliTPCDcalibRes::CheckResiduals(Bool_t* kill, float &rmsLongMA)
     rmsLongMA = rms/nacc - av*av;
     rmsLongMA = rmsLongMA>0 ? TMath::Sqrt(rmsLongMA) : 0.f;
   }
-  return nKill;
+  return nMask;
   //
 }
 
@@ -2465,7 +2465,7 @@ void AliTPCDcalibRes::WriteResTree()
   resTree->SetAlias("fitOK",Form("(flags&0x%x)==0x%x",kDistDone,kDistDone));
   resTree->SetAlias("dispOK",Form("(flags&0x%x)==0x%x",kDispDone,kDispDone));
   resTree->SetAlias("smtOK",Form("(flags&0x%x)==0x%x",kSmoothDone,kSmoothDone));
-  resTree->SetAlias("killed",Form("(flags&0x%x)==0x%x",kKilled,kKilled));
+  resTree->SetAlias("masked",Form("(flags&0x%x)==0x%x",kMasked,kMasked));
   //
   for (int is=0;is<kNSect2;is++) { 
 
@@ -2544,7 +2544,7 @@ Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     // the X distortion contribution was already subtracted from the Y,Z components, restore it
     voxel->D[kResZ]  -= voxel->stat[kVoxZ]*voxel->DS[kResX];
     // reset smoothed params
-    voxel->flags &= ~(kSmoothDone|kKilled);
+    voxel->flags &= ~(kSmoothDone|kMasked);
     for (int ir=kResDim;ir--;) voxel->DS[ir]=voxel->DC[ir]=0.f;
   } // end of sector loop
   //
@@ -2648,8 +2648,8 @@ Bool_t AliTPCDcalibRes::FitPoly1(const float* x,const float* y, const float* w, 
 //________________________________
 Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
 {
-  // apply voxel validation cuts, calculate number of low stat or killed voxels
-  int cntKilled=0, cntInvalid=0;
+  // apply voxel validation cuts, calculate number of low stat or masked voxels
+  int cntMasked=0, cntInvalid=0;
   //
   fXBinIgnore[isect].ResetAllBits();
   bres_t* sectData = fSectGVoxRes[isect];
@@ -2659,7 +2659,7 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
       for (int iz=0;iz<fNZ2XBins;iz++) {  // extract line in z
 	int binGlo = GetVoxGBin(ix,ip,iz);
 	bres_t *voxRes = &sectData[binGlo];
-	Bool_t voxOK = voxRes->flags&kDistDone && !(voxRes->flags&kKilled);
+	Bool_t voxOK = voxRes->flags&kDistDone && !(voxRes->flags&kMasked);
 	if (voxOK) {
 	  // check fit errors
 	  if (voxRes->E[kResY]*voxRes->E[kResY]>fMaxFitYErr2 ||
@@ -2667,7 +2667,7 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
 	      TMath::Abs(voxRes->EXYCorr)>fMaxFitXYCorr) voxOK = kFALSE;
 	  // check raw distributions sigmas
 	  if (voxRes->dYSigMAD > fMaxSigY || voxRes->dZSigLTM > fMaxSigZ) voxOK = kFALSE;
-	  if (!voxOK) cntKilled++;
+	  if (!voxOK) cntMasked++;
 	}
 	if (voxOK) {
 	  nvalidXBin++;
@@ -2675,7 +2675,7 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
 	}
 	else {
 	  cntInvalid++;
-	  voxRes->flags |= kKilled;
+	  voxRes->flags |= kMasked;
 	}
       } // loop over Z
     } // loop over Y
@@ -2746,8 +2746,8 @@ Int_t AliTPCDcalibRes::ValidateVoxels(int isect)
   }
   //
   int nMaskedRows = fXBinIgnore[isect].CountBits();
-  AliInfoF("Sector%2d: Voxel stat: Killed: %5d(%07.3f%%) Invalid: %5d(%07.3f%%)  -> Masked %3d rows out of %3d",isect,
-	   cntKilled, 100*float(cntKilled)/fNGVoxPerSector,
+  AliInfoF("Sector%2d: Voxel stat: Masked: %5d(%07.3f%%) Invalid: %5d(%07.3f%%)  -> Masked %3d rows out of %3d",isect,
+	   cntMasked, 100*float(cntMasked)/fNGVoxPerSector,
 	   cntInvalid,100*float(cntInvalid)/fNGVoxPerSector,
 	   nMaskedRows,fNXBins);
   //
@@ -2847,7 +2847,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     float stepF = fStepKern[kVoxF]*(1. + kTrialStep*trial[kVoxF]);
     float stepZ = fStepKern[kVoxZ]*(1. + kTrialStep*trial[kVoxZ]);
     //
-    if (!(voxCen->flags&kDistDone) || (voxCen->flags&kKilled) || GetXBinIgnored(isect,ix0)) { 
+    if (!(voxCen->flags&kDistDone) || (voxCen->flags&kMasked) || GetXBinIgnored(isect,ix0)) { 
       // closest voxel has no data, increase smoothing step
       stepX+=kTrialStep*fStepKern[kVoxX];
       stepF+=kTrialStep*fStepKern[kVoxF];
@@ -2923,7 +2923,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	  //
 	  int binNb = GetVoxGBin(ix,ip,iz);  // global bin
 	  bres_t* voxNb = &sectData[binNb];
-	  if (!(voxNb->flags&kDistDone) || (voxNb->flags&kKilled) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
+	  if (!(voxNb->flags&kDistDone) || (voxNb->flags&kMasked) || GetXBinIgnored(isect,ix)) continue; // skip voxels w/o data
 	  // estimate weighted distance
 	  float dx = voxNb->stat[kVoxX]-x;
 	  float df = voxNb->stat[kVoxF]-p;
