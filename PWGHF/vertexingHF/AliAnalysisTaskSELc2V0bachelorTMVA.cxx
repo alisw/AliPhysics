@@ -193,7 +193,10 @@ AliAnalysisTaskSE(),
   fHistoMCLcK0SpGen(0x0),
   fHistoMCLcK0SpGenAcc(0x0),
   fHistoMCLcK0SpGenLimAcc(0x0),
-  fTriggerMask(0)
+  fTriggerMask(0),
+  fFuncWeightPythia(0),
+  fFuncWeightFONLL5overLHC13d3(0),
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
   //
   /// Default ctor
@@ -317,7 +320,11 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fHistoMCLcK0SpGen(0x0),
   fHistoMCLcK0SpGenAcc(0x0),
   fHistoMCLcK0SpGenLimAcc(0x0),
-  fTriggerMask(0)
+  fTriggerMask(0),
+
+  fFuncWeightPythia(0),
+  fFuncWeightFONLL5overLHC13d3(0),
+  fFuncWeightFONLL5overLHC13d3Lc(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -469,7 +476,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   const char* nameoutput = GetOutputSlot(1)->GetContainer()->GetName();
   fVariablesTreeSgn = new TTree(Form("%s_Sgn", nameoutput), "Candidates variables tree, Signal");
   fVariablesTreeBkg = new TTree(Form("%s_Bkg", nameoutput), "Candidates variables tree, Background");
-  Int_t nVar = 86;
+  Int_t nVar = 89;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[0]="massLc2K0Sp";
@@ -570,6 +577,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fCandidateVariableNames[84]="ptArmLc";
   
   fCandidateVariableNames[85]="CosThetaStar";
+
+  fCandidateVariableNames[86]="weightPtFlat";
+  fCandidateVariableNames[87]="weightFONLL5overLHC13d3";
+  fCandidateVariableNames[88]="weightFONLL5overLHC13d3Lc";
 
 
   for(Int_t ivar=0; ivar<nVar; ivar++){
@@ -848,6 +859,19 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
     fOutputKF->Add(fHistoArmenterosPodolanskiV0AODSgn);
   }
 
+  // weight function from ratio of flat value (1/30) to pythia
+  // use to normalise to flat distribution (should lead to flat pT distribution)
+  fFuncWeightPythia = new TF1("funcWeightPythia","1./(30. *[0]*x/TMath::Power(1.+(TMath::Power((x/[1]),[3])),[2]))",0.15,30);
+  fFuncWeightPythia->SetParameters(0.36609,1.94635,1.40463,2.5);
+
+  // weight function from the ratio of the LHC13d3 MC
+  // and FONLL calculations for pp data
+  fFuncWeightFONLL5overLHC13d3 = new TF1("funcWeightFONLL5overLHC13d3","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
+  fFuncWeightFONLL5overLHC13d3->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+
+  fFuncWeightFONLL5overLHC13d3Lc = new TF1("funcWeightFONLL5overLHC13d3Lc","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,20.);
+  fFuncWeightFONLL5overLHC13d3Lc->SetParameters(5.94428e+01,1.63585e+01,9.65555e+00,6.71944e+00,8.88338e-02,2.40477e+00,-4.88649e-02,-6.78599e-01,-2.10951e-01);
+
   PostData(6, fOutputKF);
 
   return;
@@ -891,7 +915,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
     array3Prong=(TClonesArray*)aodEvent->GetList()->FindObject("Charm3Prong");
   }
   
-  if ( !fUseMCInfo && fIspA) {
+  if (!fUseMCInfo && fIspA) {
     fAnalCuts->SetTriggerClass("");
     fAnalCuts->SetTriggerMask(fTriggerMask);
   }
@@ -1144,8 +1168,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	  pdgCode = partLc->GetPdgCode();
 	  if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", fmcLabelLc, pdgCode));
 	  pdgCode = TMath::Abs(pdgCode);
-	  fHistoLcBeforeCuts->Fill(1);
-					
+	  fHistoLcBeforeCuts->Fill(1);					
 	}
       } 
       else {
@@ -1196,10 +1219,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
     }
 
     Int_t isLc = 0;
-
+    
     if (fUseMCInfo) {
 
-      Int_t pdgCode=-2;
+      Int_t pdgCode = -2;
 
       // find associated MC particle for Lc -> p+K0 and K0S->pi+pi
       Int_t mcLabel = lcK0spr->MatchToMC(pdgCand, pdgDgLctoV0bachelor[1], pdgDgLctoV0bachelor, pdgDgV0toDaughters, mcArray, kTRUE);
@@ -1212,8 +1235,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	  if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
 	  pdgCode = TMath::Abs(pdgCode);
 	  isLc = 1;
-	  fHistoLc->Fill(1);
-					
+	  fHistoLc->Fill(1);				
 	}
       } 
       else {
@@ -1544,6 +1566,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   nSigmaTOFka = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kKaon));
   nSigmaTOFpr = fPIDResponse->NumberOfSigmasTOF(bachelor,(AliPID::kProton));
 
+  Double_t weightPythia = -1, weight5LHC13d3 = -1, weight5LHC13d3Lc = -1; 
+
+  if (fUseMCInfo) {
+    weightPythia = fFuncWeightPythia->Eval(part->Pt());
+    weight5LHC13d3 = fFuncWeightFONLL5overLHC13d3->Eval(part->Pt());
+    weight5LHC13d3Lc = fFuncWeightFONLL5overLHC13d3Lc->Eval(part->Pt());
+  }
 
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
@@ -1702,6 +1731,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
     
     fCandidateVariables[85] = cts;
+
+    fCandidateVariables[86] = weightPythia;
+    fCandidateVariables[87] = weight5LHC13d3;
+    fCandidateVariables[88] = weight5LHC13d3Lc;
+
+
 
     if (fUseMCInfo) {
       if (isLc){
