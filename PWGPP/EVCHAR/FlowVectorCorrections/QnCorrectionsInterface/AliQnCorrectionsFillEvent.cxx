@@ -147,7 +147,9 @@ void AliQnCorrectionsFillEvent::FillEventInfo(Float_t* values) {
   }
 
   AliMultSelection *MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
-  values[VAR::kVZEROMultPercentile] = MultSelection->GetMultiplicityPercentile("V0M", kTRUE);
+  if(MultSelection){
+    values[VAR::kVZEROMultPercentile] = MultSelection->GetMultiplicityPercentile("V0M", kTRUE);
+  }
 
   AliESDEvent* esdEvent = static_cast<AliESDEvent*>(fEvent);
   AliCentrality* cent = esdEvent->GetCentrality();
@@ -198,6 +200,7 @@ void AliQnCorrectionsFillEvent::FillTrackInfo(AliVParticle* particle, Float_t* v
   values[VAR::kTPCchi2]       = aodTrack->Chi2perNDF();
   values[VAR::kTPCsignal]     = aodTrack->GetTPCsignal();
   for(Int_t ibit=0; ibit<9; ibit++) values[VAR::kFilterBit+ibit]     = aodTrack->TestFilterBit(BIT(ibit));
+  values[VAR::kFilterBitMask768]  = (aodTrack->TestFilterBit(BIT(8))||aodTrack->TestFilterBit(BIT(9)));
 
   //delete aodTrack;
 
@@ -495,6 +498,7 @@ void AliQnCorrectionsFillEvent::FillFMD(AliAnalysisTaskSE* task)
       nFMD++;
 
       fEventPlaneManager->AddDataVector(VAR::kFMD, phi, m, iEta*nPhi+iPhi);   // 1st ich is position in array, 2nd ich is channel id
+
 
     }
   }

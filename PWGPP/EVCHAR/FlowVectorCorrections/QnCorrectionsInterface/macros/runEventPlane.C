@@ -1,7 +1,7 @@
 //TChain* CreateESDChain(const char* aDataDir, Int_t aRuns, Int_t offset);
 //TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset);
 
-void runEventPlane()
+void runEventPlane(Bool_t isESD, Bool_t onGrid)
 {
   // Load common libraries
   gSystem->Load("libCore.so");  
@@ -24,11 +24,11 @@ void runEventPlane()
   gSystem->Load("libPWGPPevcharQnInterface.so");
 
   //Bool_t onGrid=kFALSE;
-  Bool_t onGrid=kFALSE;
+  //Bool_t onGrid=kTRUE;
 
   // Select input format
-  Bool_t isESD=kTRUE;
-  Bool_t isAOD=kFALSE;
+  //Bool_t isESD=kTRUE;
+  Bool_t isAOD=!isESD;
 
   //Create and configure the alien handler plugin
 
@@ -70,7 +70,8 @@ void runEventPlane()
     }
     if(isAOD) {
       gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateAODChain.C");
-      chain = CreateAODChain("/u/jonderw/aodfiles.txt", 1, 0);
+      //chain = CreateAODChain("/u/jonderw/aodfiles.txt", 1, 0);
+      chain = CreateAODChain("/mnt/home/jonderw/alicesoftware/alice/alien/data/2010/LHC10h/000138275/ESDs/pass2/AOD160/files.txt", 1, 0);
     }
   }
 
