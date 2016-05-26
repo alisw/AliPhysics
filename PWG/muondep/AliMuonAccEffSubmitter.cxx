@@ -163,26 +163,30 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
   
   SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
-  
+
+  SetVar("VAR_USE_RAW_ALIGN","1");
+
   SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Ideal\"");
   
   SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Residual\"");
   
   SetVar("VAR_USE_ITS_RECO","0");
+  SetVar("VAR_USE_MC_VERTEX","1");
+  SetVar("VAR_VERTEX_SIGMA_X","0.0025");
+  SetVar("VAR_VERTEX_SIGMA_Y","0.0029");
   
   UseOCDBSnapshots(fUseOCDBSnapshots);
 
   SetVar("VAR_TRIGGER_CONFIGURATION","");
   
-  SetVar("VAR_PYTHIA8_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");");
-  SetVar("VAR_PYTHIA8_SETENV","");
-
-  SetVar("VAR_PYTHIA6_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/include\");");
-  SetVar("VAR_PYTHIA6_SETENV","");
-  
   SetVar("VAR_LHAPDF","liblhapdf");
   SetVar("VAR_MUONMCMODE","1");
-  
+
+  SetVar("VAR_PYTHIA8_SETENV","");
+  SetVar("VAR_PYTHIA6_SETENV","");
+  SetVar("VAR_NEEDS_PYTHIA6", "0");
+  SetVar("VAR_NEEDS_PYTHIA8", "0");
+
   if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
   {
     fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
@@ -191,19 +195,21 @@ fUseAODMerging(kFALSE)
     // add SPD tracklets to muon AODs.
     
     SetVar("VAR_USE_ITS_RECO","1");
-  
-    TString p8env;
-    
-    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%s/xmldoc\"));\n",generatorVersion);
-    
-    p8env += "  gSystem->Setenv(\"LHAPDF\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF\"));\n";
-    
-    p8env +=  "  gSystem->Setenv(\"LHAPATH\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF/PDFsets\"));\n";
-    
-    SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
 
-    SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"\"");
-    
+    SetupPythia8(generatorVersion);
+  
+//    TString p8env;
+//    
+//    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%s/xmldoc\"));\n",generatorVersion);
+//    
+//    p8env += "  gSystem->Setenv(\"LHAPDF\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF\"));\n";
+//    
+//    p8env +=  "  gSystem->Setenv(\"LHAPATH\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF/PDFsets\"));\n";
+//    
+//    SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
+//
+//    SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"\"");
+
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
   
@@ -214,12 +220,13 @@ fUseAODMerging(kFALSE)
     SetCompactMode(2); // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
 
-    TString p6env;
-    
-    p6env += Form("gSystem->Load(\"libpythia6_%s\");",generatorVersion);
-    
-    SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
-    
+    SetupPythia6(generatorVersion);
+//    TString p6env;
+//    
+//    p6env += Form("gSystem->Load(\"libpythia6_%s\");",generatorVersion);
+//    
+//    SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
+
     SetVar("VAR_USE_ITS_RECO","1");
     
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
@@ -293,7 +300,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   << "# $2 = merging stage" << std::endl
   << "# Stage_<n>.xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip" << std::endl;
 
-  OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"),GetMapValue("AliRoot"),GetMapValue("API"));
+  OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"));
   
   OutputToJDL(*os,"Executable","AOD_merge.sh");
   
@@ -356,7 +363,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     return kFALSE;
   }
   
-  OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"),GetMapValue("AliRoot"),GetMapValue("API"));
+  OutputToJDL(*os,"Packages",GetMapValue("Generator"),GetMapValue("AliPhysics"));
               
   OutputToJDL(*os,"Jobtag","comment: AliMuonAccEffSubmitter RUN $1");
 
@@ -962,6 +969,29 @@ void AliMuonAccEffSubmitter::SetCompactMode ( Int_t mode )
     fRootOutToKeep.Prepend("root_archive.zip:");
     fRootOutToKeep.Append("@disk=2");
   }
+}
+
+
+///______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetupPythia6 ( const char *version )
+{
+  /// Setup pythia 6
+  SetVar("VAR_NEEDS_PYTHIA6", "1");
+
+  TString p6env = Form("gSystem->Load(\"libpythia6_%s\");",version);
+  SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
+}
+
+///______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetupPythia8 ( const char *version, const char* configStrings )
+{
+  /// Setup pythia 6
+  SetVar("VAR_NEEDS_PYTHIA8", "1");
+
+  TString p8env = Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%s/xmldoc\"));\n",version);
+  SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
+
+  SetVar("VAR_PYTHIA8_SETUP_STRINGS",Form("\"%s\"",configStrings));
 }
 
 //______________________________________________________________________________

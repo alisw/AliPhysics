@@ -154,11 +154,8 @@ void Config()
   
 
   gener->SetOrigin(0., 0., 0.); // Taken from OCDB
-
-  Float_t sigmax = 0.0025;
-  Float_t sigmay = 0.0029;
   
-  gener->SetSigma(sigmax, sigmay, 0.);      // Sigma in (X,Y,Z) (cm) on IP position, sigmaz taken from OCDB
+  gener->SetSigma(VAR_VERTEX_SIGMA_X, VAR_VERTEX_SIGMA_Y, 0.);      // Sigma in (X,Y,Z) (cm) on IP position, sigmaz taken from OCDB
   gener->SetVertexSmear(kPerEvent);
   gener->Init();
   
