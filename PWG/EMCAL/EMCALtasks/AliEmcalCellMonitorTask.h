@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include <TString.h>
 
 class THistManager;
 class AliEMCALGeometry;
@@ -45,6 +46,23 @@ public:
    */
   virtual ~AliEmcalCellMonitorTask();
 
+  /**
+   * Set the minimum amplitude requested for a cell in order to use the
+   * cell time in the cell time plot
+   * @param minAmp Min. cell amplitude
+   */
+  void SetMinCellAmplitudeForCellTime(Double_t minAmp) { fMinCellAmplitude = minAmp; }
+
+  /**
+   * Define trigger selection. It can consist of trigger bits and a trigger string
+   * @param triggerbits Trigger bit selection
+   * @param triggerstring Trigger string (i.e. EG1, EG2, DG1, ...)
+   */
+  void SetRequestTrigger(ULong_t triggerbits, TString triggerstring = "") {
+    fRequestTrigger = triggerbits;
+    fTriggerString = triggerstring;
+  }
+
 protected:
 
   /**
@@ -73,6 +91,10 @@ protected:
 private:
   THistManager                        *fHistManager;        //!<! Histogram handler
   AliEMCALGeometry                    *fGeometry;           //!<! EMCAL geometry
+
+  Double_t                            fMinCellAmplitude;    ///< Min. cell amplitude requested for cell time
+  ULong_t                             fRequestTrigger;      ///< Trigger selection
+  TString                             fTriggerString;       ///< Trigger string in addition to trigger selection
 
   AliEmcalCellMonitorTask(const AliEmcalCellMonitorTask &ref);
   AliEmcalCellMonitorTask &operator=(const AliEmcalCellMonitorTask &ref);
