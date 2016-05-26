@@ -1916,7 +1916,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
         fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
       if (TruePhotonCandidate->IsSubLeadingEM())
         fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloMotherMCLabels());
+      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
       
       if (!TruePhotonCandidate->IsLargestComponentPhoton())
         FillPhotonBackgroundHist(TruePhotonCandidate,pdgCodeParticle);
