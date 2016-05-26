@@ -64,6 +64,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fTrackJt(NULL)    //Store jT of tracks
   , fTrackPt(NULL)    //Store pT of tracks
   , fJetPt(NULL)    //Store pT of corresponding jets
+  , fTrackFound(NULL) //Keep track of matched tracks
   , fBin2(NULL)    //Store iBin2 of corresponding tracks 
   , fBin3(NULL)    //Store iBin3 of corresponding tracks
   , fpta(NULL)    //Store pTa bin of corresponding tracks
@@ -127,6 +128,11 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJtWeightBinLimBin()
   , fhLogJtWeightBinLimBin()
   , fhLogJtWeight2BinLimBin()
+  , fhJetConeJtUnfBg()
+  , fhJetConeJtBinUnfBg()
+  , fhJetConeJtWeightBinUnfBg()
+  , fhJetConeLogJtWeightBinUnfBg()
+  , fhJetConeLogJtWeight2BinUnfBg()
   , fhJetBgPt()
   , fhJetBgPtBin()
   , fhBgZ() //Bg Z 
@@ -305,6 +311,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis():
   , fhJetPtCorr2() 
   , fhTrackPtCorr() //Correlation between true and reco mc track pt
   , fhJetdR() //Jet distance distribution
+  , fhJetdPt() //Jet momentum difference distribution
 , frandom(0x0)
 {
 
@@ -341,6 +348,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fTrackJt(NULL)
   , fTrackPt(NULL)
   , fJetPt(NULL)
+  , fTrackFound(NULL)
   , Nrandom(1)
   , moveJet(1)
   , fDoMC(0)
@@ -400,6 +408,11 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetConeJtWithPtCutWeightBinBin()
   , fhJetConeLogJtWithPtCutWeightBinBin()
   , fhJetConeLogJtWithPtCutWeight2BinBin()
+  , fhJetConeJtUnfBg()
+  , fhJetConeJtBinUnfBg()
+  , fhJetConeJtWeightBinUnfBg()
+  , fhJetConeLogJtWeightBinUnfBg()
+  , fhJetConeLogJtWeight2BinUnfBg()
   , fhJetBgPt()
   , fhJetBgPtBin()
   , fhBgZ()
@@ -559,6 +572,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis( AliJCard * card ):
   , fhJetPtCorr2() 
   , fhTrackPtCorr() 
   , fhJetdR() 
+  , fhJetdPt() 
 , frandom(0x0)
 {
 
@@ -653,6 +667,11 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetConeJtWithPtCutWeightBinBin(ap.fhJetConeJtWithPtCutWeightBinBin)
   , fhJetConeLogJtWithPtCutWeightBinBin(ap.fhJetConeLogJtWithPtCutWeightBinBin)
   , fhJetConeLogJtWithPtCutWeight2BinBin(ap.fhJetConeLogJtWithPtCutWeight2BinBin)
+  , fhJetConeJtUnfBg(ap.fhJetConeJtUnfBg)
+  , fhJetConeJtBinUnfBg(ap.fhJetConeJtBinUnfBg)
+  , fhJetConeJtWeightBinUnfBg(ap.fhJetConeJtWeightBinUnfBg)
+  , fhJetConeLogJtWeightBinUnfBg(ap.fhJetConeLogJtWeightBinUnfBg)
+  , fhJetConeLogJtWeight2BinUnfBg(ap.fhJetConeLogJtWeight2BinUnfBg)
   , fhJetBgPt(ap.fhJetBgPt)
   , fhJetBgPtBin(ap.fhJetBgPtBin)
   , fhBgZ(ap.fhBgZ)
@@ -793,6 +812,7 @@ AliJJetJtAnalysis::AliJJetJtAnalysis(const AliJJetJtAnalysis& ap) :
   , fhJetPtCorr2(ap.fhJetPtCorr2) 
   , fhTrackPtCorr(ap.fhTrackPtCorr) 
   , fhJetdR(ap.fhJetdR)
+  , fhJetdPt(ap.fhJetdPt)
   , frandom(0x0)
 {
 
@@ -883,7 +903,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
 
 
   int NBINS=150;
-  double LogBinsX[NBINS+1], LimL=0.1, LimH=150;
+  double LogBinsX[NBINS+1], LimL=0.1, LimH=500;
   double logBW = (log(LimH)-log(LimL))/NBINS;
   for(int ij=0;ij<=NBINS;ij++) LogBinsX[ij]=LimL*exp(ij*logBW);
 
@@ -1322,7 +1342,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
 void AliJJetJtAnalysis::CreateMCHistograms(){
 
   int NBINS=150;
-  double LogBinsX[NBINS+1], LimL=0.1, LimH=150;
+  double LogBinsX[NBINS+1], LimL=0.1, LimH=500;
   double logBW = (log(LimH)-log(LimL))/NBINS;
   for(int ij=0;ij<=NBINS;ij++) LogBinsX[ij]=LimL*exp(ij*logBW);
 
@@ -1339,7 +1359,7 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
 
 
   fhTrackMatchSuccess
-    << TH1D("TrackMatchSuccess","",3,0,3)
+    << TH1D("TrackMatchSuccess","",6,0,6)
     << fJetFinderBinMC << fJetTriggerBinMC
     << "END";
 
@@ -1355,6 +1375,11 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
     << "END";
   fhJetdR
     << TH1D("hJetdR","",50,0,0.5)
+    << fJetFinderBinMC << fJetTriggerBinMC
+    << "END";
+
+  fhJetdPt
+    << TH1D("hJetdPt","",50,0,0.5)
     << fJetFinderBinMC << fJetTriggerBinMC
     << "END";
 
@@ -1554,6 +1579,45 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
     << TH1D("LogJtWeight2BinLimBin","",NBINSJtW, LimLJtW, LimHJtW ) 
     << fJetFinderBinMC << fJetTriggerBinMC << fTrkLimPtBinMC
     <<"END";
+
+  fhJetConeJtUnfBg
+    << TH1D("JetConeJtUnfBg","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBinMC
+    <<"END";
+  fhJetConeJtBinUnfBg
+    << TH1D("JetConeJtBinUnfBg","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";
+  fhJetConeJtWeightBinUnfBg
+    << TH1D("JetConeJtWeightBinUnfBg","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";
+  /*fhJetConeJtWeightWithTrackCutBinBinMC
+    << TH1D("JetConeJtWeightWithTrackCutBinBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBinMC << fJetTriggerBinMC << fJetLeadPtBinMC 
+    <<"END";
+  fhJetConeJtWeightWithMultiplicityCutBinBinMC
+    << TH1D("JetConeJtWeightWithMultiplicityCutBinBin","",NBINSJt, LogBinsJt ) 
+    << fJetFinderBinMC << fJetTriggerBinMC << fJetMultBinMC 
+    <<"END";
+  fhLogJtWeightBinMC
+    << TH1D("LogJtWeightBin","",NBINSJtW, LimLJtW, LimHJtW ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";*/
+  fhJetConeLogJtWeightBinUnfBg
+    << TH1D("JetConeLogJtWeightUnfBg","",NBINSJtW, LimLJtW, LimHJtW ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";
+  /*fhLogJtWeight2BinMC
+    << TH1D("LogJtWeight2Bin","",NBINSJtW, LimLJtW, LimHJtW ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";*/
+  fhJetConeLogJtWeight2BinUnfBg 
+    << TH1D("JetConeLogJtWeight2BinUnfBg","",NBINSJtW, LimLJtW, LimHJtW ) 
+    << fJetFinderBinMC << fJetTriggerBinMC
+    <<"END";
+
+
 
   fhJetBgPtMC
     << TH1D("JetBgPt","",NBINS, LogBinsX ) 
@@ -1814,6 +1878,7 @@ void AliJJetJtAnalysis::UserExec(){
   fTrackJt = new TVector(fTracks->GetEntries());
   fTrackPt = new TVector(fTracks->GetEntries());
   fJetPt = new TVector(fTracks->GetEntries());
+  fTrackFound = new TVector(fTracks->GetEntries());
   fBin2 = new TVector(fTracks->GetEntries());
   fBin3 = new TVector(fTracks->GetEntries());
   fpta = new TVector(fTracks->GetEntries());
@@ -1828,21 +1893,22 @@ void AliJJetJtAnalysis::UserExec(){
     }else{
       this->FillJtHistogram(Jets,i,0);
     }
-  }
 
-  if(fDoMC){
-    //fTrackPt.clear();
-    TObjArray * Jets = (TObjArray*) fJetListOfList[0];
-    TObjArray * MCJets = (TObjArray*) fJetListOfList[6];
-    int doCor = 1;
-    if(!MCJets) {
-      doCor = 0;
-    }
-    if(!Jets) {
-      doCor = 0;
-    }
-    if(doCor){
-      this->FillCorrelation(Jets,MCJets,0);
+    if(fDoMC){
+      //fTrackPt.clear();
+      if(i>5) continue;
+      TObjArray * Jets = (TObjArray*) fJetListOfList[i];
+      TObjArray * MCJets = (TObjArray*) fJetListOfList[i+6];
+      int doCor = 1;
+      if(!MCJets) {
+        doCor = 0;
+      }
+      if(!Jets) {
+        doCor = 0;
+      }
+      if(doCor){
+        this->FillCorrelation(Jets,MCJets,i);
+      }
     }
   }
 
@@ -1979,7 +2045,21 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
 
   int doRndmBg = 0;
   // iJet loop for an event
+  if(!mc){
+    for (int icon = 0; icon<trackArray->GetEntries(); icon++){
+      (*fTrackJt)[icon] = -1;
+      (*fJetPt)[icon] = -1;
+      (*fTrackFound)[icon] = -1;
+      AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(trackArray->At(icon));
+      if (!track) continue;
+      (*fTrackPt)[icon] = track->Pt();
+    }
+  }
 
+  if(Jets->GetEntries() == 0){
+    //cout << "No Jets!" << endl;
+    return;
+  }
   for (int i = 0; i<Jets->GetEntries(); i++){
     AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
     if (!jet) continue;
@@ -1991,16 +2071,16 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
     if( iBin < 0 ) continue;
     doRndmBg++;
-    fhJetPt[iContainer]->Fill( pT );
-    fhJetPtBin[iContainer][iBin]->Fill( pT );
-    fhJetPtWeight[iContainer]->Fill( pT , 1/pT);
-    fhJetPtWeightBin[iContainer][iBin]->Fill( pT, 1/pT );
     int jetMult = jet->GetConstituents()->GetEntries();
     if(jetMult < 1){
       cout << "WARNING Jet multiplicity: " << jetMult << "!!!!!!" << endl;
       cout << "Skipping jet" << endl;
       continue;
     }
+    fhJetPt[iContainer]->Fill( pT );
+    fhJetPtBin[iContainer][iBin]->Fill( pT );
+    fhJetPtWeight[iContainer]->Fill( pT , 1/pT);
+    fhJetPtWeightBin[iContainer][iBin]->Fill( pT, 1/pT );
     //cout << "Fill fhJetMultiplicityBin[" << iContainer << "][" << iBin << "] With " << jet->GetConstituents()->GetEntries() << endl;
     fhJetMultiplicityBin[iContainer][iBin]->Fill(jetMult);
     double leadingTrackPt = jet->LeadingParticlePt();
@@ -2169,9 +2249,8 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
         fhJetConeZBin[iContainer][iBin]->Fill( z , effCorrection);
 
         jt = (track->Vect()-z*jet->Vect()).Mag();
-        if(iContainer == 0){
+        if(!mc){
           (*fTrackJt)[icon] = jt;
-          (*fTrackPt)[icon] = track->Pt();
           (*fJetPt)[icon] = jet->Pt();
         }
         fhJetConeJt[iContainer]->Fill( jt , effCorrection);
@@ -2298,376 +2377,6 @@ void AliJJetJtAnalysis::FillJtHistogram( TObjArray *Jets , int iContainer,int mc
     }*/
 }
 
-void AliJJetJtAnalysis::FillJtHistogramMC( TObjArray *Jets , int iContainer)
-{	
-
-  int iBin, iptaBin=0;
-  int iBin2 = 0;
-  int iBin3=0;
-  int jBin=0;
-  double pT = 0;
-  double conPtMax =0;
-
-
-  double z; double jt;
-  double pta;
-  //double Y , deltaY = 0;
-  //double Phi, deltaPhi;
-  //double deltaR= 0;
-  //cout<<"histogram filling number of jets : "<<Jets->GetEntriesFast()<<endl;
-
-  TLorentzVector  vOrtho;
-  TLorentzVector  randomTrack;
-  TLorentzVector summedJet;
-  fJetBgListOfList[iContainer].Clear();
-  TClonesArray & bgjets = fJetBgListOfList[iContainer];
-
-  //cout << "REMOVE THIS " << endl << endl << endl;
-
-
-  int k = 0;
-  double deltaR = -1;
-  double deltaEta = -999;
-  double deltaPhi = -999;
-  double effCorrection = -1;
-  double thisConeSize = fConeSizes[iContainer] ;
-  double etaRndm = 0;
-  double phiRndm = 0;
-  int iBgJet = 0;
-
-
-  int doRndmBg = 0;
-  // iJet loop for an event
-  for (int i = 0; i<Jets->GetEntries(); i++){
-    AliJJet *jet = dynamic_cast<AliJJet*>( Jets->At(i) );
-    if (!jet) continue;
-    jet->ReSum();
-    if (TMath::Abs(jet->Eta()) > fJetEtaCut) continue;
-    fhJetEtaPhiMC[iContainer]->Fill(jet->Eta(),jet->Phi());
-    pT = jet->Pt();
-    if (pT<(*fJetTriggPtBorders)[1]) continue;
-    iBin = GetBin(fJetTriggPtBorders,pT); // fill jetPt histos
-    if( iBin < 0 ) continue;
-    doRndmBg++;
-    fhJetPtMC[iContainer]->Fill( pT );
-    fhJetPtBinMC[iContainer][iBin]->Fill( pT );
-    fhJetPtWeightMC[iContainer]->Fill( pT , 1/pT);
-    fhJetPtWeightBinMC[iContainer][iBin]->Fill( pT, 1/pT );
-    int jetMult = jet->GetConstituents()->GetEntries();
-    fhJetMultiplicityBinMC[iContainer][iBin]->Fill(jetMult);
-    double leadingTrackPt = jet->LeadingParticlePt();
-    fhLeadingTrkPtBinMC[iContainer][iBin]->Fill(leadingTrackPt);
-    iBin2 = GetBin(fJetLeadPtBorders,leadingTrackPt);
-    iBin3 = GetBin(fJetMultBorders,jetMult);
-    if(iBin2 < 0 || iBin3 <0){
-      cout << "Jet pT: " << pT << " Multiplicity: " << jetMult << " Leading track pT: " << leadingTrackPt << " Jet Finder: " << iContainer << endl;
-    }
-    fhJetPtMultiplicityCutBinMC[iContainer][iBin][iBin3]->Fill(pT);
-    if(iBin2 > -1){
-      fhJetPtTrackCutBinMC[iContainer][iBin][iBin2]->Fill(pT);
-    }
-
-    for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
-      AliJBaseTrack *con = jet->GetConstituent(icon);
-      if (con->Pt()>conPtMax) conPtMax = con->Pt();
-    }
-
-    for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--){   
-      if (conPtMax > (*fJetConstPtLowLimits)[ii]) {               
-        jBin = ii-1;                                               
-        break;
-      }
-    }
-
-    //iConstituent loop for the iJet
-    //jt, z are calcualted and filled  
-    for (int icon = 0; icon<jet->GetConstituents()->GetEntries(); icon++){
-      AliJBaseTrack *constituent = jet->GetConstituent(icon);
-      z = (constituent->Vect()*jet->Vect().Unit())/jet->P();
-      pta = constituent->Pt();
-      constituent->SetTrackEff( 1);
-      effCorrection = constituent->GetTrackEff();
-      iptaBin = GetBin(fJetAssocPtBorders, pta);
-      if( iptaBin < 0 ) continue;
-
-      fhTrkPtMC[iContainer]->Fill(pta,effCorrection);
-      fhTrkPtBinMC[iContainer][iBin]->Fill(pta,effCorrection);
-      fhTrkPtWeightBinMC[iContainer][iBin]->Fill(pta,effCorrection/pta);
-
-
-      fhZMC[iContainer]->Fill( z , effCorrection);
-      fhZBinMC[iContainer][iBin]->Fill( z , effCorrection);
-      jt = (constituent->Vect()-z*jet->Vect()).Mag();
-      fhJtMC[iContainer]->Fill( jt , effCorrection);
-      fhJtBinMC[iContainer][iBin]->Fill( jt , effCorrection);
-      fhJtWeightBinMC[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
-      fhLogJtWeightBinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-      fhLogJtWeight2BinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-
-
-
-      fhJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( jt, 1.0/jt * effCorrection );
-      fhLogJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection);
-      fhLogJtWithPtCutWeight2BinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection);
-
-      for (int jj = 0; jj <= jBin ; jj++) {
-        fhJtBinLimBinMC[iContainer][iBin][jj]->Fill( jt, effCorrection );
-        fhJtWeightBinLimBinMC[iContainer][iBin][jj]->Fill( jt, 1.0/jt * effCorrection );
-        fhLogJtWeightBinLimBinMC[iContainer][iBin][jj]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-        fhLogJtWeight2BinLimBinMC[iContainer][iBin][jj]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-      }
-
-    }
-
-
-
-    //vOrtho.SetVect(jet->Vect().Orthogonal());
-    vOrtho.SetVect(jet->Vect());
-    vOrtho.SetE(jet->E());
-    vOrtho.SetPhi(jet->Phi()+TMath::Pi()/2);
-
-    //k=0; // count number of rotations of the orthogonal axis of a jet. 
-
-    //Background jet (iBgJet) will be produced. This background jet is orthogonal to the iJet.  
-    //If there is another jJet, then iBgJet will be consecutevely moved not to 
-    //have jJet in the cone size. 
-    int doBkg = 1;
-    int counter = 0;
-    if (Jets->GetEntries()>1){
-      fhNumberMC[iContainer]->Fill(3.5);
-      for (int j = 0; j<Jets->GetEntries(); j++){
-        if (i == j) continue;
-        AliJJet *jet2 = dynamic_cast<AliJJet*>( Jets->At(j) );
-        if (!jet2) continue;
-
-
-
-        deltaR   = getDiffR(vOrtho.Phi(),jet2->Phi(),vOrtho.Eta(),jet2->Eta());
-        if ( deltaR < 2*thisConeSize) {
-          doBkg = 0;
-          /*vOrtho.Rotate(TMath::Pi()/8, jet->Vect());
-            j=0;
-            k++;*/
-          fhNumberMC[iContainer]->Fill(4.5);
-          break;
-        }
-
-      }
-    }
-
-    if(doBkg){
-      fhNumberMC[iContainer]->Fill(5.5); //TODO jet pt bins ->Fill(5.5+ iBin);
-    }
-
-    // Filling iBgJet,  Bgjt and Bgz
-    double maxconpt = 0;
-    AliJJet *jbg;
-    if ( doBkg ){
-      new (bgjets[iBgJet]) AliJJet(vOrtho.Px(),vOrtho.Py(), vOrtho.Pz(), vOrtho.E(), i ,0,0);
-      //AliJJet * jbg = (AliJJet*) fJetBgListOfList[iContainer][iBgJet];
-      jbg = (AliJJet*) fJetBgListOfList[iContainer][iBgJet];
-      iBgJet++;
-
-      pT = vOrtho.Pt();
-      if (pT<(*fJetTriggPtBorders)[1]) continue;
-
-      fhJetBgPtMC[iContainer]->Fill( pT );
-      //bbfHistos[iContainer]->fhJetBgPtWeight->Fill( pT, 1./pT);
-      iBin = GetBin(fJetTriggPtBorders, pT);
-      if( iBin < 0 ) continue;
-      fhJetBgPtBinMC[iContainer][iBin]->Fill( pT );
-    }
-
-    for (int icon = 0; icon<fMCTracks->GetEntries(); icon++){
-      AliJBaseTrack *track = dynamic_cast<AliJBaseTrack*>(fMCTracks->At(icon));
-      if (!track) continue;
-      fhTrackEtaPhiMC[iContainer]->Fill(track->Eta(),track->Phi());
-      pta = track->Pt();
-      if (pta > maxconpt) maxconpt = pta;
-      track->SetTrackEff( 1);
-      effCorrection = track->GetTrackEff();
-      iptaBin = GetBin(fJetAssocPtBorders, pta);
-      if( iptaBin < 0 ) continue;
-
-      //Jet Cone Jt here
-      deltaR   = getDiffR(jet->Phi(),track->Phi(),jet->Eta(),track->Eta());
-      if ( deltaR < thisConeSize){ 
-        fhJetConeTrkPtMC[iContainer]->Fill(pta,effCorrection);
-        fhJetConeTrkPtBinMC[iContainer][iBin]->Fill(pta,effCorrection);
-        fhJetConeTrkPtWeightBinMC[iContainer][iBin]->Fill(pta,effCorrection/pta);
-
-        z = (track->Vect()*jet->Vect().Unit())/jet->P();
-        fhJetConeZMC[iContainer]->Fill( z , effCorrection);
-        fhJetConeZBinMC[iContainer][iBin]->Fill( z , effCorrection);
-
-        jt = (track->Vect()-z*jet->Vect()).Mag();
-        fhJetConeJtMC[iContainer]->Fill( jt , effCorrection);
-        fhJetConeJtBinMC[iContainer][iBin]->Fill( jt , effCorrection);
-        fhJetConeJtWeightBinMC[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
-        if(iBin2 > -1){
-          fhJetConeJtWeightWithTrackCutBinBinMC[iContainer][iBin][iBin2]->Fill( jt, 1.0/jt * effCorrection );
-        }
-        fhJetConeJtWeightWithMultiplicityCutBinBinMC[iContainer][iBin][iBin3]->Fill( jt, 1.0/jt * effCorrection );
-        fhJetConeLogJtWeightBinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-        fhJetConeLogJtWeight2BinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-
-        if (iptaBin < 0) continue;
-        fhJetConeJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( jt, 1.0/jt * effCorrection );
-        fhJetConeLogJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-        fhJetConeLogJtWithPtCutWeight2BinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-
-        //TODO Correct track matching
-        int found =0;
-        AliJMCTrack *mcTrack = (AliJMCTrack*)fMCTracks->At(icon);
-        if(!mcTrack || !mcTrack->IsTrue(AliJMCTrack::kPrimary) ){
-          cout << "Not primary " << endl;
-          continue;
-          }
-        if(iContainer == 0){
-          for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
-            AliJTrack * jtrack = (AliJTrack*) fTracks->At(i);
-            if(mcTrack && (TMath::Abs(track->GetLabel()) == TMath::Abs(mcTrack->GetLabel())) ){
-              found++;
-              fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
-              fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],track->Pt());
-              fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],jet->Pt());
-              fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
-            }
-          }
-          if(found == 0){
-            //cout << "FOUND NO MATCHING TRACK" << endl;
-            fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
-            fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
-            fhTrackPtCorr[iContainer]->Fill(0.0,track->Pt());
-          }
-          if(found > 1){
-            fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
-            //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
-          }
-        }
-
-        /*int found = 0;
-        if(iContainer == 0){
-          for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
-            AliJBaseTrack *recoTrack = dynamic_cast<AliJBaseTrack*>(fTracks->At(icon2));
-            deltaR   = getDiffR(recoTrack->Phi(),track->Phi(),recoTrack->Eta(),track->Eta());
-            if(deltaR < 0.2 && TMath::Abs(recoTrack->Pt() - track->Pt()) < 0.2 ){
-              found++;
-              //cout << "Filling fhTrackJtCorrBin with " << (*fTrackJt)[icon2] << endl;
-              //cout << "and " << jt << endl;
-              fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
-              fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],track->Pt());
-              fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],jet->Pt());
-              fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
-            }
-          }
-          if(found == 0){
-            //cout << "FOUND NO MATCHING TRACK" << endl;
-            fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
-            fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
-            fhTrackPtCorr[iContainer]->Fill(0.0,track->Pt());
-          }
-          if(found > 1){
-            fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
-            //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
-          }
-        }*/
-
-
-      }
-
-
-
-      if ( doBkg ){
-        //Background jt
-        deltaR   = getDiffR(vOrtho.Phi(),track->Phi(),vOrtho.Eta(),track->Eta());
-        if ( deltaR < thisConeSize){
-          counter++;
-          jbg->AddConstituent(track);
-          fhBgTrkPtMC[iContainer]->Fill(pta,effCorrection);
-          fhBgTrkPtBinMC[iContainer][iBin]->Fill(pta,effCorrection);
-          fhBgTrkPtWeightBinMC[iContainer][iBin]->Fill(pta,effCorrection/pta);
-          if(moveJet){
-            summedJet = track->GetLorentzVector() + vOrtho;
-            z = (track->Vect()*summedJet.Vect().Unit())/summedJet.P();
-            fhBgZMC[iContainer]->Fill( z , effCorrection);
-            fhBgZBinMC[iContainer][iBin]->Fill( z , effCorrection);
-
-            jt = (track->Vect()-z*summedJet.Vect()).Mag();
-            fhBgJtMC[iContainer]->Fill( jt , effCorrection);
-            fhBgJtBinMC[iContainer][iBin]->Fill( jt , effCorrection);
-            fhBgJtWeightBinMC[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
-            fhBgLogJtWeightBinMC[iContainer][iBin]
-              ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-            fhBgLogJtWeight2BinMC[iContainer][iBin]
-              ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-
-            if (iptaBin < 0) continue;
-            fhBgJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( jt, 1.0/jt * effCorrection );
-            fhBgLogJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-            fhBgLogJtWithPtCutWeight2BinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-          }else{
-            z = (track->Vect()*vOrtho.Vect().Unit())/vOrtho.P();
-            fhBgZMC[iContainer]->Fill( z , effCorrection);
-            fhBgZBinMC[iContainer][iBin]->Fill( z , effCorrection);
-
-            jt = (track->Vect()-z*vOrtho.Vect()).Mag();
-            fhBgJtMC[iContainer]->Fill( jt , effCorrection);
-            fhBgJtBinMC[iContainer][iBin]->Fill( jt , effCorrection);
-            fhBgJtWeightBinMC[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
-            fhBgLogJtWeightBinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-            fhBgLogJtWeight2BinMC[iContainer][iBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-
-            if (iptaBin < 0) continue;
-            fhBgJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( jt, 1.0/jt * effCorrection );
-            fhBgLogJtWithPtCutWeightBinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-            fhBgLogJtWithPtCutWeight2BinBinMC[iContainer][iBin][iptaBin]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-          }
-        }
-      }
-
-    }
-    if(doRndmBg){
-      this->FillRandomBackground(jet->Pt(), jet->E(),  Jets, iContainer,1);
-    }
-    for (int ii = fJetConstPtLowLimits->GetNoElements(); ii >= 1 ; ii--)   {
-      if (maxconpt > (*fJetConstPtLowLimits)[ii]) {
-        jBin = ii-1;
-        break;
-      }
-    }
-
-    if(doBkg){
-      fhBgTrkNumberMC[iContainer]->Fill(counter);
-      fhBgTrkNumberBinMC[iContainer][iBin]->Fill(counter);
-      for (int icon =0; icon<jbg->GetConstituents()->GetEntries();icon++){
-        AliJBaseTrack *con = jbg->GetConstituent(icon);
-        z = (con->Vect()*jbg->Vect().Unit())/jbg->P();
-        pta = con->Pt();
-        iptaBin = GetBin(fJetAssocPtBorders, pta);
-        jt = (con->Vect()-z*jbg->Vect()).Mag();
-        if( iptaBin < 0 ) continue;
-        for (int jj = 0; jj <= jBin ; jj++) {
-          fhBgJtBinLimBinMC[iContainer][iBin][jj]->Fill( jt, effCorrection );
-          fhBgJtWeightBinLimBinMC[iContainer][iBin][jj]->Fill( jt, 1.0/jt * effCorrection );
-          fhBgLogJtWeightBinLimBinMC[iContainer][iBin][jj]->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
-          fhBgLogJtWeight2BinLimBinMC[iContainer][iBin][jj]->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
-        }
-      }
-    }
-  }
-
-
-
-  //doRndmBg = 1;
-  /*if(doRndmBg){
-    this->FillRandomBackground(iContainer);
-    }*/
-  /*for(int iBg = 0 ; iBg < doRndmBg ; iBg++){
-    this->FillRandomBackground(Jets, iContainer);
-    }*/
-}
-
 void AliJJetJtAnalysis::FillRandomBackground(TObjArray *Jets , int iContainer, int MC){
   TClonesArray *trackArray;
   if(MC)
@@ -2775,7 +2484,6 @@ void AliJJetJtAnalysis::FillRandomBackground(TObjArray *Jets , int iContainer, i
   fhBgRndmTrkNumber[iContainer]->Fill(counter/Nrandom);
 }
 
-
 void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int iContainer){
 
   int iBin=0;
@@ -2826,6 +2534,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
       if(deltaR < 0.5){
         fhJetPtCorr[iContainer]->Fill(pTmc,pT);
         fhJetdR[iContainer][iBin]->Fill(deltaR);
+        fhJetdPt[iContainer][iBin]->Fill(pTmc-pT);
       }
     }	
   }
@@ -2885,25 +2594,68 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
           continue;
         }
         for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
-          AliJBaseTrack * track = (AliJBaseTrack*) fTracks->At(i);
+          AliJBaseTrack * track = (AliJBaseTrack*) fTracks->At(icon2);
           if(mcTrack && (TMath::Abs(track->GetLabel()) == TMath::Abs(mcTrack->GetLabel())) ){
+            /*cout << "Found match: " << endl;
+              cout << "Reco track index: " << icon2             << " mc Track index:  " << icon << endl;
+              cout << "Reco track Label: " << track->GetLabel() << " mc Track Label:  " << mcTrack->GetLabel()  << endl;
+              cout << "Reco track Eta:   " << track->Eta() <<      " mc Track Eta:    " << mcTrack->Eta()  << endl;
+              cout << "Reco track Phi:   " << track->Phi() <<      " mc Track Eta:    " << mcTrack->Phi()  << endl;
+              cout << "Reco track pT:    " << track->Pt() <<       " mc Track pT:     " << mcTrack->Pt()  << endl;
+             */
+            (*fTrackFound)[icon2] = 1;
+            if((*fTrackJt)[icon2] < -0){
+              //cout << "Reconstructed track jT not measured, MC jT was " << jt << endl;
+              found = -1;
+              fhTrackJtCorrBin[iContainer][iBin]->Fill(-1.0,jt);
+              fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],mcTrack->Pt());
+              fhJetPtCorr[iContainer]->Fill(-1.0,mcjet->Pt());
+              continue;
+            }
+            if(found == 1){
+              for(int icon3 = 0 ; icon3 < fTracks->GetEntries() ; icon3++){
+                if(icon2 == icon3) continue;
+                AliJBaseTrack * track2 = (AliJBaseTrack*) fTracks->At(icon3);
+                if(track2 && (TMath::Abs(track->GetLabel()) == TMath::Abs(track2->GetLabel())) ){
+                  /*cout << "Found duplicate: " << endl;
+                    cout << "Track1 index: " << icon2             << " Track2 index:  " << icon3 << endl;
+                    cout << "Track1 Label: " << track->GetLabel() << " Track2 Label:  " << track2->GetLabel()  << endl;
+                    cout << "Track1 Eta:   " << track->Eta() <<      " Track2 Eta:    " << track2->Eta()  << endl;
+                    cout << "Track1 Phi:   " << track->Phi() <<      " Track2 Eta:    " << track2->Phi()  << endl;
+                    cout << "Track1 pT:    " << track->Pt() <<       " Track2 pT:     " << track2->Pt()  << endl;*/
+                }
+              }
+            }
             found++;
-            fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
+            if((*fTrackJt)[icon2] < 0){
+              fhTrackJtCorrBin[iContainer][iBin]->Fill(-1,jt);
+            }else{
+              fhTrackJtCorrBin[iContainer][iBin]->Fill((*fTrackJt)[icon2],jt);
+            }
             fhTrackPtCorr[iContainer]->Fill((*fTrackPt)[icon2],mcTrack->Pt());
             fhJetPtCorr[iContainer]->Fill((*fJetPt)[icon2],mcjet->Pt());
-            fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
           }
         }
         if(found == 0){
           //cout << "FOUND NO MATCHING TRACK" << endl;
           fhTrackMatchSuccess[iContainer][iBin]->Fill(0.5);
-          fhTrackJtCorrBin[iContainer][iBin]->Fill(0.0,jt);
-          fhJetPtCorr[iContainer]->Fill(0.0,mcjet->Pt());
-          fhTrackPtCorr[iContainer]->Fill(0.0,mcTrack->Pt());
+          fhTrackJtCorrBin[iContainer][iBin]->Fill(-1.0,jt);
+          fhJetPtCorr[iContainer]->Fill(-1.0,mcjet->Pt());
+          fhTrackPtCorr[iContainer]->Fill(-1.0,mcTrack->Pt());
         }
-        if(found > 1){
+        if(found > 2){
           fhTrackMatchSuccess[iContainer][iBin]->Fill(2.5);
           //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
+        }
+        if(found == 2){
+          fhTrackMatchSuccess[iContainer][iBin]->Fill(4.5);
+          //cout << "FOUND EXACTLY 2 MATCHING TRACKS" << endl;
+        }
+        if(found == -1){
+          fhTrackMatchSuccess[iContainer][iBin]->Fill(3.5);
+        }
+        if(found == 1){
+          fhTrackMatchSuccess[iContainer][iBin]->Fill(1.5);
         }
         /*int found = 0;
           for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
@@ -2930,6 +2682,41 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
         //cout << "FOUND MORE THAN 1 MATCHING TRACK" << endl;
         }*/
       }
+
+    }
+  }
+  double effCorrection;
+  for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
+    //AliJBaseTrack * track = (AliJBaseTrack*) fTracks->At(icon2);
+    //if(!track) continue;
+    if((*fTrackFound)[icon2] < 0 && (*fTrackJt)[icon2] > 0){
+      fhTrackMatchSuccess[iContainer][iBin]->Fill(5.5);
+      //cout << "Constructed jT: " << (*fTrackJt)[icon2] << " with no pythia counterpart" << endl;
+      pta = (*fTrackPt)[icon2];
+      //track->SetTrackEff( fEfficiency->GetCorrection( pta, 5, fcent) );
+      effCorrection = 1.0/fEfficiency->GetCorrection(pta,5,fcent);
+      jt = (*fTrackJt)[icon2];
+      fhJetConeJtUnfBg[iContainer]->Fill( jt , effCorrection);
+      fhJetConeJtBinUnfBg[iContainer][iBin]->Fill( jt , effCorrection);
+      fhJetConeJtWeightBinUnfBg[iContainer][iBin]->Fill( jt, 1.0/jt * effCorrection );
+      /*if(iBin2 > -1){
+        fhJetConeJtWeightWithTrackCutBinBin[iContainer][iBin][iBin2]->Fill( jt, 1.0/jt * effCorrection );
+        }
+        if(iBin3 > -1){
+        fhJetConeJtWeightWithMultiplicityCutBinBin[iContainer][iBin][iBin3]->Fill( jt, 1.0/jt * effCorrection );
+        }*/
+      fhJetConeLogJtWeightBinUnfBg[iContainer][iBin]
+        ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+      fhJetConeLogJtWeight2BinUnfBg[iContainer][iBin]
+        ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );
+
+      /*if (iptaBin < 0) continue;
+        fhJetConeJtWithPtCutWeightBinBinUnfBg[iContainer][iBin][iptaBin]
+        ->Fill( jt, 1.0/jt * effCorrection );
+        fhJetConeLogJtWithPtCutWeightBinBinUnfBg[iContainer][iBin][iptaBin]
+        ->Fill( TMath::Log(jt), 1.0/jt * effCorrection );
+        fhJetConeLogJtWithPtCutWeight2BinBinUnfBg[iContainer][iBin][iptaBin]
+        ->Fill( TMath::Log(jt), 1.0/jt/jt * effCorrection );*/
     }
   }
 }
