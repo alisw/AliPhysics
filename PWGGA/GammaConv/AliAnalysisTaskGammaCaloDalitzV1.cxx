@@ -1953,7 +1953,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 // 			cout << clus->GetNLabels() << endl;
 			if (clus->GetNLabels()>0){
 				for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-					if (k< 20)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+					if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 // 					Int_t pdgCode = fMCStack->Particle(mclabelsCluster[k])->GetPdgCode();
 // 					cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
 				}	
@@ -2130,7 +2130,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidates(AliAODConver
 				fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			if (TruePhotonCandidate->IsSubLeadingEM())
 				fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
 		}
 	}
 
@@ -2191,7 +2191,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAODCon
 				fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
 			if (TruePhotonCandidate->IsSubLeadingEM())
 				fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+			fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
 		}
 	}
 
@@ -4305,7 +4305,7 @@ Double_t AliAnalysisTaskGammaCaloDalitzV1::GetPsiPair( const AliESDtrack *trackP
 	// direction ?0 to the opening angle ? Pair
 	//
 	// Ref. Measurement of photons via conversion pairs with the PHENIX experiment at RHIC
-	//      Mas   ter Thesis. Thorsten Dahms. 2005
+	//      Master Thesis. Thorsten Dahms. 2005
 	// https://twiki.cern.ch/twiki/pub/ALICE/GammaPhysicsPublications/tdahms_thesis.pdf
 	//
 	Double_t momPos[3];

@@ -1306,18 +1306,18 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-          TParticle *dummy    = NULL;
+//           TParticle *dummy    = NULL;
           if (mclabelsCluster[k]>0){
-            dummy             = fMCStack->Particle(mclabelsCluster[k]);
-            if (dummy->R() < 407.0){
-              if (nValidClusters< 20)PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
+//             dummy             = fMCStack->Particle(mclabelsCluster[k]);
+//             if (dummy->R() < 407.0){
+              if (nValidClusters< 50)PhotonCandidate->SetCaloPhotonMCLabel(nValidClusters,mclabelsCluster[k]);
               nValidClusters++;
-            }  
+//             }  
           }
         }
       }
       PhotonCandidate->SetNCaloPhotonMCLabels(nValidClusters);
-
+      
     }
     
     fIsFromMBHeader = kTRUE; 
@@ -1405,16 +1405,16 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     // Flag Photon as CaloPhoton
     PhotonCandidate1->SetIsCaloPhoton();
     // get MC label
-    if(fIsMC> 0){
-      Int_t* mclabelsCluster = clusSub1->GetLabels();
-      PhotonCandidate1->SetNCaloPhotonMCLabels(clusSub1->GetNLabels());
-
-      if (clusSub1->GetNLabels()>0){
-        for (Int_t k =0; k< (Int_t)clusSub1->GetNLabels(); k++){
-          if (k< 20)PhotonCandidate1->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-        }
-      }
-    }
+//     if(fIsMC> 0){
+//       Int_t* mclabelsCluster = clusSub1->GetLabels();
+//       PhotonCandidate1->SetNCaloPhotonMCLabels(clusSub1->GetNLabels());
+// 
+//       if (clusSub1->GetNLabels()>0){
+//         for (Int_t k =0; k< (Int_t)clusSub1->GetNLabels(); k++){
+//           if (k< 50)PhotonCandidate1->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+//         }
+//       }
+//     }
     
     // TLorentzvector with sub cluster 2
     TLorentzVector clusterVector2;
@@ -1432,16 +1432,16 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     // Flag Photon as CaloPhoton
     PhotonCandidate2->SetIsCaloPhoton();
     // get MC label
-    if(fIsMC> 0){
-      Int_t* mclabelsCluster = clusSub2->GetLabels();
-      PhotonCandidate2->SetNCaloPhotonMCLabels(clusSub2->GetNLabels());
-
-      if (clusSub2->GetNLabels()>0){
-        for (Int_t k =0; k< (Int_t)clusSub2->GetNLabels(); k++){
-          if (k< 20)PhotonCandidate2->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-        }
-      }
-    }
+//     if(fIsMC> 0){
+//       Int_t* mclabelsCluster = clusSub2->GetLabels();
+//       PhotonCandidate2->SetNCaloPhotonMCLabels(clusSub2->GetNLabels());
+// 
+//       if (clusSub2->GetNLabels()>0){
+//         for (Int_t k =0; k< (Int_t)clusSub2->GetNLabels(); k++){
+//           if (k< 50)PhotonCandidate2->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+//         }
+//       }
+//     }
     
     AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
             
@@ -1536,6 +1536,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
   Int_t pdgCodeParticle             = Photon->GetPdgCode();
   TrueClusterCandidate->SetCaloPhotonMCFlags(fMCStack);
   if (TrueClusterCandidate->GetNCaloPhotonMCLabels()>1 && fEnableDetailedPrintOut){
+    cout << endl << endl << "Cluster energy: " << TrueClusterCandidate->E() << endl;;
     TrueClusterCandidate->PrintCaloMCLabelsAndInfo(fMCStack);
     TrueClusterCandidate->PrintCaloMCFlags();
   }
@@ -1550,7 +1551,30 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
     // 1    - nice merged cluster (2 gamma | contributions from 2 gamma) from pi0/eta
     // 2    - contribution from only 1 partner (1 gamma, 1 fully coverted gamma) from pi0/eta
     // 3    - contribution from part of 1 partner (1 electron) from pi0/eta
-    
+    if (TrueClusterCandidate->IsMerged() || TrueClusterCandidate->IsMergedPartConv()){
+        clusterClass    = 1;
+    } else if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 0){
+//       cout << TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0) << endl;
+      if (TrueClusterCandidate->IsLargestComponentElectron() || TrueClusterCandidate->IsLargestComponentPhoton()){ 
+        if (fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 111 || fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(0))->GetPdgCode() == 221 ){
+          if ( TrueClusterCandidate->IsConversion() && !TrueClusterCandidate->IsConversionFullyContained() ){
+            clusterClass  = 3;
+          } else {
+            clusterClass  = 2;  
+          }
+        }  
+      } else if (TrueClusterCandidate->IsSubLeadingEM()){
+        if (TrueClusterCandidate->GetNCaloPhotonMotherMCLabels()> 1){
+          if (fEnableDetailedPrintOut) cout << "Is Subleading EM: "<<  TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) << endl;
+          if ( TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1) > -1){
+            if (fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 111 || fMCStack->Particle(TrueClusterCandidate->GetCaloPhotonMotherMCLabel(1))->GetPdgCode() == 221 ){
+              clusterClass  = 2;  
+            }
+          }
+        }  
+      }  
+    }  
+    if (fEnableDetailedPrintOut) cout << "cluster class: " << clusterClass << endl;
   
     if (TrueClusterCandidate->IsMerged() && !TrueClusterCandidate->IsMergedPartConv()){
       if (fEnableDetailedPrintOut) cout << "merged" << endl;
@@ -1809,7 +1833,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         Bool_t kDaughter1IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, particle->GetLastDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
         
         if( kDaughter0IsPrim && kDaughter1IsPrim &&
-          ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter0,fMCStack) &&
+          ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter0,fMCStack) ||
           ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCStack) ){                    
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc
@@ -1856,8 +1880,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         Bool_t kElectronIsPrim  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, electronLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
         Bool_t kPositronIsPrim  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, positronLabel, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
         if( kGammaIsPrim && kElectronIsPrim && kPositronIsPrim &&
-            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma,fMCStack) &&
-            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedElecMC(electron,fMCStack) && 
+            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(gamma,fMCStack) ||
+            ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedElecMC(electron,fMCStack) || 
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedElecMC(positron,fMCStack)
           ){                    
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){

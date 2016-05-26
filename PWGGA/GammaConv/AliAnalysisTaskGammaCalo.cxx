@@ -1684,7 +1684,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 //       cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k< (Int_t)clus->GetNLabels(); k++){
-          if (k< 20)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
+          if (k< 50)PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
 //           Int_t pdgCode = fMCStack->Particle(mclabelsCluster[k])->GetPdgCode();
 //           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         }
@@ -1783,7 +1783,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
         fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
       if (TruePhotonCandidate->IsSubLeadingEM())
         fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());
       if (!TruePhotonCandidate->IsLargestComponentPhoton())
         FillPhotonBackgroundHist(TruePhotonCandidate,pdgCodeParticle);
       if (!(TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion())) )
@@ -1916,7 +1916,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
         fHistoTrueClusShowerPt[fiCut]->Fill(TruePhotonCandidate->Pt());
       if (TruePhotonCandidate->IsSubLeadingEM())
         fHistoTrueClusSubLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
-      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMotherMCLabels());
+      fHistoTrueClusNParticles[fiCut]->Fill(TruePhotonCandidate->GetNCaloMotherMCLabels());
       
       if (!TruePhotonCandidate->IsLargestComponentPhoton())
         FillPhotonBackgroundHist(TruePhotonCandidate,pdgCodeParticle);
