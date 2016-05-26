@@ -20,7 +20,7 @@ fNCaloPhotonMotherMCLabels(0),
 fCaloPhotonMCFlags(0)
 {
   // initialize calo photon MC labels
-  for (Int_t i =0; i<20; i++){
+  for (Int_t i =0; i<50; i++){
     fCaloPhotonMCLabels[i]=-1;		
   }
   for (Int_t i =0; i<20; i++){
@@ -49,7 +49,7 @@ fCaloPhotonMCFlags(0)
   //SetE(P());
     
   // initialize calo photon MC labels
-  for (Int_t i =0; i<20; i++){
+  for (Int_t i =0; i<50; i++){
     fCaloPhotonMCLabels[i]=-1;		
   }
   for (Int_t i =0; i<20; i++){
@@ -73,7 +73,7 @@ fCaloPhotonMCFlags(0)
   //Constructor from TLorentzVector
 
   // initialize calo photon MC labels
-  for (Int_t i =0; i<20; i++){
+  for (Int_t i =0; i<50; i++){
     fCaloPhotonMCLabels[i]=-1;		
   }
   for (Int_t i =0; i<20; i++){
@@ -98,7 +98,7 @@ fCaloPhotonMCFlags(original.fCaloPhotonMCFlags)
   //Copy constructor
 
   // initialize calo photon MC labels
-  for (Int_t i =0; i<20; i++){
+  for (Int_t i =0; i<50; i++){
     fCaloPhotonMCLabels[i]=original.fCaloPhotonMCLabels[i];		
   }
   for (Int_t i =0; i<20; i++){
@@ -161,6 +161,38 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
   
   TParticle* Photon;
   if (fNCaloPhotonMCLabels==0) return;
+  
+  // sort the array according to the energy of contributing particles
+  if (fNCaloPhotonMCLabels>1){
+//     cout << "start sorting" << endl;
+    Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
+    Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
+    Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
+    for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
+      orginalContrib[i]       = fCaloPhotonMCLabels[i];
+      if (fCaloPhotonMCLabels[i]> -1){
+        TParticle* dummy  = MCStack->Particle(fCaloPhotonMCLabels[i]);
+        energyPerPart[i]  = dummy->Energy();
+        // suppress energy of hadrons !!! DIRTY hack !!!
+        if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+//           cout << "suppressed hadron energy for:" << dummy->GetPdgCode() << endl;
+          energyPerPart[i]= energyPerPart[i]/10;
+        }  
+      } else {
+        energyPerPart[i]  = 0;
+      }  
+    }  
+    
+    TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
+    for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
+      fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
+      
+    }
+    delete [] sortIdx;
+    delete [] energyPerPart;
+    delete [] orginalContrib;
+  }   
+  
   Photon                            = MCStack->Particle(GetCaloPhotonMCLabel(0));
   
   if(Photon == NULL){
@@ -184,17 +216,20 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
   }
 
   //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
+  //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   if (particleMotherLabel > -1){
     if( abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    }
-    else if (particleGrandMotherLabel > -1){
+    } else if (abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
       if ( abs(particleMotherPDG) == 22 && (abs(particleGrandMotherPDG) == 111 || abs(particleGrandMotherPDG) == 221 || abs(particleGrandMotherPDG) == 331) ){
         fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
         fNCaloPhotonMotherMCLabels++;
-      }
-    }
+      } 
+    } else {
+      fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
+      fNCaloPhotonMotherMCLabels++;
+    }  
   }
 
   // Check whether the first contribution was photon
@@ -239,7 +274,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
     TParticle* dummyPart =NULL;
     
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
-      if (i > 19) continue;													// abort if more than 20 entries to the cluster have been checked (more are not stored in these objects)
+      if (i > 49) continue;													// abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       if (enablePrintOuts) cout << "checking particle: " <<  i << endl;
       dummyPart = MCStack->Particle(GetCaloPhotonMCLabel(i));
       Int_t dummyPartMotherLabel      = dummyPart->GetMother(0);
@@ -340,56 +375,56 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
       }
 
 
-      if (dummyPartMotherLabel > -1){             // test whether particle has a mother
-        if (abs(dummyPart->GetPdgCode()) == 22){  // test whether particle is a photon
+      if (dummyPartMotherLabel > -1){ // test whether particle has a mother
+        if (abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
           //check if photon directly comes from a pion/eta/eta_prime decay
-          if ( abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331){
-            fCaloPhotonMotherMCLabels[i]  = dummyPartMotherLabel;
-            Bool_t helpN                  = true;
-            for(Int_t j=0; j<i; j++){
-              if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
-                helpN                     = false;
-              }
+          Bool_t helpN                    = true;
+          for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
+            if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
+              helpN                       = false;
             }
-            if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
-            if (!isPhoton && !isElectron) 
-              isSubLeadingEM              = kTRUE;
           }
-        }
-
-        if (abs(dummyPart->GetPdgCode()) == 11){  // test whether particle is an electron
+          if (helpN){
+            fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
+            fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+          }  
+          if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+            isSubLeadingEM                = kTRUE;
+        } else if (abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
           //check if electron comes from a pion decay
-          if ( abs(dummyPartMotherPDG) == 111){
-            fCaloPhotonMotherMCLabels[i]  = dummyPartMotherLabel;
-            Bool_t helpN                  = true;
-            for(Int_t j=0; j<i; j++){
+          if ( abs(dummyPartMotherPDG) != 22 ){
+            Bool_t helpN                    = true;
+            for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
               if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
-                helpN                     = false;
+                helpN                       = false;
               }
             }
-            if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
-            if (!isPhoton && !isElectron) 
-              isSubLeadingEM              = kTRUE;
-          }
-          else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
+            if (helpN){
+              fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
+              fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+            }  
+            if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+              isSubLeadingEM                = kTRUE;
+          } else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
             //check if it is a conversion electron that has pion/eta/eta_prime as grandmother
-            if ( abs(dummyPartMotherPDG) == 22 && (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
-              fCaloPhotonMotherMCLabels[i]  = dummyPartGrandMotherLabel;
+            if ( (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
+              
               Bool_t helpN                  = true;
-              for(Int_t j=0; j<i; j++){
+              for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
                 if (fCaloPhotonMotherMCLabels[j] == dummyPartGrandMotherLabel){ //check if grandmother is already contained in fCaloPhotonMotherMCLabels
                   helpN                     = false;
                 }
               }
-              if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+              if (helpN){
+                fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]  = dummyPartGrandMotherLabel;
+                fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+              }  
               if (!isPhoton && !isElectron) 
                 isSubLeadingEM              = kTRUE;
             }
           }
         }
-
       }
-
     }
   }
   fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024;
@@ -418,6 +453,38 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
 
   if (fNCaloPhotonMCLabels==0) return;
   Photon                            = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(0));
+
+  // sort the array according to the energy of contributing particles
+  if (fNCaloPhotonMCLabels>1){
+//     cout << "start sorting" << endl;
+    Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
+    Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
+    Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
+    for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
+      orginalContrib[i]       = fCaloPhotonMCLabels[i];
+      if (fCaloPhotonMCLabels[i]> -1){
+        AliAODMCParticle* dummy  = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
+        energyPerPart[i]  = dummy->E();
+        // suppress energy of hadrons !!! DIRTY hack !!!
+        if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+//           cout << "suppressed hadron energy" << endl;
+          energyPerPart[i]= energyPerPart[i]/10;
+        }  
+      } else {
+        energyPerPart[i]  = 0;
+      }  
+    }  
+    
+    TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
+    for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
+      fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
+      
+    }
+    delete [] sortIdx;
+    delete [] energyPerPart;
+    delete [] orginalContrib;
+  }   
+
   
   if(Photon == NULL){
     return;
@@ -446,13 +513,15 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
     if( abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    }
-    else if (particleGrandMotherLabel > -1){
+    } else if (abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
       if ( abs(particleMotherPDG) == 22 && (abs(particleGrandMotherPDG) == 111 || abs(particleGrandMotherPDG) == 221 || abs(particleGrandMotherPDG) == 331) ){
         fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
         fNCaloPhotonMotherMCLabels++;
-      }
-    }
+      } 
+    } else {
+      fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
+      fNCaloPhotonMotherMCLabels++;
+    }  
   }
     
   // Check whether the first contribution was photon
@@ -495,7 +564,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
     AliAODMCParticle* dummyPartMother       = NULL;
     AliAODMCParticle* dummyPartGrandMother  = NULL;
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
-      if (i > 19) continue;                       // abort if more than 20 entries to the cluster have been checked (more are not stored in these objects)
+      if (i > 49) continue;                       // abort if more than 50 entries to the cluster have been checked (more are not stored in these objects)
       dummyPart = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
       Int_t dummyPartMotherLabel            = dummyPart->GetMother();
       Int_t dummyPartGrandMotherLabel       = -1;
@@ -598,53 +667,53 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
       if (dummyPartMotherLabel > -1){ // test whether particle has a mother
         if (abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
           //check if photon directly comes from a pion/eta/eta_prime decay
-          if ( abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331){
-            fCaloPhotonMotherMCLabels[i]    = dummyPartMotherLabel;
-            Bool_t helpN                    = true;
-            for(Int_t j=0; j<i; j++){
-              if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
-                helpN                       = false;
-              }
+          Bool_t helpN                    = true;
+          for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
+            if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
+              helpN                       = false;
             }
-            if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
-            if (!isPhoton && !isElectron) 
-              isSubLeadingEM                = kTRUE;
           }
-        }
-
-        if (abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
+          if (helpN){
+            fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
+            fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+          }  
+          if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+            isSubLeadingEM                = kTRUE;
+        } else if (abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
           //check if electron comes from a pion decay
-          if ( abs(dummyPartMotherPDG) == 111){
-            fCaloPhotonMotherMCLabels[i]    = dummyPartMotherLabel;
+          if ( abs(dummyPartMotherPDG) != 22 ){
             Bool_t helpN                    = true;
-            for(Int_t j=0; j<i; j++){
+            for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
               if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
                 helpN                       = false;
               }
             }
-            if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
-            if (!isPhoton && !isElectron) 
+            if (helpN){
+              fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
+              fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+            }  
+            if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
               isSubLeadingEM                = kTRUE;
-          }
-          else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
+          } else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
             //check if it is a conversion electron that has pion/eta/eta_prime as grandmother
-            if ( abs(dummyPartMotherPDG) == 22 && (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
-              fCaloPhotonMotherMCLabels[i]  = dummyPartGrandMotherLabel;
+            if ( (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
+              
               Bool_t helpN                  = true;
-              for(Int_t j=0; j<i; j++){
+              for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
                 if (fCaloPhotonMotherMCLabels[j] == dummyPartGrandMotherLabel){ //check if grandmother is already contained in fCaloPhotonMotherMCLabels
                   helpN                     = false;
                 }
               }
-              if (helpN) fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+              if (helpN){
+                fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]  = dummyPartGrandMotherLabel;
+                fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
+              }  
               if (!isPhoton && !isElectron) 
                 isSubLeadingEM              = kTRUE;
             }
           }
         }
-
       }
-
     }
   }
   fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024;
