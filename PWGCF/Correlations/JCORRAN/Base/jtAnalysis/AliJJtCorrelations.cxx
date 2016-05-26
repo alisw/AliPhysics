@@ -194,7 +194,16 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   // copy constructor
 }
 
-
+/*
+ * Histogram filled based on correlation type. Only calls the main histogram filler in case of correct correlation type.
+ *
+ *  corrFillType cFTyp = corraletion type. Histograms only filled for kAzimuthFill
+ *  fillType fTyp = real or mixed events
+ *  int CentBin = centrality bin index
+ *  int zBin = z-vertex bin index
+ *  AliJBaseTrack *ftk1 = Track for trigger particle
+ *  AliJBaseTrack *ftk2 = Track for associated particle
+ */
 void AliJJtCorrelations::FillHisto(corrFillType cFTyp, fillType fTyp, int cBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2){
   // histo filler
   if( cFTyp == kAzimuthFill ){
@@ -203,9 +212,16 @@ void AliJJtCorrelations::FillHisto(corrFillType cFTyp, fillType fTyp, int cBin, 
   
 }
 
-//=============================================================================================
-void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, int ZBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2)
-//=============================================================================================
+/*
+ * Main correlation histogram filler. Reads basic info from tracks and calls other methods that fill the histograms.
+ *
+ *  fillType fTyp = real or mixed events
+ *  int CentBin = centrality bin index
+ *  int zBin = z-vertex bin index
+ *  AliJBaseTrack *ftk1 = Track for trigger particle
+ *  AliJBaseTrack *ftk2 = Track for associated particle
+ */
+void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2)
 {
   // histo filler
   bool twoTracks = false;
@@ -274,9 +290,9 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   // If quality control level is high enough, fill 2D quality control histograms
   if(fcard->Get("QualityControlLevel")>1) fill2DBackgroundQualityControlHistograms = true;
   
-  if(fhistos->fhJT.Dimension()>0) FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
+  FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
-  FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
+  FillDeltaEtaDeltaPhiHistograms(fTyp,zBin);  // Fill the 2D correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
   
 }
@@ -578,6 +594,11 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
   } // background randomization
 }
 
+/*
+ * Fill the deltaEta histogram for simplistic acceptance correction
+ *
+ *  fillType fTyp = real or mixed events
+ */
 void AliJJtCorrelations::FillDeltaEtaHistograms(fillType fTyp)
 {
   // This method fills the mixed event DeltaEta histograms
@@ -587,32 +608,37 @@ void AliJJtCorrelations::FillDeltaEtaHistograms(fillType fTyp)
       fhistos->fhDetaNearMixAcceptance[fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaEta, fTrackPairEfficiency);
     }
   }
-  
-  // Different near side definition for xlong bins
-  if( fNearSide3D ){
-    if( fTyp == 1 ) {
-      if(fPhiGapBinNear>=0 && fXlongBin >= 0) fhistos->fhDeta3DNearMixAcceptance[fCentralityBin][fpttBin][fXlongBin]->Fill( fDeltaEta, fTrackPairEfficiency);
-    }
-  }
+
 }
 
-void AliJJtCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
+/*
+ * Fill deltaEta deltaPhi histograms to be used for acceptance correction
+ *
+ *  fillType fTyp = real or mixed events
+ *  int zVertexBin = bin index for z-vertex bin
+ */
+void AliJJtCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zVertexBin)
 {
   // This method fills the two dimensional DeltaEta,DeltaPhi histograms
   // No acceptance correction here, since we want to see tha structure caused by acceptance effects
   
   // Fill the histogram in pTa bins
   if(fNearSide){
-    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][zVertexBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
   // Fill the histogram in xlong bins
   if(fNearSide3D && fXlongBin >= 0){
-    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][zVertexBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
 }
 
+/*
+ * Fill associated particle pT distribution in pTt and pTa bins
+ *
+ *  fillType fTyp = real or mixed events
+ */
 void AliJJtCorrelations::FillPtaHistograms(fillType fTyp)
 {
   // This method fills various pta histograms
@@ -627,7 +653,14 @@ void AliJJtCorrelations::FillPtaHistograms(fillType fTyp)
   }
 }
 
-
+/*
+ * Calculate the deltaPhi from two phi values
+ *
+ *  double phi1 = first phi value
+ *  double phi2 = second phi value
+ *
+ *  return phi diffence between first and second phi value in interval [-9/20*pi, -9/20*pi+2*pi]
+ */
 double AliJJtCorrelations::DeltaPhi(double phi1, double phi2) {
   // dphi
   double res =  atan2(sin(phi1-phi2), cos(phi1-phi2));

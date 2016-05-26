@@ -352,7 +352,7 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   if(fhistos->fhJT.Dimension()>0) FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp, ZBin);  // Fill all the delta eta histograms
   FillDeltaPhiHistograms(fTyp);  // Fill the azimuthal correlation functions
-  FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
+  FillDeltaEtaDeltaPhiHistograms(fTyp, ZBin);  // Fill the 2D correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
   if(fhistos->fhDRNearPtMoon.Dimension()>0) FillIAAAndMoonHistograms(fTyp, ZBin);  // Fill the I_AA and moon histograms
   
@@ -783,19 +783,19 @@ void AliJCorrelations::FillDeltaPhiHistograms(fillType fTyp)
   if(fIsIsolatedTrigger) fhistos->fhDphiAssocIsolTrigg[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency); //FK//
 }
 
-void AliJCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
+void AliJCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zBin)
 {
   // This method fills the two dimensional DeltaEta,DeltaPhi histograms
   // No acceptance correction here, since we want to see tha structure caused by acceptance effects
   
   // Fill the histogram in pTa bins
   if(fNearSide){
-    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][zBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
   // Fill the histogram in xlong bins
   if(fNearSide3D && fXlongBin >= 0){
-    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][zBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
 }

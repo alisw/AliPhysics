@@ -95,7 +95,7 @@ private:
   
   void FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2, bool fill2DBackground); // jT histogram filler
   void FillDeltaEtaHistograms(fillType fTyp); // deltaEta histogram filler
-  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp); // deltaEta deltaPhi histogram filler
+  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zBin); // deltaEta deltaPhi histogram filler
   void FillPtaHistograms(fillType fTyp); // pTa histogram filler
   void FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign); // jT distribution filler
   void FillJtBackgroundHistograms(int assocType, int gapType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hBackground, AliJTH1D &hBackgroundLikeSign, AliJTH1D &hBackgroundUnlikeSign, AliJTH1D &hPtAssoc, AliJTH2D &hBackground2D, bool fill2DBackground); // jT background filler

@@ -29,8 +29,10 @@ public:
   double GetAcceptanceCorrectionTriangle(double deltaEta);  // Calculate acceptance correction from deltaEta triangle
   double GetAcceptanceCorrectionTriangleInclusive(double deltaEta, int centralityBin, int triggerBin, int assocBin);  // Calculate the acceptance correction from a one dimensional input histogram
   double GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional input histogram
+  double GetAcceptanceCorrectionTraditionalInclusive(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional input histogram
   double GetAcceptanceCorrection3DNearSideCalculation(double deltaEta, double deltaPhi); // Calculate the acceptance correction from geometry for 3D near side
-  double GetAcceptanceCorrection3DNearSideInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional histogram
+  double GetAcceptanceCorrection3DNearSideInclusive(double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Calculate the acceptance correction from a z-vertex summed two dimensional histogram
+  double GetAcceptanceCorrection3DNearSideInclusive(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional histogram
 
   double GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for traditional near side
   double GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for 3D near side
@@ -48,6 +50,10 @@ private:
   void NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional histograms to interval [0,1]
   void NormalizeAcceptance3DNearSideInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional 3D near side histograms according to acceptance limits
   void Generate3DAcceptanceCorrection(); // Calculate 3D near side acceptance correction and store it in 2D histogram
+  int GetRebin(double counts, int nBins, int dimension); // Get rebinning factor for histogram
+  void RebinAndNormalize(TH2 *histogram, double peakValue); // Rebin and normalize two dimensional histogram
+  double GetAcceptanceCorrection3DNearSideInclusiveBin(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin, int firstBin);  // Common correction getter for z-vertex summed and z-vertex binned histograms
+  double GetAcceptanceCorrectionTraditionalInclusiveBin(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin, int firstBin);  // Common correction getter for z-vertex summed and z-vertex binned histograms
   
   AliJCard *fCard;                    // Card containing analysis details
   AliJTH1D fDEtaNearAcceptance;       // DeltaEta acceptance histogram for the near side

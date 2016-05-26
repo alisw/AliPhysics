@@ -814,7 +814,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
 
     fhDphiDetaXlong
         << TH2D( "hDphiDetaXlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-        <<  fTypBin <<  fCentBin << fPTtBin << fXEBin  << "END";
+        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
   
     if(fenable2DHistos){
       
@@ -896,7 +896,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
 
     /*fhDphiDetaKlong
           << TH2D( "hDphiDetaKlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
-          <<  fTypBin <<  fCentBin << fPTtBin << fKLongBin  << "END";*/
+          <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fKLongBin  << "END";*/
   
     if(fenable2DHistos){
       
@@ -978,7 +978,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
 
     fhDphiDetaPta
         << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fTypBin <<  fCentBin << fPTtBin << fPTaBin  << "END";
+        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
   
     if(fenable2DHistos){
       

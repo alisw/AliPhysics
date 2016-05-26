@@ -214,6 +214,7 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
     
     const int numCentBins  = fcard->GetNoOfBins(kCentrType);
     const int numPttBins   = fcard->GetNoOfBins(kTriggType);
+    const int numZvertex   = fcard->GetNoOfBins(kZVertType);
     
     fhistos->fhAcceptanceTraditional2D[0][0][1]->Fill(0.0,0.0);
     int nBinsEta = fhistos->fhAcceptanceTraditional2D[0][0][1]->GetNbinsX();
@@ -240,6 +241,14 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
               fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->Fill(etaValue,phiValue,0);
             } else {
               fhistos->fhAcceptanceTraditional2D[iCent][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
+            }
+            for(int iZ = 0; iZ < numZvertex; iZ++){
+              correction = fAcceptanceCorrection->GetAcceptanceCorrectionTraditionalInclusive(etaValue,phiValue,iCent,iZ,iPtt);
+              if(correction < 1e-6){
+                fhistos->fhAcceptanceTraditional2DZ[iCent][iZ][iPtt][0]->Fill(etaValue,phiValue,0);
+              } else {
+                fhistos->fhAcceptanceTraditional2DZ[iCent][iZ][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
+              }
             }
           } // phi loop
         } // eta loop
@@ -274,6 +283,14 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
               fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Fill(etaValue,phiValue,0);
             } else {
               fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
+            }
+            for(int iZ = 0; iZ < numZvertex; iZ++){
+              correction = fAcceptanceCorrection->GetAcceptanceCorrection3DNearSideInclusive(etaValue,phiValue,iCent,iZ,iPtt);
+              if(correction < 1e-6){
+                fhistos->fhAcceptance3DNearSideZ[iCent][iZ][iPtt][0]->Fill(etaValue,phiValue,0);
+              } else {
+                fhistos->fhAcceptance3DNearSideZ[iCent][iZ][iPtt][0]->Fill(etaValue,phiValue,1.0/correction);
+              }
             }
           } // phi loop
         } // eta loop
