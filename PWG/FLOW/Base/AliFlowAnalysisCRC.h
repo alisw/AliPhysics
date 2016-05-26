@@ -906,10 +906,10 @@ public:
  void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
  TH1D* GetFlowQCIntCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHist[eg][h];};
  void SetFlowQCIntCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHist[eg][k] = TP;};
-  TProfile* GetFlowQCMulCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCMulCorPro[eg][h];};
-  void SetFlowQCMulCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMulCorPro[eg][k] = TP;};
-  TH1D* GetFlowQCMulCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCMulCorHist[eg][h];};
-  void SetFlowQCMulCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMulCorHist[eg][k] = TP;};
+  TProfile* GetFlowQCNewCenPro(Int_t const eg, Int_t const h) const {return this->fFlowQCNewCenPro[eg][h];};
+  void SetFlowQCNewCenPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCNewCenPro[eg][k] = TP;};
+  TH1D* GetFlowQCNewCenHist(Int_t const eg, Int_t const h) const {return this->fFlowQCNewCenHist[eg][h];};
+  void SetFlowQCNewCenHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCNewCenHist[eg][k] = TP;};
   TProfile* GetFlowQCMetricCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorPro[eg][h];};
   void SetFlowQCMetricCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorPro[eg][k] = TP;};
   TH1D* GetFlowQCMetricCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorHist[eg][h];};
@@ -918,10 +918,10 @@ public:
   void SetFlowQCIntCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCIntCorProEG[eg] = TP;};
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
-  TProfile* GetFlowQCMetricCorProEG(Int_t const eg) const {return this->fFlowQCMetricCorProEG[eg];};
-  void SetFlowQCMetricCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCMetricCorProEG[eg] = TP;};
-  TH1D* GetFlowQCMetricCorHistEG(Int_t const eg) const {return this->fFlowQCMetricCorHistEG[eg];};
-  void SetFlowQCMetricCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCMetricCorHistEG[eg] = TP;};
+  TProfile* GetFlowQCNewCenProEG(Int_t const eg) const {return this->fFlowQCNewCenProEG[eg];};
+  void SetFlowQCNewCenProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCNewCenProEG[eg] = TP;};
+  TH1D* GetFlowQCNewCenHistEG(Int_t const eg) const {return this->fFlowQCNewCenHistEG[eg];};
+  void SetFlowQCNewCenHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCNewCenHistEG[eg] = TP;};
   
   TProfile2D* GetFlowQCMetric2DProEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DProEG[eg][bng];};
   void SetFlowQCMetric2DProEG(TProfile2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DProEG[eg][bng] = TP;};
@@ -1592,14 +1592,14 @@ private:
  TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
  TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
- TProfile *fFlowQCMulCorPro[fFlowNHarm][3]; //!
- TH1D *fFlowQCMulCorHist[fFlowNHarm][3]; //!
+ TProfile *fFlowQCNewCenPro[fFlowNHarm][3]; //!
+ TH1D *fFlowQCNewCenHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCMetricCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCMetricCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
-  TProfile *fFlowQCMetricCorProEG[fFlowNHarm]; //!
-  TH1D *fFlowQCMetricCorHistEG[fFlowNHarm]; //!
+  TProfile *fFlowQCNewCenProEG[fFlowNHarm]; //!
+  TH1D *fFlowQCNewCenHistEG[fFlowNHarm]; //!
   TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm][4]; //!
   TH2D *fFlowQCMetric2DHistEG[fFlowNHarm][4]; //!
  
@@ -1650,6 +1650,7 @@ private:
   TF1 *fPolInt[2]; //!
   TF1 *fPolDist[2]; //!
   TF1 *fPolSlope[2]; //!
+  TGraph *fCenMetric; //!
   
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
  TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
@@ -1659,7 +1660,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 12);
+ ClassDef(AliFlowAnalysisCRC, 13);
  
 };
 
