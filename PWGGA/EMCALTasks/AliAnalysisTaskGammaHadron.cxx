@@ -616,22 +616,11 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//    Same event section
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//--Loop over clusters and fill histograms
+	//We do not flg this here for only fSameEventAnalysis==1 because this way we can get results
+	//of this also for the minimum bias data.
 	if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,0,1);//correlate with same event
 	else               CorrelatePi0AndTrack(tracks,0,0,1);    //correlate with same event
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	//    Update the pool
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	if(fSameEventAnalysis==0)
-	{
-		/*TObjArray* tracksClone=0x0;
-		tracksClone = CloneToCreateTObjArray(tracks);
-		//if(!tracksClone)cout<<"**No arrray!!!!!"<<endl;
-		if(tracksClone)
-		{
-			pool->UpdatePool(tracksClone);
-		}*/
-	}
 	return kTRUE;
 }
 //________________________________________________________________________
@@ -693,19 +682,6 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 			FillQAHisograms(0,CaloClusterVec,trackNULL,0,0);
 
 			nAccClusters++;
-		}
-		if(tracks)  //just for current debugging move back to previous stage later
-		{
-			Int_t NoOfTracksInEvent =tracks->GetNParticles();
-			AliVParticle* track=0;
-
-			for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
-			{
-				track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
-				if(!track)continue; //check if the track is a good track
-
-				fHistptAssHadron[0][0]->Fill(track->Pt());
-			}
 		}
 		if(fUsePerTrigWeight==1)
 		{
@@ -991,7 +967,7 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector
 	if(G_PT_Value>=ClusterEcut && TrackVec->Pt()>=TrackPcut && deltaPhi>=Anglecut)
 	{
 		fHistNoClusPtH[identifier]     ->Fill(G_PT_Value,Weight);    //the .pt only works for gammas (E=M) for other particle this is wrong
-		///*comment for the moment!!*/		fHistptAssHadron[identifier][0]->Fill(TrackVec->Pt(),Weight);
+		fHistptAssHadron[identifier][0]->Fill(TrackVec->Pt(),Weight);
 		fHistDpGh[identifier][0]       ->Fill(deltaPhi,Weight);
 
 		//--Fill 2D Histograms for certain event conditions
