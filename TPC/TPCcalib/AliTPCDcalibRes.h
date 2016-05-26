@@ -43,7 +43,8 @@ class AliTPCDcalibRes: public TNamed
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
   enum {kCtrITS,kCtrTRD,kCtrTOF,kCtrBC0,kCtrNtr,kCtrNbr}; // control branches for test stat
- 
+  enum {kLargeTimeDiff=1000*3600};  // misc consts
+
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates
 	kVoxF,   // y/x in sector coordinates
@@ -124,7 +125,7 @@ class AliTPCDcalibRes: public TNamed
   AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
   virtual ~AliTPCDcalibRes();
   
-  void CalibrateVDrift();
+  void CalibrateVDrift(Int_t deltaT, Int_t sigmaT);
   void ProcessFromDeltaTrees();
   void ProcessFromLocalBinnedTrees();
   void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
@@ -249,8 +250,7 @@ class AliTPCDcalibRes: public TNamed
   void        GBin2Vox(UShort_t gbin, UChar_t bvox[kVoxDim]) const;
   //
   void     SetRun(int run)                       {fRun = run;}
-  void     SetTMinMax(Long64_t tmin=0, Long64_t tmax=9999999999) {fTMin=tmin; fTMax=tmax;}
-  void     SetTMinMaxGRP(Long64_t tmin=0, Long64_t tmax=9999999999) {fTMinGRP=tmin; fTMaxGRP=tmax;}
+  void     SetTMinMax(Long64_t tmin=0, Long64_t tmax=9999999999);
   void     SetNXBins(int n=kNPadRows)            {fNXBins = n;}
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
   void     SetNZ2XBins(int n=5)                  {fNZ2XBins = n;}
@@ -729,5 +729,15 @@ inline void AliTPCDcalibRes::GBin2Vox(UShort_t gbin, UChar_t bvox[kVoxDim]) cons
   for (int id=kVoxDim-1;id--;) bvox[id] = (gbin/fNBProdSectG[id])%fNBins[id];
 }
 
+//_____________________________________________
+inline void AliTPCDcalibRes::SetTMinMax(Long64_t tmin, Long64_t tmax) {
+  // set min max time
+  fTMin = tmin;
+  fTMax = tmax;
+  if (fTMin>=fTMax) {
+    fTMin = 0;
+    fTMax = 9999999999;
+  } 
+}
 
 #endif

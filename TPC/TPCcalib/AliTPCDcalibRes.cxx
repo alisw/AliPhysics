@@ -161,6 +161,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fQ2Pt(0)
   ,fTgLam(0)
 {
+  SetTMinMax(tmin,tmax);
   for (int i=0;i<kResDim;i++) {
     for (int j=0;j<2;j++) fNPCheb[i][j] = -1; //determine from job binning// 15;
     fChebPrecD[i] = 100e-4;
@@ -224,12 +225,48 @@ void AliTPCDcalibRes::SetExternalDetectors(int det)
 }
 
 //________________________________________
-void AliTPCDcalibRes::CalibrateVDrift()
+void AliTPCDcalibRes::CalibrateVDrift(Int_t deltaT, Int_t sigmaT)
 {
-  // run VDrift calibration from residual trees
+  // run VDrift calibration from residual trees, with deltaT time binning and sigmaT smoothing
   TStopwatch sw;
+  const float kSafeMargin = 0.25f;
+  const int kDelTDef=120.,kSigTDef=600;
+  Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
+  Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
+  Int_t duration = tmx - tmn;
+  if (deltaT<1) {
+    deltaT = kDelTDef;
+    AliInfoF("Setting VDrift time-bin to %d",deltaT);
+  }
+  if (sigmaT<1) {
+    sigmaT = kSigTDef;
+    AliInfoF("Setting VDrift time-smoothing to %d",sigmaT);
+  }
+  int nTBins = TMath::Max(1,TMath::Nint(float(duration)/deltaT));
+  // check available statistics
+  if (!EstimateStatistics()) AliFatal("Cannot process further");
+  float fracMult = fTestStat[kCtrNtr][kCtrNtr];
+  Bool_t useTOFBC = fUseTOFBC;
+  float statEst = 0;
+  if (useTOFBC) {
+    if      (fExtDet==kUseTRDonly) statEst = fTestStat[kCtrBC0][kCtrTRD];
+    else if (fExtDet==kUseTOFonly) statEst = fTestStat[kCtrBC0][kCtrTOF];
+    else if (fExtDet==kUseITSonly) statEst = fTestStat[kCtrBC0][kCtrITS];
+    else if (fExtDet==kUseTRDorTOF) statEst = fTestStat[kCtrBC0][kCtrTOF]; // contribution of TRD is negligable
+  }
+  else {
+    if      (fExtDet==kUseTRDonly) statEst = fTestStat[kCtrTRD][kCtrTRD];
+    else if (fExtDet==kUseTOFonly) statEst = fTestStat[kCtrTOF][kCtrTOF];
+    else if (fExtDet==kUseITSonly) statEst = fTestStat[kCtrITS][kCtrITS];
+    else if (fExtDet==kUseTRDorTOF) statEst = fTestStat[kCtrTRD][kCtrTRD]+
+				      fTestStat[kCtrTOF][kCtrTOF]-fTestStat[kCtrTRD][kCtrTOF];
+  }
+  statEst *= fTestStat[kCtrNtr][kCtrNtr]; // loss due to the mult selection
+  statEst *= fNTestTracks*fInputChunks->GetEntriesFast()*(1.-kSafeMargin); // safety margin for losses (outliers etc)
+  //
+  statEst *= TMath::Min(1.f,float(duration)/(fTMaxGRP-fTMinGRP));
+  float statEstTBin = statEst/nTBins;
   // select tracks matching to time window and write compact local trees
-  //  EstimateStatistics();
   //
   CollectData(kVDriftCalibMode);
   //
@@ -386,7 +423,6 @@ void AliTPCDcalibRes::Init()
   }
 
   // init histo for track rate
-  const Long64_t kLargeTimeDiff = 1000*3600; // to allow process close runs together in special mode
   Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
   Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
   fTracksRate = new TH1F("TracksRate","TracksRate", 1+tmx-tmn, -0.5+tmn,0.5+tmx);
@@ -544,13 +580,13 @@ Bool_t AliTPCDcalibRes::EstimateStatistics()
     if (!br[i]->GetAddress()) AliFatalF("Control branch %s address is not set",kControlBr[i]);
     if (!tree->GetBranchStatus(kControlBr[i])) AliFatalF("Control branch %s is not active",kControlBr[i]);
   }	       
-  int nTracks = tree->GetEntries();
+  fNTestTracks = tree->GetEntries();
   memset(fTestStat,0,kCtrNbr*kCtrNbr*sizeof(float));
   if (fTOFBCTestH) delete fTOFBCTestH;
-  fTOFBCTestH = new TH1F("TOFBCtest",Form("TOF BC for %d tracks",nTracks),1000,-500.,500.);
+  fTOFBCTestH = new TH1F("TOFBCtest",Form("TOF BC for %d tracks",fNTestTracks),1000,-500.,500.);
   fTOFBCTestH->SetDirectory(0);
   Bool_t condOK[kCtrNbr];
-  for (int itr=0;itr<nTracks;itr++) {
+  for (int itr=0;itr<fNTestTracks;itr++) {
     for (int ib=kCtrNbr;ib--;) br[ib]->GetEntry(itr);
     condOK[kCtrITS] = fDeltaStr.itsOK;
     condOK[kCtrTRD] = fDeltaStr.trdOK;
@@ -560,8 +596,8 @@ Bool_t AliTPCDcalibRes::EstimateStatistics()
     for (int i=kCtrNbr;i--;) for (int j=kCtrNbr;j--;) if (condOK[i]&&condOK[j]) fTestStat[i][j]++;
     fTOFBCTestH->Fill(fDeltaStr.tofBC);
   }
-  if (nTracks)  for (int i=kCtrNbr;i--;)  for (int j=kCtrNbr;j--;) fTestStat[i][j] /= nTracks;
-  AliInfoF("Accepted statistics wrt %d tracks in chunk id=%d (out %d)",nTracks,chunk,nChunks);
+  if (fNTestTracks)  for (int i=kCtrNbr;i--;)  for (int j=kCtrNbr;j--;) fTestStat[i][j] /= fNTestTracks;
+  AliInfoF("Accepted statistics wrt %d tracks in chunk id=%d (out of %d)",fNTestTracks,chunk,nChunks);
   printf(" %11s",""); for (int i=0;i<kCtrNbr;i++) printf("  %11s",kControlBr[i]); printf("\n");
   for (int i=0;i<kCtrNbr;i++) {
     printf("*%11s",kControlBr[i]);
