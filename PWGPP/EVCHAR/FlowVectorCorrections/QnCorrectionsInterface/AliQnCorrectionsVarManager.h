@@ -234,7 +234,8 @@ class AliQnCorrectionsVarManager : public TNamed {
     kDeltaTheta,        
     kDeltaEta,          
     kFilterBit,         
-    kDetector=kFilterBit+9,
+    kFilterBitMask768=kFilterBit+9,
+    kDetector,
     kQvectorX,
     kQvectorY,
     kNVars
@@ -291,7 +292,7 @@ class AliQnCorrectionsVarManager : public TNamed {
     kFilterBit7, 
     kFilterBit8        
   };
- 
+
   // offline triggers as defined in AliVEvent.h
   // NOTE: Check consistency with updates in aliroot!!!
   enum EOfflineTriggerTypes { 

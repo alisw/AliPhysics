@@ -147,13 +147,14 @@ void AliQnCorrectionsSteps::RecenterQvec(AliQnCorrectionsQnVector* QvectorIn, Al
 
         if(QvectorIn->CheckQnVectorStatus(ih,AliQnCorrectionsConstants::kUndefined)) continue;
 
-        QvectorOut->SetQx( ih, 
-            QvectorIn->Qx(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,0)->GetBinContent(bin)/axentries);
-        QvectorOut->SetQy( ih,  
-            QvectorIn->Qy(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,1)->GetBinContent(bin)/axentries);
+        if (!(axentries < 1.90)) {
+          QvectorOut->SetQx( ih, 
+              QvectorIn->Qx(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,0)->GetBinContent(bin)/axentries);
+          QvectorOut->SetQy( ih,  
+              QvectorIn->Qy(ih) - inputHistos->CalibrationHistogramQ(useStep,ih,1)->GetBinContent(bin)/axentries);
+        }
 
         QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kRecentering);
-        if(axentries==1) QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kUndefined);   // With one event in the event class, Qvector becomes undefined after recentering
 
       }
 
@@ -326,13 +327,19 @@ void AliQnCorrectionsSteps::RotateQvec(AliQnCorrectionsQnVector* QvectorIn, AliQ
     eXY =  TMath::Sqrt((eXY*eXY/n-(XY/n*XY/n))/n);
     eYX =  TMath::Sqrt((eYX*eYX/n-(YX/n*YX/n))/n);
 
-    Double_t dphi = -TMath::ATan((XY-YX)/(XX+YY))/alignmentHarmonic;
+    Double_t dphi;
+    if (n < 1.99) {
+      dphi = 0.0;
+      }
+    else {
+      dphi= -TMath::ATan2((XY/n-YX/n),(XX/n+YY/n))/alignmentHarmonic;
+      }
     Double_t edenom2 = eXY*eXY+eYX*eYX;
     Double_t enumer2 = eXX*eXX+eYY*eYY;
 
     for(Int_t ih=minHar; ih<=maxHar; ++ih) {QvectorOut->SetQnVectorStatus(ih, AliQnCorrectionsConstants::kAlignment);}
 
-    if(TMath::Sqrt((XY-YX)*(XY-YX)/edenom2)<2.) return;
+    if(TMath::Sqrt((XY/n-YX/n)*(XY/n-YX/n)/edenom2)<2.) return;
     //if(!(dphi<1.)) return;
 
     Double_t equot  = TMath::Sqrt(enumer2/(XX+YY)/(XX+YY)+edenom2/(XY-YX)/(XY-YX))*((XY-YX)/(XX+YY));

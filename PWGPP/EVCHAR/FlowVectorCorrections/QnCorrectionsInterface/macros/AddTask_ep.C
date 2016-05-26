@@ -40,9 +40,10 @@
 void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos* histos, TString histClass);
 
 void AddVZERO(AliQnCorrectionsManager* QnManager);
-void AddTPC(AliQnCorrectionsManager* QnManager);
+void AddTPC(AliQnCorrectionsManager* QnManager, Bool_t isESD, Bool_t UseTPConlyTracks);
 void AddTZERO(AliQnCorrectionsManager* QnManager);
-void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager);
+void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager, Bool_t isESD);
+void AddFMDTaskForESDanalysis(AliAnalysisManager *mgr);
 void AddRawFMD(AliQnCorrectionsManager* QnManager);
 void AddZDC(AliQnCorrectionsManager* QnManager);
 void AddSPD(AliQnCorrectionsManager* QnManager);
@@ -62,6 +63,10 @@ AliAnalysisDataContainer* AddTask_ep() {
     return 0;
   }
 
+  Bool_t isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+  Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+
+  cout<<"I AM ESD !!!!!!!!!!!!!!!!! "<<isESD<<"  "<<isAOD<<endl;
 
   AliQnCorrectionsManager* QnManager = new AliQnCorrectionsManager();
   AliAnalysisTaskFlowVectorCorrections* taskEP = new AliAnalysisTaskFlowVectorCorrections("FlowVectorCorrections");
@@ -94,10 +99,11 @@ AliAnalysisDataContainer* AddTask_ep() {
     taskEP->SetCalibrationFilePath("alien:///alice/cern.ch/user/j/jonderwa/CalibrationFiles/LHC10h.root");
   }
 
-  taskEP->GetFillEvent()->SetUseTPCStandaloneTracks(kFALSE);  // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+  Bool_t UseTPConlyTracks=kFALSE;
+  taskEP->GetFillEvent()->SetUseTPCStandaloneTracks(UseTPConlyTracks);  // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
 
   if (b2015DataSet) {
-    AddTPC(QnManager);
+    AddTPC(QnManager, isESD, UseTPConlyTracks);
     AddSPD(QnManager);
     AddVZERO(QnManager);
     AddTZERO(QnManager);
@@ -106,10 +112,10 @@ AliAnalysisDataContainer* AddTask_ep() {
   }
   else {
     AddVZERO(QnManager);
-    AddTPC(QnManager);
-    AddTZERO(QnManager);
+    AddTPC(QnManager, isESD, UseTPConlyTracks);
+    if(isESD) AddTZERO(QnManager);
     AddZDC(QnManager);
-    AddFMD(mgr,QnManager);
+    AddFMD(mgr,QnManager, isESD);
     //AddRawFMD(QnManager);
     //AddSPD(QnManager);
   }
@@ -282,7 +288,7 @@ void AddVZERO(AliQnCorrectionsManager* QnManager){
 
 }
 
-void AddTPC(AliQnCorrectionsManager* QnManager){
+void AddTPC(AliQnCorrectionsManager* QnManager, Bool_t isESD, Bool_t UseTPConlyTracks){
 
   /////////////// Add TPC subdetectors ///////////////////
 
@@ -320,14 +326,33 @@ void AddTPC(AliQnCorrectionsManager* QnManager){
 
 
   AliQnCorrectionsCuts *trackTPC = new AliQnCorrectionsCuts();
+  if(!isESD){
+    trackTPC->AddFlag(AliQnCorrectionsVarManager::kFilterBitMask768,0.5,1.5);
   //trackTPC->AddFlag(QnCorrectionsVarManager::kFilterBit,QnCorrectionsVarManager::kFilterBit0,kTRUE);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaXY,-0.3,0.3);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaZ ,-0.3,0.3);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.8,0.8);
-  //trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.3,0.3, kTRUE);  // exclusion region
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,5.);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCncls,70.0,161.0);
-  trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCchi2,0.2,4.0);
+    trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.8,0.8);
+    trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,5.);
+  }
+  else{
+    if(UseTPConlyTracks){
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaXY,-3.0,3.0);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaZ ,-3.0,3.0);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.8,0.8);
+      //trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.3,0.3, kTRUE);  // exclusion region
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,5.);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCnclsIter1,70.0,161.0);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCchi2,0.2,4.0);
+    }
+    else{
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaXY,-0.3,0.3);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kDcaZ ,-0.3,0.3);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.8,0.8);
+      //trackTPC->AddCut(AliQnCorrectionsVarManager::kEta,-0.3,0.3, kTRUE);  // exclusion region
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kPt,0.2,5.);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCncls,70.0,161.0);
+      trackTPC->AddCut(AliQnCorrectionsVarManager::kTPCchi2,0.2,4.0);
+    }
+  }
+
   TPCconf->SetDataVectorCuts(trackTPC);
 
   TPCconf->SetQnCorrectionRecentering();
@@ -387,7 +412,7 @@ void AddTZERO(AliQnCorrectionsManager* QnManager){
   /////////////// Add TZERO subdetectors ///////////////////
 
   Short_t TZEROchannels[2][24];
-  for(Int_t iv0=0; iv0<2; iv0++) for(Int_t ich=0; ich<23; ich++) TZEROchannels[iv0][ich] = 0;
+  for(Int_t iv0=0; iv0<2; iv0++) for(Int_t ich=0; ich<24; ich++) TZEROchannels[iv0][ich] = 0;
 
   for(Int_t ich=12; ich<24; ich++) TZEROchannels[0][ich] = 1;  // channel list: value 1 if channel should be used
   for(Int_t ich=0; ich<12; ich++) TZEROchannels[1][ich] = 1;
@@ -541,9 +566,7 @@ void AddZDC(AliQnCorrectionsManager* QnManager){
 
 }
 
-
-void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
-
+void AddFMDTaskForESDanalysis(AliAnalysisManager *mgr){
 
   gSystem->Load("libPWGLFforward2");  // for FMD
 
@@ -596,13 +619,17 @@ void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager){
   mgr->ConnectInput(taskFmd, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskFmd, 1, histOut);
 
-  //mgr->AddTask(taskFmd);
+}
+
+void AddFMD(AliAnalysisManager *mgr, AliQnCorrectionsManager* QnManager, Bool_t isESD){
+
+  if(isESD) AddFMDTaskForESDanalysis(mgr);
 
   const Int_t gkFMDstep=0;
   Short_t FMDchannels[2][4000];
   for(Int_t iv0=0; iv0<2; iv0++) for(Int_t ich=0; ich<4000; ich++) FMDchannels[iv0][ich] = 0;
 
-  for(Int_t ich=2001; ich<4000; ich++) FMDchannels[0][ich] = 1;  // channel list: value 1 if channel should be used
+  for(Int_t ich=2000; ich<4000; ich++) FMDchannels[0][ich] = 1;  // channel list: value 1 if channel should be used
   for(Int_t ich=0; ich<2000; ich++) FMDchannels[1][ich] = 1;
 
   //-----------------------------------------------------------
