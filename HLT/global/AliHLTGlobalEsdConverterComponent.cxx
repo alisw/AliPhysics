@@ -379,16 +379,18 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   if (pCTPData) {
     AliHLTTriggerMask_t mask=pCTPData->ActiveTriggers(trigData);
     for (int index=0; index<gkNCTPTriggerClasses; index++) {
-      if ((mask&(AliHLTTriggerMask_t(0x1)<<index)) == 0) continue;
-      pESD->SetTriggerClass(pCTPData->Name(index), index);
+      if (!mask.test(index)) continue;
+      const char* name = pCTPData->Name(index);
+      if( name && name[0]!='\0' && strncmp(name,"AliHLTReadoutList",17)!=0){
+	pESD->SetTriggerClass(name, index);
+      }
     }
+    ULong64_t low, high;
+    pCTPData->GetTriggerMaskAll(low,high);
     //first 50 triggers
-    AliHLTTriggerMask_t mask50;
-    mask50.set(); // set all bits
-    mask50 >>= 50; // shift 50 right
-    pESD->SetTriggerMask((mask&mask50).to_ulong());
-    //next 50
-    pESD->SetTriggerMaskNext50((mask>>50).to_ulong());
+    pESD->SetTriggerMask(low);
+    //next 50 triggers
+    pESD->SetTriggerMaskNext50(high);
   }
 
   TTree* pTree = NULL;
