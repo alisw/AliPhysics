@@ -18,6 +18,7 @@ class TH3F;
 class TF1;
 class AliADCalibData;
 class AliAnalysisUtils;
+class AliTriggerAnalysis; 
 
 #include "AliAnalysisTaskSE.h"
 
@@ -49,10 +50,12 @@ private:
 
   TList       *fListHist;                       //! List of histograms
   /*From ESD*/
-  TH1F        *fHistTotalChargePerEventADA;
+TH1F        *fHistTotalChargePerEventADA;
   TH1F        *fHistTotalChargePerEventADC;
   TH2F        *fHistChargePerPM_All;
+  TH2F        *fHistChargePerPM_BB;
   TH2F        *fHistChargePerPM_BG;
+  TH2F        *fHistChargePerPM_Time;
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
@@ -102,53 +105,39 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  
   TH3F	      *fHistTimeVsChargePerPM_UnCorr;
-  /*TH3F	      *fHistTimeVsChargePerPM_UnCorr_Cut;
-  TH3F	      *fHistTimePairCorrelation;
-  TH3F	      *fHistTimePairCorrelation_Cut; */
-  TTree	      *fTimeSlewingTree;
-  UShort_t    fAdc[16];
-  UShort_t    fAdcTail[16]; 
-  UShort_t    fTdc[16];
   
-  TH3F	      *fHistChargeTriggerPerPMPerV0Flag;
-  TH3F	      *fHistChargeTailPerPMPerV0Flag;
-  TH3F	      *fHistChargeBBPerPMPerV0Flag;
+  /*Aging monitoring*/
+  TH3F	      *fHistTriggerChargePerPMPerV0Flag;
+  TH3F	      *fHistTailChargePerPMPerV0Flag;
+  TH3F	      *fHistIntegratedChargePerPMPerV0Flag;
   
-  TH2F	      *fHistChargeTriggerPerChannel;
-  TH2F	      *fHistChargeTriggerPerChannel_PF;
-  TH2F	      *fHistChargeTriggerPerChannel_TVX;
-  TH2F	      *fHistChargeTriggerPerChannel_PF_TVX;
+  TH2F	      *fHistTriggerChargePerChannel;
+  TH2F	      *fHistTriggerChargePerChannel_PF;
+  TH2F	      *fHistTriggerChargePerChannel_TVX;
+  TH2F	      *fHistTriggerChargePerChannel_PF_TVX;
   
-  TH2F	      *fHistChargeTailPerChannel;
-  TH2F	      *fHistChargeTailPerChannel_PF;
-  TH2F	      *fHistChargeTailPerChannel_TVX;
-  TH2F	      *fHistChargeTailPerChannel_PF_TVX;  
+  TH2F	      *fHistTailChargePerChannel;
+  TH2F	      *fHistTailChargePerChannel_PF;
+  TH2F	      *fHistTailChargePerChannel_TVX;
+  TH2F	      *fHistTailChargePerChannel_PF_TVX;  
   
-  TH2F        *fHistChargePerPM_BB; 
-  TH2F        *fHistChargePerPM_BB_PF;
-  TH2F        *fHistChargePerPM_BB_TVX;  
-  TH2F        *fHistChargePerPM_BB_PF_TVX;
-  
-  TH2F        *fHistChargePerPM_Time; 
-  TH2F        *fHistChargePerPM_Time_PF;
-  TH2F        *fHistChargePerPM_Time_TVX;  
-  TH2F        *fHistChargePerPM_Time_PF_TVX;
+  TH2F        *fHistIntegratedChargePerChannel; 
+  TH2F        *fHistIntegratedChargePerChannel_PF;
+  TH2F        *fHistIntegratedChargePerChannel_TVX;  
+  TH2F        *fHistIntegratedChargePerChannel_PF_TVX;  
+    
+  TH1F	      *fHistADMOn; 
+  TH1F	      *fHistADMOff;
    
-  Int_t        fRun;
-  Int_t        fOldRun;
-
-  void	       SetCalibData();
-  AliADCalibData* fCalibData;      // calibration data
-  
-  AliAnalysisUtils* fAnalysisUtils;
+  AliAnalysisUtils *fAnalysisUtils;
+  AliTriggerAnalysis *fTriggerAnalysis;
   
 
   AliAnalysisTaskADPilot(const AliAnalysisTaskADPilot&);            // not implemented
   AliAnalysisTaskADPilot& operator=(const AliAnalysisTaskADPilot&); // not implemented
   
-  ClassDef(AliAnalysisTaskADPilot, 4);
+  ClassDef(AliAnalysisTaskADPilot, 5);
 };
 
 #endif
