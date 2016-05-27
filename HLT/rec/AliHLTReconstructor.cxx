@@ -152,7 +152,9 @@ void AliHLTReconstructor::Init()
 	pSystem->SwitchAliLog(0);
       } else if (token.CompareTo("ignore-hltout")==0) {
 	fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
-      } else if (token.CompareTo("run-online-config")==0) {
+ 	if (option.Length()>0) option+=" ";
+	option+=token;
+     } else if (token.CompareTo("run-online-config")==0) {
         fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
 	if (option.Length()>0) option+=" ";
 	option+=token;
@@ -288,6 +290,14 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       delete pHLTOUT;
       pHLTOUT=NULL;
     }
+    // same for HLTInput
+    AliHLTOUT* pHLTInput=NULL;
+    pSystem->InvalidateHLTInput(&pHLTInput);
+    if (pHLTInput) {
+      pHLTInput->Reset();
+      delete pHLTInput;
+      pHLTInput=NULL;
+    }
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       // this is the highest level where an error can be detected, no error
       // codes can be returned
@@ -315,9 +325,11 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
 	input=rawReader;
       }
       pHLTOUT=new AliHLTOUTRawReader(input, eventNo, fpEsdManager);
-      if (pHLTOUT) {
-	if (pHLTOUT->Init()>=0) {
+      pHLTInput=new AliHLTOUTRawReader(rawReader);
+      if (pHLTOUT && pHLTInput) {
+	if (pHLTOUT->Init()>=0 && pHLTInput->Init()>=0) {
 	  pSystem->InitHLTOUT(pHLTOUT);
+	  pSystem->InitHLTInput(pHLTInput);
 	} else {
 	  AliError("error : initialization of HLTOUT handler failed");
 	}
@@ -330,7 +342,9 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
 
     if ((iResult=pSystem->Reconstruct(1, NULL, rawReader))>=0) {
     }
-  }
+    pSystem->InvalidateHLTInput(&pHLTInput);
+    delete pHLTInput;
+   }
 }
 
 void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree*/, 
@@ -695,7 +709,9 @@ int AliHLTReconstructor::BuildCTPTriggerClassString(TString& triggerclasses) con
       AliTriggerClass* trclass = NULL;
       if (classesArray.At(iclass) && (trclass=dynamic_cast<AliTriggerClass*>(classesArray.At(iclass)))!=NULL) {
 	TString entry;
-	int trindex = trclass->GetIndex();
+  //trigger classes in the OCDB start at offset 1, not zero we need to subtract 1 when constructing
+  //the ECS param string, this is done also in offline: Bool_t AliReconstruction::GetEventInfo()
+	int trindex = trclass->GetIndex()-1;
 	entry.Form("%02d:%s:", trindex, trclass->GetName());
 	AliTriggerCluster* cluster=NULL;
 	TObject* clusterobj=config->GetClusters().FindObject(trclass->GetCluster());

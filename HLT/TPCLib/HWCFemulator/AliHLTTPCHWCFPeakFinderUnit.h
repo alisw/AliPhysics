@@ -37,6 +37,8 @@ class AliHLTTPCHWCFPeakFinderUnit
   void SetChargeFluctuation( AliHLTUInt32_t val ){ 
     fChargeFluctuation = val;
   }
+  
+  void SetNoiseSuppression( AliHLTUInt32_t val) {fNoiseSuppression = val;}
 
 
   /** initialise */
@@ -59,6 +61,7 @@ class AliHLTTPCHWCFPeakFinderUnit
   AliHLTTPCHWCFBunch fOutput; // current output
   const AliHLTTPCHWCFBunch *fkBunch; // current input
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
+  AliHLTUInt32_t fNoiseSuppression; // noise suppression while peak finding
   int fDebug; // debug level
 };
 

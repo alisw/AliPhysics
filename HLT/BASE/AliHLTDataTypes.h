@@ -774,7 +774,7 @@ extern "C" {
     }
 
     //Print this datatype to a string, bufferlen is the len of the buffer, this function will return a zero-terminated string of max len bufferLen - 1
-    void PrintDataType(char* buffer, unsigned int bufferLen);
+    void PrintDataType(char* buffer, unsigned int bufferLen) const;
   };
 
   /**
@@ -818,7 +818,11 @@ extern "C" {
   {
     for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
     {
-      if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
+      if (!(topic[i]=='*' || reference[i]=='*' || 
+            topic[i]=='\0' || reference[i]=='\0' || 
+            topic[i]==reference[i])) {
+        return false;
+      }
     }
     return true;
   }
@@ -875,7 +879,7 @@ extern "C" {
     bool operator==( const AliHLTDataTopic& dt )
     {
       bool topicMatch = Topicncmp(dt.fTopic, fTopic);
-      return dt.fSpecification==fSpecification && topicMatch;
+      return topicMatch;
     }
 
     std::string Description() const
@@ -888,13 +892,13 @@ extern "C" {
       return description;
     }
 
-    std::string GetOrigin()
+    std::string GetOrigin() const
     {
       std::string origin(fTopic+kAliHLTComponentDataTypefIDsize, kAliHLTComponentDataTypefOriginSize);
       return origin;
     }
 
-    std::string GetID()
+    std::string GetID() const
     {
       std::string id(fTopic, kAliHLTComponentDataTypefIDsize);
       return id;

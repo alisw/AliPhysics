@@ -22,6 +22,7 @@
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTDataInflater.h"
 #include "AliHLTTPCHWClusterMerger.h"
+#include "AliHLTTPCClusterFlagsData.h"
 #include <vector>
 
 /**
@@ -66,7 +67,9 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   int AddRawClustersDescriptor(const AliHLTComponentBlockData* pDesc);
   int AddClusterMCData(const AliHLTComponentBlockData* pDesc);
   int AddClusterIds(const AliHLTComponentBlockData* pDesc);
+  int AddClusterFlags(const AliHLTComponentBlockData* pDesc);
   AliHLTUInt32_t GetClusterId(int clusterNo) const;
+  unsigned short GetNextClusterFlag();
   const AliHLTTPCClusterMCLabel* GetMCLabel(AliHLTUInt32_t clusterId) const;
 
   void Clear(const char* option="");
@@ -93,8 +96,13 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
 
   vector<AliClusterIdBlock> fPartitionClusterIds; //! clusters ids for clusters of individual partitions
+  vector<AliHLTTPCClusterFlagsData*> fPartitionClusterFlags; //! same for cluster flags
   AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
   AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
+  AliHLTTPCClusterFlagsData* fCurrentClusterFlags; //! same for flags
+  unsigned int fDecodeFlagsTmpFlag; //!
+  unsigned int fDecodeFlagsTmpPos; //!
+  unsigned int fDecodeFlagsTmpEntries; //!
   vector<const AliHLTTPCClusterMCData*> fClusterMCData; //! references to MC data blocks
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
@@ -251,6 +259,8 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     }
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
       AliHLTUInt32_t id=GetClusterId(decodedClusterCnt);
+      unsigned short flags = GetNextClusterFlag();
+      rawCluster.SetFlags(flags);
       const AliHLTTPCClusterMCLabel* pMC=GetMCLabel(id);
       if (fUseClusterMerger && fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
 	fpClusterMerger->AddCandidate(slice, partition, id, rawCluster, pMC);
@@ -263,6 +273,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       c.SetSigmaZ2(rawCluster.GetSigmaTime2());
       c.SetCharge(rawCluster.GetCharge());
       c.SetQMax(rawCluster.GetQMax());
+      c.SetFlags(rawCluster.GetFlags());
       if (pMC) c.SetMC(pMC);
       outClusterCnt++;
       }
@@ -300,6 +311,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	c.SetSigmaZ2(mergedCluster.GetSigmaTime2());
 	c.SetCharge(mergedCluster.GetCharge());
 	c.SetQMax(mergedCluster.GetQMax());
+	c.SetFlags(mergedCluster.GetFlags());
 	c.SetMC(&mc);
 	outClusterCnt++;
 	remainingCnt++;

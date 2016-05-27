@@ -101,7 +101,6 @@ public:
     AliEveDataSource* GetDataSourceOffline(){return fDataSourceOffline;}
     AliEveDataSource* GetDataSourceHLTZMQ(){return fDataSourceHLTZMQ;}
     
-    Bool_t ReceivePromptRecoParameters(Int_t runNo);
 
     static void SetCdbUri(TString path);
 

@@ -351,7 +351,7 @@ Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, con
  * ######################## PushToFXS #####################
  */
 
-Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
+Int_t AliHLTCalibrationProcessor::PushToFXS(const TObject* pObject, const char* pDetector, const char* pFileID, const AliHLTReadoutList* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;

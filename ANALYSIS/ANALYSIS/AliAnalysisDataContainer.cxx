@@ -57,6 +57,7 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisTask.h"
 #include "AliLog.h"
+#include <TBuffer.h>
 
 using std::endl;
 using std::cout;
@@ -151,6 +152,19 @@ AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisD
 }      
 
 //______________________________________________________________________________
+void AliAnalysisDataContainer::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliAnalysisDataContainer.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(AliAnalysisDataContainer::Class(),this);
+      this->SetDataOwned(kTRUE);
+   } else {
+      R__b.WriteClassBuffer(AliAnalysisDataContainer::Class(),this);
+   }
+}
+
+//______________________________________________________________________________
 void AliAnalysisDataContainer::AddConsumer(AliAnalysisTask *consumer, Int_t islot)
 {
 // Add a consumer for contained data;
@@ -240,7 +254,7 @@ Long64_t AliAnalysisDataContainer::Merge(TCollection *list)
 // Merge a list of containers with this one. Containers in the list must have
 // data of the same type.
    if (!list || !fData) return 0;
-   AliInfo(Form("Merging %d containers %s\n", list->GetSize()+1, GetName()));
+   AliInfo(Form("Merging %d containers %s\n", list->GetEntries(), GetName()));
    TMethodCall callEnv;
    if (fData->IsA())
       callEnv.InitWithPrototype(fData->IsA(), "Merge", "TCollection*");

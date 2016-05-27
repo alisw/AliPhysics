@@ -353,7 +353,7 @@ const char kAliHLTDataOriginCPV[kAliHLTComponentDataTypefOriginSize]   = {'C','P
 const char kAliHLTDataOriginPMD[kAliHLTComponentDataTypefOriginSize]   = {'P','M','D',' '};
 
 /** T0 */
-const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize]   = {'T','Z','R','O'};
+const char kAliHLTDataOriginT0[kAliHLTComponentDataTypefOriginSize]   = {'T','0',' ',' '};
 
 /** VZERO */
 const char kAliHLTDataOriginVZERO[kAliHLTComponentDataTypefOriginSize]   = {'V','Z','R','O'};
@@ -376,7 +376,7 @@ const char kAliHLTDataOriginPTR[kAliHLTComponentDataTypefOriginSize]  = {'P','T'
 /** config **/
 const char kAliHLTDataOriginCONFIG[kAliHLTComponentDataTypefOriginSize] = {'C','O','N','F'};
 
-void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen)
+void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen) const
 {
 	if (bufferLen == 1) *buffer = 0;
 	if (bufferLen <= 1) return;

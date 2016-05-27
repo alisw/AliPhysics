@@ -25,6 +25,7 @@
 #include "AliHLTPluginBase.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDataBuffer.h"
+#include "TSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTPluginBase)
@@ -59,6 +60,11 @@ AliHLTPluginBase::~AliHLTPluginBase()
 void AliHLTPluginBase::InitInstance()
 {
   // see header file for class documentation
+  if (fNofInstances == 0)
+  {
+    gSystem->Load("libHLTbase");
+    gSystem->Load("libHLTrec");
+  }
   if (!fpSystem) fpSystem=new AliHLTSystem;
 }
 

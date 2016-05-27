@@ -117,7 +117,7 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environParam, int
   if (!cdbPath) cdbPath = getenv("ALICE_ROOT");
   int ret = gComponentHandler_C->CreateComponent( componentType, comp);
   if (ret>=0 && comp) {
-    AliHLTMisc::Instance().InitCDB(cdbPath);
+    AliHLTMisc::Instance().InitCDB(cdbPath, getenv("ALIHLT_HCDBSNAPSHOT"));
     AliHLTMisc::Instance().SetCDBRunNo(gRunDesc.fRunNo);
     comp->SetRunDescription(&gRunDesc, gRunType);
     const AliHLTAnalysisEnvironment* comenv=gComponentHandler_C->GetEnvironment();

@@ -111,7 +111,6 @@ if(ZEROMQ_FOUND)
       ${SRCS}
       AliHLTZMQsink.cxx
       AliHLTZMQsource.cxx
-      AliZMQhelpers.cxx
      )
 endif(ZEROMQ_FOUND)
 
@@ -125,7 +124,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib AliHLTCalo)
+set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec TPCbase ITSbase ITSrec TPCcalib AliHLTCalo)
 if(ZEROMQ_FOUND)
   set(LIBDEPS ${LIBDEPS} ${ZEROMQ_LIBRARIES})
 endif(ZEROMQ_FOUND)
@@ -153,3 +152,19 @@ install(FILES ${HDRS} DESTINATION include)
 #install macros
 install(DIRECTORY macros DESTINATION HLT/global)
 install(DIRECTORY physics/macros DESTINATION HLT/global/physics/)
+
+if(ZEROMQ_FOUND) 
+
+  # Additional include folders in alphabetical order except ROOT
+  include_directories(
+                      ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
+                      ${AliRoot_SOURCE_DIR}/HLT/BASE/util
+                      ${ZEROMQ_INCLUDE_DIR}
+                      )
+
+  add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
+  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core zmq)
+  
+  # Installation of 
+  install(TARGETS ZMQDIMlumiregServer RUNTIME DESTINATION bin)
+endif(ZEROMQ_FOUND)

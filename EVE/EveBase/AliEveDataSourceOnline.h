@@ -38,6 +38,8 @@ private:
 
     void MarkCurrentEvent();        // Send request to Storage Manager to mark current event
     
+    Bool_t ReceivePromptRecoParameters(Int_t runNo);
+    
     AliESDEvent *fCurrentEvent[2];  // Array of currently displayed event and event being recently received from reco
     int fEventInUse;                // Specifies which element of fCurrentEvent is currently displayed
     int fWritingToEventIndex;       // Specifies to which element of fCurrentEvent subsriber's thread is writing

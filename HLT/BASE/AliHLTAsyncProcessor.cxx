@@ -324,7 +324,7 @@ int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* 
 
 int AliHLTAsyncProcessor::IsQueuedTaskCompleted()
 {
-	HLTInfo("%d results ready for retrieval", fMe->fOutputQueueUsed);
+	//HLTInfo("%d results ready for retrieval", fMe->fOutputQueueUsed);
 	return(fMe->fOutputQueueUsed);
 }
 
@@ -579,7 +579,7 @@ int AliHLTAsyncProcessor::ForceChildExit(int waitTime)
 	fMe->fExit = true;
 	QueueAsyncTask(AsyncThreadStop, this);
 	int retVal = fMe->fBackend->KillChildProcess(waitTime);
-	if (retVal == 1) HLTWarning("Child dit not terminate in time and was killed");
+	if (retVal == 1) HLTWarning("Async Worker Child dit not terminate in time and was killed");
 	fMe->fChildStopped = true;
 	fMe->fInputQueueUsed = 0;
 	fMe->fAsyncThreadProcessing = false;

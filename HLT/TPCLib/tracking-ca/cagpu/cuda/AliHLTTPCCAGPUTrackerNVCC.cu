@@ -28,8 +28,7 @@
 #define get_group_id(dim) (blockIdx.x)
 
 #include <cuda.h>
-#include <sm_11_atomic_functions.h>
-#include <sm_12_atomic_functions.h>
+#include <sm_20_atomic_functions.h>
 
 __constant__ float4 gAliHLTTPCCATracker[HLTCA_GPU_TRACKER_CONSTANT_MEM / sizeof( float4 )];
 #ifdef HLTCA_GPU_TEXTURE_FETCH
@@ -220,7 +219,7 @@ int AliHLTTPCCAGPUTrackerNVCC::InitGPU_Runtime(int sliceCount, int forceDeviceID
 	}
 
 	cuCtxPopCurrent((CUcontext*) fCudaContext);
-	HLTImportant("CUDA Initialisation successfull (Device %d: %s, Thread %d, Max slices: %d, %d GB used)", fCudaDevice, fCudaDeviceProp.name, fThreadId, fSliceCount, fGPUMemSize);
+	HLTInfo("CUDA Initialisation successfull (Device %d: %s, Thread %d, Max slices: %d, %d bytes used)", fCudaDevice, fCudaDeviceProp.name, fThreadId, fSliceCount, fGPUMemSize);
 
 	return(0);
 }

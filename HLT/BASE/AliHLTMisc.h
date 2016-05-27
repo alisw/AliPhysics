@@ -49,7 +49,7 @@ class AliHLTMisc : public TObject {
   static AliHLTMisc& Instance();
 
   /// init the CDB patch
-  virtual int InitCDB(const char* cdbpath);
+  virtual int InitCDB(const char* cdbpath, const char* cdbsnapshot);
 
   /// init the CDB run number
   virtual int SetCDBRunNo(int runNo);

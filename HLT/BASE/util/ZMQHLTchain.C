@@ -127,7 +127,7 @@ void ZMQHLTchain(int configId=2)
 	}
 	
   //send blocks via ZMQ
-  AliHLTConfiguration zmqSink("sink","ZMQsink", listOfChains.Data(), "out=PUB@ipc:///tmp/chainSink");
+  AliHLTConfiguration zmqSink("sink","ZMQsink", listOfChains.Data(), "out=PUB@tcp://*:60324");
   printf("done configuring chain\n");
 }
 

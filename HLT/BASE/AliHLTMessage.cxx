@@ -168,7 +168,7 @@ void AliHLTMessage::ForceWriteInfo(TVirtualStreamerInfo *info, Bool_t /* force *
    // Force writing the TStreamerInfo to the message.
 
    if (fgEvolution || fEvolution) {
-      if (!fInfos) fInfos = new TList();
+      if (!fInfos) fInfos = new TObjArray();
       if (fInfos->FindObject(info->GetName())==NULL) {
 	fInfos->Add(info);
       }
@@ -198,7 +198,7 @@ void AliHLTMessage::TagStreamerInfo(TVirtualStreamerInfo *info)
    // Remember that the StreamerInfo is being used in writing.
 
    if (fgEvolution || fEvolution) {
-      if (!fInfos) fInfos = new TList();
+      if (!fInfos) fInfos = new TObjArray();
       fInfos->Add(info);
    }
 }
@@ -212,7 +212,7 @@ void AliHLTMessage::IncrementLevel(TVirtualStreamerInfo *info)
 
    if (!info) return;
    if (fgEvolution || fEvolution) {
-      if (!fInfos) fInfos = new TList();
+      if (!fInfos) fInfos = new TObjArray();
 
       // add the streamer info, but only once
       // this assumes that there is only one version
@@ -437,7 +437,7 @@ void AliHLTMessage::WriteObject(const TObject *obj)
       if (fInfos)
          fInfos->Clear();
       else
-         fInfos = new TList();
+         fInfos = new TObjArray();
    }
 
    fBitsPIDs.ResetAllBits();
@@ -462,7 +462,7 @@ UShort_t AliHLTMessage::WriteProcessID(TProcessID *pid)
    return 1;
 }
 
-AliHLTMessage* AliHLTMessage::Stream(TObject* pSrc, Int_t compression, unsigned verbosity)
+AliHLTMessage* AliHLTMessage::Stream(TObject* pSrc, Int_t compression, unsigned verbosity, bool enableSchema)
 {
   /// Helper function to stream an object into an AliHLTMessage
   /// The returned instance must be cleaned by the caller
@@ -486,6 +486,7 @@ AliHLTMessage* AliHLTMessage::Stream(TObject* pSrc, Int_t compression, unsigned 
     return NULL;
   }
 
+  pMsg->EnableSchemaEvolution(enableSchema);
   pMsg->SetCompressionLevel(compression);
   pMsg->WriteObject(pSrc);
   if (pMsg->Length()>0) {

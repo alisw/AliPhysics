@@ -12,6 +12,8 @@
 #include "AliZMQManager.h"
 #include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
+#include "AliEveInit.h"
+#include "AliCDBManager.h"
 
 #include <TEnv.h>
 #include <TInterpreter.h>
@@ -366,5 +368,40 @@ void AliEveDataSourceOnline::EventServerDown()
 //    Emit("EventServerDown()");
 }
 
+Bool_t AliEveDataSourceOnline::ReceivePromptRecoParameters(Int_t runNo)
+{
+  TString localGRPstorage = "local://OCDB";
+  cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
+  TEnv settings;
+  AliEveInit::GetConfig(&settings);
 
+  // Retrieve GRP entry for given run from aldaqdb.
+  TString dbHost = settings.GetValue("logbook.host", "");
+  Int_t   dbPort =  settings.GetValue("logbook.port", 0);
+  TString dbName =  settings.GetValue("logbook.db", "");
+  TString user =  settings.GetValue("logbook.user", "");
+  TString password = settings.GetValue("logbook.pass", "");
 
+  gSystem->cd(localGRPstorage.Data());
+  gSystem->Exec("rm -fr GRP/");
+  cout<<"CDB path for GRP:"<<localGRPstorage<<endl;
+
+  TString gdc;
+
+  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(runNo, dbHost.Data(),
+                                                            dbPort, dbName.Data(),
+                                                            user.Data(), password.Data(),
+                                                            Form("%s",localGRPstorage.Data()),
+                                                            gdc);
+
+  if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
+  else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
+  else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
+
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage",Form("local://%s/../src/OCDB",gSystem->Getenv("ALICE_ROOT"))));
+  cdb->SetSpecificStorage("GRP/GRP/Data",localGRPstorage.Data());
+  cdb->SetRun(runNo);
+  cdb->Print();
+  return kTRUE;    
+}

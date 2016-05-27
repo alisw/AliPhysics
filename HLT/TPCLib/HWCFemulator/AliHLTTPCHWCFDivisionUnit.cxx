@@ -26,13 +26,16 @@
 //  @note 
 
 #include "AliHLTTPCHWCFDivisionUnit.h"
+#include "AliHLTErrorGuard.h"
+#include "TNtuple.h"
+#include "TFile.h"
 #include <iostream>
 #include <algorithm>
 
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fkInput(0),fOutput(), fDebug(0)
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
 {
   //constructor 
 }
@@ -40,12 +43,17 @@ AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 {   
-  //destructor 
+  if( fDebugNtuple ) fDebugNtuple->Write();
+  if( fDebugFile ){
+    fDebugFile->Write();
+    fDebugFile->Close();
+  }
+//destructor 
 }
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fkInput(0),fOutput(), fDebug(0)
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
 {
 }
 
@@ -68,7 +76,7 @@ int AliHLTTPCHWCFDivisionUnit::InputStream( const AliHLTTPCHWCFClusterFragment *
 {
   // input stream of data
   fkInput = fragment;
-  if( fkInput && fDebug ){
+  if( fkInput && fDebug==1 ){
     std::cout<<"HWCF Division: input Br: "<<fragment->fBranch<<" F: "<<fragment->fFlag<<" R: "<<fragment->fRow
 	     <<" Q: "<<(fragment->fQ>>AliHLTTPCHWCFDefinitions::kFixedPoint)
 	     <<" P: "<<fragment->fPad<<" Tmean: "<<fragment->fTMean;	        
@@ -111,8 +119,34 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   AliHLTFloat32_t q = fkInput->fQ;
   
   fOutput.fFlag = 1;
-  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax)&0xFFFFFF);
-  fOutput.fQ = fkInput->fQ;
+
+  // bit 23 is 0, bits 30,31 are 1
+  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax)&0x7FFFFF);
+
+  // bits 30,31 are 0
+  fOutput.fQ = fkInput->fQ & 0x3FFFFFFF;
+
+  // set is_deconvoluted flag at bit 31 for pad direction, at bit 30 for time direction
+  
+  switch( fTagDeconvolutedClusters ){
+  case 0:
+    break;
+  case 1:
+    if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
+    if( fkInput->fNDeconvolutedTime>0 ) fOutput.fQ += (0x1 << 30 );
+    break;
+  case 2:
+    if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
+    if( fkInput->fNPads>1 ){
+      if( fkInput->fConsecutiveTimeDeconvolution>=2 ) fOutput.fQ += (0x1 << 30 );
+    } else {
+      if( fkInput->fNDeconvolutedTime>0 ) fOutput.fQ += (0x1 << 30 ); 
+    }
+    break;
+  default:
+    HLTError("Unknown HW cluster tagging option %d",fTagDeconvolutedClusters);
+  }
+
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
   *((AliHLTFloat32_t*)&fOutput.fT) = (float)fkInput->fT/q;
   *((AliHLTFloat32_t*)&fOutput.fP2) = (float)fkInput->fP2/q;
@@ -145,6 +179,19 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   for( unsigned int i=0; i<3 && i<labels.size(); i++ ){
     if( labels[i].fMCID <0 ) continue;
     fOutput.fMC.fClusterID[i] = labels[i];
+  }
+
+  if( fDebug==2 ){
+    if( !fDebugNtuple ){ 
+      cout<<"HW clusterfinder emulator: Create cluster debug file 'HWClustersDebug.root' .."<<endl;
+      fDebugFile = new TFile("HWClustersDebug.root","RECREATE");
+      fDebugFile->cd();
+      fDebugNtuple = new TNtuple("HWClusters", "HWClusters", "iNPads:iIsSplitPad:iNSplitTime:iIsConsSplitTime");
+      if( fDebugNtuple ) fDebugNtuple->AutoSave();      
+    }
+    if( fDebugNtuple ){
+      fDebugNtuple->Fill(fkInput->fNPads, fkInput->fIsDeconvolutedPad, fkInput->fNDeconvolutedTime, (fkInput->fConsecutiveTimeDeconvolution>=2));
+    }
   }
 
   fkInput = 0;

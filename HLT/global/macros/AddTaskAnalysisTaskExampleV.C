@@ -19,7 +19,7 @@ AliAnalysisTask* AddTaskAnalysisTaskExampleV()
 
   //Create the in/out containers
   AliAnalysisDataContainer *input = mgr->GetCommonInputContainer(); //this is standard
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer("outputList",TList::Class(),AliAnalysisManager::kOutputContainer);
+  AliAnalysisDataContainer *output1 = mgr->CreateContainer("outputList",TList::Class(),AliAnalysisManager::kOutputContainer,"analysisTaskExampleOutput.root");
 
   // Connect to the input and output containers
   mgr->ConnectInput(task,0,input); 

@@ -160,6 +160,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       void SetSigmaZ2(float sigmaZ2)   {if (fEntry ) fEntry->fCluster.SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fEntry ) fEntry->fCluster.SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fEntry ) fEntry->fCluster.SetQMax(qmax);}
+      void SetFlags(unsigned short flags) {if (fEntry ) fEntry->fCluster.SetFlags(flags);}
       iterator& operator=(const AliHLTTPCRawCluster& rawcluster) {if (fEntry ) {
 	  memcpy(&fEntry->fCluster, &rawcluster, sizeof(AliHLTTPCRawCluster));
 	  // Note: offline code uses a different convention for row offset than the online code
@@ -200,9 +201,9 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
     /// get the cluster array for a sector
-    TObjArray* GetSectorArray(unsigned sector) const;
+    TObjArray* GetSectorArray(unsigned sector, int propagateSplitClusterFlag = 0) const;
     /// fill the cluster array for a sector and specific row if specified
-    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1) const;
+    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1, int propagateSplitClusterFlag = 0) const;
     /// print info
     virtual void Print(Option_t *option=NULL) const;
 
@@ -239,6 +240,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   AliRawClusterContainer* fClusters; //! cluster container
   int fCurrentSector; //! current sector
   int fCurrentRow; //! current row
+  int fPropagateSplitClusterFlag; //! propagate flags for split clusters
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
   AliTPCParam* fTPCParam; //! pointer to TPC param
 

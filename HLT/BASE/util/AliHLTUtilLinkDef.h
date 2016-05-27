@@ -9,6 +9,7 @@
 #pragma link C++ class AliHLTFilePublisher+;
 #pragma link C++ class AliHLTFileWriter+;
 #pragma link C++ class AliHLTFXSFileWriter+;
+#pragma link C++ class AliHLTFXSWriterComponent+;
 #pragma link C++ class AliHLTMCEvent+;
 #pragma link C++ class AliHLTJets+;
 #pragma link C++ class AliHLTRootFilePublisherComponent+;
@@ -34,6 +35,11 @@
 #pragma link C++ class AliHLTCorruptorComponent+;
 #pragma link C++ class AliHLTESDTrackCuts+;
 #pragma link C++ class AliHLTObjectRenamer+;
+#ifdef ZMQ
+#pragma link C++ class AliZMQhistViewer;
+#pragma link C++ class AliZMQMTviewerGUI;
+#pragma link C++ class AliZMQMTviewerGUIview;
+#endif
 
 #endif // __CINT__
 //

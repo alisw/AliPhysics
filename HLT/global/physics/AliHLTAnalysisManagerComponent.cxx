@@ -65,6 +65,9 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliHLTLogging.h"
+#include "AliHLTCTPData.h"
+#include "TClass.h"
+#include "TDataMember.h"
 
 using namespace std;
 
@@ -82,6 +85,7 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
   fQuickEndRun(false),
+  fAnalysisInitialized(false),
   fAnalysisManager(NULL),
   fInputHandler(NULL),
   fAddTaskMacro(""),
@@ -213,10 +217,13 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerInit(void*)
   if (fAddTaskMacro.Length()>0) 
   {
     HLTInfo("Executing the macro: %s\n",fAddTaskMacro.Data());
-    gROOT->Macro(fAddTaskMacro);
+    gROOT->Macro(fAddTaskMacro + "\\;");
   }
 
-  fAnalysisManager->InitAnalysis();
+  if (fAnalysisManager->InitAnalysis() == kFALSE)
+  {
+    return((void*) -1);
+  }
   return(NULL);
 }
 
@@ -239,7 +246,28 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   HLTInfo("AliHLTAnalysisManagerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth, fAsyncProcess > 0, fAsyncProcess)) return(1);
 
-  fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL);
+  if (fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL) == NULL)
+  {
+    fAnalysisInitialized = kTRUE;
+  }
+
+  //Init the CTP data
+  if (SetupCTPData() == -ENOMEM) 
+  {
+    HLTError("could not SetupCTPData(); ENOMEM");
+    return -ENOMEM;
+  }
+
+  //this disables streaming of the fProducer and fConsumers data members of
+  //AliAnalysisDataContainer.
+  //It is needed to avoid memory leaks downstream.
+  //Proper fix in the container itself may be too dangerous
+  TClass::GetClass("AliAnalysisDataContainer")->
+    GetDataMember("fProducer")->
+    SetBit(BIT(2),0);
+  TClass::GetClass("AliAnalysisDataContainer")->
+    GetDataMember("fConsumers")->
+    SetBit(BIT(2),0);
 
   return 0;
 }
@@ -326,10 +354,15 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
   if (retVal && fQueueDepth)
   {
     //If we are an async process, we cannot access the pushback-period of the parent process, so we use this flag
-    if (!(fAsyncProcess ? requestPush : CheckPushbackPeriod())) return(NULL); 
-
-    retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
-    if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+    if (!(fAsyncProcess ? requestPush : CheckPushbackPeriod()))
+    {
+      retVal = NULL; 
+    }
+    else
+    {
+      retVal = fAsyncProcessor.SerializeIntoBuffer((TObject*) retVal, this);
+      if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+    }
   }
 
   if (fQueueDepth)
@@ -345,6 +378,8 @@ void* AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent(void* tmpEventData)
 Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& evtData,
     AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
+  
+  if (!fAnalysisInitialized) return(0);
 
   TStopwatch stopwatch;
   stopwatch.Start();
@@ -386,10 +421,15 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
     if (eventData->fEvent) {HLTInfo("----> event %p has %d tracks: \n", eventData->fEvent, eventData->fEvent->GetNumberOfTracks());}
     if (eventData->fFriend) {HLTInfo("----> friend %p has %d tracks: \n", eventData->fFriend, eventData->fFriend->GetNumberOfTracks());}
+    const AliHLTCTPData* ctpData = CTPData();
+    std::string activeTriggers;
+    activeTriggers.reserve(1000);
+    ctpData->GetFiredTriggerClasses(activeTriggers);
+    HLTInfo("active triggers: %s", activeTriggers.c_str());
 
     if (eventData->fEvent->GetNumberOfTracks() >= fMinTracks)
     {
-      if (fMinTracks) HLTImportant("Event has %d tracks, running AnalysisManager", eventData->fEvent->GetNumberOfTracks());
+      if (fMinTracks) HLTInfo("Event has %d tracks, running AnalysisManager", eventData->fEvent->GetNumberOfTracks());
       eventData->fRequestPush = CheckPushbackPeriod() && !fPushRequestOngoing;
       if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerDoEvent, eventData))
       {
@@ -430,7 +470,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	fPushRequestOngoing = kFALSE;
 	if (pushResult)
 	{
-	  HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+	  HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
 	  fNumEvents = 0;
 	}
 
@@ -443,7 +483,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
         if (pushResult > 0)
         {
            if (fResetAfterPush) fAnalysisManager->ResetOutputData();
-           HLTImportant("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
+           HLTInfo("HLT Analysis Manager pushing output: %p (%d bytes, %d events)", retVal, pushResult, fNumEvents);
            fNumEvents = 0;
         }
       }

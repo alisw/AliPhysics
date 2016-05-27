@@ -20,6 +20,11 @@
 #include "AliZMQhelpers.h"
 #include <sstream>
 #include <vector>
+#include "TRandom.h"
+#include "TTimeStamp.h"
+#include "TSystem.h"
+#include "TObjArray.h"
+#include "AliAnalysisDataContainer.h"
 
 void* fZMQout = NULL;
 void* fZMQcontext = NULL;
@@ -38,9 +43,11 @@ TString fHistDistribution = "exp(-0.5*((x-0.)/0.1)**2)";
 float fHistRangeLow = -0.5;
 float fHistRangeHigh = 0.5;
 int fHistNBins = 100;
-aliZMQTstreamerInfo* fSchema = NULL;
+aliZMQrootStreamerInfo* fSchema = NULL;
 bool fVerbose = false;
 int fCompression = 0;
+TObjArray* fCollection = NULL;
+AliAnalysisDataContainer* fAnalContainer = NULL;
     
 const char* fUSAGE = 
     "ZMQhstSource: send a randomly filled ROOT histogram\n"
@@ -55,6 +62,9 @@ const char* fUSAGE =
     " -entries : how many entries in the histogram before sending\n"
     " -histos : how many histograms per message\n"
     " -schema : include the streamer infos in the message\n"
+    " -run : run number\n"
+    " -collection : wrap all histograms in a TObjArray\n"
+    " -analysisContainer : wrap the collection in an AliAnalysisDataContainer\n"
     //" -compression : compression level (0|1)\n"
     ;
 
@@ -86,13 +96,26 @@ int main(int argc, char** argv)
     if (i>0) ss << i;
     fHistograms.push_back(new TH1F(ss.str().c_str(), ss.str().c_str(), fHistNBins, fHistRangeLow, fHistRangeHigh));
   }
+
+  if (fCollection)
+  {
+    for (int i = 0; i < fNHistos; i++)
+    {
+      fCollection->Add(fHistograms[i]);
+    }
+  }
+
+  if (fCollection && fAnalContainer)
+  {
+    fAnalContainer->SetData(fCollection);
+  }
   
   if (fSchema) {
-    if (fVerbose) printf("enabling schema for TMessage\n");
-    AliHLTMessage::EnableSchemaEvolutionForAll();
-    TMessage::EnableSchemaEvolutionForAll();
-      if (fVerbose && AliHLTMessage::UsesSchemaEvolutionForAll()) printf("enabled...\n");
+    if (fVerbose) printf("enabling schema for AliHLTMessage\n");
   }
+
+  TTimeStamp time;
+  gRandom->SetSeed(time.GetNanoSec()+gSystem->GetPid());
 
   //main loop
   int iterations=0;
@@ -121,14 +144,30 @@ int main(int argc, char** argv)
     }
 
     aliZMQmsg message;
-    for (int i = 0; i < fNHistos; i++) 
+    if (fCollection && !fAnalContainer)
     {
-      rc = alizmq_msg_add(&message, &topic, fHistograms[i], fCompression, fSchema);
+      rc = alizmq_msg_add(&message, &topic, fCollection, fCompression, fSchema);
       if (rc < 0)
         printf("unable to send\n");
     }
+    else if (fCollection && fAnalContainer)
+    {
+      rc = alizmq_msg_add(&message, &topic, fAnalContainer, fCompression, fSchema);
+      if (rc < 0)
+        printf("unable to send\n");
+    }
+    else
+    {
+      for (int i = 0; i < fNHistos; i++) 
+      {
+        rc = alizmq_msg_add(&message, &topic, fHistograms[i], fCompression, fSchema);
+        if (rc < 0)
+          printf("unable to send\n");
+      }
+    }
 
     if (fSchema) alizmq_msg_prepend_streamer_infos(&message,fSchema);
+
     alizmq_msg_send(&message, fZMQout, 0);
     alizmq_msg_close(&message);
     if (fVerbose) printf("sent!\n");
@@ -174,6 +213,17 @@ int ProcessOptionString(TString arguments)
     {
       fRunNumber = value.Atoi();
     }
+    else if (option.EqualTo("collection"))
+    {
+      fCollection = new TObjArray(100);
+      fCollection->SetOwner(kTRUE);
+    }
+    else if (option.EqualTo("analysisContainer"))
+    {
+      fAnalContainer = new AliAnalysisDataContainer("container",TObjArray::Class());
+      if (!fCollection) fCollection = new TObjArray(100);
+      fCollection->SetOwner(kTRUE);
+    }
     else if (option.EqualTo("range"))
     {
       TString lowString = value(0,value.Index(','));
@@ -197,7 +247,7 @@ int ProcessOptionString(TString arguments)
       fNHistos = value.Atoi();
     }
     else if (option.EqualTo("schema")) {
-      fSchema = new aliZMQTstreamerInfo;
+      fSchema = new aliZMQrootStreamerInfo;
     }
     else if (option.EqualTo("Verbose")) {
       fVerbose=true;

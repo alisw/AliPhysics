@@ -426,6 +426,36 @@ class AliHLTSystem : public AliHLTLogging {
   int ReleaseHLTOUT(const AliHLTOUT* instance);
 
   /**
+   * Init the HLTInput instance for the current event.
+   * The instance can be used by other classes to get hold on the data
+   * from HLTInput.
+   * @param  instance     instance to be set as the active HLTInput
+   * @return -EBUSY other active instance already existing
+   */
+  int InitHLTInput(AliHLTOUT* instance);
+
+  /**
+   * Invalidate the HLTInput instance.
+   * @param  instance     target variable for the instance
+   * @return -EBUSY if instance in use
+   */
+  int InvalidateHLTInput(AliHLTOUT** instance=NULL);
+
+  /**
+   * Get the HLTInput instance.
+   * User method for processing classes. To be released after use.
+   * @return pointer to HLTInput instance
+   */
+  AliHLTOUT* RequestHLTInput();
+
+  /**
+   * Release the HLTInput instance after use.
+   * @param instance      pointer to instance to be released
+   * @return -ENOENT if instance does not match
+   */
+  int ReleaseHLTInput(const AliHLTOUT* instance);
+
+  /**
    * Process the HLTOUT data.
    * The provided instance of AliHLTOUT provides the access to the data.
    * AliHLTSystem queries all registered module agents (AliHLTModuleAgent)
@@ -666,6 +696,12 @@ class AliHLTSystem : public AliHLTLogging {
 
   /** HLTOUT use counter */
   int fHLTOUTUse;                                                  //!transient
+ 
+  /** HLTInput instance for the current event */
+  AliHLTOUT* fpHLTInput;                                            //!transient
+
+  /** HLTInput use counter */
+  int fHLTInputUse;                                                  //!transient
 
   /** special task to publish the control events */
   AliHLTControlTask* fpControlTask;                                //!transient

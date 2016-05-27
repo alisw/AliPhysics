@@ -57,12 +57,13 @@
  * @ingroup alihlt_qa
  */
 void recraw_local(const char *filename,
-		  const char *cdbURI,
-		  int minEvent=-1,
-		  int maxEvent=-1,
-		  const char *modules="ALL",
-		  const char *hltOptions="loglevel=0x7c",
-		  const char *cdbDrain=NULL)
+    const char *cdbURI,
+    int minEvent=-1,
+    int maxEvent=-1,
+    const char *modules="ALL",
+    const char *hltOptions="loglevel=0x7c",
+    const char *cdbDrain=NULL,
+    const char* cdbSnapshot=NULL)
 {
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "AliReconstruction on raw data requires to delete galice.root, or run at different place." << endl;
@@ -99,6 +100,10 @@ void recraw_local(const char *filename,
     }
   }
   if (cdbDrain) man->SetDrain(cdbDrain);
+
+  if (cdbSnapshot) {
+    man->SetSnapshotMode(cdbSnapshot);
+  }
 
   // Reconstruction settings
   AliReconstruction rec;

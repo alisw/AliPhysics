@@ -127,7 +127,9 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAn
 	
 	if (fAsyncProcess)
 	{
-		return((AliCDBEntry*) fAsyncProcessor.SerializeIntoBuffer(retVal, this));
+		void* serRetVal = fAsyncProcessor.SerializeIntoBuffer(retVal, this);
+		delete retVal;
+		return((AliCDBEntry*) serRetVal);
 	}
 	
 	return(retVal);
@@ -282,7 +284,6 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 		fAsyncProcessor.WaitForTasks(0);
 	}
 
-	//If a new transform map is available from an async creation task, we ship the newest one.
 	while (fAsyncProcessor.IsQueuedTaskCompleted())
 	{
 		AliCDBEntry* retVal;

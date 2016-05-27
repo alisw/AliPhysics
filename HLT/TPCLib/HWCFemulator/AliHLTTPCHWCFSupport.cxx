@@ -48,6 +48,7 @@ using namespace std;
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport()
   : 
   AliHLTLogging(),
+  fProcessingRCU2Data(0),
   fEventMemory(0),
   fEventMCMemory(0)
 {
@@ -68,6 +69,7 @@ AliHLTTPCHWCFSupport::~AliHLTTPCHWCFSupport()
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport(const AliHLTTPCHWCFSupport&)
   : 
   AliHLTLogging(),
+  fProcessingRCU2Data(0),
   fEventMemory(0),
   fEventMCMemory(0)
 {
@@ -89,6 +91,16 @@ void AliHLTTPCHWCFSupport::ReleaseEventMemory()
   fEventMCMemory = 0;
 }
 
+void AliHLTTPCHWCFSupport::UnloadMapping()
+{
+  // unload mapping
+  for( int i=0; i<fgkNSlices; i++ ){
+    for( int j=0; j<fgkNPatches; j++ ){
+      delete[] fMapping[i][j];
+      fMapping[i][j] = NULL;
+    }
+  }
+}
 
 const AliHLTUInt32_t *AliHLTTPCHWCFSupport::GetMapping( int slice, int patch )
 { 
@@ -265,6 +277,7 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
       mapping[1+hwAdd] = configWord;
 	
       AliHLTUInt32_t branch = (hwAdd >> 11) & 0x1;	
+      if( fProcessingRCU2Data ) branch = 0;
       rowBranchPadHw[nRead] = (row<<25) | (branch<<24) | (pad<<16) | hwAdd;
 
       nRead++;
@@ -282,14 +295,14 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
     // mark pads at borders of A/B branches 
       
     std::sort(rowBranchPadHw, rowBranchPadHw + nHWAdd);
-    int rowBranchLast = -1;
+    int rowBranchPadLast = -10;
     for( unsigned int i=0; i<nHWAdd; i++ ){
-      int rowBranch = rowBranchPadHw[i]>>24;
-      if( rowBranch != rowBranchLast ){
+      int rowBranchPad = rowBranchPadHw[i]>>16;
+      if( rowBranchPad != rowBranchPadLast+1 ){
 	mapping[1+(rowBranchPadHw[i] & 0xFFF)] |= kBorderFlag;
-	rowBranchLast = rowBranch;
 	if( i>0 ) mapping[1+(rowBranchPadHw[i-1] & 0xFFF)] |= kBorderFlag;	  
       }
+      rowBranchPadLast = rowBranchPad;
     }
     mapping[1+(rowBranchPadHw[nRead-1] & 0xFFF)] |= kBorderFlag;
     

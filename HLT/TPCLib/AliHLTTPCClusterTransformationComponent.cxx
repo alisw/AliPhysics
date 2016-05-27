@@ -178,7 +178,7 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 	   fInitialized = true;
     }
     timer.Stop();
-    HLTImportant("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
+    HLTInfo("Initialization time: %f / %f", timer.CpuTime(), timer.RealTime());
     if( err!=0 ){
       HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
       return -ENOENT;
@@ -263,12 +263,12 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 		}
 		if (fInitialized)
 		{
-			HLTImportant("Received updated cluster transformation map with new calibration");
+			HLTInfo("Received updated cluster transformation map with new calibration");
 			fgTransform.DeInit();
 		}
 		else
 		{
-			HLTImportant("Received initial cluster transformation map");
+			HLTInfo("Received initial cluster transformation map");
 		}
 
 		HLTInfo( "received configuration object." );
@@ -414,7 +414,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
       c.SetID( minSlice, minPartition, outPtr->fSpacePointCnt );
 	 
-      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, c.fX, c.fY, c.fZ, (UInt_t)c.fCharge);
+      HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, c.GetX(), c.GetY(), c.GetZ(), (UInt_t)c.GetCharge());
 	 
       outPtr->fSpacePointCnt++; 
     } // end of loop over clusters

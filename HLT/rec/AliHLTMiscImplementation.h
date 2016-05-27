@@ -24,7 +24,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
   AliHLTMiscImplementation();
   ~AliHLTMiscImplementation();
 
-  int InitCDB(const char* cdbpath);
+  int InitCDB(const char* cdbpath, const char* cdbsnapshot);
 
   int SetCDBRunNo(int runNo);
   int GetCDBRunNo() const;

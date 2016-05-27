@@ -95,6 +95,9 @@ void AliHLTTPCDataCompressionMonitorComponent::GetInputDataTypes( AliHLTComponen
   tgtList.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType);
   tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());  
+  tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
 }
 
 AliHLTComponentDataType AliHLTTPCDataCompressionMonitorComponent::GetOutputDataType()
@@ -231,6 +234,24 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
     // read data
     AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
     decoder.Clear();
+
+    for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClustersFlagsDataType());
+	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
+      iResult=decoder.AddClusterFlags(pDesc);
+    }
+    
+    if (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDescriptorDataType())) {
+        if ((iResult=decoder.AddRawClustersDescriptor(pDesc))<0) {
+            return iResult;
+        }
+    }
+    //CompressionDescriptor should have priority over rawcluster descriptor in case both are present, because this describes the actual compressed data.
+    if (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::DataCompressionDescriptorDataType())) {
+        if ((iResult=decoder.AddCompressionDescriptor(pDesc))<0) {
+            return iResult;
+        }
+    }
+
     bool bHaveRawClusters=false;
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
@@ -1038,6 +1059,11 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillCharge(unsi
   unsigned index=kHistogramCharge;
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(charge);
+}
+
+void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillFlags(unsigned short flags, AliHLTUInt32_t /*clusterId*/)
+{
+  fCurrentCluster.SetFlags(flags);
 }
 
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillQMax(unsigned qmax, AliHLTUInt32_t /*clusterId*/)

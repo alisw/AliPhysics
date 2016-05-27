@@ -74,7 +74,17 @@ class AliHLTTPCHWCFEmulator
   static void CreateDefaultConfiguration( AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 ){
     CreateConfiguration(0,0,0,1,0,0,0, 3, 1, 0, 1, configWord1, configWord2 );
   }
+
+  /** set tagging of deconvoluted clusters
+   **/
+  void SetTagDeconvolutedClusters( AliHLTUInt32_t option ){ fDivisionUnit.SetTagDeconvolutedClusters( option ); }
+
+  /** set RCU2 flag (data is not split in two branches)
+   **/
+  void SetProcessingRCU2Data( bool b ){ fChannelExtractor.SetRCU2Flag( b ); }
   
+  void SetNoiseSuppression(int ns) {fPeakFinderUnit.SetNoiseSuppression(ns);}
+
  private: 
 
   /** copy constructor prohibited */

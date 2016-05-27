@@ -49,7 +49,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	float surfaceAtmosPressure;
 	float cavernAtmosPressure;
 	float cavernAtmosPressure2;
-	float beamEnergy;
+	int beamEnergy;
 	
 	if (defaults)
 	{
@@ -62,7 +62,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		surfaceAtmosPressure = 971.127;
 		cavernAtmosPressure = 974.75;
 		cavernAtmosPressure2 = 975.55;
-		beamEnergy = 14000 / 0.12;
+		beamEnergy = 6501;
 	}
 	else
 	{
@@ -78,7 +78,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		//DimCurrentInfo LHCBeamType1Dim("DCS_GRP_LHC_BEAM_TYPE_1", -1);
 		//DimCurrentInfo LHCBeamType2Dim("DCS_GRP_LHC_BEAM_TYPE_2", -1);
 		//LHC Energy has not been used before, but it was seto to constant ((cmsEnergy = 14000) / 0.12), I think it is better to use dim value
-		DimCurrentInfo LHCBeamEnergyDim("DCS_GRP_LHC_BEAM_ENERGY", -123456.f);
+		DimCurrentInfo LHCBeamEnergyDim("DCS_GRP_LHC_BEAM_ENERGY", -12345678);
 		l3Polarity = solenoidPolarityDim.getInt();
 		l3Current = solenoidCurrentDim.getFloat();
 		dipolePolarity = dipolePolarityDim.getInt();
@@ -86,7 +86,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 		surfaceAtmosPressure = pressureSurfaceDim.getFloat();
 		cavernAtmosPressure = pressureCavernDim.getFloat();
 		cavernAtmosPressure2 = pressureCavernDim2.getFloat();
-		beamEnergy = LHCBeamEnergyDim.getFloat();
+		beamEnergy = LHCBeamEnergyDim.getInt();
 	}
 	
 	if (l3Polarity == -12345678) {printf("Error obtaining L3 Polarity from DIM\n"); return(1);}
@@ -99,7 +99,11 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	if (beamEnergy == -123456.f) {printf("Error obtaining Beam Energy from DIM\n"); return(1);}
 	
 	AliMagF* field = AliMagF::CreateFieldMap(l3Current, dipoleCurrent, 0, kFALSE, beamEnergy, beamType, "$(ALICE_ROOT)/data/maps/mfchebKGI_sym.root", true);
-	if (field == NULL) return(4);
+	if (field == NULL)
+	{
+		cout << "Cannot create fild map with current magnet currents: L3 " << l3Current << ", Diploe " << dipoleCurrent;
+		return(4);
+	}
 	
 	cout << "Values from DIM: L3 Polarity " << l3Polarity << ", L3 Current " << l3Current << ", Dipole Polarity " << dipolePolarity <<
 		", Dipole Current " << dipoleCurrent << ", Surface Pressure " << surfaceAtmosPressure << ", Cavern Pressure " << cavernAtmosPressure << " / " << cavernAtmosPressure2 <<
@@ -273,6 +277,10 @@ UInt_t AliHLTCreateGRP::createDetectorMask(TObjArray* listOfDetectors)
 			cout << "   *** Detector list contains unknown detector name, skipping ..." << endl;
 		}
 	}
+	
+	//Always enable HLT and CTP flags
+	mask |= AliDAQ::kHLT;
+	mask |= AliDAQ::kTRG;
 
 	return mask;
 }

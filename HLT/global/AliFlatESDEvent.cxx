@@ -69,6 +69,8 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 
+#include <bitset>
+
 // _______________________________________________________________________________________________________
 AliFlatESDEvent::AliFlatESDEvent() 
   :
@@ -86,6 +88,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fNTriggerClasses(0),
   fNTracks(0),
   fNV0s(0),
+  fNtrackletsSPD(0),
   fTriggerPointer(0),
   fVZEROPointer(-1),
   fMultiplicityPointer(-1),
@@ -98,6 +101,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fFriendEvent(NULL)
 {
   // Default constructor
+  for( int i=0; i<6; i++ ) fNclustersITS[i] = 0;
   fContent[0]=0;
 }
 
@@ -175,16 +179,15 @@ TString AliFlatESDEvent::GetFiredTriggerClasses() const
   // Fired trigger classes
   TString trclasses; 
   const AliFlatESDTrigger *tr = GetTriggerClasses();
-  ULong64_t mask = GetTriggerMask() | GetTriggerMaskNext50();
+  std::bitset<AliESDRun::kNTriggerClasses>  mask = GetTriggerMask() | (GetTriggerMaskNext50()<<50);
   for(Int_t i = 0; i < GetNumberOfTriggerClasses(); i++) {
     int index = tr->GetTriggerIndex();    
-    if( mask & (1ull<<index) ){
+    if( mask.test(index) ){
       trclasses += " ";
       trclasses += tr->GetTriggerClassName();
-      trclasses += " ";
     }
+    tr = tr->GetNextTrigger();
   }
-  tr = tr->GetNextTrigger();
   return trclasses;
 }
 
@@ -206,6 +209,7 @@ void AliFlatESDEvent::Reset()
   fNTriggerClasses = 0;
   fNTracks = 0;
   fNV0s = 0;
+  fNtrackletsSPD = 0;
   fTriggerPointer = 0;
   fVZEROPointer = -1;
   fMultiplicityPointer = -1;
@@ -215,6 +219,7 @@ void AliFlatESDEvent::Reset()
   fTrackTablePointer = 0;
   fTracksPointer = 0;
   fV0Pointer = 0;
+  for( int i=0; i<6; i++ ) fNclustersITS[i] = 0;
 }
 
 // _______________________________________________________________________________________________________

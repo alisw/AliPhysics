@@ -46,7 +46,10 @@ AliHLTAnalysisManager::~AliHLTAnalysisManager()
 Bool_t AliHLTAnalysisManager::InitAnalysis()
 {
   //initialize everything
-  AliAnalysisManager::InitAnalysis();
+  if (AliAnalysisManager::InitAnalysis() == kFALSE)
+  {
+    return kFALSE;
+  }
   Bool_t dirStatus = TH1::AddDirectoryStatus();  
   TIter nextT(GetTasks());
   AliAnalysisTask* task=NULL;

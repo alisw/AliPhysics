@@ -87,6 +87,8 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fpHLTOUTTask(NULL),
   fpHLTOUT(NULL),
   fHLTOUTUse(0),
+  fpHLTInput(NULL),
+  fHLTInputUse(0),
   fpControlTask(NULL),
   fName(name)
   , fConfigurationString()
@@ -1279,6 +1281,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.BeginsWith("!lib") && token.EndsWith(".so")) {
 	  excludelibs+=token;
 	  excludelibs+=" ";
+	} else if ( (token.CompareTo("ignore-hltout")==0 ) || (token.Contains("TPC-input=")) ) {
+	    // these options will be used when configuring subdetectors, do nothing here
 	} else {
 	  HLTWarning("unknown option \'%s\'", token.Data());
 	}
@@ -1702,5 +1706,48 @@ int AliHLTSystem::ReleaseHLTOUT(const AliHLTOUT* instance)
   if (!instance) return -EINVAL;
   if (instance!=fpHLTOUT) return -ENOENT;
   fHLTOUTUse--;
+  return 0;
+}
+
+int AliHLTSystem::InitHLTInput(AliHLTOUT* instance)
+{
+  // Init the HLTInput instance for the current event.
+  // The instance can be used by other classes to get hold on the data
+  // from HLTInput.
+  if (!instance) return -EINVAL;
+  if (fpHLTInput && fpHLTInput!=instance) return -EBUSY;
+  fpHLTInput=instance;
+  return 0;
+}
+
+int AliHLTSystem::InvalidateHLTInput(AliHLTOUT** target)
+{
+  // Clear the HLTInput instance.
+  int iResult=0;
+  if (fHLTInputUse>0) {
+    HLTWarning("HLTInput instance still in use, potential problem due to invalid pointer ahead");
+    fHLTInputUse=0;
+    iResult=-EBUSY;
+  }
+  if (target) *target=fpHLTInput;
+  fpHLTInput=NULL;
+  return iResult;
+}
+
+AliHLTOUT* AliHLTSystem::RequestHLTInput()
+{
+  // Get the HLTInput instance.
+  // User method for processing classes. To be released after use.
+  if (!fpHLTInput) return NULL;
+  fHLTInputUse++;
+  return fpHLTInput;
+}
+
+int AliHLTSystem::ReleaseHLTInput(const AliHLTOUT* instance)
+{
+  // Release the HLTInput instance after use.
+  if (!instance) return -EINVAL;
+  if (instance!=fpHLTInput) return -ENOENT;
+  fHLTInputUse--;
   return 0;
 }

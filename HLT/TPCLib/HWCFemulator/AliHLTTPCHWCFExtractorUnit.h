@@ -29,6 +29,9 @@ class AliHLTTPCHWCFExtractorUnit
   /** initialisation **/
   int Init( const AliHLTUInt32_t *mapping, const AliHLTTPCClusterMCLabel *mcLabels, AliHLTUInt32_t nMCLabels );
 
+  /** RCU2 flag */
+  void SetRCU2Flag( bool RCU2 ){ fRCU2Flag = RCU2; }
+
   /** input stream of data **/
   int InputStream( AliHLTUInt32_t word );
 
@@ -60,6 +63,7 @@ class AliHLTTPCHWCFExtractorUnit
   AliHLTInt32_t fChannelNumWordsLeft; // n 10-bit words left in the channel
   AliHLTInt32_t fBunchNumWordsLeft;// n 10-bit words left in the bunch
   AliHLTInt32_t fBunchCurrentTime; // timebin of the curent signal
+  bool fRCU2Flag; // do not split input data in two branches for RCU 2
 
   const AliHLTTPCClusterMCLabel *fkMCLabels; // pointer to mc labels
   AliHLTUInt32_t fNMCLabels;                 // N mc labels

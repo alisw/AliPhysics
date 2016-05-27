@@ -15,6 +15,7 @@
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "TString.h"
+#include <stdexcept>
 #include <map>
 #include <cassert>
 
@@ -76,6 +77,72 @@ public:
   virtual AliHLTComponent* Spawn();
 
   /**
+   * @class AliHLTTPCRawClusterRef
+   * Abstract interface to references of AliHLTTPCRawCluster objects.
+   * The polymorphic solution has been chosen over templates to make the container
+   * iterator template free. The interface consists of the access operator which
+   * returns a reference to the raw cluster in memory. A clone function provides
+   * a factory for copy constructor and assignment operator.
+   */
+  class AliHLTTPCRawClusterRef {
+  public:
+    AliHLTTPCRawClusterRef() {}
+    virtual ~AliHLTTPCRawClusterRef() {}
+    virtual AliHLTTPCRawCluster& operator[](unsigned) = 0;
+    virtual AliHLTTPCRawClusterRef* Clone() const = 0;
+  };
+
+  /**
+   * @class AliHLTTPCRawClusterArrayRef
+   * Reference to an array of AliHLTTPCRawCluster
+   */
+  class AliHLTTPCRawClusterArrayRef : public AliHLTTPCRawClusterRef {
+  public:
+    AliHLTTPCRawClusterArrayRef(AliHLTTPCRawCluster* array=NULL, unsigned size=0)
+      : fExternalArray(array), fArraySize(size) {}
+    AliHLTTPCRawClusterArrayRef(const AliHLTTPCRawClusterArrayRef& other)
+      : fExternalArray(other.fExternalArray), fArraySize(other.fArraySize) {}
+    AliHLTTPCRawClusterArrayRef& operator=(const AliHLTTPCRawClusterArrayRef& other)
+    { if (&other!=this) {fExternalArray=other.fExternalArray, fArraySize=other.fArraySize;} return *this;}
+    ~AliHLTTPCRawClusterArrayRef() {}
+
+    AliHLTTPCRawCluster& operator[](unsigned id) {
+      unsigned n=AliHLTTPCSpacePointData::GetNumber(id);
+      if (n>=fArraySize) {
+        throw std::runtime_error("index out of bounds");
+      }
+      return *(fExternalArray+n);
+    }
+
+    AliHLTTPCRawClusterRef* Clone() const {return new AliHLTTPCRawClusterArrayRef(*this);}
+  private:
+    AliHLTTPCRawCluster* fExternalArray;
+    unsigned fArraySize;
+  };
+
+  /**
+   * @class AliHLTTPCRawClusterMapRef
+   * Reference to a std map of AliHLTTPCRawCluster
+   */
+  class AliHLTTPCRawClusterMapRef : public AliHLTTPCRawClusterRef {
+  public:
+    AliHLTTPCRawClusterMapRef(std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>& map)
+      : fMap(map) {}
+    AliHLTTPCRawClusterMapRef(const AliHLTTPCRawClusterMapRef& other)
+      : fMap(other.fMap) {}
+    AliHLTTPCRawClusterMapRef& operator=(const AliHLTTPCRawClusterMapRef& other)
+    { if (&other!=this) {fMap=other.fMap;} return *this;}
+    ~AliHLTTPCRawClusterMapRef() {}
+
+    AliHLTTPCRawCluster& operator[](unsigned id) {
+      return fMap[id];
+    }
+    AliHLTTPCRawClusterRef* Clone() const {return new AliHLTTPCRawClusterMapRef(*this);}
+  private:
+    std::map<AliHLTUInt32_t, AliHLTTPCRawCluster>& fMap;
+  };
+
+  /**
    * @class AliClusterWriter
    * Container for cluster decoder.
    * The class implements the interface to be used in the decoding
@@ -93,33 +160,68 @@ public:
       AliHLTUInt32_t  fSize; //!
     };
 
+    /**
+     * @class iterator
+     * iterator to be used within the cluster decoder class.
+     * The iterator has access to the target for writing through the AliHLTTPCRawClusterRef
+     * interface.
+     */
     class iterator {
     public:
-      iterator() : fClusterNo(-1), fData(NULL), fSlice(-1), fPartition(-1), fClusterId(kAliHLTVoidDataSpec) {}
-      iterator(AliClusterWriter* pData, int slice=-1, int partition=-1) : fClusterNo(-1), fData(pData), fSlice(slice), fPartition(partition), fClusterId(GetClusterId()) {}
-      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fSlice(other.fSlice), fPartition(other.fPartition), fClusterId(other.fClusterId) {}
+      iterator()
+        : fClusterNo(-1)
+        , fRef(NULL)
+        , fSlice(-1)
+        , fPartition(-1)
+        , fClusterIdBlock(NULL)
+        , fClusterId(kAliHLTVoidDataSpec)
+      {}
+      iterator(AliHLTTPCRawClusterRef& ref, int slice=-1, int partition=-1, AliClusterIdBlock* clusterIdBlock=NULL)
+        : fClusterNo(-1)
+        , fRef(ref.Clone())
+        , fSlice(slice)
+        , fPartition(partition)
+        , fClusterIdBlock(clusterIdBlock)
+        , fClusterId(GetClusterId())
+      {}
+
+      iterator(const iterator& other)
+        : fClusterNo(other.fClusterNo)
+        , fRef(other.fRef->Clone())
+        , fSlice(other.fSlice)
+        , fPartition(other.fPartition)
+        , fClusterIdBlock(other.fClusterIdBlock)
+        , fClusterId(other.fClusterId)
+      {}
       iterator& operator=(const iterator& other) {
         if (this==&other) return *this;
-        fClusterNo=other.fClusterNo; fData=other.fData; fSlice=other.fSlice; fPartition=other.fPartition; fClusterId=other.fClusterId; return *this;
+        fClusterNo=other.fClusterNo;
+        fRef=other.fRef->Clone();
+        fSlice=other.fSlice;
+        fPartition=other.fPartition;
+        fClusterIdBlock=other.fClusterIdBlock;
+        fClusterId=other.fClusterId;
+        return *this;
       }
-      ~iterator() {}
+      ~iterator() {delete fRef;}
 
-      void SetPadRow(int row)             {if (fData) fData->GetClusterRef(fClusterId).SetPadRow(row);}
-      void SetPad(float pad)              {if (fData) fData->GetClusterRef(fClusterId).SetPad(pad);}
-      void SetTime(float time)            {if (fData) fData->GetClusterRef(fClusterId).SetTime(time);}
-      void SetSigmaY2(float sigmaY2)      {if (fData) fData->GetClusterRef(fClusterId).SetSigmaPad2(sigmaY2);}
-      void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->GetClusterRef(fClusterId).SetSigmaTime2(sigmaZ2);}
-      void SetCharge(unsigned charge)     {if (fData) fData->GetClusterRef(fClusterId).SetCharge(charge);}
-      void SetQMax(unsigned qmax)         {if (fData) fData->GetClusterRef(fClusterId).SetQMax(qmax);}
+      void SetPadRow(int row)             {(*fRef)[fClusterId].SetPadRow(row);}
+      void SetPad(float pad)              {(*fRef)[fClusterId].SetPad(pad);}
+      void SetTime(float time)            {(*fRef)[fClusterId].SetTime(time);}
+      void SetSigmaY2(float sigmaY2)      {(*fRef)[fClusterId].SetSigmaPad2(sigmaY2);}
+      void SetSigmaZ2(float sigmaZ2)      {(*fRef)[fClusterId].SetSigmaTime2(sigmaZ2);}
+      void SetCharge(unsigned charge)     {(*fRef)[fClusterId].SetCharge(charge);}
+      void SetQMax(unsigned qmax)         {(*fRef)[fClusterId].SetQMax(qmax);}
+      void SetFlags(unsigned short flags) {(*fRef)[fClusterId].SetFlags(flags);}
       void Set(const AliHLTTPCRawCluster& cl) {*this=cl;}
-      iterator& operator=(const AliHLTTPCRawCluster& cluster) {if (fData) {
-          fData->GetClusterRef(fClusterId)=cluster;
-        } return *this;}
+      iterator& operator=(const AliHLTTPCRawCluster& cluster) {
+        (*fRef)[fClusterId]=cluster;
+        return *this;
+      }
       void SetMC(const AliHLTTPCClusterMCLabel* /*pMC*/) {assert(0);/* to be implemented*/}
 
       // switch to next cluster
       iterator& Next(int slice, int partition) {
-        if (fData) fData->IncrementClusterCount(slice, partition);
         fSlice=slice; fPartition=partition; return operator++();
       }
       // prefix operators
@@ -129,23 +231,31 @@ public:
       iterator operator++(int) {iterator i(*this); operator++(); return i;}
       iterator operator--(int) {iterator i(*this); operator--(); return i;}
 
-      bool operator==(const iterator other) const {return fData==other.fData;}
-      bool operator!=(const iterator other) const {return fData!=other.fData;}
+      // TODO: not yet used, proper implementation needed
+      //bool operator==(const iterator other) const {return ...;}
+      //bool operator!=(const iterator other) const {return ...;}
 
     private:
       // retrieve cluster id from the optional cluster ID block, or calculate
       // from slice, partition and cluster number
       AliHLTUInt32_t GetClusterId() const {
         AliHLTUInt32_t id=kAliHLTVoidDataSpec;
-        if (fData) id=fData->GetClusterId(fClusterNo);
+        if (fClusterNo<0) return id;
+        if (fClusterIdBlock) {
+          if (fClusterIdBlock->fSize<=(unsigned)fClusterNo) {
+            throw std::runtime_error("index out of bounds");
+          }
+          id=fClusterIdBlock->fIds[fClusterNo];
+        }
         if (id==kAliHLTVoidDataSpec) id=AliHLTTPCSpacePointData::GetID(fSlice, fPartition, fClusterNo);
         return id;
       };
 
       int fClusterNo; //! cluster no in the current block
-      AliClusterWriter* fData; //! pointer to actual data
+      AliHLTTPCRawClusterRef* fRef; //! reference instance for writing of unpacked clusters
       int fSlice;     //! current slice
       int fPartition; //! current partition
+      AliClusterIdBlock* fClusterIdBlock; //! pointer to optional cluster Ids
       AliHLTUInt32_t fClusterId; //! id of the cluster, from optional cluster id blocks or calculated from slice-partition-number
     };
 
@@ -168,11 +278,10 @@ public:
     virtual void  Clear(Option_t * option="");
 
     unsigned GetRequiredSpace() const {return fRequiredSpace;}
+    int ProcessTrackModelClusterCount();
 
   protected:
     AliHLTComponentBlockData ReservePartitionClusterBlock(int count, AliHLTUInt32_t specification);
-    AliHLTTPCRawCluster& GetClusterRef(AliHLTUInt32_t clusterId);
-    int IncrementClusterCount(int slice, int partition);
 
   private:
     AliClusterWriter(const AliClusterWriter&);
@@ -186,11 +295,8 @@ public:
     std::map<AliHLTUInt32_t, unsigned> fTrackModelClusterCounts; //! cluster count per partition
     std::map<AliHLTUInt32_t, AliHLTComponentBlockData> fPartitionBlockDescriptors; //! block descriptors of partition clusters
     std::map<AliHLTUInt32_t, AliHLTTPCRawCluster*> fPartitionClusterTargets; //! positions of partition cluster blocks
-    AliHLTTPCRawCluster* fCurrentClusterTarget; //! cluster target currently active in the iteration
     std::map<AliHLTUInt32_t, AliClusterIdBlock> fPartitionClusterIds; //! clusters ids for partition cluster ids
     AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
-    AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
-    iterator fBegin; //! for returning a reference
   };
 
 protected:

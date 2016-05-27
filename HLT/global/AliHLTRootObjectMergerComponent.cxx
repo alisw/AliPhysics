@@ -84,7 +84,7 @@ void* AliHLTRootObjectMergerComponent::cleanup(void*)
 {
   if (fObj) delete fObj;
   fObj = NULL;
-  return fObj;
+  return(NULL);
 }
 
 int AliHLTRootObjectMergerComponent::DoDeinit() {
@@ -298,6 +298,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		AliHLTAsyncProcessor::AliHLTAsyncProcessorMultiBuffer* buf = NULL;
 		for (const AliHLTComponentBlockData* blk = GetFirstInputBlock(fDataType); blk != NULL; blk = GetNextInputBlock())
 		{
+			if (blk->GetDataType() == (kAliHLTAnyDataType | kAliHLTDataOriginPrivate)) continue;
 			if (buf == NULL) buf = fAsyncProcessor.AllocateMultiBuffer();
 			if (buf == NULL)
 			{
@@ -352,11 +353,11 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 		if (fCumulative)
 		{
 			fTotalInputs += nInputs;
-			HLTImportant("Root objects merging cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
+			HLTInfo("Root objects merging cumulatively: %d new inputs (%d bytes), %d total inputs", nInputs, inputSize, fTotalInputs);
 		}
 		else
 		{
-			HLTImportant("Root objects merging from %d inputs", nInputs);
+			HLTInfo("Root objects merging from %d inputs", nInputs);
 		}
 		if (fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTRootObjectMergerComponent::MergeObjects, objectForAsyncProcessor))
 		{
@@ -380,7 +381,7 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			{
 				char tmpType[32];
 				fDataType.PrintDataType(tmpType, 32);
-				HLTImportant("Merger Component pushing (%s, %d bytes)", tmpType, pushresult);
+				HLTInfo("Merger Component pushing (%s, %d bytes)", tmpType, pushresult);
 			}
 		}
 		else if (fAsyncProcess && CheckPushbackPeriod())

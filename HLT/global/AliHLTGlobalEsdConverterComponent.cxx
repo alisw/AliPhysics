@@ -55,7 +55,6 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TTimeStamp.h"
-#include "THnSparse.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
@@ -380,16 +379,18 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   if (pCTPData) {
     AliHLTTriggerMask_t mask=pCTPData->ActiveTriggers(trigData);
     for (int index=0; index<gkNCTPTriggerClasses; index++) {
-      if ((mask&(AliHLTTriggerMask_t(0x1)<<index)) == 0) continue;
-      pESD->SetTriggerClass(pCTPData->Name(index), index);
+      if (!mask.test(index)) continue;
+      const char* name = pCTPData->Name(index);
+      if( name && name[0]!='\0' && strncmp(name,"AliHLTReadoutList",17)!=0){
+	pESD->SetTriggerClass(name, index);
+      }
     }
+    ULong64_t low, high;
+    pCTPData->GetTriggerMaskAll(low,high);
     //first 50 triggers
-    AliHLTTriggerMask_t mask50;
-    mask50.set(); // set all bits
-    mask50 >>= 50; // shift 50 right
-    pESD->SetTriggerMask((mask&mask50).to_ulong());
-    //next 50
-    pESD->SetTriggerMaskNext50((mask>>50).to_ulong());
+    pESD->SetTriggerMask(low);
+    //next 50 triggers
+    pESD->SetTriggerMaskNext50(high);
   }
 
   TTree* pTree = NULL;
@@ -655,8 +656,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
+      int iTrack = 0;
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
-	   element!=tracks.end(); element++) {
+	   element!=tracks.end(); element++, iTrack++ ) {
 	Float_t points[4] = {
 	  static_cast<Float_t>(element->GetX()),
 	  static_cast<Float_t>(element->GetY()),
@@ -712,8 +714,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// TPC cluster
 	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTPCrefit);
 	iotrack.SetTPCPoints(points);
-	if( element->TrackID()<ndEdxTPC ){
-	  AliHLTFloat32_t *val = &(dEdxTPC[3*element->TrackID()]);
+	if( iTrack < ndEdxTPC ){
+	  AliHLTFloat32_t *val = &(dEdxTPC[3*iTrack]);
 	  iotrack.SetTPCsignal( val[0], val[1], (UChar_t) val[2] ); 
 	  //AliTPCseed s;
 	  //s.Set( element->GetX(), element->GetAlpha(),

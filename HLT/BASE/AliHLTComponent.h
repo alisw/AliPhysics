@@ -1138,9 +1138,10 @@ class AliHLTComponent : public AliHLTLogging {
    * the content of TObjString entries.
    * @param entries   blank separated list of OCDB paths
    * @param key       if the entry is a TMap, search for the corresponding object
+   * @defaultToEmptyString if OCDB object does not exist, we assume an empty configuration string and do continue
    * @return neg. error code if failed
    */
-  int ConfigureFromCDBTObjString(const char* entries, const char* key=NULL);
+  int ConfigureFromCDBTObjString(const char* entries, const char* key=NULL, bool defaultToEmptyString = false);
 
   /**
    * Load specified entry from the OCDB and extract the object.

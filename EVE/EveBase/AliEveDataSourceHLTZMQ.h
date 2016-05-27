@@ -8,11 +8,7 @@
 #ifndef __AliEveDataSourceHLTZMQ__
 #define __AliEveDataSourceHLTZMQ__
 
-#include "AliEveEventManager.h"
 #include "AliEveDataSource.h"
-#include "AliHLTDataTypes.h"
-
-#include "TThread.h"
 
 class AliEveDataSourceHLTZMQ : public AliEveDataSource
 {
@@ -21,37 +17,20 @@ public:
     ~AliEveDataSourceHLTZMQ();
 
 private:
-    static void* DispatchEventListenerHLT(void *arg){static_cast<AliEveDataSourceHLTZMQ*>(arg)->PullEventFromHLT();return nullptr;}
-    void PullEventFromHLT();
-    void InitOCDB(int runNo);
     void GotoEvent(Int_t event);
     void Init();
     void NextEvent();
-    
-    TThread *fEventListenerThreadHLT;
+    void RequestData();
+    Bool_t ReceivePromptRecoParameters(Int_t runNo);
     
     void* fZMQContext;
-    void* fZMQeventQueue; //this is the ONLY queue for threads!
-    TString fHLTPublisherAddress;
+    void* fZMQin;
+    int fZMQtimeout;
 
     AliEveDataSourceHLTZMQ(const AliEveDataSourceHLTZMQ&);
     AliEveDataSourceHLTZMQ& operator=(const AliEveDataSourceHLTZMQ&);
 
-    ClassDef(AliEveDataSourceHLTZMQ, 0); // Interface for getting all event components in a uniform way.
+    ClassDef(AliEveDataSourceHLTZMQ, 0);
 };
-
-//const int kAliHLTComponentDataTypeTopicSize = kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
-//
-//inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
-//{
-//    for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
-//    {
-//        if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
-//    }
-//    return true;
-//}
-
-
-
 
 #endif

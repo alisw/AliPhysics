@@ -39,6 +39,7 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit()
   fChannelNumWordsLeft(0),
   fBunchNumWordsLeft(0),  
   fBunchCurrentTime(-2),
+  fRCU2Flag(0),
   fkMCLabels(0),
   fNMCLabels(0),
   fCurrentMCLabel(0)
@@ -64,6 +65,7 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit(const AliHLTTPCHWCFExtrac
   fChannelNumWordsLeft(0),
   fBunchNumWordsLeft(0),  
   fBunchCurrentTime(-2),
+  fRCU2Flag(0),
   fkMCLabels(0),
   fNMCLabels(0),
   fCurrentMCLabel(0)
@@ -177,7 +179,10 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
     AliHLTUInt32_t  hwAddress = fInput & 0xFFF;
 
     fBunch->fFlag = 1;
+
     fBunch->fBranch = (hwAddress >> 11) & 0x1;
+    if( fRCU2Flag ) fBunch->fBranch = 0;
+
     if( hwAddress>=fkMapping[0] ) fBunch->fFlag = 0; //readout errors
     else{
       AliHLTUInt32_t configWord = fkMapping[hwAddress+1];

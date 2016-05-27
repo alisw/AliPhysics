@@ -8,7 +8,9 @@
 #define ALIHLTTPCHWCFDIVISIONUNIT_H
 
 #include "AliHLTTPCHWCFDataTypes.h"
-
+#include "AliHLTLogging.h"
+class TNtuple;
+class TFile;
 
 //  @class   AliHLTTPCHWCFDivisionUnit
 //  @author Sergey Gorbunov <sergey.gorbunov@fias.uni-frankfurt.de>
@@ -17,7 +19,7 @@
 //  @brief  ( see AliHLTTPCHWCFEmulator class )
 //  @note
 //
-class AliHLTTPCHWCFDivisionUnit
+class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
 {
  public:  
 
@@ -47,7 +49,11 @@ class AliHLTTPCHWCFDivisionUnit
     fClusterLowerLimit = val << AliHLTTPCHWCFDefinitions::kFixedPoint; 
   }
   
-  /** initialise */
+  /** set tagging of deconvoluted clusters
+   **/
+  void SetTagDeconvolutedClusters( AliHLTUInt32_t b ){ fTagDeconvolutedClusters = b; }
+
+ /** initialise */
   int Init();
   
   /** input stream of data */
@@ -65,9 +71,15 @@ class AliHLTTPCHWCFDivisionUnit
   
   bool fSinglePadSuppression; // suppress not merged clusters
   AliHLTUInt64_t fClusterLowerLimit; // lower charge limit for clusters 
+  AliHLTUInt32_t fTagDeconvolutedClusters; // way to tag deconvoluted clusters 
+                                           // 0: no tagging 
+                                           // 1: tag pad, tag time if one of the time sequences is deconvoluted 
+                                           // 2: tag pad, tag time if 2 consecutive time sequences are deconvoluted 
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
   int  fDebug; // debug level
+  TNtuple *fDebugNtuple; // ntuple with some cluster parameters for debugging
+  TFile * fDebugFile; // file with debug ntuple
 };
 
 #endif

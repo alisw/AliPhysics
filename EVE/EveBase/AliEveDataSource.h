@@ -30,6 +30,7 @@ struct AliEveData {
   AliAODEvent  *fAOD;			// AODEvent object.
   AliRunLoader* fRunLoader;		// Run loader.
   AliRawReader *fRawReader;             // Raw-data reader.
+  Int_t         fRunNumber;
     
   AliEveData()
       : fESDFile(NULL)
@@ -42,6 +43,7 @@ struct AliEveData {
       , fAOD(NULL)
       , fRunLoader(NULL)
       , fRawReader(NULL)
+      , fRunNumber(0)
   {}
 
   void Clear()
@@ -66,11 +68,13 @@ public:
     ~AliEveDataSource();
     
     virtual void Init();
+    virtual void InitOCDB(Int_t runNumber) {}
     virtual void GotoEvent(Int_t event);
     virtual void NextEvent();
     virtual const AliEveData* GetData() const {return &fCurrentData;}
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const{return -1;}
     virtual void SetSourceURL(TString url) {fSourceURL=url; Init();}
+    virtual Bool_t ReceivePromptRecoParameters(Int_t runNo) {return kFALSE;}
     
     void StorageManagerOk();     // *SIGNAL*
     void StorageManagerDown();   // *SIGNAL*

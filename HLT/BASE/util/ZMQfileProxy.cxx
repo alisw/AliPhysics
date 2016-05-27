@@ -35,7 +35,7 @@ class MySignalHandler;
 
 //methods
 int ProcessOptionString(TString arguments);
-int DumpToFile(TObject* object);
+int DumpToFile(TObject* object, std::string name);
 int processInfo(aliZMQmsg::iterator& i);
 void* run(void* arg);
 void* runToFile(void* arg);
@@ -66,7 +66,8 @@ void* fZMQin  = NULL;                 //the in socket - entry point for the data
 
 TString fStatus = "";
 TPRegexp fRunNumberRegex("([-_/]+)(000[0-9][0-9][0-9][0-9][0-9][0-9])([-_/]+)");
-Int_t fRunNumber = 0;
+Int_t fRunNumber = -1;
+std::string fInfo = "";
 TPRegexp* fSelectionRegexp = NULL;
 TPRegexp* fUnSelectionRegexp = NULL;
 
@@ -126,33 +127,50 @@ void* runFromFile(void* arg)
       }
     }
 
+    TObject* infoObject = fFile->Get("_ZMQ_internal_fInfo");
+    if (infoObject) {
+      TObjString* objstr = dynamic_cast<TObjString*>(infoObject);
+      if (objstr) {
+        fInfo = objstr->String();
+        fRunNumber = atoi(GetParamString("run",fInfo).c_str());
+      }
+      if (fVerbose) printf("read metadata: %s\n", fInfo.c_str());
+      delete infoObject;
+    }
+
     //parse the file name for run number
-    {
+    if (fRunNumber<0) {
       TObjArray* eearr = fRunNumberRegex.MatchS(fFileName);
       TObject* runstr = NULL;
       if (eearr) runstr = eearr->At(2);
       if (runstr) fRunNumber = atoi(runstr->GetName());
       else fRunNumber = 0;
       delete eearr;
+      fInfo+=Form("run=%i",fRunNumber);
     }
 
-    alizmq_msg_add(&message, "INFO", Form("run=%i",fRunNumber));
+    alizmq_msg_add(&message, "INFO", fInfo);
 
     //attach each key as a message part
     TList* listOfKeys = fFile->GetListOfKeys();
     TIter keys(listOfKeys);
     while (TKey* key = (TKey*)keys.Next())
     {
-      const char* objectName = key->GetName();
+      string objectName = key->GetName();
+      
+      //skip the info part (handled before)
+      if (objectName=="_ZMQ_internal_fInfo") {
+        continue;
+      }
       
       //do the selection
       Bool_t selected = kTRUE;
       Bool_t unselected = kFALSE;
-      if (fSelectionRegexp) selected = fSelectionRegexp->Match(objectName);
-      if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(objectName);
+      if (fSelectionRegexp) selected = fSelectionRegexp->Match(objectName.c_str());
+      if (fUnSelectionRegexp) unselected = fUnSelectionRegexp->Match(objectName.c_str());
       if (!selected || unselected)
       {
-        if (fVerbose) Printf("skipping %s",objectName);
+        if (fVerbose) Printf("skipping %s",objectName.c_str());
         continue;
       }
 
@@ -160,7 +178,8 @@ void* runFromFile(void* arg)
       TObject* object = key->ReadObj();
       if (object)
       {
-        if (fVerbose) Printf("attaching %s",objectName);
+
+        if (fVerbose) Printf("attaching %s",objectName.c_str());
         AliHLTDataTopic topic = kAliHLTDataTypeTObject;
         alizmq_msg_add(&message, &topic, object);
       }
@@ -261,26 +280,34 @@ void* runToFile(void* arg)
       //count ROOT objects
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_msg_iter_check(i, "ROOT")==0) fNumberOfTObjectsInMessage++;
+        if (alizmq_msg_iter_check_id(i, "ROOT")==0) fNumberOfTObjectsInMessage++;
       }
 
       //process
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_msg_iter_check(i, "INFO")==0)
+        TObject* object = NULL;
+        string name;
+        if (alizmq_msg_iter_check_id(i, "INFO")==0)
         {
-          processInfo(i);
-          continue;
+          //check if we have a runnumber in the string
+          alizmq_msg_iter_data(i,fInfo);
+          if (fVerbose) Printf("processing INFO %s", fInfo.c_str());
+          fRunNumber = atoi(GetParamString("run",fInfo).c_str());
+          object = new TObjString(fInfo.c_str());
+          name = "_ZMQ_internal_fInfo";
+        }
+        else
+        {
+          alizmq_msg_iter_data(i, object);
+          if (object) name = object->GetName();
         }
 
-        TObject* object = NULL;
-        alizmq_msg_iter_data(i, object);
-
-        if (fVerbose) Printf("got %s %s", object->ClassName(), object->GetName());
+        if (fVerbose && object) Printf("got %s %s", object->ClassName(), object->GetName());
 
         if (object && !fFileNameBase.IsNull()) 
         {
-          DumpToFile(object);
+          DumpToFile(object,name);
           delete object;
         }
         else
@@ -311,23 +338,6 @@ void* run(void* arg)
 //_______________________________________________________________________________________
 int processInfo(aliZMQmsg::iterator& i)
 {
-  //check if we have a runnumber in the string
-  string info;
-  alizmq_msg_iter_data(i,info);
-  if (fVerbose) Printf("processing INFO %s", info.c_str());
-
-  size_t runTagPos = info.find("run");
-  if (runTagPos != std::string::npos)
-  {
-    size_t runStartPos = info.find("=",runTagPos);
-    size_t runEndPos = info.find(" ");
-    string runString = info.substr(runStartPos+1,runEndPos-runStartPos-1);
-    if (fVerbose) printf("received run=%s\n",runString.c_str());
-
-    int runnumber = atoi(runString.c_str());
-
-    fRunNumber = runnumber; 
-  }
   return 0;
 }
 
@@ -377,12 +387,10 @@ int main(int argc, char** argv)
   int mainReturnCode=0;
 
   //init stuff
-  //globally enable schema evolution for serializing ROOT objects
-  TMessage::EnableSchemaEvolutionForAll(kTRUE);
   TDirectory::AddDirectory(kFALSE);
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
-  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), fPollTimeout, 2);
+  fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
   if (fZMQsocketModeIN < 0) return 1;
   printf("in:  (%s) %s\n", alizmq_socket_name(fZMQsocketModeIN), fZMQconfigIN.Data());
 
@@ -411,7 +419,7 @@ int main(int argc, char** argv)
 }
 
 //______________________________________________________________________________
-int DumpToFile(TObject* object)
+int DumpToFile(TObject* object, std::string name)
 {
   Option_t* fileMode="RECREATE";
   TTimeStamp time;
@@ -428,7 +436,7 @@ int DumpToFile(TObject* object)
   //if we just have one object, append it to file name for clarity)
   if (fNumberOfTObjectsInMessage==1) 
   {
-    TString objectName = object->GetName();
+    TString objectName = name.c_str();
     objectName.ReplaceAll(" ","_");
     fFileName += "_"+objectName;
   }
@@ -437,8 +445,8 @@ int DumpToFile(TObject* object)
   fFileName += ".root";
   if (fVerbose) Printf("opening file: %s", fFileName.Data());
   if (!fFile) fFile = new TFile(fFileName,fileMode);
-  if (fVerbose) Printf("writing object %s to %s",object->GetName(), fFileName.Data());
-  int rc = object->Write(object->GetName(),TObject::kOverwrite);
+  if (fVerbose) Printf("writing object %s to %s",name.c_str(), fFileName.Data());
+  int rc = object->Write(name.c_str(),TObject::kOverwrite);
   return rc;
 }
 

@@ -61,7 +61,7 @@ struct AliHLTTPCHWCFClusterFragment
 {
   //* constructor **/
   AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-       fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fSlope(0), fMC()
+    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0),fConsecutiveTimeDeconvolution(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -78,8 +78,12 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt64_t fTMean;// mean time, used for merging neighbouring pads
   AliHLTUInt64_t fLastQ; // for merged fragments, charge of the last (highest pad value)
                          //    fragment bein merged, needed for deconvolution
+  AliHLTUInt32_t fNPads; // how many pads are in the cluster 
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
                          //   ( needed for deconvolution )
+  AliHLTUInt32_t fNDeconvolutedTime; // how many cluster pads has been split in Time direction  
+  bool fIsDeconvolutedPad; // tag shows if the cluster has been split in several clusters in Pad direction
+  AliHLTUInt32_t fConsecutiveTimeDeconvolution; // ==2 when 2 or more cons. time sequences are deconvoluted
   std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
 typedef struct AliHLTTPCHWCFClusterFragment AliHLTTPCHWCFClusterFragment;
@@ -87,20 +91,22 @@ typedef struct AliHLTTPCHWCFClusterFragment AliHLTTPCHWCFClusterFragment;
 struct AliHLTTPCHWCFCluster
 {
   //* constructor **/
-  AliHLTTPCHWCFCluster(): fFlag(0), fRowQ(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fMC()
+AliHLTTPCHWCFCluster(): fFlag(0), fRowQ(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
   AliHLTUInt32_t fRowQ; // bits 30-31 = 0x3
                         // bits 24-29 = row number
-                        // bits 0 -23 = max adc value as fixed point integer,
+                        // bit  23    = 0 (not used) 
+                        // bits 0 -22 = max adc value as fixed point integer,
                         //              with 12 bits after the point
-  AliHLTUInt32_t fQ;    // total charge as fixed point integer, 12 bits after the point
+  AliHLTUInt32_t fQ;    // 0-29 total charge as fixed point integer, 12 bits after the point
+                        // 30   flag: is the cluster deconvoluted in Time
+                        // 31   flag: is the cluster deconvoluted in Pad
   AliHLTUInt32_t fT;    // mean time, 32-bit float stored as 32-bit integer
   AliHLTUInt32_t fP;    // mean pad,  32-bit float stored as 32-bit integer
   AliHLTUInt32_t fT2;   // mean time^2, 32-bit float stored as 32-bit integer
   AliHLTUInt32_t fP2;   // mean pad^2,  32-bit float stored as 32-bit integer
-
   AliHLTTPCClusterMCLabel fMC; // mc label
 };
 typedef struct AliHLTTPCHWCFCluster AliHLTTPCHWCFCluster;

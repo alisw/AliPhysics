@@ -13,7 +13,7 @@ namespace AliZMQhelpers {
 #include "TString.h"
 struct zmq_msg_t;
 struct AliHLTDataTopic;
-class TStreamerInfo;
+class TVirtualStreamerInfo;
 
 //convenience typedefs:
 //define a map of strings
@@ -22,13 +22,15 @@ typedef std::pair<zmq_msg_t*, zmq_msg_t*> aliZMQframe;
 typedef std::vector<aliZMQframe> aliZMQmsg;
 typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
 typedef std::vector<std::pair<std::string, std::string> > aliStringVec;
-typedef std::map<int,TStreamerInfo*> aliZMQTstreamerInfo;
+typedef std::vector<TVirtualStreamerInfo*> aliZMQrootStreamerInfo;
 
 //  Init and bind/connect a ZMQ socket using a string:
 //  PUB@tcp://*:123123
 //  SUB>tcp://localhost:123123,@tcp://*:454545
 //  timeout is in ms, -1 is wait forever
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1, int highWaterMark=10);
+int alizmq_socket_close(void*& socket, int linger=0);
+int alizmq_socket_state(void* socket);
 
 //get the global context
 void* alizmq_context();
@@ -52,7 +54,7 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
-int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
+int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, TObject* object, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, const std::string& data);
 int alizmq_msg_add(aliZMQmsg* message, const AliHLTDataTopic* topic, void* buffer, int size);
 int alizmq_msg_add(aliZMQmsg* message, const std::string& topic, const std::string& data);
@@ -61,12 +63,14 @@ int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
 
 //ROOT streamers
-int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQTstreamerInfo* streamers);
+int alizmq_msg_prepend_streamer_infos(aliZMQmsg* message, aliZMQrootStreamerInfo* streamers);
 int alizmq_msg_iter_init_streamer_infos(aliZMQmsg::iterator it);
+void alizmq_update_streamerlist(aliZMQrootStreamerInfo* streamers, const TObjArray* newStreamers);
 
 //checking identity of the frame via iterator
 int alizmq_msg_iter_check(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
-int alizmq_msg_iter_check(aliZMQmsg::iterator it, const std::string& topic);
+int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const AliHLTDataTopic& topic);
+int alizmq_msg_iter_check_id(aliZMQmsg::iterator it, const std::string& topic);
 //helpers for accessing data via iterators
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, std::string& topic);
 int alizmq_msg_iter_data(aliZMQmsg::iterator it, std::string& data);
@@ -78,7 +82,7 @@ int alizmq_msg_send(std::string topic, std::string data, void* socket, int flags
 int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags);
 
 //send a single block (one header + payload), ZMQ_SNDMORE should not be used
-int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQTstreamerInfo* streamers=NULL);
+int alizmq_msg_send(const AliHLTDataTopic& topic, TObject* object, void* socket, int flags, int compression=0, aliZMQrootStreamerInfo* streamers=NULL);
 int alizmq_msg_send(const AliHLTDataTopic& topic, const std::string& data, void* socket, int flags);
 
 //deallocate an object - callback for ZMQ
@@ -128,4 +132,5 @@ public:
 std::vector<std::string> TokenizeString(const std::string input, const std::string delimiters);
 //parse 
 stringMap ParseParamString(const std::string paramString);
+std::string GetParamString(const std::string param, const std::string paramstring);
 #endif

@@ -66,6 +66,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 			c.GetSigmaZ2(),
 			c.GetCharge(),
 			c.GetQMax(),
+			c.GetFlags(),
 			id
 			);
   }
@@ -86,6 +87,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 			c.GetSigmaTime2(),
 			c.GetCharge(),
 			c.GetQMax(),
+			c.GetFlags(),
 			id,
 			mc
 			);
@@ -101,6 +103,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 		   float sigmaZ2,
 		   unsigned short charge,
 		   unsigned short qmax,
+		   unsigned short flags,
 		   AliHLTUInt32_t id=~AliHLTUInt32_t(0),
 		   const AliHLTTPCClusterMCLabel *mc=NULL
 		   );

@@ -150,7 +150,10 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   AliHLTUInt32_t fMergerDistance; // max. distance in mean time between two pads to be merged
   bool           fUseTimeBinWindow; // use timebin window
   bool           fUseTimeFollow; // use time follow algorithm for merging pads  
+  bool           fNoiseSuppression; // Slightly modified algorithm for peak and minimum finding aimed to suppress noise
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
+  AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
+  Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
   Int_t fDebug; // debug level
   AliHLTTPCHWCFSupport fCFSupport;     // !transient
   AliHLTTPCHWCFEmulator fCFEmulator;   // !transient

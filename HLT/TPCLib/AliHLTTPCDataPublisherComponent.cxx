@@ -115,7 +115,7 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
       // are unpacked but not stored in order to find the included partitions
     }
 
-    iResult = ReadClusterFromHLTOUT(fClusters);
+    iResult = ReadClusterFromHLTInput(fClusters);
     
     if( CheckMode(kPublishClustersAll) ) { // write out cluster blocks 	    
 
@@ -159,7 +159,7 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
       }
     }        
     if (iResult==-ENODATA) {
-      // return indicates absence of compressed clusters in HLTOUT
+      // return indicates absence of compressed clusters in HLTInput
       // but is not treated as an error further downstream
       iResult=0;    
     }
@@ -217,18 +217,18 @@ int AliHLTTPCDataPublisherComponent::GetEvent(const AliHLTComponentEventData& ev
   return iResult;
 }
 
-int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublisherComponent::AliRawClusterContainer* pContainer)
+int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTInput(AliHLTTPCDataPublisherComponent::AliRawClusterContainer* pContainer)
 {
-  // check the HLTOUT for availability of compressed data blocks
+  // check the HLTInput for availability of compressed data blocks
   int iResult=0;
   AliHLTSystem* pSystem=AliHLTPluginBase::GetInstance();
   if (!pSystem) {
     // global system not initialized
     return -ENODEV;
   }
-  AliHLTOUT* pHLTOUT=pSystem->RequestHLTOUT();
-  if (!pHLTOUT) {
-    // not HLTOUT, hence not clusters
+  AliHLTOUT* pHLTInput=pSystem->RequestHLTInput();
+  if (!pHLTInput) {
+    // not HLTInput, hence not clusters
     return 0;
   }
 
@@ -250,10 +250,10 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
 
   bool bNextBlock=false;
   // add cluster id and mc information data blocks
-  for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
-       bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
+  for (bNextBlock=(pHLTInput->SelectFirstDataBlock()>=0);
+       bNextBlock; bNextBlock=(pHLTInput->SelectNextDataBlock()>=0)) {
     AliHLTComponentBlockData desc;
-    if ((iResult=pHLTOUT->GetDataBuffer(desc))<0) {
+    if ((iResult=pHLTInput->GetDataBuffer(desc))<0) {
       continue;
     }
     if (desc.fDataType==AliHLTTPCDefinitions::DataCompressionDescriptorDataType()) {
@@ -283,6 +283,12 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
 	return iResult;
       }
     }
+    if (desc.fDataType==AliHLTTPCDefinitions::ClustersFlagsDataType()) {
+      // add cluster flags information
+      if ((iResult=decoder.AddClusterFlags(&desc))<0) {
+	return iResult;
+      }
+    }
   }
 
   vector<bool> bHavePartitionData(216, false);
@@ -290,11 +296,11 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
   // read data
   iResult=-ENODATA;
   int nExtractedClusters=0;
-  for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
-       bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
+  for (bNextBlock=(pHLTInput->SelectFirstDataBlock()>=0);
+       bNextBlock; bNextBlock=(pHLTInput->SelectNextDataBlock()>=0)) {
     decoder.SetPadShift(0.0);
     AliHLTComponentBlockData desc;
-    if ((iResult=pHLTOUT->GetDataBuffer(desc))<0) {
+    if ((iResult=pHLTInput->GetDataBuffer(desc))<0) {
       continue;
     }
     if (desc.fDataType==AliHLTTPCDefinitions::RawClustersDataType()) {
@@ -386,7 +392,7 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
     }
   }
 
-  pSystem->ReleaseHLTOUT(pHLTOUT);
+  pSystem->ReleaseHLTInput(pHLTInput);
     
   if (iResult<0) return iResult;
   return nExtractedClusters;

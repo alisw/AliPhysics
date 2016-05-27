@@ -9,7 +9,6 @@
 
 #include "AliEveEventManagerEditor.h"
 #include "AliEveDataSource.h"
-#include "AliEveDataSourceOffline.h"
 #ifdef ZMQ
 #include "AliStorageAdministratorPanelListEvents.h"
 #include "AliStorageAdministratorPanelMarkEvent.h"
@@ -255,7 +254,7 @@ AliEveEventManagerWindow::~AliEveEventManagerWindow()
 void AliEveEventManagerWindow::DoFirstEvent()
 {
     // Load previous event
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    AliEveDataSource *dataSource = fM->GetCurrentDataSource();
     dataSource->GotoEvent(0);
 }
 
@@ -268,7 +267,7 @@ void AliEveEventManagerWindow::DoPrevEvent()
 //        fM->GotoEvent(1);
 //    }
 //    else {
-        AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+        AliEveDataSource *dataSource = fM->GetCurrentDataSource();
         dataSource->GotoEvent((Int_t) fEventId->GetNumber()-1);
         
 //    }
@@ -286,7 +285,7 @@ void AliEveEventManagerWindow::DoNextEvent()
 //    }
 //    else {
 //        cout<<"next event, offline mode"<<endl;
-        AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+        AliEveDataSource *dataSource = fM->GetCurrentDataSource();
         dataSource->GotoEvent((Int_t) fEventId->GetNumber()+1);
 //    }
 }
@@ -295,7 +294,7 @@ void AliEveEventManagerWindow::DoNextEvent()
 void AliEveEventManagerWindow::DoLastEvent()
 {
     // Load previous event
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    AliEveDataSource *dataSource = fM->GetCurrentDataSource();
     dataSource->GotoEvent(-1);
 }
 
@@ -318,7 +317,7 @@ void AliEveEventManagerWindow::DoScreenshot()
 void AliEveEventManagerWindow::DoSetEvent()
 {
     // Set current event
-    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    AliEveDataSource *dataSource = fM->GetCurrentDataSource();
     dataSource->GotoEvent((Int_t) fEventId->GetNumber());
 }
 

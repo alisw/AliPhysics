@@ -33,6 +33,7 @@ class TObjArray;
 class TCollection;
 class AliAnalysisTask;
 class AliAnalysisDataWrapper;
+class TBuffer;
 
 using std::ostream;
 

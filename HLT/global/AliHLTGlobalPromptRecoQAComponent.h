@@ -17,8 +17,10 @@ class AliESDfriend;
 class TTree;
 struct AliHLTTracksData;
 class AliTPCclusterMI;
-class TH2I;
+class TH1F;
 class TH2F;
+class TH1D;
+class TH2D;
 class AliHLTTPCHWCFData;
 
 /**
@@ -64,7 +66,6 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   const char* GetComponentID() {return "PromptRecoQA";};
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
-  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalPromptRecoQAComponent;}
 
@@ -109,6 +110,8 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   void NewAxis(string name, int bins, float low, float high);
   void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
   void NewHistogram(std::string histConfig);
+  void CreateFixedHistograms();
+  void DeleteFixedHistograms();
   int FillHistograms();
 
 protected:
@@ -138,6 +141,19 @@ protected:
   double frawSizeVZERO; 
   double frawSizeEMCAL; 
   double frawSizeZDC; 
+  double frawSizeTRD;
+  double frawSizeFMD;
+  double frawSizeTZERO;
+  double frawSizeACORDE;
+  double frawSizeCTP;
+  double frawSizeAD;
+  double frawSizeTOF;
+  double frawSizePHOS;
+  double frawSizeCPV;
+  double frawSizeHMPID;
+  double frawSizePMD;
+  double frawSizeMUTK;
+  double frawSizeMUTG;
   
   double fnClustersTPC; 
   double frawSizeTPC; 
@@ -145,6 +161,8 @@ protected:
   double fclusterSizeTPCtransformed; 
   double fclusterSizeTPC; 
   double fcompressedSizeTPC; 
+  double fTPCSplitRatioPad;
+  double fTPCSplitRatioTime;
 
   double fnITSSAPtracks; 
   double fnTPCtracklets; 
@@ -177,6 +195,11 @@ protected:
   double fnHLTInSize; 
   double fnHLTOutSize; 
   double fhltRatio;
+  
+  //Fixed histograms with track / cluster properties.
+  //These are not created dynamically because that would require quite some CPU resources.
+  TH1D* fHistClusterChargeTot;
+  TH1D* fHistTPCTrackPt;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };

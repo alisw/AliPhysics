@@ -573,7 +573,7 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
   return iResult;
 }
 
-int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char* key)
+int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char* key, bool defaultToEmptyString)
 {
   // load a list of OCDB objects and configure from the objects
   // can either be a TObjString or a TMap with a TObjString:TObjString key-value pair
@@ -607,15 +607,22 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
 
 	if (pString) {
 	  HLTInfo("received configuration object string: \'%s\'", pString->GetName());
+	  if( !arguments.IsNull() ) arguments+=" ";
 	  arguments+=pString->GetName();
-	  arguments+=" ";
 	} else {
 	  HLTError("configuration object \"%s\"%s%s has wrong type, required TObjString", path, key?" key ":"",key?key:"");
 	  iResult=-EINVAL;
 	}
       } else {
 	HLTError("can not fetch object \"%s\" from OCDB", path);
-	iResult=-ENOENT;
+	if (defaultToEmptyString)
+	{
+	    arguments = "";
+	}
+	else
+	{
+	    iResult=-ENOENT;
+	}
       }
     }
     delete pTokens;
@@ -1541,7 +1548,7 @@ int AliHLTComponent::PushBack(const TObject* pObject, const AliHLTComponentDataT
     //chache the streamer infos during the first few times
     //no need to do this every time as we mostly push the same objects
     if (fUseSchema) {
-      const TList* schemaList = msg.GetStreamerInfos();
+      const TObjArray* schemaList = msg.GetStreamerInfos();
       if (schemaList)  UpdateSchema(schemaList);
     }
 

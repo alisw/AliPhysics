@@ -49,7 +49,13 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
   /** clean up */
   void ReleaseEventMemory();
 
- 
+  // unload mapping from memory
+  void UnloadMapping();
+
+  /** set RCU2 flag (data is not split in two branches)
+   **/
+  void SetProcessingRCU2Data( bool b ){ fProcessingRCU2Data = b; }
+
  private:
 
   static const int fgkNSlices = 36; // n patches in TPC
@@ -62,6 +68,8 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
 
   /** add 10-bit data to the 32-bit word */
   void Add10Word( AliHLTUInt32_t &nWords32, int &seek10, UInt_t data );
+
+  Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
 
   AliHLTUInt32_t *fMapping[fgkNSlices][fgkNPatches]; // mapping arrays
   AliHLTUInt32_t *fEventMemory;          // memory for created event

@@ -346,7 +346,11 @@ AliMagF* AliEveEventManager::AssertMagField()
     //one last check
     if (!TGeoGlobalMagField::Instance()->GetField())
     {
-        fgMaster->ReceivePromptRecoParameters(AliCDBManager::Instance()->GetRun());
+        AliEveDataSource* dataSource = fgMaster->GetCurrentDataSource();
+        if (dataSource) {
+          fgMaster->SetCurrentRun(AliCDBManager::Instance()->GetRun());
+          dataSource->ReceivePromptRecoParameters(AliCDBManager::Instance()->GetRun());
+        }
         if (fgMaster->InitGRP()){
             fgMaster->fgGRPLoaded = kTRUE;
         }
@@ -508,8 +512,14 @@ void AliEveEventManager::AfterNewEventLoaded()
     //
     // Virtual from TEveEventManager.
   
-    if (fCurrentData->fESD)
-      InitOCDB(fCurrentData->fESD->GetRunNumber());
+    Bool_t cdbOK = kTRUE;
+    if (fCurrentData->fESD) {
+      cdbOK = InitOCDB(fCurrentData->fESD->GetRunNumber());
+    }
+    if (!cdbOK) {
+      printf("CDB not OK! not executing AfterNewEventLoaded\n");
+      return;
+    }
 
     cout<<"AliEveEventManager::AfterNewEventLoaded ------------------!!!------------"<<endl;
     
@@ -652,6 +662,7 @@ TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
 
 Bool_t AliEveEventManager::InitOCDB(int runNo)
 {
+  Bool_t ok = kTRUE;
   //first check/set the default OCDB
   AliCDBManager* cdb = AliCDBManager::Instance();
   if (!cdb->IsDefaultStorageSet())
@@ -662,6 +673,7 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
     TString ocdbStorage = settings.GetValue("OCDB.default.path",Form("local://%s/../src/OCDB",gSystem->Getenv("ALICE_ROOT")));
     if (gSystem->Getenv("ocdbStorage"))
     {
+      printf("taking OCDB storage path from env ($ocdbStorage)\n");
       ocdbStorage = gSystem->Getenv("ocdbStorage");
     }
 
@@ -683,20 +695,16 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
       AliFatal("could not set the default OCDB!");
     }
   }
-
+  cdb->SetRun(runNo);
   //check is there is a GRP object for this run
-  AliCDBStorage* defaultStorage = cdb->GetDefaultStorage();
-  if (!defaultStorage) AliFatal("At this point we really should have the default storage set!");
-  if (defaultStorage->GetId("GRP/GRP/Data", runNo))
-  {
-    cdb->SetRun(runNo);
-  }
-  else
-  {
+  try {
+    AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  } catch(...) {
     //now if we don't have a GRP we need to get one from somewhere
-    ReceivePromptRecoParameters(runNo);
+    fgMaster->SetCurrentRun(AliCDBManager::Instance()->GetRun());
+    ok = fCurrentDataSource->ReceivePromptRecoParameters(runNo);
   }
-  
+
   //on run change destroy the mag field, it will be reinitialized via AssertMagField/InitGRP
   if (runNo != cdb->GetRun())
   {
@@ -705,46 +713,7 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
     fgMaster->fgMagField=NULL;
   }
 
-  return kTRUE;
-}
-
-Bool_t AliEveEventManager::ReceivePromptRecoParameters(Int_t runNo)
-{
-  TString localGRPstorage = "local://OCDB";
-  cout<<"Loading OCDB for new run:"<<runNo<<" in online mode."<<endl;
-  TEnv settings;
-    AliEveInit::GetConfig(&settings);
-  SetCurrentRun(runNo);
-
-  // Retrieve GRP entry for given run from aldaqdb.
-  TString dbHost = settings.GetValue("logbook.host", "");
-  Int_t   dbPort =  settings.GetValue("logbook.port", 0);
-  TString dbName =  settings.GetValue("logbook.db", "");
-  TString user =  settings.GetValue("logbook.user", "");
-  TString password = settings.GetValue("logbook.pass", "");
-
-  gSystem->cd(localGRPstorage.Data());
-  gSystem->Exec("rm -fr GRP/");
-  cout<<"CDB path for GRP:"<<localGRPstorage<<endl;
-
-  TString gdc;
-
-  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(runNo, dbHost.Data(),
-                                                            dbPort, dbName.Data(),
-                                                            user.Data(), password.Data(),
-                                                            Form("%s",localGRPstorage.Data()),
-                                                            gdc);
-
-  if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
-  else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
-  else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
-
-  AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage(settings.GetValue("cdb.defaultStorage",Form("local://%s/../src/OCDB",gSystem->Getenv("ALICE_ROOT"))));
-  cdb->SetSpecificStorage("GRP/GRP/Data",localGRPstorage.Data());
-  cdb->SetRun(runNo);
-  cdb->Print();
-  return kTRUE;
+  return ok;
 }
 
 void AliEveEventManager::SetCdbUri(TString path) 

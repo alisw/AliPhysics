@@ -53,7 +53,7 @@ private:
   void* fZMQcontext;       //!ZMQ context pointer
   void* fZMQout;           //!the output socket
   int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
-  TString fZMQoutConfig;   //config the ZMQ socket: e.g. SUB+tcp://localhost:123123
+  std::string fZMQoutConfig;   //config the ZMQ socket: e.g. SUB+tcp://localhost:123123
   Bool_t fZMQpollIn;       //do we poll fo incoming requests?
   Int_t fPushbackDelayPeriod;   //how often do we send?
   Int_t fLastPushbackDelayTime; //last push back time
@@ -63,9 +63,11 @@ private:
   unsigned long fNskippedErrorMessages; //keep the number of pushed messages
   Int_t fZMQerrorMsgSkip; //downscale ZMQ send warnings
   Bool_t fSendECSparamString; //send the full ECS param string
-  TString fECSparamString; //the ECS param string from SOR event
+  std::string fECSparamString; //the ECS param string from SOR event
+  stringMap fECSparamMap; //parsed map of ECS param strings
   Bool_t fSendStreamerInfos;   //send the cached streamer infos
   TRegexp fCDBpattern;          //keep the pattern for cdb string checks
+  std::string fInfoString;  //cache the string with the run information
   
   ClassDef(AliHLTZMQsink, 1)
 };

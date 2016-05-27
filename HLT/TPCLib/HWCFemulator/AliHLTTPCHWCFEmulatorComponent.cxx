@@ -64,6 +64,9 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fUseTimeBinWindow(0),
   fUseTimeFollow(0),
   fChargeFluctuation(0),
+  fTagDeconvolutedClusters(0),
+  fProcessingRCU2Data(0),
+  fNoiseSuppression(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -92,6 +95,8 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fUseTimeBinWindow(0),
   fUseTimeFollow(0),
   fChargeFluctuation(0),
+  fTagDeconvolutedClusters(0),
+  fProcessingRCU2Data(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -223,6 +228,8 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fUseTimeBinWindow = 1;
   fUseTimeFollow = 1;
   fChargeFluctuation = 0;
+  fTagDeconvolutedClusters = 0;
+  fProcessingRCU2Data = 0;
   fDebug = 0;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
@@ -337,6 +344,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
     
+    if ( argument.CompareTo( "-noise-suppression" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fNoiseSuppression  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Noise Suppression is set to: %d", fNoiseSuppression );
+      continue;
+    }
+
     if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -350,7 +364,21 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       HLTInfo( "Debug level is set to: %d", fDebug );
       continue;
     }
-    
+
+    if ( argument.CompareTo( "-tag-deconvoluted-clusters" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fTagDeconvolutedClusters  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Tag Deconvoluted Clusters is set to: %d", fTagDeconvolutedClusters );
+      continue;
+    }
+ 
+    if ( argument.CompareTo( "-rcu2-data" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fProcessingRCU2Data  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Processing RCU2 data flag is set to: %d", fProcessingRCU2Data );
+      continue;
+    }
+   
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
@@ -428,6 +456,9 @@ int AliHLTTPCHWCFEmulatorComponent::Configure( const char* cdbEntry, const char*
   if( fDebug>1 ) fCFEmulator.SetDebugLevel( fDebug );
   else fCFEmulator.SetDebugLevel(0);
 
+  fCFSupport.UnloadMapping();
+  fCFSupport.SetProcessingRCU2Data( fProcessingRCU2Data );
+
   return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }
 
@@ -493,15 +524,24 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	nMCLabels = 0;
       }
 
-      AliHLTCDHWrapper header(iter->fPtr);
-      // book memory for the output
       
       AliHLTUInt32_t maxNClusters = rawEventSize32 + 1; // N 32-bit words in input
       AliHLTUInt32_t clustersSize32 = maxNClusters*AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
       AliHLTUInt32_t nOutputMC = maxNClusters;
 
+      // create or forward the CDH header
+
+      AliRawDataHeaderV3 dummyCDHHeader;
+
+      bool isRawInput = ( iter->fDataType == kAliHLTDataTypeDDLRaw );
+
+      AliHLTCDHWrapper header( isRawInput ?iter->fPtr :&dummyCDHHeader );
+
       AliHLTUInt32_t headerSize = header.GetHeaderSize();
-      AliHLTUInt32_t outBlockSize=headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
+
+      // book memory for the output
+
+      AliHLTUInt32_t outBlockSize = headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
 
       if( outBlock ) delete[] outBlock;
       if( allocOutMC ) delete[] allocOutMC;      
@@ -518,7 +558,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       AliHLTTPCClusterMCData *outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(allocOutMC);
       
       // fill CDH header here, since the HW clusterfinder does not receive it
-      memcpy(outBlock, iter->fPtr, headerSize);
+      memcpy(outBlock, header.GetHeader(), headerSize );
       memset(outBlock,0xFF,4);
 
       //AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
@@ -531,7 +571,11 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fBenchmark.Start(1);
       fCFEmulator.Init
 	( fCFSupport.GetMapping(slice,patch), configWord1, configWord2 );
-      
+
+      fCFEmulator.SetTagDeconvolutedClusters( fTagDeconvolutedClusters );
+      fCFEmulator.SetProcessingRCU2Data( fProcessingRCU2Data );
+      fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
+
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 
 					  mcLabels, nMCLabels,

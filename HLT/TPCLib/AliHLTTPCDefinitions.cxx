@@ -49,6 +49,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksModelDataTyp
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDataType = AliHLTComponentDataTypeInitializer("REMCLSMD", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersFlagsDataType = AliHLTComponentDataTypeInitializer("CLSFLAGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType = AliHLTComponentDataTypeInitializer("HLTTPCFT", kAliHLTDataOriginTPC);
 
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DDLEncodedEntropyRawDataType() {
@@ -72,7 +73,7 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDataType() {
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() {
-  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSOTC", kAliHLTDataOriginTPC);
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLUSNOTC", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDescriptorDataType() {
@@ -125,6 +126,10 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::CompressedClusterIdDataType
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RemainingClustersCompressedDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::ClustersFlagsDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLSFLAGS", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RemainingClusterIdsDataType() {

@@ -113,7 +113,7 @@ class AliHLTRootSchemaEvolutionComponent : public AliHLTCalibrationProcessor
   /// Update the array of known streamer infos from a list of infos
   /// Checks whether the provided infos are already there in the present version
   /// and adds if it is a new info. 
-  int UpdateStreamerInfos(const TList* list, TObjArray* infos) const;
+  int UpdateStreamerInfos(const TObjArray* list, TObjArray* infos) const;
 
   class AliHLTDataBlockItem
   {

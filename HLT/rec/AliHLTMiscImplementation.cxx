@@ -37,6 +37,7 @@
 #include "AliESDHLTDecision.h"
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
+#include "TSystem.h"
 #include "TClass.h"
 #include "TStreamerInfo.h"
 #include "TObjArray.h"
@@ -54,7 +55,7 @@ AliHLTMiscImplementation::~AliHLTMiscImplementation()
   // see header file for function documentation
 }
 
-int AliHLTMiscImplementation::InitCDB(const char* cdbpath)
+int AliHLTMiscImplementation::InitCDB(const char* cdbpath, const char* cdbsnapshot)
 {
   // see header file for function documentation
   int iResult=0;
@@ -79,6 +80,12 @@ int AliHLTMiscImplementation::InitCDB(const char* cdbpath)
       pCDB->SetRun(0);
       log.Logging(kHLTLogInfo, "InitCDB", "CDB handling", "set default URI: %s", cdbUri);
     }
+  }
+  if (cdbsnapshot != NULL) {
+    gSystem->Load("libGeom");
+    gSystem->Load("libGeomBuilder");
+    log.Logging(kHLTLogInfo, "InitCDB", "CDB Snapshot", "Running in snapshot mode: %s", cdbsnapshot);
+    pCDB->SetSnapshotMode(cdbsnapshot);
   }
   return iResult;
 }
@@ -127,7 +134,10 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   try {
     // exceptions for the loading of OCDB objects have been introduced in r61012 on
     // Feb 20 2013. This allows to reduce this function to try and catch of AliCDBManager::Get
-    entry=man->Get(path, runNo);
+    AliCDBStorage* storage = man->GetDefaultStorage();
+    if (storage && storage->GetId(path, runNo) ){ // check the path before calling Get() in order to avoid call of AliFatal() in Grid CDB manager
+      entry=man->Get(path, runNo);
+    }
   }
   catch (...) {
     // ignore the exception, missing object can be a valid condition, and is handled

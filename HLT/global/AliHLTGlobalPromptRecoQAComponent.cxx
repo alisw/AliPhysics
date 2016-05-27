@@ -31,6 +31,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCRawCluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliITStrackV2.h"
@@ -49,7 +50,6 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TTimeStamp.h"
-#include "THnSparse.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
@@ -69,8 +69,8 @@
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
 
-#include "TH1I.h"
 #include "TH2F.h"
+#include "TH1D.h"
 #include <string>
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
@@ -101,12 +101,27 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , frawSizeVZERO(0.)
   , frawSizeEMCAL(0.)
   , frawSizeZDC(0.)
+  , frawSizeTRD(0.)
+  , frawSizeFMD(0.)
+  , frawSizeTZERO(0.)
+  , frawSizeACORDE(0.)
+  , frawSizeCTP(0.)
+  , frawSizeAD(0.)
+  , frawSizeTOF(0.)
+  , frawSizePHOS(0.)
+  , frawSizeCPV(0.)
+  , frawSizeHMPID(0.)
+  , frawSizePMD(0.)
+  , frawSizeMUTK(0.)
+  , frawSizeMUTG(0.)
   , fnClustersTPC(0.)
   , frawSizeTPC(0.)
   , fhwcfSizeTPC(0.)
   , fclusterSizeTPCtransformed(0.)
   , fclusterSizeTPC(0.)
   , fcompressedSizeTPC(0.)
+  , fTPCSplitRatioPad(0.)
+  , fTPCSplitRatioTime(0.)
   , fnITSSAPtracks(0.)
   , fnTPCtracklets(0.)
   , fnTPCtracks(0.)
@@ -132,6 +147,8 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fnHLTInSize(0.)
   , fnHLTOutSize(0.)
   , fhltRatio(0.)
+  , fHistClusterChargeTot(NULL)
+  , fHistTPCTrackPt(NULL)
 {
   // see header file for class documentation
   // or
@@ -199,6 +216,9 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   {
     rc = PushBack("reset", kAliHLTDataTypeConfig|kAliHLTDataOriginHLT);
   }
+
+  fHistClusterChargeTot->Reset();
+  fHistTPCTrackPt->Reset();
   return 0;
 }
 
@@ -273,11 +293,26 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
 
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD);
+
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginFMD); //All the other detectors where we do not have reco yet
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginT0);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginACORDE);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRG);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginAD);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTOF);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginPHOS);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginCPV);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginHMPID);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginPMD);
+  list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON);
+
   //All this is TPC Data compression
   list.push_back(AliHLTTPCDefinitions::DataCompressionDescriptorDataType());
   list.push_back(AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed());
   list.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  list.push_back(AliHLTTPCDefinitions::ClustersFlagsDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
   list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
 }
@@ -285,16 +320,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
 AliHLTComponentDataType AliHLTGlobalPromptRecoQAComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTMultipleDataType;
-}
-
-int AliHLTGlobalPromptRecoQAComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList){ 
-// see header file for class documentation
-
-  tgtList.clear();
-  tgtList.push_back( kAliHLTDataTypeHistogram|kAliHLTDataOriginOut );
-  tgtList.push_back( kAliHLTDataTypeTObject|kAliHLTDataOriginOut );
-  return tgtList.size();
+  return kAliHLTDataTypeHistogram|kAliHLTDataOriginOut;
 }
 
 void AliHLTGlobalPromptRecoQAComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
@@ -323,7 +349,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
       mgr.GetGRPData()->GetBeamType() == "PbPb" ||
       mgr.GetGRPData()->GetBeamType() == "A-A" ||
       mgr.GetGRPData()->GetBeamType() == "AA" )
-  {
+  {//Start Axes for Pb-Pb
     fAxes["nClustersSPD"].set( 100, 0., 30e3,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 140e3, &frawSizeSPD );
     fAxes["nClustersSDD"].set( 100, 0., 26e3,  &fnClustersSDD );
@@ -366,32 +392,31 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
     fAxes["nHLTInSize"].set( 100, 0., 200e6, &fnHLTInSize );
     fAxes["nHLTOutSize"].set( 100, 0., 70e6, &fnHLTOutSize );
-
-  }
+  }//End Axes for Pb-Pb
   else
-  {
-    fAxes["nClustersSPD"].set( 100, 0., 500.,  &fnClustersSPD );
+  {//Start Axes for pp
+    fAxes["nClustersSPD"].set( 100, 0., 800.,  &fnClustersSPD );
     fAxes["rawSizeSPD"].set( 100, 0., 10e3, &frawSizeSPD );
-    fAxes["nClustersSDD"].set( 100, 0., 500.,  &fnClustersSDD );
+    fAxes["nClustersSDD"].set( 100, 0., 1e3,  &fnClustersSDD );
     fAxes["rawSizeSDD"].set( 100, 0., 50e3, &frawSizeSDD );
-    fAxes["nClustersSSD"].set( 100, 0., 600.,  &fnClustersSSD );
-    fAxes["rawSizeSSD"].set( 100, 0., 8e3, &frawSizeSSD );
+    fAxes["nClustersSSD"].set( 100, 0., 1e3,  &fnClustersSSD );
+    fAxes["rawSizeSSD"].set( 100, 0., 100e3, &frawSizeSSD );
     fAxes["nClustersITS"].set( 100, 0., 10e3, &fnClustersITS );
     fAxes["rawSizeITS"].set( 100, 0., 100e3, &frawSizeITS );
     fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
     fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
     fAxes["rawSizeZDC"].set( 100, 0., 10e3, &frawSizeZDC );
-    fAxes["nClustersTPC"].set( 100, 0., 20e3, &fnClustersTPC );
-    fAxes["rawSizeTPC"].set( 100, 0., 5e6, &frawSizeTPC );
-    fAxes["hwcfSizeTPC"].set( 100, 0., 1., &fhwcfSizeTPC );
+    fAxes["nClustersTPC"].set( 100, 0., 1.8e6, &fnClustersTPC );
+    fAxes["rawSizeTPC"].set( 100, 0., 40e6, &frawSizeTPC );
+    fAxes["hwcfSizeTPC"].set( 100, 0., 40e6, &fhwcfSizeTPC );
     fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
     fAxes["clusterSizeTPC"].set( 100, 0., 6500e3, &fclusterSizeTPC );
-    fAxes["compressedSizeTPC"].set( 100, 0., 1500e3, &fcompressedSizeTPC );
+    fAxes["compressedSizeTPC"].set( 100, 0., 10e6, &fcompressedSizeTPC );
     fAxes["nITSSAPtracks"].set( 100, 0., 100., &fnITSSAPtracks );
-    fAxes["nTPCtracklets"].set( 100, 0., 1e3, &fnTPCtracklets );
-    fAxes["nTPCtracks"].set( 100, 0., 700., &fnTPCtracks );
-    fAxes["nITSTracks"].set( 100, 0., 1., &fnITSTracks );
-    fAxes["nITSOutTracks"].set( 100, 0., 1., &fnITSOutTracks );
+    fAxes["nTPCtracklets"].set( 100, 0., 7e3, &fnTPCtracklets );
+    fAxes["nTPCtracks"].set( 100, 0., 5e3, &fnTPCtracks );
+    fAxes["nITSTracks"].set( 100, 0., 5e3, &fnITSTracks );
+    fAxes["nITSOutTracks"].set( 100, 5e3, 1., &fnITSOutTracks );
     fAxes["vZEROMultiplicity"].set( 100, 0., 40e3, &fvZEROMultiplicity );
     fAxes["vZEROTriggerChargeA"].set( 100, 0., 2e3, &fvZEROTriggerChargeA );
     fAxes["vZEROTriggerChargeC"].set( 100, 0., 2e3, &fvZEROTriggerChargeC );
@@ -410,10 +435,19 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nESDFriendSize"].set( 100, 0., 1., &fnESDFriendSize );
     fAxes["nFlatESDSize"].set( 100, 0., 1., &fnFlatESDSize );
     fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
-    fAxes["nHLTInSize"].set( 100, 0., 6e6, &fnHLTInSize );
-    fAxes["nHLTOutSize"].set( 100, 0., 2e6, &fnHLTOutSize );
-  }
+    fAxes["nHLTInSize"].set( 100, 0., 40e6, &fnHLTInSize );
+    fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
+  }//End Axes for pp
 
+  static double fakePtr = 0.;
+  //Start Common Axes
+  fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
+  fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
+  fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
+  fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
+  //End Common Axes
+
+  //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
   NewHistogram(",fHistSDDclusters_SDDrawSize,SDD clusters vs SDD raw size,rawSizeSDD,nClustersSDD");
   NewHistogram(",fHistSSDclusters_SSDrawSize,SSD clusters vs SSD raw size,rawSizeSSD,nClustersSSD");
@@ -426,6 +460,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram(",fHistTPCRawSize_TPCCompressedSize,TPC compressed size vs TPC Raw Size,rawSizeTPC,compressedSizeTPC");
   NewHistogram(",fHistTPCHLTclusters_TPCCompressionRatio,Huffman compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatio");
   NewHistogram(",fHistTPCHLTclusters_TPCFullCompressionRatio,Full compression ratio vs TPC HLT clusters,nClustersTPC,compressionRatioFull");
+  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatioPad,TPC Split Cluster ratio pad vs TPC HLT clusters,nClustersTPC,tpcSplitRatioPad");
+  NewHistogram(",fHistTPCHLTclusters_TPCSplitClusterRatioTime,TPC Split Cluster ratio time vs TPC HLT clusters,nClustersTPC,tpcSplitRatioTime");
   NewHistogram(",fHistHLTInSize_HLTOutSize,HLT Out Size vs HLT In Size,nHLTInSize,nHLTOutSize");
   NewHistogram(",fHistHLTSize_HLTInOutRatio,HLT Out/In Size Ratio vs HLT Input Size,nHLTInSize,hltRatio");
   NewHistogram(",fHistZNA_VZEROTrigChargeA,ZNA vs. VZERO Trigger Charge A,vZEROTriggerChargeA,zdcZNA");
@@ -438,6 +474,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   NewHistogram("CINT7,fHistVZERO_ITSSAPTracks,ITS SAP Tracks vs VZERO Trigger Charge (A+C),vZEROTriggerChargeAC,nITSSAPtracks");
   NewHistogram("MUFAST,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
   NewHistogram("CINT7,fHistITSSAtracks_SPDclusters,ITSSAP tracks vs SPD clusters,nClustersSPD,nITSSAPtracks");
+  //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;
   
@@ -450,7 +487,23 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     return -EINVAL;
   }
 
+  CreateFixedHistograms();
+
   return iResult;
+}
+
+void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
+{
+  delete fHistClusterChargeTot;
+  delete fHistTPCTrackPt;
+}
+
+void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
+{
+  axisStruct& axisClusterChargeTot = fAxes["tpcClusterCharge"];
+  fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", axisClusterChargeTot.bins, axisClusterChargeTot.low, axisClusterChargeTot.high );
+  axisStruct& axisTrackPt = fAxes["tpcTrackPt"];
+  fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", axisTrackPt.bins, axisTrackPt.low, axisTrackPt.high );
 }
 
 void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
@@ -596,6 +649,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
   // see header file for class documentation
   
   delete fpHWCFData;
+  
   return 0;
 }
 
@@ -668,7 +722,21 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t rawSizeVZERO = 0;
   AliHLTUInt32_t rawSizeEMCAL = 0;
   AliHLTUInt32_t rawSizeZDC = 0;
-  
+  AliHLTUInt32_t rawSizeTRD = 0;
+
+  AliHLTUInt32_t rawSizeFMD = 0;
+  AliHLTUInt32_t rawSizeTZERO = 0;
+  AliHLTUInt32_t rawSizeACORDE = 0;
+  AliHLTUInt32_t rawSizeCTP = 0;
+  AliHLTUInt32_t rawSizeAD = 0;
+  AliHLTUInt32_t rawSizeTOF = 0;
+  AliHLTUInt32_t rawSizePHOS = 0;
+  AliHLTUInt32_t rawSizeCPV = 0;
+  AliHLTUInt32_t rawSizeHMPID = 0;
+  AliHLTUInt32_t rawSizePMD = 0;
+  AliHLTUInt32_t rawSizeMUTK = 0;
+  AliHLTUInt32_t rawSizeMUTG = 0;
+
   AliHLTUInt32_t nClustersTPC = 0;
   AliHLTUInt32_t rawSizeTPC = 0;
   AliHLTUInt32_t hwcfSizeTPC = 0;
@@ -681,6 +749,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t nTPCtracks = 0;
   AliHLTUInt32_t nITSTracks = 0;
   AliHLTUInt32_t nITSOutTracks = 0;
+
+  AliHLTUInt32_t nTPCHitsSplitPad = 0;
+  AliHLTUInt32_t nTPCHitsSplitTime = 0;
 
   float vZEROMultiplicity = 0.;
   UShort_t vZEROTriggerChargeA = 0;
@@ -722,8 +793,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       char* configCharArr = reinterpret_cast<char*>(iter->fPtr);
       string configString;
       configString.assign(configCharArr,iter->fSize);
-      HLTImportant("reconfiguring with: %s", configString.c_str());
+      HLTInfo("reconfiguring with: %s", configString.c_str());
       ProcessOptionString(configString.c_str());
+      DeleteFixedHistograms();
+      CreateFixedHistograms();
     }
 
     //SPD Vertex Found
@@ -774,6 +847,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       iter->fDataType == AliHLTTPCDefinitions::RawClustersDataTypeNotCompressed() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
+      iter->fDataType == AliHLTTPCDefinitions::ClustersFlagsDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::ClusterTracksCompressedDataType() ||
       iter->fDataType == AliHLTTPCDefinitions::ClusterIdTracksDataType())
     {
@@ -859,7 +933,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       clusterSizeTPCtransformed += iter->fSize;
     }
-    if (iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC clusters (uncompressed from HWCF, not yet transformed)
+    if (iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC)) //Size of HLT-TPC clusters (uncompressed from HWCF after HWCFDecoder, not yet transformed)
     {
       clusterSizeTPC += iter->fSize;
     }
@@ -898,6 +972,62 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nFlatESDFriendSize += iter->fSize;
     }
 
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRD))
+    {
+      rawSizeTRD += iter->fSize;
+    }
+
+    //other detector sizes
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginFMD))
+    {
+      rawSizeFMD += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginT0))
+    {
+      rawSizeTZERO += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginACORDE))
+    {
+      rawSizeACORDE += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTRG))
+    {
+      rawSizeCTP += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginAD))
+    {
+      rawSizeAD += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTOF))
+    {
+      rawSizeTOF += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginPHOS))
+    {
+      rawSizePHOS += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginCPV))
+    {
+      rawSizeCPV += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginHMPID))
+    {
+      rawSizeHMPID += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginPMD))
+    {
+      rawSizePMD += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON) && iter->fSpecification < (1 << 20))
+    {
+      rawSizeMUTK += iter->fSize;
+    }
+    if (iter->fDataType == (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginMUON) && iter->fSpecification >= (1 << 20))
+    {
+      rawSizeMUTG += iter->fSize;
+    }
+
+
     //numbers of tracks
     if (iter->fDataType == AliHLTTPCCADefinitions::fgkTrackletsDataType) //HLT-TPC CA-trackets (before TPC global merger)
     {
@@ -933,6 +1063,36 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   nHLTOutSize = nESDSize + compressedSizeTPC;
   hltRatio = nHLTInSize > 0 ? ((float) nHLTOutSize / (float) nHLTInSize) : 0.f;
 
+  for (int ndx=0; ndx<nBlocks; ndx++) {
+    const AliHLTComponentBlockData* iter = blocks+ndx;
+
+    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
+    {
+      AliHLTTracksData* tracks = (AliHLTTracksData*) iter->fPtr;
+      const AliHLTUInt8_t* pCurrent = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
+      for (unsigned i = 0;i < tracks->fCount;i++)
+      {
+        const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
+        fHistTPCTrackPt->Fill(1. / track->fq1Pt);
+        pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
+      }
+    }
+
+    if (iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC))
+    {
+      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
+      for (unsigned i = 0;i < clusters->fCount;i++)
+      {
+        AliHLTTPCRawCluster& cluster = clusters->fClusters[i];
+        fHistClusterChargeTot->Fill(cluster.GetCharge());
+        nTPCHitsSplitPad += cluster.GetFlagSplitPad();
+        nTPCHitsSplitTime += cluster.GetFlagSplitTime();
+      }
+    }
+  }
+  PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+  PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+
   //convert the numbers fo floats for histograms
   fnClustersSPD = nClustersSPD;
   frawSizeSPD = rawSizeSPD;
@@ -951,6 +1111,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fclusterSizeTPCtransformed = clusterSizeTPCtransformed;
   fclusterSizeTPC = clusterSizeTPC;
   fcompressedSizeTPC = compressedSizeTPC;
+  fTPCSplitRatioPad = nTPCHitsSplitPad ? ((double) nTPCHitsSplitPad / (double) nClustersTPC) : 0.0;
+  fTPCSplitRatioTime = nTPCHitsSplitTime ? ((double) nTPCHitsSplitTime / (double) nClustersTPC) : 0.0;
   fnITSSAPtracks = nITSSAPtracks;
   fnTPCtracklets = nTPCtracklets;
   fnTPCtracks = nTPCtracks;
@@ -964,6 +1126,19 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fzdcZNA = zdcZNA;
   fzdcZNAC = zdcZNA+zdcZNC;
   fzdcRecoSize = zdcRecoSize;
+  frawSizeTRD = rawSizeTRD;
+  frawSizeFMD = rawSizeFMD;
+  frawSizeTZERO = rawSizeTZERO;
+  frawSizeACORDE = rawSizeACORDE;
+  frawSizeCTP = rawSizeCTP;
+  frawSizeAD = rawSizeAD;
+  frawSizeTOF = rawSizeTOF;
+  frawSizePHOS = rawSizePHOS;
+  frawSizeCPV = rawSizeCPV;
+  frawSizeHMPID = rawSizeHMPID;
+  frawSizePMD = rawSizePMD;
+  frawSizeMUTK = rawSizeMUTK;
+  frawSizeMUTG = rawSizeMUTG;
   femcalRecoSize = emcalRecoSize;
   femcalTRU = emcalTRU;
   femcalSTU = emcalSTU;
@@ -980,13 +1155,15 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   //Fill the histograms
   int pushed_something = FillHistograms();
 
+
   static int nPrinted = 0;
-  if (fPrintStats && (fPrintStats == 2 || pushed_something) && nPrinted++ % fPrintDownscale == 0) //Don't print this for every event if we use a pushback period
+  if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period
   {
     HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx (%'d)"
-      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)",
+      ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)   -   (TRD %'d, FMD %'d, T0 %'d, ACO %'d, CTP %'d, AD %'d, TOF %'d, PHO %'d, CPV %'d, HMP %'d, PMD %'d, MTK %'d, MTG %'d)",
       nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, compressedSizeTPC,
-      nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize);
+      nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize,
+      rawSizeTRD, rawSizeFMD, rawSizeTZERO, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
   }
 
   return iResult;

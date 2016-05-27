@@ -161,7 +161,7 @@ void AliQADataMakerRec::EndOfCycle(AliQAv1::TASKINDEX_t task)
   EndOfDetectorCycle(task, list) ;
   
   if (! AliQAManager::QAManager(AliQAv1::kRECMODE)->IsSaveData()) return; 
-
+  if (!fOutput) return; //If we failed to open the output file for some reason, return and do not seqfault
   fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
   if (!fDetectorDir) fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
   TDirectory * subDir = fDetectorDir->GetDirectory(AliQAv1::GetTaskName(task)) ; 

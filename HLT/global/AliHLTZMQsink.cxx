@@ -49,8 +49,10 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQerrorMsgSkip(100)
   , fSendECSparamString(kFALSE)
   , fECSparamString()
+  , fECSparamMap()
   , fSendStreamerInfos(kFALSE)
   , fCDBpattern("^/*[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/*$")
+  , fInfoString()
 {
   //ctor
 }
@@ -60,7 +62,6 @@ AliHLTZMQsink::~AliHLTZMQsink()
 {
   //dtor
   zmq_close(fZMQout);
-  zmq_ctx_destroy(fZMQcontext);
 }
 
 //______________________________________________________________________________
@@ -124,18 +125,23 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   if (!fZMQcontext) return -1;
 
   //init ZMQ socket
-  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig.Data(), 0, 10 ); 
+  rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQoutConfig, 0, 10 ); 
   if (!fZMQout || rc<0) 
   {
-    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.Data(),zmq_strerror(errno));
+    HLTError("cannot initialize ZMQ socket %s, %s",fZMQoutConfig.c_str(),zmq_strerror(errno));
     return -1;
   }
   
   HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
-  HLTImportant(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
-               fZMQoutConfig.Data(),alizmq_socket_name(fZMQsocketType),
+  HLTMessage(Form("ZMQ connected to: %s (%s(id %i)) rc %i %s",
+               fZMQoutConfig.c_str(),alizmq_socket_name(fZMQsocketType),
                fZMQsocketType,rc,(rc<0)?zmq_strerror(errno):""));
   
+  //init a simple info string with just the run number
+  char tmp[34];
+  snprintf(tmp,34,"%i",GetRunNo()); 
+  fInfoString  = "run="; fInfoString += tmp;
+
   return retCode;
 }
 
@@ -143,7 +149,9 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
 Int_t AliHLTZMQsink::DoDeinit()
 {
   // see header file for class documentation
-  return 0;
+  int retCode = 0;
+  retCode = alizmq_socket_close(fZMQout);
+  return retCode;
 }
 
 //______________________________________________________________________________
@@ -253,7 +261,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
   }  
 
   //caching the ECS param string has to happen for non data event
-  if (!IsDataEvent())
+  AliHLTUInt32_t eventType = 0;
+  if (!IsDataEvent(&eventType))
   {
     const AliHLTComponentBlockData* inputBlock = NULL;
     for (int iBlock = 0;
@@ -269,13 +278,21 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         int ecsparamsize = inputBlock->fSize;
         if (ecsparamstr[ecsparamsize-1]!=0)
         {
-          fECSparamString.Insert(0, ecsparamstr, ecsparamsize);
+          fECSparamString.insert(0, ecsparamstr, ecsparamsize);
           fECSparamString += "";
         }
         else
         {
           fECSparamString = ecsparamstr;
         }
+        fECSparamMap = ParseParamString(fECSparamString);
+
+        int ecsRunNo = atoi(fECSparamMap["RUN_NUMBER"].c_str());
+        if (ecsRunNo != GetRunNo()) {
+          HLTWarning("Mismatch run from OCDB: %i and ECS: %i",GetRunNo(),ecsRunNo);
+        }
+        
+        fInfoString += ";HLT_MODE=" + fECSparamMap["HLT_MODE"];
         break;
       }
     }
@@ -358,11 +375,8 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     //only send the INFO block if there is some data to send
     if (fSendRunNumber && nSelectedBlocks>0)
     {
-      string runNumberString = "run=";
-      char tmp[34];
-      snprintf(tmp,34,"%i",GetRunNo()); 
-      runNumberString+=tmp;
-      rc = alizmq_msg_add(&message, "INFO", runNumberString);
+      AliHLTDataTopic topic = kAliHLTDataTypeInfo;
+      rc = alizmq_msg_add(&message, &topic, fInfoString);
       if (rc<0) {
         HLTWarning("ZMQ error adding INFO");
       }
@@ -373,7 +387,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     if ((fSendECSparamString && nSelectedBlocks>0) || doSendECSparamString)
     {
       AliHLTDataTopic topic = kAliHLTDataTypeECSParam;
-      rc = alizmq_msg_add(&message, &topic, fECSparamString.Data());
+      rc = alizmq_msg_add(&message, &topic, fECSparamString);
       if (rc<0) {
         HLTWarning("ZMQ error adding ECS param string");
       }
@@ -402,7 +416,7 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       doSendCDB = kFALSE;
     }
 
-    //send the selected blocks
+    //add the selected blocks
     for (int iSelectedBlock = 0;
          iSelectedBlock < selectedBlockIdx.size();
          iSelectedBlock++) 
@@ -414,7 +428,6 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       if (rc<0) {
         HLTWarning("ZMQ error adding block %s", blockTopic.Description().c_str());
       }
-      HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
 
     
@@ -427,11 +440,18 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
         HLTWarning("ZMQ error adding dummy rep data");
       }
     }
-    rc = alizmq_msg_send(&message, fZMQout, 0);
-    if (rc<0){ 
-      HLTWarning("ZMQ error sending message: %s", zmq_strerror(errno));
-    }
+    int flags = 0;
+    if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
+    rc = alizmq_msg_send(&message, fZMQout, flags);
+    HLTMessage(Form("sent data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     alizmq_msg_close(&message);
+  } //if (doSend)
+  else if (eventType==gkAliEventTypeStartOfRun)
+  {
+    HLTMessage("sending INFO block on SOR");
+    int flags = 0;
+    if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
+    alizmq_msg_send(kAliHLTDataTypeInfo,fInfoString,fZMQout,flags);
   }
 
   outputBlocks.clear();
@@ -460,7 +480,7 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
         fZMQpollIn=kFALSE;
         break;
       default:
-        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.Data());
+        HLTFatal("use of socket type %s for a sink is currently unsupported! (config: %s)", alizmq_socket_name(fZMQsocketType), fZMQoutConfig.c_str());
         return -EINVAL;
     }
   }

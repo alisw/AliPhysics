@@ -102,6 +102,7 @@ set(SRCS
     AliHLTTPCTrackHistoComponent.cxx
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
+    comp/AliHLTTPCClusterStatComponent.cxx
     comp/AliHLTTPCDataCompressionComponent.cxx
     comp/AliHLTTPCDataCompressionDecoder.cxx
     comp/AliHLTTPCDataCompressionFilterComponent.cxx

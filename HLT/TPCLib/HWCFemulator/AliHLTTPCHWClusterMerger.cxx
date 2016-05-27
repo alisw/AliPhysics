@@ -112,8 +112,8 @@ void AliHLTTPCHWClusterMerger::Init()
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
       row+=AliHLTTPCGeometry::GetFirstRow(iPart);
-      if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
+      if( row>=fNRows ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(row) ) continue;
       fMapping[row*fNRowPads + pad] = -2;
     }
   }
@@ -212,6 +212,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   float sigmaTime2,
 					   unsigned short charge,
 					   unsigned short qmax,
+					   unsigned short flags,
 					   AliHLTUInt32_t id,
 					   const AliHLTTPCClusterMCLabel *mc 
 					   )
@@ -260,7 +261,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   }
 
   fClusters.push_back(AliClusterRecord(slice, partition, iBorder, -1, id,
-				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaPad2, sigmaTime2, charge, qmax),
+				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaPad2, sigmaTime2, charge, qmax, flags),
 				       mc!=NULL?*mc:AliHLTTPCClusterMCLabel() ));
 
   if( iBorder>=0 ){
@@ -404,6 +405,8 @@ sLeft+=n1;
       
       c1.Cluster().fPad  = w1*c1.Cluster().fPad + w2*c2.Cluster().fPad;
       c1.Cluster().fTime = w1*c1.Cluster().fTime + w2*c2.Cluster().fTime;
+      
+      c1.Cluster().fFlags |= c2.Cluster().fFlags;
       
       // merge MC labels
       

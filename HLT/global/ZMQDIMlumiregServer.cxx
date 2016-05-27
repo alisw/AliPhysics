@@ -414,14 +414,14 @@ void AliHLTDCSPublisherServer::InitLumiRegionAsInvalid(AliLuminosityRegion& lumi
   }
 
 	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
-	lumiRegion.fX = -999.;
-	lumiRegion.fY = -999.;
-	lumiRegion.fZ = -999.;
-	lumiRegion.fSizeX = -999.;
-	lumiRegion.fSizeY = -999.;
-	lumiRegion.fSizeZ = -999.;
-	lumiRegion.fDxdz = -999.;
-	lumiRegion.fDydz = -999.;
+	lumiRegion.fX = -1000.;
+	lumiRegion.fY = -1000.;
+	lumiRegion.fZ = -1000.;
+	lumiRegion.fSizeX = -1000.;
+	lumiRegion.fSizeY = -1000.;
+	lumiRegion.fSizeZ = -1000.;
+	lumiRegion.fDxdz = 1000.;
+	lumiRegion.fDydz = -1000.;
 }
 
 

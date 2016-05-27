@@ -208,12 +208,20 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
     AliHLTTPCHWCFClusterFragment &s = fSearchRange[ib][fSearchStart[ib]++];
     if( fDeconvolute && s.fSlope && s.fLastQ<fInput.fLastQ ){
       //cout<<"push from search range at "<<fSearchStart[ib]-1<<" of "<<fSearchEnd[ib]<<endl;
+      // deconvolution in pad direction, mark both clusters
+      s.fIsDeconvolutedPad = 1; 
+      fInput.fIsDeconvolutedPad = 1;
       ret = &s;
     } else {
       // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
       fInput.fSlope = s.fSlope;
       if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
       if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
+      fInput.fNPads += s.fNPads;
+      if( s.fConsecutiveTimeDeconvolution == 2 ) fInput.fConsecutiveTimeDeconvolution = 2;
+      else if( s.fConsecutiveTimeDeconvolution > 0 && fInput.fConsecutiveTimeDeconvolution ==1 ) fInput.fConsecutiveTimeDeconvolution=s.fConsecutiveTimeDeconvolution+1;
+
+      fInput.fNDeconvolutedTime += s.fNDeconvolutedTime; // count N deconvoluted 1-d fragments
       fInput.fQ += s.fQ;
       fInput.fT += s.fT;
       fInput.fT2 += s.fT2;

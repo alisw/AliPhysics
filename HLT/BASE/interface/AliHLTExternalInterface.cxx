@@ -87,7 +87,7 @@ int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* 
 
   // the AliRoot dependent code is implemented by the
   // AliHLTMiscImplementation class in libHLTrec
-  AliHLTMisc::Instance().InitCDB(getenv("ALIHLT_HCDBDIR"));
+  AliHLTMisc::Instance().InitCDB(getenv("ALIHLT_HCDBDIR"), getenv("ALIHLT_HCDBSNAPSHOT"));
   AliHLTMisc::Instance().SetCDBRunNo(gRunDesc.fRunNo);
   AliHLTMisc::Instance().InitMagneticField();
 
