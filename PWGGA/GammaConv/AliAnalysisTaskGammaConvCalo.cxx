@@ -314,7 +314,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE)
+  doConvGammaShowerShapeTree(kFALSE),
+  fEnableSortForClusMC(kFALSE)
 {
   
 }
@@ -574,7 +575,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE)
+  doConvGammaShowerShapeTree(kFALSE),
+  fEnableSortForClusMC(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2304,7 +2306,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, kFALSE);
   
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX           = primVtxMC->GetX();
@@ -2447,7 +2449,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
     return;
   }
 
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
   fHistoTrueNLabelsInClusPt[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
 
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();

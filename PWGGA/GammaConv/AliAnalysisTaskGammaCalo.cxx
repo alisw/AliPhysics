@@ -258,8 +258,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fWeightJetJetMC(1),
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
-  fMaxTimingCluster(0)
-
+  fMaxTimingCluster(0),
+  fEnableSortForClusMC(kFALSE)
 {
   
 }
@@ -463,7 +463,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fWeightJetJetMC(1),
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
-  fMaxTimingCluster(0)
+  fMaxTimingCluster(0),
+  fEnableSortForClusMC(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -1749,7 +1750,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
   }
 
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, kFALSE);
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
@@ -1882,7 +1883,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
     return;
   }
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
