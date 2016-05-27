@@ -1107,7 +1107,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueCaloPhotonCandidate
 	}
 
 // 	Int_t pdgCodeParticle = Photon->GetPdgCode();
-	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, kFALSE);
 	
 	// True Photon
 	if(fIsFromMBHeader){	

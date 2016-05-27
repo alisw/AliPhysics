@@ -130,6 +130,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
                                           Int_t> &ma,
                                           TH1F* hist );
   
+        // Function to enable MC label sorting
+    void SetEnableSortingOfMCClusLabels (Bool_t enableSort)                                 { fEnableSortForClusMC   = enableSort         ;}
+
+    
   protected:
     AliV0ReaderV1*                      fV0Reader;              // basic photon Selection Task
     TString                             fV0ReaderName;
@@ -377,42 +381,44 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
     // hists for nonlineartiy calibration
-//    TH2F**                  fHistoTruePi0NonLinearity;                          //! E_truth/E_rec vs E_rec for TruePi0s
-//    TH2F**                  fHistoTrueEtaNonLinearity;                          //! E_truth/E_rec vs E_rec for TrueEtas
+//    TH2F**                  fHistoTruePi0NonLinearity;                        //! E_truth/E_rec vs E_rec for TruePi0s
+//    TH2F**                  fHistoTrueEtaNonLinearity;                        //! E_truth/E_rec vs E_rec for TrueEtas
 
     // additional variables
-    Double_t                fEventPlaneAngle;                 // EventPlaneAngle
-    TRandom3                fRandom;                          // random 
-    Int_t                   fNGammaCandidates;                // number of gamma candidates in event
-    Double_t*               fUnsmearedPx;                     //[fNGammaCandidates]
-    Double_t*               fUnsmearedPy;                     //[fNGammaCandidates]
-    Double_t*               fUnsmearedPz;                     //[fNGammaCandidates]
-    Double_t*               fUnsmearedE;                      //[fNGammaCandidates]
-    Int_t*                  fMCStackPos;                      //[fNGammaCandidates]
-    Int_t*                  fMCStackNeg;                      //[fNGammaCandidates]
-    Int_t*                  fESDArrayPos;                     //[fNGammaCandidates]
-    Int_t*                  fESDArrayNeg;                     //[fNGammaCandidates]
-    Int_t                   fnCuts;                           // number of cuts to be analysed in parallel
-    Int_t                   fiCut;                            // current cut  
-    Bool_t                  fMoveParticleAccordingToVertex;   // boolean for BG calculation
-    Int_t                   fIsHeavyIon;                      // switch for pp = 0, PbPb = 1, pPb = 2
-    Bool_t                  fDoMesonAnalysis;                 // flag for meson analysis
-    Int_t                   fDoMesonQA;                       // flag for meson QA
-    Int_t                   fDoPhotonQA;                      // flag for photon QA
-    Int_t                   fDoClusterQA;                     // flag for cluster QA
-    Bool_t                  fIsFromMBHeader;                  // flag for MC headers
-    Bool_t                  fIsOverlappingWithOtherHeader;    // flag for particles in MC overlapping between headers
-    Int_t                   fIsMC;                            // flag for MC information
-    Bool_t                  fDoTHnSparse;                     // flag for using THnSparses for background estimation
-    Bool_t                  fSetPlotHistsExtQA;               // flag for extended QA hists
-    Double_t                fWeightJetJetMC;                  // weight for Jet-Jet MC 
-    Bool_t                  doConvGammaShowerShapeTree;       // flag for tree with conv gamma R vs energy vs shower shape
+    Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
+    TRandom3                fRandom;                                            // random 
+    Int_t                   fNGammaCandidates;                                  // number of gamma candidates in event
+    Double_t*               fUnsmearedPx;                                       //[fNGammaCandidates]
+    Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
+    Double_t*               fUnsmearedPz;                                       //[fNGammaCandidates]
+    Double_t*               fUnsmearedE;                                        //[fNGammaCandidates]
+    Int_t*                  fMCStackPos;                                        //[fNGammaCandidates]
+    Int_t*                  fMCStackNeg;                                        //[fNGammaCandidates]
+    Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
+    Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
+    Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
+    Int_t                   fiCut;                                              // current cut  
+    Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
+    Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
+    Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
+    Int_t                   fDoMesonQA;                                         // flag for meson QA
+    Int_t                   fDoPhotonQA;                                        // flag for photon QA
+    Int_t                   fDoClusterQA;                                       // flag for cluster QA
+    Bool_t                  fIsFromMBHeader;                                    // flag for MC headers
+    Bool_t                  fIsOverlappingWithOtherHeader;                      // flag for particles in MC overlapping between headers
+    Int_t                   fIsMC;                                              // flag for MC information
+    Bool_t                  fDoTHnSparse;                                       // flag for using THnSparses for background estimation
+    Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
+    Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC 
+    Bool_t                  doConvGammaShowerShapeTree;                         // flag for tree with conv gamma R vs energy vs shower shape
+    Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
+    
     
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 25);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 26);
 };
 
 #endif

@@ -2015,7 +2015,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidates(AliAODConver
 		return;
 	}
 
-	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack);
+	TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack,kFALSE);
 	
 	// True Photon
 	if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
@@ -2157,7 +2157,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueClusterCandidatesAOD(AliAODCon
 	//	cout << "no photon" << endl;
 		return;
 	}
-	TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent);
+	TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
 	fHistoTrueNLabelsInClus[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels());	
 	// True Photon
 	if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
