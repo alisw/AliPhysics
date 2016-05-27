@@ -608,7 +608,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
 // Destructor
 AliAnalysisTaskDmesonJets::AnalysisEngine::~AnalysisEngine()
 {
-  if (fRDHFCuts) delete fRDHFCuts;
+  delete fRDHFCuts;
 }
 
 /// Assignement operator

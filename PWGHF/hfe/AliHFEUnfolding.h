@@ -29,7 +29,7 @@ private:
   
 public:
   AliHFEUnfolding();
-  ~AliHFEUnfolding();
+  virtual ~AliHFEUnfolding();
   
   void SetData(TH1D * DataHistogram);
   void SetData(TH1D * DataHistogram, Int_t LowestBin, Int_t HighestBin);
