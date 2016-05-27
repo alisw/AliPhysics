@@ -148,6 +148,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
     AliJetInfoSummary(const AliDmesonJetInfo& source, std::string n);
+    virtual ~AliJetInfoSummary() {};
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source, std::string n);
@@ -177,6 +178,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     AliDmesonInfoSummary() : fPt(0), fEta(0), fPhi(0) {;}
     AliDmesonInfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliDmesonInfoSummary() {}
 
     virtual void Set(const AliDmesonJetInfo& source);
 

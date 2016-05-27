@@ -18,7 +18,7 @@ using namespace std;
   public:
    AliReconstructedProton();
 
-   ~AliReconstructedProton();
+   virtual ~AliReconstructedProton();
 
 //   AliReconstructedProton(const AliReconstructedProton&);
 //   AliReconstructedProton & operator=(const AliReconstructedProton&);
@@ -55,7 +55,7 @@ using namespace std;
 
   public:
    AliReconstructedXi();
-   ~AliReconstructedXi();
+   virtual ~AliReconstructedXi();
 //   AliReconstructedXi(const AliReconstructedXi&);
 //   AliReconstructedXi & operator=(const AliReconstructedXi&);
 
@@ -149,9 +149,9 @@ using namespace std;
 class AliAnalysishCascadeEvent {
 
    public:
-
+    virtual ~AliAnalysishCascadeEvent() {}
     int fNumberCandidateXi;
-    int fNumberCandidateProton; 
+    int fNumberCandidateProton;
     double fPrimaryVertex[3]; //Location of the primary vertex
 
     AliReconstructedXi *fReconstructedXi;
@@ -172,7 +172,7 @@ class AliAnalysishCascadeEventCollection  {
     AliAnalysishCascadeEventCollection(const AliAnalysishCascadeEventCollection&);
     AliAnalysishCascadeEventCollection & operator=(const AliAnalysishCascadeEventCollection&);
 
-    ~AliAnalysishCascadeEventCollection();
+    virtual ~AliAnalysishCascadeEventCollection();
 
     void FifoShift();
 
