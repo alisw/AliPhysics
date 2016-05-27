@@ -233,7 +233,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
   // Output slot #1 writes into a TList container
   AliOADBTriggerAnalysis *triggerAnalysisOADB = new AliOADBTriggerAnalysis();
   fTriggerAnalysis->SetParameters(triggerAnalysisOADB);
-  fTriggerAnalysis->EnableHistograms();
+  //fTriggerAnalysis->EnableHistograms();
   fAnalysisUtils->SetUseOutOfBunchPileUp(kTRUE);
  
   
@@ -690,13 +690,13 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		}
   }
   //Aging monitoring
-  Bool_t isSPDClsVsTklBG   = fTriggerAnalysis->IsSPDClusterVsTrackletBG(fESD,1);
-  Bool_t isV0C012vsTklBG   = fTriggerAnalysis->IsV0C012vsTklBG(fESD,1);
-  Bool_t isV0MOnVsOfPileup = fTriggerAnalysis->IsV0MOnVsOfPileup(fESD,1);
-  Bool_t isSPDOnVsOfPileup = fTriggerAnalysis->IsSPDOnVsOfPileup(fESD,1);
-  Bool_t isV0PFPileup	 = fTriggerAnalysis->IsV0PFPileup(fESD,1);
-  Bool_t isSPDVtxPileup	 = fTriggerAnalysis->IsSPDVtxPileup(fESD,1);
-  Bool_t isV0Casym	 = fTriggerAnalysis->IsV0Casym(fESD,1);
+  Bool_t isSPDClsVsTklBG   = fTriggerAnalysis->IsSPDClusterVsTrackletBG(fESD,0);
+  Bool_t isV0C012vsTklBG   = fTriggerAnalysis->IsV0C012vsTklBG(fESD,0);
+  Bool_t isV0MOnVsOfPileup = fTriggerAnalysis->IsV0MOnVsOfPileup(fESD,0);
+  Bool_t isSPDOnVsOfPileup = fTriggerAnalysis->IsSPDOnVsOfPileup(fESD,0);
+  Bool_t isV0PFPileup	 = fTriggerAnalysis->IsV0PFPileup(fESD,0);
+  Bool_t isSPDVtxPileup	 = fTriggerAnalysis->IsSPDVtxPileup(fESD,0);
+  Bool_t isV0Casym	 = fTriggerAnalysis->IsV0Casym(fESD,0);
   Bool_t isADA		 = esdAD->GetADADecision()==1;
   Bool_t isADC		 = esdAD->GetADCDecision()==1;
 
