@@ -115,6 +115,7 @@ fPassName(""),
 fCurrentRun(-1),
 fMC(kFALSE),
 fIsPP(kFALSE),
+fReadOCDB(kFALSE),
 fUseBXNumbers(0),
 fUsingCustomClasses(0),
 fCollTrigClasses(),
@@ -331,7 +332,7 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
   fIsPP = kTRUE;
   if (event->GetDataLayoutType()==AliVEvent::kESD) {
     fIsPP = !TString(((AliESDEvent*) event)->GetESDRun()->GetBeamType()).EqualTo("A-A");
-  } else {
+  } else if (fReadOCDB) {
     AliCDBManager* man = AliCDBManager::Instance();
     if (man) {
       if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("raw://");
@@ -339,6 +340,12 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
       AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
       if (grp) fIsPP = !grp->GetBeamType().EqualTo("A-A");
     }
+  } else {
+    Int_t run = event->GetRunNumber();
+    if ((run>=136849 && run<=139517) ||
+        (run>=166477 && run<=170593) ||
+        (run>=243399 && run<=243984) ||
+        (run>=244913 && run<=246994)) fIsPP = kFALSE;
   }
   return Initialize(event->GetRunNumber());
 }
@@ -400,11 +407,12 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       }
     }
     
-    if (fTriggerOADB->GetV0MOnThreshold()<0 ||
-        fTriggerOADB->GetVHMBBAflags()<0 ||
-        fTriggerOADB->GetVHMBBCflags()<0 ||
-        fTriggerOADB->GetVHMBGAflags()<0 ||
-        fTriggerOADB->GetVHMBGCflags()<0
+    if (fReadOCDB && 
+        (fTriggerOADB->GetV0MOnThreshold()<0 ||
+         fTriggerOADB->GetVHMBBAflags()<0 ||
+         fTriggerOADB->GetVHMBBCflags()<0 ||
+         fTriggerOADB->GetVHMBGAflags()<0 ||
+         fTriggerOADB->GetVHMBGCflags()<0)
        ) 
     {
       AliInfo("Setting V0 online thresholds from OCDB");
@@ -443,8 +451,9 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       } else AliError("Failed to set V0 online thresholds from OCDB");
     }
     
-    if (fTriggerOADB->GetSH1OuterThreshold()<0 ||
-        fTriggerOADB->GetSH2OuterThreshold()<0
+    if (fReadOCDB && 
+        (fTriggerOADB->GetSH1OuterThreshold()<0 ||
+         fTriggerOADB->GetSH2OuterThreshold()<0)
         ){
       AliInfo("Setting FO online thresholds from OCDB");
       AliITSOnlineCalibrationSPDhandler h;
