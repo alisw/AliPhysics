@@ -157,7 +157,6 @@ class AliAnalysishCascadeEvent {
     AliReconstructedXi *fReconstructedXi;
     AliReconstructedProton *fReconstructedProton;
 
-    virtual ~AliAnalysishCascadeEvent();
     ClassDef(AliAnalysishCascadeEvent, 1);
 
 };
