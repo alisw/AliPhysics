@@ -56,18 +56,19 @@ class CutHandlerCalo{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,                  // change different set of cuts
-                              Int_t     isMC                      = 0,                  // run MC
-                              Int_t     enableQAMesonTask         = 0,                 // enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t     enableQAClusterTask       = 0,                 // enable additional QA task
-                              TString   fileNameInputForWeighting = "MCSpectraInput.root",       // path to file for weigting input
-                              Int_t     headerSelectionInt        = 0,                  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,                    // change different set of cuts
+                              Int_t     isMC                      = 0,                    // run MC
+                              Int_t     enableQAMesonTask         = 0,                    // enable QA in AliAnalysisTaskGammaConvV1
+                              Int_t     enableQAClusterTask       = 0,                    // enable additional QA task
+                              TString   fileNameInputForWeighting = "MCSpectraInput.root",// path to file for weigting input
+                              Int_t     headerSelectionInt        = 0,                    // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString   cutnumberAODBranch        = "111110006008400000001500000",
-                              TString   periodName                = "LHC13d2",              // name of the period for added signals and weighting
-                              Bool_t    doWeighting               = kFALSE,                // enable Weighting
-                              Bool_t    isUsingTHnSparse          = kTRUE,               // enable or disable usage of THnSparses for background estimation
-                              Int_t     enableExtMatchAndQA       = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                              TString   periodNameV0Reader        = ""
+                              TString   periodName                = "LHC13d2",            // name of the period for added signals and weighting
+                              Bool_t    doWeighting               = kFALSE,               // enable Weighting
+                              Bool_t    isUsingTHnSparse          = kTRUE,                // enable or disable usage of THnSparses for background estimation
+                              Int_t     enableExtMatchAndQA       = 0,                    // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                              TString   periodNameV0Reader        = "",                   // name of period for V0Reader
+                              Bool_t    enableSortingMCLabels     = kTRUE                 // enable sorting for MC cluster labels
                 ) {
 
   // ================= Load Librariers =================================
@@ -333,9 +334,10 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonAnalysis(kTRUE);
-  task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-  task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-    task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetDoMesonQA(enableQAMesonTask);        //Attention new switch for Pi0 QA
+  task->SetDoClusterQA(enableQAClusterTask);    //Attention new switch small for Cluster QA
+  task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers

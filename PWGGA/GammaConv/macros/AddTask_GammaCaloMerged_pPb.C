@@ -59,18 +59,19 @@ class CutHandlerCaloMerged{
 //main function
 //***************************************************************************************
 void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,                  // change different set of cuts
-                                  Int_t     isMC                        = 0,                 // run MC
-                                  Int_t     enableQAMesonTask           = 0,                 // enable QA in AliAnalysisTaskGammaCalo
-                                  Int_t     enableQAClusterTask         = 0,                 // enable additional QA task
+                                  Int_t     isMC                        = 0,                  // run MC
+                                  Int_t     enableQAMesonTask           = 0,                  // enable QA in AliAnalysisTaskGammaCalo
+                                  Int_t     enableQAClusterTask         = 0,                  // enable additional QA task
                                   TString   fileNameInputForWeighting   = "MCSpectraInput.root",       // path to file for weigting input
                                   TString   cutnumberAODBranch          = "000000006008400001001500000",
-                                  TString   periodname                  = "LHC12f1x",             // period name
-                                  Int_t     doWeightingPart             = 0,                // enables weighting
-                                  Int_t     enableExtMatchAndQA         = 0,                // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
-                                  Bool_t    enableTriggerMimicking      = kFALSE,              // enable trigger mimicking
-                                  Bool_t    enableTriggerOverlapRej     = kFALSE,              // enable trigger overlap rejection
-                                  Float_t   maxFacPtHard                = 3.,                // maximum factor between hardest jet and ptHard generated
-                                  TString   periodNameV0Reader          = ""
+                                  TString   periodname                  = "LHC12f1x",         // period name
+                                  Int_t     doWeightingPart             = 0,                  // enables weighting
+                                  Int_t     enableExtMatchAndQA         = 0,                  // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                                  Bool_t    enableTriggerMimicking      = kFALSE,             // enable trigger mimicking
+                                  Bool_t    enableTriggerOverlapRej     = kFALSE,             // enable trigger overlap rejection
+                                  Float_t   maxFacPtHard                = 3.,                 // maximum factor between hardest jet and ptHard generated
+                                  TString   periodNameV0Reader          = "",                 // set period name for V0 Reader
+                                  Bool_t    enableSortingMCLabels       = kTRUE               // enable sorting for MC cluster labels
 ) {
   
   Int_t isHeavyIon = 2;
@@ -259,7 +260,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-
+    
     analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts();
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
@@ -282,6 +283,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
   
   //connect containers
