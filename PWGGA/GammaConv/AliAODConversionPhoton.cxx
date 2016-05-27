@@ -144,7 +144,7 @@ void AliAODConversionPhoton::CalculateDistanceOfClossetApproachToPrimVtx(const A
 }
 
 
-void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
+void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enableSort){
   
   Bool_t isPhoton                   = kFALSE; // largest contribution to cluster is photon 
   Bool_t isElectron                 = kFALSE; // largest contribution to cluster is electron
@@ -162,36 +162,38 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
   TParticle* Photon;
   if (fNCaloPhotonMCLabels==0) return;
   
-  // sort the array according to the energy of contributing particles
-  if (fNCaloPhotonMCLabels>1){
-//     cout << "start sorting" << endl;
-    Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
-    Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
-    Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
-    for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
-      orginalContrib[i]       = fCaloPhotonMCLabels[i];
-      if (fCaloPhotonMCLabels[i]> -1){
-        TParticle* dummy  = MCStack->Particle(fCaloPhotonMCLabels[i]);
-        energyPerPart[i]  = dummy->Energy();
-        // suppress energy of hadrons !!! DIRTY hack !!!
-        if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
-//           cout << "suppressed hadron energy for:" << dummy->GetPdgCode() << endl;
-          energyPerPart[i]= energyPerPart[i]/10;
+  if (enableSort){
+    // sort the array according to the energy of contributing particles
+    if (fNCaloPhotonMCLabels>1){
+  //     cout << "start sorting" << endl;
+      Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
+      Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
+      Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
+      for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
+        orginalContrib[i]       = fCaloPhotonMCLabels[i];
+        if (fCaloPhotonMCLabels[i]> -1){
+          TParticle* dummy  = MCStack->Particle(fCaloPhotonMCLabels[i]);
+          energyPerPart[i]  = dummy->Energy();
+          // suppress energy of hadrons !!! DIRTY hack !!!
+          if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+  //           cout << "suppressed hadron energy for:" << dummy->GetPdgCode() << endl;
+            energyPerPart[i]= 0.25; // put energy to mip
+          }  
+        } else {
+          energyPerPart[i]  = 0;
         }  
-      } else {
-        energyPerPart[i]  = 0;
       }  
-    }  
-    
-    TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
-    for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
-      fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
       
-    }
-    delete [] sortIdx;
-    delete [] energyPerPart;
-    delete [] orginalContrib;
-  }   
+      TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
+      for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
+        fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
+        
+      }
+      delete [] sortIdx;
+      delete [] energyPerPart;
+      delete [] orginalContrib;
+    }   
+  }
   
   Photon                            = MCStack->Particle(GetCaloPhotonMCLabel(0));
   
@@ -430,7 +432,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack){
   fCaloPhotonMCFlags = isPhoton *1 + isElectron *2 + isConversion*4+ isConversionFullyContained *8 + isMerged *16 + isMergedPartConv*32 + isDalitz *64 + isDalitzMerged *128 + isPhotonWithElecMother *256 + isShower * 512 + isSubLeadingEM * 1024;
 }
 
-void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
+void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort){
   
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!AODMCTrackArray) return;
@@ -454,37 +456,38 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event){
   if (fNCaloPhotonMCLabels==0) return;
   Photon                            = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(0));
 
-  // sort the array according to the energy of contributing particles
-  if (fNCaloPhotonMCLabels>1){
-//     cout << "start sorting" << endl;
-    Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
-    Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
-    Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
-    for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
-      orginalContrib[i]       = fCaloPhotonMCLabels[i];
-      if (fCaloPhotonMCLabels[i]> -1){
-        AliAODMCParticle* dummy  = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
-        energyPerPart[i]  = dummy->E();
-        // suppress energy of hadrons !!! DIRTY hack !!!
-        if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
-//           cout << "suppressed hadron energy" << endl;
-          energyPerPart[i]= energyPerPart[i]/10;
+  if (enableSort){
+    // sort the array according to the energy of contributing particles
+    if (fNCaloPhotonMCLabels>1){
+  //     cout << "start sorting" << endl;
+      Int_t* sortIdx            = new Int_t[fNCaloPhotonMCLabels];
+      Double_t* energyPerPart   = new Double_t[fNCaloPhotonMCLabels];
+      Long_t* orginalContrib    = new Long_t[fNCaloPhotonMCLabels];
+      for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
+        orginalContrib[i]       = fCaloPhotonMCLabels[i];
+        if (fCaloPhotonMCLabels[i]> -1){
+          AliAODMCParticle* dummy  = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
+          energyPerPart[i]  = dummy->E();
+          // suppress energy of hadrons !!! DIRTY hack !!!
+          if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+  //           cout << "suppressed hadron energy" << endl;
+            energyPerPart[i]= 0.25; // put energy to mip
+          }  
+        } else {
+          energyPerPart[i]  = 0;
         }  
-      } else {
-        energyPerPart[i]  = 0;
       }  
-    }  
-    
-    TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
-    for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
-      fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
       
-    }
-    delete [] sortIdx;
-    delete [] energyPerPart;
-    delete [] orginalContrib;
-  }   
-
+      TMath::Sort(fNCaloPhotonMCLabels,energyPerPart,sortIdx); 
+      for(Int_t index = 0; index < fNCaloPhotonMCLabels; index++) {
+        fCaloPhotonMCLabels[index] = orginalContrib  [sortIdx[index]] ;      
+        
+      }
+      delete [] sortIdx;
+      delete [] energyPerPart;
+      delete [] orginalContrib;
+    }   
+  }
   
   if(Photon == NULL){
     return;
