@@ -11,6 +11,19 @@
 #include <TArrayI.h>
 #include "AliTLorentzVector.h"
 
+
+#if (__GNUC__ >= 3) && !defined(__INTEL_COMPILER)
+// gcc warns in level Weffc++ about non-virtual destructor
+// in std::iterator. It is a false positive, therefore Weffc++
+// needs to be disabled for AliEmcalIterableContainerT
+#pragma GCC system_header
+#endif
+
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40600
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
+#endif
+
 class AliEmcalContainer;
 
 namespace EMCALIterableContainer {
@@ -208,6 +221,10 @@ private:
   }
 };
 }
+
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40600
+#pragma GCC diagnostic pop
+#endif
 
 #include "AliEmcalContainer.h"
 
