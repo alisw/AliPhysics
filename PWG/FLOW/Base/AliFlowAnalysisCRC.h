@@ -902,6 +902,12 @@ public:
  TProfile* GetFlowQCNUAPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowQCNUAPro[c][eg][k];};
  void SetFlowQCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowQCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorHist[c][eg][h];};
+  
+  void SetFlowQCIntCrosPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCrosPro[c][eg][h] = TP;};
+  TProfile* GetFlowQCIntCrosPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCrosPro[c][eg][h];};
+  void SetFlowQCIntFlucPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntFlucPro[c][eg][h] = TP;};
+  TProfile* GetFlowQCIntFlucPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntFlucPro[c][eg][h];};
+  
  TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
  void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
  TH1D* GetFlowQCIntCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHist[eg][h];};
@@ -983,20 +989,12 @@ public:
  void SetCMETPCList(TList* const TL) {this->fCMETPCList = TL;};
  void SetCMEZDCList(TList* const TL) {this->fCMEZDCList = TL;};
  // CME TPC only:
- void SetCMETPCCorPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMETPCCorPro[eg][h] = TP;};
- TProfile* GetCMETPCCorPro(Int_t const eg, Int_t const h) const {return this->fCMETPCCorPro[eg][h];};
- void SetCMETPCCovPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMETPCCovPro[eg][h] = TP;};
- TProfile* GetCMETPCCovPro(Int_t const eg, Int_t const h) const {return this->fCMETPCCovPro[eg][h];};
- void SetCMETPCNUAPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMETPCNUAPro[eg][h] = TP;};
- TProfile* GetCMETPCNUAPro(Int_t const eg, Int_t const h) const {return this->fCMETPCNUAPro[eg][h];};
- void SetCMETPCCorHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMETPCCorHist[eg][h] = TH;};
- TH1D* GetCMETPCCorHist(Int_t const eg, Int_t const h) const {return this->fCMETPCCorHist[eg][h];};
-  void SetCMETPCFinalHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMETPCFinalHist[eg][h] = TH;};
-  TH1D* GetCMETPCFinalHist(Int_t const eg, Int_t const h) const {return this->fCMETPCFinalHist[eg][h];};
- void SetCMETPCCovHist(TH2D* const TH, Int_t const eg, Int_t const h) {this->fCMETPCCovHist[eg][h] = TH;};
- TH2D* GetCMETPCCovHist(Int_t const eg, Int_t const h) const {return this->fCMETPCCovHist[eg][h];};
- void SetCMETPCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMETPCDistHist[eg][h][k] = TH;};
- TH1D* GetCMETPCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMETPCDistHist[eg][h][k];};
+  void SetCMETPCCorPro(TProfile* const TP, Int_t const h) {this->fCMETPCCorPro[h] = TP;};
+  TProfile* GetCMETPCCorPro(Int_t const h) const {return this->fCMETPCCorPro[h];};
+  void SetCMETPCCorHist(TH1D* const TH, Int_t const h) {this->fCMETPCCorHist[h] = TH;};
+  TH1D* GetCMETPCCorHist(Int_t const h) const {return this->fCMETPCCorHist[h];};
+  void SetCMETPCFinalHist(TH1D* const TH, Int_t const h) {this->fCMETPCFinalHist[h] = TH;};
+  TH1D* GetCMETPCFinalHist(Int_t const h) const {return this->fCMETPCFinalHist[h];};
  // CME TPC-ZDCs:
  void SetCMEZDCCorPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMEZDCCorPro[eg][h] = TP;};
  TProfile* GetCMEZDCCorPro(Int_t const eg, Int_t const h) const {return this->fCMEZDCCorPro[eg][h];};
@@ -1521,19 +1519,16 @@ private:
  TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
- TH1D *fCMETPCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
- TH1D *fCMETPCFinalHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
- TH2D *fCMETPCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
- TH1D *fCMETPCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMETPCnDist]; //! <<2'>>, [CRCBin][eg]
  TH1D *fCMEZDCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
  TH2D *fCMEZDCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
  TH1D *fCMEZDCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEZDCnDist]; //! <<2'>>, [CRCBin][eg]
- TProfile *fCMETPCCorPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
- TProfile *fCMETPCCovPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
- TProfile *fCMETPCNUAPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCMEZDCCorPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCMEZDCCovPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCMEZDCNUAPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+  const static Int_t fCMETPCnHist = 10;
+   TProfile *fCMETPCCorPro[fCMETPCnHist]; //! correlation profile, [CRCBin][eg]
+  TH1D *fCMETPCCorHist[fCMETPCnHist]; //! <<2'>>, [CRCBin][eg]
+  TH1D *fCMETPCFinalHist[fCMETPCnHist]; //! <<2'>>, [CRCBin][eg]
  
  // CRC2
   const static Int_t fkNCorCRC2 = 6;
@@ -1590,6 +1585,9 @@ private:
  TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowQCNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
+  TProfile *fFlowQCIntCrosPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
+  TProfile *fFlowQCIntFlucPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
+  
  TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
  TProfile *fFlowQCNewCenPro[fFlowNHarm][3]; //!
