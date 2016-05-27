@@ -720,7 +720,7 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
 
       UInt_t rejectionReason = 0;
-      if (!clusters->AcceptCluster(clusters->GetCurrentID(), rejectionReason)) {
+      if (!clusters->AcceptCluster(it.current_index(), rejectionReason)) {
         histname = TString::Format("%s/fHistRejectionReason_%d", clusters->GetArrayName().Data(), fCentBin);
         fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), it->first.E());
         continue;
