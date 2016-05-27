@@ -187,14 +187,11 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   TH2F              *fHistIPtoPVxyzTPC;                     //!
   TH2F              *fHistIPtoPVxyzGlobal;                  //!
 
-  TH2F              *fHistpTOFmisvspt;                      //!
   TH2F              *fHistpTOFmisvsp;                       //!
-  TH2F              *fHistpTOFnsigmavspt;                   //!
   TH2F              *fHistpTOFnsigmavsp;                    //!
   TH2F              *fHistpTOFsignalvsp;                    //!
-  TH2F              *fHistpTOFsignalvspt;                   //!
-  TH2F              *fHistpnsigTOFnsigTPC;                  //!
-  TH2F              *fHistpTOFTPCsignalvspt;                //!
+  TH3F              *fHistpnsigTOFnsigTPC;                  //!
+  TH3F              *fHistpsignalTOFsignalTPC;              //!
   TH2F              *fHistProtonMultvsCent;                 //!
   TH2F              *fHistMCPrimProtons;                    //!
   TH2F              *fHistMCFromWdecayProtons;              //!
@@ -283,7 +280,7 @@ class AliAnalysisTaskhCascadeFemto : public AliAnalysisTaskSE {
   AliAnalysisTaskhCascadeFemto(const AliAnalysisTaskhCascadeFemto&); // not implemented
   AliAnalysisTaskhCascadeFemto& operator=(const AliAnalysisTaskhCascadeFemto&); // not implemented
   //
-  ClassDef(AliAnalysisTaskhCascadeFemto, 7);
+  ClassDef(AliAnalysisTaskhCascadeFemto, 8);
 };
 
 #endif

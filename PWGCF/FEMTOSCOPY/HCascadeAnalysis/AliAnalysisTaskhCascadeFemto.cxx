@@ -196,15 +196,13 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistIPtoPVxyzTPC(0x0),
   fHistIPtoPVxyzGlobal(0x0),
 
-  fHistpTOFmisvspt(0x0),
   fHistpTOFmisvsp(0x0),
-  fHistpTOFnsigmavspt(0x0),
   fHistpTOFnsigmavsp(0x0),
   fHistpTOFsignalvsp(0x0),
-  fHistpTOFsignalvspt(0x0),
   fHistpnsigTOFnsigTPC(0x0),
-  fHistpTOFTPCsignalvspt(0x0),
+  fHistpsignalTOFsignalTPC(0x0),
   fHistProtonMultvsCent(0x0),
+
   fHistMCPrimProtons(0x0),
   fHistMCFromWdecayProtons(0x0),
   fHistMCFromMaterialProtons(0x0),
@@ -400,15 +398,13 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistIPtoPVxyzTPC(0x0),
   fHistIPtoPVxyzGlobal(0x0),
 
-  fHistpTOFmisvspt(0x0),
   fHistpTOFmisvsp(0x0),
-  fHistpTOFnsigmavspt(0x0),
   fHistpTOFnsigmavsp(0x0),
   fHistpTOFsignalvsp(0x0),
-  fHistpTOFsignalvspt(0x0),
   fHistpnsigTOFnsigTPC(0x0),
-  fHistpTOFTPCsignalvspt(0x0),
+  fHistpsignalTOFsignalTPC(0x0),
   fHistProtonMultvsCent(0x0),
+
   fHistMCPrimProtons(0x0),
   fHistMCFromWdecayProtons(0x0),
   fHistMCFromMaterialProtons(0x0),
@@ -684,26 +680,23 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fHistIPtoPVxyzGlobal = new TH2F("fHistIPtoPVxyzGlobal","",200, -5.,5., 200, -5., 5.);
   fOutputContainer->Add(fHistIPtoPVxyzGlobal);
 
-  fHistpTOFmisvspt = new TH2F("fHistpTOFmisvspt", "", 200, 0., 10., 101, 0.0, 1.01);
-  fOutputContainer->Add(fHistpTOFmisvspt);
+  
   fHistpTOFmisvsp = new TH2F("fHistpTOFmisvsp", "", 200, 0., 10., 101, 0.0, 1.01);
   fOutputContainer->Add(fHistpTOFmisvsp);
-  fHistpTOFnsigmavspt = new TH2F("fHistpTOFnsigmavspt", "", 200, 0., 10., 100, -5. , 5);
-  fOutputContainer->Add(fHistpTOFnsigmavspt);
   fHistpTOFnsigmavsp = new TH2F("fHistpTOFnsigmavsp", "", 200, 0., 10., 100, -5., 5.);
   fOutputContainer->Add(fHistpTOFnsigmavsp);
   fHistpTOFsignalvsp = new TH2F("fHistpTOFsignalvsp", "", 200, 0., 10, 100,-3000,3000);//1000 , 0., 2.);
-  fHistpTOFsignalvsp->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{exoected} (ps)");
+  fHistpTOFsignalvsp->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
   fHistpTOFsignalvsp->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
   fOutputContainer->Add(fHistpTOFsignalvsp);
-  fHistpTOFsignalvspt = new TH2F("fHistpTOFsignalvspt", "", 200, 0., 10., 100,-3000,3000);//1000, 0.0, 2.);
-  fHistpTOFsignalvspt->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
-  fHistpTOFsignalvspt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})"); 
-  fOutputContainer->Add(fHistpTOFsignalvspt);
-  fHistpnsigTOFnsigTPC = new TH2F("fHistpnsigTOFnsigTPC","",100, -10., 10., 100, -10., 10);
+  fHistpnsigTOFnsigTPC = new TH3F("fHistpnsigTOFnsigTPC","",100, 0., 5., 100, -10., 10., 100, -10., 10);
   fOutputContainer->Add(fHistpnsigTOFnsigTPC);
-  fHistpTOFTPCsignalvspt = new TH2F("fHistpTOFTPCsignalvspt","",200, 0., 10., 100, 0., 20);
-  fOutputContainer->Add(fHistpTOFTPCsignalvspt);
+  fHistpsignalTOFsignalTPC = new TH3F("fHistpsignalTOFsignalTPC","", 100, 0., 5., 100, -3000, 3000, 500, 0.0, 2000);
+  fHistpsignalTOFsignalTPC->GetZaxis()->SetTitle("TPC dE/dx (a.u.)");
+  fHistpsignalTOFsignalTPC->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
+  fHistpsignalTOFsignalTPC->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  fOutputContainer->Add(fHistpsignalTOFsignalTPC);
+
   fHistProtonMultvsCent = new TH2F("fHistProtonMultvsCent","",400,0.,2000.,10,0.,100.);
   fOutputContainer->Add(fHistProtonMultvsCent);
 
@@ -1270,6 +1263,9 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
   Float_t rapidity = 0.;
   Short_t charge = -2;
+  Float_t trackmomentum = 0.;
+  Float_t tracktransversemomentum = 0.;
+  Float_t tpcSignal = 0.;
 
 
   int pCount = 0;
@@ -1365,10 +1361,12 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     isaP = kFALSE;
     
     charge = globaltrack->Charge();
+    trackmomentum = track->P();
+    tracktransversemomentum = track->Pt();
  
     if (TMath::Abs(track->Eta())> 0.8) continue;
     if (track->Chi2perNDF()>4.) continue; // should be redundant already applied in the TPC only track ESD filtering
-    if ((track->Pt()<fMinPtForPrim) || (track->Pt()> fMaxPtForPrim)) continue;  
+    if ((tracktransversemomentum<fMinPtForPrim) || (tracktransversemomentum>fMaxPtForPrim)) continue;  
 
 /*    if (fkCutOnTPCIP) {
       if (TMath::Abs(dz[0])>fIPCutxy ) continue;  // 2.4 proton 1. pion 
@@ -1411,6 +1409,8 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       continue; 
     }
 
+    tpcSignal = globaltrack->GetTPCsignal();
+
     if (fFirstpart == kPion) nsigmaTPCp = fPIDResponse->NumberOfSigmasTPC(globaltrack, AliPID::kPion); 
     else if (fFirstpart == kProton) nsigmaTPCp = fPIDResponse->NumberOfSigmasTPC(globaltrack, AliPID::kProton); 
    
@@ -1443,24 +1443,8 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       } else { 
         probMis = 0.; nsigmaTOFp = 0.; //cout<<"The corresponding global track has no tof pid!"<<endl;
       } 
-     
+    }     
     
-      // PID different momentum intervals Hans 0-0.75-1.-5 TPC-TPCTOF-TOF(+TPC to detect mismatch if present)
-                                       // Maciej 0.8       TPC-TPC+TOF
-      if (track->P()< fMomemtumLimitForTOFPID) {
-        if (TMath::Abs(nsigmaTPCp)> fnSigmaTPCPIDfirstParticle) continue;  
-      } else {
-        if (isTOFPIDok) {
-          if (probMis > 0.01) continue;
-          if (TMath::Sqrt(nsigmaTOFp*nsigmaTOFp+nsigmaTPCp*nsigmaTPCp)> fnSigmaTPCTOFPIDfirstParticle) continue;   // this cleans the TOF corrected time plot vs p       
-        } else { 
-          continue; // if no TOF we dont use this track // NB stat is 4 times smaller 
-        //if (TMath::Abs(nsigmaTPCp)> 3.) continue; 
-        }
-      }
-    } else if (fFirstpart == kPion) { // for pions only TPC
-      if (TMath::Abs(nsigmaTPCp)> fnSigmaTPCPIDfirstParticle) continue; 
-    }
     if (!fkCutOnTPCIP) {   
       // in AliAODTrack::PropagateToDCA() the lines below are iplemented 
       globaltrack->GetPosition(xyz);
@@ -1476,26 +1460,63 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     }
 
     // Fill histos for purity studies, after that cut on IP
-    if (fkCutOnTPCIP) { // preselection
+    // Preselection on DCA z
+    if (fkCutOnTPCIP) { 
       if (TMath::Abs(dz[1])>fIPCutz ) continue;   // 3.2  proton 1. pion
     } else {
       if (TMath::Abs(dzg[1])>fIPCutz ) continue;   // 0.15 proton/pion
     }
 
+    // Fill here histos for purity studies only for tracks with IP within cuts
     if (lcentrality>0. && lcentrality<=10.) {
-      fHistIPtoPVxyGlobalvspt->Fill(track->Pt(),dzg[0]);
+      if (fkCutOnTPCIP) {
+        if (TMath::Abs(dz[0])<fIPCutxy) {
+          if (trackmomentum < fMomemtumLimitForTOFPID) fHistpsignalTOFsignalTPC->Fill(trackmomentum,0.,tpcSignal);
+          else {
+            if (isTOFPIDok&&(probMis>0.01)) fHistpsignalTOFsignalTPC->Fill(trackmomentum,tTOF,tpcSignal);
+          }
+        }
+      } else {
+        if (TMath::Abs(dzg[0])<fIPCutxy) {
+          if (trackmomentum < fMomemtumLimitForTOFPID) fHistpsignalTOFsignalTPC->Fill(trackmomentum,0.,tpcSignal);
+          else {
+            if (isTOFPIDok&&(probMis>0.01)) fHistpsignalTOFsignalTPC->Fill(trackmomentum,tTOF,tpcSignal);
+          }
+        }
+      }
+    }
+
+    // Cut on PID
+    if (fFirstpart == kProton) {
+      if (trackmomentum< fMomemtumLimitForTOFPID) {
+        if (TMath::Abs(nsigmaTPCp)> fnSigmaTPCPIDfirstParticle) continue;
+      } else {
+        if (isTOFPIDok) {
+          if (probMis > 0.01) continue;
+          if (TMath::Sqrt(nsigmaTOFp*nsigmaTOFp+nsigmaTPCp*nsigmaTPCp)> fnSigmaTPCTOFPIDfirstParticle) continue;   // this cleans the TOF corrected time plot vs p       
+        } else {
+          continue; // if no TOF we dont use this track 
+          // if (TMath::Abs(nsigmaTPCp)> 3.) continue; 
+        }
+      }
+    } else if (fFirstpart == kPion) { // for pions only TPC
+        if (TMath::Abs(nsigmaTPCp)> fnSigmaTPCPIDfirstParticle) continue;
+    }
+
+    if (lcentrality>0. && lcentrality<=10.) {
+      fHistIPtoPVxyGlobalvspt->Fill(tracktransversemomentum,dzg[0]);
       if (fReadMCTruth) { 
         mcProtonOrigin = ProtonOrigin( TMath::Abs(globaltrack->GetLabel()), arrayMC, pMomentumTruth); //  for purity and momentum resolution correction
         if (isP) {
-          if (mcProtonOrigin == AliReconstructedProton::kPrimaryP) fHistMCPrimProtons->Fill(track->Pt(),dzg[0]);   
-          else if (mcProtonOrigin == AliReconstructedProton::kSecondaryWeak) fHistMCFromWdecayProtons->Fill(track->Pt(),dzg[0]);
-          else if (mcProtonOrigin == AliReconstructedProton::kMaterial) fHistMCFromMaterialProtons->Fill(track->Pt(),dzg[0]);
-          else if (mcProtonOrigin == AliReconstructedProton::kUnassigned) fHistMCOtherProtons->Fill(track->Pt(),dzg[0]);
+          if (mcProtonOrigin == AliReconstructedProton::kPrimaryP) fHistMCPrimProtons->Fill(tracktransversemomentum,dzg[0]);   
+          else if (mcProtonOrigin == AliReconstructedProton::kSecondaryWeak) fHistMCFromWdecayProtons->Fill(tracktransversemomentum,dzg[0]);
+          else if (mcProtonOrigin == AliReconstructedProton::kMaterial) fHistMCFromMaterialProtons->Fill(tracktransversemomentum,dzg[0]);
+          else if (mcProtonOrigin == AliReconstructedProton::kUnassigned) fHistMCOtherProtons->Fill(tracktransversemomentum,dzg[0]);
         } else if (isaP) {
-          if (mcProtonOrigin == AliReconstructedProton::kPrimaryP) fHistMCPrimAProtons->Fill(track->Pt(),dzg[0]);
-          else if (mcProtonOrigin == AliReconstructedProton::kSecondaryWeak) fHistMCFromWdecayAProtons->Fill(track->Pt(),dzg[0]);
-          else if (mcProtonOrigin == AliReconstructedProton::kMaterial) fHistMCFromMaterialAProtons->Fill(track->Pt(),dzg[0]);
-          else if (mcProtonOrigin == AliReconstructedProton::kUnassigned) fHistMCOtherAProtons->Fill(track->Pt(),dzg[0]);
+          if (mcProtonOrigin == AliReconstructedProton::kPrimaryP) fHistMCPrimAProtons->Fill(tracktransversemomentum,dzg[0]);
+          else if (mcProtonOrigin == AliReconstructedProton::kSecondaryWeak) fHistMCFromWdecayAProtons->Fill(tracktransversemomentum,dzg[0]);
+          else if (mcProtonOrigin == AliReconstructedProton::kMaterial) fHistMCFromMaterialAProtons->Fill(tracktransversemomentum,dzg[0]);
+          else if (mcProtonOrigin == AliReconstructedProton::kUnassigned) fHistMCOtherAProtons->Fill(tracktransversemomentum,dzg[0]);
         }
       }
     }
@@ -1507,25 +1528,22 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
     
     // 
-    fHistyptProtons->Fill(track->Pt(),rapidity,lcentrality);
+    fHistyptProtons->Fill(tracktransversemomentum,rapidity,lcentrality);
     fHistphietaProtons->Fill(track->Phi(),track->Eta());
     fHistIPtoPVxyzTPC->Fill(dz[0],dz[1]); 
     fHistIPtoPVxyzGlobal->Fill(dzg[0],dzg[1]);
    
-//       cout<<"TOF signal "<<globaltrack->GetTOFsignal()<<endl; 
-    if (isTOFPIDok) {
-      fHistpTOFmisvspt->Fill(track->Pt(),probMis);
-      fHistpTOFmisvsp->Fill(track->P(),probMis);
-      fHistpTOFnsigmavspt->Fill(track->Pt(),nsigmaTOFp);
-      fHistpTOFnsigmavsp->Fill(track->P(),nsigmaTPCp);
-      fHistpTOFsignalvsp->Fill(track->P(),tTOF);  
-      fHistpTOFsignalvspt->Fill(track->Pt(),tTOF);
-      fHistpnsigTOFnsigTPC->Fill(nsigmaTOFp,nsigmaTPCp);
-      fHistpTOFTPCsignalvspt->Fill(track->Pt(),TMath::Sqrt(nsigmaTOFp*nsigmaTOFp+nsigmaTPCp*nsigmaTPCp));
-    }
+//       cout<<"TOF signal "<<globaltrack->GetTOFsignal()<<endl;
+    if (lcentrality>0. && lcentrality<=10.) {
+      if (isTOFPIDok) {
+        fHistpTOFmisvsp->Fill(trackmomentum,probMis);
+        fHistpTOFnsigmavsp->Fill(trackmomentum,nsigmaTOFp);
+        fHistpTOFsignalvsp->Fill(trackmomentum,tTOF);  
+        fHistpnsigTOFnsigTPC->Fill(trackmomentum,nsigmaTOFp,nsigmaTPCp);
+      }
 
-    fHistprimpTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, globaltrack->GetTPCsignal());
-    
+      fHistprimpTPCdEdx->Fill(globaltrack->GetTPCmomentum()*charge, tpcSignal);
+    } 
    
     fHistnTPCCrossedR->Fill(nTPCCrossedRows);
     fHistRationTPCCrossedRnFind->Fill(rationCrnFind);
@@ -1546,7 +1564,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     fEvt->fReconstructedProton[pCount].pMomentum[1]  = track->Py();
     fEvt->fReconstructedProton[pCount].pMomentum[2]  = track->Pz();
 
-    fEvt->fReconstructedProton[pCount].pPt     = track->Pt();
+    fEvt->fReconstructedProton[pCount].pPt     = tracktransversemomentum;
     fEvt->fReconstructedProton[pCount].pEta    = track->Eta();
     fEvt->fReconstructedProton[pCount].pPhi    = track->Phi();
     fEvt->fReconstructedProton[pCount].pRap    = rapidity; 
