@@ -65,8 +65,8 @@ class AliAODConversionPhoton : public AliAODConversionParticle, public AliConver
     Int_t GetNCaloPhotonMotherMCLabels(){return fNCaloPhotonMotherMCLabels;}
     Int_t GetCaloPhotonMotherMCLabel(Int_t i){return fCaloPhotonMotherMCLabels[i];}
     
-    void SetCaloPhotonMCFlags(AliStack *MCStack);
-    void SetCaloPhotonMCFlagsAOD(AliVEvent* event);
+    void SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enableSort);
+    void SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t enableSort);
     void SetCaloClusterRef(Long_t ref){fCaloClusterRef = ref;}
     Long_t GetCaloClusterRef()const {return fCaloClusterRef;}
     void PrintCaloMCLabelsAndInfo(AliStack *MCStack);
