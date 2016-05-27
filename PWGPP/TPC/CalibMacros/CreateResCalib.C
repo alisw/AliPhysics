@@ -136,7 +136,7 @@ void CheckResCalibEnvVars(AliTPCDcalibRes* clb)
   if (!useTOFBCStr.IsNull()) {
     useTOFBCStr.ToLower();
     Bool_t useTOFBC=clb->GetUseTOFBC();
-    if      (useTOFBCStr.Contains("true")) 
+    if      (useTOFBCStr.Contains("true")) useTOFBC = kTRUE;
     else if (useTOFBCStr.Contains("false")) useTOFBC = kFALSE;
     else {
       ::Error("CreateResCalib","Wrong useTOFBC = %s",useTOFBCStr.Data());
