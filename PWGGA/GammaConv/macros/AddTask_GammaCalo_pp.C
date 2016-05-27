@@ -69,10 +69,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             Bool_t    enableTriggerMimicking        = kFALSE,                       // enable trigger mimicking
                             Bool_t    enableTriggerOverlapRej       = kFALSE,                       // enable trigger overlap rejection
                             Float_t   maxFacPtHard                  = 3.,                           // maximum factor between hardest jet and ptHard generated
-                            TString   periodNameV0Reader            = "",
-                            Bool_t    doMultiplicityWeighting       = kFALSE,                       //
-                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",          //  
-                            TString   periodNameAnchor              = ""
+                            TString   periodNameV0Reader            = "",                           // period Name for V0 reader
+                            Bool_t    doMultiplicityWeighting       = kFALSE,                       // enable multiplicity weights
+                            TString   fileNameInputForMultWeighing  = "Multiplicity.root",          // file for multiplicity weights
+                            TString   periodNameAnchor              = "",                           // name of anchor period for weighting
+                            Bool_t    enableSortingMCLabels         = kTRUE                         // enable sorting for MC cluster labels
                             
 ) {
   
@@ -844,6 +845,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106){
     task->SetInOutTimingCluster(-30e-9,35e-9);
