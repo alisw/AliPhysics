@@ -88,6 +88,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fNTriggerClasses(0),
   fNTracks(0),
   fNV0s(0),
+  fNtrackletsSPD(0),
   fTriggerPointer(0),
   fVZEROPointer(-1),
   fMultiplicityPointer(-1),
@@ -100,6 +101,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fFriendEvent(NULL)
 {
   // Default constructor
+  for( int i=0; i<6; i++ ) fNclustersITS[i] = 0;
   fContent[0]=0;
 }
 
@@ -207,6 +209,7 @@ void AliFlatESDEvent::Reset()
   fNTriggerClasses = 0;
   fNTracks = 0;
   fNV0s = 0;
+  fNtrackletsSPD = 0;
   fTriggerPointer = 0;
   fVZEROPointer = -1;
   fMultiplicityPointer = -1;
@@ -216,6 +219,7 @@ void AliFlatESDEvent::Reset()
   fTrackTablePointer = 0;
   fTracksPointer = 0;
   fV0Pointer = 0;
+  for( int i=0; i<6; i++ ) fNclustersITS[i] = 0;
 }
 
 // _______________________________________________________________________________________________________

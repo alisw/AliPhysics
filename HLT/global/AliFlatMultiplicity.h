@@ -43,9 +43,9 @@ private:
 
 inline AliFlatMultiplicity::AliFlatMultiplicity() :
   fNtracks(0)
-, fITSClusters{0,0,0,0,0,0}
 {   
   // Default constructor 
+  for( int i=0; i<6; i++ ) fITSClusters[i] = 0;
 }
 
 #pragma GCC diagnostic ignored "-Weffc++" 
