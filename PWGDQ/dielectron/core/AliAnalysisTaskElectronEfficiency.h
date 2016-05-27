@@ -55,7 +55,7 @@ class AliDielectronSignalMC;
 
 class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
  public:
-  
+
   AliAnalysisTaskElectronEfficiency();
   /// default constructor is mandatory for local LEGO train:
   /// W-TBufferFile::WriteObjectAny: since AliAnalysisTaskElectronEfficiency has no public constructor
@@ -66,11 +66,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   /// and it can crash, so instead, we implement the function and checks within this task, as done in 'AliAnalysisTaskMultiDielectron'.
   AliAnalysisTaskElectronEfficiency(const char *name); //const char *name = "AliAnalysisTaskElectronEfficiency"
   virtual ~AliAnalysisTaskElectronEfficiency();
-  
+
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(const Option_t*);
-  
+
   void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
   void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
@@ -95,13 +95,13 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetResolutionPhi(TObjArray *resArr)                 {fPhiResArr=resArr;}
   void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
   void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
-  
+
   void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
   void          SetCentroidCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetWidthCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetCentroidCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void          SetWidthCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  
+
   void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins, Int_t Nmeebins=0, Double_t *Meebins=0x0, Int_t Npteebins=0, Double_t *Pteebins=0x0) {
     /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;   fMeeBins=Meebins; fPteeBins=Pteebins;
     /**/          fNptBins=Nptbins; fNetaBins=Netabins; fNphiBins=Nphibins; fNmeeBins=Nmeebins; fNpteeBins=Npteebins;
@@ -116,15 +116,18 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
   void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
   void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
-  
-  
+  void          SetDeltaMomBinning(Int_t N, Double_t min, Double_t max)   {fDeltaMomNbins=N; fDeltaMomMin=min, fDeltaMomMax=max;}
+  void          SetDeltaEtaBinning(Int_t N, Double_t min, Double_t max)   {fDeltaEtaNbins=N; fDeltaEtaMin=min, fDeltaEtaMax=max;}
+  void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min, fDeltaThetaMax=max;}
+  void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min, fDeltaPhiMax=max;}
+
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
   void          CreateSupportHistos();
-  
+
   UInt_t        GetNCutsets() const { return fvReco_Ele.size(); } // 'cutset' and 'cutInstance' are used as synonymes in this task!
   //AliPIDResponse* GetPIDResponse() { return fPIDResponse; }
-  
+
  private:
   void          CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra);
   Double_t      PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
@@ -135,7 +138,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
     /**/        }
   TVectorD*     GetPDGcodes();
   Double_t      GetSmearing(TObjArray *arr, Double_t x);
-  
+
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
   AliPIDResponse*   fPIDResponse;
@@ -156,7 +159,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //Int_t             fEventcount;
   Bool_t            fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
   TRandom3          fRandom3;
-  
+
   Double_t          fMaxVtxZ;
   Double_t          fCentMin;                 // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
@@ -173,8 +176,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TString           fsRunBins;                // for run dependency histograms
   Bool_t            fCalcEfficiencyRec;
   Bool_t            fCalcEfficiencyPoslabel;
-  
-  
+
+
   //Cut Settings
   std::vector<AliAnalysisFilter*> fvTrackCuts;
   std::vector<AliAnalysisFilter*> fvExtraTrackCuts; // used in prefilter cutsets for global electron cuts to find relevant events for prefilter efficiency determination. // has to be a subset of 'fvTrackCuts', otherwise the treatment is incorrect!
@@ -195,7 +198,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //std::vector<TH3F*>             fvReco_Pio; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Kao; // be really careful if you need to implement this (see comments in UserExec).
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
-  
+
   // histograms with reconstructed observables
   TH3D*                           fNgen_Rec_Ele;
   TH3D*                           fNgen2_Rec_Ele;
@@ -205,23 +208,23 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH3D*                           fNgen2_Rec_Pos;
   std::vector<TH3D*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3D*>              fvReco_Rec_Pos_poslabel;
-  
+
   Int_t                           fNmeeBins;
   Int_t                           fNpteeBins;
   Double_t*                       fMeeBins;   //! ("!" to avoid streamer error)
   Double_t*                       fPteeBins;  //! ("!" to avoid streamer error)
-  
+
   TH2D*                           fNgenPairs_sameMother;
   std::vector<TH2D*>              fvRecoPairs_sameMother;
   std::vector<TH2D*>              fvRecoPairs_poslabel_sameMother;
   TH2D*                           fNgenPairs_diffMothers;
   std::vector<TH2D*>              fvRecoPairs_diffMothers;
   std::vector<TH2D*>              fvRecoPairs_poslabel_diffMothers;
-  
-  
+
+
   // resolutions
   Bool_t                          fCalcResolution;
-  
+
   TH1D*                           fDeltaPhiAll;
   TH1D*                           fDeltaPhi;
   TH2D*                           fDeltaPhi_alpha;
@@ -229,7 +232,21 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2D*                           fDeltaPhi_eta;
   TH2D*                           fDeltaPhi_MCcharge;
   TH2D*                           fDeltaPhi_charge;
-  
+
+  Int_t fDeltaMomNbins;
+  Double_t fDeltaMomMin;
+  Double_t fDeltaMomMax;
+  Int_t fDeltaEtaNbins;
+  Double_t fDeltaEtaMin;
+  Double_t fDeltaEtaMax;
+  Int_t fDeltaThetaNbins;
+  Double_t fDeltaThetaMin;
+  Double_t fDeltaThetaMax;
+  Int_t fDeltaPhiNbins;
+  Double_t fDeltaPhiMin;
+  Double_t fDeltaPhiMax;
+
+
   TH2D*                           fPGen_DeltaP;
   TH2D*                           fPtGen_DeltaPt;
   TH2D*                           fEtaGen_DeltaEta;
@@ -237,41 +254,41 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2D*                           fPhiGen_DeltaPhi;
   TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS;
   TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS;
-  
+
   TH2D*                           fPGen_DeltaP_pions;
   TH2D*                           fPtGen_DeltaPt_pions;
   TH2D*                           fEtaGen_DeltaEta_pions;
   TH2D*                           fThetaGen_DeltaTheta_pions;
   TH2D*                           fPhiGen_DeltaPhi_pions;
   TH2D*                           fOpeningAngleGen_DeltaOpeningAngleUS_pions;
-  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS_pions;  
-  
+  TH2D*                           fOpeningAngleGen_DeltaOpeningAngleLS_pions;
+
   THnSparseF*                     fMgen_PtGen_mRes_ptRes;
-  
+
   // external resolutions
-  TObjArray*                      fPResArr; 
-  TObjArray*                      fPtResArr; 
+  TObjArray*                      fPResArr;
+  TObjArray*                      fPtResArr;
   TObjArray*                      fThetaResArr;
   TObjArray*                      fEtaResArr;
   TObjArray*                      fPhiResArr;
   TH1D*                           fSmearing_Ele[6];
   TH1D*                           fSmearing_Pos[6];
-  
+
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
   Double_t                        fPairCutMee;      // used for pair cuts in pair efficiency calculation.
   Double_t                        fPairCutTheta;    // ''
   Double_t                        fPairCutPhiV;     // ''
   //AliAnalysisFilter*            fPairCuts;        // would be nicer, but cannot get AliDielectronPair working on MC :-(
-  
+
   TList*                          fOutputList; // ! output data container
-  TList*                          fOutputListSupportHistos; // ! output data container   
+  TList*                          fOutputListSupportHistos; // ! output data container
   TH1D*                           fEventStat;               // ! Histogram with event statistics
-  
+
   //Output Tree with Tracks
   TTree*                          tracksT;
   Bool_t                          fWriteTree;
-  
+
   //Track Variables
   // these are for data and MC:
   Float_t   pxESD;
@@ -319,13 +336,13 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Float_t   pzMC;
   UInt_t    fSelectedByCut; // bit mask
   UInt_t    fSelectedByExtraCut; // bit mask
-  
+
   //protected:
   enum {kAllEvents=0, kPhysicsSelectionEvents, kFilteredEvents , kEventStatBins};
 
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
-  
+
   ClassDef(AliAnalysisTaskElectronEfficiency, 5);
 };
 

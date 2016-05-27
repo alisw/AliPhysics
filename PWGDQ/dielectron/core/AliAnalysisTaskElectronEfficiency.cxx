@@ -71,7 +71,7 @@ using std::endl;
 
 
 //________________________________________________________________________
-AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency() : 
+AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency() :
 AliAnalysisTaskSE(),
 fESD(0x0),
 mcEvent(0x0),
@@ -146,6 +146,18 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
+fDeltaMomNbins(1000),
+fDeltaMomMin(-10.),
+fDeltaMomMax(10.),
+fDeltaEtaNbins(300),
+fDeltaEtaMin(-1.5),
+fDeltaEtaMax(1.5),
+fDeltaThetaNbins(300),
+fDeltaThetaMin(-1.5),
+fDeltaThetaMax(1.5),
+fDeltaPhiNbins(300),
+fDeltaPhiMin(-1.5),
+fDeltaPhiMax(1.5),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
 fEtaGen_DeltaEta(0x0),
@@ -230,7 +242,7 @@ fSelectedByExtraCut(0)
 
 
 //________________________________________________________________________
-AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) : 
+AliAnalysisTaskElectronEfficiency::AliAnalysisTaskElectronEfficiency(const char *name) :
 AliAnalysisTaskSE(name),
 fESD(0x0),
 mcEvent(0x0),
@@ -305,6 +317,18 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
+fDeltaMomNbins(1000),
+fDeltaMomMin(-10.),
+fDeltaMomMax(10.),
+fDeltaEtaNbins(300),
+fDeltaEtaMin(-1.5),
+fDeltaEtaMax(1.5),
+fDeltaThetaNbins(300),
+fDeltaThetaMin(-1.5),
+fDeltaThetaMax(1.5),
+fDeltaPhiNbins(300),
+fDeltaPhiMin(-1.5),
+fDeltaPhiMax(1.5),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
 fEtaGen_DeltaEta(0x0),
@@ -385,7 +409,7 @@ fSelectedByCut(0),
 fSelectedByExtraCut(0)
 {
   /// Constructor
-  
+
   fvTrackCuts.clear();
   fvExtraTrackCuts.clear();
   fvDoPrefilterEff.clear();
@@ -404,13 +428,13 @@ fSelectedByExtraCut(0)
   fvPionsRejByAllSigns.clear();
   fvPionsRejByUnlike.clear();
 
-  
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TH1D::Class());
-  
+
   fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);
   fUsedVars->SetBitNumber(AliDielectronVarManager::kPIn, kTRUE);
@@ -448,20 +472,20 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
              "  eleFinalState->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);//equiv. to IsPrimary();\n"
              "  task->AddSignalMC(eleFinalState);\n}");
   }
-  
-  
+
+
   Printf("  __________________________________________________");
   Printf("  - centrality range:  %f  to  %f", fCentMin, fCentMax);
   Printf("  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-  
+
   OpenFile(1, "RECREATE");
-  
+
   TList *pairEffList(0x0);
   if(fDoPairing){
     pairEffList = new TList();
     pairEffList->SetName("pairEfficiency");
     pairEffList->SetOwner();
-    
+
     TList *lSameMother = new TList();
     lSameMother->SetName("sameMother");
     lSameMother->SetOwner();
@@ -469,7 +493,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lSameMother->Add(fvRecoPairs_sameMother.at(iCut));
     for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lSameMother->Add(fvRecoPairs_poslabel_sameMother.at(iCut));
     pairEffList->Add(lSameMother);
-    
+
     TList *lDiffMothers = new TList();
     lDiffMothers->SetName("differentMothers");
     lDiffMothers->SetOwner();
@@ -478,27 +502,27 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     for(UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) lDiffMothers->Add(fvRecoPairs_poslabel_diffMothers.at(iCut));
     pairEffList->Add(lDiffMothers);
   }
-  
+
   TList *resolutionList(0x0);
   if(fCalcResolution){
     resolutionList = new TList();
     resolutionList->SetName("resolution");
     resolutionList->SetOwner();
-    
+
     fDeltaPhiAll = new TH1D("DeltaPhiAll","",320,-0.1,6.4);
     fDeltaPhiAll->GetXaxis()->SetTitle("#varphi_{gen} - #varphi_{rec}");
     fDeltaPhiAll->Sumw2();
     fDeltaPhiAll->SetMarkerStyle(20);
     fDeltaPhiAll->SetMarkerColor(kBlack);
     fDeltaPhiAll->SetLineColor(kBlack);
-    
+
     fDeltaPhi = new TH1D("DeltaPhi","",320,-0.1,6.4);
     fDeltaPhi->GetXaxis()->SetTitle("#varphi_{gen} - #varphi_{rec}");
     fDeltaPhi->Sumw2();
     fDeltaPhi->SetMarkerStyle(20);
     fDeltaPhi->SetMarkerColor(kBlack);
     fDeltaPhi->SetLineColor(kBlack);
-    
+
     fDeltaPhi_alpha = new TH2D("DeltaPhi_alpha","",320,-0.1,6.4,140,-7.,7.);
     fDeltaPhi_alpha->Sumw2();
     fDeltaPhi_pt = new TH2D("DeltaPhi_pt","",320,-0.1,6.4,500,0.,10.);
@@ -509,14 +533,14 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fDeltaPhi_MCcharge->Sumw2();
     fDeltaPhi_charge = new TH2D("DeltaPhi_charge","",320,-0.1,6.4,3,-1.5,1.5);
     fDeltaPhi_charge->Sumw2();
-    
-    fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "",500,0.,10.,1000,-10.,10.);
-    fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "",500,0.,10.,1000,-10.,10.);
-    fEtaGen_DeltaEta                     = new TH2D("EtaGen_DeltaEta",                    "",200,-1.,1.,300,-1.5,1.5);
-    fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "",220,-0.1*TMath::Pi(),1.1*TMath::Pi(),300,-1.5,1.5);
-    fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "",320,-0.1*TMath::Pi(),2.1*TMath::Pi(),300,-1.5,1.5);
-    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,300,-1.5,1.5);
-    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,300,-1.5,1.5);
+
+    fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+    fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+    fEtaGen_DeltaEta                     = new TH2D("EtaGen_DeltaEta",                    "",200,-1.,1.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+    fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "",220,-0.1*TMath::Pi(),1.1*TMath::Pi(),fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+    fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "",320,-0.1*TMath::Pi(),2.1*TMath::Pi(),fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,300,-0.5,1.);
+    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,300,-0.5,1.);
 
     fPGen_DeltaP                         ->Sumw2();
     fPtGen_DeltaPt                       ->Sumw2();
@@ -538,8 +562,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fPhiGen_DeltaPhi                     ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
     fOpeningAngleGen_DeltaOpeningAngleUS ->GetXaxis()->SetTitle("#theta_{ee,US}^{gen} (rad)");
     fOpeningAngleGen_DeltaOpeningAngleUS ->GetYaxis()->SetTitle("#theta_{ee,US}^{rec} - #theta_{ee,US}^{gen} (rad)");
-    fOpeningAngleGen_DeltaOpeningAngleLS ->GetXaxis()->SetTitle("#theta_{ee,LS}^{gen} (rad)"); 
-    fOpeningAngleGen_DeltaOpeningAngleLS ->GetYaxis()->SetTitle("#theta_{ee,LS}^{rec} - #theta_{ee,LS}^{gen} (rad)");   
+    fOpeningAngleGen_DeltaOpeningAngleLS ->GetXaxis()->SetTitle("#theta_{ee,LS}^{gen} (rad)");
+    fOpeningAngleGen_DeltaOpeningAngleLS ->GetYaxis()->SetTitle("#theta_{ee,LS}^{rec} - #theta_{ee,LS}^{gen} (rad)");
 
 
     fPGen_DeltaP_pions                         = static_cast<TH2D*> (fPGen_DeltaP                         ->Clone(Form("%s_pions",fPGen_DeltaP                         ->GetName())));
@@ -549,7 +573,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fPhiGen_DeltaPhi_pions                     = static_cast<TH2D*> (fPhiGen_DeltaPhi                     ->Clone(Form("%s_pions",fPhiGen_DeltaPhi                     ->GetName())));
     fOpeningAngleGen_DeltaOpeningAngleUS_pions = static_cast<TH2D*> (fOpeningAngleGen_DeltaOpeningAngleUS ->Clone(Form("%s_pions",fOpeningAngleGen_DeltaOpeningAngleUS ->GetName())));
     fOpeningAngleGen_DeltaOpeningAngleLS_pions = static_cast<TH2D*> (fOpeningAngleGen_DeltaOpeningAngleLS ->Clone(Form("%s_pions",fOpeningAngleGen_DeltaOpeningAngleLS ->GetName())));
-    
+
     resolutionList->Add(fDeltaPhiAll);
     resolutionList->Add(fDeltaPhi_alpha);
     resolutionList->Add(fDeltaPhi_pt);
@@ -557,7 +581,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fDeltaPhi_MCcharge);
     resolutionList->Add(fDeltaPhi_charge);
     resolutionList->Add(fDeltaPhi);
-    
+
     resolutionList->Add(fPGen_DeltaP);
     resolutionList->Add(fPtGen_DeltaPt);
     resolutionList->Add(fEtaGen_DeltaEta);
@@ -565,16 +589,16 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fPhiGen_DeltaPhi);
     resolutionList->Add(fOpeningAngleGen_DeltaOpeningAngleUS);
     resolutionList->Add(fOpeningAngleGen_DeltaOpeningAngleLS);
-    
+
     resolutionList->Add(fPGen_DeltaP_pions);
     resolutionList->Add(fPtGen_DeltaPt_pions);
     resolutionList->Add(fEtaGen_DeltaEta_pions);
     resolutionList->Add(fThetaGen_DeltaTheta_pions);
     resolutionList->Add(fPhiGen_DeltaPhi_pions);
     resolutionList->Add(fOpeningAngleGen_DeltaOpeningAngleUS_pions);
-    resolutionList->Add(fOpeningAngleGen_DeltaOpeningAngleLS_pions);  
-    
-   
+    resolutionList->Add(fOpeningAngleGen_DeltaOpeningAngleLS_pions);
+
+
     Int_t bins[4] = {50,60,100,100};
     Double_t min[4] = { 0., 0., 0., 0. };
     Double_t max[4] = { 5., 6., 2., 2. };
@@ -589,64 +613,64 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fMgen_PtGen_mRes_ptRes->GetAxis(1)->SetName("pt_gen");
     fMgen_PtGen_mRes_ptRes->GetAxis(2)->SetName("mResolution");
     fMgen_PtGen_mRes_ptRes->GetAxis(3)->SetName("ptResolution");
-    
+
     resolutionList->Add(fMgen_PtGen_mRes_ptRes);
   }
-  
+
   TList *singleEffList = new TList();
   singleEffList->SetName("electronEfficiency");
   singleEffList->SetOwner();
-  
+
   TList *singleEffGenList = new TList();
   singleEffGenList->SetName("generatedBinning");
   singleEffGenList->SetOwner();
-  
+
   singleEffGenList->Add(fNgen_Ele);
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffGenList->Add(fvReco_Ele.at(iCut));
-  if(fCalcEfficiencyPoslabel)   
-    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+  if(fCalcEfficiencyPoslabel)
+    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffGenList->Add(fvReco_Ele_poslabel.at(iCut));
-  
-  singleEffGenList->Add(fNgen_Pos);     
+
+  singleEffGenList->Add(fNgen_Pos);
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     singleEffGenList->Add(fvReco_Pos.at(iCut));
-  if(fCalcEfficiencyPoslabel) 
-    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+  if(fCalcEfficiencyPoslabel)
+    for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffGenList->Add(fvReco_Pos_poslabel.at(iCut));
-  
+
   singleEffList->Add(singleEffGenList);
-  
+
   if(fCalcEfficiencyRec){
     if(fPResArr)        {
-      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_P","",1000,-10.,10.);    
-      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_P","",1000,-10.,10.);
-      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_P","",1000,-10.,10.);    
-      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_P","",1000,-10.,10.);
+      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_P","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     }
     else if(fPtResArr)  {
-      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_Pt","",1000,-10.,10.);    
-      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_Pt","",1000,-10.,10.);
-      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_Pt","",1000,-10.,10.);    
-      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_Pt","",1000,-10.,10.);
+      fSmearing_Ele[0] = new TH1D("smearingValues1_Ele_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Ele[1] = new TH1D("smearingValues2_Ele_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Pos[0] = new TH1D("smearingValues1_Pos_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+      fSmearing_Pos[1] = new TH1D("smearingValues2_Pos_Pt","",fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     }
     if(fThetaResArr)    {
-      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_theta","",300,-1.5,1.5); 
-      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_theta","",300,-1.5,1.5);
-      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_theta","",300,-1.5,1.5); 
-      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_theta","",300,-1.5,1.5);
+      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_theta","",fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
     }
     else if(fEtaResArr) {
-      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_eta","",300,-1.5,1.5); 
-      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_eta","",300,-1.5,1.5);
-      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_eta","",300,-1.5,1.5); 
-      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_eta","",300,-1.5,1.5);
+      fSmearing_Ele[2] = new TH1D("smearingValues1_Ele_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+      fSmearing_Ele[3] = new TH1D("smearingValues2_Ele_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+      fSmearing_Pos[2] = new TH1D("smearingValues1_Pos_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+      fSmearing_Pos[3] = new TH1D("smearingValues2_Pos_eta","",fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
     }
     if(fPhiResArr)      {
-      fSmearing_Ele[4] = new TH1D("smearingValues1_Ele_phi","",300,-1.5,1.5); 
-      fSmearing_Ele[5] = new TH1D("smearingValues2_Ele_phi","",300,-1.5,1.5);
-      fSmearing_Pos[4] = new TH1D("smearingValues1_Pos_phi","",300,-1.5,1.5); 
-      fSmearing_Pos[5] = new TH1D("smearingValues2_Pos_phi","",300,-1.5,1.5);
+      fSmearing_Ele[4] = new TH1D("smearingValues1_Ele_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+      fSmearing_Ele[5] = new TH1D("smearingValues2_Ele_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+      fSmearing_Pos[4] = new TH1D("smearingValues1_Pos_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+      fSmearing_Pos[5] = new TH1D("smearingValues2_Pos_phi","",fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
     }
     TList *singleEffRecList = new TList();
     singleEffRecList->SetName("reconstructedBinning");
@@ -660,28 +684,28 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     if(fPResArr || fPtResArr)     { smearingList->Add(fSmearing_Pos[0]); smearingList->Add(fSmearing_Pos[1]);}
     if(fThetaResArr || fEtaResArr){ smearingList->Add(fSmearing_Pos[2]); smearingList->Add(fSmearing_Pos[3]);}
     if(fPhiResArr)                { smearingList->Add(fSmearing_Pos[4]); smearingList->Add(fSmearing_Pos[5]);}
-    if(smearingList->GetEntries() > 0) 
+    if(smearingList->GetEntries() > 0)
       singleEffRecList->Add(smearingList);
-      
+
     singleEffRecList->Add(fNgen_Rec_Ele);
     singleEffRecList->Add(fNgen2_Rec_Ele);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffRecList->Add(fvReco_Rec_Ele.at(iCut));
-    if(fCalcEfficiencyPoslabel)   
-      for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+    if(fCalcEfficiencyPoslabel)
+      for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
         singleEffRecList->Add(fvReco_Rec_Ele_poslabel.at(iCut));
-    
+
     singleEffRecList->Add(fNgen_Rec_Pos);
     singleEffRecList->Add(fNgen2_Rec_Pos);
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
       singleEffRecList->Add(fvReco_Rec_Pos.at(iCut));
-    if(fCalcEfficiencyPoslabel) 
-      for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) 
+    if(fCalcEfficiencyPoslabel)
+      for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
         singleEffRecList->Add(fvReco_Rec_Pos_poslabel.at(iCut));
-        
-    singleEffList->Add(singleEffRecList);    
+
+    singleEffList->Add(singleEffRecList);
   }
-  
+
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){
     if(fvDoPrefilterEff.at(iCut)){
       singleEffList->Add(fvAllPionsForRej.at(iCut));
@@ -689,26 +713,26 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       singleEffList->Add(fvPionsRejByUnlike.at(iCut));
     }
   }
-    
+
     // be really careful if you need to implement this (see comments in UserExec):
     //    fOutputList->Add(fvReco_Pio.at(iCut));
     //    fOutputList->Add(fvReco_Kao.at(iCut));
     //    fOutputList->Add(fvReco_Pro.at(iCut));
-  
+
   fOutputList = new TList();
   fOutputList->SetName(GetName());
   fOutputList->SetOwner();
-  
+
   if(singleEffList)  fOutputList->Add(singleEffList);
   if(pairEffList)    fOutputList->Add(pairEffList);
   if(resolutionList) fOutputList->Add(resolutionList);
 
   PostData(1, fOutputList);
-  
+
   OpenFile(2, "RECREATE");
   CreateSupportHistos();
-  PostData(2, fOutputListSupportHistos);  
-  
+  PostData(2, fOutputListSupportHistos);
+
   OpenFile(3, "RECREATE");
   //Define Tree for Track Values
   tracksT = new TTree("tracksT","tracksT");
@@ -759,7 +783,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
   tracksT->Branch("selectedByCut",      &fSelectedByCut);
   tracksT->Branch("selectedByExtraCut", &fSelectedByExtraCut);
   PostData(3, tracksT);
-  
+
   OpenFile(4, "RECREATE");
   if (!fEventStat){
     fEventStat=new TH1D("hEventStat","Event statistics",kEventStatBins,0,kEventStatBins);
@@ -783,24 +807,24 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   mcEvent = AliDielectronMC::Instance()->GetMCEvent();
   if (!mcEvent) { Printf("ERROR: mcEvent not available"); return; }
   AliDielectronVarManager::SetEvent(mcEvent);
-  
+
   AliESDInputHandler *inputHandlerESD = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!inputHandlerESD) { Printf("ERROR: Could not get ESDInputHandler\n"); }
   else fESD = (AliESDEvent*)inputHandlerESD->GetEvent();
   if (!fESD) { Printf("ERROR: fESD not available"); return; }
-  
+
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
-  
+
 
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
   if(fPostPIDCntrdCorrITS) AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
   if(fPostPIDWdthCorrITS)  AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
-  
+
   AliStack *fStack = mcEvent->Stack();
-  
+
   Bool_t isESD=kTRUE;
   Bool_t isAOD=kFALSE; //currently not supported!
   // taken from AliAnalysisTaskMultiDielectron::UserExec():
@@ -829,7 +853,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   }
   // After physics selection
   fEventStat->Fill(kPhysicsSelectionEvents);
-  
+
   // Event filter
   if (fEventFilter) {
     if (!fEventFilter->IsSelected(fESD)) return; // fESD instead of 'InputEvent()'
@@ -847,16 +871,16 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     vtxZGlobal = vtxESD->GetZ(); // was GetZv(); until Jan 2015
     nCtrb = vtxESD->GetNContributors();
   }
-  
+
   // After event filter
   fEventStat->Fill(kFilteredEvents);
   PostData(4,fEventStat);
-  
-  
+
+
 //  ++fEventcount;
 //  Printf("__________ next Event selected ( %i ) __________", fEventcount);
   Int_t kRunNumber = fESD->GetRunNumber();
-  
+
   // for selected events, fill some histos:
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(0)))->Fill(0.);
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(1)))->Fill(centralityF);
@@ -877,7 +901,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     if (fvDoPrefilterEff.at(iCut) == kTRUE) atleastOnePrefilterSetting=kTRUE;
     fvAtleastOneEleExtra_perCut.push_back(kFALSE); // initialize vector contents
   }
-  
+
   //
   // store all accepted track IDs in vectors to use them for the Prefilter efficiency determination.
   //
@@ -885,14 +909,14 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   vecTrkID.push_back(0); // first element is neccessary to hook track vector into cut vector.
   std::vector< std::vector<Int_t> > vecEleCand_perCut; // one vector per cut setting
   for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut) { vecEleCand_perCut.push_back(vecTrkID); }
-  
-  
+
+
   Int_t NEleSelected = 0;
-  
+
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
     //AliStack *fStack = mcEvent->Stack();
-    
+
     for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
       // New:
       // Select electrons based on an attached AliDielectronSignalMC.
@@ -900,13 +924,13 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       //
       Bool_t truth1 = AliDielectronMC::Instance()->IsMCTruth(iMCtrack, (AliDielectronSignalMC*)fSignalsMC->At(0), 1);
       if (!truth1) continue;
-      
+
       AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iMCtrack));
       if (!mctrack) continue;
       Double_t mcP     = mctrack->P();
-      Double_t mcPt    = mctrack->Pt(); 
+      Double_t mcPt    = mctrack->Pt();
       Double_t mcEta   = mctrack->Eta();
-      Double_t mcTheta = mctrack->Theta(); 
+      Double_t mcTheta = mctrack->Theta();
       Double_t mcPhi   = mctrack->Phi();
       if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
       if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
@@ -922,17 +946,17 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Int_t abslabel = TMath::Abs( track->GetLabel() );
         if(abslabel != iMCtrack) continue;
         if(mctrack->Charge()/3 != track->Charge()) continue;
-        
+
         Double_t trackPt  = track->Pt();
         Double_t trackEta = track->Eta();
         Double_t trackPhi = track->Phi();
-        
-        if(fCalcEfficiencyRec && !bFilled1){ 
-          if(mctrack->Charge() < 0) fNgen_Rec_Ele ->Fill(trackPt,trackEta,trackPhi); 
+
+        if(fCalcEfficiencyRec && !bFilled1){
+          if(mctrack->Charge() < 0) fNgen_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
           else                      fNgen_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
           bFilled1 = kTRUE;
         }
-        
+
         for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
           //cutting logic taken from AliDielectron::FillTrackArrays()
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
@@ -970,8 +994,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
         } // cut loop
         if(fSelectedByCut==0) continue;// only go on if the track survived at least 1 of the cut settings!
-        if(fCalcEfficiencyRec && !bFilled2){ 
-          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi); 
+        if(fCalcEfficiencyRec && !bFilled2){
+          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
           else                      fNgen2_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
           bFilled2 = kTRUE;
         }
@@ -1020,16 +1044,16 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         if(mother){
           pdgmotherT = mother->PdgCode();
           labelgrandmotherT = mother->Particle()->GetFirstMother();
-        }  
+        }
         if(labelgrandmotherT>=0)
           grandmother = (dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelgrandmotherT)));
-        if(grandmother) 
+        if(grandmother)
           pdggrandmotherT = grandmother->PdgCode();
-    
+
         if(fWriteTree) // variable 'fSelectedByCut' is stored in the Tree to distinguish the cut settings...
           tracksT->Fill(); //Fill Track Tree
-    
-        if(fSelectedByCut & 1<<fSupportedCutInstance){ // only go on if the track survived in the cut setting for which you want to fill the support histograms. 
+
+        if(fSelectedByCut & 1<<fSupportedCutInstance){ // only go on if the track survived in the cut setting for which you want to fill the support histograms.
           NEleSelected++;
           Float_t pESD = track->P();
           // for selected tracks, fill some histos:
@@ -1109,7 +1133,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
           mcPhi = mcPhi + phiSmearing;
         }
-        if(fThetaResArr){ 
+        if(fThetaResArr){
           Double_t thetaSmearing = GetSmearing(fThetaResArr,mcTheta);
           if(mctrack->Charge() < 0){
             if(!bFilled1) fSmearing_Ele[2]->Fill(thetaSmearing);
@@ -1133,7 +1157,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
           mcEta = mcEta + etaSmearing;
         }
-        if(fPResArr){  
+        if(fPResArr){
           Double_t pSmearing = GetSmearing(fPResArr,mcP);
           if(mctrack->Charge() < 0){
             if(!bFilled1) fSmearing_Ele[0]->Fill(pSmearing);
@@ -1157,23 +1181,23 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
           mcPt = mcPt + ptSmearing;
         }
-        
-        if(mctrack->Charge() < 0){ 
+
+        if(mctrack->Charge() < 0){
           if(!bFilled1) fNgen_Rec_Ele ->Fill(mcPt,mcEta,mcPhi);
-          if(!bFilled2) fNgen2_Rec_Ele->Fill(mcPt,mcEta,mcPhi); 
-        }  
+          if(!bFilled2) fNgen2_Rec_Ele->Fill(mcPt,mcEta,mcPhi);
+        }
         else{
           if(!bFilled1) fNgen_Rec_Pos ->Fill(mcPt,mcEta,mcPhi);
           if(!bFilled2) fNgen2_Rec_Pos->Fill(mcPt,mcEta,mcPhi);
         }
       }
-      
+
     } // mc track loop
-    
+
     //(dynamic_cast<TH2D *>(fOutputListSupportHistos->At(2)))->Fill(centralityF,0);//hNTrksEvent_cent
     (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(3)))->Fill(centralityF,NEleSelected);//hNEleEvent_cent
     if(atleastOnePrefilterSetting && atleastOneEleExtraSelected) CalcPrefilterEff(mcEvent, vecEleCand_perCut, fvAtleastOneEleExtra_perCut);
-    
+
     if(fDoPairing){  // calculate pair efficiency from signal pairs
       TLorentzVector l1, l2;
       UInt_t cutMaskKine=0, selectedMaskKine=(1<<fKineTrackCuts->GetCuts()->GetEntries())-1;
@@ -1209,10 +1233,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             fNgenPairs_diffMothers->Fill(mee,ptee);
         } // positron loop
       } // electron loop
-      
+
       for(Int_t iTrack1 = 0; iTrack1 < fESD->GetNumberOfTracks(); iTrack1++){
         AliESDtrack *track1 = fESD->GetTrack(iTrack1);
-        if(!track1){ Printf("ERROR: Could not receive track1 %d", iTrack1); continue; }  
+        if(!track1){ Printf("ERROR: Could not receive track1 %d", iTrack1); continue; }
         Int_t label1 = track1->GetLabel();
         AliMCParticle *p1 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label1)));
         if(!p1){ Printf("no MCtrack: %d", TMath::Abs(label1)); continue; }
@@ -1232,7 +1256,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         for(Int_t iTrack2 = 0; iTrack2 < fESD->GetNumberOfTracks(); iTrack2++){
           if(iTrack1 == iTrack2) continue;
           AliESDtrack *track2 = fESD->GetTrack(iTrack2);
-          if(!track2){ Printf("ERROR: Could not receive track2 %d", iTrack2); continue; }  
+          if(!track2){ Printf("ERROR: Could not receive track2 %d", iTrack2); continue; }
           Int_t label2 = track2->GetLabel();
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(TMath::Abs(label2)));
           if(!p2){ Printf("no MCtrack: %d", TMath::Abs(label2)); continue; }
@@ -1258,19 +1282,19 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             }
             if(p1->GetMother() == p2->GetMother()){
               fvRecoPairs_sameMother.at(iCut)->Fill(mee,ptee);
-              if(label1 > 0 && label2 > 0) 
+              if(label1 > 0 && label2 > 0)
                 fvRecoPairs_poslabel_sameMother.at(iCut)->Fill(mee,ptee);
             }
             else{
               fvRecoPairs_diffMothers.at(iCut)->Fill(mee,ptee);
-              if(label1 > 0 && label2 > 0) 
+              if(label1 > 0 && label2 > 0)
                 fvRecoPairs_poslabel_diffMothers.at(iCut)->Fill(mee,ptee);
             }
           } // cut loop
-        } // positron loop 
+        } // positron loop
       } // electron loop
     } // end of pair efficiency calculation
-    
+
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
       UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
       Int_t Nprimaries = mcEvent->GetNumberOfPrimaries();
@@ -1294,7 +1318,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         }
         Double_t deltaPhi = TMath::Abs(part->Phi() - track->Phi());
         fDeltaPhiAll->Fill(deltaPhi);
-        if(track->Charge() != part->Charge()/3){ 
+        if(track->Charge() != part->Charge()/3){
           fDeltaPhi_alpha->Fill(deltaPhi,track->GetAlpha());
           fDeltaPhi_pt->Fill(deltaPhi,track->Pt());
           fDeltaPhi_eta->Fill(deltaPhi,track->Eta());
@@ -1329,11 +1353,11 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           Double_t OpeningAngleGen = l1Gen.Angle(l2Gen.Vect());
           Double_t OpeningAngleRec = l1Rec.Angle(l2Rec.Vect());
           Double_t OpeningAngleResolution = (OpeningAngleGen > 0.) ? OpeningAngleRec/OpeningAngleGen : -1.;
-     
+
           Double_t vals[4];
           vals[0] = (l1Gen+l2Gen).M();
           vals[2] = (vals[0] > 0.) ? (l1Rec+l2Rec).M()/vals[0] : -1.;
-          
+
           vals[1] = (l1Gen+l2Gen).Pt();
           vals[3] = (vals[1] > 0.) ? (l1Rec+l2Rec).Pt()/vals[1] : -1.;
           if(pdg == 11 && pdg2 == 11){
@@ -1343,13 +1367,13 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             }
             else
               fOpeningAngleGen_DeltaOpeningAngleLS ->Fill(OpeningAngleGen,OpeningAngleRec - OpeningAngleGen);
-          } 
+          }
           else if(pdg == 211 && pdg2 == 211){
             if(part->Charge() != part2->Charge())
               fOpeningAngleGen_DeltaOpeningAngleUS_pions ->Fill(OpeningAngleGen,OpeningAngleRec - OpeningAngleGen);
             else
               fOpeningAngleGen_DeltaOpeningAngleLS_pions ->Fill(OpeningAngleGen,OpeningAngleRec - OpeningAngleGen);
-            
+
           }
         } // pairing loop
         Double_t mcPt   = part->Pt();
@@ -1362,7 +1386,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           fEtaGen_DeltaEta     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta ->Fill(part->Theta(),track->Theta() - part->Theta());
           if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
-        } 
+        }
         else if(pdg == 211){
           if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP_pions   ->Fill(mcP,recP - mcP);
           if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt_pions ->Fill(mcPt,recPt - mcPt);
@@ -1378,7 +1402,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra) 
+void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLocal, const std::vector< std::vector<Int_t> > & vvEleCand, const std::vector<Bool_t> & vbEleExtra)
 {
   /// Determination of random electron rejection efficiency due to pair-prefiltering (used for photon conversion + Dalitz rejection).
   /// It is estimated by pairing a sample of "testparticles" (using primary, non-injected, charged pions) with the electrons of the prefilter sample (stored in 'vvEleCand').
@@ -1389,23 +1413,23 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
   /// The prefilter pair cuts are applied to these random pairs. All and rejected testparticles are stored in 3D histograms.
   /// The advantage of this method is a huge number of random pairs, the disadvantage may be a systematic difference in the implicitly available number of pairs...
   /// (by Patrick)
-  
+
   Int_t nMCtracks  = mcEventLocal->GetNumberOfTracks();
   AliStack *fStack = mcEventLocal->Stack();
   Double_t eleMass = AliPID::ParticleMass(AliPID::kElectron);
-  
+
   for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++)
   {
     // select only primary, non-injected, charged pions:
     if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
     AliMCParticle *mcPion = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(iMCtrack));
     if( TMath::Abs(mcPion->PdgCode()) !=  211 ) continue;
-    
+
     Double_t mcPt(-1.),mcEta(-9.),mcPhi(-9.);
     mcPt = mcPion->Pt(); mcEta = mcPion->Eta(); mcPhi = mcPion->Phi();
     if(mcPt  < fPtMinGEN  || mcPt  > fPtMaxGEN)  continue;
     if(mcEta < fEtaMinGEN || mcEta > fEtaMaxGEN) continue;
-    
+
     // need TLorentzVectors for the pairing
 		Double_t vMomPi[3]; mcPion->PxPyPz(vMomPi);
     Double_t momPi    = mcPion->P();
@@ -1413,7 +1437,7 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
     TLorentzVector dau1;
     dau1.SetPxPyPzE(vMomPi[0],vMomPi[1],vMomPi[2],energyPi);
     Int_t chargePion = mcPion->Charge();
-    
+
     // loop over all cut settings
     for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut)
     {
@@ -1423,10 +1447,10 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
       // flags for the pion
       Bool_t rejByAllSigns = kFALSE;
       Bool_t rejByUnlike   = kFALSE;
-      
-      // pair the testparticle with all selected electron candidates and check for close pairs. 
+
+      // pair the testparticle with all selected electron candidates and check for close pairs.
       // pairing starts at vec[1] because vec[0] is always set to 0, since this is needed to initialize the 2D vector (see UserExec).
-      for (UInt_t iEle=1; iEle<vvEleCand.at(iCut).size(); iEle++) 
+      for (UInt_t iEle=1; iEle<vvEleCand.at(iCut).size(); iEle++)
       {
         AliMCParticle *mcEle = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(vvEleCand.at(iCut).at(iEle)));
         Double_t vMomEle[3]; mcEle->PxPyPz(vMomEle);
@@ -1435,12 +1459,12 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
         TLorentzVector dau2;
         dau2.SetPxPyPzE(vMomEle[0],vMomEle[1],vMomEle[2],energyEle);
         Int_t chargeEle = mcEle->Charge();
-        
+
         Double_t mee   = (dau1+dau2).M();
         Double_t ptee  = (dau1+dau2).Pt();
         Double_t theta = dau1.Angle(dau2.Vect());
         Double_t phiv  = PhivPair(fESD->GetMagneticField(), chargePion, chargeEle, dau1.Vect(), dau2.Vect());
-        
+
         (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(51)))->Fill(mee,ptee);//hMeePtee
         (dynamic_cast<TH3D *>(fOutputListSupportHistos->At(52)))->Fill(mee,phiv,theta);//hMeePhiVOpen
         (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(53)))->Fill(mee,theta);//hMeeOpen
@@ -1448,7 +1472,7 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
         (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(55)))->Fill(ptee,theta);//hPteeOpen
         (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(56)))->Fill(ptee,phiv);//hPteePhiV
         (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(57)))->Fill(theta,phiv);//hOpenPhiV
-        
+
         // tag the pion as rejected, if the pair falls within following cut:
         if ( (fvRejCutMee.at(iCut)   > 0. || fvRejCutTheta.at(iCut) > 0. || fvRejCutPhiV.at(iCut) < 3.14) // at least one cut must be enabled
             && (mee   < fvRejCutMee.at(iCut)   || fvRejCutMee.at(iCut)   < 0.) // -> within cut or cut disabled
@@ -1460,13 +1484,13 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
           if (chargePion!=chargeEle) rejByUnlike = kTRUE;
         }
       } //electron loop
-      
+
       //fill histograms per cut setting to determine rejection efficiency
       fvAllPionsForRej.at(iCut)->Fill(mcPt,mcEta,mcPhi); //reference histogram (denominator)
       if (rejByAllSigns) fvPionsRejByAllSigns.at(iCut)->Fill(mcPt,mcEta,mcPhi);
       if (rejByUnlike)   fvPionsRejByUnlike.at(iCut)->Fill(mcPt,mcEta,mcPhi);
     } //cut loop
-    
+
   } //pion loop
 }
 //______________________________________________
@@ -1474,12 +1498,12 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
 {
   /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
   /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
-  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle 
-  /// always end up as pair in "cowboy" configuration. The function as defined here then 
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle
+  /// always end up as pair in "cowboy" configuration. The function as defined here then
   /// returns values close to pi.
-  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up 
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up
   /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
-  /// This expected ambiguity is not seen due to sorting of track arrays in this framework. 
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework.
   /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
   /// from PWGDQ/dielectron/AliDielectronPair.cxx
 
@@ -1507,7 +1531,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
       //d2Q=charge1;
     }
   }
-  
+
   if (charge1*charge2 > 0.) { // Like Sign
     if(MagField<0){ // inverted behaviour
       if(d1Q>0){
@@ -1533,7 +1557,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
         px1 = fD1.Px();
         py1 = fD1.Py();
         pz1 = fD1.Pz();
-        
+
         px2 = fD2.Px();
         py2 = fD2.Py();
         pz2 = fD2.Pz();
@@ -1541,7 +1565,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
         px1 = fD2.Px();
         py1 = fD2.Py();
         pz1 = fD2.Pz();
-        
+
         px2 = fD1.Px();
         py2 = fD1.Py();
         pz2 = fD1.Pz();
@@ -1551,7 +1575,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
         px1 = fD2.Px();
         py1 = fD2.Py();
         pz1 = fD2.Pz();
-        
+
         px2 = fD1.Px();
         py2 = fD1.Py();
         pz2 = fD1.Pz();
@@ -1559,7 +1583,7 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
         px1 = fD1.Px();
         py1 = fD1.Py();
         pz1 = fD1.Pz();
-        
+
         px2 = fD2.Px();
         py2 = fD2.Py();
         pz2 = fD2.Pz();
@@ -1571,50 +1595,50 @@ Double_t AliAnalysisTaskElectronEfficiency::PhivPair(Double_t MagField, Int_t ch
   Double_t py = py1+py2;
   Double_t pz = pz1+pz2;
   Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
-  
-  //unit vector of (pep+pem) 
+
+  //unit vector of (pep+pem)
   Double_t pl = dppair;
   Double_t ux = px/pl;
   Double_t uy = py/pl;
   Double_t uz = pz/pl;
   Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
-  Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy); 
-  
+  Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy);
+
   //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
-  //Double_t ptep = iep->Px()*ax + iep->Py()*ay; 
-  //Double_t ptem = iem->Px()*ax + iem->Py()*ay; 
-  
+  //Double_t ptep = iep->Px()*ax + iep->Py()*ay;
+  //Double_t ptem = iem->Px()*ax + iem->Py()*ay;
+
   Double_t pxep = px1;
   Double_t pyep = py1;
   Double_t pzep = pz1;
   Double_t pxem = px2;
   Double_t pyem = py2;
   Double_t pzem = pz2;
-  
-  //vector product of pep X pem 
-  Double_t vpx = pyep*pzem - pzep*pyem; 
-  Double_t vpy = pzep*pxem - pxep*pzem; 
-  Double_t vpz = pxep*pyem - pyep*pxem; 
-  Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz); 
-  //Double_t thev = acos(vpz/vp); 
-  
-  //unit vector of pep X pem 
-  Double_t vx = vpx/vp; 
-  Double_t vy = vpy/vp; 
-  Double_t vz = vpz/vp; 
-  
-  //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz) 
-  Double_t wx = uy*vz - uz*vy; 
-  Double_t wy = uz*vx - ux*vz; 
-  //Double_t wz = ux*vy - uy*vx; 
-  //Double_t wl = sqrt(wx*wx+wy*wy+wz*wz); 
-  // by construction, (wx,wy,wz) must be a unit vector. 
-  // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them 
+
+  //vector product of pep X pem
+  Double_t vpx = pyep*pzem - pzep*pyem;
+  Double_t vpy = pzep*pxem - pxep*pzem;
+  Double_t vpz = pxep*pyem - pyep*pxem;
+  Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz);
+  //Double_t thev = acos(vpz/vp);
+
+  //unit vector of pep X pem
+  Double_t vx = vpx/vp;
+  Double_t vy = vpy/vp;
+  Double_t vz = vpz/vp;
+
+  //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz)
+  Double_t wx = uy*vz - uz*vy;
+  Double_t wy = uz*vx - ux*vz;
+  //Double_t wz = ux*vy - uy*vx;
+  //Double_t wl = sqrt(wx*wx+wy*wy+wz*wz);
+  // by construction, (wx,wy,wz) must be a unit vector.
+  // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them
   // should be small if the pair is conversion.
   // this function then returns values close to pi!
-  Double_t cosPhiV = wx*ax + wy*ay; 
-  Double_t phiv = TMath::ACos(cosPhiV); 
-  
+  Double_t cosPhiV = wx*ax + wy*ay;
+  Double_t phiv = TMath::ACos(cosPhiV);
+
   return phiv;
 }
 //________________________________________________________________________
@@ -1634,9 +1658,9 @@ AliAnalysisTaskElectronEfficiency::~AliAnalysisTaskElectronEfficiency()
 {
   /// Destructor
   Printf(" Now running: ~Destructor");
-  
+
   if (fSignalsMC) delete fSignalsMC;
-  
+
   Printf("deleting TList");
   if (fOutputList) {
     fOutputList->Clear();
@@ -1644,13 +1668,13 @@ AliAnalysisTaskElectronEfficiency::~AliAnalysisTaskElectronEfficiency()
   }
   Printf("setting pointer to 0x0");
   fOutputList=0x0;
-  
+
   if (fOutputListSupportHistos) {
     fOutputListSupportHistos->Clear();
     delete fOutputListSupportHistos;
   }
   fOutputListSupportHistos=0x0;
-  
+
   // other objects (pointers) may be deleted like this:
   //  if (fTrackCutsITSSA)  delete fTrackCutsITSSA;
   //  fTrackCutsITSSA=0x0;
@@ -1669,12 +1693,12 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   TH3D *hNreco_Ele = new TH3D(Form("Nreco_Ele_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   hNreco_Ele->Sumw2();
   fvReco_Ele.push_back(hNreco_Ele);
- 
+
   TH3D *hNreco_Pos          = new TH3D(Form("Nreco_Pos_%s",name.Data()),         "",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   hNreco_Pos->Sumw2();
   fvReco_Pos.push_back(hNreco_Pos);
-  
-  if(fCalcEfficiencyPoslabel){ 
+
+  if(fCalcEfficiencyPoslabel){
     TH3D *hNreco_Ele_poslabel = new TH3D(Form("Nreco_Ele_poslabel_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     hNreco_Ele_poslabel->Sumw2();
     fvReco_Ele_poslabel.push_back(hNreco_Ele_poslabel);
@@ -1682,26 +1706,26 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
     hNreco_Pos_poslabel->Sumw2();
     fvReco_Pos_poslabel.push_back(hNreco_Pos_poslabel);
   }
-  
+
   if(fCalcEfficiencyRec){
     TH3D *hNreco_Rec_Ele = new TH3D(Form("Nreco_Rec_Ele_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
     hNreco_Rec_Ele->Sumw2();
     fvReco_Rec_Ele.push_back(hNreco_Rec_Ele);
-    
-    TH3D *hNreco_Rec_Pos = new TH3D(Form("Nreco_Rec_Pos_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins); 
-    hNreco_Rec_Pos->Sumw2();    
-    fvReco_Rec_Pos.push_back(hNreco_Rec_Pos);      
-    if(fCalcEfficiencyPoslabel){ 
+
+    TH3D *hNreco_Rec_Pos = new TH3D(Form("Nreco_Rec_Pos_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
+    hNreco_Rec_Pos->Sumw2();
+    fvReco_Rec_Pos.push_back(hNreco_Rec_Pos);
+    if(fCalcEfficiencyPoslabel){
       TH3D *hNreco_Rec_Ele_poslabel = new TH3D(Form("Nreco_Rec_Ele_poslabel_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
       hNreco_Rec_Ele_poslabel->Sumw2();
       fvReco_Rec_Ele_poslabel.push_back(hNreco_Rec_Ele_poslabel);
-      
+
       TH3D *hNreco_Rec_Pos_poslabel = new TH3D(Form("Nreco_Rec_Pos_poslabel_%s",name.Data()),"",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
       hNreco_Rec_Pos_poslabel->Sumw2();
       fvReco_Rec_Pos_poslabel.push_back(hNreco_Rec_Pos_poslabel);
-    }  
+    }
   }
-  
+
   // one needs the histogram 'hAllPionsForRej' for each cutInstance independently, because empty events may differ between the cutsets which run together.
   TH3D *hAllPionsForRej = new TH3D(Form("AllPionsForRej_%s",name.Data()),Form("AllPionsForRej_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   TH3D *hNPionsRejByAllSigns = new TH3D(Form("NPionsRejByAllSigns_%s",name.Data()),Form("NPionsRejByAllSigns_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1709,24 +1733,24 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
   fvAllPionsForRej.push_back(hAllPionsForRej);
   fvPionsRejByAllSigns.push_back(hNPionsRejByAllSigns);
   fvPionsRejByUnlike.push_back(hNPionsRejByUnlike);
-  
-  
+
+
   if(fDoPairing){
     TH2D *hNrecoPairs_sameMother          = new TH2D(Form("NrecoPairs_sameMother_%s",         name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
     hNrecoPairs_sameMother->Sumw2();
     fvRecoPairs_sameMother          .push_back(hNrecoPairs_sameMother);
-    
+
     TH2D *hNrecoPairs_poslabel_sameMother = new TH2D(Form("NrecoPairs_poslabel_sameMother_%s",name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
     hNrecoPairs_poslabel_sameMother->Sumw2();
     fvRecoPairs_poslabel_sameMother .push_back(hNrecoPairs_poslabel_sameMother);
-    
+
     TH2D *hNrecoPairs_diffMothers          = new TH2D(Form("NrecoPairs_differentMothers_%s",         name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
     hNrecoPairs_diffMothers->Sumw2();
-    fvRecoPairs_diffMothers         .push_back(hNrecoPairs_diffMothers);    
-    
+    fvRecoPairs_diffMothers         .push_back(hNrecoPairs_diffMothers);
+
     TH2D *hNrecoPairs_poslabel_diffMothers = new TH2D(Form("NrecoPairs_poslabel_differentMothers_%s",name.Data()),"",fNmeeBins,fMeeBins,fNpteeBins,fPteeBins);
-    hNrecoPairs_poslabel_diffMothers->Sumw2(); 
-    fvRecoPairs_poslabel_diffMothers.push_back(hNrecoPairs_poslabel_diffMothers);    
+    hNrecoPairs_poslabel_diffMothers->Sumw2();
+    fvRecoPairs_poslabel_diffMothers.push_back(hNrecoPairs_poslabel_diffMothers);
   }
   // be really careful if you need to implement this (see comments in UserExec):
   //  TH3D *hNreco_Pio = new TH3D(Form("Nreco_Pio_%s",name.Data()),Form("Nreco_Pio_%s",name.Data()),fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1740,7 +1764,7 @@ void AliAnalysisTaskElectronEfficiency::CreateHistograms(TString names, Int_t cu
 void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
 {
 	Printf(" Now running: CreateHistoGen()");
-  
+
   Printf("fNptBins=%i\t fPtBins[1]=%f\t fNetaBins=%i\t fEtaBins[1]=%f\t fNphiBins=%i\t fPhiBins[1]=%f\t ",fNptBins,fPtBins[1],fNetaBins,fEtaBins[1],fNphiBins,fPhiBins[1]);
   fNgen_Ele                 = new TH3D("Ngen_electrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
   fNgen_Pos                 = new TH3D("Ngen_positrons","",fNptBins,fPtBins,fNetaBins,fEtaBins,fNphiBins,fPhiBins);
@@ -1760,11 +1784,11 @@ void AliAnalysisTaskElectronEfficiency::CreateHistoGen()
 void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
 {
 	Printf(" Now running: CreateSupportHistos()");
-  
+
   fOutputListSupportHistos = new TList();
   fOutputListSupportHistos->SetName(GetName());
   fOutputListSupportHistos->SetOwner();
-  
+
   // Event variables
   TH1D* hnEvents         = new TH1D("nEvents","Number of processed events after cuts;;N_{events}",1,0.,1.);//,AliDielectronVarManager::kNevents);
   TH1D* hCent            = new TH1D("centrality","N. events vs. centrality;centrality [%];N_{events}",100,0,100);//,AliDielectronVarManager::kCentrality);
@@ -1778,13 +1802,13 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hNEleEvent_cent, 3);
   fOutputListSupportHistos->AddAt(hVertexZ, 4);
   fOutputListSupportHistos->AddAt(hNvertexCtrb, 5);
-  
+
   TH2D* hPInVarMgr_PInStandAlone = new TH2D("PInVarMgr_PInStandAlone","GetTPCInnerParam()->P() vs GetInnerParam()->P() (VarMgr method); PIn global tracking (VarMgr method) (GeV/c); PIn TPC standalone (GeV/c)",
                                             160,0.,8.,160,0.,8.);
   fOutputListSupportHistos->AddAt(hPInVarMgr_PInStandAlone, 6);
   //  TH1D* hUseless06 = new TH1D("hUseless06","hUseless06", 1,0.,1.);
   //  fOutputListSupportHistos->AddAt(hUseless06, 6);
-  
+
   // Track variables
   TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",200,0,10.);//,AliDielectronVarManager::kPt);
   TH2D* hP_PIn   = new TH2D("P_PIn","TPC inner P vs P;P [GeV/c];PIn (pTPC) [GeV/c]",
@@ -1794,8 +1818,8 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hPt,     7);
   fOutputListSupportHistos->AddAt(hP_PIn,  8);
   fOutputListSupportHistos->AddAt(hP_Pgen, 9);
-  
-  
+
+
   // ITS
   TH2D* hITS_dEdx_P = new TH2D("ITS_dEdx_P","ITS dEdx;P [GeV/c];ITS signal (arb units)",
                         160,0.,8.,700,0.,700.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal,makeLogx);
@@ -1809,7 +1833,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P, 11);
   fOutputListSupportHistos->AddAt(hITSnSigmaPio_P, 12);
   fOutputListSupportHistos->AddAt(hITSnSigmaKao_P, 13);
-  
+
   // TPC
   TH2D* hTPC_dEdx_P = new TH2D("TPC_dEdx_P","TPC dEdx;PIn (pTPC) [GeV/c];TPC signal (arb units)",
                         160,0.,8.,120,0.,120.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,makeLogx);
@@ -1829,42 +1853,42 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hTPCnSigmaPio_P, 17);
   fOutputListSupportHistos->AddAt(hTPCnSigmaKao_P, 18);
   fOutputListSupportHistos->AddAt(hTPCnSigmaPro_P, 19);
-  
+
   TH1D* hUseless20 = new TH1D("hUseless20","hUseless20", 1,0.,1.);
   TH1D* hUseless21 = new TH1D("hUseless21","hUseless21", 1,0.,1.);
   fOutputListSupportHistos->AddAt(hUseless20, 20);
   fOutputListSupportHistos->AddAt(hUseless21, 21);
-  
+
   // run dependency
   // run string "fsRunBins" must be sorted in increasing order!
   TObjArray *objaRuns=fsRunBins.Tokenize(", ");
   const Int_t nRuns=objaRuns->GetEntries();
   if (nRuns<1) { fsRunBins = "-99"; cout << "warning: bins for run dependence not specified!" << endl; }
   fsRunBins.Append(Form(", %i", (Int_t) (atoi(objaRuns->At(nRuns-1)->GetName()) + 10))); // create upper limit for bin of last run!
-  
+
   Double_t* dRunBinning = (AliDielectronHelper::MakeArbitraryBinning(fsRunBins))->GetMatrixArray();
   //for (int i=0; i<nRuns+1; i++) { cout << i << " \t " << dRunBinning[i] << " \t "; }
-  
+
   Int_t nbinsPIn=80, nbinsTPCsig=50;
   TH3D* hTPC_dEdx_P_run = new TH3D("TPC_dEdx_P_run","TPC dEdx;TPC inner PIn (pTPC) [GeV/c];TPC signal (arb units);run number",
-                                   nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
-                                   nbinsTPCsig, (AliDielectronHelper::MakeLinBinning(nbinsTPCsig,50.,100.))->GetMatrixArray(), 
+                                   nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(),
+                                   nbinsTPCsig, (AliDielectronHelper::MakeLinBinning(nbinsTPCsig,50.,100.))->GetMatrixArray(),
                                    nRuns      , dRunBinning
                                    );//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kRunNumber);
   TH3D* hTPCnSigmaEle_P_run = new TH3D("TPCnSigmaEle_P_run","TPC number of sigmas Electrons;TPC inner PIn (pTPC) [GeV/c];TPC number of sigmas Electrons;run number",
-                                       nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
-                                       50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(), 
+                                       nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(),
+                                       50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(),
                                        nRuns      , dRunBinning
                                        );//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
   TH3D* hITSnSigmaEle_P_run = new TH3D("ITSnSigmaEle_P_run","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons;run number",
-                                       nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
-                                       50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(), 
+                                       nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(),
+                                       50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(),
                                        nRuns      , dRunBinning
                                        );//,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kRunNumber);
   fOutputListSupportHistos->AddAt(hTPC_dEdx_P_run, 22);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEle_P_run, 23);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P_run, 24);
-  
+
   // TOF
   TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons",
                         160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
@@ -1872,7 +1896,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
                         160,0.,8.,120,0.,1.2);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta,makeLogx);
   fOutputListSupportHistos->AddAt(hTOFnSigmaEle_P, 25);
   fOutputListSupportHistos->AddAt(hTOFbeta, 26);
-  
+
   // Eta and Phi
   TH1D* hEta = new TH1D("Eta","Eta; Eta;#tracks",
                         200,-2,2);//,AliDielectronVarManager::kEta);
@@ -1883,7 +1907,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hEta, 27);
   fOutputListSupportHistos->AddAt(hPhi, 28);
   fOutputListSupportHistos->AddAt(hEta_Phi, 29);
-  
+
   TH2D* hTPC_dEdx_Eta = new TH2D("TPC_dEdx_Eta","TPC dEdx;Eta;TPC signal (arb units)",
                         100,-1,1,120,0.,120.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
   TH3D* hTPC_dEdx_Eta_P = new TH3D("TPC_dEdx_Eta_P","TPC dEdx;Eta;TPC signal (arb units); PIn (pTPC) [GeV/c]",
@@ -1909,7 +1933,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
 //                        50,-1,1,100,-10.,10.,80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao,AliDielectronVarManager::kPIn);
 //  fOutputListSupportHistos->AddAt(hTPCnSigmaKao_Eta, 34);
 //  fOutputListSupportHistos->AddAt(hTPCnSigmaKao_Eta_P, 35);
-  
+
   // DCA
   TH1D* hdXY = new TH1D("dXY","dXY;dXY [cm];#tracks",
                         200,-2.,2.);//.,AliDielectronVarManager::kImpactParXY);
@@ -1920,7 +1944,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hdXY, 36);
   fOutputListSupportHistos->AddAt(hdZ, 37);
   fOutputListSupportHistos->AddAt(hdXY_dZ, 38);
-  
+
   TH1D* hUseless39 = new TH1D("hUseless","hUseless",1,0,1);
   fOutputListSupportHistos->AddAt(hUseless39, 39);
 
@@ -1943,16 +1967,16 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hNclsSFracTPC, 46);
   fOutputListSupportHistos->AddAt(hTPCclsDiff, 47);
   fOutputListSupportHistos->AddAt(hTPCsignalN, 48);
-  
+
   TH2D* hTPCcrossedRows_TPCnCls = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters;TPC number clusters;TPC crossed rows",
                         160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
   TH2D* hTPCcrossedRows_Pt = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt;Pt [GeV];TPC crossed rows",
                         160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_TPCnCls, 49);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_Pt, 50);
-  
-  
-  
+
+
+
   // pair-prefilter histograms
   //2D and 3D histograms
   TH2D* hMeePtee    = new TH2D("InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
@@ -1977,13 +2001,13 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hPteeOpen,    55);
   fOutputListSupportHistos->AddAt(hPteePhiV,    56);
   fOutputListSupportHistos->AddAt(hOpenPhiV,    57);
-  
+
   TH1D* hUseless58 = new TH1D("hUseless","hUseless",1,0,1);
   fOutputListSupportHistos->AddAt(hUseless58, 58);
   TH1D* hUseless59 = new TH1D("hUseless","hUseless",1,0,1);
   fOutputListSupportHistos->AddAt(hUseless59, 59);
-  
-  
+
+
   // histograms for ITS eta and dEdx correction
   TH2D* hITSnSigmaEle_Eta = new TH2D("ITSnSigmaEle_Eta","ITS number of sigmas Electrons; Eta; ITS number of sigmas Electrons",
                                      100,-1,1,100,-5.,5.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
@@ -1998,7 +2022,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_Eta_P,    61);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_Eta_RefMultTPConly, 62);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_Eta_Nacc, 63);
-  
+
   // raw sigma Ele in ITS and TPC
   TH2D* hITSnSigmaEleRaw_P = new TH2D("ITSnSigmaEleRaw_P","ITS number of sigmas Electrons (raw);P [GeV/c];ITS number of sigmas Electrons (raw)",
                                       160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEleRaw);
@@ -2012,13 +2036,13 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hTPCnSigmaEleRaw_P,     65);
   fOutputListSupportHistos->AddAt(hITSnSigmaEleRaw_Eta,   66);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEleRaw_Eta,   67);
-  
+
   TH1D* hUseless68 = new TH1D("hUseless","hUseless",1,0,1);
   fOutputListSupportHistos->AddAt(hUseless68, 68);
   TH1D* hUseless69 = new TH1D("hUseless","hUseless",1,0,1);
   fOutputListSupportHistos->AddAt(hUseless69, 69);
-  
-  
+
+
   TH1D* hPdgCode   = new TH1D("hPdgCode",  "hPdgCode",   GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
   TH1D* hPdgCodeM  = new TH1D("hPdgCodeM", "hPdgCodeM",  GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
   TH1D* hPdgCodeGM = new TH1D("hPdgCodeGM","hPdgCodeGM", GetPDGcodes()->GetNrows()-1, GetPDGcodes()->GetMatrixArray());
@@ -2227,11 +2251,11 @@ Double_t AliAnalysisTaskElectronEfficiency::GetSmearing(TObjArray *arr, Double_t
   TH1D *hisSlice(0x0);
   TH2D *hDeltaXvsXgen = static_cast<TH2D*> (arr->At(0));
   Int_t histIndex = TMath::Min( hDeltaXvsXgen->GetXaxis()->FindBin(x), arr->GetLast() );
-  if (histIndex<1) histIndex=1; 
+  if (histIndex<1) histIndex=1;
   hisSlice = static_cast<TH1D*> (arr->At(histIndex));
   // get smear parameter via random selection from the x slices retreived from the deltax plot
   Double_t smearing(0.);
   if(hisSlice) smearing = hisSlice->GetRandom();
-  
+
   return smearing;
 }
