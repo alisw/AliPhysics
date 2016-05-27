@@ -67,25 +67,36 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   TIter next(listoffiles);   
   TObjArray* a = new TObjArray();
   a->SetOwner(kTRUE);
+  Int_t lowStatJobs = 0;
+  Int_t nJobs = 0;
   while (nextfile=next()) {
     snextfile = nextfile->GetName();
     Printf("opening file %s", snextfile.Data());
     if (isGrid) TGrid::Connect("alien://");
-    TFile* ftmp = TFile::Open(Form("%s", snextfile.Data()));
-    TList* l = (TList*)ftmp->GetListOfKeys();
-    for (Int_t ikey = 0; ikey < l->GetEntries(); ikey++){
-      TKey* k = l->At(ikey);
-      TString kStr = k->GetName();
-      if (kStr.Contains(Form("run%d", run))){
-	AliTPCDcalibRes* dcalibRes = (AliTPCDcalibRes*)ftmp->Get(Form("%s", kStr.Data()));
-	AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
-	a->Add(c);
-      }
+    AliTPCDcalibRes* dcalibRes = AliTPCDcalibRes::Load(snextfile.Data());
+    if (!dcalibRes) {
+      ::Error("ProcessOutput","Did not find calib object in %s",snextfile.Data());
+      continue;
     }
+    int ntrUse = dcalibRes->GetNTracksUsed();
+    int ntrMin = dcalibRes->GetMinTrackToUse();
+    if (ntrUse<ntrMin) {
+      ::Error("ProcessOutput","Low stat:%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+      lowStatJobs++;
+    }
+    else {
+      ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+    }
+    AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
+    a->Add(c);
   }
-  
-  a->Print();
-  CreateCorrMapObjTime(a, startRun, endRun, ocdbStorage);
+  if (lowStatJobs) {
+    ::Error("ProcessOutput","%d out of %d timebins have low stat, will not update OCDB",lowStatJobs,nJobs);
+  }
+  else {
+    a->Print();
+    CreateCorrMapObjTime(a, startRun, endRun, ocdbStorage);
+  }
   delete a;
   delete listoffiles;
   
