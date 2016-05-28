@@ -24,6 +24,7 @@
 /////////////////////////////////////////////////////////////////////////
 #include "TStopwatch.h"
 #include "TStatToolkit.h"
+#include "TTreeFormula.h"
 
 using std::cout;
 using std::cerr;
@@ -963,6 +964,7 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   }else{
     graph = new TGraphErrors (entries, tree->GetV2(),tree->GetV1(),0,0);
   }
+
   graph->SetMarkerStyle(mstyle); 
   graph->SetMarkerColor(mcolor);
   graph->SetLineColor(mcolor);
@@ -994,6 +996,16 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   delete charray;
   if (msize>0) graph->SetMarkerSize(msize);
   for(Int_t i=0;i<graph->GetN();i++) graph->GetX()[i]+=offset;
+  //
+  if (tree->GetVar(1)->IsInteger()){
+    TAxis * axis = tree->GetHistogram()->GetXaxis();
+    axis->Copy(*(graph->GetXaxis()));
+  }
+  if (tree->GetVar(0)->IsInteger()){
+    TAxis * axis = tree->GetHistogram()->GetYaxis();
+    axis->Copy(*(graph->GetYaxis()));
+  }
+  graph->Sort();
   return graph;
   
 }
@@ -1056,7 +1068,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   // offset : points can slightly be shifted in x for better visibility with more graphs
   //
   // Patrick Reichelt and Marian Ivanov
-  // maintained and updated bu Marian Ivanov
+  // maintained and updated by Marian Ivanov
   const Int_t entries = tree->Draw(expr,cut,"goff");
   if (entries<=0) {
     ::Error("TStatToolkit::MakeGraphSparse","Empty or Not valid expression (%s) or cut (%s)", expr, cut);
@@ -1121,6 +1133,19 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
     graphNew->GetXaxis()->SetBinLabel(i+1,xName);
     graphNew->GetX()[i]+=offset;
   }
+  if (tree->GetVar(1)->IsInteger()){
+    for(Int_t i=0;i<count;i++){
+      graphNew->GetXaxis()->SetBinLabel(i+1,tree->GetHistogram()->GetXaxis()->GetBinLabel(i+1));
+    }
+  }
+  if (tree->GetVar(0)->IsInteger()){
+    for(Int_t i=0;i<count;i++){
+      graphNew->GetYaxis()->SetBinLabel(i+1,tree->GetHistogram()->GetYaxis()->GetBinLabel(i+1));
+    }
+  }
+
+
+
 
   graphNew->GetHistogram()->SetTitle("");
   graphNew->SetMarkerStyle(mstyle);

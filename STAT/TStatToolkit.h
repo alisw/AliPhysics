@@ -88,7 +88,7 @@ namespace TStatToolkit
   THashList *AddMetadata(TTree*, const char *vartagName,const char *varTagValue);
   TNamed *GetMetadata(TTree* tree, const char *vartagName);
   TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0);
-  TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=-1, Int_t firstEntry=0);
+  TGraphErrors * MakeGraphErrors(TTree * tree, const char * expr="Entry", const char * cut="1",  Int_t mstyle=25, Int_t mcolor=1, Float_t msize=-1, Float_t offset=0.0, Int_t entries=10000000, Int_t firstEntry=0);
 
   //
   // Fitting function
