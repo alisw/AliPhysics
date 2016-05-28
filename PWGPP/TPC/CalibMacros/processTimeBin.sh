@@ -40,6 +40,9 @@ export mapStartTime=$1
 export mapStopTime=$2
 export runNumber=$3
 
+#use of TOF BC or not
+export useTOFBC
+useTOFBC=${ALIEN_JDL_USETOFBC-$useTOFBC}
 #
 inclMacro="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/includeMacro.C"
 macroName="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateResCalib.C"
