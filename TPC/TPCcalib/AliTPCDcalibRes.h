@@ -56,9 +56,9 @@ class AliTPCDcalibRes: public TNamed
   //
   struct dtv_t {  // struct for vdrift calibration loca residual
     Char_t  side;   // +/- for A/C
-    Float_t dz;     // dz 
-    Float_t drift;  // drift distance
-    Float_t ylab;   // y coordinate
+    Double32_t dz;     //[-25:25,14] 
+    Double32_t drift;  //[-260:260,14] drift distance
+    Double32_t ylab;   //[-260:260,14] y coordinate
     Int_t   t;      // time stamp
     //
     dtv_t() {memset(this,0,sizeof(dtv_t));}

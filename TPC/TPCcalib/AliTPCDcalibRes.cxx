@@ -547,6 +547,10 @@ Int_t AliTPCDcalibRes::ParseInputList()
 {
   // convert text file to array of file names
   if (fInputChunks) delete fInputChunks;
+  if (fResidualList.IsNull()) {
+    AliError("Input residuals list is not assigned");
+    return 0;
+  }
   TString  chunkList = gSystem->GetFromPipe(TString::Format("cat %s",fResidualList.Data()).Data());
   fInputChunks = chunkList.Tokenize("\n");  
   return fInputChunks->GetEntriesFast();
