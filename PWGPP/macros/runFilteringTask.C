@@ -74,6 +74,9 @@ void runFilteringTask( const char* esdList,
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);
     task->SetUseESDfriends(kTRUE);
+    Info("runFilteringTask","Dumping task setup AliAnalysisTaskFilteredTree::Dump() \n");
+    task->Dump();
+
 
     // Init
     if (!mgr->InitAnalysis()) 
