@@ -83,7 +83,7 @@ void AliITSTriggerAlgorithmConditions::AddParam(const Char_t* name, Int_t value)
   // if the name is already present in the list, the parameter value will be over-written
   UShort_t findIndex=fNumParam;
   for (UInt_t i=0; i<fNumParam; i++) {
-    if (((TObjString*)fParamNames.At(i))->GetString().CompareTo(name, TString::kIgnoreCase) == 0) {
+    if (((TObjString*)fParamNames.At(i))->String().CompareTo(name, TString::kIgnoreCase) == 0) {
       findIndex = i;
       break;
     }
@@ -106,7 +106,7 @@ const Char_t* AliITSTriggerAlgorithmConditions::GetParamNameI(UShort_t index) co
     Error("AliITSTriggerAlgorithmConditions::GetParamNameI", "index %d out of range", index);
     return "dummy";
   }
-  return ((TObjString*)fParamNames.At(index))->GetString().Data();
+  return ((TObjString*)fParamNames.At(index))->String().Data();
 }
 //__________________________________________________________________________
 Int_t AliITSTriggerAlgorithmConditions::GetParamValueI(UShort_t index) const {
@@ -122,7 +122,7 @@ Int_t AliITSTriggerAlgorithmConditions::GetParamValueN(const Char_t* name) const
   // returns parameter value for parameter with name 'name'
   UShort_t findIndex=fNumParam;
   for (UInt_t i=0; i<fNumParam; i++) {
-    if (((TObjString*)fParamNames.At(i))->GetString().CompareTo(name, TString::kIgnoreCase) == 0) {
+    if (((TObjString*)fParamNames.At(i))->String().CompareTo(name, TString::kIgnoreCase) == 0) {
       findIndex = i;
       break;
     }
