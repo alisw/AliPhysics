@@ -1488,37 +1488,33 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
   //
 }
 
-//_________________________________________________
-void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes)
+Float_t AliTPCDcalibRes::FitPoly1Robust(int np, float* x, float* y, float* res, float* err, float ltmCut)
 {
-  // extract X,Y,Z distortions of the voxel
-  if (np<fMinEntriesVoxel) return;
-  float a,b,err[3];
-  TVectorF zres(7),yres(7);
-  voxRes.flags = 0;
-  if (!TStatToolkit::LTMUnbinned(np,dz,zres,fLTMCut)) return; 
-  //
-  int *indY =  TStatToolkit::LTMUnbinned(np,dy,yres,fLTMCut);
-  if (!indY) return;
+  // robust pol1 fit, modifies input arrays order
+  if (np<2) return -1;
+  TVectorF yres(7);
+  int *indY =  TStatToolkit::LTMUnbinned(np,y,yres,ltmCut);
+  if (!indY) return -1;
   // rearrange used events in increasing order
-  TStatToolkit::Reorder(np,dy,indY);
-  TStatToolkit::Reorder(np,tg,indY);
+  TStatToolkit::Reorder(np,y,indY);
+  TStatToolkit::Reorder(np,x,indY);
   //
   // 1st fit to get crude slope
   int npuse = TMath::Nint(yres[0]);
   int offs =  TMath::Nint(yres[5]);
   // use only entries selected by LTM for the fit
-  AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
+  float a,b;
+  AliTPCDcalibRes::medFit(npuse, x+offs, y+offs, a, b, err);
   //
   // don't abuse stack
   float *ycmHeap=0,ycmStack[np<kMaxOnStack ? np:1],*ycm=np<kMaxOnStack ? &ycmStack[0] : (ycmHeap=new float[np]);
   int   *indcmHeap=0,indcmStack[np<kMaxOnStack ? np:1],*indcm=np<kMaxOnStack ? &indcmStack[0] : (indcmHeap=new int[np]);
   //  
-  for (int i=np;i--;) ycm[i] = dy[i]-(a+b*tg[i]);
+  for (int i=np;i--;) ycm[i] = y[i]-(a+b*x[i]);
   TMath::Sort(np,ycm,indcm,kFALSE);
   TStatToolkit::Reorder(np,ycm,indcm);
-  TStatToolkit::Reorder(np,dy,indcm); // we must keep the same order
-  TStatToolkit::Reorder(np,tg,indcm);
+  TStatToolkit::Reorder(np,y,indcm); // we must keep the same order
+  TStatToolkit::Reorder(np,x,indcm);
   //
   // robust estimate of sigma after crude slope correction
   float sigMAD = AliTPCDcalibRes::MAD2Sigma(npuse,ycm+offs);
@@ -1527,18 +1523,32 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   delete[] ycmHeap;
   delete[] indcmHeap;
   //
-  if (!indY) return;
+  if (!indY) return -1;
   // final fit
   npuse = TMath::Nint(yres[0]);
   offs =  TMath::Nint(yres[5]);
-  AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
+  AliTPCDcalibRes::medFit(npuse, x+offs, y+offs, a,b, err);
+  return sigMAD;
+}
 
+//_________________________________________________
+void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float *dz, bres_t& voxRes)
+{
+  // extract X,Y,Z distortions of the voxel
+  if (np<fMinEntriesVoxel) return;
+  TVectorF zres(7);
+  voxRes.flags = 0;
+  if (!TStatToolkit::LTMUnbinned(np,dz,zres,fLTMCut)) return; 
+  //
+  float ab[2],err[3];
+  float sigMAD = FitPoly1Robust(np,tg,dy,ab,err,fLTMCut);
+  if (sigMAD<0) return;
   float corrErr = err[0]*err[2];
   corrErr = corrErr>0 ? err[1]/TMath::Sqrt(corrErr) : -999;
   //printf("N:%3d A:%+e B:%+e / %+e %+e %+e | %+e %+e / %+e %+e\n",np,a,b,err[0],err[1],err[2], zres[1],zres[2], zres[3],zres[4]);
   //
-  voxRes.D[kResX] = -b;
-  voxRes.D[kResY] = a;
+  voxRes.D[kResX] = -ab[1];
+  voxRes.D[kResY] = ab[0];
   voxRes.D[kResZ] = zres[1];
   voxRes.E[kResX] = TMath::Sqrt(err[2]);
   voxRes.E[kResY] = TMath::Sqrt(err[0]);

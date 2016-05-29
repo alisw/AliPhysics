@@ -177,7 +177,7 @@ class AliTPCDcalibRes: public TNamed
   const char* GetVoxResFileName() const {return Form("%sTree.root",kResOut);}
 
   //------------------------------------ misc. stat. methods
-
+  static Float_t FitPoly1Robust(int np, float* x, float* y, float* res, float* err, float ltmCut);
   static void    FitCircle(int np, const float* x, const float* y, 
 			   double &xc, double &yc, double &r, float* dy=0);
   static void    DiffToMA(int np, const float *y, const int winLR, float* diffMA);
