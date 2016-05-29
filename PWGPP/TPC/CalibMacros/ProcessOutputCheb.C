@@ -75,8 +75,8 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     if (isGrid) TGrid::Connect("alien://");
     AliTPCDcalibRes* dcalibRes = AliTPCDcalibRes::Load(snextfile.Data());
     if (!dcalibRes) {
-      ::Error("ProcessOutput","Did not find calib object in %s",snextfile.Data());
-      continue;
+      ::Error("ProcessOutput","Did not find calib object in %s, job Killed",snextfile.Data());
+      exit(1);
     }
     int ntrUse = dcalibRes->GetNTracksUsed();
     int ntrMin = dcalibRes->GetMinTrackToUse();
