@@ -155,10 +155,14 @@ void AliCheb2DStackS::CreateParams(stFun_t fun, const int *np, const float* prc)
   //
   // temporary space for max possible coeffs, rows etc
   float **grids = new float*[fDimOut]; // Chebyshev grids for each output dimension
-  int maxSpace = 1;
+  int maxSpace = 1, totSpace = 1;
+  Bool_t sameGrid = kTRUE;
+  int ref0=np[0],ref1=np[1];
   for (int id=fDimOut;id--;) {
     int nsp = np[2*id]*np[2*id+1];
     if (maxSpace<nsp) maxSpace = nsp;
+    totSpace += nsp;
+    if (ref0!=np[2*id] || ref1!=np[2*id+1]) sameGrid = kFALSE;
   }
   //
   // save pointers to recover the beggining of arrays later
@@ -167,16 +171,26 @@ void AliCheb2DStackS::CreateParams(stFun_t fun, const int *np, const float* prc)
   Short_t*  coeffs0 = fCoeffs;
   //
   float *tmpCoef2D = new float[maxSpace]; // temporary workspace for coeffs
-  float *tmpVals = new float[maxSpace]; // temporary workspace for function values
+  float *tmpVals = new float[totSpace]; // temporary workspace for function values
   //
   for (int isl=0;isl<fNSlices;isl++) {
     for (int id=fDimOut;id--;) grids[id] = DefineGrid(isl, id, &np[2*id]);
     fCoeffsEntry[isl] = fCoeffs - coeffs0;   // offset of the given slice coeffs
     fColEntry[isl]    = fNCols  - nCols0;    // offset of the given slice columns dimensions
+    //
+    if (sameGrid) FillFunValues(fun, isl, grids[0], &np[0], tmpVals);
+    else {
+      int slot = 0;
+      for (int id=0;id<fDimOut;id++) {
+	FillFunValues(fun, isl, id, grids[id], &np[2*id], tmpVals+slot); // get values for single dimensions
+	slot += np[2*id]*np[2*id+1];
+      }
+    }
+    int slot = 0;
     for (int id=0;id<fDimOut;id++) {
-      FillFunValues(fun, isl, id, grids[id], &np[2*id], tmpVals);
       float prcs = prc ? prc[id] : fgkDefPrec;
-      fParScale[isl*fDimOut+id] = ChebFit(&np[2*id], tmpVals, tmpCoef2D, prcs);
+      fParScale[isl*fDimOut+id] = ChebFit(&np[2*id], tmpVals+slot, tmpCoef2D, prcs);
+      slot += np[2*id]*np[2*id+1];
     }
     for (int id=fDimOut;id--;) delete[] grids[id];
   }
@@ -289,6 +303,42 @@ void AliCheb2DStackS::FillFunValues(stFun_t fun, int slice, int dim, const float
   // map values to +- fWSpace
   float offs = fParHVar[slice*fDimOut+dim];
   for (int id1=np[1];id1--;) for (int id0=np[0];id0--;) vals[id1*np[0] + id0] -= offs;
+  //
+}
+
+//____________________________________________________________________
+void AliCheb2DStackS::FillFunValues(stFun_t fun, int slice, const float *grid, 
+				    const int np[2], float* vals)
+{
+  // fill function values on the grid for all output dimension at same time (same grid)
+  float args[2];  
+  float *minv = new float[fDimOut], *maxv = new float[fDimOut];
+  for (int dim=fDimOut;dim--;) {
+    minv[dim] = 1e15;
+    maxv[dim] =-1e15;
+  }
+  int stepDim = np[0]*np[1];
+  for (int id1=np[1];id1--;) {
+    args[1] = grid[id1];
+    for (int id0=np[0];id0--;) { // 
+      args[0] = grid[np[1]+id0];
+      fun(slice, args, fWSpace);
+      for (int dim=fDimOut;dim--;) {
+	vals[stepDim*dim + id1*np[0] + id0] = fWSpace[dim];
+	if (minv[dim]>fWSpace[dim]) minv[dim] = fWSpace[dim];
+	if (maxv[dim]<fWSpace[dim]) maxv[dim] = fWSpace[dim];
+      }
+    }
+  }
+  for (int dim=fDimOut;dim--;) {
+    float offs = fParHVar[slice*fDimOut+dim] = (maxv[dim]+minv[dim])/2.;
+    // map values to +- fWSpace
+    float* valsdim = vals+stepDim*dim;
+    for (int id1=np[1];id1--;) for (int id0=np[0];id0--;) valsdim[id1*np[0] + id0] -= offs;
+  }
+  //
+  delete[] minv;
+  delete[] maxv;
   //
 }
 

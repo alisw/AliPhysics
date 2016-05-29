@@ -38,8 +38,9 @@ class AliCheb2DStackF : public AliCheb2DStack
  protected:
   //
   void          CreateParams(stFun_t fun, const int *np, const float* prc);
-  void          ChebFit(const int np[2], float* wspace, float prec);
-  void          FillFunValues(stFun_t fun, int slice, int dim, const float *grid, const int np[2]);
+  void          ChebFit(const int np[2], const float* tmpVals, float* wspace, float prec);
+  void          FillFunValues(stFun_t fun, int slice, int dim, const float *grid, const int np[2], float* vals);
+  void          FillFunValues(stFun_t fun, int slice, const float *grid, const int np[2], float* vals);
   //
  protected:
   //
