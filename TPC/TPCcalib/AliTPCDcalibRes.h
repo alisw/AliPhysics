@@ -55,18 +55,18 @@ class AliTPCDcalibRes: public TNamed
   enum {kResX,kResY,kResZ,kResD,kResDim,kResDimG=kResDim-1}; // output dimensions
   //
   struct dtv_t {  // struct for vdrift calibration loca residual
-    Char_t  side;   // +/- for A/C
-    Double32_t dz;     //[-25:25,14] 
-    Double32_t drift;  //[-260:260,14] drift distance
-    Double32_t ylab;   //[-260:260,14] y coordinate
-    Int_t   t;      // time stamp
+    Char_t  side;      // +/- for A/C
+    Double32_t dz;     //[-40.,40.,15]   // +-kMaxResidZVD
+    Double32_t drift;  //[-260.,260.,14] drift distance
+    Double32_t ylab;   //[-260.,260.,14] y coordinate
+    Int_t   t;         // time stamp
     //
     dtv_t() {memset(this,0,sizeof(dtv_t));}
   };
   //
   struct dts_t {  // struct for basic local residual
-    Double32_t dy; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
-    Double32_t dz; //[-10.,10.,14] // [-kMaxResid,kMaxResid,14]
+    Double32_t dy; //[-20.,20.,15] // [-kMaxResid,kMaxResid,14]
+    Double32_t dz; //[-20.,20.,15] // [-kMaxResid,kMaxResid,14]
     Double32_t tgSlp; //[-2,2,14]  //[kMaxTgSlp,kMaxTgSlp,14]
     UChar_t bvox[kVoxDim]; // voxel bin info: VoxF,kVoxX,kVoxZ
     //
@@ -77,10 +77,10 @@ class AliTPCDcalibRes: public TNamed
   struct dtc_t
   {
     Int_t t;        // time stamp
-    Double32_t dyR; //[-10.,10.,14] 
-    Double32_t dzR; //[-10.,10.,14]
-    Double32_t dyC; //[-10.,10.,14] 
-    Double32_t dzC; //[-10.,10.,14]
+    Double32_t dyR; //[-15.,15.,14] 
+    Double32_t dzR; //[-15.,15.,14]
+    Double32_t dyC; //[-15.,15.,14] 
+    Double32_t dzC; //[-15.,15.,14]
     Double32_t q2pt;//[-3,3,14]
     Double32_t tgLam;//[-2.,2.,14]
     Double32_t tgSlp;//[-2,2,14] 
@@ -498,7 +498,8 @@ class AliTPCDcalibRes: public TNamed
   //
   static AliTPCDcalibRes* fgUsedInstance; //! interface instance to use for parameterization
   //
-  static const float kMaxResid;  // max range of distortions, must be <= than the double32_t range of dst_t
+  static const float kMaxResid;     // max range of distortions, must be <= than the double32_t range of dst_t
+  static const float kMaxResidZVD;  // max range of distortions in VDrift calib, must be <= than the double32_t range of dtv_t
   static const float kMaxTgSlp;  // max range of tgSlope, must be <= than the double32_t range of dst_t
   static const float kSecDPhi;
   static const float kMaxQ2Pt;

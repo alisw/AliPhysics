@@ -14,13 +14,12 @@ void trainCorr(int row, float* tzLoc, float* corrLoc);
 const char* AliTPCDcalibRes::kControlBr[kCtrNbr] = {"itsOK","trdOK","tofOK","tofBC","nPrimTracks"}; 
 const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
-const float  AliTPCDcalibRes::kMaxResid=10.0;   
+const float  AliTPCDcalibRes::kMaxResid=20.0f;   
+const float  AliTPCDcalibRes::kMaxResidZVD=40.0f;   
 const float  AliTPCDcalibRes::kMaxTgSlp=2.0;
 
 const float AliTPCDcalibRes::kSecDPhi = 20.f*TMath::DegToRad();
 const float AliTPCDcalibRes::kMaxQ2Pt = 3.0f;
-//const float AliTPCDcalibRes::kMaxTgSlp = 2.0f;
-//const float AliTPCDcalibRes::kMaxResid = 10.0f;
 const float AliTPCDcalibRes::kMinX = 85.0f;
 const float AliTPCDcalibRes::kMaxX = 246.0f;
 const float AliTPCDcalibRes::kMaxZ2X = 1.0f;
@@ -628,9 +627,11 @@ void AliTPCDcalibRes::CollectData(const int mode)
   fNReadCallTot = 0;
   fNBytesReadTot = 0;
   //
+  float maxAbsResid = kMaxResid - kEps; // discard residuals exceeding this
   Bool_t correctVDrift = kTRUE;
   if (mode==kVDriftCalibMode) {
     AliInfo("VDrift calibration mode: drift correction disabled");
+    maxAbsResid = kMaxResidZVD - kEps; // vdrift calibration may see larger residuals
     correctVDrift = kFALSE;
   }
   else {
@@ -814,8 +815,8 @@ void AliTPCDcalibRes::CollectData(const int mode)
 	fArrDZ[fNCl]  = ztr - zcl;
 	//
 	// we don't want under/overflows
-	if (TMath::Abs(fArrDY[fNCl])>kMaxResid-kEps) continue;
-	if (TMath::Abs(fArrDZ[fNCl])>kMaxResid-kEps) continue;
+	if (TMath::Abs(fArrDY[fNCl])>maxAbsResid) continue;
+	if (TMath::Abs(fArrDZ[fNCl])>maxAbsResid) continue;
 	//
 	if (fArrX[fNCl]<kMinX || fArrX[fNCl]>kMaxX) continue;
 	if (TMath::Abs(fArrZCl[fNCl])>kZLim[side]) continue;;
