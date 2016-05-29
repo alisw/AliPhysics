@@ -227,6 +227,7 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       f3dHistGenPtVsGenYvsNtracksOmegaPlus_H(0),  
       f3dHistGenPtVsGenctauvsYOmegaPlus_H(0),  
       // - Plots for generated cascades (after all the event selections)
+      // -- xi minus
       fHistEtaGenCascXiMinus(0),                // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiMinus(0),              // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblXiMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -234,9 +235,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachXiMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachXiMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachXiMinus(0),                    // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- xi plus
       fHistEtaGenCascXiPlus(0),                 // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiPlus(0),               // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblXiPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -244,9 +250,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachXiPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachXiPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachXiPlus(0),                     // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- omega minus
       fHistEtaGenCascOmegaMinus(0),             // In all the eta and pt range (as they are generated)
       fHistThetaGenCascOmegaMinus(0),           // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblOmegaMinus(0),      // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -254,9 +265,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachOmegaMinus(0),              // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachOmegaMinus(0),              // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachOmegaMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- omega plus
       fHistEtaGenCascOmegaPlus(0),              // In all the eta and pt range (as they are generated)
       fHistThetaGenCascOmegaPlus(0),            // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblOmegaPlus(0),       // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -264,6 +280,10 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachOmegaPlus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachOmegaPlus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachOmegaPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -451,6 +471,7 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       f3dHistGenPtVsGenYvsNtracksOmegaPlus_H(0),
       f3dHistGenPtVsGenctauvsYOmegaPlus_H(0),
       // - Plots for generated cascades (after all the event selections)
+      // -- xi minus
       fHistEtaGenCascXiMinus(0),                // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiMinus(0),              // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblXiMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -458,9 +479,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachXiMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachXiMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterXiMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachXiMinus(0),                    // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterXiMinus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- xi plus
       fHistEtaGenCascXiPlus(0),                 // In all the eta and pt range (as they are generated)
       fHistThetaGenCascXiPlus(0),               // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblXiPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -468,9 +494,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachXiPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachXiPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterXiPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachXiPlus(0),                     // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterXiPlus(0),                // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- omega minus
       fHistEtaGenCascOmegaMinus(0),             // In all the eta and pt range (as they are generated)
       fHistThetaGenCascOmegaMinus(0),           // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblOmegaMinus(0),      // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -478,9 +509,14 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachOmegaMinus(0),              // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachOmegaMinus(0),              // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterOmegaMinus(0),         // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachOmegaMinus(0),                 // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaMinus(0),            // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      // -- omega plus
       fHistEtaGenCascOmegaPlus(0),              // In all the eta and pt range (as they are generated)
       fHistThetaGenCascOmegaPlus(0),            // In all the eta and pt range (as they are generated)
       f2dHistGenPtVsGenYFdblOmegaPlus(0),       // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -488,6 +524,10 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistThetaBachOmegaPlus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaMesDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistThetaBarDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaLambdaOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBachOmegaPlus(0),               // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaMesDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
+      fHistEtaBarDghterOmegaPlus(0),          // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBachOmegaPlus(0),                  // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtMesDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
@@ -941,6 +981,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fListHistCascade->Add(f3dHistGenPtVsGenctauvsYOmegaPlus_H);
    }
    // - Many observable distributions for mother and daugthers: pseudo-rapidity, theta, Pt vs Y, Pt
+   // -- xi minus
    if (! fHistEtaGenCascXiMinus) {
         fHistEtaGenCascXiMinus = new TH1F("fHistEtaGenCascXiMinus", "#eta of any gen. #Xi^{-}; #eta; Number of Casc", 200, -10, 10);
         fListHistCascade->Add(fHistEtaGenCascXiMinus);
@@ -969,6 +1010,22 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistThetaBarDghterXiMinus = new TH1F("fHistThetaBarDghterXiMinus", "#theta of gen. Baryon #Lambda dghter; #theta_{BarDght}; Number of Bar.", 200, -10, 190);
         fListHistCascade->Add(fHistThetaBarDghterXiMinus);
    }
+   if (! fHistEtaLambdaXiMinus) {
+        fHistEtaLambdaXiMinus = new TH1F("fHistEtaLambdaXiMinus", "#eta of gen. #Lambda (Xi dghter); #eta_{#Lambda}; Number of #Lambda^0", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaLambdaXiMinus);
+   }
+   if (! fHistEtaBachXiMinus) {
+        fHistEtaBachXiMinus = new TH1F("fHistEtaBachXiMinus", "#eta of gen. Bach.; #eta_{Bach}; Number of Bach.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBachXiMinus);
+   }
+   if (! fHistEtaMesDghterXiMinus) {
+        fHistEtaMesDghterXiMinus = new TH1F("fHistEtaMesDghterXiMinus", "#eta of gen. Meson #Lambda dghter; #eta_{MesDght}; Number of Mes.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaMesDghterXiMinus);
+   }
+   if (! fHistEtaBarDghterXiMinus) {
+        fHistEtaBarDghterXiMinus = new TH1F("fHistEtaBarDghterXiMinus", "#eta of gen. Baryon #Lambda dghter; #eta_{BarDght}; Number of Bar.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBarDghterXiMinus);
+   }
    if (! fHistPtBachXiMinus) {
         fHistPtBachXiMinus = new TH1F("fHistPtBachXiMinus", "p_{t} of gen. Bach.; pt_{Bach}; Number of Bach.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBachXiMinus);
@@ -981,6 +1038,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistPtBarDghterXiMinus = new TH1F("fHistPtBarDghterXiMinus", "p_{t} of gen. Baryon #Lambda dghter; pt_{BarDght}; Number of Bar.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBarDghterXiMinus);
    }
+   // -- xi plus
    if (! fHistEtaGenCascXiPlus) {
         fHistEtaGenCascXiPlus = new TH1F("fHistEtaGenCascXiPlus", "#eta of any gen. #Xi^{+}; #eta; Number of Casc", 200, -10, 10);
         fListHistCascade->Add(fHistEtaGenCascXiPlus);
@@ -1009,6 +1067,22 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistThetaBarDghterXiPlus = new TH1F("fHistThetaBarDghterXiPlus", "#theta of gen. Baryon #Lambda dghter; #theta_{BarDght}; Number of Bar.", 200, -10, 190);
         fListHistCascade->Add(fHistThetaBarDghterXiPlus);
    }
+   if (! fHistEtaLambdaXiPlus) {
+        fHistEtaLambdaXiPlus = new TH1F("fHistEtaLambdaXiPlus", "#eta of gen. #Lambda (Xi dghter); #eta_{#Lambda}; Number of #Lambda", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaLambdaXiPlus);
+   }
+   if (! fHistEtaBachXiPlus) {
+        fHistEtaBachXiPlus = new TH1F("fHistEtaBachXiPlus", "#eta of gen. Bach.; #eta_{Bach}; Number of Bach.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBachXiPlus);
+   }
+   if (! fHistEtaMesDghterXiPlus) {
+        fHistEtaMesDghterXiPlus = new TH1F("fHistEtaMesDghterXiPlus", "#eta of gen. Meson #Lambda dghter; #eta_{MesDght}; Number of Mes.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaMesDghterXiPlus);
+   }
+   if (! fHistEtaBarDghterXiPlus) {
+        fHistEtaBarDghterXiPlus = new TH1F("fHistEtaBarDghterXiPlus", "#eta of gen. Baryon #Lambda dghter; #eta_{BarDght}; Number of Bar.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBarDghterXiPlus);
+   }
    if (! fHistPtBachXiPlus) {
         fHistPtBachXiPlus = new TH1F("fHistPtBachXiPlus", "p_{t} of gen. Bach.; pt_{Bach}; Number of Bach.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBachXiPlus);
@@ -1021,6 +1095,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistPtBarDghterXiPlus = new TH1F("fHistPtBarDghterXiPlus", "p_{t} of gen. Baryon #Lambda dghter); pt_{BarDght}; Number of Bar.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBarDghterXiPlus);
    }
+   // -- omega minus
    if (! fHistEtaGenCascOmegaMinus) {
         fHistEtaGenCascOmegaMinus = new TH1F("fHistEtaGenCascOmegaMinus", "#eta of any gen. #Omega^{-}; #eta; Number of Casc", 200, -10, 10);
         fListHistCascade->Add(fHistEtaGenCascOmegaMinus);
@@ -1049,6 +1124,22 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistThetaBarDghterOmegaMinus = new TH1F("fHistThetaBarDghterOmegaMinus", "#theta of gen. Baryon #Lambda dghter; #theta_{BarDght}; Number of Bar.", 200, -10, 190);
         fListHistCascade->Add(fHistThetaBarDghterOmegaMinus);
    }
+   if (! fHistEtaLambdaOmegaMinus) {
+        fHistEtaLambdaOmegaMinus = new TH1F("fHistEtaLambdaOmegaMinus", "#eta of gen. #Lambda (Omega dghter); #eta_{#Lambda}; Number of #Lambda", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaLambdaOmegaMinus);
+   }
+   if (! fHistEtaBachOmegaMinus) {
+        fHistEtaBachOmegaMinus = new TH1F("fHistEtaBachOmegaMinus", "#eta of gen. Bach.;#eta_{Bach};Number of Bach.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBachOmegaMinus);
+   }
+   if (! fHistEtaMesDghterOmegaMinus) {
+        fHistEtaMesDghterOmegaMinus = new TH1F("fHistEtaMesDghterOmegaMinus", "#eta of gen. Meson #Lambda dghter; #eta_{MesDght}; Number of Mes.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaMesDghterOmegaMinus);
+   }
+   if (! fHistEtaBarDghterOmegaMinus) {
+        fHistEtaBarDghterOmegaMinus = new TH1F("fHistEtaBarDghterOmegaMinus", "#eta of gen. Baryon #Lambda dghter; #eta_{BarDght}; Number of Bar.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBarDghterOmegaMinus);
+   }
    if (! fHistPtBachOmegaMinus) {
         fHistPtBachOmegaMinus = new TH1F("fHistPtBachOmegaMinus", "p_{t} of gen. Bach.; pt_{Bach}; Number of Bach.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBachOmegaMinus);
@@ -1061,6 +1152,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistPtBarDghterOmegaMinus = new TH1F("fHistPtBarDghterOmegaMinus", "p_{t} of gen. Baryon #Lambda dghter); pt_{BarDght}; Number of Bar.", 200, 0, 10);
         fListHistCascade->Add(fHistPtBarDghterOmegaMinus);
    }
+   // -- omega plus
    if (! fHistEtaGenCascOmegaPlus) {
         fHistEtaGenCascOmegaPlus = new TH1F("fHistEtaGenCascOmegaPlus", "#eta of any gen. #Omega^{+}; #eta; Number of Casc", 200, -10, 10);
         fListHistCascade->Add(fHistEtaGenCascOmegaPlus);
@@ -1088,6 +1180,22 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
    if (! fHistThetaBarDghterOmegaPlus) {
         fHistThetaBarDghterOmegaPlus = new TH1F("fHistThetaBarDghterOmegaPlus", "#theta of gen. Baryon #Lambda dghter; #theta_{BarDght}; Number of Bar.", 200, -10, 190);
         fListHistCascade->Add(fHistThetaBarDghterOmegaPlus);
+   }
+   if (! fHistEtaLambdaOmegaPlus) {
+        fHistEtaLambdaOmegaPlus = new TH1F("fHistEtaLambdaOmegaPlus", "#eta of gen. #Lambda (Omega dghter); #eta_{#Lambda}; Number of #Lambda", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaLambdaOmegaPlus);
+   }
+   if (! fHistEtaBachOmegaPlus) {
+        fHistEtaBachOmegaPlus = new TH1F("fHistEtaBachOmegaPlus", "#eta of gen. Bach.; #eta_{Bach}; Number of Bach.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBachOmegaPlus);
+   }
+   if (! fHistEtaMesDghterOmegaPlus) {
+        fHistEtaMesDghterOmegaPlus = new TH1F("fHistEtaMesDghterOmegaPlus", "#eta of gen. Meson #Lambda dghter; #eta_{MesDght}; Number of Mes.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaMesDghterOmegaPlus);
+   }
+   if (! fHistEtaBarDghterOmegaPlus) {
+        fHistEtaBarDghterOmegaPlus = new TH1F("fHistEtaBarDghterOmegaPlus", "#eta of gen. Baryon #Lambda dghter; #eta_{BarDght}; Number of Bar.", 200, -10, 10);
+        fListHistCascade->Add(fHistEtaBarDghterOmegaPlus);
    }
    if (! fHistPtBachOmegaPlus) {
         fHistPtBachOmegaPlus = new TH1F("fHistPtBachOmegaPlus", "p_{t} of gen. Bach.; pt_{Bach}; Number of Bach.", 200, 0, 10);
@@ -2261,12 +2369,13 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
    // - (H) Efficiency denominator after all event selections + QA plots on Generated particle distributions
    // - Initialisation of useful local variables		
    Int_t lPdgCodeCasc = 0, lPdgCodeBach = 0, lPdgCodeLambda = 0, lPdgCodeDghtMesV0 = 0, lPdgCodeDghtBarV0 = 0, ncascperev = 0, ncascperevtot =0, lPrimaryTrackMultiplicity = 0;	
-   TH1F *lHistEtaGenCasc = 0, *lHistThetaGenCasc = 0, *lHistThetaLambda = 0, *lHistThetaBach = 0, *lHistThetaBarDghter = 0, *lHistThetaMesDghter = 0, *lHistPtBach = 0, *lHistPtBarDghter = 0, *lHistPtMesDghter = 0;
+   TH1F *lHistEtaGenCasc = 0, *lHistThetaGenCasc = 0, *lHistThetaLambda = 0, *lHistThetaBach = 0, *lHistThetaBarDghter = 0, *lHistThetaMesDghter = 0, 
+        *lHistEtaLambda = 0, *lHistEtaBach = 0, *lHistEtaBarDghter = 0, *lHistEtaMesDghter = 0, *lHistPtBach = 0, *lHistPtBarDghter = 0, *lHistPtMesDghter = 0;
    TH3D *l3dHistGenPtVsGenYvsNtracks = 0;
    TH3D *l3dHistGenPtVsGenctauvsY    = 0;
    TH2D *l2dHistGenPtVsGenYFdbl      = 0;
    Double_t partEnergy, partPz, partEta, partTheta, partP, partPt, partVx, partVy, partVz, bacVx, bacVy, bacVz, partMass, lRapXiMC, lctau, lRadToDeg;
-   Float_t lambdaTheta, bacTheta, dghtBarV0Theta, dghtMesV0Theta, bacPt, dghtBarV0Pt, dghtMesV0Pt;
+   Float_t lambdaTheta, bacTheta, dghtBarV0Theta, dghtMesV0Theta,lambdaEta, bacEta, dghtBarV0Eta, dghtMesV0Eta, bacPt, dghtBarV0Pt, dghtMesV0Pt;
    TParticle *lCurrentParticle = 0x0, *xiMC = 0x0, *mcBach = 0x0, *lDght0ofXi = 0x0, *lDght1ofXi = 0x0, *lLambda = 0x0, 
              *lBach = 0x0, *lDghtBarV0 = 0x0, *lDghtMesV0 = 0x0, *lDght0ofLambda = 0x0, *lDght1ofLambda = 0x0;
    AliAODMCParticle *lCurrentParticleaod = 0x0, *xiMCaod = 0x0, *mcBachaod = 0x0, *lDght0ofXiaod = 0x0, *lDght1ofXiaod = 0x0, *lLambdaaod = 0x0, 
@@ -2293,6 +2402,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistThetaBach              = fHistThetaBachXiMinus;                // 
 	       lHistThetaBarDghter         = fHistThetaBarDghterXiMinus;           // 
 	       lHistThetaMesDghter         = fHistThetaMesDghterXiMinus;           // 
+               lHistEtaLambda              = fHistEtaLambdaXiMinus;                // 
+               lHistEtaBach                = fHistEtaBachXiMinus;                  // 
+               lHistEtaBarDghter           = fHistEtaBarDghterXiMinus;             // 
+               lHistEtaMesDghter           = fHistEtaMesDghterXiMinus;             //
 	       lHistPtBach	           = fHistPtBachXiMinus;                   // 
 	       lHistPtBarDghter            = fHistPtBarDghterXiMinus;              // 
 	       lHistPtMesDghter            = fHistPtMesDghterXiMinus;              // 
@@ -2311,7 +2424,11 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistThetaLambda            = fHistThetaLambdaXiPlus;              //
 	       lHistThetaBach              = fHistThetaBachXiPlus;                //
 	       lHistThetaBarDghter         = fHistThetaBarDghterXiPlus;           // 
-	       lHistThetaMesDghter         = fHistThetaMesDghterXiPlus;           // 
+	       lHistThetaMesDghter         = fHistThetaMesDghterXiPlus;           //
+               lHistEtaLambda              = fHistEtaLambdaXiPlus;                //
+               lHistEtaBach                = fHistEtaBachXiPlus;                  //
+               lHistEtaBarDghter           = fHistEtaBarDghterXiPlus;             // 
+               lHistEtaMesDghter           = fHistEtaMesDghterXiPlus;             // 
 	       lHistPtBach	           = fHistPtBachXiPlus;                   //
 	       lHistPtBarDghter            = fHistPtBarDghterXiPlus;              // 
 	       lHistPtMesDghter            = fHistPtMesDghterXiPlus;              // 
@@ -2331,6 +2448,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistThetaBach              = fHistThetaBachOmegaMinus;                //
 	       lHistThetaBarDghter         = fHistThetaBarDghterOmegaMinus;           //
 	       lHistThetaMesDghter         = fHistThetaMesDghterOmegaMinus;           //
+               lHistEtaLambda              = fHistEtaLambdaOmegaMinus;                //
+               lHistEtaBach                = fHistEtaBachOmegaMinus;                  //
+               lHistEtaBarDghter           = fHistEtaBarDghterOmegaMinus;             //
+               lHistEtaMesDghter           = fHistEtaMesDghterOmegaMinus;             //
 	       lHistPtBach	           = fHistPtBachOmegaMinus;                   //
 	       lHistPtBarDghter            = fHistPtBarDghterOmegaMinus;              //
 	       lHistPtMesDghter            = fHistPtMesDghterOmegaMinus;              //
@@ -2350,6 +2471,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
 	       lHistThetaBach              = fHistThetaBachOmegaPlus;                //
 	       lHistThetaBarDghter         = fHistThetaBarDghterOmegaPlus;           //
 	       lHistThetaMesDghter         = fHistThetaMesDghterOmegaPlus;           //
+               lHistEtaLambda              = fHistEtaLambdaOmegaPlus;                //
+               lHistEtaBach                = fHistEtaBachOmegaPlus;                  //
+               lHistEtaBarDghter           = fHistEtaBarDghterOmegaPlus;             //
+               lHistEtaMesDghter           = fHistEtaMesDghterOmegaPlus;             //
 	       lHistPtBach	           = fHistPtBachOmegaPlus;                   //
 	       lHistPtBarDghter            = fHistPtBarDghterOmegaPlus;              //
 	       lHistPtMesDghter            = fHistPtMesDghterOmegaPlus;              //
@@ -2396,7 +2521,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                lHistThetaGenCasc->Fill(lRadToDeg * partTheta);
                // - Check the emission of particle stays within the acceptance of the detector (cut in theta)
                if (fApplyAccCut) {if( partTheta < TMath::Pi()/4.0 || partTheta > 3.0*TMath::Pi()/4.0 ) continue;}	
-               lambdaTheta = 0.;  bacTheta = 0.;  dghtBarV0Theta = 0.;  dghtMesV0Theta = 0.;  bacPt = 0.;  dghtBarV0Pt = 0.;  dghtMesV0Pt = 0.;
+               lambdaTheta = 0.;  bacTheta = 0.;  dghtBarV0Theta = 0.;  dghtMesV0Theta = 0.; lambdaEta = 0.;  bacEta = 0.;  dghtBarV0Eta = 0.;  dghtMesV0Eta = 0.;  bacPt = 0.;  dghtBarV0Pt = 0.;  dghtMesV0Pt = 0.;
                if (fAnalysisType == "ESD") { 
                     // - Cascade level
                     xiMC = 0;  xiMC = lMCstack->Particle( iCurrentLabelStack );
@@ -2454,6 +2579,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     bacTheta       = lBach->Theta();
                     dghtBarV0Theta = lDghtBarV0->Theta(); 			
                     dghtMesV0Theta = lDghtMesV0->Theta();
+                    lambdaEta      = lLambda->Eta();
+                    bacEta         = lBach->Eta();
+                    dghtBarV0Eta   = lDghtBarV0->Eta();
+                    dghtMesV0Eta   = lDghtMesV0->Eta();
                     bacPt          = lBach->Pt();
                     dghtBarV0Pt    = lDghtBarV0->Pt();
                     dghtMesV0Pt    = lDghtMesV0->Pt();
@@ -2514,6 +2643,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     bacTheta       = lBachaod->Theta();
                     dghtBarV0Theta = lDghtBarV0aod->Theta();
                     dghtMesV0Theta = lDghtMesV0aod->Theta();
+                    lambdaEta      = lLambdaaod->Eta();
+                    bacEta         = lBachaod->Eta();
+                    dghtBarV0Eta   = lDghtBarV0aod->Eta();
+                    dghtMesV0Eta   = lDghtMesV0aod->Eta();
                     bacPt          = lBachaod->Pt();
                     dghtBarV0Pt    = lDghtBarV0aod->Pt();
                     dghtMesV0Pt    = lDghtMesV0aod->Pt();
@@ -2523,6 +2656,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                lHistThetaBach->Fill( lRadToDeg * bacTheta );
                lHistThetaBarDghter->Fill( lRadToDeg * dghtBarV0Theta );
                lHistThetaMesDghter->Fill( lRadToDeg * dghtMesV0Theta );
+               if (partEta >= 1.2) lHistEtaLambda->Fill( lambdaEta );
+               if (partEta >= 1.2) lHistEtaBach->Fill( bacEta );
+               if (partEta >= 1.2) lHistEtaBarDghter->Fill( dghtBarV0Eta );
+               if (partEta >= 1.2) lHistEtaMesDghter->Fill( dghtMesV0Eta );
                lHistPtBach->Fill( bacPt );
                lHistPtBarDghter->Fill( dghtBarV0Pt );
                lHistPtMesDghter->Fill( dghtMesV0Pt );
