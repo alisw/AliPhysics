@@ -1491,6 +1491,7 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
 Float_t AliTPCDcalibRes::FitPoly1Robust(int np, float* x, float* y, float* res, float* err, float ltmCut)
 {
   // robust pol1 fit, modifies input arrays order
+  res[0] = res[1] = 0.f;
   if (np<2) return -1;
   TVectorF yres(7);
   int *indY =  TStatToolkit::LTMUnbinned(np,y,yres,ltmCut);
@@ -1528,6 +1529,8 @@ Float_t AliTPCDcalibRes::FitPoly1Robust(int np, float* x, float* y, float* res, 
   npuse = TMath::Nint(yres[0]);
   offs =  TMath::Nint(yres[5]);
   AliTPCDcalibRes::medFit(npuse, x+offs, y+offs, a,b, err);
+  res[0] = a;
+  res[1] = b;
   return sigMAD;
 }
 
