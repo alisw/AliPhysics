@@ -148,17 +148,11 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistCascadeMultiplicityAfterSPDclustervstrackletSel(0),
       fHistCascadeMultiplicityAfterPileupRej(0),
       fHistCascadeMultiplicityAfterPhysicsSel(0),
+      fHistCascadeMultiplicityAfterRevertexing(0),
       fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel(0),      
+      fHistCascadeMultiplicityAfterSPDresolution(0),
+      fHistCascadeMultiplicityAfterVerticesProximity(0),
       fHistCascadeMultiplicityAfterZprimVtxPosSel(0),           
-      // -- Track multiplicity plots
-      fHistTrackMultiplicityBeforeAnySel(0),
-      fHistTrackMultiplicityAfterSDDstatusSel(0),
-      fHistTrackMultiplicityAfterDAQincompleteEvRej(0),
-      fHistTrackMultiplicityAfterSPDclustervstrackletSel(0),
-      fHistTrackMultiplicityAfterPileupRej(0),
-      fHistTrackMultiplicityAfterPhysicsSel(0),
-      fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel(0),
-      fHistTrackMultiplicityAfterZprimVtxPosSel(0),
       // -- Cascade multiplicity per event plots
       fHistnXiPlusPerEvTot(0),                  // After any event selections, in all the eta and pt range
       fHistnXiMinusPerEvTot(0),                 // After any event selections, in all the eta and pt range
@@ -397,17 +391,11 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistCascadeMultiplicityAfterSPDclustervstrackletSel(0),
       fHistCascadeMultiplicityAfterPileupRej(0),
       fHistCascadeMultiplicityAfterPhysicsSel(0),
+      fHistCascadeMultiplicityAfterRevertexing(0),
       fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel(0),
+      fHistCascadeMultiplicityAfterSPDresolution(0),
+      fHistCascadeMultiplicityAfterVerticesProximity(0),
       fHistCascadeMultiplicityAfterZprimVtxPosSel(0),
-      // -- Track multiplicity plots
-      fHistTrackMultiplicityBeforeAnySel(0),
-      fHistTrackMultiplicityAfterSDDstatusSel(0),
-      fHistTrackMultiplicityAfterDAQincompleteEvRej(0),
-      fHistTrackMultiplicityAfterSPDclustervstrackletSel(0),
-      fHistTrackMultiplicityAfterPileupRej(0),
-      fHistTrackMultiplicityAfterPhysicsSel(0),
-      fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel(0),
-      fHistTrackMultiplicityAfterZprimVtxPosSel(0),
       // -- Cascade multiplicity per event plots
       fHistnXiPlusPerEvTot(0),                  // After any event selections, in all the eta and pt range
       fHistnXiMinusPerEvTot(0),                 // After any event selections, in all the eta and pt range
@@ -725,46 +713,25 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistCascadeMultiplicityAfterPhysicsSel = new TH1F("fHistCascadeMultiplicityAfterPhysicsSel", "Cascades per event (after physics selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterPhysicsSel);
    }
+   if (! fHistCascadeMultiplicityAfterRevertexing) {
+        fHistCascadeMultiplicityAfterRevertexing = new TH1F("fHistCascadeMultiplicityAfterRevertexing", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterRevertexing);
+   }
    if (! fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel) {
         fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel = new TH1F("fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel", "Cascades per event (for selected events with well-established PV);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel);
    }
+   if (! fHistCascadeMultiplicityAfterSPDresolution) {
+        fHistCascadeMultiplicityAfterSPDresolution = new TH1F("fHistCascadeMultiplicityAfterSPDresolution", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterSPDresolution);
+   }
+   if (! fHistCascadeMultiplicityAfterVerticesProximity) {
+        fHistCascadeMultiplicityAfterVerticesProximity = new TH1F("fHistCascadeMultiplicityAfterVerticesProximity", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
+        fListHistCascade->Add(fHistCascadeMultiplicityAfterVerticesProximity);
+   }
    if (! fHistCascadeMultiplicityAfterZprimVtxPosSel) {
         fHistCascadeMultiplicityAfterZprimVtxPosSel = new TH1F("fHistCascadeMultiplicityAfterZprimVtxPosSel", "Cascades per event (after vertex cut selection);Nbr of Cascades/Evt;Events", 20, 0, 20);
         fListHistCascade->Add(fHistCascadeMultiplicityAfterZprimVtxPosSel);
-   }
-   // - Tracks multiplicity plots 
-   if (! fHistTrackMultiplicityBeforeAnySel) {
-        fHistTrackMultiplicityBeforeAnySel = new TH1F("fHistTrackMultiplicityBeforeAnySel", "Tracks per event (before any selections);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityBeforeAnySel);
-   }
-   if (! fHistTrackMultiplicityAfterSDDstatusSel) {
-        fHistTrackMultiplicityAfterSDDstatusSel = new TH1F("fHistTrackMultiplicityAfterSDDstatusSel", "Tracks per event (after the SDD status selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterSDDstatusSel);
-   }
-   if (! fHistTrackMultiplicityAfterDAQincompleteEvRej) {
-        fHistTrackMultiplicityAfterDAQincompleteEvRej = new TH1F("fHistTrackMultiplicityAfterDAQincompleteEvRej", "Tracks per event (after DAQ incomplete event rejection);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterDAQincompleteEvRej);
-   }
-   if (! fHistTrackMultiplicityAfterSPDclustervstrackletSel) {
-        fHistTrackMultiplicityAfterSPDclustervstrackletSel = new TH1F("fHistTrackMultiplicityAfterSPDclustervstrackletSel", "Tracks per event (after background rejection based on SPD cluster vs tracklet);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterSPDclustervstrackletSel);
-   }
-   if (! fHistTrackMultiplicityAfterPileupRej) {
-        fHistTrackMultiplicityAfterPileupRej = new TH1F("fHistTrackMultiplicityAfterPileupRej", "Tracks per event (after pile-up events rejection);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterPileupRej);
-   }
-   if (! fHistTrackMultiplicityAfterPhysicsSel) {
-        fHistTrackMultiplicityAfterPhysicsSel = new TH1F("fHistTrackMultiplicityAfterPhysicsSel", "Tracks per event (after physics selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterPhysicsSel);
-   }
-   if (! fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel) {
-        fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel = new TH1F("fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel", "Tracks per event (for selected events with well-established PV);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel);
-   }
-   if (! fHistTrackMultiplicityAfterZprimVtxPosSel) {
-        fHistTrackMultiplicityAfterZprimVtxPosSel = new TH1F("fHistTrackMultiplicityAfterZprimVtxPosSel", "Tracks per event (after vertex cut selection);Nbr of Tracks/Evt;Events", 100, 0, 100);
-        fListHistCascade->Add(fHistTrackMultiplicityAfterZprimVtxPosSel);
    }
    // - Vertex position plots
    // -- After all the event selections but the |Zvtx| < 10 cm cut
@@ -1140,14 +1107,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistThetaGenCascOmegaPlus = new TH1F("fHistThetaGenCascOmegaPlus", "#theta of gen. #Omega^{+}; #theta; Number of Casc.", 200, -10, 190);
         fListHistCascade->Add(fHistThetaGenCascOmegaPlus);
    }
-   if (! f2dHistGenPtVsGenYFdblOmegaPlus) {
-        f2dHistGenPtVsGenYFdblOmegaPlus = new TH2D("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
-        fListHistCascade->Add(f2dHistGenPtVsGenYFdblOmegaPlus);
-   }
-   if (! fHistThetaGenCascOmegaPlus) {
-        fHistThetaGenCascOmegaPlus = new TH1F("fHistThetaGenCascOmegaPlus", "#theta of gen. #Omega^{+}; #theta; Number of Casc.", 200, -10, 190);
-        fListHistCascade->Add(fHistThetaGenCascOmegaPlus);
-   } 
    if (! f2dHistGenPtVsGenYFdblOmegaPlus) {
         f2dHistGenPtVsGenYFdblOmegaPlus = new TH2D("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 100, 0., 10., 220, -1.1, 1.1);
         fListHistCascade->Add(f2dHistGenPtVsGenYFdblOmegaPlus);
@@ -1774,7 +1733,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
        nTrackMultiplicity = -100;
        ncascades = lAODevent->GetNumberOfCascades();
    }
-   fHistTrackMultiplicityBeforeAnySel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityBeforeAnySel->Fill(ncascades);
    
 
@@ -1805,7 +1763,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                  return;
         }
    }
-   fHistTrackMultiplicityAfterSDDstatusSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterSDDstatusSel->Fill(ncascades);
 
    // - (A) Check generated particle pT spectra before all the event selections
@@ -1851,7 +1808,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
         PostData(6, fCFContAsCascadeCuts);
         return;
    }
-   fHistTrackMultiplicityAfterDAQincompleteEvRej->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterDAQincompleteEvRej->Fill(ncascades);
 
    //=======================================================================
@@ -1869,7 +1825,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
               return;
       }
    }
-   fHistTrackMultiplicityAfterSPDclustervstrackletSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterSPDclustervstrackletSel->Fill(ncascades);
 
    //======================
@@ -1900,7 +1855,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
            }
       }
    }
-   fHistTrackMultiplicityAfterPileupRej->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterPileupRej->Fill(ncascades);
 
    // - (B) Efficiency denominator before physics selection 
@@ -1977,7 +1931,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
            return;
        }
    }
-   fHistTrackMultiplicityAfterPhysicsSel->Fill(nTrackMultiplicity);
    fHistCascadeMultiplicityAfterPhysicsSel->Fill(ncascades);
 
    // - (C) Efficiency denominator after physics selection 
@@ -2024,6 +1977,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
            //delete lV0vtxer;
            //delete lCascVtxer; 
    }
+   fHistCascadeMultiplicityAfterRevertexing->Fill(nTrackMultiplicity);
 
    // - (D) Efficiency denominator after Re-vertexing
    Int_t lNbMCPrimary_D = 0;   lNbMCPrimary_D = lMCstack->GetNprimary();
@@ -2095,6 +2049,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
              }
         }
    }
+   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicity);
 
    // - (E) Efficiency denominator after rejection of events that has only vertex from TPC
    Int_t lNbMCPrimary_E = 0;  lNbMCPrimary_E = lMCstack->GetNprimary();
@@ -2159,6 +2114,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
              return;
         }
    }
+   fHistCascadeMultiplicityAfterSPDresolution->Fill(nTrackMultiplicity);
 
    // - (F) Efficiency denominator after the rejection of events that do not satisfy the request on the dispersion and resolution of the SPD vertex
    Int_t lNbMCPrimary_F = 0;   lNbMCPrimary_F = lMCstack->GetNprimary();
@@ -2271,8 +2227,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
               } 
           }
    }
-   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascades);
-   fHistTrackMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicity);
+   fHistCascadeMultiplicityAfterVerticesProximity->Fill(nTrackMultiplicity);
 
    // - (G) Efficiency denominator after proximity check for the vertices
    Int_t lNbMCPrimary_G = 0;   lNbMCPrimary_G = lMCstack->GetNprimary();
@@ -2378,7 +2333,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
       }
    }
    fHistCascadeMultiplicityAfterZprimVtxPosSel->Fill(ncascades);
-   fHistTrackMultiplicityAfterZprimVtxPosSel->Fill(nTrackMultiplicity);
    // - Vertex position plots: after any event selections
    tPrimaryVtxPosition[0] = 0;
    tPrimaryVtxPosition[1] = 0;
