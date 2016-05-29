@@ -690,9 +690,13 @@ template <typename T>
 void TStatToolkit::Reorder(int np, T *arr, const int *idx)
 {
   // rearange arr in order given by idx
-  T arrc[np];
-  memcpy(arrc,arr,np*sizeof(T));
-  for (int i=np;i--;) arr[i] = arrc[idx[i]];
+  const int kMaxOnStack = 10000;
+  // don't abuse stack
+  T *arrCHeap=0, arrCstack[np<kMaxOnStack ? np:1], *arrC=np<kMaxOnStack ? &arrCstack[0] : (arrCHeap=new T[np]);
+  memcpy(arrC,arr,np*sizeof(T));
+  for (int i=np;i--;) arr[i] = arrC[idx[i]];
+  delete[] arrCHeap;
+  //
 }
 
 #endif
