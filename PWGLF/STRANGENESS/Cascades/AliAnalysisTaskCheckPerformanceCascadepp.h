@@ -250,24 +250,9 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH1F *fHistPtBachOmegaPlus;                  // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtMesDghterOmegaPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
          TH1F *fHistPtBarDghterOmegaPlus;             // In the detector acceptance and over a pt minimum (Findable particle)
-         // - Associated to MC cascade plots
-         TH1F *fHistMassXiMinus;                      // For the Reconstructed-Associated cascades
-         TH1F *fHistMassXiPlus;                       // For the Reconstructed-Associated cascades
-         TH1F *fHistMassOmegaMinus;                   // For the Reconstructed-Associated cascades
-         TH1F *fHistMassOmegaPlus;                    // For the Reconstructed-Associated cascades
-         // Effective mass histos with combined PID
-         TH1F *fHistMassWithCombPIDXiMinus;
-         TH1F *fHistMassWithCombPIDXiPlus;
-         TH1F *fHistMassWithCombPIDOmegaMinus;
-         TH1F *fHistMassWithCombPIDOmegaPlus;
          // PID Probability versus MC Pt(bachelor track)
          TH2F *f2dHistPIDprobaKaonVsMCPtBach; 
          TH2F *f2dHistPIDprobaPionVsMCPtBach;
-         // Effective mass histos with perfect MC PID on the bachelor
-         TH1F *fHistMassWithMcPIDXiMinus; 
-         TH1F *fHistMassWithMcPIDXiPlus;
-         TH1F *fHistMassWithMcPIDOmegaMinus; 
-         TH1F *fHistMassWithMcPIDOmegaPlus;
          // Effective mass histos for the cascade candidates associated with MC
          TH1F *fHistAsMCMassXiMinus;
          TH1F *fHistAsMCMassXiPlus;
@@ -308,10 +293,6 @@ class AliAnalysisTaskCheckPerformanceCascadepp : public AliAnalysisTaskSE {
          TH2F *f2dHistAsMCptAntiprotonMCptXiPlus;
          TH2F *f2dHistAsMCptProtonMCptOmegaMinus;
          TH2F *f2dHistAsMCptAntiprotonMCptOmegaPlus;
-         // QA plots
-         TH1F *fHistV0toXiCosineOfPointingAngle;
-         TH2F *fHistV0CosineOfPointingAnglevsPtXi;
-         TH2F *fHistV0CosineOfPointingAnglevsPtOmega;
 
          // Containers                       
          AliCFContainer  *fCFContCascadePIDAsXiMinus;
