@@ -43,7 +43,7 @@ class AliTPCDcalibRes: public TNamed
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
   enum {kCtrITS,kCtrTRD,kCtrTOF,kCtrBC0,kCtrNtr,kCtrNbr}; // control branches for test stat
-  enum {kLargeTimeDiff=1000*3600};  // misc consts
+  enum {kLargeTimeDiff=1000*3600,kMaxOnStack=10000};  // misc consts
 
   // the voxels are defined in following space
   enum {kVoxZ,   // Z/X sector coordinates

@@ -1509,8 +1509,11 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   int offs =  TMath::Nint(yres[5]);
   // use only entries selected by LTM for the fit
   AliTPCDcalibRes::medFit(npuse, tg+offs, dy+offs, a,b, err);
-  float ycm[np];
-  int indcm[np];
+  //
+  // don't abuse stack
+  float *ycmHeap=0,ycmStack[np<kMaxOnStack ? np:1],*ycm=np<kMaxOnStack ? &ycmStack[0] : (ycmHeap=new float[np]);
+  int   *indcmHeap=0,indcmStack[np<kMaxOnStack ? np:1],*indcm=np<kMaxOnStack ? &indcmStack[0] : (indcmHeap=new int[np]);
+  //  
   for (int i=np;i--;) ycm[i] = dy[i]-(a+b*tg[i]);
   TMath::Sort(np,ycm,indcm,kFALSE);
   TStatToolkit::Reorder(np,ycm,indcm);
@@ -1521,6 +1524,9 @@ void AliTPCDcalibRes::ProcessVoxelResiduals(int np, float* tg, float *dy, float 
   float sigMAD = AliTPCDcalibRes::MAD2Sigma(npuse,ycm+offs);
   // find LTM estimate matching to sigMAD, keaping at least given fraction
   indY = AliTPCDcalibRes::LTMUnbinnedSig(np, ycm, yres, sigMAD,0.5,kTRUE);
+  delete[] ycmHeap;
+  delete[] indcmHeap;
+  //
   if (!indY) return;
   // final fit
   npuse = TMath::Nint(yres[0]);
@@ -2206,13 +2212,15 @@ float AliTPCDcalibRes::MAD2Sigma(int np, float* y)
   if (np<2) return 0;
   int nph = np>>1;
   if (nph&0x1) nph -= 1;
-  float yc[np]; 
+  // don't abuse stack
+  float *ycHeap=0, ycStack[np<kMaxOnStack ? np:1],*yc=np<kMaxOnStack ? &ycStack[0] : (ycHeap = new float[np]);
   memcpy(yc,y,np*sizeof(float));
   float median = (np&0x1) ? SelKthMin(nph,np,yc) : 0.5f*(SelKthMin(nph-1,np,yc)+SelKthMin(nph,np,yc));
   // build abs differences to median
   for (int i=np;i--;) yc[i] = TMath::Abs(yc[i]-median);
   // now get median of abs deviations
   median = (np&0x1) ? SelKthMin(nph,np,yc) : 0.5f*(SelKthMin(nph-1,np,yc)+SelKthMin(nph,np,yc));
+  delete[] ycHeap; // if any...
   return median*1.4826; // convert to Gaussian sigma
 }
 
