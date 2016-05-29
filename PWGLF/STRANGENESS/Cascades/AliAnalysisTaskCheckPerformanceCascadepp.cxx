@@ -268,24 +268,9 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistPtMesDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
     // - Plots for associated to MC cascade (after all the event selections)
-      // -- Invariant mass distribution
-      fHistMassXiMinus(0),                      // For the Reconstructed-Associated cascades
-      fHistMassXiPlus(0),                       // For the Reconstructed-Associated cascades
-      fHistMassOmegaMinus(0),                   // For the Reconstructed-Associated cascades
-      fHistMassOmegaPlus(0),                    // For the Reconstructed-Associated cascades
-      // -- Invariant mass distribution with combined PID
-      fHistMassWithCombPIDXiMinus(0),           
-      fHistMassWithCombPIDXiPlus(0),
-      fHistMassWithCombPIDOmegaMinus(0), 
-      fHistMassWithCombPIDOmegaPlus(0),	
       // -- PID Probability versus MC Pt(bachelor track)
       f2dHistPIDprobaKaonVsMCPtBach(0), 
       f2dHistPIDprobaPionVsMCPtBach(0),
-      // -- Invariant mass distribution with perfect MC PID on the bachelor
-      fHistMassWithMcPIDXiMinus(0), 
-      fHistMassWithMcPIDXiPlus(0),
-      fHistMassWithMcPIDOmegaMinus(0), 
-      fHistMassWithMcPIDOmegaPlus(0),
       // -- Invariant mass distribution for the cascade candidates associated with MC
       fHistAsMCMassXiMinus(0),		
       fHistAsMCMassXiPlus(0),		
@@ -326,10 +311,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       f2dHistAsMCptAntiprotonMCptXiPlus(0),
       f2dHistAsMCptProtonMCptOmegaMinus(0),
       f2dHistAsMCptAntiprotonMCptOmegaPlus(0),
-      // -- QA plots
-      fHistV0toXiCosineOfPointingAngle(0),
-      fHistV0CosineOfPointingAnglevsPtXi(0),
-      fHistV0CosineOfPointingAnglevsPtOmega(0), 
       // -- Containers                       
       fCFContCascadePIDAsXiMinus(0),
       fCFContCascadePIDAsXiPlus(0),
@@ -511,24 +492,9 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       fHistPtMesDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
       fHistPtBarDghterOmegaPlus(0),             // if (fApplyAccCut) In the detector acceptance and over a pt minimum (Findable particle)
     // - Plots for associated to MC cascade (after all the event selections)
-      // -- Invariant mass distribution
-      fHistMassXiMinus(0),                      // For the Reconstructed-Associated cascades
-      fHistMassXiPlus(0),                       // For the Reconstructed-Associated cascades
-      fHistMassOmegaMinus(0),                   // For the Reconstructed-Associated cascades
-      fHistMassOmegaPlus(0),                    // For the Reconstructed-Associated cascades
-      // -- Invariant mass distribution with combined PID
-      fHistMassWithCombPIDXiMinus(0),
-      fHistMassWithCombPIDXiPlus(0),
-      fHistMassWithCombPIDOmegaMinus(0),
-      fHistMassWithCombPIDOmegaPlus(0),
       // -- PID Probability versus MC Pt(bachelor track)
       f2dHistPIDprobaKaonVsMCPtBach(0),
       f2dHistPIDprobaPionVsMCPtBach(0),
-      // -- Invariant mass distribution with perfect MC PID on the bachelor
-      fHistMassWithMcPIDXiMinus(0),
-      fHistMassWithMcPIDXiPlus(0),
-      fHistMassWithMcPIDOmegaMinus(0),
-      fHistMassWithMcPIDOmegaPlus(0),
       // -- Invariant mass distribution for the cascade candidates associated with MC
       fHistAsMCMassXiMinus(0),
       fHistAsMCMassXiPlus(0),
@@ -569,10 +535,6 @@ AliAnalysisTaskCheckPerformanceCascadepp::AliAnalysisTaskCheckPerformanceCascade
       f2dHistAsMCptAntiprotonMCptXiPlus(0),
       f2dHistAsMCptProtonMCptOmegaMinus(0),
       f2dHistAsMCptAntiprotonMCptOmegaPlus(0),
-      // -- QA plots
-      fHistV0toXiCosineOfPointingAngle(0),
-      fHistV0CosineOfPointingAnglevsPtXi(0),
-      fHistV0CosineOfPointingAnglevsPtOmega(0),
       // -- Containers                       
       fCFContCascadePIDAsXiMinus(0),
       fCFContCascadePIDAsXiPlus(0),
@@ -1158,40 +1120,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
         fHistnAssoOmegaPlus= new TH1F("fHistnAssoOmegaPlus", "", 25, 0, 25);
         fListHistCascade->Add(fHistnAssoOmegaPlus);
    }
-   // - Invariant mass distributions for cascades candidates
-   if (! fHistMassXiMinus) {
-        fHistMassXiMinus = new TH1F("fHistMassXiMinus","#Xi^{-} candidates; M( #Lambda , #pi^{-} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassXiMinus);
-   }
-   if (! fHistMassXiPlus) {
-        fHistMassXiPlus = new TH1F("fHistMassXiPlus","#Xi^{+} candidates; M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassXiPlus);
-   }
-   if (! fHistMassOmegaMinus) {
-        fHistMassOmegaMinus = new TH1F("fHistMassOmegaMinus","#Omega^{-} candidates; M( #Lambda , K^{-} ) (GeV/c^{2}); Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassOmegaMinus);
-   } 
-   if (! fHistMassOmegaPlus) {
-        fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates; M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2}); Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassOmegaPlus);
-   }
-   // - Invariant mass distributions with combined PID
-   if (! fHistMassWithCombPIDXiMinus) {
-        fHistMassWithCombPIDXiMinus = new TH1F("fHistMassWithCombPIDXiMinus","#Xi^{-} candidates, with Bach. comb. PID; M( #Lambda , #pi^{-} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassWithCombPIDXiMinus);
-   }
-   if (! fHistMassWithCombPIDXiPlus) {
-        fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID; M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassWithCombPIDXiPlus);
-   }
-   if (! fHistMassWithCombPIDOmegaMinus) {
-        fHistMassWithCombPIDOmegaMinus = new TH1F("fHistMassWithCombPIDOmegaMinus","#Omega^{-} candidates, with Bach. comb. PID; M( #Lambda , K^{-} ) (GeV/c^{2}); Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassWithCombPIDOmegaMinus);
-   }
-   if (! fHistMassWithCombPIDOmegaPlus) {
-        fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID; M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2}); Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
-   }
    // - PID Probability versus MC Pt(bachelor track)
    if (! f2dHistPIDprobaKaonVsMCPtBach ){
         f2dHistPIDprobaKaonVsMCPtBach  = new TH2F("f2dHistPIDprobaKaonVsMCPtBach", "Comb. PID proba to be K^{#pm} Vs MC Bach. Pt; Pt_{MC}(Bach.) (GeV/c); Comb. PID Proba (Bach. = K^{#pm})", 100, 0.0, 5.0, 110, 0.0, 1.10);
@@ -1200,23 +1128,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
    if (! f2dHistPIDprobaPionVsMCPtBach ){
         f2dHistPIDprobaPionVsMCPtBach  = new TH2F("f2dHistPIDprobaPionVsMCPtBach", "Comb. PID proba to be #pi^{#pm} Vs MC Bach. Pt; Pt_{MC}(Bach.) (GeV/c); Comb. PID Proba (Bach. = #pi^{#pm})", 100, 0.0, 5.0, 110, 0.0, 1.10);
         fListHistCascade->Add(f2dHistPIDprobaPionVsMCPtBach);
-   }
-   // - Invariant mass distribution with perfect MC PID on the bachelor
-   if (! fHistMassWithMcPIDXiMinus) {
-        fHistMassWithMcPIDXiMinus = new TH1F("fHistMassWithMcPIDXiMinus", "#Xi^{-} candidates, with Bach. MC PID; M( #Lambda , #pi^{-} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassWithMcPIDXiMinus);
-   }
-   if (! fHistMassWithMcPIDXiPlus) {
-        fHistMassWithMcPIDXiPlus = new TH1F("fHistMassWithMcPIDXiPlus", "#Xi^{+} candidates, with Bach. MC PID; M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2}); Counts", 400, 1.2, 2.0);
-        fListHistCascade->Add(fHistMassWithMcPIDXiPlus);
-   }
-   if (! fHistMassWithMcPIDOmegaMinus) {
-        fHistMassWithMcPIDOmegaMinus = new TH1F("fHistMassWithMcPIDOmegaMinus", "#Omega^{-} candidates, with Bach. MC PID; M( #Lambda , K^{-} ) (GeV/c^{2});Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassWithMcPIDOmegaMinus);
-   }
-   if (! fHistMassWithMcPIDOmegaPlus) {
-        fHistMassWithMcPIDOmegaPlus = new TH1F("fHistMassWithMcPIDOmegaPlus", "#Omega^{+} candidates, with Bach. MC PID; M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2}); Counts", 500, 1.5, 2.5);
-        fListHistCascade->Add(fHistMassWithMcPIDOmegaPlus);
    }
    // - Invariant mass distribution for cascades candidates ASSOCIATED with MC
    if (! fHistAsMCMassXiMinus) {
@@ -1353,19 +1264,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
    if (! f2dHistAsMCptAntiprotonMCptOmegaPlus) {
         f2dHistAsMCptAntiprotonMCptOmegaPlus = new TH2F("f2dHistAsMCptAntiprotonMCptOmegaPlus", "Antiproton MC pt vs Omega+ MC pt", 100, 0., 10., 100, 0., 10.);
         fListHistCascade->Add(f2dHistAsMCptAntiprotonMCptOmegaPlus);
-   }
-   // - Cosine of Pointing angle
-   if (! fHistV0toXiCosineOfPointingAngle) {
-        fHistV0toXiCosineOfPointingAngle = new TH1F("fHistV0toXiCosineOfPointingAngle", "Cos. of V0 Ptng Angl / Xi vtx ; Cos(V0 Point. Angl / Xi vtx); Counts", 200, 0.95, 1.0001);
-        fListHistCascade->Add(fHistV0toXiCosineOfPointingAngle);
-   }
-   if (! fHistV0CosineOfPointingAnglevsPtXi) {
-        fHistV0CosineOfPointingAnglevsPtXi = new TH2F("fHistV0CosineOfPointingAnglevsPtXi", "Cos. of V0 Ptng Angl vs cascade Pt; Cos(V0 Point. Angl); Counts", 100, 0., 10., 200, 0.95, 1.0001);
-        fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtXi);
-   }
-   if (! fHistV0CosineOfPointingAnglevsPtOmega) {
-        fHistV0CosineOfPointingAnglevsPtOmega = new TH2F("fHistV0CosineOfPointingAnglevsPtOmega", "Cos. of V0 Ptng Angl vs cascade Pt; Cos(V0 Point. Angl); Counts", 100, 0., 10., 200, 0.95, 1.0001);
-        fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtOmega);
    }
 
   // - CFContainer
@@ -3207,20 +3105,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 if (lV0RadiusXi < 0.9) continue;                                                  // in AliV0vertexer
         }
         // - Fill combined PID TH1s
-        //if (lChargeXi < 0 && lIsBachelorPion)    fHistMassWithCombPIDXiMinus    ->Fill( lInvMassXiMinus    );
-        //if (lChargeXi > 0 && lIsBachelorPion)    fHistMassWithCombPIDXiPlus     ->Fill( lInvMassXiPlus     );
-        //if (lChargeXi < 0 && lIsBachelorKaon)    fHistMassWithCombPIDOmegaMinus ->Fill( lInvMassOmegaMinus );
-        //if (lChargeXi > 0 && lIsBachelorKaon)    fHistMassWithCombPIDOmegaPlus  ->Fill( lInvMassOmegaPlus  );
-        //if (lChargeXi < 0 )   fHistMassXiMinus    ->Fill( lInvMassXiMinus );
-        //if (lChargeXi > 0 )   fHistMassXiPlus     ->Fill( lInvMassXiPlus );
-        //if (lChargeXi < 0 )   fHistMassOmegaMinus ->Fill( lInvMassOmegaMinus );
-        //if (lChargeXi > 0 )   fHistMassOmegaPlus  ->Fill( lInvMassOmegaPlus );
         if (lIsBachelorPion)   f2dHistPIDprobaPionVsMCPtBach->Fill( lmcPtBach, ppionBach );
         if (lIsBachelorKaon)   f2dHistPIDprobaKaonVsMCPtBach->Fill( lmcPtBach, pkaonBach );
-        //if (lChargeXi < 0 && lIsBachelorMCPiMinus)    fHistMassWithMcPIDXiMinus     ->Fill( lInvMassXiMinus );
-        //if (lChargeXi > 0 && lIsBachelorMCPiPlus)    fHistMassWithMcPIDXiPlus      ->Fill( lInvMassXiPlus );
-        //if (lChargeXi < 0 && lIsBachelorMCKMinus)    fHistMassWithMcPIDOmegaMinus  ->Fill( lInvMassOmegaMinus );
-        //if (lChargeXi > 0 && lIsBachelorMCKPlus)    fHistMassWithMcPIDOmegaPlus   ->Fill( lInvMassOmegaPlus );
         // - No association, skip the rest of the code
         if(!lAssoXiMinus && !lAssoXiPlus && !lAssoOmegaMinus && !lAssoOmegaPlus) continue; 
         // - Proper time         
@@ -3244,7 +3130,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 f2dHistAsMCResRXiMinus->Fill(lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius) / lmcTransvRadius);
                 f2dHistAsMCResPhiXiMinus->Fill(lmcPt, lDeltaPhiMcReco);
                 f2dHistAsMCptProtonMCptXiMinus->Fill(lmcPt, lmcPtPosV0Dghter);
-                fHistV0CosineOfPointingAnglevsPtXi->Fill(lmcPt, lV0CosineOfPointingAngle);
         }	
         else if (lChargeXi > 0 && lAssoXiPlus){	
                 fHistAsMCMassXiPlus->Fill(lInvMassXiPlus);
@@ -3255,7 +3140,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 f2dHistAsMCResRXiPlus->Fill(lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius) / lmcTransvRadius);
                 f2dHistAsMCResPhiXiPlus->Fill(lmcPt, lDeltaPhiMcReco);
                 f2dHistAsMCptAntiprotonMCptXiPlus->Fill(lmcPt, lmcPtNegV0Dghter);
-                fHistV0CosineOfPointingAnglevsPtXi->Fill(lmcPt, lV0CosineOfPointingAngle);
         }
         else if( lChargeXi < 0 && lAssoOmegaMinus){	
                 fHistAsMCMassOmegaMinus->Fill(lInvMassOmegaMinus);
@@ -3266,7 +3150,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 f2dHistAsMCResROmegaMinus->Fill(lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius) / lmcTransvRadius);
                 f2dHistAsMCResPhiOmegaMinus->Fill( lmcPt, lDeltaPhiMcReco);
                 f2dHistAsMCptProtonMCptOmegaMinus->Fill(lmcPt, lmcPtPosV0Dghter);
-                fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt, lV0CosineOfPointingAngle);
         }	
         else if( lChargeXi > 0 && lAssoOmegaPlus){	
                 fHistAsMCMassOmegaPlus->Fill(lInvMassOmegaPlus);
@@ -3277,9 +3160,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 f2dHistAsMCResROmegaPlus->Fill(lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius) / lmcTransvRadius);
                 f2dHistAsMCResPhiOmegaPlus->Fill(lmcPt, lDeltaPhiMcReco);
                 f2dHistAsMCptAntiprotonMCptOmegaPlus->Fill(lmcPt, lmcPtNegV0Dghter);
-                fHistV0CosineOfPointingAnglevsPtOmega->Fill(lmcPt, lV0CosineOfPointingAngle);
         }
-        fHistV0toXiCosineOfPointingAngle->Fill(lV0CosineOfPointingAngleXi);
         fHistPosV0TPCClusters->Fill( lPosTPCClusters );
         fHistNegV0TPCClusters->Fill( lNegTPCClusters );
         fHistBachTPCClusters->Fill( lBachTPCClusters );
