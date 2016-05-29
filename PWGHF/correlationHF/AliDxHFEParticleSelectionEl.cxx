@@ -755,7 +755,7 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
 
   //Pion rejection
   if(fTPCnSigmaPiRej>0){ //Pion rejection on by default, but can be turned off by setting fTPCnSigmaPiRej to -1
-    if(TMath::Abs(nsigmaTPCpi)>fTPCnSigmaPiRej && pPart>1.){ //Only applied above 1GeV
+    if(TMath::Abs(nsigmaTPCpi)<fTPCnSigmaPiRej && pPart>1.){ //Only applied above 1GeV
       // Track within pion identification range. Reject
       ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejPi);
       return 0; 
@@ -767,8 +767,8 @@ int AliDxHFEParticleSelectionEl::IsSelected(AliVParticle* pEl, const AliVEvent* 
   }  
 
   //Proton rejection
-  if(fTPCnSigmaPiRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
-    if(TMath::Abs(nsigmaTPCp)>fTPCnSigmaPRej && pPart>1.){ //Only applied above 1GeV
+  if(fTPCnSigmaPRej>0){ //Proton rejection on by default, but can be turned off by setting fTPCnSigmaPRej to -1
+    if(TMath::Abs(nsigmaTPCp)<fTPCnSigmaPRej && pPart>1.){ //Only applied above 1GeV
       // Track within proton identification range. Reject
       ((TH1D*)fHistoList->FindObject("fWhichCut"))->Fill(kRejProton);
       return 0;
