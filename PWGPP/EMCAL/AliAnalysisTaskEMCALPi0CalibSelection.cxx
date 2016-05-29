@@ -371,13 +371,20 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
   
   Int_t bc  = InputEvent()->GetBunchCrossNumber();
   Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
+  
+  Int_t NbClusterInTopoHisto[nSM];
+  
+  for(Int_t iSM = 0; iSM < nSM; iSM++)
+  {
+    NbClusterInTopoHisto[iSM] = 0;
+  }
 
   for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++) 
   {
     AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
     
     // Exclude bad channels
-    if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;	
+    if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;
     
     Float_t e1i = c1->E();   // cluster energy before correction   
     
@@ -410,7 +417,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     Double_t time1 = c1->GetTOF()*1.e9;
     
-    if(fSelectOnlyCellSignalOutOfCollision && (time1 < fTimeMax || time1 > fTimeMin)) continue;
+    if(fSelectOnlyCellSignalOutOfCollision && ((time1 < fTimeMax) && (time1 > fTimeMin))) continue;
     else if(!fSelectOnlyCellSignalOutOfCollision && (time1 > fTimeMax || time1 < fTimeMin)) continue;
     
     fhClusterTime            ->Fill(c1->E(),time1);
@@ -433,7 +440,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         
         Float_t AmpFraction = amp / e1i;
         
-        AliDebug(0,Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iIphi,iIeta,amp,AmpFraction));
+        if(DebugLevel() > 0)
+        {
+          AliInfo(Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iphiCell,ietaCell,amp,AmpFraction));
+        }
+        
         
         switch (iPosInNoisyQuartet) {
           case 0:
@@ -458,6 +469,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
             break;
           default:
             break;
+        }
+        
+        if(amp && AmpFraction)
+        {
+          NbClusterInTopoHisto[iSupMod1] = NbClusterInTopoHisto[iSupMod1] + 1;
         }
       }
     }
@@ -718,6 +734,28 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       }
     }
   } // end of loop over EMCAL clusters
+  
+  for(Int_t iSM = 0; iSM < nSM; iSM++)
+  {
+    if(DebugLevel() > 0)
+    {
+      AliInfo(Form("nbClusterInTopo = %i\n",NbClusterInTopoHisto[iSM]));
+    }
+    if(NbClusterInTopoHisto[iSM] == 0) continue;
+    
+    fhTopoClusterAmpCase0[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase0[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    
+    fhTopoClusterAmpCase1[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase1[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    
+    fhTopoClusterAmpCase2[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase2[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    
+    fhTopoClusterAmpCase3[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase3[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+  }
+  
 }
 
 
