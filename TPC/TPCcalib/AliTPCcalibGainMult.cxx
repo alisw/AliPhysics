@@ -343,6 +343,11 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     return;
   }
 
+  // CookdEdxAnalytical requires the time stamp in AliTPCTransform to be set
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  transform->SetCurrentRun(fRun);
+  transform->SetCurrentTimeStamp((UInt_t)fTime);
+
   const Int_t row0 = param->GetNRowLow();
   const Int_t row1 = row0+param->GetNRowUp1();
   const Int_t row2 = row1+param->GetNRowUp2();
