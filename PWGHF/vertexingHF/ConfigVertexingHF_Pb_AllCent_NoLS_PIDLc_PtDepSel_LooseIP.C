@@ -16,14 +16,15 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?
   //vHF->SetSecVtxWithKF();
-  vHF->SetCascadesOff();
+  //vHF->SetCascadesOff();
   vHF->SetFindVertexForCascades(kFALSE);
   vHF->SetMassCutBeforeVertexing(kTRUE); // PbPb
-  vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kAllV0s);
+  vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kOnlyOfflineV0s);
 
    //set PID
    vHF->SetUseKaonPIDfor3Prong(kFALSE);
    vHF->SetUseProtonAndPionPIDforLambdaC();
+   vHF->SetUseProtonPIDforLambdaC2V0();
    //  vHF->SetnSigmaTOFforKaonSel(5., 5.);
    // vHF->SetnSigmaTPCforKaonSel(5., 5.);
    vHF->SetnSigmaTOFforProtonSel(40.,40.);
@@ -101,6 +102,23 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
+
+  //     bachelor track cuts
+  AliESDtrackCuts *esdTrackCutsBach = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCutsBach->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsBach->SetMinNClustersTPC(50);
+  esdTrackCutsBach->SetRequireITSRefit(kTRUE);
+  esdTrackCutsBach->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCutsBach->SetMaxDCAToVertexXY(1.);  
+  esdTrackCutsBach->SetMaxDCAToVertexZ(1.);
+  esdTrackCutsBach->SetPtRange(0.5,1.e10);
+  esdTrackCutsBach->SetEtaRange(-0.8,+0.8);
+  AliAnalysisFilter *trkFilterBach = new AliAnalysisFilter("trackFilterBachelor");
+  trkFilterBach->AddCuts(esdTrackCutsBach);
+  vHF->SetTrackFilterBachelor(trkFilterBach);
+
+
   //--- set cuts for candidates selection
   Int_t nptbins=2; Float_t ptlimits[2]={0.,1000000.};
 
@@ -260,7 +278,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--------------------------------------------------------
 
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[17]={1.0,1.0,0.05,0.05,0.0,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.,0.0};
+  Float_t cutsArrayLctoV0[17]={0.2,0.,0.05,0.05,0.5,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.5,1};
+  cutsLctoV0->SetUseTrackSelectionWithFilterBits(kFALSE);
+  cutsLctoV0->SetMinPtCandidate(4.);
   cutsLctoV0->SetCuts(17,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
 
