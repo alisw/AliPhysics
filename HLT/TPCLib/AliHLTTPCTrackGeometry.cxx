@@ -355,7 +355,7 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAs
       pClusters[pClusterData->fSpacePointCnt].fX=GetPlaneR(planeId);
       pClusters[pClusterData->fSpacePointCnt].fY=trackPoints[i].GetU();
       pClusters[pClusterData->fSpacePointCnt].fZ=trackPoints[i].GetV();
-      pClusters[pClusterData->fSpacePointCnt].fID=planeId;
+      pClusters[pClusterData->fSpacePointCnt].fRawID=planeId;
       pClusters[pClusterData->fSpacePointCnt].fPadRow=AliHLTTPCGeometry::GetFirstRow(partition)+number;
       pClusters[pClusterData->fSpacePointCnt].fSigmaY2=0.;
       pClusters[pClusterData->fSpacePointCnt].fSigmaZ2=0.;

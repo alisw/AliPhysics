@@ -41,9 +41,6 @@
 #include "AliTPCTransform.h"
 #include "AliHLTTPCClusterMCData.h"
 
-//#include "AliHLTTPCCAInputDataCompressorComponent.h"
-//#include "AliHLTTPCCADef.h"
-
 #include <cstdlib>
 #include <cerrno>
 #include "TString.h"
@@ -153,7 +150,6 @@ int AliHLTTPCClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeL
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
   tgtList.push_back(kAliHLTDataTypeHwAddr16);
-  //tgtList.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType);
   return tgtList.size();
 }
 
@@ -512,39 +508,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
        fBenchmark.AddOutput(bdHW.fSize);
        tSize+=nHWAdd*sizeof(AliHLTUInt16_t);
       }
-
-      /*
-      { // compressed output for the CA tracker	
-
-	AliHLTUInt32_t dSize = 0;	
-
-	int ret = AliHLTTPCCAInputDataCompressorComponent::Compress(  (AliHLTTPCClusterData*)( outputPtr + bd.fOffset ),
-								      size - tSize,
-								      outputPtr+tSize,
-								      dSize );
-	
-	if ( ret!=0 || tSize + dSize > size )
-	  {
-	    Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 
-		     "Data written over allowed buffer. Amount written: %lu, allowed amount: %lu.",
-		     tSize + dSize, size );
-	    iResult=-ENOSPC;
-	    break;
-	  }
-	
- 	AliHLTComponentBlockData bdCompressed;
-	FillBlockData( bdCompressed );
-	bdCompressed.fOffset = tSize ;
-	bdCompressed.fSize = dSize;
-	bdCompressed.fSpecification = iter->fSpecification;
-	bdCompressed.fDataType = AliHLTTPCCADefinitions::fgkCompressedInputDataType;
-	outputBlocks.push_back( bdCompressed );
-	
-	tSize += dSize;
-	outBPtr += dSize;
-	outPtr = (AliHLTTPCClusterData*)outBPtr;	
-      }
-      */
 
       if(fDoMC){
 	Int_t maxNumberOfClusterMCInfo = (Int_t)((size-tSize-sizeof(AliHLTTPCClusterMCData))/sizeof(AliHLTTPCClusterMCLabel)-1);

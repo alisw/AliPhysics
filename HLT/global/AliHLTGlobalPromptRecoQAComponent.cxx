@@ -62,7 +62,6 @@
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
 #include "tracking-ca/AliHLTTPCCADefinitions.h"
-#include "tracking-ca/AliHLTTPCCACompressedInputData.h"
 #include "tracking-ca/AliHLTTPCCASliceOutput.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTTPCHWCFData.h"
@@ -270,7 +269,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC); //HLT-TPC clusters from HWCF
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC); //TPC DDL raw data
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters
-  list.push_back(AliHLTTPCCADefinitions::fgkCompressedInputDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters (internally compressed form)
+  
   list.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC); //Non-transformed HLT-TPC clusters
   
   list.push_back(AliHLTTPCCADefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
@@ -848,16 +847,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       AliHLTTPCClusterData* inPtrSP = ( AliHLTTPCClusterData* )( iter->fPtr );
       nClustersTPC += inPtrSP->fSpacePointCnt;
-    }
-    else if (iter->fDataType == AliHLTTPCCADefinitions::fgkCompressedInputDataType) //Compressed (internally) form of transformed HLT TPC clusters (currently not used)
-    {
-      const AliHLTUInt8_t * inPtr = (const AliHLTUInt8_t *)iter->fPtr;
-      while(inPtr< ((const AliHLTUInt8_t *) iter->fPtr) + iter->fSize)
-      {
-        AliHLTTPCCACompressedClusterRow *row = (AliHLTTPCCACompressedClusterRow*) inPtr;
-        nClustersTPC+= row->fNClusters;
-        inPtr = (const AliHLTUInt8_t *)(row->fClusters+row->fNClusters);
-      }
     }
 
     if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() ||

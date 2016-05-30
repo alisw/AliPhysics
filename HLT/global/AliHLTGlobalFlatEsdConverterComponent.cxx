@@ -922,7 +922,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	}
 	    
 	const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
-	UInt_t rawID = chlt->GetID();
+	UInt_t rawID = chlt->GetRawID();
 	UInt_t sliceRaw = AliHLTTPCSpacePointData::GetSlice( rawID );
 	UInt_t partitionRaw = AliHLTTPCSpacePointData::GetPatch( rawID );
 	UInt_t indRaw = AliHLTTPCSpacePointData::GetNumber( rawID );

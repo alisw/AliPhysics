@@ -538,7 +538,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
       for ( unsigned int i = 0; i < inPtrSP->fSpacePointCnt; i++ ) {
 	AliHLTTPCSpacePointData *chlt = &( inPtrSP->fSpacePoints[i] );
-	UInt_t rawID = chlt->GetID();
+	UInt_t rawID = chlt->GetRawID();
 	UInt_t sliceRaw = AliHLTTPCSpacePointData::GetSlice( rawID );
 	UInt_t partitionRaw = AliHLTTPCSpacePointData::GetPatch( rawID );
 	UInt_t indRaw = AliHLTTPCSpacePointData::GetNumber( rawID );

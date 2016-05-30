@@ -98,28 +98,16 @@ int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* 
   bool bIsSinglePartition=(pDesc->fSpecification==kAliHLTVoidDataSpec?false:minslice==maxslice && minpart==maxpart);
 
   for (UInt_t i=0; i<pClusterData->fSpacePointCnt; i++) {
-    AliHLTUInt32_t clusterID=~(AliHLTUInt32_t)0;
-    if (bIsSinglePartition) {
-      // cluster ID has to match ID encoded from slice, partition and index
-      clusterID=AliHLTTPCSpacePointData::GetID(minslice, minpart, i);
-      if (clusterID!=pClusterData->fSpacePoints[i].fID) {
-	HLTWarning("cluster ID 0x%08x does not match slice %d partition %d index %d",
-		   pClusterData->fSpacePoints[i].fID, minslice, minpart, i);
-      }
-    } else {
-      // check the cluster ID for correct bounds
-      clusterID=pClusterData->fSpacePoints[i].fID;
-      UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
-      UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
-      UInt_t clusterNumber=AliHLTTPCSpacePointData::GetNumber(clusterID);
-      if (pDesc->fSpecification!=kAliHLTVoidDataSpec) {
-	if (clusterSlice<minslice || clusterSlice>maxslice ||
-	    clusterPart<minpart || clusterPart>maxpart) {
-	  HLTWarning("cluster ID 0x%08d out of range indicated by data specification 0x%08x", clusterID, pDesc->fSpecification);
-	} else if (clusterNumber!=i) {
-	  HLTWarning("cluster ID 0x%08d does not match index %d in block 0x%08x", clusterID, i, pDesc->fSpecification);
-	}
-      }
+    // check the cluster ID for correct bounds
+    AliHLTUInt32_t clusterID = pClusterData->fSpacePoints[i].GetRawID();
+    UInt_t clusterSlice  = AliHLTTPCSpacePointData::GetSlice(clusterID);
+    UInt_t clusterPart   = AliHLTTPCSpacePointData::GetPatch(clusterID);
+    UInt_t clusterNumber = AliHLTTPCSpacePointData::GetNumber(clusterID);
+    if (pDesc->fSpecification!=kAliHLTVoidDataSpec) {
+      if (clusterSlice<minslice || clusterSlice>maxslice ||
+	  clusterPart<minpart || clusterPart>maxpart) {
+	HLTWarning("cluster ID 0x%08d out of range indicated by data specification 0x%08x", clusterID, pDesc->fSpecification);
+      } 
     }
     {
       // consistency check for x and row number

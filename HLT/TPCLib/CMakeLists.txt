@@ -132,7 +132,6 @@ set(SRCS
     tracking-ca/AliHLTTPCCAGPUTracker.cxx
     tracking-ca/AliHLTTPCCAGrid.cxx
     tracking-ca/AliHLTTPCCAHitArea.cxx
-    tracking-ca/AliHLTTPCCAInputDataCompressorComponent.cxx
     tracking-ca/AliHLTTPCCAMCPoint.cxx
     tracking-ca/AliHLTTPCCAMCTrack.cxx
     tracking-ca/AliHLTTPCCAMerger.cxx
