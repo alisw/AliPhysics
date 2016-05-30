@@ -1525,7 +1525,7 @@ private:
  TProfile *fCMEZDCCorPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCMEZDCCovPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCMEZDCNUAPro[fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
-  const static Int_t fCMETPCnHist = 14;
+  const static Int_t fCMETPCnHist = 15;
   const static Int_t fZDCESEnCl = 5;
   Int_t fZDCESEclEbE;
   TProfile *fCMETPCCorPro[fZDCESEnCl][fCMETPCnHist]; //! correlation profile, [CRCBin][eg]
