@@ -110,9 +110,7 @@ void AliT0TenderSupply::Init(){
               }
     }
 
- //   TString filename=Form("/tzero/alla/alice/ESDtree/2013/195483/alice_cern.ch_user_a_alla_treeLHC16c_output195483TOFcuts_000_%.3i_AnalysisResults.root",ifile);
- 	
-    if ( fileName.Contains("LHC16d3") || fileName.Contains("LHC16a2d2") ) {
+   if ( fileName.Contains("LHC16d3") || fileName.Contains("LHC16a2d2") ) {
    	 fCorrectMeanTime=kTRUE;
          fTimeOffset[0]=35; fTimeOffset[1]=25; fTimeOffset[2]=40; 
 	 }
@@ -186,16 +184,13 @@ void AliT0TenderSupply::ProcessEvent(){
       // correct mean time offsets  
       const Double32_t* mean = event->GetT0TOF();
       for(int it0=0; it0<3; it0++){
-	if( mean[it0] < 2000  && mean[it0]>-2000 ) {
+	if( mean[it0] > -2000  && mean[it0]<2000 ) {
 	  event->SetT0TOF(it0, mean[it0] - fTimeOffset[it0]);
-	  printf("T0 %i mean[it0] %f fTimeOffset[it0] %f\n",it0, mean[it0],
-	  fTimeOffset[it0]);
 	  }
-     }
+      }
     }
     //...........................................
-
-
+       
 }
 
 
