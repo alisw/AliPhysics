@@ -66,7 +66,7 @@
 ClassImp(AliAnalysisTaskPi0Flow);
 
 const Double_t AliAnalysisTaskPi0Flow::kLogWeight         = 4.5 ;
-const Double_t AliAnalysisTaskPi0Flow::kAlphaCut          = 0.7 ;
+const Double_t AliAnalysisTaskPi0Flow::kAlphaCut          = 0.1 ;
 const Bool_t   AliAnalysisTaskPi0Flow::doESDReCalibration = kTRUE;
 const Double_t AliAnalysisTaskPi0Flow::kMinClusterEnergy  = 0.3;
 const Double_t AliAnalysisTaskPi0Flow::kMinBCDistance     = 2.5;
