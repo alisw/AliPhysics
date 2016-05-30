@@ -1512,7 +1512,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     if( vtxESD->GetNContributors() < 1 )
     {
       AliWarning("No vertex contributor");
-      return;
+//      return;
     }
     //    TString trigClasses = fEsdEv->GetFiredTriggerClasses();
     //    // remove "fast cluster events":
