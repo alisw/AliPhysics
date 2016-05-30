@@ -107,6 +107,8 @@ fHistFMDC(0),
 fHistFMDSingle(0),
 fHistFMDSum(0),
 fHistT0(0),
+fHistOFOvsTKLAcc(0),
+fHistV0MOnVsOfAcc(0),
 fTriggerClasses(new TMap),
 fMC(kFALSE)
 {
@@ -239,6 +241,8 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistFMDSingle       = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;", 1000, 0, 10);
   fHistFMDSum          = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
   fHistT0              = new TH1F("fHistT0", ";T0 time (ns);", 100, -25, 25);
+  fHistOFOvsTKLAcc     = new TH2F("fHistOFOvsTKLAcc","Accepted events; n tracklets; Online outer FO chips",200,0,isLowFlux?200:6000,200,0,isLowFlux?200:800);
+  fHistV0MOnVsOfAcc    = new TH2F("fHistV0MOnVsOfAcc","Accepted events; Offline V0M; Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
 
   TF1* fFuncSPDClsVsTkl = new TF1("fFuncSPDClsVsTkl","[0]+[1]*x",0,fHistSPDClsVsTklCln->GetXaxis()->GetXmax());
   fFuncSPDClsVsTkl->SetParameters(fSPDClsVsTklA,fSPDClsVsTklB);
@@ -318,6 +322,8 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistFMDSingle);
   fHistList->Add(fHistFMDSum);
   fHistList->Add(fHistT0);
+  fHistList->Add(fHistOFOvsTKLAcc);
+  fHistList->Add(fHistV0MOnVsOfAcc);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -1373,11 +1379,12 @@ Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Int
   Float_t of = vzero->GetMTotV0A()+vzero->GetMTotV0C();
 
   if (fillHists==1) {
-    fHistV0MOnAll->Fill(on);
-    fHistV0MOfAll->Fill(of);
+    if (online) fHistV0MOnAll->Fill(on); 
+    else        fHistV0MOfAll->Fill(of); 
   } else if (fillHists==2) {
-    fHistV0MOnAcc->Fill(on);
-    fHistV0MOfAcc->Fill(of);
+    if (online) fHistV0MOnAcc->Fill(on);
+    else        fHistV0MOfAcc->Fill(of);
+    if (!online) fHistV0MOnVsOfAcc->Fill(of,on);
   }
   
   return online ? on>=fV0MOnThreshold: of>=fV0MOfThreshold;
@@ -1424,7 +1431,10 @@ Bool_t AliTriggerAnalysis::TKLTrigger(const AliVEvent* event, Int_t fillHists){
   }
   Int_t nTkl = mult->GetNumberOfTracklets();
   if      (fillHists==1) fHistTKLAll->Fill(nTkl);
-  else if (fillHists==2) fHistTKLAcc->Fill(nTkl);
+  else if (fillHists==2) {
+    fHistTKLAcc->Fill(nTkl);
+    fHistOFOvsTKLAcc->Fill(mult->GetFastOrFiredChips().CountBits(400),nTkl);
+  }
   return (nTkl>=fTklThreshold);
 }
 

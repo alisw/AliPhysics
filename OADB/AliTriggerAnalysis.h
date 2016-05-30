@@ -158,9 +158,12 @@ protected:
   TH1F* fHistFMDSingle;      //! single mult value (more than one entry per event)
   TH1F* fHistFMDSum;         //! summed mult value (more than one entry per event)
   TH1F* fHistT0;             //! bb triggers
+  TH2F* fHistOFOvsTKLAcc;    //! Outer FO vs tracklet distribution for threshold efficiency studies
+  TH2F* fHistV0MOnVsOfAcc;   //! V0M online vs V0M offline distribution for threshold efficiency studies
+
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 32)
+  ClassDef(AliTriggerAnalysis, 33)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
