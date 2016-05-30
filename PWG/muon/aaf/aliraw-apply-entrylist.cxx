@@ -5,6 +5,7 @@
 #include "TTree.h"
 #include <cstdlib>
 #include <sstream>
+#include <memory>
 
 // TTree* tree = (TTree*) fFile->Get("RAW");
 // if (!tree) {

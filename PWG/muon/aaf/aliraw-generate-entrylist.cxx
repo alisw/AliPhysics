@@ -3,6 +3,8 @@
 #include "TDatime.h"
 #include "TString.h"
 #include "TSystem.h"
+#include <algorithm>
+#include <memory>
 
 struct EventInfo {
   Int_t mEventNumber;
@@ -30,7 +32,7 @@ void GenerateEntryListOneChunk(const char* infile, std::ostream& outfile, const 
   }
   if (!eventNumbers.empty()) {
     std::sort(begin(eventNumbers), end(eventNumbers),
-              [](EventInfo& i, EventInfo& j) -> bool { return i.mTimeStamp < j.mTimeStamp; });
+              [](const EventInfo& i, const EventInfo& j) -> bool { return i.mTimeStamp < j.mTimeStamp; });
     outfile << infile << std::endl << eventNumbers.size() << std::endl;
     for (auto ei : eventNumbers) {
       outfile << ei.mEventNumber << " ";
