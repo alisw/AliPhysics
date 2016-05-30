@@ -145,6 +145,7 @@ fNumberOfRPsEBE(0.),
 fNumberOfPOIsEBE(0.),
 fReferenceMultiplicityEBE(0.),
 fCentralityEBE(0.),
+fZDCESEclEbE(0),
 fNewMetricLEBE(0.),
 fNewMetricDEBE(0.),
 fNewMetricL2EBE(0.),
@@ -16205,6 +16206,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
     fZDCESEMinMetricHist[k] =  NULL;
     fZDCESEMaxMetricHist[k] =  NULL;
   }
+  for(Int_t k=0; k<fZDCESEnPol; k++) {
+    fZDCESECutsHist[k] =  NULL;
+  }
 } // end of AliFlowAnalysisCRC::InitializeArraysForQVec()
 
 //=======================================================================================================================
@@ -16237,10 +16241,12 @@ void AliFlowAnalysisCRC::InitializeArraysForCME()
     } // end of for(Int_t eg=0; eg<fCMEnEtaBin; eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for (Int_t h=0; h<fCMETPCnHist; h++) {
-    fCMETPCCorPro[h] = NULL;
-    fCMETPCCorHist[h] = NULL;
-    fCMETPCFinalHist[h] = NULL;
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      fCMETPCCorPro[k][h] = NULL;
+      fCMETPCCorHist[k][h] = NULL;
+      fCMETPCFinalHist[k][h] = NULL;
+    }
   }
   
 } // end of AliFlowAnalysisCRC::InitializeArraysForCME()
@@ -16765,6 +16771,9 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 //    fPolInt[k] = NULL;
     fPolDist[k] = NULL;
     fPolSlope[k] = NULL;
+  }
+  for(Int_t k=0; k<fZDCESEnPol; k++) {
+    fPolCuts[k] = NULL;
   }
   fCenMetric = NULL;
   
@@ -18024,13 +18033,15 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     fZDCQHist[1] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecC[%d][%d]",fRunNum,1)));
     fZDCQHist[2] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecA[%d][%d]",fRunNum,0)));
     fZDCQHist[3] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecA[%d][%d]",fRunNum,1)));
-    fZDCQHist[4] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2A[%d][%d]",fRunNum,0)));
-    fZDCQHist[5] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2A[%d][%d]",fRunNum,1)));
-    fZDCQHist[6] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2C[%d][%d]",fRunNum,2)));
-    fZDCQHist[7] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2C[%d][%d]",fRunNum,3)));
-    for (Int_t k=0; k<4; k++) {
-      fZDCQHist[k+4]->Fit(fZDCFitSec[k],"QRN","",3.,87.);
-    }
+    
+//    fZDCQHist[4] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2A[%d][%d]",fRunNum,0)));
+//    fZDCQHist[5] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2A[%d][%d]",fRunNum,1)));
+//    fZDCQHist[6] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCcos2C[%d][%d]",fRunNum,2)));
+//    fZDCQHist[7] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCsin2C[%d][%d]",fRunNum,3)));
+//    
+//    for (Int_t k=0; k<4; k++) {
+//      if(fZDCQHist[k+4]) fZDCQHist[k+4]->Fit(fZDCFitSec[k],"QRN","",3.,87.);
+//    }
   }
   
   if (!fZDCQHist[0] || !fZDCQHist[1] || !fZDCQHist[2] || !fZDCQHist[3]) return;
@@ -18120,9 +18131,15 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   if(QMA>0. && QMC>0.) {
     if( fInvertZDC ) QAReR = -QAReR;
     Double_t EvPlZDCC = TMath::ATan2(QCImR,QCReR);
-    fCRCZDCEvPlC[fRunBin][fCenBin]->Fill(EvPlZDCC);
     Double_t EvPlZDCA = TMath::ATan2(QAImR,QAReR);
-    fCRCZDCEvPlA[fRunBin][fCenBin]->Fill(EvPlZDCA);
+    Double_t EvPlSum = EvPlZDCC+EvPlZDCC;
+    if(EvPlSum < -TMath::Pi()) EvPlSum += TMath::Pi();
+    if(EvPlSum > TMath::Pi()) EvPlSum -= TMath::Pi();
+    fCRCZDCEvPlC[fRunBin][fCenBin]->Fill(EvPlSum);
+    
+    EvPlSum = TMath::ATan2(QAReR*QCReR-QAImR*QCImR,QAImR*QCReR+QAReR*QCImR);
+    fCRCZDCEvPlA[fRunBin][fCenBin]->Fill(EvPlSum);
+    
     fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,QAReR*QAReR-QAImR*QAImR);
     fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,2.*QAReR*QAImR);
     fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,QCReR*QCReR-QCImR*QCImR);
@@ -18188,32 +18205,49 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   Double_t ZNM = (ZCM+ZAM)/2.;
   Double_t VZM = VZCM+VZAM;
   
-  if (VZM>5.E3) {
-    Double_t par1 = 0.;
-    if(VZM<1.E4) par1 = fPolSlope[0]->Eval(VZM);
-    else         par1 = fPolSlope[1]->Eval(VZM);
-    Double_t par0 = ZNM-par1*VZM;
-    
-    fPolDist[0]->SetParameter(0,par0);
-    fPolDist[0]->SetParameter(1,par1);
-    Double_t VZMint = fPolDist[0]->GetMinimumX();
-    fNewMetricLEBE = sqrt(pow(VZMint-5.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
-    fNewMetricL2EBE = sqrt(pow((VZMint-5.E3)/1.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
-    
-    fPolAv[1]->SetParameter(0,par0);
-    fPolAv[1]->SetParameter(1,par1);
-    fNewMetricDEBE = sqrt(pow(VZM-VZMint,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
-    fNewMetricD2EBE = sqrt(pow((VZM-VZMint)/1.E3,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
-    if(fPolAv[1]->Eval(VZM)<fPolAv[0]->Eval(VZM)) {
-      fNewMetricDEBE *= -1.;
-      fNewMetricD2EBE *= -1.;
+  if(fMinMulZN==7) {
+    if (VZM>5.E3) {
+      Double_t par1 = 0.;
+      if(VZM<1.E4) par1 = fPolSlope[0]->Eval(VZM);
+      else         par1 = fPolSlope[1]->Eval(VZM);
+      Double_t par0 = ZNM-par1*VZM;
+      
+      fPolDist[0]->SetParameter(0,par0);
+      fPolDist[0]->SetParameter(1,par1);
+      Double_t VZMint = fPolDist[0]->GetMinimumX();
+      fNewMetricLEBE = sqrt(pow(VZMint-5.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
+      fNewMetricL2EBE = sqrt(pow((VZMint-5.E3)/1.E3,2.)+pow(fPolAv[0]->Eval(VZMint)-fPolAv[0]->Eval(5.E3),2.));
+      
+      fPolAv[1]->SetParameter(0,par0);
+      fPolAv[1]->SetParameter(1,par1);
+      fNewMetricDEBE = sqrt(pow(VZM-VZMint,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
+      fNewMetricD2EBE = sqrt(pow((VZM-VZMint)/1.E3,2.)+pow(fPolAv[1]->Eval(VZM)-fPolAv[1]->Eval(VZMint),2.));
+      if(fPolAv[1]->Eval(VZM)<fPolAv[0]->Eval(VZM)) {
+        fNewMetricDEBE *= -1.;
+        fNewMetricD2EBE *= -1.;
+      }
+      
+    } else {
+      fNewMetricLEBE = -1.;
+      fNewMetricDEBE = -1.;
+      PassZDCcuts = kFALSE;
     }
-    
-  } else {
-    fNewMetricLEBE = -1.;
-    fNewMetricDEBE = -1.;
   }
-  if(fMinMulZN==7 && VZM<=5.E3) PassZDCcuts = kFALSE;
+  
+  // new ZDC ESE selection
+  if(fMinMulZN==5) {
+    fZDCESEclEbE=-1;
+    Double_t DifMin=1.E3;
+    for (Int_t k=0; k<fZDCESEnPol; k++) {
+      Double_t PolV = fPolCuts[k]->Eval(fCentralityEBE)-fCorrMap[CenBin];
+      if(ZNM<PolV && PolV-ZNM<DifMin) {
+        fZDCESEclEbE=k;
+        DifMin=PolV-ZNM;
+      }
+    }
+    if (fZDCESEclEbE==-1) fZDCESEclEbE=fZDCESEnPol;
+    if (fCentralityEBE>=90.) PassZDCcuts = kFALSE;
+  }
   
   // cut on centroid position
   Double_t SigZNC = 0.2679;
@@ -18234,8 +18268,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhZNvsTCen[1]->Fill(fCentralityCL1EBE,ZAM);
     fhCenvsMul[0]->Fill(VZM,fCentralityEBE);
     fhCenvsMul[1]->Fill(VZM,fCentralityCL1EBE);
-    fhZNvsMul[0]->Fill(VZM,ZCM);
-    fhZNvsMul[1]->Fill(VZM,ZAM);
+    fhZNvsMul[0]->Fill(VZM,ZNM);
+    fhZNvsMul[1]->Fill(VZM,ZNM);
     fhCenvsDif[0]->Fill(VZM,ZNM);
     Double_t NewCentralityEBE = fCenMetric->Eval(fNewMetricLEBE);
     fhCenvsDif[1]->Fill(NewCentralityEBE,fCentralityEBE);
@@ -19043,13 +19077,51 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   Double_t VZAM  = fVZFlowVect[1][VZH-1].GetMult();
   
   if( VZCM<1. || VZAM<1. ) return;
+  if(fZDCESEclEbE<0 || fZDCESEclEbE>=fZDCESEnCl) return;
+  
+  // ZDC-C (eta < -8.8)
+  Double_t ZCM  = fZDCFlowVect[0].GetMult()/1380.;
+  // ZDC-A (eta > 8.8)
+  Double_t ZAM  = fZDCFlowVect[1].GetMult()/1380.;
+  Double_t ZNM = ZCM+ZAM;
   
   // Common variables
   
-  Double_t uPRe=0., uPIm=0., uPM=0., uP2Re=0., uP2Im=0.;
-  Double_t uNRe=0., uNIm=0., uNM=0., uN2Re=0., uN2Im=0.;
+  Double_t uPReA=0., uPImA=0., uPMA=0., uPReC=0., uPImC=0., uPMC=0.;
+  Double_t uNReA=0., uNImA=0., uNMA=0., uNReC=0., uNImC=0., uNMC=0.;
+  
+  uPReA = fCMEQRe[0][h]->GetBinContent(1);
+  uPImA = fCMEQIm[0][h]->GetBinContent(1);
+  uPMA  = fCMEMult[0][h]->GetBinContent(1);
+  uPReC = fCMEQRe[0][h]->GetBinContent(2);
+  uPImC = fCMEQIm[0][h]->GetBinContent(2);
+  uPMC  = fCMEMult[0][h]->GetBinContent(2);
+  
+  // negative charge
+  uNReA = fCMEQRe[1][h]->GetBinContent(1);
+  uNImA = fCMEQIm[1][h]->GetBinContent(1);
+  uNMA  = fCMEMult[1][h]->GetBinContent(1);
+  uNReC = fCMEQRe[1][h]->GetBinContent(2);
+  uNImC = fCMEQIm[1][h]->GetBinContent(2);
+  uNMC  = fCMEMult[1][h]->GetBinContent(2);
+  
+  if (uPMA>1. && uNMA>1. && uPMC>1. && uNMC>1.) {
+    
+    Double_t TwoQpQn = (uPReA*uNReC+uPImA*uNImC)/(uPMA*uNMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPMA*uNMC);
+    
+    Double_t TwoQpQp = (uPReA*uPReC+uPImA*uPImC)/(uPMA*uPMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,uPMA*uPMC);
+    
+    Double_t TwoQnQn = (uNReA*uNReC+uNImA*uNImC)/(uNMA*uNMC) ;
+    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNMA*uNMC);
+    
+  }
   
   // **********************************************************************************************************
+  
+  Double_t uPRe=0., uPIm=0., uPM=0., uP2Re=0., uP2Im=0.;
+  Double_t uNRe=0., uNIm=0., uNM=0., uN2Re=0., uN2Im=0.;
   
   for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++) {
     // positive charge
@@ -19068,41 +19140,39 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   
   if (uPM>1. && uNM>1.) {
     
-    // Delta
-    
-    Double_t TwoQpQn = (uPRe*uNRe+uPIm*uNIm)/(uPM*uNM) ;
-    fCMETPCCorPro[0]->Fill(fCentralityEBE,TwoQpQn,uPM*uNM);
-    
-    Double_t TwoQpQp = (uPRe*uPRe+uPIm*uPIm)/(uPM*uPM) ;
-    fCMETPCCorPro[1]->Fill(fCentralityEBE,TwoQpQp,uPM*uPM);
-    
-    Double_t TwoQnQn = (uNRe*uNRe+uNIm*uNIm)/(uNM*uNM) ;
-    fCMETPCCorPro[2]->Fill(fCentralityEBE,TwoQnQn,uNM*uNM);
-    
-    // Gamma
-    
     Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZCRe + (uPRe*uNIm+uPIm*uNRe)*VZCIm) / (uPM*uNM) ;
-    fCMETPCCorPro[3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
+    fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
     Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZCRe + (2.*uPRe*uPIm-uP2Im)*VZCIm) / (uPM*(uPM-1.)) ;
-    fCMETPCCorPro[4]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
+    fCMETPCCorPro[fZDCESEclEbE][4]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
     
     Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZCRe + (2.*uNRe*uNIm-uN2Im)*VZCIm) / (uNM*(uNM-1.)) ;
-    fCMETPCCorPro[5]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
+    fCMETPCCorPro[fZDCESEclEbE][5]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
     
     TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZARe + (uPRe*uNIm+uPIm*uNRe)*VZAIm) / (uPM*uNM) ;
-    fCMETPCCorPro[6]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
+    fCMETPCCorPro[fZDCESEclEbE][6]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
     TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZARe + (2.*uPRe*uPIm-uP2Im)*VZAIm) / (uPM*(uPM-1.)) ;
-    fCMETPCCorPro[7]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
+    fCMETPCCorPro[fZDCESEclEbE][7]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
     
     TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZARe + (2.*uNRe*uNIm-uN2Im)*VZAIm) / (uNM*(uNM-1.)) ;
-    fCMETPCCorPro[8]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
+    fCMETPCCorPro[fZDCESEclEbE][8]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
     
     // Resolution corrections
     
     Double_t TwoT2 = VZARe*VZCRe+VZAIm*VZCIm;
-    fCMETPCCorPro[9]->Fill(fCentralityEBE,TwoT2);
+    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,TwoT2);
+    
+    TwoT2 = ((uP2Re+uN2Re)*VZCRe+(uP2Im+uN2Im)*VZCIm)/(uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
+    
+    TwoT2 = ((uP2Re+uN2Re)*VZARe+(uP2Im+uN2Im)*VZAIm)/(uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
+    
+    // ZDC-ESE terms
+    
+    fCMETPCCorPro[fZDCESEclEbE][12]->Fill(fCentralityEBE,ZNM);
+    fCMETPCCorPro[fZDCESEclEbE][13]->Fill(fCentralityEBE,uPM+uNM);
     
   } // end of if (uPM>1. && uNM>1.)
   
@@ -21346,124 +21416,128 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
   cout << endl;
   cout << endl;
   
-  for (Int_t h=0; h<fCMETPCnHist; h++) {
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
     
-    for(Int_t c=1;c<=fCMETPCCorPro[h]->GetNbinsX();c++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
       
-      Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumTwoSq=0., SumWeigSq=0.;
-      Double_t stats[6]={0.};
+      for(Int_t c=1;c<=fCMETPCCorPro[k][h]->GetNbinsX();c++) {
+        
+        Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumTwoSq=0., SumWeigSq=0.;
+        Double_t stats[6]={0.};
+        
+        fCMETPCCorPro[k][h]->GetXaxis()->SetRange(c,c);
+        fCMETPCCorPro[k][h]->GetStats(stats);
+        Double_t sumw   = stats[0];
+        Double_t sumw2  = stats[1];
+        Double_t sumwx  = stats[4];
+        Double_t sumwx2 = stats[5];
+        if(sumw>0.) {
+          SumTwo    += sumwx;
+          SumWeig   += sumw;
+          SumTwoSq  += sumwx2;
+          SumWeigSq += sumw2;
+        } // end of if(sumw>0.)
+        
+        if(!SumWeig) continue;
+        
+        Double_t Corr = SumTwo/SumWeig;
+        Double_t SqCorr = SumTwoSq/SumWeig;
+        Double_t Weig = SumWeig;
+        Double_t SqWeig = SumWeigSq;
+        Double_t spread=0., termA=0., termB=0.;
+        if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
+        if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
+        if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
+        Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+        
+        if(CorrErr>0.) {
+          fCMETPCCorHist[k][h]->SetBinContent(c,Corr);
+          fCMETPCCorHist[k][h]->SetBinError(c,CorrErr);
+        }
+        
+      } // end of for(Int_t c=1;c<=fCMEnCR;c++)
+    } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
+    
+    // calculate correlation functions
+    
+    for(Int_t c=1;c<=fCMETPCCorHist[k][0]->GetNbinsX();c++) {
       
-      fCMETPCCorPro[h]->GetXaxis()->SetRange(c,c);
-      fCMETPCCorPro[h]->GetStats(stats);
-      Double_t sumw   = stats[0];
-      Double_t sumw2  = stats[1];
-      Double_t sumwx  = stats[4];
-      Double_t sumwx2 = stats[5];
-      if(sumw>0.) {
-        SumTwo    += sumwx;
-        SumWeig   += sumw;
-        SumTwoSq  += sumwx2;
-        SumWeigSq += sumw2;
-      } // end of if(sumw>0.)
+      // Delta
+      Double_t QPQN   = fCMETPCCorHist[k][0]->GetBinContent(c);
+      Double_t QPQNer = fCMETPCCorHist[k][0]->GetBinError(c);
       
-      if(!SumWeig) continue;
+      Double_t QPQP   = fCMETPCCorHist[k][1]->GetBinContent(c);
+      Double_t QPQPer = fCMETPCCorHist[k][1]->GetBinError(c);
       
-      Double_t Corr = SumTwo/SumWeig;
-      Double_t SqCorr = SumTwoSq/SumWeig;
-      Double_t Weig = SumWeig;
-      Double_t SqWeig = SumWeigSq;
-      Double_t spread=0., termA=0., termB=0.;
-      if(SqCorr-pow(Corr,2.)>=0.) { spread = pow(SqCorr-pow(Corr,2.),0.5); }
-      if(TMath::Abs(Weig)>0.) { termA = (pow(SqWeig,0.5)/Weig); }
-      if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
-      Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
+      Double_t QNQN   = fCMETPCCorHist[k][2]->GetBinContent(c);
+      Double_t QNQNer = fCMETPCCorHist[k][2]->GetBinError(c);
       
-      if(CorrErr>0.) {
-        fCMETPCCorHist[h]->SetBinContent(c,Corr);
-        fCMETPCCorHist[h]->SetBinError(c,CorrErr);
+      // Gamma
+      Double_t QPQNGC   = fCMETPCCorHist[k][3]->GetBinContent(c);
+      Double_t QPQNGCer = fCMETPCCorHist[k][3]->GetBinError(c);
+      
+      Double_t QPQPGC   = fCMETPCCorHist[k][4]->GetBinContent(c);
+      Double_t QPQPGCer = fCMETPCCorHist[k][4]->GetBinError(c);
+      
+      Double_t QNQNGC   = fCMETPCCorHist[k][5]->GetBinContent(c);
+      Double_t QNQNGCer = fCMETPCCorHist[k][5]->GetBinError(c);
+      
+      Double_t QPQNGA   = fCMETPCCorHist[k][6]->GetBinContent(c);
+      Double_t QPQNGAer = fCMETPCCorHist[k][6]->GetBinError(c);
+      
+      Double_t QPQPGA   = fCMETPCCorHist[k][7]->GetBinContent(c);
+      Double_t QPQPGAer = fCMETPCCorHist[k][7]->GetBinError(c);
+      
+      Double_t QNQNGA   = fCMETPCCorHist[k][8]->GetBinContent(c);
+      Double_t QNQNGAer = fCMETPCCorHist[k][8]->GetBinError(c);
+      
+      Double_t Res   = fCMETPCCorHist[k][9]->GetBinContent(c);
+      Double_t Reser = fCMETPCCorHist[k][9]->GetBinError(c);
+      
+      if(Res>0.) {
+        Double_t DeltaOp = QPQN;
+        Double_t DeltaOper = QPQNer;
+        //      printf(" delta, oppo charges: %e, %e \n",DeltaOp,DeltaOper);
+        fCMETPCFinalHist[k][0]->SetBinContent(c,DeltaOp);
+        fCMETPCFinalHist[k][0]->SetBinError(c,DeltaOper);
+        Double_t DeltaSa = (QPQP+QNQN)/2.;
+        Double_t DeltaSaer = pow(pow(QPQPer,2.)+pow(QNQNer,2.),0.5)/2.;
+        //      printf(" delta, same charges: %e, %e \n",DeltaSa,DeltaSaer);
+        fCMETPCFinalHist[k][1]->SetBinContent(c,DeltaSa);
+        fCMETPCFinalHist[k][1]->SetBinError(c,DeltaSaer);
+        
+        Double_t GammaOp = QPQNGC/sqrt(Res);
+        Double_t GammaOper = pow(QPQNGCer/(2.*sqrt(Res)),2.) + pow(QPQNGC*Reser/(2.*pow(Res,1.5)),2.);
+        GammaOper = pow(GammaOper,0.5);
+        //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
+        fCMETPCFinalHist[k][2]->SetBinContent(c,GammaOp);
+        fCMETPCFinalHist[k][2]->SetBinError(c,GammaOper);
+        
+        Double_t GammaSa = (QPQPGC+QNQNGC)/(2.*sqrt(Res));
+        Double_t GammaSaer = pow(QPQPGCer/(2.*sqrt(Res)),2.) + pow(QPQPGC*Reser/(2.*pow(Res,1.5)),2.);
+        GammaSaer = pow(GammaSaer,0.5)/2.;
+        //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
+        fCMETPCFinalHist[k][3]->SetBinContent(c,GammaSa);
+        fCMETPCFinalHist[k][3]->SetBinError(c,GammaSaer);
+        
+        GammaOp = QPQNGA/sqrt(Res);
+        GammaOper = pow(QPQNGAer/(2.*sqrt(Res)),2.) + pow(QPQNGA*Reser/(2.*pow(Res,1.5)),2.);
+        GammaOper = pow(GammaOper,0.5);
+        //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
+        fCMETPCFinalHist[k][4]->SetBinContent(c,GammaOp);
+        fCMETPCFinalHist[k][4]->SetBinError(c,GammaOper);
+        
+        GammaSa = (QPQPGA+QNQNGA)/(2.*sqrt(Res));
+        GammaSaer = pow(QPQPGAer/(2.*sqrt(Res)),2.) + pow(QPQPGA*Reser/(2.*pow(Res,1.5)),2.);
+        GammaSaer = pow(GammaSaer,0.5)/2.;
+        //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
+        fCMETPCFinalHist[k][5]->SetBinContent(c,GammaSa);
+        fCMETPCFinalHist[k][5]->SetBinError(c,GammaSaer);
       }
       
-    } // end of for(Int_t c=1;c<=fCMEnCR;c++)
-  } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
-  
-  // calculate correlation functions
-  
-  for(Int_t c=1;c<=fCMETPCCorPro[0]->GetNbinsX();c++) {
+    } // end of for(Int_t c=1;c<=fCMETPCCorPro->GetNbinsX();c++)
     
-    // Delta
-    Double_t QPQN   = fCMETPCCorHist[0]->GetBinContent(c);
-    Double_t QPQNer = fCMETPCCorHist[0]->GetBinError(c);
-    
-    Double_t QPQP   = fCMETPCCorHist[1]->GetBinContent(c);
-    Double_t QPQPer = fCMETPCCorHist[1]->GetBinError(c);
-    
-    Double_t QNQN   = fCMETPCCorHist[2]->GetBinContent(c);
-    Double_t QNQNer = fCMETPCCorHist[2]->GetBinError(c);
-    
-    // Gamma
-    Double_t QPQNGC   = fCMETPCCorHist[3]->GetBinContent(c);
-    Double_t QPQNGCer = fCMETPCCorHist[3]->GetBinError(c);
-    
-    Double_t QPQPGC   = fCMETPCCorHist[4]->GetBinContent(c);
-    Double_t QPQPGCer = fCMETPCCorHist[4]->GetBinError(c);
-    
-    Double_t QNQNGC   = fCMETPCCorHist[5]->GetBinContent(c);
-    Double_t QNQNGCer = fCMETPCCorHist[5]->GetBinError(c);
-    
-    Double_t QPQNGA   = fCMETPCCorHist[6]->GetBinContent(c);
-    Double_t QPQNGAer = fCMETPCCorHist[6]->GetBinError(c);
-    
-    Double_t QPQPGA   = fCMETPCCorHist[7]->GetBinContent(c);
-    Double_t QPQPGAer = fCMETPCCorHist[7]->GetBinError(c);
-    
-    Double_t QNQNGA   = fCMETPCCorHist[8]->GetBinContent(c);
-    Double_t QNQNGAer = fCMETPCCorHist[8]->GetBinError(c);
-    
-    Double_t Res   = fCMETPCCorHist[9]->GetBinContent(c);
-    Double_t Reser = fCMETPCCorHist[9]->GetBinError(c);
-    
-    if(Res<=0.) continue;
-    
-    Double_t DeltaOp = QPQN;
-    Double_t DeltaOper = QPQNer;
-    //      printf(" delta, oppo charges: %e, %e \n",DeltaOp,DeltaOper);
-    fCMETPCFinalHist[0]->SetBinContent(c,DeltaOp);
-    fCMETPCFinalHist[0]->SetBinError(c,DeltaOper);
-    Double_t DeltaSa = (QPQP+QNQN)/2.;
-    Double_t DeltaSaer = pow(pow(QPQPer,2.)+pow(QNQNer,2.),0.5)/2.;
-    //      printf(" delta, same charges: %e, %e \n",DeltaSa,DeltaSaer);
-    fCMETPCFinalHist[1]->SetBinContent(c,DeltaSa);
-    fCMETPCFinalHist[1]->SetBinError(c,DeltaSaer);
-    
-    Double_t GammaOp = QPQNGC/sqrt(Res);
-    Double_t GammaOper = pow(QPQNGCer/(2.*sqrt(Res)),2.) + pow(QPQNGC*Reser/(2.*pow(Res,1.5)),2.);
-    GammaOper = pow(GammaOper,0.5);
-    //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
-    fCMETPCFinalHist[2]->SetBinContent(c,GammaOp);
-    fCMETPCFinalHist[2]->SetBinError(c,GammaOper);
-    
-    Double_t GammaSa = (QPQPGC+QNQNGC)/(2.*sqrt(Res));
-    Double_t GammaSaer = pow(QPQPGCer/(2.*sqrt(Res)),2.) + pow(QPQPGC*Reser/(2.*pow(Res,1.5)),2.);
-    GammaSaer = pow(GammaSaer,0.5)/2.;
-    //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
-    fCMETPCFinalHist[3]->SetBinContent(c,GammaSa);
-    fCMETPCFinalHist[3]->SetBinError(c,GammaSaer);
-    
-    GammaOp = QPQNGA/sqrt(Res);
-    GammaOper = pow(QPQNGAer/(2.*sqrt(Res)),2.) + pow(QPQNGA*Reser/(2.*pow(Res,1.5)),2.);
-    GammaOper = pow(GammaOper,0.5);
-    //      printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
-    fCMETPCFinalHist[4]->SetBinContent(c,GammaOp);
-    fCMETPCFinalHist[4]->SetBinError(c,GammaOper);
-    
-    GammaSa = (QPQPGA+QNQNGA)/(2.*sqrt(Res));
-    GammaSaer = pow(QPQPGAer/(2.*sqrt(Res)),2.) + pow(QPQPGA*Reser/(2.*pow(Res,1.5)),2.);
-    GammaSaer = pow(GammaSaer,0.5)/2.;
-    //      printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
-    fCMETPCFinalHist[5]->SetBinContent(c,GammaSa);
-    fCMETPCFinalHist[5]->SetBinError(c,GammaSaer);
-    
-  } // end of for(Int_t c=1;c<=fCMETPCCorPro->GetNbinsX();c++)
+  }
   
 } // end of void AliFlowAnalysisCRC::FinalizeCMETPC()
 
@@ -24786,18 +24860,20 @@ void AliFlowAnalysisCRC::GetPointersForCME()
     } // end of for(Int_t eg=0;eg<fCRCZDCnEtaBin;eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for (Int_t h=0; h<fCMETPCnHist; h++) {
-    // Profiles
-    TProfile *CMETPCCorPro = dynamic_cast<TProfile*>(fCMETPCList->FindObject(Form("fCMETPCCorPro[%d]",h)));
-    if(CMETPCCorPro) { this->SetCMETPCCorPro(CMETPCCorPro,h); }
-    else { cout<<"WARNING: CMETPCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-    // Correlations:
-    TH1D *CMETPCCorHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCCorHist[%d]",h)));
-    if(CMETPCCorHist) { this->SetCMETPCCorHist(CMETPCCorHist,h); }
-    else { cout<<"WARNING: CMETPCCorHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
-    TH1D *CMETPCFinalHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCFinalHist[%d]",h)));
-    if(CMETPCFinalHist) { this->SetCMETPCFinalHist(CMETPCFinalHist,h); }
-    else { cout<<"WARNING: CMETPCFinalHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      // Profiles
+      TProfile *CMETPCCorPro = dynamic_cast<TProfile*>(fCMETPCList->FindObject(Form("fCMETPCCorPro[%d][%d]",k,h)));
+      if(CMETPCCorPro) { this->SetCMETPCCorPro(CMETPCCorPro,k,h); }
+      else { cout<<"WARNING: CMETPCCorPro is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      // Correlations:
+      TH1D *CMETPCCorHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCCorHist[%d][%d]",k,h)));
+      if(CMETPCCorHist) { this->SetCMETPCCorHist(CMETPCCorHist,k,h); }
+      else { cout<<"WARNING: CMETPCCorHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+      TH1D *CMETPCFinalHist = dynamic_cast<TH1D*>(fCMETPCList->FindObject(Form("fCMETPCFinalHist[%d][%d]",k,h)));
+      if(CMETPCFinalHist) { this->SetCMETPCFinalHist(CMETPCFinalHist,k,h); }
+      else { cout<<"WARNING: CMETPCFinalHist is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+    }
   }
   
 } // end void AliFlowAnalysisCRC::GetPointersForCME()
@@ -25944,6 +26020,19 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
 //      fTempList->Add(fPolMinMetric[k]);
 //      fTempList->Add(fPolMaxMetric[k]);
       
+      // new cuts on ZDC-ESE
+      for(Int_t k=0; k<fZDCESEnPol; k++) {
+        fZDCESECutsHist[k] = (TH1D*)(fZDCESEList->FindObject(Form("CutsHis[%d]",k)));
+        if(fZDCESECutsHist[k]) fTempList->Add(fZDCESECutsHist[k]);
+        else printf("WARNING: fZDCESECutsHist not found! \n");
+        
+        fPolCuts[k] = new TF1(Form("fPolCuts[%d]",k),"pol9",0.,100.);
+        if(fZDCESECutsHist[k]) {
+          fZDCESECutsHist[k]->Fit(fPolCuts[k],"QRN","",0.,90.);
+        }
+        fTempList->Add(fPolCuts[k]);
+      }
+      
       const Int_t nbins = 3410;
       
       Double_t xd[nbins] = {1.800005e+00, 1.800005e+00, 1.800005e+00, 5.400014e+00, 1.080003e+01, 1.440004e+01, 1.800005e+01, 2.160006e+01, 2.520007e+01, 2.700007e+01, 3.060008e+01, 3.240008e+01, 3.600009e+01, 3.780010e+01, 4.140011e+01, 4.320011e+01, 4.500012e+01, 4.860013e+01, 5.040013e+01, 5.220014e+01, 5.580015e+01, 5.760015e+01, 5.940016e+01, 6.120016e+01, 6.480017e+01, 6.660017e+01, 6.840018e+01, 7.020018e+01, 7.380019e+01, 7.560020e+01, 7.740020e+01, 7.920021e+01, 8.280022e+01, 8.460022e+01, 8.640023e+01, 8.820023e+01, 9.180024e+01, 9.360024e+01, 9.540025e+01, 9.900026e+01, 1.008003e+02, 1.026003e+02, 1.044003e+02, 1.080003e+02, 1.098003e+02, 1.116003e+02, 1.134003e+02, 1.152003e+02, 1.188003e+02, 1.206003e+02, 1.224003e+02, 1.242003e+02, 1.278003e+02, 1.296003e+02, 1.314003e+02, 1.332003e+02, 1.368004e+02, 1.386004e+02, 1.404004e+02, 1.422004e+02, 1.458004e+02, 1.476004e+02, 1.494004e+02, 1.530004e+02, 1.548004e+02, 1.566004e+02, 1.584004e+02, 1.620004e+02, 1.638004e+02, 1.656004e+02, 1.674004e+02, 1.692004e+02, 1.728005e+02, 1.746005e+02, 1.764005e+02, 1.800005e+02, 1.818005e+02, 1.836005e+02, 1.854005e+02, 1.890005e+02, 1.908005e+02, 1.926005e+02, 1.944005e+02, 1.980005e+02, 1.998005e+02, 2.016005e+02, 2.034005e+02, 2.070005e+02, 2.088005e+02, 2.106005e+02, 2.124006e+02, 2.160006e+02, 2.178006e+02, 2.196006e+02, 2.214006e+02, 2.250006e+02, 2.268006e+02, 2.286006e+02, 2.304006e+02, 2.340006e+02, 2.358006e+02, 2.376006e+02, 2.412006e+02, 2.430006e+02, 2.448006e+02, 2.466006e+02, 2.502007e+02, 2.520007e+02, 2.538007e+02, 2.556007e+02, 2.592007e+02, 2.610007e+02, 2.628007e+02, 2.646007e+02, 2.682007e+02, 2.700007e+02, 2.718007e+02, 2.754007e+02, 2.772007e+02, 2.790007e+02, 2.808007e+02, 2.844007e+02, 2.862007e+02, 2.880008e+02, 2.916008e+02, 2.934008e+02, 2.952008e+02, 2.970008e+02, 3.006008e+02, 3.024008e+02, 3.042008e+02, 3.078008e+02, 3.096008e+02, 3.114008e+02, 3.132008e+02, 3.168008e+02, 3.186008e+02, 3.204008e+02, 3.240008e+02, 3.258009e+02, 3.276009e+02, 3.294009e+02, 3.330009e+02, 3.348009e+02, 3.366009e+02, 3.402009e+02, 3.420009e+02, 3.438009e+02, 3.456009e+02, 3.492009e+02, 3.510009e+02, 3.528009e+02, 3.564009e+02, 3.582009e+02, 3.600009e+02, 3.618009e+02, 3.654010e+02, 3.672010e+02, 3.690010e+02, 3.726010e+02, 3.744010e+02, 3.762010e+02, 3.780010e+02, 3.816010e+02, 3.834010e+02, 3.852010e+02, 3.888010e+02, 3.906010e+02, 3.924010e+02, 3.960010e+02, 3.978010e+02, 3.996010e+02, 4.014010e+02, 4.050011e+02, 4.068011e+02, 4.086011e+02, 4.122011e+02, 4.140011e+02, 4.158011e+02, 4.194011e+02, 4.212011e+02, 4.230011e+02, 4.266011e+02, 4.284011e+02, 4.302011e+02, 4.320011e+02, 4.356011e+02, 4.374011e+02, 4.392011e+02, 4.428012e+02, 4.446012e+02, 4.464012e+02, 4.500012e+02, 4.518012e+02, 4.536012e+02, 4.554012e+02, 4.590012e+02, 4.608012e+02, 4.626012e+02, 4.662012e+02, 4.680012e+02, 4.698012e+02, 4.734012e+02, 4.752012e+02, 4.770012e+02, 4.806013e+02, 4.824013e+02, 4.842013e+02, 4.860013e+02, 4.896013e+02, 4.914013e+02, 4.932013e+02, 4.968013e+02, 4.986013e+02, 5.004013e+02, 5.040013e+02, 5.058013e+02, 5.076013e+02, 5.112013e+02, 5.130013e+02, 5.148013e+02, 5.184014e+02, 5.202014e+02, 5.220014e+02, 5.256014e+02, 5.274014e+02, 5.292014e+02, 5.328014e+02, 5.346014e+02, 5.364014e+02, 5.400014e+02, 5.418014e+02, 5.436014e+02, 5.472014e+02, 5.490014e+02, 5.508014e+02, 5.544014e+02, 5.562015e+02, 5.580015e+02, 5.616015e+02, 5.634015e+02, 5.652015e+02, 5.688015e+02, 5.706015e+02, 5.724015e+02, 5.760015e+02, 5.778015e+02, 5.796015e+02, 5.832015e+02, 5.850015e+02, 5.868015e+02, 5.886015e+02, 5.922015e+02, 5.940016e+02, 5.958016e+02, 5.994016e+02, 6.012016e+02, 6.030016e+02, 6.066016e+02, 6.084016e+02, 6.102016e+02, 6.138016e+02, 6.156016e+02, 6.174016e+02, 6.210016e+02, 6.228016e+02, 6.246016e+02, 6.282016e+02, 6.300016e+02, 6.318016e+02, 6.354017e+02, 6.372017e+02, 6.390017e+02, 6.426017e+02, 6.444017e+02, 6.462017e+02, 6.498017e+02, 6.516017e+02, 6.534017e+02, 6.570017e+02, 6.588017e+02, 6.606017e+02, 6.642017e+02, 6.660017e+02, 6.696017e+02, 6.714018e+02, 6.732018e+02, 6.768018e+02, 6.786018e+02, 6.804018e+02, 6.840018e+02, 6.858018e+02, 6.876018e+02, 6.912018e+02, 6.930018e+02, 6.948018e+02, 6.984018e+02, 7.002018e+02, 7.020018e+02, 7.056018e+02, 7.074018e+02, 7.092019e+02, 7.128019e+02, 7.146019e+02, 7.164019e+02, 7.200019e+02, 7.218019e+02, 7.236019e+02, 7.272019e+02, 7.290019e+02, 7.326019e+02, 7.344019e+02, 7.362019e+02, 7.380019e+02, 7.416019e+02, 7.434019e+02, 7.470019e+02, 7.488020e+02, 7.506020e+02, 7.542020e+02, 7.560020e+02, 7.578020e+02, 7.614020e+02, 7.632020e+02, 7.650020e+02, 7.686020e+02, 7.704020e+02, 7.740020e+02, 7.758020e+02, 7.776020e+02, 7.812020e+02, 7.830020e+02, 7.848020e+02, 7.884021e+02, 7.902021e+02, 7.920021e+02, 7.956021e+02, 7.974021e+02, 8.010021e+02, 8.028021e+02, 8.046021e+02, 8.082021e+02, 8.100021e+02, 8.118021e+02, 8.154021e+02, 8.172021e+02, 8.190021e+02, 8.226021e+02, 8.244022e+02, 8.280022e+02, 8.298022e+02, 8.316022e+02, 8.352022e+02, 8.370022e+02, 8.406022e+02, 8.424022e+02, 8.442022e+02, 8.478022e+02, 8.496022e+02, 8.514022e+02, 8.550022e+02, 8.568022e+02, 8.604022e+02, 8.622023e+02, 8.640023e+02, 8.676023e+02, 8.694023e+02, 8.712023e+02, 8.748023e+02, 8.766023e+02, 8.802023e+02, 8.820023e+02, 8.838023e+02, 8.874023e+02, 8.892023e+02, 8.910023e+02, 8.946023e+02, 8.964023e+02, 9.000023e+02, 9.018024e+02, 9.036024e+02, 9.072024e+02, 9.090024e+02, 9.108024e+02, 9.144024e+02, 9.162024e+02, 9.198024e+02, 9.216024e+02, 9.234024e+02, 9.270024e+02, 9.288024e+02, 9.324024e+02, 9.342024e+02, 9.360024e+02, 9.396025e+02, 9.414025e+02, 9.432025e+02, 9.468025e+02, 9.486025e+02, 9.522025e+02, 9.540025e+02, 9.576025e+02, 9.594025e+02, 9.612025e+02, 9.648025e+02, 9.666025e+02, 9.702025e+02, 9.720025e+02, 9.738025e+02, 9.774026e+02, 9.792026e+02, 9.828026e+02, 9.846026e+02, 9.864026e+02, 9.900026e+02, 9.918026e+02, 9.954026e+02, 9.972026e+02, 9.990026e+02, 1.002603e+03, 1.004403e+03, 1.006203e+03, 1.009803e+03, 1.011603e+03, 1.015203e+03, 1.017003e+03, 1.018803e+03, 1.022403e+03, 1.024203e+03, 1.027803e+03, 1.029603e+03, 1.031403e+03, 1.035003e+03, 1.036803e+03, 1.040403e+03, 1.042203e+03, 1.044003e+03, 1.047603e+03, 1.049403e+03, 1.053003e+03, 1.054803e+03, 1.058403e+03, 1.060203e+03, 1.062003e+03, 1.065603e+03, 1.067403e+03, 1.071003e+03, 1.072803e+03, 1.076403e+03, 1.078203e+03, 1.080003e+03, 1.083603e+03, 1.085403e+03, 1.089003e+03, 1.090803e+03, 1.094403e+03, 1.096203e+03, 1.098003e+03, 1.101603e+03, 1.103403e+03, 1.105203e+03, 1.108803e+03, 1.110603e+03, 1.114203e+03, 1.116003e+03, 1.117803e+03, 1.121403e+03, 1.123203e+03, 1.126803e+03, 1.128603e+03, 1.132203e+03, 1.134003e+03, 1.135803e+03, 1.139403e+03, 1.141203e+03, 1.144803e+03, 1.146603e+03, 1.150203e+03, 1.152003e+03, 1.153803e+03, 1.157403e+03, 1.159203e+03, 1.162803e+03, 1.164603e+03, 1.168203e+03, 1.170003e+03, 1.173603e+03, 1.175403e+03, 1.177203e+03, 1.180803e+03, 1.182603e+03, 1.186203e+03, 1.188003e+03, 1.191603e+03, 1.193403e+03, 1.195203e+03, 1.198803e+03, 1.200603e+03, 1.204203e+03, 1.206003e+03, 1.209603e+03, 1.211403e+03, 1.215003e+03, 1.216803e+03, 1.218603e+03, 1.222203e+03, 1.224003e+03, 1.227603e+03, 1.229403e+03, 1.233003e+03, 1.234803e+03, 1.238403e+03, 1.240203e+03, 1.243803e+03, 1.245603e+03, 1.247403e+03, 1.251003e+03, 1.252803e+03, 1.256403e+03, 1.258203e+03, 1.261803e+03, 1.263603e+03, 1.265403e+03, 1.269003e+03, 1.270803e+03, 1.274403e+03, 1.276203e+03, 1.279803e+03, 1.281603e+03, 1.285203e+03, 1.287003e+03, 1.290603e+03, 1.292403e+03, 1.296003e+03, 1.297803e+03, 1.299603e+03, 1.303203e+03, 1.305003e+03, 1.308603e+03, 1.310403e+03, 1.314003e+03, 1.315803e+03, 1.319403e+03, 1.321203e+03, 1.324803e+03, 1.326603e+03, 1.328403e+03, 1.332003e+03, 1.333803e+03, 1.337403e+03, 1.339203e+03, 1.342804e+03, 1.344604e+03, 1.348204e+03, 1.350004e+03, 1.353604e+03, 1.355404e+03, 1.359004e+03, 1.360804e+03, 1.364404e+03, 1.366204e+03, 1.368004e+03, 1.371604e+03, 1.373404e+03, 1.377004e+03, 1.378804e+03, 1.382404e+03, 1.384204e+03, 1.387804e+03, 1.389604e+03, 1.393204e+03, 1.395004e+03, 1.398604e+03, 1.400404e+03, 1.404004e+03, 1.405804e+03, 1.407604e+03, 1.411204e+03, 1.413004e+03, 1.416604e+03, 1.418404e+03, 1.422004e+03, 1.423804e+03, 1.427404e+03, 1.429204e+03, 1.432804e+03, 1.434604e+03, 1.438204e+03, 1.440004e+03, 1.443604e+03, 1.445404e+03, 1.449004e+03, 1.450804e+03, 1.454404e+03, 1.456204e+03, 1.458004e+03, 1.461604e+03, 1.463404e+03, 1.467004e+03, 1.468804e+03, 1.472404e+03, 1.474204e+03, 1.477804e+03, 1.479604e+03, 1.483204e+03, 1.485004e+03, 1.488604e+03, 1.490404e+03, 1.494004e+03, 1.495804e+03, 1.499404e+03, 1.501204e+03, 1.504804e+03, 1.506604e+03, 1.510204e+03, 1.512004e+03, 1.515604e+03, 1.517404e+03, 1.521004e+03, 1.522804e+03, 1.526404e+03, 1.528204e+03, 1.531804e+03, 1.533604e+03, 1.537204e+03, 1.539004e+03, 1.542604e+03, 1.544404e+03, 1.548004e+03, 1.549804e+03, 1.553404e+03, 1.555204e+03, 1.558804e+03, 1.560604e+03, 1.564204e+03, 1.566004e+03, 1.569604e+03, 1.571404e+03, 1.575004e+03, 1.576804e+03, 1.580404e+03, 1.582204e+03, 1.585804e+03, 1.587604e+03, 1.591204e+03, 1.593004e+03, 1.596604e+03, 1.598404e+03, 1.602004e+03, 1.603804e+03, 1.607404e+03, 1.609204e+03, 1.612804e+03, 1.616404e+03, 1.618204e+03, 1.621804e+03, 1.623604e+03, 1.627204e+03, 1.629004e+03, 1.632604e+03, 1.634404e+03, 1.638004e+03, 1.639804e+03, 1.641604e+03, 1.645204e+03, 1.647004e+03, 1.650604e+03, 1.654204e+03, 1.656004e+03, 1.659604e+03, 1.661404e+03, 1.665004e+03, 1.666804e+03, 1.670404e+03, 1.672204e+03, 1.675804e+03, 1.677604e+03, 1.681204e+03, 1.683004e+03, 1.686604e+03, 1.688404e+03, 1.692004e+03, 1.693804e+03, 1.697404e+03, 1.699204e+03, 1.702804e+03, 1.706404e+03, 1.708204e+03, 1.710004e+03, 1.713604e+03, 1.715404e+03, 1.719004e+03, 1.722604e+03, 1.724405e+03, 1.728005e+03, 1.729805e+03, 1.733405e+03, 1.735205e+03, 1.738805e+03, 1.740605e+03, 1.744205e+03, 1.746005e+03, 1.749605e+03, 1.751405e+03, 1.755005e+03, 1.756805e+03, 1.760405e+03, 1.762205e+03, 1.765805e+03, 1.767605e+03, 1.771205e+03, 1.773005e+03, 1.776605e+03, 1.778405e+03, 1.782005e+03, 1.785605e+03, 1.787405e+03, 1.791005e+03, 1.792805e+03, 1.796405e+03, 1.798205e+03, 1.801805e+03, 1.803605e+03, 1.807205e+03, 1.809005e+03, 1.812605e+03, 1.814405e+03, 1.818005e+03, 1.819805e+03, 1.823405e+03, 1.827005e+03, 1.828805e+03, 1.832405e+03, 1.834205e+03, 1.837805e+03, 1.839605e+03, 1.843205e+03, 1.845005e+03, 1.848605e+03, 1.850405e+03, 1.854005e+03, 1.857605e+03, 1.859405e+03, 1.861205e+03, 1.864805e+03, 1.868405e+03, 1.870205e+03, 1.873805e+03, 1.875605e+03, 1.879205e+03, 1.881005e+03, 1.884605e+03, 1.888205e+03, 1.890005e+03, 1.893605e+03, 1.895405e+03, 1.899005e+03, 1.902605e+03, 1.904405e+03, 1.908005e+03, 1.909805e+03, 1.913405e+03, 1.915205e+03, 1.918805e+03, 1.920605e+03, 1.924205e+03, 1.926005e+03, 1.929605e+03, 1.933205e+03, 1.935005e+03, 1.938605e+03, 1.940405e+03, 1.944005e+03, 1.945805e+03, 1.949405e+03, 1.953005e+03, 1.954805e+03, 1.958405e+03, 1.960205e+03, 1.963805e+03, 1.965605e+03, 1.969205e+03, 1.972805e+03, 1.974605e+03, 1.978205e+03, 1.980005e+03, 1.983605e+03, 1.985405e+03, 1.989005e+03, 1.992605e+03, 1.994405e+03, 1.998005e+03, 1.999805e+03, 2.003405e+03, 2.005205e+03, 2.008805e+03, 2.010605e+03, 2.014205e+03, 2.017805e+03, 2.019605e+03, 2.023205e+03, 2.025005e+03, 2.028605e+03, 2.030405e+03, 2.034005e+03, 2.037605e+03, 2.039405e+03, 2.043005e+03, 2.046605e+03, 2.048405e+03, 2.052005e+03, 2.053805e+03, 2.057405e+03, 2.059205e+03, 2.062805e+03, 2.066405e+03, 2.068205e+03, 2.071805e+03, 2.073605e+03, 2.077205e+03, 2.080805e+03, 2.082605e+03, 2.086205e+03, 2.088005e+03, 2.091605e+03, 2.095205e+03, 2.097005e+03, 2.100605e+03, 2.102405e+03, 2.106005e+03, 2.109606e+03, 2.111406e+03, 2.115006e+03, 2.116806e+03, 2.120406e+03, 2.122206e+03, 2.125806e+03, 2.129406e+03, 2.131206e+03, 2.134806e+03, 2.136606e+03, 2.140206e+03, 2.143806e+03, 2.145606e+03, 2.149206e+03, 2.152806e+03, 2.154606e+03, 2.158206e+03, 2.160006e+03, 2.163606e+03, 2.167206e+03, 2.169006e+03, 2.172606e+03, 2.174406e+03, 2.178006e+03, 2.181606e+03, 2.183406e+03, 2.187006e+03, 2.188806e+03, 2.192406e+03, 2.196006e+03, 2.197806e+03, 2.201406e+03, 2.205006e+03, 2.206806e+03, 2.210406e+03, 2.212206e+03, 2.215806e+03, 2.219406e+03, 2.221206e+03, 2.224806e+03, 2.226606e+03, 2.230206e+03, 2.233806e+03, 2.235606e+03, 2.239206e+03, 2.241006e+03, 2.244606e+03, 2.248206e+03, 2.250006e+03, 2.253606e+03, 2.257206e+03, 2.259006e+03, 2.262606e+03, 2.264406e+03, 2.268006e+03, 2.271606e+03, 2.273406e+03, 2.277006e+03, 2.280606e+03, 2.282406e+03, 2.286006e+03, 2.287806e+03, 2.291406e+03, 2.295006e+03, 2.296806e+03, 2.300406e+03, 2.304006e+03, 2.305806e+03, 2.309406e+03, 2.313006e+03, 2.314806e+03, 2.318406e+03, 2.320206e+03, 2.323806e+03, 2.327406e+03, 2.329206e+03, 2.332806e+03, 2.336406e+03, 2.338206e+03, 2.341806e+03, 2.345406e+03, 2.347206e+03, 2.350806e+03, 2.354406e+03, 2.356206e+03, 2.359806e+03, 2.363406e+03, 2.365206e+03, 2.368806e+03, 2.372406e+03, 2.374206e+03, 2.377806e+03, 2.381406e+03, 2.383206e+03, 2.386806e+03, 2.390406e+03, 2.392206e+03, 2.395806e+03, 2.397606e+03, 2.401206e+03, 2.404806e+03, 2.406606e+03, 2.410206e+03, 2.413806e+03, 2.415606e+03, 2.419206e+03, 2.422806e+03, 2.424606e+03, 2.428206e+03, 2.431806e+03, 2.433606e+03, 2.437206e+03, 2.439006e+03, 2.442606e+03, 2.446206e+03, 2.448006e+03, 2.451606e+03, 2.455206e+03, 2.457006e+03, 2.460606e+03, 2.464206e+03, 2.466006e+03, 2.469606e+03, 2.473206e+03, 2.475006e+03, 2.478606e+03, 2.480406e+03, 2.484006e+03, 2.487606e+03, 2.489406e+03, 2.493007e+03, 2.496607e+03, 2.498407e+03, 2.502007e+03, 2.505607e+03, 2.507407e+03, 2.511007e+03, 2.514607e+03, 2.516407e+03, 2.520007e+03, 2.523607e+03, 2.527207e+03, 2.529007e+03, 2.532607e+03, 2.536207e+03, 2.538007e+03, 2.541607e+03, 2.545207e+03, 2.547007e+03, 2.550607e+03, 2.554207e+03, 2.557807e+03, 2.559607e+03, 2.563207e+03, 2.566807e+03, 2.568607e+03, 2.572207e+03, 2.575807e+03, 2.577607e+03, 2.581207e+03, 2.584807e+03, 2.588407e+03, 2.590207e+03, 2.593807e+03, 2.597407e+03, 2.599207e+03, 2.602807e+03, 2.606407e+03, 2.610007e+03, 2.611807e+03, 2.615407e+03, 2.619007e+03, 2.620807e+03, 2.624407e+03, 2.628007e+03, 2.629807e+03, 2.633407e+03, 2.637007e+03, 2.640607e+03, 2.642407e+03, 2.646007e+03, 2.649607e+03, 2.651407e+03, 2.655007e+03, 2.658607e+03, 2.660407e+03, 2.664007e+03, 2.667607e+03, 2.669407e+03, 2.673007e+03, 2.676607e+03, 2.680207e+03, 2.682007e+03, 2.685607e+03, 2.689207e+03, 2.692807e+03, 2.694607e+03, 2.698207e+03, 2.701807e+03, 2.705407e+03, 2.707207e+03, 2.710807e+03, 2.714407e+03, 2.716207e+03, 2.719807e+03, 2.723407e+03, 2.727007e+03, 2.728807e+03, 2.732407e+03, 2.736007e+03, 2.737807e+03, 2.741407e+03, 2.745007e+03, 2.748607e+03, 2.750407e+03, 2.754007e+03, 2.757607e+03, 2.759407e+03, 2.763007e+03, 2.766607e+03, 2.770207e+03, 2.772007e+03, 2.775607e+03, 2.779207e+03, 2.781007e+03, 2.784607e+03, 2.788207e+03, 2.790007e+03, 2.793607e+03, 2.797207e+03, 2.800807e+03, 2.802607e+03, 2.806207e+03, 2.809807e+03, 2.813407e+03, 2.815207e+03, 2.818807e+03, 2.822407e+03, 2.824207e+03, 2.827807e+03, 2.831407e+03, 2.833207e+03, 2.836807e+03, 2.840407e+03, 2.844007e+03, 2.845807e+03, 2.849407e+03, 2.853007e+03, 2.856607e+03, 2.858407e+03, 2.862007e+03, 2.865607e+03, 2.867407e+03, 2.871007e+03, 2.874608e+03, 2.878208e+03, 2.880008e+03, 2.883608e+03, 2.887208e+03, 2.890808e+03, 2.892608e+03, 2.896208e+03, 2.899808e+03, 2.903408e+03, 2.905208e+03, 2.908808e+03, 2.912408e+03, 2.916008e+03, 2.917808e+03, 2.921408e+03, 2.925008e+03, 2.928608e+03, 2.930408e+03, 2.934008e+03, 2.937608e+03, 2.941208e+03, 2.943008e+03, 2.946608e+03, 2.950208e+03, 2.953808e+03, 2.955608e+03, 2.959208e+03, 2.962808e+03, 2.966408e+03, 2.968208e+03, 2.971808e+03, 2.975408e+03, 2.979008e+03, 2.980808e+03, 2.984408e+03, 2.988008e+03, 2.991608e+03, 2.993408e+03, 2.997008e+03, 3.000608e+03, 3.004208e+03, 3.006008e+03, 3.009608e+03, 3.013208e+03, 3.016808e+03, 3.018608e+03, 3.022208e+03, 3.025808e+03, 3.029408e+03, 3.033008e+03, 3.034808e+03, 3.038408e+03, 3.042008e+03, 3.045608e+03, 3.047408e+03, 3.051008e+03, 3.054608e+03, 3.058208e+03, 3.061808e+03, 3.063608e+03, 3.067208e+03, 3.070808e+03, 3.074408e+03, 3.076208e+03, 3.079808e+03, 3.083408e+03, 3.087008e+03, 3.088808e+03, 3.092408e+03, 3.096008e+03, 3.099608e+03, 3.101408e+03, 3.105008e+03, 3.108608e+03, 3.112208e+03, 3.115808e+03, 3.117608e+03, 3.121208e+03, 3.124808e+03, 3.128408e+03, 3.130208e+03, 3.133808e+03, 3.137408e+03, 3.141008e+03, 3.142808e+03, 3.146408e+03, 3.150008e+03, 3.153608e+03, 3.155408e+03, 3.159008e+03, 3.162608e+03, 3.166208e+03, 3.168008e+03, 3.171608e+03, 3.175208e+03, 3.178808e+03, 3.182408e+03, 3.184208e+03, 3.187808e+03, 3.191408e+03, 3.195008e+03, 3.198608e+03, 3.200408e+03, 3.204008e+03, 3.207608e+03, 3.211208e+03, 3.214808e+03, 3.216608e+03, 3.220208e+03, 3.223808e+03, 3.227408e+03, 3.231008e+03, 3.234608e+03, 3.236408e+03, 3.240008e+03, 3.243608e+03, 3.247208e+03, 3.250808e+03, 3.252608e+03, 3.256208e+03, 3.259809e+03, 3.263409e+03, 3.267009e+03, 3.268809e+03, 3.272409e+03, 3.276009e+03, 3.279609e+03, 3.283209e+03, 3.285009e+03, 3.288609e+03, 3.292209e+03, 3.295809e+03, 3.297609e+03, 3.301209e+03, 3.304809e+03, 3.308409e+03, 3.312009e+03, 3.313809e+03, 3.317409e+03, 3.321009e+03, 3.324609e+03, 3.328209e+03, 3.330009e+03, 3.333609e+03, 3.337209e+03, 3.340809e+03, 3.344409e+03, 3.346209e+03, 3.349809e+03, 3.353409e+03, 3.357009e+03, 3.360609e+03, 3.362409e+03, 3.366009e+03, 3.369609e+03, 3.373209e+03, 3.376809e+03, 3.380409e+03, 3.382209e+03, 3.385809e+03, 3.389409e+03, 3.393009e+03, 3.396609e+03, 3.398409e+03, 3.402009e+03, 3.405609e+03, 3.409209e+03, 3.412809e+03, 3.416409e+03, 3.418209e+03, 3.421809e+03, 3.425409e+03, 3.429009e+03, 3.432609e+03, 3.434409e+03, 3.438009e+03, 3.441609e+03, 3.445209e+03, 3.447009e+03, 3.450609e+03, 3.454209e+03, 3.457809e+03, 3.461409e+03, 3.465009e+03, 3.468609e+03, 3.470409e+03, 3.474009e+03, 3.477609e+03, 3.481209e+03, 3.484809e+03, 3.488409e+03, 3.490209e+03, 3.493809e+03, 3.497409e+03, 3.501009e+03, 3.504609e+03, 3.508209e+03, 3.511809e+03, 3.513609e+03, 3.517209e+03, 3.520809e+03, 3.524409e+03, 3.528009e+03, 3.531609e+03, 3.535209e+03, 3.537009e+03, 3.540609e+03, 3.544209e+03, 3.547809e+03, 3.551409e+03, 3.555009e+03, 3.556809e+03, 3.560409e+03, 3.564009e+03, 3.567609e+03, 3.571209e+03, 3.574809e+03, 3.576609e+03, 3.580209e+03, 3.583809e+03, 3.587409e+03, 3.591009e+03, 3.594609e+03, 3.598209e+03, 3.601809e+03, 3.605409e+03, 3.609009e+03, 3.610809e+03, 3.614409e+03, 3.618009e+03, 3.621609e+03, 3.625209e+03, 3.628809e+03, 3.632409e+03, 3.634209e+03, 3.637809e+03, 3.641410e+03, 3.645010e+03, 3.648610e+03, 3.652210e+03, 3.655810e+03, 3.659410e+03, 3.661210e+03, 3.664810e+03, 3.668410e+03, 3.672010e+03, 3.675610e+03, 3.679210e+03, 3.682810e+03, 3.686410e+03, 3.688210e+03, 3.691810e+03, 3.695410e+03, 3.699010e+03, 3.702610e+03, 3.706210e+03, 3.709810e+03, 3.713410e+03, 3.715210e+03, 3.718810e+03, 3.722410e+03, 3.726010e+03, 3.729610e+03, 3.733210e+03, 3.736810e+03, 3.740410e+03, 3.744010e+03, 3.745810e+03, 3.749410e+03, 3.753010e+03, 3.756610e+03, 3.760210e+03, 3.763810e+03, 3.767410e+03, 3.771010e+03, 3.774610e+03, 3.778210e+03, 3.780010e+03, 3.783610e+03, 3.787210e+03, 3.790810e+03, 3.794410e+03, 3.798010e+03, 3.801610e+03, 3.805210e+03, 3.807010e+03, 3.810610e+03, 3.814210e+03, 3.817810e+03, 3.821410e+03, 3.825010e+03, 3.828610e+03, 3.832210e+03, 3.834010e+03, 3.837610e+03, 3.841210e+03, 3.844810e+03, 3.848410e+03, 3.852010e+03, 3.855610e+03, 3.859210e+03, 3.862810e+03, 3.866410e+03, 3.870010e+03, 3.871810e+03, 3.875410e+03, 3.879010e+03, 3.882610e+03, 3.886210e+03, 3.889810e+03, 3.893410e+03, 3.897010e+03, 3.900610e+03, 3.904210e+03, 3.907810e+03, 3.909610e+03, 3.913210e+03, 3.916810e+03, 3.920410e+03, 3.924010e+03, 3.927610e+03, 3.931210e+03, 3.934810e+03, 3.938410e+03, 3.940210e+03, 3.943810e+03, 3.947410e+03, 3.951010e+03, 3.954610e+03, 3.958210e+03, 3.961810e+03, 3.965410e+03, 3.969010e+03, 3.972610e+03, 3.976210e+03, 3.979810e+03, 3.983410e+03, 3.985210e+03, 3.988810e+03, 3.992410e+03, 3.996010e+03, 3.999610e+03, 4.003210e+03, 4.006810e+03, 4.010410e+03, 4.014010e+03, 4.017610e+03, 4.021210e+03, 4.024811e+03, 4.028411e+03, 4.032011e+03, 4.033811e+03, 4.037411e+03, 4.041011e+03, 4.044611e+03, 4.048211e+03, 4.051811e+03, 4.055411e+03, 4.059011e+03, 4.062611e+03, 4.066211e+03, 4.069811e+03, 4.073411e+03, 4.077011e+03, 4.080611e+03, 4.084211e+03, 4.087811e+03, 4.091411e+03, 4.095011e+03, 4.098611e+03, 4.102211e+03, 4.105811e+03, 4.109411e+03, 4.113011e+03, 4.114811e+03, 4.118411e+03, 4.122011e+03, 4.125611e+03, 4.129211e+03, 4.132811e+03, 4.136411e+03, 4.140011e+03, 4.143611e+03, 4.147211e+03, 4.150811e+03, 4.154411e+03, 4.158011e+03, 4.161611e+03, 4.165211e+03, 4.168811e+03, 4.172411e+03, 4.176011e+03, 4.179611e+03, 4.183211e+03, 4.186811e+03, 4.190411e+03, 4.194011e+03, 4.197611e+03, 4.199411e+03, 4.203011e+03, 4.206611e+03, 4.210211e+03, 4.213811e+03, 4.217411e+03, 4.221011e+03, 4.224611e+03, 4.228211e+03, 4.231811e+03, 4.235411e+03, 4.239011e+03, 4.242611e+03, 4.246211e+03, 4.249811e+03, 4.253411e+03, 4.257011e+03, 4.260611e+03, 4.264211e+03, 4.267811e+03, 4.271411e+03, 4.275011e+03, 4.278611e+03, 4.282211e+03, 4.285811e+03, 4.289411e+03, 4.293011e+03, 4.296611e+03, 4.300211e+03, 4.303811e+03, 4.307411e+03, 4.311011e+03, 4.314611e+03, 4.318211e+03, 4.321811e+03, 4.325411e+03, 4.329011e+03, 4.332611e+03, 4.336211e+03, 4.339811e+03, 4.343411e+03, 4.347011e+03, 4.350611e+03, 4.354211e+03, 4.357811e+03, 4.361411e+03, 4.365011e+03, 4.368611e+03, 4.372211e+03, 4.375811e+03, 4.379411e+03, 4.383011e+03, 4.386611e+03, 4.390211e+03, 4.393811e+03, 4.397411e+03, 4.401011e+03, 4.404611e+03, 4.408212e+03, 4.411812e+03, 4.415412e+03, 4.419012e+03, 4.422612e+03, 4.426212e+03, 4.429812e+03, 4.433412e+03, 4.437012e+03, 4.440612e+03, 4.444212e+03, 4.447812e+03, 4.451412e+03, 4.455012e+03, 4.460412e+03, 4.462212e+03, 4.467612e+03, 4.471212e+03, 4.474812e+03, 4.478412e+03, 4.482012e+03, 4.485612e+03, 4.489212e+03, 4.492812e+03, 4.496412e+03, 4.500012e+03, 4.503612e+03, 4.507212e+03, 4.510812e+03, 4.514412e+03, 4.518012e+03, 4.521612e+03, 4.525212e+03, 4.528812e+03, 4.532412e+03, 4.536012e+03, 4.539612e+03, 4.545012e+03, 4.548612e+03, 4.552212e+03, 4.555812e+03, 4.559412e+03, 4.563012e+03, 4.566612e+03, 4.570212e+03, 4.573812e+03, 4.577412e+03, 4.581012e+03, 4.584612e+03, 4.590012e+03, 4.593612e+03, 4.597212e+03, 4.600812e+03, 4.604412e+03, 4.608012e+03, 4.611612e+03, 4.615212e+03, 4.618812e+03, 4.622412e+03, 4.626012e+03, 4.629612e+03, 4.633212e+03, 4.638612e+03, 4.642212e+03, 4.645812e+03, 4.649412e+03, 4.653012e+03, 4.656612e+03, 4.660212e+03, 4.663812e+03, 4.667412e+03, 4.672812e+03, 4.676412e+03, 4.680012e+03, 4.683612e+03, 4.687212e+03, 4.690812e+03, 4.694412e+03, 4.698012e+03, 4.703412e+03, 4.707012e+03, 4.710612e+03, 4.714212e+03, 4.717812e+03, 4.721412e+03, 4.725012e+03, 4.730412e+03, 4.734012e+03, 4.737612e+03, 4.741212e+03, 4.744812e+03, 4.748412e+03, 4.752012e+03, 4.755612e+03, 4.761012e+03, 4.764612e+03, 4.768212e+03, 4.771812e+03, 4.775412e+03, 4.780812e+03, 4.784412e+03, 4.788012e+03, 4.791613e+03, 4.795213e+03, 4.798813e+03, 4.802413e+03, 4.807813e+03, 4.811413e+03, 4.815013e+03, 4.818613e+03, 4.822213e+03, 4.825813e+03, 4.829413e+03, 4.834813e+03, 4.838413e+03, 4.842013e+03, 4.845613e+03, 4.849213e+03, 4.852813e+03, 4.858213e+03, 4.861813e+03, 4.865413e+03, 4.869013e+03, 4.872613e+03, 4.876213e+03, 4.881613e+03, 4.885213e+03, 4.888813e+03, 4.892413e+03, 4.897813e+03, 4.901413e+03, 4.905013e+03, 4.908613e+03, 4.912213e+03, 4.915813e+03, 4.921213e+03, 4.924813e+03, 4.928413e+03, 4.932013e+03, 4.937413e+03, 4.941013e+03, 4.944613e+03, 4.948213e+03, 4.951813e+03, 4.957213e+03, 4.960813e+03, 4.964413e+03, 4.968013e+03, 4.973413e+03, 4.977013e+03, 4.980613e+03, 4.984213e+03, 4.989613e+03, 4.993213e+03, 4.996813e+03, 5.000413e+03, 5.005813e+03, 5.009413e+03, 5.013013e+03, 5.016613e+03, 5.022013e+03, 5.025613e+03, 5.029213e+03, 5.032813e+03, 5.036413e+03, 5.041813e+03, 5.045413e+03, 5.049013e+03, 5.052613e+03, 5.058013e+03, 5.061613e+03, 5.065213e+03, 5.068813e+03, 5.074213e+03, 5.077813e+03, 5.081413e+03, 5.086813e+03, 5.090413e+03, 5.094013e+03, 5.099413e+03, 5.103013e+03, 5.106613e+03, 5.110213e+03, 5.113813e+03, 5.119213e+03, 5.122813e+03, 5.126413e+03, 5.130013e+03, 5.133613e+03, 5.139013e+03, 5.142613e+03, 5.146213e+03, 5.151613e+03, 5.155213e+03, 5.158813e+03, 5.162413e+03, 5.167813e+03, 5.171413e+03, 5.175014e+03, 5.178614e+03, 5.184014e+03, 5.187614e+03, 5.191214e+03, 5.194814e+03, 5.200214e+03, 5.203814e+03, 5.207414e+03, 5.211014e+03, 5.216414e+03, 5.220014e+03, 5.223614e+03, 5.229014e+03, 5.232614e+03, 5.236214e+03, 5.239814e+03, 5.245214e+03, 5.248814e+03, 5.252414e+03, 5.256014e+03, 5.261414e+03, 5.265014e+03, 5.268614e+03, 5.272214e+03, 5.277614e+03, 5.281214e+03, 5.284814e+03, 5.290214e+03, 5.293814e+03, 5.297414e+03, 5.301014e+03, 5.306414e+03, 5.310014e+03, 5.313614e+03, 5.317214e+03, 5.322614e+03, 5.326214e+03, 5.329814e+03, 5.335214e+03, 5.338814e+03, 5.342414e+03, 5.346014e+03, 5.351414e+03, 5.355014e+03, 5.358614e+03, 5.362214e+03, 5.367614e+03, 5.371214e+03, 5.374814e+03, 5.380214e+03, 5.383814e+03, 5.387414e+03, 5.391014e+03, 5.396414e+03, 5.400014e+03, 5.403614e+03, 5.409014e+03, 5.412614e+03, 5.416214e+03, 5.419814e+03, 5.425214e+03, 5.428814e+03, 5.432414e+03, 5.437814e+03, 5.441414e+03, 5.445014e+03, 5.448614e+03, 5.454014e+03, 5.457614e+03, 5.461214e+03, 5.464814e+03, 5.470214e+03, 5.473814e+03, 5.477414e+03, 5.481014e+03, 5.486414e+03, 5.490014e+03, 5.493614e+03, 5.499014e+03, 5.502614e+03, 5.506214e+03, 5.509814e+03, 5.515214e+03, 5.518814e+03, 5.522414e+03, 5.526014e+03, 5.531414e+03, 5.535014e+03, 5.538614e+03, 5.544014e+03, 5.547614e+03, 5.551214e+03, 5.554814e+03, 5.560215e+03, 5.563815e+03, 5.567415e+03, 5.571015e+03, 5.576415e+03, 5.580015e+03, 5.583615e+03, 5.589015e+03, 5.592615e+03, 5.596215e+03, 5.601615e+03, 5.605215e+03, 5.608815e+03, 5.612415e+03, 5.617815e+03, 5.621415e+03, 5.625015e+03, 5.630415e+03, 5.634015e+03, 5.637615e+03, 5.641215e+03, 5.646615e+03, 5.650215e+03, 5.653815e+03, 5.659215e+03, 5.662815e+03, 5.666415e+03, 5.670015e+03, 5.675415e+03, 5.679015e+03, 5.682615e+03, 5.688015e+03, 5.691615e+03, 5.695215e+03, 5.700615e+03, 5.704215e+03, 5.707815e+03, 5.713215e+03, 5.716815e+03, 5.720415e+03, 5.725815e+03, 5.729415e+03, 5.733015e+03, 5.736615e+03, 5.742015e+03, 5.745615e+03, 5.749215e+03, 5.754615e+03, 5.758215e+03, 5.761815e+03, 5.767215e+03, 5.770815e+03, 5.774415e+03, 5.778015e+03, 5.783415e+03, 5.787015e+03, 5.790615e+03, 5.796015e+03, 5.799615e+03, 5.803215e+03, 5.808615e+03, 5.812215e+03, 5.815815e+03, 5.821215e+03, 5.824815e+03, 5.828415e+03, 5.833815e+03, 5.837415e+03, 5.841015e+03, 5.846415e+03, 5.850015e+03, 5.853615e+03, 5.859015e+03, 5.862615e+03, 5.866215e+03, 5.871615e+03, 5.875215e+03, 5.878815e+03, 5.884215e+03, 5.887815e+03, 5.891415e+03, 5.896815e+03, 5.900415e+03, 5.904015e+03, 5.909415e+03, 5.913015e+03, 5.916615e+03, 5.922015e+03, 5.925615e+03, 5.929215e+03, 5.934615e+03, 5.938216e+03, 5.943616e+03, 5.947216e+03, 5.950816e+03, 5.956216e+03, 5.959816e+03, 5.963416e+03, 5.968816e+03, 5.972416e+03, 5.976016e+03, 5.981416e+03, 5.985016e+03, 5.988616e+03, 5.994016e+03, 5.997616e+03, 6.003016e+03, 6.006616e+03, 6.010216e+03, 6.015616e+03, 6.019216e+03, 6.024616e+03, 6.028216e+03, 6.031816e+03, 6.037216e+03, 6.040816e+03, 6.044416e+03, 6.049816e+03, 6.053416e+03, 6.058816e+03, 6.062416e+03, 6.066016e+03, 6.071416e+03, 6.075016e+03, 6.078616e+03, 6.084016e+03, 6.087616e+03, 6.093016e+03, 6.096616e+03, 6.100216e+03, 6.105616e+03, 6.109216e+03, 6.112816e+03, 6.118216e+03, 6.121816e+03, 6.125416e+03, 6.130816e+03, 6.134416e+03, 6.139816e+03, 6.143416e+03, 6.147016e+03, 6.152416e+03, 6.156016e+03, 6.159616e+03, 6.165016e+03, 6.168616e+03, 6.174016e+03, 6.177616e+03, 6.181216e+03, 6.186616e+03, 6.190216e+03, 6.193816e+03, 6.199216e+03, 6.202816e+03, 6.208216e+03, 6.211816e+03, 6.215416e+03, 6.220816e+03, 6.224416e+03, 6.229816e+03, 6.233416e+03, 6.238816e+03, 6.242416e+03, 6.246016e+03, 6.251416e+03, 6.255016e+03, 6.260416e+03, 6.264016e+03, 6.267616e+03, 6.273016e+03, 6.276616e+03, 6.282016e+03, 6.285616e+03, 6.289216e+03, 6.294616e+03, 6.298216e+03, 6.303616e+03, 6.307216e+03, 6.310816e+03, 6.316216e+03, 6.319816e+03, 6.325217e+03, 6.328817e+03, 6.334217e+03, 6.337817e+03, 6.341417e+03, 6.346817e+03, 6.350417e+03, 6.355817e+03, 6.359417e+03, 6.364817e+03, 6.368417e+03, 6.372017e+03, 6.377417e+03, 6.381017e+03, 6.386417e+03, 6.390017e+03, 6.395417e+03, 6.399017e+03, 6.404417e+03, 6.408017e+03, 6.413417e+03, 6.417017e+03, 6.420617e+03, 6.426017e+03, 6.431417e+03, 6.435017e+03, 6.438617e+03, 6.444017e+03, 6.447617e+03, 6.453017e+03, 6.456617e+03, 6.462017e+03, 6.465617e+03, 6.469217e+03, 6.474617e+03, 6.478217e+03, 6.483617e+03, 6.487217e+03, 6.492617e+03, 6.496217e+03, 6.501617e+03, 6.505217e+03, 6.510617e+03, 6.514217e+03, 6.519617e+03, 6.523217e+03, 6.528617e+03, 6.532217e+03, 6.537617e+03, 6.541217e+03, 6.546617e+03, 6.550217e+03, 6.555617e+03, 6.559217e+03, 6.564617e+03, 6.568217e+03, 6.573617e+03, 6.577217e+03, 6.582617e+03, 6.586217e+03, 6.591617e+03, 6.595217e+03, 6.600617e+03, 6.604217e+03, 6.609617e+03, 6.613217e+03, 6.618617e+03, 6.622217e+03, 6.627617e+03, 6.631217e+03, 6.636617e+03, 6.640217e+03, 6.645617e+03, 6.649217e+03, 6.654617e+03, 6.658217e+03, 6.663617e+03, 6.667217e+03, 6.672617e+03, 6.676217e+03, 6.681617e+03, 6.687017e+03, 6.690617e+03, 6.696017e+03, 6.699617e+03, 6.705018e+03, 6.708618e+03, 6.714018e+03, 6.717618e+03, 6.723018e+03, 6.726618e+03, 6.732018e+03, 6.735618e+03, 6.741018e+03, 6.744618e+03, 6.750018e+03, 6.753618e+03, 6.757218e+03, 6.762618e+03, 6.768018e+03, 6.771618e+03, 6.777018e+03, 6.780618e+03, 6.786018e+03, 6.789618e+03, 6.795018e+03, 6.798618e+03, 6.804018e+03, 6.809418e+03, 6.813018e+03, 6.818418e+03, 6.822018e+03, 6.827418e+03, 6.831018e+03, 6.836418e+03, 6.840018e+03, 6.845418e+03, 6.849018e+03, 6.854418e+03, 6.858018e+03, 6.863418e+03, 6.867018e+03, 6.872418e+03, 6.877818e+03, 6.881418e+03, 6.886818e+03, 6.892218e+03, 6.895818e+03, 6.901218e+03, 6.904818e+03, 6.910218e+03, 6.913818e+03, 6.919218e+03, 6.922818e+03, 6.928218e+03, 6.931818e+03, 6.937218e+03, 6.942618e+03, 6.946218e+03, 6.951618e+03, 6.955218e+03, 6.960618e+03, 6.966018e+03, 6.969618e+03, 6.975018e+03, 6.978618e+03, 6.984018e+03, 6.989418e+03, 6.993018e+03, 6.998418e+03, 7.002018e+03, 7.007418e+03, 7.012818e+03, 7.016418e+03, 7.021818e+03, 7.025418e+03, 7.030818e+03, 7.036218e+03, 7.039818e+03, 7.045218e+03, 7.048818e+03, 7.054218e+03, 7.057818e+03, 7.063218e+03, 7.068618e+03, 7.072218e+03, 7.077618e+03, 7.081218e+03, 7.086618e+03, 7.092019e+03, 7.095619e+03, 7.101019e+03, 7.104619e+03, 7.110019e+03, 7.115419e+03, 7.119019e+03, 7.124419e+03, 7.129819e+03, 7.133419e+03, 7.138819e+03, 7.142419e+03, 7.147819e+03, 7.153219e+03, 7.156819e+03, 7.162219e+03, 7.167619e+03, 7.171219e+03, 7.176619e+03, 7.180219e+03, 7.185619e+03, 7.191019e+03, 7.194619e+03, 7.200019e+03, 7.205419e+03, 7.209019e+03, 7.214419e+03, 7.219819e+03, 7.223419e+03, 7.228819e+03, 7.234219e+03, 7.237819e+03, 7.243219e+03, 7.248619e+03, 7.252219e+03, 7.257619e+03, 7.261219e+03, 7.266619e+03, 7.272019e+03, 7.275619e+03, 7.281019e+03, 7.286419e+03, 7.290019e+03, 7.295419e+03, 7.300819e+03, 7.304419e+03, 7.309819e+03, 7.315219e+03, 7.320619e+03, 7.324219e+03, 7.329619e+03, 7.335019e+03, 7.338619e+03, 7.344019e+03, 7.347619e+03, 7.353019e+03, 7.358419e+03, 7.362019e+03, 7.367419e+03, 7.372819e+03, 7.376419e+03, 7.381819e+03, 7.387219e+03, 7.390819e+03, 7.396219e+03, 7.401619e+03, 7.405219e+03, 7.410619e+03, 7.416019e+03, 7.419619e+03, 7.425019e+03, 7.430419e+03, 7.434019e+03, 7.439419e+03, 7.444819e+03, 7.448419e+03, 7.453819e+03, 7.459219e+03, 7.462819e+03, 7.468219e+03, 7.473620e+03, 7.477220e+03, 7.482620e+03, 7.488020e+03, 7.493420e+03, 7.497020e+03, 7.502420e+03, 7.507820e+03, 7.511420e+03, 7.516820e+03, 7.522220e+03, 7.525820e+03, 7.531220e+03, 7.536620e+03, 7.540220e+03, 7.545620e+03, 7.551020e+03, 7.556420e+03, 7.561820e+03, 7.565420e+03, 7.570820e+03, 7.576220e+03, 7.579820e+03, 7.585220e+03, 7.590620e+03, 7.596020e+03, 7.599620e+03, 7.605020e+03, 7.608620e+03, 7.614020e+03, 7.619420e+03, 7.624820e+03, 7.628420e+03, 7.633820e+03, 7.639220e+03, 7.644620e+03, 7.650020e+03, 7.653620e+03, 7.659020e+03, 7.664420e+03, 7.668020e+03, 7.673420e+03, 7.678820e+03, 7.684220e+03, 7.689620e+03, 7.693220e+03, 7.698620e+03, 7.704020e+03, 7.709420e+03, 7.713020e+03, 7.718420e+03, 7.723820e+03, 7.729220e+03, 7.732820e+03, 7.738220e+03, 7.743620e+03, 7.747220e+03, 7.752620e+03, 7.758020e+03, 7.763420e+03, 7.767020e+03, 7.772420e+03, 7.777820e+03, 7.783220e+03, 7.786820e+03, 7.792220e+03, 7.797620e+03, 7.803020e+03, 7.806620e+03, 7.812020e+03, 7.817420e+03, 7.822820e+03, 7.828220e+03, 7.831820e+03, 7.837220e+03, 7.842620e+03, 7.846220e+03, 7.851620e+03, 7.857021e+03, 7.862421e+03, 7.867821e+03, 7.871421e+03, 7.876821e+03, 7.882221e+03, 7.887621e+03, 7.893021e+03, 7.896621e+03, 7.902021e+03, 7.907421e+03, 7.912821e+03, 7.918221e+03, 7.921821e+03, 7.927221e+03, 7.932621e+03, 7.938021e+03, 7.943421e+03, 7.947021e+03, 7.952421e+03, 7.957821e+03, 7.963221e+03, 7.968621e+03, 7.972221e+03, 7.977621e+03, 7.983021e+03, 7.988421e+03, 7.993821e+03, 7.999221e+03, 8.002821e+03, 8.008221e+03, 8.013621e+03, 8.019021e+03, 8.024421e+03, 8.028021e+03, 8.033421e+03, 8.038821e+03, 8.044221e+03, 8.049621e+03, 8.055021e+03, 8.058621e+03, 8.064021e+03, 8.069421e+03, 8.074821e+03, 8.080221e+03, 8.085621e+03, 8.089221e+03, 8.094621e+03, 8.100021e+03, 8.105421e+03, 8.110821e+03, 8.116221e+03, 8.119821e+03, 8.125221e+03, 8.130621e+03, 8.136021e+03, 8.141421e+03, 8.145021e+03, 8.150421e+03, 8.155821e+03, 8.161221e+03, 8.166621e+03, 8.172021e+03, 8.175621e+03, 8.181021e+03, 8.186421e+03, 8.191821e+03, 8.197221e+03, 8.202621e+03, 8.208021e+03, 8.213421e+03, 8.218821e+03, 8.224221e+03, 8.227821e+03, 8.233221e+03, 8.238622e+03, 8.244022e+03, 8.249422e+03, 8.254822e+03, 8.260222e+03, 8.265622e+03, 8.271022e+03, 8.276422e+03, 8.281822e+03, 8.287222e+03, 8.290822e+03, 8.296222e+03, 8.301622e+03, 8.307022e+03, 8.312422e+03, 8.317822e+03, 8.323222e+03, 8.328622e+03, 8.334022e+03, 8.339422e+03, 8.344822e+03, 8.348422e+03, 8.353822e+03, 8.359222e+03, 8.364622e+03, 8.370022e+03, 8.375422e+03, 8.380822e+03, 8.386222e+03, 8.391622e+03, 8.397022e+03, 8.400622e+03, 8.406022e+03, 8.411422e+03, 8.416822e+03, 8.422222e+03, 8.427622e+03, 8.433022e+03, 8.438422e+03, 8.443822e+03, 8.449222e+03, 8.454622e+03, 8.460022e+03, 8.465422e+03, 8.470822e+03, 8.476222e+03, 8.481622e+03, 8.487022e+03, 8.490622e+03, 8.496022e+03, 8.501422e+03, 8.506822e+03, 8.512222e+03, 8.517622e+03, 8.523022e+03, 8.528422e+03, 8.533822e+03, 8.539222e+03, 8.544622e+03, 8.550022e+03, 8.555422e+03, 8.560822e+03, 8.566222e+03, 8.569822e+03, 8.575222e+03, 8.580622e+03, 8.586022e+03, 8.591422e+03, 8.596822e+03, 8.602222e+03, 8.607622e+03, 8.613022e+03, 8.618422e+03, 8.623823e+03, 8.629223e+03, 8.634623e+03, 8.640023e+03, 8.645423e+03, 8.650823e+03, 8.656223e+03, 8.661623e+03, 8.667023e+03, 8.672423e+03, 8.677823e+03, 8.683223e+03, 8.688623e+03, 8.694023e+03, 8.699423e+03, 8.704823e+03, 8.710223e+03, 8.715623e+03, 8.721023e+03, 8.726423e+03, 8.731823e+03, 8.737223e+03, 8.742623e+03, 8.748023e+03, 8.753423e+03, 8.758823e+03, 8.764223e+03, 8.769623e+03, 8.775023e+03, 8.780423e+03, 8.785823e+03, 8.791223e+03, 8.796623e+03, 8.802023e+03, 8.807423e+03, 8.812823e+03, 8.818223e+03, 8.823623e+03, 8.829023e+03, 8.834423e+03, 8.839823e+03, 8.845223e+03, 8.850623e+03, 8.856023e+03, 8.861423e+03, 8.866823e+03, 8.872223e+03, 8.877623e+03, 8.883023e+03, 8.888423e+03, 8.893823e+03, 8.901023e+03, 8.906423e+03, 8.911823e+03, 8.917223e+03, 8.922623e+03, 8.928023e+03, 8.933423e+03, 8.938823e+03, 8.944223e+03, 8.949623e+03, 8.955023e+03, 8.962223e+03, 8.967623e+03, 8.973023e+03, 8.978423e+03, 8.983823e+03, 8.989223e+03, 8.994623e+03, 9.000023e+03, 9.005424e+03, 9.010824e+03, 9.016224e+03, 9.021624e+03, 9.028824e+03, 9.034224e+03, 9.039624e+03, 9.045024e+03, 9.050424e+03, 9.055824e+03, 9.061224e+03, 9.066624e+03, 9.072024e+03, 9.079224e+03, 9.084624e+03, 9.090024e+03, 9.095424e+03, 9.100824e+03, 9.106224e+03, 9.111624e+03, 9.117024e+03, 9.124224e+03, 9.129624e+03, 9.135024e+03, 9.140424e+03, 9.145824e+03, 9.151224e+03, 9.156624e+03, 9.163824e+03, 9.169224e+03, 9.174624e+03, 9.180024e+03, 9.185424e+03, 9.190824e+03, 9.196224e+03, 9.201624e+03, 9.207024e+03, 9.212424e+03, 9.217824e+03, 9.225024e+03, 9.230424e+03, 9.235824e+03, 9.241224e+03, 9.248424e+03, 9.253824e+03, 9.259224e+03, 9.264624e+03, 9.270024e+03, 9.275424e+03, 9.282624e+03, 9.288024e+03, 9.293424e+03, 9.298824e+03, 9.304224e+03, 9.309624e+03, 9.315024e+03, 9.320424e+03, 9.327624e+03, 9.333024e+03, 9.338424e+03, 9.343824e+03, 9.351024e+03, 9.356424e+03, 9.361824e+03, 9.367224e+03, 9.372624e+03, 9.378024e+03, 9.383424e+03, 9.390625e+03, 9.396025e+03, 9.401425e+03, 9.406825e+03, 9.412225e+03, 9.417625e+03, 9.424825e+03, 9.430225e+03, 9.435625e+03, 9.441025e+03, 9.448225e+03, 9.453625e+03, 9.459025e+03, 9.464425e+03, 9.469825e+03, 9.475225e+03, 9.482425e+03, 9.487825e+03, 9.493225e+03, 9.498625e+03, 9.504025e+03, 9.511225e+03, 9.516625e+03, 9.522025e+03, 9.527425e+03, 9.534625e+03, 9.540025e+03, 9.545425e+03, 9.550825e+03, 9.556225e+03, 9.563425e+03, 9.568825e+03, 9.574225e+03, 9.579625e+03, 9.586825e+03, 9.592225e+03, 9.597625e+03, 9.603025e+03, 9.608425e+03, 9.613825e+03, 9.621025e+03, 9.626425e+03, 9.631825e+03, 9.637225e+03, 9.644425e+03, 9.649825e+03, 9.655225e+03, 9.660625e+03, 9.666025e+03, 9.673225e+03, 9.678625e+03, 9.684025e+03, 9.689425e+03, 9.694825e+03, 9.702025e+03, 9.707425e+03, 9.712825e+03, 9.720025e+03, 9.725425e+03, 9.730825e+03, 9.738025e+03, 9.743425e+03, 9.748825e+03, 9.754225e+03, 9.761425e+03, 9.766825e+03, 9.772226e+03, 9.777626e+03, 9.784826e+03, 9.790226e+03, 9.795626e+03, 9.802826e+03, 9.808226e+03, 9.813626e+03, 9.819026e+03, 9.826226e+03, 9.831626e+03, 9.837026e+03, 9.844226e+03, 9.849626e+03, 9.856826e+03, 9.862226e+03, 9.867626e+03, 9.873026e+03, 9.880226e+03, 9.885626e+03, 9.892826e+03, 9.898226e+03, 9.903626e+03, 9.909026e+03, 9.916226e+03, 9.921626e+03, 9.927026e+03, 9.934226e+03, 9.939626e+03, 9.946826e+03, 9.952226e+03, 9.957626e+03, 9.964826e+03, 9.970226e+03, 9.977426e+03, 9.982826e+03, 9.988226e+03, 9.995426e+03, 1.000083e+04, 1.000623e+04, 1.001343e+04, 1.001883e+04, 1.002423e+04, 1.003143e+04, 1.003683e+04, 1.004223e+04, 1.004763e+04, 1.005483e+04, 1.006023e+04, 1.006743e+04, 1.007283e+04, 1.007823e+04, 1.008543e+04, 1.009083e+04, 1.009803e+04, 1.010343e+04, 1.011063e+04, 1.011603e+04, 1.012143e+04, 1.012863e+04, 1.013403e+04, 1.014123e+04, 1.014663e+04, 1.015203e+04, 1.015923e+04, 1.016463e+04, 1.017003e+04, 1.017723e+04, 1.018263e+04, 1.018803e+04, 1.019523e+04, 1.020063e+04, 1.020783e+04, 1.021323e+04, 1.021863e+04, 1.022583e+04, 1.023123e+04, 1.023843e+04, 1.024383e+04, 1.025103e+04, 1.025643e+04, 1.026363e+04, 1.026903e+04, 1.027443e+04, 1.028163e+04, 1.028703e+04, 1.029423e+04, 1.029963e+04, 1.030683e+04, 1.031223e+04, 1.031763e+04, 1.032483e+04, 1.033023e+04, 1.033743e+04, 1.034283e+04, 1.035003e+04, 1.035543e+04, 1.036083e+04, 1.036803e+04, 1.037343e+04, 1.038063e+04, 1.038603e+04, 1.039323e+04, 1.039863e+04, 1.040583e+04, 1.041123e+04, 1.041843e+04, 1.042383e+04, 1.043103e+04, 1.043643e+04, 1.044363e+04, 1.044903e+04, 1.045623e+04, 1.046163e+04, 1.046703e+04, 1.047423e+04, 1.047963e+04, 1.048683e+04, 1.049223e+04, 1.049943e+04, 1.050483e+04, 1.051203e+04, 1.051923e+04, 1.052463e+04, 1.053003e+04, 1.053723e+04, 1.054443e+04, 1.054983e+04, 1.055703e+04, 1.056243e+04, 1.056783e+04, 1.057503e+04, 1.058043e+04, 1.058763e+04, 1.059483e+04, 1.060023e+04, 1.060563e+04, 1.061283e+04, 1.061823e+04, 1.062543e+04, 1.063263e+04, 1.063803e+04, 1.064523e+04, 1.065063e+04, 1.065783e+04, 1.066503e+04, 1.067043e+04, 1.067763e+04, 1.068303e+04, 1.069023e+04, 1.069563e+04, 1.070283e+04, 1.070823e+04, 1.071543e+04, 1.072083e+04, 1.072803e+04, 1.073523e+04, 1.074063e+04, 1.074783e+04, 1.075323e+04, 1.076043e+04, 1.076763e+04, 1.077303e+04, 1.078023e+04, 1.078563e+04, 1.079283e+04, 1.079823e+04, 1.080543e+04, 1.081263e+04, 1.081803e+04, 1.082523e+04, 1.083063e+04, 1.083783e+04, 1.084323e+04, 1.085043e+04, 1.085583e+04, 1.086303e+04, 1.087023e+04, 1.087563e+04, 1.088283e+04, 1.088823e+04, 1.089543e+04, 1.090263e+04, 1.090803e+04, 1.091523e+04, 1.092063e+04, 1.092783e+04, 1.093323e+04, 1.094043e+04, 1.094583e+04, 1.095303e+04, 1.095843e+04, 1.096563e+04, 1.097103e+04, 1.097823e+04, 1.098543e+04, 1.099083e+04, 1.099803e+04, 1.100343e+04, 1.101063e+04, 1.101783e+04, 1.102323e+04, 1.103043e+04, 1.103763e+04, 1.104303e+04, 1.105023e+04, 1.105563e+04, 1.106283e+04, 1.107003e+04, 1.107723e+04, 1.108263e+04, 1.108983e+04, 1.109703e+04, 1.110243e+04, 1.110963e+04, 1.111683e+04, 1.112403e+04, 1.112943e+04, 1.113663e+04, 1.114383e+04, 1.114923e+04, 1.115643e+04, 1.116363e+04, 1.116903e+04, 1.117623e+04, 1.118343e+04, 1.119063e+04, 1.119603e+04, 1.120323e+04, 1.121043e+04, 1.121763e+04, 1.122303e+04, 1.123023e+04, 1.123563e+04, 1.124283e+04, 1.125003e+04, 1.125543e+04, 1.126263e+04, 1.126983e+04, 1.127523e+04, 1.128243e+04, 1.128963e+04, 1.129503e+04, 1.130223e+04, 1.130943e+04, 1.131663e+04, 1.132203e+04, 1.132923e+04, 1.133643e+04, 1.134363e+04, 1.135083e+04, 1.135623e+04, 1.136343e+04, 1.137063e+04, 1.137783e+04, 1.138323e+04, 1.139043e+04, 1.139763e+04, 1.140483e+04, 1.141023e+04, 1.141743e+04, 1.142463e+04, 1.143003e+04, 1.143723e+04, 1.144443e+04, 1.144983e+04, 1.145703e+04, 1.146423e+04, 1.147143e+04, 1.147863e+04, 1.148583e+04, 1.149123e+04, 1.149843e+04, 1.150563e+04, 1.151283e+04, 1.152003e+04, 1.152543e+04, 1.153263e+04, 1.153983e+04, 1.154703e+04, 1.155423e+04, 1.155963e+04, 1.156683e+04, 1.157403e+04, 1.158123e+04, 1.158663e+04, 1.159383e+04, 1.160103e+04, 1.160823e+04, 1.161363e+04, 1.162083e+04, 1.162803e+04, 1.163523e+04, 1.164243e+04, 1.164963e+04, 1.165683e+04, 1.166403e+04, 1.167123e+04, 1.167663e+04, 1.168383e+04, 1.169103e+04, 1.169823e+04, 1.170543e+04, 1.171263e+04, 1.171983e+04, 1.172523e+04, 1.173243e+04, 1.173963e+04, 1.174683e+04, 1.175403e+04, 1.175943e+04, 1.176663e+04, 1.177383e+04, 1.178103e+04, 1.178823e+04, 1.179543e+04, 1.180263e+04, 1.180803e+04, 1.181523e+04, 1.182243e+04, 1.182963e+04, 1.183683e+04, 1.184223e+04, 1.184943e+04, 1.185663e+04, 1.186383e+04, 1.187103e+04, 1.187823e+04, 1.188543e+04, 1.189263e+04, 1.189803e+04, 1.190523e+04, 1.191243e+04, 1.191963e+04, 1.192683e+04, 1.193403e+04, 1.194123e+04, 1.194843e+04, 1.195563e+04, 1.196283e+04, 1.196823e+04, 1.197543e+04, 1.198263e+04, 1.198983e+04, 1.199703e+04, 1.200423e+04, 1.201143e+04, 1.201863e+04, 1.202403e+04, 1.203123e+04, 1.203843e+04, 1.204563e+04, 1.205283e+04, 1.206003e+04, 1.206723e+04, 1.207443e+04, 1.207983e+04, 1.208703e+04, 1.209423e+04, 1.210143e+04, 1.210863e+04, 1.211583e+04, 1.212303e+04, 1.213023e+04, 1.213743e+04, 1.214463e+04, 1.215003e+04, 1.215723e+04, 1.216443e+04, 1.217163e+04, 1.217883e+04, 1.218603e+04, 1.219323e+04, 1.220043e+04, 1.220763e+04, 1.221483e+04, 1.222203e+04, 1.222923e+04, 1.223643e+04, 1.224363e+04, 1.225083e+04, 1.225803e+04, 1.226523e+04, 1.227243e+04, 1.227963e+04, 1.228683e+04, 1.229403e+04, 1.230123e+04, 1.230843e+04, 1.231563e+04, 1.232283e+04, 1.233003e+04, 1.233723e+04, 1.234443e+04, 1.235163e+04, 1.235883e+04, 1.236603e+04, 1.237323e+04, 1.238043e+04, 1.238763e+04, 1.239483e+04, 1.240203e+04, 1.240923e+04, 1.241643e+04, 1.242363e+04, 1.243083e+04, 1.243803e+04, 1.244523e+04, 1.245243e+04, 1.245963e+04, 1.246683e+04, 1.247583e+04, 1.248303e+04, 1.249023e+04, 1.249743e+04, 1.250463e+04, 1.251183e+04, 1.251903e+04, 1.252623e+04, 1.253343e+04, 1.254063e+04, 1.254783e+04, 1.255503e+04, 1.256223e+04, 1.256943e+04, 1.257843e+04, 1.258563e+04, 1.259283e+04, 1.260003e+04, 1.260723e+04, 1.261443e+04, 1.262163e+04, 1.262883e+04, 1.263603e+04, 1.264323e+04, 1.265043e+04, 1.265763e+04, 1.266663e+04, 1.267383e+04, 1.268103e+04, 1.268823e+04, 1.269543e+04, 1.270263e+04, 1.270983e+04, 1.271703e+04, 1.272603e+04, 1.273323e+04, 1.274043e+04, 1.274763e+04, 1.275483e+04, 1.276203e+04, 1.276923e+04, 1.277643e+04, 1.278363e+04, 1.279263e+04, 1.279983e+04, 1.280703e+04, 1.281423e+04, 1.282143e+04, 1.282863e+04, 1.283763e+04, 1.284483e+04, 1.285203e+04, 1.285923e+04, 1.286643e+04, 1.287363e+04, 1.288083e+04, 1.288983e+04, 1.289703e+04, 1.290423e+04, 1.291143e+04, 1.291863e+04, 1.292763e+04, 1.293483e+04, 1.294203e+04, 1.294923e+04, 1.295643e+04, 1.296543e+04, 1.297263e+04, 1.297983e+04, 1.298703e+04, 1.299423e+04, 1.300143e+04, 1.300863e+04, 1.301583e+04, 1.302483e+04, 1.303203e+04, 1.303923e+04, 1.304643e+04, 1.305363e+04, 1.306083e+04, 1.306803e+04, 1.307703e+04, 1.308423e+04, 1.309143e+04, 1.309863e+04, 1.310583e+04, 1.311483e+04, 1.312203e+04, 1.312923e+04, 1.313823e+04, 1.314543e+04, 1.315263e+04, 1.315983e+04, 1.316703e+04, 1.317603e+04, 1.318323e+04, 1.319043e+04, 1.319943e+04, 1.320663e+04, 1.321383e+04, 1.322103e+04, 1.323003e+04, 1.323723e+04, 1.324443e+04, 1.325343e+04, 1.326063e+04, 1.326963e+04, 1.327683e+04, 1.328403e+04, 1.329303e+04, 1.330023e+04, 1.330743e+04, 1.331463e+04, 1.332363e+04, 1.333083e+04, 1.333803e+04, 1.334523e+04, 1.335423e+04, 1.336143e+04, 1.337043e+04, 1.337763e+04, 1.338483e+04, 1.339203e+04, 1.340103e+04, 1.340823e+04, 1.341724e+04, 1.342444e+04, 1.343164e+04, 1.344064e+04, 1.344784e+04, 1.345504e+04, 1.346404e+04, 1.347124e+04, 1.347844e+04, 1.348744e+04, 1.349464e+04, 1.350364e+04, 1.351084e+04, 1.351804e+04, 1.352704e+04, 1.353424e+04, 1.354324e+04, 1.355044e+04, 1.355764e+04, 1.356664e+04, 1.357384e+04, 1.358284e+04, 1.359004e+04, 1.359904e+04, 1.360624e+04, 1.361524e+04, 1.362244e+04, 1.362964e+04, 1.363864e+04, 1.364584e+04, 1.365484e+04, 1.366204e+04, 1.366924e+04, 1.367824e+04, 1.368544e+04, 1.369444e+04, 1.370344e+04, 1.371064e+04, 1.371784e+04, 1.372684e+04, 1.373404e+04, 1.374304e+04, 1.375024e+04, 1.375924e+04, 1.376824e+04, 1.377544e+04, 1.378444e+04, 1.379164e+04, 1.380064e+04, 1.380784e+04, 1.381684e+04, 1.382404e+04, 1.383304e+04, 1.384024e+04, 1.384924e+04, 1.385644e+04, 1.386544e+04, 1.387444e+04, 1.388164e+04, 1.389064e+04, 1.389784e+04, 1.390684e+04, 1.391584e+04, 1.392304e+04, 1.393204e+04, 1.394104e+04, 1.394824e+04, 1.395724e+04, 1.396624e+04, 1.397524e+04, 1.398244e+04, 1.399144e+04, 1.399864e+04, 1.400764e+04, 1.401484e+04, 1.402384e+04, 1.403284e+04, 1.404004e+04, 1.404904e+04, 1.405804e+04, 1.406704e+04, 1.407424e+04, 1.408324e+04, 1.409224e+04, 1.409944e+04, 1.410844e+04, 1.411744e+04, 1.412644e+04, 1.413364e+04, 1.414444e+04, 1.415164e+04, 1.416064e+04, 1.416964e+04, 1.417864e+04, 1.418764e+04, 1.419484e+04, 1.420384e+04, 1.421284e+04, 1.422184e+04, 1.423084e+04, 1.423984e+04, 1.424884e+04, 1.425784e+04, 1.426684e+04, 1.427584e+04, 1.428484e+04, 1.429384e+04, 1.430464e+04, 1.431364e+04, 1.432264e+04, 1.433164e+04, 1.434064e+04, 1.435144e+04, 1.436044e+04, 1.436944e+04, 1.437844e+04, 1.438924e+04, 1.439824e+04, 1.440904e+04, 1.441804e+04, 1.442884e+04, 1.443784e+04, 1.444684e+04, 1.445764e+04, 1.446664e+04, 1.447744e+04, 1.448824e+04, 1.449724e+04, 1.450804e+04, 1.451884e+04, 1.452784e+04, 1.453864e+04, 1.454944e+04, 1.456024e+04, 1.457284e+04, 1.458364e+04, 1.459444e+04, 1.460524e+04, 1.461784e+04, 1.462864e+04, 1.464124e+04, 1.465204e+04, 1.466464e+04, 1.467724e+04, 1.468984e+04, 1.470244e+04, 1.471324e+04, 1.472764e+04, 1.474024e+04, 1.475464e+04, 1.476724e+04, 1.478164e+04, 1.479604e+04, 1.481044e+04, 1.482484e+04, 1.483924e+04, 1.485544e+04, 1.487164e+04, 1.488784e+04, 1.490404e+04, 1.492024e+04, 1.493824e+04, 1.495444e+04, 1.497424e+04, 1.499404e+04, 1.501384e+04, 1.503544e+04, 1.505884e+04, 1.508224e+04, 1.510744e+04, 1.513444e+04, 1.516324e+04, 1.519384e+04, 1.522804e+04, 1.526404e+04, 1.530544e+04, 1.535404e+04, 1.541344e+04, 1.549444e+04, 1.561144e+04};
@@ -26145,19 +26234,21 @@ void AliFlowAnalysisCRC::BookEverythingForCME()
     } // end of for(Int_t eg=0;eg<fCMEnEtaBin;eg++)
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   
-  for (Int_t h=0; h<fCMETPCnHist; h++) {
-    // Profiles
-    fCMETPCCorPro[h] = new TProfile(Form("fCMETPCCorPro[%d]",h),Form("fCMETPCCorPro[%d]",h),11,cent,"s");
-    fCMETPCCorPro[h]->Sumw2();
-    fCMETPCList->Add(fCMETPCCorPro[h]);
-    // Correlations:
-    // Final Histo:
-    fCMETPCCorHist[h] = new TH1D(Form("fCMETPCCorHist[%d]",h),Form("fCMETPCCorHist[%d]",h),11,cent);
-    fCMETPCCorHist[h]->Sumw2();
-    fCMETPCList->Add(fCMETPCCorHist[h]);
-    fCMETPCFinalHist[h] = new TH1D(Form("fCMETPCFinalHist[%d]",h),Form("fCMETPCFinalHist[%d]",h),11,cent);
-    fCMETPCFinalHist[h]->Sumw2();
-    fCMETPCList->Add(fCMETPCFinalHist[h]);
+  for (Int_t k=0; k<fZDCESEnCl; k++) {
+    for (Int_t h=0; h<fCMETPCnHist; h++) {
+      // Profiles
+      fCMETPCCorPro[k][h] = new TProfile(Form("fCMETPCCorPro[%d][%d]",k,h),Form("fCMETPCCorPro[%d][%d]",k,h),fFlowQCCenBin,0.,100.,"s");
+      fCMETPCCorPro[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCCorPro[k][h]);
+      // Correlations:
+      // Final Histo:
+      fCMETPCCorHist[k][h] = new TH1D(Form("fCMETPCCorHist[%d][%d]",k,h),Form("fCMETPCCorHist[%d][%d]",k,h),fFlowQCCenBin,0.,100.);
+      fCMETPCCorHist[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCCorHist[k][h]);
+      fCMETPCFinalHist[k][h] = new TH1D(Form("fCMETPCFinalHist[%d][%d]",k,h),Form("fCMETPCFinalHist[%d][%d]",k,h),fFlowQCCenBin,0.,100.);
+      fCMETPCFinalHist[k][h]->Sumw2();
+      fCMETPCList->Add(fCMETPCFinalHist[k][h]);
+    }
   }
   
 } // end of AliFlowAnalysisCRC::BookEverythingForCME()
