@@ -19176,6 +19176,31 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
     
   } // end of if (uPM>1. && uNM>1.)
   
+  // **********************************************************************************************************
+  
+  // Eta Gap
+  Double_t QARe=0., QAIm=0., QBRe=0., QBIm=0., QAM0=0., QAM=0., QBM0=0., QBM=0.;
+  Int_t hr=0;
+  
+  for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
+    QARe += fPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
+    QAIm += fPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
+    QBRe += fPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
+    QBIm += fPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
+    QAM0 += fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
+    QAM  += fPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
+    QBM0 += fPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
+    QBM  += fPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
+  }
+  
+  Double_t IQM2EG = QAM*QBM;
+  if(QAM0+QBM0>1) {
+    if(IQM2EG) {
+      Double_t IQC2EG = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
+      fCMETPCCorPro[fZDCESEclEbE][14]->Fill(fCentralityEBE,IQC2EG,IQM2EG);
+    }
+  }
+  
 } // end of AliFlowAnalysisCRC::CalculateCMETPC();
 
 //=======================================================================================================================
@@ -19733,7 +19758,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     
     IQM2EG = QAM*QBM;
     if(QAM0+QBM0>1) {
-      if(IQM2) {
+      if(IQM2EG) {
         IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
         fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG);
         fFlowQCNewCenProEG[hr]->Fill(NewCentralityEBE,IQC2EG[hr],IQM2EG);
