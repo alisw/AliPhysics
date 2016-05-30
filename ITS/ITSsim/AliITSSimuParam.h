@@ -191,6 +191,10 @@ class AliITSSimuParam : public TObject {
 
 
   void PrintParameters() const; 
+  void SetSPDReadoutStrobe(Int_t win[2]){fSPDHitStrobe[0]=win[0];fSPDHitStrobe[1]=win[1];}
+  void SetSPDFastOrStrobe(Int_t win[2]){fSPDFoStrobe[0]=win[0];fSPDFoStrobe[1]=win[1];}
+  const Int_t* GetSPDHitStrobe() const {return fSPDHitStrobe;}
+  const Int_t* GetSPDFoStrobe() const {return fSPDFoStrobe;}
 
  protected:
 
@@ -235,6 +239,8 @@ class AliITSSimuParam : public TObject {
   TString  fSPDCouplOpt;    // SPD Coupling Option
   Double_t fSPDCouplCol;    // SPD Coupling parameter along the cols
   Double_t fSPDCouplRow;    // SPD Coupling parameter along the rows
+  Int_t    fSPDHitStrobe[2]; // Hit read out strobe (left and right readout windows wrt the collision)
+  Int_t    fSPDFoStrobe[2];  // FastOr read out strobe (left and right readout windows wrt the collision)
   Float_t  fSPDEccDiff;     // Eccentricity (i.e. asymmetry parameter) in the 
                             // Gaussian diffusion for SPD  
   Bool_t   fSPDLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in SPD
@@ -271,6 +277,6 @@ class AliITSSimuParam : public TObject {
   Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
   Float_t fT;   // The temperature of the Si in Degree K.
 
-  ClassDef(AliITSSimuParam,6);
+  ClassDef(AliITSSimuParam,7);
 };
 #endif

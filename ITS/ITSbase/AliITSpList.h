@@ -90,6 +90,12 @@ class AliITSpList: public AliITSMap {
 	if(GetpListItem(i,j)==0) return 0;
 	return GetpListItem(i,j)->GetNsignals();
     }
+    // Returns the signal+noise for a give map coordinate for SDigits in the FO strobe
+    virtual Double_t GetSignalFo(Int_t i,Int_t j) const  {
+        if(GetpListItem(i,j)==0) return 0.0;
+        return GetpListItem(i,j)->GetSumSignalFo();
+    }
+
     // Adds the contents of pl to the list with track number off set given by
     // fileIndex.
     virtual void AddItemTo(Int_t fileIndex, AliITSpListItem *pl);

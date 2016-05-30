@@ -105,6 +105,10 @@ AliITSSimuParam::AliITSSimuParam():
   SetSDDDiffCoeff(fgkSDDDiffCoeffDefault,fgkSDDDiffCoeff1Default);
   SetSDDMaxAdc((Double_t)fgkSDDMaxAdcDefault);
   SetSSDCouplings(fgkSSDCouplingPRDefault,fgkSSDCouplingPLDefault,fgkSSDCouplingNRDefault,fgkSSDCouplingNLDefault);
+  fSPDHitStrobe[0]=-1; // 100 ns before the collision time ( 300 ns readout strobe in total)
+  fSPDHitStrobe[1]=2; // 200 ns after the collision time  (300 ns readout strobe in total)
+  fSPDFoStrobe[0]=0;  // coincidence with collision time
+  fSPDFoStrobe[1]=1;  // 100 ns after the collision time
 }
 //______________________________________________________________________
 AliITSSimuParam::AliITSSimuParam(const AliITSSimuParam &simpar):
@@ -152,6 +156,10 @@ AliITSSimuParam::AliITSSimuParam(const AliITSSimuParam &simpar):
     fSPDNoise[i]=simpar.fSPDNoise[i];
     fSPDBaseline[i]=simpar.fSPDBaseline[i];
   }
+ for (Int_t j=0; j<2; j++){
+  fSPDHitStrobe[j]=simpar.fSPDHitStrobe[j]; 
+  fSPDFoStrobe[j]=simpar.fSPDFoStrobe[j]; 
+ }
 }
 
 //______________________________________________________________________
@@ -197,6 +205,8 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Weight of Holes in Lor.Drift = %f\n",fSPDLorentzHoleWeight);
   printf("Flag to add noisy         = %d\n",fSPDAddNoisyFlag);
   printf("Flag to remove dead       = %d\n",fSPDRemoveDeadFlag);
+  printf("Hit Strobe params         = %d %d\n",fSPDHitStrobe[0],fSPDHitStrobe[1]);
+  printf("FO  Strobe params         = %d %d\n",fSPDFoStrobe[0],fSPDFoStrobe[1]);
   printf("\n");
   printf("=====  SDD parameters  =====\n");
   printf("Electronic chips          = %d\n",fSDDElectronics);

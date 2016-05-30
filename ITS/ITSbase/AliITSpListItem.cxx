@@ -45,6 +45,7 @@ fUsed(kFALSE){
         this->fTrack[i]  = -2;
         this->fHits[i]   = -1;
         this->fSignal[i] = 0.0;
+        this->fInFastOrStrobe[i] = kFALSE;
     } // end if i
 }
 //______________________________________________________________________
@@ -69,6 +70,7 @@ fUsed(kTRUE){
         this->fTrack[i]  = -2;
         this->fSignal[i] = 0.0;
         this->fHits[i]   = -1;
+        this->fInFastOrStrobe[i] = kFALSE;
     } // end if i
 }
 //______________________________________________________________________
@@ -95,10 +97,12 @@ fUsed(kTRUE){
     this->fTrack[0]  = track;
     this->fHits[0]   = hit;
     this->fSignal[0] = signal;
+    this->fInFastOrStrobe[0] = kFALSE;
     for(Int_t i=1;i<this->fgksize;i++){
         this->fTrack[i]  = -2;
         this->fSignal[i] = 0.0;
         this->fHits[i]   = -1;
+        this->fInFastOrStrobe[i] = kFALSE;
     } // end if i
 }
 
@@ -116,6 +120,7 @@ void AliITSpListItem::Build(Int_t module,Int_t index,Double_t noise){
     this->fTrack[i]  = -2;
     this->fSignal[i] = 0.0;
     this->fHits[i]   = -1;
+        this->fInFastOrStrobe[i] = kFALSE;
   } 
 }
 
@@ -132,10 +137,12 @@ void AliITSpListItem::Build(Int_t track,Int_t hit,Int_t module,Int_t index,Doubl
   this->fTrack[0]  = track;
   this->fHits[0]   = hit;
   this->fSignal[0] = signal;
+        this->fInFastOrStrobe[0] = kFALSE;
   for(Int_t i=1;i<this->fgksize;i++){
     this->fTrack[i]  = -2;
     this->fSignal[i] = 0.0;
     this->fHits[i]   = -1;
+        this->fInFastOrStrobe[i] = kFALSE;
   } 
 }
 
@@ -153,6 +160,7 @@ void AliITSpListItem::Build(const AliITSpListItem &source){
     this->fTrack[i]  = source.fTrack[i];
     this->fSignal[i] = source.fSignal[i];
     this->fHits[i]   = source.fHits[i];
+   this->fInFastOrStrobe[i] = source.fInFastOrStrobe[i];
   }
 }
 
@@ -202,6 +210,7 @@ fUsed(source.fUsed){
       this->fTrack[i]  = source.fTrack[i];
       this->fSignal[i] = source.fSignal[i];
       this->fHits[i]   = source.fHits[i];
+      this->fInFastOrStrobe[i] = source.fInFastOrStrobe[i];
     } // end if i
 
 }

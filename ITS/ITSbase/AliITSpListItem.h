@@ -37,6 +37,8 @@ class AliITSpListItem: public TObject {
 	                    return fSignalAfterElect;}
     // Returns the Sum/Total signal
     virtual Double_t GetSumSignal() const {return fTsignal+fNoise;}
+    // Returns the Total signal for hits in the FO strobe
+    virtual Double_t GetSumSignalFo() const {Double_t foSig =0; for(Int_t i=0; i<fgksize; i++) if(fInFastOrStrobe[i]) foSig+=GetSignal(i); return foSig; }
     // Returns the  noise
     virtual Double_t GetNoise() const {return fNoise;}
     // Returns the number of stored singals.
@@ -80,6 +82,8 @@ class AliITSpListItem: public TObject {
     // Returns max size of array for for Tracks, Hits, and signals.
     static Int_t GetMaxKept() {return fgksize;};
 
+    void SetIsInFoStrobe(Int_t i) {(i>=0&&i<fgksize) ? fInFastOrStrobe[i]=kTRUE : printf("index %i out of range \n",i); }
+
  private:
     static const Int_t fgksize = 10; // Array sizes
     Int_t    fmodule;         // module number
@@ -91,8 +95,9 @@ class AliITSpListItem: public TObject {
     Double_t fNoise;          // Total noise, coupling, ...
     Double_t fSignalAfterElect; // Signal after electronics
     Bool_t fUsed;              //! kTRUE if the item is built and in use
+    Bool_t fInFastOrStrobe[fgksize];   //[fgksize] bool if the hit (in readout strobe) is also in the Fo strobe
 
-    ClassDef(AliITSpListItem,4) // Item list of signals and track numbers
+    ClassDef(AliITSpListItem,5) // Item list of signals and track numbers
 };	
 // Input and output functions for standard C++ input/output.
 ostream & operator<<(ostream &os,AliITSpListItem &source);
