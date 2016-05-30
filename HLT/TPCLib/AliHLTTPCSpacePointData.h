@@ -19,8 +19,6 @@
  * @ingroup alihlt_tpc_datastructs
  */
 struct AliHLTTPCSpacePointData{
-  Float_t fPad;     // Pad coordinate in raw coordinates
-  Float_t fTime;    // Time coordinate in raw coordinates
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
   Float_t fZ;       // Z coordinate in local coordinates
@@ -33,8 +31,6 @@ struct AliHLTTPCSpacePointData{
   Bool_t fUsed;     // only used in AliHLTTPCDisplay 
   Int_t fTrackN;    // only used in AliHLTTPCDisplay 
 
-  void SetPad(Float_t pad)         {fPad=pad;}
-  void SetTime(Float_t time)       {fTime=time;}
   void SetX(Float_t x)             {fX=x;}
   void SetY(Float_t y)             {fY=y;}
   void SetZ(Float_t z)             {fZ=z;}
@@ -45,8 +41,6 @@ struct AliHLTTPCSpacePointData{
   void SetCharge(UShort_t charge)  {fCharge=charge;}
   void SetQMax(UShort_t qmax)      {fQMax=qmax;}
 
-  Float_t  GetPad()     const      {return fPad;}
-  Float_t  GetTime()    const      {return fTime;}
   Float_t  GetX()       const      {return fX;}
   Float_t  GetY()       const      {return fY;}
   Float_t  GetZ()       const      {return fZ;}
@@ -65,7 +59,7 @@ struct AliHLTTPCSpacePointData{
   }
 
   AliHLTTPCSpacePointData() 
-  : fPad(0.), fTime(0.), fX(0.), fY(0.), fZ(0.), fID(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fUsed(kFALSE), fTrackN(0) {}
+  : fX(0.), fY(0.), fZ(0.), fID(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fUsed(kFALSE), fTrackN(0) {}
   void SetID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
     fID = GetID(Slice, Patch,Number);
   }
