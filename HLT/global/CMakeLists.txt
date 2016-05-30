@@ -163,7 +163,7 @@ if(ZEROMQ_FOUND)
                       )
 
   add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
-  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core zmq)
+  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTGlobal AliHLTUtil AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core ${ZMQ_LIBRARIES})
   
   # Installation of 
   install(TARGETS ZMQDIMlumiregServer RUNTIME DESTINATION bin)
