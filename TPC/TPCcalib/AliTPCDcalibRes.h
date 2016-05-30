@@ -19,6 +19,8 @@
 #include <TStopwatch.h>
 #include <TGraphErrors.h>
 #include <TGeoMatrix.h>
+#include <TH2F.h>
+#include <TProfile2D.h>
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
 #include "AliTPCcalibAlignInterpolation.h"
@@ -125,7 +127,16 @@ class AliTPCDcalibRes: public TNamed
   AliTPCDcalibRes(int run=0,Long64_t tmin=0,Long64_t tmax=9999999999,const char* resList=0);
   virtual ~AliTPCDcalibRes();
   
-  void CalibrateVDrift(Int_t deltaT, Int_t sigmaT);
+  void CalibrateVDrift();
+  void FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins);
+  TProfile2D* GetHistoVDTimeInt()    const {return fHVDTimeInt;}
+  TH2F*       GetHistoVDTimeCorr()   const {return fHVDTimeCorr;}
+  Int_t GetDeltaTVDrift()  const {return fDeltaTVD;}
+  Int_t GetSigmaTVDrift()  const {return fSigmaTVD;}
+  void  SetDeltaTVDrift(int v=120) {fDeltaTVD = v;}
+  void  SetSigmaTVDrift(int v=600) {fSigmaTVD = v;}
+
+  //
   void ProcessFromDeltaTrees();
   void ProcessFromLocalBinnedTrees();
   void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
@@ -378,6 +389,9 @@ class AliTPCDcalibRes: public TNamed
   Long64_t fTMax;    // time stop for timebin
   Long64_t fTMinGRP;    // time start from GRP
   Long64_t fTMaxGRP;    // time stop from GRP
+  Int_t    fDeltaTVD;      // vdrift T-bin size
+  //
+  Int_t    fSigmaTVD;      // vdrift smoothing window
   Int_t    fMaxTracks;  // max tracks to accept
   Int_t    fCacheInp;      // input trees cache in MB
   Int_t    fLearnSize;     // event to learn for the cache
@@ -456,10 +470,11 @@ class AliTPCDcalibRes: public TNamed
   Float_t  fTestStat[kCtrNbr][kCtrNbr]; // control statistics (fraction to fNTestTracks) 
   TH1F*    fTracksRate;     // accepted tracks per second
   TH1F*    fTOFBCTestH;     // TOF BC (ns) for test fNTestTracks tracks
+  TProfile2D* fHVDTimeInt;   // histo used for time integrated vdrift fit
+  TH2F*    fHVDTimeCorr;     // histo used for vdrift time correction fit
   Float_t  fValidFracXBin[kNSect2][kNPadRows]; // fraction of voxels valid per padrow
   Int_t    fNSmoothingFailedBins[kNSect2];     // number of failed bins/sector, should be 0 to produce parameterization
   TBits    fXBinIgnore[kNSect2];    // flag to ignore Xbin
-  
   // ------------------------------VDrift correction
   TVectorD     *fVDriftParam;
   TGraphErrors *fVDriftGraph;  
@@ -527,7 +542,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,11);
+  ClassDef(AliTPCDcalibRes,12);
 };
 
 //________________________________________________________________

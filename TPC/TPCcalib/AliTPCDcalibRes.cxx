@@ -4,6 +4,7 @@
 #include "AliGRPObject.h"
 #include "AliDAQ.h"
 #include <TKey.h>
+#include <TF2.h>
 
 using std::swap;
 
@@ -84,6 +85,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fTMax(tmax)
   ,fTMinGRP(0)
   ,fTMaxGRP(0)
+  ,fDeltaTVD(120)
+  ,fSigmaTVD(600)
   ,fMaxTracks(4000000)
   ,fCacheInp(100)
   ,fLearnSize(1)
@@ -144,6 +147,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fNTestTracks(0)
   ,fTracksRate(0)
   ,fTOFBCTestH(0)
+  ,fHVDTimeInt(0)
+  ,fHVDTimeCorr(0)
   ,fVDriftParam(0)
   ,fVDriftGraph(0)
   ,fCorrTime(0)
@@ -209,6 +214,8 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
   }
   delete fTracksRate;
   delete fTOFBCTestH;
+  delete fHVDTimeInt;
+  delete fHVDTimeCorr;
   delete fInputChunks;
 }
 
@@ -224,24 +231,22 @@ void AliTPCDcalibRes::SetExternalDetectors(int det)
 }
 
 //________________________________________
-void AliTPCDcalibRes::CalibrateVDrift(Int_t deltaT, Int_t sigmaT)
+void AliTPCDcalibRes::CalibrateVDrift()
 {
-  // run VDrift calibration from residual trees, with deltaT time binning and sigmaT smoothing
+  // run VDrift calibration from residual trees. 
+  // Parameters  time fDeltaTVD (binning) and  fSigmaTVD (smoothing) can be changed from their
+  // default values by their setters
   TStopwatch sw;
   const float kSafeMargin = 0.25f;
-  const int kDelTDef=120.,kSigTDef=600;
+  if (!fInitDone) Init();
   Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
   Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
   Int_t duration = tmx - tmn;
-  if (deltaT<1) {
-    deltaT = kDelTDef;
-    AliInfoF("Setting VDrift time-bin to %d",deltaT);
-  }
-  if (sigmaT<1) {
-    sigmaT = kSigTDef;
-    AliInfoF("Setting VDrift time-smoothing to %d",sigmaT);
-  }
-  int nTBins = TMath::Max(1,TMath::Nint(float(duration)/deltaT));
+  int nTBins = duration /fDeltaTVD+1;
+  int durRange = nTBins*fDeltaTVD;
+  tmn -= (durRange-duration)/2;
+  tmx += (durRange-duration)/2;
+  //
   // check available statistics
   if (!EstimateStatistics()) AliFatal("Cannot process further");
   float fracMult = fTestStat[kCtrNtr][kCtrNtr];
@@ -269,9 +274,115 @@ void AliTPCDcalibRes::CalibrateVDrift(Int_t deltaT, Int_t sigmaT)
   //
   CollectData(kVDriftCalibMode);
   //
+  FitDrift(tmn,tmx,nTBins);
+
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
   //
+}
+
+//________________________________________
+void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
+{
+  // fit v.drift params
+  const int kUsePoints0 = 1000000; // nominal number of points for 1st estimate
+  const int kUsePoints1 = 3000000; // nominal number of points for time integrated estimate
+  const int kNXBins = 150, kNYBins = 150, kNTCorrBins=100;
+  const float kMaxTCorr = 0.02; // max time correction for vdrift
+  const float kDiscardDriftEdge = 10.; // discard min and max drift values with this margin
+  TStopwatch sw;  sw.Start();
+  AliSysInfo::AddStamp("FitDrift",0,0,0,0);
+  //
+  if (!fInitDone) Init();
+  //
+  TString zresFileName = Form("%s.root",kDriftResFileName);
+  TFile* zresFile = TFile::Open(zresFileName.Data());
+  if (!zresFile) AliFatalF("file %s not found",zresFileName.Data());
+  TString treeName = Form("resdrift");
+  TTree *zresTree = (TTree*) zresFile->Get(treeName.Data());
+  if (!zresTree) AliFatalF("tree %s is not found in file %s",treeName.Data(),zresFileName.Data());
+  //
+  dtv_t *dtvP = &fDTV; 
+  zresTree->SetBranchAddress("dtv",&dtvP);
+  int entries = zresTree->GetEntries();
+  if (!entries) AliFatalF("tree %s in %s has no entries",treeName.Data(),zresFileName.Data());
+  //
+  float prescale = kUsePoints0/float(entries);
+  int npUse = entries*prescale;
+  //
+  float *xArr = new Float_t[npUse];
+  float *zArr = new Float_t[npUse];
+  int nAcc = 0;
+  float dmaxCut = (kZLim[0]+kZLim[1])/2. - kDiscardDriftEdge;
+  float res[2],err[3];
+  for (int i=0;i<entries;i++) {
+    if (gRandom->Rndm()>prescale) continue;
+    zresTree->GetEntry(i);
+    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
+    xArr[nAcc] = fDTV.drift;
+    zArr[nAcc] = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
+    nAcc++;
+  }
+  AliInfoF("Will use %d points out of %d for outliers rejection estimate",nAcc,entries);
+  //
+  float sigMAD = AliTPCDcalibRes::FitPoly1Robust(nAcc,xArr,zArr,res,err,0.95);
+  if (sigMAD<0) AliFatal("Unbinned fit failed");
+  AliInfoF("Will clean outliers outside of |dz*side-(%.3e+drift*(%.3e))|<3*%.3f band",res[0],res[1],sigMAD);
+  delete[] xArr;
+  delete[] zArr;
+  //
+  const float outlCut = sigMAD*3.0f;
+  delete fHVDTimeInt;
+  fHVDTimeInt = new TProfile2D("driftTInt","",kNXBins,-dmaxCut,dmaxCut,kNYBins,-kMaxX,kMaxX);
+  fHVDTimeInt->SetXTitle("side*drift");
+  fHVDTimeInt->SetYTitle("ylab*side*drift/zmax");  
+  fHVDTimeInt->SetZTitle("#deltaz*side");  
+  fHVDTimeInt->SetDirectory(0);
+  prescale = kUsePoints1/float(entries);
+  npUse = entries*prescale;
+  AliInfoF("Will use %d points out of %d for time-integrated estimate",npUse,entries);
+  for (int i=0;i<entries;i++) {
+    if (gRandom->Rndm()>prescale) continue;
+    zresTree->GetEntry(i);
+    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
+    float dz = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
+    if (TMath::Abs(dz - (res[0]+res[1]*fDTV.drift)) > outlCut) continue;
+    float sdrift = fDTV.side>0 ? fDTV.drift : -fDTV.drift;
+    fHVDTimeInt->Fill(sdrift, fDTV.ylab*sdrift/kZLim[fDTV.side<0], dz);
+  }
+  TF2* ftd = new TF2("ftd","[0]+[1]*sign(x)+[2]*sign(x)*y + [3]*sign(x)*x",-250,250,-250,250);
+  ftd->SetParameters(res[0],0.,0.,res[1]); // initial values from unbinned fit
+  AliInfoF("Fitting time-integrated vdrift params by %s",ftd->GetTitle());
+  TFitResultPtr rf = fHVDTimeInt->Fit(ftd,"0S");
+  int ndf = rf->Ndf();
+  float chi2 = rf->Chi2();
+  AliInfoF("Fit chi2: %f per %d DOFs -> %f",chi2,ndf,ndf>0 ? chi2/ndf : -1.f);
+  delete fVDriftParam;
+  fVDriftParam = new TVectorD(4);
+  for (int i=4;i--;) (*fVDriftParam)[i] = ftd->GetParameter(i);
+  //
+  // time correction
+  delete fHVDTimeCorr;
+  fHVDTimeCorr = new TH2F("driftTCorr","drift time correction",ntbins,tmin,tmax,kNTCorrBins,-kMaxTCorr,kMaxTCorr);
+  fHVDTimeCorr->SetXTitle("time");
+  fHVDTimeCorr->SetYTitle("time");  
+  //
+  double *vpar = fVDriftParam->GetMatrixArray();
+  for (int i=0;i<entries;i++) {
+    zresTree->GetEntry(i);
+    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
+    float dz = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
+    float sdrift = fDTV.side>0 ? fDTV.drift : -fDTV.drift;
+    float d2z = fDTV.drift/kZLim[fDTV.side<0];
+    Double_t expected = vpar[0]+vpar[1]*fDTV.side + vpar[2]*fDTV.ylab*d2z + vpar[3]*fDTV.drift;
+    dz -= expected;
+    if (TMath::Abs(dz) > outlCut) continue;
+    fHVDTimeCorr->Fill(fDTV.t,  dz/fDTV.drift, d2z); // ?? why this weight 
+  }
+  //
+  sw.Stop(); 
+  AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
+  AliSysInfo::AddStamp("FitDrift",1,0,0,0);
 }
 
 //________________________________________
@@ -1488,6 +1599,7 @@ void AliTPCDcalibRes::ReProcessSectorResiduals(int is)
   //
 }
 
+//_________________________________________________________
 Float_t AliTPCDcalibRes::FitPoly1Robust(int np, float* x, float* y, float* res, float* err, float ltmCut)
 {
   // robust pol1 fit, modifies input arrays order

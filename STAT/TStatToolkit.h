@@ -639,7 +639,7 @@ Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
   //
   static int book = 0;
   static int *index = 0;
-  static double* w = 0;
+  static float* w = 0;
   int keepN = np*keep;
   if (keepN>np) keepN = np;
   if (keepN<2) return 0;
@@ -649,10 +649,10 @@ Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
     book = np;
     index = new int[book];
     delete[] w;
-    w = new double[book+book];
+    w = new float[book+book];
   }
   //
-  double *wx1 = w, *wx2 = wx1+np;
+  float *wx1 = w, *wx2 = wx1+np;
   TMath::Sort(np,arr,index,kFALSE); // sort in increasing order
   // build cumulants
   double sum1=0.0,sum2=0.0;
@@ -666,8 +666,8 @@ Int_t* TStatToolkit::LTMUnbinned(int np, const T *arr, TVectorT<T> &params , Flo
   int limI = np - keepN+1;
   for (int i=0;i<limI;i++) {
     int limJ = i+keepN-1;
-    Double_t sum1 = wx1[limJ] - (i ? wx1[i-1] : 0.0);
-    Double_t sum2 = wx2[limJ] - (i ? wx2[i-1] : 0.0);
+    Double_t sum1 = double(wx1[limJ]) - double(i ? wx1[i-1] : 0.0);
+    Double_t sum2 = double(wx2[limJ]) - double(i ? wx2[i-1] : 0.0);
     double mean = sum1/keepN;
     double rms2 = sum2/keepN - mean*mean;
     //    printf("%d : %d %e %e\n",i,limJ, mean, TMath::Sqrt(rms2));
