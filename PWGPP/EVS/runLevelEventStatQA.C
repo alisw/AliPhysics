@@ -48,7 +48,9 @@ void writeTree(TFile* fout, TTree* t){
 }
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=254422, TString ocdbStorage = "raw://"){
+Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+  
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
   gStyle->SetPadBottomMargin(0.08);
@@ -368,6 +370,10 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     if (!mask) continue;
     // Fill all and accepted counters for the most significant bit
     Int_t ibit = TMath::Nint(TMath::Log2(mask));
+
+    // FIXME
+//    if (!bitNames[ibit].EqualTo("kINT7")) continue;
+
     if (ibit>=NBITS) continue;
 //    if (alias_recorded[ibit]) break; 
 
@@ -469,6 +475,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH1F* hTimeZNC         = (TH1F*) list->FindObject("fHistTimeZNC");
     TH2F* hTimeZNSumVsDif  = (TH2F*) list->FindObject("fHistTimeZNSumVsDif");
     TH2F* hTimeCorrZDC     = (TH2F*) list->FindObject("fHistTimeCorrZDC");
+    TH2F* hOFOvsTKLAcc     = (TH2F*) list->FindObject("fHistOFOvsTKLAcc");
+    TH2F* hV0MOnVsOfAcc    = (TH2F*) list->FindObject("fHistV0MOnVsOfAcc");
 
     if (bitNames[ibit].EqualTo("kINT7")) {
       meanV0MOn = hV0MOnAcc->GetMean();
@@ -494,6 +502,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     DrawMultiplicity(hV0MOnAll,hV0MOnAcc,hV0MOnVHM,hV0MOfAll,hV0MOfAcc,bitName,"V0M","V0M",meanV0MOn,meanV0MOf);
     DrawMultiplicity(hOFOAll,hOFOAcc,hOFOVHM,hTKLAll,hTKLAcc,bitName,"OFO","TKL",meanOFO,meanTKL);
     DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
+//      DrawEfficiency(hOFOvsTKLAcc,bitName);
+//      DrawEfficiency(hV0MOnVsOfAcc,bitName);
 //
 //    if (hFiredBitsSPD) {
 //      TCanvas* cFiredBitsSPD = new TCanvas(Form("cFiredBitsSPD_%s",bitName),Form("cFiredBitsSPD_%s",bitName),1800,500);
@@ -538,7 +548,67 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   return 0;
 }
 
+void DrawEfficiency(TH2F* h2D,const char* bitName){
+  TCanvas* c = new TCanvas(Form("c_%s",bitName),Form("c_%s",bitName),1000,1000);
+  c->Divide(2,2,0.001,0.001);
+  c->cd(1);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
+  gPad->SetLogz();
+  h2D->SetTitle(Form("%s",bitName));
+  h2D->GetYaxis()->SetTitleOffset(1.5);
+  h2D->GetYaxis()->SetRangeUser(0,150);
+  h2D->Draw("colz");
+  TH2F* h2Dcum = (TH2F*) h2D->Clone();
+  h2Dcum->Clear();
+  for (Int_t of=1;of<=h2D->GetNbinsX();of++){
+    for (Int_t on=1;on<=h2D->GetNbinsY();on++){
+      h2Dcum->SetBinContent(of,on,h2D->Integral(of,of,on,h2D->GetNbinsY()+1));
+    }
+  }
+  c->cd(2);
+  gPad->SetLogy();
+  TH1F* hAll   = (TH1F*) h2Dcum->ProjectionX("hAll",1,1);
+  TH1F* hProj1 = (TH1F*) h2Dcum->ProjectionX("hProj1",60,60);
+  TH1F* hProj2 = (TH1F*) h2Dcum->ProjectionX("hProj2",70,70);
+  TH1F* hProj3 = (TH1F*) h2Dcum->ProjectionX("hProj3",80,80);
+  TH1F* hProj4 = (TH1F*) h2Dcum->ProjectionX("hProj4",90,90);
+  hProj1->SetLineColor(kBlue);
+  hProj2->SetLineColor(kRed);
+  hProj3->SetLineColor(kGreen+1);
+  hProj4->SetLineColor(kMagenta+1);
+  TH1F* hEff1 = (TH1F*) hProj1->Clone("hEff1");
+  TH1F* hEff2 = (TH1F*) hProj2->Clone("hEff2");
+  TH1F* hEff3 = (TH1F*) hProj3->Clone("hEff3");
+  TH1F* hEff4 = (TH1F*) hProj4->Clone("hEff4");
+  hEff1->Divide(hAll);
+  hEff2->Divide(hAll);
+  hEff3->Divide(hAll);
+  hEff4->Divide(hAll);
+  hAll->DrawCopy();
+  hProj1->SetFillColor(kBlue);
+  hProj2->SetFillColor(kRed);
+  hProj3->SetFillColor(kGreen+1);
+  hProj4->SetFillColor(kMagenta+1);
+  hProj1->DrawCopy("same");
+  hProj2->DrawCopy("same");
+  hProj3->DrawCopy("same");
+  hProj4->DrawCopy("same");
+  TLegend* leg = new TLegend(0.6,0.6,0.96,0.90);
+  leg->AddEntry(hProj1,"60");
+  leg->AddEntry(hProj2,"70");
+  leg->AddEntry(hProj3,"80");
+  leg->AddEntry(hProj4,"90");
+  leg->Draw();
 
+  c->cd(3);
+  hEff1->DrawCopy();
+  hEff2->DrawCopy("same");
+  hEff3->DrawCopy("same");
+  hEff4->DrawCopy("same");
+  
+  c->Print("efficiency.png");
+}
 
 void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
   if (!hAll || !hCln) {
@@ -563,7 +633,6 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
   hCln->GetYaxis()->SetTitleOffset(1.7);
   hCln->Draw("colz");
   c->Print("V0MOnVsOf.png");
-  return;
 //  TH1F* hFitResults = (TH1F*) hCln->ProjectionX("hFitResults");
 //  TF1* fExp = new TF1("fExp","exp(-([0]-x)*[1])",0,10000);
 //  TF1* fPol1 = new TF1("fPol1","pol1",0,hCln->GetXaxis()->GetXmax());
@@ -577,11 +646,13 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
 //  gPad->SetLogy();
 //  TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
 //  for (Int_t i=1;i<=hCln->GetNbinsX();i++){
+//    printf("%i\n",i);
 //    TH1D* hProj = hCln->ProjectionY(Form("proj%i",i),i,i);
 //    hProj->GetXaxis()->SetTitleOffset(1.0);
 //    hProj->SetTitle(Form("%s;Online V0M;",bitName));
 //    Float_t integ = hProj->Integral();
-//    if (integ<200) continue;
+//    gPad->Print("fit.png");
+//    if (integ<100) continue;
 //    Double_t mMax = hProj->GetBinLowEdge(hProj->GetMaximumBin()-1);
 //    Double_t mMin = hProj->GetBinLowEdge(hProj->GetMaximumBin()-6);
 //    fExp->SetRange(mMin,mMax);
@@ -600,8 +671,10 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
 //    Double_t lambdaerr = lambda*fExp->GetParError(1)/fExp->GetParameter(1);
 //    hFitResults->SetBinContent(i,x0-7*lambda);
 //    hFitResults->SetBinError(i,x0err+7*lambdaerr);
-////        gPad->Print("fit.png");
+//    gPad->Print("fit.png");
 //  }
+//  cFit->WaitPrimitive();
+//  return;
 //  leg->Draw();
 //  
 //  cFit->cd(2);
@@ -754,6 +827,10 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   hOfNormCum->DrawCopy();
   
   ccum->Print(Form("%s_cum.png",multOn.Data()));
+  
+//  TFile* fout = new TFile(Form("fout_%s.root",multOn.Data()),"recreate");
+//  hOfAcc->Write();
+//  fout->Close();
 }
 
 
@@ -780,7 +857,7 @@ void DrawSPDClsVsTkl(TH2F* hAll,TH2F* hCln, const char* bitName){
   gPad->SetLogz();
   hCln->Draw("colz");
   c->Print("ClsVsTkl.png");
-} 
+}
 
 
 void DrawV0C012vsTkl(TH2F* hAll,TH2F* hCln, const char* bitName){
@@ -886,6 +963,7 @@ void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName){
   hCln->Draw("colz");
   c->Print("SPDOnVsOf.png");
 }
+
 
 void DrawTiming(TH1F* hAall,TH1F* hAacc,TH1F* hCall,TH1F* hCacc, TString cname, const char* bitName){
   if (!hAall || !hAacc || !hCall || !hCacc) {
