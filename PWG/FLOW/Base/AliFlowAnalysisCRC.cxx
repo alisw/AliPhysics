@@ -16416,7 +16416,7 @@ void AliFlowAnalysisCRC::InitializeArraysForEbEFlow()
       fEBEFlowFlucHis[h][i] = NULL;
     }
   }
-  for(Int_t h=0; h<2; h++) {
+  for(Int_t h=0; h<8; h++) {
     fEBEFlowResVZPro[h] = NULL;
   }
   FourierExp = NULL;
@@ -19922,11 +19922,34 @@ void AliFlowAnalysisCRC::FitEbEFlow()
 {
   if(fEBEFlowMulBin<0) return;
 
+  // VZ eta < 0
+  Double_t VZC2Re = fVZFlowVect[0][1].X();
+  Double_t VZC2Im = fVZFlowVect[0][1].Y();
+  Double_t VZC3Re = fVZFlowVect[0][2].X();
+  Double_t VZC3Im = fVZFlowVect[0][2].Y();
+  // VZ eta > 0
+  Double_t VZA2Re = fVZFlowVect[1][1].X();
+  Double_t VZA2Im = fVZFlowVect[1][1].Y();
+  Double_t VZA3Re = fVZFlowVect[1][2].X();
+  Double_t VZA3Im = fVZFlowVect[1][2].Y();
+  
   Double_t VZCM  = fVZFlowVect[0][1].GetMult();
   Double_t VZAM  = fVZFlowVect[1][1].GetMult();
   if( VZCM<1. || VZAM<1. ) return;
   
   //FourierExp [0]*(1 + 2.*[1]*cos(2.*(x-[3])) + 2.*[2]*cos(3.*(x-[4])))
+  
+  Double_t VZApsi2 = TMath::ATan2(VZA2Im,VZA2Re)/2.;
+  if(VZApsi2<0.) VZApsi2 += TMath::TwoPi();
+  
+  Double_t VZCpsi2 = TMath::ATan2(VZC2Im,VZC2Re)/2.;
+  if(VZCpsi2<0.) VZCpsi2 += TMath::TwoPi();
+  
+  Double_t VZApsi3 = TMath::ATan2(VZA3Im,VZA3Re)/3.;
+  if(VZApsi3<0.) VZApsi3 += TMath::TwoPi();
+  
+  Double_t VZCpsi3 = TMath::ATan2(VZC3Im,VZC3Re)/3.;
+  if(VZCpsi3<0.) VZCpsi3 += TMath::TwoPi();
   
   AliFlowVector CombQVZpsi2 = fVZFlowVect[0][1]+fVZFlowVect[1][1];
   Double_t VZpsi2 = TMath::ATan2(CombQVZpsi2.Y(),CombQVZpsi2.X())/2.;
@@ -19938,7 +19961,6 @@ void AliFlowAnalysisCRC::FitEbEFlow()
   if(VZpsi3<0.) VZpsi3 += TMath::TwoPi();
   FourierExp->FixParameter(4,VZpsi3);
 
-  Bool_t FitFlag = kTRUE;
   Int_t DoF = fEbEFlowAzimDis[fEBEFlowMulBin]->GetNbinsX();
   
   FourierExp->SetParameter(0,(Double_t)(fEbEFlowAzimDis[fEBEFlowMulBin]->GetSumOfWeights()/DoF));
@@ -19974,11 +19996,20 @@ void AliFlowAnalysisCRC::FitEbEFlow()
     
     Double_t TPCpsi2 = TMath::ATan2(Q2Im,Q2Re)/2.;
     if(TPCpsi2<0.) TPCpsi2 += TMath::TwoPi();
-    fEBEFlowResVZPro[0]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZpsi2)));
     
     Double_t TPCpsi3 = TMath::ATan2(Q3Im,Q3Re)/3.;
     if(TPCpsi3<0.) TPCpsi3 += TMath::TwoPi();
-    fEBEFlowResVZPro[1]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZpsi3)));
+    
+    fEBEFlowResVZPro[0]->Fill(fCentralityEBE,cos(2.*(VZApsi2-VZCpsi2)));
+    fEBEFlowResVZPro[1]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZApsi2)));
+    fEBEFlowResVZPro[2]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZCpsi2)));
+    
+    fEBEFlowResVZPro[3]->Fill(fCentralityEBE,cos(3.*(VZApsi3-VZCpsi3)));
+    fEBEFlowResVZPro[4]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZApsi3)));
+    fEBEFlowResVZPro[5]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZApsi3)));
+    
+    fEBEFlowResVZPro[6]->Fill(fCentralityEBE,cos(2.*(TPCpsi2-VZpsi2)));
+    fEBEFlowResVZPro[7]->Fill(fCentralityEBE,cos(3.*(TPCpsi3-VZpsi3)));
   }
   
 }
@@ -26639,7 +26670,7 @@ void AliFlowAnalysisCRC::BookEverythingForEbEFlow()
       fEbEFlowList->Add(fEBEFlowFlucHis[h][i]);
     }
   }
-  for(Int_t h=0; h<2; h++) {
+  for(Int_t h=0; h<8; h++) {
     fEBEFlowResVZPro[h] = new TProfile(Form("fEBEFlowResVZPro[%d]",h),Form("fEBEFlowResVZPro[%d]",h),100,0.,100.);
     fEBEFlowResVZPro[h]->Sumw2();
     fEbEFlowList->Add(fEBEFlowResVZPro[h]);
