@@ -2,6 +2,8 @@
 #include "AliCDBPath.h"
 #include "AliCDBEntry.h"
 #include "AliGRPObject.h"
+#include "AliTriggerRunScalers.h"
+#include "AliTriggerScalersRecord.h"
 #include "AliDAQ.h"
 #include <TKey.h>
 #include <TF2.h>
@@ -85,6 +87,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fTMax(tmax)
   ,fTMinGRP(0)
   ,fTMaxGRP(0)
+  ,fTMinCTP(0)
+  ,fTMaxCTP(0)
   ,fDeltaTVD(120)
   ,fSigmaTVD(600)
   ,fMaxTracks(4000000)
@@ -239,8 +243,8 @@ void AliTPCDcalibRes::CalibrateVDrift()
   TStopwatch sw;
   const float kSafeMargin = 0.25f;
   if (!fInitDone) Init();
-  Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
-  Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
+  Long64_t tmn = fTMinCTP-fTMin>kLargeTimeDiff ? fTMinCTP : fTMin;
+  Long64_t tmx = fTMax-fTMaxCTP>kLargeTimeDiff ? fTMaxCTP : fTMax;
   Int_t duration = tmx - tmn;
   int nTBins = duration /fDeltaTVD+1;
   int durRange = nTBins*fDeltaTVD;
@@ -268,7 +272,7 @@ void AliTPCDcalibRes::CalibrateVDrift()
   statEst *= fTestStat[kCtrNtr][kCtrNtr]; // loss due to the mult selection
   statEst *= fNTestTracks*fInputChunks->GetEntriesFast()*(1.-kSafeMargin); // safety margin for losses (outliers etc)
   //
-  statEst *= TMath::Min(1.f,float(duration)/(fTMaxGRP-fTMinGRP));
+  statEst *= TMath::Min(1.f,float(duration)/(fTMaxCTP-fTMinCTP));
   float statEstTBin = statEst/nTBins;
   // select tracks matching to time window and write compact local trees
   //
@@ -531,11 +535,14 @@ void AliTPCDcalibRes::Init()
       fUseTOFBC = kFALSE;      
     }
   }
-
+  // get real data time from CTP scalers
+  AliTriggerRunScalers* scalers = (AliTriggerRunScalers*)man->Get(AliCDBPath("GRP/CTP/Scalers"))->GetObject();
+  Int_t nEntries = scalers->GetScalersRecords()->GetEntriesFast();
+  fTMinCTP = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
+  fTMaxCTP = scalers->GetScalersRecord(nEntries-1)->GetTimeStamp()->GetSeconds();
+  //
   // init histo for track rate
-  Long64_t tmn = fTMinGRP-fTMin>kLargeTimeDiff ? fTMinGRP-100 : fTMin;
-  Long64_t tmx = fTMax-fTMaxGRP>kLargeTimeDiff ? fTMaxGRP+100 : fTMax;
-  fTracksRate = new TH1F("TracksRate","TracksRate", 1+tmx-tmn, -0.5+tmn,0.5+tmx);
+  fTracksRate = new TH1F("TracksRate","TracksRate", 1+fTMaxCTP-fTMinCTP, -0.5+fTMinCTP,0.5+fTMaxCTP);
   fTracksRate->SetDirectory(0);
   //
   InitGeom();

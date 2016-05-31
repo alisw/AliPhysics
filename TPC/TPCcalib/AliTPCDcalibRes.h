@@ -326,6 +326,8 @@ class AliTPCDcalibRes: public TNamed
   Long64_t GetTMax()                        const {return fTMax;}  
   Long64_t GetTMinGRP()                     const {return fTMinGRP;}
   Long64_t GetTMaxGRP()                     const {return fTMaxGRP;}  
+  Long64_t GetTMinCTP()                     const {return fTMinCTP;}
+  Long64_t GetTMaxCTP()                     const {return fTMaxCTP;}  
   Int_t    GetNXBins()                      const {return fNXBins;}
   Int_t    GetNY2XBins()                    const {return fNY2XBins;}
   Int_t    GetNZ2XBins()                    const {return fNZ2XBins;}
@@ -389,6 +391,8 @@ class AliTPCDcalibRes: public TNamed
   Long64_t fTMax;    // time stop for timebin
   Long64_t fTMinGRP;    // time start from GRP
   Long64_t fTMaxGRP;    // time stop from GRP
+  Long64_t fTMinCTP;    // time start from CTP
+  Long64_t fTMaxCTP;    // time stop from CTP
   Int_t    fDeltaTVD;      // vdrift T-bin size
   //
   Int_t    fSigmaTVD;      // vdrift smoothing window
@@ -542,7 +546,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,12);
+  ClassDef(AliTPCDcalibRes,13);
 };
 
 //________________________________________________________________
