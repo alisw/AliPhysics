@@ -109,6 +109,9 @@ public:
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
   static const AliHLTComponentDataType& ClustersDataType();
+  /** xyz cluster coordinates */
+  static const AliHLTComponentDataType fgkClustersXYZDataType;          // see above
+  static const AliHLTComponentDataType& ClustersXYZDataType();
   /** raw cluster data (not transformed) */
   static const AliHLTComponentDataType fgkRawClustersDataType;          // see above
   static const AliHLTComponentDataType fgkRawClustersDataTypeNotCompressed;          // A copy of the fgkRawClustersDataType, which is used if the DataCompressor failed to compress clusters
