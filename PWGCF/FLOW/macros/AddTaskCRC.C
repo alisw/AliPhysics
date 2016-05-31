@@ -4,7 +4,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
-                             Bool_t bCalculateCRC2=kFALSE,
+                             Bool_t bCalculateEbEFlow=kFALSE,
                              Bool_t bUseCRCRecenter,
                              TString QVecWeightsFileName,
                              Bool_t bCalculateCME=kFALSE,
@@ -75,6 +75,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Double_t CenBinWidth=10.;
  Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
+ Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
  Bool_t bUsePhiEtaWeights=kFALSE;
  TString PhiEtaWeightsFileName="";
@@ -309,7 +310,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCalculateCRC2(bCalculateCRC2);
  taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
  taskQC->SetCalculateCRCZDC(bCalculateCRCZDC);
- taskQC->SetCalculateEbEFlow(kTRUE);
+ taskQC->SetCalculateEbEFlow(bCalculateEbEFlow);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
