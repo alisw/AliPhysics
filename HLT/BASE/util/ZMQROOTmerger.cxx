@@ -43,7 +43,7 @@ Int_t HandleRequest(aliZMQmsg::iterator block, void* /*socket*/=NULL);
 Int_t DoReceive(aliZMQmsg::iterator block, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(aliZMQmsg::iterator block, void* socket);
-Int_t DoRequest(void* /*socket*/);
+Int_t DoRequest(void* /*socket*/, unsigned long long& latTime);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
 Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
@@ -73,7 +73,6 @@ std::string fInitFile = "";
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 Bool_t  fRequestResetOnRequest = kFALSE; //when requesting from another merger, request also a reset
-Int_t   fSleep = 0;  //how long to sleep between requests (microseconds)
 Bool_t fClearOnReset = kFALSE;
 
 Bool_t  fAllowGlobalReset=kTRUE;
@@ -91,6 +90,10 @@ std::string fNameList = "";
 TString fTitleAnnotation = "";
 
 AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
+
+unsigned long long lastTimeRequestIN = 0;
+unsigned long long lastTimeRequestOUT = 0;
+unsigned long long lastTimeRequestMON = 0;
 
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
@@ -145,7 +148,7 @@ const char* fUSAGE =
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
     " -ZMQtimeout: when to timeout the sockets (milliseconds)\n"
-    " -sleep : how long to sleep between requests (milliseconds)\n"
+    " -sleep : socket timeout (milliseconds) - same as ZMQtimeout\n"
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
@@ -186,9 +189,9 @@ Int_t Run()
     Int_t syncType=alizmq_socket_type(fZMQsync);
     
     //request first
-    if (inType==ZMQ_REQ) DoRequest(fZMQin);
-    if (outType==ZMQ_REQ) DoRequest(fZMQout);
-    if (monType==ZMQ_REQ) DoRequest(fZMQmon);
+    if (inType==ZMQ_REQ) DoRequest(fZMQin, lastTimeRequestIN);
+    if (outType==ZMQ_REQ) DoRequest(fZMQout, lastTimeRequestOUT);
+    if (monType==ZMQ_REQ) DoRequest(fZMQmon, lastTimeRequestMON);
 
     //wait for the data
     //poll sockets - we want to take action on one of two conditions:
@@ -298,7 +301,6 @@ Int_t Run()
       }
       alizmq_msg_close(&message);
     }//socket 3
-    if (fSleep>0) usleep(fSleep);
   }//main loop
 
   return 0;
@@ -555,8 +557,16 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 }
 
 //______________________________________________________________________________
-Int_t DoRequest(void* socket)
+Int_t DoRequest(void* socket, unsigned long long& lastTime)
 {
+
+  struct timeval currentTimeStruct;
+  gettimeofday(&currentTimeStruct, NULL);
+  unsigned long long currentTime = 1000*currentTimeStruct.tv_sec+currentTimeStruct.tv_usec/1000;
+
+  if ((currentTime-lastTime)<fZMQtimeout) { return -1; }
+  lastTime = currentTime;
+
   //just send an empty request
   if (fRequestResetOnRequest) {
     if (fVerbose) Printf("sending an ResetOnRequest request");
@@ -609,11 +619,12 @@ Int_t DoSend(void* socket)
     rc = alizmq_msg_add(&message, &topic, object, fCompression, fSchema);
     if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
     {
-      if (fVerbose) {printf("resetting %s\n",objectName);}
       if (fClearOnReset) {
+        if (fVerbose) {printf("resetting %s\n",objectName);}
         TH1* hist = dynamic_cast<TH1*>(object);
         if (hist) hist->Reset();
       } else {
+        if (fVerbose) {printf("destroying %s\n",objectName);}
         TPair* pair = fMergeObjectMap.RemoveEntry(key);
         delete pair->Key();
         delete pair->Value();
@@ -810,7 +821,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     else if (option.EqualTo("sleep"))
     {
-      fSleep = value.Atoi() * 1000;
+      fZMQtimeout=value.Atoi();
     }
     else if (option.EqualTo("select"))
     {
