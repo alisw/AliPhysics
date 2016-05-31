@@ -1,11 +1,13 @@
 #ifndef ALIEMCALCELLMONITOR_H_
 #define ALIEMCALCELLMONITOR_H_
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include <TCustomBinning.h>
 #include <TString.h>
 
+class TArrayD;
 class THistManager;
 class AliEMCALGeometry;
 
@@ -63,7 +65,38 @@ public:
     fTriggerString = triggerstring;
   }
 
+  /**
+   * Set number of Cells in order to match run2 geometry
+   */
+  void SetRun2() { fNumberOfCells = 17664; }
+
 protected:
+
+  /**
+   * @class AliEmcalCellMonitorAmplitudeBinning
+   * @brief Defining binning in amplitude direction
+   *
+   * Create binning for the amplitude:
+   * 0 - 1 GeV: 100 MeV bins
+   * 1 - 10 GeV: 500 MeV bins
+   * 10 - 20 GeV: 1 GeV bins
+   * 20 - 50 GeV: 2 GeV bins
+   * 50 - 100 GeV: 5 GeV bins
+   * 100 - 200 GeV: 10 GeV bins
+   */
+  class AliEmcalCellMonitorAmplitudeBinning : public TCustomBinning {
+  public:
+
+    /**
+     * Constructor, defining minimum and ranges
+     */
+    AliEmcalCellMonitorAmplitudeBinning();
+
+    /**
+     * Destructor
+     */
+    virtual ~AliEmcalCellMonitorAmplitudeBinning() {}
+  };
 
   /**
    * Create the output histograms
@@ -95,6 +128,7 @@ private:
   Double_t                            fMinCellAmplitude;    ///< Min. cell amplitude requested for cell time
   ULong_t                             fRequestTrigger;      ///< Trigger selection
   TString                             fTriggerString;       ///< Trigger string in addition to trigger selection
+  Int_t                               fNumberOfCells;       ///< Number of cells
 
   AliEmcalCellMonitorTask(const AliEmcalCellMonitorTask &ref);
   AliEmcalCellMonitorTask &operator=(const AliEmcalCellMonitorTask &ref);
