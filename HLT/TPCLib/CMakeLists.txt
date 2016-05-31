@@ -66,7 +66,6 @@ ALICE_UseVc()
 # Sources in alphabetical order
 set(SRCS
     AliHLTTPCAgent.cxx
-    AliHLTTPCCFComparisonComponent.cxx
     AliHLTTPCClusterAccessHLTOUT.cxx    
     AliHLTTPCClusterDumpComponent.cxx
     AliHLTTPCClusterFinderComponent.cxx

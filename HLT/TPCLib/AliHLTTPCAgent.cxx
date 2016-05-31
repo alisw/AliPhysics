@@ -54,7 +54,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCHistogramHandlerComponent.h"
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCHWCFDataReverterComponent.h"
-#include "AliHLTTPCCFComparisonComponent.h"
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
@@ -415,7 +414,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
-  pHandler->AddComponent(new AliHLTTPCCFComparisonComponent);
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
