@@ -527,8 +527,9 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   } while (false);
 
   //add all extracted objects to the list of veiwer objects
-  for (auto i: fListOfObjects) {
-    AddObject(i);
+  for (std::vector<TObject*>::iterator i=fListOfObjects.begin();
+       i!=fListOfObjects.end(); ++i) {
+    AddObject(*i);
   }
   fListOfObjects.clear();
 
