@@ -61,8 +61,7 @@
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCClusterXYZ.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCGeometry.h"
@@ -167,8 +166,8 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
   list.push_back(kAliHLTDataTypeESDFriendContent);
-  list.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC  );
-  list.push_back(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
+  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
 }
@@ -726,8 +725,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     // ---------- Access to clusters --------------------
 
     const AliHLTTPCRawClusterData* rawClusters[fkNPartition];
-    const AliHLTTPCClusterData  *partitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
-    Int_t                        partitionNClusters[fkNPartition]; //! number of clusters for each TPC partition
+    const AliHLTTPCClusterXYZData  *partitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
+    Int_t                          partitionNClusters[fkNPartition]; //! number of clusters for each TPC partition
 
     {
       for(Int_t i=0; i<fkNPartition; i++){
@@ -738,8 +737,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
       // Access to raw clusters 
     
-      for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC); iter != NULL; iter = GetNextInputBlock()){      
-	if( iter->fDataType != (AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC) ) continue;    
+      for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType() ); iter != NULL; iter = GetNextInputBlock()){      
+	if( iter->fDataType != AliHLTTPCDefinitions::RawClustersDataType() ) continue;    
 	Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
 	Int_t slicepartition = slice*6+partition;      
@@ -752,8 +751,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     
       // Access to  transformed clusters
       
-      for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock()){      
-	if(iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType) continue;
+      for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::ClustersXYZDataType()); iter != NULL; iter = GetNextInputBlock()){      
+	if(iter->fDataType != AliHLTTPCDefinitions::ClustersXYZDataType()) continue;
 	Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
 	Int_t slicepartition = slice*6+partition;      
@@ -761,10 +760,10 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  HLTWarning("Wrong header of TPC cluster data, slice %d, partition %d", slice, partition );
 	  continue;
 	}
-	const AliHLTTPCClusterData * clusterData = ( AliHLTTPCClusterData* )( iter->fPtr );
+	const AliHLTTPCClusterXYZData * clusterData = ( AliHLTTPCClusterXYZData* )( iter->fPtr );
 	if( clusterData ) {
 	  partitionClusters[slicepartition] = clusterData;
-	  partitionNClusters[slicepartition] = clusterData->fSpacePointCnt;
+	  partitionNClusters[slicepartition] = clusterData->fCount;
 	}
       } // end of loop over blocks of clusters    
     }
@@ -893,9 +892,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       const UInt_t*clusterIDs = tpcTrack->GetPoints();
       for(UInt_t ic=0; ic<nClusters; ic++){	 
 	UInt_t id      = clusterIDs[ic];	     
-	int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
-	int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
-	int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+	UInt_t iSlice = AliHLTTPCClusterXYZ::RawID2Slice( id );
+	UInt_t iPartition = AliHLTTPCClusterXYZ::RawID2Partition( id );
+	UInt_t iCluster = AliHLTTPCClusterXYZ::RawID2Index( id );
 	
 	if(iSlice<0 || iSlice>35 || iPartition<0 || iPartition>5){
 	  HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
@@ -903,7 +902,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	}
 	Int_t slicepartition = iSlice*6+iPartition;      
 
-	const AliHLTTPCClusterData * clusterData = partitionClusters[slicepartition];
+	const AliHLTTPCClusterXYZData * clusterData = partitionClusters[slicepartition];
 	if(!clusterData ){
 	  HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
 	  continue;
@@ -921,11 +920,11 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  continue;
 	}
 	    
-	const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
-	UInt_t rawID = chlt->GetRawID();
-	UInt_t sliceRaw = AliHLTTPCSpacePointData::GetSlice( rawID );
-	UInt_t partitionRaw = AliHLTTPCSpacePointData::GetPatch( rawID );
-	UInt_t indRaw = AliHLTTPCSpacePointData::GetNumber( rawID );
+	const AliHLTTPCClusterXYZ &chlt = clusterData->fClusters[iCluster];
+	UInt_t rawID = chlt.GetRawClusterID();
+	UInt_t sliceRaw = AliHLTTPCClusterXYZ::RawID2Slice( rawID );
+	UInt_t partitionRaw = AliHLTTPCClusterXYZ::RawID2Partition( rawID );
+	UInt_t indRaw = AliHLTTPCClusterXYZ::RawID2Index( rawID );
 	
 	if( sliceRaw!=iSlice || partitionRaw!=iPartition || indRaw>=rawClustersBlock->fCount ){
 	  HLTWarning("Raw and XYZ cluster indexes does not match. Raw: slice %d, partition %d, cluster %d  XYZ: slice %d, partition %d, cluster %d", sliceRaw, partitionRaw, indRaw, iSlice, iPartition, iCluster );
@@ -933,19 +932,25 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	}
 	const AliHLTTPCRawCluster &chltRaw = rawClustersBlock->fClusters[indRaw];
 
+	double padpitch = AliHLTTPCGeometry:: GetPadPitchWidth( iPartition );
+	double zwidth = AliHLTTPCGeometry::GetZWidth();   
+	double padpitch2 = padpitch*padpitch;
+	double zwidth2 = zwidth*zwidth;
+	int firstRow = AliHLTTPCGeometry::GetFirstRow(iPartition);
+
 	AliTPCclusterMI cl;
 	cl.SetPad( chltRaw.GetPad() );
 	cl.SetTimeBin( chltRaw.GetTime() );
-	cl.SetX(chlt->fX);
-	cl.SetY(chlt->fY);
-	cl.SetZ(chlt->fZ);
-	cl.SetSigmaY2(chlt->fSigmaY2);
+	cl.SetX(chlt.GetX() );
+	cl.SetY(chlt.GetY() );
+	cl.SetZ(chlt.GetZ() );
+	cl.SetSigmaY2( chltRaw.GetSigmaPad2()*padpitch2 );
 	cl.SetSigmaYZ( 0 );
-	cl.SetSigmaZ2(chlt->fSigmaZ2);
-	cl.SetQ( chlt->fCharge );
-	cl.SetMax( chlt->fQMax );
+	cl.SetSigmaZ2( chltRaw.GetSigmaTime2()*zwidth2 );
+	cl.SetQ( chltRaw.GetCharge() );
+	cl.SetMax( chltRaw.GetQMax() );
 	Int_t sector, row;
-	AliHLTTPCGeometry::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
+	AliHLTTPCGeometry::Slice2Sector(iSlice, firstRow + chltRaw.GetPadRow(), sector, row);
 	cl.SetDetector( sector );
 	cl.SetRow( row );
 	

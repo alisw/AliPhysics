@@ -30,7 +30,7 @@
 #include "AliHLTCTPData.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCClusterXYZ.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
@@ -843,10 +843,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       nClustersITS += inPtr->fSpacePointCnt;
     }
 
-    if (iter->fDataType == AliHLTTPCDefinitions::fgkClustersDataType) //Transformed TPC clusters used in TPCCATracker
+    if (iter->fDataType == AliHLTTPCDefinitions::ClustersXYZDataType() ) //Transformed TPC clusters used in TPCCATracker
     {
-      AliHLTTPCClusterData* inPtrSP = ( AliHLTTPCClusterData* )( iter->fPtr );
-      nClustersTPC += inPtrSP->fSpacePointCnt;
+      AliHLTTPCClusterXYZData* inPtrSP = ( AliHLTTPCClusterXYZData* )( iter->fPtr );
+      nClustersTPC += inPtrSP->fCount;
     }
 
     if (iter->fDataType == AliHLTTPCDefinitions::DataCompressionDescriptorDataType() ||

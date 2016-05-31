@@ -26,8 +26,6 @@
 #include "AliHLTTPCHWClusterDecoderComponent.h"
 #include "AliHLTTPCHWClusterMergerV1.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCHWCFEmulator.h"

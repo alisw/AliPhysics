@@ -36,8 +36,8 @@
 #include "AliHLTCTPData.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
+#include "AliHLTTPCClusterXYZ.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
 #include "AliITStrackV2.h"
@@ -128,8 +128,8 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
   list.push_back(kAliHLTDataTypeESDFriendContent);
-  list.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC  );
-  list.push_back(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
+  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
 }
@@ -509,9 +509,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
     int nInputClusters = 0;
     
-    for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType); iter != NULL; iter = GetNextInputBlock()){
+    for(const AliHLTComponentBlockData *iter = GetFirstInputBlock(AliHLTTPCDefinitions::ClustersXYZDataType()); iter != NULL; iter = GetNextInputBlock()){
       
-      if(iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType) continue;    
+      if(iter->fDataType != AliHLTTPCDefinitions::ClustersXYZDataType() ) continue;    
       Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
       Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
       Int_t slicepartition = slice*6+partition;      
@@ -527,21 +527,29 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	continue;
       }
       
-      AliHLTTPCClusterData *inPtrSP = ( AliHLTTPCClusterData* )( iter->fPtr );
-      nInputClusters += inPtrSP->fSpacePointCnt;
+      AliHLTTPCClusterXYZData *inPtrSP = ( AliHLTTPCClusterXYZData* )( iter->fPtr );
+      nInputClusters += inPtrSP->fCount;
       
       delete[] fPartitionClusters[slicepartition];
-      fPartitionClusters[slicepartition]  = new AliTPCclusterMI[inPtrSP->fSpacePointCnt];
-      fNPartitionClusters[slicepartition] = inPtrSP->fSpacePointCnt;
-    
+      fPartitionClusters[slicepartition]  = new AliTPCclusterMI[inPtrSP->fCount];
+      fNPartitionClusters[slicepartition] = inPtrSP->fCount;
+
+
+      double padpitch = AliHLTTPCGeometry:: GetPadPitchWidth( partition );
+      double zwidth = AliHLTTPCGeometry::GetZWidth();   
+      double padpitch2 = padpitch*padpitch;
+      double zwidth2 = zwidth*zwidth;
+      int firstRow = AliHLTTPCGeometry::GetFirstRow(partition);
+ 
       // create  offline clusters out of the HLT clusters
 
-      for ( unsigned int i = 0; i < inPtrSP->fSpacePointCnt; i++ ) {
-	AliHLTTPCSpacePointData *chlt = &( inPtrSP->fSpacePoints[i] );
-	UInt_t rawID = chlt->GetRawID();
-	UInt_t sliceRaw = AliHLTTPCSpacePointData::GetSlice( rawID );
-	UInt_t partitionRaw = AliHLTTPCSpacePointData::GetPatch( rawID );
-	UInt_t indRaw = AliHLTTPCSpacePointData::GetNumber( rawID );
+      for ( unsigned int i = 0; i < inPtrSP->fCount; i++ ) {
+	AliHLTTPCClusterXYZ &chlt = inPtrSP->fClusters[i];
+
+	UInt_t rawID = chlt.GetRawClusterID();
+	UInt_t sliceRaw = AliHLTTPCClusterXYZ::RawID2Slice( rawID );
+	UInt_t partitionRaw = AliHLTTPCClusterXYZ::RawID2Partition( rawID );
+	UInt_t indRaw = AliHLTTPCClusterXYZ::RawID2Index( rawID );
 	
 	if( sliceRaw!=slice || partitionRaw!=partition || indRaw>=rawClustersBlock->fCount ){
 	  HLTWarning("Raw and XYZ cluster indexes does not match. Raw: slice %d, partition %d, cluster %d  XYZ: slice %d, partition %d, cluster %d", sliceRaw, partitionRaw, indRaw, slice, partition, i );
@@ -552,17 +560,16 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliTPCclusterMI *c = fPartitionClusters[slicepartition]+i;
 	c->SetPad( chltRaw.GetPad() );
 	c->SetTimeBin( chltRaw.GetTime() );
-	c->SetX(chlt->fX);
-	c->SetY(chlt->fY);
-	c->SetZ(chlt->fZ);
-	c->SetSigmaY2(chlt->fSigmaY2);
+	c->SetX(chlt.GetX() );
+	c->SetY(chlt.GetY() );
+	c->SetZ(chlt.GetZ() );
+	c->SetSigmaY2( chltRaw.GetSigmaPad2()*padpitch2 );
 	c->SetSigmaYZ( 0 );
-	c->SetSigmaZ2(chlt->fSigmaZ2);
-	c->SetQ( chlt->fCharge );
-	c->SetMax( chlt->fQMax );
+	c->SetSigmaZ2( chltRaw.GetSigmaTime2()*zwidth2 );
+	c->SetQ( chltRaw.GetCharge() );
+	c->SetMax( chltRaw.GetQMax() );
 	Int_t sector, row;
-	Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-	AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
+	AliHLTTPCGeometry::Slice2Sector(slice, firstRow + chltRaw.GetPadRow(), sector, row);
 	c->SetDetector( sector );
 	c->SetRow( row );
       }

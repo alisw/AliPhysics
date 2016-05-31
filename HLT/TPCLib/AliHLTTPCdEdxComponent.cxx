@@ -38,8 +38,8 @@
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTPCGeometry.h"
-#include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCClusterXYZ.h"
+#include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
@@ -117,7 +117,8 @@ void AliHLTTPCdEdxComponent::GetInputDataTypes( vector<AliHLTComponentDataType>&
   // see header file for class documentation
   list.clear();
   list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
-  list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
+  list.push_back( AliHLTTPCDefinitions::RawClustersDataType() );
+  list.push_back( AliHLTTPCDefinitions::ClustersXYZDataType() );
 }
 
 AliHLTComponentDataType AliHLTTPCdEdxComponent::GetOutputDataType()
@@ -356,11 +357,11 @@ int AliHLTTPCdEdxComponent::DoEvent
   int nInputClusters = 0;
   int nInputTracks = 0;
 
-  // first read all the clusters
+  // first read all raw clusters
 
   for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
     const AliHLTComponentBlockData* iter = blocks+ndx;
-    if ( iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType ) continue;
+    if ( iter->fDataType != AliHLTTPCDefinitions::RawClustersDataType() ) continue;
     Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
     Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
     Int_t slicepatch=slice*6+patch;
@@ -369,35 +370,42 @@ int AliHLTTPCdEdxComponent::DoEvent
 		 slice, patch );
       continue;
     }
-    AliHLTTPCClusterData* inPtrSP = ( AliHLTTPCClusterData* )( iter->fPtr );
-    nInputClusters += inPtrSP->fSpacePointCnt;
+    const AliHLTTPCRawClusterData* inPtrSP = reinterpret_cast< const AliHLTTPCRawClusterData* >( iter->fPtr );
+    nInputClusters += inPtrSP->fCount;
 
     delete[] fPatchClusters[slicepatch];
-    fPatchClusters[slicepatch] = new AliTPCclusterMI[inPtrSP->fSpacePointCnt];
-    fNPatchClusters[slicepatch] = inPtrSP->fSpacePointCnt;
+    fPatchClusters[slicepatch] = new AliTPCclusterMI[inPtrSP->fCount];
+    fNPatchClusters[slicepatch] = inPtrSP->fCount;
     
     // create  off-line clusters out of the HLT clusters
     // todo: check which cluster information is really needed for the dEdx
-
-    for ( unsigned int i = 0; i < inPtrSP->fSpacePointCnt; i++ ) {
-      AliHLTTPCSpacePointData *chlt = &( inPtrSP->fSpacePoints[i] );
+   
+    double padpitch = AliHLTTPCGeometry:: GetPadPitchWidth( patch );
+    double zwidth = AliHLTTPCGeometry::GetZWidth();   
+    double padpitch2 = padpitch*padpitch;
+    double zwidth2 = zwidth*zwidth;
+    int firstRow = AliHLTTPCGeometry::GetFirstRow(patch);
+ 
+    for ( unsigned int i = 0; i < inPtrSP->fCount; i++ ) {
+      const AliHLTTPCRawCluster &chlt = inPtrSP->fClusters[i];
       AliTPCclusterMI *c = fPatchClusters[slicepatch]+i;
-      c->SetX(chlt->fX);
-      c->SetY(chlt->fY);
-      c->SetZ(chlt->fZ);
-      c->SetSigmaY2(chlt->fSigmaY2);
+      c->SetPad( chlt.GetPad() );
+      c->SetTimeBin( chlt.GetTime() );
+       c->SetSigmaY2( chlt.GetSigmaPad2()*padpitch2 );
       c->SetSigmaYZ( 0 );
-      c->SetSigmaZ2(chlt->fSigmaZ2);
-      c->SetQ( chlt->fCharge );
-      c->SetMax( chlt->fQMax );
+      c->SetSigmaZ2( chlt.GetSigmaTime2()*zwidth2 );
+      c->SetQ( chlt.GetCharge() );
+      c->SetMax( chlt.GetQMax() );
+
       Int_t sector, row;
-      Float_t padtime[3]={0,chlt->fY,chlt->fZ};
-      AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
-      AliHLTTPCGeometry::Local2Raw( padtime, sector, row);
+      AliHLTTPCGeometry::Slice2Sector(slice,firstRow + chlt.GetPadRow(), sector, row);
       c->SetDetector( sector );
       c->SetRow( row );
-      c->SetPad( (Int_t) padtime[1] );
-      c->SetTimeBin( (Int_t) padtime[2] );
+      Float_t xyz[3]={0,0,0};
+      AliHLTTPCGeometry::Raw2Local( xyz, sector, row, chlt.GetPad(), chlt.GetTime() );
+      c->SetX(xyz[0]);
+      c->SetY(xyz[1]);
+      c->SetZ(xyz[2]);
     }
   }
 
@@ -436,9 +444,9 @@ int AliHLTTPCdEdxComponent::DoEvent
       
       for( UInt_t ic=0; ic<currTrack->fNPoints; ic++){	    
 	UInt_t id = currTrack->fPointIDs[ic];
-	int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
-	int iPatch = AliHLTTPCSpacePointData::GetPatch(id);
-	int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+	int iSlice = AliHLTTPCClusterXYZ::RawID2Slice(id);
+	int iPatch = AliHLTTPCClusterXYZ::RawID2Partition(id);
+	int iCluster = AliHLTTPCClusterXYZ::RawID2Index(id);
 	if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
 	  HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
 		   iSlice, iPatch,iCluster );

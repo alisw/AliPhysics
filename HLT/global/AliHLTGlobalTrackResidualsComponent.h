@@ -51,7 +51,7 @@
 
 #include "AliHLTProcessor.h"
 
-struct AliHLTTPCSpacePointData;
+struct AliHLTTPCClusterXYZData;
 class AliHLTGlobalBarrelTrack;
 
 class AliHLTGlobalTrackResidualsComponent : public AliHLTProcessor {
@@ -109,7 +109,7 @@ private:
   TH1F fResZ;
 
   std::vector<std::pair<Float_t, UInt_t> > fSortedX; //! Hits, sorted along X
-  const AliHLTTPCSpacePointData*           fClustersArray[36][6]; //! Clusters for event.
+  const AliHLTTPCClusterXYZData*           fClustersArray[36][6]; //! Clusters for event.
   UInt_t                                   fNSpacePoints[36][6];  //! Number of points in a cluster for event.
 
   /** Non-copyable class */

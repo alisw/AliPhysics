@@ -26,8 +26,7 @@
 #include <TMath.h>
 
 #include "AliHLTGlobalTrackResidualsComponent.h"
-#include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCClusterXYZ.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTDataTypes.h"
@@ -70,7 +69,7 @@ void AliHLTGlobalTrackResidualsComponent::GetInputDataTypes(AliHLTComponentDataT
 {
   //Possible input data types
   list.clear();
-  list.push_back(AliHLTTPCDefinitions::fgkClustersDataType|kAliHLTDataOriginTPC);
+  list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 }
 
@@ -179,17 +178,17 @@ void AliHLTGlobalTrackResidualsComponent::ReadClusterBlocks()
   CleanClusters();
 
   Int_t totalSpacePoints = 0;
-  const AliHLTComponentBlockData* iter = GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType);
+  const AliHLTComponentBlockData* iter = GetFirstInputBlock(AliHLTTPCDefinitions::ClustersXYZDataType() );
 
   for (; iter; iter = GetNextInputBlock()) {
-    if (iter->fDataType != AliHLTTPCDefinitions::fgkClustersDataType)
+    if (iter->fDataType != AliHLTTPCDefinitions::ClustersXYZDataType() )
       continue;
 
     const AliHLTUInt8_t minSlice     = AliHLTTPCDefinitions::GetMinSliceNr(*iter);
     const AliHLTUInt8_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
 
-    const AliHLTTPCClusterData * clusterData = (AliHLTTPCClusterData *)iter->fPtr;
-    const Int_t nSpacepoint = Int_t(clusterData->fSpacePointCnt);
+    const AliHLTTPCClusterXYZData * clusterData = (AliHLTTPCClusterXYZData *)iter->fPtr;
+    const Int_t nSpacepoint = Int_t(clusterData->fCount);
     totalSpacePoints += nSpacepoint;
 
     //This part is from AliHLTTPCTrackHistoComponent. Logic is not clear -
@@ -197,7 +196,7 @@ void AliHLTGlobalTrackResidualsComponent::ReadClusterBlocks()
     //and one of them with 0 spacepoint?
     if (nSpacepoint) {
       HLTDebug("TrackResiduals component found %d spacepoints in slice %d partition %d", nSpacepoint, minSlice, minPartition);
-      fClustersArray[minSlice][minPartition] = (AliHLTTPCSpacePointData*)clusterData->fSpacePoints;
+      fClustersArray[minSlice][minPartition] = (AliHLTTPCClusterXYZData*)clusterData->fClusters;
       fNSpacePoints[minSlice][minPartition]  = nSpacepoint;
     }
   }
@@ -248,8 +247,8 @@ void AliHLTGlobalTrackResidualsComponent::SortHitsX(const AliHLTGlobalBarrelTrac
       prevSlice = sliceTrack;
     }
 
-    Float_t clusterXY[] = {fClustersArray[sliceTrack][patchTrack][pos].fX,
-                           fClustersArray[sliceTrack][patchTrack][pos].fY};
+    Float_t clusterXY[] = {fClustersArray[sliceTrack][patchTrack][pos].GetX(),
+                           fClustersArray[sliceTrack][patchTrack][pos].GetY()};
 
     Rotate(clusterXY, rotAngle);
 
@@ -296,9 +295,9 @@ void AliHLTGlobalTrackResidualsComponent::FillResiduals(const AliHLTGlobalBarrel
     }
 
     if (track.PropagateTo(fSortedX[i].first, GetBz())) {
-      Float_t clusterXYZ[] = {fClustersArray[sliceTrack][patchTrack][pos].fX,
-                              fClustersArray[sliceTrack][patchTrack][pos].fY,
-                              fClustersArray[sliceTrack][patchTrack][pos].fZ};
+      Float_t clusterXYZ[] = {fClustersArray[sliceTrack][patchTrack][pos].GetX(),
+                              fClustersArray[sliceTrack][patchTrack][pos].GetY(),
+                              fClustersArray[sliceTrack][patchTrack][pos].GetZ()};
       Rotate(clusterXYZ, rotAngle);
 
       fResY.Fill(clusterXYZ[1] - track.GetY());
