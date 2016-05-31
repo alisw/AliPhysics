@@ -515,7 +515,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
     return fTimeDependentUpdated;
   }
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
-    if (!fCorrMapCacheRef) LoadFieldDependendStaticCorrectionMap(kTRUE); // need to load the reference correction map
+    if (!fCorrMapCacheRef) fCorrMapCacheRef = LoadFieldDependendStaticCorrectionMap(kTRUE); // need to load the reference correction map
     //
     int mapTimeDepMethod = fCurrentRecoParam->GetCorrMapTimeDepMethod();
     Bool_t needToLoad = timeChanged;
@@ -552,7 +552,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       TObjArray* mapsArr = LoadCorrectionMaps(kFALSE);
       // are these time-static maps?
       if (!((AliTPCChebCorr*)mapsArr->UncheckedAt(0))->GetTimeDependent()) {
-	LoadFieldDependendStaticCorrectionMap(kFALSE,mapsArr); // static maps are field-dependent
+	fCorrMapCache0 = LoadFieldDependendStaticCorrectionMap(kFALSE,mapsArr); // static maps are field-dependent
       }
       else {
 	LoadCorrectionMapsForTimeBin(mapsArr); // load maps matching to time stamp
@@ -694,7 +694,7 @@ void AliTPCTransform::LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided)
 }
 
 //______________________________________________________
-void AliTPCTransform::LoadFieldDependendStaticCorrectionMap(Bool_t ref, TObjArray* mapsArrProvided)
+AliTPCChebCorr* AliTPCTransform::LoadFieldDependendStaticCorrectionMap(Bool_t ref, TObjArray* mapsArrProvided)
 {
   // loads time-independent correction map for relevan field polarity. If ref is true, then the
   // reference map is loaded
@@ -717,29 +717,27 @@ void AliTPCTransform::LoadFieldDependendStaticCorrectionMap(Bool_t ref, TObjArra
     if (mtp==expectType || mtp==AliTPCChebCorr::kFieldAny) cormap = map;
     if (mtp==expectType) break;
   }
-  if (!cormap) AliFatalF("Did not find %s correction map",ref ? "reference":"");
+  if (!cormap) AliFatalGeneralF("AliTPCTransform","Did not find %s correction map",ref ? "reference":"");
 
-  AliInfoF("Loaded  %s correction map",ref ? "reference":"");
+  AliInfoGeneralF("AliTPCTransform","Loaded  %s correction map",ref ? "reference":"");
   cormap->Print();
   if (cormap->GetFieldType() == AliTPCChebCorr::kFieldAny) {
-    AliWarningF("ATTENTION: no map for field %+.1f was found, placeholder map is used",bzField);
+    AliWarningGeneralF("AliTPCTransform","ATTENTION: no map for field %+.1f was found, placeholder map is used",bzField);
   }
   //
   cormap->SetFirst(); // flag absence of maps before
   cormap->SetLast();  // and after
   //
-  if (ref) fCorrMapCacheRef = cormap;
-  else     fCorrMapCache0 = cormap;
-
   if (!mapsArrProvided) { // if loaded locally, clean unnecessary stuff
     mapsArr->Remove((TObject*)cormap);
     mapsArr->SetOwner(kTRUE);
     delete mapsArr;
   }
+  return cormap;
 }
 
 //______________________________________________________
-TObjArray* AliTPCTransform::LoadCorrectionMaps(Bool_t refMap) const
+TObjArray* AliTPCTransform::LoadCorrectionMaps(Bool_t refMap)
 {
   // TPC fast Chebyshev correction map, loaded on demand, not handler by calibDB
   const char* kNameRef = "TPC/Calib/CorrectionMapsRef";

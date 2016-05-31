@@ -40,8 +40,8 @@ public:
   AliTPCChebCorr* GetCorrMapCache0() const {return fCorrMapCache0;}
   AliTPCChebCorr* GetCorrMapCache1() const {return fCorrMapCache1;}
   //
-  TObjArray* LoadCorrectionMaps(Bool_t refMap=kFALSE) const;
-  void LoadFieldDependendStaticCorrectionMap(Bool_t ref,TObjArray* mapsArrProvided=0);
+  static TObjArray* LoadCorrectionMaps(Bool_t refMap=kFALSE);
+  static AliTPCChebCorr* LoadFieldDependendStaticCorrectionMap(Bool_t ref,TObjArray* mapsArrProvided=0);
   void LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided=0);
   // set current values
   //
