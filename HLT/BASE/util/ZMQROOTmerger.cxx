@@ -26,6 +26,7 @@
 #include "TSystem.h"
 #include "signal.h"
 #include <unistd.h>
+#include <pthread.h>
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -44,7 +45,7 @@ Int_t HandleRequest(aliZMQmsg::iterator block, void* /*socket*/=NULL);
 Int_t DoReceive(aliZMQmsg::iterator block, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(aliZMQmsg::iterator block, void* socket);
-Int_t DoRequest(void* /*socket*/, unsigned long long& latTime);
+Int_t DoRequest(void*& socket, unsigned long long& lastTime, TString* config=NULL);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
 Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
@@ -122,6 +123,12 @@ void* fZMQout = NULL;        //the monitoring socket, here we publish a copy of 
 void* fZMQin  = NULL;        //the in socket - entry point for the data to be merged.
 void* fZMQsync = NULL;
 
+//request trigger
+void* fZMQtrig = NULL; //dummy socket to trigger requests at constant time interval
+std::string fZMQconfigTRIG = "PAIR@inproc://trigger";
+pthread_t fTRIGthread = NULL;
+void* runTRIGthread(void*);
+
 const char* fUSAGE = 
     "ZMQROOTmerger options: Merge() all ROOT mergeables in the message.\n"
     "merge based on what GetName() returns, the merged data can be retrieved at any time.\n"
@@ -161,7 +168,7 @@ const char* fUSAGE =
 void sig_handler(int signo)
 {
   if (signo == SIGINT)
-    printf("received signal\n");
+    printf(" received SIGINT\n");
   fgTerminationSignaled=true;
 }
 
@@ -173,12 +180,13 @@ Int_t Run()
   //main loop
   while(!fgTerminationSignaled)
   {
-    Int_t nSockets=4;
+    Int_t nSockets=5;
     zmq_pollitem_t sockets[] = { 
       { fZMQin, 0, ZMQ_POLLIN, 0 },
       { fZMQout, 0, ZMQ_POLLIN, 0 },
       { fZMQmon, 0, ZMQ_POLLIN, 0 },
       { fZMQsync, 0, ZMQ_POLLIN, 0 },
+      { fZMQtrig, 0, ZMQ_POLLIN, 0 },
     };
 
     Int_t rc = 0;
@@ -188,40 +196,18 @@ Int_t Run()
     Int_t outType=alizmq_socket_type(fZMQout);
     Int_t monType=alizmq_socket_type(fZMQmon);
     Int_t syncType=alizmq_socket_type(fZMQsync);
-    
-    //request first
-    if (inType==ZMQ_REQ) DoRequest(fZMQin, lastTimeRequestIN);
-    if (outType==ZMQ_REQ) DoRequest(fZMQout, lastTimeRequestOUT);
-    if (monType==ZMQ_REQ) DoRequest(fZMQmon, lastTimeRequestMON);
 
     //wait for the data
     //poll sockets - we want to take action on one of two conditions:
     //  1 - request comes in - then we merge whatever is not yet merged and send
     //  2 - data comes in - then we add it to the merging list
-    rc = zmq_poll(sockets, nSockets, fZMQtimeout); //poll sockets
+    rc = zmq_poll(sockets, nSockets, -1); //poll sockets
     if (rc==-1 && errno==ETERM)
     {
       //this can only happen it the context was terminated, one of the sockets are
       //not valid or operation was interrupted
       Printf("zmq_poll was interrupted! rc = %i, %s", rc, zmq_strerror(errno));
       break;
-    }
-
-    //if we time out (waiting for a response) reinit the REQ socket(s)
-    if (rc==0)
-    {
-      if (inType==ZMQ_REQ) {
-        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigIN.Data(), fZMQtimeout);
-        rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), fZMQtimeout, fZMQmaxQueueSize);
-      }
-      if (outType==ZMQ_REQ) {
-        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigOUT.Data(), fZMQtimeout);
-        alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), fZMQtimeout, fZMQmaxQueueSize);
-      }
-      if (monType==ZMQ_REQ) {
-        if (fVerbose) printf("no reply from %s in %i ms, server died?\n", fZMQconfigMON.Data(), fZMQtimeout);
-        alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), fZMQtimeout, fZMQmaxQueueSize);
-      }
     }
 
     //data present socket 0 - in
@@ -291,7 +277,7 @@ Int_t Run()
       }
     }//socket 2
     
-    //data present socket 3 - mon
+    //data present socket 3 - sync
     if (sockets[3].revents & ZMQ_POLLIN)
     {
       aliZMQmsg message;
@@ -302,6 +288,19 @@ Int_t Run()
       }
       alizmq_msg_close(&message);
     }//socket 3
+    
+    //data present socket 4 - trig
+    if (sockets[4].revents & ZMQ_POLLIN)
+    {
+      zmq_recv(fZMQtrig, 0, 0, 0);
+      if (fVerbose) printf("trigger\n");
+      // first
+      if (inType==ZMQ_REQ) DoRequest(fZMQin, lastTimeRequestIN, &fZMQconfigIN);
+      if (outType==ZMQ_REQ) DoRequest(fZMQout, lastTimeRequestOUT, &fZMQconfigOUT);
+      if (monType==ZMQ_REQ) DoRequest(fZMQmon, lastTimeRequestMON, &fZMQconfigMON);
+
+    }//socket 3
+
   }//main loop
 
   return 0;
@@ -558,8 +557,15 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 }
 
 //______________________________________________________________________________
-Int_t DoRequest(void* socket, unsigned long long& lastTime)
+Int_t DoRequest(void*& socket, unsigned long long& lastTime, TString* config)
 {
+
+  //if we cannot send it means we were waiting for a reply.
+  //reinit the socket because probably the server died...
+  if ((alizmq_socket_state(socket)&ZMQ_POLLOUT)==0) {
+    if (fVerbose) printf("no reply from %s in %i ms, server died? - reinit socket\n", config->Data(), fZMQtimeout);
+    alizmq_socket_init(socket, fZMQcontext, config->Data(), fZMQtimeout, fZMQmaxQueueSize);
+  }
 
   struct timeval currentTimeStruct;
   gettimeofday(&currentTimeStruct, NULL);
@@ -583,7 +589,10 @@ Int_t DoRequest(void* socket, unsigned long long& lastTime)
 Int_t DoSend(void* socket)
 {
   //only send if we actually CAN send
-  if ( !(alizmq_socket_state(socket) & ZMQ_POLLOUT) ) { return 0; }
+  if ( !(alizmq_socket_state(socket) & ZMQ_POLLOUT) ) {
+    if (fVerbose) printf("cannot send, socket in wrong state\n");
+    return 0;
+  }
 
   //send back merged data, one object per frame
 
@@ -708,6 +717,8 @@ Int_t InitZMQ()
   printf("mon: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigMON.Data());
   rc = alizmq_socket_init(fZMQsync, fZMQcontext, fZMQconfigSYNC.Data(), fZMQtimeout, fZMQmaxQueueSize);
   printf("sync: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigSYNC.Data());
+  rc = alizmq_socket_init(fZMQtrig, fZMQcontext, fZMQconfigTRIG, -1, 1);
+  printf("trigger: (%s) %s\n", alizmq_socket_name(rc) , fZMQconfigTRIG.c_str());
   return 0;
 }
 
@@ -903,6 +914,7 @@ Int_t ProcessOptionString(TString arguments)
     }
     nOptions++;
   }
+
   delete options; //tidy up
 
   return nOptions; 
@@ -945,6 +957,8 @@ int main(Int_t argc, char** argv)
     return 1;
   }
 
+  pthread_create(&fTRIGthread, NULL, runTRIGthread, NULL);
+
   //init other stuff
   fListOfObjects.reserve(100);
 
@@ -959,6 +973,7 @@ int main(Int_t argc, char** argv)
   zmq_close(fZMQin);
   zmq_close(fZMQout);
   zmq_close(fZMQsync);
+  zmq_close(fZMQtrig);
   zmq_ctx_destroy(fZMQcontext);
   return mainReturnCode;
 }
@@ -1098,5 +1113,33 @@ Int_t DumpToFile(std::string file)
 
   f.Close();
   return 0;
+}
+
+//______________________________________________________________________________
+void* runTRIGthread(void*)
+{
+  if (fVerbose) printf("starting trigger thread\n");
+  int delay = fZMQtimeout;
+  void* trig = NULL;
+  alizmq_socket_init(trig, alizmq_context(), "PAIR+inproc://trigger");
+  while (true) {
+    if (delay <= 0) break;
+
+    zmq_pollitem_t sockets[] = { { trig, 0, ZMQ_POLLIN, 0 } };
+    int rc = zmq_poll(sockets, 1, delay);
+    if (rc==-1 && errno==ETERM)
+    {
+      break;
+    }
+
+    if (sockets[0].revents & ZMQ_POLLIN) {
+      zmq_recv(trig,&delay,sizeof(delay),0);
+    }
+    
+    zmq_send(trig,0,0,0);
+  }
+  alizmq_socket_close(trig, 0);
+  if (fVerbose) printf("stopping trigger thread\n");
+  return NULL;
 }
 
