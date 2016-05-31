@@ -1,4 +1,8 @@
+#include <map>
+#include <vector>
+#include <TArrayD.h>
 #include <THashList.h>
+#include <TLinearBinning.h>
 #include <THistManager.h>
 
 #include "AliEMCALGeometry.h"
@@ -17,7 +21,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
-   fTriggerString("")
+   fTriggerString(""),
+   fNumberOfCells(12288)
 {
 
 }
@@ -28,7 +33,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
-   fTriggerString("")
+   fTriggerString(""),
+   fNumberOfCells(12288)
 {
   DefineOutput(1, TList::Class());
 }
@@ -40,9 +46,9 @@ AliEmcalCellMonitorTask::~AliEmcalCellMonitorTask() {
 void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
   fHistManager = new THistManager("EMCALCellMonitor");
 
-  fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", 20001, -0.5, 20000.5, 1000, 0., 100);
-  fHistManager->CreateTH2("cellTime", "Time distribution per cell", 20001, -0.5, 20000.5, 1000, -1e-6, 1e-6);
-  fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", 20001, -0.5, 20000.5, 100, 1e-6, 5e-5);
+  fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
+  fHistManager->CreateTH2("cellTime", "Time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 200, -1e-6, 1e-6);
+  fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 100, 1e-6, 5e-5);
   for(int ism = 0; ism < 20; ++ism){
     fHistManager->CreateTH2(Form("cellAmpSM%d", ism), Form("Integrated cell amplitudes for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
     fHistManager->CreateTH2(Form("cellCountSM%d", ism), Form("Count rate per cell for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
@@ -90,4 +96,16 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     fHistManager->FillTH2(Form("cellAmpTimeCorrSM%d", sm), celltime, amplitude);
   }
   PostData(1, fHistManager->GetListOfHistograms());
+}
+
+AliEmcalCellMonitorTask::AliEmcalCellMonitorAmplitudeBinning::AliEmcalCellMonitorAmplitudeBinning():
+    TCustomBinning()
+{
+  SetMinimum(0);
+  AddStep(1., 0.1);
+  AddStep(10., 0.5);
+  AddStep(20., 1.);
+  AddStep(50., 2.);
+  AddStep(100., 5.);
+  AddStep(200., 10.);
 }
