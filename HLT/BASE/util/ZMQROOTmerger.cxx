@@ -1030,6 +1030,7 @@ Int_t ReadFromFile(std::string file)
 Int_t DumpToFile(std::string file)
 {
   int rc = 0;
+  if (file.empty()) { return 0; }
   TFile f(file.c_str(),"recreate");
   if (f.IsZombie()) { return -1; }
 
