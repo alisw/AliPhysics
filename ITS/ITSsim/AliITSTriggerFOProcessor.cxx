@@ -150,6 +150,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter(
     return kFALSE;
   }
   Int_t thI = fTriggerCond->GetAlgoParamValueIN(index, "inner_threshold");
+  if (thI<0) thI = fTriggerCond->GetAlgoParamValueIN(index, "inner_treshold"); // hack to comply with a typo in ocdb file
   if (thI<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsTHRTotalAndTHRInnerAndTHROuter","Parameter 'inner_threshold' not defined");
     return kFALSE;
@@ -174,6 +175,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsTHRInnerAndTHROuter(Short_t ind
   
   // Get parameter values:
   Int_t thI = fTriggerCond->GetAlgoParamValueIN(index, "inner_threshold");
+  if (thI<0) thI = fTriggerCond->GetAlgoParamValueIN(index, "inner_treshold"); // hack to comply with a typo in ocdb file
   if (thI<0) {
     Error("AliITSTriggerFOProcessor::ProcessFOSignalsTHRInnerAndTHROuter","Parameter 'inner_threshold' not defined");
     return kFALSE;
