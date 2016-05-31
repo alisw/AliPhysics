@@ -1680,7 +1680,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 14);
+ ClassDef(AliFlowAnalysisCRC, 15);
  
 };
 

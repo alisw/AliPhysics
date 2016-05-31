@@ -305,7 +305,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 4);
+ ClassDef(AliAnalysisTaskCRC, 5);
 };
 
 //================================================================================================================
