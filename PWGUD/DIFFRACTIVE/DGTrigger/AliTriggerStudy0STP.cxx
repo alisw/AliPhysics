@@ -14,71 +14,72 @@ Bool_t AliTriggerStudy0STP::CheckForTrackletPair(const TBits* mult, std::bitset<
   
   const std::bitset<20> phi_L0 = ExtractPhi_L0(mult);
   const std::bitset<40> phi_L1 = ExtractPhi_L1(mult);
-  
-  for (std::vector<TablePhi>::const_iterator i=fLookupTablePhi.begin(), iend=fLookupTablePhi.end(); i!=iend; ++i) {
-    if ((i->p.first  & phi_L0).any() &&
-	(i->p.second & phi_L1).any()) 
-      phi[i->phi] = 1;
+
+  switch (fOTtype) {
+  case kOT_2_3: {
+    
+    for (std::vector<TablePhi>::const_iterator i=fLookupTablePhi.begin(), iend=fLookupTablePhi.end(); i!=iend; ++i) {
+      if ((i->p.first  & phi_L0).any() &&
+	  (i->p.second & phi_L1).any()) 
+	phi[i->phi] = 1;
+    }
+    AliDebug(3, Form("L1  %s", phi_L1.to_string().c_str()));
+    AliDebug(3, Form("L0  %s", phi_L0.to_string().c_str()));
+    AliDebug(3, Form("phi %s", phi.to_string().c_str()));
+    for (std::vector<TableDeltaPhi>::const_iterator i=fLookupTableDeltaPhi.begin(), iend=fLookupTableDeltaPhi.end(); i!=iend; ++i) {
+      //     Printf(".....ForTrackletPair:     %s", i->p.to_string().c_str());
+      if ((phi & i->p) == i->p)
+	return true;
+    }
+    break;
   }
-  AliDebug(3, Form("CheckForTrackletPair: L1  %s", phi_L1.to_string().c_str()));
-  AliDebug(3, Form("CheckForTrackletPair: L0  %s", phi_L0.to_string().c_str()));
-  AliDebug(3, Form("CheckForTrackletPair: phi %s", phi.to_string().c_str()));
-  for (std::vector<TableDeltaPhi>::const_iterator i=fLookupTableDeltaPhi.begin(), iend=fLookupTableDeltaPhi.end(); i!=iend; ++i) {
-    //     Printf(".....ForTrackletPair:     %s", i->p.to_string().c_str());
-    if ((phi & i->p) == i->p)
-      return true;
+  case kOT_1_4:
+  case kOT_1_2: {
+
+    if (fOTtype == kOT_1_4) {
+      for (Int_t idxInner=0; idxInner<20; ++idxInner) {
+	const Int_t idxOuter = 2*idxInner;
+	phi[idxInner] = 
+	  ( phi_L0[ idxInner         ] )
+	  &	
+	  ( phi_L1[(idxOuter     )%40] |
+	    phi_L1[(idxOuter +  1)%40] |
+	    phi_L1[(idxOuter +  2)%40] |
+	    phi_L1[(idxOuter + 39)%40] );      
+      }
+    }
+    if (fOTtype == kOT_1_2) {
+      for (Int_t idxInner=0; idxInner<20; ++idxInner) {
+	const Int_t idxOuter = 2*idxInner;
+	phi[idxInner] = 
+	  ( phi_L0[ idxInner         ] )
+	  &	
+	  ( phi_L1[(idxOuter     )%40] |
+	    phi_L1[(idxOuter +  1)%40] );
+      }
+    }
+    
+    Bool_t trig=false;
+    for (Int_t idxInner=0; idxInner<20 && !trig; ++idxInner) {
+      for (Int_t idxMatch=1; idxMatch<11 && !trig; ++idxMatch)
+	trig = trig | ( fMask[idxMatch] &  phi[idxInner] & phi[(idxInner+idxMatch)%20] );	    
+    }
+    return trig;
+    break;
+  }
+  default:
+    return false;
   }
   
   return false;
 }
 
-Bool_t AliTriggerStudy0STP::CheckForTrackletPairFPGA(const TBits* mult) const
-{
-  const std::bitset<20> phi_L0 = ExtractPhi_L0(mult);
-  const std::bitset<40> phi_L1 = ExtractPhi_L1(mult);
-
-  AliDebug(3, Form("CheckForTrackletPair: L1  %s", phi_L1.to_string().c_str()));
-  AliDebug(3, Form("CheckForTrackletPair: L0  %s", phi_L0.to_string().c_str()));
-
-  std::bitset<21> v_coinc;
-  for (Int_t d_phi_outer=3; d_phi_outer<=20; ++d_phi_outer) {
-    v_coinc[d_phi_outer] = 0;
-
-    for (Int_t idxOuter=0; idxOuter<40; ++idxOuter) {
-      const Int_t idxInner  = idxOuter/2;
-      const Int_t idxInnerC = ((idxOuter+d_phi_outer)%40)/2;
-      const Bool_t coinc_inner0 = ( phi_L0[ idxInner        ] |
-				    phi_L0[(idxInner+1) % 20] );
-
-      const Bool_t coinc_inner1 = ( phi_L0[(idxInnerC    ) % 20] |
-				    phi_L0[(idxInnerC + 1) % 20] );
-
-      const Bool_t coinc_inner = (coinc_inner0 & coinc_inner1);
-
-      const Bool_t coinc_outer0 = (phi_L1[(idxOuter    )%40] |
-				   phi_L1[(idxOuter + 1)%40] |
-				   phi_L1[(idxOuter + 2)%40]);
-
-      const Bool_t coinc_outer1 = (phi_L1[(idxOuter+d_phi_outer    ) % 40] |
-				   phi_L1[(idxOuter+d_phi_outer + 1) % 40] |
-				   phi_L1[(idxOuter+d_phi_outer + 2) % 40]);
-
-      const Bool_t coinc_outer = (coinc_outer0 & coinc_outer1);
-
-      if ((coinc_inner & coinc_outer))
-	AliDebug(3, Form("ZZ %d %d %d", d_phi_outer, idxInner, idxOuter ));
-
-      v_coinc[d_phi_outer] = v_coinc[d_phi_outer] | (coinc_inner & coinc_outer);
-    }
-  }
-  AliDebug(3, Form("YY %s %s",
-		   v_coinc.to_string().c_str(),
-		   fMask.to_string().c_str()));
-  return (v_coinc & fMask).any();
-}
-
 std::bitset<20> AliTriggerStudy0STP::CheckForVertex(const TBits* mult, const std::bitset<40> &phi, std::vector<int>& v) const
 {
+
+  if (fOTtype != kOT_2_3)
+    return kFALSE;
+
   std::bitset<20> vtx;
   for (std::vector<TableDeltaPhi>::const_iterator i=fLookupTableDeltaPhi.begin(), iend=fLookupTableDeltaPhi.end(); i!=iend; ++i) {
     if ((phi & i->p) == i->p) {
@@ -151,7 +152,7 @@ void AliTriggerStudy0STP::MakeTablePhi()
     for (Int_t l=0; l<20; ++l)
       s0 += TString::Format("%2d", Int_t(t.p.first[19-l]));
     AliDebug(3, s0.Data());
-    AliDebug(3, Form("TablePhi: L1  %s", t.p.second.to_string().c_str()));
+    AliDebug(3, Form("L1  %s", t.p.second.to_string().c_str()));
     fLookupTablePhi.push_back(t);
   }
 }
@@ -165,7 +166,7 @@ void AliTriggerStudy0STP::MakeTableDeltaPhi(Int_t deltaPhiMin, Int_t deltaPhiMax
       t.phi2 = ((k+j)%40);
       t.p[t.phi1] = 1;
       t.p[t.phi2] = 1;
-      AliDebug(3, Form("TableDeltaPhi: %s", t.p.to_string().c_str()));
+      AliDebug(3, Form("%s", t.p.to_string().c_str()));
       fLookupTableDeltaPhi.push_back(t);
     }
   }
