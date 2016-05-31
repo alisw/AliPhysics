@@ -67,6 +67,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("reichelt_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
+  
   //event related
   // Note: event cuts are identical for all analysis 'cutInstance's that run together!
   if (!hasMC) task->UsePhysicsSelection();
@@ -86,6 +87,23 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   // resolution calculation
   task->SetCalcResolution(calcResolution);
   if(calcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(resoCutInstance));
+  task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+  task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
+  task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
+  task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
+  // resolution usage
+  if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/%s .",resolutionfile.Data()))) ){
+    TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+    if(bUsePtResolution){  task->SetResolutionPt( (TObjArray*) fRes->Get("PtResArr") ); }
+    else                {  task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr") ); }
+    if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
+    else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
+    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiResArr") );
+  }
+  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
+  
   // pair efficiency
   task->SetDoPairing(doPairing);
   if(doPairing){
