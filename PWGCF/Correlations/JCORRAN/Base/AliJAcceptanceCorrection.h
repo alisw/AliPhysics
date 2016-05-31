@@ -43,6 +43,8 @@ public:
   TH2D *GetAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptanceCalculation;} // Getter for calculated acceptance
 
   void SetMinCountsPerBinInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBinInclusive
+  
+  void SetLeadingParticle(bool leadingParticle){ fLeadingParticleCorrelation = leadingParticle; } // Setter for fLeadingParticleCorrelation
 
 private:
   void NormalizeAcceptanceTraditional(AliJTH1D &acceptanceHisto, corrType assocType); // Normalize one dimensional histograms to interval [0,1]
@@ -67,6 +69,7 @@ private:
   bool fDEtaNearLoaded; // Tells whether the one dimensional traditional near side mixed event histogram is loaded or not
   bool fDEtaDPhiNearLoaded; // Tells whether the two dimensional traditional near side mixed event histogram is loaded or not
   bool fDEtaDPhi3DNearLoaded; // Tells whether the two dimensional 3D near side mixed event histogram is loaded or not
+  bool fLeadingParticleCorrelation; // Tells whether the acceptance histograms are done with leading particle
 };
 
 #endif
