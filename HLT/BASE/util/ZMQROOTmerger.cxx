@@ -74,6 +74,7 @@ Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled push
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 Bool_t  fRequestResetOnRequest = kFALSE; //when requesting from another merger, request also a reset
 Int_t   fSleep = 0;  //how long to sleep between requests (microseconds)
+Bool_t fClearOnReset = kFALSE;
 
 Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
@@ -129,6 +130,7 @@ const char* fUSAGE =
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
     " -RequestResetOnRequest : if requesting form another merger, request a ResetOnRequest\n"
+    " -ClearOnReset : instead of destroying data - clear it by calling TH1::Reset() on all histograms\n"
     " -AllowGlobalReset :  allow a global \'reset\' on request\n"
     " -AllowResetOnRequest : allow reset on request\n"
     " -AllowResetAtSOR : allow reset at change of run\n"
@@ -608,10 +610,15 @@ Int_t DoSend(void* socket)
     if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
     {
       if (fVerbose) {printf("resetting %s\n",objectName);}
-      TPair* pair = fMergeObjectMap.RemoveEntry(key);
-      delete pair->Key();
-      delete pair->Value();
-      delete pair;
+      if (fClearOnReset) {
+        TH1* hist = dynamic_cast<TH1*>(object);
+        if (hist) hist->Reset();
+      } else {
+        TPair* pair = fMergeObjectMap.RemoveEntry(key);
+        delete pair->Key();
+        delete pair->Value();
+        delete pair;
+      }
     }
   }
 
@@ -643,10 +650,15 @@ int ResetOutputData(Bool_t force)
 {
   if (fAllowGlobalReset || force) 
   {
-    if (fVerbose) Printf("Resetting the merger");
-    fMergeObjectMap.DeleteAll();
-    ClearMergeListMap();
-    return 1;
+    if (fClearOnReset) {
+      if (fVerbose) Printf("Clearing the merger by calling Reset() on all data");
+      return ClearOutputData();
+    } else {
+      if (fVerbose) Printf("Resetting the merger");
+      fMergeObjectMap.DeleteAll();
+      ClearMergeListMap();
+      return 1;
+    }
   }
   return 0;
 }
@@ -749,6 +761,10 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("ResetOnSend"))
     {
       fResetOnSend = value.Contains("0")?kFALSE:kTRUE;
+    }
+    else if (option.EqualTo("ClearOnReset"))
+    {
+      fClearOnReset = value.Contains("0")?kFALSE:kTRUE;
     }
     else if (option.EqualTo("MaxObjects"))
     {
