@@ -36,7 +36,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection() :
     fMinCountsPerBinInclusive(1000),
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
-    fDEtaDPhi3DNearLoaded(false)
+    fDEtaDPhi3DNearLoaded(false),
+    fLeadingParticleCorrelation(true)
 {
   // default constructor
   Generate3DAcceptanceCorrection();
@@ -54,7 +55,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(AliJCard *inputCard) :
     fMinCountsPerBinInclusive(1000),
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
-    fDEtaDPhi3DNearLoaded(false)
+    fDEtaDPhi3DNearLoaded(false),
+    fLeadingParticleCorrelation(true)
 {
   // Constructor with JCard
   Generate3DAcceptanceCorrection();
@@ -72,7 +74,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
     fMinCountsPerBinInclusive(a.fMinCountsPerBinInclusive),
     fDEtaNearLoaded(a.fDEtaNearLoaded),
     fDEtaDPhiNearLoaded(a.fDEtaDPhiNearLoaded),
-    fDEtaDPhi3DNearLoaded(a.fDEtaDPhi3DNearLoaded)
+    fDEtaDPhi3DNearLoaded(a.fDEtaDPhi3DNearLoaded),
+    fLeadingParticleCorrelation(a.fLeadingParticleCorrelation)
 {
   //copy constructor
 }
@@ -93,6 +96,7 @@ AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAccepta
     fDEtaNearLoaded = a.fDEtaNearLoaded;
     fDEtaDPhiNearLoaded = a.fDEtaDPhiNearLoaded;
     fDEtaDPhi3DNearLoaded = a.fDEtaDPhi3DNearLoaded;
+    fLeadingParticleCorrelation = a.fLeadingParticleCorrelation;
   }
   return *this;
 }
@@ -264,13 +268,13 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptance
         // Also pTa bins are integrated over to get a good statistics
         for (int iAssoc = 1; iAssoc < numAssoc; iAssoc++){
           // Check the leading particle condition for the histograms
-          if(assocType == kAssocType && fCard->Get(kTriggType,iPtt) < fCard->Get(kAssocType,iAssoc)) continue;
+          if(assocType == kAssocType && fCard->Get(kTriggType,iPtt) < fCard->Get(kAssocType,iAssoc) && fLeadingParticleCorrelation) continue;
           acceptanceHisto[1][iCent][iZVertex][iPtt][0]->Add(acceptanceHisto[1][iCent][iZVertex][iPtt][iAssoc]);
         }
         
         // Sum over z-vertex bins and put the histograms on first array index 0
-        if(iZVertex == 0) acceptanceHisto[0][iCent][0][iPtt][0]->Reset();
-        acceptanceHisto[0][iCent][0][iPtt][0]->Add(acceptanceHisto[1][iCent][iZVertex][iPtt][0]);
+        if(iZVertex == 0) acceptanceHisto[0][iCent][0][iPtt][1]->Reset();
+        acceptanceHisto[0][iCent][0][iPtt][1]->Add(acceptanceHisto[1][iCent][iZVertex][iPtt][0]);
         
         // Rebin and normalize the acceptance histograms to the interval [0,peakValue]
         RebinAndNormalize(acceptanceHisto[1][iCent][iZVertex][iPtt][0],peakValue);
@@ -279,7 +283,7 @@ void AliJAcceptanceCorrection::NormalizeAcceptanceInclusive(AliJTH2D &acceptance
       } // z-vertex bins
       
       // Rebin and normalize the acceptance histograms integrated over z-vertices to the interval [0,peakValue]
-      RebinAndNormalize(acceptanceHisto[0][iCent][0][iPtt][0],peakValue);
+      RebinAndNormalize(acceptanceHisto[0][iCent][0][iPtt][1],peakValue);
       
     } // Trigger pT bins
   } // Centrality bins
@@ -352,7 +356,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTriangle(double deltaEta
  */
 double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideCalculation(double deltaEta, double deltaPhi){
   // return the acceptance correction from the pre-calculated surface
-  
+
   double denominator = fDEtaDPhi3DNearAcceptanceCalculation->GetBinContent(fDEtaDPhi3DNearAcceptanceCalculation->FindBin(deltaEta,deltaPhi));
   
   if(denominator > 1e-6)
@@ -415,7 +419,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditionalInclusiveBin(
 
   // The acceptance histogram comes always from 2D distribution
   // If z-vertex bin not specified in the argument list, return sum over z-vertex bins
-  TH2D *acceptanceHistogram = fDEtaDPhiNearAcceptance[firstBin][centralityBin][zVertexBin][triggerBin][0];
+  TH2D *acceptanceHistogram = fDEtaDPhiNearAcceptance[firstBin][centralityBin][zVertexBin][triggerBin][1-firstBin];
   
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
@@ -486,7 +490,7 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(d
   // If there are less than fMinCountsPerBinInclusive entries per bin use calculation instead of histogram
   // This can happen only if after rebin of 16 the entries per bin are still low
   // If z-vertex bin not specified in the argument list, return sum over z-vertex bins
-  TH2D *acceptanceHistogram = fDEtaDPhi3DNearAcceptance[firstBin][centralityBin][zVertexBin][triggerBin][0];
+  TH2D *acceptanceHistogram = fDEtaDPhi3DNearAcceptance[firstBin][centralityBin][zVertexBin][triggerBin][1-firstBin];
   const int nBinsEta = acceptanceHistogram->GetNbinsX();
   const int nBinsPhi = acceptanceHistogram->GetNbinsY();
   const int nBins = nBinsEta*nBinsPhi;
