@@ -95,7 +95,7 @@ class AliAnalysisTaskFlowVectorCorrections : public AliAnalysisTaskSE {
   AliAnalysisTaskFlowVectorCorrections(const AliAnalysisTaskFlowVectorCorrections &c);
   AliAnalysisTaskFlowVectorCorrections& operator= (const AliAnalysisTaskFlowVectorCorrections &c);
 
-  ClassDef(AliAnalysisTaskFlowVectorCorrections, 1);
+  ClassDef(AliAnalysisTaskFlowVectorCorrections, 2);
 };
 
 #endif
