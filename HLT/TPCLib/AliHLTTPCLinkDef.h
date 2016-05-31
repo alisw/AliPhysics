@@ -34,7 +34,6 @@
 #pragma link C++ class AliHLTTPCPad+;
 #pragma link C++ class AliHLTTPCDefinitions+;
 #pragma link C++ class AliHLTTPCClusterFinderComponent+;
-#pragma link C++ class AliHLTTPCCFComparisonComponent+;
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCCATrack+;
