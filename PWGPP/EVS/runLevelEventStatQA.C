@@ -48,8 +48,8 @@ void writeTree(TFile* fout, TTree* t){
 }
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+//Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "raw://"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -502,8 +502,8 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042
     DrawMultiplicity(hV0MOnAll,hV0MOnAcc,hV0MOnVHM,hV0MOfAll,hV0MOfAcc,bitName,"V0M","V0M",meanV0MOn,meanV0MOf);
     DrawMultiplicity(hOFOAll,hOFOAcc,hOFOVHM,hTKLAll,hTKLAcc,bitName,"OFO","TKL",meanOFO,meanTKL);
     DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
-//      DrawEfficiency(hOFOvsTKLAcc,bitName);
-//      DrawEfficiency(hV0MOnVsOfAcc,bitName);
+    if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hOFOvsTKLAcc,"OFO",bitName);
+    if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hV0MOnVsOfAcc,"V0M",bitName);
 //
 //    if (hFiredBitsSPD) {
 //      TCanvas* cFiredBitsSPD = new TCanvas(Form("cFiredBitsSPD_%s",bitName),Form("cFiredBitsSPD_%s",bitName),1800,500);
@@ -548,66 +548,81 @@ Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042
   return 0;
 }
 
-void DrawEfficiency(TH2F* h2D,const char* bitName){
-  TCanvas* c = new TCanvas(Form("c_%s",bitName),Form("c_%s",bitName),1000,1000);
+void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName){
+  TCanvas* c = new TCanvas(Form("c_%s_%s",multOn,bitName),Form("c_%s_%s",multOn,bitName),1000,1000);
   c->Divide(2,2,0.001,0.001);
   c->cd(1);
   gPad->SetLeftMargin(0.11);
   gPad->SetRightMargin(0.11);
   gPad->SetLogz();
-  h2D->SetTitle(Form("%s",bitName));
+  h2D->SetTitle(bitName);
   h2D->GetYaxis()->SetTitleOffset(1.5);
-  h2D->GetYaxis()->SetRangeUser(0,150);
   h2D->Draw("colz");
   TH2F* h2Dcum = (TH2F*) h2D->Clone();
   h2Dcum->Clear();
-  for (Int_t of=1;of<=h2D->GetNbinsX();of++){
-    for (Int_t on=1;on<=h2D->GetNbinsY();on++){
+  TH1F** proj = new TH1F*[h2D->GetNbinsY()];
+  TH1F** eff  = new TH1F*[h2D->GetNbinsY()];
+  TH1F* hEff90VsThreshold = new TH1F(Form("hEff90VsThreshold_%s",multOn),Form(";Online %s threshold",multOn),h2D->GetNbinsY(),0,h2D->GetYaxis()->GetXmax());
+  TH1F* hEff95VsThreshold = new TH1F(Form("hEff95VsThreshold_%s",multOn),Form(";Online %s threshold",multOn),h2D->GetNbinsY(),0,h2D->GetYaxis()->GetXmax());
+  
+  TLegend* leg = new TLegend(0.6,0.55,0.98,0.85);
+
+  for (Int_t on=1;on<=h2D->GetNbinsY();on++){
+    for (Int_t of=1;of<=h2D->GetNbinsX();of++){
       h2Dcum->SetBinContent(of,on,h2D->Integral(of,of,on,h2D->GetNbinsY()+1));
     }
+    proj[on-1] = (TH1F*) h2Dcum->ProjectionX(Form("hProj_%i",on),on,on);
+    proj[on-1]->SetLineWidth(2);
+    eff[on-1] = (TH1F*) proj[on-1]->Clone(Form("hEff_%i",on));
+    eff[on-1]->Divide(proj[0]);
+    Int_t bin90 = eff[on-1]->FindFirstBinAbove(0.90);
+    Int_t bin95 = eff[on-1]->FindFirstBinAbove(0.95);
+    Float_t all     = proj[on-1]->Integral(1,proj[on-1]->GetNbinsX()+1);
+    Float_t above90 = proj[on-1]->Integral(bin90,proj[on-1]->GetNbinsX()+1);
+    Float_t above95 = proj[on-1]->Integral(bin95,proj[on-1]->GetNbinsX()+1);
+    hEff90VsThreshold->SetBinContent(on,all>0 ? above90/all : 0);
+    hEff95VsThreshold->SetBinContent(on,all>0 ? above95/all : 0);
+    if (on==1){
+      c->cd(2);
+      proj[0]->SetTitle(bitName);
+      proj[0]->SetLineColor(kBlack);
+      proj[0]->DrawCopy();
+    }
+    if ((TString(multOn).Contains("OFO") && (on==60 || on==70  || on== 80 || on== 90)) ||
+        (TString(multOn).Contains("V0M") && (on==60 || on==120 || on==180 || on==240))) {
+      proj[on-1]->SetLineColor(TString(multOn).Contains("OFO") ? (on-60)/10+2 : on/60+1);
+      eff[on-1]->SetLineColor(proj[on-1]->GetLineColor());
+      eff[on-1]->SetTitle(bitName);
+      c->cd(2);
+      proj[on-1]->DrawCopy("same");
+      leg->AddEntry(proj[on-1],Form("%s>=%.0f\n",multOn,h2Dcum->GetYaxis()->GetBinUpEdge(on)));
+      c->cd(3);
+      eff[on-1]->DrawCopy(on==60 ? "": "same");
+    }
   }
+  
   c->cd(2);
   gPad->SetLogy();
-  TH1F* hAll   = (TH1F*) h2Dcum->ProjectionX("hAll",1,1);
-  TH1F* hProj1 = (TH1F*) h2Dcum->ProjectionX("hProj1",60,60);
-  TH1F* hProj2 = (TH1F*) h2Dcum->ProjectionX("hProj2",70,70);
-  TH1F* hProj3 = (TH1F*) h2Dcum->ProjectionX("hProj3",80,80);
-  TH1F* hProj4 = (TH1F*) h2Dcum->ProjectionX("hProj4",90,90);
-  hProj1->SetLineColor(kBlue);
-  hProj2->SetLineColor(kRed);
-  hProj3->SetLineColor(kGreen+1);
-  hProj4->SetLineColor(kMagenta+1);
-  TH1F* hEff1 = (TH1F*) hProj1->Clone("hEff1");
-  TH1F* hEff2 = (TH1F*) hProj2->Clone("hEff2");
-  TH1F* hEff3 = (TH1F*) hProj3->Clone("hEff3");
-  TH1F* hEff4 = (TH1F*) hProj4->Clone("hEff4");
-  hEff1->Divide(hAll);
-  hEff2->Divide(hAll);
-  hEff3->Divide(hAll);
-  hEff4->Divide(hAll);
-  hAll->DrawCopy();
-  hProj1->SetFillColor(kBlue);
-  hProj2->SetFillColor(kRed);
-  hProj3->SetFillColor(kGreen+1);
-  hProj4->SetFillColor(kMagenta+1);
-  hProj1->DrawCopy("same");
-  hProj2->DrawCopy("same");
-  hProj3->DrawCopy("same");
-  hProj4->DrawCopy("same");
-  TLegend* leg = new TLegend(0.6,0.6,0.96,0.90);
-  leg->AddEntry(hProj1,"60");
-  leg->AddEntry(hProj2,"70");
-  leg->AddEntry(hProj3,"80");
-  leg->AddEntry(hProj4,"90");
   leg->Draw();
-
   c->cd(3);
-  hEff1->DrawCopy();
-  hEff2->DrawCopy("same");
-  hEff3->DrawCopy("same");
-  hEff4->DrawCopy("same");
+  gPad->SetLogy();
+  leg->Draw();
   
-  c->Print("efficiency.png");
+  c->cd(4);
+  hEff90VsThreshold->SetLineWidth(2);
+  hEff95VsThreshold->SetLineWidth(2);
+  hEff90VsThreshold->SetLineColor(kBlue);
+  hEff95VsThreshold->SetLineColor(kRed);
+//  hEff90VsThreshold->GetXaxis()->SetRangeUser(0,150);
+  hEff90VsThreshold->DrawCopy();
+  hEff95VsThreshold->DrawCopy("same");
+  
+  TLegend* legEff = new TLegend(0.25,0.75,0.98,0.89);
+  legEff->AddEntry(hEff90VsThreshold,"Purity at 90% efficiency");
+  legEff->AddEntry(hEff95VsThreshold,"Purity at 95% efficiency");
+  legEff->Draw();
+
+  c->Print(Form("%s_efficiency.png",multOn));
 }
 
 void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName){
@@ -722,11 +737,11 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   hOnAll->SetNameTitle(Form("%s_%s_All",bitName,multOn.Data()),bitName);
   hOfAll->SetNameTitle(Form("%s_%s_All",bitName,multOf.Data()),bitName);
 
-  TLegend* leg1 = new TLegend(0.40,0.85,0.97,0.93);
+  TLegend* leg1 = new TLegend(0.40,0.80,0.97,0.90);
   leg1->AddEntry(hOnAll,Form("All: %.0f",hOnAll->Integral(0,hOnAll->GetNbinsX()+1)));
   leg1->AddEntry(hOnAcc,Form("Accepted: %.0f, <%s>=%.1f",hOnAcc->Integral(0,hOnAcc->GetNbinsX()+1),hOnAcc->GetMean(),multOn.Data()),"l");
 
-  TLegend* leg2 = new TLegend(0.40,0.85,0.97,0.93);
+  TLegend* leg2 = new TLegend(0.40,0.80,0.97,0.90);
   leg2->AddEntry(hOfAll,Form("All: %.0f",hOfAll->Integral(0,hOfAll->GetNbinsX()+1)));
   leg2->AddEntry(hOfAcc,Form("Accepted: %.0f, <%s>=%.1f",hOfAcc->Integral(0,hOfAcc->GetNbinsX()+1),hOfAcc->GetMean(),multOf.Data()),"l");
 
@@ -788,13 +803,14 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   TH1F* hOfNormCum = (TH1F*) hOfNorm->GetCumulative(kFALSE);
   TH1F* hOnVHMCum = hOnVHM ? (TH1F*) hOnVHM->GetCumulative(kFALSE) : 0;
   
-  hOnAllCum->Scale(1./hOnAllCum->GetBinContent(1));
-  hOnAccCum->Scale(1./hOnAccCum->GetBinContent(1));
-  hOfAllCum->Scale(1./hOfAllCum->GetBinContent(1));
-  hOfAccCum->Scale(1./hOfAccCum->GetBinContent(1));
-  hOnNormCum->Scale(1./hOnNormCum->GetBinContent(1));
-  hOfNormCum->Scale(1./hOfNormCum->GetBinContent(1));
-  if (hOnVHMCum) hOnVHMCum->Scale(1./hOnVHMCum->GetBinContent(1));
+  hOnAllCum->Scale(hOnAllCum->GetBinContent(1)>1e-10 ? 1./hOnAllCum->GetBinContent(1) : 1);
+  hOnAccCum->Scale(hOnAccCum->GetBinContent(1)>1e-10 ? 1./hOnAccCum->GetBinContent(1) : 1);
+  hOfAllCum->Scale(hOfAllCum->GetBinContent(1)>1e-10 ? 1./hOfAllCum->GetBinContent(1) : 1);
+  hOfAccCum->Scale(hOfAccCum->GetBinContent(1)>1e-10 ? 1./hOfAccCum->GetBinContent(1) : 1);
+  hOnNormCum->Scale(hOnNormCum->GetBinContent(1)>1e-10 ? 1./hOnNormCum->GetBinContent(1) : 1);
+  hOfNormCum->Scale(hOfNormCum->GetBinContent(1)>1e-10 ? 1./hOfNormCum->GetBinContent(1) : 1);
+  if (hOnVHMCum) hOnVHMCum->Scale(hOnVHMCum->GetBinContent(1)>1e-10 ? 1./hOnVHMCum->GetBinContent(1) : 1);
+  
   hOnAccCum->SetFillStyle(0);
   hOfAccCum->SetFillStyle(0);
   hOnAllCum->SetNameTitle(Form("%s_%s_All_Cum",bitName,multOn.Data()),Form("%s: cumulative",bitName));
@@ -1061,8 +1077,10 @@ void DrawZDC(TH1F* hTimeZNA, TH1F* hTimeZNC, TH2F* hTimeZNSumVsDif, TH2F* hTimeC
   hTimeZNC       ->SetTitle(bitName);
   hTimeCorrZDC   ->SetTitle(bitName);
   hTimeZNSumVsDif->SetTitle(bitName);
+  hTimeCorrZDC->GetYaxis()->SetTitleOffset(1.3);
+  hTimeZNSumVsDif->GetYaxis()->SetTitleOffset(1.3);
 
-  TCanvas* cZDC = new TCanvas(Form("cZDC_%s",bitName),Form("cZDC_%s",bitName),1800,800);
+  TCanvas* cZDC = new TCanvas(Form("cZDC_%s",bitName),Form("cZDC_%s",bitName),1000,1000);
   cZDC->Divide(2,2,0.001,0.001);
   
   cZDC->cd(1);
@@ -1074,10 +1092,15 @@ void DrawZDC(TH1F* hTimeZNA, TH1F* hTimeZNC, TH2F* hTimeZNSumVsDif, TH2F* hTimeC
   hTimeZNC->Draw();
   
   cZDC->cd(3);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
   gPad->SetLogz();
+
   hTimeCorrZDC->Draw("colz");
   
   cZDC->cd(4);
+  gPad->SetLeftMargin(0.11);
+  gPad->SetRightMargin(0.11);
   gPad->SetLogz();
   hTimeZNSumVsDif->Draw("colz");
   
