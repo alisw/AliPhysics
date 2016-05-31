@@ -41,7 +41,6 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDataType = Ali
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDataTypeNotCompressed = AliHLTComponentDataTypeInitializer("CLUSNOTC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDescriptorDataType = AliHLTComponentDataTypeInitializer("CLRAWDSC", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkHWClustersDataType = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAlterClustersDataType = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTrackSegmentsDataType = AliHLTComponentDataTypeInitializer("TRAKSEGS", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkTracksDataType = AliHLTComponentDataTypeInitializer("TRACKS  ", kAliHLTDataOriginTPC);
@@ -92,10 +91,6 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::RawClustersDescriptorDataTy
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::HWClustersDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
-  return dt;
-}
-const AliHLTComponentDataType& AliHLTTPCDefinitions::AlterClustersDataType() {
-  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
   return dt;
 }
 const AliHLTComponentDataType& AliHLTTPCDefinitions::VertexDataType() {

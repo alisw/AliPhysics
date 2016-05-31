@@ -60,7 +60,6 @@ void AliHLTTPCClusterDumpComponent::GetInputDataTypes( vector<AliHLTComponentDat
   // see header file for class documentation
   list.clear();
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
-  list.push_back(AliHLTTPCDefinitions::fgkAlterClustersDataType);
 }
 
 AliHLTComponent* AliHLTTPCClusterDumpComponent::Spawn()
@@ -158,53 +157,6 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
       dump.close();
     }
   }
-  
-  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAlterClustersDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
-    TString filename;
-    iResult=BuildFileName(evtData.fEventID, 0, pDesc->fDataType, 0, filename);
-    ios::openmode filemode=(ios::openmode)0;
-    if (fCurrentFileName.CompareTo(filename)==0) {
-      filemode=ios::app;
-    } else {
-      fCurrentFileName=filename;
-    }
     
-    if (iResult>=0) {
-      ofstream dump(fCurrentFileName.Data(), filemode);
-      if (dump.good()) {
-	
-	if(pDesc->fDataType!=AliHLTTPCDefinitions::fgkAlterClustersDataType){continue;}
-	
-	//if (dump.good() || 1) {//the || 1 is there since dump.good() will return false( EOF )
-	iResult=1;
-	const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) pDesc->fPtr;
-	Int_t nSpacepoints = (Int_t) clusterData->fSpacePointCnt;
-	AliHLTTPCSpacePointData *clusters = (AliHLTTPCSpacePointData*) &clusterData->fSpacePoints;
-	
-	for(int i=0;i<nSpacepoints;i++){
-	  UInt_t idCluster = clusters[i].GetRawID();
-	  Int_t slice = AliHLTTPCSpacePointData::GetSlice(idCluster);
-	  Int_t patch = AliHLTTPCSpacePointData::GetPatch(idCluster);
-	  
-	  dump << "" << endl;
-	  dump << "ClusterNumber: " << spacePointCounter << endl;
-	  dump << "Slice:         " << slice << endl;
-	  dump << "Partition:     " << patch << endl;
-	  dump << "[X,Y,Z]:       [" << clusters[i].fX<<" , "<<clusters[i].fY<<" , "<<clusters[i].fZ <<"]"<< endl;
-	  //Float_t xyz[3]={clusters[i].fX,clusters[i].fY,clusters[i].fZ};
-	  //AliHLTTPCGeometry::LocHLT2Raw(xyz,(Int_t)(clusters[i].fID/10),(Int_t)(clusters[i].fID%10));
-	  //dump << "[R,P,T]:       [" << xyz[0]<<" , "<<xyz[1]<<" , "<<xyz[2] <<"]"<< endl;
-	  dump << "Total Charge:  " << clusters[i].fCharge         << endl;
-	  dump << "Q Max:         " << clusters[i].fQMax           << endl;
-	  spacePointCounter++;
-	}
-      }
-      else {
-	HLTError("can not open file %s for writing", fCurrentFileName.Data());
-	iResult=-EBADF;
-      }
-      dump.close();
-    }
-  }
   return iResult;
 }

@@ -91,8 +91,6 @@ private:
   bool fInitialized;	//Are we initialized?
   bool fTPCPresent;	//Is TPC present in GRP, if not skip init
 
-  Bool_t fDataId; // change output data description
-
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 
   ClassDef(AliHLTTPCClusterTransformationComponent, 0)

@@ -58,7 +58,6 @@ fOfflineMode(0),
 fInitializeByObjectInDoEvent(0),
 fInitialized(0),
 fTPCPresent(0),
-fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
   // see header file for class documentation
@@ -186,8 +185,6 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
     }
   }
 
-  fDataId = kFALSE;
-
   return iResult;
 } // end DoInit()
 
@@ -200,7 +197,6 @@ int AliHLTTPCClusterTransformationComponent::DoDeinit() {
 
 int AliHLTTPCClusterTransformationComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
-  fDataId = kFALSE;
   return 0;//!! ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 }
 
@@ -213,8 +209,7 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
   for( int i=0; i<argc; i++ ){
     TString argument=argv[i];  
     if (argument.CompareTo("-change-dataId")==0){
-      HLTDebug("Change data ID received.");
-      fDataId = kTRUE;
+      HLTWarning("Obsolete -change-dataId option received.");
       iRet++;
     } else if (argument.CompareTo("-offline-mode")==0){
       fOfflineMode = 1;
@@ -378,8 +373,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
     bd.fOffset = size;
     bd.fSize = mysize;
     bd.fSpecification = iter->fSpecification;
-    if(fDataId==kFALSE) bd.fDataType = AliHLTTPCDefinitions::ClustersXYZDataType();
-    else                bd.fDataType = AliHLTTPCDefinitions::fgkAlterClustersDataType;
+    bd.fDataType = AliHLTTPCDefinitions::ClustersXYZDataType();
     
     //HLTDebug("datatype: %s", DataType2Text(bd.fDataType).c_str());
     
