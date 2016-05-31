@@ -1627,7 +1627,7 @@ private:
   TH2D* fEBEFlowpValueHist; //!
   TH1D* fEBEFlowFlucHis[fCRCMaxnCen][2]; //!
   TProfile* fEBEFlowCrosPro[fCRCMaxnCen]; //!
-  TProfile* fEBEFlowResVZPro[2]; //!
+  TProfile* fEBEFlowResVZPro[8]; //!
   TF1* FourierExp; //!
  
  // Various:
