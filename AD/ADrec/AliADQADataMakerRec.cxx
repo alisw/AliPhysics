@@ -409,7 +409,8 @@ void AliADQADataMakerRec::MakeDigits(TTree* digitTree)
          branch->SetAddress(&fDigitsArray) ;
          branch->GetEntry(0) ; 
          MakeDigits() ; 
-    }  
+    }
+    digitTree->ResetBranchAddress(branch);  
     //
     IncEvCountCycleDigits();
     IncEvCountTotalDigits();

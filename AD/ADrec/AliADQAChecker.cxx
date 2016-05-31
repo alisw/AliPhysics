@@ -840,27 +840,28 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
   //
   for (Int_t esIndex = 0; esIndex < AliRecoParam::kNSpecies; esIndex++) {
     if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) continue;
-    Int_t nImages = 0;
-    TIter next(list[esIndex]);
-    TObject* hdata = NULL;
-    tmpArr.Clear();
-    while ( (hdata=(next())) ) { // count histos and transfere to flat array
-      if (hdata->InheritsFrom(TH1::Class()) && hdata->TestBit(AliQAv1::GetImageBit()) ) {  // histo, not cloned
-	nImages++; 
-	tmpArr.AddLast(hdata); 
-	continue;
-      }
-      if (!hdata->TestBit(AliQAv1::GetClonedBit())) continue;  // not an array of clones, unknown object
-      TIter nextCl((TObjArray*)hdata);   // array of histo clones
-      TObject* hcl = 0;
-      while ((hcl=nextCl())) if (hcl->InheritsFrom(TH1::Class()) && hcl->TestBit(AliQAv1::GetImageBit())) {tmpArr.AddLast(hcl); nImages++;}
-    }
-    //
-    if ( nImages == 0 ) {
-      AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)));  
-      continue;
-    }
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data(),AliRecoParam::GetEventSpecieName(esIndex)));  
+    Bool_t allHistosPresent = kTRUE;
+    
+    Int_t histosToDraw[] = {AliADQADataMakerRec::kChargeADA,AliADQADataMakerRec::kChargeADC,AliADQADataMakerRec::kChargeEoI,AliADQADataMakerRec::kChargeEoIBB,AliADQADataMakerRec::kChargeEoIBG,
+		   AliADQADataMakerRec::kHPTDCTime,AliADQADataMakerRec::kHPTDCTimeBB,AliADQADataMakerRec::kHPTDCTimeBG,AliADQADataMakerRec::kWidth,
+		   AliADQADataMakerRec::kHPTDCTimeRebin,AliADQADataMakerRec::kHPTDCTimeRebinBB,AliADQADataMakerRec::kHPTDCTimeRebinBG,
+		   AliADQADataMakerRec::kBBFlagVsClock,AliADQADataMakerRec::kBBFlagVsClock_ADOR,AliADQADataMakerRec::kBGFlagVsClock,AliADQADataMakerRec::kBBFlagsPerChannel,AliADQADataMakerRec::kBGFlagsPerChannel,
+		   AliADQADataMakerRec::kChargeVsClockInt0,AliADQADataMakerRec::kChargeVsClockInt1,AliADQADataMakerRec::kMaxChargeClock,
+		   AliADQADataMakerRec::kNBBCoincADA,AliADQADataMakerRec::kNBBCoincADC,AliADQADataMakerRec::kNBGCoincADA,AliADQADataMakerRec::kNBGCoincADC,
+		   AliADQADataMakerRec::kPedestalDiffInt0,AliADQADataMakerRec::kPedestalDiffInt1,
+		   AliADQADataMakerRec::kChargeSaturation,
+		   AliADQADataMakerRec::kNBBCoincCorr,AliADQADataMakerRec::kNBGCoincCorr,
+		   AliADQADataMakerRec::kTriggers,AliADQADataMakerRec::kDecisions,
+		   AliADQADataMakerRec::kMeanTimeADA,AliADQADataMakerRec::kMeanTimeADC,AliADQADataMakerRec::kMeanTimeDiff,AliADQADataMakerRec::kMeanTimeCorr,AliADQADataMakerRec::kMeanTimeSumDiff,
+		   AliADQADataMakerRec::kPedestalInt0,AliADQADataMakerRec::kPedestalInt1,
+		   AliADQADataMakerRec::kNEventsBBFlag,AliADQADataMakerRec::kNEventsBGFlag,
+		   AliADQADataMakerRec::kFlagNoTime,AliADQADataMakerRec::kTimeNoFlag,
+		   AliADQADataMakerRec::kTimeSlewingADA,AliADQADataMakerRec::kTimeSlewingADC,
+		   AliADQADataMakerRec::kTrend_TriggerChargeQuantileADA,AliADQADataMakerRec::kTrend_TriggerChargeQuantileADC};
+		   
+    for(Int_t iHisto=0; iHisto<(&histosToDraw)[1]-histosToDraw; iHisto++)if(!list[esIndex]->At(histosToDraw[iHisto])) allHistosPresent = kFALSE; 
+    if(!allHistosPresent) continue;
+    
     //        
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
     //
@@ -872,7 +873,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     fImage[esIndex]->Clear(); 
     fImage[esIndex]->SetTitle(title); 
     fImage[esIndex]->cd(); 
-    TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
+    TPaveText someText(0.015, 0.015, 0.98, 0.98);
     someText.AddText(title) ;
     someText.SetFillColor(0);
     someText.SetFillStyle(0);
