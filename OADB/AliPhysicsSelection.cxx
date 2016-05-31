@@ -313,9 +313,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
     Int_t triggerLogic = 0;
     UInt_t singleTriggerResult = CheckTriggerClass(event, triggerClass, triggerLogic);
     if (!singleTriggerResult) continue;
-    printf("before online, trigger %s\n", fPSOADB->GetHardwareTrigger(triggerLogic).Data());
     Bool_t onlineDecision  = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetHardwareTrigger(triggerLogic), kFALSE);
-    printf("before offline, trigger %s\n", fPSOADB->GetOfflineTrigger(triggerLogic).Data());
     Bool_t offlineDecision = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetOfflineTrigger(triggerLogic), kTRUE);
     triggerAnalysis->FillHistograms(event,onlineDecision,offlineDecision);
     if (!onlineDecision) continue;
