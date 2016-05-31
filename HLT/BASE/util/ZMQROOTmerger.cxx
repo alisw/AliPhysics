@@ -24,6 +24,7 @@
 #include "TKey.h"
 #include "TSystem.h"
 #include "signal.h"
+#include <unistd.h>
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -71,6 +72,8 @@ std::string fInitFile = "";
 
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
+Bool_t  fRequestResetOnRequest = kFALSE; //when requesting from another merger, request also a reset
+Int_t   fSleep = 0;  //how long to sleep between requests (microseconds)
 
 Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
@@ -125,6 +128,7 @@ const char* fUSAGE =
     " -pushback-period : push the merged data once every n seconds\n"
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
+    " -RequestResetOnRequest : if requesting form another merger, request a ResetOnRequest\n"
     " -AllowGlobalReset :  allow a global \'reset\' on request\n"
     " -AllowResetOnRequest : allow reset on request\n"
     " -AllowResetAtSOR : allow reset at change of run\n"
@@ -138,7 +142,8 @@ const char* fUSAGE =
     " -list : a list of (fulll) names to send (arb. delimiter)\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
-    " -ZMQtimeout: when to timeout the sockets\n"
+    " -ZMQtimeout: when to timeout the sockets (milliseconds)\n"
+    " -sleep : how long to sleep between requests (milliseconds)\n"
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
@@ -291,6 +296,7 @@ Int_t Run()
       }
       alizmq_msg_close(&message);
     }//socket 3
+    if (fSleep>0) usleep(fSleep);
   }//main loop
 
   return 0;
@@ -550,8 +556,13 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 Int_t DoRequest(void* socket)
 {
   //just send an empty request
-  if (fVerbose) Printf("sending an empty request");
-  alizmq_msg_send("", "", socket, 0);
+  if (fRequestResetOnRequest) {
+    if (fVerbose) Printf("sending an ResetOnRequest request");
+    alizmq_msg_send(kAliHLTDataTypeConfig, "ResetOnRequest",socket,0);
+  } else {
+    if (fVerbose) Printf("sending an empty request");
+    alizmq_msg_send("", "", socket, 0);
+  }
   return 0;
 }
 
@@ -596,6 +607,7 @@ Int_t DoSend(void* socket)
     rc = alizmq_msg_add(&message, &topic, object, fCompression, fSchema);
     if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
     {
+      if (fVerbose) {printf("resetting %s\n",objectName);}
       TPair* pair = fMergeObjectMap.RemoveEntry(key);
       delete pair->Key();
       delete pair->Value();
@@ -730,6 +742,10 @@ Int_t ProcessOptionString(TString arguments)
     {
       fResetOnRequest = value.Contains("0")?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("RequestResetOnRequest"))
+    {
+      fRequestResetOnRequest = value.Contains("0")?kFALSE:kTRUE;
+    }
     else if (option.EqualTo("ResetOnSend"))
     {
       fResetOnSend = value.Contains("0")?kFALSE:kTRUE;
@@ -775,6 +791,10 @@ Int_t ProcessOptionString(TString arguments)
     else if (option.EqualTo("ZMQtimeout"))
     {
       fZMQtimeout=value.Atoi();
+    }
+    else if (option.EqualTo("sleep"))
+    {
+      fSleep = value.Atoi() * 1000;
     }
     else if (option.EqualTo("select"))
     {
