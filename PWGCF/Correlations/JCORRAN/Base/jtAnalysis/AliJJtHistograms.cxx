@@ -30,7 +30,6 @@ AliJJtHistograms::AliJJtHistograms(AliJCard* cardP) :
   fhDphiDetaXlong(),
   fhDphiDetaPta(),
   fhDetaNearMixAcceptance(),
-  fhDeta3DNearMixAcceptance(),
   fhDphiDetaBgKlongEta(),
   fhDphiDetaBgKlongR(),
   fhDphiDetaBgKlongPhi(),
@@ -132,7 +131,6 @@ AliJJtHistograms::AliJJtHistograms(const AliJJtHistograms& obj) :
   fhDphiDetaXlong(obj.fhDphiDetaXlong),
   fhDphiDetaPta(obj.fhDphiDetaPta),
   fhDetaNearMixAcceptance(obj.fhDetaNearMixAcceptance),
-  fhDeta3DNearMixAcceptance(obj.fhDeta3DNearMixAcceptance),
   fhDphiDetaBgKlongEta(obj.fhDphiDetaBgKlongEta),
   fhDphiDetaBgKlongR(obj.fhDphiDetaBgKlongR),
   fhDphiDetaBgKlongPhi(obj.fhDphiDetaBgKlongPhi),
@@ -346,10 +344,6 @@ void AliJJtHistograms::CreateCorrelationHistograms()
   fhDetaNearMixAcceptance
       << TH1D( "hDEtaNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
       <<  fCentBin << fPTtBin << fPTaBin  << "END";
-  
-  fhDeta3DNearMixAcceptance
-      << TH1D( "hDEta3DNearMixAcceptance", "",  320, -2*fmaxEtaRange, 2*fmaxEtaRange)
-      <<  fCentBin << fPTtBin << fXEBin  << "END";
   
   //=======================
   //jT fhistos
