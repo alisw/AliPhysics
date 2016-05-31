@@ -372,11 +372,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
   Int_t bc  = InputEvent()->GetBunchCrossNumber();
   Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
   
-  Int_t NbClusterInTopoHisto[nSM];
+  Int_t nbClusterInTopoHisto[nSM];
   
   for(Int_t iSM = 0; iSM < nSM; iSM++)
   {
-    NbClusterInTopoHisto[iSM] = 0;
+    nbClusterInTopoHisto[iSM] = 0;
   }
 
   for(Int_t iClu=0; iClu<fCaloClustersArr->GetEntriesFast()-1; iClu++) 
@@ -440,11 +440,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         
         Float_t AmpFraction = amp / e1i;
         
-        if(DebugLevel() > 0)
-        {
-          AliInfo(Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iphiCell,ietaCell,amp,AmpFraction));
-        }
-        
+        AliDebug(2,Form("Cell ID: %i, Cell row: %i, Cell col: %i, Cell amp: %f, Cell amp fraction: %f\n",CellID,iphiCell,ietaCell,amp,AmpFraction));
         
         switch (iPosInNoisyQuartet) {
           case 0:
@@ -473,7 +469,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
         
         if(amp && AmpFraction)
         {
-          NbClusterInTopoHisto[iSupMod1] = NbClusterInTopoHisto[iSupMod1] + 1;
+          nbClusterInTopoHisto[iSupMod1] = nbClusterInTopoHisto[iSupMod1] + 1;
         }
       }
     }
@@ -508,7 +504,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       //Time cut
       Double_t time2 = c2->GetTOF()*1.e9;
       
-      if(fSelectOnlyCellSignalOutOfCollision && (time2 < fTimeMax || time2 > fTimeMin)) continue;
+      if(fSelectOnlyCellSignalOutOfCollision && ((time2 < fTimeMax) && (time2 > fTimeMin))) continue;
       else if(!fSelectOnlyCellSignalOutOfCollision && (time2 > fTimeMax || time2 < fTimeMin)) continue;
       
       fhClusterPairDiffTime->Fill(fMomentum12.E(),time1-time2);
@@ -737,23 +733,21 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
   
   for(Int_t iSM = 0; iSM < nSM; iSM++)
   {
-    if(DebugLevel() > 0)
-    {
-      AliInfo(Form("nbClusterInTopo = %i\n",NbClusterInTopoHisto[iSM]));
-    }
-    if(NbClusterInTopoHisto[iSM] == 0) continue;
+    AliDebug(2,Form("nbClusterInTopo = %i\n",nbClusterInTopoHisto[iSM]));
     
-    fhTopoClusterAmpCase0[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
-    fhTopoClusterAmpFractionCase0[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    if(nbClusterInTopoHisto[iSM] == 0) continue;
     
-    fhTopoClusterAmpCase1[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
-    fhTopoClusterAmpFractionCase1[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpCase0[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase0[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
     
-    fhTopoClusterAmpCase2[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
-    fhTopoClusterAmpFractionCase2[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpCase1[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase1[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
     
-    fhTopoClusterAmpCase3[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
-    fhTopoClusterAmpFractionCase3[iSM]->Scale(1./NbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpCase2[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase2[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
+    
+    fhTopoClusterAmpCase3[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
+    fhTopoClusterAmpFractionCase3[iSM]->Scale(1./nbClusterInTopoHisto[iSM]);
   }
   
 }
