@@ -92,6 +92,7 @@ public:
  virtual void InitializeArraysForFlowQC();
  virtual void InitializeArraysForFlowSPZDC();
  virtual void InitializeArraysForFlowSPVZ();
+ virtual void InitializeArraysForEbEFlow();
  
  // 1.) method Init() and methods called within Init():
  virtual void Init();
@@ -123,6 +124,7 @@ public:
  virtual void BookEverythingForFlowQC();
  virtual void BookEverythingForFlowSPZDC();
  virtual void BookEverythingForFlowSPVZ();
+ virtual void BookEverythingForEbEFlow();
  virtual void StoreIntFlowFlags();
  virtual void StoreDiffFlowFlags();
  virtual void StoreFlagsForDistributions();
@@ -201,6 +203,7 @@ public:
  virtual void CalculateFlowQC();
  virtual void CalculateFlowSPZDC();
  virtual void CalculateFlowSPVZ();
+  virtual void FitEbEFlow();
  // 2h.) Various
  virtual void FillVarious();
  
@@ -280,6 +283,7 @@ public:
  virtual void GetPointersForFlowQC();
  virtual void GetPointersForFlowSPZDC();
  virtual void GetPointersForFlowSPVZ();
+ virtual void GetPointersForEbEFlow();
  virtual void GetPointersForVarious();
  
  // 5.) other methods:
@@ -692,6 +696,8 @@ public:
   Bool_t GetCalculateCRCVZ() const {return this->fCalculateCRCVZ;};
   void SetCalculateCRCZDC(Bool_t const cCRC) {this->fCalculateCRCZDC = cCRC;};
   Bool_t GetCalculateCRCZDC() const {return this->fCalculateCRCZDC;};
+  void SetCalculateEbEFlow(Bool_t const cCRC) {this->fCalculateEbEFlow = cCRC;};
+  Bool_t GetCalculateEbEFlow() const {return this->fCalculateEbEFlow;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -903,11 +909,6 @@ public:
  void SetFlowQCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowQCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorHist[c][eg][h];};
   
-  void SetFlowQCIntCrosPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCrosPro[c][eg][h] = TP;};
-  TProfile* GetFlowQCIntCrosPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCrosPro[c][eg][h];};
-  void SetFlowQCIntFlucPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntFlucPro[c][eg][h] = TP;};
-  TProfile* GetFlowQCIntFlucPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntFlucPro[c][eg][h];};
-  
  TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
  void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
  TH1D* GetFlowQCIntCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHist[eg][h];};
@@ -1008,6 +1009,10 @@ public:
  TH2D* GetCMEZDCCovHist(Int_t const eg, Int_t const h) const {return this->fCMEZDCCovHist[eg][h];};
  void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
  TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
+  
+  // EbE Flow
+  void SetEbEFlowList(TList* const TL) {this->fEbEFlowList = TL;};
+  
  
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
@@ -1437,6 +1442,7 @@ private:
  TH1D *fZDCESEAvHist[2]; //!
   TH1D *fZDCESEMinMetricHist[2]; //!
   TH1D *fZDCESEMaxMetricHist[2]; //!
+  TH1D *fEBEAzimuthalDis; //!
  
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
@@ -1587,8 +1593,6 @@ private:
  TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowQCNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
-  TProfile *fFlowQCIntCrosPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
-  TProfile *fFlowQCIntFlucPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   
  TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
@@ -1613,6 +1617,18 @@ private:
  TProfile *fFlowSPVZCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPVZNUAPro[fCRCMaxnCen][fFlowNHarm][5][4]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPVZCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
+  
+  // EbE Flow
+  Bool_t fCalculateEbEFlow;
+  Int_t fEBEFlowMulBin;
+  TList *fEbEFlowList;    //! EbE Flow List
+  TH1D *fEbEFlowAzimDis[24]; //! mult. binned azim. dis.
+  TH2D* fEBEFlowRChiSqHist; //!
+  TH2D* fEBEFlowpValueHist; //!
+  TH1D* fEBEFlowFlucHis[fCRCMaxnCen][2]; //!
+  TProfile* fEBEFlowCrosPro[fCRCMaxnCen]; //!
+  TProfile* fEBEFlowResVZPro[2]; //!
+  TF1* FourierExp; //!
  
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects

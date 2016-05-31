@@ -94,6 +94,7 @@ fCalculateCME(kFALSE),
 fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
+fCalculateEbEFlow(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlow(kFALSE),
 fUseVZERO(kFALSE),
@@ -226,6 +227,7 @@ fCalculateCME(kFALSE),
 fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
+fCalculateEbEFlow(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlow(kFALSE),
 fUseVZERO(kFALSE),
@@ -333,6 +335,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateCRC2(fCalculateCRC2);
   fQC->SetCalculateCRCVZ(fCalculateCRCVZ);
   fQC->SetCalculateCRCZDC(fCalculateCRCZDC);
+  fQC->SetCalculateEbEFlow(fCalculateEbEFlow);
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
  fQC->SetCalculateFlowQC(fCalculateFlow);
   fQC->SetFlowQCCenBin(fFlowQCCenBin);
