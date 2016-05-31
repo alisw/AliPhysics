@@ -1750,7 +1750,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
   }
 
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, kFALSE);
+  TruePhotonCandidate->SetCaloPhotonMCFlags(fMCStack, fEnableSortForClusMC);
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
@@ -1883,7 +1883,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
     return;
   }
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, kFALSE);
+  TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){

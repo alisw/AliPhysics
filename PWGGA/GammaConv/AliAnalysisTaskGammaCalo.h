@@ -97,7 +97,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     
     // Function to enable MC label sorting
-    void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort                                                         ; }
+    void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort; }
 
     
   protected:
