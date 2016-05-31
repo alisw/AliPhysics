@@ -1,4 +1,4 @@
-TString names=("V0_PID2_SPDfirst1;ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst5cls_4;ITS2gevTPCTOFif_trkSPDfirst_5_tight;ITSTPCTOFif_trkSPD5orSDD4cls_4;ITS2gevTPCTOFif_trkSPDorSDD_5_tight;ITS2gevTPCTOFif_trkSPDfirst5cls_6_tight;ITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight");
+TString names=("cut16_SPDorSDD14_PID16");
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -18,13 +18,19 @@ const Int_t nDie=arrNames->GetEntriesFast();
 //
 //________________________________________________________________
 // main task settings
-// fill resolutions for one cutInstance.
+// fill resolutions for one cutInstance (step 1).
 const Bool_t calcResolution = kTRUE;
-const Int_t  resoCutInstance = 1;
+const Int_t  resoCutInstance = 0;
+// use previously extracted resolutions (step 2).
+TString resolutionfile = "user/p/preichel/PWGDQ/dielectron/supportFiles/PbPb_resolution_cut16_deltaXvsX.root";
+Bool_t bUsePtResolution = kFALSE;
+Bool_t bUseEtaResolution = kFALSE;
+Bool_t CalcEfficiencyRec = kFALSE;
+Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
 const Bool_t doPairing = kTRUE;
 // specify for which "cutInstance" the support histos should be filled!
-const Int_t     supportedCutInstance = 1;
+const Int_t     supportedCutInstance = 0;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
 const Bool_t    writeTree = kFALSE;
 // activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut)
@@ -46,6 +52,20 @@ const Double_t PtBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,8.0
 };
+// resolution binnings
+Int_t NbinsDeltaMom    = 1000;
+Double_t DeltaMomMin   = -9.0;
+Double_t DeltaMomMax   =  1.0;
+Int_t NbinsDeltaEta    = 200;
+Double_t DeltaEtaMin   = -0.4;
+Double_t DeltaEtaMax   =  0.4;
+Int_t NbinsDeltaTheta  = 200;
+Double_t DeltaThetaMin = -0.4;
+Double_t DeltaThetaMax =  0.4;
+Int_t NbinsDeltaPhi    = 200;
+Double_t DeltaPhiMin   = -0.4;
+Double_t DeltaPhiMax   =  0.4;
+
 // mee bins
 const Double_t MeeMin    = 0.;
 const Double_t MeeMax    = 5.;
@@ -138,7 +158,7 @@ void SetupMCSignals(AliAnalysisTaskElectronEfficiency* task)
 //________________________________________________________________
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTRUE)
 {
-  std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
+  std::cout << "SetupTrackCutsAndSettings( cutInstance = " << cutInstance << " )" <<std::endl;
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter("anaFilter","anaFilter"); // named constructor seems mandatory!
   // do not change these initial values!
   selectedPairCutsPre=-1;
@@ -166,41 +186,26 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   {
     LMEECutLib* LMcutlib = new LMEECutLib();
     LMcutlib->SetIsESDTask(isESD);
-    LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
     
+    // --------------------------------------------------
+    // common settings:
+    // --------------------------------------------------
+    //    LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_00to10; // use AddTask for centrality cuts!
+    // prefilter settings:
+    //    LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011PID_TPCITSif_2;
+    //    LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011TRK_FilterBit0;
+    //    LMcutlib->selectedKineCutsPre = LMEECutLib::kKineCut_pt50_eta090;
+    //    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
+    // ana settings:
+    LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_pt200_eta080;
+    LMcutlib->selectedPairCutsAna = LMEECutLib::kPairCut_theta50;
+    //
+    // --------------------------------------------------
+    // specific settings for each cutset:
+    // --------------------------------------------------
     if (cutInstance==0+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_V0_2_TOFif; // to be used for post-PID-correction (if it is the supportedCutInstance)
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011TRK_SPDfirst_1;
-    }
-    else if (cutInstance==1+nCutsUsingConfigFunctions) {
-      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50; // centrality cuts not supported yet, set 'CentMin + Max' above!
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      isPrefilterCutset=kFALSE; // (de)activate prefilter efficiency determination.
-    }
-    else if (cutInstance==2+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst5cls_4; // syst 1
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst5cls_4; // syst 1
-    }
-    else if (cutInstance==3+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst_5_tight; // syst 2
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst_5_tight; // syst 2
-    }
-    else if (cutInstance==4+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPD5orSDD4cls_4; // syst 3
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPD5orSDD4cls_4; // syst 3
-    }
-    else if (cutInstance==5+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDorSDD_5_tight; // syst 4
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDorSDD_5_tight; // syst 4
-    }
-    else if (cutInstance==6+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst5cls_6_tight; // syst 5
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPDfirst5cls_6_tight; // syst 5
-    }
-    else if (cutInstance==7+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight; // syst 6
-      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight; // syst 6
+      LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
+      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
     }
     else if (cutInstance==100) {
       // kinematic cuts for the legs during pair efficiency determination:
@@ -209,7 +214,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
     }
     else if (cutInstance==101) {
       // pair cuts during pair efficiency determination:
-      SetupPairCutsAna( LMEECutLib::kPairCut_theta20 );
+      SetupPairCutsAna( LMcutlib->selectedPairCutsAna ); // class member is public...
       return 0x0; // return here because we dont want any other cuts.
     }
     else {
@@ -219,19 +224,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       cout << " =============================== " << endl;
       return 0x0;
     }
-    //// to be put above of course, but sometimes commented-out code messes up the if-elseif-else block...
-    //    else if (cutInstance==2+nCutsUsingConfigFunctions) {
-    //      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-    //      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
-    //      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    //      LMcutlib->selectedQualityAna  = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    //      LMcutlib->selectedQualityPre  = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    //      LMcutlib->selectedKineCutsPre = LMEECutLib::kKineCut_pt50_eta090;
-    //      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_phiv236_mee40;
-    //      isPrefilterCutset=kTRUE;
-    //    }
     
-    //if (isESD) anaFilter->AddCuts( LMcutlib->GetESDTrackCutsAna() ); // now done within CutLib
     if (!isPrefilterCutset) {
       anaFilter->AddCuts( LMcutlib->GetTrackCutsAna() );
     }
