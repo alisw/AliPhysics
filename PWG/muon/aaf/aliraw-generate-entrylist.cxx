@@ -19,6 +19,10 @@ void GenerateEntryListOneChunk(const char* infile, std::ostream& outfile, const 
 
   std::unique_ptr<AliRawReader> rawReader(AliRawReader::Create(infile));
 
+  if (!rawReader.get()) {
+	std::cout << "Could not open file " << infile << " skipping it..." << std::endl;
+	return;
+  }
   while (rawReader->NextEvent()) {
     Int_t ts = rawReader->GetTimestamp();
     TDatime d(ts);
@@ -39,6 +43,9 @@ void GenerateEntryListOneChunk(const char* infile, std::ostream& outfile, const 
     }
     outfile << std::endl;
   }
+  
+  std::cout << eventNumbers.size() << " entries matched in " << infile << std::endl;
+
 }
 
 Int_t GenerateEntryList(const char* filelist, const char* entrylistfilename, const TDatime& fromTime,
@@ -66,7 +73,7 @@ int main(int argc, char** argv)
 {
   if (argc < 2) {
     std::cout << "Usage : " << argv[0]
-              << " --collection filelist.txt --entrylist filename.txt --from [startTime] --to [endTime]" << std::endl;
+              << " --filelist filelist.txt --entrylist filename.txt --from [startTime] --to [endTime]" << std::endl;
     return 1;
   }
 
