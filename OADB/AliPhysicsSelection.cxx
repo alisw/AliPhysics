@@ -127,14 +127,13 @@ fPSOADB(0),
 fFillOADB(0),
 fTriggerOADB(0),
 fRegexp(new TPRegexp("([[:alpha:]]\\w*)")),
-fCashedTokens(new TList())
+fCashedTokens(NULL)
 {
   // constructor
   fCollTrigClasses.SetOwner(1);
   fBGTrigClasses.SetOwner(1);
   fTriggerAnalysis.SetOwner(1);
   fHistList.SetOwner(1);
-  fCashedTokens->SetOwner();
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   fHistStat = new TH2F("fHistStat",";;",1,0,1,1,0,1);
@@ -244,8 +243,8 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliVEvent* event, AliTrig
     if (nMatches <= 0) break;
     
     TString token(trigger(pos[0], pos[1]-pos[0]+1));
-    
-    TParameter<Int_t>* param = (TParameter<Int_t>*) fCashedTokens->FindObject(token);
+
+    TParameter<Int_t>* param = dynamic_cast<TParameter<Int_t> *>(fCashedTokens->FindObject(token));
     if (!param) {
       TInterpreter::EErrorCode error;
       Int_t bit = gInterpreter->ProcessLine(Form("AliTriggerAnalysis::k%s;", token.Data()), &error);
@@ -314,7 +313,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
     Int_t triggerLogic = 0;
     UInt_t singleTriggerResult = CheckTriggerClass(event, triggerClass, triggerLogic);
     if (!singleTriggerResult) continue;
+    printf("before online, trigger %s\n", fPSOADB->GetHardwareTrigger(triggerLogic).Data());
     Bool_t onlineDecision  = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetHardwareTrigger(triggerLogic), kFALSE);
+    printf("before offline, trigger %s\n", fPSOADB->GetOfflineTrigger(triggerLogic).Data());
     Bool_t offlineDecision = EvaluateTriggerLogic(event, triggerAnalysis, fPSOADB->GetOfflineTrigger(triggerLogic), kTRUE);
     triggerAnalysis->FillHistograms(event,onlineDecision,offlineDecision);
     if (!onlineDecision) continue;
@@ -483,6 +484,10 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
+  }
+  if(!fCashedTokens){
+    fCashedTokens = new TList();
+    fCashedTokens->SetOwner();
   }
   
   fCurrentRun = runNumber;
