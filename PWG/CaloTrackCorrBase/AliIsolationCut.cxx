@@ -471,7 +471,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         // in the isolation conte
         if ( pCandidate->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
         {
-          Int_t  trackID   = TMath::Abs(track->GetID()) ;
+          Int_t  trackID   = reader->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
           Bool_t contained = kFALSE;
           
           for(Int_t i = 0; i < 4; i++) 

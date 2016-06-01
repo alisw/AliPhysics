@@ -162,6 +162,28 @@ AliAODMCHeader* AliCaloTrackAODReader::GetAODMCHeader() const
   return mch;
 }
 
+//_____________________________
+/// 
+/// Return track ID, different for ESD and AODs.
+/// In AODs a track can correspond to several definitions.
+/// If negative (hybrid constrained to vertex), it corresponds to global track 
+/// with ID positive plus one.
+///
+/// See AliCaloTrackReader for ESD correspondent.
+///
+/// \return track ID
+/// \param track: pointer to track
+//_____________________________
+Int_t AliCaloTrackAODReader::GetTrackID(AliVTrack* track) 
+{
+  Int_t id = track->GetID();
+  
+  if( id < 0 ) id = TMath::Abs(id) - 1;
+  
+  return id;
+}
+
+
 //_____________________________________________________________________________
 /// Select AOD track using the AOD filter bits or predefined selection methods.
 //_____________________________________________________________________________
