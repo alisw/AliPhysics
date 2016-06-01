@@ -16,7 +16,6 @@
 #pragma link C++ class AliHLTTPCAgent+;
 #pragma link C++ class AliHLTTPCMemHandler+;
 #pragma link C++ class AliHLTTPCFileHandler+;
-#pragma link C++ class AliHLTTPCClusterFinder+;
 #pragma link C++ class AliHLTTPCMapping+;
 #pragma link C++ class AliHLTTPCDigitReader+;
 #pragma link C++ class AliHLTTPCDigitReaderUnpacked+;
@@ -30,10 +29,7 @@
 #pragma link C++ class AliHLTTPCHWCFData+;
 #pragma link C++ class AliHLTTPCDigitPublisherComponent+;
 #pragma link C++ class AliHLTTPCOfflineCluster+;
-#pragma link C++ class AliHLTTPCClusters+;
-#pragma link C++ class AliHLTTPCPad+;
 #pragma link C++ class AliHLTTPCDefinitions+;
-#pragma link C++ class AliHLTTPCClusterFinderComponent+;
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCCATrack+;
@@ -78,9 +74,7 @@
 #pragma link C++ class AliHLTTPCDataCompressionIDMap+;
 #pragma link C++ class AliHLTTPCDataPublisherComponent+;
 #pragma link C++ class AliHLTTPCClusterHistoComponent+;
-#pragma link C++ class AliHLTTPCTrackHistoComponent+;
 #pragma link C++ class AliHLTTPCClusterDumpComponent+;
-#pragma link C++ class AliHLTTPCHWCFDataReverterComponent+;
 #pragma link C++ class AliHLTTPCTrackMCMarkerComponent+;
 #pragma link C++ class AliHLTTPCdEdxComponent+;
 #pragma link C++ class AliHLTTPCdEdxMonitoringComponent+;

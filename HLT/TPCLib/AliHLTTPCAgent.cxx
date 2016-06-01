@@ -46,14 +46,11 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCCAGlobalMergerComponent.h"
 #include "AliHLTTPCdEdxComponent.h"
 #include "AliHLTTPCdEdxMonitoringComponent.h"
-#include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCDigitPublisherComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCClusterDumpComponent.h"
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCHistogramHandlerComponent.h"
-#include "AliHLTTPCTrackHistoComponent.h"
-#include "AliHLTTPCHWCFDataReverterComponent.h"
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
@@ -403,17 +400,11 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxMonitoringComponent);
-  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderPacked));
-  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked));
-  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder));
-  pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinder32Bit));
   pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
-  pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
-  pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
-  pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
+  pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);  
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677

@@ -68,10 +68,7 @@ set(SRCS
     AliHLTTPCAgent.cxx
     AliHLTTPCClusterAccessHLTOUT.cxx    
     AliHLTTPCClusterDumpComponent.cxx
-    AliHLTTPCClusterFinderComponent.cxx
-    AliHLTTPCClusterFinder.cxx
     AliHLTTPCClusterHistoComponent.cxx
-    AliHLTTPCClusters.cxx
     AliHLTTPCClusterTransformationComponent.cxx
     AliHLTTPCClusterTransformationPrepareComponent.cxx
     AliHLTTPCOfflinePreprocessorWrapperComponent.cxx
@@ -88,17 +85,14 @@ set(SRCS
     AliHLTTPCFileHandler.cxx
     AliHLTTPCHistogramHandlerComponent.cxx
     AliHLTTPCHWCFData.cxx
-    AliHLTTPCHWCFDataReverterComponent.cxx
     AliHLTTPCHWCFSpacePointContainer.cxx
     AliHLTTPCHWClusterDecoderComponent.cxx
     AliHLTTPCLog.cxx
     AliHLTTPCMapping.cxx
     AliHLTTPCMemHandler.cxx
-    AliHLTTPCPad.cxx
     AliHLTTPCRawSpacePointContainer.cxx
     AliHLTTPCSpacePointContainer.cxx
-    AliHLTTPCTrackGeometry.cxx
-    AliHLTTPCTrackHistoComponent.cxx
+    AliHLTTPCTrackGeometry.cxx    
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
     comp/AliHLTTPCClusterStatComponent.cxx
