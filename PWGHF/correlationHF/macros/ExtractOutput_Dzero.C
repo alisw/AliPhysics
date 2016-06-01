@@ -15,7 +15,6 @@
 // setting plotter->SetDebugLevel(1) will print a series of additional plots for debugging; plotter->SetDebugLevel(2) will also be more verbose
 //
 
-
 void ExtractOutput(
    Bool_t treeSE=kFALSE, Bool_t treeME=kFALSE, //read TH2F from offline correlation framewrks (produced from the TTree) for SE, ME analysis instead of THnSparse
    Int_t specie=AliDhCorrelationExtraction::kD0toKpi, //the D-meson decay channel (check the enumerator for the options)
@@ -33,7 +32,6 @@ void ExtractOutput(
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1.) //deltaEta ranges for correlation distributions
 {
-
 
   //Create and set the correlation plotter class
   AliDhCorrelationExtraction *plotter = new AliDhCorrelationExtraction();
@@ -73,9 +71,9 @@ void ExtractOutput(
 //________________________________________
 void SetInputNames(AliDhCorrelationExtraction *plotter){
 
-  plotter->SetInputFilenameMass("./AnalysisResults_pp_CFR.root");
-  plotter->SetInputFilenameSE("./AnalysisResults_pp_CFR.root");
-  plotter->SetInputFilenameME("./AnalysisResults_pp_CFR.root");
+  plotter->SetInputFilenameMass("./AnalysisResults_pp.root");
+  plotter->SetInputFilenameSE("./AnalysisResults_pp.root");
+  plotter->SetInputFilenameME("./AnalysisResults_pp.root");
   plotter->SetDirNameMass("PWG3_D2H_D0InvMassOutput");
   plotter->SetListNameMass("coutputmassD0MassOutput0100");
   plotter->SetDirNameSE("PWG3_D2H_D0InvMassOutput");
