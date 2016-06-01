@@ -229,7 +229,7 @@ public:
 	 * @param[in] xbins User Binning
 	 * @param[in] opt Additonal options (s for sumw2)
 	 */
-	TH1* CreateTH1(const char *name, const char *title, const TBinning &binning, Option_t *opt);
+	TH1* CreateTH1(const char *name, const char *title, const TBinning &binning, Option_t *opt = "");
 
 	/**
 	 * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
