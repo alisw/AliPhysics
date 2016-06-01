@@ -17,7 +17,6 @@
 #include <string>
 #include <map>
 #include "AliZMQhelpers.h"
-#include "TTimeStamp.h"
 #include "TCollection.h"
 #include "AliLog.h"
 #include "AliAnalysisDataContainer.h"
@@ -45,7 +44,7 @@ Int_t HandleRequest(aliZMQmsg::iterator block, void* /*socket*/=NULL);
 Int_t DoReceive(aliZMQmsg::iterator block, void* socket);
 Int_t DoSend(void* socket);
 Int_t DoReply(aliZMQmsg::iterator block, void* socket);
-Int_t DoRequest(void*& socket, unsigned long long& lastTime, TString* config=NULL);
+Int_t DoRequest(void*& socket, TString* config=NULL);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
 Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
 Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
@@ -60,6 +59,7 @@ Int_t Merge(TObject* object, TCollection* list);
 int AddNewObject(TObject* object);
 int RemoveEntry(TPair* entry, TMap* map);
 Int_t AddObject(TObject* object);
+void SetLastPushBackTime();
 
 //configuration vars
 Bool_t  fVerbose = kFALSE;
@@ -93,10 +93,6 @@ TString fTitleAnnotation = "";
 
 AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
 
-unsigned long long lastTimeRequestIN = 0;
-unsigned long long lastTimeRequestOUT = 0;
-unsigned long long lastTimeRequestMON = 0;
-
 Int_t fRunNumber = 0;
 std::string fInfo;           //cache for the info string
 
@@ -107,13 +103,15 @@ Int_t fMaxObjects = 1;        //trigger merge after this many messages
 std::vector<TObject*> fListOfObjects;
 
 long fPushbackPeriod = -1;        //in seconds, -1 means never
-TTimeStamp fLastPushBackTime;
 Bool_t fCacheOnly = kFALSE;
 aliZMQrootStreamerInfo* fSchema = NULL;
 bool fSchemaOnRequest = false;
 bool fSchemaOnSend = false;
 int fCompression = 1;
 bool fgTerminationSignaled=false;
+
+unsigned long long fLastPushBackTime = 0;
+struct timeval fCurrentTimeStruct;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -137,7 +135,7 @@ const char* fUSAGE =
     " -mon : monitoring socket\n"
     " -sync : sync socket, will send the INFO block on run change, has to be PUB or SUB\n"
     " -Verbose : print some info\n"
-    " -pushback-period : push the merged data once every n seconds\n"
+    " -pushback-period : push the merged data once every n milliseconds (if updated)\n"
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
     " -RequestResetOnRequest : if requesting form another merger, request a ResetOnRequest\n"
@@ -229,7 +227,7 @@ Int_t Run()
       {
         if (fVerbose) printf("pushback!\n");
         DoSend(fZMQout);
-        fLastPushBackTime.Set();
+        SetLastPushBackTime();
       }
     } //socket 0
 
@@ -251,7 +249,7 @@ Int_t Run()
       {
         if (fVerbose) printf("pushback!\n");
         DoSend(fZMQin);
-        fLastPushBackTime.Set();
+        SetLastPushBackTime();
       }
     }//socket 1
     
@@ -273,7 +271,7 @@ Int_t Run()
       {
         if (fVerbose) printf("pushback!\n");
         DoSend(fZMQmon);
-        fLastPushBackTime.Set();
+        SetLastPushBackTime();
       }
     }//socket 2
     
@@ -295,9 +293,9 @@ Int_t Run()
       zmq_recv(fZMQtrig, 0, 0, 0);
       if (fVerbose) printf("trigger\n");
       // first
-      if (inType==ZMQ_REQ) DoRequest(fZMQin, lastTimeRequestIN, &fZMQconfigIN);
-      if (outType==ZMQ_REQ) DoRequest(fZMQout, lastTimeRequestOUT, &fZMQconfigOUT);
-      if (monType==ZMQ_REQ) DoRequest(fZMQmon, lastTimeRequestMON, &fZMQconfigMON);
+      if (inType==ZMQ_REQ) DoRequest(fZMQin, &fZMQconfigIN);
+      if (outType==ZMQ_REQ) DoRequest(fZMQout, &fZMQconfigOUT);
+      if (monType==ZMQ_REQ) DoRequest(fZMQmon, &fZMQconfigMON);
 
     }//socket 3
 
@@ -545,8 +543,10 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 
   if (fPushbackPeriod>=0)
   {
-    TTimeStamp time;
-    if ((time.GetSec()-fLastPushBackTime.GetSec())>=fPushbackPeriod)
+    gettimeofday(&fCurrentTimeStruct, NULL);
+    unsigned long long currentTime = 1000*fCurrentTimeStruct.tv_sec+fCurrentTimeStruct.tv_usec/1000;
+    
+    if (currentTime-fLastPushBackTime >= fPushbackPeriod)
     {
       return 1; //signal we will want to send after message is done
     }
@@ -557,7 +557,7 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 }
 
 //______________________________________________________________________________
-Int_t DoRequest(void*& socket, unsigned long long& lastTime, TString* config)
+Int_t DoRequest(void*& socket, TString* config)
 {
 
   //if we cannot send it means we were waiting for a reply.
@@ -566,13 +566,6 @@ Int_t DoRequest(void*& socket, unsigned long long& lastTime, TString* config)
     if (fVerbose) printf("no reply from %s in %i ms, server died? - reinit socket\n", config->Data(), fZMQtimeout);
     alizmq_socket_init(socket, fZMQcontext, config->Data(), fZMQtimeout, fZMQmaxQueueSize);
   }
-
-  struct timeval currentTimeStruct;
-  gettimeofday(&currentTimeStruct, NULL);
-  unsigned long long currentTime = 1000*currentTimeStruct.tv_sec+currentTimeStruct.tv_usec/1000;
-
-  if ((currentTime-lastTime)<fZMQtimeout) { return -1; }
-  lastTime = currentTime;
 
   //just send an empty request
   if (fRequestResetOnRequest) {
@@ -655,6 +648,13 @@ Int_t DoSend(void* socket)
   return sentBytes;
 }
 
+//______________________________________________________________________________
+void SetLastPushBackTime()
+{
+  gettimeofday(&fCurrentTimeStruct, NULL);
+  fLastPushBackTime = 1000*fCurrentTimeStruct.tv_sec+fCurrentTimeStruct.tv_usec/1000;
+}
+    
 //______________________________________________________________________________
 void ClearMergeListMap()
 {
