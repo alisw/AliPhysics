@@ -42,6 +42,8 @@
 #pragma link C++ class AliDielectronSignalMC+;
 #pragma link C++ class AliDielectronEvent+;
 #pragma link C++ class AliDielectronMixingHandler+;
+#pragma link C++ class AliAnalysisTask_Syst_PtDistributionsData+;
+#pragma link C++ class AliAnalysisTask_Syst_PtDistributionsMC+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Data+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
 #pragma link C++ class AliDielectronReducedTrack+;
