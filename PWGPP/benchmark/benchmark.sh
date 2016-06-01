@@ -324,6 +324,7 @@ goCPass()
                           "${batchWorkingDirectory}/recCPass0.C"
                           "${batchWorkingDirectory}/runCalibTrain.C"
                           "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+                          "${batchWorkingDirectory}/localOCDB.tgz"
                           "${batchWorkingDirectory}/OCDB.root" )
        filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
@@ -386,6 +387,11 @@ goCPass()
 
   # If OCDB is found here, then create a macro that configures local OCDB access.
   # This step also decompresses the tarball into $PWD/OCDB.
+
+  # this would be relevant only for cpass0 :
+  # custom initial specific OCDB objects provided by the user at the beginning
+  [[ -f localOCDB.tgz ]] && mv cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   [[ -f $ocdbTarball ]] \
     && printExec goMakeLocalOCDBaccessConfig $ocdbTarball \
@@ -1088,6 +1094,7 @@ goGenerateMakeflow()
   #these files will be made a dependency - will be copied to the working dir of the jobs
   declare -a copyFiles
   inputFiles=( OCDB.root
+               localOCDB.tgz
                localOCDBaccessConfig.C
                QAtrain_duo.C
                runCPass1.sh
