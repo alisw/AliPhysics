@@ -199,8 +199,8 @@ class AliTPCDcalibRes: public TNamed
   static void    medFit(int np, const float* x, const float* y, float &a, float &b, float *err=0, float delI=0.f);
   static Int_t*  LTMUnbinnedSig(int np, const float *arr, TVectorF &params , Float_t sigTgt, Float_t minFrac=0.7, Bool_t sorted=kFALSE);
   static Float_t MAD2Sigma(int np, float* y);
-  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err);
-  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err);
+  static Bool_t  FitPoly2(const float* x,const float* y, const float* w, int np, float *res, float *err=0);
+  static Bool_t  FitPoly1(const float* x,const float* y, const float* w, int np, float *res, float *err=0);
   static Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
   static void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
   static Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
@@ -212,6 +212,8 @@ class AliTPCDcalibRes: public TNamed
   Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
   void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
 			float scX=1.f,float scP=1.f,float scZ=1.f);
+  Bool_t  GetSmooth1D(float xQuery,float valerr[2],int np,const float* x,const float* y,const float* err,
+		      float w,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,Bool_t xIncreasing=kTRUE) const;
   Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
   void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
   //  

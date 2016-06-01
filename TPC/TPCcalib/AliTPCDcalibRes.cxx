@@ -290,6 +290,7 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   const int kUsePoints0 = 1000000; // nominal number of points for 1st estimate
   const int kUsePoints1 = 3000000; // nominal number of points for time integrated estimate
   const int kNXBins = 150, kNYBins = 150, kNTCorrBins=100;
+  const int kMinEntriesBin = 100;
   const float kMaxTCorr = 0.02; // max time correction for vdrift
   const float kDiscardDriftEdge = 10.; // discard min and max drift values with this margin
   TStopwatch sw;  sw.Start();
@@ -381,6 +382,44 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
     if (TMath::Abs(dz) > outlCut) continue;
     fHVDTimeCorr->Fill(fDTV.t,  dz/fDTV.drift, d2z); // ?? why this weight 
   }
+  //
+  // check results
+  //
+  // extract values
+  TF1* gs = new TF1("gs","gaus",-kMaxTCorr,kMaxTCorr);
+  TObjArray arrH;
+  arrH.SetOwner(kTRUE);
+  fHVDTimeCorr->FitSlicesY(gs,1,kNTCorrBins,0,"QNR",&arrH);
+  TH1* hEnt = fHVDTimeCorr->ProjectionX("hEnt",1,ntbins);
+  TH1* hmean = (TH1*)arrH[1];
+  float tArr[ntbins],dArr[ntbins],deArr[ntbins];
+  nAcc = 0;
+  for (int i=0;i<ntbins;i++) {
+    if (hEnt->GetBinContent(i+1)<kMinEntriesBin) continue;
+    deArr[nAcc] = hmean->GetBinError(i+1);
+    if (deArr[nAcc]<1e-16) continue;
+    tArr[nAcc] = hmean->GetBinCenter(i+1);
+    dArr[nAcc] = hmean->GetBinContent(i+1);
+    nAcc++;
+  }
+  //
+  delete fVDriftGraph;
+  fVDriftGraph = new TGraphErrors(ntbins);
+  float resve[2];
+  int ngAcc = 0;
+  for (int i=0;i<ntbins;i++) {
+    if (!GetSmooth1D(tArr[i],resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,kFALSE,kTRUE)) {
+      AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tArr[i]));
+      continue;
+    }
+    fVDriftGraph->SetPoint(ngAcc,tArr[i],resve[0]);
+    fVDriftGraph->SetPointError(ngAcc,0.5,resve[1]);
+    ngAcc++;
+  }
+  for (int i=ngAcc;i<ntbins;i++) fVDriftGraph->RemovePoint(i); // eliminate extra points
+  //
+  delete hEnt;
+  arrH.Delete();
   //
   sw.Stop(); 
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
@@ -2785,12 +2824,14 @@ Bool_t AliTPCDcalibRes::FitPoly2(const float* x,const float* y, const float* w, 
   res[1] = det1*detI;
   res[2] = det2*detI;
   //
-  err[0] = min00*detI; // e00
-  err[1] =-min01*detI; // e10
-  err[2] = min11*detI; // e11
-  err[3] = min02*detI; // e20
-  err[4] =-min12*detI; // e21
-  err[5] = min22*detI; // e21
+  if (err) {
+    err[0] = min00*detI; // e00
+    err[1] =-min01*detI; // e10
+    err[2] = min11*detI; // e11
+    err[3] = min02*detI; // e20
+    err[4] =-min12*detI; // e21
+    err[5] = min22*detI; // e21
+  }
   //
   return kTRUE;
 }
@@ -2817,9 +2858,11 @@ Bool_t AliTPCDcalibRes::FitPoly1(const float* x,const float* y, const float* w, 
   res[0] = det0*detI;
   res[1] = det1*detI;
   //
-  err[0] = sumW[2]*detI; // e00
-  err[1] =-sumW[1]*detI; // e10
-  err[2] = sumW[0]*detI; // e11
+  if (err) {
+    err[0] = sumW[2]*detI; // e00
+    err[1] =-sumW[1]*detI; // e10
+    err[2] = sumW[0]*detI; // e11
+  }
   //
   return kTRUE;
 }
@@ -3261,6 +3304,80 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 
 }
 
+//_____________________________________________________________________
+Bool_t AliTPCDcalibRes::GetSmooth1D
+(float xQuery,                                            // query X
+ float valerr[2],                                          // output array for value and its error
+ int np, const float* x, const float* y, const float* err, // points x,y, optional error 
+ float w, int kType,Bool_t usePol2,                       // kernel width and type, do we use pol1 or pol2 interpolation
+ Bool_t xIncreasing                                        // are points increasing in X
+ ) const 
+{
+  // get kernel (width w) smoothed value at xQuery for (opionally ordered in x-increasing) array x,y (optionally err)
+  int minPoints = 3+usePol2;
+  // don't abuse stack
+  float *ySelHeap=0,ySelStack[np<kMaxOnStack ? np:1],*ySel=np<kMaxOnStack ? &ySelStack[0] : (ySelHeap=new float[np]);
+  float *xSelHeap=0,xSelStack[np<kMaxOnStack ? np:1],*xSel=np<kMaxOnStack ? &xSelStack[0] : (xSelHeap=new float[np]);
+  float *wSelHeap=0,wSelStack[np<kMaxOnStack ? np:1],*wSel=np<kMaxOnStack ? &wSelStack[0] : (wSelHeap=new float[np]);
+  //
+  // select only points which have chance to contribute
+  double ws = w;
+  float xmax = x[np-1], xmin = x[0];
+  if (!xIncreasing) {
+    for (int i=np;i--;) {
+      if (xmax>x[i]) xmax = x[i];
+      if (xmin<x[i]) xmin = x[i];
+    }
+  }
+  double maxD,w2Sum=0.,range = xmax - xmin;
+  //
+  const float kEps = 1e-12;
+  int npUse=0;
+  do {
+    maxD = ws*(kType==kGaussianKernel ? kMaxGaussStdDev : 1.0f);
+    double ws2 = 1./(ws*ws);
+    npUse = 0;
+    w2Sum = 0.;
+    for (int ip=0;ip<np;ip++) {
+      double df = x[ip]-xQuery;
+      if (df>maxD) {
+	if (xIncreasing) break; // with sorted arrays no point in checking further
+	continue;
+      }
+      if (df<-maxD) continue;
+      xSel[npUse] = df;  // we fit wrt queried point!
+      ySel[npUse] = y[ip];
+      df *= df*ws2;
+      wSel[npUse] = GetKernelWeight(&df,1);
+      w2Sum += wSel[npUse];
+      if (wSel[npUse]<kEps) continue; 
+      if (err && err[ip]>0) wSel[npUse] /= err[ip]*err[ip];
+      npUse++;
+    }
+    //
+    if (npUse>=minPoints) break;
+    ws *= 1.5; // expand kernel
+  }
+  while (maxD<range);
+  //
+  Bool_t res = kFALSE;
+  if (npUse<minPoints) {
+    valerr[0] = valerr[1] = 0.f;
+    AliErrorF("Found only %d points, %d required",npUse,minPoints);
+  }
+  else {
+    float resVal[3],resErr[6];
+    if ((res=usePol2 ? FitPoly2(xSel,ySel,wSel,npUse,resVal,resErr) : FitPoly1(xSel,ySel,wSel,npUse,resVal,resErr))) {
+      valerr[0] = resVal[0];
+      valerr[1] = TMath::Sqrt(resErr[0]/w2Sum);
+    }
+  }
+  delete[] ySelHeap;
+  delete[] xSelHeap;
+  delete[] wSelHeap;
+  //
+  return res;
+}
 
 //_____________________________________
 Double_t AliTPCDcalibRes::GetKernelWeight(double* u2vec,int np) const
