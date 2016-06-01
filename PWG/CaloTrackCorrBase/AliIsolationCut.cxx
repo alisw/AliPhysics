@@ -17,17 +17,20 @@
 #include <TObjArray.h>
 
 // --- AliRoot system ---
-#include "AliIsolationCut.h"
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGeoParams.h"
-#include "AliCalorimeterUtils.h"
 #include "AliAODTrack.h"
 #include "AliVCluster.h"
-#include "AliCaloTrackReader.h"
 #include "AliMixedEvent.h"
-#include "AliCaloPID.h"
 #include "AliLog.h"
+
+// --- CaloTrackCorrelations --- 
+#include "AliCaloTrackReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliCaloPID.h"
+#include "AliFiducialCut.h"
+#include "AliIsolationCut.h"
 
 /// \cond CLASSIMP
 ClassImp(AliIsolationCut) ;
@@ -423,50 +426,62 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   Float_t phiC  = pCandidate->Phi() ;
   if ( phiC < 0 ) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
-
+  
   Float_t pt     = -100. ;
   Float_t eta    = -100. ;
   Float_t phi    = -100. ;
   Float_t rad    = -100. ;
-
+  
   Float_t coneptsumCluster = 0;
   Float_t coneptsumTrack   = 0;
-
+  
   Float_t  etaBandPtSumTrack   = 0;
   Float_t  phiBandPtSumTrack   = 0;
   Float_t  etaBandPtSumCluster = 0;
   Float_t  phiBandPtSumCluster = 0;
-
+  
   n         = 0 ;
   nfrac     = 0 ;
   isolated  = kFALSE;
-
+  
   AliDebug(1,Form("Candidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
                   pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), fConeSize,fPtThreshold,bFillAOD));
-
+  
   //Initialize the array with refrences
   TObjArray * refclusters  = 0x0;
   TObjArray * reftracks    = 0x0;
   Int_t       ntrackrefs   = 0;
   Int_t       nclusterrefs = 0;
-
+  
   // --------------------------------
   // Check charged tracks in cone.
   // --------------------------------
-
+  
   if(plCTS &&
      (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
   {
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
     {
       AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ;
-
+      
       if(track)
       {
-        //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
-        if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) ||
-           track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3)   ) continue ;
-
+        // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+        // do not count the candidate or the daughters of the candidate
+        // in the isolation conte
+        if ( pCandidate->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
+        {
+          Int_t  trackID   = track->GetID() ;
+          Bool_t contained = kFALSE;
+          
+          for(Int_t i = 0; i < 4; i++) 
+          {
+            if( trackID == pCandidate->GetTrackLabel(i) ) contained = kTRUE;
+          }
+          
+          if ( contained ) continue ;
+        }
+        
         fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
         pt  = fTrackVector.Pt();
         eta = fTrackVector.Eta();
@@ -480,18 +495,18 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
           AliWarning("Wrong track data type, continue");
           continue;
         }
-
+        
         pt  = trackmix->Pt();
         eta = trackmix->Eta();
         phi = trackmix->Phi() ;
       }
-
+      
       // ** Calculate distance between candidate and tracks **
       
       if ( phi < 0 ) phi+=TMath::TwoPi();
-
+      
       rad = Radius(etaC, phiC, eta, phi);
-
+      
       // ** Exclude tracks too close to the candidate, inactive by default **
       
       if(rad < fDistMinToTrigger) continue ;
@@ -503,12 +518,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumTrack += pt;
         if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumTrack += pt;
       }
-
+      
       // ** For the isolated particle **
-
+      
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC) > TMath::PiOver2()) continue ;
-
+      
 //      // If at the same side has particle larger than candidate,
 //      // then candidate can not be the leading, skip such events
 //      if(pt > ptC)
@@ -528,16 +543,16 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //
 //        return ;
 //      }
-
+      
       AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
-
+      
       //
       // Select tracks inside the isolation radius
       //
       if(rad < fConeSize)
       {
         AliDebug(2,"Inside candidate cone");
-
+        
         if(bFillAOD)
         {
           ntrackrefs++;
@@ -552,11 +567,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
           }
           reftracks->Add(track);
         }
-
+        
         coneptsumTrack+=pt;
-
+        
         if( ptLead < pt ) ptLead = pt;
-
+        
 //        // *Before*, count particles in cone
 //        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
 //
@@ -576,13 +591,13 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //        {
 //          if( pt > fPtFraction*ptC ) nfrac++;
 //        }
-
+        
       } // Inside cone
-
+      
     }// charged particle loop
-
+    
   }//Tracks
-
+  
   // --------------------------------
   // Check calorimeter clusters in cone.
   // --------------------------------
@@ -590,33 +605,33 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   if(plNe &&
      (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
   {
-
+    
     for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
     {
       AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(ipr)) ;
-
+      
       if(calo)
       {
         // Get the index where the cluster comes, to retrieve the corresponding vertex
         Int_t evtIndex = 0 ;
         if (reader->GetMixedEvent())
           evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ;
-
-
+        
+        
         // Do not count the candidate (photon or pi0) or the daughters of the candidate
         if(calo->GetID() == pCandidate->GetCaloLabel(0) ||
            calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
-
+        
         // Skip matched clusters with tracks in case of neutral+charged analysis
         if(fIsTMClusterInConeRejected)
         {
           if( fPartInCone == kNeutralAndCharged &&
              pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
         }
-
+        
         // Assume that come from vertex in straight line
         calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
-
+        
         pt  = fMomentum.Pt()  ;
         eta = fMomentum.Eta() ;
         phi = fMomentum.Phi() ;
@@ -629,35 +644,35 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
           AliWarning("Wrong calo data type, continue");
           continue;
         }
-
+        
         pt  = calomix->Pt();
         eta = calomix->Eta();
         phi = calomix->Phi() ;
       }
-
+      
       // ** Calculate distance between candidate and tracks **
       
       if( phi < 0 ) phi+=TMath::TwoPi();
-
+      
       rad = Radius(etaC, phiC, eta, phi);
-
+      
       // ** Exclude clusters too close to the candidate, inactive by default **
-
+      
       if(rad < fDistMinToTrigger) continue ;
       
       // ** For the background out of cone **
-
+      
       if(rad > fConeSize)
       {
         if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumCluster += pt;
         if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumCluster += pt;
       }
-
+      
       // ** For the isolated particle **
-
+      
       // Only loop the particle at the same side of candidate
       if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
-
+      
 //      // If at the same side has particle larger than candidate,
 //      // then candidate can not be the leading, skip such events
 //      if(pt > ptC)
@@ -685,16 +700,16 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //        }
 //        return ;
 //      }
-
+      
       AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
-
+      
       //
       // Select calorimeter clusters inside the isolation radius 
       //
       if(rad < fConeSize)
       {
         AliDebug(2,"Inside candidate cone");
-
+        
         if(bFillAOD)
         {
           nclusterrefs++;
@@ -709,11 +724,11 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
           }
           refclusters->Add(calo);
         }
-
+        
         coneptsumCluster+=pt;
-
+        
         if( ptLead < pt ) ptLead = pt;
-
+        
 //        // *Before*, count particles in cone
 //        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
 //
@@ -733,25 +748,25 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
 //        {
 //          if( pt > fPtFraction*ptC ) nfrac++;
 //        }
-
+        
       }//in cone
-
+      
     }// neutral particle loop
-
+    
   }//neutrals
-
+  
   //Add reference arrays to AOD when filling AODs only
   if(bFillAOD)
   {
     if(refclusters)	pCandidate->AddObjArray(refclusters);
     if(reftracks)	  pCandidate->AddObjArray(reftracks);
   }
-
+  
   coneptsum = coneptsumCluster + coneptsumTrack;
-
+  
   // *Now*, just check the leading particle in the cone if the threshold is passed
   if(ptLead > fPtThreshold && ptLead < fPtThresholdMax)  n = 1;
-
+  
   //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
   if(fFracIsThresh)
   {
@@ -768,14 +783,14 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   {
     if( ptLead > fPtFraction*ptC ) nfrac = 1;
   }
-
+  
   //-------------------------------------------------------------------
   // Check isolation, depending on selected isolation criteria requested
-
+  
   if( fICMethod == kPtThresIC)
   {
     if( n == 0 ) isolated = kTRUE ;
-
+    
     AliDebug(1,Form("pT Cand %2.2f, pT Lead %2.2f, %2.2f<pT Lead< %2.2f, isolated %d",
                     ptC,ptLead,fPtThreshold,fPtThresholdMax,isolated));
   }
@@ -786,9 +801,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
-
-     AliDebug(1,Form("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d",
-                     ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated));
+    
+    AliDebug(1,Form("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d",
+                    ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated));
   }
   else if( fICMethod == kPtFracIC )
   {
@@ -812,9 +827,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
   {
     // Get good cell density (number of active cells over all cells in cone)
     // and correct energy in cone
-
+    
     Float_t cellDensity = GetCellDensity(pCandidate,reader);
-
+    
     if( coneptsum < fSumPtThreshold*cellDensity )
       isolated = kTRUE;
   }
@@ -825,12 +840,12 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     Float_t  phiBandPtSumTrackNorm   = 0;
     Float_t  etaBandPtSumClusterNorm = 0;
     Float_t  phiBandPtSumClusterNorm = 0;
-
+    
     Float_t  excessFracEtaTrack   = 1;
     Float_t  excessFracPhiTrack   = 1;
     Float_t  excessFracEtaCluster = 1;
     Float_t  excessFracPhiCluster = 1;
-
+    
     // Normalize background to cone area
     if     (fPartInCone != kOnlyCharged       )
       CalculateUEBandClusterNormalization(reader, etaC, phiC,
@@ -840,26 +855,26 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     
     if     (fPartInCone != kOnlyNeutral       )
       CalculateUEBandTrackNormalization(reader, etaC, phiC,
-                                          phiBandPtSumTrack    , etaBandPtSumTrack  ,
-                                          phiBandPtSumTrackNorm, etaBandPtSumTrackNorm,
-                                          excessFracEtaTrack   , excessFracPhiTrack    );
-
+                                        phiBandPtSumTrack    , etaBandPtSumTrack  ,
+                                        phiBandPtSumTrackNorm, etaBandPtSumTrackNorm,
+                                        excessFracEtaTrack   , excessFracPhiTrack    );
+    
     if     (fPartInCone == kOnlyCharged       ) coneptsumBkg = etaBandPtSumTrackNorm;
     else if(fPartInCone == kOnlyNeutral       ) coneptsumBkg = etaBandPtSumClusterNorm;
     else if(fPartInCone == kNeutralAndCharged ) coneptsumBkg = etaBandPtSumClusterNorm + etaBandPtSumTrackNorm;
-
+    
     //coneptsumCluster*=(coneBadCellsCoeff*excessFracEtaCluster*excessFracPhiCluster) ; // apply this correction earlier???
     // line commented out in last modif!!!
-
+    
     coneptsum = coneptsumCluster+coneptsumTrack;
-
+    
     coneptsum -= coneptsumBkg;
-
+    
     if( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
-
+    
   }
 }
 
