@@ -742,7 +742,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
 	Int_t slicepartition = slice*6+partition;      
-	if(slicepartition<0 || slicepartition > fkNPartition){
+	if(slicepartition<0 || slicepartition >= fkNPartition){
 	  HLTWarning("Wrong header of TPC raw cluster data, slice %d, partition %d", slice, partition );
 	  continue;
 	}
@@ -756,15 +756,23 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	Int_t slice     = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
 	Int_t partition = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);    
 	Int_t slicepartition = slice*6+partition;      
-	if(slicepartition<0 || slicepartition > fkNPartition){
+	if(slicepartition<0 || slicepartition >= fkNPartition){
 	  HLTWarning("Wrong header of TPC cluster data, slice %d, partition %d", slice, partition );
 	  continue;
 	}
 	const AliHLTTPCClusterXYZData * clusterData = ( AliHLTTPCClusterXYZData* )( iter->fPtr );
-	if( clusterData ) {
-	  partitionClusters[slicepartition] = clusterData;
-	  partitionNClusters[slicepartition] = clusterData->fCount;
+	if( !clusterData ) continue;	
+	const AliHLTTPCRawClusterData* rawClustersData = rawClusters[slicepartition];
+	if( !rawClustersData ){
+	  HLTWarning("Raw cluster data block missing for slice %d, partition %d", slice, partition );
+	  continue;
 	}
+	if( clusterData->fCount != rawClustersData->fCount ){
+	  HLTWarning("Number of entries in raw and xyz clusters are not mached %d vs %d", rawClustersData->fCount, clusterData->fCount );
+	  continue;
+	}
+	partitionClusters[slicepartition] = clusterData;
+	partitionNClusters[slicepartition] = clusterData->fCount;      
       } // end of loop over blocks of clusters    
     }
 
@@ -906,31 +914,15 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	if(!clusterData ){
 	  HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
 	  continue;
-	}
-	
+	}	
 	if(iCluster >= partitionNClusters[slicepartition]){
 	  HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[slicepartition] );
 	  continue;
 	}
   
-	const AliHLTTPCRawClusterData* rawClustersBlock = rawClusters[slicepartition];
-
-	if( !rawClustersBlock ){
-	  HLTWarning("Raw cluster data block missing for slice %d, partition %d", iSlice, iPartition );
-	  continue;
-	}
-	    
+	const AliHLTTPCRawClusterData* rawClustersBlock = rawClusters[slicepartition];	    
 	const AliHLTTPCClusterXYZ &chlt = clusterData->fClusters[iCluster];
-	UInt_t rawID = chlt.GetRawClusterID();
-	UInt_t sliceRaw = AliHLTTPCGeometry::CluID2Slice( rawID );
-	UInt_t partitionRaw = AliHLTTPCGeometry::CluID2Partition( rawID );
-	UInt_t indRaw = AliHLTTPCGeometry::CluID2Index( rawID );
-	
-	if( sliceRaw!=iSlice || partitionRaw!=iPartition || indRaw>=rawClustersBlock->fCount ){
-	  HLTWarning("Raw and XYZ cluster indexes does not match. Raw: slice %d, partition %d, cluster %d  XYZ: slice %d, partition %d, cluster %d", sliceRaw, partitionRaw, indRaw, iSlice, iPartition, iCluster );
-	  continue;
-	}
-	const AliHLTTPCRawCluster &chltRaw = rawClustersBlock->fClusters[indRaw];
+	const AliHLTTPCRawCluster &chltRaw = rawClustersBlock->fClusters[iCluster];
 
 	double padpitch = AliHLTTPCGeometry:: GetPadPitchWidth( iPartition );
 	double zwidth = AliHLTTPCGeometry::GetZWidth();   

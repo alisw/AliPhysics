@@ -331,39 +331,40 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       break;
     }
  
+    int firstRow = AliHLTTPCGeometry::GetFirstRow(partition);
+
+    // create AliHLTTPCClusterXYZData array in parallel to raw clusters, fill xyz==0 in case of problems 
+
     AliHLTTPCClusterXYZData* outPtr  = reinterpret_cast<AliHLTTPCClusterXYZData*>(outputPtr);
-    outPtr->fCount = 0;
- 
-    for( UInt_t icl=0; icl<rawClusters->fCount; icl++){
+    outPtr->fCount = rawClusters->fCount;
+     
+    for( UInt_t icl=0; icl<rawClusters->fCount; icl++ ){
       
       const AliHLTTPCRawCluster &cl = rawClusters->fClusters[icl];
+      AliHLTTPCClusterXYZ& cXYZ = outPtr->fClusters[icl];
+      cXYZ.Set( 0.f, 0.f, 0.f );
 
-      AliHLTTPCClusterXYZ& cXYZ = outPtr->fClusters[outPtr->fCount];
       int padrow=cl.GetPadRow();
       if (padrow<0) {
 	// something wrong here, padrow is stored in the cluster header
 	// word which has bit pattern 0x3 in bits bit 30 and 31 which was
 	// not recognized
 	ALIHLTERRORGUARD(1, "can not read cluster header word");
-	break;
+	continue;
       }
-      padrow+=AliHLTTPCGeometry::GetFirstRow(partition);
       Float_t xyz[3];
-      int err = fgTransform.Transform( slice, padrow, cl.GetPad(), cl.GetTime(), xyz );	 
+      int err = fgTransform.Transform( slice, firstRow + padrow, cl.GetPad(), cl.GetTime(), xyz );	 
       if( err!=0 ){
 	HLTWarning(Form("Cannot transform the cluster, AliHLTTPCClusterTransformation returns error %d, %s",err, fgTransform.GetLastError()));
 	continue;
       }
-      cXYZ.SetX(xyz[0]);
-      cXYZ.SetY(xyz[1]);
-      cXYZ.SetZ(xyz[2]);
-      cXYZ.SetRawClusterID( AliHLTTPCGeometry::CreateClusterID( slice, partition, icl ) );
+
+      cXYZ.Set( xyz[0], xyz[1], xyz[2] );
 	 
       HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fCount, cXYZ.GetX(), cXYZ.GetY(), cXYZ.GetZ(), (UInt_t)cl.GetCharge());
-	 
-      outPtr->fCount++; 
-    } // end of loop over clusters
       
+    } // end of loop over clusters
+
     HLTDebug("Number of found clusters: %d", outPtr->fCount);
      
     UInt_t mysize = sizeof(AliHLTTPCClusterXYZData) + sizeof(AliHLTTPCClusterXYZ)*outPtr->fCount;
