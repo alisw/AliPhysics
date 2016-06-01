@@ -216,6 +216,7 @@ int ProcessOptionString(TString arguments)
     else if (option.EqualTo("collection"))
     {
       fCollection = new TObjArray(100);
+      fCollection->SetName("exampleContainer1");
       fCollection->SetOwner(kTRUE);
     }
     else if (option.EqualTo("analysisContainer"))

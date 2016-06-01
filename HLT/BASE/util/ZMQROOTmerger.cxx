@@ -26,6 +26,7 @@
 #include "signal.h"
 #include <unistd.h>
 #include <pthread.h>
+#include "TMethodCall.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -46,8 +47,9 @@ Int_t DoSend(void* socket);
 Int_t DoReply(aliZMQmsg::iterator block, void* socket);
 Int_t DoRequest(void*& socket, TString* config=NULL);
 Int_t DoControl(aliZMQmsg::iterator block, void* socket);
-Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix="");
-Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix="");
+Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, std::string prefix="");
+Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::string prefix="");
+TCollection* UnpackToCollection(TObject*, std::string);
 Int_t ReadFromFile(std::string file);
 Int_t DumpToFile(std::string file);
 
@@ -75,7 +77,7 @@ std::string fInitFile = "";
 Bool_t  fResetOnSend = kFALSE;      //reset on each send (also on scheduled pushing)
 Bool_t  fResetOnRequest = kFALSE;   //reset once after a single request
 Bool_t  fRequestResetOnRequest = kFALSE; //when requesting from another merger, request also a reset
-Bool_t fClearOnReset = kFALSE;
+Bool_t  fClearOnReset = kFALSE;
 
 Bool_t  fAllowGlobalReset=kTRUE;
 Bool_t  fAllowControlSequences=kTRUE;
@@ -85,6 +87,8 @@ Bool_t  fAllowClearAtSOR=kFALSE;
 
 Bool_t  fUnpackCollections = kFALSE;
 Bool_t  fUnpackContainers = kFALSE;
+std::string fCustomUnpackMethodName = "GetListOfDrawableObjects";
+Bool_t  fCustomUnpackMethod = kFALSE;
 
 TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
@@ -169,6 +173,8 @@ const char* fUSAGE =
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
     " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
     " -UnpackContainers : unpack the contents of AliAnalysisDataContainers\n"
+    " -UnpackCustom : use a custom method to unpack the objects (must return TCollection*)\n"
+    " -CustomUnpackMethodName : name of the custom method to call to get a pointer to unpacked objects\n"
     " -statefile : save/restore state on exit/start\n"
     ;
 //_______________________________________________________________________________________
@@ -952,6 +958,14 @@ Int_t ProcessOptionString(TString arguments)
     {
       fUnpackContainers = (value.Contains("0") || value.Contains("no"))?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("CustomUnpackMethodName"))
+    {
+      fCustomUnpackMethodName = value.Data();
+    }
+    else if (option.EqualTo("UnpackCustom"))
+    {
+      fCustomUnpackMethod = value.Contains("0")?kFALSE:kTRUE;
+    }
     else if (option.EqualTo("statefile"))
     {
       fInitFile = value.Data();
@@ -1034,32 +1048,34 @@ int main(Int_t argc, char** argv)
 }
 
 //______________________________________________________________________________
-Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, const char* prefix)
+Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, std::string prefix)
 {
-  const char* analName = kont->GetName();
+  std::string kontName = kont->GetName();
+  std::string kontPrefix = prefix + kontName + "/";
+
   TObject* analData = kont->GetData();
-  std::string name = analName;
-  std::string namePrefix = name + "/";
-  TCollection* collection = dynamic_cast<TCollection*>(analData);
-  if (collection) {
+  if (TCollection* collection = dynamic_cast<TCollection*>(analData)) {
+    //a collection
     if (fVerbose) Printf("  have a collection %p",collection);
     const char* collName = collection->GetName();
-    GetObjects(collection, list, namePrefix.c_str());
+    GetObjects(collection, list, kontPrefix);
     if (fVerbose) printf("  destroying collection %p\n",collection);
     delete collection;
     kont->SetDataOwned(kFALSE);
-  } else { //if (collection)
+
+  } else {
+    //just an object
     TNamed* named = dynamic_cast<TNamed*>(analData);
-    name = namePrefix + analData->GetName();
-    std::string title = namePrefix + analData->GetTitle();
     if (named) {
-      named->SetName(name.c_str());
+      std::string name = kontPrefix + analData->GetName();
+      std::string title = kontPrefix + analData->GetTitle();
+      named->SetName(kontName.c_str());
       named->SetTitle(title.c_str());
+      if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
+          named->GetName(),
+          named->ClassName(),
+          named );
     }
-    if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
-                         named->GetName(),
-                         named->ClassName(),
-                         named );
     kont->SetDataOwned(kFALSE);
     list->push_back(analData);
   }
@@ -1067,36 +1083,65 @@ Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, co
 }
 
 //______________________________________________________________________________
-Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, const char* prefix)
+Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::string prefix)
 {
+  std::string kontName = collection->GetName();
+  std::string kontPrefix = prefix + kontName + "/";
   TIter next(collection);
   while (TObject* tmp = next()) {
     collection->Remove(tmp);
-    std::string name = tmp->GetName();
-    name = prefix + name;
-    if (fVerbose) Printf("--in (from a TCollection): %s (%s), %p",
-                         tmp->GetName(), tmp->ClassName(), tmp);
-    AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
-    if (analKont) {
+
+    if (AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp)) {
+      //analysis container
       if (fVerbose) Printf("  have an analysis container %p",analKont);
-      GetObjects(analKont,list,name.c_str());
+      GetObjects(analKont,list,kontPrefix);
       if (fVerbose) printf("  destroying anal container %p\n",analKont);
       delete analKont;
+
+    } else if (fCustomUnpackMethod &&
+        tmp->IsA()->GetMethodWithPrototype(fCustomUnpackMethodName.c_str(), "")) {
+      //something implementing a custom method to unpack into a list
+      if (fVerbose) printf("Attempting to call method %s to unpack\n",
+                           fCustomUnpackMethodName.c_str());
+      TCollection* unpackedList = UnpackToCollection(tmp, fCustomUnpackMethodName);
+      GetObjects(unpackedList, list, kontPrefix);
+      delete unpackedList;
+
+    } else if (TCollection* subcollection = dynamic_cast<TCollection*>(tmp)) {
+      //embedded collection
+      GetObjects(subcollection, list, kontPrefix);
+
     } else {
+      //..or just na object
       TNamed* named = dynamic_cast<TNamed*>(tmp);
       if (named) {
-        name = named->GetName();
-        name = prefix + name;
-        std::string title = named->GetTitle();
-        title = prefix + title;
+        std::string name = kontPrefix + named->GetName();
+        std::string title = kontPrefix + named->GetTitle();
         named->SetName(name.c_str());
         named->SetTitle(title.c_str());
+        if (fVerbose) Printf("--in (from collection): %s (%s), %p",
+                             named->GetName(),
+                             named->ClassName(),
+                             named );
       }
       list->push_back(tmp);
     }
     collection->SetOwner(kTRUE);
   } //while
   return 0;
+}
+
+//______________________________________________________________________________
+TCollection* UnpackToCollection(TObject* object, std::string method)
+{
+  //this will call method (which MUST return a pointer to TCollection*
+  //and take no arguments
+  TMethodCall *mc = new TMethodCall(object->IsA(),method.c_str(),"");
+  char* ret = NULL;
+  mc->Execute(object,&ret);
+  TObject* retObject = reinterpret_cast<TObject*>(ret);
+  TCollection* collection = dynamic_cast<TCollection*>(retObject);
+  return collection;
 }
 
 //______________________________________________________________________________
