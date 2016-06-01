@@ -27,7 +27,6 @@
 
 #include "AliHLTTPCHWClusterMerger.h"
 #include "AliHLTTPCGeometry.h"
-#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCHWCFSupport.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -227,13 +226,13 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
  
   if (id!=~AliHLTUInt32_t(0)) {
     if (slice<0) {
-      slice=AliHLTTPCSpacePointData::GetSlice(id);
-    } else if ((unsigned)slice!=AliHLTTPCSpacePointData::GetSlice(id)) {
+      slice=AliHLTTPCGeometry::CluID2Slice(id);
+    } else if ((unsigned)slice!=AliHLTTPCGeometry::CluID2Slice(id)) {
       HLTError("cluster id 0x%08x is not consistent with specified slice %d", id, slice);
     }
     if (partition<0) {
-      partition=AliHLTTPCSpacePointData::GetPatch(id);
-    } else if ((unsigned)partition!=AliHLTTPCSpacePointData::GetPatch(id)) {
+      partition=AliHLTTPCGeometry::CluID2Partition(id);
+    } else if ((unsigned)partition!=AliHLTTPCGeometry::CluID2Partition(id)) {
       HLTError("cluster id 0x%08x is not consistent with specified partition %d", id, partition);
     }
   }

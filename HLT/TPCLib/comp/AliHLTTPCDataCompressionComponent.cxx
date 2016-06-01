@@ -275,9 +275,9 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       UInt_t nofPoints=track->GetNumberOfPoints();
       const UInt_t* points=track->GetPoints();
       for (unsigned i=0; i<nofPoints; i++) {
-	int slice=AliHLTTPCSpacePointData::GetSlice(points[i]);
-	int partition=AliHLTTPCSpacePointData::GetPatch(points[i]);
-	int number=AliHLTTPCSpacePointData::GetNumber(points[i]);
+	int slice=AliHLTTPCGeometry::CluID2Slice(points[i]);
+	int partition=AliHLTTPCGeometry::CluID2Partition(points[i]);
+	int number=AliHLTTPCGeometry::CluID2Index(points[i]);
 	HLTInfo("track %d point %d id 0x%08x slice %d partition %d number %d", track->GetID(), i, points[i], slice, partition, number);
       }
     }
@@ -598,14 +598,14 @@ int AliHLTTPCDataCompressionComponent::ProcessTrackClusters(AliHLTGlobalBarrelTr
     const UInt_t* trackPoints=track.GetPoints();
     for (unsigned i=0; i<nofTrackPoints; i++) {
       const AliHLTUInt32_t& clusterId=trackPoints[i];
-      if (AliHLTTPCSpacePointData::GetSlice(clusterId)!=(unsigned)slice ||
-	  AliHLTTPCSpacePointData::GetPatch(clusterId)!=(unsigned)partition) {
+      if (AliHLTTPCGeometry::CluID2Slice(clusterId)!=(unsigned)slice ||
+	  AliHLTTPCGeometry::CluID2Partition(clusterId)!=(unsigned)partition) {
 	// not in the current partition;
 	continue;
       }
 
       int clusterrow=(int)pClusters->GetX(clusterId);
-      AliHLTUInt32_t pointId=AliHLTTPCSpacePointData::GetID(slice, partition, clusterrow);
+      AliHLTUInt32_t pointId=AliHLTTPCGeometry::CreateClusterID(slice, partition, clusterrow);
       AliHLTTrackGeometry::AliHLTTrackPoint* point=pTrackPoints->GetRawTrackPoint(pointId);
       if (!point) {
 	//HLTError("can not find track point slice %d partition %d padrow %d (0x%08x) of track %d", slice, partition, clusterrow, pointId, trackId.Data());
@@ -655,7 +655,7 @@ int AliHLTTPCDataCompressionComponent::ProcessRemainingClusters(AliHLTGlobalBarr
 	HLTError("invalid track geometry type for track %d, expecting AliHLTTPCTrackGeometry", trackId.Data());
 	continue;	
       }
-      AliHLTUInt32_t pointId=AliHLTTPCSpacePointData::GetID(slice, partition, padrow);
+      AliHLTUInt32_t pointId=AliHLTTPCGeometry::CreateClusterID(slice, partition, padrow);
       AliHLTTrackGeometry::AliHLTTrackPoint* point=pTrackPoints->GetRawTrackPoint(pointId);
       if (!point) {
 	//HLTError("can not find track point slice %d partition %d padrow %d (0x%08x) of track %d", slice, partition, padrow, pointId, trackId.Data());

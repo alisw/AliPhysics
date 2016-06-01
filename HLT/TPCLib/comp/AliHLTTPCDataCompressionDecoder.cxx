@@ -349,9 +349,9 @@ const AliHLTTPCClusterMCLabel* AliHLTTPCDataCompressionDecoder::GetMCLabel(AliHL
   /// format free from any overhead
   if (clusterId==kAliHLTVoidDataSpec) return NULL;
 
-  unsigned slice=AliHLTTPCSpacePointData::GetSlice(clusterId);
-  unsigned partition=AliHLTTPCSpacePointData::GetPatch(clusterId);
-  unsigned number=AliHLTTPCSpacePointData::GetNumber(clusterId);
+  unsigned slice=AliHLTTPCGeometry::CluID2Slice(clusterId);
+  unsigned partition=AliHLTTPCGeometry::CluID2Partition(clusterId);
+  unsigned number=AliHLTTPCGeometry::CluID2Index(clusterId);
   if ((int)slice>=AliHLTTPCGeometry::GetNSlice() ||
       (int)partition>=AliHLTTPCGeometry::GetNumberOfPatches()) return NULL;
   unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;

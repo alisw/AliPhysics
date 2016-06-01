@@ -26,7 +26,7 @@
 #include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCCADef.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCClusterXYZ.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterMCData.h"
 
 #include "AliCDBEntry.h"
@@ -242,9 +242,9 @@ Int_t AliHLTTPCTrackMCMarkerComponent::GetTrackMCLabel( unsigned int *hits, int 
 
   for( Int_t ih=0; ih<nHits; ih++){
     UInt_t id = hits[ih];
-    int iSlice = AliHLTTPCClusterXYZ::RawID2Slice(id);
-    int iPatch = AliHLTTPCClusterXYZ::RawID2Partition(id);
-    unsigned int iCluster = AliHLTTPCClusterXYZ::RawID2Index(id);
+    int iSlice = AliHLTTPCGeometry::CluID2Slice(id);
+    int iPatch = AliHLTTPCGeometry::CluID2Partition(id);
+    unsigned int iCluster = AliHLTTPCGeometry::CluID2Index(id);
     if( iSlice<0 || iSlice>=36 || iPatch<0 || iPatch>5 ){
       HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
 	       iSlice, iPatch,iCluster );

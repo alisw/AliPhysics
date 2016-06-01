@@ -444,9 +444,9 @@ int AliHLTTPCdEdxComponent::DoEvent
       
       for( UInt_t ic=0; ic<currTrack->fNPoints; ic++){	    
 	UInt_t id = currTrack->fPointIDs[ic];
-	int iSlice = AliHLTTPCClusterXYZ::RawID2Slice(id);
-	int iPatch = AliHLTTPCClusterXYZ::RawID2Partition(id);
-	int iCluster = AliHLTTPCClusterXYZ::RawID2Index(id);
+	int iSlice = AliHLTTPCGeometry::CluID2Slice(id);
+	int iPatch = AliHLTTPCGeometry::CluID2Partition(id);
+	int iCluster = AliHLTTPCGeometry::CluID2Index(id);
 	if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
 	  HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
 		   iSlice, iPatch,iCluster );

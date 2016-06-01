@@ -35,7 +35,6 @@
 #include "AliHLTTrackMCLabel.h"
 #include "AliHLTCTPData.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterXYZ.h"
 #include "AliTPCclusterMI.h"
@@ -547,9 +546,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliHLTTPCClusterXYZ &chlt = inPtrSP->fClusters[i];
 
 	UInt_t rawID = chlt.GetRawClusterID();
-	UInt_t sliceRaw = AliHLTTPCClusterXYZ::RawID2Slice( rawID );
-	UInt_t partitionRaw = AliHLTTPCClusterXYZ::RawID2Partition( rawID );
-	UInt_t indRaw = AliHLTTPCClusterXYZ::RawID2Index( rawID );
+	UInt_t sliceRaw = AliHLTTPCGeometry::CluID2Slice( rawID );
+	UInt_t partitionRaw = AliHLTTPCGeometry::CluID2Partition( rawID );
+	UInt_t indRaw = AliHLTTPCGeometry::CluID2Index( rawID );
 	
 	if( sliceRaw!=slice || partitionRaw!=partition || indRaw>=rawClustersBlock->fCount ){
 	  HLTWarning("Raw and XYZ cluster indexes does not match. Raw: slice %d, partition %d, cluster %d  XYZ: slice %d, partition %d, cluster %d", sliceRaw, partitionRaw, indRaw, slice, partition, i );
@@ -769,9 +768,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  for(UInt_t ic=0; ic<nClusters; ic++){	 
 
 	    UInt_t id      = clusterIDs[ic];	     
-	    int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
-	    int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
-	    int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+	    int iSlice = AliHLTTPCGeometry::CluID2Slice(id);
+	    int iPartition = AliHLTTPCGeometry::CluID2Partition(id);
+	    int iCluster = AliHLTTPCGeometry::CluID2Index(id);
 	    
 	    if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
 	      HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);

@@ -35,6 +35,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCTransform.h"
 #include "AliTPCParam.h"
+#include "AliHLTTPCGeometry.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -1242,7 +1243,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
-      fSpacePointData[counter].SetRawID( fCurrentSlice, patch, counter );
+      fSpacePointData[counter].SetRawID( AliHLTTPCGeometry::CreateClusterID(fCurrentSlice, patch, counter ) );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
 	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);
@@ -1405,7 +1406,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
-      fSpacePointData[counter].SetRawID( fCurrentSlice, patch, counter );
+      fSpacePointData[counter].SetRawID( AliHLTTPCGeometry::CreateClusterID(fCurrentSlice, patch, counter) );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
 	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);

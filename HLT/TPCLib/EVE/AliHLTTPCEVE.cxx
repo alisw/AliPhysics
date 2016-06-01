@@ -34,6 +34,7 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCSpacePointContainer.h"
+#include "AliHLTTPCGeometry.h"
 #include "TSystem.h"
 #include "TClass.h"
 #include "TString.h"
@@ -163,7 +164,7 @@ int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTSpacePointCont
   for (vector<AliHLTUInt32_t>::const_iterator element=clusterIDs.begin();
        element!=clusterIDs.end(); element++) {
     AliHLTUInt32_t clusterID=*element;
-    UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
+    UInt_t clusterSlice =AliHLTTPCGeometry::CluID2Slice(clusterID);
     //UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
     //UInt_t clusterNumber=AliHLTTPCSpacePointData::GetNumber(clusterID);
     Float_t phi     = ( clusterSlice + 0.5 ) * TMath::Pi() / 9.0;

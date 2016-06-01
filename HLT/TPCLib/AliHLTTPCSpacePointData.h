@@ -51,22 +51,8 @@ struct AliHLTTPCSpacePointData{
   UShort_t GetCharge()  const      {return fCharge;}
   UShort_t GetQMax()    const      {return fQMax;}
 
-  static UInt_t GetSlice( UInt_t Id )  { return (Id>>25)&0x3F; }
-  static UInt_t GetPatch( UInt_t Id )  { return (Id>>22)&0x7; }
-  static UInt_t GetNumber( UInt_t Id ) { return Id&0x003FFFFF; }
-  static UInt_t GetID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
-    return ((Slice&0x3F)<<25)+((Patch&0x7)<<22) + (Number&0x003FFFFF);
-  }
-
   AliHLTTPCSpacePointData() 
   : fX(0.), fY(0.), fZ(0.), fRawID(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fUsed(kFALSE), fTrackN(0) {}
-
-  void SetRawID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
-    fRawID = GetID( Slice, Patch, Number);
-  }
-  UInt_t GetSlice() const { return GetSlice(fRawID); }
-  UInt_t GetPatch() const { return GetPatch(fRawID); }
-  UInt_t GetRawNumber() const { return GetNumber(fRawID); }
 
   Bool_t IsUsed() const {return fUsed;}
   void SetUsed(Bool_t used) {fUsed=used;}

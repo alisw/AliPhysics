@@ -134,8 +134,8 @@ int AliHLTTPCClusterDumpComponent::DumpEvent( const AliHLTComponentEventData& ev
 	
 	for(int i=0;i<nSpacepoints;i++){
 	  UInt_t idCluster = clusters[i].GetRawID();
-	  Int_t slice = AliHLTTPCSpacePointData::GetSlice(idCluster);
-	  Int_t patch = AliHLTTPCSpacePointData::GetPatch(idCluster);
+	  Int_t slice = AliHLTTPCGeometry::CluID2Slice(idCluster);
+	  Int_t patch = AliHLTTPCGeometry::CluID2Partition(idCluster);
 	  
 	  dump << "" << endl;
 	  dump << "ClusterNumber: " << spacePointCounter << endl;

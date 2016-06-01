@@ -24,7 +24,6 @@
 #include "AliHLTTPCRawSpacePointContainer.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterFlagsData.h"
 #include "AliHLTTPCGeometry.h"
@@ -117,7 +116,7 @@ int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDat
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
   AliHLTUInt8_t part  = AliHLTTPCDefinitions::GetMinPatchNr( pDesc->fSpecification );
 
-  AliHLTUInt32_t decoderIndex=AliHLTTPCSpacePointData::GetID(slice, part, 0);
+  AliHLTUInt32_t decoderIndex=AliHLTTPCGeometry::CreateClusterID(slice, part, 0);
 
   AliHLTSpacePointPropertyGrid* pGrid=NULL;
   if (fMode&kModeSingle) {
@@ -144,7 +143,7 @@ int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDat
       const AliHLTTPCRawCluster &cl = rawClusters->fClusters[icl];
       AliHLTUInt32_t clusterID=~(AliHLTUInt32_t)0;
       // cluster ID from slice, partition and index
-      clusterID=AliHLTTPCSpacePointData::GetID(slice, part, icl);
+      clusterID=AliHLTTPCGeometry::CreateClusterID(slice, part, icl);
 
       if (fClusters.find(clusterID)==fClusters.end()) {
 	// new cluster
@@ -195,7 +194,7 @@ int AliHLTTPCRawSpacePointContainer::PopulateAccessGrid(AliHLTSpacePointProperty
   
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(mask);
   AliHLTUInt8_t partition  = AliHLTTPCDefinitions::GetMinPatchNr(mask);
-  AliHLTUInt32_t decoderIndex=AliHLTTPCSpacePointData::GetID(slice, partition, 0);
+  AliHLTUInt32_t decoderIndex=AliHLTTPCGeometry::CreateClusterID(slice, partition, 0);
   std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointBlock>::const_iterator block=fBlocks.find(decoderIndex);
   if (block==fBlocks.end()) {
     HLTError("can not find data block of id 0x%08x", mask);
@@ -220,7 +219,7 @@ int AliHLTTPCRawSpacePointContainer::PopulateAccessGrid(AliHLTSpacePointProperty
   
   for( UInt_t icl=0; icl<pDecoder->fCount; icl++ ){
     const AliHLTTPCRawCluster &cl = pDecoder->fClusters[icl];
-    AliHLTUInt32_t id=AliHLTTPCSpacePointData::GetID(slice, partition, icl);
+    AliHLTUInt32_t id=AliHLTTPCGeometry::CreateClusterID(slice, partition, icl);
     iResult=pGrid->AddSpacePoint(AliHLTSpacePointProperties(id), cl.GetPadRow(), cl.GetPad(), cl.GetTime());
     if (iResult<0)
       HLTError("AddSpacePoint 0x%08x %d %f %f failed: %d", id, cl.GetPadRow(), cl.GetPad(), cl.GetTime(), iResult);
@@ -234,7 +233,7 @@ const AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* AliHLTTPCRawSpace
   // get the access grid for a data block
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(mask);
   AliHLTUInt8_t part  = AliHLTTPCDefinitions::GetMinPatchNr(mask);
-  AliHLTUInt32_t decoderIndex=AliHLTTPCSpacePointData::GetID(slice, part, 0);
+  AliHLTUInt32_t decoderIndex=AliHLTTPCGeometry::CreateClusterID(slice, part, 0);
   std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointBlock>::const_iterator block=fBlocks.find(decoderIndex);
   if (block==fBlocks.end()) {
     HLTError("can not find data block of id 0x%08x", mask);
@@ -248,7 +247,7 @@ int AliHLTTPCRawSpacePointContainer::SetSpacePointPropertyGrid(AliHLTUInt32_t ma
   // set the access grid for a data block
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(mask);
   AliHLTUInt8_t part  = AliHLTTPCDefinitions::GetMinPatchNr(mask);
-  AliHLTUInt32_t decoderIndex=AliHLTTPCSpacePointData::GetID(slice, part, 0);
+  AliHLTUInt32_t decoderIndex=AliHLTTPCGeometry::CreateClusterID(slice, part, 0);
   std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointBlock>::iterator block=fBlocks.find(decoderIndex);
   if (block==fBlocks.end()) {
     HLTError("can not find data block of id 0x%08x", mask);
@@ -287,8 +286,8 @@ const vector<AliHLTUInt32_t>* AliHLTTPCRawSpacePointContainer::GetClusterIDs(Ali
   // create new collection
   vector<AliHLTUInt32_t>* selected=new vector<AliHLTUInt32_t>;
   if (!selected) return NULL;
-  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
-  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  UInt_t slice=AliHLTTPCGeometry::CluID2Slice(mask);
+  UInt_t partition=AliHLTTPCGeometry::CluID2Partition(mask);
   //HLTInfo("creating collection 0x%08x", mask);
 
   // the first cluster with number 0 has equal ID to mask unless
@@ -301,8 +300,8 @@ const vector<AliHLTUInt32_t>* AliHLTTPCRawSpacePointContainer::GetClusterIDs(Ali
     bAll=true;
   }
   for (; cl!=fClusters.end(); cl++) {
-    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
-    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    UInt_t s=AliHLTTPCGeometry::CluID2Slice(cl->first);
+    UInt_t p=AliHLTTPCGeometry::CluID2Partition(cl->first);
     if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
 	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       selected->push_back(cl->first);
@@ -399,7 +398,7 @@ float AliHLTTPCRawSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
 
   // phi can be derived directly from the id, no need to search
   // for existing cluster
-  int slice=AliHLTTPCSpacePointData::GetSlice(clusterID);
+  int slice=AliHLTTPCGeometry::CluID2Slice(clusterID);
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
@@ -445,12 +444,12 @@ AliHLTSpacePointContainer* AliHLTTPCRawSpacePointContainer::SelectByMask(AliHLTU
   std::auto_ptr<AliHLTTPCRawSpacePointContainer> c(new AliHLTTPCRawSpacePointContainer);
   if (!c.get()) return NULL;
 
-  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
-  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  UInt_t slice=AliHLTTPCGeometry::CluID2Slice(mask);
+  UInt_t partition=AliHLTTPCGeometry::CluID2Partition(mask);
   for (std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.begin();
        cl!=fClusters.end(); cl++) {
-    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
-    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    UInt_t s=AliHLTTPCGeometry::CluID2Slice(cl->first);
+    UInt_t p=AliHLTTPCGeometry::CluID2Partition(cl->first);
     if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
 	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       c->fClusters[cl->first]=cl->second;
@@ -632,8 +631,8 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   const AliHLTUInt32_t capacity=size;
   size=0;
 
-  int slice=AliHLTTPCSpacePointData::GetSlice(mask);
-  int part=AliHLTTPCSpacePointData::GetPatch(mask);
+  int slice=AliHLTTPCGeometry::CluID2Slice(mask);
+  int part=AliHLTTPCGeometry::CluID2Partition(mask);
 
   // Note: the offset parameter is only for the block descriptors, output pointer and size
   // consider already the offset
@@ -670,13 +669,13 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       // AliHLTTPCDataCompressionComponent::ForwardMCLabels
       continue;
     }
-    if ((unsigned)slice!=AliHLTTPCSpacePointData::GetSlice(clusterID.Data().fId) ||
-	(unsigned)part!=AliHLTTPCSpacePointData::GetPatch(clusterID.Data().fId)) {
+    if ((unsigned)slice!=AliHLTTPCGeometry::CluID2Slice(clusterID.Data().fId) ||
+	(unsigned)part!=AliHLTTPCGeometry::CluID2Partition(clusterID.Data().fId)) {
       HLTError("cluster id 0x%08x out of slice %d partition %d", clusterID.Data().fId, slice, part);
       iResult = -EBADMSG;
       break;
     }
-    int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
+    int index=AliHLTTPCGeometry::CluID2Index(clusterID.Data().fId);
 
     if( index<0 || index>= (int)pDecoder->fCount ){
       HLTError("cluster index %d id 0x%08x out of range %d", index, clusterID.Data().fId, (int)pDecoder->fCount);
@@ -858,7 +857,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
           break;
         }
 
-        int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
+        int index=AliHLTTPCGeometry::CluID2Index(clusterID.Data().fId);
         const AliHLTTPCRawCluster &input = pDecoder->fClusters[index];
 
         unsigned int tmpFlags = input.fFlags & ((1 << clusterFlagsData->fNumberOfFlags) - 1);

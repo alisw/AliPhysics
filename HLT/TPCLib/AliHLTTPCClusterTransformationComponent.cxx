@@ -357,7 +357,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       cXYZ.SetX(xyz[0]);
       cXYZ.SetY(xyz[1]);
       cXYZ.SetZ(xyz[2]);
-      cXYZ.SetRawClusterID( slice, partition, icl );
+      cXYZ.SetRawClusterID( AliHLTTPCGeometry::CreateClusterID( slice, partition, icl ) );
 	 
       HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fCount, cXYZ.GetX(), cXYZ.GetY(), cXYZ.GetZ(), (UInt_t)cl.GetCharge());
 	 

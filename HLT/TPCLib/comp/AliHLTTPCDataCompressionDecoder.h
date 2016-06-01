@@ -16,7 +16,6 @@
 #include "AliHLTMisc.h"
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCTrackGeometry.h"
@@ -446,8 +445,8 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	currentTrackPoint=rawTrackPoints.begin();
 	bEscape=true;
       }
-      if (AliHLTTPCGeometry::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId())) +
-	  AliHLTTPCSpacePointData::GetNumber(currentTrackPoint->GetId()) == row) {
+      if (AliHLTTPCGeometry::GetFirstRow(AliHLTTPCGeometry::CluID2Partition(currentTrackPoint->GetId())) +
+	  AliHLTTPCGeometry::CluID2Index(currentTrackPoint->GetId()) == row) {
 	break;
       }
       currentTrackPoint++;
@@ -456,8 +455,8 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       HLTError("decoding error, can not find track point on row %d", row);
       return -EFAULT;
     }
-    AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(currentTrackPoint->GetId());
-    AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId());
+    AliHLTUInt8_t slice = AliHLTTPCGeometry::CluID2Slice(currentTrackPoint->GetId());
+    AliHLTUInt8_t partition = AliHLTTPCGeometry::CluID2Partition(currentTrackPoint->GetId());
     // subtract first row of partition if padrow mode 'local'
     unsigned firstRow=fExtractGlobalPadrow?0:AliHLTTPCGeometry::GetFirstRow(partition);
     AliHLTUInt8_t nofClusters=0;

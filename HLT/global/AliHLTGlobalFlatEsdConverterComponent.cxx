@@ -892,9 +892,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       const UInt_t*clusterIDs = tpcTrack->GetPoints();
       for(UInt_t ic=0; ic<nClusters; ic++){	 
 	UInt_t id      = clusterIDs[ic];	     
-	UInt_t iSlice = AliHLTTPCClusterXYZ::RawID2Slice( id );
-	UInt_t iPartition = AliHLTTPCClusterXYZ::RawID2Partition( id );
-	UInt_t iCluster = AliHLTTPCClusterXYZ::RawID2Index( id );
+	UInt_t iSlice = AliHLTTPCGeometry::CluID2Slice( id );
+	UInt_t iPartition = AliHLTTPCGeometry::CluID2Partition( id );
+	UInt_t iCluster = AliHLTTPCGeometry::CluID2Index( id );
 	
 	if(iSlice<0 || iSlice>35 || iPartition<0 || iPartition>5){
 	  HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
@@ -922,9 +922,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	    
 	const AliHLTTPCClusterXYZ &chlt = clusterData->fClusters[iCluster];
 	UInt_t rawID = chlt.GetRawClusterID();
-	UInt_t sliceRaw = AliHLTTPCClusterXYZ::RawID2Slice( rawID );
-	UInt_t partitionRaw = AliHLTTPCClusterXYZ::RawID2Partition( rawID );
-	UInt_t indRaw = AliHLTTPCClusterXYZ::RawID2Index( rawID );
+	UInt_t sliceRaw = AliHLTTPCGeometry::CluID2Slice( rawID );
+	UInt_t partitionRaw = AliHLTTPCGeometry::CluID2Partition( rawID );
+	UInt_t indRaw = AliHLTTPCGeometry::CluID2Index( rawID );
 	
 	if( sliceRaw!=iSlice || partitionRaw!=iPartition || indRaw>=rawClustersBlock->fCount ){
 	  HLTWarning("Raw and XYZ cluster indexes does not match. Raw: slice %d, partition %d, cluster %d  XYZ: slice %d, partition %d, cluster %d", sliceRaw, partitionRaw, indRaw, iSlice, iPartition, iCluster );

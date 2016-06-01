@@ -676,7 +676,7 @@ AliHLTTPCRawCluster* AliHLTTPCDataPublisherComponent::AliRawClusterContainer::Ne
   data->fCount++;
   fDescriptors.back().fSize+=sizeof(AliHLTTPCRawCluster);
   if (fTrackModelClusters)
-    fTrackModelClusterMap.push_back(AliHLTTPCSpacePointData::GetID(slice, partition, fBlockClusterCount));
+    fTrackModelClusterMap.push_back( AliHLTTPCGeometry::CreateClusterID(slice, partition, fBlockClusterCount) );
   return data->fClusters+(data->fCount-1);
 }
 

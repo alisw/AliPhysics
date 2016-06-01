@@ -277,9 +277,9 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
        for(UInt_t i=0; i<element->GetNumberOfPoints(); i++){
            
       	   UInt_t idTrack   = hitnum[i];
-           Int_t sliceTrack = AliHLTTPCSpacePointData::GetSlice(idTrack);
-           Int_t patchTrack = AliHLTTPCSpacePointData::GetPatch(idTrack);
-           UInt_t pos	    = AliHLTTPCSpacePointData::GetNumber(idTrack);
+           Int_t sliceTrack = AliHLTTPCGeometry::CluID2Slice(idTrack);
+           Int_t patchTrack = AliHLTTPCGeometry::CluID2Partition(idTrack);
+           UInt_t pos	    = AliHLTTPCGeometry::CluID2Index(idTrack);
        	   
       	   if(sliceTrack<0 || sliceTrack>=36 || patchTrack<0 || patchTrack>5 ){
       	      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d", sliceTrack, patchTrack, idTrack);
