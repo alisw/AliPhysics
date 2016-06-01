@@ -1266,7 +1266,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     // Mixed event
     if (GetMixedEvent())
     {
-      evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
+      evtIndex = GetMixedEvent()->EventIndex(TMath::Abs(track->GetID())) ;
     }
     
     GetVertex(vert,evtIndex); 
@@ -1275,7 +1275,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),0);
     tr.SetDetectorTag(kCTS);
     tr.SetLabel(track->GetLabel());
-    tr.SetTrackLabel(track->GetID(),-1);
+    tr.SetTrackLabel(TMath::Abs(track->GetID()),-1);
     tr.SetChargedBit(track->Charge()>0);
 		
     AddAODParticle(tr);
