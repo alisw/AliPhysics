@@ -94,6 +94,7 @@ TPRegexp* fSendSelection = NULL;
 TPRegexp* fUnSendSelection = NULL;
 std::string fNameList = "";
 TString fTitleAnnotation = "";
+Bool_t fTitleAnnotationWithContainerName = kFALSE;
 
 AliHLTDataTopic fInfoTopic = kAliHLTDataTypeInfo;
 
@@ -167,6 +168,7 @@ const char* fUSAGE =
     " -list : a list of (full) names to send (arb. delimiter)\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
+    " -annotateTitleWithContainerName : prepend the container name to title\n"
     " -ZMQtimeout: when to timeout the sockets (milliseconds)\n"
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
@@ -916,6 +918,10 @@ Int_t ProcessOptionString(TString arguments)
     {
       fTitleAnnotation = value;
     }
+    else if (option.EqualTo("annotateTitleWithContainerName"))
+    {
+      fTitleAnnotationWithContainerName = value.Contains("0")?kFALSE:kTRUE;
+    }
     else if (option.EqualTo("AllowGlobalReset"))
     {
       fAllowGlobalReset=(value.Contains("0")||value.Contains("no"))?kFALSE:kTRUE;
@@ -1068,9 +1074,11 @@ Int_t GetObjects(AliAnalysisDataContainer* kont, std::vector<TObject*>* list, st
     TNamed* named = dynamic_cast<TNamed*>(analData);
     if (named) {
       std::string name = kontPrefix + analData->GetName();
-      std::string title = kontPrefix + analData->GetTitle();
       named->SetName(kontName.c_str());
-      named->SetTitle(title.c_str());
+      if (fTitleAnnotationWithContainerName) {
+        std::string title = kontPrefix + analData->GetTitle();
+        named->SetTitle(title.c_str());
+      }
       if (fVerbose) Printf("--in (from analysis container): %s (%s), %p",
           named->GetName(),
           named->ClassName(),
@@ -1116,9 +1124,11 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::stri
       TNamed* named = dynamic_cast<TNamed*>(tmp);
       if (named) {
         std::string name = kontPrefix + named->GetName();
-        std::string title = kontPrefix + named->GetTitle();
         named->SetName(name.c_str());
-        named->SetTitle(title.c_str());
+        if (fTitleAnnotationWithContainerName) {
+          std::string title = kontPrefix + named->GetTitle();
+          named->SetTitle(title.c_str());
+        }
         if (fVerbose) Printf("--in (from collection): %s (%s), %p",
                              named->GetName(),
                              named->ClassName(),
