@@ -26,6 +26,7 @@
 #include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliCalorimeterUtils.h"
+#include "AliFiducialCut.h" // detector enum definition
 #include "AliVEvent.h"
 #include "AliLog.h"
 
@@ -728,8 +729,8 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   // Get the 2 max indeces and do inv mass
   //---------------------------------------------------------------------
   
-  Int_t  calorimeter = AliCalorimeterUtils::kEMCAL;
-  if(cluster->IsPHOS()) calorimeter = AliCalorimeterUtils::kPHOS;
+  Int_t  calorimeter = AliFiducialCut::kEMCAL;
+  if(cluster->IsPHOS()) calorimeter = AliFiducialCut::kPHOS;
 
   if     ( nMax == 2 )
   {
