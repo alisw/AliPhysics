@@ -1967,10 +1967,13 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
 }
 
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, Double_t etaMin, Double_t etaMax, 
+Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, 
+					    Double_t etaMin, Double_t etaMax, 
 					    Double_t ptMin, Double_t ptMax,
 					    Int_t filtbit1, Int_t filtbit2, 
-					    Int_t minMult, Double_t phiStepSizeDeg){
+					    Int_t minMult, Double_t phiStepSizeDeg,
+					    Int_t nTrksToSkip, Int_t* idToSkip
+					    ){
   /// compute spherocity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -1987,7 +1990,15 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, Double_t etaMin, D
     Float_t pt  = tr->Pt();
     Float_t phi  = tr->Phi();
     if(eta<etaMin || eta>etaMax) continue;
-    if(pt<ptMin || pt>ptMax) continue;
+    if(pt<ptMin || pt>ptMax) continue;    
+    if(nTrksToSkip>0 && idToSkip){ 
+      Int_t trid = (Int_t)tr->GetID();
+      Bool_t keep=kTRUE;
+      for(Int_t jt=0; jt<nTrksToSkip; jt++){ 
+	if(trid==idToSkip[jt]) keep=kFALSE;
+      }
+      if(!keep) continue;
+    }
     Bool_t fb1 = tr->TestFilterBit(filtbit1);
     Bool_t fb2 = tr->TestFilterBit(filtbit2);
     if( !(fb1 || fb2) ) continue;    

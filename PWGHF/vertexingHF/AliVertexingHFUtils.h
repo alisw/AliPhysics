@@ -91,10 +91,13 @@ class AliVertexingHFUtils : public TObject{
   static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
   /// Functions for event shape variables
-  static Double_t GetSpherocity(AliAODEvent* aod, Double_t etaMin=-0.8, Double_t etaMax=0.8, 
+  static Double_t GetSpherocity(AliAODEvent* aod, 
+				Double_t etaMin=-0.8, Double_t etaMax=0.8, 
 				Double_t ptMin=0.15, Double_t ptMax=10.,
 				Int_t filtbit1=256, Int_t filtbit2=512, 
-				Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
+				Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
+				Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
+
   static Double_t GetSphericity(AliAODEvent* aod, Double_t etaMin=-0.8, Double_t etaMax=0.8, 
 				Double_t ptMin=0.15, Double_t ptMax=10.,
 				Int_t filtbit1=256, Int_t filtbit2=512, 
