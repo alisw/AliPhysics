@@ -1326,22 +1326,18 @@ Bool_t   AliTPCtracker::GetProlongation(Double_t x1, Double_t x2, Double_t x[5],
   //-----------------------------------------------------------------
   
   Double_t dx=x2-x1;
-
-  if (TMath::Abs(x[4]*x1 - x[2]) >= 0.999) {   
-    return kFALSE;
-  }
-
-  Double_t c1=x[4]*x1 - x[2], r1=TMath::Sqrt((1.-c1)*(1.+c1));
-  Double_t c2=x[4]*x2 - x[2], r2=TMath::Sqrt((1.-c2)*(1.+c2));  
+  Double_t c1=x[4]*x1 - x[2];
+  if (TMath::Abs(c1) >= 0.999) return kFALSE;
+  Double_t c2=x[4]*x2 - x[2];
+  if (TMath::Abs(c2) >= 0.999) return kFALSE;
+  Double_t r1=TMath::Sqrt((1.-c1)*(1.+c1)),r2=TMath::Sqrt((1.-c2)*(1.+c2));  
   y = x[0];
   z = x[1];
   
   Double_t dy = dx*(c1+c2)/(r1+r2);
-  Double_t dz = 0;
   //
   Double_t delta = x[4]*dx*(c1+c2)/(c1*r2 + c2*r1);
-  
-  dz = x[3]*asinf(delta)/x[4];
+  Double_t dz = x[3]*asinf(delta)/x[4];
   
   y+=dy;
   z+=dz;
