@@ -950,6 +950,19 @@ Int_t AliCaloTrackReader::GetVertexBC(const AliVVertex * vtx)
 }
 
 //_____________________________
+/// 
+/// Return track ID, different for ESD and AODs.
+/// See AliCaloTrackAODReader for AOD correspondent
+///
+/// \return track ID
+/// \param track: pointer to track
+//_____________________________
+Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track) 
+{
+  return track->GetID();
+}
+
+//_____________________________
 /// Init the reader. 
 /// Method to be called in AliAnaCaloTrackCorrMaker.
 //_____________________________

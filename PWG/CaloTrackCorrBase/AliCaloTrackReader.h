@@ -149,6 +149,8 @@ public:
   void             SetEMCALEMax (Float_t  en)              { SetEMCALPtMax(en)             ; }
   void             SetPHOSEMax  (Float_t  en)              { SetPHOSPtMax (en)             ; }
   
+  virtual Int_t    GetTrackID(AliVTrack* track) ;
+  
   // Distance to bad channels cut
   
   Float_t          GetEMCALBadChannelMinDist()       const { return fEMCALBadChMinDist     ; }

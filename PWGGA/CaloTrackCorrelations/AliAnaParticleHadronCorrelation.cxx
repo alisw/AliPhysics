@@ -3491,7 +3491,7 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
     // in the isolation conte
     if ( pLeading->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
     {
-      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Int_t  trackID   = GetReader()->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
       Bool_t contained = kFALSE;
       
       for(Int_t i = 0; i < 4; i++) 
@@ -4067,7 +4067,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     // in the isolation conte
     if ( aodParticle->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
     {
-      Int_t  trackID   = TMath::Abs(track->GetID()) ;
+      Int_t  trackID   = GetReader()->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
       Bool_t contained = kFALSE;
       
       for(Int_t i = 0; i < 4; i++) 
@@ -4082,7 +4082,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     Int_t evtIndex2 = 0 ;
     if (GetMixedEvent())
     {
-      evtIndex2 = GetMixedEvent()->EventIndex(TMath::Abs(track->GetID())) ;
+      evtIndex2 = GetMixedEvent()->EventIndex(GetReader()->GetTrackID(track)) ;
       if (evtIndex11 == evtIndex2 || evtIndex12 == evtIndex2 || evtIndex13 == evtIndex2 ) // photon and track from different events
         continue ;
       //vertex cut
