@@ -20,7 +20,7 @@
 // AliAnalysisTaskSE for D0 candidates (2Prongs)
 // and hadrons correlations
 //
-// Authors: Chiara Bianchin, chiara.bianchin@pd.infn.it (invariant mass)
+// Author:
 // Fabio Colamaria, fabio.colamaria@ba.infn.it (correlations)
 /////////////////////////////////////////////////////////////
 
@@ -53,6 +53,7 @@
 #include "AliAnalysisTaskSED0Correlations.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
+#include "AliHFOfflineCorrelator.h"
 
 using std::cout;
 using std::endl;
@@ -71,8 +72,14 @@ AliAnalysisTaskSE(),
   fLSBUppLim(), 
   fRSBLowLim(), 
   fRSBUppLim(),
+  fDaughTrackID(),
+  fDaughTrigNum(),
+  fSoftPiTrackID(),
+  fSoftPiTrigNum(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
+  fNtrigD(0),
+  fNsoftPi(0),
   fOutputMass(0),
   fOutputCorr(0),
   fOutputStudy(0),
@@ -96,6 +103,7 @@ AliAnalysisTaskSE(),
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fzVtx(0.),
   fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
   fKaonCorr(kFALSE),
@@ -108,7 +116,15 @@ AliAnalysisTaskSE(),
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
-  fPtAssocLimit(1.)
+  fPtAssocLimit(1.),
+  fFillTrees(kFALSE),
+  fFractAccME(100),
+  fBranchD(),
+  fBranchTr(),
+  fTreeD(0x0),
+  fTreeTr(0x0),
+  fTrackArray(0x0),
+  fTrackArrayFilled(kFALSE)     
 {
   // Default constructor
 
@@ -125,8 +141,14 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fLSBUppLim(), 
   fRSBLowLim(), 
   fRSBUppLim(),
+  fDaughTrackID(),
+  fDaughTrigNum(),
+  fSoftPiTrackID(),
+  fSoftPiTrigNum(),
   fEvents(0),
   fAlreadyFilled(kFALSE),
+  fNtrigD(0),
+  fNsoftPi(0),
   fOutputMass(0),
   fOutputCorr(0),
   fOutputStudy(0),
@@ -150,6 +172,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fIsRejectSDDClusters(0),
   fFillGlobal(kFALSE),
   fMultEv(0.),
+  fzVtx(0.),
   fSoftPiCut(kTRUE),
   fMEAxisThresh(kFALSE),
   fKaonCorr(kFALSE),
@@ -162,7 +185,15 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fMergePools(kFALSE),
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
-  fPtAssocLimit(1.)   
+  fPtAssocLimit(1.),
+  fFillTrees(kFALSE),
+  fFractAccME(100),
+  fBranchD(),
+  fBranchTr(),
+  fTreeD(0x0),
+  fTreeTr(0x0),
+  fTrackArray(0x0),
+  fTrackArrayFilled(kFALSE)        
 {
   // Default constructor
 
@@ -184,6 +215,10 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   DefineOutput(6,TList::Class());  //My private output
   // Output slot #7 writes into a AliHFAssociatedTrackCuts container (cuts)
   DefineOutput(7,AliHFAssociatedTrackCuts::Class());  //My private output
+  // Output slot #8 writes into a TTree (D0)
+  DefineOutput(8,TTree::Class());  //My private output
+  // Output slot #9 writes into a TTree (Tracks)
+  DefineOutput(9,TTree::Class());  //My private output
 }
 
 //________________________________________________________________________
@@ -197,8 +232,14 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fLSBUppLim(source.fLSBUppLim), 
   fRSBLowLim(source.fRSBLowLim), 
   fRSBUppLim(source.fRSBUppLim),
+  fDaughTrackID(source.fDaughTrackID),
+  fDaughTrigNum(source.fDaughTrigNum),
+  fSoftPiTrackID(source.fSoftPiTrackID),
+  fSoftPiTrigNum(source.fSoftPiTrigNum),
   fEvents(source.fEvents),
   fAlreadyFilled(source.fAlreadyFilled),
+  fNtrigD(source.fNtrigD),
+  fNsoftPi(source.fNsoftPi),
   fOutputMass(source.fOutputMass),
   fOutputCorr(source.fOutputCorr),
   fOutputStudy(source.fOutputStudy),
@@ -222,6 +263,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fIsRejectSDDClusters(source.fIsRejectSDDClusters),
   fFillGlobal(source.fFillGlobal),
   fMultEv(source.fMultEv),
+  fzVtx(source.fzVtx),
   fSoftPiCut(source.fSoftPiCut),
   fMEAxisThresh(source.fMEAxisThresh),
   fKaonCorr(source.fKaonCorr),
@@ -234,7 +276,15 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fMergePools(source.fMergePools),
   fUseDeff(source.fUseDeff),
   fUseTrackeff(source.fUseTrackeff),
-  fPtAssocLimit(source.fPtAssocLimit)   
+  fPtAssocLimit(source.fPtAssocLimit),
+  fFillTrees(source.fFillTrees),
+  fFractAccME(source.fFractAccME),
+  fBranchD(source.fBranchD),
+  fBranchTr(source.fBranchTr),
+  fTreeD(source.fTreeD),
+  fTreeTr(source.fTreeTr),   
+  fTrackArray(source.fTrackArray),
+  fTrackArrayFilled(source.fTrackArrayFilled)   
 {
   // Copy constructor
 }
@@ -295,8 +345,14 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fLSBUppLim = orig.fLSBUppLim; 
   fRSBLowLim = orig.fRSBLowLim;  
   fRSBUppLim = orig.fRSBUppLim; 
+  fDaughTrackID = orig.fDaughTrackID;
+  fDaughTrigNum = orig.fDaughTrigNum;
+  fSoftPiTrackID = orig.fSoftPiTrackID;
+  fSoftPiTrigNum = orig.fSoftPiTrigNum;
   fEvents = orig.fEvents;
   fAlreadyFilled = orig.fAlreadyFilled;
+  fNtrigD = orig.fNtrigD;
+  fNsoftPi = orig.fNsoftPi;
   fOutputMass = orig.fOutputMass;
   fOutputCorr = orig.fOutputCorr;
   fOutputStudy = orig.fOutputStudy;
@@ -320,6 +376,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fIsRejectSDDClusters = orig.fIsRejectSDDClusters;
   fFillGlobal = orig.fFillGlobal;
   fMultEv = orig.fMultEv;
+  fzVtx = orig.fzVtx;
   fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
   fKaonCorr = orig.fKaonCorr;
@@ -333,6 +390,14 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fUseDeff = orig.fUseDeff;
   fUseTrackeff = orig.fUseTrackeff;
   fPtAssocLimit = orig.fPtAssocLimit;
+  fFillTrees = orig.fFillTrees;
+  fFractAccME = orig.fFractAccME; 
+  fBranchD = orig.fBranchD;
+  fBranchTr = orig.fBranchTr;
+  fTreeD = orig.fTreeD;
+  fTreeTr = orig.fTreeTr;
+  fTrackArray = orig.fTrackArray;      
+  fTrackArrayFilled = orig.fTrackArrayFilled;
   
   return *this; //returns pointer of the class
 }
@@ -349,6 +414,8 @@ void AliAnalysisTaskSED0Correlations::Init()
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
   copyfCutsD0->SetName(nameoutput);
 
+  fTrackArray = new TObjArray();
+  
   //needer to clear completely the objects inside with Clear() method
   // Post the data
   PostData(3,copyfCutsD0);
@@ -360,6 +427,21 @@ void AliAnalysisTaskSED0Correlations::Init()
 //________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 {
+
+  if(fFillTrees) {
+
+    fBranchD = new AliHFCorrelationBranchD();
+    fBranchTr = new AliHFCorrelationBranchTr();
+
+    fTreeD = new TTree("fTreeD","TTree for D0 mesons");
+    fTreeD->Branch("branchD",&fBranchD);
+
+    fTreeTr = new TTree("fTreeTr","TTree for Associated Tracks");
+    fTreeTr->Branch("branchTr",&fBranchTr);
+
+    PostData(8,fTreeD);
+    PostData(9,fTreeTr);
+  }
 
   // Create the output container
   //
@@ -534,6 +616,8 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   PostData(4,fCounter);
   PostData(5,fOutputCorr);
   PostData(6,fOutputStudy);
+  PostData(8,fTreeD);
+  PostData(9,fTreeTr);
 
   return;
 }
@@ -565,7 +649,15 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   TClonesArray *inputArray=0;
 
   fMultEv = 0.; //reset event multiplicity
+  fzVtx = 0.; //reset event multiplicity
   fPoolNum = 0; //reset event pool
+
+  fDaughTrackID.clear(); //removes daugher IDs from previous event
+  fDaughTrigNum.clear(); //removes daugher trigger matchings from previous event
+  fSoftPiTrackID.clear(); //removes soft pion IDs from previous event
+  fSoftPiTrigNum.clear(); //removes soft pion trtigger matchings from previous event
+  fTrackArray->Clear(); //removes associated tracks selected from previous event
+  fTrackArrayFilled = kFALSE; //associated track array is now not filled
   
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
@@ -712,6 +804,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   //Pool definition
   Double_t MultipOrCent = fCorrelatorTr->GetCentrality();
   Double_t zVtxPosition = vtx1->GetZ();
+  fzVtx = zVtxPosition;
   if(!fMergePools) fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
   
   //vtx1->Print();
@@ -720,8 +813,10 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     fNentries->Fill(3);
   }
 
-  //Reset flag for tracks distributions fill
+  //Reset flag for tracks distributions fill and counter of D0 triggers and of Soft pions
   fAlreadyFilled=kFALSE;
+  fNtrigD=0;
+  fNsoftPi=0;
 
   //***** Loop over D0 candidates *****
   Int_t nInD0toKpi = inputArray->GetEntriesFast();
@@ -806,7 +901,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
  	         ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
 	         ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
             }
-	        CalculateCorrelations(d); //correlations on real data
+	        if(fFillTrees) FillTreeD0(d,aod); //only for offline correlations
+	        else CalculateCorrelations(d); //correlations on real data
 	      }
         } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
@@ -900,13 +996,14 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   }
   //End MCKineD0 case ************************************************
 
-  if(fMixing /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelD0 found! (fAlreadyFilled's role!)
+  if(fMixing && !fFillTrees /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelD0 found! (fAlreadyFilled's role!)
     Bool_t updatedTr = fCorrelatorTr->PoolUpdate();
     Bool_t updatedKc = fCorrelatorKc->PoolUpdate();
     Bool_t updatedK0 = fCorrelatorK0->PoolUpdate();
     if(!updatedTr || !updatedKc || !updatedK0) AliInfo("Pool was not updated");
   }
-
+  if(fFillTrees && fAlreadyFilled) FillTreeTracks(aod);
+  
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
 
@@ -916,7 +1013,9 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   PostData(4,fCounter);
   PostData(5,fOutputCorr);
   PostData(6,fOutputStudy);
-
+  if(fFillTrees) PostData(8,fTreeD);
+  if(fFillTrees) PostData(9,fTreeTr);
+  
   return;
 }
 
@@ -1208,6 +1307,7 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     }  	  
 
     if(!fMixing) {
+     if(!fFillTrees) {
       for(Int_t k=0; k<nPoolForHistos; k++) {    	    
     	    
         //THnSparse plots: correlations for various invariant mass (MC and data)
@@ -1472,41 +1572,42 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
           fOutputCorr->Add(hCorrWeig_Non);
         }
       } //end of fSpeed
-    
-    //pT distribution histos
-    namePlot = "hist_Pt_Charg_Bin"; namePlot+=i;
-    TH1F *hPtC = new TH1F(namePlot.Data(), "Charged track pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
-    hPtC->SetMinimum(0);
-    fOutputStudy->Add(hPtC);
+     } //end of !fFillTrees
 
-    namePlot = "hist_Pt_Kcharg_Bin"; namePlot+=i;
-    TH1F *hPtH = new TH1F(namePlot.Data(), "Hadrons pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
-    hPtH->SetMinimum(0);
-    fOutputStudy->Add(hPtH);
+     //pT distribution histos
+     namePlot = "hist_Pt_Charg_Bin"; namePlot+=i;
+     TH1F *hPtC = new TH1F(namePlot.Data(), "Charged track pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
+     hPtC->SetMinimum(0);
+     fOutputStudy->Add(hPtC);
 
-    namePlot = "hist_Pt_K0_Bin"; namePlot+=i;
-    TH1F *hPtK = new TH1F(namePlot.Data(), "Kaons pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
-    hPtK->SetMinimum(0);
-    fOutputStudy->Add(hPtK);
+     namePlot = "hist_Pt_Kcharg_Bin"; namePlot+=i;
+     TH1F *hPtH = new TH1F(namePlot.Data(), "Hadrons pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
+     hPtH->SetMinimum(0);
+     fOutputStudy->Add(hPtH);
 
-    //Events multiplicity
-    Double_t yAxisMult[17] = {0, 4, 8, 12, 16, 20, 28, 36, 44, 52, 58, 66, 80, 100, 150, 200, 300}; 
-    namePlot = "hMultiplEvt_Bin"; namePlot+=i;
-    TH1F *hMultEv = new TH1F(namePlot.Data(), "Event multiplicity",16,yAxisMult);
-    hMultEv->SetMinimum(0);
-    fOutputStudy->Add(hMultEv);
+     namePlot = "hist_Pt_K0_Bin"; namePlot+=i;
+     TH1F *hPtK = new TH1F(namePlot.Data(), "Kaons pT (in D0 evs); p_{T} (GeV/c)",240,0.,12.);
+     hPtK->SetMinimum(0);
+     fOutputStudy->Add(hPtK);
 
-    //D* feeddown pions rejection histos
-    namePlot = "hDstarPions_Bin"; namePlot+=i;
-    TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut; # Tracks",2,0.,2.,150,1.5848,2.1848);
-    hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
-    hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
+     //Events multiplicity
+     Double_t yAxisMult[17] = {0, 4, 8, 12, 16, 20, 28, 36, 44, 52, 58, 66, 80, 100, 150, 200, 300}; 
+     namePlot = "hMultiplEvt_Bin"; namePlot+=i;
+     TH1F *hMultEv = new TH1F(namePlot.Data(), "Event multiplicity",16,yAxisMult);
+     hMultEv->SetMinimum(0);
+     fOutputStudy->Add(hMultEv);
+
+     //D* feeddown pions rejection histos
+     namePlot = "hDstarPions_Bin"; namePlot+=i;
+     TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut; # Tracks",2,0.,2.,150,1.5848,2.1848);
+     hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
+     hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
     hDstarPions->SetMinimum(0);
     fOutputStudy->Add(hDstarPions); 
  
-    }
+    } //end of !fMixing
 
-    if(fMixing) {
+    if(fMixing && !fFillTrees) {
       for(Int_t k=0; k<nPoolForHistos; k++) {     	    
         //THnSparse plots for event mixing!
         namePlot="hPhi_K0_Bin";
@@ -2602,6 +2703,189 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod) {
+
+  Int_t ptbin = PtBinCorr(d->Pt());
+  if(ptbin < 0) return;
+
+  Bool_t allowD0 = 0;
+  Bool_t allowD0bar = 0;
+  Double_t mD0, mD0bar;
+  d->InvMassD0(mD0,mD0bar);
+  fBranchD->invMass_D = 0;
+
+  if(fSpeed) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
+    if(ptbin<9) {	    
+      if(mD0 > fSignLeft_LowPt && mD0 < fSignRight_LowPt) allowD0 = 1;
+      if(mD0bar > fSignLeft_LowPt && mD0bar < fSignRight_LowPt) allowD0bar = 1;
+    } else {
+      if(mD0 > fSignLeft_HighPt && mD0 < fSignRight_HighPt) allowD0 = 1;
+      if(mD0bar > fSignLeft_HighPt && mD0bar < fSignRight_HighPt) allowD0bar = 1;
+    }
+    if(mD0 > fLSBLowLim.at(ptbin) && mD0 < fLSBUppLim.at(ptbin)) allowD0 = 1; //in LSB bin!
+    if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) allowD0bar = 1; //in LSB bin!
+    if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) allowD0 = 1; //in RSB bin!
+    if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) allowD0bar = 1; //in RSB bin!
+  } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
+  else if(!fSpeed) { // Full Minv range in THnSparse!
+    if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
+    if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
+  }   
+
+  //Fill TTree for accepted candidates
+  //**** NOTE: each candidate has a IDtrig, regardless of how many hypotheses are allowed (if both, the TTree is filled 2 times, but both times with the same IDtrig) ****//
+  if(fIsSelectedCandidate>0 && (allowD0 || allowD0bar)) {
+    ResetBranchD();
+    fBranchD->phi_D = (Float_t)d->Phi();
+    fBranchD->eta_D = (Float_t)d->Eta();
+    fBranchD->pT_D = (Float_t)d->Pt();
+    fBranchD->mult_D = (Float_t)fMultEv;
+    fBranchD->zVtx_D = (Float_t)fzVtx;
+    fBranchD->period_D = (UInt_t)aod->GetPeriodNumber();
+    fBranchD->orbit_D = (UInt_t)aod->GetOrbitNumber();
+    fBranchD->BC_D = (UShort_t)aod->GetBunchCrossNumber();
+    fBranchD->IDtrig_D = (Short_t)fNtrigD;
+    fBranchD->sel_D = (Short_t)1; //******DUMMY FOR THE MOMENT******* - To be used for multiple selection fills (2^n = 1 if selction n is ok)
+    if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) && allowD0) {
+      fBranchD->invMass_D = (Float_t)mD0;
+      fTreeD->Fill();
+    }
+    if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3) && allowD0bar) {
+      fBranchD->invMass_D = (Float_t)mD0bar;
+      fTreeD->Fill();
+    }
+
+    //store daughter ID, so that are not included in TTree of tracks, and tags the corresponding number of the D-meson trigger
+    fDaughTrackID.push_back(((AliVTrack*)d->GetDaughter(0))->GetID());
+    fDaughTrigNum.push_back(fNtrigD);
+    fDaughTrackID.push_back(((AliVTrack*)d->GetDaughter(1))->GetID());
+    fDaughTrigNum.push_back(fNtrigD);
+
+    if(!fTrackArrayFilled) {
+      fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, needed for soft pion rejection (for the first trigger only)
+      fTrackArrayFilled = kTRUE;
+    }
+ 
+    //soft pion rejection
+    for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++) { // looping on track candidates
+      AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
+      if(fSoftPiCut && !track->CheckSoftPi()) {  //identifies soft pions for the trigger under analysis and associate it to the track
+        fSoftPiTrackID.push_back(track->GetID()); //tags tha track id as a soft pion
+        fSoftPiTrigNum.push_back(fNtrigD); //identifies whose trigger the track is a softpion
+        fNsoftPi++;
+      }
+    }
+
+    fNtrigD++; //increase by 1 the index of D0 triggers in the event
+  } //end of if for tree filling
+
+  fAlreadyFilled++; //A D0 was selected in the event (even if can be also outside mass range)! Enables saving the tracks of the event in the ME offline approach
+
+  return;
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
+
+  if(!fTrackArrayFilled) {
+    fTrackArray = fCorrelatorTr->AcceptAndReduceTracks(aod); //track selection, if not already done in FillTreeD0
+    fTrackArrayFilled = kTRUE;
+  }
+
+  for(Int_t iTrack = 0; iTrack<fTrackArray->GetEntriesFast(); iTrack++){ // looping on track candidates
+      
+    AliReducedParticle* track = (AliReducedParticle*)fTrackArray->At(iTrack);
+/*
+      if(fReadMC) {
+        AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
+        if (!trkKine) continue;
+        if (!trkKine->IsPhysicalPrimary()) {
+ 	  ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(1.);  
+  	  continue; //reject the Reco track if correspondent Kine track is not primary
+        } else ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(0.);
+      }
+*/
+
+    //skip D-meson trigger daughters
+    Short_t trigID = -1;
+    for(Int_t iID=0; iID<(int)fDaughTrackID.size(); iID++) {
+      if(track->GetID() == fDaughTrackID.at(iID)) trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+    }
+
+    //tags soft pions in the same way as daughter tracks (for the corresponding trigger)
+    for(Int_t iID=0; iID<(int)fSoftPiTrackID.size(); iID++) {
+      if(track->GetID() == fSoftPiTrackID.at(iID)) trigID = fSoftPiTrigNum.at(iID);
+    }    
+
+    if(!AcceptTrackForMEOffline(track->Pt())) continue;
+
+    //Fill TTree for accepted candidates
+    ResetBranchTracks();
+    fBranchTr->phi_Tr = (Float_t)track->Phi();
+    fBranchTr->eta_Tr = (Float_t)track->Eta();
+    fBranchTr->pT_Tr = (Float_t)track->Pt();
+    fBranchTr->mult_Tr = (Float_t)fMultEv;
+    fBranchTr->zVtx_Tr = (Float_t)fzVtx;
+    fBranchTr->period_Tr = (UInt_t)aod->GetPeriodNumber();
+    fBranchTr->orbit_Tr = (UInt_t)aod->GetOrbitNumber();
+    fBranchTr->BC_Tr = (UShort_t)aod->GetBunchCrossNumber();
+    fBranchTr->IDtrig_Tr = (Short_t)trigID;
+    fBranchTr->sel_Tr = (Short_t)1; //******DUMMY FOR THE MOMENT******* - To be used for multiple selection fills (2^n = 1 if selction n is ok)
+    fTreeTr->Fill();
+
+  } //end of track loop
+
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::ResetBranchD() {
+
+  fBranchD->phi_D = 0.;
+  fBranchD->eta_D = 0.;
+  fBranchD->pT_D = 0.;
+  fBranchD->invMass_D = 0.;
+  fBranchD->mult_D = 0.;
+  fBranchD->zVtx_D = 0.;
+  fBranchD->period_D = 0;
+  fBranchD->orbit_D = 0;
+  fBranchD->BC_D = 0;
+  fBranchD->IDtrig_D = 0;
+  fBranchD->sel_D = 0;
+
+  return;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Correlations::ResetBranchTracks() {
+
+  fBranchTr->phi_Tr = 0.;
+  fBranchTr->eta_Tr = 0.;
+  fBranchTr->pT_Tr = 0.;
+  fBranchTr->mult_Tr = 0.;
+  fBranchTr->zVtx_Tr = 0.;
+  fBranchTr->period_Tr = 0;
+  fBranchTr->orbit_Tr = 0;
+  fBranchTr->BC_Tr = 0;
+  fBranchTr->IDtrig_Tr = 0;
+  fBranchTr->sel_Tr = 0;
+
+  return;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSED0Correlations::AcceptTrackForMEOffline(Double_t pt) {
+
+  pt = pt*1000-(long)(pt*1000); //to extract decimals from 4° onwards - I.e. a.bcdefghi --> 0.efghi
+  pt = (long)(pt*100); //to take only 4° and 5° decimal digits - I.e. 0.efghi --> ef
+
+  if(pt > fFractAccME) return kFALSE; //reject track
+  else return kTRUE; //accept track for offline ME
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
 
   cout << "--------------------------\n";
@@ -2654,6 +2938,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "All entries in Pool0 = "<<fMergePools<<"\n";
   cout << "--------------------------\n";  
   cout << "PtBin associated maximum edge = "<<fPtAssocLimit<<"\n";
+  cout << "--------------------------\n";    
+  cout << "TTree filling = "<<fFillTrees<<"\n";
   cout << "--------------------------\n";  
 }
 

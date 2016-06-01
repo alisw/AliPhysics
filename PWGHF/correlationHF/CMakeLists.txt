@@ -42,6 +42,7 @@ set(SRCS
     AliAnalysisTaskDxHFECorrelation.cxx
     AliHFAssociatedTrackCuts.cxx
     AliHFCorrelator.cxx
+    AliHFOfflineCorrelator.cxx
     AliReducedParticle.cxx
     AliAnalysisTaskDStarCorrelations.cxx
     AliAnalysisTaskSED0Correlations.cxx
