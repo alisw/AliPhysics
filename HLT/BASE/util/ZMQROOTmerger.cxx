@@ -135,7 +135,7 @@ std::string fZMQconfigTRIG = "PAIR@inproc://trigger";
 pthread_t fTRIGthread = NULL;
 void* runTRIGthread(void*);
 
-const char* fUSAGE = 
+const char* fUSAGE =
     "ZMQROOTmerger options: Merge() all ROOT mergeables in the message.\n"
     "merge based on what GetName() returns, the merged data can be retrieved at any time.\n"
     " -in : data in, zmq config string, e.g. PUSH>tcp://localhost:123123\n"
@@ -157,7 +157,7 @@ const char* fUSAGE =
     " -AllowControlSequences : allow control seqs (CONFIG messages)\n"
     " -MaxObjects : merge after this many objects are in (default 1)\n"
     " -reset : reset NOW\n"
-    " -select : set the selection regex for sending out objects,\n" 
+    " -select : set the selection regex for sending out objects,\n"
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
     " -list : a list of (full) names to send (arb. delimiter)\n"
@@ -192,7 +192,7 @@ Int_t Run()
   while(!fgTerminationSignaled)
   {
     Int_t nSockets=5;
-    zmq_pollitem_t sockets[] = { 
+    zmq_pollitem_t sockets[] = {
       { fZMQin, 0, ZMQ_POLLIN, 0 },
       { fZMQout, 0, ZMQ_POLLIN, 0 },
       { fZMQmon, 0, ZMQ_POLLIN, 0 },
@@ -229,13 +229,13 @@ Int_t Run()
       fBytesIN += alizmq_msg_recv(&message, fZMQin, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_socket_type(fZMQin)==ZMQ_REP) 
+        if (alizmq_socket_type(fZMQin)==ZMQ_REP)
         { HandleRequest(i, fZMQin); }
         else
         { pushBack += HandleDataIn(i, fZMQout); }
       }
       alizmq_msg_close(&message);
-      
+
       if (pushBack>0)
       {
         if (fVerbose) printf("pushback!\n");
@@ -252,7 +252,7 @@ Int_t Run()
       fBytesIN += alizmq_msg_recv(&message, fZMQout, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_socket_type(fZMQout)==ZMQ_REP) 
+        if (alizmq_socket_type(fZMQout)==ZMQ_REP)
         { HandleRequest(i, fZMQout); }
         else
         { pushBack += HandleDataIn(i, fZMQin); }
@@ -265,7 +265,7 @@ Int_t Run()
         SetLastPushBackTime();
       }
     }//socket 1
-    
+
     //data present socket 2 - mon
     if (sockets[2].revents & ZMQ_POLLIN)
     {
@@ -274,7 +274,7 @@ Int_t Run()
       fBytesIN += alizmq_msg_recv(&message, fZMQmon, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
-        if (alizmq_socket_type(fZMQmon)==ZMQ_REP) 
+        if (alizmq_socket_type(fZMQmon)==ZMQ_REP)
         { HandleRequest(i, fZMQmon); }
         else
         { pushBack += HandleDataIn(i, fZMQmon); }
@@ -287,7 +287,7 @@ Int_t Run()
         SetLastPushBackTime();
       }
     }//socket 2
-    
+
     //data present socket 3 - sync
     if (sockets[3].revents & ZMQ_POLLIN)
     {
@@ -299,7 +299,7 @@ Int_t Run()
       }
       alizmq_msg_close(&message);
     }//socket 3
-    
+
     //data present socket 4 - trig
     if (sockets[4].revents & ZMQ_POLLIN)
     {
@@ -368,7 +368,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
     //on run change
     if (runnumber != fRunNumber)
     {
-      if (fAllowResetAtSOR) 
+      if (fAllowResetAtSOR)
       {
         if (ResetOutputData(fAllowResetAtSOR)>0)
         {
@@ -386,13 +386,13 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       {
         fBytesOUT += alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
       }
-      fRunNumber = runnumber; 
+      fRunNumber = runnumber;
       DoSend(socket);
     }//on run change
 
     return 1;
   }
-  
+
   return 0;
 }
 
@@ -420,10 +420,10 @@ Int_t DoReply(aliZMQmsg::iterator block, void* socket)
   fResetOnRequest = kFALSE;
   fSchemaOnRequest = false;
   fNameList.clear();
-  if (fVerbose && (fSendSelection || fUnSendSelection)) 
+  if (fVerbose && (fSendSelection || fUnSendSelection))
   {
     Printf("unsetting include=%s, exclude=%s",
-        (fSendSelection)?fSendSelection->GetPattern().Data():"", 
+        (fSendSelection)?fSendSelection->GetPattern().Data():"",
         (fUnSendSelection)?fUnSendSelection->GetPattern().Data():"");
   }
   delete fSendSelection; fSendSelection=NULL;
@@ -439,7 +439,7 @@ int AddNewObject(const char* name, TObject* object, TMap* map)
   {
     TNamed* named = dynamic_cast<TNamed*>(object);
     if (!named) return 0;
-    
+
     TString title = named->GetTitle();
     title = fTitleAnnotation + " " + title;
     named->SetTitle(title);
@@ -476,7 +476,7 @@ Int_t AddObject(TObject* object)
     if (fVerbose) Printf("adding %s to fMergeObjectMap as first instance", name);
     AddNewObject(name, object, &fMergeObjectMap);
   }
-  else if (!mergingList && !fCacheOnly) 
+  else if (!mergingList && !fCacheOnly)
   {
     if (fVerbose) Printf("adding a new list %s to fMergeListMap", name);
     mergingList = new TList();
@@ -537,17 +537,17 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
       if (container) {
         //unpack an analysis data container
         if (fVerbose) printf("unpacking analysis container %s %p\n", container->GetName(), container);
-        GetObjects(container, &fListOfObjects);      
+        GetObjects(container, &fListOfObjects);
         delete container;
         break;
-      } 
+      }
     }
 
     if (TCollection* collection = dynamic_cast<TCollection*>(object)) {
       //unpack a collection
       if (fUnpackCollections) {
         if (fVerbose) printf("unpacking collection %s %p\n", collection->GetName(), collection);
-        GetObjects(collection, &fListOfObjects);      
+        GetObjects(collection, &fListOfObjects);
         delete collection;
         break;
       } else {
@@ -572,7 +572,7 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
   {
     gettimeofday(&fCurrentTimeStruct, NULL);
     unsigned long long currentTime = 1000*fCurrentTimeStruct.tv_sec+fCurrentTimeStruct.tv_usec/1000;
-    
+
     unsigned long timeInterval = currentTime - fLastPushBackTime;
     if (timeInterval >= fPushbackPeriod)
     {
@@ -616,7 +616,7 @@ Int_t DoRequest(void*& socket, TString* config)
     if (fVerbose) Printf("sending an empty request");
     alizmq_msg_send("", "", socket, 0);
   }
-  
+
   fLastRequestTime = currentTime;
   return 0;
 }
@@ -638,7 +638,7 @@ Int_t DoSend(void* socket)
   Int_t rc = 0;
   TObject* object = NULL;
   TObject* key = NULL;
-  
+
   TIter mapIter(&fMergeObjectMap);
   while ((key = mapIter.Next()))
   {
@@ -652,18 +652,18 @@ Int_t DoSend(void* socket)
     Bool_t unselected = kFALSE;
     if (fSendSelection) selected = fSendSelection->Match(objectName);
     if (fUnSendSelection) unselected = fUnSendSelection->Match(objectName);
-    if (!fNameList.empty()) unselected = unselected || 
+    if (!fNameList.empty()) unselected = unselected ||
                                          (fNameList.find(objectName)==std::string::npos);
     if (!selected || unselected)
     {
-      if (fVerbose) Printf("     object %s did NOT make the selection [%s] && ![%s]", 
+      if (fVerbose) Printf("     object %s did NOT make the selection [%s] && ![%s]",
                            objectName, (fSendSelection)?fSendSelection->GetPattern().Data():"",
                            (fUnSendSelection)?fUnSendSelection->GetPattern().Data():"");
       continue;
     }
 
     rc = alizmq_msg_add(&message, &topic, object, fCompression, fSchema);
-    if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest )) 
+    if (fResetOnSend || ( fResetOnRequest && fAllowResetOnRequest ))
     {
       if (fClearOnReset) {
         if (fVerbose) {printf("resetting %s\n",objectName);}
@@ -700,7 +700,7 @@ void SetLastPushBackTime()
   gettimeofday(&fCurrentTimeStruct, NULL);
   fLastPushBackTime = 1000*fCurrentTimeStruct.tv_sec+fCurrentTimeStruct.tv_usec/1000;
 }
-    
+
 //______________________________________________________________________________
 void ClearMergeListMap()
 {
@@ -715,7 +715,7 @@ void ClearMergeListMap()
 //______________________________________________________________________________
 int ResetOutputData(Bool_t force)
 {
-  if (fAllowGlobalReset || force) 
+  if (fAllowGlobalReset || force)
   {
     if (fClearOnReset) {
       if (fVerbose) Printf("Clearing the merger by calling Reset() on all data");
@@ -735,7 +735,7 @@ int ClearOutputData()
 {
   TObject* object = NULL;
   TObject* key = NULL;
-  
+
   TIter mapIter(&fMergeObjectMap);
   while ((key = mapIter.Next()))
   {
@@ -813,9 +813,9 @@ Int_t ProcessOptionString(TString arguments)
   aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
   for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
-    const TString& option = i->first; 
+    const TString& option = i->first;
     const TString& value = i->second;
-    if (option.EqualTo("reset")) 
+    if (option.EqualTo("reset"))
     {
       ResetOutputData();
     }
@@ -970,7 +970,7 @@ Int_t ProcessOptionString(TString arguments)
 
   delete options; //tidy up
 
-  return nOptions; 
+  return nOptions;
 }
 
 //_______________________________________________________________________________________
@@ -986,7 +986,7 @@ int main(Int_t argc, char** argv)
   if (signal(SIGQUIT, sig_handler) == SIG_ERR)
   printf("\ncan't catch SIGQUIT\n");
   if (signal(SIGTERM, sig_handler) == SIG_ERR)
-  printf("\ncan't catch SIGTERM\n");  
+  printf("\ncan't catch SIGTERM\n");
 
   //process args
   TString argString = AliOptionParser::GetFullArgString(argc,argv);
@@ -1192,7 +1192,7 @@ void* runTRIGthread(void*)
     if (sockets[0].revents & ZMQ_POLLIN) {
       zmq_recv(trig,&delay,sizeof(delay),0);
     }
-    
+
   }
   alizmq_socket_close(trig, 0);
   if (fVerbose) printf("stopping trigger thread\n");

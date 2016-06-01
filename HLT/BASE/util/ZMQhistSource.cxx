@@ -48,8 +48,8 @@ bool fVerbose = false;
 int fCompression = 0;
 TObjArray* fCollection = NULL;
 AliAnalysisDataContainer* fAnalContainer = NULL;
-    
-const char* fUSAGE = 
+
+const char* fUSAGE =
     "ZMQhstSource: send a randomly filled ROOT histogram\n"
     "options: \n"
     " -out : data out\n"
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     printf("%s", fUSAGE);
     return 1;
   }
-  
+
   //ZMQ init
   fZMQcontext = zmq_ctx_new();
   fZMQsocketModeOUT = alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), -1);
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
   {
     fAnalContainer->SetData(fCollection);
   }
-  
+
   if (fSchema) {
     if (fVerbose) printf("enabling schema for AliHLTMessage\n");
   }
@@ -121,22 +121,22 @@ int main(int argc, char** argv)
   int iterations=0;
   while(fCount==0 || iterations++<fCount)
   {
-    for (int i = 0; i < fNHistos; i++) 
+    for (int i = 0; i < fNHistos; i++)
     {
       fHistograms[i]->Reset();
       fHistograms[i]->FillRandom("histDistribution", fNentries);
     }
-    
+
     AliHLTDataTopic topic = kAliHLTDataTypeTObject;
-    
+
     if (fZMQsocketModeOUT==ZMQ_REP)
     {
       //receive the request - could be multipart
       aliZMQmsgStr request;
       rc = alizmq_msg_recv(&request, fZMQout, 0);
     }
-    
-    if (fRunNumber>=0) 
+
+    if (fRunNumber>=0)
     {
       TString runInfo = "run=";
       runInfo+=fRunNumber;
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      for (int i = 0; i < fNHistos; i++) 
+      for (int i = 0; i < fNHistos; i++)
       {
         rc = alizmq_msg_add(&message, &topic, fHistograms[i], fCompression, fSchema);
         if (rc < 0)
@@ -193,7 +193,7 @@ int ProcessOptionString(TString arguments)
     //Printf("  %s : %s", i->first.data(), i->second.data());
     const TString& option = i->first;
     const TString& value = i->second;
-    if (option.EqualTo("name")) 
+    if (option.EqualTo("name"))
     {
       fHistName = value;
     }
@@ -264,6 +264,6 @@ int ProcessOptionString(TString arguments)
   }
   delete options; //tidy up
 
-  return nOptions; 
+  return nOptions;
 }
 
