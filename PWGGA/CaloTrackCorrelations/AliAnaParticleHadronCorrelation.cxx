@@ -3486,8 +3486,21 @@ Bool_t AliAnaParticleHadronCorrelation::IsTriggerTheEventLeadingParticle()
   {
     AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
     
-    if(track->GetID() == pLeading->GetTrackLabel(0) || track->GetID() == pLeading->GetTrackLabel(1) ||
-       track->GetID() == pLeading->GetTrackLabel(2) || track->GetID() == pLeading->GetTrackLabel(3)   ) continue ;
+    // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+    // do not count the candidate or the daughters of the candidate
+    // in the isolation conte
+    if ( pLeading->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
+    {
+      Int_t  trackID   = track->GetID() ;
+      Bool_t contained = kFALSE;
+      
+      for(Int_t i = 0; i < 4; i++) 
+      {
+        if( trackID == pLeading->GetTrackLabel(i) ) contained = kTRUE;
+      }
+      
+      if ( contained ) continue ;
+    }
     
     fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
     Float_t pt   = fTrackVector.Pt();
@@ -4049,10 +4062,21 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     //Select only hadrons in pt range
     if(pt < fMinAssocPt || pt > fMaxAssocPt) continue ;
     
-    //remove trigger itself for correlation when use charged triggers
-    if( track->GetID() == aodParticle->GetTrackLabel(0) || track->GetID() == aodParticle->GetTrackLabel(1) ||
-       track->GetID() == aodParticle->GetTrackLabel(2) || track->GetID() == aodParticle->GetTrackLabel(3)   )
-      continue ;
+    // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+    // do not count the candidate or the daughters of the candidate
+    // in the isolation conte
+    if ( aodParticle->GetDetectorTag() == kCTS ) // make sure conversions are tagged as kCTS!!!
+    {
+      Int_t  trackID   = track->GetID() ;
+      Bool_t contained = kFALSE;
+      
+      for(Int_t i = 0; i < 4; i++) 
+      {
+        if( trackID == aodParticle->GetTrackLabel(i) ) contained = kTRUE;
+      }
+      
+      if ( contained ) continue ;
+    }
     
     //Only for mixed event frame
     Int_t evtIndex2 = 0 ;
