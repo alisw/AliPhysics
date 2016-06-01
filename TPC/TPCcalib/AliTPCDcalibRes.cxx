@@ -33,10 +33,11 @@ const char* AliTPCDcalibRes::kClosureTestFileName  = "closureTestSect";
 const char* AliTPCDcalibRes::kStatOut      = "voxelStat";
 const char* AliTPCDcalibRes::kResOut       = "voxelRes";
 const char* AliTPCDcalibRes::kDriftFileName= "fitDrift";
-const float AliTPCDcalibRes::kDeadZone = 1.5;
+const float AliTPCDcalibRes::kDeadZone = 1.5f;
 const float AliTPCDcalibRes::kZeroK = 1e-6;
 const float AliTPCDcalibRes::kInvalidR = 10.f;
-const float AliTPCDcalibRes::kInvalidRes = -900;
+const float AliTPCDcalibRes::kInvalidRes = -900.0f;
+const float AliTPCDcalibRes::kMaxGaussStdDev = 5.0f;
 const ULong64_t AliTPCDcalibRes::kMByte = 1024LL*1024LL;
 
 const Float_t AliTPCDcalibRes::kTPCRowX[AliTPCDcalibRes::kNPadRows] = { // pad-row center X
@@ -246,10 +247,7 @@ void AliTPCDcalibRes::CalibrateVDrift()
   Long64_t tmn = fTMinCTP-fTMin>kLargeTimeDiff ? fTMinCTP : fTMin;
   Long64_t tmx = fTMax-fTMaxCTP>kLargeTimeDiff ? fTMaxCTP : fTMax;
   Int_t duration = tmx - tmn;
-  int nTBins = duration /fDeltaTVD+1;
-  int durRange = nTBins*fDeltaTVD;
-  tmn -= (durRange-duration)/2;
-  tmx += (durRange-duration)/2;
+  int nTBins = duration/fDeltaTVD+1;
   //
   // check available statistics
   if (!EstimateStatistics()) AliFatal("Cannot process further");
@@ -3277,7 +3275,7 @@ Double_t AliTPCDcalibRes::GetKernelWeight(double* u2vec,int np) const
   else if (fKernelType == kGaussianKernel) {
     double u2 = 0;
     for (int i=np;i--;) u2 += u2vec[i];
-    w = u2<25*3 ? TMath::Exp(-u2)/TMath::Sqrt(2.*TMath::Pi()) : 0;
+    w = u2<kMaxGaussStdDev*kMaxGaussStdDev*np ? TMath::Exp(-u2)/TMath::Sqrt(2.*TMath::Pi()) : 0;
   }
   else {
     AliFatalF("Kernel type %d is not defined",fKernelType);

@@ -522,6 +522,7 @@ class AliTPCDcalibRes: public TNamed
   static const float kMaxTgSlp;  // max range of tgSlope, must be <= than the double32_t range of dst_t
   static const float kSecDPhi;
   static const float kMaxQ2Pt;
+  static const float kMaxGaussStdDev; // don't evaluate gaussian outside this number of StdDevs
   //  static const float kMaxTgSlp;
   //  static const float kMaxResid; // max allowed residual  
   static const float kMinX;   // min X to cover
