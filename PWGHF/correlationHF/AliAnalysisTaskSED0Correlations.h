@@ -26,6 +26,7 @@
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliHFCorrelator.h"
 #include "AliNormalizationCounter.h"
+#include "AliHFOfflineCorrelator.h"
 
 using std::vector;
 
@@ -71,6 +72,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t GetSoftPiFlag() const {return fSoftPiCut;}
   Bool_t GetMEAxisThresh() const {return fMEAxisThresh;}
   Bool_t GetKaonCorrelations() const {return fKaonCorr;}
+  Bool_t GetFillTrees() const {return fFillTrees;}
 
   //correlations setters/printers
   void SetNPtBinsCorr(Int_t nbins) {fNPtBinsCorr = nbins;}
@@ -96,6 +98,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
   void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
+  void SetFillTrees(Bool_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
  
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
@@ -115,6 +118,11 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
   Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
+  void FillTreeD0(AliAODRecoDecayHF2Prong* d, AliAODEvent* aod);  
+  void FillTreeTracks(AliAODEvent* aod);  
+  void ResetBranchD();
+  void ResetBranchTracks();
+  Bool_t AcceptTrackForMEOffline(Double_t pt);
   
   Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
@@ -124,9 +132,15 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   std::vector<Double_t>  fLSBUppLim;          // Left SB lower lim
   std::vector<Double_t>  fRSBLowLim;          // Right SB upper lim
   std::vector<Double_t>  fRSBUppLim;          // Right SB upper lim
+  std::vector<Int_t>     fDaughTrackID;       // ID of tagged daughters
+  std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters		
+  std::vector<Int_t>     fSoftPiTrackID;      // ID of tagged soft pions
+  std::vector<Int_t>     fSoftPiTrigNum;      // ID of D-trigger for soft pions
 
   Int_t     fEvents;		  	// EventCounter
   Bool_t    fAlreadyFilled;	  	// D0 in an event already analyzed (for track distribution plots)
+  Int_t	    fNtrigD;			// counter on number of D triggers filled (for association with daughter tracks in TTrees)
+  Int_t     fNsoftPi;			// counter of number of soft pions
   TList    *fOutputMass;          	//!list send on output slot 1
   TList    *fOutputCorr;	  	//!list of correlation histos, output slot 5
   TList    *fOutputStudy;	  	//!list of histos with MC distributions, output slot 6
@@ -150,6 +164,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fIsRejectSDDClusters; 	// flag to reject events with SDD clusters
   Bool_t    fFillGlobal;          	// flag to fill global plots (in loops on tracks and V0 for each event)
   Double_t  fMultEv;			// event multiplicity (for trigger eff)
+  Double_t  fzVtx;				// event zVtx position (for track eff)
   Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
   Bool_t    fKaonCorr;			// enables correlations of D0-Kcharg and D0-K0
@@ -164,7 +179,18 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
 
-  ClassDef(AliAnalysisTaskSED0Correlations,9); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  Bool_t    fFillTrees;			// Flag to fill ME offline trees
+  Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
+
+  AliHFCorrelationBranchD   *fBranchD;
+  AliHFCorrelationBranchTr  *fBranchTr;
+
+  TTree	    *fTreeD;			// TTree for ME offline - D0 mesons
+  TTree	    *fTreeTr;			// TTree for ME offline - Assoc tracks
+  TObjArray *fTrackArray;		// Array with selected tracks for association
+  Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
+
+  ClassDef(AliAnalysisTaskSED0Correlations,10); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
