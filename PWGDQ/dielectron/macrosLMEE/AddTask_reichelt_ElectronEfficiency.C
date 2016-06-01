@@ -88,6 +88,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   task->SetCalcResolution(calcResolution);
   if(calcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(resoCutInstance));
   task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+  task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
   task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
   task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
   task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
@@ -109,7 +110,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   if(doPairing){
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(100));
     //task->SetPairCuts(SetupTrackCutsAndSettings(101));
-    SetupTrackCutsAndSettings(101);
+    SetupTrackCutsAndSettings(101); // this fills the pair cuts into rejCutMee,rejCutTheta,rejCutPhiV
     task->SetPairCutMee(rejCutMee);
     task->SetPairCutTheta(rejCutTheta);
     task->SetPairCutPhiV(rejCutPhiV);
