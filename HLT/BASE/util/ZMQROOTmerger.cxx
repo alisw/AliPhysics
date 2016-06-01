@@ -103,6 +103,8 @@ Int_t fMaxObjects = 1;        //trigger merge after this many messages
 std::vector<TObject*> fListOfObjects;
 
 long fPushbackPeriod = -1;        //in seconds, -1 means never
+long fRequestPeriod = -1;        //in seconds, -1 means never
+long fRequestTimeout = 10000;    //default 10s
 Bool_t fCacheOnly = kFALSE;
 aliZMQrootStreamerInfo* fSchema = NULL;
 bool fSchemaOnRequest = false;
@@ -111,7 +113,13 @@ int fCompression = 1;
 bool fgTerminationSignaled=false;
 
 unsigned long long fLastPushBackTime = 0;
+unsigned long long fLastRequestTime = 0;
 struct timeval fCurrentTimeStruct;
+
+unsigned long fBytesIN = 0;
+unsigned long fBytesOUT = 0;
+unsigned long fSecondsStart = 0;
+unsigned long fSecondsStop = 0;
 
 //ZMQ stuff
 void* fZMQcontext = NULL;    //ze zmq context
@@ -136,6 +144,8 @@ const char* fUSAGE =
     " -sync : sync socket, will send the INFO block on run change, has to be PUB or SUB\n"
     " -Verbose : print some info\n"
     " -pushback-period : push the merged data once every n milliseconds (if updated)\n"
+    " -request-period : request period [ms] - limited by request-timeout\n"
+    " -request-timeout : timeout for REQ socket [ms] after which socket is reinitialized\n"
     " -ResetOnSend : always reset after send\n"
     " -ResetOnRequest : reset once after reply\n"
     " -RequestResetOnRequest : if requesting form another merger, request a ResetOnRequest\n"
@@ -150,11 +160,10 @@ const char* fUSAGE =
     " -select : set the selection regex for sending out objects,\n" 
     "           valid for one reply if used in a request,\n"
     " -unselect : as above, only inverted\n"
-    " -list : a list of (fulll) names to send (arb. delimiter)\n"
+    " -list : a list of (full) names to send (arb. delimiter)\n"
     " -cache : don't merge, only cache (i.e. replace)\n"
     " -annotateTitle : prepend string to title (if applicable)\n"
     " -ZMQtimeout: when to timeout the sockets (milliseconds)\n"
-    " -sleep : socket timeout (milliseconds) - same as ZMQtimeout\n"
     " -schema : include the ROOT streamer infos in the messages containing ROOT objects\n"
     " -SchemaOnRequest : include streamers ONCE (after a request)\n"
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
@@ -174,6 +183,10 @@ void sig_handler(int signo)
 Int_t Run()
 {
   fMergeListMap.SetOwnerKeyValue(kTRUE,kTRUE);
+
+  //start time (sec)
+  gettimeofday(&fCurrentTimeStruct, NULL);
+  fSecondsStart = fCurrentTimeStruct.tv_sec;
 
   //main loop
   while(!fgTerminationSignaled)
@@ -199,7 +212,7 @@ Int_t Run()
     //poll sockets - we want to take action on one of two conditions:
     //  1 - request comes in - then we merge whatever is not yet merged and send
     //  2 - data comes in - then we add it to the merging list
-    rc = zmq_poll(sockets, nSockets, -1); //poll sockets
+    rc = zmq_poll(sockets, nSockets, fZMQtimeout); //poll sockets
     if (rc==-1 && errno==ETERM)
     {
       //this can only happen it the context was terminated, one of the sockets are
@@ -213,7 +226,7 @@ Int_t Run()
     {
       int pushBack = 0;
       aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQin, 0);
+      fBytesIN += alizmq_msg_recv(&message, fZMQin, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQin)==ZMQ_REP) 
@@ -236,7 +249,7 @@ Int_t Run()
     {
       int pushBack = 0;
       aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQout, 0);
+      fBytesIN += alizmq_msg_recv(&message, fZMQout, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQout)==ZMQ_REP) 
@@ -258,7 +271,7 @@ Int_t Run()
     {
       int pushBack = 0;
       aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQmon, 0);
+      fBytesIN += alizmq_msg_recv(&message, fZMQmon, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         if (alizmq_socket_type(fZMQmon)==ZMQ_REP) 
@@ -279,7 +292,7 @@ Int_t Run()
     if (sockets[3].revents & ZMQ_POLLIN)
     {
       aliZMQmsg message;
-      alizmq_msg_recv(&message, fZMQsync, 0);
+      fBytesIN += alizmq_msg_recv(&message, fZMQsync, 0);
       for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
       {
         HandleDataIn(i, fZMQsync);
@@ -297,9 +310,23 @@ Int_t Run()
       if (outType==ZMQ_REQ) DoRequest(fZMQout, &fZMQconfigOUT);
       if (monType==ZMQ_REQ) DoRequest(fZMQmon, &fZMQconfigMON);
 
+      //this might trigger internal cleanup
+      alizmq_socket_state(fZMQin);
+      alizmq_socket_state(fZMQout);
+      alizmq_socket_state(fZMQmon);
+      alizmq_socket_state(fZMQsync);
     }//socket 3
 
   }//main loop
+
+  //stop time (sec)
+  gettimeofday(&fCurrentTimeStruct, NULL);
+  fSecondsStop = fCurrentTimeStruct.tv_sec;
+
+  {
+    printf("in  %.2f MB, %.2f MB/s\n", (double)(fBytesIN/1024./1024.),  (float)(fBytesIN/(fSecondsStop-fSecondsStart)/1024./1024.));
+    printf("out %.2f MB, %.2f MB/s\n", (double)(fBytesOUT/1024./1024.), (float)(fBytesOUT/(fSecondsStop-fSecondsStart)/1024./1024.));
+  }
 
   return 0;
 }
@@ -357,7 +384,7 @@ Int_t DoControl(aliZMQmsg::iterator block, void* socket)
       }
       if (fZMQsync)
       {
-        alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
+        fBytesOUT += alizmq_msg_send(fInfoTopic, fInfo, fZMQsync, ZMQ_DONTWAIT);
       }
       fRunNumber = runnumber; 
       DoSend(socket);
@@ -546,7 +573,8 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
     gettimeofday(&fCurrentTimeStruct, NULL);
     unsigned long long currentTime = 1000*fCurrentTimeStruct.tv_sec+fCurrentTimeStruct.tv_usec/1000;
     
-    if (currentTime-fLastPushBackTime >= fPushbackPeriod)
+    unsigned long timeInterval = currentTime - fLastPushBackTime;
+    if (timeInterval >= fPushbackPeriod)
     {
       return 1; //signal we will want to send after message is done
     }
@@ -559,15 +587,28 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
 //______________________________________________________________________________
 Int_t DoRequest(void*& socket, TString* config)
 {
-
   //if we cannot send it means we were waiting for a reply.
-  //reinit the socket because probably the server died...
+  //after enough time passed we assume server died and reinit the socket
+  gettimeofday(&fCurrentTimeStruct, NULL);
+  unsigned long long currentTime = 1000*fCurrentTimeStruct.tv_sec +
+                                        fCurrentTimeStruct.tv_usec/1000;
+  unsigned long long sinceLastRequest = currentTime - fLastRequestTime;
+
   if ((alizmq_socket_state(socket)&ZMQ_POLLOUT)==0) {
-    if (fVerbose) printf("no reply from %s in %i ms, server died? - reinit socket\n", config->Data(), fZMQtimeout);
+
+    //if we are still waiting, do nothing
+    if (fLastRequestTime>0 && sinceLastRequest < fRequestTimeout) {
+      if (fVerbose) printf("still waiting for a reply....\n");
+      return -1;
+    }
+
+    //if we are not still waiting and socket is in wrong state, we have to reinit the socket
+    if (fVerbose) printf("no reply from %s in %li ms, server died? - reinit socket\n",
+        config->Data(), fRequestTimeout);
     alizmq_socket_init(socket, fZMQcontext, config->Data(), fZMQtimeout, fZMQmaxQueueSize);
   }
 
-  //just send an empty request
+  //request
   if (fRequestResetOnRequest) {
     if (fVerbose) Printf("sending an ResetOnRequest request");
     alizmq_msg_send(kAliHLTDataTypeConfig, "ResetOnRequest",socket,0);
@@ -575,6 +616,8 @@ Int_t DoRequest(void*& socket, TString* config)
     if (fVerbose) Printf("sending an empty request");
     alizmq_msg_send("", "", socket, 0);
   }
+  
+  fLastRequestTime = currentTime;
   return 0;
 }
 
@@ -642,8 +685,11 @@ Int_t DoSend(void* socket)
 
   //send
   int sentBytes = alizmq_msg_send(&message, socket, 0);
+  fBytesOUT += sentBytes;
   if (fVerbose) Printf("merger sent %i bytes", sentBytes);
   alizmq_msg_close(&message);
+
+  SetLastPushBackTime();
 
   return sentBytes;
 }
@@ -831,9 +877,13 @@ Int_t ProcessOptionString(TString arguments)
     {
       fZMQtimeout=value.Atoi();
     }
-    else if (option.EqualTo("sleep"))
+    else if (option.EqualTo("request-period"))
     {
-      fZMQtimeout=value.Atoi();
+      fRequestPeriod=value.Atoi();
+    }
+    else if (option.EqualTo("request-timeout"))
+    {
+      fRequestTimeout=value.Atoi();
     }
     else if (option.EqualTo("select"))
     {
@@ -915,6 +965,9 @@ Int_t ProcessOptionString(TString arguments)
     nOptions++;
   }
 
+  if (fRequestTimeout<100) printf("WARNING: setting the socket timeout to %lu ms can be dagerous,\n"
+      "         choose something more realistic or leave the default as it is\n", fRequestTimeout);
+
   delete options; //tidy up
 
   return nOptions; 
@@ -957,7 +1010,9 @@ int main(Int_t argc, char** argv)
     return 1;
   }
 
-  pthread_create(&fTRIGthread, NULL, runTRIGthread, NULL);
+  if (fRequestPeriod>=0) {
+    pthread_create(&fTRIGthread, NULL, runTRIGthread, NULL);
+  }
 
   //init other stuff
   fListOfObjects.reserve(100);
@@ -1119,24 +1174,25 @@ Int_t DumpToFile(std::string file)
 void* runTRIGthread(void*)
 {
   if (fVerbose) printf("starting trigger thread\n");
-  int delay = fZMQtimeout;
+  int delay = fRequestPeriod;
   void* trig = NULL;
   alizmq_socket_init(trig, alizmq_context(), "PAIR+inproc://trigger");
   while (true) {
-    if (delay <= 0) break;
+    if (delay < 0) break;
 
+    zmq_send(trig,0,0,0);
+
+    //poll to handle the delay and exit condition
     zmq_pollitem_t sockets[] = { { trig, 0, ZMQ_POLLIN, 0 } };
     int rc = zmq_poll(sockets, 1, delay);
     if (rc==-1 && errno==ETERM)
     {
       break;
     }
-
     if (sockets[0].revents & ZMQ_POLLIN) {
       zmq_recv(trig,&delay,sizeof(delay),0);
     }
     
-    zmq_send(trig,0,0,0);
   }
   alizmq_socket_close(trig, 0);
   if (fVerbose) printf("stopping trigger thread\n");
