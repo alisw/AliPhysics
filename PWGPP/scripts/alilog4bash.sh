@@ -36,7 +36,6 @@ ALILOG_SCRIPT_ARGS="$@"
 ALILOG_SCRIPT_NAME="$0"
 ALILOG_SCRIPT_NAME="${SCRIPT_NAME#\./}"
 ALILOG_SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-ALILOG_SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
 
 # This should probably be the right way - didn't have time to experiment though
 # declare -r ALILOG_INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
