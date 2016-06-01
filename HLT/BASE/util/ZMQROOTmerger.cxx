@@ -1099,7 +1099,11 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::stri
   while (TObject* tmp = next()) {
     collection->Remove(tmp);
 
-    if (AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp)) {
+    AliAnalysisDataContainer* analKont = NULL;
+    if (fUnpackContainers) {
+      AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
+    }
+    if (analKont) {
       //analysis container
       if (fVerbose) Printf("  have an analysis container %p",analKont);
       GetObjects(analKont,list,kontPrefix);
