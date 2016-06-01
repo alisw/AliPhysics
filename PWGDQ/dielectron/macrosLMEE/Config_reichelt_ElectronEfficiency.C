@@ -1,4 +1,4 @@
-TString names=("cut16_SPDorSDD14_PID16");
+TString names=("cut_resolution");
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 //________________________________________________________________
@@ -20,7 +20,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
 // main task settings
 // fill resolutions for one cutInstance (step 1).
 const Bool_t calcResolution = kTRUE;
-const Int_t  resoCutInstance = 0;
+const Int_t  resoCutInstance = 0; // this cut number cannot be used correctly for other things.
 // use previously extracted resolutions (step 2).
 TString resolutionfile = "user/p/preichel/PWGDQ/dielectron/supportFiles/PbPb_resolution_cut16_deltaXvsX.root";
 Bool_t bUsePtResolution = kFALSE;
@@ -28,7 +28,7 @@ Bool_t bUseEtaResolution = kFALSE;
 Bool_t CalcEfficiencyRec = kFALSE;
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 // determine pair efficiency for all cutInstances. (Consider high combinatorics if not only MC-true electrons are selected.)
-const Bool_t doPairing = kTRUE;
+const Bool_t doPairing = kFALSE;
 // specify for which "cutInstance" the support histos should be filled!
 const Int_t     supportedCutInstance = 0;
 // specify if track tree shall be filled and written to file (only recommended for small checks!)
@@ -53,9 +53,12 @@ const Double_t PtBins[] = {
   4.00,5.0,6.0,7.0,8.0
 };
 // resolution binnings
-Int_t NbinsDeltaMom    = 1000;
-Double_t DeltaMomMin   = -9.0;
-Double_t DeltaMomMax   =  1.0;
+Int_t NbinsDeltaMom    =1200;
+Double_t DeltaMomMin   =-10.0;
+Double_t DeltaMomMax   =  2.0;
+Int_t NbinsRelMom      = 400;
+Double_t RelMomMin     =  0.0;
+Double_t RelMomMax     =  2.0;
 Int_t NbinsDeltaEta    = 200;
 Double_t DeltaEtaMin   = -0.4;
 Double_t DeltaEtaMax   =  0.4;
@@ -203,9 +206,14 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
     // --------------------------------------------------
     // specific settings for each cutset:
     // --------------------------------------------------
-    if (cutInstance==0+nCutsUsingConfigFunctions) {
-      LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
-      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
+    if (calcResolution && cutInstance==resoCutInstance) {
+      LMcutlib->selectedKineCutsAna = LMEECutLib::kKineCut_p50inf_eta150; // maximum acceptance
+      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011PID_TPCITS_3;  // ITS+TPC, 100% efficiency
+      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;                 // combined tracks SPDorSDD
+    }
+    else if (cutInstance==0+nCutsUsingConfigFunctions) {
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kCut16;
+//      LMcutlib->selectedQualityAna  = LMEECutLib::kCut16;
     }
     else if (cutInstance==100) {
       // kinematic cuts for the legs during pair efficiency determination:

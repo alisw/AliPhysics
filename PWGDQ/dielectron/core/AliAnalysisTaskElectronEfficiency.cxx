@@ -15,8 +15,8 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
-//          Single Electron and Pair-Prefilter Efficiency Task           //
-//                                     (description in .h file)          //
+//       Single Electron, Pair and Pair-Prefilter Efficiency Task        //
+//                                        (description in .h file)       //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -146,20 +146,29 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
-fDeltaMomNbins(1000),
+fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
-fDeltaMomMax(10.),
-fDeltaEtaNbins(300),
-fDeltaEtaMin(-1.5),
-fDeltaEtaMax(1.5),
-fDeltaThetaNbins(300),
-fDeltaThetaMin(-1.5),
-fDeltaThetaMax(1.5),
-fDeltaPhiNbins(300),
-fDeltaPhiMin(-1.5),
-fDeltaPhiMax(1.5),
+fDeltaMomMax(2.),
+fRelMomNbins(400),
+fRelMomMin(0.),
+fRelMomMax(2.),
+fDeltaEtaNbins(200),
+fDeltaEtaMin(-0.4),
+fDeltaEtaMax(0.4),
+fDeltaThetaNbins(200),
+fDeltaThetaMin(-0.4),
+fDeltaThetaMax(0.4),
+fDeltaPhiNbins(200),
+fDeltaPhiMin(-0.4),
+fDeltaPhiMax(0.4),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
+fPGen_PrecOverPGen(0x0),
+fPtGen_PtRecOverPtGen(0x0),
+fPGen_DeltaEta(0x0),
+fPGen_DeltaTheta(0x0),
+fPGen_DeltaPhi_Ele(0x0),
+fPGen_DeltaPhi_Pos(0x0),
 fEtaGen_DeltaEta(0x0),
 fThetaGen_DeltaTheta(0x0),
 fPhiGen_DeltaPhi(0x0),
@@ -317,20 +326,29 @@ fDeltaPhi_pt(0x0),
 fDeltaPhi_eta(0x0),
 fDeltaPhi_MCcharge(0x0),
 fDeltaPhi_charge(0x0),
-fDeltaMomNbins(1000),
+fDeltaMomNbins(1200),
 fDeltaMomMin(-10.),
-fDeltaMomMax(10.),
-fDeltaEtaNbins(300),
-fDeltaEtaMin(-1.5),
-fDeltaEtaMax(1.5),
-fDeltaThetaNbins(300),
-fDeltaThetaMin(-1.5),
-fDeltaThetaMax(1.5),
-fDeltaPhiNbins(300),
-fDeltaPhiMin(-1.5),
-fDeltaPhiMax(1.5),
+fDeltaMomMax(2.),
+fRelMomNbins(400),
+fRelMomMin(0.),
+fRelMomMax(2.),
+fDeltaEtaNbins(200),
+fDeltaEtaMin(-0.4),
+fDeltaEtaMax(0.4),
+fDeltaThetaNbins(200),
+fDeltaThetaMin(-0.4),
+fDeltaThetaMax(0.4),
+fDeltaPhiNbins(200),
+fDeltaPhiMin(-0.4),
+fDeltaPhiMax(0.4),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
+fPGen_PrecOverPGen(0x0),
+fPtGen_PtRecOverPtGen(0x0),
+fPGen_DeltaEta(0x0),
+fPGen_DeltaTheta(0x0),
+fPGen_DeltaPhi_Ele(0x0),
+fPGen_DeltaPhi_Pos(0x0),
 fEtaGen_DeltaEta(0x0),
 fThetaGen_DeltaTheta(0x0),
 fPhiGen_DeltaPhi(0x0),
@@ -536,6 +554,12 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
+    fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "",500,0.,10.,fRelMomNbins,fRelMomMin,fRelMomMax);
+    fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "",500,0.,10.,fRelMomNbins,fRelMomMin,fRelMomMax);
+    fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "",500,0.,10.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
+    fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "",500,0.,10.,fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
+    fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "",500,0.,10.,fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
+    fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "",500,0.,10.,fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
     fEtaGen_DeltaEta                     = new TH2D("EtaGen_DeltaEta",                    "",200,-1.,1.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
     fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "",220,-0.1*TMath::Pi(),1.1*TMath::Pi(),fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
     fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "",320,-0.1*TMath::Pi(),2.1*TMath::Pi(),fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
@@ -544,6 +568,12 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     fPGen_DeltaP                         ->Sumw2();
     fPtGen_DeltaPt                       ->Sumw2();
+    fPGen_PrecOverPGen                   ->Sumw2();
+    fPtGen_PtRecOverPtGen                ->Sumw2();
+    fPGen_DeltaEta                       ->Sumw2();
+    fPGen_DeltaTheta                     ->Sumw2();
+    fPGen_DeltaPhi_Ele                   ->Sumw2();
+    fPGen_DeltaPhi_Pos                   ->Sumw2();
     fEtaGen_DeltaEta                     ->Sumw2();
     fThetaGen_DeltaTheta                 ->Sumw2();
     fPhiGen_DeltaPhi                     ->Sumw2();
@@ -554,6 +584,18 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fPGen_DeltaP                         ->GetYaxis()->SetTitle("p^{rec} - p^{gen} (GeV/c)");
     fPtGen_DeltaPt                       ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
     fPtGen_DeltaPt                       ->GetYaxis()->SetTitle("p^{rec}_{T} - p^{gen}_{T} (GeV/c)");
+    fPGen_PrecOverPGen                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_PrecOverPGen                   ->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
+    fPtGen_PtRecOverPtGen                ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+    fPtGen_PtRecOverPtGen                ->GetYaxis()->SetTitle("p^{rec}_{T} / p^{gen}_{T} (GeV/c)");
+    fPGen_DeltaEta                       ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaEta                       ->GetYaxis()->SetTitle("#eta^{rec} - #eta^{gen}");
+    fPGen_DeltaTheta                     ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaTheta                     ->GetYaxis()->SetTitle("#theta^{rec} - #theta^{gen} (rad)");
+    fPGen_DeltaPhi_Ele                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaPhi_Ele                   ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
+    fPGen_DeltaPhi_Pos                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPGen_DeltaPhi_Pos                   ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
     fEtaGen_DeltaEta                     ->GetXaxis()->SetTitle("#eta^{gen}");
     fEtaGen_DeltaEta                     ->GetYaxis()->SetTitle("#eta^{rec} - #eta^{gen}");
     fThetaGen_DeltaTheta                 ->GetXaxis()->SetTitle("#theta^{gen} (rad)");
@@ -584,6 +626,12 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
 
     resolutionList->Add(fPGen_DeltaP);
     resolutionList->Add(fPtGen_DeltaPt);
+    resolutionList->Add(fPGen_PrecOverPGen   );
+    resolutionList->Add(fPtGen_PtRecOverPtGen);
+    resolutionList->Add(fPGen_DeltaEta       );
+    resolutionList->Add(fPGen_DeltaTheta     );
+    resolutionList->Add(fPGen_DeltaPhi_Ele   );
+    resolutionList->Add(fPGen_DeltaPhi_Pos   );
     resolutionList->Add(fEtaGen_DeltaEta);
     resolutionList->Add(fThetaGen_DeltaTheta);
     resolutionList->Add(fPhiGen_DeltaPhi);
@@ -1208,8 +1256,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         cutMaskKine=fKineTrackCuts->IsSelected( p1 );
         if (cutMaskKine!=selectedMaskKine) continue;
         l1.SetPtEtaPhiM(p1->Pt(),p1->Eta(),p1->Phi(),0.0005109989);
-        for(Int_t iMC2 = 0; iMC2 < nMCtracks; iMC2++){
-          if(iMC1 == iMC2) continue;
+        for(Int_t iMC2 = iMC1+1; iMC2 < nMCtracks; iMC2++){
           AliMCParticle *p2 = dynamic_cast<AliMCParticle*> (mcEvent->GetTrack(iMC2));
           if(!p2){ Printf("no MCtrack: %d", iMC2); continue; }
           if(!AliDielectronMC::Instance()->IsMCTruth(iMC2, (AliDielectronSignalMC*)fSignalsMC->At(0), 1)) continue;
@@ -1231,8 +1278,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
             fNgenPairs_sameMother->Fill(mee,ptee);
           else
             fNgenPairs_diffMothers->Fill(mee,ptee);
-        } // positron loop
-      } // electron loop
+        } // inner loop
+      } // outer loop
 
       for(Int_t iTrack1 = 0; iTrack1 < fESD->GetNumberOfTracks(); iTrack1++){
         AliESDtrack *track1 = fESD->GetTrack(iTrack1);
@@ -1381,18 +1428,28 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t recPt  = track->Pt();
         Double_t recP   = track->P();
         if(pdg == 11){
-          if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP   ->Fill(mcP,recP - mcP);
-          if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt ->Fill(mcPt,recPt - mcPt);
+          if(TMath::Abs(part->Eta()) < 0.8) {
+            fPGen_DeltaP         ->Fill(mcP, recP - mcP);
+            fPtGen_DeltaPt       ->Fill(mcPt,recPt - mcPt);
+            fPGen_PrecOverPGen   ->Fill(mcP, recP / mcP);
+            fPtGen_PtRecOverPtGen->Fill(mcPt,recPt / mcPt);
+            if (part->Charge()<0) fPGen_DeltaPhi_Ele->Fill(mcP, track->Phi()   - part->Phi());
+            else                  fPGen_DeltaPhi_Pos->Fill(mcP, track->Phi()   - part->Phi());
+            fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          }
+          fPGen_DeltaEta       ->Fill(mcP, track->Eta()   - part->Eta());
+          fPGen_DeltaTheta     ->Fill(mcP, track->Theta() - part->Theta());
           fEtaGen_DeltaEta     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta ->Fill(part->Theta(),track->Theta() - part->Theta());
-          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         }
         else if(pdg == 211){
-          if(TMath::Abs(part->Eta()) < 0.8) fPGen_DeltaP_pions   ->Fill(mcP,recP - mcP);
-          if(TMath::Abs(part->Eta()) < 0.8) fPtGen_DeltaPt_pions ->Fill(mcPt,recPt - mcPt);
+          if(TMath::Abs(part->Eta()) < 0.8) {
+            fPGen_DeltaP_pions       ->Fill(mcP,recP - mcP);
+            fPtGen_DeltaPt_pions     ->Fill(mcPt,recPt - mcPt);
+            fPhiGen_DeltaPhi_pions   ->Fill(part->Phi(),  track->Phi()   - part->Phi());
+          }
           fEtaGen_DeltaEta_pions     ->Fill(part->Eta(),  track->Eta()   - part->Eta());
           fThetaGen_DeltaTheta_pions ->Fill(part->Theta(),track->Theta() - part->Theta());
-          if(TMath::Abs(part->Eta()) < 0.8) fPhiGen_DeltaPhi_pions     ->Fill(part->Phi(),  track->Phi()   - part->Phi());
         }
         fDeltaPhi->Fill(deltaPhi);
       } // track loop

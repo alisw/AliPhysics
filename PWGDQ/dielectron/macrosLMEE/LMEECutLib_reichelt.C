@@ -37,7 +37,8 @@ public:
   };
   
   static enum enKineCut {
-    kKineCut_pt50_eta080=0,
+    kKineCut_p50inf_eta150=0, // for resolution extraction
+    kKineCut_pt50_eta080,
     kKineCut_pt50_eta090,
     kKineCut_pt200_eta080,
     kKineCut_pt200_eta090,
@@ -98,6 +99,7 @@ public:
     kPbPb2011PID_ITSTPCTOFif_looseTPC,
     kPbPb2011PID_TPCITS_1,                  // ITS+TPC
     kPbPb2011PID_TPCITSif_2,
+    kPbPb2011PID_TPCITS_3,
     kPbPb2011PID_TPCTOF_1,                  // TPC+TOF
     kPbPb2011PID_TPCTOF_LOOSE,
     kPbPb2011PID_TPC_1,                     // TPC
@@ -919,6 +921,10 @@ AliAnalysisCuts* LMEECutLib::GetKineCutsPre(Int_t cutSet) {
   
   AliDielectronVarCuts* kineCuts = new AliDielectronVarCuts("kineCuts","kineCuts");
   switch (cutSet) {
+    case kKineCut_p50inf_eta150:
+      kineCuts->AddCut(AliDielectronVarManager::kP, .05, 100.); // momentum!
+      kineCuts->AddCut(AliDielectronVarManager::kEta, -1.50, 1.50);
+      break;
     case kKineCut_pt50_eta080:
       kineCuts->AddCut(AliDielectronVarManager::kPt, .05, 3.5);
       kineCuts->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
@@ -1188,6 +1194,11 @@ AliAnalysisCuts* LMEECutLib::GetPIDCuts(Int_t cutSet) {
     case kPbPb2011PID_TPCITSif_2:
       pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2. , 3. , 0. ,100., kFALSE);
       pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 2. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+      return pidCuts;
+      break;
+    case kPbPb2011PID_TPCITS_3: // for full efficiency. used in MC for resolution extraction.
+      pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE);
+      pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -4. , 3. , 0. ,100., kFALSE);
       return pidCuts;
       break;
       
