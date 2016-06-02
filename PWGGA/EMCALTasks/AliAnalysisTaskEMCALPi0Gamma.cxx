@@ -159,7 +159,7 @@ fHClustEnergyPt(0x0),
 fHClustEnergyPtDCal(0x0),
 fHClustEnergySM(0x0),
 fHClustEnergySigma(0x0),
-fHClustSigmaSigma(0x0),
+fHClustEnergyTime(0x0),
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
 fHPrimTrackPt(0x0),
@@ -368,7 +368,7 @@ fHClustEnergyPt(0x0),
 fHClustEnergyPtDCal(0x0),
 fHClustEnergySM(0x0),
 fHClustEnergySigma(0x0),
-fHClustSigmaSigma(0x0),
+fHClustEnergyTime(0x0),
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
 fHPrimTrackPt(0x0),
@@ -746,10 +746,10 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHClustEnergySigma->SetXTitle("E_{C} * #sigma_{max} [GeV*cm]");
     fHClustEnergySigma->SetYTitle("E_{C} [GeV]");
     fOutput->Add(fHClustEnergySigma);
-    fHClustSigmaSigma = new TH2F("hClustSigmaSigma","",100,0,10,50,0,1);
-    fHClustSigmaSigma->SetXTitle("#lambda_{0} [cm]");
-    fHClustSigmaSigma->SetYTitle("#sigma_{max} [cm]");
-    fOutput->Add(fHClustSigmaSigma);
+    fHClustEnergyTime = new TH2F("hClustEnergyTime","",100,0,20,500,-50e-8,200e-8);
+    fHClustEnergyTime->SetXTitle("E [GeV]");
+    fHClustEnergyTime->SetYTitle("t_{Cluster} [s]");
+    fOutput->Add(fHClustEnergyTime);
     fHClustNCellEnergyRatio = new TH2F("hClustNCellEnergyRatio","",27,-0.5,26.5,101,-0.05,1.05);
     fHClustNCellEnergyRatio->SetXTitle("N_{cells}");
     fHClustNCellEnergyRatio->SetYTitle("E^{max}_{cell}/E_{clus}");
@@ -2059,7 +2059,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
     }
     fHClustEnergySM->Fill(clusterVec.E(),GetModuleNumber(clus));
     //fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
-    //fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
+    fHClustEnergyTime->Fill(clusterVec.E(),clus->GetTOF());
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
     fHClustEnergyNCell->Fill(clus->E(),clus->GetNCells());
     nclusters++;
