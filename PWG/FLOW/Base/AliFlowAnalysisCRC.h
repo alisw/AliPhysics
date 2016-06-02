@@ -1622,13 +1622,15 @@ private:
   Bool_t fCalculateEbEFlow;
   Int_t fEBEFlowMulBin;
   TList *fEbEFlowList;    //! EbE Flow List
-  TH1D *fEbEFlowAzimDis[24]; //! mult. binned azim. dis.
-  TH2D* fEBEFlowRChiSqHist; //!
-  TH2D* fEBEFlowpValueHist; //!
-  TH1D* fEBEFlowFlucHis[fCRCMaxnCen][2]; //!
-  TProfile* fEBEFlowCrosPro[fCRCMaxnCen]; //!
-  TProfile* fEBEFlowResVZPro[8]; //!
+  TH1D *fEbEFlowAzimDis[26]; //! mult. binned azim. dis.
+  TH2D* fEBEFlowRChiSqHist[2]; //!
+  TH2D* fEBEFlowpValueHist[2]; //!
+  TH1D* fEBEFlowFlucHis[fCRCMaxnCen][4]; //!
+  TProfile* fEBEFlowCrosPro[fCRCMaxnCen][2]; //!
+  TProfile* fEBEFlowResVZPro[12]; //!
   TF1* FourierExp; //!
+  Double_t *fchisqVA; //!
+  Double_t *fchisqVC; //!
  
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
@@ -1680,7 +1682,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 15);
+ ClassDef(AliFlowAnalysisCRC, 16);
  
 };
 
