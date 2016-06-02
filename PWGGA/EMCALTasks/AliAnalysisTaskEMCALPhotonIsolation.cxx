@@ -40,6 +40,7 @@
 #include "TF1.h"
 #include "Riostream.h"
 #include "TRandom3.h"
+#include "AliGenPythiaEventHeader.h"
 
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"
@@ -767,14 +768,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fTrackMultvsPt->Sumw2();
   fOutput->Add(fTrackMultvsPt);
   
-  fHistXsection = new TH1F("fHistXsection", "fHistXsection", 11, 0, 11);
-  fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistXsection->GetYaxis()->SetTitle("xsection");
+  fHistXsection = new TH1F("fHistXsection", "fHistXsection", 1, 0, 1);
+  fHistXsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
   fOutput->Add(fHistXsection);
   
-  fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
-  fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
-  fHistTrials->GetYaxis()->SetTitle("trials");
+  fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);
+  fHistTrials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
   fOutput->Add(fHistTrials);
   
     //  fTracksConeEtaPt = new TH3D("hTracksConeEtaPt","#Sigma vs #eta vs E_{T}",200,0.,100.,320,-0.8,0.8,200,0.,100.);
@@ -907,8 +906,15 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     //AliError(Form("one event"));
   
   if(fIsMC && fAnalysispPb){
-    fHistXsection->Fill(fPtHardBin, fXsection);
-    fHistTrials->Fill(fPtHardBin, fNTrials);
+    Float_t fXSection=0;
+    Int_t fTrials=0;
+    if(fPythiaHeader){
+    fXSection = fPythiaHeader->GetXsection();
+    fTrials = fPythiaHeader->Trials();
+
+    fHistXsection->Fill("<#sigma>",fXSection);
+    fHistTrials->Fill("#sum{ntrials}",fTrials);
+    }
       // AliError(Form("EMCAL L1 trigger for MC simulation anchored to LHC13 data"));
     if(!MCSimTrigger(fVevent,fTriggerLevel1)) return kFALSE;
   }
@@ -1270,7 +1276,7 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
   Int_t absId2 = -1 ;
   const Int_t nCells = coi->GetNCells();
   
-  Printf("Cluster Energy Before Recalculation: %.4f",coi->E());
+  // Printf("Cluster Energy Before Recalculation: %.4f",coi->E());
   Float_t eCluster = RecalEnClust(coi, cells);// recalculate cluster energy, avoid non lin correction.
   Float_t localMaxCutE = 0.1;
   Float_t locMaxCutEDiff = 0.0;
@@ -1372,9 +1378,9 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
       absIdList[iDigitN] = absIdList[iDigit] ;
       
       Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-      Printf("NlocMax Cell Energy Before Recalculation: %.4f",en);
+      // Printf("NlocMax Cell Energy Before Recalculation: %.4f",en);
       RecalAmpCell(en,absIdList[iDigit]);
-      Printf("NlocMax Cell Energy After Recalculation: %.4f",en);
+      // Printf("NlocMax Cell Energy After Recalculation: %.4f",en);
       
         //      if(fMCECellClusFracCorrOn)
         //        en*=GetMCECellClusFracCorrection(en,eCluster)/simuTotWeight;

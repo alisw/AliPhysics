@@ -55,6 +55,7 @@ class AliAODCaloCluster;
 class AliESDCaloCluster;
 class AliVCaloCells;
 class AliAODMCParticle;
+class AliGenPythiaEventHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -208,8 +209,8 @@ protected:
   TH2D        *fTrackMultvsPt;
   TH3D        *fTracksConeEtaPt;
   TH3D        *fTracksConeEtaM02;
-  TH1         *fHistXsection;
-  TH1         *fHistTrials;
+  TH1F        *fHistXsection;
+  TH1F        *fHistTrials;
   
   THnSparse   *fOutputTHnS;                    //! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //! 1st Method 4 MC truth Output //Isolation on pTMax
