@@ -162,8 +162,12 @@ public:
   Bool_t GetCalculateEbEFlow() const {return this->fCalculateEbEFlow;};
  void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
  Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
- void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
- Bool_t GetCalculateFlow() const {return this->fCalculateFlow;};
+  void SetCalculateFlowQC(Bool_t const cCRC) {this->fCalculateFlowQC = cCRC;};
+  Bool_t GetCalculateFlowQC() const {return this->fCalculateFlowQC;};
+  void SetCalculateFlowZDC(Bool_t const cCRC) {this->fCalculateFlowZDC = cCRC;};
+  Bool_t GetCalculateFlowZDC() const {return this->fCalculateFlowZDC;};
+  void SetCalculateFlowVZ(Bool_t const cCRC) {this->fCalculateFlowVZ = cCRC;};
+  Bool_t GetCalculateFlowVZ() const {return this->fCalculateFlowVZ;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -278,7 +282,9 @@ private:
   Bool_t fCalculateCRCZDC;
   Bool_t fCalculateEbEFlow;
  Int_t fCRC2nEtaBins; // CRC2 n eta bins
- Bool_t fCalculateFlow;
+  Bool_t fCalculateFlowQC;
+  Bool_t fCalculateFlowZDC;
+  Bool_t fCalculateFlowVZ;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
@@ -305,7 +311,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 5);
+ ClassDef(AliAnalysisTaskCRC, 6);
 };
 
 //================================================================================================================

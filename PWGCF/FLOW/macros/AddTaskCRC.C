@@ -141,12 +141,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
- // configure some event cuts, starting with centrality
- if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
-  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
-  cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  cutsEvent->SetQA(bCutsQA);
- }
+  // configure some event cuts, starting with centrality
+  if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
+    // method used for centrality determination
+    if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+    if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+    if(sCentrEstimator=="CL1") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1clusters);
+    cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+    cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
+    cutsEvent->SetQA(bCutsQA);
+  }
  else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   // method used for centrality determination
@@ -214,6 +218,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cutsRP->SetVZEROgainEqualizationPerRing(bUseVZERO);
    cutsRP->SetApplyRecentering(bUseVZERO);
    cutsRP->SetDivSigma(bDivSigma);
+   if (analysisTypeUser == "MCAOD")
+    cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts();
   } else {
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(AODfilterBit);
@@ -313,7 +319,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCalculateEbEFlow(bCalculateEbEFlow);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
- taskQC->SetCalculateFlow(bCalculateFlow);
+ taskQC->SetCalculateFlowQC(bCalculateFlow);
+ taskQC->SetCalculateFlowZDC(bCalculateFlow);
+ taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(kTRUE);
