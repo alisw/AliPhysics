@@ -66,8 +66,6 @@ AliAnalysisDataContainer* AddTask_ep() {
   Bool_t isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
-  cout<<"I AM ESD !!!!!!!!!!!!!!!!! "<<isESD<<"  "<<isAOD<<endl;
-
   AliQnCorrectionsManager* QnManager = new AliQnCorrectionsManager();
   AliAnalysisTaskFlowVectorCorrections* taskEP = new AliAnalysisTaskFlowVectorCorrections("FlowVectorCorrections");
   taskEP->SetRunListPath("$(ALICE_PHYSICS)/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/runsLHC10h.txt");

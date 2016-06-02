@@ -151,12 +151,12 @@ void AliQnCorrectionsFillEvent::FillEventInfo(Float_t* values) {
     values[VAR::kVZEROMultPercentile] = MultSelection->GetMultiplicityPercentile("V0M", kTRUE);
   }
 
-  AliESDEvent* esdEvent = static_cast<AliESDEvent*>(fEvent);
-  AliCentrality* cent = esdEvent->GetCentrality();
+  AliCentrality* cent = fEvent->GetCentrality();
   if(cent){
     values[VAR::kCentVZERO]   = cent->GetCentralityPercentile("V0M");
     values[VAR::kCentSPD]     = cent->GetCentralityPercentile("CL1");
     values[VAR::kCentTPC]     = cent->GetCentralityPercentile("TRK");
+    values[VAR::kCentZDC]     = cent->GetCentralityPercentile("ZEMvsZDC");
     values[VAR::kCentQuality] = cent->GetQuality();
   }
 
