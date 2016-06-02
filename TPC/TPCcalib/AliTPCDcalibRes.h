@@ -214,8 +214,8 @@ class AliTPCDcalibRes: public TNamed
   Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
   void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
 			float scX=1.f,float scP=1.f,float scZ=1.f);
-  Bool_t  GetSmooth1D(float xQuery,float valerr[2],int np,const float* x,const float* y,const float* err,
-		      float w,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,Bool_t xIncreasing=kTRUE) const;
+  Bool_t  GetSmooth1D(double xQuery,double valerr[2],int np,const double* x,const double* y,const double* err,
+		      double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,Bool_t xIncreasing=kTRUE) const;
   Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
   void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
   //  

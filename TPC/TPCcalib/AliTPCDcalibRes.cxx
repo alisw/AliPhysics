@@ -395,7 +395,7 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   fHVDTimeCorr->FitSlicesY(gs,1,kNTCorrBins,0,"QNR",&arrH);
   TH1* hEnt = fHVDTimeCorr->ProjectionX("hEnt",1,ntbins);
   TH1* hmean = (TH1*)arrH[1];
-  float tArr[ntbins],dArr[ntbins],deArr[ntbins];
+  double tArr[ntbins],dArr[ntbins],deArr[ntbins];
   nAcc = 0;
   for (int i=0;i<ntbins;i++) {
     if (hEnt->GetBinContent(i+1)<kMinEntriesBin) continue;
@@ -408,14 +408,15 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   //
   delete fVDriftGraph;
   fVDriftGraph = new TGraphErrors(ntbins);
-  float resve[2];
+  double resve[2];
   int ngAcc = 0;
   for (int i=0;i<ntbins;i++) {
-    if (!GetSmooth1D(tArr[i],resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,kFALSE,kTRUE)) {
-      AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tArr[i]));
+    double tQuery = hEnt->GetBinCenter(i);
+    if (!GetSmooth1D(tQuery,resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,kFALSE,kTRUE)) {
+      AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tQuery));
       continue;
     }
-    fVDriftGraph->SetPoint(ngAcc,tArr[i],resve[0]);
+    fVDriftGraph->SetPoint(ngAcc,tQuery,resve[0]);
     fVDriftGraph->SetPointError(ngAcc,0.5,resve[1]);
     ngAcc++;
   }
@@ -3400,10 +3401,10 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 
 //_____________________________________________________________________
 Bool_t AliTPCDcalibRes::GetSmooth1D
-(float xQuery,                                            // query X
- float valerr[2],                                          // output array for value and its error
- int np, const float* x, const float* y, const float* err, // points x,y, optional error 
- float w, int kType,Bool_t usePol2,                       // kernel width and type, do we use pol1 or pol2 interpolation
+(double xQuery,                                            // query X
+ double valerr[2],                                          // output array for value and its error
+ int np, const double* x, const double* y, const double* err, // points x,y, optional error 
+ double w, int kType,Bool_t usePol2,                       // kernel width and type, do we use pol1 or pol2 interpolation
  Bool_t xIncreasing                                        // are points increasing in X
  ) const 
 {
@@ -3416,7 +3417,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
   //
   // select only points which have chance to contribute
   double ws = w;
-  float xmax = x[np-1], xmin = x[0];
+  double xmax = x[np-1], xmin = x[0];
   if (!xIncreasing) {
     for (int i=np;i--;) {
       if (xmax>x[i]) xmax = x[i];
