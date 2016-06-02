@@ -233,6 +233,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hTofM2","TOF in mod2",200,-1.e-6,1.e-6,200,0.,20.)) ;
   fOutputContainer->Add(new TH2F("hTofM3","TOF in mod3",200,-1.e-6,1.e-6,200,0.,20.)) ;
 
+  fOutputContainer->Add(new TH3F("hDispE","Dispersion vs E",120,0.,60.,100,0.,10.,100,0.,10.)) ;
+  
   char cPID[4][5] ;
   snprintf(cPID[0],5,"All") ;
   snprintf(cPID[1],5,"Disp");
@@ -240,8 +242,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   snprintf(cPID[3],5,"Both"); 
   
  
-  const Int_t nPt=500 ;
-  const Double_t ptMax=50. ;
+  const Int_t nPt=650 ;
+  const Double_t ptMax=65. ;
   const Int_t nM=400 ;
   const Double_t mMax=1. ;
 
@@ -333,18 +335,18 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   }  
 
  
-  fOutputContainer->Add(new TH2F(Form("QA_Cone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Cone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Cone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_PCone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_PCone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_PCone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
-  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Cone1_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Cone2_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Cone3_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone1_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone2_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone3_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone1_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone2_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone3_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone1_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone2_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone3_Tracks_cent%d",cen),"Cone energy",50,0.,50.,200,0.,50.)) ;
   }//centrality
   
   //MC  
@@ -683,7 +685,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     if((!fIsMC) && (clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut))
       continue ;          
     
-    
+   FillHistogram("hDispE", clu->E(),clu->GetM02(),clu->GetM20()) ;
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
@@ -1790,9 +1792,9 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph, Bool_t is
    const Double_t coneR2=0.4 ;
    const Double_t coneR3=0.5 ;
 
-   const Double_t cutEcone1=3. ;
-   const Double_t cutEcone2=4.5 ;
-   const Double_t cutEcone3=6.5 ;
+   const Double_t cutEcone1=1.5+0.8 ;
+   const Double_t cutEcone2=2.+0.8 ;
+   const Double_t cutEcone3=2.5+0.8 ;
 
    if(!ph) return 0 ;
 
