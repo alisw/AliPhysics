@@ -310,7 +310,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     return 4;
   }
   
-  if (qafilename.Contains("event_stat.root")) {
+  if (qafilename.Contains("event_stat")) {
     hHistStat = (TH2F*) fin->Get("fHistStat");
   } else {
     TList* statsout = (TList*) fin->Get("cstatsout");
@@ -549,6 +549,10 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
 }
 
 void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName){
+  if (!h2D) {
+    printf("h2D histo for HM trigger efficiency monitoring not found\n");
+    return;
+  }
   TCanvas* c = new TCanvas(Form("c_%s_%s",multOn,bitName),Form("c_%s_%s",multOn,bitName),1000,1000);
   c->Divide(2,2,0.001,0.001);
   c->cd(1);
