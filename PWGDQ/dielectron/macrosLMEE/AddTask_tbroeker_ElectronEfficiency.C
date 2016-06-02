@@ -46,11 +46,10 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
      (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/t/tbroker/supportFiles/%s .",resolutionfile.Data()))) ){
     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    if(bUsePtResolution){  task->SetResolutionPt( (TObjArray*) fRes->Get("PtResArr") ); }
-    else                {  task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr") ); }
+    task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr"), bUseRelPResolution );
     if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
     else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
-    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiResArr") );
+    task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiEleResArr"), (TObjArray*) fRes->Get("PhiPosResArr"));
   }
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
