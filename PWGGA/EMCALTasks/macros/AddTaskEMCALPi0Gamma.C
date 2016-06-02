@@ -100,7 +100,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   
   if(doManualBadmap) {
     if (badMapName == "defaultTender")
-      AliWarning("Cannot apply default tender bad map in task, now applying empty bad map. Specify own bad map to fix it.");
+      cout << "Cannot apply default tender bad map in task, now applying empty bad map. Specify own bad map to fix it." << endl;
     else {
       TFile *fBadMap = TFile::Open(pathToBadMap.Data());
       
