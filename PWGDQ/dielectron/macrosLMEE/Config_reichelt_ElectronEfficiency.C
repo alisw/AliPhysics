@@ -23,7 +23,7 @@ const Bool_t calcResolution = kTRUE;
 const Int_t  resoCutInstance = 0; // this cut number cannot be used correctly for other things.
 // use previously extracted resolutions (step 2).
 TString resolutionfile = "user/p/preichel/PWGDQ/dielectron/supportFiles/PbPb_resolution_cut16_deltaXvsX.root";
-Bool_t bUsePtResolution = kFALSE;
+Bool_t bUseRelPResolution = kTRUE;
 Bool_t bUseEtaResolution = kFALSE;
 Bool_t CalcEfficiencyRec = kFALSE;
 Bool_t CalcEfficiencyPoslabel = kFALSE;
@@ -170,7 +170,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   rejCutMee=-1;
   rejCutTheta=-1;
   rejCutPhiV=3.2; // relevant are values below pi, so initialization to 3.2 means disabling.
-  
+
   // -----
   // produce analysis filter by using functions in this config:
   // -----
@@ -189,7 +189,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
   {
     LMEECutLib* LMcutlib = new LMEECutLib();
     LMcutlib->SetIsESDTask(isESD);
-    
+
     // --------------------------------------------------
     // common settings:
     // --------------------------------------------------
@@ -232,7 +232,7 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       cout << " =============================== " << endl;
       return 0x0;
     }
-    
+
     if (!isPrefilterCutset) {
       anaFilter->AddCuts( LMcutlib->GetTrackCutsAna() );
     }
@@ -241,13 +241,13 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       // cuts for final analysis electrons
       anaFilterExtra->AddCuts( LMcutlib->GetTrackCutsAna() );
     }
-    
+
     // export selectedPairCutsPre so that function SetupPrefilterPairCuts() can use it. (not really nice but...)
     selectedPairCutsPre = LMcutlib->selectedPairCutsPre;
   }
   // -----
-  
-  
+
+
   //  std::cout << "__________ anaFilter->GetCuts()->Print() __________ cutInstance = " << cutInstance <<std::endl;
   //  anaFilter->GetCuts()->Print();
   //  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" <<std::endl;
@@ -264,22 +264,22 @@ Int_t SetupPairCutsAna(Int_t selectedPairCutsAna)
   std::cout << "SetupPairCutsAna()" <<std::endl;
   selectedPairCutsPre = selectedPairCutsAna;
   return SetupPrefilterPairCuts(-1);
-}  
+}
 
 //________________________________________________________________
 Int_t SetupPrefilterPairCuts(Int_t cutInstance)
 {
   std::cout << "SetupPrefilterPairCuts()" <<std::endl;
-  
+
   if (selectedPairCutsPre > -1) { // case with LMcutlib
     LMEECutLib* LMcutlib = new LMEECutLib();
     LMcutlib->selectedPairCutsPre = selectedPairCutsPre;
     //cout << " LMcutlib->selectedPairCutsPre = " << LMcutlib->selectedPairCutsPre << endl;
     Double_t dummy=-1;
-    
+
     // this function is NOT failsafe!!!
     // the version commented out by /* ... */ needs a cutgroup as top level object and one or more varcuts inside, which have internal cuts on the needed variables.
-    
+
     /*    AliDielectronCutGroup* cgPairCutsPre = (AliDielectronCutGroup*) LMcutlib->GetPairCutsPre();
      if(!cgPairCutsPre) {
      std::cout << "WARNING: no Prefilter PairCuts given (bad cutgroup)!" << std::endl;
@@ -297,10 +297,10 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
     //   AliDielectronCutGroup::GetNCuts() and ::GetCut()
     //   AliDielectronVarCuts::IsCutOnVariableX() and ::GetCutLimits()
     //
-    
+
     /*  for (Int_t iCutGroupCut=0; iCutGroupCut<cgPairCutsPre->GetNCuts(); iCutGroupCut++) {
      AliDielectronVarCuts* varcuti = (AliDielectronVarCuts*) cgPairCutsPre->GetCut(iCutGroupCut);  */
-    
+
     for (Int_t iCut=0; iCut<varcuti->GetNCuts(); iCut++) {
       if ( varcuti->IsCutOnVariableX(iCut, AliDielectronVarManager::kM) ) {
         if (rejCutMee>-1) { std::cout << "WARNING: rejCutMee was defined two times!" << std::endl; return -1; } // should take the stronger cut in that case...
@@ -331,12 +331,12 @@ Int_t SetupPrefilterPairCuts(Int_t cutInstance)
         return -1;
     }
   }
-  
+
   std::cout << "SetupPrefilterPairCuts() done!" <<std::endl;
   std::cout << "  rejCutMee   = " << rejCutMee <<std::endl;
   std::cout << "  rejCutTheta = " << rejCutTheta <<std::endl;
   std::cout << "  rejCutPhiV  = " << rejCutPhiV <<std::endl;
-  
+
   return 1;
 }
 
@@ -346,7 +346,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
 {
   std::cout << "SetupTrackCuts()" <<std::endl;
   //AliAnalysisCuts* trackCuts=0x0;
-  
+
   if(cutInstance == 0) {
     // reproduce AOD filter bit 4:
     AliESDtrackCuts *esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -354,7 +354,7 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     //esdTrackCuts->SetMaxDCAToVertexZ(3.2);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
+
     // additional or modified cuts: like in LMEECutLib::GetTrackCutsAna()
     esdTrackCuts->SetMaxDCAToVertexXY(1.);
     esdTrackCuts->SetMaxDCAToVertexZ(3.);
@@ -363,14 +363,14 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance)
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); //default is 0.8
     //
     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    
+
     // kinematic cuts:
     esdTrackCuts->SetPtRange(   0.4 , 3.5 );
     esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
     //    esdTrackCuts->SetPtRange(   0.399 , 3.499 );
     //    esdTrackCuts->SetEtaRange( -0.899 , 0.901 ); // on purpose to check if something gets mixed up...
   }
-  
+
   return esdTrackCuts;
   //  trackCuts = fesdTrackCuts;
   //  trackCuts->Print();
@@ -382,15 +382,15 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutInstance)
 {
   std::cout << "SetupPIDcuts()" <<std::endl;
   AliAnalysisCuts* pidCuts=0x0;
-  
+
   if(cutInstance == 0) {
     AliDielectronPID *pid = new AliDielectronPID("pidXtraPIn","pidXtraPIn");
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,      -3.  ,3. ,0.0, 100., kTRUE);
     pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,  -1.5 ,3. ,0.0, 100., kFALSE);
     pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,  -3.  ,3. ,0.0, 1.7 , kFALSE);
   }
-  
+
   pidCuts = pid;
   //pidCuts->Print();
-  return pidCuts;  
+  return pidCuts;
 }

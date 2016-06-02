@@ -97,11 +97,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetWriteTree(Bool_t write)                          {fWriteTree=write;}
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)          {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)          {fRandomizeDaughters=random;}
-  void          SetResolutionP(TObjArray *resArr)                   {fPResArr=resArr;}
-  void          SetResolutionPt(TObjArray *resArr)                  {fPtResArr=resArr;}
+  void          SetResolutionP(TObjArray *resArr, Bool_t b=kFALSE)  {fPResArr=resArr; fUseRelPResolution=b; }
   void          SetResolutionTheta(TObjArray *resArr)               {fThetaResArr=resArr;}
   void          SetResolutionEta(TObjArray *resArr)                 {fEtaResArr=resArr;}
-  void          SetResolutionPhi(TObjArray *resArr)                 {fPhiResArr=resArr;}
+  void          SetResolutionPhi(TObjArray *rEle, TObjArray *rPos=0x0)  {fPhiEleResArr=rEle; if(rPos) fPhiPosResArr=rPos; else fPhiPosResArr=rEle;}
   void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
   void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
 
@@ -210,11 +209,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   //std::vector<TH3F*>             fvReco_Pro; // be really careful if you need to implement this (see comments in UserExec).
 
   // histograms with reconstructed observables
-  TH3D*                           fNgen_Rec_Ele;
+  TH3D*                           fNgen1_Rec_Ele;
   TH3D*                           fNgen2_Rec_Ele;
   std::vector<TH3D*>              fvReco_Rec_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3D*>              fvReco_Rec_Ele_poslabel;  // store also result when using only tracks with positive label, for systematic checks.
-  TH3D*                           fNgen_Rec_Pos;
+  TH3D*                           fNgen1_Rec_Pos;
   TH3D*                           fNgen2_Rec_Pos;
   std::vector<TH3D*>              fvReco_Rec_Pos;           // store reconstructed positrons (N vs pT, eta, phi) per cutset.
   std::vector<TH3D*>              fvReco_Rec_Pos_poslabel;
@@ -285,12 +284,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   // external resolutions
   TObjArray*                      fPResArr;
-  TObjArray*                      fPtResArr;
+  Bool_t                          fUseRelPResolution;
   TObjArray*                      fThetaResArr;
   TObjArray*                      fEtaResArr;
-  TObjArray*                      fPhiResArr;
-  TH1D*                           fSmearing_Ele[6];
-  TH1D*                           fSmearing_Pos[6];
+  TObjArray*                      fPhiEleResArr;
+  TObjArray*                      fPhiPosResArr;
+
 
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
