@@ -40,8 +40,9 @@ class AliTPCDcalibRes: public TNamed
   enum {kEpanechnikovKernel, kGaussianKernel};  // defined kernels
   enum {kNSect=18,kNSect2=2*kNSect,kNROC=4*kNSect,kNPadRows=159, kNRowIROC=63, kNRowOROC1=64, kNRowOROC2=32};
   enum {kAlignmentBugFixedBit = AliTPCcalibAlignInterpolation::kAlignmentBugFixedBit};
-  enum {kVDriftCalibMode, kDistExtractMode, kDistClosureTestMode};
+  enum {kVDriftCalibMode, kDistExtractMode, kDistClosureTestMode,kNCollectModes};
   enum {kDistDone=BIT(0),kDispDone=BIT(1),kSmoothDone=BIT(2),kMasked=BIT(7)};
+  enum {kVDWithTOFBC=BIT(14),kVDWithoutTOFBC=BIT(15)};
   enum {kUseTRDonly,kUseTOFonly,kUseITSonly,kUseTRDorTOF,kNExtDetComb}; // which points to use
   enum {kSmtLinDim=4, kMaxSmtDim=7}; // max size of matrix for smoothing, for pol1 and pol2 options
   enum {kCtrITS,kCtrTRD,kCtrTOF,kCtrBC0,kCtrNtr,kCtrNbr}; // control branches for test stat
@@ -167,6 +168,7 @@ class AliTPCDcalibRes: public TNamed
   void InitGeom();
   THnF* CreateVoxelStatHisto(int sect);
   void    LoadVDrift();
+  void    MakeVDriftOCDB(TString targetOCDBstorage);
   Float_t GetDriftCorrection(float z, float x, float phi, int rocID);
   Float_t tgpXY(float x, float y, float q2p, float bz);
 
@@ -545,6 +547,7 @@ class AliTPCDcalibRes: public TNamed
   static const char* kControlBr[];
   static const char* kVoxName[];
   static const char* kResName[];
+  static const char* kModeName[];
   
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X

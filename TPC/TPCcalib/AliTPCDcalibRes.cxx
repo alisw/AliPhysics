@@ -1,10 +1,12 @@
 #include "AliTPCDcalibRes.h"
 #include "AliCDBPath.h"
 #include "AliCDBEntry.h"
+#include "AliCDBStorage.h"
 #include "AliGRPObject.h"
 #include "AliTriggerRunScalers.h"
 #include "AliTriggerScalersRecord.h"
 #include "AliDAQ.h"
+#include "AliTPCParam.h"
 #include <TKey.h>
 #include <TF2.h>
 
@@ -14,6 +16,7 @@ using std::swap;
 void trainCorr(int row, float* tzLoc, float* corrLoc);
 
 // make sure these branches are always connected in InitDeltaFile
+const char* AliTPCDcalibRes::kModeName[kNCollectModes] = {"VDrift calibration","Distortions extraction","Closure test"};
 const char* AliTPCDcalibRes::kControlBr[kCtrNbr] = {"itsOK","trdOK","tofOK","tofBC","nPrimTracks"}; 
 const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
@@ -418,6 +421,10 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   }
   for (int i=ngAcc;i<ntbins;i++) fVDriftGraph->RemovePoint(i); // eliminate extra points
   //
+  // flag if TOFBC was used for VDrift extraction
+  if (fUseTOFBC) fVDriftGraph->SetBit(kVDWithTOFBC);
+  else           fVDriftGraph->SetBit(kVDWithoutTOFBC);
+  //
   delete hEnt;
   arrH.Delete();
   //
@@ -782,6 +789,10 @@ void AliTPCDcalibRes::CollectData(const int mode)
   fNReadCallTot = 0;
   fNBytesReadTot = 0;
   //
+  AliInfo("***");
+  AliInfoF("***   Collecting data in mode: %s",kModeName[mode]);
+  AliInfo("***");
+  //
   float maxAbsResid = kMaxResid - kEps; // discard residuals exceeding this
   Bool_t correctVDrift = kTRUE;
   if (mode==kVDriftCalibMode) {
@@ -795,7 +806,17 @@ void AliTPCDcalibRes::CollectData(const int mode)
 		mode,fVDriftGraph,fVDriftParam);
       if (fFatalOnMissingDrift) AliFatal("Aborting...");
     }
+    // make sure TOF usage is consistent with that in VDrift extraction
+    Bool_t vdtofUsed1 = fVDriftGraph->TestBit(kVDWithTOFBC);
+    Bool_t vdtofUsed0 = fVDriftGraph->TestBit(kVDWithoutTOFBC);
+    if (vdtofUsed1 || vdtofUsed0) { // override to what was used in vdrift extraction
+      AliInfoF("VDrift has TOFBC flag %s, imposing in distortion map extraction",vdtofUsed1 ? "ON":"OFF");
+      if (vdtofUsed1) fUseTOFBC = kTRUE;
+      else            fUseTOFBC = kFALSE;
+    }
+    else AliInfoF("VDrift has TOFBC flags set, using user provided setting %s",fUseTOFBC ? "ON":"OFF");
   }
+  AliInfoF("TOFBC usage in window %.1f:%.1f is %s",fTOFBCMin,fTOFBCMax,fUseTOFBC ? "ON":"OFF");
   CreateLocalResidualsTrees(mode);
   //
   // if cheb object is present, do on-the-fly init to attach internal structures
@@ -2547,6 +2568,79 @@ Float_t AliTPCDcalibRes::SelKthMin(int k, int np, float* arr)
 
 //===============================================================
 
+//_________________________________________
+void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
+{
+  // write OCDB object for VDrift (simplified copy/paste of AliTPCcalibAlignInterpolation::MakeVDriftOCDB)
+  TObjArray * driftArray = new TObjArray();
+  //
+  Double_t atime[2]={0,0};
+  Double_t deltaZ[2]={0,0};
+  Double_t t0[2]={0,0};
+  Double_t vdgy[2]={0,0};
+  //
+  atime[0] = fVDriftGraph->GetX()[0];
+  atime[1] = fVDriftGraph->GetX()[fVDriftGraph->GetN()-1];
+  //
+  AliTPCParam param; // we need dummy param just to get the constant
+  //
+  for (Int_t ipoint=0; ipoint<=1; ipoint++){
+    deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK
+    vdgy[ipoint]=-(*fVDriftParam)[2];   // units OK
+    t0[ipoint]=-(*fVDriftParam)[0]/(1+(*fVDriftParam)[3]);       // t0 to be normalized to the ms
+    t0[ipoint]/=(param.GetDriftV()/1000000.); 
+  }
+  Double_t vdrifCorrRun=1./(1.+(*fVDriftParam)[3]);
+  //
+  TGraphErrors   *graphDELTAZ=0;
+  TGraphErrors   *graphT0=0;
+  TGraphErrors   *graphVDGY=0;
+  TGraphErrors   *graphDRIFTVD=0;
+  TGraphErrors   *graph=0;
+  //
+  TString grPrefix="ALIGN_B_ITS_TPC_";
+  //
+  graphDELTAZ=new TGraphErrors(2, atime, deltaZ);
+  graphDELTAZ->SetName(grPrefix+"DELTAZ");
+  driftArray->AddLast(graphDELTAZ);
+  graphT0=new TGraphErrors(2, atime, t0);
+  graphT0->SetName(grPrefix+"T0");
+  driftArray->AddLast(graphT0);
+  graphVDGY=new TGraphErrors(2, atime, vdgy);
+  graphVDGY->SetName(grPrefix+"VDGY");
+  driftArray->AddLast(graphVDGY);
+  //
+  // drift velocity
+  graph = new TGraphErrors(*fVDriftGraph);
+  graph->SetName(grPrefix+"DRIFTVD");
+  driftArray->AddLast(graph);
+  //
+  AliCDBStorage* targetStorage = 0x0;
+  if (targetOCDBstorage.Length()==0) {
+    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+  else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
+    targetStorage = AliCDBManager::Instance()->GetDefaultStorage();
+  }
+  else {
+    targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
+  }
+
+  AliCDBMetaData* metaData = new AliCDBMetaData;
+  metaData->SetObjectClassName("TObjArray");
+  metaData->SetResponsible("Marian Ivanov");
+  metaData->SetBeamPeriod(1);
+  metaData->SetAliRootVersion(">v5-07-20"); //AliRoot version
+  metaData->SetComment("AliTPCcalibAlignInterpolation Calibration of the time dependence of the drift velocity using Residual trees");
+  AliCDBId id1("TPC/Calib/TimeDrift", fRun, fRun);
+  
+  //now the entry owns the metadata, but NOT the data
+  AliCDBEntry *driftCDBentry=new AliCDBEntry(driftArray,id1,metaData,kFALSE);
+  targetStorage->Put(driftCDBentry); 
+  //
+  delete driftCDBentry;
+}
 
 //_________________________________________
 void AliTPCDcalibRes::LoadVDrift()
