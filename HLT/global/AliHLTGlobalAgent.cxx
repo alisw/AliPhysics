@@ -183,7 +183,7 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
   }
 
   if (esdInputs.Length()>0) {
-    esdInputs+=" TPC-HWCFDecoder TPC-ClusterTransformation";
+    esdInputs+=" TPC-HWCFDecoder TPC-ClusterTransformation TPC-compressed-cluster-ids";
     HLTInfo("Configuring inputs to global HLT ESD: %s", esdInputs.Data());
   } else {
     HLTWarning("No inputs to global HLT ESD found");

@@ -227,6 +227,7 @@ private:
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
   int fVerificationMode; //! mode for verification and unit tests
+  int fProvideClusterIds; //! provide blocks of HLT cluster ids 
   int fCreateFlags; //! Store cluster flags in compressed data
 
   float fMaxDeltaPad; //! maximum deviation in pad

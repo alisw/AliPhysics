@@ -52,6 +52,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fMode(kCompressionModeNone)
   , fDeflaterMode(kDeflaterModeNone)
   , fVerificationMode(0)
+  , fProvideClusterIds(0)
   , fCreateFlags(0)
   , fMaxDeltaPad(AliHLTTPCDefinitions::GetMaxClusterDeltaPad())
   , fMaxDeltaTime(AliHLTTPCDefinitions::GetMaxClusterDeltaTime())
@@ -177,7 +178,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // Loop over all input blocks in the event
   bool bHaveMC=(GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC))!=NULL;
-  if ((bHaveMC || fVerificationMode>0) && fpWrittenAssociatedClusterIds==NULL) {
+  if ((bHaveMC || fVerificationMode>0 || fProvideClusterIds ) && fpWrittenAssociatedClusterIds==NULL) {
     fpWrittenAssociatedClusterIds=new vector<AliHLTUInt32_t>;
   }
 
@@ -1154,7 +1155,19 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       if ((bMissingParam=(++i>=argc))) break;
       TString parameter=argv[i];
       if (parameter.IsDigit()) {
-	fVerificationMode=parameter.Atoi();
+	fVerificationMode=parameter.Atoi();	
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
+    // -cluster-ids
+    if (argument.CompareTo("-cluster-ids")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.IsDigit()) {
+	fProvideClusterIds = parameter.Atoi();
 	return 2;
       } else {
 	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());

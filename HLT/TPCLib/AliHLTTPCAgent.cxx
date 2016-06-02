@@ -269,11 +269,14 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
-    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "");
+    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "-cluster-ids 1");
     handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
     handler->CreateConfiguration("TPC-compression-monitoring-component", "TPCDataCompressorMonitor", "TPC-compression TPC-hwcfdata","-pushback-period=30");
     handler->CreateConfiguration("TPC-compression-monitoring", "ROOTFileWriter", "TPC-compression-monitoring-component","-concatenate-events -overwrite -datafile HLT.TPCDataCompression-statistics.root");
 
+    // compressed cluster ids 
+    handler->CreateConfiguration("TPC-compressed-cluster-ids", "BlockFilter"   , "TPC-compression", "-datatype 'CLIDSTRK' 'TPC ' -datatype 'REMCLIDS' 'TPC '");  
+ 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
     if (!bPublishRaw) {
