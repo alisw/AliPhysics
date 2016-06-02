@@ -294,7 +294,7 @@ protected:
   TH2                   *fHClustEnergyPtDCal;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySM;         //!histo for cluster energy vs. Supermodule
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis
-  TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
+  TH2                   *fHClustEnergyTime;       //!histo for cluster energy vs. time
   TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
   TH2			*fHClustEnergyNCell;      //!histo for cluster energy vs. cluster n cells
   // histograms for primary tracks
@@ -436,7 +436,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 17) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 18) // Analysis task for neutral pions in Pb+Pb
 };
 
 
