@@ -24,6 +24,10 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TMap.h"
+#include "TSystem.h"
+#include "TMath.h"
+#include "TArrayI.h"
 
 // MUON includes
 #include "AliMUONCDB.h"
@@ -32,6 +36,9 @@
 #include "AliMUONTriggerChamberEfficiency.h"
 #include "AliCDBManager.h"
 #include "AliCDBRunRange.h"
+#include "AliCDBId.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
 
 #endif
 
@@ -195,6 +202,134 @@ void BuildDefaultMap(TString outFilename="/tmp/defTrigChEff.root", Double_t glob
   outFile->Close();
 }
 
+
+//____________________________________________________________
+void BuildSystematicMap ( TString runList, Double_t globalSyst = -0.02, TString outputCDB = "local://CDB", TString inputCDB = "raw://", TString systematicPerBoard = "" )
+{
+  /// Build map with systematic uncertainties
+  /// The file systematicPerBoard is a text file containing the relative
+  /// deltas w.r.t. original efficiency in the format:
+  /// chamber(11-14) board(1-234) plane(0,1) delta
+  /// where 0 = bending plane and 1 = non-bending plane 
+
+  // Read run list
+  TArrayI runListArray(1000);
+  Int_t nruns=0;
+  if ( gSystem->AccessPathName(runList.Data()) ) {
+    runList.ReplaceAll(","," ");
+    TObjArray* arr = runList.Tokenize(" ");
+    TObjString* objStr = 0x0;
+    TIter nextRun(arr);
+    while ( (objStr = static_cast<TObjString*>(nextRun())) ) {
+      if ( objStr->String().IsDigit() ) runListArray[nruns++] = objStr->String().Atoi();
+    }
+    delete arr;
+  }
+  else {
+    ifstream inRunList(runList.Data());
+    TString currLine = "";
+    while ( ! inRunList.eof() ) {
+      currLine.ReadLine(inRunList);
+      currLine.ReplaceAll(","," ");
+      TObjArray* arr = currLine.Tokenize(" ");
+      TObjString* objStr = 0x0;
+      TIter nextRun(arr);
+      while ( (objStr = static_cast<TObjString*>(nextRun())) ) {
+        if ( objStr->String().IsDigit() ) runListArray[nruns++] = objStr->String().Atoi();
+      }
+      delete arr;
+    }
+    inRunList.close();
+  }
+  runListArray.Set(nruns);
+
+  // Read maps from input CDB
+  AliCDBManager* mgr = AliCDBManager::Instance();
+  mgr->SetDefaultStorage(inputCDB.Data());
+  TMap effMapsList;
+  AliCDBId* prevId = 0x0;
+  for ( Int_t irun=0; irun<runListArray.GetSize(); irun++ ) {
+    mgr->SetRun(runListArray[irun]);
+    AliCDBEntry* entry = mgr->Get(AliCDBPath("MUON/Calib/TriggerEfficiency"));
+    const AliCDBId cdbId = entry->GetId();
+    if ( prevId && cdbId.IsEqual(prevId) ) continue;
+    delete prevId;
+    prevId = static_cast<AliCDBId*>(cdbId.Clone());
+
+    AliMUONTriggerEfficiencyCells* effMap = static_cast<AliMUONTriggerEfficiencyCells*>(entry->GetObject());
+    effMapsList.Add(new TObjString(Form("%i_%i",cdbId.GetFirstRun(),cdbId.GetLastRun())),effMap->Clone());
+  }
+  delete prevId;
+
+
+  // Set global systematic variation
+  Int_t nPoints = 234*4*3;
+  TArrayD systDiff(nPoints);
+  systDiff.Reset(globalSyst);
+  if ( ! systematicPerBoard.IsNull() && gSystem->AccessPathName(systematicPerBoard.Data()) == 0 ) {
+    // If file with specific chamber variation exists, read values
+    TString currLine = "";
+    ifstream inFile(systematicPerBoard.Data());
+    while ( ! inFile.eof() ) {
+      currLine.ReadLine(inFile);
+      TObjArray* arr = currLine.Tokenize(" ");
+      if ( arr->GetEntries() >= 4 && static_cast<TObjString*>(arr->UncheckedAt(0))->String().IsDigit() ) {
+        Int_t ich = static_cast<TObjString*>(arr->UncheckedAt(0))->String().Atoi()%11;
+        Int_t iboard = static_cast<TObjString*>(arr->UncheckedAt(1))->String().Atoi()-1;
+        Int_t icount = static_cast<TObjString*>(arr->UncheckedAt(2))->String().Atoi();
+        Double_t systErr = static_cast<TObjString*>(arr->UncheckedAt(3))->String().Atof();
+        Int_t idx = ich*234*3+iboard*3+icount;
+        if ( idx < nPoints ) systDiff[idx] = systErr;
+      }
+      delete arr;
+    }
+    inFile.close();
+
+    // Set both planes uncertainty
+    // by default take the maximum uncertainty between bending and non-bending
+    for ( Int_t ich=0; ich<4; ich++ ) {
+      for ( Int_t iboard=0; iboard<234; iboard++ ) {
+        Int_t idx = ich*234*3+iboard*3;
+        Double_t diffBend = systDiff[idx];
+        Double_t diffNonBend = systDiff[idx+1];
+        systDiff[idx+2] = ( TMath::Abs(diffBend) > TMath::Abs(diffNonBend) ) ? diffBend : diffNonBend;
+      }
+    }
+  }
+
+  mgr->SetDefaultStorage(outputCDB.Data());
+
+  enum { kBendingEff, kNonBendingEff, kBothPlanesEff};
+  TString countTypeName[3] = {"bendPlane", "nonBendPlane","bothPlanes"};
+
+  TIter next(&effMapsList);
+  TObject* key = 0x0;
+  while ( ( key = next() ) ) {
+    TString runRange = key->GetName();
+    AliMUONTriggerEfficiencyCells* effMap = static_cast<AliMUONTriggerEfficiencyCells*>(effMapsList.GetValue(key));
+    for ( Int_t ich=0; ich<4; ich++ ) {
+      TString histoName = Form("allTracksCountBoardCh%i", 11+ich);
+      TH1* auxHisto = static_cast<TH1*>(effMap->GetHistoList()->FindObject(histoName));
+      for ( Int_t icount=0; icount<3; icount++ ) {
+        histoName = Form("%sCountBoardCh%i", countTypeName[icount].Data(), 11+ich);
+        TH1* histo = static_cast<TH1*>(effMap->GetHistoList()->FindObject(histoName));
+        for ( Int_t iboard=0; iboard<234; iboard++ ) {
+          Int_t idx = ich*234*3+iboard*3+icount;
+          Int_t ibin = iboard+1;
+          Double_t countDiff = TMath::Nint(systDiff[idx] * auxHisto->GetBinContent(ibin));
+          Double_t countOrig = histo->GetBinContent(ibin);
+          Double_t newCount = countOrig+countDiff;
+          histo->SetBinContent(ibin,newCount);
+          if ( histo->GetSumw2N() > 0 ) histo->SetBinError(ibin,TMath::Sqrt(newCount));
+        }
+      }
+    }
+    TObjArray* arr = runRange.Tokenize("_");
+    Int_t firstRun = static_cast<TObjString*>(arr->UncheckedAt(0))->String().Atoi();
+    Int_t lastRun = static_cast<TObjString*>(arr->UncheckedAt(1))->String().Atoi();
+    AliMUONCDB::WriteToCDB(effMap, "MUON/Calib/TriggerEfficiency", firstRun, lastRun, "Measured efficiencies");
+  }
+}
 
 //____________________________________________________________
 void CompleteEfficiency(TString effFileWithHoles, TString effFileCompatible, TString outFilename)
