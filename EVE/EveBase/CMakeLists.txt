@@ -101,6 +101,9 @@ set(SRCS
 
 # Sources if ZMQ installed
 if(ZEROMQ_FOUND)
+    include_directories(
+                        ${ZEROMQ_INCLUDE_DIR}
+                        )
     set(SRCS
         ${SRCS}
         AliEveDataSourceHLTZMQ.cxx
