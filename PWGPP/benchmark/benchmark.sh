@@ -390,7 +390,7 @@ goCPass()
 
   # this would be relevant only for cpass0 :
   # custom initial specific OCDB objects provided by the user at the beginning
-  [[ -f localOCDB.tgz ]] && mv cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+  [[ -f localOCDB.tgz ]] && mv localOCDB.tgz cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
 
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   [[ -f $ocdbTarball ]] \
