@@ -77,26 +77,7 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fAsynchronBB(0.5),
   fAsynchronBG(0.5)
 {
-  fQAParam = (AliADQAParam*)GetQAParam();
-  fSatMed = fQAParam->GetSatMed();
-  fSatHigh = fQAParam->GetSatHigh();
-  fSatHuge = fQAParam->GetSatHuge();
-  fMaxPedDiff = fQAParam->GetMaxPedDiff();
-  fMaxPedWidth = fQAParam->GetMaxPedWidth();
-  fChargeChannelZoomMin = fQAParam->GetChargeChannelZoomMin();
-  fChargeChannelZoomMax = fQAParam->GetChargeChannelZoomMax();
-  fTimeRatioBBZoomMin =  fQAParam->GetTdcTimeMinBBFlag();
-  fTimeRatioBBZoomMax =  fQAParam->GetTdcTimeMaxBBFlag();
-  fTimeRatioBGZoomMin =  fQAParam->GetTdcTimeMinBGFlag();
-  fTimeRatioBGZoomMax =  fQAParam->GetTdcTimeMaxBGFlag();
-  fChargeTrendMin = fQAParam->GetChargeTrendMin();
-  fChargeTrendMax = fQAParam->GetChargeTrendMax();
-  fMaxNoTimeRate = fQAParam->GetMaxNoTimeRate();
-  fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
-  fMaxBBVariation = fQAParam->GetMaxBBVariation();
-  fMaxBGVariation = fQAParam->GetMaxBGVariation();
-  fAsynchronBB = fQAParam->GetAsynchronBB();
-  fAsynchronBG = fQAParam->GetAsynchronBG();
+  
   
 }
 
@@ -791,6 +772,27 @@ Double_t AliADQAChecker::CheckEsds(TObjArray * list) const
 void AliADQAChecker::Init(const AliQAv1::DETECTORINDEX_t det) 
 {
   // intialises QA and QA checker settings
+  fQAParam = (AliADQAParam*)GetQAParam();
+  fSatMed = fQAParam->GetSatMed();
+  fSatHigh = fQAParam->GetSatHigh();
+  fSatHuge = fQAParam->GetSatHuge();
+  fMaxPedDiff = fQAParam->GetMaxPedDiff();
+  fMaxPedWidth = fQAParam->GetMaxPedWidth();
+  fChargeChannelZoomMin = fQAParam->GetChargeChannelZoomMin();
+  fChargeChannelZoomMax = fQAParam->GetChargeChannelZoomMax();
+  fTimeRatioBBZoomMin =  fQAParam->GetTdcTimeMinBBFlag();
+  fTimeRatioBBZoomMax =  fQAParam->GetTdcTimeMaxBBFlag();
+  fTimeRatioBGZoomMin =  fQAParam->GetTdcTimeMinBGFlag();
+  fTimeRatioBGZoomMax =  fQAParam->GetTdcTimeMaxBGFlag();
+  fChargeTrendMin = fQAParam->GetChargeTrendMin();
+  fChargeTrendMax = fQAParam->GetChargeTrendMax();
+  fMaxNoTimeRate = fQAParam->GetMaxNoTimeRate();
+  fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
+  fMaxBBVariation = fQAParam->GetMaxBBVariation();
+  fMaxBGVariation = fQAParam->GetMaxBGVariation();
+  fAsynchronBB = fQAParam->GetAsynchronBB();
+  fAsynchronBG = fQAParam->GetAsynchronBG();
+  
   AliQAv1::Instance(det) ; 
   Float_t * hiValue = new Float_t[AliQAv1::kNBIT] ; 
   Float_t * lowValue = new Float_t[AliQAv1::kNBIT] ;
