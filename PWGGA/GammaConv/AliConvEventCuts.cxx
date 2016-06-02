@@ -2014,10 +2014,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                              70, 85, 99, 115, 132,
                                              150, 169, 190, 212, 235,
                                              1000};
-            Double_t weightsBins[20]     = {  0.955373, 0.821992, 0.780789, 0.505334, 0.259068,
-                                              0.127333, 0.0466297, 0.0177833, 0.00793359, 0.00287752,
-                                              0.00120152, 0.00045384, 0.000233819, 0.000114206, 5.86274e-05,
-                                              3.1154e-05, 1.77343e-05, 9.71544e-06, 5.48182e-06, 8.08904e-06}; //preliminary estimates
+            Double_t weightsBins[20]     = {  0.956415, 0.821379, 0.778703, 0.505199, 0.258559,
+                                              0.127309, 0.0465009, 0.0177292, 0.00793543, 0.00287085,
+                                              0.00120106, 0.000452849, 0.000233323, 0.000114117, 5.84248e-05,
+                                              3.10809e-05, 1.76776e-05, 9.68772e-06, 5.46624e-06, 8.071e-06};
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 20) weight = weightsBins[bin];
@@ -2158,10 +2158,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                            70, 85, 99, 115, 132,
                                            150, 169, 190, 212, 235,
                                            1000};
-          Double_t weightsBins[20]     = {  0.955373, 0.821992, 0.780789, 0.505334, 0.259068,
-                                            0.127333, 0.0466297, 0.0177833, 0.00793359, 0.00287752,
-                                            0.00120152, 0.00045384, 0.000233819, 0.000114206, 5.86274e-05,
-                                            3.1154e-05, 1.77343e-05, 9.71544e-06, 5.48182e-06, 8.08904e-06}; //preliminary estimates
+          Double_t weightsBins[20]     = {  0.956415, 0.821379, 0.778703, 0.505199, 0.258559,
+                                            0.127309, 0.0465009, 0.0177292, 0.00793543, 0.00287085,
+                                            0.00120106, 0.000452849, 0.000233323, 0.000114117, 5.84248e-05,
+                                            3.10809e-05, 1.76776e-05, 9.68772e-06, 5.46624e-06, 8.071e-06};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
