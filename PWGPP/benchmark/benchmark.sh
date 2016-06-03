@@ -747,6 +747,7 @@ goMergeCPass()
                                "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                                "${batchWorkingDirectory}/${mergingScript}"
                                "${batchWorkingDirectory}/OCDB.root"
+                               "${batchWorkingDirectory}/localOCDB.tgz"
                                "${batchWorkingDirectory}/localOCDBaccessConfig.C" )
        filesMergeCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/${mergingScript}"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeByComponent.C"
