@@ -6,6 +6,7 @@
 #include "AliTriggerRunScalers.h"
 #include "AliTriggerScalersRecord.h"
 #include "AliDAQ.h"
+#include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include <TKey.h>
 #include <TF2.h>
@@ -318,7 +319,8 @@ void AliTPCDcalibRes::CalibrateVDrift()
   ntr2BinBCon  = fNominalTimeBin/duration*statEstBCon;
   ntr2BinBCoff = fNominalTimeBin/duration*statEstBCoff;
   AliInfoF("Estimated Ntracks per time bin: with(w/o) TOF BC: %d(%d)",ntr2BinBCon,ntr2BinBCoff);
-  if ( ntr2BinBCon<(nWantedTracks+fMinTracksToUse)/2 ) useTOFBC = kFALSE; // try to keep stat. high
+  //  if ( ntr2BinBCon<(nWantedTracks+fMinTracksToUse)/2 ) useTOFBC = kFALSE; // try to keep stat. high
+  if ( ntr2BinBCon<nWantedTracks ) useTOFBC = kFALSE; // try to keep stat. high
   //
   if (!useTOFBC && fUseTOFBC) {
     AliWarning("Switching OFF requested TOF BC validation due to statistics");
@@ -664,7 +666,7 @@ void AliTPCDcalibRes::Init()
   //
   AliInfoF("Run time: GRP:%lld:%lld |CTP:%lld:%lld |User:%lld:%lld",fTMinGRP,fTMaxGRP,fTMinCTP,fTMaxCTP,fTMin,fTMax);
   //
-  InitGeom();
+  InitFieldGeom();
   SetName(Form("run%d_%lld_%lld",fRun,fTMin,fTMax));
   SetTitle(IsA()->GetName());
   //
@@ -844,7 +846,7 @@ Bool_t AliTPCDcalibRes::EstimateChunkStatistics()
   // make rough estimate of statistics with different options
   AliInfo("Performing rough statistics check");
   if (!fInitDone) Init();
-  if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
+  if (!AliGeomManager::GetGeometry()) InitFieldGeom(); // in case started from saved object
   // 
   // pick 1st chunk
   int nChunks = (!fInputChunks) ? ParseInputList() : fInputChunks->GetEntriesFast();
@@ -901,7 +903,7 @@ void AliTPCDcalibRes::CollectData(const int mode)
   const float kEps = 1e-6;
   const float q2ptIniTolerance = 1.5;
   if (!fInitDone) Init();
-  if (!AliGeomManager::GetGeometry()) InitGeom(); // in case started from saved object
+  if (!AliGeomManager::GetGeometry()) InitFieldGeom(); // in case started from saved object
   //
   TStopwatch swTot;
   swTot.Start();
@@ -2081,30 +2083,29 @@ Bool_t AliTPCDcalibRes::GetTruncNormMuSig(double a, double b, double &mean, doub
 }
 
 //_________________________________________________
-void AliTPCDcalibRes::InitGeom()
+void AliTPCDcalibRes::InitFieldGeom(Bool_t field,Bool_t geom)
 {
   // init geometry and field
   // this requires the field and the geometry ...
   if (fRun<1) AliFatal("Run number is not provided");
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (fOCDBPath.IsNull()) fOCDBPath = "raw://";
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(fOCDBPath);
+  if (man->GetRun()!=fRun) man->SetRun(fRun);
+  //
   Bool_t geomOK = AliGeomManager::GetGeometry() != 0;
-  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-  if (!geomOK || !fld) { // need to setup ocdb?
-    AliCDBManager* man = AliCDBManager::Instance();
-    if (fOCDBPath.IsNull()) fOCDBPath = "raw://";
-    if (!man->IsDefaultStorageSet()) man->SetDefaultStorage(fOCDBPath);
-    if (man->GetRun()!=fRun) man->SetRun(fRun);
-  }
-  if (!geomOK) {
+  if (geom && !geomOK) {
     AliGeomManager::LoadGeometry();
     AliGeomManager::ApplyAlignObjsFromCDB("TPC");
   }
-  if (!fld) {
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld && field) {
     AliGRPManager grpMan;
     grpMan.ReadGRPEntry();
     grpMan.SetMagField();
     fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   }
-  fBz = fld->SolenoidField();
+  if (fld) fBz = fld->SolenoidField();
 }
 
 
@@ -2743,6 +2744,8 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   // write OCDB object for VDrift (simplified copy/paste of AliTPCcalibAlignInterpolation::MakeVDriftOCDB)
   TObjArray * driftArray = new TObjArray();
   //
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld) InitFieldGeom(kTRUE,kFALSE);
   Double_t atime[2]={0,0};
   Double_t deltaZ[2]={0,0};
   Double_t t0[2]={0,0};
@@ -2751,13 +2754,13 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   atime[0] = fVDriftGraph->GetX()[0];
   atime[1] = fVDriftGraph->GetX()[fVDriftGraph->GetN()-1];
   //
-  AliTPCParam param; // we need dummy param just to get the constant
+  AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters(); // just to get Vdrift
   //
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
     deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK
     vdgy[ipoint]=-(*fVDriftParam)[2];   // units OK
     t0[ipoint]=-(*fVDriftParam)[0]/(1+(*fVDriftParam)[3]);       // t0 to be normalized to the ms
-    t0[ipoint]/=(param.GetDriftV()/1000000.); 
+    t0[ipoint]/=(param->GetDriftV()/1000000.); 
   }
   Double_t vdrifCorrRun=1./(1.+(*fVDriftParam)[3]);
   //
@@ -2767,7 +2770,7 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   TGraphErrors   *graphDRIFTVD=0;
   TGraphErrors   *graph=0;
   //
-  TString grPrefix="ALIGN_B_ITS_TPC_";
+  TString grPrefix="ALIGN_ITSB_TPC_";
   //
   graphDELTAZ=new TGraphErrors(2, atime, deltaZ);
   graphDELTAZ->SetName(grPrefix+"DELTAZ");
@@ -2782,6 +2785,11 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   // drift velocity
   graph = new TGraphErrors(*fVDriftGraph);
   graph->SetName(grPrefix+"DRIFTVD");
+  Int_t npoints = graph->GetN();
+  for (Int_t ipoint=0; ipoint<npoints; ipoint++) {
+    graph->GetY()[ipoint]  = (vdrifCorrRun*(1-graph->GetY()[ipoint]))-1.;
+    graph->GetEY()[ipoint] = vdrifCorrRun*graph->GetEY()[ipoint];
+  }
   driftArray->AddLast(graph);
   //
   AliCDBStorage* targetStorage = 0x0;

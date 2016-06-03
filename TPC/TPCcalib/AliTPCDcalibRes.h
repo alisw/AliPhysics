@@ -168,7 +168,7 @@ class AliTPCDcalibRes: public TNamed
   void ProcessVoxelDispersions(int np, const float* tg, float *dy, bres_t& voxRes);
   Int_t ValidateVoxels(int isect);
   //
-  void InitGeom();
+  void InitFieldGeom(Bool_t field=kTRUE,Bool_t geom=kTRUE);
   THnF* CreateVoxelStatHisto(int sect);
   void    LoadVDrift();
   void    MakeVDriftOCDB(TString targetOCDBstorage);
