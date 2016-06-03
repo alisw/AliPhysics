@@ -390,7 +390,7 @@ goCPass()
 
   # this would be relevant only for cpass0 :
   # custom initial specific OCDB objects provided by the user at the beginning
-  [[ -f localOCDB.tgz ]] && mv localOCDB.tgz cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
+  [[ -f localOCDB.tgz && $cpass==0 ]] && tar xzvvf localOCDB.tgz
 
   ocdbTarball=cpass$(($cpass-1)).localOCDB.${runNumber}.tgz
   [[ -f $ocdbTarball ]] \
@@ -805,6 +805,10 @@ goMergeCPass()
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   alirootInfo > ALICE_ROOT.log
+
+  # this would be relevant only for cpass0 :
+  # custom initial specific OCDB objects provided by the user at the beginning
+  [[ -f localOCDB.tgz && $cpass==0 ]] && tar xzvvf localOCDB.tgz
 
   # Configure local OCDB storage (a macro is produced). Only used in MergeCPass1 but could be used
   # in CPass0 too. It's harmless in any case.
@@ -1457,7 +1461,7 @@ goMakeLocalOCDBaccessConfig()
   echo
   echo creating the specific storage script
   echo   localOCDBaccessConfig.C
-  echo   based on OCDB: ${localOCDBaccessConfig}
+  echo   based on OCDB: ${localOCDBpathCPass0}
   echo
 
   local tempLocalOCDB=""
