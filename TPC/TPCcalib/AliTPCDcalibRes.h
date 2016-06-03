@@ -136,7 +136,6 @@ class AliTPCDcalibRes: public TNamed
   Int_t GetSigmaTVDrift()  const {return fSigmaTVD;}
   void  SetDeltaTVDrift(int v=120) {fDeltaTVD = v;}
   void  SetSigmaTVDrift(int v=600) {fSigmaTVD = v;}
-
   //
   void ProcessFromDeltaTrees();
   void ProcessFromLocalBinnedTrees();
@@ -241,6 +240,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetMinTracksPerVDBin()        const {return fMinTracksPerVDBin;}
   Int_t   GetNTestTracks()              const {return fNTestTracks;}
   Float_t GetTestStat(int row, int col) const {return fTestStat[row][col];}
+  TGraph*  GetLumiGraph() const {return (TGraph*) fLumiCTPGraph;}
+  Float_t  GetLumiCOG()   const {return fLumiCOG;}
   //
   Int_t   GetXBinExact(float x);
   Float_t GetY2X(int ix, int iy);
@@ -499,11 +500,12 @@ class AliTPCDcalibRes: public TNamed
   Float_t  fValidFracXBin[kNSect2][kNPadRows]; // fraction of voxels valid per padrow
   Int_t    fNSmoothingFailedBins[kNSect2];     // number of failed bins/sector, should be 0 to produce parameterization
   TBits    fXBinIgnore[kNSect2];    // flag to ignore Xbin
+  Float_t  fLumiCOG;                // COG lumi for timebin
+  TGraph*  fLumiCTPGraph;           // lumi graph from CTP
   // ------------------------------VDrift correction
   TVectorD     *fVDriftParam;
   TGraphErrors *fVDriftGraph;  
   Float_t       fCorrTime;   //! 
-
   // -----------------------------Results of processing
   bres_t *fSectGVoxRes[kNSect2];         //! [fNGVoxPerSector] sectors results for geometric voxel
   TTree* fStatTree;                      //! tree with voxels statistics
@@ -568,7 +570,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,14);
+  ClassDef(AliTPCDcalibRes,15);
 };
 
 //________________________________________________________________

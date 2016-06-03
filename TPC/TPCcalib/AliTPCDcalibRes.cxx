@@ -8,6 +8,7 @@
 #include "AliDAQ.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
+#include "AliLumiTools.h"
 #include <TKey.h>
 #include <TF2.h>
 
@@ -164,6 +165,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fTOFBCTestH(0)
   ,fHVDTimeInt(0)
   ,fHVDTimeCorr(0)
+  ,fLumiCOG(0)
+  ,fLumiCTPGraph(0)
   ,fVDriftParam(0)
   ,fVDriftGraph(0)
   ,fCorrTime(0)
@@ -2939,6 +2942,7 @@ void AliTPCDcalibRes::WriteResTree()
   TFile* flOut = new TFile(GetVoxResFileName(),"recreate");
   TTree* resTree = new TTree("voxRes","final distortions, see GetListOfAliases");
   resTree->Branch("res", &voxRes);
+  resTree->Branch("L",&fLumiCOG);
   for (int i=0;i<kVoxDim;i++) {
     resTree->SetAlias(kVoxName[i],Form("bvox[%d]",i));
     resTree->SetAlias(Form("%sAV",kVoxName[i]),Form("stat[%d]",i));
@@ -3762,6 +3766,10 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   //
   // register tracks rate for lumi weighting
   fChebCorr->SetTracksRate(ExtractTrackRate());
+  //
+  // calculate weighted lumi
+  fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
+  fLumiCOG = fChebCorr->GetLuminosityCOG(fLumiCTPGraph);
   //
   AliSysInfo::AddStamp("CreateCorrectionObject",1,0,0,0);
 }
