@@ -48,15 +48,13 @@ class AliEMCALGeometry;
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include "AliTLorentzVector.h"
 #include "THistManager.h"
 
 #include "AliAnalysisTaskEmcalLight.h"
 #include "AliJetContainer.h"
-
-using std::vector;
-using std::list;
 
 class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 {
@@ -361,13 +359,13 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected
     UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
     Bool_t                             fInhibit               ; ///<  Inhibit the task
-    vector<AliHFJetDefinition>         fJetDefinitions        ; ///<  Jet definitions
+    std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
-    vector<AliDmesonJetInfo>           fDmesonJets            ; //!<! Array containing the D meson jets
+    std::vector<AliDmesonJetInfo>      fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
     AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
@@ -430,7 +428,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
-  list<AnalysisEngine> fAnalysisEngines           ; ///<  Array of analysis parameters
+  std::list<AnalysisEngine>
+                       fAnalysisEngines           ; ///<  Array of analysis parameters
   UInt_t               fEnabledAxis               ; ///<  Use bit defined in EAxis_t to enable axis in the THnSparse
   Bool_t               fTreeOutput                ; ///<  If true, output will be posted in a TTree rather than a THnSparse
   THistManager         fHistManager               ; ///<  Histogram manager

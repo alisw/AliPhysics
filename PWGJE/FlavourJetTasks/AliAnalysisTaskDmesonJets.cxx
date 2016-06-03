@@ -54,12 +54,12 @@ void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
   fD.SetPtEtaPhiE(0,0,0,0);
   fSoftPionPt = 0;
   fInvMass2Prong = 0;
-  for (std::map<std::string, AliJetInfo>::iterator it = fJets.begin(); it != fJets.end(); it++) {
-    (*it).second.fMomentum.SetPtEtaPhiE(0,0,0,0);
-    (*it).second.fNConstituents = 0;
-    (*it).second.fNEF = 0;
-    (*it).second.fMaxChargedPt = 0;
-    (*it).second.fMaxNeutralPt = 0;
+  for (auto &jet : fJets) {
+    jet.second.fMomentum.SetPtEtaPhiE(0,0,0,0);
+    jet.second.fNConstituents = 0;
+    jet.second.fNEF = 0;
+    jet.second.fMaxChargedPt = 0;
+    jet.second.fMaxNeutralPt = 0;
   }
 }
 
@@ -69,9 +69,9 @@ void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Print() const
   Printf("Printing D Meson Jet object.");
   Printf("D Meson: pT = %.3f, eta = %.3f, phi = %.3f, inv. mass = %.3f", fD.Pt(), fD.Eta(), fD.Phi_0_2pi(), fD.M());
   Printf("Soft pion pT: %.3f. 2-Prong Invariant mass = %.3f", fSoftPionPt, fInvMass2Prong);
-  for (std::map<std::string, AliJetInfo>::const_iterator it = fJets.begin(); it != fJets.end(); it++) {
-    Printf("Jet %s: pT = %.3f, eta = %.3f, phi = %.3f", (*it).first.c_str(), (*it).second.Pt(), (*it).second.Eta(), (*it).second.Phi_0_2pi());
-    Printf("Jet N Consituents = %d", (*it).second.fNConstituents);
+  for (auto &jet : fJets) {
+    Printf("Jet %s: pT = %.3f, eta = %.3f, phi = %.3f", jet.first.c_str(), jet.second.Pt(), jet.second.Eta(), jet.second.Phi_0_2pi());
+    Printf("Jet N Consituents = %d", jet.second.fNConstituents);
   }
 }
 
@@ -1299,15 +1299,14 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
   std::map<int, AliDmesonJetInfo> dMesonJets;
 
-  for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
-    AliHFJetDefinition* jetDef = &(*itdef);
+  for (auto &jetDef : fJetDefinitions) {
 
     fFastJetWrapper->Clear();
-    fFastJetWrapper->SetR(jetDef->fRadius);
-    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef->fJetAlgo));
-    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef->fRecoScheme));
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
 
-    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
 
     fFastJetWrapper->Run();
@@ -1336,7 +1335,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
             (*dMesonJetIt).second.fD.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->E());
           }
 
-          (*dMesonJetIt).second.fJets[jetDef->GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
+          (*dMesonJetIt).second.fJets[jetDef.GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
           break;
         }
       }
@@ -1386,12 +1385,11 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
 
   Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
-  for (std::vector<AliHFJetDefinition>::const_iterator it = fJetDefinitions.begin(); it != fJetDefinitions.end(); it++) {
-    const AliHFJetDefinition* jetDef = &(*it);
+  for (auto &jetDef : fJetDefinitions) {
 
-    AliDebug(2,Form("Now working on '%s'", jetDef->GetName()));
+    AliDebug(2,Form("Now working on '%s'", jetDef.GetName()));
 
-    Double_t radius = jetDef->fRadius;
+    Double_t radius = jetDef.fRadius;
 
     TString  title[30] = {""};
     Int_t    nbins[30] = {0 };
@@ -1521,7 +1519,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
       dim++;
     }
 
-    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef.GetName());
     THnSparse* h = fHistManager->CreateTHnSparse(hname,hname,dim,nbins,min,max);
     for (Int_t j = 0; j < dim; j++) {
       h->GetAxis(j)->SetTitle(title[j]);
@@ -1599,26 +1597,24 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillHnSparse(Bool_t applyKinCu
     }
   }
 
-  for (std::vector<AliHFJetDefinition>::iterator itdef = fJetDefinitions.begin(); itdef != fJetDefinitions.end(); itdef++) {
+  for (auto &jetDef : fJetDefinitions) {
 
-    AliHFJetDefinition* jetDef = &(*itdef);
-
-    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef->GetName());
+    hname = TString::Format("%s/%s/fDmesonJets", GetName(), jetDef.GetName());
     THnSparse* h = static_cast<THnSparse*>(fHistManager->FindObject(hname));
 
     for (Int_t id = 0; id < fDmesonJets.size(); id++) {
-      const AliJetInfo* jet = fDmesonJets[id].GetJet(jetDef->GetName());
+      const AliJetInfo* jet = fDmesonJets[id].GetJet(jetDef.GetName());
       if (!jet) continue;
-      if (!jetDef->IsJetInAcceptance(*jet)) {
-        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), jetDef->GetName());
+      if (!jetDef.IsJetInAcceptance(*jet)) {
+        hname = TString::Format("%s/%s/fHistRejectedJetPt", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Pt());
-        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), jetDef->GetName());
+        hname = TString::Format("%s/%s/fHistRejectedJetPhi", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Phi_0_2pi());
-        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), jetDef->GetName());
+        hname = TString::Format("%s/%s/fHistRejectedJetEta", GetName(), jetDef.GetName());
         fHistManager->FillTH1(hname, jet->Eta());
         continue;
       }
-      FillHnSparse(h, fDmesonJets[id], (*itdef).GetName());
+      FillHnSparse(h, fDmesonJets[id], jetDef.GetName());
     }
   }
 
@@ -1824,108 +1820,107 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TH1* h = 0;
 
   ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for task '%s' (%lu analysis engines)", GetName(), fAnalysisEngines.size());
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* param = &(*it);
-    ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param->GetName(), param->fJetDefinitions.size());
+  for (auto &param : fAnalysisEngines) {
+    ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param.GetName(), param.fJetDefinitions.size());
 
-    fHistManager.CreateHistoGroup(param->GetName());
+    fHistManager.CreateHistoGroup(param.GetName());
 
-    param->fHistManager = &fHistManager;
+    param.fHistManager = &fHistManager;
 
-    hname = TString::Format("%s/fHistNAcceptedDmesons", param->GetName());
+    hname = TString::Format("%s/fHistNAcceptedDmesons", param.GetName());
     htitle = hname + ";Number of D accepted meson candidates;counts";
     h = fHistManager.CreateTH1(hname, htitle, 51, -0.5, 50.5);
 
-    hname = TString::Format("%s/fHistNDmesons", param->GetName());
+    hname = TString::Format("%s/fHistNDmesons", param.GetName());
     htitle = hname + ";Number of D meson candidates;counts";
     h = fHistManager.CreateTH1(hname, htitle, 101, -0.5, 100.5);
 
-    hname = TString::Format("%s/fHistNEvents", param->GetName());
+    hname = TString::Format("%s/fHistNEvents", param.GetName());
     htitle = hname + ";Event status;counts";
     h = fHistManager.CreateTH1(hname, htitle, 2, 0, 2);
     h->GetXaxis()->SetBinLabel(1, "Accepted");
     h->GetXaxis()->SetBinLabel(2, "Rejected");
 
-    hname = TString::Format("%s/fHistEventRejectionReasons", param->GetName());
+    hname = TString::Format("%s/fHistEventRejectionReasons", param.GetName());
     htitle = hname + ";Rejection reason;counts";
     h = fHistManager.CreateTH1(hname, htitle, 32, 0, 32);
 
-    hname = TString::Format("%s/fHistRejectedDMesonPt", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonPt", param.GetName());
     htitle = hname + ";#it{p}_{T,D} (GeV/#it{c});counts";
     fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
 
-    hname = TString::Format("%s/fHistRejectedDMesonEta", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonEta", param.GetName());
     htitle = hname + ";#it{#eta}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
 
-    hname = TString::Format("%s/fHistRejectedDMesonPhi", param->GetName());
+    hname = TString::Format("%s/fHistRejectedDMesonPhi", param.GetName());
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
 
-    if (param->fCandidateType == kD0toKpi) {
-      hname = TString::Format("%s/fHistRejectedDMesonInvMass", param->GetName());
+    if (param.fCandidateType == kD0toKpi) {
+      hname = TString::Format("%s/fHistRejectedDMesonInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, param->fMinMass, param->fMaxMass);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins, param.fMinMass, param.fMaxMass);
     }
-    else if (param->fCandidateType == kDstartoKpipi) {
+    else if (param.fCandidateType == kDstartoKpipi) {
       Double_t min = 0;
       Double_t max = 0;
 
-      hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", param->GetName());
+      hname = TString::Format("%s/fHistRejectedDMeson2ProngInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      CalculateMassLimits(param->fMaxMass - param->fMinMass, 421, param->fNMassBins, min, max);
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins, min, max);
+      CalculateMassLimits(param.fMaxMass - param.fMinMass, 421, param.fNMassBins, min, max);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins, min, max);
 
       Double_t D0mass = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", param->GetName());
+      hname = TString::Format("%s/fHistRejectedDMesonDeltaInvMass", param.GetName());
       htitle = hname + ";#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2});counts";
-      CalculateMassLimits(0.20, 413, param->fNMassBins*6, min, max);
-      fHistManager.CreateTH1(hname, htitle, param->fNMassBins*6, min-D0mass, max-D0mass);
+      CalculateMassLimits(0.20, 413, param.fNMassBins*6, min, max);
+      fHistManager.CreateTH1(hname, htitle, param.fNMassBins*6, min-D0mass, max-D0mass);
     }
 
-    for (std::vector<AliHFJetDefinition>::iterator itdef = param->fJetDefinitions.begin(); itdef != param->fJetDefinitions.end(); itdef++) {
+    for (std::vector<AliHFJetDefinition>::iterator itdef = param.fJetDefinitions.begin(); itdef != param.fJetDefinitions.end(); itdef++) {
       AliHFJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
 
-      fHistManager.CreateHistoGroup(jetDef->GetName(), param->GetName());
+      fHistManager.CreateHistoGroup(jetDef->GetName(), param.GetName());
 
-      hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistTrackRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistTrackRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistClusterRejectionReason", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistClusterRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Cluster rejection reason;#it{p}_{T,cluster} (GeV/#it{c});counts";
       h = fHistManager.CreateTH2(hname, htitle, 32, 0, 32, 150, 0, 150);
       SetRejectionReasonLabels(h->GetXaxis());
 
-      hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,track} (GeV/#it{c});counts";
       fHistManager.CreateTH1(hname, htitle, 200, 0, 100);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetPt", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetPt", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{p}_{T,jet} (GeV/#it{c});counts";
       fHistManager.CreateTH1(hname, htitle, 150, 0, 150);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetEta", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetEta", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{#eta}_{jet};counts";
       fHistManager.CreateTH1(hname, htitle, 100, -2, 2);
 
-      hname = TString::Format("%s/%s/fHistRejectedJetPhi", param->GetName(), jetDef->GetName());
+      hname = TString::Format("%s/%s/fHistRejectedJetPhi", param.GetName(), jetDef->GetName());
       htitle = hname + ";#it{#phi}_{jet};counts";
       fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
     }
     if (fTreeOutput) {
-      TTree* tree = param->BuildTree();
+      TTree* tree = param.BuildTree();
       fOutput->Add(tree);
     }
     else {
-      param->BuildHnSparse(fEnabledAxis);
+      param.BuildHnSparse(fEnabledAxis);
     }
   }
 
@@ -1953,57 +1948,56 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
      return;
   }
 
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* params = &(*it);
+  for (auto &params : fAnalysisEngines) {
 
-    params->fAodEvent = fAodEvent;
-    params->fFastJetWrapper = fFastJetWrapper;
-    params->Init(fGeom, fAodEvent->GetRunNumber());
+    params.fAodEvent = fAodEvent;
+    params.fFastJetWrapper = fFastJetWrapper;
+    params.Init(fGeom, fAodEvent->GetRunNumber());
 
-    if (params->fMCMode != kMCTruth) {
-      params->fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params->fBranchName.Data()));
+    if (params.fMCMode != kMCTruth) {
+      params.fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject(params.fBranchName.Data()));
 
-      if (params->fCandidateArray) {
-        if (!params->fCandidateArray->GetClass()->InheritsFrom("AliAODRecoDecayHF2Prong")) {
+      if (params.fCandidateArray) {
+        if (!params.fCandidateArray->GetClass()->InheritsFrom("AliAODRecoDecayHF2Prong")) {
           ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
               "%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!",
-              GetName(), params->fCandidateArray->GetClass()->GetName(), params->fCandidateArray->GetName());
-          params->fCandidateArray = 0;
-          params->fInhibit = kTRUE;
+              GetName(), params.fCandidateArray->GetClass()->GetName(), params.fCandidateArray->GetName());
+          params.fCandidateArray = 0;
+          params.fInhibit = kTRUE;
         }
       }
       else {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "Could not find candidate array '%s', skipping the event. Analysis engine '%s' will be disabled!",
-            params->fBranchName.Data(), params->GetName());
-        params->fInhibit = kTRUE;
+            params.fBranchName.Data(), params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
 
-    if (params->fMCMode != kNoMC) {
-      params->fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
+    if (params.fMCMode != kNoMC) {
+      params.fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
 
-      if (!params->fMCContainer) params->fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
+      if (!params.fMCContainer) params.fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
 
-      if (!params->fMCContainer) {
+      if (!params.fMCContainer) {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "No MC particle container was provided. Analysis engine '%s' will be disabled!",
-            params->GetName());
-        params->fInhibit = kTRUE;
+            params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
 
-    if (params->fMCMode != kMCTruth) {
-      params->fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(0));
-      if (!params->fTrackContainer) params->fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(1));
+    if (params.fMCMode != kMCTruth) {
+      params.fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(0));
+      if (!params.fTrackContainer) params.fTrackContainer = dynamic_cast<AliHFTrackContainer*>(GetParticleContainer(1));
 
-      params->fClusterContainer = GetClusterContainer(0);
+      params.fClusterContainer = GetClusterContainer(0);
 
-      if (!params->fTrackContainer && !params->fClusterContainer) {
+      if (!params.fTrackContainer && !params.fClusterContainer) {
         ::Error("AliAnalysisTaskDmesonJets::ExecOnce",
             "No track container and no cluster container were provided. Analysis engine '%s' will be disabled!",
-            params->GetName());
-        params->fInhibit = kTRUE;
+            params.GetName());
+        params.fInhibit = kTRUE;
       }
     }
   }
@@ -2022,18 +2016,17 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
   // the AODs with null vertex pointer didn't pass the PhysSel
   if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
 
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* eng = &(*it);
+  for (auto &eng : fAnalysisEngines) {
 
-    if (eng->fInhibit) continue;
+    if (eng.fInhibit) continue;
 
     //Event selection
-    hname = TString::Format("%s/fHistNEvents", eng->GetName());
-    Bool_t iseventselected = eng->fRDHFCuts->IsEventSelected(fAodEvent);
+    hname = TString::Format("%s/fHistNEvents", eng.GetName());
+    Bool_t iseventselected = eng.fRDHFCuts->IsEventSelected(fAodEvent);
     if (!iseventselected) {
       fHistManager.FillTH1(hname, "Rejected");
-      hname = TString::Format("%s/fHistEventRejectionReasons", eng->GetName());
-      UInt_t bitmap = eng->fRDHFCuts->GetEventRejectionBitMap();
+      hname = TString::Format("%s/fHistEventRejectionReasons", eng.GetName());
+      UInt_t bitmap = eng.fRDHFCuts->GetEventRejectionBitMap();
       TString label;
       do {
         label = GetHFEventRejectionReasonLabel(bitmap);
@@ -2048,7 +2041,7 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 
     AliDebug(2, "Event selected");
 
-    eng->RunAnalysis();
+    eng.RunAnalysis();
   }
   return kTRUE;
 }
@@ -2059,16 +2052,15 @@ Bool_t AliAnalysisTaskDmesonJets::Run()
 Bool_t AliAnalysisTaskDmesonJets::FillHistograms()
 {
   TString hname;
-  for (std::list<AnalysisEngine>::iterator it = fAnalysisEngines.begin(); it != fAnalysisEngines.end(); it++) {
-    AnalysisEngine* param = &(*it);
+  for (auto &param : fAnalysisEngines) {
 
-    if (param->fInhibit) continue;
+    if (param.fInhibit) continue;
 
     if (fTreeOutput) {
-      param->FillTree(fApplyKinematicCuts);
+      param.FillTree(fApplyKinematicCuts);
     }
     else {
-      param->FillHnSparse(fApplyKinematicCuts);
+      param.FillHnSparse(fApplyKinematicCuts);
     }
   }
   return kTRUE;
