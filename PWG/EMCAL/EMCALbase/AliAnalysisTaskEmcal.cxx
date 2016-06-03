@@ -1279,8 +1279,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
   if (fPtHardAndClusterPtFactor > 0.) {
     AliClusterContainer* mccluscont = GetClusterContainer(0);
     if ((Bool_t)mccluscont) {
-      for (auto obj : mccluscont->all()) {// Not cuts applied ; use accept for cuts
-        AliVCluster* cluster = static_cast<AliVCluster*>(obj);
+      for (auto cluster : mccluscont->all()) {// Not cuts applied ; use accept for cuts
         Float_t ecluster = cluster->E();
 
         if (ecluster > (fPtHardAndClusterPtFactor * fPtHard)) {
@@ -1294,10 +1293,9 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
   // condition 3 : Reconstructed track pT / pT-hard >factor
   if (fPtHardAndTrackPtFactor > 0.) {
-    AliMCParticleContainer* mcpartcont = GetMCParticleContainer(0);
+    AliMCParticleContainer* mcpartcont = dynamic_cast<AliMCParticleContainer*>(GetParticleContainer(0));
     if ((Bool_t)mcpartcont) {
-      for (auto obj : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
-        AliAODMCParticle* mctrack = static_cast<AliAODMCParticle*>(obj);
+      for (auto mctrack : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
         Float_t trackpt = mctrack->Pt();
         if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
           AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
