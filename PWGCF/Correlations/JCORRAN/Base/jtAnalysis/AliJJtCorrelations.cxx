@@ -48,9 +48,7 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fNearSide3D(true),
   fEtaGapBin(0),
   fPhiGapBinNear(0),
-  fPhiGapBinAway(0),
   fRGapBinNear(0),
-  fRGapBinAway(0),
   fCentralityBin(0),
   fXlongBin(0),
   fIsLikeSign(false),
@@ -92,9 +90,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fNearSide3D(true),
   fEtaGapBin(0),
   fPhiGapBinNear(0),
-  fPhiGapBinAway(0),
   fRGapBinNear(0),
-  fRGapBinAway(0),
   fCentralityBin(0),
   fXlongBin(0),
   fIsLikeSign(false),
@@ -130,9 +126,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fNearSide3D(in.fNearSide3D),
   fEtaGapBin(in.fEtaGapBin),
   fPhiGapBinNear(in.fPhiGapBinNear),
-  fPhiGapBinAway(in.fPhiGapBinAway),
   fRGapBinNear(in.fRGapBinNear),
-  fRGapBinAway(in.fRGapBinAway),
   fCentralityBin(in.fCentralityBin),
   fXlongBin(in.fXlongBin),
   fIsLikeSign(in.fIsLikeSign),
@@ -168,9 +162,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fNearSide3D = in.fNearSide3D;
   fEtaGapBin = in.fEtaGapBin;
   fPhiGapBinNear = in.fPhiGapBinNear;
-  fPhiGapBinAway = in.fPhiGapBinAway;
   fRGapBinNear = in.fRGapBinNear;
-  fRGapBinAway = in.fRGapBinAway;
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
   fIsLikeSign = in.fIsLikeSign;
@@ -193,6 +185,14 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   return *this;
   // copy constructor
 }
+
+AliJJtCorrelations::~AliJJtCorrelations(){
+  // destructor
+  
+  delete frandom;
+
+}
+
 
 /*
  * Histogram filled based on correlation type. Only calls the main histogram filler in case of correct correlation type.
@@ -247,7 +247,6 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   fptaBin       = ftk2->GetAssocBin();
   fPhiTrigger   = ftk1->Phi();
   fPhiAssoc     = ftk2->Phi();
-  fDeltaPhi     = DeltaPhi(fPhiTrigger, fPhiAssoc);  //radians
   fDeltaPhiPiPi = atan2(sin(fPhiTrigger-fPhiAssoc), cos(fPhiTrigger-fPhiAssoc));
   fDeltaEta     = ftk1->Eta() - ftk2->Eta();
   fEtaTrigger   = ftk1->Eta();
@@ -258,9 +257,7 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
 
   fEtaGapBin = fcard->GetBin( kEtaGapType, fabs(fDeltaEta));
   fPhiGapBinNear = fcard->GetBin( kEtaGapType, fabs(fDeltaPhiPiPi) );
-  fPhiGapBinAway = fcard->GetBin( kEtaGapType, fabs(fDeltaPhi-kJPi) ); //here the angle must be 0-2pi and not (-pi,pi)
   fRGapBinNear   = fcard->GetBin( kRGapType, fabs(ftk1->DeltaR(*ftk2)));
-  fRGapBinAway   = fcard->GetBin( kRGapType, sqrt(pow(fDeltaPhi-kJPi,2)+fDeltaEta*fDeltaEta) );
   fCentralityBin = CentBin;
   
   
@@ -651,20 +648,6 @@ void AliJJtCorrelations::FillPtaHistograms(fillType fTyp)
   } else { // only mix
     fnMix++;
   }
-}
-
-/*
- * Calculate the deltaPhi from two phi values
- *
- *  double phi1 = first phi value
- *  double phi2 = second phi value
- *
- *  return phi diffence between first and second phi value in interval [-9/20*pi, -9/20*pi+2*pi]
- */
-double AliJJtCorrelations::DeltaPhi(double phi1, double phi2) {
-  // dphi
-  double res =  atan2(sin(phi1-phi2), cos(phi1-phi2));
-  return res>-kJPi*9./20. ? res : kJTwoPi+res ;
 }
 
 

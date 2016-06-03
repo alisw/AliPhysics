@@ -44,7 +44,6 @@ double AliJAcceptanceFunctions::AcceptanceCorrection3DNearSide(double *x, double
   
   AliJAcceptanceFunctions *functionWrapper = new AliJAcceptanceFunctions();
   TF1 distance("boundaryDistance",functionWrapper,&AliJAcceptanceFunctions::SideBoundaryDistance,-3*etaRange,3*etaRange,2,"AliJAcceptanceFunctions","SideBoundaryDistance");
-  //TF1 distance("boundaryDistance",SideBoundaryDistance,-3*etaRange,3*etaRange,2);
   distance.SetParameter(0,deltaPhi);
   distance.SetParameter(1,deltaEta);
   ROOT::Math::WrappedTF1 wf1(distance);
@@ -104,6 +103,9 @@ double AliJAcceptanceFunctions::AcceptanceCorrection3DNearSide(double *x, double
     }
     
   }
+  
+  // Delete the function wrapped created with new-keyword
+  delete functionWrapper;
   
   // Remove the away side part from the diameter length
   diameterLegth = diameterLegth - awaySideLength;

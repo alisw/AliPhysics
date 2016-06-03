@@ -36,7 +36,7 @@ public:
   AliJJtCorrelations(); // default constructor
   AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *histosIn); // constructor
   AliJJtCorrelations(const AliJJtCorrelations& in); // copy constructor
-  virtual ~AliJJtCorrelations(){;} //destructor
+  virtual ~AliJJtCorrelations(); //destructor
   AliJJtCorrelations& operator=(const AliJJtCorrelations& obj); // equal sign operator
   
   void PrintOut(){cout<<"Number of events = "<<fnReal<<"  Mixed events = "<<fnMix<<endl;} // Event count print
@@ -47,12 +47,10 @@ public:
   void SetSamplingInclusive(){fsamplingMethod = 1;} // Setter for inclusive sampling
   void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
   
-  double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from the phi values
-  
   
 protected:
   
-  AliJCard*   fcard; // Card with binning information etc.
+  AliJCard* fcard; // Card with binning information etc.
   AliJJtHistograms* fhistos;  // Histograms needed in the analysis
   AliJAcceptanceCorrection *fAcceptanceCorrection;  // Acceptance correction container
   int fnReal; // Number of events
@@ -80,9 +78,7 @@ protected:
   bool fNearSide3D; // near side defined by the half ball around the trigger
   int fEtaGapBin;  // Bin index for the current eta gap
   int fPhiGapBinNear;  // Bin index for the phi gap in the near side
-  int fPhiGapBinAway;  // Bin index for the phi gap in the away side
   int fRGapBinNear;  // Bin index for the R gap in the near side
-  int fRGapBinAway;  // Bin index for the R gap in the away side
   int fCentralityBin;  // Bin index for the centrality bin
   int fXlongBin;  // Bin index for xlong bin
 

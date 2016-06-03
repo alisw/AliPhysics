@@ -23,7 +23,7 @@ public:
   AliJAcceptanceCorrection();                     // default constructor
   AliJAcceptanceCorrection(AliJCard *inputCard);  // constructor with card definition
   AliJAcceptanceCorrection(const AliJAcceptanceCorrection& a); // copy constructor
-  ~AliJAcceptanceCorrection(){;}    //destructor
+  ~AliJAcceptanceCorrection();    //destructor
 
   void ReadMixedEventHistograms(const char *fileName);      // Read acceptance histograms from input file
   double GetAcceptanceCorrectionTriangle(double deltaEta);  // Calculate acceptance correction from deltaEta triangle
