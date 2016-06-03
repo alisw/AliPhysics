@@ -232,6 +232,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D    *fhDeltaPtEmb2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
    TH1D    *fhDeltaPtEmbPerp[kCAll][kRho-1]; //! embedded delta pT (emb track is perp to TT)
    TH2D    *fhDeltaPtEmbPerp2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
+   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kRho-1]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
+   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
+
    TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
@@ -261,25 +264,19 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhCentralityV0ATT;  //! centrality from V0A when TT is present
    TH1F     *fhCentralityV0CTT;  //! centrality from V0C when TT is present
    TH1F     *fhCentralityZNATT;  //! centrality from ZNA when TT is present
-   /*
+  
    TH1F     *fhVzeroATotMult[kCAll]; //! V0A multiplicity for given V0A centrality selection
    TH1F     *fhVzeroATotMultTT[kCAll];   //! V0A multiplicity 
-   TH2F     *fh2VzeroATotMultVsCent; //! V0A multiplicity versus Centrality 
-   TH2F     *fh2VzeroATotMultVsCentTT; //! V0A multiplicity versus Centrality for TT selection
 
    TH1F     *fhZNAEnergy[kCAll]; //! ZDC A neutral energy for given V0A centrality selection
    TH1F     *fhZNAEnergyTT[kCAll];   //! ZDC A neutral energy 
-   TH2F     *fh2ZNAEnergyVsCent; //! ZDC A Neutral energyy versus Centrality 
-   TH2F     *fh2ZNAEnergyVsCentTT; //! ZDC A  Neutral energy versus Centrality for TT selection
 
    TH1D     *fhTrackMultiplicity[kCAll]; //! multiplicity of tracks
    TH1D     *fhTrackMultiplicityTT[kCAll]; //! multiplicity of tracks in event with TT track
-   TH2D     *fh2TrackMultVsCent; //! track multiplicity versus centrality 
-   TH2D     *fh2TrackMultVsCentTT; //! track multiplicity versus centrality
 
    THnSparse  *fhZNAVzeroATrack[kCAll]; //! ZNA energy versus Vzero A mult versus track mult.
    THnSparse  *fhZNAVzeroATrackTT[kCAll]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
-   */
+   
 
    //TProfile*     fh1Xsec;   //! gc pythia cross section and trials
    //TH1F*         fh1Trials; //! gc trials are added
@@ -310,14 +307,14 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
    Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
    Double_t ftmpArray[2]; //tmp array
-   //Double_t ftmpArrayX[3]; //tmp array
+   Double_t ftmpArrayX[3]; //tmp array
    TArrayF fpyVtx;   //primaru vertex
    Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 15); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 16); // Charged jet analysis for pA
 
 };
 #endif
