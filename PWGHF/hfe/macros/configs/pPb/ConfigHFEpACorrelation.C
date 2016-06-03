@@ -12,6 +12,7 @@
 //configIndex = 9 ---> TPC PID: -0.5 to 3.0
 //configIndex = 10 ---> V0A -> other
 //configIndex = 11 ---> Associated hadron with SPD::kAny cut
+//configIndex = 11 ---> SPD kFirst + 3 ITS cls
 //Configurations for the Assoated pT Cut
 //configIndex = 20 ---> Default (same as 0)
 //configIndex = 21 ---> pT>0.3
@@ -84,6 +85,11 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);				            	//Require at least one cluster on SPD
         hfecuts->SetMinNClustersITS(3);												//Minimum number of clusters on ITS
+    }
+    else if (configIndex == 12)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+        hfecuts->SetMinNClustersITS(2);
     }
     else
     {
