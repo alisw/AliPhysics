@@ -161,6 +161,8 @@ fDeltaThetaMax(0.4),
 fDeltaPhiNbins(200),
 fDeltaPhiMin(-0.4),
 fDeltaPhiMax(0.4),
+fPGen(0x0),
+fPRec(0x0),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
 fPGen_PrecOverPGen(0x0),
@@ -340,6 +342,8 @@ fDeltaThetaMax(0.4),
 fDeltaPhiNbins(200),
 fDeltaPhiMin(-0.4),
 fDeltaPhiMax(0.4),
+fPGen(0x0),
+fPRec(0x0),
 fPGen_DeltaP(0x0),
 fPtGen_DeltaPt(0x0),
 fPGen_PrecOverPGen(0x0),
@@ -552,6 +556,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fDeltaPhi_charge = new TH2D("DeltaPhi_charge","",320,-0.1,6.4,3,-1.5,1.5);
     fDeltaPhi_charge->Sumw2();
 
+    fPGen                                = new TH1D("PGen",                               "",500,0., 5.);
+    fPRec                                = new TH1D("PRec",                               "",500,0., 5.);
     fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "",500,0.,10.,fDeltaMomNbins,fDeltaMomMin,fDeltaMomMax);
     fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "",500,0.,10.,fRelMomNbins,fRelMomMin,fRelMomMax);
@@ -566,6 +572,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,300,-0.5,1.);
     fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,300,-0.5,1.);
 
+    fPGen                                ->Sumw2();
+    fPRec                                ->Sumw2();
     fPGen_DeltaP                         ->Sumw2();
     fPtGen_DeltaPt                       ->Sumw2();
     fPGen_PrecOverPGen                   ->Sumw2();
@@ -579,7 +587,9 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fPhiGen_DeltaPhi                     ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleUS ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleLS ->Sumw2();
-
+    
+    fPGen                                ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+    fPRec                                ->GetXaxis()->SetTitle("p^{rec} (GeV/c)");
     fPGen_DeltaP                         ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
     fPGen_DeltaP                         ->GetYaxis()->SetTitle("p^{rec} - p^{gen} (GeV/c)");
     fPtGen_DeltaPt                       ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
@@ -623,7 +633,9 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fDeltaPhi_MCcharge);
     resolutionList->Add(fDeltaPhi_charge);
     resolutionList->Add(fDeltaPhi);
-
+    
+    resolutionList->Add(fPGen);
+    resolutionList->Add(fPRec);
     resolutionList->Add(fPGen_DeltaP);
     resolutionList->Add(fPtGen_DeltaPt);
     resolutionList->Add(fPGen_PrecOverPGen   );
@@ -824,7 +836,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if (!fPIDResponse) SetPIDResponse( ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
 
-
   // set pid correction function to var manager
   if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
   if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
@@ -920,11 +931,12 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
 
 
   Int_t NEleSelected = 0;
-
+  UInt_t ResolutionMask = 1000;
+  if(fResolutionCuts) ResolutionMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
     //AliStack *fStack = mcEvent->Stack();
-
+    
     for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
       // New:
       // Select electrons based on an attached AliDielectronSignalMC.
@@ -958,7 +970,13 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t trackPt  = track->Pt();
         Double_t trackEta = track->Eta();
         Double_t trackPhi = track->Phi();
-
+        UInt_t ResolutionMaskSelected = 999;
+        if(fResolutionCuts) ResolutionMaskSelected = fResolutionCuts->IsSelected(track);
+        if(fCalcEfficiencyRec && !bFilled && ResolutionMask == ResolutionMaskSelected){
+          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
+          else                      fNgen2_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
+          bFilled = kTRUE;
+        }
         for (UInt_t iCut=0; iCut<GetNCutsets(); ++iCut){ // loop over all specified cutInstances
           //cutting logic taken from AliDielectron::FillTrackArrays()
           UInt_t selectedMask=(1<<fvTrackCuts.at(iCut)->GetCuts()->GetEntries())-1;
@@ -996,11 +1014,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           }
         } // cut loop
         if(fSelectedByCut==0) continue;// only go on if the track survived at least 1 of the cut settings!
-        if(fCalcEfficiencyRec && !bFilled){
-          if(mctrack->Charge() < 0) fNgen2_Rec_Ele ->Fill(trackPt,trackEta,trackPhi);
-          else                      fNgen2_Rec_Pos ->Fill(trackPt,trackEta,trackPhi);
-          bFilled = kTRUE;
-        }
         // get track information
         // feel free to add more information to the tree, some more variables are already defined as branches...
         pxESD = track->Px();
@@ -1265,13 +1278,12 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     } // end of pair efficiency calculation
 
     if(fCalcResolution && fResolutionCuts){ // calculate electron pt resolution
-      UInt_t selectedMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
       Int_t Nprimaries = mcEvent->GetNumberOfPrimaries();
       TLorentzVector l1Gen,l2Gen,l1Rec,l2Rec;
       for(Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++){
         AliESDtrack *track = fESD->GetTrack(iTracks);
         if (!track) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-        if(fResolutionCuts->IsSelected(track) != selectedMask) continue;
+        if(fResolutionCuts->IsSelected(track) != ResolutionMask) continue;
         Int_t label = track->GetLabel();
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
@@ -1301,7 +1313,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(iTracks == iTracks2) continue;
           AliESDtrack *track2 = fESD->GetTrack(iTracks2);
           if (!track2) { Printf("ERROR: Could not receive track %d", iTracks); continue; }
-          if(fResolutionCuts->IsSelected(track2) != selectedMask) continue;
+          if(fResolutionCuts->IsSelected(track2) != ResolutionMask) continue;
           Int_t label2 = track2->GetLabel();
           if(label == label2) continue;
           AliMCParticle *part2 = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label2)));
@@ -1351,6 +1363,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         Double_t recP   = track->P();
         if(pdg == 11){
           if(TMath::Abs(part->Eta()) < 0.8) {
+            fPGen                ->Fill(mcP);
+            fPRec                ->Fill(recP);
             fPGen_DeltaP         ->Fill(mcP, recP - mcP);
             fPtGen_DeltaPt       ->Fill(mcPt,recPt - mcPt);
             fPGen_PrecOverPGen   ->Fill(mcP, recP / mcP);
@@ -2034,7 +2048,8 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
 
 }
 //__________________________________________________________________
-void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal) {
+void AliAnalysisTaskElectronEfficiency::AddSignalMC(AliDielectronSignalMC* signal)
+{
   //
   //  Add an MC signal to the signals list
   //

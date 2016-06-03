@@ -258,6 +258,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t                        fDeltaPhiMin;
   Double_t                        fDeltaPhiMax;
 
+  TH1D*                           fPGen;
+  TH1D*                           fPRec;
   TH2D*                           fPGen_DeltaP;
   TH2D*                           fPtGen_DeltaPt;
   TH2D*                           fPGen_PrecOverPGen; // higher precision at low p than 'fPGen_DeltaP'.
