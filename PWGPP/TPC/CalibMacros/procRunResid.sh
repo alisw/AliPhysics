@@ -19,7 +19,7 @@ chunks=`wc -l $inpList | cut -f1 -d' '`
 curdir=`pwd`
 
 scriptVDT="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/procVDTime.sh"
-scriptMAP="ALICE_PHYSICS/PWGPP/TPC/CalibMacros/procRunTimeBins.sh"
+scriptMAP="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/procRunTimeBins.sh"
 
 [[ ! -f "$scriptVDT" ]] && echo "did not find script $scriptVDT" && exit
 [[ ! -f "$scriptMAP" ]] && echo "did not find script $scriptMAP" && exit 
