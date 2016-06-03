@@ -80,6 +80,15 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
   //copy constructor
 }
 
+/*
+ * Destructor
+ */
+AliJAcceptanceCorrection::~AliJAcceptanceCorrection(){
+  // destructor
+  
+  delete fDEtaDPhi3DNearAcceptanceCalculation;
+  
+}
 
 /*
  * Equal sign operator
@@ -136,6 +145,9 @@ void AliJAcceptanceCorrection::Generate3DAcceptanceCorrection(){
       fDEtaDPhi3DNearAcceptanceCalculation->SetBinContent(binX,binY,binContent);
     }
   }
+  
+  delete functionWrapper;
+  delete acceptanceCorrectionFunction;
   
 }
 
@@ -198,6 +210,8 @@ void AliJAcceptanceCorrection::ReadMixedEventHistograms(const char *fileName){
     std::cout << "Could not find histogram: hDphiDetaXlong" << std::endl;
     std::cout << "Inclusive histograms for 3D near side acceptance correction are not loaded! " << std::endl;
   }
+  
+  delete histogramReader;
   
 }
 
