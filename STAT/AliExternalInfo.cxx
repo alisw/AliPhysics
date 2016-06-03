@@ -33,6 +33,10 @@ AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLo
                                 fChainMap(),
                                 fMaxCacheSize(-1)
 {
+  // use default cache path from Env variable if specified 
+  if (gSystem->Getenv("AliExternalInfoCache")!=NULL){
+    if (localStorageDirectory.Length()<2)   fLocalStorageDirectory=gSystem->Getenv("AliExternalInfoCache");
+  }
   ReadConfig();
 }
 
