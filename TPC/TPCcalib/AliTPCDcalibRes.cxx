@@ -1191,19 +1191,28 @@ Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac)
   //
   // mean number of tracks expected per tested bin in full stat
   float nexpTracksAv = fEstTracksPerEvent*fNEvTot*fDeltaTVD/(fTMaxCTP-fTMinCTP);
+  int longestEmpty=0,prevEmpty=0;
   for (int ts=fTMin;ts<fTMax;ts+=dth) {
     int bmin = fTracksRate->FindBin(ts)-1;
     int bmax = fTracksRate->FindBin(ts+fDeltaTVD);
     int ntr = ntrCumul[bmax]-ntrCumul[bmin];
     nChecked++;
-    if (ntr>fMinTracksPerVDBin) continue;
+    if (ntr>fMinTracksPerVDBin) {
+      if (prevEmpty>longestEmpty) longestEmpty = prevEmpty;
+      prevEmpty = 0; // reset empty segment counter
+      continue;
+    }
     // do we expect enough tracks in this time period?
     int nexpTracks = (nevCumul[bmax]-nevCumul[bmin])*fEstTracksPerEvent;
     // declare stat insufficient only if we expect enough tracks there
-    if (nexpTracks>fMinTracksPerVDBin && nexpTracks>nexpTracksAv/2 && ntr<fMinTracksPerVDBin/2) nHoles++;
+    if (nexpTracks>fMinTracksPerVDBin && nexpTracks>nexpTracksAv/2 && ntr<fMinTracksPerVDBin/2) {
+      nHoles++;
+      prevEmpty += prevEmpty ? dth :  fDeltaTVD;
+    }
   }
-  AliInfoF("%d bins out %d checked got enough statistics",nChecked-nHoles,nChecked);
-  if (nChecked && nHoles<maxHolesFrac*nChecked) return kTRUE;
+  AliInfoF("%d bins out %d checked got enough stat., longest empty segment: %ds",
+	   nChecked-nHoles,nChecked,longestEmpty);
+  if (nChecked && nHoles<maxHolesFrac*nChecked && longestEmpty<fSigmaTVD/2) return kTRUE;
   return kFALSE;
 }
 
