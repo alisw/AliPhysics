@@ -51,6 +51,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
     else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
     task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiEleResArr"), (TObjArray*) fRes->Get("PhiPosResArr"));
   }
+  if(CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
   SetupMCSignals(task);
@@ -67,6 +68,7 @@ AliAnalysisTask *AddTask_tbroeker_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetCalcResolution(CalcResolution);
   if(CalcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(-1));
   task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+  task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
   task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
   task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
   task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);

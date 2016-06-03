@@ -36,18 +36,21 @@ Bool_t CalcEfficiencyPoslabel = kTRUE;
 Bool_t CalcResolution = kTRUE;
 Bool_t doPairing = kFALSE;
 // resolution binnings
-Int_t NbinsDeltaMom    = 1000;
-Double_t DeltaMomMin   = -9.0;
-Double_t DeltaMomMax   =  1.0;
-Int_t NbinsDeltaEta    = 400;
-Double_t DeltaEtaMin   = -0.8;
-Double_t DeltaEtaMax   =  0.8;
-Int_t NbinsDeltaTheta  = 400;
-Double_t DeltaThetaMin = -0.8;
-Double_t DeltaThetaMax =  0.8;
-Int_t NbinsDeltaPhi    = 200;
-Double_t DeltaPhiMin   = -0.4;
-Double_t DeltaPhiMax   =  0.4;
+Int_t    NbinsDeltaMom   = 1001;
+Double_t DeltaMomMin     = -9.005;
+Double_t DeltaMomMax     =  1.005;
+Int_t    NbinsRelMom     =  1201;
+Double_t RelMomMin       = -0.0005;
+Double_t RelMomMax       =  1.2005;
+Int_t    NbinsDeltaEta   = 801;
+Double_t DeltaEtaMin     = -0.8005;
+Double_t DeltaEtaMax     =  0.8005;
+Int_t    NbinsDeltaTheta = 801;
+Double_t DeltaThetaMin   = -0.8005;
+Double_t DeltaThetaMax   =  0.8005;
+Int_t    NbinsDeltaPhi   = 401;
+Double_t DeltaPhiMin     = -0.4005;
+Double_t DeltaPhiMax     =  0.4005;
 
 
 // mee bins
