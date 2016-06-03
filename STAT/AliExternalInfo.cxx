@@ -315,10 +315,21 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
 
   //function to get tree namee based on type
   chain=new TChain(treeName.Data());
-  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile) {
-    chain->AddFile(arrFiles->At(ifile)->GetName());
-  }
+   // ---| loop over possible tree names |---
+  TObjArray *arrTreeName = treeName.Tokenize(",");
 
+  for (Int_t ifile=0; ifile<arrFiles->GetEntriesFast(); ++ifile) {
+    for (Int_t itree=0; itree<arrTreeName->GetEntriesFast(); itree++){
+      TFile *ftemp=TFile::Open(arrFiles->At(ifile)->GetName());
+      if (ftemp==NULL) continue;
+      if (ftemp->GetListOfKeys()->FindObject(arrTreeName->At(itree)->GetName())){
+	chain->AddFile(arrFiles->At(ifile)->GetName(),0, arrTreeName->At(itree)->GetName());
+	
+      }
+      delete ftemp;
+    }
+  }
+  
   const TString cacheSize=fLocationTimeOutMap[type + ".CacheSize"];
   Long64_t cache=cacheSize.Atoll();
   if (fMaxCacheSize>0) {
@@ -332,6 +343,7 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
 
   AddChain(type, period, pass);
   delete arrFiles;
+  delete arrTreeName;
   return chain;
 };
 
