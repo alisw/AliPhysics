@@ -430,8 +430,8 @@ void AliTRDtestG4::StepManager()
   if (!fPrimaryIonisation) TVirtualMC::GetMC()->SetMaxStep(kBig); 
 
   // If not charged track or already stopped or disappeared, just return.
-  if ((!TVirtualMC::GetMC()->TrackCharge()) || 
-        TVirtualMC::GetMC()->IsTrackDisappeared()) {
+ 
+  if ((!TVirtualMC::GetMC()->TrackCharge())) {
     return;
   }
 
