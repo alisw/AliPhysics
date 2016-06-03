@@ -1186,7 +1186,7 @@ Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac)
   ntrCumul[0] = nevCumul[0] = 0;
   for (int ib=1;ib<=nbins;ib++) {
     ntrCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
-    nevCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
+    nevCumul[ib] = (sumNev += fEvRateH->GetBinContent(ib));
   }
   //
   // mean number of tracks expected per tested bin in full stat
