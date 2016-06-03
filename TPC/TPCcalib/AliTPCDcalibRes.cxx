@@ -96,6 +96,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fDeltaTVD(120)
   ,fSigmaTVD(600)
   ,fMaxTracks(4000000)
+  ,fNominalTimeBin(2400)
+  ,fNominalTimeBinPrec(0.3)
   ,fCacheInp(100)
   ,fLearnSize(1)
   ,fBz(0)
@@ -105,6 +107,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fOCDBPath()
 
   ,fMinTracksToUse(600000)
+  ,fMinTracksPerVDBin(3000)
   ,fMinEntriesVoxel(15)
   ,fNPrimTracksCut(400)
   ,fMinNCl(30)
@@ -148,11 +151,14 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
 
   ,fKernelType(kGaussianKernel)
 
+  ,fNEvTot(0)
   ,fNTrSelTot(0)
   ,fNTrSelTotWO(0)
   ,fNReadCallTot(0)
   ,fNBytesReadTot(0)
   ,fNTestTracks(0)
+  ,fEstTracksPerEvent(0)
+  ,fEvRateH(0)
   ,fTracksRate(0)
   ,fTOFBCTestH(0)
   ,fHVDTimeInt(0)
@@ -245,49 +251,96 @@ void AliTPCDcalibRes::CalibrateVDrift()
   // Parameters  time fDeltaTVD (binning) and  fSigmaTVD (smoothing) can be changed from their
   // default values by their setters
   TStopwatch sw;
-  const float kSafeMargin = 0.25f;
+  const float kSafeMargin = 0.2f;
+  const float kTofEffLow = 0.25f; // if fraction of TOFbc validated to otherwise useful tracks is below this, abandon TOF
   if (!fInitDone) Init();
-  Long64_t tmn = fTMinCTP-fTMin>kLargeTimeDiff ? fTMinCTP : fTMin;
-  Long64_t tmx = fTMax-fTMaxCTP>kLargeTimeDiff ? fTMaxCTP : fTMax;
-  Int_t duration = tmx - tmn;
-  int nTBins = duration/fDeltaTVD+1;
-  //
   // check available statistics
-  if (!EstimateStatistics()) AliFatal("Cannot process further");
+  if (!EstimateChunkStatistics() || !CollectDataStatistics()) AliFatal("Cannot process further");
+  //
+  int nChunks = fInputChunks->GetEntriesFast();
+  float ev2Chunk = fNEvTot/nChunks;
   float fracMult = fTestStat[kCtrNtr][kCtrNtr];
   Bool_t useTOFBC = fUseTOFBC;
-  float statEst = 0;
-  if (useTOFBC) {
-    if      (fExtDet==kUseTRDonly) statEst = fTestStat[kCtrBC0][kCtrTRD];
-    else if (fExtDet==kUseTOFonly) statEst = fTestStat[kCtrBC0][kCtrTOF];
-    else if (fExtDet==kUseITSonly) statEst = fTestStat[kCtrBC0][kCtrITS];
-    else if (fExtDet==kUseTRDorTOF) statEst = fTestStat[kCtrBC0][kCtrTOF]; // contribution of TRD is negligable
-  }
-  else {
-    if      (fExtDet==kUseTRDonly) statEst = fTestStat[kCtrTRD][kCtrTRD];
-    else if (fExtDet==kUseTOFonly) statEst = fTestStat[kCtrTOF][kCtrTOF];
-    else if (fExtDet==kUseITSonly) statEst = fTestStat[kCtrITS][kCtrITS];
-    else if (fExtDet==kUseTRDorTOF) statEst = fTestStat[kCtrTRD][kCtrTRD]+
-				      fTestStat[kCtrTOF][kCtrTOF]-fTestStat[kCtrTRD][kCtrTOF];
-  }
-  statEst *= fTestStat[kCtrNtr][kCtrNtr]; // loss due to the mult selection
-  statEst *= fNTestTracks*fInputChunks->GetEntriesFast()*(1.-kSafeMargin); // safety margin for losses (outliers etc)
+  float statEstBCon=0,statEstBCoff=0;
+  // estimate with TOF BC selection
+  if      (fExtDet==kUseTRDonly) statEstBCon = fTestStat[kCtrBC0][kCtrTRD];
+  else if (fExtDet==kUseTOFonly) statEstBCon = fTestStat[kCtrBC0][kCtrTOF];
+  else if (fExtDet==kUseITSonly) statEstBCon = fTestStat[kCtrBC0][kCtrITS];
+  else if (fExtDet==kUseTRDorTOF) statEstBCon = fTestStat[kCtrBC0][kCtrTOF]; // contribution of TRD is negligable
   //
-  statEst *= TMath::Min(1.f,float(duration)/(fTMaxCTP-fTMinCTP));
-  float statEstTBin = statEst/nTBins;
+  if      (fExtDet==kUseTRDonly) statEstBCoff = fTestStat[kCtrTRD][kCtrTRD];
+  else if (fExtDet==kUseTOFonly) statEstBCoff = fTestStat[kCtrTOF][kCtrTOF];
+  else if (fExtDet==kUseITSonly) statEstBCoff = fTestStat[kCtrITS][kCtrITS];
+  else if (fExtDet==kUseTRDorTOF) statEstBCoff = fTestStat[kCtrTRD][kCtrTRD]+
+				      fTestStat[kCtrTOF][kCtrTOF]-fTestStat[kCtrTRD][kCtrTOF];
+  //
+  Long64_t tmn = fTMin;
+  Long64_t tmx = fTMax;
+  double duration = tmx - tmn;
+  //
+  statEstBCon *= fTestStat[kCtrNtr][kCtrNtr]; // loss due to the mult selection
+  statEstBCon *= fNTestTracks*nChunks*(1.-kSafeMargin); // safety margin for losses (outliers etc)
+  //
+  statEstBCoff *= fTestStat[kCtrNtr][kCtrNtr]; // loss due to the mult selection
+  statEstBCoff *= fNTestTracks*nChunks*(1.-kSafeMargin); // safety margin for losses (outliers etc)
+  //
+  float tofOK=0.f,tofTot=0.f;
+  if (fTOFBCTestH && fTOFBCMin<fTOFBCMax) {
+    tofOK  = fTOFBCTestH->Integral(fTOFBCTestH->FindBin(fTOFBCMin),fTOFBCTestH->FindBin(fTOFBCMax));
+    tofTot = fTOFBCTestH->Integral(1,fTOFBCTestH->GetNbinsX());
+    if (tofTot>0) tofOK /= tofTot;
+  }
+  AliInfoF("Fraction of TOFBC tracks in %.1f:%.1f window: %.2f (%.2f loss assumed)",
+	   fTOFBCMin,fTOFBCMax,tofOK,kSafeMargin);
+  //
+  AliInfoF("Estimated tracks stat.for %.1f min: with(w/o) TOF BC selection %d (%d)",
+	   duration/60.,int(statEstBCon),int(statEstBCoff));
+  //
+  if (statEstBCoff<10) AliFatal("No reasonable data found");
+
+  float tofEff = statEstBCon/statEstBCoff;
+  if (tofEff<kTofEffLow) {
+    AliWarningF("TOFBC selection eff. %.3f is below the threshold %.3f",tofEff,kTofEffLow);
+    useTOFBC = kFALSE;
+  }
+  int ntr2BinBCon=0,ntr2BinBCoff=0,nTimeBins=0;
+  float tbinDuration = fNominalTimeBin;
+  // define time bins
+  int nWantedTracks = (fMaxTracks+fMinTracksToUse)/2;
+  AliInfoF("Nominal requested Ntracks/bin: %d (min:%d max:%d)",nWantedTracks,fMinTracksToUse,fMaxTracks);
+  nTimeBins = 1+int(duration/fNominalTimeBin);
+  tbinDuration = duration/nTimeBins;
+  if (tbinDuration/fNominalTimeBin<(1.-fNominalTimeBinPrec))  {
+    nTimeBins = TMath::Max(1,nTimeBins-1);
+    tbinDuration = duration/nTimeBins;
+  }
+  AliInfoF("Suggest %d time bins of %d s durations",nTimeBins,int(tbinDuration));
+  ntr2BinBCon  = fNominalTimeBin/duration*statEstBCon;
+  ntr2BinBCoff = fNominalTimeBin/duration*statEstBCoff;
+  AliInfoF("Estimated Ntracks per time bin: with(w/o) TOF BC: %d(%d)",ntr2BinBCon,ntr2BinBCoff);
+  if ( ntr2BinBCon<(nWantedTracks+fMinTracksToUse)/2 ) useTOFBC = kFALSE; // try to keep stat. high
+  //
+  if (!useTOFBC && fUseTOFBC) {
+    AliWarning("Switching OFF requested TOF BC validation due to statistics");
+    fUseTOFBC = kFALSE;
+  }
+  fEstTracksPerEvent =  (fUseTOFBC ? statEstBCon:statEstBCoff)/fNEvTot;
+  //
+  printf("StatInfo.NTBin\t%d\n",nTimeBins);
+  printf("StatInfo.TBinDuration\t%d\n",int(tbinDuration));
+  printf("StatInfo.TOFBCsel\t%d\n",fUseTOFBC);
   // select tracks matching to time window and write compact local trees
   //
   CollectData(kVDriftCalibMode);
   //
-  FitDrift(tmn,tmx,nTBins);
-
+  FitDrift();
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
   //
 }
 
 //________________________________________
-void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
+void AliTPCDcalibRes::FitDrift()
 {
   // fit v.drift params
   const int kUsePoints0 = 1000000; // nominal number of points for 1st estimate
@@ -369,9 +422,11 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   //
   // time correction
   delete fHVDTimeCorr;
-  fHVDTimeCorr = new TH2F("driftTCorr","drift time correction",ntbins,tmin,tmax,kNTCorrBins,-kMaxTCorr,kMaxTCorr);
+  int ntbins = double(fTMax-fTMin)/fDeltaTVD+1;
+  fHVDTimeCorr = new TH2F("driftTCorr","drift time correction",ntbins,fTMin,fTMax,kNTCorrBins,-kMaxTCorr,kMaxTCorr);
+  fHVDTimeCorr->SetDirectory(0);
   fHVDTimeCorr->SetXTitle("time");
-  fHVDTimeCorr->SetYTitle("time");  
+  fHVDTimeCorr->SetYTitle("delta");  
   //
   double *vpar = fVDriftParam->GetMatrixArray();
   for (int i=0;i<entries;i++) {
@@ -429,6 +484,8 @@ void AliTPCDcalibRes::FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins)
   delete hEnt;
   arrH.Delete();
   //
+  SaveFitDrift();
+  //
   sw.Stop(); 
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
   AliSysInfo::AddStamp("FitDrift",1,0,0,0);
@@ -440,7 +497,7 @@ void AliTPCDcalibRes::ProcessFromDeltaTrees()
   // process from residual trees
   TStopwatch sw;
   // select tracks matching to time window and write compact local trees
-  EstimateStatistics();
+  EstimateChunkStatistics();
   //
   CollectData(kDistExtractMode);
   //
@@ -546,6 +603,21 @@ void AliTPCDcalibRes::Save(const char* name)
   //
 }
 
+//________________________________________
+void AliTPCDcalibRes::SaveFitDrift()
+{
+  // save drift parameters in old fitDrift.root format for old way of loading the drift parameters
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("%s.root",kDriftFileName),"recreate");
+  (*pcstream)<<"fitTimeStat"<<
+    "grTRDReg.="<<fVDriftGraph<<      // time dependent drift correction TRD - regression estimator
+    "paramRobust.="<<fVDriftParam<< // time independent parameters
+    "time0="<<fTMin<<             
+    "time1="<<fTMax<<
+    "run="<<fRun<<
+    "\n";
+  delete pcstream;
+}
+
 //==================================================================================
 void AliTPCDcalibRes::Init()
 {          
@@ -589,6 +661,8 @@ void AliTPCDcalibRes::Init()
   // init histo for track rate
   fTracksRate = new TH1F("TracksRate","TracksRate", 1+fTMaxCTP-fTMinCTP, -0.5+fTMinCTP,0.5+fTMaxCTP);
   fTracksRate->SetDirectory(0);
+  //
+  AliInfoF("Run time: GRP:%lld:%lld |CTP:%lld:%lld |User:%lld:%lld",fTMinGRP,fTMaxGRP,fTMinCTP,fTMaxCTP,fTMin,fTMax);
   //
   InitGeom();
   SetName(Form("run%d_%lld_%lld",fRun,fTMin,fTMax));
@@ -705,6 +779,52 @@ TTree* AliTPCDcalibRes::InitDeltaFile(const char* name, Bool_t connect, const ch
 }
 
 //_____________________________________________________
+Bool_t AliTPCDcalibRes::CollectDataStatistics()
+{
+  // scan even trees to get time coverage
+  int nChunks = (!fInputChunks) ? ParseInputList() : fInputChunks->GetEntriesFast();
+  AliInfoF("Collecting event rate from %d chunks",nChunks);
+  if (!fInitDone) Init();
+  int nPrimTrack,timeStamp,tmin=0x7fffffff,tmax=0;
+  int nb = int((fTMaxCTP-fTMinCTP)/10.);
+  fEvRateH = new TH1F("EvRate","EventRate",1+fTMaxCTP-fTMinCTP,-0.5+fTMinCTP,fTMaxCTP+0.5);
+  fEvRateH->SetDirectory(0);
+  fEvRateH->GetXaxis()->SetTimeFormat();
+  fNEvTot = 0;
+  for (int ichunk=0;ichunk<nChunks;ichunk++) {
+    TTree *tree = InitDeltaFile(fInputChunks->At(ichunk)->GetName(),kFALSE,"eventInfo");
+    if (!tree) continue;
+    TBranch* brt = tree->GetBranch("timeStamp");
+    TBranch* brn = tree->GetBranch("nPrimTrack");
+    if (!brt || !brn) {
+      AliError("Did not find branch timeStamp or nPromTrack in event info tree");
+      CloseDeltaFile(tree);
+      return kFALSE;
+    }
+    brt->SetAddress(&timeStamp);
+    brn->SetAddress(&nPrimTrack);
+    int nent = tree->GetEntries();
+    for (int i=0;i<nent;i++) {
+      brt->GetEntry(i);
+      brn->GetEntry(i);
+      if (fNPrimTracksCut>0 && nPrimTrack>fNPrimTracksCut) continue;
+      fEvRateH->Fill(timeStamp);
+      if (tmin>timeStamp) tmin = timeStamp;
+      if (tmax<timeStamp) tmax = timeStamp;
+    }
+    fNEvTot += nent;
+    CloseDeltaFile(tree);
+  }
+  //
+  if (fTMin<tmin) fTMin = tmin;
+  if (fTMax>tmax) fTMax = tmax;  
+  AliInfoF("%d selected events in %d chunks covering %d<T<%d",fNEvTot,nChunks,tmin,tmax);
+  printf("StatInfo.minTime\t%lld\n",fTMin);
+  printf("StatInfo.maxTime\t%lld\n",fTMax);
+  return kTRUE;
+}
+
+//_____________________________________________________
 Int_t AliTPCDcalibRes::ParseInputList()
 {
   // convert text file to array of file names
@@ -719,7 +839,7 @@ Int_t AliTPCDcalibRes::ParseInputList()
 }
 
 //_____________________________________________________
-Bool_t AliTPCDcalibRes::EstimateStatistics()
+Bool_t AliTPCDcalibRes::EstimateChunkStatistics()
 {
   // make rough estimate of statistics with different options
   AliInfo("Performing rough statistics check");
@@ -1032,6 +1152,10 @@ void AliTPCDcalibRes::CollectData(const int mode)
       AliInfo("Max number of tracks exceeded");
       break;
     }
+    if (mode==kVDriftCalibMode && EnoughStatForVDrift()) {
+      AliInfo("Sifficient statistics for VDrift calibration collected");
+      break;
+    }
     //
   } // loop over chunks
   //
@@ -1046,6 +1170,41 @@ void AliTPCDcalibRes::CollectData(const int mode)
 
   if (mode==kDistExtractMode) WriteStatHistos();
   //
+}
+
+//________________________________________________
+Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac) 
+{
+  // check if collected stat. is enough for VDrift calibration
+  int tmin = TMath::Max(fTMin,fTMinCTP);
+  int tmax = TMath::Min(fTMax,fTMaxCTP);
+  int dth  = fDeltaTVD/2;
+  int nHoles = 0, nChecked = 0;
+  int nbins = fTracksRate->GetNbinsX();
+  int ntrCumul[nbins+1], sumNtr=0;
+  int nevCumul[nbins+1], sumNev=0;
+  ntrCumul[0] = nevCumul[0] = 0;
+  for (int ib=1;ib<=nbins;ib++) {
+    ntrCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
+    nevCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
+  }
+  //
+  // mean number of tracks expected per tested bin in full stat
+  float nexpTracksAv = fEstTracksPerEvent*fNEvTot*fDeltaTVD/(fTMaxCTP-fTMinCTP);
+  for (int ts=fTMin;ts<fTMax;ts+=dth) {
+    int bmin = fTracksRate->FindBin(ts)-1;
+    int bmax = fTracksRate->FindBin(ts+fDeltaTVD);
+    int ntr = ntrCumul[bmax]-ntrCumul[bmin];
+    nChecked++;
+    if (ntr>fMinTracksPerVDBin) continue;
+    // do we expect enough tracks in this time period?
+    int nexpTracks = (nevCumul[bmax]-nevCumul[bmin])*fEstTracksPerEvent;
+    // declare stat insufficient only if we expect enough tracks there
+    if (nexpTracks>fMinTracksPerVDBin && nexpTracks>nexpTracksAv/2 && ntr<fMinTracksPerVDBin/2) nHoles++;
+  }
+  AliInfoF("%d bins out %d checked got enough statistics",nChecked-nHoles,nChecked);
+  if (nChecked && nHoles<maxHolesFrac*nChecked) return kTRUE;
+  return kFALSE;
 }
 
 //________________________________________________
@@ -3606,6 +3765,7 @@ TH1F* AliTPCDcalibRes::ExtractTrackRate() const
     Long64_t tmx = (Long64_t)fTracksRate->GetBinCenter(bin1);
     hTr = new TH1F(Form("TrackRate%lld_%lld",tmn,tmx),"TracksRate",nb,
 		   fTracksRate->GetBinLowEdge(bin0),fTracksRate->GetBinLowEdge(bin1+1));
+    hTr->SetDirectory(0);
     for (int ib=0;ib<nb;ib++) {
       int ibh = ib+bin0;
       hTr->SetBinContent(ib+1,tarr[ibh]);

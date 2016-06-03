@@ -129,7 +129,7 @@ class AliTPCDcalibRes: public TNamed
   virtual ~AliTPCDcalibRes();
   
   void CalibrateVDrift();
-  void FitDrift(Int_t tmin,Int_t tmax, Int_t ntbins);
+  void FitDrift();
   TProfile2D* GetHistoVDTimeInt()    const {return fHVDTimeInt;}
   TH2F*       GetHistoVDTimeCorr()   const {return fHVDTimeCorr;}
   Int_t GetDeltaTVDrift()  const {return fDeltaTVD;}
@@ -142,9 +142,12 @@ class AliTPCDcalibRes: public TNamed
   void ProcessFromLocalBinnedTrees();
   void ReProcessFromResVoxTree(const char* resTreeFile, Bool_t backup=kTRUE);
   void Save(const char* name=0);
+  void SaveFitDrift();
 
   TTree* InitDeltaFile(const char* name, Bool_t connect=kTRUE, const char* treeName="delta");
-  Bool_t EstimateStatistics();
+  Bool_t EstimateChunkStatistics();
+  Bool_t CollectDataStatistics();
+  Bool_t EnoughStatForVDrift(float maxHolesFrac=0.05);
   Int_t  ParseInputList();
   void CloseDeltaFile(TTree* dtree);
   void Init();
@@ -225,6 +228,7 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetRowID(float x);
   
   Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
+  TH1F*   GetEventsRateHisto()          const {return fEvRateH;}
   TH1F*   GetTracksRateHisto()          const {return fTracksRate;}
   TH1F*   GetTOFBCHisto()               const {return fTOFBCTestH;}
   void    SetTracksRateHisto(TH1F* h)  {fTracksRate = h;}   // needed for hacks
@@ -234,7 +238,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetNTracksUsed()              const {return fNTrSelTot;}
   Int_t   GetNTracksWithOutliers()      const {return fNTrSelTotWO;}
   Int_t   GetMinTrackToUse()            const {return fMinTracksToUse;}
-  Int_t     GetNTestTracks()            const {return fNTestTracks;}
+  Int_t   GetMinTracksPerVDBin()        const {return fMinTracksPerVDBin;}
+  Int_t   GetNTestTracks()              const {return fNTestTracks;}
   Float_t GetTestStat(int row, int col) const {return fTestStat[row][col];}
   //
   Int_t   GetXBinExact(float x);
@@ -270,6 +275,8 @@ class AliTPCDcalibRes: public TNamed
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
   void     SetNZ2XBins(int n=5)                  {fNZ2XBins = n;}
   void     SetMaxTracks(int n=4000000)           {fMaxTracks = n;}
+  void     SetNominalTimeBin(int nsec=2400)      {fNominalTimeBin = nsec;}
+  void     SetNominalTimeBinPrec(float p=0.3)    {fNominalTimeBinPrec = p;}
   void     SetFixAligmentBug(Bool_t v=kTRUE)     {fFixAlignmentBug = v;}
   void     SetCacheLearnSize(int n=1)            {fLearnSize = n;}
   void     SetCacheInput(Int_t v=100)            {fCacheInp = v;}
@@ -280,6 +287,7 @@ class AliTPCDcalibRes: public TNamed
   void     SetUseErrorInSmoothing(Bool_t v=kTRUE) {fUseErrInSmoothing = v;}
   void     SetNPrimTrackCuts(int n=400)          {fNPrimTracksCut = n;}
   void     SetMinTrackToUse(int n=600000)        {fMinTracksToUse = n;}
+  void     SetMinTracksPerVDBin(int n=3000)      {fMinTracksPerVDBin = n;}
   void     SetMinEntriesVoxel(int n=15)          {fMinEntriesVoxel = n;}
   void     SetMinNClusters(int n=30)             {fMinNCl = n;}
   void     SetNVoisinMA(int n=3)                 {fNVoisinMA = n;}
@@ -336,6 +344,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t    GetNY2XBins()                    const {return fNY2XBins;}
   Int_t    GetNZ2XBins()                    const {return fNZ2XBins;}
   Int_t    GetMaxTracks()                   const {return fMaxTracks;}
+  Int_t    GetNominalTimeBin()              const {return fNominalTimeBin;}
+  Float_t  GetNominalTimeBinPrec()          const {return fNominalTimeBinPrec;}
   Int_t    GetCacheInput()                  const {return fCacheInp;}
   Int_t    GetCacheLearnSize()              const {return fLearnSize;}
   Int_t    GetNPrimTrackCuts()              const {return fNPrimTracksCut;}
@@ -400,7 +410,9 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fDeltaTVD;      // vdrift T-bin size
   //
   Int_t    fSigmaTVD;      // vdrift smoothing window
-  Int_t    fMaxTracks;  // max tracks to accept
+  Int_t    fMaxTracks;     // max tracks to accept
+  Int_t    fNominalTimeBin;// nominal time bin
+  Float_t  fNominalTimeBinPrec; // allow deviation of time bin from nominal within this limit
   Int_t    fCacheInp;      // input trees cache in MB
   Int_t    fLearnSize;     // event to learn for the cache
   Float_t  fBz;            // B field
@@ -409,6 +421,7 @@ class AliTPCDcalibRes: public TNamed
   TObjArray* fInputChunks;  // list of input files used
   TString  fOCDBPath;      // ocdb path
   // ------------------------------Selection/filtering cuts
+  Int_t    fMinTracksPerVDBin;       // min number of tracks per VDrift bin
   Int_t    fMinTracksToUse;          // produce warning if n tracks is too low
   Int_t    fMinEntriesVoxel;         // min number of entries per voxel to consider
   Int_t    fNPrimTracksCut;          // of >0, cut on event multiplicity
@@ -470,12 +483,15 @@ class AliTPCDcalibRes: public TNamed
   // result of last kernel minimization: value and dV/dX,dV/dY,dV/dZ for each dim
   Double_t fLastSmoothingRes[kResDim*kMaxSmtDim];  //! results of last smoothing
   // ------------------------------Selection Stats
+  Int_t    fNEvTot;         // total number of events
   Int_t    fNTrSelTot;      // selected tracks
   Int_t    fNTrSelTotWO;    // would be selected w/o outliers rejection
   Int_t    fNReadCallTot;   // read calls from input trees
   Long64_t fNBytesReadTot;  // total bytes read
   Int_t    fNTestTracks;                // number of control tracks in test stat
+  Float_t  fEstTracksPerEvent;          // estimate for used tracks per selected event
   Float_t  fTestStat[kCtrNbr][kCtrNbr]; // control statistics (fraction to fNTestTracks) 
+  TH1F*    fEvRateH;        // events per time histo
   TH1F*    fTracksRate;     // accepted tracks per second
   TH1F*    fTOFBCTestH;     // TOF BC (ns) for test fNTestTracks tracks
   TProfile2D* fHVDTimeInt;   // histo used for time integrated vdrift fit
@@ -552,7 +568,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,13);
+  ClassDef(AliTPCDcalibRes,14);
 };
 
 //________________________________________________________________
