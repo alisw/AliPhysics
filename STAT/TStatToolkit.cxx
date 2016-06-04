@@ -1648,11 +1648,17 @@ void   TStatToolkit::MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, 
   //    sumID     - ID as will be used in output tree
   //    selection - selection criteria define the set of entries used to evaluat statistic 
   //
+  // Curently only predefined statistic used to fill summary information
+  // Future plans an option user defined statistic descriptor instead of the defualt (if exist)
+  // 
+  //      e.g 
+  //          default.Branches=median:mean90:rms90:mean60:rms60
+  //          interactionRate.Branches   mean90:median:rms90:mean95:rms95:mean60:rms60
+  //
   TObjArray * brArray = treeIn->GetListOfBranches();
   Int_t tEntries= treeIn->GetEntries();
   Int_t nBranches=brArray->GetEntries();
   TString treeName = treeIn->GetName();
-  treeName+="Summary";
 
   (*pcstream)<<treeName.Data()<<"entries="<<tEntries;
   (*pcstream)<<treeName.Data()<<"ID.="<<&sumID;
@@ -1660,7 +1666,7 @@ void   TStatToolkit::MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, 
   TMatrixD valBranch(nBranches,7);
   for (Int_t iBr=0; iBr<nBranches; iBr++){    
     TString brName= brArray->At(iBr)->GetName();
-    Int_t entries=treeIn->Draw(brArray->At(iBr)->GetName(),selection);
+    Int_t entries=treeIn->Draw(TString::Format("%s>>dummy(10,0,1)",brArray->At(iBr)->GetName()).Data(),selection,"goff");
     if (entries==0) continue;
     Double_t median, mean, rms, mean60,rms60, mean90, rms90;
     mean  = TMath::Mean(entries,treeIn->GetV1());
@@ -1676,7 +1682,8 @@ void   TStatToolkit::MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, 
     valBranch(iBr,5)=mean90; 
     valBranch(iBr,6)=rms90; 
     (*pcstream)<<treeName.Data()<<
-      brName+"_Mean="<<valBranch(iBr,0)<<
+      brName+"="<<valBranch(iBr,1)<<           // use as an default median estimator
+      brName+"_Mean="<<valBranch(iBr,0)<< 
       brName+"_Median="<<valBranch(iBr,1)<<
       brName+"_RMS="<<valBranch(iBr,2)<<
       brName+"_Mean60="<<valBranch(iBr,3)<<
