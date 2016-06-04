@@ -701,15 +701,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227302008250400000", "0152109500900000"); //variation alpha
     cuts.AddCut("00010113", "00200009227302008250400000", "0152101500900002"); //variation alpha opan max
   } else if (trainConfig == 103) {  // for V0 High-Mult trigger by HM
-    cuts.AddCut("00074113", "00200009227302008250400000", "0152103500000000"); //standard cut
-    cuts.AddCut("00074113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
-    cuts.AddCut("00074113", "00200009227302008250400000", "0152109500000000"); //variation alpha
-    cuts.AddCut("00074113", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
+    cuts.AddCut("00074113", "00200009227302008250404000", "0152103500000000"); //standard cut
+    cuts.AddCut("00074113", "00200009227302008250404000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00074113", "00200009227302008250404000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00074113", "00200009227302008250404000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 104) {  // for SPD High-Mult trigger by HM
-    cuts.AddCut("00075113", "00200009227302008250400000", "0152103500000000"); //standard cut
-    cuts.AddCut("00075113", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
-    cuts.AddCut("00075113", "00200009227302008250400000", "0152109500000000"); //variation alpha
-    cuts.AddCut("00075113", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
+    cuts.AddCut("00075113", "00200009227302008250404000", "0152103500000000"); //standard cut
+    cuts.AddCut("00075113", "00200009227302008250404000", "0152101500000000"); //variation alpha pT dependent
+    cuts.AddCut("00075113", "00200009227302008250404000", "0152109500000000"); //variation alpha
+    cuts.AddCut("00075113", "00200009227302008250404000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 105) {  // check # of entries w/ pileup rejection cut for V0HM
     cuts.AddCut("00074013", "00200009227302008250400000", "0152103500000000"); //standard cut
     cuts.AddCut("00074013", "00200009227302008250400000", "0152101500000000"); //variation alpha pT dependent
@@ -765,11 +765,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); // double counting cut
     cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); // dEdx 4 sigma below e
     cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000");
-  }  else if (trainConfig == 116) {  // like trainconfig 101, with changes in conversion cuts
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000");
-    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); //double counting
-    cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); //variation dE/dx e -2.5<sigma<4
-    cuts.AddCut("00010113", "00200009227312008250400000", "0152101500000000"); //variation nSigma rejection cut
+  } else if (trainConfig == 116) { //kINT7
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); // standard cut Gamma pp 13TeV
+    cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000"); // variation dE/dx e -2.5<sigma<4
+    cuts.AddCut("00010113", "00200009227302008260404000", "0152101500000000"); // psi pair 0.05 2D
+    cuts.AddCut("00010113", "00200009227312008250404000", "0152101500000000"); // variation nSigma rejection cut
   } else if (trainConfig == 117) { //kINT7
     cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000");
     cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000"); // dEdx 4 sigma below e
