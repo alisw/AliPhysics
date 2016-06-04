@@ -43,15 +43,17 @@ Int_t    NbinsRelMom     =  1201;
 Double_t RelMomMin       = -0.0005;
 Double_t RelMomMax       =  1.2005;
 Int_t    NbinsDeltaEta   = 801;
-Double_t DeltaEtaMin     = -0.8005;
-Double_t DeltaEtaMax     =  0.8005;
+Double_t DeltaEtaMin     = -0.801;
+Double_t DeltaEtaMax     =  0.801;
 Int_t    NbinsDeltaTheta = 801;
-Double_t DeltaThetaMin   = -0.8005;
-Double_t DeltaThetaMax   =  0.8005;
+Double_t DeltaThetaMin   = -0.801;
+Double_t DeltaThetaMax   =  0.801;
 Int_t    NbinsDeltaPhi   = 401;
-Double_t DeltaPhiMin     = -0.4005;
-Double_t DeltaPhiMax     =  0.4005;
-
+Double_t DeltaPhiMin     = -0.401;
+Double_t DeltaPhiMax     =  0.401;
+Int_t    NbinsDeltaAngle = 401;
+Double_t DeltaAngleMin   = -0.201;
+Double_t DeltaAngleMax   =  0.601;
 
 // mee bins
 const Double_t MeeMin    = 0.;
