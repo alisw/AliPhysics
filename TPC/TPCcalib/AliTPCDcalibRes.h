@@ -566,6 +566,7 @@ class AliTPCDcalibRes: public TNamed
   static const char* kVoxName[];
   static const char* kResName[];
   static const char* kModeName[];
+  static const char* kExtDetName[];
   
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X

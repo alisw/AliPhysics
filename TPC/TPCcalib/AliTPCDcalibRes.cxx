@@ -19,6 +19,7 @@ void trainCorr(int row, float* tzLoc, float* corrLoc);
 
 // make sure these branches are always connected in InitDeltaFile
 const char* AliTPCDcalibRes::kModeName[kNCollectModes] = {"VDrift calibration","Distortions extraction","Closure test"};
+const char* AliTPCDcalibRes::kExtDetName[kNExtDetComb] = {"TRDonly","TOFonly","ITSonly","TRD|TOF"};
 const char* AliTPCDcalibRes::kControlBr[kCtrNbr] = {"itsOK","trdOK","tofOK","tofBC","nPrimTracks"}; 
 const char* AliTPCDcalibRes::kVoxName[AliTPCDcalibRes::kVoxHDim] = {"z2x","y2x","x","N"};
 const char* AliTPCDcalibRes::kResName[AliTPCDcalibRes::kResDim] = {"dX","dY","dZ","Disp"};
@@ -914,9 +915,15 @@ void AliTPCDcalibRes::CollectData(const int mode)
   fNReadCallTot = 0;
   fNBytesReadTot = 0;
   //
-  AliInfo("***");
+  AliInfo( "***");
   AliInfoF("***   Collecting data in mode: %s",kModeName[mode]);
-  AliInfo("***");
+  AliInfoF("***   Ext.Det.used: %s, TOFBC validation: %s",kExtDetName[fExtDet],fUseTOFBC?"ON":"OFF");
+  AliInfo( "***");
+  //
+  delete fTracksRate;
+  // init histo for track rate
+  fTracksRate = new TH1F("TracksRate","TracksRate", 1+fTMax-fTMin, fTMin,fTMax+1);
+  fTracksRate->SetDirectory(0);
   //
   delete fTracksRate;
   // init histo for track rate
