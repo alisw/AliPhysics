@@ -151,7 +151,7 @@ goCPass2() (
 goCPass()
 (
   umask 0002
-  
+
   targetDirectory=$1
   inputList=$2
   nEvents=$3
@@ -200,14 +200,14 @@ goCPass()
   doneFile="$commonOutputPath/meta/$doneFileBase"
 
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source ${alirootSource}
-  
+
   [[ -n "$ALIROOT_FORCE_COREDUMP" ]] && export ALIROOT_FORCE_COREDUMP && ulimit -c unlimited
 
   # The contents of this is stored in the tree and used later (e.g. AliAnalysisTaskPIDResponse)!
   # At the QA stage the pass number is guessed from the path stored here.
   # The Format is:
   #   Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;
-  #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
+  #   LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear=
   export PRODUCTION_METADATA="OutputDir=cpass${cpass}"
 
   # Check if input list exists. Works both for local and remote cases.
@@ -229,6 +229,15 @@ goCPass()
     *) runpath=$outputDir ;;
   esac
 
+  logOutputDir=$runpath
+  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
+  if [[ -z "$dontRedirectStdOutToLog" ]]; then
+    # Redirect all output to both file and console. Save fd 3 to restore later.
+    exec 3>&1
+    exec &> >(tee ${logOutputDir}/stdout)
+  fi
+  echo "$0 $*"
+
   # TODO: check if this is really for CPass1 only. Asymmetry found when merging CPass0/1.
   # TODO: Used only in MC. Check if this still works.
   if [[ $cpass == 1 ]]; then
@@ -248,17 +257,9 @@ goCPass()
 
   # runCPassX/C expects the raw chunk to be linked in the run dir despite it being accessed by the
   # full path.
+  echo "Making $infile visible in the current directory, $PWD"
   [[ $copyInputData == 0 ]] && ln -s ${infile} ${runpath}/${chunkName} \
                             || copyFileFromRemote ${infile} ${runpath}/
-
-  logOutputDir=$runpath
-  [[ -n "$logToFinalDestination" ]] && logOutputDir=${outputDir}
-  if [[ -z "$dontRedirectStdOutToLog" ]]; then
-    # Redirect all output to both file and console. Save fd 3 to restore later.
-    exec 3>&1
-    exec &> >(tee ${logOutputDir}/stdout)
-  fi
-  echo "$0 $*"
 
   ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
   if [[ $cpass == 0 && -n $generateMC ]]; then
@@ -271,7 +272,7 @@ goCPass()
     mkdir -p ${simrunpath}
     if cd ${simrunpath}; then
 
-      filesMC=( 
+      filesMC=(
       "${batchWorkingDirectory}/sim.C"
       "${batchWorkingDirectory}/rec.C"
       "${batchWorkingDirectory}/Config.C"
@@ -286,7 +287,7 @@ goCPass()
       [[ ! "${simrunpath}" =~ "${outputDirMC}" ]] && mv * ${outputDirMC} #TODO check if it works
       cd ${olddir}
 
-      ln -s ${outputDirMC}/* ${runpath}/ 
+      ln -s ${outputDirMC}/* ${runpath}/
 
       inputList=${outputDirMC}/galice.root #TODO not valid outside shell !!!
       infile=""
@@ -308,7 +309,7 @@ goCPass()
   echo commonOutputPath      ${commonOutputPath}
   echo doneFile              ${doneFile}
   echo batchWorkingDirectory ${batchWorkingDirectory}
-  echo runpath               ${runpath}  
+  echo runpath               ${runpath}
   echo outputDir             ${outputDir}
   echo PWD                   ${PWD}
   echo ALICE_ROOT            ${ALICE_ROOT}
@@ -327,7 +328,7 @@ goCPass()
                           "${batchWorkingDirectory}/localOCDB.tgz"
                           "${batchWorkingDirectory}/OCDB.root" )
        filesCPass=( "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCPass0.sh"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C" 
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/recCPass0.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/runCalibTrain.C" ) ;;
 
     1) filesCPassCustom=( "${batchWorkingDirectory}/runCPass1.sh"
