@@ -428,7 +428,7 @@ void AliTPCDcalibRes::FitDrift()
   // time correction
   delete fHVDTimeCorr;
   int ntbins = double(fTMax-fTMin)/fDeltaTVD+1;
-  fHVDTimeCorr = new TH2F("driftTCorr","drift time correction",ntbins,fTMin,fTMax,kNTCorrBins,-kMaxTCorr,kMaxTCorr);
+  fHVDTimeCorr = new TH2F("driftTCorr","drift time correction",ntbins,fTMin,fTMax+1,kNTCorrBins,-kMaxTCorr,kMaxTCorr);
   fHVDTimeCorr->SetDirectory(0);
   fHVDTimeCorr->SetXTitle("time");
   fHVDTimeCorr->SetYTitle("delta");  
@@ -663,9 +663,8 @@ void AliTPCDcalibRes::Init()
   fTMinCTP = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
   fTMaxCTP = scalers->GetScalersRecord(nEntries-1)->GetTimeStamp()->GetSeconds();
   //
-  // init histo for track rate
-  fTracksRate = new TH1F("TracksRate","TracksRate", 1+fTMaxCTP-fTMinCTP, -0.5+fTMinCTP,0.5+fTMaxCTP);
-  fTracksRate->SetDirectory(0);
+  if (fTMin<fTMinGRP) fTMin = fTMinGRP;
+  if (fTMax>fTMaxGRP) fTMax = fTMaxGRP;
   //
   AliInfoF("Run time: GRP:%lld:%lld |CTP:%lld:%lld |User:%lld:%lld",fTMinGRP,fTMaxGRP,fTMinCTP,fTMaxCTP,fTMin,fTMax);
   //
@@ -792,7 +791,7 @@ Bool_t AliTPCDcalibRes::CollectDataStatistics()
   if (!fInitDone) Init();
   int nPrimTrack,timeStamp,tmin=0x7fffffff,tmax=0;
   int nb = int((fTMaxCTP-fTMinCTP)/10.);
-  fEvRateH = new TH1F("EvRate","EventRate",1+fTMaxCTP-fTMinCTP,-0.5+fTMinCTP,fTMaxCTP+0.5);
+  fEvRateH = new TH1F("EvRate","EventRate",1+fTMaxGRP-fTMinGRP,fTMinGRP,fTMaxGRP+1);
   fEvRateH->SetDirectory(0);
   fEvRateH->GetXaxis()->SetTimeFormat();
   fNEvTot = 0;
@@ -918,6 +917,11 @@ void AliTPCDcalibRes::CollectData(const int mode)
   AliInfo("***");
   AliInfoF("***   Collecting data in mode: %s",kModeName[mode]);
   AliInfo("***");
+  //
+  delete fTracksRate;
+  // init histo for track rate
+  fTracksRate = new TH1F("TracksRate","TracksRate", 1+fTMax-fTMin, fTMin,fTMax+1);
+  fTracksRate->SetDirectory(0);
   //
   float maxAbsResid = kMaxResid - kEps; // discard residuals exceeding this
   Bool_t correctVDrift = kTRUE;
@@ -1181,26 +1185,27 @@ void AliTPCDcalibRes::CollectData(const int mode)
 Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac) 
 {
   // check if collected stat. is enough for VDrift calibration
-  int tmin = TMath::Max(fTMin,fTMinCTP);
-  int tmax = TMath::Min(fTMax,fTMaxCTP);
   int dth  = fDeltaTVD/2;
   int nHoles = 0, nChecked = 0;
-  int nbins = fTracksRate->GetNbinsX();
-  int ntrCumul[nbins+1], sumNtr=0;
-  int nevCumul[nbins+1], sumNev=0;
+  int nbinsT = fTracksRate->GetNbinsX();
+  int nbinsE = fEvRateH->GetNbinsX();
+  int ntrCumul[nbinsT+2], sumNtr=0;
+  int nevCumul[nbinsE+2], sumNev=0;
   ntrCumul[0] = nevCumul[0] = 0;
-  for (int ib=1;ib<=nbins;ib++) {
-    ntrCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
-    nevCumul[ib] = (sumNev += fEvRateH->GetBinContent(ib));
-  }
+  for (int ib=1;ib<=nbinsT;ib++) ntrCumul[ib] = (sumNtr += fTracksRate->GetBinContent(ib));
+  for (int ib=1;ib<=nbinsE;ib++) nevCumul[ib] = (sumNev += fEvRateH->GetBinContent(ib));
+  ntrCumul[nbinsT+1] = sumNtr;
+  nevCumul[nbinsE+1] = sumNev;
   //
   // mean number of tracks expected per tested bin in full stat
   float nexpTracksAv = fEstTracksPerEvent*fNEvTot*fDeltaTVD/(fTMaxCTP-fTMinCTP);
   int longestEmpty=0,prevEmpty=0;
-  for (int ts=fTMin;ts<fTMax;ts+=dth) {
-    int bmin = fTracksRate->FindBin(ts)-1;
-    int bmax = fTracksRate->FindBin(ts+fDeltaTVD);
-    int ntr = ntrCumul[bmax]-ntrCumul[bmin];
+  for (int ts=fTMin;ts<fTMax-fDeltaTVD;ts+=dth) {
+    int bminT = fTracksRate->FindBin(ts);
+    int bmaxT = fTracksRate->FindBin(ts+fDeltaTVD);
+    int bminE = fEvRateH->FindBin(ts);
+    int bmaxE = fEvRateH->FindBin(ts+fDeltaTVD);
+    int ntr = ntrCumul[bmaxT]-ntrCumul[bminT];
     nChecked++;
     if (ntr>fMinTracksPerVDBin) {
       if (prevEmpty>longestEmpty) longestEmpty = prevEmpty;
@@ -1208,7 +1213,7 @@ Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac)
       continue;
     }
     // do we expect enough tracks in this time period?
-    int nexpTracks = (nevCumul[bmax]-nevCumul[bmin])*fEstTracksPerEvent;
+    int nexpTracks = (nevCumul[bmaxE]-nevCumul[bminE])*fEstTracksPerEvent;
     // declare stat insufficient only if we expect enough tracks there
     if (nexpTracks>fMinTracksPerVDBin && nexpTracks>nexpTracksAv/2 && ntr<fMinTracksPerVDBin/2) {
       nHoles++;
