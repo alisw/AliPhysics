@@ -127,7 +127,7 @@ fi
 wdir=`pwd` 
 for arun in `cat $runList`; do
     alilog_info "BEGIN: Processing run $arun"
-    run=`echo $arun| sed s_000__`
+    run=$(echo "$arun" | sed 's/^0*//')
     echo "run=$run"
     export runNumber=$run
     runDir=$curdir
