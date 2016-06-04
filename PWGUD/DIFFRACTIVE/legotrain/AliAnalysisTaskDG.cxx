@@ -150,7 +150,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexTPC()
   , fVertexTracks()
   , fTOFHeader()
-  , fTriggerIRs("AliTriggerIR", 10)
+  , fTriggerIRs("AliTriggerIR", 3)
   , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTrackSave)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(NULL)
@@ -224,8 +224,11 @@ void AliAnalysisTaskDG::SetBranches(TTree* t) {
 
 void AliAnalysisTaskDG::UserCreateOutputObjects()
 {
-  if (fTrackCutType == "ITSPureSA")
+  if (fTrackCutType == "ITSPureSA") {
     fTrackCuts  = AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE);
+    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kBoth);
+  }
 
   if (fTrackCutType == "TPCOnly")
     fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -388,9 +391,13 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   fTOFHeader    = *(esdEvent->GetTOFHeader());
 
+  // store trigger IR for up to +-1 orbits around the event
   fTriggerIRs.Delete();
-  for (Int_t i=0; i<esdHeader->GetTriggerIREntries(); ++i) {
-    new(fTriggerIRs[i]) AliTriggerIR(*(esdHeader->GetTriggerIR(i)));
+  for (Int_t i=0,j=0,n=esdHeader->GetTriggerIREntries(); i<n; ++i) {
+    const AliTriggerIR *ir = esdHeader->GetTriggerIR(i);
+    if (!ir || TMath::Abs(Int_t(ir->GetOrbit()&0xFFFF) - Int_t(fTreeData.fEventInfo.fOrbitID)) > 1)
+      continue;
+    new(fTriggerIRs[j++]) AliTriggerIR(*ir);
   }
 
   fFastOrMap    = mult->GetFastOrFiredChips();

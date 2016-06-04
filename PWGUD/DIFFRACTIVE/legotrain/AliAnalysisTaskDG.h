@@ -126,7 +126,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 1);
+    ClassDef(TreeData, 2);
   } ;
 
   struct TrackData : public TObject {
@@ -155,7 +155,7 @@ public:
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
-    ClassDef(TrackData, 1);
+    ClassDef(TrackData, 2);
   } ;
 
 
