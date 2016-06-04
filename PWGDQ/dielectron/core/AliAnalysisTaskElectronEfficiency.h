@@ -124,12 +124,13 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
   void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
   void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
-  void          SetDeltaMomBinning(Int_t N, Double_t min, Double_t max)   {fDeltaMomNbins=N; fDeltaMomMin=min, fDeltaMomMax=max;}
-  void          SetRelMomBinning(Int_t N, Double_t min, Double_t max)     {fRelMomNbins=N; fRelMomMin=min, fRelMomMax=max;}
-  void          SetDeltaEtaBinning(Int_t N, Double_t min, Double_t max)   {fDeltaEtaNbins=N; fDeltaEtaMin=min, fDeltaEtaMax=max;}
-  void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min, fDeltaThetaMax=max;}
-  void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min, fDeltaPhiMax=max;}
-
+  void          SetDeltaMomBinning(Int_t N, Double_t min, Double_t max)   {fDeltaMomNbins=N; fDeltaMomMin=min; fDeltaMomMax=max;}
+  void          SetRelMomBinning(Int_t N, Double_t min, Double_t max)     {fRelMomNbins=N; fRelMomMin=min; fRelMomMax=max;}
+  void          SetDeltaEtaBinning(Int_t N, Double_t min, Double_t max)   {fDeltaEtaNbins=N; fDeltaEtaMin=min; fDeltaEtaMax=max;}
+  void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min; fDeltaThetaMax=max;}
+  void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min; fDeltaPhiMax=max;}
+  void          SetDeltaAngleBinning(Int_t N, Double_t min, Double_t max) {fDeltaAngleNbins=N; fDeltaAngleMin=min; fDeltaAngleMax=max;}
+  
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
   void          CreateSupportHistos();
@@ -257,6 +258,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Int_t                           fDeltaPhiNbins;
   Double_t                        fDeltaPhiMin;
   Double_t                        fDeltaPhiMax;
+  Int_t                           fDeltaAngleNbins;
+  Double_t                        fDeltaAngleMin;
+  Double_t                        fDeltaAngleMax;
 
   TH1D*                           fPGen;
   TH1D*                           fPRec;

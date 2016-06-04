@@ -161,6 +161,9 @@ fDeltaThetaMax(0.4),
 fDeltaPhiNbins(200),
 fDeltaPhiMin(-0.4),
 fDeltaPhiMax(0.4),
+fDeltaAngleNbins(300),
+fDeltaAngleMin(-0.5),
+fDeltaAngleMax(1.),
 fPGen(0x0),
 fPRec(0x0),
 fPGen_DeltaP(0x0),
@@ -342,6 +345,9 @@ fDeltaThetaMax(0.4),
 fDeltaPhiNbins(200),
 fDeltaPhiMin(-0.4),
 fDeltaPhiMax(0.4),
+fDeltaAngleNbins(300),
+fDeltaAngleMin(-0.5),
+fDeltaAngleMax(1.),
 fPGen(0x0),
 fPRec(0x0),
 fPGen_DeltaP(0x0),
@@ -569,8 +575,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fEtaGen_DeltaEta                     = new TH2D("EtaGen_DeltaEta",                    "",200,-1.,1.,fDeltaEtaNbins,fDeltaEtaMin,fDeltaEtaMax);
     fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "",220,-0.1*TMath::Pi(),1.1*TMath::Pi(),fDeltaThetaNbins,fDeltaThetaMin,fDeltaThetaMax);
     fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "",320,-0.1*TMath::Pi(),2.1*TMath::Pi(),fDeltaPhiNbins,fDeltaPhiMin,fDeltaPhiMax);
-    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,300,-0.5,1.);
-    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,300,-0.5,1.);
+    fOpeningAngleGen_DeltaOpeningAngleUS = new TH2D("OpeningAngleGen_DeltaOpeningAngleUS","",330,-0.1,3.2,fDeltaAngleNbins,fDeltaAngleMin,fDeltaAngleMax);
+    fOpeningAngleGen_DeltaOpeningAngleLS = new TH2D("OpeningAngleGen_DeltaOpeningAngleLS","",330,-0.1,3.2,fDeltaAngleNbins,fDeltaAngleMin,fDeltaAngleMax);
 
     fPGen                                ->Sumw2();
     fPRec                                ->Sumw2();
@@ -587,7 +593,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     fPhiGen_DeltaPhi                     ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleUS ->Sumw2();
     fOpeningAngleGen_DeltaOpeningAngleLS ->Sumw2();
-    
+
     fPGen                                ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
     fPRec                                ->GetXaxis()->SetTitle("p^{rec} (GeV/c)");
     fPGen_DeltaP                         ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
@@ -633,7 +639,7 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
     resolutionList->Add(fDeltaPhi_MCcharge);
     resolutionList->Add(fDeltaPhi_charge);
     resolutionList->Add(fDeltaPhi);
-    
+
     resolutionList->Add(fPGen);
     resolutionList->Add(fPRec);
     resolutionList->Add(fPGen_DeltaP);
@@ -936,7 +942,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
     //AliStack *fStack = mcEvent->Stack();
-    
+
     for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
       // New:
       // Select electrons based on an attached AliDielectronSignalMC.
