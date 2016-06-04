@@ -146,7 +146,7 @@ class AliTPCDcalibRes: public TNamed
   TTree* InitDeltaFile(const char* name, Bool_t connect=kTRUE, const char* treeName="delta");
   Bool_t EstimateChunkStatistics();
   Bool_t CollectDataStatistics();
-  Bool_t EnoughStatForVDrift(float maxHolesFrac=0.05);
+  Bool_t EnoughStatForVDrift(int tstamp=-1,float maxHolesFrac=0.05);
   Int_t  ParseInputList();
   void CloseDeltaFile(TTree* dtree);
   void Init();
@@ -217,7 +217,8 @@ class AliTPCDcalibRes: public TNamed
   void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
 			float scX=1.f,float scP=1.f,float scZ=1.f);
   Bool_t  GetSmooth1D(double xQuery,double valerr[2],int np,const double* x,const double* y,const double* err,
-		      double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,Bool_t xIncreasing=kTRUE) const;
+		      double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,
+		      Bool_t xIncreasing=kTRUE, Float_t maxD2Range=3.0) const;
   Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
   void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
   //  

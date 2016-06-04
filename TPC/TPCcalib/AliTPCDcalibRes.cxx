@@ -453,7 +453,7 @@ void AliTPCDcalibRes::FitDrift()
   TF1* gs = new TF1("gs","gaus",-kMaxTCorr,kMaxTCorr);
   TObjArray arrH;
   arrH.SetOwner(kTRUE);
-  fHVDTimeCorr->FitSlicesY(gs,1,kNTCorrBins,0,"QNR",&arrH);
+  fHVDTimeCorr->FitSlicesY(gs,0,-1,0,"QNR",&arrH);
   TH1* hEnt = fHVDTimeCorr->ProjectionX("hEnt",1,ntbins);
   TH1* hmean = (TH1*)arrH[1];
   double tArr[ntbins],dArr[ntbins],deArr[ntbins];
@@ -481,7 +481,7 @@ void AliTPCDcalibRes::FitDrift()
     fVDriftGraph->SetPointError(ngAcc,0.5,resve[1]);
     ngAcc++;
   }
-  for (int i=ngAcc;i<ntbins;i++) fVDriftGraph->RemovePoint(i); // eliminate extra points
+  for (int i=ntbins-1;i>=ngAcc; i--) fVDriftGraph->RemovePoint(i); // eliminate empty points
   //
   // flag if TOFBC was used for VDrift extraction
   if (fUseTOFBC) fVDriftGraph->SetBit(kVDWithTOFBC);
@@ -998,6 +998,7 @@ void AliTPCDcalibRes::CollectData(const int mode)
 	}
 	continue;	
       }
+      if (mode==kVDriftCalibMode && EnoughStatForVDrift(fTimeStamp)) continue; // matching but is it needed?
       //
       brITSOK->GetEntry(itr);
       brTRDOK->GetEntry(itr);
@@ -1189,10 +1190,25 @@ void AliTPCDcalibRes::CollectData(const int mode)
 }
 
 //________________________________________________
-Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac) 
+Bool_t AliTPCDcalibRes::EnoughStatForVDrift(int tstamp, float maxHolesFrac) 
 {
   // check if collected stat. is enough for VDrift calibration
-  int dth  = fDeltaTVD/2;
+  // when called with positive timestamp, check just the occupancy of the bin it belong to
+  static Bool_t *binStat = 0;
+  static int    nBinStat = 0;
+  if (!binStat) {
+    nBinStat = (fTMax-fTMin)/fDeltaTVD+1;
+    binStat = new Bool_t[nBinStat];
+    memset(binStat,0,nBinStat*sizeof(Bool_t));
+  }
+  //
+  int binv = (tstamp-fTMin)/fDeltaTVD; // time stamp provided: query for specific time bin
+  if (tstamp>0) {
+    if (binv>=0 && binv<nBinStat) return binStat[binv];
+    return kTRUE; // this should not happen normally
+  }
+  //   
+  // query for the whole run
   int nHoles = 0, nChecked = 0;
   int nbinsT = fTracksRate->GetNbinsX();
   int nbinsE = fEvRateH->GetNbinsX();
@@ -1205,16 +1221,18 @@ Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac)
   nevCumul[nbinsE+1] = sumNev;
   //
   // mean number of tracks expected per tested bin in full stat
-  float nexpTracksAv = fEstTracksPerEvent*fNEvTot*fDeltaTVD/(fTMaxCTP-fTMinCTP);
+  float nexpTracksAv = fEstTracksPerEvent*fNEvTot*fDeltaTVD/(fTMax-fTMin);
   int longestEmpty=0,prevEmpty=0;
-  for (int ts=fTMin;ts<fTMax-fDeltaTVD;ts+=dth) {
+  for (int ts=fTMin;ts<fTMax-fDeltaTVD;ts+=fDeltaTVD) {
     int bminT = fTracksRate->FindBin(ts);
     int bmaxT = fTracksRate->FindBin(ts+fDeltaTVD);
     int bminE = fEvRateH->FindBin(ts);
     int bmaxE = fEvRateH->FindBin(ts+fDeltaTVD);
     int ntr = ntrCumul[bmaxT]-ntrCumul[bminT];
+    int binv = (ts+1-fTMin)/fDeltaTVD;
     nChecked++;
     if (ntr>fMinTracksPerVDBin) {
+      binStat[binv] = kTRUE; // flag complete bin
       if (prevEmpty>longestEmpty) longestEmpty = prevEmpty;
       prevEmpty = 0; // reset empty segment counter
       continue;
@@ -1224,12 +1242,14 @@ Bool_t AliTPCDcalibRes::EnoughStatForVDrift(float maxHolesFrac)
     // declare stat insufficient only if we expect enough tracks there
     if (nexpTracks>fMinTracksPerVDBin && nexpTracks>nexpTracksAv/2 && ntr<fMinTracksPerVDBin/2) {
       nHoles++;
-      prevEmpty += prevEmpty ? dth :  fDeltaTVD;
+      prevEmpty += fDeltaTVD;
     }
+    else binStat[binv] = kTRUE; // flag complete bin, since this bin is depleted on event level
   }
+  if (prevEmpty>longestEmpty) longestEmpty = prevEmpty;
   AliInfoF("%d bins out %d checked got enough stat., longest empty segment: %ds",
 	   nChecked-nHoles,nChecked,longestEmpty);
-  if (nChecked && nHoles<maxHolesFrac*nChecked && longestEmpty<fSigmaTVD/2) return kTRUE;
+  if (nChecked && nHoles<maxHolesFrac*nChecked && longestEmpty<fSigmaTVD*0.75) return kTRUE;
   return kFALSE;
 }
 
@@ -3597,7 +3617,8 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
  double valerr[2],                                          // output array for value and its error
  int np, const double* x, const double* y, const double* err, // points x,y, optional error 
  double w, int kType,Bool_t usePol2,                       // kernel width and type, do we use pol1 or pol2 interpolation
- Bool_t xIncreasing                                        // are points increasing in X
+ Bool_t xIncreasing,                                       // are points increasing in X
+ float  maxD2Range                                         // may increase kernel width up to maxD2Range*dataRange
  ) const 
 {
   // get kernel (width w) smoothed value at xQuery for (opionally ordered in x-increasing) array x,y (optionally err)
@@ -3616,7 +3637,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
       if (xmin<x[i]) xmin = x[i];
     }
   }
-  double maxD,w2Sum=0.,range = xmax - xmin;
+  double maxD,w2Sum=0.,range = (xmax - xmin)*maxD2Range;
   //
   const float kEps = 1e-12;
   int npUse=0;
