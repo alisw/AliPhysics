@@ -2800,7 +2800,8 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters(); // just to get Vdrift
   //
   for (Int_t ipoint=0; ipoint<=1; ipoint++){
-    deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK
+    //    deltaZ[ipoint]=-(*fVDriftParam)[1];  // unit OK
+    deltaZ[ipoint]=(*fVDriftParam)[1];  // unit OK  !!! No - sign, it is subtracted from (Zmax-drift)
     vdgy[ipoint]=-(*fVDriftParam)[2];   // units OK
     t0[ipoint]=-(*fVDriftParam)[0]/(1+(*fVDriftParam)[3]);       // t0 to be normalized to the ms
     t0[ipoint]/=(param->GetDriftV()/1000000.); 
