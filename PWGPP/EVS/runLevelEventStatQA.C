@@ -310,11 +310,13 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     return 4;
   }
   
+  AliPhysicsSelection* ps = 0;
+  
   if (qafilename.Contains("event_stat")) {
     hHistStat = (TH2F*) fin->Get("fHistStat");
   } else {
     TList* statsout = (TList*) fin->Get("cstatsout");
-    AliPhysicsSelection* ps = statsout ? (AliPhysicsSelection*) statsout->FindObject("AliPhysicsSelection") : 0;
+    ps = statsout ? (AliPhysicsSelection*) statsout->FindObject("AliPhysicsSelection") : 0;
     hHistStat = ps ? (TH2F*) ps->GetStatistics("") : 0;
   }
   
@@ -325,14 +327,40 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   }
   
   fout->cd();
+
   meanV0MOn = 0;
   meanV0MOf = 0;
-  meanOFO = 0;
-  meanTKL = 0;
+  meanOFO   = 0;
+  meanTKL   = 0;
   meanErrV0MOn = 0;
   meanErrV0MOf = 0;
-  meanErrOFO = 0;
-  meanErrTKL = 0;
+  meanErrOFO   = 0;
+  meanErrTKL   = 0;
+  for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
+    TString label = hHistStat->GetYaxis()->GetBinLabel(j);
+    // kINT7
+    if (!label.Contains(" &2 ")) continue;
+    TList* list = NULL;
+    if (qafilename.Contains("event_stat")) {
+      list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
+    } else {
+      AliTriggerAnalysis* ta = ps->GetTriggerAnalysis(j-1);
+      list = ta->GetHistList();
+    }
+    if (!list) continue;
+    TH1F* hV0MOnAcc = (TH1F*) list->FindObject("fHistV0MOnAcc");
+    TH1F* hV0MOfAcc = (TH1F*) list->FindObject("fHistV0MOfAcc");
+    TH1F* hOFOAcc   = (TH1F*) list->FindObject("fHistOFOAcc");
+    TH1F* hTKLAcc   = (TH1F*) list->FindObject("fHistTKLAcc");
+    meanV0MOn    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
+    meanV0MOf    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
+    meanOFO      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
+    meanTKL      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
+    meanErrV0MOn = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
+    meanErrV0MOf = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
+    meanErrOFO   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
+    meanErrTKL   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+  }
 
   for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
     TString label = hHistStat->GetYaxis()->GetBinLabel(j);
@@ -419,7 +447,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     // Fill run QA histograms
     const char* bitName = bitNames[ibit].Data();
     TList* list = NULL;
-    if (qafilename.Contains("event_stat.root")) {
+    if (qafilename.Contains("event_stat")) {
       list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
     } else {
       AliTriggerAnalysis* ta = ps->GetTriggerAnalysis(j-1);
@@ -478,17 +506,6 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH2F* hOFOvsTKLAcc     = (TH2F*) list->FindObject("fHistOFOvsTKLAcc");
     TH2F* hV0MOnVsOfAcc    = (TH2F*) list->FindObject("fHistV0MOnVsOfAcc");
 
-    if (bitNames[ibit].EqualTo("kINT7")) {
-      meanV0MOn = hV0MOnAcc->GetMean();
-      meanV0MOf = hV0MOfAcc->GetMean();
-      meanOFO   = hOFOAcc->GetMean();
-      meanTKL   = hTKLAcc->GetMean();
-      meanErrV0MOn = hV0MOnAcc->GetMeanError();
-      meanErrV0MOf = hV0MOfAcc->GetMeanError();
-      meanErrOFO   = hOFOAcc->GetMeanError();
-      meanErrTKL   = hTKLAcc->GetMeanError();
-    }
-    
     DrawV0MOnVsOf(hV0MOnVsOfAll,hV0MOnVsOfCln,bitName);
     DrawSPDOnVsOf(hSPDOnVsOfAll,hSPDOnVsOfCln,bitName);
     DrawSPDClsVsTkl(hSPDClsVsTklAll,hSPDClsVsTklCln,bitName);
@@ -754,6 +771,7 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
 
   c->cd(1);
   gPad->SetLogy();
+  hOnAll->SetMinimum(0.9);
   hOnAll->Draw();
   hOnAcc->Draw("same");
   if (hOnVHM) hOnVHM->Draw("same");
@@ -761,6 +779,7 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   
   c->cd(2);
   gPad->SetLogy();
+  hOfAll->SetMinimum(0.9);
   hOfAll->Draw();
   hOfAcc->Draw("same");
   leg2->Draw();
@@ -776,12 +795,12 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   for (Int_t i=1;i<=hOnAcc->GetNbinsX();i++){
     Float_t binCenter  = hOnAcc->GetXaxis()->GetBinCenter(i);
     Float_t binContent = hOnAcc->GetBinContent(i);
-    hOnNorm->Fill(binCenter/meanOn,binContent);
+    hOnNorm->Fill(meanOn>1e-10 ? binCenter/meanOn : 0,binContent);
   }
   for (Int_t i=1;i<=hOfAcc->GetNbinsX();i++){
     Float_t binCenter  = hOfAcc->GetXaxis()->GetBinCenter(i);
     Float_t binContent = hOfAcc->GetBinContent(i);
-    hOfNorm->Fill(binCenter/meanOf,binContent);
+    hOfNorm->Fill(meanOf>1e-10 ? binCenter/meanOf : 0,binContent);
   }
 
   hOnNorm->SetLineColor(kBlue);
