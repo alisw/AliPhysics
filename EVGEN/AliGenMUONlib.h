@@ -18,7 +18,7 @@ class AliGenMUONlib :
 {
  public:
   enum constants{kPhi, kOmega, kEta, kJpsi, kJpsiFamily, kPsiP, kJpsiFromB, kUpsilon, kUpsilonFamily,
-		   kUpsilonP, kUpsilonPP, kCharm, kBeauty, kPion, kKaon, kChic, kChic0, kChic1, kChic2 }; 
+		 kUpsilonP, kUpsilonPP, kCharm, kBeauty, kPion, kKaon, kChic, kChic0, kChic1, kChic2, kRho }; 
     
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
@@ -56,6 +56,11 @@ class AliGenMUONlib :
     static Double_t PtEta( const Double_t *px, const Double_t *dummy);
     static Double_t YEta( const Double_t *px, const Double_t *dummy);
     static Int_t    IpEta(TRandom *ran);
+// Rho
+    static Double_t PtRho( const Double_t *px, const Double_t *dummy);
+    static Double_t YRho( const Double_t *px, const Double_t *dummy);
+    static Int_t    IpRho(TRandom *ran);
+
 // J/Psi     
     static Double_t PtJpsiPPdummy(Double_t px, Double_t en);
     static Double_t PtJpsiPP7000(const Double_t *px, const Double_t *dummy);

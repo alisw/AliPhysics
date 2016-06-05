@@ -2951,6 +2951,32 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 
 
 //
+//                        omega
+//
+//
+//    pt-distribution (by scaling of pion distribution)
+//____________________________________________________________
+Double_t AliGenMUONlib::PtRho( const Double_t *px, const Double_t */*dummy*/)
+{
+// Omega pT
+  return PtScal(*px,5);
+}
+//    y-distribution
+Double_t AliGenMUONlib::YRho( const Double_t *px, const Double_t */*dummy*/)
+{
+// Omega y
+    Double_t *dum=0;
+    return YJpsi(px,dum);
+}
+//                 particle composition
+//
+Int_t AliGenMUONlib::IpRho(TRandom *)
+{
+// Omega composition
+    return 113;
+}
+
+//
 //                        Eta
 //
 //
