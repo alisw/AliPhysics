@@ -883,31 +883,47 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   
   
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f1 = new AliOADBTriggerAnalysis("lhc15f_bad_spd_trigger_alignment");
-  oadbTrigAnalysisLHC15f1->SetV0MOnVsOfA(-372.579114);
-  oadbTrigAnalysisLHC15f1->SetV0MOnVsOfB(9.415265);
+  oadbTrigAnalysisLHC15f1->SetV0MOnVsOfA(0.);
+  oadbTrigAnalysisLHC15f1->SetV0MOnVsOfB(0.);
   oadbTrigAnalysisLHC15f1->SetSPDOnVsOfA(0.);
   oadbTrigAnalysisLHC15f1->SetSPDOnVsOfB(0.);
+  oadbTrigAnalysisLHC15f1->SetVIRBBAflags(33);
+  oadbTrigAnalysisLHC15f1->SetVIRBBCflags(33);
   oadbTrigAnalysisLHC15f1->SetNBCsPast(0);
-  oadbTrigAnalysisLHC15f1->SetNBCsFuture(10);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1,225000,225106);
-
-  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f2 = new AliOADBTriggerAnalysis("lhc15f");
+  oadbTrigAnalysisLHC15f1->SetNBCsFuture(11);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1                                   ,225000,225106);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1->Clone("lhc15f_isolated_bunches1"),225305,225719);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1->Clone("lhc15f_isolated_bunches2"),226062,226500);
+  
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f2 = new AliOADBTriggerAnalysis("lhc15f_50ns_trains1");
   oadbTrigAnalysisLHC15f2->SetV0MOnVsOfA(-372.579114);
   oadbTrigAnalysisLHC15f2->SetV0MOnVsOfB(9.415265);
   oadbTrigAnalysisLHC15f2->SetSPDOnVsOfA(-6.65857);
   oadbTrigAnalysisLHC15f2->SetSPDOnVsOfB(0.546801);
   oadbTrigAnalysisLHC15f2->SetNBCsPast(0);
-  oadbTrigAnalysisLHC15f2->SetNBCsFuture(10);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2,225107,226606);
+  oadbTrigAnalysisLHC15f2->SetNBCsFuture(11);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2                              ,225753,225768);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2->Clone("lhc15f_50ns_trains2"),226532,226606);
   
-  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15h = new AliOADBTriggerAnalysis("lhc15h");
-  oadbTrigAnalysisLHC15h->SetV0MOnVsOfA(-245.12);
-  oadbTrigAnalysisLHC15h->SetV0MOnVsOfB(6.86754);
-  oadbTrigAnalysisLHC15h->SetSPDOnVsOfA(-6.65857);
-  oadbTrigAnalysisLHC15h->SetSPDOnVsOfB(0.546801);
-  oadbTrigAnalysisLHC15h->SetNBCsPast(0);
-  oadbTrigAnalysisLHC15h->SetNBCsFuture(10);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15h,232914,234050);
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15h1 = new AliOADBTriggerAnalysis("lhc15h");
+  oadbTrigAnalysisLHC15h1->SetV0MOnVsOfA(-245.12);
+  oadbTrigAnalysisLHC15h1->SetV0MOnVsOfB(6.86754);
+  oadbTrigAnalysisLHC15h1->SetSPDOnVsOfA(-6.65857);
+  oadbTrigAnalysisLHC15h1->SetSPDOnVsOfB(0.546801);
+  oadbTrigAnalysisLHC15h1->SetNBCsPast(0);
+  oadbTrigAnalysisLHC15h1->SetNBCsFuture(11);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15h1,232914,233911);
+  
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15h2 = new AliOADBTriggerAnalysis("lhc15h_isolated_bunches");
+  oadbTrigAnalysisLHC15h2->SetV0MOnVsOfA(0);
+  oadbTrigAnalysisLHC15h2->SetV0MOnVsOfB(0);
+  oadbTrigAnalysisLHC15h2->SetSPDOnVsOfA(0);
+  oadbTrigAnalysisLHC15h2->SetSPDOnVsOfB(0);
+  oadbTrigAnalysisLHC15h2->SetVIRBBAflags(33);
+  oadbTrigAnalysisLHC15h2->SetVIRBBCflags(33);
+  oadbTrigAnalysisLHC15h2->SetNBCsPast(0);
+  oadbTrigAnalysisLHC15h2->SetNBCsFuture(11);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15h2,233912,234050);
   
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15i = new AliOADBTriggerAnalysis("lhc15i");
   oadbTrigAnalysisLHC15i->SetV0MOnVsOfA(-223.155660);
@@ -915,7 +931,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15i->SetSPDOnVsOfA(-6.218793);
   oadbTrigAnalysisLHC15i->SetSPDOnVsOfB(0.543201);
   oadbTrigAnalysisLHC15i->SetNBCsPast(0);
-  oadbTrigAnalysisLHC15i->SetNBCsFuture(10);
+  oadbTrigAnalysisLHC15i->SetNBCsFuture(11);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15i,235193,236866);
 
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15j = new AliOADBTriggerAnalysis("lhc15j");
@@ -924,7 +940,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15j->SetSPDOnVsOfA(-6.610850);
   oadbTrigAnalysisLHC15j->SetSPDOnVsOfB(0.587165);
   oadbTrigAnalysisLHC15j->SetNBCsPast(0);
-  oadbTrigAnalysisLHC15j->SetNBCsFuture(10);
+  oadbTrigAnalysisLHC15j->SetNBCsFuture(11);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15j,236892,238621);
 
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15l = new AliOADBTriggerAnalysis("lhc15l");
