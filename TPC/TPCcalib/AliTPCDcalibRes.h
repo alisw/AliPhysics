@@ -317,7 +317,7 @@ class AliTPCDcalibRes: public TNamed
   Int_t    GetMinGoodXBinsToCover()        const {return fMinGoodXBinsToCover;}
   Int_t    GetMaxBadRowsPerSector()        const {return fMaxBadRowsPerSector;}
   
-  void     SetMinValidVoxFracDrift(float v=0.65)  {fMinValidVoxFracDrift = v;}
+  void     SetMinValidVoxFracDrift(float v=0.7)   {fMinValidVoxFracDrift = v;}
   void     SetMaxSigY(Float_t v=1.1)              {fMaxSigY = v;}
   void     SetMaxSigZ(Float_t v=0.7)              {fMaxSigZ = v;}  
   void     SetMaxBadXBinsToCover(int n=4)         {fMaxBadXBinsToCover = n;}

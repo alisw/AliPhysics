@@ -133,7 +133,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   //
   ,fMaxSigY(1.1)
   ,fMaxSigZ(0.7)
-  ,fMinValidVoxFracDrift(0.65)
+  ,fMinValidVoxFracDrift(0.7)
   ,fMaxBadXBinsToCover(4)
   ,fMinGoodXBinsToCover(3)
   ,fMaxBadRowsPerSector(0.4)
