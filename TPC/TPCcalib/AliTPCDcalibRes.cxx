@@ -350,11 +350,11 @@ void AliTPCDcalibRes::FitDrift()
 {
   // fit v.drift params
   const int kUsePoints0 = 1000000; // nominal number of points for 1st estimate
-  const int kUsePoints1 = 3000000; // nominal number of points for time integrated estimate
-  const int kNXBins = 150, kNYBins = 150, kNTCorrBins=100;
+  const int kUsePoints1 = 10000000; // nominal number of points for time integrated estimate
+  const int kNXBins = 200, kNYBins = 100, kNTCorrBins=100;
   const int kMinEntriesBin = 100;
   const float kMaxTCorr = 0.02; // max time correction for vdrift
-  const float kDiscardDriftEdge = 10.; // discard min and max drift values with this margin
+  const float kDiscardDriftEdge = 5.; // discard min and max drift values with this margin
   TStopwatch sw;  sw.Start();
   AliSysInfo::AddStamp("FitDrift",0,0,0,0);
   //
@@ -383,7 +383,7 @@ void AliTPCDcalibRes::FitDrift()
   for (int i=0;i<entries;i++) {
     if (gRandom->Rndm()>prescale) continue;
     zresTree->GetEntry(i);
-    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
+    if (/*fDTV.drift<kDiscardDriftEdge ||*/ fDTV.drift>dmaxCut) continue;
     xArr[nAcc] = fDTV.drift;
     zArr[nAcc] = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
     nAcc++;
@@ -400,8 +400,8 @@ void AliTPCDcalibRes::FitDrift()
   delete fHVDTimeInt;
   fHVDTimeInt = new TProfile2D("driftTInt","",kNXBins,-dmaxCut,dmaxCut,kNYBins,-kMaxX,kMaxX);
   fHVDTimeInt->SetXTitle("side*drift");
-  fHVDTimeInt->SetYTitle("ylab*side*drift/zmax");  
-  fHVDTimeInt->SetZTitle("#deltaz*side");  
+  fHVDTimeInt->SetYTitle("ylab");  
+  fHVDTimeInt->SetZTitle("#deltaz");  
   fHVDTimeInt->SetDirectory(0);
   prescale = kUsePoints1/float(entries);
   npUse = entries*prescale;
@@ -409,13 +409,19 @@ void AliTPCDcalibRes::FitDrift()
   for (int i=0;i<entries;i++) {
     if (gRandom->Rndm()>prescale) continue;
     zresTree->GetEntry(i);
-    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
-    float dz = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
-    if (TMath::Abs(dz - (res[0]+res[1]*fDTV.drift)) > outlCut) continue;
+    if (/*fDTV.drift<kDiscardDriftEdge ||*/ fDTV.drift>dmaxCut) continue;
+    float dz = fDTV.dz;
+    float sdz = fDTV.side>0 ? dz : -dz;
+    if (TMath::Abs(sdz - (res[0]+res[1]*fDTV.drift)) > outlCut) continue;
     float sdrift = fDTV.side>0 ? fDTV.drift : -fDTV.drift;
-    fHVDTimeInt->Fill(sdrift, fDTV.ylab*sdrift/kZLim[fDTV.side<0], dz);
+    //    float d2z = fDTV.drift/kZLim[fDTV.side<0];
+    float wgh = 1;//160./fDTV.r; // use weight as inverse^2 of radius to increase the ITS contribution
+    fHVDTimeInt->Fill(sdrift, fDTV.ylab, dz, wgh);
+    //fHVDTimeInt->Fill(sdrift, fDTV.ylab*sdrift/kZLim[fDTV.side<0], sdz); // old way
   }
-  TF2* ftd = new TF2("ftd","[0]+[1]*sign(x)+[2]*sign(x)*y + [3]*sign(x)*x",-250,250,-250,250);
+  float zlim = (kZLim[0]+kZLim[1])/2.f;
+  TF2* ftd = new TF2("ftd",Form("[0]*sign(x)+[1]+([2]*y/%.2f+[3])*x",zlim),-250,250,-250,250);
+  //TF2* ftd = new TF2("ftd","[0]+[1]*sign(x)+[2]*sign(x)*y + [3]*sign(x)*x",-250,250,-250,250); // old fun
   ftd->SetParameters(res[0],0.,0.,res[1]); // initial values from unbinned fit
   AliInfoF("Fitting time-integrated vdrift params by %s",ftd->GetTitle());
   TFitResultPtr rf = fHVDTimeInt->Fit(ftd,"0S");
@@ -437,14 +443,15 @@ void AliTPCDcalibRes::FitDrift()
   double *vpar = fVDriftParam->GetMatrixArray();
   for (int i=0;i<entries;i++) {
     zresTree->GetEntry(i);
-    if (fDTV.drift<kDiscardDriftEdge || fDTV.drift>dmaxCut) continue;
+    if (/*fDTV.drift<kDiscardDriftEdge ||*/ fDTV.drift>dmaxCut) continue;
     float dz = fDTV.side>0 ? fDTV.dz : -fDTV.dz;
     float sdrift = fDTV.side>0 ? fDTV.drift : -fDTV.drift;
     float d2z = fDTV.drift/kZLim[fDTV.side<0];
     Double_t expected = vpar[0]+vpar[1]*fDTV.side + vpar[2]*fDTV.ylab*d2z + vpar[3]*fDTV.drift;
     dz -= expected;
     if (TMath::Abs(dz) > outlCut) continue;
-    fHVDTimeCorr->Fill(fDTV.t,  dz/fDTV.drift, d2z); // ?? why this weight 
+    float wgh = 1;//160./fDTV.r; // use weight as inverse^2 of radius to increase the ITS contribution
+    fHVDTimeCorr->Fill(fDTV.t,  dz/fDTV.drift, d2z*wgh); // ?? why this weight 
   }
   //
   // check results
@@ -1265,6 +1272,7 @@ void AliTPCDcalibRes::FillDriftResidualsTrees()
     fDTV.dz    = fArrDZ[icl];
     fDTV.drift = kZLim[isCside] - fDTV.side*fArrZCl[icl];
     fDTV.ylab  = fArrR[icl]*TMath::Sin(fArrPhi[icl]);
+    fDTV.r     = fArrR[icl];
     // 
     fTmpTree[0]->Fill();
   }

@@ -62,6 +62,7 @@ class AliTPCDcalibRes: public TNamed
     Double32_t dz;     //[-40.,40.,15]   // +-kMaxResidZVD
     Double32_t drift;  //[-260.,260.,14] drift distance
     Double32_t ylab;   //[-260.,260.,14] y coordinate
+    Double32_t r;      //[80.,250.,7] radius
     Int_t   t;         // time stamp
     //
     dtv_t() {memset(this,0,sizeof(dtv_t));}
