@@ -192,8 +192,8 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistFiredBitsSPD    = new TH1F("fHistFiredBitsSPD","SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTklAll  = new TH2F("fHistSPDClsVsTklAll",                  "All events;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
   fHistSPDClsVsTklCln  = new TH2F("fHistSPDClsVsTklCln","Events cleaned by other cuts;n tracklets;n clusters",200,0,isLowFlux?200:6000,500,0,isLowFlux?1000:20000);
-  fHistV0C012vsTklAll  = new TH2F("fHistV0C012vsTklAll",                  "All events;n tracklets;V0C012 multiplicity",150,0,150,160,0,800);
-  fHistV0C012vsTklCln  = new TH2F("fHistV0C012vsTklCln","Events cleaned by other cuts;n tracklets;V0C012 multiplicity",150,0,150,160,0,800);
+  fHistV0C012vsTklAll  = new TH2F("fHistV0C012vsTklAll",                  "All events;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
+  fHistV0C012vsTklCln  = new TH2F("fHistV0C012vsTklCln","Events cleaned by other cuts;n tracklets;V0C012 multiplicity",150,0,150,150,0,600);
   fHistV0MOnVsOfAll    = new TH2F("fHistV0MOnVsOfAll",                  "All events;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
   fHistV0MOnVsOfCln    = new TH2F("fHistV0MOnVsOfCln","Events cleaned by other cuts;Offline V0M;Online V0M",200,0,isLowFlux?1000:50000,400,0,isLowFlux?8000:40000);
   fHistSPDOnVsOfAll    = new TH2F("fHistSPDOnVsOfAll",                  "All events;Offline FOR;Online FOR",300,0,isLowFlux?300:1200 ,300,0,isLowFlux?300:1200);
@@ -1285,6 +1285,8 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
   Int_t bcMax = 10 + fNBCsPast   + bcMod4;
   for (Int_t bc=bcMin;bc<=bcMax;bc++) {
     if (bc==10) continue; // skip current bc
+    if (bc < 0) continue;
+    if (bc >20) continue;
     if (vir[bc]) return kTRUE;
   }
 
