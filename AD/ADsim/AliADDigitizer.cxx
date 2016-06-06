@@ -317,6 +317,9 @@ void AliADDigitizer::DigitizeHits()
 	 Int_t nPhot = hit->GetNphot();
 	 Int_t pmt  = hit->GetCell();                          
 	 if (pmt < 0) continue;
+	 //Cut late hits
+	 if(pmt<8 && TMath::Abs(hit->GetTof()-65.19)>3)continue;
+	 if(pmt>7 && TMath::Abs(hit->GetTof()-56.7 )>3)continue;
 	 Int_t trackLabel = hit->GetTrack();
 	 for(Int_t l = 0; l < 3; ++l) {
 	   if (fLabels[pmt][l] < 0) {
