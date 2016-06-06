@@ -156,6 +156,12 @@ AliTPCDcalibRes*  CreateSetCalib(int run,int tmin,int tmax,const char* inp)
     clbn->SetMinTrackToUse(envs.Atoi());
   }
   //
+  envs = gSystem->Getenv("distMinValidVoxPerRow");
+  if (envs.IsFloat()) {
+    ::Info("CreateResCalib","SetMinValidVoxFracDrift %s",envs.Data());
+    clbn->SetMinValidVoxFracDrift(envs.Atof());
+  }
+  //
   // stat limits <<<<<<<<<<<<<<<<<<<<<
   //
   // Kernel Smoother settings >>>>>>>>

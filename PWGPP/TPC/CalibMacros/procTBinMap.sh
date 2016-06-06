@@ -8,10 +8,60 @@
 # 3) run number
 # 4) optional number of tracks for closure test (if requested)
 
+
+##############################################################################
 Usage() {
     echo "Usage: ${0##*/} <minTime> <maxTime> <runNumber> [ntracks_closure_test]"
     exit
 }
+
+##############################################################################
+extractEnvVars()
+{
+    # variables to calculate vdrfit
+    export driftDeltaT=${ALIEN_JDL_DRIFTDELTAT-$driftDeltaT}
+    export driftSigmaT=${ALIEN_JDL_DRIFTSIGMAAT-$driftSigmaT}
+    
+    export targetOCDBDir=${ALIEN_JDL_TARGETOCDBDIR-$targetOCDBDir}
+    if [ -z "$targetOCDBDir" ] ; then targetOCDBDir="local://`pwd`" ; fi 
+    
+    export distTimeBin=${ALIEN_JDL_DISTTIMEBIN-$distTimeBin}  # nominal time bin 
+    
+    export distTimeBinPrec=${ALIEN_JDL_DISTTIMEBINPREC-$distTimeBinPrec}; # nominal time bin relative precision (can play within this factor)
+    
+    # do we use TOF BC validataion
+    export useTOFBC=${ALIEN_JDL_USETOFBC-$useTOFBC}
+    
+    # which detectors to use
+    export distUseDet=${ALIEN_JDL_DISTUSEDET-$distUseDet}
+    
+    export distNBinsZ=${ALIEN_JDL_DISTNBINSZ-$distNBinsZ}
+    export distNBinsY=${ALIEN_JDL_DISTNBINSY-$distNBinsY}
+    
+    export distMaxTracks=${ALIEN_JDL_DISTMAXTRACKS-$distMaxTracks}
+    export distMinTracks=${ALIEN_JDL_DISTMINTRACKS-$distMinTracks}
+
+    export distMinValidVoxPerRow=${ALIEN_JDL_DISTMINVALIDVOXPERROW-$distMinValidVoxPerRow}
+    
+    export distKernelType=${ALIEN_JDL_DISTKERNELTYPE-$distKernelType}
+    export distKernelWX=${ALIEN_JDL_DISTKERNELWX-$distKernelWX}
+    export distKernelWY=${ALIEN_JDL_DISTKERNELWY-$distKernelWY}
+    export distKernelWZ=${ALIEN_JDL_DISTKERNELWZ-$distKernelWZ}
+    
+    export distKernelPol2X=${ALIEN_JDL_DISTKERNELPOL2X-$distKernelPol2X}
+    export distKernelPol2Y=${ALIEN_JDL_DISTKERNELPOL2Y-$distKernelPol2Y}
+    export distKernelPol2Z=${ALIEN_JDL_DISTKERNELPOL2Z-$distKernelPol2Z}
+    
+    # number of tracks for closure test, hardly will be done of the grid
+    export distNTracksClosureTest=${ALIEN_JDL_DISTNTRACKSCLOSURETEST-$distNTracksClosureTest}
+    #
+    echo ""
+    echo "Listing all env.vars"
+    printenv
+    echo ""
+}
+##############################################################################
+
 
 [[ $# -lt 3 ]] &&  Usage && exit
 echo "Arguments: 1 = $1, 2 = $2, 3 = $3"
@@ -38,6 +88,8 @@ macroName="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/procResidData.C"
 locMacro=$(basename "$macroName")
 [[ ! -f "$locMacro" ]] && cp $macroName ./
 [[ ! -f "$locMacro" ]] && echo "did not find $locMacro" && exit 1
+
+extractEnvVars
 
 run=$(echo "$runNumber" | sed 's/^0*//')
 alilog_info "BEGIN Processing for time bin $mapStartTime : $mapStopTime in run $runNumber"
