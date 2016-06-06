@@ -882,19 +882,20 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC11h, 166529, 170593);
   
   
-  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f1 = new AliOADBTriggerAnalysis("lhc15f_bad_spd_trigger_alignment");
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f1 = new AliOADBTriggerAnalysis("lhc15f_isolated_bunches");
   oadbTrigAnalysisLHC15f1->SetV0MOnVsOfA(0.);
   oadbTrigAnalysisLHC15f1->SetV0MOnVsOfB(0.);
   oadbTrigAnalysisLHC15f1->SetSPDOnVsOfA(0.);
   oadbTrigAnalysisLHC15f1->SetSPDOnVsOfB(0.);
   oadbTrigAnalysisLHC15f1->SetVIRBBAflags(33);
   oadbTrigAnalysisLHC15f1->SetVIRBBCflags(33);
+  oadbTrigAnalysisLHC15f1->SetV0CasymA(0);
+  oadbTrigAnalysisLHC15f1->SetV0CasymB(0);
   oadbTrigAnalysisLHC15f1->SetNBCsPast(0);
   oadbTrigAnalysisLHC15f1->SetNBCsFuture(11);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1                                   ,225000,225106);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1->Clone("lhc15f_isolated_bunches1"),225305,225719);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1                                   ,225000,225719);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f1->Clone("lhc15f_isolated_bunches2"),226062,226500);
-  
+
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f2 = new AliOADBTriggerAnalysis("lhc15f_50ns_trains1");
   oadbTrigAnalysisLHC15f2->SetV0MOnVsOfA(-372.579114);
   oadbTrigAnalysisLHC15f2->SetV0MOnVsOfB(9.415265);
@@ -902,8 +903,18 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15f2->SetSPDOnVsOfB(0.546801);
   oadbTrigAnalysisLHC15f2->SetNBCsPast(0);
   oadbTrigAnalysisLHC15f2->SetNBCsFuture(11);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2                              ,225753,225768);
-  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2->Clone("lhc15f_50ns_trains2"),226532,226606);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f2,225753,225768);
+
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15f3 = new AliOADBTriggerAnalysis("lhc15f_50ns_trains2_missing_V0C3");
+  oadbTrigAnalysisLHC15f3->SetV0MOnVsOfA(-372.579114);
+  oadbTrigAnalysisLHC15f3->SetV0MOnVsOfB(9.415265);
+  oadbTrigAnalysisLHC15f3->SetSPDOnVsOfA(-6.65857);
+  oadbTrigAnalysisLHC15f3->SetSPDOnVsOfB(0.546801);
+  oadbTrigAnalysisLHC15f3->SetV0CasymA(0);
+  oadbTrigAnalysisLHC15f3->SetV0CasymB(0);
+  oadbTrigAnalysisLHC15f3->SetNBCsPast(0);
+  oadbTrigAnalysisLHC15f3->SetNBCsFuture(11);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15f3,226530,226606);
   
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC15h1 = new AliOADBTriggerAnalysis("lhc15h");
   oadbTrigAnalysisLHC15h1->SetV0MOnVsOfA(-245.12);
