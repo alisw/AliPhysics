@@ -144,7 +144,6 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fmaxeta(0.8),
   fselectprimaryTruth(kTRUE),
   fonlyprimarydatareco(kFALSE),
-  fdcacut(kFALSE),
   fdcacutvalue(3.0),
   ffillhistQAReco(kFALSE),
   ffillhistQATruth(kFALSE),
@@ -456,7 +455,6 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fmaxeta(0.8),
   fselectprimaryTruth(kTRUE),
   fonlyprimarydatareco(kFALSE),
-   fdcacut(kFALSE),
   fdcacutvalue(3.0),
   ffillhistQAReco(kFALSE),
   ffillhistQATruth(kFALSE),
@@ -4344,8 +4342,8 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
       }
       //===========================end of PID (so far only for electron rejection)===============================//
      
-// DCA XY
-      if (fdcacut && fDCAXYCut)
+// DCA XY cut to check contaminations from lambda using dca sigma cut variation with filterbit 16
+      if (fDCAXYCut)
 	{
 	  if (!vertex)
 	    return 0;
