@@ -68,6 +68,10 @@ set(SRCS
   jtAnalysis/AliJJtAnalysis.cxx
   jtAnalysis/AliJJtHistograms.cxx
   jtAnalysis/AliJJtCorrelations.cxx
+  iaaAnalysis/AliJDiHadronIaaTask.cxx
+  iaaAnalysis/AliJIaaAnalysis.cxx
+  iaaAnalysis/AliJIaaCorrelations.cxx
+  iaaAnalysis/AliJIaaHistos.cxx
   )
 
 # Headers from sources
