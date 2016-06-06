@@ -384,6 +384,7 @@ class AliTPCDcalibRes: public TNamed
   const AliTPCChebCorr* GetChebCorrObject() const {return fChebCorr;}
 
   static AliTPCDcalibRes* Load(const char* fname="alitpcdcalibres.root");
+  static TTree*           LoadTree(const char* fname="voxelResTree.root",Int_t mStyle=7,Int_t mCol=kBlack);
   static void SetUsedInstance(AliTPCDcalibRes* inst) {fgUsedInstance = inst;}
   static AliTPCDcalibRes* GetUsedInstance()          {return fgUsedInstance;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}

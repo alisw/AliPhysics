@@ -583,8 +583,13 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
 AliTPCDcalibRes* AliTPCDcalibRes::Load(const char* fname)
 {
   // load AliTPCDcalibRes object from input file
-  TFile* fl = TFile::Open(fname);
-  if (!fl) {AliErrorClassF("Failed to open %s",fname); return 0;}
+  TString fnames = fname;
+  if (!fnames.EndsWith(".root")) {
+    if (!fnames.EndsWith("/")) fnames += "/";
+    fnames += "alitpcdcalibres.root";
+  }
+  TFile* fl = TFile::Open(fnames.Data());
+  if (!fl) {AliErrorClassF("Failed to open %s",fnames.Data()); return 0;}
   TList* lstk = fl->GetListOfKeys();
   TIter next(lstk);
   TKey* key = 0;
@@ -593,7 +598,36 @@ AliTPCDcalibRes* AliTPCDcalibRes::Load(const char* fname)
     TString keyt = key->GetTitle();
     if (keyt == "AliTPCDcalibRes") {res = (AliTPCDcalibRes*)fl->Get(key->GetName()); break;}
   }
-  if (!res) AliErrorClassF("Did not find AliTPCDcalibRes object in %s",fname);
+  if (!res) AliErrorClassF("Did not find AliTPCDcalibRes object in %s",fnames.Data());
+  return res;
+  //
+}
+
+//________________________________________
+TTree* AliTPCDcalibRes::LoadTree(const char* fname, int markerStyle,int color)
+{
+  // load voxResTee from input file
+  TString fnames = fname;
+  if (!fnames.EndsWith(".root")) {
+    if (!fnames.EndsWith("/")) fnames += "/";
+    fnames += "voxelResTree.root";
+  }
+  TFile* fl = TFile::Open(fnames.Data());
+  if (!fl) {AliErrorClassF("Failed to open %s",fnames.Data()); return 0;}
+  TList* lstk = fl->GetListOfKeys();
+  TIter next(lstk);
+  TKey* key = 0;
+  TTree* res = 0;
+  while (key=(TKey*)next()) {
+    TString keyt = key->GetName();
+    if (keyt == "voxRes") {res = (TTree*)fl->Get(key->GetName()); break;}
+  }
+  if (!res) AliErrorClassF("Did not find voxRes tree in %s",fnames.Data());
+  else {
+    res->SetMarkerStyle(markerStyle);
+    res->SetMarkerColor(color);
+    res->SetLineColor(color);    
+  }
   return res;
   //
 }
