@@ -18218,7 +18218,7 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     
     Double_t TPCReA = fEtaDiffQRe[0]->GetBinContent(2);
     Double_t TPCImA = fEtaDiffQIm[0]->GetBinContent(2);
-    printf("filling with %e \n",QCReR*TPCReA);
+
     fCRCZDCQVecCov[fRunBin][4]->Fill(fCentralityEBE,QCReR*TPCReA);
     fCRCZDCQVecCov[fRunBin][5]->Fill(fCentralityEBE,QCImR*TPCImA);
     fCRCZDCQVecCov[fRunBin][6]->Fill(fCentralityEBE,QCReR*TPCImA);
