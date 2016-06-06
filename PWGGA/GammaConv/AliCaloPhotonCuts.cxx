@@ -3433,7 +3433,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= FunctionNL_kSDM(energy, 0.969703*0.989*0.9969*0.9991, -3.80387, -0.200546);
 
         else if( fCurrentMC == k16c2 )
-          energy /= FunctionNL_kSDM(energy, 0.974859, -3.85842, -0.405277);
+          energy /= FunctionNL_kSDM(energy, 0.974859*0.987, -3.85842, -0.405277);
 
         // 2.76TeV LHC11a/LHC13g
         else if( fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 )
