@@ -18211,18 +18211,19 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     
     Double_t TPCReC = fEtaDiffQRe[0]->GetBinContent(1);
     Double_t TPCImC = fEtaDiffQIm[0]->GetBinContent(1);
-    fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,QAReR*TPCReC);
-    fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,QAImR*TPCImC);
-    fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,QAReR*TPCImC);
-    fCRCZDCQVecCov[fRunBin][3]->Fill(fCentralityEBE,QAImR*TPCReC);
+    Double_t TPCMC  = fEtaDiffMul[0]->GetBinContent(1);
+    fCRCZDCQVecCov[fRunBin][0]->Fill(fCentralityEBE,QAReR*TPCReC/TPCMC);
+    fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,QAImR*TPCImC/TPCMC);
+    fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,QAReR*TPCImC/TPCMC);
+    fCRCZDCQVecCov[fRunBin][3]->Fill(fCentralityEBE,QAImR*TPCReC/TPCMC);
     
     Double_t TPCReA = fEtaDiffQRe[0]->GetBinContent(2);
     Double_t TPCImA = fEtaDiffQIm[0]->GetBinContent(2);
-
-    fCRCZDCQVecCov[fRunBin][4]->Fill(fCentralityEBE,QCReR*TPCReA);
-    fCRCZDCQVecCov[fRunBin][5]->Fill(fCentralityEBE,QCImR*TPCImA);
-    fCRCZDCQVecCov[fRunBin][6]->Fill(fCentralityEBE,QCReR*TPCImA);
-    fCRCZDCQVecCov[fRunBin][7]->Fill(fCentralityEBE,QCImR*TPCReA);
+    Double_t TPCMA  = fEtaDiffMul[0]->GetBinContent(2);
+    fCRCZDCQVecCov[fRunBin][4]->Fill(fCentralityEBE,QCReR*TPCReA/TPCMA);
+    fCRCZDCQVecCov[fRunBin][5]->Fill(fCentralityEBE,QCImR*TPCImA/TPCMA);
+    fCRCZDCQVecCov[fRunBin][6]->Fill(fCentralityEBE,QCReR*TPCImA/TPCMA);
+    fCRCZDCQVecCov[fRunBin][7]->Fill(fCentralityEBE,QCImR*TPCReA/TPCMA);
     
   }
   
