@@ -748,7 +748,7 @@ void AliDCSSensorArray::AddSensors(AliDCSSensorArray *newSensors)
   }
 }  
 
-void  AliDCSSensorArray::DumpToTree(const char * fname, Int_t deltaT, Int_t sigmaT){
+void  AliDCSSensorArray::DumpToTree(const char * fname, Int_t deltaT, Int_t sigmaT, Int_t id){
   ///
   /// Dump the content of the DCS sensor array into the tree
   /// Usage:
@@ -773,7 +773,7 @@ void  AliDCSSensorArray::DumpToTree(const char * fname, Int_t deltaT, Int_t sigm
   for (Int_t itime=0; itime<nBins; itime++) {
     UInt_t evalTime=startTime+itime*deltaT;
     TTimeStamp timeStamp(evalTime);
-    (*pcstream)<<"sensorDumpTime"<<"evalTime="<<evalTime;
+    (*pcstream)<<"sensorDumpTime"<<"evalTime="<<evalTime<<"id="<<id;
     for (Int_t iSensor=0; iSensor<nSensors; iSensor++){
       AliDCSSensor *sensor=  GetSensorNum (iSensor);
       values[iSensor]=sensor->GetValue(timeStamp);
