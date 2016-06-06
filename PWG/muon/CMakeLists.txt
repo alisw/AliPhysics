@@ -61,7 +61,8 @@ set(SRCS
   AliAnalysisTaskFlowSingleMu.cxx 
   AliAnalysisTaskFromStandardToMuonAOD.cxx 
   AliAnalysisTaskLinkToMC.cxx 
-  AliAnalysisTaskLUT.cxx 
+  AliAnalysisTaskLUT.cxx
+  AliAnalysisTaskMTRResponse.cxx
   AliAnalysisTaskMuMu.cxx
   AliAnalysisTaskMuMu.cxx 
   AliAnalysisTaskMuonAODCreation.cxx 
@@ -84,6 +85,7 @@ set(SRCS
   AliESDMuonTrackCuts.cxx 
   AliEventPoolMuon.cxx 
   AliHistogramCollection.cxx
+  AliMTRParameterizedResponse.cxx
   AliMuonAnalysisOutput.cxx
   AliMuonEventCuts.cxx
   AliMuonInfoStoreMC.cxx 
