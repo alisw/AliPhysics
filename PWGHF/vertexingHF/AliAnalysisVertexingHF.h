@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 /// \class                     Class AliAnalysisVertexingHF
@@ -43,8 +43,8 @@ class AliESDtrack;
 class AliVEvent;
 class AliAODVertex;
 class AliVertexerTracks;
-class AliESDv0; 
-class AliAODv0; 
+class AliESDv0;
+class AliAODv0;
 
 //-----------------------------------------------------------------------------
 class AliAnalysisVertexingHF : public TNamed {
@@ -52,7 +52,7 @@ class AliAnalysisVertexingHF : public TNamed {
   //
   AliAnalysisVertexingHF();
   AliAnalysisVertexingHF(const AliAnalysisVertexingHF& source);
-  AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source); 
+  AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source);
   virtual ~AliAnalysisVertexingHF();
 
   void FindCandidates(AliVEvent *event,
@@ -67,7 +67,7 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodLikeSign3ProngTClArr);
 
   TList* FillListOfCuts();
-  void FixReferences(AliAODEvent *aod);  
+  void FixReferences(AliAODEvent *aod);
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd3);
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd2);
   Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc,Bool_t isDStar,Bool_t recoSecVtx=kFALSE);
@@ -111,26 +111,26 @@ class AliAnalysisVertexingHF : public TNamed {
 
   void  SetV0TypeForCascadeVertex(Int_t type) {fV0TypeForCascadeVertex = type;}
   Int_t GetV0TypeForCascadeVertex()           { return fV0TypeForCascadeVertex;}
-  
-  void SetRecoPrimVtxSkippingTrks() 
+
+  void SetRecoPrimVtxSkippingTrks()
     { fRecoPrimVtxSkippingTrks=kTRUE; fRmTrksFromPrimVtx=kFALSE;}
   void UnsetRecoPrimVtxSkippingTrks()
     { fRecoPrimVtxSkippingTrks=kFALSE; fRmTrksFromPrimVtx=kFALSE;}
-  void SetRmTrksFromPrimVtx() 
+  void SetRmTrksFromPrimVtx()
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
   void SetTrackFilter(AliAnalysisFilter* trackF) {
     /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
-    fTrackFilter = trackF; 
+    fTrackFilter = trackF;
   }
   void SetTrackFilter2prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
     /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
-    fTrackFilter2prongCentral = trackF; 
+    fTrackFilter2prongCentral = trackF;
     fMaxCentPercentileForTightCuts=maxPercentile;
   }
   void SetTrackFilter3prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
@@ -138,15 +138,15 @@ class AliAnalysisVertexingHF : public TNamed {
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
-    fTrackFilter3prongCentral = trackF; 
+    fTrackFilter3prongCentral = trackF;
     fMaxCentPercentileForTightCuts=maxPercentile;
   }
-  void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { 
+  void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) {
     /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
-    fTrackFilterSoftPi = trackF; 
+    fTrackFilterSoftPi = trackF;
   }
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
@@ -170,7 +170,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsD0toKpipipi* GetCutsD0toKpipipi() const { return fCutsD0toKpipipi; }
   void SetCutsDStartoKpipi(AliRDHFCutsDStartoKpipi* cuts) { fCutsDStartoKpipi = cuts; }
   AliRDHFCutsDStartoKpipi* GetCutsDStartoKpipi() const { return fCutsDStartoKpipi; }
-  void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; } 
+  void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; }
 
   void SetMasses();
   Bool_t CheckCutsConsistency();
@@ -214,7 +214,7 @@ class AliAnalysisVertexingHF : public TNamed {
     minnsigma=fnSigmaTOFKaonLow;maxnsigma=fnSigmaTOFKaonHi;
   }
   void GetnSigmaTPCforKaonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
-    minnsigma=fnSigmaTPCKaonLow;maxnsigma=fnSigmaTPCKaonHi; 
+    minnsigma=fnSigmaTPCKaonLow;maxnsigma=fnSigmaTPCKaonHi;
   }
   void GetnSigmaTOFforProtonSel(Double_t& minnsigma, Double_t& maxnsigma) const {
     minnsigma=fnSigmaTOFProtonLow;maxnsigma=fnSigmaTOFProtonHi;
@@ -232,9 +232,9 @@ class AliAnalysisVertexingHF : public TNamed {
   Int_t GetUseProtonPIDforLambdaC() const {return fUsePIDforLc;}
   Bool_t GetUseKaonPIDforDs() const {return fUseKaonPIDforDs;}
   Bool_t GetUseProtonPIDforLambdaC2V0() const {return fUsePIDforLc2V0;}
- 
+
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
-  
+
   //
  private:
   //
@@ -327,8 +327,6 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fOKInvMassDstar; /// combination fullfilling D* inv mass selection
   Bool_t fOKInvMassD0to4p; /// 4tracks fullfilling D0 inv mass selection
   Bool_t fOKInvMassLctoV0; /// triplet fullfilling Lc inv mass selection
-  Bool_t fOKInvMassDplustoK0s; /// triplet fullfilling D+->K0s+pi inv mass selection
-  Bool_t fOKInvMassDstoK0s; /// triplet fullfilling Ds->K0s+K inv mass selection
 
   Int_t  fnTrksTotal;
   Int_t  fnSeleTrksTotal;
@@ -355,7 +353,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				      Double_t dispersion,
 				      const AliAODVertex *vertexp1n1,
 				      const AliAODVertex *vertexp2n1,
-				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2, 
+				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 				      Bool_t useForLc, Bool_t useForDs,
 				      Bool_t &ok3Prong);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
@@ -404,16 +402,16 @@ class AliAnalysisVertexingHF : public TNamed {
 				   Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
-  
+
   Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
 
-  AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0, 
+  AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0,
 				  TObjArray *twoTrackArrayV0);
 
-  /// \cond CLASSIMP 
-  ClassDef(AliAnalysisVertexingHF,26);  // Reconstruction of HF decay candidates
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisVertexingHF,27);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 
