@@ -144,6 +144,9 @@ AliTPCRecoParam::AliTPCRecoParam():
                              // ~ about 5 % rate  for high pt kink finder
   fKinkAngleCutChi2[1]=12;    // angular cut for kink finder - to use the partial track                             // form kink
                              // ~ about 2 % rate  for high pt kink finder
+  //
+  SetBadPadMaxDistXYZ(999.,999.,999.); // by default accept any distortions
+  SetBadPadMaxErrYZ(999.,999.);        // by default accept any errors
 }
 
 //_____________________________________________________________________________

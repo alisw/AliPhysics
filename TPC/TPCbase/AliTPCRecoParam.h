@@ -168,6 +168,13 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetUseDistortionFractionAsErrorZ(double v) {fDistortionFractionAsErrorYZ[1] = v;}
   void     SetUseDistDispFractionAsErrorY(double v) {fDistDispFractionAsErrorYZ[0] = v;}
   void     SetUseDistDispFractionAsErrorZ(double v) {fDistDispFractionAsErrorYZ[1] = v;}
+
+  void     SetBadPadMaxDistXYZ(double x,double y,double z)  {fBadPadMaxDistXYZ[0]=x;fBadPadMaxDistXYZ[1]=y;fBadPadMaxDistXYZ[2]=z;}
+  void     SetBadPadMaxErrYZ(double y,double z)             {fBadPadMaxErrYZ[0]=y;fBadPadMaxErrYZ[1]=z;}
+
+  const Double_t* GetBadPadMaxDistXYZ() const {return fBadPadMaxDistXYZ;}
+  const Double_t* GetBadPadMaxErrYZ()   const {return fBadPadMaxErrYZ;}
+
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
   const Double_t * GetSystematicErrorCluster() const { return fSystematicErrorCluster;}
@@ -276,8 +283,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fSystematicErrorCluster[2];        ///< systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Double_t fDistortionFractionAsErrorYZ[2];   ///< use fraction of distortion as additional error
   Double_t fDistDispFractionAsErrorYZ[2];   ///< use fraction of distortion dispersion as additional error
+  Double_t fBadPadMaxDistXYZ[3];            ///< pad considered bad if abs distortion exceeds this value
+  Double_t fBadPadMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
-
 
 public:
   static Bool_t fgUseTimeCalibration; ///< flag usage the time dependent calibration
@@ -285,7 +293,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 28)
+  ClassDef(AliTPCRecoParam, 29)
   /// \endcond
 };
 
