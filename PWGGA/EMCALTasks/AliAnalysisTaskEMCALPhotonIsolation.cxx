@@ -769,7 +769,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fOutput->Add(fTrackMultvsPt);
   
   fHistXsection = new TH1F("fHistXsection", "fHistXsection", 1, 0, 1);
-  fHistXsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  fHistXsection->GetXaxis()->SetBinLabel(1,"<sigma>");
   fOutput->Add(fHistXsection);
   
   fHistTrials = new TH1F("fHistTrials", "fHistTrials", 1, 0, 1);
@@ -911,9 +911,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     if(fPythiaHeader){
     fXSection = fPythiaHeader->GetXsection();
     fTrials = fPythiaHeader->Trials();
-
-    fHistXsection->Fill("<#sigma>",fXSection);
+    if(fTrials>0){
+    fHistXsection->Fill("<sigma>",fXSection);
     fHistTrials->Fill("#sum{ntrials}",fTrials);
+    }
     }
       // AliError(Form("EMCAL L1 trigger for MC simulation anchored to LHC13 data"));
     if(!MCSimTrigger(fVevent,fTriggerLevel1)) return kFALSE;
@@ -2587,7 +2588,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
         }
         else
         {
-          if (isolation>.3) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
+          if (isolation>3.) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
           
           fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
           fPtnoisoT=vecCOI.Pt();
