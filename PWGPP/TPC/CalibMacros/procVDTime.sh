@@ -37,6 +37,8 @@ extractEnvVars()
     
     export distMaxTracks=${ALIEN_JDL_DISTMAXTRACKS-$distMaxTracks}
     export distMinTracks=${ALIEN_JDL_DISTMINTRACKS-$distMinTracks}
+
+    export distMinValidVoxPerRow=${ALIEN_JDL_DISTMINVALIDVOXPERROW-$distMinValidVoxPerRow}
     
     export distKernelType=${ALIEN_JDL_DISTKERNELTYPE-$distKernelType}
     export distKernelWX=${ALIEN_JDL_DISTKERNELWX-$distKernelWX}
