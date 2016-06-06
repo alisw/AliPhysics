@@ -150,7 +150,7 @@
   sourceClass="AliTPCChebCorr" \
   targetClass="AliTPCChebCorr" \
   source="TH1* fTracksRate" \
-  version="[-7]" \
+  version="[5-7]" \
   target="fTracksRate" \
   targetType="TH1F*" \
   code="{fTracksRate=(TH1F*)onfile.fTracksRate;onfile.fTracksRate=0;}"
