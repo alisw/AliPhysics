@@ -557,7 +557,7 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
   // reprocess starting from the raw data filled from existing resVox tree
   TStopwatch sw;
   sw.Start();
-  if (!LoadResTree(resTreeFile)) return;
+  if (!LoadDataFromResTree(resTreeFile)) return;
   ReProcessResiduals();
   //
   if (fChebCorr) delete fChebCorr; fChebCorr = 0;
@@ -735,7 +735,7 @@ void AliTPCDcalibRes::Init()
 }
 
 //_____________________________________________________
-void AliTPCDcalibRes::CloseDeltaFile(TTree* dtree)
+void AliTPCDcalibRes::CloseTreeFile(TTree* dtree)
 {
   // close input delta chunk
   TFile* fl = 0;
@@ -844,7 +844,7 @@ Bool_t AliTPCDcalibRes::CollectDataStatistics()
     TBranch* brn = tree->GetBranch("nPrimTrack");
     if (!brt || !brn) {
       AliError("Did not find branch timeStamp or nPromTrack in event info tree");
-      CloseDeltaFile(tree);
+      CloseTreeFile(tree);
       return kFALSE;
     }
     brt->SetAddress(&timeStamp);
@@ -859,7 +859,7 @@ Bool_t AliTPCDcalibRes::CollectDataStatistics()
       if (tmax<timeStamp) tmax = timeStamp;
     }
     fNEvTot += nent;
-    CloseDeltaFile(tree);
+    CloseTreeFile(tree);
   }
   //
   if (fTMin<tmin) fTMin = tmin;
@@ -937,7 +937,7 @@ Bool_t AliTPCDcalibRes::EstimateChunkStatistics()
     printf("\n");
   }
   //
-  CloseDeltaFile(tree);
+  CloseTreeFile(tree);
   return kTRUE;
 }
 
@@ -1203,7 +1203,7 @@ void AliTPCDcalibRes::CollectData(const int mode)
     fNReadCallTot += nReadCallsChunk;
     fNBytesReadTot += nBytesReadChunk;
     //
-    CloseDeltaFile(tree);
+    CloseTreeFile(tree);
     AliSysInfo::AddStamp("ProjTreeLoc", ichunk ,fNTrSelTot,fNTrSelTot,fNReadCallTot );
     //
     if (fNTrSelTot > fMaxTracks) {
@@ -3063,9 +3063,24 @@ void AliTPCDcalibRes::WriteResTree()
     //
   } // end of sector loop
   //
+  //
+  // write small trees with luminosity and vdrift info
+  //
+  TTree* infoTree = new TTree("runInfo","run information");
+  if (fLumiCTPGraph) infoTree->Branch("lumiCTP", &fLumiCTPGraph);
+  if (fVDriftGraph)  infoTree->Branch("driftGraph", &fVDriftGraph);
+  if (fVDriftParam)  infoTree->Branch("driftParam", &fVDriftParam);
+  infoTree->Branch("tminCTPrun",&fTMinCTP);
+  infoTree->Branch("tmaxCTPrun",&fTMaxCTP);
+  infoTree->Branch("tminTBin",&fTMin);
+  infoTree->Branch("tmaxTBin",&fTMax);
+  infoTree->Fill();
+  //
   flOut->cd();
   resTree->Write("", TObject::kOverwrite);
+  infoTree->Write("", TObject::kOverwrite);
   delete resTree;
+  delete infoTree;
   //
   if (fChebCorr) {
     fChebCorr->Write();
@@ -3081,17 +3096,15 @@ void AliTPCDcalibRes::WriteResTree()
 }
 
 //___________________________________________________________________
-Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
+Bool_t AliTPCDcalibRes::LoadDataFromResTree(const char* resTreeFile)
 {
   // Fill voxels info from existing resVox tree for reprocessing
   TStopwatch sw;
   sw.Start();
   bres_t voxRes, *voxResP=&voxRes;
   //
-  TFile* flIn = new TFile(resTreeFile);
-  if (!flIn) {AliErrorF("Failed to open %s",resTreeFile); return kFALSE;}
-  TTree* resTree = (TTree*) flIn->Get("voxRes");
-  if (!resTree) {AliErrorF("Failed to extract resTree from %s",resTreeFile); delete flIn; return kFALSE;}
+  TTree* resTree = LoadTree(resTreeFile);
+  if (!resTree) {AliErrorF("Failed to extract resTree from %s",resTreeFile); return kFALSE;}
   resTree->SetBranchAddress("res", &voxResP);
   //
   int nent = resTree->GetEntries();
@@ -3116,9 +3129,7 @@ Bool_t AliTPCDcalibRes::LoadResTree(const char* resTreeFile)
     for (int ir=kResDim;ir--;) voxel->DS[ir]=voxel->DC[ir]=0.f;
   } // end of sector loop
   //
-  delete resTree;
-  flIn->Close();
-  delete flIn;
+  CloseTreeFile(resTree);
   //
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());

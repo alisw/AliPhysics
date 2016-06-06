@@ -149,7 +149,7 @@ class AliTPCDcalibRes: public TNamed
   Bool_t CollectDataStatistics();
   Bool_t EnoughStatForVDrift(int tstamp=-1,float maxHolesFrac=0.05);
   Int_t  ParseInputList();
-  void CloseDeltaFile(TTree* dtree);
+  void CloseTreeFile(TTree* dtree);
   void Init();
   void CollectData(const int mode = kDistExtractMode);
   void FillLocalResidualsTrees();
@@ -181,7 +181,7 @@ class AliTPCDcalibRes: public TNamed
   void WriteStatHistos();
   void LoadStatHistos();
   void WriteResTree();
-  Bool_t LoadResTree(const char* resTreeFile);
+  Bool_t LoadDataFromResTree(const char* resTreeFile);
 
   void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
 
