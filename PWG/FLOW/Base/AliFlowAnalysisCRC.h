@@ -750,14 +750,14 @@ public:
  TProfile* GetCRCNUATermsPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCNUATermsPro[r][c][eg][h];};
  
  // 12.e) Q Vectors:
- void SetCRCQ2ReHist(TProfile* const TH, Int_t const r) {this->fCRCQ2Re[r] = TH;};
- TProfile* GetCRCQ2ReHist(Int_t const r) const {return this->fCRCQ2Re[r];};
- void SetCRCQ2ImHist(TProfile* const TH, Int_t const r) {this->fCRCQ2Im[r] = TH;};
- TProfile* GetCRCQ2ImHist(Int_t const r) const {return this->fCRCQ2Im[r];};
- void SetCRCQ2ReCorrHist(TProfile* const TH, Int_t const r) {this->fCRCQ2ReCorr[r] = TH;};
- TProfile* GetCRCQ2ReCorrHist(Int_t const r) const {return this->fCRCQ2ReCorr[r];};
- void SetCRCQ2ImCorrHist(TProfile* const TH, Int_t const r) {this->fCRCQ2ImCorr[r] = TH;};
- TProfile* GetCRCQ2ImCorrHist(Int_t const r) const {return this->fCRCQ2ImCorr[r];};
+ void SetCRCQ2ReHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2Re[r][h] = TH;};
+ TProfile* GetCRCQ2ReHist(Int_t const r, Int_t const h) const {return this->fCRCQ2Re[r][h];};
+ void SetCRCQ2ImHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2Im[r][h] = TH;};
+ TProfile* GetCRCQ2ImHist(Int_t const r, Int_t const h) const {return this->fCRCQ2Im[r][h];};
+ void SetCRCQ2ReCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2ReCorr[r][h] = TH;};
+ TProfile* GetCRCQ2ReCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQ2ReCorr[r][h];};
+ void SetCRCQ2ImCorrHist(TProfile* const TH, Int_t const r, Int_t const h) {this->fCRCQ2ImCorr[r][h] = TH;};
+ TProfile* GetCRCQ2ImCorrHist(Int_t const r, Int_t const h) const {return this->fCRCQ2ImCorr[r][h];};
  void SetCRCPhiHist(TH2D* const TH, Int_t const r, Int_t const c, Int_t const i) {this->fCRCPhiHist[r][c][i] = TH;};
  TH2D* GetCRCPhiHist(Int_t const r, Int_t const c, Int_t const i) const {return this->fCRCPhiHist[r][c][i];};
  
@@ -787,8 +787,8 @@ public:
  void SetCRCZDCQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
  TProfile* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
  
- void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
- TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
+// void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
+// TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
  
  // CRC VZERO:
  // 12.a) EbE Corr:
@@ -1425,10 +1425,10 @@ private:
  TList *fCRCQVecWeightsList; //! Weights for Q Vectors
  TList *fCRCZDCCalibList; //! ZDC calibration
  TList *fZDCESEList; //! ZDC ESE
- TProfile *fCRCQ2Re[fCRCMaxnRun]; //! Q Vectors Re
- TProfile *fCRCQ2Im[fCRCMaxnRun]; //! Q Vectors Im
- TProfile *fCRCQ2ReCorr[fCRCMaxnRun]; //! Q Vectors Re
- TProfile *fCRCQ2ImCorr[fCRCMaxnRun]; //! Q Vectors Im
+ TProfile *fCRCQ2Re[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
+ TProfile *fCRCQ2Im[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
+ TProfile *fCRCQ2ReCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
+ TProfile *fCRCQ2ImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  AliFlowVector fTPCQ2Recenter;
  
@@ -1448,7 +1448,9 @@ private:
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
  TProfile *fCRCVZQVecA[fCRCMaxnRun][2]; //! Q Vectors VZERO-A
  TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
- TProfile *fCRCVZQVecCov[fCRCMaxnRun][4]; //! VZs Q Vectors correlations
+ const static Int_t fCRCQVecnCov = 8;
+ TProfile *fCRCVZQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! VZs Q Vectors correlations
+ TProfile *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
  
  TH1D *fCRCZDCEvPlA[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-A
  TH1D *fCRCZDCEvPlC[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-C
@@ -1456,9 +1458,8 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
- TProfile *fCRCZDCQVecCov[fCRCMaxnRun][4]; //! ZDCs Q Vectors correlations
- 
- TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
+  
+// TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
  
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
