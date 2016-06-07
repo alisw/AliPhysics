@@ -85,7 +85,8 @@ void makeTPCFastTransformOCDBObject( const Char_t* cdbUri=NULL,
 
   cout<<"\n\nBz field is set to "<<bz<<", time stamp is set to "<<grpObj->GetTimeEnd()<<endl<<endl;
 
-  calib->SetExBField(bz);  
+  const AliMagF * field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+  calib->SetExBField(field);
   calib->SetRun( runMin );
   calib->UpdateRunInformations( runMin );
 
