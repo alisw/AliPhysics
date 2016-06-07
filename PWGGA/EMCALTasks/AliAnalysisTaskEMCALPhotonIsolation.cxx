@@ -79,7 +79,10 @@ fEvents(0),
 fPT(0),
 fE(0),
 fPtaftTime(0),
+fPtaftCell(0),
+fPtaftNLM(0),
 fPtaftTM(0),
+fPtaftDTBC(0),
 fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
@@ -150,6 +153,7 @@ fIsMC(0),
 fTPC4Iso(0),
 fIsoMethod(0),
 fUEMethod(0),
+fPeriod("LHC11c"),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
@@ -224,7 +228,10 @@ fEvents(0),
 fPT(0),
 fE(0),
 fPtaftTime(0),
+fPtaftCell(0),
+fPtaftNLM(0),
 fPtaftTM(0),
+fPtaftDTBC(0),
 fPtaftFC(0),
 fPtaftM02C(0),
 fClusTime(0),
@@ -295,6 +302,7 @@ fIsMC(0),
 fTPC4Iso(0),
 fIsoMethod(0),
 fUEMethod(0),
+fPeriod("LHC11c"),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
@@ -579,9 +587,21 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fPtaftTime->Sumw2();
   fOutput->Add(fPtaftTime);
   
+  fPtaftCell = new TH1D("hPtaftCell_NC","p_{T} distribution for Clusters after Ncells cut",200,0.,100.);
+  fPtaftCell->Sumw2();
+  fOutput->Add(fPtaftCell);
+  
+  fPtaftNLM = new TH1D("hPtaftNLM_NC","p_{T} distribution for Clusters after NLM cut",200,0.,100.);
+  fPtaftNLM->Sumw2();
+  fOutput->Add(fPtaftNLM);
+  
   fPtaftTM = new TH1D("hPtaftTM_NC","p_{T} distribution for Neutral Clusters",200,0.,100.);
   fPtaftTM->Sumw2();
   fOutput->Add(fPtaftTM);
+  
+  fPtaftDTBC = new TH1D("hPtaftDTBC_NC","p_{T} distribution for Neutral Clusters after DTBC cut",200,0.,100.);
+  fPtaftDTBC->Sumw2();
+  fOutput->Add(fPtaftDTBC);
   
   fPtaftFC = new TH1D("hPtaftFC_NC","p_{T} distribution for Clusters after fiducial cut",200,0.,100.);
   fPtaftFC->Sumw2();
@@ -599,7 +619,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fM02->Sumw2();
   fOutput->Add(fM02);
   
-  fNLM = new TH1D("hNLM_NC","NLM distribution for Neutral Clusters",10,0.,10.);
+  fNLM = new TH2D("hNLM_NC","NLM distribution for Neutral Clusters",10,0.,10.,100,0.,100.);
   fNLM->Sumw2();
   fOutput->Add(fNLM);
   
@@ -726,9 +746,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fTestLocalIndexE->Sumw2();
   fOutput->Add(fTestLocalIndexE);
   
-  fTestEnergyCone= new TH2D("hTestEnergyCone","Test energy clusters and tracks in cone",200,0.,100.,200,0.,100.);
-  fTestEnergyCone->SetXTitle("#sum^{cone} p_{T}^{cluster}");
-  fTestEnergyCone->SetYTitle("#sum^{cone} p_{T}^{track}");
+  fTestEnergyCone= new TH3F("hTestEnergyConeVSpT","Test energy clusters and tracks in cone",200,0.,100.,250,0.,100.,250,0.,100.);
+  fTestEnergyCone->SetXTitle("p_{T}^{cluster}");
+  fTestEnergyCone->SetYTitle("#sum^{cone} p_{T}^{cluster}");
+  fTestEnergyCone->SetZTitle("#sum^{cone} p_{T}^{track}");
   fTestEnergyCone->Sumw2();
   fOutput->Add(fTestEnergyCone);
   
@@ -911,12 +932,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     Float_t fXSection=0;
     Int_t fTrials=0;
     if(fPythiaHeader){
-    fXSection = fPythiaHeader->GetXsection();
-    fTrials = fPythiaHeader->Trials();
-    if(fTrials>0){
-    fHistXsection->Fill("<sigma>",fXSection);
-    fHistTrials->Fill("#sum{ntrials}",fTrials);
-    }
+      fXSection = fPythiaHeader->GetXsection();
+      fTrials = fPythiaHeader->Trials();
+      if(fTrials>0){
+        fHistXsection->Fill("<sigma>",fXSection);
+        fHistTrials->Fill("#sum{ntrials}",fTrials);
+      }
     }
       // AliError(Form("EMCAL L1 trigger for MC simulation anchored to LHC13 data"));
     if(!MCSimTrigger(fVevent,fTriggerLevel1)) return kFALSE;
@@ -1014,42 +1035,30 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       FillQAHistograms(coi,vecCOI);
       
-      if((coi->GetNCells() < 2)) continue;
-      if((coi->GetDistanceToBadChannel() < 2)) continue;
+      Printf("cluster with ID %d energy %.4lf, pT: %.4f, eta:%.4f, phi: %.4f ",coi->GetID(),vecCOI.E(),vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
       
-      if(vecCOI.Et()<5.) continue;
-        //Printf("cluster with energy %lf",vecCOI.Et());
-      
-      //Printf("cluster time %lf",coiTOF);
+      Printf("\nCluster time %lf",coiTOF);
       if(!fIsMC){
         if(coiTOF< -30. || coiTOF > 30.)
           continue;
       }
-      //Printf("Cluster time OK!!!");
+      
+      Printf("Cluster time OK!!!");
       fPtaftTime->Fill(vecCOI.Pt());
-      //Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
+      
+      Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
       
       if((coi->GetNCells() < 2)) continue;
-      if((coi->GetDistanceToBadChannel() < 2)) continue;
+      fPtaftCell->Fill(vecCOI.Pt());
       
-     // Printf("Cluster with NCell %d",coi->GetNCells());
-      
-      if(fTMClusterRejected)
-      {
-        //Printf("CT Matching from Run");
-        if(ClustTrackMatching(coi)){
-          //Printf("Cluster Matched with a Track");
-          continue;
-        }
-        fPtaftTM->Fill(vecCOI.Pt());
-      }
+      Printf("Cluster with NCell %d",coi->GetNCells());
       
       Int_t nlm=0;
       AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
       if(fCaloCells)
       {
         nlm = GetNLM(coi,fCaloCells);
-        //Printf("Number of local maxima for this cluster: %d",nlm);
+        Printf("Number of local maxima for this cluster: %d",nlm);
         AliDebug(1,Form("NLM = %d",nlm));
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
@@ -1057,9 +1066,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         if(fIsNLMCut && fNLMCut>0)
           if(nlm > fNLMCut)
             continue;
-        
-        if(coi->E()>=5. && coi->E()<70.)
-          fNLM->Fill(nlm);
       }
       else
       {
@@ -1067,21 +1073,39 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         AliDebug(1,Form("Can't retrieve EMCAL cells"));
       }
         //      Printf("Cluster number: %d; \t Cluster ToF: %lf ;\tCluster M02:%lf\n",index,coiTOF,coiM02);
+      fPtaftNLM->Fill(vecCOI.Pt());
+      if(fTMClusterRejected)
+      {
+        Printf("CT Matching from Run");
+        if(ClustTrackMatching(coi)){
+          Printf("Cluster Matched with a Track");
+          continue;
+        }
+      }
+      fPtaftTM->Fill(vecCOI.Pt());
+      
+      if((coi->GetDistanceToBadChannel() < 2)) continue;
+      
+      fPtaftDTBC->Fill(vecCOI.Pt());
+      
+      if(coi->E()>=5. && coi->E()<70.)
+        fNLM->Fill(nlm,coi->E());
       
       if(!CheckBoundaries(vecCOI)){
-        //Printf("Outside the boundaries");
+        Printf("Outside the boundaries");
         continue;
       }
       
       fPtaftFC->Fill(vecCOI.Pt());
       fTestIndexE->Fill(vecCOI.Pt(),index);
       
-        //      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with Index: %d",index);
+      if(vecCOI.Pt()<5.) continue;
+      
+      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
       FillGeneralHistograms(coi,vecCOI,index);
     }
     
   }
-  
     //  PostData(1, fOutput);
   return kTRUE;
 }
@@ -1793,7 +1817,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     }
   } // end of tracks loop
   
-  fTestEnergyCone->Fill(sumEnergyConeClus,sumpTConeCharged);
+  fTestEnergyCone->Fill(nClust.Pt(),sumEnergyConeClus,sumpTConeCharged);
   
   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTPhiBandTracks);
   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
@@ -1811,14 +1835,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Double_t &ptIso, Double_t &etaBandclus, Int_t index){
     // Underlying events study with clusters in eta band
   
-  Double_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandTracks=0.;
+  Float_t sumEnergyEtaBandClus =0., sumEnergyConeClus=0., sumpTConeCharged=0, sumpTEtaBandTracks=0.;
   Double_t clustTOF=0;
   Double_t minEta = -0.67, maxEta = 0.67, minPhi=1.4,maxPhi=3.15;
   
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
-  AliVCluster *clust= 0x0;
+  TLorentzVector nClust; //STILL NOT INITIALIZED
+  
   for(auto it : clusters->accepted()){ //check the position of other clusters in respect to the trigger cluster
     
     AliVCluster* coi = static_cast<AliVCluster*>(it);
@@ -1827,7 +1852,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       //  AliError(Form("Tourne bien sur les clusters"));
     if(localIndex==index) continue;
     
-    TLorentzVector nClust; //STILL NOT INITIALIZED
     coi->GetMomentum(nClust,fVertex);
     
     Double_t phiClust =nClust.Phi();
@@ -1887,10 +1911,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
     Double_t phiTrack, etaTrack,radius;
       //AliError("On a bien des traces pour l'analysos");
-      //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
+    if(!(eTrack->IsHybridGlobalConstrainedGlobal())) continue;
     
     if((eTrack->Pt())<0.2)
       continue;
+    
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(float(eTrack->GetTPCnclsS()/eTrack->GetTPCncls()) > 0.4) continue;
     
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
@@ -1913,7 +1941,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     }
   } // end of tracks loop
     //  Printf("Total Energy inside IsoCone from Tracks %.4lf",sumpTConeCharged);
-  fTestEnergyCone->Fill(sumEnergyConeClus,sumpTConeCharged);
+fTestEnergyCone->Fill(c.Pt(),sumEnergyConeClus,sumpTConeCharged);
   
   fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTracks);
   fTrackMultvsPt->Fill(iTracksCone,c.Pt());
@@ -2188,15 +2216,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
       //   minEtaBound = -0.27;
       //   maxEtaBound = 0.27;
   }
-  
-  
-  
-  if(!fTPC4Iso)
-  {
-    minPhiBound = 1.4+fIsoConeRadius;
-    maxPhiBound = 3.15-fIsoConeRadius; // normally 110° but shorter cut to avoid EMCAL border
+  else{
     minEtaBound = -0.67+fIsoConeRadius; // ""
     maxEtaBound = 0.67-fIsoConeRadius; // ""
+    
+    if(fPeriod=="LHC11c"){
+      minPhiBound = 1.798;
+      maxPhiBound = 2.740; // normally 110° but shorter cut to avoid EMCAL border
+    }
+    else{
+    minPhiBound = 1.4+fIsoConeRadius;
+    maxPhiBound = 3.15-fIsoConeRadius; // normally 110° but shorter cut to avoid EMCAL border
+    }
   }
   
   if(vecCOI.Eta() > maxEtaBound || vecCOI.Eta() < minEtaBound || vecCOI.Phi() > maxPhiBound || vecCOI.Phi() <minPhiBound)
