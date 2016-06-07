@@ -67,6 +67,7 @@
 #include "AliHLTTPCHWCFData.h"
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
+#include "TMath.h"
 
 #include "TH2F.h"
 #include "TH1D.h"
@@ -444,6 +445,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
+  fAxes["phiAngles"].set(180, 0., TMath::Pi(), &fakePtr );
+  fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr );
   //End Common Axes
 
   //Start Histograms
