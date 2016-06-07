@@ -223,7 +223,7 @@ set ( SRCS18
 set ( SRCS19
 #  BeamGasMonitoring/AliAnalysisMBVeto.cxx temporarily commented:sjena
   BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
-  BeamGasMonitoring/AliAnal ysisBGMonitorQAHLT.cxx
+  BeamGasMonitoring/AliAnalysisBGMonitorQAHLT.cxx
   BeamGasMonitoring/AliAnalysisBGMonitorQATrain.cxx
   )
 
