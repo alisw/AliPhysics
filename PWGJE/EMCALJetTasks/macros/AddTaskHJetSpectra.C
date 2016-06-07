@@ -565,8 +565,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
 
       embSingle->SetCopyArray(kTRUE);
-      embSingle->SetSuffix(Form("TT%d%d_AN%d%d_R%02d_%s",
-         TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data()));
+      embSingle->SetSuffix(Form("TT%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",
+         TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb));
       kGenPartices = embSingle->GetOutTrackName(); 
    }
  
