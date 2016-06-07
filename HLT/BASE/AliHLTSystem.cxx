@@ -709,7 +709,7 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
       AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
       AliHLTUInt32_t timestamp = 0;
       AliGRPManager grp;
-      if (grp.GetGRPData() == NULL) grp.ReadGRPEntry();
+      grp.ReadGRPEntry();
       const AliGRPObject *grpObj = grp.GetGRPData();
       if (dt==kAliHLTDataTypeSOR)
       {

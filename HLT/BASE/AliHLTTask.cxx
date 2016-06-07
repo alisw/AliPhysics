@@ -31,6 +31,8 @@
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
+#include "AliGRPManager.h"
+#include "AliGRPObject.h"
 #include "TList.h"
 #include "AliHLTErrorGuard.h"
 
@@ -123,6 +125,11 @@ int AliHLTTask::CreateComponent(AliHLTConfiguration* pConfiguration, AliHLTCompo
 	// currently just set to NULL.
 	iResult=pCH->CreateComponent(pConf->GetComponentID(), pComponent);
 	if (pComponent && iResult>=0) {
+	  AliGRPManager grp;
+	  grp.ReadGRPEntry();
+	  const AliGRPObject *grpObj = grp.GetGRPData();
+	  pComponent->SetTimeStamp(grpObj->GetTimeStart());
+	
 	  TString description;
 	  description.Form("chainid=%s", GetName());
 	  pComponent->SetComponentDescription(description.Data());
@@ -159,6 +166,11 @@ int AliHLTTask::Deinit()
   fpComponent=NULL;
   if (pComponent) {
     //HLTDebug("delete component %s (%p)", pComponent->GetComponentID(), pComponent); 
+    AliGRPManager grp;
+    grp.ReadGRPEntry();
+    const AliGRPObject *grpObj = grp.GetGRPData();
+    pComponent->SetTimeStamp(grpObj->GetTimeEnd());
+
     pComponent->Deinit();
     delete pComponent;
   } else {

@@ -819,6 +819,12 @@ class AliHLTComponent : public AliHLTLogging {
   static AliHLTUInt32_t ExtractEventTypeFromCDH(const AliHLTCDHWrapper* const cdh);
   
   /**
+   * Override function to set timestamp of current event.
+   * Needed to provide a timestamp during DoInit() and DoDeinit()
+   */
+  void SetTimeStamp(AliHLTUInt32_t val) {fCurrentEventData.fEventCreation_s = val;}
+
+  /**
    * Stopwatch type for benchmarking.
    */
   enum AliHLTStopwatchType {
@@ -1573,7 +1579,7 @@ class AliHLTComponent : public AliHLTLogging {
    * Exact format needs to be documented.
    */
   AliHLTUInt32_t    GetTimeStamp() const;
-
+  
   /**
    * Get the period number.
    * Upper 28 bits (36 to 63) of the 64-bit event id 
