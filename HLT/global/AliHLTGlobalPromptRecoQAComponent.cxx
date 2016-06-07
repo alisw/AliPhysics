@@ -494,8 +494,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
 
 void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
 {
-  delete fHistClusterChargeTot;
-  delete fHistTPCTrackPt;
+  delete fHistClusterChargeTot; fHistClusterChargeTot=NULL;
+  delete fHistTPCTrackPt; fHistTPCTrackPt=NULL;
 }
 
 static void ReBinLogX(TAxis* axis)
@@ -517,9 +517,13 @@ static void ReBinLogX(TAxis* axis)
 void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
 {
   axisStruct& axisClusterChargeTot = fAxes["tpcClusterCharge"];
-  fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", axisClusterChargeTot.bins, axisClusterChargeTot.low, axisClusterChargeTot.high );
+  if (axisClusterChargeTot.bins>0) {
+    fHistClusterChargeTot = new TH1D("fHistClusterChargeTot", "TPC Cluster ChargeTotal", axisClusterChargeTot.bins, axisClusterChargeTot.low, axisClusterChargeTot.high );
+  }
   axisStruct& axisTrackPt = fAxes["tpcTrackPt"];
-  fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", axisTrackPt.bins, axisTrackPt.low, axisTrackPt.high );
+  if (axisTrackPt.bins>0) {
+    fHistTPCTrackPt = new TH1D("fHistTPCTrackPt", "TPC Track Pt", axisTrackPt.bins, axisTrackPt.low, axisTrackPt.high );
+  }
 }
 
 void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
@@ -593,7 +597,14 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
     HLTWarning("empty variable %s",yname.c_str());
     return;
   }
-  delete hist.hist;
+  delete hist.hist; hist.hist=NULL;
+  if (x.bins==0 || y.bins==0)
+  {
+    HLTInfo("hist %s disabled, axis has zero bins",histName.c_str());
+    fHistograms.erase(histName);
+    return;
+  }
+
   if (!xname.empty() && !yname.empty())
   {
     //both axes specified, TH2
@@ -1072,7 +1083,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   for (int ndx=0; ndx<nBlocks; ndx++) {
     const AliHLTComponentBlockData* iter = blocks+ndx;
 
-    if (iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC))
+    if ( fHistTPCTrackPt &&
+         iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC) )
     {
       AliHLTTracksData* tracks = (AliHLTTracksData*) iter->fPtr;
       const AliHLTUInt8_t* pCurrent = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
@@ -1084,7 +1096,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    if (iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC))
+    if ( fHistClusterChargeTot &&
+         iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC) )
     {
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
       for (unsigned i = 0;i < clusters->fCount;i++)
