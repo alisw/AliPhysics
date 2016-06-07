@@ -37,6 +37,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
                    )
 
 option(USE_DLOPEN "Use \"dlopen()\" in favor of \"gSystem->Load()\" to load HLT component libraries." OFF)
