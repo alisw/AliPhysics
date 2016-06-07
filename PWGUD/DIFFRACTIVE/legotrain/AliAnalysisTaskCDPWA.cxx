@@ -1405,6 +1405,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	if (fCombmode) DoCombStudy(ad,vzero);
 	AliTriggerAnalysis fTrigger;
+	fTrigger.SetDoFMD(kTRUE);
 	fTrigger.SetFMDThreshold(0.3,0.5);//FMD Threshold at 7/13TeV is used.
 
 	if (fTrigger.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFO)) {
