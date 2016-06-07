@@ -129,7 +129,7 @@ int Run()
 
     //poll socket readiness for sending
     Int_t noutSockets=2;
-    zmq_pollitem_t outSockets[] = { 
+    zmq_pollitem_t outSockets[] = {
       { fZMQin, 0, ZMQ_POLLOUT, 0 },
       { fZMQout, 0, ZMQ_POLLOUT, 0 },
       { fZMQmon, 0, ZMQ_POLLOUT, 0 },
@@ -157,10 +157,10 @@ int Run()
     {
       if (fVerbose) printf("socket %p (%s) signals ZMQ_POLLOUT\n", fZMQmon, fZMQconfigMON.Data());
     }
-    
+
     //poll incoming data
     Int_t ninSockets=3;
-    zmq_pollitem_t inSockets[] = { 
+    zmq_pollitem_t inSockets[] = {
       { fZMQin, 0, ZMQ_POLLIN, 0 },
       { fZMQout, 0, ZMQ_POLLIN, 0 },
       { fZMQmon, 0, ZMQ_POLLIN, 0 },
@@ -206,28 +206,28 @@ int Run()
       }
     }
     zmq_msg_close(&msg);
-    
+
     //if we time out (waiting for a response) reinit the REQ socket(s)
     if (pollrc==0)
     {
       if (inType==ZMQ_REQ) {
         if (fVerbose) printf("no reply from %s in %i ms, server died?\n",
             fZMQconfigIN.Data(), fZMQtimeout);
-        rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(), 
+        rc = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data(),
             -1, fZMQmaxQueueSize);
         if (fVerbose) printf("rc of reinit %i\n",rc);
       }
       if (outType==ZMQ_REQ) {
         if (fVerbose) printf("no reply from %s in %i ms, server died?\n",
             fZMQconfigOUT.Data(), fZMQtimeout);
-        rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(), 
+        rc = alizmq_socket_init(fZMQout, fZMQcontext, fZMQconfigOUT.Data(),
             -1, fZMQmaxQueueSize);
         if (fVerbose) printf("rc of reinit %i\n",rc);
       }
       if (monType==ZMQ_REQ) {
         if (fVerbose) printf("no reply from %s in %i ms, server died?\n",
             fZMQconfigMON.Data(), fZMQtimeout);
-        rc = alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(), 
+        rc = alizmq_socket_init(fZMQmon, fZMQcontext, fZMQconfigMON.Data(),
             -1, fZMQmaxQueueSize);
         if (fVerbose) printf("rc of reinit %i\n",rc);
       }
@@ -294,7 +294,7 @@ int ProcessOptionString(TString arguments)
   }
   delete options; //tidy up
 
-  return nOptions; 
+  return nOptions;
 }
 
 //_______________________________________________________________________________________
