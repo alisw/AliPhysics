@@ -36,6 +36,9 @@
 #include <AliVParticle.h>
 #include <AliLog.h>
 
+#include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
+
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
@@ -58,6 +61,10 @@ ClassImp(AliAnalysisTaskEmcalJetHF);
  */
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() :
 AliAnalysisTaskEmcalJet(),
+fVevent(),
+fESD(),
+fAOD(),
+fpidResponse(),
 fHistManager(),
 fHistJetEovP(),
 fHistJetEovPvPt(),
@@ -74,6 +81,10 @@ fHistClusEovPHadCorr()
  */
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF(const char *name) :
 AliAnalysisTaskEmcalJet(name, kTRUE),
+fVevent(0),
+fESD(0),
+fAOD(0),
+fpidResponse(0),
 fHistManager(name),
 fHistJetEovP(0),
 fHistJetEovPvPt(0),
@@ -99,6 +110,18 @@ void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
 {
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
     
+    /////////////////////////////////////////////////
+    //Automatic determination of the analysis mode//
+    ////////////////////////////////////////////////
+    AliVEventHandler *inputHandler = dynamic_cast<AliVEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(!TString(inputHandler->IsA()->GetName()).CompareTo("AliAODInputHandler")){
+        SetAODAnalysis();
+    } else {
+        SetESDAnalysis();
+    }
+    printf("Analysis Mode: %s Analysis\n", IsAODanalysis() ? "AOD" : "ESD");
+
+
     AllocateClusterHistograms();
     AllocateTrackHistograms();
     AllocateJetHistograms();
@@ -534,6 +557,22 @@ void AliAnalysisTaskEmcalJetHF::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetHF::Run()
 {
+    UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
+    fVevent = dynamic_cast<AliVEvent*>(InputEvent());
+    if (!fVevent) {
+        printf("ERROR: fVEvent not available\n");
+        return kFALSE;
+    }
+
+    const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+
+    fpidResponse = fInputHandler->GetPIDResponse();
+    if (!fpidResponse) {
+        printf("ERROR: fpidResponse not available\n");
+        return kFALSE;
+    }
+
     return kTRUE;
 }
 

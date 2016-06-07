@@ -1,13 +1,10 @@
 #ifndef ALIANALYSISTASKEMCALJETHF_H
 #define ALIANALYSISTASKEMCALJETHF_H
 /**
- * \file AliAnalysisTaskEmcalJetSample.h
+ * \file AliAnalysisTaskEmcalJetHF.h
  * \brief Declaration of class AliAnalysisTaskEmcalJetHF
  *
- * In this header file the class AliAnalysisTaskEmcalJetSample is declared.
- * This is a sample task that shows how to write a simple user analysis task
- * using the EMCal jet framework. It is also used to do automatic benchmark
- * tests of the software.
+ * Task to perform HFE Jet Spectra using EMCal
  *
  * \author Andrew Castro, <andrew.john.castro@cern.ch>, University of Tennessee
  * \date June 06, 2016
@@ -50,6 +47,7 @@ class AliParticleContainer;
 class AliClusterContainer;
 class AliEMCALTriggerPatchInfo;
 class AliVCaloTrigger;
+class AliPIDResponse;
 //INCLUDES
 #include <TRef.h>
 #include <TBits.h>
@@ -77,9 +75,11 @@ class AliVCaloTrigger;
 #include "AliTPCPIDResponse.h"
 #include "AliESDpid.h"
 #include "AliAnalysisFilter.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliStack.h"
 
 /**
- * \class AliAnalysisTaskEmcalJetSample
+ * \class AliAnalysisTaskEmcalJetHF
  * \brief Implementation of a HFE jet analysis task.
  *
  **/
@@ -91,8 +91,13 @@ public:
     AliAnalysisTaskEmcalJetHF(const char *name)                               ;
     virtual ~AliAnalysisTaskEmcalJetHF()                                      ;
     
+    void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
+    void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
+    Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
+
     void                        UserCreateOutputObjects()                         ;
     void                        Terminate(Option_t *option)                       ;
+    void                        SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     
 protected:
     void                        ExecOnce()                                        ;
@@ -112,6 +117,25 @@ protected:
     THistManager                fHistManager                                      ;///< Histogram manager
 
 private:
+    enum{
+        kAODanalysis = BIT(20),
+    };
+
+    AliVEvent   *fVevent;  //!event object
+    AliESDEvent *fESD;    //!ESD object
+    AliAODEvent *fAOD;    //!AOD object
+    AliPIDResponse *fpidResponse; //!pid response
+
+
+    Double_t    fInvmassCut;//!
+
+    TH2F                          *fdEdx;//!dedx vs pt
+    TH2F                          *fM20;//!pt vs M20
+    TH2F                          *fM02;//!pt vs M20
+    TH2F                          *fM20EovP;//!M20 vs E/p
+    TH2F                          *fM02EovP;//!M20 vs E/p
+    TH1F                          *fInvmassLS;//!Invmass of LS pairs
+    TH1F                          *fInvmassULS;//!Invmass of ULS pairs
     TH1F                          *fHistJetEovP;
     TH2F                          *fHistJetEovPvPt;
     TH1F                          *fHistClusEovP;
