@@ -966,7 +966,7 @@ goMergeCPass()
   fi
   echo "dir $outputDir" >> $doneFileTmp
   reportDoneFile syswatchRec syswatch.rec.cpass${cpass}.tree ${outputDir} >> $doneFileTmp
-  reportDoneFile syswatchCalib syswatch.calib.${cpass}.tree ${outputDir} >> $doneFileTmp
+  reportDoneFile syswatchCalib syswatch.calib.cpass${cpass}.tree ${outputDir} >> $doneFileTmp
 
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
