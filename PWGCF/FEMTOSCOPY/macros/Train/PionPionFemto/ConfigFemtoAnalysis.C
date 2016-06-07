@@ -194,15 +194,21 @@ ConfigFemtoAnalysis(const TString& param_str="")
         binned->AddKtRange(0.3, 0.4);
         binned->AddKtRange(0.4, 0.5);
         binned->AddKtRange(0.5, 0.6);
-        binned->AddKtRange(0.6, 1.0);
+        binned->AddKtRange(0.6, 0.7);
+        binned->AddKtRange(0.7, 0.8);
+        binned->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(binned);
       }
 
       if (macro_config.do_kt_q3d) {
         AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", new AliFemtoCorrFctn3DLCMSSym(TString("q3D_") + pair_type_str, 72, 1.1));
-        kt_q3d->AddKtRange(0.2, 0.4);
-        kt_q3d->AddKtRange(0.4, 0.6);
-        kt_q3d->AddKtRange(0.6, 1.0);
+        kt_q3d->AddKtRange(0.2, 0.3);
+        kt_q3d->AddKtRange(0.3, 0.4);
+        kt_q3d->AddKtRange(0.4, 0.5);
+        kt_q3d->AddKtRange(0.5, 0.6);
+        kt_q3d->AddKtRange(0.6, 0.7);
+        kt_q3d->AddKtRange(0.7, 0.8);
+        kt_q3d->AddKtRange(0.8, 1.0);
         analysis->AddCorrFctn(kt_q3d);
       }
 
