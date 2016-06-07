@@ -41,6 +41,7 @@
 #include "AliRawEventHeaderBase.h"
 #include <iostream>
 #include <iomanip>
+#include <TGeoGlobalMagField.h>
 
 using namespace std;
 
@@ -80,7 +81,9 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, Long_t TimeStamp )
  
   if(!pCalib ) return Error(-2,"AliHLTTPCClusterTransformation::Init: Calibration not found");
   
-  pCalib->SetExBField(FieldBz);
+  const AliMagF * field = (AliMagF*) TGeoGlobalMagField::Instance()->GetField();
+  pCalib->SetExBField(field);
+
  
   if( !pCalib->GetTransform() ) return Error(-3,"AliHLTTPCClusterTransformation::Init: No TPC transformation found");
   
