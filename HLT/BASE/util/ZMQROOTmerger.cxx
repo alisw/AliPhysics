@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "TMethodCall.h"
+#include "TMethod.h"
 
 //this is meant to become a class, hence the structure with global vars etc.
 //Also the code is rather flat - it is a bit of a playground to test ideas.
@@ -175,7 +176,7 @@ const char* fUSAGE =
     " -SchemaOnSend : include streamers ALWAYS in each sent message\n"
     " -UnpackCollections : cache/merge the contents of the collections instead of the collection itself\n"
     " -UnpackContainers : unpack the contents of AliAnalysisDataContainers\n"
-    " -UnpackCustom : use a custom method to unpack the objects (must return TCollection*)\n"
+    " -UnpackCustom : use a custom method to unpack the objects (must return TCollection* AND must be in a collection)\n"
     " -CustomUnpackMethodName : name of the custom method to call to get a pointer to unpacked objects\n"
     " -statefile : save/restore state on exit/start\n"
     ;
@@ -1100,9 +1101,21 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::stri
     collection->Remove(tmp);
 
     AliAnalysisDataContainer* analKont = NULL;
+    TCollection* unpackedList = NULL;
+    TCollection* subcollection = NULL;
+
     if (fUnpackContainers) {
-      AliAnalysisDataContainer* analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
+      analKont = dynamic_cast<AliAnalysisDataContainer*>(tmp);
     }
+
+    if (!analKont) {
+      subcollection = dynamic_cast<TCollection*>(tmp);
+    }
+
+    if (fCustomUnpackMethod && !analKont && !subcollection) {
+      unpackedList = UnpackToCollection(tmp, fCustomUnpackMethodName);
+    }
+
     if (analKont) {
       //analysis container
       if (fVerbose) Printf("  have an analysis container %p",analKont);
@@ -1110,21 +1123,21 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::stri
       if (fVerbose) printf("  destroying anal container %p\n",analKont);
       delete analKont;
 
-    } else if (fCustomUnpackMethod &&
-        tmp->IsA()->GetMethodWithPrototype(fCustomUnpackMethodName.c_str(), "")) {
-      //something implementing a custom method to unpack into a list
-      if (fVerbose) printf("Attempting to call method %s to unpack\n",
-                           fCustomUnpackMethodName.c_str());
-      TCollection* unpackedList = UnpackToCollection(tmp, fCustomUnpackMethodName);
-      GetObjects(unpackedList, list, kontPrefix);
-      delete unpackedList;
-
-    } else if (TCollection* subcollection = dynamic_cast<TCollection*>(tmp)) {
+    } else if (subcollection) {
       //embedded collection
+      if (fVerbose) Printf("  have a collection %p",analKont);
       GetObjects(subcollection, list, kontPrefix);
+      if (fVerbose) Printf("  destroying a collection %p",analKont);
+
+    } else if (unpackedList) {
+        //something implementing a custom method to unpack into a list
+        if (fVerbose) Printf("  using the custom unpacked list %p",analKont);
+        GetObjects(unpackedList, list, kontPrefix);
+        if (fVerbose) Printf("  destroying the custom unpacked list %p",analKont);
+        delete unpackedList;
 
     } else {
-      //..or just na object
+      //..or just an object
       TNamed* named = dynamic_cast<TNamed*>(tmp);
       if (named) {
         std::string name = kontPrefix + named->GetName();
@@ -1133,7 +1146,7 @@ Int_t GetObjects(TCollection* collection, std::vector<TObject*>* list, std::stri
           std::string title = kontPrefix + named->GetTitle();
           named->SetTitle(title.c_str());
         }
-        if (fVerbose) Printf("--in (from collection): %s (%s), %p",
+        if (fVerbose) Printf("--in: %s (%s), %p",
                              named->GetName(),
                              named->ClassName(),
                              named );
@@ -1150,11 +1163,19 @@ TCollection* UnpackToCollection(TObject* object, std::string method)
 {
   //this will call method (which MUST return a pointer to TCollection*
   //and take no arguments
+  TMethod* tmethod = object->IsA()->GetMethodWithPrototype(fCustomUnpackMethodName.c_str(), "");
+  if (!tmethod) return NULL;
+  std::string returnType = tmethod->GetReturnTypeName();
+  size_t starpos = returnType.rfind('*');
+  if (starpos == std::string::npos) return NULL;
+  returnType.erase(starpos,1);
+  TClass* returnClass = TClass::GetClass(returnType.c_str());
+  if (!returnClass) return NULL;
+  if (!returnClass->InheritsFrom("TCollection")) return NULL;
   TMethodCall *mc = new TMethodCall(object->IsA(),method.c_str(),"");
   char* ret = NULL;
   mc->Execute(object,&ret);
-  TObject* retObject = reinterpret_cast<TObject*>(ret);
-  TCollection* collection = dynamic_cast<TCollection*>(retObject);
+  TCollection* collection = reinterpret_cast<TCollection*>(ret);
   return collection;
 }
 
