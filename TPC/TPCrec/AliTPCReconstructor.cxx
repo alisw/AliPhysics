@@ -102,7 +102,7 @@ fClusterer(NULL),
 fArrSplines(NULL)
 {
   //
-  // Dummy copu constructor
+  // Dummy copy constructor
   //
 }
 
