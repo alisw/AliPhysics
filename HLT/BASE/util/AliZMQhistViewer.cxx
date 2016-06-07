@@ -252,9 +252,9 @@ int AliZMQhistViewer::GetData(void* socket)
       }
 
       //add all extracted objects to the list of veiwer objects
-      for (auto i: listOfObjects) {
-        ZMQviewerObject object(i);
-        if (fVerbose) Printf("  adding: %s (%s), %p", i->GetName(), i->ClassName(), i);
+      for (std::vector<TObject*>::iterator i=listOfObjects.begin(); i!=listOfObjects.end(); ++i) {
+        ZMQviewerObject object(*i);
+        if (fVerbose) Printf("  adding: %s (%s), %p", (*i)->GetName(), (*i)->ClassName(), *i);
         incomingObjects->push_back(object);
       }
     }
