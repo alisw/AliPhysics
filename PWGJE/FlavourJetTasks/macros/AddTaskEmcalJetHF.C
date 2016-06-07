@@ -105,7 +105,7 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
     HFTask->SetVzRange(-10,10);
 
     if (trackName == "mcparticles") {
-        AliMCParticleContainer* mcpartCont = sampleTask->AddMCParticleContainer(trackName);
+        AliMCParticleContainer* mcpartCont = HFTask->AddMCParticleContainer(trackName);
     }
     else if (trackName == "tracks" || trackName == "Tracks") {
         AliTrackContainer* trackCont = HFTask->AddTrackContainer(trackName);
