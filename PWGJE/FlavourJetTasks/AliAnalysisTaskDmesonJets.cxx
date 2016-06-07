@@ -518,6 +518,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -556,6 +557,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -591,6 +593,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -1365,7 +1368,8 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
     fCurrentDmesonJetInfo = new AliDStarInfoSummary();
     break;
   }
-  fTree = new TTree(GetName(), GetName());
+  TString treeName = TString::Format("AliAnalysisTaskDmesonJets_%s", GetName());
+  fTree = new TTree(treeName, treeName);
   fTree->Branch("DmesonJet", classname, &fCurrentDmesonJetInfo, 32000, 0);
   fCurrentJetInfo = new AliJetInfoSummary*[fJetDefinitions.size()];
   for (Int_t i = 0; i < fJetDefinitions.size(); i++) {
@@ -1679,6 +1683,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fTreeOutput(kFALSE),
   fHistManager(),
   fApplyKinematicCuts(kTRUE),
+  fNOutputTrees(0),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
@@ -1688,17 +1693,21 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
 /// This is the standard named constructor.
 ///
 /// \param name Name of the task
-AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name) :
+AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees) :
   AliAnalysisTaskEmcalLight(name, kTRUE),
   fAnalysisEngines(),
   fEnabledAxis(k2ProngInvMass),
   fTreeOutput(kFALSE),
   fHistManager(name),
   fApplyKinematicCuts(kTRUE),
+  fNOutputTrees(nOutputTrees),
   fAodEvent(0),
   fFastJetWrapper(0)
 {
   SetMakeGeneralHistograms(kTRUE);
+  for (Int_t i = 0; i < nOutputTrees; i++){
+    DefineOutput(2+i, TTree::Class());
+  }
 }
 
 /// This is the standard destructor.
@@ -1818,6 +1827,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   TString hname;
   TString htitle;
   TH1* h = 0;
+  Int_t treeSlot = 0;
 
   ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for task '%s' (%lu analysis engines)", GetName(), fAnalysisEngines.size());
   for (auto &param : fAnalysisEngines) {
@@ -1916,8 +1926,15 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
     }
     if (fTreeOutput) {
-      TTree* tree = param.BuildTree();
-      fOutput->Add(tree);
+      param.BuildTree();
+      if (treeSlot < fNOutputTrees) {
+        param.AssignDataSlot(treeSlot+2);
+        treeSlot++;
+        PostDataFromAnalysisEngine(param);
+      }
+      else {
+        AliError(Form("Number of data output slots %d not sufficient. Tree of analysis engine %s will not be posted!", fNOutputTrees, param.GetName()));
+      }
     }
     else {
       param.BuildHnSparse(fEnabledAxis);
@@ -2157,4 +2174,20 @@ const char* AliAnalysisTaskDmesonJets::GetHFEventRejectionReasonLabel(UInt_t& bi
   }
 
   return label.Data();
+}
+
+/// Post the tree of an analysis engine in the data slot (if the tree exists and the data slot has been assigned)
+///
+/// \param eng Constant reference to an analysis engine
+///
+/// \return -1 if unsuccessful, an integer number corresponding to the data slot if successful
+Int_t AliAnalysisTaskDmesonJets::PostDataFromAnalysisEngine(const AnalysisEngine& eng)
+{
+  if (eng.GetDataSlotNumber() >= 0 && eng.GetTree()) {
+    PostData(eng.GetDataSlotNumber(), eng.GetTree());
+    return eng.GetDataSlotNumber();
+  }
+  else {
+    return -1;
+  }
 }
