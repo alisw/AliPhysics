@@ -93,7 +93,8 @@ public:
     fSSsmearwidth = width;}
   void                     SetMean4Smear(Float_t mean)                                     {
     fSSsmear_mean = mean;}
-  
+  void                     SetExtraIsoCuts(Bool_t bExtraIsoCuts)                           { fExtraIsoCuts = bExtraIsoCuts;}
+
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -235,6 +236,7 @@ protected:
   Double_t    fdphicut;                        // cut on dphi between track and cluster
   Double_t    fM02mincut;                      // lambda0^2 minimum cut
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
+  Bool_t      fExtraIsoCuts;                   // Cuts on Ncell and DTBC for Clusters in Eiso calculation
   Bool_t      fQA;                             // Flag for few further QA plots wrt the ones already done in the EMCALTask
   Bool_t      fIsMC;                           // Flag for MC Truth Analysis
   Bool_t      fTPC4Iso;                        //0=EMCAL_ONLY; 1=EMCAL+TPC

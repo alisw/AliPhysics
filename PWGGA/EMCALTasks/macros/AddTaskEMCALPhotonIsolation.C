@@ -35,6 +35,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           iSmearingSS               = kFALSE,
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
+                                                                 const Bool_t           iExtraIsoCuts             = 0.
                                                                  )
 {
   
@@ -76,6 +77,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetM02Smearing(iSmearingSS);
   task->SetWidth4Smear(iWidthSSsmear);
   task->SetMean4Smear(iMean_SSsmear);
+  task->SetExtraIsoCuts(iExtraIsoCuts);
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   

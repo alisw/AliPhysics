@@ -144,6 +144,7 @@ fdetacut(0.025),
 fdphicut(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
+fExtraIsoCuts(kFALSE),
 fQA(0),
 fIsMC(0),
 fTPC4Iso(0),
@@ -288,6 +289,7 @@ fdetacut(0.025),
 fdphicut(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
+fExtraIsoCuts(kFALSE),
 fQA(0),
 fIsMC(0),
 fTPC4Iso(0),
@@ -1710,8 +1712,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     phiClust =nClust.Phi();
     etaClust= nClust.Eta();
     
-    if((coi->GetNCells() < 2)) continue;
-    if((coi->GetDistanceToBadChannel() < 2)) continue;
+    if(fExtraIsoCuts){
+      if((coi->GetNCells() < 2)) continue;
+      if((coi->GetDistanceToBadChannel() < 2)) continue;
+    }
     
     clustTOF = coi->GetTOF()*1e9;
     
@@ -1830,8 +1834,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     Double_t etaClust= nClust.Eta();
     Double_t eTcluster=0, radius;
     
-    if((coi->GetNCells() < 2)) continue;
-    if((coi->GetDistanceToBadChannel() < 2)) continue;
+    if(fExtraIsoCuts){
+      if((coi->GetNCells() < 2)) continue;
+      if((coi->GetDistanceToBadChannel() < 2)) continue;
+    }
     
     clustTOF = coi->GetTOF()*1e9;
     if(!fIsMC)
