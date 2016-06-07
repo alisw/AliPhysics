@@ -327,8 +327,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
 
     TTree* BuildTree();
-    TTree* GetTree() { return fTree; }
+    TTree* GetTree() const { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
+
+    void AssignDataSlot(Int_t n) { fDataSlotNumber = n; }
+    Int_t GetDataSlotNumber() const { return fDataSlotNumber; }
 
     void BuildHnSparse(UInt_t enabledAxis);
     Bool_t FillHnSparse(Bool_t applyKinCuts);
@@ -362,6 +365,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
+    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
@@ -396,7 +400,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   };
 
   AliAnalysisTaskDmesonJets();
-  AliAnalysisTaskDmesonJets(const char* name);
+  AliAnalysisTaskDmesonJets(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJets();
 
   AnalysisEngine* AddAnalysisEngine(ECandidateType_t type, EMCMode_t bkgMode, EJetType_t jettype, Double_t jetradius, TString cutfname = "");
@@ -428,12 +432,15 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
+  Int_t                PostDataFromAnalysisEngine(const AnalysisEngine& eng);
+
   std::list<AnalysisEngine>
                        fAnalysisEngines           ; ///<  Array of analysis parameters
   UInt_t               fEnabledAxis               ; ///<  Use bit defined in EAxis_t to enable axis in the THnSparse
   Bool_t               fTreeOutput                ; ///<  If true, output will be posted in a TTree rather than a THnSparse
   THistManager         fHistManager               ; ///<  Histogram manager
   Bool_t               fApplyKinematicCuts        ; ///<  Apply jet kinematic cuts
+  Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
 
@@ -443,7 +450,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 4);
+  ClassDef(AliAnalysisTaskDmesonJets, 5);
   /// \endcond
 };
 
