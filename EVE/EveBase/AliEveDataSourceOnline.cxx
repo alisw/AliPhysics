@@ -454,15 +454,6 @@ void AliEveDataSourceOnline::StorageManagerDown()
     //    Emit("StorageManagerDown()");
 }
 
-void AliEveDataSourceOnline::EventServerOk()
-{
-//    Emit("EventServerOk()");
-}
-void AliEveDataSourceOnline::EventServerDown()
-{
-//    Emit("EventServerDown()");
-}
-
 Bool_t AliEveDataSourceOnline::ReceivePromptRecoParameters(Int_t runNo)
 {
   TString localGRPstorage = "local://OCDB";

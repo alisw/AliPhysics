@@ -9,6 +9,9 @@
 
 #include "AliEveEventManagerEditor.h"
 #include "AliEveDataSource.h"
+#include "AliEveDataSourceOffline.h"
+#include "AliEveGeomGentle.h"
+#include "AliEveInit.h"
 #ifdef ZMQ
 #include "AliStorageAdministratorPanelListEvents.h"
 #include "AliStorageAdministratorPanelMarkEvent.h"
@@ -27,6 +30,7 @@
 #include <TTimeStamp.h>
 #include <TSystemDirectory.h>
 #include <TRegexp.h>
+#include <TEnv.h>
 
 #include <AliRawReader.h>
 #include <AliDAQ.h>

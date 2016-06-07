@@ -237,7 +237,7 @@ void AliEvePreferencesWindow::SaveToConfigFile()
     settings.SetValue("tracks.byType.elecon",TColor::GetColor(fColorSelect2706->GetColor()));//elecon
     settings.SetValue("tracks.byType.unknown",TColor::GetColor(fColorSelect2707->GetColor()));//unknown
     
-    settings.WriteFile(Form("%s/eve_config",gSystem->Getenv("HOME")), kEnvAll);
+    settings.WriteFile(Form("%s/.eve_config",gSystem->Getenv("HOME")), kEnvAll);
 }
 
 void AliEvePreferencesWindow::ApplyChanges()

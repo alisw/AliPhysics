@@ -44,8 +44,8 @@
 #include <iostream>
 
 
-using std::cout;
-using std::endl;
+using namespace std;
+
 //==============================================================================
 //==============================================================================
 // AliEveEventManager
@@ -706,7 +706,7 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
     {
         //now if we don't have a GRP we need to get one from somewhere
         cout<<"AliEveEventManager::InitOCDB : GRP Data from prompt reco params"<<endl;
-        ReceivePromptRecoParameters(runNo);
+        fCurrentDataSource->ReceivePromptRecoParameters(runNo);
     }
     
     //on run change destroy the mag field, it will be reinitialized via AssertMagField/InitGRP
