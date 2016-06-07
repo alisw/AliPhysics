@@ -1094,6 +1094,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         fHistTPCTrackPt->Fill(1. / track->fq1Pt);
         pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
       }
+      if (PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+        fHistTPCTrackPt->Reset();
+      }
     }
 
     if ( fHistClusterChargeTot &&
@@ -1107,10 +1110,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         nTPCHitsSplitPad += cluster.GetFlagSplitPad();
         nTPCHitsSplitTime += cluster.GetFlagSplitTime();
       }
+      if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+        fHistClusterChargeTot->Reset();
+      }
     }
   }
-  PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
-  PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT);
+  
 
   //convert the numbers fo floats for histograms
   fnClustersSPD = nClustersSPD;
