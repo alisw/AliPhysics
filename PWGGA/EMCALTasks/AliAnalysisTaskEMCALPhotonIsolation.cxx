@@ -1721,7 +1721,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
-  
+  TLorentzVector nClust; //STILL NOT INITIALIZED
+
   for(auto it : clusters->accepted()){ //check the position of other clusters in respect to the trigger cluster
     
     AliVCluster* coi = static_cast<AliVCluster*>(it);
@@ -1731,7 +1732,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     if(localIndex==index) continue;
     
     phiClust = etaClust = clustTOF = 0.;
-    TLorentzVector nClust; //STILL NOT INITIALIZED
     coi->GetMomentum(nClust,fVertex);
     phiClust =nClust.Phi();
     etaClust= nClust.Eta();
@@ -1782,6 +1782,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   
   tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
+  
   Int_t iTracksCone = 0;
   Double_t phiTrack, etaTrack;
 
@@ -1842,6 +1843,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   AliClusterContainer *clusters = GetClusterContainer(0);
   Int_t localIndex=0;
+  
   TLorentzVector nClust; //STILL NOT INITIALIZED
   
   for(auto it : clusters->accepted()){ //check the position of other clusters in respect to the trigger cluster
@@ -2471,6 +2473,327 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
   } // end of clusters loop
   
 }
+
+  //__________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index){
+  
+  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
+  
+  Double_t etaBandArea = 1.4*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandArea = 1.75*2.*fIsoConeRadius-isoConeArea;
+  
+  TLorentzVector vecCOI;
+  coi->GetMomentum(vecCOI,fVertex);
+  Double_t m02COI=coi->GetM02();
+  Double_t eTCOI=vecCOI.Et();
+  
+    //EMCAL Only for Acceptance of Cell/Clusters/or Tracks
+  switch(fIsoMethod)
+  {
+    case 0: //EMCAL CELLS
+      
+      switch (fUEMethod)
+    {
+      case 0: //phi band
+        EtIsoCellPhiBand(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / phiBandArea);
+        fPhiBandUECells->Fill(vecCOI.Pt() , ue);
+        fEtIsoCells->Fill(isolation);
+        if(isolation<eTThreshold)
+        {
+          fEtIsolatedCells->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+        break;
+      case 1: //eta band
+        EtIsoCellEtaBand(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / etaBandArea);
+        fEtaBandUECells->Fill(vecCOI.Pt() , ue);
+        fEtIsoCells->Fill(isolation);
+        if(isolation<eTThreshold)
+        {
+          fEtIsolatedCells->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+        break;
+    }
+      break;
+      
+    case 1: //EMCAL CLUSTERS
+      
+      switch (fUEMethod)
+    {
+      case 0: //phi band
+        
+        EtIsoClusPhiBand(vecCOI, isolation, ue,index);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / phiBandArea);
+        break;
+      case 1: //eta band
+        EtIsoClusEtaBand(vecCOI, isolation, ue,index);
+          //Normalisation ue wrt Area - TO DO-
+        ue = ue * (isoConeArea / etaBandArea);
+        break;
+    }
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+        //AliError(Form("Passe bien Fill General histograms"));
+        //isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      fEtIsoClust->Fill(vecCOI.Pt(),isolation);
+      
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
+          //	      AliError(Form("rempli histo"));
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNClust->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedClust->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if (isolation>3.) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
+        
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+      
+    case 2: //TRACKS (TBD which tracks) //EMCAL tracks
+      switch (fUEMethod)
+    {
+      case 0: //phi band
+        PtIsoTrackPhiBand(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        fPhiBandUETracks->Fill(vecCOI.Pt() , ue);
+        ue = ue * (isoConeArea / phiBandArea);
+      case 1: //eta band
+        PtIsoTrackEtaBand(vecCOI, isolation, ue);
+          //Normalisation ue wrt Area - TO DO-
+        fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
+        ue = ue * (isoConeArea / etaBandArea);
+        break;
+          // case 2: //Cones
+          // PtIsoTrackOrthCones(vecCOI, absId, isolation, ue);
+          // break;
+          // case 3: //Full TPC
+          // PtIsoTrackFullTPC(vecCOI, absId, isolation, ue);
+          // break;
+    }
+        // Fill histograms for isolation
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+        //isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+      fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedTracks->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if(isolation>3.)  FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+  }
+}
+
+  //__________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index){
+  
+    //EMCAL + TPC (Only tracks for the Isolation since IsoCone Goes Out of EMCAL)
+  
+  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
+  
+  Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
+  Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
+  Double_t perpConesArea = 2.*isoConeArea;
+  Double_t fullTPCArea = (1.8*2.*TMath::Pi())-(fIsoConeRadius*2*1.8)-isoConeArea;
+  
+  TLorentzVector vecCOI;
+  coi->GetMomentum(vecCOI,fVertex);
+  Double_t m02COI=coi->GetM02();
+  Double_t eTCOI=vecCOI.Et();
+  
+  switch (fUEMethod)
+  {
+    case 0: //phi band
+      PtIsoTrackPhiBand(vecCOI, isolation, ue);
+        //Normalisation ue wrt Area - TO DO-
+        //      ue = ue * (isoConeArea / phiBandAreaTr);
+      fPhiBandUETracks->Fill(vecCOI.Pt() , ue);
+      ue = ue * (isoConeArea / phiBandAreaTr);
+        // fill histograms for isolation
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+      isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+      
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedTracks->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if(isolation>3.)   FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+    case 1: //eta band
+      PtIsoTrackEtaBand(vecCOI, isolation, ue);
+        //Normalisation ue wrt Area - TO DO-
+        //      ue = ue * (isoConeArea / etaBandAreaTr);
+      fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
+      ue = ue * (isoConeArea / etaBandAreaTr);
+        // fill histograms for isolation
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+      isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+      
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedTracks->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if(isolation>3.)   FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+    case 2: //Cones
+      PtIsoTrackOrthCones(vecCOI, isolation, ue);
+        //Normalisation ue wrt Area - TO DO-
+        //      ue = ue * (isoConeArea / perpConesArea);
+      fPerpConesUETracks ->Fill(vecCOI.Pt() , ue);
+      ue = ue * (isoConeArea / perpConesArea);
+        // fill histograms for isolation
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+      isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+      
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedTracks->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if(isolation>3.)  FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+    case 3: //Full TPC
+      PtIsoTrackFullTPC(vecCOI, isolation, ue);
+        //Normalisation ue wrt Area - TO DO-
+        //      ue = ue * (isoConeArea / fullTPCArea);
+      fTPCWithoutIsoConeB2BbandUE->Fill(vecCOI.Pt() , ue);
+      ue = ue * (isoConeArea / fullTPCArea);
+        // fill histograms for isolation
+      
+      fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      
+      isolation=isolation-ue;  // ue subscraction
+      fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
+      fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
+        //	fTracksConeEtaPt->Fill(isolation, vecCOI.Eta(), vecCOI.Pt());
+        //	fTracksConeEtaM02->Fill(isolation, vecCOI.Eta(), coi->GetM02());
+      if(isolation<eTThreshold)
+      {
+        FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
+        fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtIsolatedNTracks->Fill(vecCOI.Pt());
+        fPtisoT=vecCOI.Pt();
+        fM02isoT=m02COI;
+        
+        if(fM02mincut < m02COI && m02COI < fM02maxcut)
+        {
+          fEtIsolatedTracks->Fill(eTCOI);
+          fEtisolatedT=eTCOI;
+          fPtisolatedT=vecCOI.Pt();
+        }
+      }
+      else
+      {
+        if(isolation>3.) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
+        fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
+        fPtnoisoT=vecCOI.Pt();
+        fM02noisoT=m02COI;
+      }
+      break;
+  }
+  
+}
+
   //__________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *coi, TLorentzVector vecCOI, Int_t index){
     //AliInfo("Inside FillGeneralHistograms\n");
@@ -2537,307 +2860,12 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
       break;
   }
   
-  
-  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea = 1.4*2.*fIsoConeRadius-isoConeArea;
-  Double_t phiBandArea = 1.75*2.*fIsoConeRadius-isoConeArea;
-  Double_t etaBandAreaTr = 1.74*2.*fIsoConeRadius-isoConeArea;
-  Double_t phiBandAreaTr = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
-  Double_t perpConesArea = 2.*isoConeArea;
-  Double_t fullTPCArea = (1.8*2.*TMath::Pi())-(fIsoConeRadius*2*1.8)-isoConeArea;
-  
-  
   Double_t isolation=0, ue=0;
   
-  if(!fTPC4Iso){ //EMCAL Only for Acceptance of Clusters
-    switch(fIsoMethod)
-    {
-      case 0: //EMCAL CELLS
-        
-        switch (fUEMethod)
-      {
-        case 0: //phi band
-          EtIsoCellPhiBand(vecCOI, isolation, ue);
-            //Normalisation ue wrt Area - TO DO-
-          ue = ue * (isoConeArea / phiBandArea);
-          fPhiBandUECells->Fill(vecCOI.Pt() , ue);
-          fEtIsoCells->Fill(isolation);
-          if(isolation<eTThreshold)
-          {
-            fEtIsolatedCells->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-          break;
-        case 1: //eta band
-          EtIsoCellEtaBand(vecCOI, isolation, ue);
-            //Normalisation ue wrt Area - TO DO-
-          ue = ue * (isoConeArea / etaBandArea);
-          fEtaBandUECells->Fill(vecCOI.Pt() , ue);
-          fEtIsoCells->Fill(isolation);
-          if(isolation<eTThreshold)
-          {
-            fEtIsolatedCells->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-          break;
-      }
-        break;
-        
-      case 1: //EMCAL CLUSTERS
-        
-        switch (fUEMethod)
-      {
-        case 0: //phi band
-          
-          EtIsoClusPhiBand(vecCOI, isolation, ue,index);
-            //Normalisation ue wrt Area - TO DO-
-          ue = ue * (isoConeArea / phiBandArea);
-          break;
-        case 1: //eta band
-          EtIsoClusEtaBand(vecCOI, isolation, ue,index);
-            //Normalisation ue wrt Area - TO DO-
-          ue = ue * (isoConeArea / etaBandArea);
-          break;
-      }
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-          //AliError(Form("Passe bien Fill General histograms"));
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        fEtIsoClust->Fill(vecCOI.Pt(),isolation);
-        
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
-            //	      AliError(Form("rempli histo"));
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNClust->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedClust->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if (isolation>3.) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
-          
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-        
-      case 2: //TRACKS (TBD which tracks) //EMCAL tracks
-        switch (fUEMethod)
-      {
-        case 0: //phi band
-          PtIsoTrackPhiBand(vecCOI, isolation, ue);
-            //Normalisation ue wrt Area - TO DO-
-          fPhiBandUETracks->Fill(vecCOI.Pt() , ue);
-          ue = ue * (isoConeArea / phiBandAreaTr);
-        case 1: //eta band
-          PtIsoTrackEtaBand(vecCOI, isolation, ue);
-            //Normalisation ue wrt Area - TO DO-
-          fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
-          ue = ue * (isoConeArea / etaBandAreaTr);
-          break;
-            // case 2: //Cones
-            // PtIsoTrackOrthCones(vecCOI, absId, isolation, ue);
-            // break;
-            // case 3: //Full TPC
-            // PtIsoTrackFullTPC(vecCOI, absId, isolation, ue);
-            // break;
-      }
-          // Fill histograms for isolation
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNTracks->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedTracks->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if(isolation>3.)  FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-    }
-  }
-  else{  //EMCAL + TPC (Only tracks for the Isolation since IsoCone Goes Out of EMCAL)
-    switch (fUEMethod)
-    {
-      case 0: //phi band
-        PtIsoTrackPhiBand(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-          //      ue = ue * (isoConeArea / phiBandAreaTr);
-        fPhiBandUETracks->Fill(vecCOI.Pt() , ue);
-        ue = ue * (isoConeArea / phiBandAreaTr);
-          // fill histograms for isolation
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
-        
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNTracks->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedTracks->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if(isolation>3.)   FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-      case 1: //eta band
-        PtIsoTrackEtaBand(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-          //      ue = ue * (isoConeArea / etaBandAreaTr);
-        fEtaBandUETracks->Fill(vecCOI.Pt() , ue);
-        ue = ue * (isoConeArea / etaBandAreaTr);
-          // fill histograms for isolation
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
-        
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index,isolation);
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNTracks->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedTracks->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if(isolation>3.)   FillInvMassHistograms(kFALSE, m02COI, vecCOI, index,isolation);
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-      case 2: //Cones
-        PtIsoTrackOrthCones(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-          //      ue = ue * (isoConeArea / perpConesArea);
-        fPerpConesUETracks ->Fill(vecCOI.Pt() , ue);
-        ue = ue * (isoConeArea / perpConesArea);
-          // fill histograms for isolation
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
-        
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNTracks->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedTracks->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if(isolation>3.)  FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-      case 3: //Full TPC
-        PtIsoTrackFullTPC(vecCOI, isolation, ue);
-          //Normalisation ue wrt Area - TO DO-
-          //      ue = ue * (isoConeArea / fullTPCArea);
-        fTPCWithoutIsoConeB2BbandUE->Fill(vecCOI.Pt() , ue);
-        ue = ue * (isoConeArea / fullTPCArea);
-          // fill histograms for isolation
-        
-        fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        
-        isolation=isolation-ue;  // ue subscraction
-        fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
-        fPtIsoTrack->Fill(vecCOI.Pt(), isolation);
-          //	fTracksConeEtaPt->Fill(isolation, vecCOI.Eta(), vecCOI.Pt());
-          //	fTracksConeEtaM02->Fill(isolation, vecCOI.Eta(), coi->GetM02());
-        if(isolation<eTThreshold)
-        {
-          FillInvMassHistograms(kTRUE, m02COI, vecCOI, index, isolation);
-          fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtIsolatedNTracks->Fill(vecCOI.Pt());
-          fPtisoT=vecCOI.Pt();
-          fM02isoT=m02COI;
-          
-          if(fM02mincut < m02COI && m02COI < fM02maxcut)
-          {
-            fEtIsolatedTracks->Fill(eTCOI);
-            fEtisolatedT=eTCOI;
-            fPtisolatedT=vecCOI.Pt();
-          }
-        }
-        else
-        {
-          if(isolation>3.) FillInvMassHistograms(kFALSE, m02COI, vecCOI, index, isolation);
-          fPtvsM02noiso->Fill(vecCOI.Pt(),coi->GetM02());
-          fPtnoisoT=vecCOI.Pt();
-          fM02noisoT=m02COI;
-        }
-        break;
-    }
-    
-  }
+  if(!fTPC4Iso)
+    IsolationAndUEinEMCAL(coi,isolation,ue,eTThreshold,index);
+  else
+    IsolationAndUEinTPC(coi,isolation,ue,eTThreshold,index);
   
   if(fIsMC)
     LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9, coi->GetM02(),isolation);
@@ -2877,6 +2905,123 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   return kTRUE;
 }
 
+  //_________________________________________________________________________
+
+void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp, Double_t eta,Double_t phi){
+  
+  Double_t etap=mcpp->Eta();
+  Double_t phip=mcpp->Phi();
+  
+  if(!fTPC4Iso){
+    if(TMath::Abs(etap)>=0.7 || (phip<=1.4 || phip>= TMath::Pi()))
+      return;
+    else{
+      switch(fUEMethod){
+        case 0: //Phi band
+          if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
+            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+          else
+            return;
+          
+          break;
+        case 1: //Eta band
+          if(TMath::Abs(phi-phip)<fIsoConeRadius)
+            sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+          else
+            return;
+          
+          break;
+      }
+    }
+  }
+  else{
+    if(TMath::Abs(etap)>=1.0)
+      return;
+    else{
+      switch(fUEMethod){
+        case 0: //Phi band
+        {if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
+          sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+        else
+          return;
+          break;
+        }
+        case 1: //Eta band
+        {  if(TMath::Abs(phi-phip)<fIsoConeRadius)
+          sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
+        else
+          return;
+          
+          break;
+        }
+        case 2: //Orthogonal Cones
+        { double etacone1= eta;
+          double etacone2= eta;
+          double phicone1= phi - TMath::PiOver2();
+          double phicone2= phi + TMath::PiOver2();
+          
+          if (phicone1 < 0.) phicone1 += 2*TMath::Pi();
+          
+          if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
+             TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius) //to be changed with fIsoConeRadius
+          {sumUE += mcpp->Pt();}
+          else
+            return;
+          
+          break;
+        }
+        case 3: //Full TPC
+        {    //                  Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
+             //                  Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
+             //
+             //                  if(phip < phidown || phip > phiup ) //TO BE CHECKED
+             //                    continue;
+          break;
+        }
+      }
+    }
+  }
+}
+  //_________________________________________________________________________
+
+void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
+  
+  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
+  
+  Double_t etaBandArea = (1.4 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
+  Double_t phiBandArea = ((5./9.)*TMath::Pi()- 2.*fIsoConeRadius)*2.*fIsoConeRadius;
+  Double_t etaBandAreaTr = (1.8 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
+  Double_t phiBandAreaTr = (2.*TMath::Pi() - 4.*fIsoConeRadius)*2.*fIsoConeRadius;//there is a 2 more because of the JET CONE B2B
+  Double_t perpConesArea = 2.*isoConeArea;
+  Double_t fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
+  
+  if(!fTPC4Iso){
+    switch (fUEMethod){
+      case 0:
+        sumUE = sumUE * (isoConeArea / phiBandArea);
+        break;
+      case 1:
+        sumUE = sumUE * (isoConeArea / etaBandArea);
+        break;
+    }
+  }
+  else{
+    switch (fUEMethod){
+      case 0:
+        sumUE = sumUE * (isoConeArea / phiBandAreaTr);
+        break;
+      case 1:
+        sumUE = sumUE * (isoConeArea / etaBandAreaTr);
+        break;
+      case 2:
+        sumUE = sumUE * (isoConeArea / perpConesArea);
+        break;
+      case 3:
+        sumUE = sumUE * (isoConeArea / fullTPCArea);
+        break;
+    }
+  }
+}
 
   //_________________________________________________________________________
 
@@ -2925,14 +3070,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   Int_t pdg, mompdg, photonlabel;
   Double_t mcFirstEta=0., mcFirstPhi=0.;
   
-  Double_t isoConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius;
-  Double_t etaBandArea = (1.4 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t phiBandArea = ((5./9.)*TMath::Pi()- 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t etaBandAreaTr = (1.8 - 2.*fIsoConeRadius)*2.*fIsoConeRadius;
-  Double_t phiBandAreaTr = (2.*TMath::Pi() - 4.*fIsoConeRadius)*2.*fIsoConeRadius;//there is a 2 more because of the JET CONE B2B
-  Double_t perpConesArea = 2.*isoConeArea;
-  Double_t fullTPCArea = 1.8*2.*TMath::Pi()-fIsoConeRadius*(TMath::Pi()*fIsoConeRadius + 3.6);
-  
     // AliAODMCParticle *mcfirst = static_cast<AliAODMCParticle*>(fAODMCParticles->At(0));
     //AliAODMCParticle *mcp, *mcpmaxE, *mcpp, *mom;
   if(!fisLCAnalysis){
@@ -2957,7 +3094,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       phi = mcpart->Phi();
       
         //check photons in EMCAL //to be redefined with fIsoConeR
-      if((TMath::Abs(eta)>0.7-fIsoConeRadius ) || (phi<1.8 || phi>(TMath::Pi()-fIsoConeRadius)))
+      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi<1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
         continue;
       
       photonlabel = iTr;
@@ -2990,6 +3127,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         }
       }
       
+      if(foundmatch) continue;
+      
       distance=0.;
       phip=0., etap=0.;
       sumEiso=0.,sumUE=0.;
@@ -3003,10 +3142,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         if(!mcpp) {continue;}
         
-        if((mcpp->GetPdgCode())==22) {continue;}
+        if(fTPC4Iso)
+          if((mcpp->GetPdgCode())==22) {continue;}
         
         if(mcpp->GetStatus()>10) {continue;}
-        
         
         int mumidx=mcpp->GetMother();
         mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
@@ -3018,105 +3157,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
           //Depending on which Isolation method and UE method is considered.
         distance= TMath::Sqrt((phi-phip)*(phi-phip) + (eta-etap)*(eta-etap));
         
-        if(distance <= fIsoConeRadius){ //to be changed with fIsoConeR
-                                        //cout<<iTrack<<"\t"<<photonlabel<<endl;
-                                        //mcpp->Print();
+        if(distance <= fIsoConeRadius){
+            //cout<<iTrack<<"\t"<<photonlabel<<endl;
+            //mcpp->Print();
           sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
           
         }
         else{
-          if(!fTPC4Iso){
-            if(TMath::Abs(etap)>=0.7 || (phip<=1.4 || phip>= TMath::Pi()))
-              continue;
-            else{
-              switch(fUEMethod){
-                case 0: //Phi band
-                  if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
-                    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                  else continue;
-                  
-                  break;
-                case 1: //Eta band
-                  if(TMath::Abs(phi-phip)<fIsoConeRadius)
-                    sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                  else continue;
-                  
-                  break;
-              }
-            }
-          }
-          else{
-            if(TMath::Abs(etap)>=1.0)
-              continue;
-            else{
-              switch(fUEMethod){
-                case 0: //Phi band
-                {if(TMath::Abs(eta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
-                  sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                else continue;
-                  break;
-                }
-                case 1: //Eta band
-                {  if(TMath::Abs(phi-phip)<fIsoConeRadius)
-                  sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                else continue;
-                  
-                  break;
-                }
-                case 2: //Orthogonal Cones
-                { double etacone1= eta;
-                  double etacone2= eta;
-                  double phicone1= phi - TMath::PiOver2();
-                  double phicone2= phi + TMath::PiOver2();
-                  
-                  if (phicone1 < 0.) phicone1 += 2*TMath::Pi();
-                  
-                  if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
-                     TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius) //to be changed with fIsoConeRadius
-                  {sumUE += mcpp->Pt();}
-                  else continue;
-                  
-                  break;
-                }
-                case 3: //Full TPC
-                {    //                  Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
-                     //                  Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
-                     //
-                     //                  if(phip < phidown || phip > phiup ) //TO BE CHECKED
-                     //                    continue;
-                  break;
-                }
-              }
-            }
-          }
-        }
+          AddParticleToUEMC(sumUE,mcpp, eta, phi);}
       }
-      if(!fTPC4Iso){
-        switch (fUEMethod){
-          case 0:
-            sumUE = sumUE * (isoConeArea / phiBandArea);
-            break;
-          case 1:
-            sumUE = sumUE * (isoConeArea / etaBandArea);
-            break;
-        }
-      }
-      else{
-        switch (fUEMethod){
-          case 0:
-            sumUE = sumUE * (isoConeArea / phiBandAreaTr);
-            break;
-          case 1:
-            sumUE = sumUE * (isoConeArea / etaBandAreaTr);
-            break;
-          case 2:
-            sumUE = sumUE * (isoConeArea / perpConesArea);
-            break;
-          case 3:
-            sumUE = sumUE * (isoConeArea / fullTPCArea);
-            break;
-        }
-      }
+      CalculateUEDensityMC(sumUE);
       
       outputValuesMC[0] = nFSParticles;
       outputValuesMC[1] = eT;
@@ -3135,8 +3185,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         //fill some histograms or a THnSparse or a TTree.
         //	AliError(Form("Fill something in Analize MC"));
       fOutMCTruth -> Fill(outputValuesMC);
-      
-      
     }
   }
   else{
@@ -3150,8 +3198,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
       if(mcsearch->GetStatus()>10) continue;
       if(mcsearch->GetPdgCode()!=22) continue;
-      if(TMath::Abs(mcsearch->Eta())>0.7-fIsoConeRadius) continue;
-      if(mcsearch->Phi()<= 1.8 ||mcsearch->Phi()>= TMath::Pi()) continue;
+      if(TMath::Abs(mcsearch->Eta())>0.67-fIsoConeRadius) continue;
+      if(mcsearch->Phi()<= 1.798 ||mcsearch->Phi()>= TMath::Pi()) continue;
       
       mcfirstEnergy= mcsearch->E();
       if(mcfirstEnergy>maxE){
@@ -3192,96 +3240,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         sumEiso += mcpp->E()*TMath::Sin(mcpp->Theta());
       }
       else{
-        if(!fTPC4Iso){
-          if(TMath::Abs(etap)>=0.7 || (phip<=1.4 || phip>= TMath::Pi()))
-            continue;
-          else{
-            switch(fUEMethod){
-              case 0: //Phi band
-                if(TMath::Abs(mcFirstEta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
-                  sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                else continue;
-                
-                break;
-              case 1: //Eta band
-                if(TMath::Abs(mcFirstPhi-phip)<fIsoConeRadius)
-                  sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-                else continue;
-                
-                break;
-            }
-          }
-        }
-        else{
-          if(TMath::Abs(etap)>=1.0)
-            continue;
-          else{
-            switch(fUEMethod){
-              case 0: //Phi band
-              {  if(TMath::Abs(mcFirstEta-etap)<fIsoConeRadius) //to be changed with fIsoConeRadius
-                sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-              else continue;
-                break;
-              }
-              case 1: //Eta band
-              {if(TMath::Abs(mcFirstPhi-phip)<fIsoConeRadius)
-                sumUE += mcpp->E()*TMath::Sin(mcpp->Theta());
-              else continue;
-                
-                break;
-              }
-              case 2: //Orthogonal Cones
-              {    double phicone1= mcFirstPhi - TMath::PiOver2();
-                double phicone2= mcFirstPhi + TMath::PiOver2();
-                
-                if (phicone1 < 0.) phicone1 += 2*TMath::Pi();
-                
-                if(TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone1,2))< fIsoConeRadius ||
-                   TMath::Sqrt(TMath::Power(etap-mcFirstEta,2)+TMath::Power(phip-phicone2,2))< fIsoConeRadius) //to be changed with fIsoConeRadius
-                {sumUE += mcpp->Pt();}
-                else continue;
-                break;
-              }
-              case 3: //Full TPC
-              {    //                  Double_t phiup= phi +TMath::Pi()+fIsoConeRadius;
-                   //                  Double_t phidown= phi +TMath::Pi()-fIsoConeRadius;
-                   //
-                   //                  if(phip < phidown || phip > phiup ) //TO BE CHECKED
-                   //                    continue;
-                break;
-              }
-            }
-          }
-        }
+        AddParticleToUEMC(sumUE,mcpp,mcFirstEta,mcFirstPhi);
       }
     }
       //  cout<<"\n\nTotal Energy inside the Isolation Cone : "<<sumEiso<<endl;
-    if(!fTPC4Iso){
-      switch (fUEMethod){
-        case 0:
-          sumUE = sumUE * (isoConeArea / phiBandArea);
-          break;
-        case 1:
-          sumUE = sumUE * (isoConeArea / etaBandArea);
-          break;
-      }
-    }
-    else{
-      switch (fUEMethod){
-        case 0:
-          sumUE = sumUE * (isoConeArea / phiBandAreaTr);
-          break;
-        case 1:
-          sumUE = sumUE * (isoConeArea / etaBandAreaTr);
-          break;
-        case 2:
-          sumUE = sumUE * (isoConeArea / perpConesArea);
-          break;
-        case 3:
-          sumUE = sumUE * (isoConeArea / fullTPCArea);
-          break;
-      }
-    }
+    CalculateUEDensityMC(sumUE);
       //cout<<"Total UE Energy : "<<sumUE<<" calculated with method "<<fUEMethod<<endl;
     
       //Fill the Output TTree for MC Truth
