@@ -84,25 +84,31 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
   //track related
   task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);
   task->SetPtRangeGEN(PtMinGEN, PtMaxGEN);
+  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
+
   // resolution calculation
-  task->SetCalcResolution(calcResolution);
-  if(calcResolution) task->SetResolutionCuts(SetupTrackCutsAndSettings(resoCutInstance));
-  task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
-  task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
-  task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
-  task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
-  task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
+  task->SetCalcResolution(CalcResolution);
+  if(CalcResolution || CalcEfficiencyRec) task->SetResolutionCuts(SetupTrackCutsAndSettings(99));
+  if(CalcResolution) {
+    task->SetDeltaMomBinning(NbinsDeltaMom,DeltaMomMin,DeltaMomMax);
+    task->SetRelMomBinning(NbinsRelMom,RelMomMin,RelMomMax);
+    task->SetDeltaEtaBinning(NbinsDeltaEta,DeltaEtaMin,DeltaEtaMax);
+    task->SetDeltaThetaBinning(NbinsDeltaTheta,DeltaThetaMin,DeltaThetaMax);
+    task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
+  }
   // resolution usage
+  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+  if (resolutionfile.Contains("CENTRALITY")) resolutionfile.ReplaceAll("CENTRALITY",Form("%02.0f%02.0f",centMin,centMax));
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
-     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/%s .",resolutionfile.Data()))) ){
+     (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/supportFiles/%s .",resolutionfile.Data()))) ){
+    std::cout << "using resolution file: " << resolutionfile.Data() << std::endl;
     TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-    task->SetResolutionP ( (TObjArray*) fRes->Get("PResArr"), bUseRelPResolution );
-    if(bUseEtaResolution){ task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr") ); }
-    else                 { task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr") ); }
+    if(bUseRelPResolution) task->SetResolutionP ((TObjArray*) fRes->Get("RelPResArr"),  kTRUE);
+    else                   task->SetResolutionP ((TObjArray*) fRes->Get("DeltaPResArr"),kFALSE);
+    if(bUseEtaResolution)  task->SetResolutionEta  ( (TObjArray*) fRes->Get("EtaResArr"));
+    else                   task->SetResolutionTheta( (TObjArray*) fRes->Get("ThetaResArr"));
     task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiEleResArr"), (TObjArray*) fRes->Get("PhiPosResArr"));
   }
-  task->SetCalcEfficiencyRec(CalcEfficiencyRec);
-  task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
 
   // pair efficiency
   task->SetDoPairing(doPairing);
