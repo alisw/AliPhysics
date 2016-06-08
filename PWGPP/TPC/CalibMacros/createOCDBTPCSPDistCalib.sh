@@ -61,16 +61,14 @@ echo "startRun      = $startRun"
 echo "endRun        = $endRun"
 echo "ocdbStorage   = $ocdbStorage"
 
+startRun=$(echo "$startRun" | sed 's/^0*//')
+endRun=$(echo "$endRun" | sed 's/^0*//')
+
 macroName="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/ProcessOutputCheb.C"
 locMacro=$(basename "$macroName")
 if [[ ! -f "$locMacro" ]] ; then cp $macroName ./ ; fi
 
 time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\")" >& ocdb.log
-
-
-												      
-
-
 
 
 												      
