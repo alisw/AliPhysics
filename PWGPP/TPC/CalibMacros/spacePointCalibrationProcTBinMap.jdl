@@ -19,8 +19,7 @@ Validationcommand="/alice/validation/validation.sh";
 JDLVariables={
     "Packages", 
     "OutputDir",
-    "filesToCheck",
-    "useTOFBC"
+    "filesToCheck"
 };
 
 Workdirectorysize={"20000MB"}; 
@@ -47,4 +46,3 @@ OutputErrorE={
 
 filesToCheck="voxelResTree.root alitpcdcalibres.root";
 
-useTOFBC="true"
