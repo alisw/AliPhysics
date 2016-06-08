@@ -1355,7 +1355,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 /// Builds the tree where the output will be posted
 ///
 /// \return Pointer to the new tree
-TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
+TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree(const char* taskName)
 {
   TString classname;
   switch (fCandidateType) {
@@ -1368,7 +1368,7 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
     fCurrentDmesonJetInfo = new AliDStarInfoSummary();
     break;
   }
-  TString treeName = TString::Format("AliAnalysisTaskDmesonJets_%s", GetName());
+  TString treeName = TString::Format("%s_%s", taskName, GetName());
   fTree = new TTree(treeName, treeName);
   fTree->Branch("DmesonJet", classname, &fCurrentDmesonJetInfo, 32000, 0);
   fCurrentJetInfo = new AliJetInfoSummary*[fJetDefinitions.size()];
@@ -1926,7 +1926,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
     }
     if (fTreeOutput) {
-      param.BuildTree();
+      param.BuildTree(GetName());
       if (treeSlot < fNOutputTrees) {
         param.AssignDataSlot(treeSlot+2);
         treeSlot++;

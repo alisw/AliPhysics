@@ -326,7 +326,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
 
-    TTree* BuildTree();
+    TTree* BuildTree(const char* taskName);
     TTree* GetTree() const { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
 
