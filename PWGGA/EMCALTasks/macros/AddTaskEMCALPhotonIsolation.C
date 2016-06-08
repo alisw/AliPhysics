@@ -35,7 +35,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           iSmearingSS               = kFALSE,
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
-                                                                 const Bool_t           iExtraIsoCuts             = 0.                                                                 )
+                                                                 const Bool_t           iExtraIsoCuts             = 0.,
+                                                                 const Bool_t           i_pPb                     = kFALSE
+                                                                 )
 {
   
   Printf("Preparing neutral cluster analysis\n");
@@ -77,7 +79,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetWidth4Smear(iWidthSSsmear);
   task->SetMean4Smear(iMean_SSsmear);
   task->SetExtraIsoCuts(iExtraIsoCuts);
-  task->SetPeriod(periodstr);
+  task->SetAnalysispPb(i_pPb);
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   task->SetNLMCut(bNLMCut,NLMCut);

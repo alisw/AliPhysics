@@ -2222,7 +2222,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::CheckBoundaries(TLorentzVector vecCO
     minEtaBound = -0.67+fIsoConeRadius; // ""
     maxEtaBound = 0.67-fIsoConeRadius; // ""
     
-    if(fPeriod=="LHC11c"){
+    if(!fAnalysispPb){
       minPhiBound = 1.798;
       maxPhiBound = 2.740; // normally 110° but shorter cut to avoid EMCAL border
     }
