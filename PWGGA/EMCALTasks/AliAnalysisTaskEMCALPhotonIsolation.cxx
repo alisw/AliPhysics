@@ -153,7 +153,6 @@ fIsMC(0),
 fTPC4Iso(0),
 fIsoMethod(0),
 fUEMethod(0),
-fPeriod("LHC11c"),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
@@ -302,7 +301,6 @@ fIsMC(0),
 fTPC4Iso(0),
 fIsoMethod(0),
 fUEMethod(0),
-fPeriod("LHC11c"),
 fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
@@ -1782,7 +1780,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   
   tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
-  
+  AliAODTrack *aodEtrack=0x0;
   Int_t iTracksCone = 0;
   Double_t phiTrack, etaTrack;
 
@@ -1794,8 +1792,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     }
       //    if(!(eTrack->IsHybridGlobalConstrainedGlobal())){Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID()); continue;}
     
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
+    
     if((eTrack->Pt())<0.2)
       continue;
+    
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
     
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
@@ -1904,23 +1912,28 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
   tracksAna->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
   Int_t iTracksCone = 0;
-  
+  AliAODTrack *aodEtrack=0x0;
     //  Printf("Starting loop on Tracks in EtIsoClusEtaBand");
   while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
+    
     Double_t phiTrack, etaTrack,radius;
       //AliError("On a bien des traces pour l'analysos");
-    if(!(eTrack->IsHybridGlobalConstrainedGlobal())) continue;
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
     
     if((eTrack->Pt())<0.2)
       continue;
     
     if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
     
-    if(float(eTrack->GetTPCnclsS()/eTrack->GetTPCncls()) > 0.4) continue;
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
     
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
@@ -1983,15 +1996,25 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius;
   Int_t iTracksCone = 0;
-  
+  AliAODTrack *aodEtrack=0x0;
   while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
+
     if((eTrack->Pt())<0.2)
       continue;
     
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
+
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
@@ -2047,14 +2070,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius;
   Int_t iTracksCone = 0;
-  
+  AliAODTrack *aodEtrack=0x0;
   while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
+    
     if((eTrack->Pt())<0.2)
       continue;
+    
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
     
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
@@ -2109,6 +2142,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     //  Printf("Name of the tracks used for Isolation: %s",(tracks->GetClassName()).Data());
   tracks->ResetCurrentID();
   AliVTrack *eTrack = 0x0;
+  AliAODTrack *aodEtrack=0x0;
   Double_t phiTrack,etaTrack,dist2Clust,dist2Cone1,dist2Cone2;
   Int_t iTracksCone = 0;
   
@@ -2117,8 +2151,18 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
       AliError(Form("No tracks in collection"));
       continue;
     }
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
+    
     if((eTrack->Pt())<0.2)
       continue;
+    
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
     
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
@@ -2165,14 +2209,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
   AliVTrack *eTrack = 0x0;
   Double_t phiTrack,etaTrack,radius, dphiUp, dphiDown;
   Int_t iTracksCone = 0;
-  
+  AliAODTrack *aodEtrack=0x0;
   while((eTrack = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))){
     if(!eTrack){
       AliError(Form("No tracks in collection"));
       continue;
     }
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())) continue;
+    }
+    
     if((eTrack->Pt())<0.2)
       continue;
+    
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
+    if(!fIsEsd)
+      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
     
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
