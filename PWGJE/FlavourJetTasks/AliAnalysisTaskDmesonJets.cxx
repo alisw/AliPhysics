@@ -1333,7 +1333,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
         }
         if (part->PdgCode() == fCandidatePDG) {
           std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = dMesonJets.find(iPart);
-          if (dMesonJetIt == dMesonJets.end()) {
+          if (dMesonJetIt != dMesonJets.end()) {
             std::pair<int, AliDmesonJetInfo> element;
             element.first = iPart;
             element.second = AliDmesonJetInfo();
