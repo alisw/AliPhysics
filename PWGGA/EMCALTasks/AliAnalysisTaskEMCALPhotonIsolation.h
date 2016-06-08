@@ -91,7 +91,6 @@ public:
   void                     SetWidth4Smear(Float_t width)                                   { fSSsmearwidth = width;}
   void                     SetMean4Smear(Float_t mean)                                     { fSSsmear_mean = mean;}
   void                     SetExtraIsoCuts(Bool_t bExtraIsoCuts)                           { fExtraIsoCuts = bExtraIsoCuts;}
-  void                     SetPeriod(const char* period)                                   { fPeriod=period;}
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -245,7 +244,6 @@ protected:
   Bool_t      fTPC4Iso;                        // 0=EMCAL_ONLY; 1=Candidate in EMCAL+ TPC for Isolation and UE
   Int_t       fIsoMethod;                      // 0=Cells, 1=Clusters (EMCAL_ONLY),  2=Tracks (EMCAL w/o TPC)
   Int_t       fUEMethod;                       // 0=PhiBand, 1=EtaBand, (EMCAL or TPC) 2= Ort Cones, 3=FullTPC (only with TPC)
-  Char_t*     fPeriod;                         //!
   Int_t       fNDimensions;                    //!number of Dimensions for the THnSPARSE
   Int_t       fMCDimensions;
   Int_t       fMCQAdim;                        //!
