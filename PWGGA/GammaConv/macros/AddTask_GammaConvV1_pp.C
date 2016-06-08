@@ -503,7 +503,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200049227302008250400000", "0152103500000000"); //variation single pt 0.075
     cuts.AddCut("00000113", "00200019227302008250400000", "0152103500000000"); //variation single pt 0.1
   } else if (trainConfig == 61) {
-	cuts.AddCut("00000113", "00200006227302008250400000", "0152103500000000"); //variation 70% TPC Cluster
+    cuts.AddCut("00000113", "00200006227302008250400000", "0152103500000000"); //variation 70% TPC Cluster
     cuts.AddCut("00000113", "00200008227302008250400000", "0152103500000000"); //variation 35% TPC Cluster
     cuts.AddCut("00000113", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -4<sigma<5
     cuts.AddCut("00000113", "00200009627302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4 
