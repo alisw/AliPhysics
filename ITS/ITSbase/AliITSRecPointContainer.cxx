@@ -50,7 +50,7 @@ fStatusOK(kTRUE){
     AliWarning("AliITSRecoParam is missing. Using defaults");
   }
   else {
-    if(krp->GetEventSpecie() == AliRecoParam::kHighMult)offset=6;
+    if(krp->GetEventSpecie() & AliRecoParam::kHighMult)offset=6;
   }
   Int_t maxval[6];
   TString values="";

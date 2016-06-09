@@ -130,6 +130,8 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
 // can be set via AliReconstruction::SetOption("ITS","onlyITS")
   Int_t rc=0;
   TStopwatch sw;
+  ConfigureTrackFinding();
+
   if(!fITSStandAlone){
     sw.Start();
     rc=AliITStrackerMI::Clusters2Tracks(event);
@@ -172,17 +174,6 @@ void AliITStrackerSA::Init(){
     fCoef3=0;
     fPointc[0]=0;
     fPointc[1]=0;
-    Int_t nLoops=AliITSReconstructor::GetRecoParam()->GetNLoopsSA();
-    if(nLoops==32){
-      SetFixedWindowSizes();
-    }else{
-      Double_t phimin=AliITSReconstructor::GetRecoParam()->GetMinPhiSA();
-      Double_t phimax=AliITSReconstructor::GetRecoParam()->GetMaxPhiSA();
-      Double_t lambmin=AliITSReconstructor::GetRecoParam()->GetMinLambdaSA();
-      Double_t lambmax=AliITSReconstructor::GetRecoParam()->GetMaxLambdaSA();
-      SetCalculatedWindowSizes(nLoops,phimin,phimax,lambmin,lambmax);
-    }
-    fMinQ=AliITSReconstructor::GetRecoParam()->GetSAMinClusterCharge();
     fITSclusters = 0;
     SetOuterStartLayer(1);
     SetSAFlag(kFALSE);
@@ -206,7 +197,23 @@ void AliITStrackerSA::ResetForFinding(){
     fListOfTracks->Clear();
     fListOfSATracks->Clear();
 }
+//_______________________________________________________________________
+void AliITStrackerSA::ConfigureTrackFinding(){
+  // set windows for track search based on recoparam parameters
 
+  Int_t nLoops=AliITSReconstructor::GetRecoParam()->GetNLoopsSA();
+  if(nLoops==32){
+    SetFixedWindowSizes();
+  }else{
+    Double_t phimin=AliITSReconstructor::GetRecoParam()->GetMinPhiSA();
+    Double_t phimax=AliITSReconstructor::GetRecoParam()->GetMaxPhiSA();
+    Double_t lambmin=AliITSReconstructor::GetRecoParam()->GetMinLambdaSA();
+    Double_t lambmax=AliITSReconstructor::GetRecoParam()->GetMaxLambdaSA();
+    SetCalculatedWindowSizes(nLoops,phimin,phimax,lambmin,lambmax);
+  }
+  fMinQ=AliITSReconstructor::GetRecoParam()->GetSAMinClusterCharge();
+
+}
  
 
 //______________________________________________________________________
@@ -301,7 +308,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
     }
     fCluCoord[ilay]->Sort();
   }
-   
+
   // track counter
   Int_t ntrack=0;
 
@@ -945,11 +952,21 @@ Int_t AliITStrackerSA::FindLabel(AliITStrackV2* track){
 //_____________________________________________________________________________
 void AliITStrackerSA::SetCalculatedWindowSizes(Int_t n, Double_t phimin, Double_t phimax, Double_t lambdamin, Double_t lambdamax){
   // Set sizes of the phi and lambda windows used for track finding
+
+  if( n != fNloop){
+    if(fPhiWin){
+      delete [] fPhiWin;
+      fPhiWin=0x0;
+    }
+    if(fLambdaWin){
+      delete [] fLambdaWin;
+      fLambdaWin=0x0;
+    }
+  }
   fNloop = n;
-  if(fPhiWin) delete [] fPhiWin;
-  if(fLambdaWin) delete [] fLambdaWin;
-  fPhiWin = new Double_t[fNloop];
-  fLambdaWin = new Double_t[fNloop];
+  if(!fPhiWin) fPhiWin = new Double_t[fNloop];
+  if(!fLambdaWin) fLambdaWin = new Double_t[fNloop];
+
   Double_t stepPhi=(phimax-phimin)/(Double_t)(fNloop-1);
   Double_t stepLambda=(lambdamax-lambdamin)/(Double_t)(fNloop-1);
   for(Int_t k=0;k<fNloop;k++){

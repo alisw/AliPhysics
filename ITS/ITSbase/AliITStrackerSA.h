@@ -72,6 +72,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   //Initialization
   void Init();
   void ResetForFinding();
+  void ConfigureTrackFinding();
   void UpdatePoints();
   Bool_t SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex);
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,
