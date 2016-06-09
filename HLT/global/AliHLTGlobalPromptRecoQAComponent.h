@@ -1,6 +1,6 @@
 #ifndef ALIHLTGLOBALPROMPTRECOQACOMPONENT_H
 #define ALIHLTGLOBALPROMPTRECOQACOMPONENT_H
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
@@ -74,9 +74,9 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
   int DoInit(int argc, const char** argv);
   int DoDeinit();
   int DoEvent( const AliHLTComponentEventData& evtData,
-		       const AliHLTComponentBlockData* blocks, 
+		       const AliHLTComponentBlockData* blocks,
 		       AliHLTComponentTriggerData& trigData,
-		       AliHLTUInt8_t* outputPtr, 
+		       AliHLTUInt8_t* outputPtr,
 		       AliHLTUInt32_t& size,
 		       AliHLTComponentBlockDataList& outputBlocks );
 
@@ -105,7 +105,7 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
    */
   int ProcessOption(TString option, TString value);
 
-  
+
   void NewAxis(string config);
   void NewAxis(string name, int bins, float low, float high);
   void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
@@ -118,9 +118,9 @@ protected:
 
   int fVerbosity; //!transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
-  
+
   AliHLTTPCHWCFData* fpHWCFData;
-  
+
   Int_t fSkipEvents;
   Int_t fPrintStats; //print status messages: 0: never, 1: when pushing histograms (respect pushback-period), 2: always
   Int_t fPrintDownscale;
@@ -130,17 +130,17 @@ protected:
   std::map<string,histStruct> fHistograms;
   std::map<string,axisStruct> fAxes;
 
-  double fnClustersSPD; 
-  double frawSizeSPD; 
-  double fnClustersSDD; 
-  double frawSizeSDD; 
-  double fnClustersSSD; 
-  double frawSizeSSD; 
-  double fnClustersITS; 
-  double frawSizeITS; 
-  double frawSizeVZERO; 
-  double frawSizeEMCAL; 
-  double frawSizeZDC; 
+  double fnClustersSPD;
+  double frawSizeSPD;
+  double fnClustersSDD;
+  double frawSizeSDD;
+  double fnClustersSSD;
+  double frawSizeSSD;
+  double fnClustersITS;
+  double frawSizeITS;
+  double frawSizeVZERO;
+  double frawSizeEMCAL;
+  double frawSizeZDC;
   double frawSizeTRD;
   double frawSizeFMD;
   double frawSizeTZERO;
@@ -154,48 +154,48 @@ protected:
   double frawSizePMD;
   double frawSizeMUTK;
   double frawSizeMUTG;
-  
-  double fnClustersTPC; 
-  double frawSizeTPC; 
-  double fhwcfSizeTPC; 
-  double fclusterSizeTPCtransformed; 
-  double fclusterSizeTPC; 
-  double fcompressedSizeTPC; 
+
+  double fnClustersTPC;
+  double frawSizeTPC;
+  double fhwcfSizeTPC;
+  double fclusterSizeTPCtransformed;
+  double fclusterSizeTPC;
+  double fcompressedSizeTPC;
   double fTPCSplitRatioPad;
   double fTPCSplitRatioTime;
 
-  double fnITSSAPtracks; 
-  double fnTPCtracklets; 
-  double fnTPCtracks; 
-  double fnITSTracks; 
-  double fnITSOutTracks; 
+  double fnITSSAPtracks;
+  double fnTPCtracklets;
+  double fnTPCtracks;
+  double fnITSTracks;
+  double fnITSOutTracks;
 
-  double fvZEROMultiplicity; 
-  double fvZEROTriggerChargeA; 
-  double fvZEROTriggerChargeC; 
-  double fvZEROTriggerChargeAC; 
+  double fvZEROMultiplicity;
+  double fvZEROTriggerChargeA;
+  double fvZEROTriggerChargeC;
+  double fvZEROTriggerChargeAC;
 
-  double fzdcZNC; 
-  double fzdcZNA; 
-  double fzdcZNAC; 
+  double fzdcZNC;
+  double fzdcZNA;
+  double fzdcZNAC;
 
-  double fzdcRecoSize; 
-  double femcalRecoSize; 
-  double femcalTRU; 
-  double femcalSTU; 
-  
+  double fzdcRecoSize;
+  double femcalRecoSize;
+  double femcalTRU;
+  double femcalSTU;
+
   double fcompressionRatio;
   double fcompressionRatioFull;
-  
-  double fnESDSize; 
-  double fnESDFriendSize; 
-  double fnFlatESDSize; 
-  double fnFlatESDFriendSize; 
-  
-  double fnHLTInSize; 
-  double fnHLTOutSize; 
+
+  double fnESDSize;
+  double fnESDFriendSize;
+  double fnFlatESDSize;
+  double fnFlatESDFriendSize;
+
+  double fnHLTInSize;
+  double fnHLTOutSize;
   double fhltRatio;
-  
+
   //Fixed histograms with track / cluster properties.
   //These are not created dynamically because that would require quite some CPU resources.
   TH1D* fHistClusterChargeTot;

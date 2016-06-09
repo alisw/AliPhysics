@@ -1,7 +1,7 @@
 // $Id$
 
 //**************************************************************************
-//* This file is property of and copyright by the ALICE HLT Project        * 
+//* This file is property of and copyright by the ALICE HLT Project        *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
 //* Primary Authors: Mikolaj Krzewicki <mikolaj.krzewicki@cern.ch>         *
@@ -18,9 +18,9 @@
 
 //  @file   AliHLTGlobalPromptRecoQAComponent.cxx
 //  @author Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
-//  @date   
+//  @date
 //  @brief  Simple HLT reco QA/monitor
-// 
+//
 
 #include <cassert>
 #include "AliHLTGlobalPromptRecoQAComponent.h"
@@ -193,7 +193,7 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
   } else {
     HLTError("invalid option: %s", value.Data());
     return -EINVAL;
-  }  
+  }
   return iResult;
 }
 
@@ -211,8 +211,8 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   {
     i->second.histograms.clear();
   }
-  
-  if (resetDownstream) 
+
+  if (resetDownstream)
   {
     rc = PushBack("reset", kAliHLTDataTypeConfig|kAliHLTDataOriginHLT);
   }
@@ -247,7 +247,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const c
       HLTError("can not fetch object \"%s\" from CDB", path);
     }
   }
-  
+
   return iResult;
 }
 
@@ -260,34 +260,34 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSPD);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSDD);
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginITSSSD);
-  
+
   list.push_back(kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeESDVertex | kAliHLTDataOriginITSSPD); //SPD Vertex
 
   //config
   list.push_back(kAliHLTDataTypeConfig);
-  
+
   list.push_back(AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC); //HLT-TPC clusters from HWCF
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC); //TPC DDL raw data
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType | kAliHLTDataOriginTPC); //Transformed HLT-TPC clusters
-  
+
   list.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC); //Non-transformed HLT-TPC clusters
-  
+
   list.push_back(AliHLTTPCCADefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC); //HLT-TPC merged tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITS); //TPC-ITS tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITSOut); //ITS-Out merged tracks
-  
+
   list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO); //VZERO-RECO output
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginVZERO);
   list.push_back(kAliHLTDataTypeESDContent | kAliHLTDataOriginZDC); //ZDC-RECO output
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginZDC);
-  
+
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerPatchDataType); //EMCAL-RECO output
   list.push_back(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginEMCAL);
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerSTUDataType); //STU
   list.push_back(AliHLTEMCALDefinitions::fgkTriggerRawDigitDataType); //TRU
-  
+
   list.push_back(kAliHLTDataTypeESDObject|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeESDfriendObject|kAliHLTDataOriginOut);
   list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
@@ -336,7 +336,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   int iResult=0;
 
   //Init the CTP data
-  if (SetupCTPData() == -ENOMEM) 
+  if (SetupCTPData() == -ENOMEM)
   {
     HLTError("could not SetupCTPData(); ENOMEM");
     return -ENOMEM;
@@ -344,7 +344,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
 
   AliGRPManager mgr;
   mgr.ReadGRPEntry();
-  
+
   if (mgr.GetGRPData()->GetBeamType() == "Pb-Pb" ||
       mgr.GetGRPData()->GetBeamType() == "PbPb" ||
       mgr.GetGRPData()->GetBeamType() == "A-A" ||
@@ -480,11 +480,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   //End Histograms
 
   fpHWCFData = new AliHLTTPCHWCFData;
-  
+
   setlocale(LC_NUMERIC, ""); //Make printf with 1000 separators work
 
   //parse the config string AFTER the defaults are set
-  if (ProcessOptionString(GetComponentArgs())<0) 
+  if (ProcessOptionString(GetComponentArgs())<0)
   {
     HLTFatal("wrong config string! %s", GetComponentArgs().c_str());
     return -EINVAL;
@@ -538,7 +538,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
   while ( end != string::npos)
   {
     end = histConfig.find_first_of(delimiter, start);
-    string token = histConfig.substr( 
+    string token = histConfig.substr(
         start,(end == string::npos) ? string::npos : end - start );
     size_t tokenStartPos = token.find_first_not_of(" \t\n");
     size_t tokenEndPos = token.find_last_not_of(" \t\n");
@@ -554,7 +554,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
   }
   else
   {
-    HLTWarning("histogram token string should contain trigName,histName,histTitle,x,y (%s)", 
+    HLTWarning("histogram token string should contain trigName,histName,histTitle,x,y (%s)",
         histConfig.c_str());
   }
 
@@ -590,12 +590,12 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   axisStruct x = fAxes[xname];
   axisStruct y = fAxes[yname];
   axisStruct* ax = &x;
-  if (!x.value && !xname.empty()) 
+  if (!x.value && !xname.empty())
   {
     HLTWarning("empty variable %s",xname.c_str());
     return;
   }
-  if (!y.value && !yname.empty()) 
+  if (!y.value && !yname.empty())
   {
     HLTWarning("empty variable %s",yname.c_str());
     return;
@@ -612,7 +612,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   {
     //both axes specified, TH2
     hist.hist = new TH2F(histName.c_str(), histTitle.c_str(), x.bins, x.low, x.high, y.bins, y.low, y.high);
-  } 
+  }
   else
   {
     //only one axis specified (the case of both axes empty is excluded above)
@@ -636,7 +636,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
   while ( end != string::npos)
   {
     end = config.find_first_of(delimiter, start);
-    string token = config.substr( 
+    string token = config.substr(
         start,(end == string::npos) ? string::npos : end - start );
     size_t tokenStartPos = token.find_first_not_of(" \t\n");
     size_t tokenEndPos = token.find_last_not_of(" \t\n");
@@ -652,7 +652,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
   }
   else
   {
-    HLTWarning("axis token string should contain varName,nbins,low,high (%s)", 
+    HLTWarning("axis token string should contain varName,nbins,low,high (%s)",
         config.c_str());
   }
 }
@@ -677,9 +677,9 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low
 int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
 {
   // see header file for class documentation
-  
+
   delete fpHWCFData;
-  
+
   return 0;
 }
 
@@ -699,8 +699,8 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
     }
 
 
-    if ( triggerMatched && 
-         ((hist.Fill() > 0) || fPushEmptyHistograms) && 
+    if ( triggerMatched &&
+         ((hist.Fill() > 0) || fPushEmptyHistograms) &&
          PushBack(hist.hist, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT) > 0 )
     {
       nPushedHistograms++;
@@ -722,9 +722,9 @@ int histStruct::Fill()
 }
 
 int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& evtData,
-    const AliHLTComponentBlockData* blocks, 
+    const AliHLTComponentBlockData* blocks,
     AliHLTComponentTriggerData& /*trigData*/,
-    AliHLTUInt8_t* /*outputPtr*/, 
+    AliHLTUInt8_t* /*outputPtr*/,
     AliHLTUInt32_t& /*size*/,
     AliHLTComponentBlockDataList& /*outputBlocks*/ )
 {
@@ -794,18 +794,18 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   int emcalRecoSize = 0;
   int emcalTRU = 0;
   int emcalSTU = 0;
-  
+
   static int nEvents = 0;
-  
+
   Bool_t bITSSPDVertex = kFALSE;
-  
+
   float compressionRatio, compressionRatioFull;
-  
+
   AliHLTUInt32_t nESDSize = 0;
   AliHLTUInt32_t nESDFriendSize = 0;
   AliHLTUInt32_t nFlatESDSize = 0;
   AliHLTUInt32_t nFlatESDFriendSize = 0;
-  
+
   AliHLTUInt32_t nHLTInSize = 0;
   AliHLTUInt32_t nHLTOutSize = 0;
   float hltRatio;
@@ -813,10 +813,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   nEvents++;
 
   //loop over input blocks and extract basic stats
-  int nBlocks = evtData.fBlockCnt;  
+  int nBlocks = evtData.fBlockCnt;
   for (int ndx=0; ndx<nBlocks; ndx++) {
     const AliHLTComponentBlockData* iter = blocks+ndx;
-   
+
     //reconfigure on request
     if (iter->fDataType == kAliHLTDataTypeConfig)
     {
@@ -873,7 +873,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       compressedSizeTPC += iter->fSize;
     }
-    
+
     //VZERO Multiplicity
     if (iter->fDataType == (kAliHLTDataTypeESDContent | kAliHLTDataOriginVZERO))
     {
@@ -1118,7 +1118,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
   }
-  
+
 
   //convert the numbers fo floats for histograms
   fnClustersSPD = nClustersSPD;
