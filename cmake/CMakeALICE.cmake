@@ -32,14 +32,14 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     foreach( dir ${DINCDIRS})
         set(INCLUDE_PATH -I${dir} ${INCLUDE_PATH})
     endforeach()
-    
+
     # Get the list of definitions from the directory to be sent to CINT
     get_directory_property(tmpdirdefs COMPILE_DEFINITIONS)
     foreach(dirdef ${tmpdirdefs})
         string(REPLACE "\"" "\\\"" dirdef_esc ${dirdef})
         set(GLOBALDEFINITIONS -D${dirdef_esc} ${GLOBALDEFINITIONS})
     endforeach()
-    
+
     # Custom definitions specific to library
     # Received as the forth optional argument
     separate_arguments(EXTRADEFINITIONS UNIX_COMMAND "${ARGV4}")
@@ -47,8 +47,8 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
     if (ROOT_VERSION_MAJOR LESS 6)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.h
                        COMMAND LD_LIBRARY_PATH=${ROOT_LIBDIR}:$ENV{LD_LIBRARY_PATH} ${ROOT_CINT}
-                       ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p 
-                       ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH} 
+                       ARGS -f ${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}.cxx -c -p
+                       ${GLOBALDEFINITIONS} ${EXTRADEFINITIONS} ${INCLUDE_PATH}
                        ${DHDRS} ${LDNAME}
                        DEPENDS ${DHDRS} ${LDNAME} ${ROOT_CINT}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -69,7 +69,7 @@ macro(generate_dictionary DNAME LDNAME DHDRS DINCDIRS)
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lib${DNAME}.rootmap" DESTINATION lib)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/G__${DNAME}_rdict.pcm" DESTINATION lib)
-    
+
     endif (ROOT_VERSION_MAJOR LESS 6)
 
 endmacro(generate_dictionary)
@@ -122,7 +122,7 @@ macro(generate_static_dependencies shared_list static_list)
     foreach(shared_lib ${shared_list})
         set(static_list_tmp ${static_list_tmp} "${shared_lib}-static")
     endforeach()
-    
+
     # create the variable with the name received by the macro
     set(${static_list} ${static_list_tmp})
     # set the scope to parent in order to be visible in the parent
@@ -138,24 +138,24 @@ endmacro(generate_static_dependencies)
 macro(getDAdescription _detector _daname)
     # Reading the file into a string
     file(READ "${_detector}${_daname}da.cxx" tmpinfo)
-    
+
     # Find the first occurance of /* */
     string(FIND "${tmpinfo}" "/*" _first_position)
     string(FIND "${tmpinfo}" "*/" _second_position)
-    
+
     # Adding and removing 2 characters to remove /* */
     math(EXPR _first_position ${_first_position}+2)
     math(EXPR _second_position ${_second_position}-2)
-    
+
     # Generating the length of the comment in order to take out the description
     math(EXPR _desc_length ${_second_position}-${_first_position})
-    
+
     if(${_desc_length} EQUAL 0 OR ${_desc_length} LESS 0)
         message(FATAL_ERROR "{_detector}${_daname}da.cxx does not contain a description. Please add the description as the first /*comment*/ in the file")
     else()
         string(SUBSTRING "${tmpinfo}" ${_first_position}  ${_second_position} _da_description)
         string(STRIP "${_da_description}" _da_description)
-        
+
         # The variable can be accesed by the parent
         set(RPM_DESCRIPTION ${_da_description})
     endif()
@@ -198,7 +198,7 @@ macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
 
     # Installation
     install(TARGETS ${DETECTOR}${ALGORITHM}da.exe RUNTIME DESTINATION bin)
-    
+
     if(DARPM)
         createDArpm("${DETECTOR}" "${ALGORITHM}")
     endif(DARPM)
@@ -212,7 +212,7 @@ macro(createDArpm DETECTOR ALGORITHM)
     set(DETECTOR "${DETECTOR}")
     set(ALGORITHM "${ALGORITHM}")
     set(RPM_DESCRIPTION ${RPM_DESCRIPTION})
-    
+
     if(ALGORITHM STREQUAL "")
         set(_ALGORITHM "none")
         set(DA_PREFIX "opt/daqDA-${DETECTOR}")
@@ -232,13 +232,13 @@ macro(createDArpm DETECTOR ALGORITHM)
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                        COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
     )
-    
+
     # make clean will remove also the rpm folder
     # Retrive the current list of file to be deleted - set_directory_property is overwriting, not adding to the list
     get_directory_property(_clean_files ADDITIONAL_MAKE_CLEAN_FILES)
     set(_clean_files da-${DETECTOR}${_ALGORITHM}-rpm  ${_clean_files})
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${_clean_files}")
-    
+
     # install RPM into $CMAKE_INSTALL_PREFIX/darpms
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/RPMS/ DESTINATION darpms PATTERN "\\.rpm")
 endmacro()
