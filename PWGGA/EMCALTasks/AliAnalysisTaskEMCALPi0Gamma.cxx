@@ -2008,7 +2008,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           maxID = CellsID[kk];
         }
       }
-      if(fBadMap->GetBinContent(maxID+1)>0)
+      if(fBadMap->GetBinContent(fBadMap->FindBin(maxID))>0)
         continue;
     }
 
