@@ -108,7 +108,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
         printf("\n\n...Adding bad channel map (MANUALY) \n") ;
         gROOT->cd();
         Char_t key[55] ;
-        sprintf(key,"hresult") ;
+        sprintf(key,"hBadMapDCal") ;
         TH1D * h = (TH1D*)fBadMap->Get(key) ;
         if(h)
           task->SetBadMap(h) ;
