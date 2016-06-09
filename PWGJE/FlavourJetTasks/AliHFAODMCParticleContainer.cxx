@@ -66,15 +66,6 @@ void AliHFAODMCParticleContainer::SelectCharmtoDStartoKpipi()
   SetKeepOnlyDfromB(kFALSE);
 }
 
-/// Calls the base class method (needed to avoid shadowing).
-///
-/// \param Pointer to an AliVParticle object.
-Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(AliAODMCParticle* vp)
-{
-  UInt_t rejectionReason = 0;
-  return AliMCParticleContainer::AcceptMCParticle(vp, rejectionReason);
-}
-
 /// First check whether the particle is a "special" PDG particle (in which case the particle is accepted)
 /// or a daughter of a "special" PDG particle (in which case the particle is rejected);
 /// then calls the base class AcceptParticle(Int_t i) method.
@@ -82,13 +73,8 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(AliAODMCParticle* vp)
 /// \param i Index of the particle to be checked.
 ///
 /// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i)
+Bool_t AliHFAODMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* part, UInt_t &rejectionReason) const
 {
-  // Determine whether the MC particle is accepted.
-  UInt_t rejectionReason = 0;
-
-  AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fClArray->At(i));
-
   Int_t partPdgCode = TMath::Abs(part->PdgCode());
 
   Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG && part->IsPrimary());
@@ -105,41 +91,33 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i)
     AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
                      part->Label(), partPdgCode, part->Pt(), part->Eta(), part->Phi()));
 
-    // Special PDG particle. Apply generator cut and kinematic cuts.
-
-    if (fGeneratorIndex >= 0 && fGeneratorIndex != part->GetGeneratorIndex()) {
-      rejectionReason |= kMCGeneratorCut;
-      return kFALSE;
-    }
-
-    AliTLorentzVector mom;
-    GetMomentum(mom, i);
-    return ApplyKinematicCuts(mom, rejectionReason);
+    // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
+    return ApplyParticleCuts(part, rejectionReason);
   }
 
   if (IsSpecialPDGDaughter(part)) {
     rejectionReason = kHFCut;
-    return kFALSE;  // daughter of a special PDG particle, reject it.
+    return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
-  // Not a special PDG particle, and not a daughter of a special PDG particle. Apply regular cuts.
-  return AliMCParticleContainer::AcceptMCParticle(i, rejectionReason);
+  // Not a special PDG particle, and not a daughter of a special PDG particle. Apply regular MC particle cuts.
+  return AliMCParticleContainer::ApplyMCParticleCuts(part, rejectionReason);
 }
 
 /// Check if particle it's a daughter of a "special" PDG particle: AOD mode
 /// \param part Pointer to a valid AliAODMCParticle object
 ///
 /// \result kTRUE if it is a daughter of the "special" PDG particle, kFALSE otherwise
-Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(AliAODMCParticle* part) const
+Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle* part) const
 {
   if (fSpecialPDG == 0) return kTRUE;
   
-  AliAODMCParticle* pm = part;
+  const AliAODMCParticle* pm = part;
   Int_t imo = -1;
   while (pm != 0) {
     imo = pm->GetMother();
     if (imo < 0) break;
-    pm = static_cast<AliAODMCParticle*>(fClArray->At(imo));
+    pm = static_cast<const AliAODMCParticle*>(fClArray->At(imo));
     if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG && pm->IsPrimary()) {
       AliDebug(2, Form("Rejecting particle (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
                        part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
