@@ -1120,6 +1120,14 @@ TString AliAnalysisTaskEMCALClusterize::GetPass()
     AliInfo("Path contains <calo> or <high-lumi>, set as <pass1>");
     return TString("pass1");
   }
+  else if (pass.Contains("LHC14a1a"))
+  {
+    AliInfo("Enable EMCal energy calibration for this MC production!!");
+    
+    fRecoUtils->SwitchOnRecalibration();
+
+    return TString("LHC14a1a");
+  }
   
   // No condition fullfilled, give a default value
   AliInfo("Pass number string not found");
