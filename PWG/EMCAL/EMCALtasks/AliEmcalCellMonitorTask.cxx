@@ -51,6 +51,7 @@ void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
 
   fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
+  fHistManager->CreateTH2("cellAmplitudeCut", "Energy distribution per cell (after energy cut)", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
   fHistManager->CreateTH2("cellTime", "Time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 200, -1e-6, 1e-6);
   fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 100, 1e-6, 5e-5);
   fHistManager->CreateTH2("cellTimeMain", "Time distribution per cell for the main bunch", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 150, -50e-9, 100e-9);
@@ -88,6 +89,7 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     if(IsCellMasked(cellNumber)) continue;
     fHistManager->FillTH2("cellAmplitude", cellNumber, amplitude);
     if(amplitude < fMinCellAmplitude) continue;
+    fHistManager->FillTH1("cellAmplitudeCut", cellNumber, amplitude);
     fHistManager->FillTH1("cellFrequency", cellNumber);
     fHistManager->FillTH2("cellTime", cellNumber, celltime);
     if(celltime >= 1e-6) fHistManager->FillTH2("cellTimeOutlier", cellNumber, celltime);
