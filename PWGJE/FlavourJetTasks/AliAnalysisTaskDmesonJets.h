@@ -296,8 +296,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// for the D meson jet analysis.
   class AnalysisEngine : public TObject {
   public:
-    static EMesonOrigin_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray);
-    static EMesonDecayChannel_t CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray);
+    static EMesonOrigin_t CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray);
+    static EMesonDecayChannel_t CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray);
 
     AnalysisEngine();
     AnalysisEngine(ECandidateType_t type, EMCMode_t MCmode, AliRDHFCuts* cuts = 0, Int_t nBins=80, Double_t range = 0.50);

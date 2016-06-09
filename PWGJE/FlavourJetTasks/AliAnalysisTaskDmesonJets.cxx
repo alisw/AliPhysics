@@ -134,7 +134,8 @@ const AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmeso
 {
   std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
   if (it == fJets.end()) {
-    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!",
+       n.c_str());
     return 0;
   }
   return &((*it).second);
@@ -144,7 +145,8 @@ AliAnalysisTaskDmesonJets::AliJetInfo* AliAnalysisTaskDmesonJets::AliDmesonJetIn
 {
   std::map<std::string, AliJetInfo>::iterator it = fJets.find(n);
   if (it == fJets.end()) {
-    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!", n.c_str());
+    ::Error("AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetJet", "Could not find jet info for the jet definition '%s'!",
+        n.c_str());
     return 0;
   }
   return &((*it).second);
@@ -1024,7 +1026,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
 /// \param mcArray Pointer to a TClonesArray object where to look for particles
 ///
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonDecayChannel_t (D0->Kpi or D*->D0pi->Kpipi)
-AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray)
+AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray)
 {
   if (!part) return kDecayOther;
   if (!mcArray) return kDecayOther;
@@ -1080,7 +1082,7 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
 /// \param mcArray Pointer to a TClonesArray object where to look for particles
 ///
 /// \return One of the enum constants of AliAnalysisTaskDmesonJets::EMesonOrigin_t (unknown quark, bottom or charm)
-AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray)
+AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray)
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
 
@@ -1280,17 +1282,15 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 /// \param cont Pointer to a valid AliEmcalContainer object
 void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist)
 {
-  AliTLorentzVector part;
-  for (Int_t i = 0; i < cont->GetNEntries(); i++) {
-    cont->GetMomentum(part, i);
+  AliEmcalIterableMomentumContainer itcont = cont->all_momentum();
+  for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
-    if (!cont->AcceptObject(i, rejectionReason)) {
-      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), part.Pt());
+    if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
+      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
     }
-    Int_t uid = offset >= 0 ? i : -i;
-    uid += offset;
-    fFastJetWrapper->AddInputVector(part.Px(), part.Py(), part.Pz(), part.E(), uid);
+    Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
+    fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
   }
 }
 
@@ -1312,7 +1312,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
     fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
 
-    hname = TString::Format("%s/%s/fHistClusterRejectionReason", GetName(), jetDef.GetName());
+    hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
 
     fFastJetWrapper->Run();
@@ -1331,9 +1331,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
           ::Error("AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
           continue;
         }
-        if (part->PdgCode() == fCandidatePDG) {
+        if (TMath::Abs(part->PdgCode()) == fCandidatePDG) {
           std::map<int, AliDmesonJetInfo>::iterator dMesonJetIt = dMesonJets.find(iPart);
-          if (dMesonJetIt != dMesonJets.end()) {
+          if (dMesonJetIt == dMesonJets.end()) { // This D meson does not exist yet
             std::pair<int, AliDmesonJetInfo> element;
             element.first = iPart;
             element.second = AliDmesonJetInfo();
@@ -1342,6 +1342,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
           }
 
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
+          (*dMesonJetIt).second.fJets[jetDef.GetName()].fNConstituents = constituents.size();
           break;
         }
       }
