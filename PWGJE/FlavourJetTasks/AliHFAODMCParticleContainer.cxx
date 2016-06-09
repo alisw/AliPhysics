@@ -127,3 +127,13 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle*
   return kFALSE;
 }
 
+/// Checks whether the special PDG particle is found in the container
+///
+/// \result kTRUE if the special PDG particle is found
+Bool_t AliHFAODMCParticleContainer::IsSpecialPDGFound() const
+{
+  for (auto part : accepted()) {
+    if (TMath::Abs(part->GetPdgCode()) == fSpecialPDG) return kTRUE;
+  }
+  return kFALSE;
+}

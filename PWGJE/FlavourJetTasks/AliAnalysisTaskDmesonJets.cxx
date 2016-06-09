@@ -1303,6 +1303,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
 
+  if (!fMCContainer->IsSpecialPDGFound()) return;
+
   std::map<int, AliDmesonJetInfo> dMesonJets;
 
   for (auto &jetDef : fJetDefinitions) {

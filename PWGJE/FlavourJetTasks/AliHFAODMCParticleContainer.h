@@ -58,6 +58,8 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
   
   virtual Bool_t ApplyMCParticleCuts(const AliAODMCParticle* vp, UInt_t &rejectionReason) const;
 
+  Bool_t IsSpecialPDGFound() const;
+
  protected:
   Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
  
