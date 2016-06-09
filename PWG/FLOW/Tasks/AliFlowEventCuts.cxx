@@ -484,25 +484,37 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
       if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
     }
-    AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
-    if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
-      Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
-      Double_t trkCentr = centr->GetCentralityPercentile("TRK"); 
-      if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+    if(!fUseNewCentralityFramework) {
+      AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
+      if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
+        Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
+        Double_t trkCentr = centr->GetCentralityPercentile("TRK");
+        if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+      }
+      if (fCutCentralityPercentile) {
+        if (fUseCentralityUnchecked) {
+          if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+                                                        fCentralityPercentileMax,
+                                                        CentrMethName(fCentralityPercentileMethod) )) {
+            pass = kFALSE;
+          }
+        } else {
+          if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                               fCentralityPercentileMax,
+                                               CentrMethName(fCentralityPercentileMethod) )) {
+            pass = kFALSE;
+          }
+        }
+      }
     }
-    if (fCutCentralityPercentile) {
-      if (fUseCentralityUnchecked) {
-	if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
-						       fCentralityPercentileMax,
-						       CentrMethName(fCentralityPercentileMethod) )) {
-	  pass = kFALSE;
-	}
-      } else {
-	if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-					      fCentralityPercentileMax,
-					      CentrMethName(fCentralityPercentileMethod) )) {
-	  pass = kFALSE;
-	}
+    else {
+      AliMultSelection *MultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+      Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+      if (fCutCentralityPercentile) {
+        if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
+        {
+          pass=kFALSE;
+        }
       }
     }
   }
@@ -582,8 +594,9 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
    }
    else if (aodEvent)
    {
-    cout<<"New centrality framework not tested yet for AODs..."<<endl;
-    exit(0);
+     AliMultSelection *MultSelection = (AliMultSelection *) aodEvent->FindListObject("MultSelection");
+     Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+     centrality = lPercentile;
    } // else if (aodEvent)
   } // else // if(!fUseNewCentralityFramework)
 
