@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <TArrayD.h>
@@ -22,7 +23,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
    fTriggerString(""),
-   fNumberOfCells(12288)
+   fNumberOfCells(12288),
+   fMaskedCells()
 {
 
 }
@@ -34,7 +36,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
    fTriggerString(""),
-   fNumberOfCells(12288)
+   fNumberOfCells(12288),
+   fMaskedCells()
 {
   DefineOutput(1, TList::Class());
 }
@@ -46,9 +49,11 @@ AliEmcalCellMonitorTask::~AliEmcalCellMonitorTask() {
 void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
   fHistManager = new THistManager("EMCALCellMonitor");
 
+  fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
   fHistManager->CreateTH2("cellTime", "Time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 200, -1e-6, 1e-6);
   fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 100, 1e-6, 5e-5);
+  fHistManager->CreateTH2("cellTimeMain", "Time distribution per cell for the main bunch", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 150, -50e-9, 100e-9);
   for(int ism = 0; ism < 20; ++ism){
     fHistManager->CreateTH2(Form("cellAmpSM%d", ism), Form("Integrated cell amplitudes for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
     fHistManager->CreateTH2(Form("cellCountSM%d", ism), Form("Count rate per cell for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
@@ -80,12 +85,13 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
   Int_t sm, mod, meta, mphi, ieta, iphi;
   for(int icell = 0; icell < emcalcells->GetNumberOfCells(); icell++){
     emcalcells->GetCell(icell, cellNumber, amplitude, celltime, mclabel, efrac);
-    if(amplitude <= 0) continue; // handle only cells with pos. amp
+    if(IsCellMasked(cellNumber)) continue;
     fHistManager->FillTH2("cellAmplitude", cellNumber, amplitude);
-    if(amplitude > fMinCellAmplitude){
-      fHistManager->FillTH2("cellTime", cellNumber, celltime);
-      if(celltime >= 1e-6) fHistManager->FillTH2("cellTimeOutlier", cellNumber, celltime);
-    }
+    if(amplitude < fMinCellAmplitude) continue;
+    fHistManager->FillTH1("cellFrequency", cellNumber);
+    fHistManager->FillTH2("cellTime", cellNumber, celltime);
+    if(celltime >= 1e-6) fHistManager->FillTH2("cellTimeOutlier", cellNumber, celltime);
+    if(celltime > -5e-8 && celltime < 1e-7) fHistManager->FillTH2("cellTimeMain", cellNumber, celltime);
 
     // Get Cell index in eta-phi of sm
     fGeometry->GetCellIndex(cellNumber, sm, mod, mphi, meta);
@@ -96,6 +102,15 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     fHistManager->FillTH2(Form("cellAmpTimeCorrSM%d", sm), celltime, amplitude);
   }
   PostData(1, fHistManager->GetListOfHistograms());
+}
+
+void AliEmcalCellMonitorTask::SetBadCell(Int_t cellId){
+  if(std::find(fMaskedCells.begin(), fMaskedCells.end(), cellId) != fMaskedCells.end()) return;
+  fMaskedCells.push_back(cellId);
+}
+
+bool AliEmcalCellMonitorTask::IsCellMasked(Int_t cellId) const {
+  return (std::find(fMaskedCells.begin(), fMaskedCells.end(), cellId) != fMaskedCells.end());
 }
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorAmplitudeBinning::AliEmcalCellMonitorAmplitudeBinning():
