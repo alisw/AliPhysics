@@ -5,7 +5,7 @@
 /// then runs a jet finder to reconstruct the jets that contain
 /// the D meson candidates.
 ///
-/// The main output is stored in a THnSparse histogram
+/// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
 /// \date Feb 6, 2016
@@ -120,8 +120,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information that can be easily passed to a function.
   class AliDmesonJetInfo {
   public:
-    AliDmesonJetInfo() : fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets() {}
+    AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets() {}
 
+    AliVParticle      *fDmesonParticle          ; //!<! pointer to the particle object
     AliTLorentzVector  fD                       ; //!<! 4-momentum of the D meson candidate
     Double_t           fSoftPionPt              ; //!<! Transverse momentum of the soft pion of the D* candidate
     Double_t           fInvMass2Prong           ; //!<! 2-prong mass of the D* candidate (w/o the soft pion)
@@ -369,7 +370,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
-    std::vector<AliDmesonJetInfo>      fDmesonJets            ; //!<! Array containing the D meson jets
+    std::map<int, AliDmesonJetInfo>    fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer       *fMCContainer           ; //!<! MC particle container
     AliHFTrackContainer               *fTrackContainer        ; //!<! Track container
