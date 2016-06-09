@@ -2101,7 +2101,15 @@ void AliEMCALTenderSupply::GetPass()
     //printf("AliEMCALTenderSupply::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
     fFilepass = TString("pass1");
   }
-  else if (fname.Contains("LHC14a1a")) fFilepass = TString("LHC14a1a");
+  else if (fname.Contains("LHC14a1a"))
+  {
+    fCalibrateEnergy     = kTRUE;
+    fUseAutomaticRecalib = kTRUE;
+    
+    AliInfo("Energy calibration activated for this MC production!");
+    
+    fFilepass = TString("LHC14a1a");
+  }
   else
   {
     AliError(Form("Pass number string not found: %s", fname.Data()));
