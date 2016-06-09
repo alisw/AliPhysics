@@ -1033,30 +1033,30 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       FillQAHistograms(coi,vecCOI);
       
-      Printf("cluster with ID %d energy %.4lf, pT: %.4f, eta:%.4f, phi: %.4f ",coi->GetID(),vecCOI.E(),vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
+//      Printf("cluster with ID %d energy %.4lf, pT: %.4f, eta:%.4f, phi: %.4f ",coi->GetID(),vecCOI.E(),vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
       
-      Printf("\nCluster time %lf",coiTOF);
+//      Printf("\nCluster time %lf",coiTOF);
       if(!fIsMC){
         if(coiTOF< -30. || coiTOF > 30.)
           continue;
       }
       
-      Printf("Cluster time OK!!!");
+//      Printf("Cluster time OK!!!");
       fPtaftTime->Fill(vecCOI.Pt());
       
-      Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
+//      Printf("Cluster with NCell %d and DTBC %.4f",coi->GetNCells(),coi->GetDistanceToBadChannel());
       
       if((coi->GetNCells() < 2)) continue;
       fPtaftCell->Fill(vecCOI.Pt());
       
-      Printf("Cluster with NCell %d",coi->GetNCells());
+//      Printf("Cluster with NCell %d",coi->GetNCells());
       
       Int_t nlm=0;
       AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
       if(fCaloCells)
       {
         nlm = GetNLM(coi,fCaloCells);
-        Printf("Number of local maxima for this cluster: %d",nlm);
+//        Printf("Number of local maxima for this cluster: %d",nlm);
         AliDebug(1,Form("NLM = %d",nlm));
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
@@ -1074,9 +1074,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       fPtaftNLM->Fill(vecCOI.Pt());
       if(fTMClusterRejected)
       {
-        Printf("CT Matching from Run");
+//        Printf("CT Matching from Run");
         if(ClustTrackMatching(coi)){
-          Printf("Cluster Matched with a Track");
+//          Printf("Cluster Matched with a Track");
           continue;
         }
       }
@@ -1090,7 +1090,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         fNLM->Fill(nlm,coi->E());
       
       if(!CheckBoundaries(vecCOI)){
-        Printf("Outside the boundaries");
+//        Printf("Outside the boundaries");
         continue;
       }
       
@@ -1099,7 +1099,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       if(vecCOI.Pt()<5.) continue;
       
-      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
+//      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
       FillGeneralHistograms(coi,vecCOI,index);
     }
     

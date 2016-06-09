@@ -35,7 +35,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           iSmearingSS               = kFALSE,
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
-                                                                 const Bool_t           iExtraIsoCuts             = 0.,
+                                                                 const Bool_t           iExtraIsoCuts             = kFALSE,
                                                                  const Bool_t           i_pPb                     = kFALSE
                                                                  )
 {
