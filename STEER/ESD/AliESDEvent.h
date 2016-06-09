@@ -135,6 +135,8 @@ public:
   const AliESDRun*    GetESDRun() const {return fESDRun;}
 
   // Delegated methods for fESDRun
+  const AliTimeStamp* GetCTPStart() const {return fESDRun ? &fESDRun->GetCTPStart() : 0;}
+  void     SetCTPStart(const AliTimeStamp* t) {if(fESDRun) fESDRun->SetCTPStart(t);}
   void     SetRunNumber(Int_t n) {if(fESDRun) fESDRun->SetRunNumber(n);}
   Int_t    GetRunNumber() const {return fESDRun?fESDRun->GetRunNumber():-1;}
   void     SetPeriodNumber(UInt_t n){
@@ -213,6 +215,7 @@ public:
   Bool_t    IsHLTTriggerFired(const char* name=NULL) const;
   UInt_t    GetOrbitNumber() const {return fHeader?fHeader->GetOrbitNumber():0;}
   UInt_t    GetTimeStamp()  const { return fHeader?fHeader->GetTimeStamp():0;}
+  UInt_t    GetTimeStampCTP() const;
   UInt_t    GetEventType()  const { return fHeader?fHeader->GetEventType():0;}
   UInt_t    GetEventSpecie()  const { return fHeader?fHeader->GetEventSpecie():0;}
   Int_t     GetEventNumberInFile() const {return fHeader?fHeader->GetEventNumberInFile():-1;}

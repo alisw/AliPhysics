@@ -2561,3 +2561,16 @@ Bool_t AliESDEvent::IsIncompleteDAQ()
     ||   (fDAQAttributes&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;
     
 }
+
+//______________________________________________________________________________
+UInt_t AliESDEvent::GetTimeStampCTP() const
+{
+  // calculate/return CTP time stamp
+  const AliTimeStamp* ctp0 = GetCTPStart();
+  UInt_t tCTP = 0;
+  if ( !ctp0 || !(tCTP=ctp0->GetBunchCross()) ) return GetTimeStamp(); // N/A
+  // subtract from current orbit the orbit at CTP SOR
+  Long64_t span=(GetPeriodNumber()<<24)+GetOrbitNumber()-ctp0->GetOrbit();
+  tCTP += span*3564*25/1000000000;
+  return tCTP;
+}

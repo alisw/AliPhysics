@@ -196,6 +196,7 @@
 #include "AliTrackleter.h"
 #include "AliVertexerTracks.h"
 #include "AliTriggerRunScalers.h"
+#include "AliTriggerScalersRecord.h"
 #include "AliCTPTimeParams.h" 
 #include "AliESDHLTDecision.h"
 #include "AliTriggerInput.h"
@@ -2213,6 +2214,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fhltesd->SetCurrentDip(fld->GetCurrentDip());
       fhltesd->SetUniformBMap(fld->IsUniform());
       fhltesd->SetBInfoStored();
+    }
+
+    // set CTPstart timestamp of the run
+    if (fRunScalers&&fRunScalers->GetScalersRecords()->GetEntriesFast()) {
+      esdRun->SetCTPStart(fRunScalers->GetScalersRecord(0)->GetTimeStamp());
+      esdRunH->SetCTPStart(fRunScalers->GetScalersRecord(0)->GetTimeStamp());
     }
 
     for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
