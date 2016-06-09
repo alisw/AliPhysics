@@ -25,6 +25,7 @@
 
 #include "TMatrixD.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "TRandom3.h"
 #include "AliFlowCommonConstants.h"
 #include "TNamed.h"
@@ -34,6 +35,7 @@ class TList;
 class TFile;
 class TGraph;
 class TH1;
+class TH3;
 class TProfile;
 class TProfile2D;
 class TDirectoryFile;
@@ -1458,6 +1460,8 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+ TH3D *fCRCZDCEP[3]; //! EPs
+ TProfile2D *fCRCZDCQ2[4]; //! Q2
   
 // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
  
