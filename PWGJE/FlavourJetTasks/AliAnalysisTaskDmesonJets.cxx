@@ -1223,11 +1223,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 
     hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", GetName(), jetDef.GetName());
     TH1* histDaughterNotInJet = static_cast<TH1*>(fHistManager->FindObject(hname));
-    const TObjArray daughterNotInJet = fTrackContainer->GetDaughterList();
-    for (Int_t i = 0; i < daughterNotInJet.GetEntriesFast(); i++) {
-      AliVParticle* daughter = static_cast<AliVParticle*>(daughterNotInJet.At(i));
-      if (!daughter) continue;
-      histDaughterNotInJet->Fill(daughter->Pt());
+    const TObjArray& daughters = fTrackContainer->GetDaughterList();
+    for (Int_t i = 0; i < daughters.GetEntriesFast(); i++) {
+      AliVParticle* daughter = static_cast<AliVParticle*>(daughters.At(i));
+      if (!fTrackContainer->GetArray()->FindObject(daughter)) histDaughterNotInJet->Fill(daughter->Pt());
     }
   }
 
