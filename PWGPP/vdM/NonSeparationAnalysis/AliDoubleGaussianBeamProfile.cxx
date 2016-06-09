@@ -157,7 +157,7 @@ namespace Detail {
     TMatrixD K_Inv(C1_Inv,TMatrixD::kPlus,C2_Inv);
     Double_t K_Det = 0;
     K = K_Inv;
-    K.Invert(&K_Det);
+    K.InvertFast(&K_Det);
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute mean matrix
@@ -237,7 +237,7 @@ namespace Detail {
     const TMatrixD K_Inv(C1I_plus_C2I,TMatrixD::kMinus,C_Sum);
     Double_t K_Det = 0;
     K = K_Inv;
-    K.Invert(&K_Det);
+    K.InvertFast(&K_Det);
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute mean matrix
@@ -427,10 +427,10 @@ namespace Detail {
 
 }
 
-void AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile)
+Bool_t AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile)
 {
-  if (par.GetNoElements()      < 20) AliFatalClass("par.Size() < 20");
-  if (profile.GetNoElements() !=  8) AliFatalClass("profile.Size() !=  8");
+  if (par.GetNoElements()      < 20) AliFatalClass("par.GetNoElements() < 20");
+  if (profile.GetNoElements() !=  8) AliFatalClass("profile.GetNoElements() !=  8");
 
   Detail::sigma_xa1 = par[ 0];
   Detail::sigma_ya1 = par[ 1];
@@ -468,11 +468,26 @@ void AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TVec
   profile[1] *= -1;
   profile[3] *= -1;
   profile[7] *= -1;
+
+  return (!TMath::IsNaN(profile[1]) &&
+	  !TMath::IsNaN(profile[2]) &&
+	  !TMath::IsNaN(profile[3]) &&
+	  !TMath::IsNaN(profile[4]) &&
+	  !TMath::IsNaN(profile[5]) &&
+	  !TMath::IsNaN(profile[6]) &&
+	  !TMath::IsNaN(profile[7]));
 }
 
-TString AliDoubleGaussianBeamProfile::GetParameterName(Int_t i)
+Double_t AliDoubleGaussianBeamProfile::EvalProfile0(Double_t *x, Double_t *p) {
+  const TVectorD par(20, p);
+  TVectorD profile(8);
+  Eval(x[0], x[1], par, profile);
+  return profile(0);
+}
+
+const char* AliDoubleGaussianBeamProfile::GetParName(Int_t i)
 {
-  const char* parNames[] = {
+  static const char* parNames[] = {
     "#sigma^{X}_{1a}",
     "#sigma^{Y}_{1a}",
     "#sigma^{Z}_{1a}",
@@ -496,6 +511,6 @@ TString AliDoubleGaussianBeamProfile::GetParameterName(Int_t i)
   };
   const Int_t n = sizeof(parNames)/sizeof(const char*);
   if (i >= n) AliFatalClassF("%d > %d", i, n);
-  return TString(parNames[i]);
+  return parNames[i];
 }
 
