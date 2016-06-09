@@ -9,6 +9,7 @@
 
 #include <AliLog.h>
 #include <AliVParticle.h>
+#include "AliMEStrackInfo.h"
 #include "AliMESeventInfo.h"
 
 ClassImp(AliMESeventInfo)
@@ -162,11 +163,12 @@ Double_t AliMESeventInfo::Directivity(TObjArray* tracks, Bool_t etaSign)
   if(!(ntracks=tracks->GetEntries())) return -1.;
 
   Double_t dirx(0.), diry(0.), dir(0.);
-  AliVParticle *track(NULL);
+  AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-    if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
+    if(!(track = dynamic_cast<AliMEStrackInfo*> (tracks->At(iTracks)))) continue;
     if(track->Eta()*(etaSign?1.:-1.) < 0.) continue;
     if(TMath::Abs(track->Eta()) >= 0.8) continue;
+    if(! track->HasOrigin(AliMEStrackInfo::kPrimary) ) continue;
     // printf("Directivity eta = %f\n", track->Eta());
     dirx+=track->Px();
     diry+=track->Py();
