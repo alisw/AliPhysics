@@ -2953,6 +2953,7 @@ if (fapplyTrigefficiency || fapplyAssoefficiency)
 
   //*************************************************************still in event loop
  
+ if(trackMap) delete trackMap;
 
 if(trackscount>0.0)
   { 
@@ -3320,6 +3321,9 @@ if (fapplyTrigefficiency || fapplyAssoefficiency)
   }
 } //track loop ends but still in event loop
 
+ if(trackMap) delete trackMap;
+
+ 
 if(trackscount<1.0){
   if(tracksUNID) delete tracksUNID;
   if(tracksID) delete tracksID;
