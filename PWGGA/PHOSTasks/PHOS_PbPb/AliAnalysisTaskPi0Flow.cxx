@@ -2727,10 +2727,6 @@ Bool_t AliAnalysisTaskPi0Flow::RejectCentrality()
         if( ! fEvent->GetCentrality() )
             return true; // reject
     }
-    else { // Run2
-        if (! fEvent->FindListObject("MultSelection") )
-            return true;
-    }
     
     LogSelection(kHasCentrality, fInternalRunNumber);
     
