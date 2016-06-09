@@ -183,6 +183,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fAcceptanceParameterization(0),
   fDifferentialV2(0),
   fUseFlowAfterBurner(kFALSE),
+  fIncludeSecondariesInMCgen(kFALSE),
   fExcludeSecondariesInMC(kFALSE),
   fExcludeWeakDecaysInMC(kFALSE),
   fExcludeResonancesInMC(kFALSE),
@@ -191,6 +192,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
   fExcludeResonancePDGInMC(-1),
+  fIncludeResonancePDGInMC(-1),
   fEventClass("EventPlane"), 
   fCustomBinning(""),
   fHistVZEROAGainEqualizationMap(0),
@@ -1758,7 +1760,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  continue;
 	}
 	
-	if(!aodTrack->IsPhysicalPrimary()) continue;   
+	if(!aodTrack->IsPhysicalPrimary()) continue;
 	
 	vCharge = aodTrack->Charge();
 	vEta    = aodTrack->Eta();
@@ -2253,17 +2255,23 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent) {
+
+
+      Int_t nTracks = gMCEvent->GetNumberOfPrimaries(); // default mode: running over primary particles only 
+      if(fIncludeSecondariesInMCgen){
+	nTracks = gMCEvent->GetNumberOfTracks(); // for weak decay studies, include also secondaries
+      }
+      
       // Loop over tracks in event
-      for (Int_t iTracks = 0; iTracks < gMCEvent->GetNumberOfPrimaries(); iTracks++) {
+      for (Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
 	AliMCParticle* track = dynamic_cast<AliMCParticle *>(gMCEvent->GetTrack(iTracks));
 	if (!track) {
 	  AliError(Form("Could not receive particle %d", iTracks));
 	  continue;
 	}
 	
-	//exclude non stable particles
-	if(!(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
-
+	//exclude non stable particles (only if not secondaries included explicitly)
+	if(!fIncludeSecondariesInMCgen && !(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
 
 	// exclude particles with strange behaviour in AMPT
 	// - mothers that have physical primary daughters
@@ -2400,6 +2408,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  
 	  //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
 	  if(kExcludeParticle) continue;
+	}
+
+	//Include exclusively resonances with a specific PDG value
+	if(fIncludeResonancePDGInMC > -1) {
+
+	  TParticle *particle = track->Particle();
+	  if(!particle) continue;
+	  
+	  Bool_t kIncludeParticle = kFALSE;
+	  Int_t gMotherIndex = particle->GetFirstMother();
+	  if(gMotherIndex != -1) {
+	    AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      TParticle *motherParticle = motherTrack->Particle();
+	      if(motherParticle) {
+
+		Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+		if( TMath::Abs(pdgCodeOfMother) == fIncludeResonancePDGInMC ){
+		  kIncludeParticle = kTRUE;
+		}
+	      }
+	    }
+	  }
+	  
+	  //Exclude from the analysis particle that are not decay products from this resonance
+	  if(!kIncludeParticle) continue;
 	}
 
 
