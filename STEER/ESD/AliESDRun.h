@@ -14,6 +14,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TString.h>
+#include <AliTimeStamp.h>
 
 class TGeoHMatrix;
 class AliESDVertex;
@@ -48,7 +49,7 @@ public:
   void    SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
   void    SetDetectorsInDAQ(UInt_t detmask) { fDetInDAQ = detmask; }
   void    SetDetectorsInReco(UInt_t detmask) { fDetInReco = detmask; }
-
+  void    SetCTPStart(const AliTimeStamp* t) { if (t) fCTPStart = *t;}
   Bool_t  IsBeamEnergyIsSqrtSHalfGeV() const {return TestBit(kConvSqrtSHalfGeV);}  
   Double_t GetDiamondX() const {return fDiamondXY[0];}
   Double_t GetDiamondY() const {return fDiamondXY[1];}
@@ -79,6 +80,7 @@ public:
 
   UInt_t      GetDetectorsInDAQ()         const {return fDetInDAQ; }
   UInt_t      GetDetectorsInReco()         const {return fDetInReco; }
+  const AliTimeStamp& GetCTPStart()        const {return fCTPStart;}
  
   void    SetPHOSMatrix(TGeoHMatrix*matrix, Int_t i) {
     if ((i >= 0) && (i < kNPHOSMatrix)) fPHOSMatrix[i] = matrix;
@@ -148,8 +150,9 @@ private:
   Int_t           fCaloTriggerType[15]; // Calorimeter trigger type
   Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
   Int_t           fCaloTriggerTypeNew[19]; // Calorimeter trigger type
-	
-  ClassDef(AliESDRun,16)
+  AliTimeStamp    fCTPStart;           // CTP start time stamp, to allow extraction of event trigger time     
+
+  ClassDef(AliESDRun,17)
 };
 
 #endif 

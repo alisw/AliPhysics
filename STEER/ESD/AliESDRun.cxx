@@ -45,7 +45,8 @@ AliESDRun::AliESDRun() :
   fBeamType(""),
   fTriggerClasses(kNTriggerClasses),
   fDetInDAQ(0),
-  fDetInReco(0)  
+  fDetInReco(0),
+  fCTPStart()
 {
   //
   // default ctor
@@ -79,7 +80,8 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   fBeamType(""),
   fTriggerClasses(TObjArray(kNTriggerClasses)),
   fDetInDAQ(0),
-  fDetInReco(0)
+  fDetInReco(0),
+  fCTPStart(esd.fCTPStart)
 { 
   //
   // Copy constructor
@@ -164,6 +166,7 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
   for (Int_t it=0; it<15; it++) fCaloTriggerType[it]=esd.fCaloTriggerType[it];
   for (Int_t it=0; it<19; it++) fCaloTriggerTypeNew[it]=esd.fCaloTriggerTypeNew[it];
   for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=esd.fVZEROEqFactors[j];
+  fCTPStart = esd.fCTPStart;
   return *this;
 }
 
