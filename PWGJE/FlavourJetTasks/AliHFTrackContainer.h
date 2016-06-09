@@ -40,14 +40,14 @@ class AliHFTrackContainer : public AliTrackContainer {
 
   void                 SetDMesonCandidate(AliAODRecoDecay* c);
 
-  Bool_t               AcceptTrack(AliVTrack* vp);
-  Bool_t               AcceptTrack(Int_t i);
+  virtual Bool_t       ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const;
+
   void                 GenerateDaughterList();
   const TObjArray&     GetDaughterList() const                         { return fDaughterList            ; }
   
  protected:
-  void                 AddDaughters(AliAODRecoDecay* cand);
-  Bool_t               IsDMesonDaughter(AliAODTrack* track);
+  void                 AddDaughters(const AliAODRecoDecay* cand);
+  Bool_t               IsDMesonDaughter(const AliAODTrack* track) const;
  
   AliAODRecoDecay*     fDMesonCandidate;             ///<  Exclude daughters of this D meson candidate
   TObjArray            fDaughterList;                ///<  Daughters of the D meson candidate
