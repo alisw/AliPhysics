@@ -25,17 +25,17 @@ Bool_t AliLuminousRegionFit::CutOutliers(TTree *t, Bool_t doCut, Double_t sigmaT
     Double_t       sigmaCut[3]  = { 0.00, 0.00, 0.00 };
     const Double_t sigmaCut0[3] = { 0.01, 0.01, 6.00 };
     for (Int_t i=0; i<3; ++i) {
-      sigmaCut[i] = sigmaThreshold*TMath::Sqrt(cov(i,i));
+      sigmaCut[i] = 0.5*sigmaThreshold*TMath::Sqrt(cov(i,i));
       sigmaCut[i] = TMath::Max(1.0*sigmaThreshold*sigmaCut0[i], sigmaCut[i]);
       sigmaCut[i] = TMath::Min(1.2*sigmaThreshold*sigmaCut0[i], sigmaCut[i]);
     }
-    sel = TCut(TString::Format("((xTRKnc%+f)/%f)**2 + ((yTRKnc%+f)/%f)**2 + ((zTRKnc%+f)/%f)**2 < 1",
+    sel = TCut(TString::Format("((xTRKnc%+.8f)/%f)**2 + ((yTRKnc%+.8f)/%f)**2 + ((zTRKnc%+.8f)/%f)**2 < 1",
 			       -mu[0], sigmaCut[0],
 			       -mu[1], sigmaCut[1],
 			       -mu[2], sigmaCut[2]));
   }
 
-  const Int_t m = t->Draw("xTRKnc:yTRKnc:zTRKnc", sel, "GOFF");
+  Int_t m = t->Draw("xTRKnc:yTRKnc:zTRKnc", sel, "GOFF");
   if (m < 10)
     return kFALSE;
   
@@ -45,27 +45,30 @@ Bool_t AliLuminousRegionFit::CutOutliers(TTree *t, Bool_t doCut, Double_t sigmaT
   mu[2] = TMath::Mean(m, t->GetV3());
     
   // update sigma
-  t->Draw(TString::Format("(xTRKnc%+f)**2:(yTRKnc%+f)**2:(zTRKnc%+f)**2", -mu[0], -mu[1], -mu[2]), sel, "GOFF");
-  cov(1,1) = TMath::Mean(m, t->GetV1());
-  cov(2,2) = TMath::Mean(m, t->GetV2());
-  cov(3,3) = TMath::Mean(m, t->GetV3());
+  m = t->Draw(TString::Format("(xTRKnc%+.8f)**2:(yTRKnc%+.8f)**2:(zTRKnc%+.8f)**2", -mu[0], -mu[1], -mu[2]), sel, "GOFF");
+  cov(0,0) = TMath::Mean(m, t->GetV1());
+  cov(1,1) = TMath::Mean(m, t->GetV2());
+  cov(2,2) = TMath::Mean(m, t->GetV3());
 
   // compute covariances
-  t->Draw(TString::Format("(xTRKnc%+f)*(yTRKnc%+f):(xTRKnc%+f)*(zTRKnc%+f):(yTRKnc%+f)*(zTRKnc%+f)",
-			  -mu[0], -mu[1],
-			  -mu[0], -mu[2],
-			  -mu[1], -mu[2]), sel, "GOFF");
-  cov(1,2) = cov(2,1) = TMath::Mean(m, t->GetV1());
-  cov(1,3) = cov(3,1) = TMath::Mean(m, t->GetV2());
-  cov(2,3) = cov(3,2) = TMath::Mean(m, t->GetV3());
+  m = t->Draw(TString::Format("(xTRKnc%+.8f)*(yTRKnc%+.8f):(xTRKnc%+.8f)*(zTRKnc%+.8f):(yTRKnc%+.8f)*(zTRKnc%+.8f)",
+			      -mu[0], -mu[1],
+			      -mu[0], -mu[2],
+			      -mu[1], -mu[2]), sel, "GOFF");
+  cov(0,1) = cov(1,0) = TMath::Mean(m, t->GetV1());
+  cov(0,2) = cov(2,0) = TMath::Mean(m, t->GetV2());
+  cov(1,2) = cov(2,1) = TMath::Mean(m, t->GetV3());
 
   return kTRUE;
 }
 
 Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
 {
-  Double_t result = 0.0;
+  // see ATLAS-CONF-2010-027 
+
   TMatrixD sigma(2,2);
+
+  Double_t result = 0.0;
   for (Int_t i=0; i<fN; ++i) {
     sigma(0,0) = par[3]*par[3];
     sigma(1,1) = par[4]*par[4];
@@ -82,8 +85,10 @@ Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
     sigma(1,0) += par[9]*par[9]*fCov[1][i]; //vtx_cxy[i];
 //     }
     Double_t det(0);
-    sigma.Invert(&det);
-    Double_t sum = 0.5*TMath::Log(det*TMath::Abs(par[5]));
+    sigma.InvertFast(&det);
+    Double_t sum = 0.0;
+    sum += 0.5*TMath::Log(det);
+    sum +=     TMath::Log(TMath::Abs(par[5]));
     const Double_t x = fX[0][i] - par[0] - par[7]*(fX[2][i] - par[2]);
     const Double_t y = fX[1][i] - par[1] - par[8]*(fX[2][i] - par[2]);
     const Double_t z = fX[2][i] - par[2];
@@ -184,7 +189,7 @@ TTree* AliLuminousRegionFit::RemoveOutliersRobust(TTree *t, TVectorD &mu, TMatri
     return t;
   }
 
-  const Int_t hh = TMath::Nint(0.8*m);
+  const Int_t hh = TMath::Nint(0.9*m);
   TRobustEstimator robEst(m, 3, hh);
   Float_t xyz[3] = { 0,0,0 };
   t->SetBranchAddress("xTRKnc", &xyz[0]);
@@ -216,7 +221,7 @@ TTree* AliLuminousRegionFit::RemoveOutliersOld(TTree *t, TCut &sel, TVectorD &mu
 {
   Bool_t success = kTRUE;
   for (Int_t j=0; j<4 && success; ++j)
-    success = CutOutliers(t, j!=0, 3.5, sel, mu, cov);
+    success = CutOutliers(t, j!=0, 7.0, sel, mu, cov);
 
   if (!success) {
     delete t;
@@ -270,7 +275,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   const Double_t *sep       = fTSep->GetV3();
   TTree **tTemp = new TTree*[n];
   for (Int_t i=0; i<n; ++i) {
-    AliInfoF("CloneTree for sep=%.3f", sep[i]);
+    AliInfoF("CloneTree for sep=%+.3f mm", sep[i]);
     tTemp[i] = fTE->CloneTree(0);
     tTemp[i]->SetDirectory(NULL);
   }
@@ -313,9 +318,9 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
     tTemp[i]->SetEstimate(-1);
 
     TCut sel("1");
-    tTemp[i] = RemoveOutliersRobust(tTemp[i], mu, cov);
+//     tTemp[i] = RemoveOutliersRobust(tTemp[i], mu, cov);
     // old version of outlier removal:
-    //     tTemp[i] = RemoveOutliersOld(tTemp[i], sel, mu, cov);
+    tTemp[i] = RemoveOutliersOld(tTemp[i], sel, mu, cov);
     if (NULL == tTemp[i])
       continue;
 
@@ -336,8 +341,9 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
       gModel[j]->SetPointError(gModel[j]->GetN()-1, 0, TMath::Sqrt(cx(j,j)));
     }
 
-    beamSep[0] = (scanType == 0 ? sep[i] : offset);
-    beamSep[1] = (scanType == 1 ? sep[i] : offset);
+    // conversions from mm -> cm and from um -> cm
+    beamSep[0] = (scanType == 0 ? 0.1*sep[i] : 1e-4*offset);
+    beamSep[1] = (scanType == 1 ? 0.1*sep[i] : 1e-4*offset);
 
     tBeamSpot->Fill();
   }
