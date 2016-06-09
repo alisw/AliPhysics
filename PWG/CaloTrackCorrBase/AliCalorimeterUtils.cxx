@@ -1414,7 +1414,13 @@ TString AliCalorimeterUtils::GetPass()
     AliInfo("Path contains <calo> or <high-lumi>, set as <pass1>");
     return TString("pass1");
   }
-
+  else if (pass.Contains("LHC14a1a")) 
+  {  
+    AliInfo("Check that Energy calibration was enabled for this MC production in the tender, clusterizer or here!!");
+                        
+    return TString("LHC14a1a"); 
+  }
+  
   // No condition fullfilled, give a default value
   AliInfo("Pass number string not found");
   return TString("");            
