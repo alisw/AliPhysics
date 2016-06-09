@@ -186,6 +186,10 @@ class AliTPCcalibDB : public TObject
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
   static void RegisterExB(Int_t index, Float_t bz, Bool_t bdelete);
   //
+  // Dead channel map functions
+  //
+  Int_t GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72]);
+  //
   //
   //
   AliTPCCalPad* MakeDeadMap(Double_t notInMap=1, const char *nameMappingFile="$ALICE_ROOT/TPC/Calib/tpcMapping.root" );

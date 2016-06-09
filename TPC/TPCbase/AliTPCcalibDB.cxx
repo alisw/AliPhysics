@@ -93,6 +93,7 @@
 #include "AliGRPObject.h"
 #include "AliTPCTransform.h"
 #include "AliTPCmapper.h"
+#include "AliTPCclusterMI.h"
 
 class AliCDBStorage;
 class AliTPCCalDet;
@@ -102,6 +103,7 @@ class AliTPCCalDet;
 #include "TFile.h"
 #include "TKey.h"
 #include "TGraphErrors.h"
+#include "TGeoGlobalMagField.h"
 
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -125,6 +127,7 @@ class AliTPCCalDet;
 #include "AliTriggerScalers.h"
 #include "AliTriggerScalersRecord.h"
 #include "AliDAQ.h"
+#include "AliTPCRecoParam.h"
 /// \cond CLASSIMP
 ClassImp(AliTPCcalibDB)
 /// \endcond
@@ -894,6 +897,15 @@ Int_t AliTPCcalibDB::InitDeadMap()
   // Setup DDL map done
   // ============================================================
 
+  // ============================================================
+  // Set up channel masking from correction maps
+
+  TBits maskedPads[72];
+  GetMaskedChannelsFromCorrectionMaps(maskedPads);
+
+  // channel masking done
+  // ============================================================
+
   //=============================================================
   // Setup active chnnel map
   //
@@ -904,6 +916,8 @@ Int_t AliTPCcalibDB::InitDeadMap()
     AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
     AliError(" -> Check existance of 'Masked' in the OCDB entry: 'TPC/Calib/AltroConfig'");
   }
+
+  AliTPCROC* tpcROC = AliTPCROC::Instance();
 
   for (Int_t iROC=0;iROC<AliTPCCalPad::kNsec;++iROC){
     AliTPCCalROC *roc=fActiveChannelMap->GetCalROC(iROC);
@@ -926,14 +940,22 @@ Int_t AliTPCcalibDB::InitDeadMap()
 
     Int_t numberOfDeactivatedChannels=0;
     for (UInt_t irow=0; irow<roc->GetNrows(); ++irow){
+      // first channel in row
+      const Int_t channel0 = tpcROC->GetRowIndexes(iROC)[irow];
+
       for (UInt_t ipad=0; ipad<roc->GetNPads(irow); ++ipad){
         //per default the channel is on
         roc->SetValue(irow,ipad,1);
+
         // apply altro dead channel mask (inverse logik, it is not active, but inactive channles)
         if (masked && masked->GetValue(irow, ipad)) roc->SetValue(irow, ipad ,0);
+
         // mask channels if a DDL is inactive
         Int_t ddlId=map.GetEquipmentID(iROC, irow, ipad)-768;
         if (ddlId>=0 && !ddlMap[ddlId]) roc->SetValue(irow, ipad ,0);
+
+        // mask channels if error on space point coorection is too large
+        if (maskedPads && maskedPads[iROC].TestBitNumber(channel0+ipad)) roc->SetValue(irow, ipad ,0);
 
         if (roc->GetValue(irow, ipad)<0.0001) {
           ++numberOfDeactivatedChannels;
@@ -1690,6 +1712,171 @@ Float_t AliTPCcalibDB::GetDCSSensorMeanValue(AliDCSSensorArray *arr, const char 
     //    val*=10;
   }
   return val;
+}
+
+Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
+{
+  // set bits for masked pads
+  int nrowsMasked=0,npadsMasked=0,npadsTotMasked=0;
+  if (AliTPCRecoParam::GetPrimaryDCACut()) {
+    AliInfo("Special reconstruction for residuals extraction, masking is disabled");
+    return 0;
+  }
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!fld || !man->IsDefaultStorageSet() || man->GetRun()<0) {
+    AliFatal("OCDB of B-field is not initialized");
+  }
+  const int run = GetRun();
+  // pick the recoparam matching to field (as low or high flux)
+  AliRecoParam::EventSpecie_t spec = fld->GetBeamType()==AliMagF::kBeamTypeAA ? AliRecoParam::kHighMult : AliRecoParam::kLowMult;
+  AliTPCRecoParam* param = 0;
+  int parID=0;
+  while( (param=GetRecoParam(parID++)) ) { if (param->GetEventSpecie()&spec) break;}
+  if (!param) AliFatal("Failed to extract recoparam");
+  //
+  if (!param->GetUseCorrectionMap()) {
+    AliInfo("Residual correction maps are not used, no masking needed");
+    return 0;
+  }
+
+  AliTPCTransform* transform = GetTransform();
+  if (!transform) AliFatal("Failed to extract Transform");
+  transform->SetCurrentRecoParam(param);
+
+  // Load maps covering the run and build masks for disable full rows
+  //
+  // get reference map
+  AliTPCChebCorr *mapRef = AliTPCTransform::LoadFieldDependendStaticCorrectionMap(kTRUE);
+  //
+  // get correction maps
+  TObjArray* arrMaps = AliTPCTransform::LoadCorrectionMaps(kFALSE);
+  arrMaps->SetOwner(kTRUE);
+  if (!((AliTPCChebCorr*)arrMaps->UncheckedAt(0))->GetTimeDependent()) {
+    // static maps are field-dependent
+    AliTPCChebCorr* mapKeep = AliTPCTransform::LoadFieldDependendStaticCorrectionMap(kFALSE,arrMaps);
+    arrMaps->Remove((TObject*)mapKeep);
+    arrMaps->Delete();
+    arrMaps->Add(mapKeep);  // leave only maps needed for this run if the object was default one
+  }
+  int nMaps = arrMaps->GetEntriesFast();
+
+  // mask full rows disabled in at least one of the maps
+  TBits maskedRows[72];
+  for (int isec=72;isec--;) {  // flag masked full rows
+    mapRef->GetNMaskedRows(isec,&maskedRows[isec]);
+    for (int imap=nMaps;imap--;) ((AliTPCChebCorr*)arrMaps->UncheckedAt(imap))->GetNMaskedRows(isec,&maskedRows[isec]);
+    nrowsMasked += maskedRows[isec].CountBits();
+    //       printf("ROC%d masked %d rows\n",isec,maskedRows[isec].CountBits());
+  }
+  //
+  // Now we need to mask individual pads where the assigned errors or distortions are too large
+  // Since >1 map may cover the run, we query all off them in their central time stamps
+  // 1) Make sure the maps are unique for this run
+  AliGRPObject* grp = GetGRP(run);
+  time_t tGRPmin = grp->GetTimeStart();
+  time_t tGRPmax = grp->GetTimeEnd();
+  time_t tCentGRP = (tGRPmin+tGRPmax)/2;  // center of the run according to grp
+  //
+  time_t mapsT[nMaps];
+  for (int i=0;i<nMaps;i++) {
+    mapsT[i] = ((AliTPCChebCorr*)arrMaps->At(i))->GetTimeStampCenter();
+    if (mapsT[i]<tGRPmin || mapsT[i]>tCentGRP) mapsT[i] = tCentGRP;
+  }
+  //
+  delete arrMaps; // we don't need anymore these maps, Transform will load according to time stamp
+  delete mapRef;
+  //
+  AliTPCROC* roc = AliTPCROC::Instance();
+  double testv[3]={0.};
+
+  // determine ranges for time-bin to be assigned to test cluster
+  transform->SetCurrentTimeStamp(mapsT[0]);
+  const double tbinMin=0.,tbinMax=800.0;
+  testv[0] = 62.; testv[1] = 0.; testv[2] = tbinMin; // at highest pad of IROC, min drift-time
+  transform->Local2RotatedGlobal(0,testv);
+  const double ztMin = testv[2];
+  testv[0] = 62.; testv[1] = 0.; testv[2] = tbinMax; // at highest pad of IROC, max drift-time
+  transform->Local2RotatedGlobal(0,testv);
+  const double ztMax = testv[2];
+  const double tzSlope = (tbinMax-tbinMin)/(ztMax-ztMin);
+  //
+  // for test only >>>>>>>>>>
+  //  double *mxdist = (double*)param->GetBadPadMaxDistXYZ();
+  //  double *mxerr  = (double*)param->GetBadPadMaxErrYZ();
+  //  mxdist[0] = 7.; mxdist[1] = 7.; mxdist[2] = 7.;
+  //  mxerr[0] = 2.; mxerr[1] = 2.;
+  // for test only <<<<<<<<<<
+  const double *padMaxDist = param->GetBadPadMaxDistXYZ();
+  const double *padMaxErr  = param->GetBadPadMaxErrYZ();
+  const double maxErrY2    = padMaxErr[0]>0 ? padMaxErr[0]*padMaxErr[0] : -1.;
+  const double maxErrZ2    = padMaxErr[1]>0 ? padMaxErr[1]*padMaxErr[1] : -1.;
+  //
+  const float tgLabTest = 0.4f; // check distortions/errors for this pad for high pt track at tgLab=0.4
+  AliTPCclusterMI clProbe;
+  for (int imap=0;imap<nMaps;imap++) {
+    AliInfoF("Querying maps at time %ld",mapsT[imap]);
+    transform->SetCurrentTimeStamp(mapsT[imap]);
+    //
+    for (int isec=72;isec--;) {
+      TBits& padStatus = maskedPads[isec];
+      for (int irow=roc->GetNRows(isec);irow--;) {
+        const int npads = roc->GetNPads(isec, irow), channel0 = roc->GetRowIndexes(isec)[irow];
+        if (maskedRows[isec].TestBitNumber(irow)) { // full row is masked
+          for (int ipad=npads;ipad--;) padStatus.SetBitNumber(channel0+ipad); // mask all pads of the row
+          //printf("ROC%d masked %d pads of full row %d\n",isec,npads,irow);
+          npadsTotMasked += npads;
+          continue;
+        }
+        const double xRow = roc->GetPadRowRadii(isec,irow), zTest = xRow*tgLabTest;
+        const double tbinTest = tbinMin+(zTest-ztMin)*tzSlope; // define tbin at which distortions/errors will be evaluated
+        for (int ipad=npads;ipad--;) {
+          testv[0] = irow;
+          testv[1] = 0.5+ipad; // pad center
+          testv[2] = tbinTest;
+          transform->Transform(testv,&isec,0,0);
+          const float* clCorr    = transform->GetLastMapCorrection();
+          const float* clCorrRef = transform->GetLastMapCorrectionRef();
+          Bool_t bad = kFALSE;
+
+          // does the distortion exceed max.allowed?
+          for (int dir=3;dir--;) if (padMaxDist[dir]>0. && TMath::Abs(clCorr[dir])>padMaxDist[dir]) {
+            bad=kTRUE;
+            // printf("ROC%2d row%2d pad%2d bad: distortion[%d]=%.2f exceeds threshold %.2f\n",
+            //       isec,npads,irow,dir,clCorr[dir],padMaxDist[dir]);
+            break;
+          }
+
+          if (!bad) { // check errors assigned to such cluster
+            clProbe.SetDetector(isec);
+            clProbe.SetX(testv[0]); // store coordinates
+            clProbe.SetY(testv[1]);
+            clProbe.SetZ(testv[2]);
+            clProbe.SetDistortions(clCorr[0]-clCorrRef[0],clCorr[1]-clCorrRef[1],clCorr[2]-clCorrRef[2]);
+            clProbe.SetDistortionDispersion(clCorr[3]); // store distortions wrt ref and dispersion (ref already subtracted)
+            const double errY2 = transform->ErrY2Syst(&clProbe,testv[1]/testv[0]);
+            const double errZ2 = transform->ErrZ2Syst(&clProbe,testv[2]/testv[0]);
+            if ( (maxErrY2>0 && errY2>maxErrY2) || (maxErrZ2>0 && errZ2>maxErrZ2) ) {
+              bad=kTRUE;
+              //printf("ROC%2d row%2d pad%2d bad: Errors^2 for Y:%.3e or Z:%.3e exceeds threshold %.3e|%.3e\n",
+              //     isec,npads,irow,errY2,errZ2,maxErrY2,maxErrZ2);
+            }
+          }
+          //
+          if (bad) {
+            if (!padStatus.TestBitNumber(channel0+ipad)) npadsMasked++;
+            padStatus.SetBitNumber(channel0+ipad);
+          }
+        } // loop over all pads of the row
+      } // loop over all rows of the ROC
+    } // loop over all ROCs
+  } // loop over all maps
+  //
+  npadsTotMasked += npadsMasked;
+  AliInfoF("masked %d pads (%d full padrows, %d individual pads)",
+           npadsTotMasked,nrowsMasked,npadsMasked);
+  return npadsTotMasked;
+  //
 }
 
 Bool_t AliTPCcalibDB::IsDataTakingActive(time_t timeStamp)
