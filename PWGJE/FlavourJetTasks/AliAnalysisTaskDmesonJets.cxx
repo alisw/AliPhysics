@@ -1343,7 +1343,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
 
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fMomentum.SetPxPyPzE(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E());
           (*dMesonJetIt).second.fJets[jetDef.GetName()].fNConstituents = constituents.size();
-          break;
         }
       }
     }
