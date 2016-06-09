@@ -2565,12 +2565,26 @@ Bool_t AliESDEvent::IsIncompleteDAQ()
 //______________________________________________________________________________
 UInt_t AliESDEvent::GetTimeStampCTP() const
 {
-  // calculate/return CTP time stamp
+  // calculate/return CTP time stamp in the approximation of BC=25ns
   const AliTimeStamp* ctp0 = GetCTPStart();
   UInt_t tCTP = 0;
-  if ( !ctp0 || !(tCTP=ctp0->GetBunchCross()) ) return GetTimeStamp(); // N/A
+  if ( !ctp0 || !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
   // subtract from current orbit the orbit at CTP SOR
   Long64_t span=(GetPeriodNumber()<<24)+GetOrbitNumber()-ctp0->GetOrbit();
   tCTP += span*3564*25/1000000000;
+  return tCTP;
+}
+
+//______________________________________________________________________________
+UInt_t AliESDEvent::GetTimeStampCTPBCCorr() const
+{
+  // calculate/return CTP time stamp in the approximation of BC=25ns
+  const AliTimeStamp* ctp0 = GetCTPStart();
+  const double kBCLHC = 1./40.079e6;
+  UInt_t tCTP = 0;
+  if ( !ctp0 || !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
+  // subtract from current orbit the orbit at CTP SOR
+  Long64_t span=(GetPeriodNumber()<<24)+GetOrbitNumber()-ctp0->GetOrbit();
+  tCTP += span*3564*kBCLHC;
   return tCTP;
 }
