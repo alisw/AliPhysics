@@ -181,13 +181,18 @@ macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
     setDAflags()
 
     # Generating the DA executable
-    add_executable(${DETECTOR}${ALGORITHM}da.exe ${DETECTOR}${ALGORITHM}da.cxx) #
+    add_executable(${DETECTOR}${ALGORITHM}da.exe ${DETECTOR}${ALGORITHM}da.cxx)
 
     # DA flags and linking information
     set(MODULE_COMPILE_FLAGS)
     set(MODULE_LINK_FLAGS)
 
-    target_link_libraries(${DETECTOR}${ALGORITHM}da.exe ${STATIC_DEPENDENCIES} ${AMORE_AUXLIBS} daqDA ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES} Root RootExtra) # 1
+    target_link_libraries(${DETECTOR}${ALGORITHM}da.exe
+                          ${STATIC_DEPENDENCIES}
+                          ${AMORE_AUXLIBS}
+                          daqDA
+                          ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES}
+                          Root RootExtra)
 
     # different flags
     set(MODULE_COMPILE_FLAGS "-Wl,--no-as-needed  ${DATE_CFLAGS} ${AMORE_CFLAGS}")

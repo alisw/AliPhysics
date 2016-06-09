@@ -17,7 +17,7 @@
 # Flags are filled using amore-config
 #               - AMORE_VERSION
 #               - AMORE_STATICLIBS - libraries and linking folders for static build
-#               - AMORE_AUXLIBS - auxiliary libraries for DA 
+#               - AMORE_AUXLIBS - auxiliary libraries for DA
 #               - AMORE_DEFINITIONS
 #               - AMORE_CFLAGS
 #               - AMORE_INCLUDE_DIR
@@ -25,68 +25,43 @@
 set(AMORE_FOUND FALSE)
 
 if(AMORE_CONFIG)
-    # Setting ROOTSYS environment variable for the amore-config to find root-config
-    # The variable is unset after the Find is finished
-    set(ENV{ROOTSYS} ${ROOTSYS})
+
+    # Helper to execute amore-config with the given options in the DATE environment.
+    # Output is sent to _OUTVAR.
+    # Errors are fatal.
+    macro(amore_config _OPTS _OUTVAR)
+        execute_process(COMMAND sh -c "source ${DATE_ENV} && export ROOTSYS=${ROOTSYS} && ${AMORE_CONFIG} ${_OPTS}"
+                        OUTPUT_VARIABLE _OUTVAR_RAW
+                        ERROR_VARIABLE _ERR
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if(_ERR)
+            message(FATAL_ERROR "Error executing ${DATE_CONFIG} ${_OPTS}")
+        endif()
+        string(STRIP "${_OUTVAR_RAW}" _OUTVAR_STRIPPED)
+        string(REPLACE "\n" " " ${_OUTVAR} "${_OUTVAR_STRIPPED}")
+    endmacro()
 
     # Checking AMORE version
-    execute_process(COMMAND ${AMORE_CONFIG} --version OUTPUT_VARIABLE AMORE_VERSION ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error retrieving AMORE version : ${error}")
-    endif(error)
-    
-    if(AMORE_VERSION)
-        string(STRIP ${AMORE_VERSION} AMORE_VERSION)
-    endif(AMORE_VERSION)
-
-    # Extract major, minor, and patch versions from
-#    string(REGEX REPLACE "^([0-9]+)\\.[0-9]+" "\\1" DATE_VERSION_MAJOR "${DATE_VERSION}")
-#    string(REGEX REPLACE "^[0-9]+\\.([0-9]+)" "\\1" DATE_VERSION_MINOR "${DATE_VERSION}")
-    message(STATUS "AMORE version ${AMORE_VERSION} found.")
+    amore_config(--version AMORE_VERSION)
+    message(STATUS "AMORE version ${AMORE_VERSION} found")
 
     # Checking AMORE static libraries
-    execute_process(COMMAND ${AMORE_CONFIG} --ldflags-da-static OUTPUT_VARIABLE AMORE_STATICLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error retrieving AMORE static libraries : ${error}")
-    endif(error)
-    
-    if(AMORE_STATICLIBS)
-        string(STRIP ${AMORE_STATICLIBS} AMORE_STATICLIBS)
-        string(REPLACE "\n" " " AMORE_STATICLIBS ${AMORE_STATICLIBS})
-    endif(AMORE_STATICLIBS)
+    amore_config(--ldflags-da-static AMORE_STATICLIBS)
+    message(STATUS "AMORE static libraries: ${AMORE_STATICLIBS}")
 
     # Checking AMORE auxiliary libraries
-    execute_process(COMMAND ${AMORE_CONFIG} --auxlibs-list OUTPUT_VARIABLE AMORE_AUXLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error retrieving AMORE auxiliary libraries : ${error}")
-    endif(error)
-    
-    if(AMORE_AUXLIBS)
-        string(STRIP ${AMORE_AUXLIBS} AMORE_AUXLIBS)
-    endif(AMORE_AUXLIBS)
+    amore_config(--auxlibs-list AMORE_AUXLIBS)
+    message(STATUS "AMORE auxiliary libraries: ${AMORE_AUXLIBS}")
 
     # Checking AMORE cflags
-    execute_process(COMMAND ${AMORE_CONFIG} --cflags OUTPUT_VARIABLE AMORE_CFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error retrieving AMORE cflags : ${error}")
-    endif(error)
-    
-    if(AMORE_CFLAGS)
-        string(STRIP ${AMORE_CFLAGS} AMORE_CFLAGS)
-    endif(AMORE_CFLAGS)
+    amore_config(--cflags AMORE_CFLAGS)
+    message(STATUS "AMORE CFLAGS: ${AMORE_CFLAGS}")
 
     # Checking AMORE cflags
-    execute_process(COMMAND ${AMORE_CONFIG} --include-dir OUTPUT_VARIABLE AMORE_INCLUDE_DIR ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(error)
-        message(FATAL_ERROR "Error retrieving AMORE include directory : ${error}")
-    endif(error)
-    
-    if(AMORE_INCLUDE_DIR)
-        string(STRIP ${AMORE_INCLUDE_DIR} AMORE_INCLUDE_DIR)
-    endif(AMORE_INCLUDE_DIR)
+    amore_config(--include-dir AMORE_INCLUDE_DIR)
+    message(STATUS "AMORE include directory: ${AMORE_INCLUDE_DIR}")
 
     set(AMORE_DEFINITIONS "-DALI_AMORE")
     set(AMORE_FOUND TRUE)
-    unset(ENV{ROOTSYS})
 
 endif(AMORE_CONFIG)
