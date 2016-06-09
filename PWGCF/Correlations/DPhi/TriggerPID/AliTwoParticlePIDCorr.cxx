@@ -3062,9 +3062,9 @@ fEventCounter->Fill(15);
 if(tracksUNID)  delete tracksUNID;
 
 if(tracksID) delete tracksID;
-if(fV0TrigCorr) {
-  if(tracksIDV0) delete tracksIDV0;
-  }
+ 
+if(tracksIDV0) delete tracksIDV0;
+  
 
 
 }//AOD || MCAOD condition
@@ -3447,9 +3447,8 @@ if(tracksUNID)  delete tracksUNID;
 
 if(tracksID) delete tracksID;
 
-if(fV0TrigCorr) {
-  if(tracksIDV0) delete tracksIDV0;
-  }
+if(tracksIDV0) delete tracksIDV0;
+  
 
 } // *************************event loop ends******************************************
 //________________________________________________________________________
