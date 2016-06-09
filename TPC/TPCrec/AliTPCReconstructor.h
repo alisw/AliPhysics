@@ -58,9 +58,9 @@ public:
   static        Bool_t     GetCompactClusters() { return fgCompactClusters;}
 
   static  void SetSystematicError( TVectorD *vec)  { fSystematicErrors=vec;}
-  static  void SetSystematicErrorCluster( TVectorD *vec ) { fSystematicErrorClusters=vec;}
+  static  void SetSystematicErrorCluster( TVectorD *vec );
   static  void SetExtendedRoads( TVectorD *extendedRoads ) { fgExtendedRoads=extendedRoads;}
-  static  void SetPrimaryDCACut( TVectorD *dcacut )        { fgPrimaryDCACut=dcacut;}
+  static  void SetPrimaryDCACut( TVectorD *dcacut );
   static  void SetPrimaryZ2XCut( double v )                { fgPrimaryZ2XCut=v; }
   static  void SetZOutSectorCut( double v )                { fgZOutSectorCut=v; }
   static  void SetCompactClusters(Bool_t v)                { fgCompactClusters=v;}

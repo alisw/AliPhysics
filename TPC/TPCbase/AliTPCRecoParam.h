@@ -9,6 +9,7 @@
 
 #include "AliDetectorRecoParam.h"
 #include "TVectorF.h"
+#include "TVectorD.h"
 
 class AliTPCRecoParam : public AliDetectorRecoParam
 {
@@ -193,6 +194,12 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   static   AliTPCRecoParam *GetLaserTestParam(Bool_t bPedestal);  // special setting for laser
   static   AliTPCRecoParam *GetCosmicTestParam(Bool_t bPedestal); // special setting for cosmic
   //
+  static  const Double_t * GetSystematicErrorClusterCustom() { return (fgSystErrClustCustom) ? fgSystErrClustCustom->GetMatrixArray():0;}
+  static  const Double_t * GetPrimaryDCACut()                { return (fgPrimaryDCACut)? fgPrimaryDCACut->GetMatrixArray():0; }
+  static  void  SetSystematicErrorClusterCustom( TVectorD *vec ) { fgSystErrClustCustom=vec;}
+  static  void SetPrimaryDCACut( TVectorD *dcacut )              { fgPrimaryDCACut=dcacut;}
+
+  //
  protected:
 
   Int_t    fUseHLTClusters;  ///< allows usage of HLT clusters instead of RAW data
@@ -286,6 +293,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fBadPadMaxDistXYZ[3];            ///< pad considered bad if abs distortion exceeds this value
   Double_t fBadPadMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
+
+  static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member
+  static TVectorD* fgPrimaryDCACut;       //< only primaries passing DCAYZ cut are reconstructed
 
 public:
   static Bool_t fgUseTimeCalibration; ///< flag usage the time dependent calibration

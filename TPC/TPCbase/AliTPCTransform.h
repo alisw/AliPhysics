@@ -15,6 +15,7 @@
 class AliTPCRecoParam;
 class TTreeSRedirector;
 class TGraph;
+class AliTPCclusterMI;
 #include "AliTPCChebCorr.h"
 #include "AliTransform.h"
 #include <time.h>
@@ -42,6 +43,9 @@ public:
   //
   static TObjArray* LoadCorrectionMaps(Bool_t refMap=kFALSE);
   static AliTPCChebCorr* LoadFieldDependendStaticCorrectionMap(Bool_t ref,TObjArray* mapsArrProvided=0);
+  Double_t ErrY2Syst(const AliTPCclusterMI * cl, const double tgAngPhi);
+  Double_t ErrZ2Syst(const AliTPCclusterMI * cl, const double tgAngLam);
+
   void LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided=0);
   // set current values
   //

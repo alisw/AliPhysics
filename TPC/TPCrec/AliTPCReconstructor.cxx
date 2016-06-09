@@ -371,3 +371,19 @@ void AliTPCReconstructor::ParseOptions( AliTPCtracker* tracker ) const
 
   return;
 }
+
+//_____________________________________________________________________________
+void AliTPCReconstructor::SetSystematicErrorCluster( TVectorD *vec ) 
+{ 
+  // set clusters syst.errors which will override persistent data member from AliTPCRecoParam::fSystematicErrors
+  fSystematicErrorClusters=vec;
+  AliTPCRecoParam::SetSystematicErrorClusterCustom(vec);
+}
+
+//_____________________________________________________________________________
+void AliTPCReconstructor::SetPrimaryDCACut( TVectorD *dcacut ) 
+{ 
+  // set clusters syst.errors which will override persistent data member from AliTPCRecoParam::fSystematicErrors
+  fgPrimaryDCACut=dcacut;
+  AliTPCRecoParam::SetPrimaryDCACut(dcacut);
+}

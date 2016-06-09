@@ -45,6 +45,8 @@
 ClassImp(AliTPCRecoParam)
 /// \endcond
 
+TVectorD* AliTPCRecoParam::fgSystErrClustCustom = 0;  // normally will be set as AliTPCReconstructor::SetSystematicErrorCluster alias
+TVectorD* AliTPCRecoParam::fgPrimaryDCACut = 0;       // normally will be set as AliTPCReconstructor::SetPrimaryDCACut alias
 
 Bool_t AliTPCRecoParam::fgUseTimeCalibration=kTRUE; // flag usage the time dependent calibration
                                       // to be switched off for pass 0 reconstruction

@@ -133,9 +133,6 @@ public:
    virtual Double_t ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl = 0);
    virtual Double_t ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl = 0);   
 
-   static Double_t ErrY2Syst(const AliTPCclusterMI * cl, const double tgAngPhi, const AliTPCRecoParam* rp);
-   static Double_t ErrZ2Syst(const AliTPCclusterMI * cl, const double tgAngLam, const AliTPCRecoParam* rp);
-
    Double_t F1(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3) const; 
    Double_t F1old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3) const; 
    Double_t F2(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3) const; 
