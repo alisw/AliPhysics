@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskSE.h"
 #include <TCustomBinning.h>
 #include <TString.h>
+#include <vector>
 
 class TArrayD;
 class THistManager;
@@ -70,6 +71,12 @@ public:
    */
   void SetRun2() { fNumberOfCells = 17664; }
 
+  /**
+   * Mark cell as bad (i.e) exclude from running
+   * @param cellId Cell to be masked
+   */
+  void SetBadCell(Int_t cellId);
+
 protected:
 
   /**
@@ -121,14 +128,23 @@ protected:
    */
   virtual void UserExec(Option_t *);
 
+  /**
+   * Check whether cell with a given ID is masked by the user
+   * @param cellId Cell ID to be checked
+   * @return True if the cell is masked, false otherwise
+   */
+  bool IsCellMasked(Int_t cellId) const;
+
 private:
   THistManager                        *fHistManager;        //!<! Histogram handler
   AliEMCALGeometry                    *fGeometry;           //!<! EMCAL geometry
 
-  Double_t                            fMinCellAmplitude;    ///< Min. cell amplitude requested for cell time
+  Double_t                            fMinCellAmplitude;    ///< Min. cell amplitude requested for cell time and frequency
   ULong_t                             fRequestTrigger;      ///< Trigger selection
   TString                             fTriggerString;       ///< Trigger string in addition to trigger selection
   Int_t                               fNumberOfCells;       ///< Number of cells
+
+  std::vector<Int_t>                  fMaskedCells;         ///< Vector of masked cells
 
   AliEmcalCellMonitorTask(const AliEmcalCellMonitorTask &ref);
   AliEmcalCellMonitorTask &operator=(const AliEmcalCellMonitorTask &ref);
