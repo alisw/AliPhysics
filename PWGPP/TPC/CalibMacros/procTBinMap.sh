@@ -99,7 +99,7 @@ alilog_info "END: Processing"
 [[ -f syswatch.log ]] && mv syswatch.log syswatch_${mapStartTime}_${mapStopTime}.log 
 rm tmpDeltaSect*.root
 
-if [ -z "$ntcloseTest" ] ; then
+if [ -n "$ntcloseTest" ] ; then
     alilog_info "BEGIN Closure test with $ntcloseTest tracks for time bin $mapStartTime : $mapStopTime in run $runNumber"
     mode=3
     time aliroot -b -q  $inclMacro $loadLibMacro ${locMacro}+g\($mode,$run,$mapStartTime,$mapStopTime,\"\"\) >& closure_${mapStartTime}_${mapStopTime}.log

@@ -114,13 +114,13 @@ locMacro=$(basename "$macroName")
 residFilesRun="residual.list"
 
 # if >1 run is requested, to avoid ovewriting, results for each run will appear in separate directory
-runDirPref="res_"
+runDirPref=
 if [ "$nruns" -ne 1 ] ; then 
     runDirPref="res_"
     alilog_info "***"
     alilog_info "*** ATTENTION: $nruns submitted for processing"
     alilog_info "*** Output of each run will be written in"
-    alilog_info "*** $pref_runNumber directory"
+    alilog_info "*** ${runDirPref}_runNumber directory"
     alilog_info "***"
 fi
 
@@ -133,7 +133,7 @@ for arun in `cat $runList`; do
     echo "run=$run"
     export runNumber=$run
     runDir=$curdir
-    if [ -z "$runDirPref" ] ; then
+    if [ -n "$runDirPref" ] ; then
 	runDir="$curdir/$runDirPref_$run"
 	[ ! -d /tmp/mydir  ] && mkdir $runDir
 	echo "Results will be stored in $runDir directory"
