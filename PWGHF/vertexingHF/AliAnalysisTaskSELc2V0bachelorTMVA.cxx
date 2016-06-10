@@ -198,7 +198,8 @@ AliAnalysisTaskSE(),
   fTriggerMask(0),
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc(0)
+  fFuncWeightFONLL5overLHC13d3Lc(0),
+  fNTracklets(0)
 {
   //
   /// Default ctor
@@ -328,7 +329,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
 
   fFuncWeightPythia(0),
   fFuncWeightFONLL5overLHC13d3(0),
-  fFuncWeightFONLL5overLHC13d3Lc(0)
+  fFuncWeightFONLL5overLHC13d3Lc(0),
+  fNTracklets(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -968,6 +970,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
       return;
     }
     
+    // multiplicity definition with tracklets
+    fNTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+
     //Printf("Filling MC histo");
     FillMCHisto(mcArray);
   }
@@ -1599,13 +1604,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
   Double_t weightNch = 1;
   if (fUseMCInfo) {
-    Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
-    if(nChargedMCPhysicalPrimary > 0){
+    //Int_t nChargedMCPhysicalPrimary=AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(mcArray,-1.0,1.0);
+    //  if(nChargedMCPhysicalPrimary > 0){
+    if(fNTracklets > 0){
       if(!fHistoMCNch) AliInfo("Input histos to evaluate Nch weights missing"); 
-      if(fHistoMCNch) weightNch = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(nChargedMCPhysicalPrimary));
+      if(fHistoMCNch) weightNch *= fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(fNTracklets));
     }
   }
-
+  
 
   // Fill candidate variable Tree (track selection, V0 invMass selection)
   if (!onFlyV0 && isInV0window && isInCascadeWindow && part->CosV0PointingAngle()>0.99 && TMath::Abs(nSigmaTPCpr) <= 3 && v0part->Getd0Prong(0) < 20 && v0part->Getd0Prong(1) < 20) {
