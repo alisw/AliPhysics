@@ -650,7 +650,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         //   Float_t eDEDX = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE);
         
         Float_t fTPCnSigmaPI = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kPion) : 1000;
-      
+        
         
         Double_t CorrectTPCNSigma;
         Double_t mult = fVevent->GetNumberOfESDTracks()/8;
@@ -662,10 +662,10 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             // cout <<fTPCnSigma << "   ====  " <<COrrectTPCNSigma<<endl;
         }
         
-        if(TMath::Abs(fTOFnSigma) < fmaxTOFnSigma && TMath::Abs(fTPCnSigma) < fmaxTPCnsigmaLowpT && fTPCnSigmaPI > 4)
-        {
-            fITSnsigmaElect->Fill(track->P(),fITSnSigma);
-        }
+ //       if(TMath::Abs(fTOFnSigma) < fmaxTOFnSigma && TMath::Abs(fTPCnSigma) < fmaxTPCnsigmaLowpT && fTPCnSigmaPI > 4)
+       // {
+       //     fITSnsigmaElect->Fill(track->P(),fITSnSigma);
+       // }
         
         
         fITSnsigma->Fill(track->P(),fITSnSigma);
@@ -823,7 +823,10 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             //----------------------Selection and Flow of Photonic Electrons-----------------------------
             Bool_t fFlagPhotonicElec = kFALSE;
             SelectPhotonicElectron(iTracks,track,fTPCnSigma,evPlAngV0,fFlagPhotonicElec,weightEP,mult);
-            if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
+            if(fFlagPhotonicElec){
+                fPhotoElecPt->Fill(pt);
+                fITSnsigmaElect->Fill(track->P(),fITSnSigma);
+            }
             // Semi inclusive electron
             if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
         }
@@ -1057,11 +1060,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     
     fITSnsigma = new TH2F("fITSnsigma", "ITS - n sigma before HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fITSnsigma);
-  
+    
     
     fITSnsigmaElect = new TH2F("fITSnsigmaElect", "fITSnsigmaElect - n sigma before HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fITSnsigmaElect);
-
+    
     
     fTPCnsigma = new TH2F("fTPCnsigma", "TPC - n sigma before HFE pid",600,0,6,400,-20,20);
     fOutputList->Add(fTPCnsigma);
