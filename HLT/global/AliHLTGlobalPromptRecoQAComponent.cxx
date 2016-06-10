@@ -78,6 +78,7 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalPromptRecoQAComponent)
 
+//__________________________________________________________________________________________________
 AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   : AliHLTProcessor()
   , fVerbosity(0)
@@ -156,11 +157,13 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   // or
 }
 
+//__________________________________________________________________________________________________
 AliHLTGlobalPromptRecoQAComponent::~AliHLTGlobalPromptRecoQAComponent()
 {
   // see header file for class documentation
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString value)
 {
   // see header file for class documentation
@@ -197,6 +200,7 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
   return iResult;
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
 {
   int rc = 0;
@@ -222,6 +226,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
   return 0;
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
@@ -251,6 +256,7 @@ int AliHLTGlobalPromptRecoQAComponent::Reconfigure(const char* cdbEntry, const c
   return iResult;
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
   // see header file for class documentation
@@ -317,12 +323,14 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
 }
 
+//__________________________________________________________________________________________________
 AliHLTComponentDataType AliHLTGlobalPromptRecoQAComponent::GetOutputDataType()
 {
   // see header file for class documentation
   return kAliHLTDataTypeHistogram|kAliHLTDataOriginOut;
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // see header file for class documentation
@@ -330,6 +338,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetOutputDataSize(unsigned long& constBa
   inputMultiplier=0.0;
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
 {
   // see header file for class documentation
@@ -495,26 +504,12 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   return iResult;
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
 {
   delete fHistClusterChargeTot; fHistClusterChargeTot=NULL;
   delete fHistTPCTrackPt; fHistTPCTrackPt=NULL;
 }
-
-static void ReBinLogX(TAxis* axis)
-{
-  int bins = axis->GetNbins();
-  Axis_t from = TMath::Log10(axis->GetXmin());
-  Axis_t to = TMath::Log10(axis->GetXmax());
-  Axis_t width = (to - from) / bins;
-  Axis_t *new_bins = new Axis_t[bins + 1];
-  for (int i = 0; i <= bins; i++)
-  {
-    new_bins[i] = TMath::Power(10, from + i * width);
-  }
-  axis->Set(bins, new_bins);
-  delete [] new_bins;
-} 
 
 //__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
@@ -529,6 +524,7 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   }
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
 {
   //tokenize string
@@ -561,6 +557,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(std::string histConfig)
 }
 
 void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config )
+//__________________________________________________________________________________________________
 {
   //some sanity checks
   if (histTitle.size()==0)
@@ -628,6 +625,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(string trigName, string his
   fAxes[yname].histograms[histName]=true;
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
 {
   std::vector<string> tokens;
@@ -657,6 +655,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
   }
 }
 
+//__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low, float high)
 {
   if (bins>200)
@@ -674,6 +673,7 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low
   }
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
 {
   // see header file for class documentation
@@ -683,6 +683,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoDeinit()
   return 0;
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
 {
   int nPushedHistograms=0;
@@ -710,6 +711,7 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
   return nPushedHistograms;
 }
 
+//__________________________________________________________________________________________________
 int histStruct::Fill()
 {
   if (x.value && (*x.value) && ((y.value)?(*y.value):1) )
@@ -721,6 +723,7 @@ int histStruct::Fill()
   return 0;
 }
 
+//__________________________________________________________________________________________________
 int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& evtData,
     const AliHLTComponentBlockData* blocks,
     AliHLTComponentTriggerData& /*trigData*/,
