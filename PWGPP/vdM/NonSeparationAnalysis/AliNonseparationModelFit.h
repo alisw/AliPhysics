@@ -4,7 +4,6 @@
 #define _ALI_NONSEPARATION_MODEL_FIT_H_
 
 #include <TObject.h>
-
 #include <TVectorD.h>
 
 class TObjArray;
@@ -26,36 +25,39 @@ public:
   void SetFitToRates(Bool_t b) { fFitToRates = b; }
   Bool_t FitToRates() const { return fFitToRates; }
 
+  void SetScaleRateError(Double_t s) { fScaleRateError = s; }
+
   void DoFit(TVectorD& startPar, const TString &saveFileName);
 
-  Double_t GetNDF() const {
-    Double_t sum=0;
-    for (Int_t i=0; i<6; ++i)
-      sum += fNDFMoments[i] + fNDFRates[i];
-    return sum;
-  }
-  Double_t GetChi2() const {
-    Double_t sum=0;
-    for (Int_t i=0; i<6; ++i)
-      sum += fChi2Moments[i] + fChi2Rates[i];
-    return sum;
-  }
+  Double_t GetNDF()  const { return GetNDFMoments()  + GetNDFRates();  }
+  Double_t GetChi2() const { return GetChi2Moments() + GetChi2Rates(); }
+
+  Double_t GetNDFMoments()  const;
+  Double_t GetNDFRates()    const;
+  Double_t GetChi2Moments() const;
+  Double_t GetChi2Rates()   const;
 
 protected:
 private:
+  AliNonseparationModelFit(const AliNonseparationModelFit& );
+  AliNonseparationModelFit& operator=(const AliNonseparationModelFit& );
 
-  TObjArray *fMoments; //!
-  TObjArray *fRates;   //!
+  TObjArray *fMoments;       //!
+  TObjArray *fRates;         //!
 
-  TVectorD  fPar; //!
+  TVectorD  fPar;            //!
 
-  Bool_t    fFitToRates; //!
+  Bool_t    fFitToRates;     //!
+  Double_t  fScaleRateError; //!
 
-  Double_t fChi2Moments[6]; //!
-  Double_t fChi2Rates[6];   //!
+  TVectorD  fMuOffsetsX;     //!
+  TVectorD  fMuOffsetsY;     //!
 
-  Double_t fNDFMoments[6]; //!
-  Double_t fNDFRates[6];   //!
+  Double_t  fChi2Moments[6]; //!
+  Double_t  fChi2Rates[6];   //!
+
+  Double_t  fNDFMoments[6]; //!
+  Double_t  fNDFRates[6];   //!
 
   ClassDef(AliNonseparationModelFit, 1);
 } ;
