@@ -52,7 +52,7 @@
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
 #include <AliOADBContainer.h>
-//#include <AliVEventHandler.h>
+//#include <AliMultSelection.h>
 #include <AliInputEventHandler.h>
 // emcal jet framework includes
 #include <AliPicoTrack.h>
@@ -3218,3 +3218,17 @@ void AliAnalysisTaskJetV2::DoSimpleSimulation(Int_t nEvents, Float_t v2, Float_t
    dNdphi4->SetTitle("v_{4}");
    dNdphi4->DrawCopy("same");
 }
+//_____________________________________________________________________________
+//Float_t AliAnalysisTaskJetV2::GetCentrality() const
+//{
+//   // return centrality percentile using new framework
+//    // return -1 when something goes wrong
+//    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+//        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+//    #endif
+//    AliMultSelection *multSelection = 0x0; 
+//    if(!InputEvent()) return -1.;
+//    multSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+//    if(multSelection) multSelection->GetMultiplicityPercentile("V0M");
+//    return -1.;
+//}
