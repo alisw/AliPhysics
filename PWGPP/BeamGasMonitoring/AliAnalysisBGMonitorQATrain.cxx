@@ -9,7 +9,7 @@
 // If you have any comment or question of this code,
 // Please send a mail to Bong-Hwi
 //
-// Last update: 2016.05.26 (blim)
+// Last update: 2016.06.10 (blim)
 //
 //#include <Riostream.h>
 #include <iostream>
@@ -51,7 +51,6 @@ fESD(0x0),
 fESDfriend(0x0),
 fTreeTrack2(0),
 fList(0),
-fUseTree(kFALSE),
 runNumber(0),
 fSpdC1(0),
 fSpdC2(0),
@@ -73,7 +72,6 @@ fESD(0x0),
 fESDfriend(0x0),
 fTreeTrack2(0),
 fList(0),
-fUseTree(kFALSE),
 runNumber(0),
 fSpdC1(0),
 fSpdC2(0),

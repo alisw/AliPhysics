@@ -1,5 +1,5 @@
 class AliAnalysisDataContainer;
-AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain(Bool_t UseTree = kFALSE)
+AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain()
 {
     //
     //This macro configures the task for the Beam Gas Monitoring QA
