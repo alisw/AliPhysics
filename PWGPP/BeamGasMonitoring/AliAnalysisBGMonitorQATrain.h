@@ -23,7 +23,6 @@ class AliAnalysisBGMonitorQATrain : public AliAnalysisTaskSE {
     AliESDfriend* fESDfriend; //! ESDfriend
     TTree *fTreeTrack2;        //! tree
     TList *fList;             //! list
-    Int_t fUseTree;
     Int_t runNumber;
     Int_t ftrigger[kMaxUShort];
     Int_t fSpdC1;
