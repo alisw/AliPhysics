@@ -270,6 +270,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenLimAcc;      //!<! histo with MC Lc --> K0S + p
 
   ULong64_t fTriggerMask;			  /// mask to the trigger word returned by the physics selection
+  Int_t fNTracklets;                               /// multiplicity definition with tracklets
 
   TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
@@ -277,7 +278,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 10); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 11); /// class for Lc->p K0
   /// \endcond    
 };
 
