@@ -3433,7 +3433,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= FunctionNL_kSDM(energy, 0.969703*0.989*0.9969*0.9991, -3.80387, -0.200546);
 
         else if( fCurrentMC == k16c2 )
-          energy /= FunctionNL_kSDM(energy, 0.974859*0.987, -3.85842, -0.405277);
+          energy /= FunctionNL_kSDM(energy, 0.974859*0.987*0.996, -3.85842, -0.405277);
 
         // 2.76TeV LHC11a/LHC13g
         else if( fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 )
@@ -3473,7 +3473,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
           energy /= FunctionNL_kSDM(energy, 0.96105*0.999*0.9996, -3.62239, -0.556256);
 
         else if( fCurrentMC == k16c2 )
-          energy /= FunctionNL_kSDM(energy, 0.960596*0.999, -3.48444, -0.766862);
+          energy /= FunctionNL_kSDM(energy, 0.960596*0.999*0.999, -3.48444, -0.766862);
 
         // 2.76TeV LHC11a/LHC13g
         else if(  fCurrentMC==k12f1a || fCurrentMC==k12i3 || fCurrentMC==k15g2 )
@@ -3563,7 +3563,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC == k15h2 )
           energy /= (FunctionNL_DPOW(energy, 1.0652493513, -0.0929276101, -0.1113762695, 1.1837801885, -0.1999914832, -0.0854569214) - 0.0145);
         else if( fCurrentMC == k16c2 )
-          energy /= (FunctionNL_DPOW(energy, 1.1835846739, -0.1998987993, -0.0854186691, 1.0489259285, -0.0759079646, -0.1239772934) - 0.025);
+          energy /= (FunctionNL_DPOW(energy, 1.1835846739, -0.1998987993, -0.0854186691, 1.0489259285, -0.0759079646, -0.1239772934) - 0.045);
         else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -3589,7 +3589,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC == k15h2 )
           energy /= (FunctionNL_DPOW(energy, 1.0105301622, -0.0732424689, -0.5000000000, 1.0689250170, -0.1082682369, -0.4388156470) - 0.001);
         else if( fCurrentMC == k16c2 )
-          energy /= (FunctionNL_DPOW(energy, 1.0513459039, -0.0894163252, -0.5000000000, 0.9922456908, -0.0551212559, -0.5000000000) - 0.035);
+          energy /= (FunctionNL_DPOW(energy, 1.0513459039, -0.0894163252, -0.5000000000, 0.9922456908, -0.0551212559, -0.5000000000) - 0.065);
         else fPeriodNameAvailable = kFALSE;
       }    
       break;
