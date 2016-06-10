@@ -912,9 +912,6 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   //
   // Use calibrated cluster error from OCDB
   //
-  const float kEpsZBoundary = 1.e-6; // to disentangle A,C and A+C-common regions
-  const float kMaxExpArg = 9.; // limit r-dumped error to this exp. argument
-  const float kMaxExpArgZ = TMath::Sqrt(2.*kMaxExpArg);
   const AliTPCRecoParam* rp = AliTPCReconstructor::GetRecoParam();
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   //
