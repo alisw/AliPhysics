@@ -60,6 +60,7 @@ if(FASTJET_FOUND)
            AliHFAODMCParticleContainer.cxx
            AliHFTrackContainer.cxx
            AliAnalysisTaskDmesonJets.cxx
+           AliAnalysisTaskDmesonJetsDetectorResponse.cxx
            )
 endif(FASTJET_FOUND)
 
