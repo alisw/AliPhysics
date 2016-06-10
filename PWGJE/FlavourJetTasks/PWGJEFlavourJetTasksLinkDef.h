@@ -30,6 +30,11 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets+;
+#pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine+;
+#pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliDmesonMatchInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliDStarMatchInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;
 #endif
