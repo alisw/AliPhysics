@@ -211,6 +211,8 @@ class AliBalancePsi : public TObject {
   
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
+  TH2D *GetQAHistPhiStarHBTbefore() {return fHistPhiStarHBTbefore;}
+  TH2D *GetQAHistPhiStarHBTafter() {return fHistPhiStarHBTafter;}
   TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
@@ -256,7 +258,9 @@ class AliBalancePsi : public TObject {
 
   //QA histograms
   TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts
-  TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts
+  TH2D *fHistHBTafter; // Delta Eta vs. Delta Phi after HBT inspired cuts  
+  TH2D *fHistPhiStarHBTbefore; // Delta Eta vs. Delta Phi* before HBT inspired cuts
+  TH2D *fHistPhiStarHBTafter; // Delta Eta vs. Delta Phi* after HBT inspired cuts
   TH3D *fHistConversionbefore; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
