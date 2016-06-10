@@ -508,9 +508,12 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       }
     }
     else {
-      AliMultSelection *MultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
-      Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
       if (fCutCentralityPercentile) {
+    	AliMultSelection *MultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+    	Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    	if(!MultSelection){
+    	  AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+    	}
         if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
         {
           pass=kFALSE;
@@ -596,6 +599,9 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
    {
      AliMultSelection *MultSelection = (AliMultSelection *) aodEvent->FindListObject("MultSelection");
      Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+     if(!MultSelection){
+       AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+     }
      centrality = lPercentile;
    } // else if (aodEvent)
   } // else // if(!fUseNewCentralityFramework)
