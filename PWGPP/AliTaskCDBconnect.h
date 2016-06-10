@@ -17,8 +17,10 @@ class AliESDInputHandler;
 class AliTaskCDBconnect : public AliAnalysisTask {
 private:
   Int_t                     fRun;            // Current run
+  ULong64_t                 fLock;           // CDB lock
+  TString                   fStorage;        // Storage (if cvmfs                   
+  TObjArray                 fSpecCDBUri;     // Array with specific CDB storages
   AliGRPManager            *fGRPManager;     //! Pointer to GRP manager
-
   AliTaskCDBconnect(const AliTaskCDBconnect &other);
   AliTaskCDBconnect& operator=(const AliTaskCDBconnect &other);
 
@@ -35,6 +37,6 @@ public:
   void                      SetSpecificStorage(const char* calibType, const char* dbString,
                                                Int_t version = -1, Int_t subVersion = -1);
     
-  ClassDef(AliTaskCDBconnect,2)  // Class giving CDB connectivity
+  ClassDef(AliTaskCDBconnect,4)  // Class giving CDB connectivity
 };
 #endif
