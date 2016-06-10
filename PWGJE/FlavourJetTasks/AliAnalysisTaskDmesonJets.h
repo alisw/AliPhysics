@@ -102,6 +102,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     AliJetInfo() : fMomentum(), fNConstituents(0), fNEF(0), fMaxChargedPt(0), fMaxNeutralPt(0) {}
 
+    virtual ~AliJetInfo() {;}
+
     Double_t Pt()        const { return fMomentum.Pt()       ; }
     Double_t Eta()       const { return fMomentum.Eta()      ; }
     Double_t Phi()       const { return fMomentum.Phi()      ; }
@@ -112,6 +114,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t          fNEF                  ; ///< Neutral Energy Fraction of the jet
     Double_t          fMaxChargedPt         ; ///< Transverse momentum of the leading charged particle (or track)
     Double_t          fMaxNeutralPt         ; ///< Transverse momentum of the leading neutral particle (or cluster)
+
+    /// \cond CLASSIMP
+    ClassDef(AliJetInfo, 1);
+    /// \endcond
   };
 
   /// \class AliEmcalDmesonJetInfo
@@ -122,6 +128,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   class AliDmesonJetInfo {
   public:
     AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets(), fMCLabel(-1), fReconstructed(kFALSE) {}
+
+    virtual ~AliDmesonJetInfo() {;}
 
     AliVParticle      *fDmesonParticle          ; //!<! pointer to the particle object
     AliTLorentzVector  fD                       ; //!<! 4-momentum of the D meson candidate
@@ -139,6 +147,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t GetDistance(std::string n, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(std::string n) const;
     void Print() const;
+
+    /// \cond CLASSIMP
+    ClassDef(AliDmesonJetInfo, 1);
+    /// \endcond
   };
 
   /// \class AliJetInfoSummary
