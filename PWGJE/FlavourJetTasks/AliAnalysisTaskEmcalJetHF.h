@@ -97,6 +97,7 @@ public:
 
     void                        UserCreateOutputObjects()                         ;
     void                        Terminate(Option_t *option)                       ;
+    void                        EMCalClusterInfo();
     void                        SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     
 protected:
@@ -121,13 +122,14 @@ private:
         kAODanalysis = BIT(20),
     };
 
-    AliVEvent   *fVevent;  //!event object
-    AliESDEvent *fESD;    //!ESD object
-    AliAODEvent *fAOD;    //!AOD object
-    AliPIDResponse *fpidResponse; //!pid response
+    AliVEvent                     *fVevent;  //!event object
+    AliESDEvent                   *fESD;    //!ESD object
+    AliAODEvent                   *fAOD;    //!AOD object
+    AliPIDResponse                *fpidResponse; //!pid response
 
 
-    Double_t    fInvmassCut;//!
+    Double_t                      fEventCounter;//!
+    Double_t                      fInvmassCut;//!
 
     TH2F                          *fdEdx;//!dedx vs pt
     TH2F                          *fM20;//!pt vs M20
@@ -136,6 +138,8 @@ private:
     TH2F                          *fM02EovP;//!M20 vs E/p
     TH1F                          *fInvmassLS;//!Invmass of LS pairs
     TH1F                          *fInvmassULS;//!Invmass of ULS pairs
+    TH1F                          *fEMCTrketa;//!EMC trk eta
+    TH1F                          *fEMCTrkphi;//!EMC trk phi
     TH1F                          *fHistJetEovP;
     TH2F                          *fHistJetEovPvPt;
     TH1F                          *fHistClusEovP;

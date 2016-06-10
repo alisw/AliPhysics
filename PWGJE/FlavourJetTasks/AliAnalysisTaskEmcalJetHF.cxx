@@ -39,12 +39,25 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliESDtrackCuts.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+
+#include "AliPID.h"
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+#include "AliPIDResponse.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 #include "AliAnalysisTaskEmcalJetHF.h"
 
@@ -65,7 +78,18 @@ fVevent(),
 fESD(),
 fAOD(),
 fpidResponse(),
+fEventCounter(),
+fInvmassCut(),
 fHistManager(),
+fdEdx(),  //Histo's
+fM20(),
+fM02(),
+fM20EovP(),
+fM02EovP(),
+fInvmassLS(),
+fInvmassULS(),
+fEMCTrketa(),
+fEMCTrkphi(),
 fHistJetEovP(),
 fHistJetEovPvPt(),
 fHistClusEovP(),
@@ -85,7 +109,18 @@ fVevent(0),
 fESD(0),
 fAOD(0),
 fpidResponse(0),
+fEventCounter(0),
+fInvmassCut(0),
 fHistManager(name),
+fdEdx(0),  //Histo's
+fM20(0),
+fM02(0),
+fM20EovP(0),
+fM02EovP(0),
+fInvmassLS(0),
+fInvmassULS(0),
+fEMCTrketa(0),
+fEMCTrkphi(0),
 fHistJetEovP(0),
 fHistJetEovPvPt(0),
 fHistClusEovP(0),
@@ -132,6 +167,15 @@ void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
     while ((obj = next())) {
         fOutput->Add(obj);
     }
+    fOutput->Add(fdEdx);
+    fOutput->Add(fM20);
+    fOutput->Add(fM02);
+    fOutput->Add(fM20EovP);
+    fOutput->Add(fM02EovP);
+    fOutput->Add(fInvmassLS);
+    fOutput->Add(fInvmassULS);
+    fOutput->Add(fEMCTrketa);
+    fOutput->Add(fEMCTrkphi);
     fOutput->Add(fHistJetEovP);
     fOutput->Add(fHistJetEovPvPt);
     fOutput->Add(fHistClusEovP);
@@ -161,6 +205,8 @@ void AliAnalysisTaskEmcalJetHF::AllocateClusterHistograms()
         fHistClusEovP = new TH1F("ClusEovP","Cluster EovP",130,0,1.3);
         fHistClusEovPnonlin = new TH1F("ClusEovPnonlin","nonlin Cluster EovP",130,0,1.3);
         fHistClusEovPHadCorr = new TH1F("ClusEovPHaddCorr","HadCorr Cluster EovP",130,0,1.3);
+        fInvmassULS = new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+        fInvmassLS = new TH1F("fInvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
 
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
@@ -302,7 +348,7 @@ void AliAnalysisTaskEmcalJetHF::AllocateJetHistograms()
         groupname = jetCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
 
-        fHistJetEovP    = new TH1F("JetEovP","HFE Jet EovP",100,0,1);
+        fHistJetEovP    = new TH1F("JetEovP","HFE Jet EovP",200,0,5);
         fHistJetEovPvPt = new TH2F("JetEovPvPt","HFE Jet EovP vs Pt",100,0,1,100,0,100);
 
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
@@ -366,9 +412,13 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
     TString groupname;
     AliJetContainer* jetCont = 0;
     TIter next(&fJetCollArray);
+
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupname = jetCont->GetName();
         UInt_t count = 0;
+        Double_t rhoVal = 0;
+        rhoVal = jetCont->GetRhoVal();
+
         for(auto jet : jetCont->accepted()) {
             if (!jet) continue;
             count++;
@@ -385,14 +435,58 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
             histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Eta());
             
-            if (jetCont->GetRhoParameter()) {
-                histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
-                fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
-            }
-        }
-        histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
-        fHistManager.FillTH1(histname, count);
-    }
+                if (jetCont->GetRhoParameter()) {
+                    histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
+                    fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
+                }
+            histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, count);
+
+
+
+            Float_t ptLeading = jetCont->GetLeadingHadronPt(jet);
+            Float_t corrPt = jet->Pt() - rhoVal * jet->Area();
+            TLorentzVector leadPart;
+            jetCont->GetLeadingHadronMomentum(leadPart, jet);
+
+            //cout<<"JET Corr Pt: "<<corrPt<<"  Pt of Leading Hadron: "<< ptLeading<<endl;
+
+            AliParticleContainer* tracks = jetCont->GetParticleContainer();
+            if (tracks) {
+                for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {
+                    AliVParticle *track = jet->TrackAt(it, tracks->GetArray());
+
+                    if (track) {
+                        Double_t JetTrackP = track->P();
+                        Double_t JetTrackPt = track->Pt();
+
+
+                        Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
+                        Double_t deta = track->Eta() - jet->Eta();
+                        Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
+
+                        //+++++----Track matching to EMCAL
+                        AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(track);
+                        Int_t EMCalIndex = -1;
+                        EMCalIndex = Vtrack->GetEMCALcluster();
+                        if(EMCalIndex < 0) continue;
+
+                        AliVCluster *clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+                        if(!(clustMatch && clustMatch->IsEMCAL())) continue;
+
+                        Double_t clustMatchE = clustMatch->E();
+                        Double_t clustMatchNonLinE = clustMatch->GetNonLinCorrEnergy();
+                        Double_t clustMatchHadCorr = clustMatch->GetHadCorrEnergy();
+
+                        //cout<<"Other Track Pt: "<< JetTrackPt << " Track Matched to Cluster Energy: "<< clustMatchE<<endl;
+                        fHistJetEovP->Fill(clustMatchNonLinE / Vtrack->P());
+
+
+                    }// Accepted Jet Track
+                }//Track loop
+            }//Track Container
+        } //jet loop
+    }//Jet Container
 }
 
 /**
@@ -437,6 +531,15 @@ void AliAnalysisTaskEmcalJetHF::DoTrackLoop()
 
                 Double_t TrackP = track->P();
 
+                //////////////////////
+                //Photonic Electrons//
+                //////////////////////
+
+                Bool_t fFlagPhotonicElec = kFALSE;
+
+                //----+++Identify Non-HFE
+                //SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+
                 if (clusCont) {
                     Int_t iCluster = track->GetEMCALcluster();
                     if (iCluster >= 0) {
@@ -447,6 +550,11 @@ void AliAnalysisTaskEmcalJetHF::DoTrackLoop()
                             Double_t ClusterNonLinE = cluster->GetNonLinCorrEnergy();
                             Double_t ClusterHadCorr = cluster->GetHadCorrEnergy();
 
+                            Double_t sigma = 0.0;
+
+
+                            sigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+                            //cout<<"Sigma: " << sigma << endl;
                             fHistClusEovP->Fill(ClusterE / TrackP);
                             fHistClusEovPnonlin->Fill( ClusterNonLinE / TrackP);
                             fHistClusEovPHadCorr->Fill( ClusterHadCorr / TrackP);
@@ -565,6 +673,18 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         return kFALSE;
     }
 
+    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+    if (fESD) {
+        //   printf("fESD available\n");
+        //return;
+    }
+
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (fAOD) {
+        // printf("fAOD available\n");
+        //return;
+    }
+
     const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
 
     fpidResponse = fInputHandler->GetPIDResponse();
@@ -573,8 +693,152 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
         return kFALSE;
     }
 
+    Int_t ntracks;
+    ntracks = fVevent->GetNumberOfTracks();
+    //printf("There are %d tracks in this event\n",ntracks);
+
+    Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
+    Double_t NcontV = pVtx->GetNContributors();
+
+   // if(NcontV<2)return kTRUE;  //Events with 2 Tracks
+
+    //////////////////////
+    //EMcal cluster info//
+    //////////////////////
+    EMCalClusterInfo();
+
+
+    Int_t numberofvertices = 100;
+    if(fAOD) numberofvertices = fAOD->GetNumberOfVertices();
+    Double_t listofmotherkink[numberofvertices];
+    Int_t numberofmotherkink = 0;
+    if(IsAODanalysis())
+    {
+        for(Int_t ivertex=0; ivertex < numberofvertices; ivertex++) {
+            AliAODVertex *aodvertex = fAOD->GetVertex(ivertex);
+            if(!aodvertex) continue;
+            if(aodvertex->GetType()==AliAODVertex::kKink) {
+                AliAODTrack *mother = (AliAODTrack *) aodvertex->GetParent();
+                if(!mother) continue;
+                Int_t idmother = mother->GetID();
+                listofmotherkink[numberofmotherkink] = idmother;
+                numberofmotherkink++;
+            }
+        }
+    } //+++
+
+    fEventCounter++;
+
+    //cout<<"Event: "<<fEventCounter<<"  Number of Vertices: "<<numberofvertices<<"  Number of Tracks:  "<<ntracks<< endl;
+
     return kTRUE;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetHF::EMCalClusterInfo()
+{
+    /////////////////////////////
+    //EMCAL cluster information//
+    ////////////////////////////
+
+    Int_t Nclust = -999;
+    TVector3 clustpos;
+    Float_t  emcx[3]; // cluster pos
+    Double_t clustE=-999, emcphi = -999, emceta=-999;
+    Nclust = fVevent->GetNumberOfCaloClusters();
+    for(Int_t icl=0; icl<Nclust; icl++)
+    {
+        AliVCluster *clust = 0x0;
+        clust = fVevent->GetCaloCluster(icl);
+        if(!clust)  printf("ERROR: Could not receive cluster matched calibrated from track %d\n", icl);
+
+        if(clust && clust->IsEMCAL())
+        {
+            clustE = clust->E();
+            clust->GetPosition(emcx);
+            clustpos.SetXYZ(emcx[0],emcx[1],emcx[2]);
+            emcphi = clustpos.Phi();
+            emceta = clustpos.Eta();
+            //fHistClustE->Fill(clustE);
+            //fEMCClsEtaPhi->Fill(emceta,emcphi);
+        }
+    }
+}
+//________________________________________________________________________
+
+//___________________________________________________________________________
+
+void AliAnalysisTaskEmcalJetHF::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec)
+{
+    ///////////////////////////////
+    //Photonic electron selection//
+    ///////////////////////////////
+
+    Bool_t flagPhotonicElec = kFALSE;
+    Double_t ptAsso=-999., nsigma=-999.0;
+    Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
+
+    for(Int_t jTracks = 0; jTracks<fVevent->GetNumberOfTracks(); jTracks++){
+        if(jTracks==itrack) continue;
+
+        AliVParticle* VtrackAsso = fVevent->GetTrack(jTracks);
+        if (!VtrackAsso) {
+            printf("ERROR: Could not receive track %d\n", jTracks);
+            continue;
+        }
+
+        AliVTrack *trackAsso = dynamic_cast<AliVTrack*>(VtrackAsso);
+        if(!trackAsso) continue;
+
+        if(IsAODanalysis()) {
+            AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
+            if(!atrackAsso) continue;
+            if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            if(atrackAsso->GetTPCNcls() < 70) continue;
+            if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+            if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+        }
+
+        nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        ptAsso = trackAsso->Pt();
+        Int_t chargeAsso = trackAsso->Charge();
+        Int_t charge = track->Charge();
+
+        if(ptAsso <0.2) continue;
+        if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
+        if(nsigma < -3 || nsigma > 3) continue;
+
+        Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
+        if(charge>0) fPDGe1 = -11;
+        if(chargeAsso>0) fPDGe2 = -11;
+
+        if(charge == chargeAsso) fFlagLS = kTRUE;
+        if(charge != chargeAsso) fFlagULS = kTRUE;
+
+        AliKFParticle::SetField(fVevent->GetMagneticField());
+
+        AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
+        AliKFParticle ge2 = AliKFParticle(*trackAsso, fPDGe2);
+        AliKFParticle recg(ge1, ge2);
+
+        if(recg.GetNDF()<1) continue;
+        Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
+        if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+
+        Double_t mass=-999., width = -999;
+        Int_t MassCorrect;
+        MassCorrect = recg.GetMass(mass,width);
+
+        if(fFlagLS && track->Pt()>1) fInvmassLS->Fill(mass);
+        if(fFlagULS && track->Pt()>1) fInvmassULS->Fill(mass);
+
+        if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+            flagPhotonicElec = kTRUE;
+        }
+    }
+    fFlagPhotonicElec = flagPhotonicElec;
+}
+
 
 /**
  * This function is called once at the end of the analysis.
