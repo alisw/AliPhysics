@@ -649,15 +649,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  Int_t dRun10h[] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
  
  Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
+  
+ Int_t dRun15h[] = {244917, 244918, 244975, 244980, 244982, 244983, 245061, 245064, 245066, 245068};
  
  if(fDataSet.EqualTo("2010")) {fCRCnRun=92;}
  if(fDataSet.EqualTo("2011")) {fCRCnRun=119;}
+ if(fDataSet.EqualTo("2015")) {fCRCnRun=10;}
  if(fDataSet.EqualTo("MCkine")) {fCRCnRun=1;}
  
  Int_t d=0;
  for(Int_t r=0; r<fCRCnRun; r++) {
   if(fDataSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
   if(fDataSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
+  if(fDataSet.EqualTo("2015"))   fRunList[d] = dRun15h[r];
   if(fDataSet.EqualTo("MCkine")) fRunList[d] = 1;
   d++;
  }
@@ -712,6 +716,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
   fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+   
   fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
   fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
@@ -1036,7 +1041,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  //fListHistos->Print();
  //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
  
-//  printf("event : ntr %d, cen %f **********************************************************************************************************\n",fFlowEvent->NumberOfTracks(),fFlowEvent->GetCentrality());
+//  printf("event : ntr %d, cen %f **********************************************************************************************************\n"
  
  //********************************************************************************************************************************
  
@@ -1046,7 +1051,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
  
- if(hdr->IsEventSelected() & AliVEvent::kAny) {
+ if(hdr->IsEventSelected() && AliVEvent::kAny) {
   
   AliCentrality* centrality = aod->GetCentrality();
   Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());

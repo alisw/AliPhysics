@@ -134,6 +134,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+ if (EvTrigger == "MB" && sDataSet == "2015")
+   taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
  else if (EvTrigger == "Any")
   taskFE->SelectCollisionCandidates(AliVEvent::kAny);
   // add the task to the manager
@@ -147,12 +149,22 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
     if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
     if(sCentrEstimator=="CL1") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1clusters);
-    cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
-    cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-    cutsEvent->SetQA(bCutsQA);
+    if (sDataSet == "2010" || sDataSet == "2011") {
+      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+    }
+    if (sDataSet == "2015") {
+      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
+    }
+      cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
+      cutsEvent->SetQA(bCutsQA);
   }
  else if (analysisTypeUser == "AOD") {
-  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+   if (sDataSet == "2010" || sDataSet == "2011") {
+     cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
+   }
+   if (sDataSet == "2015") {
+     cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
+   }
   // method used for centrality determination
   if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
   if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
@@ -170,14 +182,19 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  // enable the qa plots
-  cutsEvent->SetQA(bCutsQA);
   // explicit multiplicity outlier cut
-  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-  if (sDataSet == "2011")
-   cutsEvent->SetLHC11h(kTRUE);
-  else if (sDataSet == "2010")
-   cutsEvent->SetLHC10h(kTRUE);
+   if (sDataSet == "2010" || sDataSet == "2011") {
+     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+     if (sDataSet == "2011")
+       cutsEvent->SetLHC11h(kTRUE);
+     else if (sDataSet == "2010")
+       cutsEvent->SetLHC10h(kTRUE);
+   }
+   if (sDataSet == "2015") {
+     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE);
+   }
+   // enable the qa plots
+   cutsEvent->SetQA(bCutsQA);
  }
  
  // pass these cuts to your flow event task
@@ -208,8 +225,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(bUseVZERO) {
    if (sDataSet == "2011")
     cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
-   else if (sDataSet == "2010")
+   if (sDataSet == "2010")
     cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
+   if (sDataSet == "2015")
+    cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
    cutsRP->SetPhiMin(0.);
@@ -299,6 +318,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB);
+ if (EvTrigger == "MB" && sDataSet == "2015")
+  taskQC->SelectCollisionCandidates(AliVEvent::kINT7);
  else if (EvTrigger == "Any")
   taskQC->SelectCollisionCandidates(AliVEvent::kAny);
  // and set the correct harmonic n
@@ -325,7 +346,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(kTRUE);
- taskQC->SetRecenterZDC(bUseZDC);
+  if (ZDCCalibFileName != "" && bUseZDC) {
+    taskQC->SetRecenterZDC(kTRUE);
+  }
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetUseCRCRecenter(bUseCRCRecenter);
@@ -430,7 +453,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
   } // end of if(bUseCRCRecenter)
- if(bUseZDC) {
+ if(ZDCCalibFileName != "" && bUseZDC) {
   TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
   if(!ZDCCalibFile) {
    cout << "ERROR: ZDC calibration not found!" << endl;
