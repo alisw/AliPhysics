@@ -51,7 +51,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
   Int_t               recombscheme            = 5,    //recombination scheme  5=BIpt_scheme  0=E_scheme 
-  Int_t               nRandCones              = 2 
+  Int_t               nRandCones              = 2,
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //ANALYSIS OF REAL DATA
@@ -110,15 +111,16 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    myContName = Form("AnalysisR%02d_%s_An%d%d_%s_Dphi%02d_T%d_Ptt%d_%d_%s", 
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
       TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
-  
+
+   myContName.Append(suffix);
    //__________________________________________________________________________________
    // #### DEFINE MY ANALYSIS TASK
 
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
-                                  aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
-                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //(Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
+                                  //aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
+                                  //TMath::Nint(ttLow),TMath::Nint(ttHigh)));
 
    //inspired by AliAnalysisTaskEmcalQGTagging
    //_____________________________________________
@@ -209,7 +211,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
   Double_t            acut                    = 0.6,   //cut on relative jet area
-  Int_t               recombscheme            = 5    //recombination scheme  5=BIpt_scheme  0=E_scheme 
+  Int_t               recombscheme            = 5,    //recombination scheme  5=BIpt_scheme  0=E_scheme 
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //MC DATA EFF
@@ -261,6 +264,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
       TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
 
+   myContName.Append(suffix);
    //_________________________________________________________________
 
    //_________________________________________________________________
@@ -308,10 +312,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    //__________________________________________________________________________________
    // #### DEFINE MY ANALYSIS TASK
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
-                                  aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
-                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //(Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
+                                  //aktJetFinderName, triggerName.Data(), typeOfData, typeOfAnal,
+                                  //TMath::Nint(ttLow),TMath::Nint(ttHigh)));
 
    if(typeOfData == kPythia){  //EFF with PYTHIA
       task->SetIsPythia(kTRUE);  //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
@@ -443,7 +447,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            ptHardMaxEmb            = 1000.,//  pt hard max in embedding
   Double_t            ecmsGeVEmb              = 5020.,//  E cms  in embedding    
   Float_t             ptWeightEmb             = 0.,    //weighting power of the embedded spectrum 
-  Double_t            trackeff                = 1.1   //artificial reduction of tracking efficiency
+  Double_t            trackeff                = 1.1,   //artificial reduction of tracking efficiency
+  const char* suffix = ""                              //SUBWAGON has to be the last parameter
 ){
 
    //typeOfData   
@@ -501,9 +506,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       TMath::Nint(jetRadius*10), triggerName.Data(), typeOfData, typeOfAnal, containerNameSuffix.Data(),
       TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh), cntype.Data());
 
+   if(trackeff<1.0){
+      myContName.Append(Form("_EFF%03d",TMath::Nint(trackeff*100))); 
+   }
    if(typeOfAnal == kEmb || typeOfAnal == kEmbSingl){
        myContName.Append(Form("_EMB%.0f%.0f",ptHardMinEmb,ptHardMaxEmb)); 
-   } 
+   }
+   myContName.Append(suffix);
    //_________________________________________________________________
    TString recoTracks  = ""; //DETECTOR LEVEL TRACKS NAME
    TString mcParticles = ""; //GENERATOR LEVEL PARTICLE NAME
@@ -688,9 +697,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetFinderTaskMC) tname = jetFinderTaskMC->GetName();
    if(jetFinderTask)   tname = jetFinderTask->GetName();
 
-   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_%s", 
-                                  tname.Data(), triggerName.Data(), note.Data()));
+   AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(myContName.Data());
+                                  //Form("HJetSpectra_%s_%s_%s", 
+                                  //tname.Data(), triggerName.Data(), note.Data()));
 
    if(typeOfAnal == kKine) task->SetNeedEmcalGeom(kFALSE); //KINE
    if(typeOfAnal == kEff && typeOfData == kPythia){  //EFF with PYTHIA
