@@ -56,6 +56,7 @@
 #include "AliESDtrack.h"
 #include "AliESDMuonTrack.h"   // XZhang 20120604
 #include "AliMultiplicity.h"
+#include "AliMultSelection.h" // available from November 2015
 #include "AliAODTrack.h"
 #include "AliAODTracklets.h"   // XZhang 20120615
 #include "AliFlowTrackSimple.h"
@@ -5100,7 +5101,23 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
  
   // 29052015 weighting vzero tiles - jacopo.margutti@cern.ch
   if(fVZEROgainEqualizationCen) {
-    Double_t EventCentrality = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+	//Added by Bernhard Hohlweger - bhohlweg@cern.ch
+	Double_t EventCentrality = -999;
+	if(fEvent->GetRunNumber() < 209122){
+	  //For Run1 Data the Old Centrality Percentile Method is available whereas for Run2 a new method was implemented
+	  //Cut was done for the first run of the LHC15a period
+	  EventCentrality = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+	}else{
+	  AliMultSelection *MultSelection = 0x0;
+	  MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+	  if( !MultSelection) {
+	    //If you get this warning (and EventCentrality -999) please check that the AliMultSelectionTask actually ran (before your task)
+	    AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+	  }else{
+	    EventCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+	  }
+	}
+	//09062016 Bernhard Hohlweger
     Double_t CorrectionFactor = fVZEROgainEqualizationCen->GetBinContent(fVZEROgainEqualizationCen->FindBin(id,EventCentrality));
     // the fVZEROxpol[] weights are used to enable or disable vzero rings
     if(id<32) {   // v0c side
