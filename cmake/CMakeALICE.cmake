@@ -334,3 +334,17 @@ function(install_relative)
     endforeach()
 
 endfunction()
+
+# Treat warnings as errors. This is applied at module level: just add the line:
+#
+#   ali_warnings_as_errors()
+#
+# to the relevant CMakeLists.txt.
+macro(ali_warnings_as_errors)
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang OR CMAKE_COMPILER_IS_GNUCXX)
+    if (NOT ${CMAKE_SYSTEM_VERSION} MATCHES el5)
+      message(STATUS "Treating warnings as errors under ${CMAKE_CURRENT_SOURCE_DIR}")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    endif()
+  endif()
+endmacro()
