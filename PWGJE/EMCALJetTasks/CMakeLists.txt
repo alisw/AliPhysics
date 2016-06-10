@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                    )
 
 # Sources in alphabetical order
@@ -147,6 +148,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
+    UserTasks/AliAnalysisTaskEmcalRun2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
     UserTasks/AliAnalysisTaskFakeJets.cxx
     UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
@@ -213,7 +215,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCALbase PWGEMCALtrigger PWGJETFW)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)
