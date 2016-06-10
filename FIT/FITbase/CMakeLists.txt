@@ -37,6 +37,7 @@ set(SRCS
     AliFITHits.cxx
     AliFITRawData.cxx
     AliFITRawReader.cxx
+    AliFITAlign.cxx
    )
 
 # Headers from sources
