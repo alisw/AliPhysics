@@ -60,18 +60,19 @@ public:
  virtual ~AliFlowAnalysisCRC();
  
  enum CorrelationWeights { kMultiplicity,
-  kUnit
- };
+                           kUnit
+                         };
  
  enum DataSet { k2010,
-  k2011,
-  kAny
- };
+                k2011,
+                k2015,
+                kAny
+              };
  
  enum MagnetPol { kMAll,
-  kMPos,
-  kMNeg
- };
+                  kMPos,
+                  kMNeg
+                };
  
  // 0.) methods called in the constructor:
  virtual void InitializeArraysForIntFlow();
@@ -1460,8 +1461,10 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
- TH3D *fCRCZDCEP[3]; //! EPs
- TProfile2D *fCRCZDCQ2[4]; //! Q2
+ TH3D *fCRCZDCEP[5]; //! EPs
+ TProfile2D *fCRCZDCQ2[8]; //! Q2
+  Double_t fEvPlZDCCflat;
+  Double_t fEvPlZDCAflat;
   
 // TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
  
@@ -1579,7 +1582,7 @@ private:
  TList *fFlowSPZDCList;    //! SPZDC List
  TList *fFlowSPZDCRbRList; //! CRC list of histograms RbR
  TList *fFlowSPZDCRunsList[fCRCMaxnRun]; //! list of runs
- const static Int_t fFlowNPro = 14;
+ const static Int_t fFlowNPro = 12;
  const static Int_t fFlowNNUA = 4;
  TProfile *fFlowSPZDCCorPro[fCRCMaxnRun][fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCCorNUA[fCRCMaxnRun][fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]

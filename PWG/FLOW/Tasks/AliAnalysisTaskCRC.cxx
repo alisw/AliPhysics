@@ -333,6 +333,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetExactNoRPs(fExactNoRPs);
  if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
  if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
+ if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
  fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetCalculateCME(fCalculateCME);
@@ -490,6 +491,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth);
  if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
  if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
+ if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
  fQC->SetRunList();
  
  if(fListHistos) {
