@@ -23,17 +23,22 @@
 #pragma link C++ class AliMCHFParticleSelector+;
 
 #ifdef HAVE_FASTJET
-#pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
-#pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfo+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
+#pragma link C++ class std::pair<int,AliAnalysisTaskDmesonJets::AliDmesonJetInfo>+;
+#pragma link C++ class std::pair<std::string,AliAnalysisTaskDmesonJets::AliJetInfo>+;
 #pragma link C++ class AliAnalysisTaskDmesonJets+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliDmesonMatchInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse::AliDStarMatchInfoSummary+;
+#pragma link C++ class std::pair<AliAnalysisTaskDmesonJets::ECandidateType_t,AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine>+;
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 #pragma link C++ class AliHFAODMCParticleContainer+;
 #pragma link C++ class AliHFTrackContainer+;

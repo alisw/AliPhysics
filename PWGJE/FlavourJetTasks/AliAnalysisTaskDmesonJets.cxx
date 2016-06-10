@@ -46,7 +46,17 @@
 
 #include "AliAnalysisTaskDmesonJets.h"
 
+// Definitions of class AliAnalysisTaskDmesonJets::AliJetInfo
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliJetInfo);
+/// \endcond
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonJetInfo
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskDmesonJets::AliDmesonJetInfo);
+/// \endcond
 
 /// Reset all fields to their default values
 void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
