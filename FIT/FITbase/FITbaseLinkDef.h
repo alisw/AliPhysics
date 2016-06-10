@@ -14,5 +14,6 @@
 #pragma link C++ class  AliFITHits+;
 #pragma link C++ class  AliFITRawData+;
 #pragma link C++ class  AliFITRawReader+;
+#pragma link C++ class  AliFITAlign+;
 
 #endif
