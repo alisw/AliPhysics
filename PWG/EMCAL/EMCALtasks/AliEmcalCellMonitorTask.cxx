@@ -3,12 +3,15 @@
 #include <vector>
 #include <TArrayD.h>
 #include <THashList.h>
-#include <TLinearBinning.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
+#include <TObjArray.h>
+#include <TParameter.h>
 
 #include "AliEMCALGeometry.h"
 #include "AliEmcalCellMonitorTask.h"
 #include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
 #include "AliVCaloCells.h"
 #include "AliVEvent.h"
 
@@ -22,8 +25,10 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
+   fBadChannelContainer(""),
    fTriggerString(""),
    fNumberOfCells(12288),
+   fOldRun(-1),
    fMaskedCells()
 {
 
@@ -35,8 +40,10 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    fGeometry(nullptr),
    fMinCellAmplitude(0),
    fRequestTrigger(AliVEvent::kAnyINT),
+   fBadChannelContainer(""),
    fTriggerString(""),
    fNumberOfCells(12288),
+   fOldRun(-1),
    fMaskedCells()
 {
   DefineOutput(1, TList::Class());
@@ -49,6 +56,7 @@ AliEmcalCellMonitorTask::~AliEmcalCellMonitorTask() {
 void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
   fHistManager = new THistManager("EMCALCellMonitor");
 
+  fHistManager->CreateTH1("cellMasking", "Monitoring for masked cells", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
   fHistManager->CreateTH2("cellAmplitudeCut", "Energy distribution per cell (after energy cut)", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
@@ -69,6 +77,13 @@ void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
 
 void AliEmcalCellMonitorTask::UserExec(Option_t *){
   if(!fGeometry) fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(fInputEvent->GetRunNumber());
+
+  // Run change
+  if(InputEvent()->GetRunNumber() != fOldRun){
+    if(fBadChannelContainer.Length()) LoadCellMasking();
+
+    for(auto cellID : fMaskedCells) fHistManager->FillTH1("cellMasking", cellID);
+  }
 
   // Check trigger
   if(!(fInputHandler->IsEventSelected() & fRequestTrigger)) return;
@@ -104,6 +119,17 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     fHistManager->FillTH2(Form("cellAmpTimeCorrSM%d", sm), celltime, amplitude);
   }
   PostData(1, fHistManager->GetListOfHistograms());
+}
+
+void AliEmcalCellMonitorTask::LoadCellMasking(){
+  fMaskedCells.clear();
+  AliOADBContainer contreader(fBadChannelContainer.Data());
+  TObjArray *rundata = dynamic_cast<TObjArray *>(contreader.GetObject(InputEvent()->GetRunNumber()));
+  if(!rundata) return;
+  for(TIter channeliter = TIter(rundata).Begin(); channeliter != TIter::End(); ++channeliter){
+    TParameter<int> *cellID = static_cast<TParameter<int> *>(*channeliter);
+    if(cellID) SetBadCell(cellID->GetVal());
+  }
 }
 
 void AliEmcalCellMonitorTask::SetBadCell(Int_t cellId){

@@ -77,6 +77,13 @@ public:
    */
   void SetBadCell(Int_t cellId);
 
+  /**
+   * Read bad channels from OADB container and set the cell with the ID
+   * as bad.
+   * @param containername Name of the OADB container.
+   */
+  void InitBadChannelsFromContainer(const TString &containername) { fBadChannelContainer = containername; }
+
 protected:
 
   /**
@@ -135,6 +142,11 @@ protected:
    */
   bool IsCellMasked(Int_t cellId) const;
 
+  /**
+   * Load the cell masking from the OADB container into the task
+   */
+  void LoadCellMasking();
+
 private:
   THistManager                        *fHistManager;        //!<! Histogram handler
   AliEMCALGeometry                    *fGeometry;           //!<! EMCAL geometry
@@ -142,7 +154,9 @@ private:
   Double_t                            fMinCellAmplitude;    ///< Min. cell amplitude requested for cell time and frequency
   ULong_t                             fRequestTrigger;      ///< Trigger selection
   TString                             fTriggerString;       ///< Trigger string in addition to trigger selection
+  TString                             fBadChannelContainer; ///< Bad channel container name
   Int_t                               fNumberOfCells;       ///< Number of cells
+  Int_t                               fOldRun;              //!<! Old Run number (for run change check)
 
   std::vector<Int_t>                  fMaskedCells;         ///< Vector of masked cells
 
