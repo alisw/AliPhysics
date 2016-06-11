@@ -140,6 +140,12 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   // Conversion AliESDtrack -> AliTPCtrack.
   //-----------------------------------------------------------------
   const Double_t kmaxC[4]={10,10,0.1,0.1};  // cuts on the rms /fP0,fP1,fP2,fP3
+  const double kMatLarge[15]={
+    25.,
+    0.,25.,
+    0.,0.,0.5,
+    0.,0.,0.,0.5,
+    0.,0.,0.,0.,1.0};
   SetNumberOfClusters(t.GetTPCclusters(fIndex));
   SetLabel(t.GetLabel());
   SetMass(t.GetMassForTracking());
@@ -160,11 +166,15 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   Bool_t isBackProp = tpcout==0; // is this backpropagation?
   if (!tpc) tpc=&param;
 
-  Bool_t isOK = (recoParam->GetUseOuterDetectors() && t.IsOn(AliESDtrack::kTRDrefit)) || isBackProp;
-  if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
-      param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
-      param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
-      param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+  Bool_t isOK = 
+    (recoParam->GetUseOuterDetectors() && t.IsOn(AliESDtrack::kTRDrefit)) || 
+    (isBackProp && t.IsOn(AliESDtrack::kITSout));
+  if (isOK && 
+      (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
+       param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
+       param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
+       param.GetCovariance()[9]>kmaxC[3]*kmaxC[3])
+      ) isOK=kFALSE;
   //
   if (isOK) isOK &= param.Rotate(tpc->GetAlpha()); // using external seed
   Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
@@ -195,7 +205,11 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
     reject=2;
   }
   if (reject>0){
-    param.ResetCovariance(4.);  // reset covariance if start from backup param
+    //    param.ResetCovariance(4.);  // reset covariance if start from backup param
+    double *cov = (double*)param.GetCovariance(); // reset matrix
+    memcpy(cov,kMatLarge,15*sizeof(double));
+    double ep4 = param.GetParameter()[4]*kMatLarge[14];
+    cov[14] = ep4*ep4;
   }
   //
   //

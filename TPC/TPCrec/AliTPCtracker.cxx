@@ -3950,9 +3950,9 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
       }
 
     }
-    if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(10.); 
-    //RS    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
-    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
+    // RS: resetting is done in the AliTPCtrack constructor 
+    // if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(10.); 
+    // if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
     //if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
     //  fSeeds->AddAt(0,i);
     //  MarkSeedFree( seed );
@@ -5048,8 +5048,8 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       //
       double dx13 = x1-x3;
       if (TMath::Abs(dx13)<0.1) {
-	AliErrorF("Wrong X correction? Sec%d : row%d@X=%.2f->%.2f (z=%.2f) row%d@X=%.2f->%.2f (z=%.2f)\n",sec,
-		  i1-1,x1Def,x1,z1, i1-7,x3Def,x3,z3);
+	//AliErrorF("Wrong X correction? Sec%d : row%d@X=%.2f->%.2f (z=%.2f) row%d@X=%.2f->%.2f (z=%.2f)\n",sec,
+	//	  i1-1,x1Def,x1,z1, i1-7,x3Def,x3,z3);
 	continue; // distortions should not make distance so small
       }
 
