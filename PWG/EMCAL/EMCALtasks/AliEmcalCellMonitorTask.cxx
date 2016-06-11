@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <TArrayD.h>
+#include <TGrid.h>
 #include <THashList.h>
 #include <THistManager.h>
 #include <TLinearBinning.h>
@@ -11,6 +12,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEmcalCellMonitorTask.h"
 #include "AliInputEventHandler.h"
+#include "AliLog.h"
 #include "AliOADBContainer.h"
 #include "AliVCaloCells.h"
 #include "AliVEvent.h"
@@ -83,6 +85,7 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     if(fBadChannelContainer.Length()) LoadCellMasking();
 
     for(auto cellID : fMaskedCells) fHistManager->FillTH1("cellMasking", cellID);
+    fOldRun = InputEvent()->GetRunNumber();
   }
 
   // Check trigger
@@ -122,8 +125,12 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
 }
 
 void AliEmcalCellMonitorTask::LoadCellMasking(){
+  if(!fBadChannelContainer.Length()) return;
+  AliInfo(Form("Loading bad channel map from %s", fBadChannelContainer.Data()));
   fMaskedCells.clear();
-  AliOADBContainer contreader(fBadChannelContainer.Data());
+  if(fBadChannelContainer.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");    // Make sure alien connection is available as the AliOADBContainer doesn't handle it
+  AliOADBContainer contreader("EmcalBadChannelsAdditional");
+  contreader.InitFromFile(fBadChannelContainer.Data(), "EmcalBadChannelsAdditional");
   TObjArray *rundata = dynamic_cast<TObjArray *>(contreader.GetObject(InputEvent()->GetRunNumber()));
   if(!rundata) return;
   for(TIter channeliter = TIter(rundata).Begin(); channeliter != TIter::End(); ++channeliter){
