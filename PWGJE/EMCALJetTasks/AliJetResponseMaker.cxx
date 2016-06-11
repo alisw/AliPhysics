@@ -1366,7 +1366,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
         continue;
       }
       AliTLorentzVector part;
-      clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+      clus->GetMomentum(part, fVertex);
 
       for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
         Int_t cellId = clus->GetCellAbsId(iCell);
@@ -1391,7 +1391,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
         continue;
       }
       TLorentzVector part;
-      clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+      clus->GetMomentum(part, fVertex);
 
       Int_t MClabel = TMath::Abs(clus->GetLabel());
       MClabel -= fMCLabelShift;
@@ -1450,7 +1450,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
           continue;
         }
         AliTLorentzVector part;
-        clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+        clus->GetMomentum(part, fVertex);
 
         for (Int_t iCell = 0; iCell < clus->GetNCells(); iCell++) {
           Int_t cellId = clus->GetCellAbsId(iCell);
@@ -1491,7 +1491,7 @@ void AliJetResponseMaker::GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet
           continue;
         }
         AliTLorentzVector part;
-        clus->GetMomentum(part, const_cast<Double_t*>(fVertex));
+        clus->GetMomentum(part, fVertex);
 
         Int_t MClabel = TMath::Abs(clus->GetLabel());
         MClabel -= fMCLabelShift;
@@ -1586,12 +1586,20 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
 
   if (clusters1 && clusters2) {
 
-    if (fUseCellsToMatch) {
+    if (fUseCellsToMatch && fCaloCells) {
+      // Note: this section of the code needs to be revised and tested heavily
+      // While fixing some inconsistencies in AliAnalysisTaskEMCALClusterizeFast
+      // some issues came up, e.g. memory leaks (fixed) and inconsistent use of
+      // fCaloCells. In principle the two cluster collections may use cells
+      // from different sources (embedding / non-embedding). This is not handled
+      // correctly in the current version of this code.
+      AliWarning("ATTENTION ATTENTION ATTENTION: this section of the AliJetResponseMaker code needs to be revised and tested before using it for physics!!!");
       const Int_t nClus1 = jet1->GetNumberOfClusters();
 
       Int_t ncells1[nClus1];
       UShort_t *cellsId1[nClus1];
       Double_t *cellsFrac1[nClus1];
+      Double_t *cellsClusFrac1[nClus1];
       Int_t *sortedIndexes1[nClus1];
       Double_t ptClus1[nClus1];
       for (Int_t iClus1 = 0; iClus1 < nClus1; iClus1++) {
@@ -1602,18 +1610,24 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
           ncells1[iClus1] = 0;
           cellsId1[iClus1] = 0;
           cellsFrac1[iClus1] = 0;
+          cellsClusFrac1[iClus1] = 0;
           sortedIndexes1[iClus1] = 0;
           ptClus1[iClus1] = 0;
           continue;
         }
         TLorentzVector part1;
-        clus1->GetMomentum(part1, const_cast<Double_t*>(fVertex));
+        clus1->GetMomentum(part1, fVertex);
 
         ncells1[iClus1] = clus1->GetNCells();
         cellsId1[iClus1] = clus1->GetCellsAbsId();
         cellsFrac1[iClus1] = clus1->GetCellsAmplitudeFraction();
+        cellsClusFrac1[iClus1] = new Double_t[ncells1[iClus1]];
         sortedIndexes1[iClus1] = new Int_t[ncells1[iClus1]];
         ptClus1[iClus1] = part1.Pt();
+
+        for (Int_t iCell = 0; iCell < ncells1[iClus1]; iCell++) {
+          cellsClusFrac1[iClus1][iCell] = fCaloCells->GetCellAmplitude(cellsId1[iClus1][iCell]) / clus1->E();
+        }
 
         TMath::Sort(ncells1[iClus1], cellsId1[iClus1], sortedIndexes1[iClus1], kFALSE);
       }
@@ -1636,9 +1650,14 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
         }
         UShort_t *cellsId2 = clus2->GetCellsAbsId();
         Double_t *cellsFrac2 = clus2->GetCellsAmplitudeFraction();
+        Double_t *cellsClusFrac2 = new Double_t[ncells2];
+
+        for (Int_t iCell = 0; iCell < ncells2; iCell++) {
+          cellsClusFrac2[iCell] = fCaloCells->GetCellAmplitude(cellsId2[iCell]) / clus2->E();
+        }
 
         TLorentzVector part2;
-        clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+        clus2->GetMomentum(part2, fVertex);
         Double_t ptClus2 = part2.Pt();
 
         TMath::Sort(ncells2, cellsId2, sortedIndexes2, kFALSE);
@@ -1649,8 +1668,8 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
           Int_t iCell1 = 0, iCell2 = 0;
           while (iCell1 < ncells1[iClus1] && iCell2 < ncells2) {
             if (cellsId1[iClus1][sortedIndexes1[iClus1][iCell1]] == cellsId2[sortedIndexes2[iCell2]]) { // found a common cell
-              d1 -= cellsFrac1[iClus1][sortedIndexes1[iClus1][iCell1]] * ptClus1[iClus1];
-              d2 -= cellsFrac2[sortedIndexes2[iCell2]] * ptClus2;
+              d1 -= cellsFrac1[iClus1][sortedIndexes1[iClus1][iCell1]] * cellsClusFrac1[iClus1][sortedIndexes1[iClus1][iCell1]] * ptClus1[iClus1];
+              d2 -= cellsFrac2[sortedIndexes2[iCell2]] * cellsClusFrac2[sortedIndexes2[iCell2]] * ptClus2;
               iCell1++;
               iCell2++;
             }
@@ -1662,6 +1681,11 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
             }
           }
         }
+        delete[] cellsClusFrac2;
+      }
+      for (Int_t iClus1 = 0; iClus1 < nClus1; iClus1++) {
+        delete[] cellsClusFrac1[iClus1];
+        delete[] sortedIndexes1[iClus1];
       }
     }
     else {
@@ -1681,8 +1705,8 @@ void AliJetResponseMaker::GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, Ali
               continue;
             }
             TLorentzVector part1, part2;
-            clus1->GetMomentum(part1, const_cast<Double_t*>(fVertex));
-            clus2->GetMomentum(part2, const_cast<Double_t*>(fVertex));
+            clus1->GetMomentum(part1, fVertex);
+            clus2->GetMomentum(part2, fVertex);
 
             d1 -= part1.Pt();
             d2 -= part2.Pt();
