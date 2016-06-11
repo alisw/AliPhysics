@@ -95,9 +95,10 @@ AliMTRParameterizedResponse& AliMTRParameterizedResponse::operator = ( const Ali
 }
 
 //________________________________________________________________________
-Bool_t AliMTRParameterizedResponse::FitResponses ()
+Bool_t AliMTRParameterizedResponse::FitResponses ( Bool_t buildDataAptOverAllFromGraph, Bool_t fitLowPtIncrease )
 {
   /// Fit Response
+
   Double_t minPt = 0., maxPt = 100.;
   TF1* fitFuncData = new TF1("fitFuncData",this,&AliMTRParameterizedResponse::FitFunctionErf,minPt,maxPt,7);
   fitFuncData->SetNpx(1000);
@@ -156,22 +157,26 @@ Bool_t AliMTRParameterizedResponse::FitResponses ()
         graph = static_cast<TGraphAsymmErrors*>(dataLptApt->UncheckedAt(igraph));
         fitFuncData->SetParameters(defParams);
         fitFuncData->SetParLimits(0,0.,0.5);
-        // FIXME: fixed parameters for the moment
-        for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncData->FixParameter(ipar,-1.);
+        if ( ! fitLowPtIncrease ) {
+          for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncData->FixParameter(ipar,-1.);
+        }
         graph->Fit(fitFuncData,fitOpt.Data(),"",minFit,maxFit);
-        graph->GetListOfFunctions()->Add(fitFuncData->Clone(funcName.Data()));
+        TF1* clonedFitFuncData = static_cast<TF1*>(fitFuncData->Clone(funcName.Data()));
+        graph->GetListOfFunctions()->Add(clonedFitFuncData);
         graphData = graph;
 
         if ( ! mcLptApt ) continue;
         graph = static_cast<TGraphAsymmErrors*>(mcLptApt->UncheckedAt(igraph));
         fitFuncMC->SetParameters(defParams);
-        // FIXME: fixed parameters for the moment
-        for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncMC->FixParameter(ipar,-1.);
+        if ( ! fitLowPtIncrease ) {
+          for ( Int_t ipar=3; ipar<7; ipar++ ) fitFuncMC->FixParameter(ipar,-1.);
+        }
         if ( mcAptAll ) {
           fitFuncMC->FixParameter(0,fitFuncData->GetParameter(0));
         }
         graph->Fit(fitFuncMC,fitOpt.Data(),"",minFit,maxFit);
-        graph->GetListOfFunctions()->Add(fitFuncMC->Clone(funcName.Data()));
+        TF1* clonedFitFuncMC = static_cast<TF1*>(fitFuncMC->Clone(funcName.Data()));
+        graph->GetListOfFunctions()->Add(clonedFitFuncMC);
         graphMC = graph;
 
         if ( ! checkMCAptAll ) continue;
@@ -182,18 +187,23 @@ Bool_t AliMTRParameterizedResponse::FitResponses ()
         graph->Fit(fitFuncMCApt,fitOpt.Data(),"",0.,4.);
         graph->GetListOfFunctions()->Add(fitFuncMCApt->Clone(funcName.Data()));
 
+        // We need to build a "data response" for the Apt/All case.
+        // We have 2 different ways to do it.
 
-        // Build ratio data/MC
-        TGraph graphRatio(graphData->GetN());
-        Double_t xpt, ypt, xptMC, yptMC;
-        for ( Int_t ipt=0; ipt<graphRatio.GetN(); ipt++ ) {
-          graphData->GetPoint(ipt,xpt,ypt);
-          graphMC->GetPoint(ipt,xptMC,yptMC);
-          Double_t val = ( yptMC > 0. ) ? ypt/yptMC : 1.;
-          graphRatio.SetPoint(ipt,xpt,val);
-        }
+        // First way:
+        // Re-weight the Apt/All MC graph using the ratio Data/MC from Lpt/Apt
+        // This can be done in two ways:
+        // a) directly from the Lpt/Apt graph.
+        // b) scaling the pt_cut and sigma parameters of the fit results in Lpt/Apt
+        // In both cases, one need to find the pt_cut value in Lpt/Apt and Apt/All
+        // While the former is rather strightforward, the latter is complicated
+        // since the Apt/All shape is weird at forward rapidities (acceptance effect)
+        // In order to be consistent, we estimate the pt_cut directly from the graphs.
+        // In particular, we define it as the point on the graph for which the efficiency
+        // is the average between the maximum value and the minimum one.
 
-        // Search the pt value for which we are halfway from min and max
+        // So, first let's search fot the pt_cut
+        Double_t xpt, ypt;
         Double_t ptCuts[2] = {1., 0.5};
         for ( Int_t igr=0; igr<2; igr++ ) {
           TGraphAsymmErrors* auxGr = ( igr == 0 ) ? graphMC : graph;
@@ -202,6 +212,7 @@ Bool_t AliMTRParameterizedResponse::FitResponses ()
           // First get minimum and maximum
           for ( Int_t ipt=0; ipt<auxGr->GetN(); ipt++ ) {
             auxGr->GetPoint(ipt,xpt,ypt);
+            if ( ypt == 0. ) continue;
             if ( ypt < minEff ) {
               minEff = ypt;
               iptMin = ipt;
@@ -211,7 +222,7 @@ Bool_t AliMTRParameterizedResponse::FitResponses ()
               iptMax = ipt;
             }
           }
-          // Then search find the halfway pt
+          // Then search the halfway pt
           Double_t halfEff = 0.5*(minEff+maxEff);
           for ( Int_t ipt=iptMin; ipt<=iptMax; ipt++ ) {
             auxGr->GetPoint(ipt,xpt,ypt);
@@ -224,29 +235,66 @@ Bool_t AliMTRParameterizedResponse::FitResponses ()
           AliInfo(Form("%s half efficiency reached at %g",auxGr->GetName(),ptCuts[igr]));
         }
 
+
         graph = static_cast<TGraphAsymmErrors*>(dataAptAll->UncheckedAt(igraph));
 
-        // Apply the ratio data/MC to the AptOverAll MC
-        // Here we use the ratio of the ptcut values at Lpt and Apt as a strecth factor
+        // We now build the ratio data/MC from Lpt/Apt
+        TGraph graphRatio(graphData->GetN());
+        Double_t xptMC, yptMC;
+        if ( buildDataAptOverAllFromGraph ) {
+          // We can do it directly using the graphs
+          for ( Int_t ipt=0; ipt<graphRatio.GetN(); ipt++ ) {
+            graphData->GetPoint(ipt,xpt,ypt);
+            graphMC->GetPoint(ipt,xptMC,yptMC);
+            Double_t val = ( yptMC > 0. ) ? ypt/yptMC : 1.;
+            graphRatio.SetPoint(ipt,xpt,val);
+          }
+        }
+        else {
+          // Or we can do it using the fit functions
+          Double_t scaleFactor = ( ptCuts[0] > 0 ) ? ptCuts[1]/ptCuts[0] : 1.;
+          // We scale the pt_cut and sigma parameters
+          // according to the ratio of the values found above
+          for ( Int_t ifunc=0; ifunc<2; ifunc++ ) {
+            TF1* func = ( ifunc == 0 ) ? fitFuncData : fitFuncMC;
+            for ( Int_t ipar=1; ipar<=2; ipar++ ) {
+              func->SetParameter(ipar,func->GetParameter(ipar)*scaleFactor);
+            }
+          }
+        }
+
+        // Finally we apply the ratio data/MC to the Apt/All MC
+        // Here we use the ratio of the pt_cut values as a stretch factor
         Double_t stretchFactor = ( ptCuts[1] > 0 ) ? ptCuts[0]/ptCuts[1] : 1.;
+        Double_t val = 1.;
         for ( Int_t ipt=0; ipt<graph->GetN(); ipt++ ) {
-          graphRatio.GetPoint(ipt,xpt,ypt);
           graph->GetPoint(ipt,xptMC,yptMC);
-          Double_t val = yptMC*graphRatio.Eval(stretchFactor*xptMC);
+          if ( buildDataAptOverAllFromGraph ) {
+            graphRatio.GetPoint(ipt,xpt,ypt);
+            Double_t stretchX = TMath::Min(stretchFactor*xptMC,fPtBinning->GetBinUpEdge(fPtBinning->GetNbins()));
+            val = yptMC*graphRatio.Eval(stretchX);
+          }
+          else {
+            ypt = fitFuncMC->Eval(xptMC);
+            val = ( ypt == 0. ) ? 1. : fitFuncData->Eval(xptMC) / ypt;
+            val *= yptMC;
+          }
           if ( val < 0.) val = 0.;
           else if ( val > 1. ) val = 1.;
           graph->SetPoint(ipt,xptMC,val);
         }
 
-        // For the fit function, do not fit the Apt/All data
-        // but rather use the Lpt/Apt fit parameters to modify the MC Apt/All fit results
+        // Second way:
+        // assume that the relative difference between the pt_cut and sigma parameters
+        // fitted from Lpt/Apt is the same also for the Apt/All case
         for ( Int_t ipar=1; ipar<=2; ipar++ ) {
-          Double_t parMC = fitFuncMC->GetParameter(ipar);
-          Double_t parRatio = ( parMC == 0. ) ? 0. : fitFuncData->GetParameter(0)/parMC;
+          Double_t parMC = clonedFitFuncMC->GetParameter(ipar);
+          Double_t parRatio = ( parMC == 0. ) ? 1. : clonedFitFuncData->GetParameter(ipar)/parMC;
           fitFuncMCApt->SetParameter(ipar,fitFuncMCApt->GetParameter(ipar)*parRatio);
         }
         graph->GetListOfFunctions()->Add(fitFuncMCApt->Clone(funcName.Data()));
       } // loop on graphs
+
       if ( isMCAptAllDone ) checkMCAptAll = kFALSE;
     } // loop on Lpt/Apt and Hpt/Lpt
   } // loop on responses per board or per eta
@@ -284,7 +332,7 @@ Double_t AliMTRParameterizedResponse::FitFunctionErf ( Double_t* xVal, Double_t 
 
 
 //________________________________________________________________________
-TString AliMTRParameterizedResponse::GetStdName ( Int_t itype, Bool_t isMC, Bool_t perBoard )
+TString AliMTRParameterizedResponse::GetStdName ( Int_t itype, Bool_t isMC, Bool_t perBoard ) const
 {
   TString str = "";
   TString ratioName[3] = { "AptOverAll", "LptOverApt", "HptOverLpt" };
@@ -379,10 +427,10 @@ Bool_t AliMTRParameterizedResponse::SetRatio ( TH2* histoNum, TH2* histoDen, Int
   for ( Int_t ibin=1; ibin<=yAxis->GetNbins(); ibin++ ) {
     TH1* hNum = histoNum->ProjectionX("tmp_hNum",ibin,ibin,"e");
     TH1* hDen = histoDen->ProjectionX("tmp_hDen",ibin,ibin,"e");
-    TGraphAsymmErrors* gr = new TGraphAsymmErrors(hNum,hDen);
+    TGraphAsymmErrors* graph = new TGraphAsymmErrors(hNum,hDen,"cpe0");
     TString title = Form("%g < %s < %g",yAxis->GetBinLowEdge(ibin),yAxis->GetTitle(),yAxis->GetBinUpEdge(ibin));
-    gr->SetName(Form("graph%s_%i",stdName.Data(),ibin));
-    gr->SetTitle(title.Data());
+    graph->SetName(Form("graph%s_%i",stdName.Data(),ibin));
+    graph->SetTitle(title.Data());
 //    TH1F* hCopy = new TH1F();
 //    hNum->Copy(*hCopy);
 //    hCopy->SetName(Form("histo%s_%i",stdName.Data(),ibin));
@@ -393,10 +441,34 @@ Bool_t AliMTRParameterizedResponse::SetRatio ( TH2* histoNum, TH2* histoDen, Int
     delete hNum;
     delete hDen;
 
+    // Smooth response:
+    Double_t xpt, xpt1, xpt2, ypt, ypt1, ypt2, yptMod;
+    Bool_t posDer = kFALSE;
+    for ( Int_t ipt=1; ipt<graph->GetN(); ipt++ ) {
+      graph->GetPoint(ipt,xpt,ypt);
+      graph->GetPoint(ipt-1,xpt1,ypt1);
+      Double_t der = (ypt-ypt1)/(xpt-xpt1);
+      if ( der > 0. ) posDer = kTRUE;
+      if ( posDer && ypt == 0. ) {
+        yptMod = ypt1;
+        for ( Int_t jpt=ipt+1; jpt<graph->GetN(); jpt++ ) {
+          graph->GetPoint(jpt,xpt2,ypt2);
+          if ( ypt2>0. ) {
+            yptMod += (xpt - xpt1) * ( ypt2 - ypt1 ) / ( xpt2 - xpt1 );
+            break;
+          }
+        }
+        graph->SetPoint(ipt,xpt,yptMod);
+        graph->SetPointEYlow(ipt,yptMod);
+        graph->SetPointEYhigh(ipt,1.- yptMod);
+        AliWarning(Form("%s: change point %i at pt = %g from %g to %g",graph->GetName(),ipt,xpt,ypt,yptMod));
+      }
+    }
+
 //    TH1* projection = histoRatio->ProjectionX(Form("histo%s%sPer%s_%i",dataType.Data(),ratioName[type].Data(),varType.Data(),ibin),ibin,ibin,"e");
 //    projection->SetDirectory(0);
     if ( ibin == 1 ) AddResponse(itype,isMC,perBoard,new TObjArray(yAxis->GetNbins()));
-    GetResponse(itype,isMC,perBoard)->AddAt(gr,ibin-1);
+    GetResponse(itype,isMC,perBoard)->AddAt(graph,ibin-1);
   }
 
   if ( isCloned ) {
@@ -469,7 +541,7 @@ Bool_t AliMTRParameterizedResponse::SetFromMTRResponseTaskOutput ( Bool_t perBoa
 }
 
 //________________________________________________________________________
-Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBoard )
+Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBoard ) const
 {
   /// Compare data and MC responses
   TCanvas* can = 0x0;
@@ -516,7 +588,7 @@ Bool_t AliMTRParameterizedResponse::CompareResponses ( Int_t itype, Bool_t perBo
 }
 
 //________________________________________________________________________
-Bool_t AliMTRParameterizedResponse::ShowResponses ( Int_t itype, Bool_t isMC, Bool_t perBoard )
+Bool_t AliMTRParameterizedResponse::ShowResponses ( Int_t itype, Bool_t isMC, Bool_t perBoard ) const
 {
   /// Show responses
   TObjArray* resp = GetResponse(itype,isMC,perBoard);
@@ -571,7 +643,7 @@ Bool_t AliMTRParameterizedResponse::AddResponse ( Int_t itype, Bool_t isMC, Bool
 }
 
 //________________________________________________________________________
-TObjArray* AliMTRParameterizedResponse::GetResponse ( Int_t itype, Bool_t isMC, Bool_t perBoard, Bool_t warn )
+TObjArray* AliMTRParameterizedResponse::GetResponse ( Int_t itype, Bool_t isMC, Bool_t perBoard, Bool_t warn ) const
 {
   /// Get response array
   TObjArray* respArr = perBoard ? fResponseBoard : fResponseEta;
@@ -595,7 +667,7 @@ TObjArray* AliMTRParameterizedResponse::GetResponse ( Int_t itype, Bool_t isMC, 
 }
 
 //________________________________________________________________________
-Double_t AliMTRParameterizedResponse::GetWeight ( Double_t pt, Int_t ibin, Int_t itype, Bool_t isMC, Bool_t useFit, Bool_t perBoard )
+Double_t AliMTRParameterizedResponse::GetWeight ( Double_t pt, Int_t ibin, Int_t itype, Bool_t isMC, Bool_t useFit, Bool_t perBoard ) const
 {
   /// Get weight
 
@@ -623,13 +695,13 @@ Double_t AliMTRParameterizedResponse::GetWeight ( Double_t pt, Int_t ibin, Int_t
   Double_t  xpt, ypt;
   graph->GetPoint(ipoint,xpt,ypt);
 
-  AliDebug(3,Form("GraphName: %s pt: %g  xpt %g  ypt %g\n",graph->GetName(), pt, xpt, ypt));
+  AliDebug(3,Form("GraphName: %s pt: %g  xpt %g  ypt %g",graph->GetName(), pt, xpt, ypt));
 
   return ypt;
 }
 
 //________________________________________________________________________
-Double_t AliMTRParameterizedResponse::WeightPerBoard ( Double_t pt, Int_t iboard, Int_t itype, Bool_t isMC, Bool_t useFit )
+Double_t AliMTRParameterizedResponse::WeightPerBoard ( Double_t pt, Int_t iboard, Int_t itype, Bool_t isMC, Bool_t useFit ) const
 {
   /// Get weight per board
 
@@ -639,7 +711,7 @@ Double_t AliMTRParameterizedResponse::WeightPerBoard ( Double_t pt, Int_t iboard
 
 
 //________________________________________________________________________
-Double_t AliMTRParameterizedResponse::WeightPerEta ( Double_t pt, Double_t eta, Int_t itype, Bool_t isMC, Bool_t useFit )
+Double_t AliMTRParameterizedResponse::WeightPerEta ( Double_t pt, Double_t eta, Int_t itype, Bool_t isMC, Bool_t useFit ) const
 {
   /// Get weight per eta
   if ( ! fEtaBinning ) {
