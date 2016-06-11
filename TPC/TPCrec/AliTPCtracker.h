@@ -130,8 +130,9 @@ public:
 
    void SortTracks(TObjArray * arr, Int_t mode) const;
   
-   virtual Double_t ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl = 0);
-   virtual Double_t ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl = 0);   
+   void    ErrY2Z2(AliTPCseed* seed, const AliTPCclusterMI *cl, double &erry2, double &errz2);
+   virtual Double_t ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl);
+   virtual Double_t ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl);   
 
    Double_t F1(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3) const; 
    Double_t F1old(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t x3,Double_t y3) const; 

@@ -880,6 +880,86 @@ void AliTPCTransform::ApplyDistortionMap(int roc, double xyzLab[3])
 }
 
 //_____________________________________________________________________________________
+void AliTPCTransform::ErrY2Z2Syst(const AliTPCclusterMI * cl, const double tgPhi, const double tgLam,
+				  double &serry2, double &serrz2)
+{
+  // static function to calculate systematic errorY^2 on the cluster with current reco param
+  // Must be static to be used also by external routines
+  // tgPhi is the ab.tg(inclination wrt padrow), tgLam is tg of dip angle 
+  const float kEpsZBoundary = 1.e-6; // to disentangle A,C and A+C-common regions
+  const float kMaxExpArg = 9.; // limit r-dumped error to this exp. argument
+  const float kMaxExpArgZ = TMath::Sqrt(2.*kMaxExpArg);
+  serry2 = serrz2 = 0;
+  double sysErrY = 0, sysErrZ = 0;
+  //
+  // error on particular TPC subvolume (charging up)
+  const Double_t *errInner = fCurrentRecoParam->GetSystematicErrorClusterInner();
+  if (errInner[0]>0) {
+    //
+    double dr = TMath::Abs(cl->GetX()-85.);
+    float argExp = dr/errInner[1];     // is the Z-range limited ?
+    if (argExp<kMaxExpArg) {
+      const TVectorF* zranges = fCurrentRecoParam->GetSystErrClInnerRegZ(); // is the Z-range of dumped error defined?
+      int nz;
+      if (zranges && (nz=zranges->GetNoElements())) {
+	Bool_t sideC = (cl->GetDetector()/18)&0x1; // is this C-side cluster
+	const TVectorF* zrangesSigI = fCurrentRecoParam->GetSystErrClInnerRegZSigInv();
+	float zcl = cl->GetZ(); // chose the closest range within 3 sigma
+	const float* zr = zranges->GetMatrixArray();
+	const float* zsi= zrangesSigI->GetMatrixArray();
+	float dzarg = 999.;
+	for (int i=nz;i--;) { // find closest region
+	  if      (zr[i]<-kEpsZBoundary && !sideC) continue; // don't apply to A-side clusters if the Z-boundary is for C-region
+	  else if (zr[i]>kEpsZBoundary  &&  sideC) continue; // don't apply to C-side clusters if the Z-boundary is for A-region
+	  float dz = TMath::Abs( (zr[i]-zcl)*zsi[i] );
+	  if (dz<dzarg) dzarg = dz;
+	}
+	if (dzarg<kMaxExpArgZ) { // is it small enough to call exp?
+	  argExp += 0.5*dzarg*dzarg;
+	  if (argExp<kMaxExpArg) sysErrY = sysErrZ = errInner[0]*TMath::Exp(-argExp);
+	}	
+      }
+      else sysErrY = sysErrZ = errInner[0]*TMath::Exp(-argExp); // no condition on Z
+    }
+
+  }
+  serry2 += sysErrY*sysErrY;
+  serrz2 += sysErrZ*sysErrZ;
+  //
+  sysErrY = fCurrentRecoParam->GetSystematicErrorClusterCustom() ?  
+    fCurrentRecoParam->GetSystematicErrorClusterCustom()[0] : fCurrentRecoParam->GetSystematicErrorCluster()[0];
+  sysErrZ = fCurrentRecoParam->GetSystematicErrorClusterCustom() ?  
+    fCurrentRecoParam->GetSystematicErrorClusterCustom()[1] : fCurrentRecoParam->GetSystematicErrorCluster()[1];
+  if (sysErrY) serry2 += sysErrY*sysErrY;  // common syst error
+  if (sysErrZ) serrz2 += sysErrZ*sysErrZ;  // common syst error
+  //
+  double useDistY = fCurrentRecoParam->GetUseDistortionFractionAsErrorY();
+  if (useDistY>0) {
+    float dstY = cl->GetDistortionY()*useDistY;
+    float dstX = cl->GetDistortionX()*useDistY*tgPhi;
+    serry2 += dstY*dstY + dstX*dstX;
+  }
+  double useDispY = fCurrentRecoParam->GetUseDistDispFractionAsErrorY();
+  if (useDispY>0) {
+    useDispY *= cl->GetDistortionDispersion();
+    serry2 += useDispY*useDispY;
+  }
+  //
+  double useDistZ = fCurrentRecoParam->GetUseDistortionFractionAsErrorZ();
+  if (useDistZ>0) {
+    float dstZ = cl->GetDistortionZ()*useDistZ;
+    float dstX = cl->GetDistortionX()*useDistZ*tgLam;
+    serrz2 += dstZ*dstZ + dstX*dstX;
+  }
+  double useDispZ = fCurrentRecoParam->GetUseDistDispFractionAsErrorZ();
+  if (useDispZ>0) {
+    useDispZ *= cl->GetDistortionDispersion();
+    serrz2 += useDispZ*useDispZ;
+  }
+  //
+}
+
+//_____________________________________________________________________________________
 Double_t AliTPCTransform::ErrY2Syst(const AliTPCclusterMI * cl, const double tgAng)
 {
   // static function to calculate systematic errorY^2 on the cluster with current reco param

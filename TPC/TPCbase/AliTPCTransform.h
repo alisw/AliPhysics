@@ -45,6 +45,7 @@ public:
   static AliTPCChebCorr* LoadFieldDependendStaticCorrectionMap(Bool_t ref,TObjArray* mapsArrProvided=0);
   Double_t ErrY2Syst(const AliTPCclusterMI * cl, const double tgAngPhi);
   Double_t ErrZ2Syst(const AliTPCclusterMI * cl, const double tgAngLam);
+  void ErrY2Z2Syst(const AliTPCclusterMI * cl, const double tgPhi, const double tgLam,double &serry2, double &serrz2);
 
   void LoadCorrectionMapsForTimeBin(TObjArray* mapsArrProvided=0);
   // set current values

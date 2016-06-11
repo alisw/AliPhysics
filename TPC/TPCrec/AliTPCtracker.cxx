@@ -292,8 +292,9 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   // RS: use propagation only if the seed in far from the cluster
   const double kTolerance = 10e-4; // assume track is at cluster X if X-distance below this
   if (TMath::Abs(seed->GetX()-cluster->GetX())>kTolerance) seed->GetProlongation(cluster->GetX(),yt,zt); 
-  Double_t sy2=ErrY2(seed,cluster);
-  Double_t sz2=ErrZ2(seed,cluster);
+  Double_t sy2=0;//ErrY2(seed,cluster);
+  Double_t sz2=0;//ErrZ2(seed,cluster);
+  ErrY2Z2(seed,cluster,sy2,sz2);
   
   Double_t sdistancey2 = sy2+seed->GetSigmaY2();
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
@@ -752,6 +753,45 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
     AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
   
 }
+
+//_____________________________________________________________________________________
+void AliTPCtracker::ErrY2Z2(AliTPCseed* seed, const AliTPCclusterMI * cl, double &erry2, double &errz2)
+{
+  //
+  //
+  // Use calibrated cluster error from OCDB
+  //
+  const AliTPCRecoParam* rp = AliTPCReconstructor::GetRecoParam();
+  AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
+  //
+  Float_t z = TMath::Abs(fkParam->GetZLength(0)-TMath::Abs(seed->GetZ()));
+  Int_t ctype = cl->GetType();  
+  Int_t    type = (cl->GetRow()<63) ? 0: (cl->GetRow()>126) ? 1:2;
+  double   snp2 = seed->GetSnp()*seed->GetSnp();
+  if (snp2>1.-1e-6) snp2 = 1.-1e-6;
+  double   tgp2 = snp2/(1.f-snp2);
+  double   tgp  = TMath::Sqrt(tgp2);
+  double   tgl2m = seed->GetTgl()*seed->GetTgl()*(1+tgp2); 
+  Double_t tglm = TMath::Sqrt(tgl2m);
+  erry2 = clparam->GetError0Par(0,type, z,tgp);
+  errz2 = clparam->GetError0Par(1,type, z,tglm);
+  if (ctype<0) { // edge cluster
+    erry2+=0.5;  
+    errz2+=0.5; 
+  }
+  erry2 *= erry2;
+  errz2 *= errz2;
+  // additional systematic error on the cluster
+  double serry2=0,serrz2=0;
+  AliTPCcalibDB::Instance()->GetTransform()->ErrY2Z2Syst(cl, tgp, seed->GetTgl(), serry2,serrz2);
+  erry2 += serry2;
+  errz2 += serrz2;
+  seed->SetErrorY2(erry2);
+  seed->SetErrorZ2(errz2);
+  //
+}
+
+
 
 //_____________________________________________________________________________________
 Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){

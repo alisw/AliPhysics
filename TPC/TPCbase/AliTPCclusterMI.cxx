@@ -223,7 +223,7 @@ Float_t AliTPCclusterMI::GetDistortionDispersion() const
 //_____________________________________________________
 void AliTPCclusterMI::SetDistortions(float dx, float dy, float dz)
 {
-  // store distortions rounded to 0.1mm: to 0.1 for X (9 bits) and to 0.1mm (11 bits) for y and z
+  // store distortions rounded: to 0.2 for X (9 bits) and to 0.1mm (11 bits) for y and z
   int pack = 0;
   int dxi = dx*kScaleDX;
   if (dxi<0) {
