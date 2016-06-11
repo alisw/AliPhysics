@@ -39,6 +39,9 @@
 
 #include "AliAnalysisTaskEmcalRun2QA.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalRun2QA)
 
 //________________________________________________________________________
