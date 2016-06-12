@@ -157,7 +157,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson jet
-  /// information in a very compact data structure (49 bits)
+  /// information in a very compact data structure (50 bits)
   class AliJetInfoSummary {
   public:
     AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
@@ -168,7 +168,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source, std::string n);
 
     /// Transverse momentum of the jet in GeV/c
-    Double32_t  fPt        ; //[0,200,12]
+    Double32_t  fPt        ; //[0,500,13]
     /// Eta of the jet
     Double32_t  fEta       ; //[-2,2,10]
     /// Phi of the jet
@@ -179,7 +179,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double32_t  fZ         ; //[0,1,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoSummary, 1);
+    ClassDef(AliJetInfoSummary, 2);
     /// \endcond
   };
 
@@ -265,7 +265,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     void SetJetPhiRange(Double_t min, Double_t max)       { fMinJetPhi    = min; fMaxJetPhi    = max; }
     void SetJetEtaRange(Double_t min, Double_t max)       { fMinJetEta    = min; fMaxJetEta    = max; }
-    void SetJetPtMin(Double_t min)                        { fMinJetPt     = min;                      }
+    void SetJetPtRange(Double_t min, Double_t max)        { fMinJetPt     = min; fMaxJetPt     = max; }
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
     void SetAcceptanceType(EJetAcceptanceType_t a)        { fAcceptance   = a  ;                      }
@@ -293,6 +293,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
     EJetAcceptanceType_t      fAcceptance    ; ///<  Jet acceptance
     Double_t                  fMinJetPt      ; ///<  Minimum jet pT
+    Double_t                  fMaxJetPt      ; ///<  Maximum jet pT
     Double_t                  fMinJetPhi     ; ///<  Minimum jet phi
     Double_t                  fMaxJetPhi     ; ///<  Maximum jet phi
     Double_t                  fMinJetEta     ; ///<  Minimum jet eta
@@ -304,7 +305,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliHFJetDefinition, 2);
+    ClassDef(AliHFJetDefinition, 3);
     /// \endcond
   };
 

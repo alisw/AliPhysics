@@ -336,6 +336,7 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition() :
   fRecoScheme(AliJetContainer::pt_scheme),
   fAcceptance(AliJetContainer::kUser),
   fMinJetPt(0.),
+  fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
   fMinJetEta(0.),
@@ -361,6 +362,7 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(EJetType_t typ
   fRecoScheme(reco),
   fAcceptance(AliJetContainer::kUser),
   fMinJetPt(0.),
+  fMaxJetPt(500.),
   fMinJetPhi(0.),
   fMaxJetPhi(0.),
   fMinJetEta(0.),
@@ -393,6 +395,7 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(const AliHFJet
   fRecoScheme(source.fRecoScheme),
   fAcceptance(source.fAcceptance),
   fMinJetPt(source.fMinJetPt),
+  fMaxJetPt(source.fMaxJetPt),
   fMinJetPhi(source.fMinJetPhi),
   fMaxJetPhi(source.fMaxJetPhi),
   fMinJetEta(source.fMinJetEta),
@@ -431,7 +434,7 @@ Bool_t AliAnalysisTaskDmesonJets::AliHFJetDefinition::IsJetInAcceptance(const Al
 {
   if (fMinJetEta < fMaxJetEta && (jet.Eta() < fMinJetEta || jet.Eta() > fMaxJetEta)) return kFALSE;
   if (fMinJetPhi < fMaxJetPhi && (jet.Phi() < fMinJetPhi || jet.Phi() > fMaxJetPhi)) return kFALSE;
-  if (jet.Pt() < fMinJetPt) return kFALSE;
+  if (jet.Pt() > fMaxJetPt || jet.Pt() < fMinJetPt) return kFALSE;
   if (jet.fMaxChargedPt < fMinChargedPt || jet.fMaxChargedPt > fMaxChargedPt) return kFALSE;
   if (jet.fMaxNeutralPt < fMinNeutralPt || jet.fMaxNeutralPt > fMaxNeutralPt) return kFALSE;
 
