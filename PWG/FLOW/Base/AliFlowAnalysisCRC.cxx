@@ -16197,7 +16197,7 @@ void AliFlowAnalysisCRC::InitializeArraysForCRCZDC()
 void AliFlowAnalysisCRC::InitializeArraysForQVec()
 {
   // CRC Q Vectors
-  for(Int_t c=0;c<5;c++) {
+  for(Int_t c=0;c<6;c++) {
     fCRCZDCEP[c] = NULL;
   }
   for(Int_t c=0;c<8;c++) {
@@ -18233,6 +18233,11 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   fCRCZDCEP[3]->Fill(fRunBin+0.5,fCentralityEBE,EvPlZDCC);
   fCRCZDCEP[4]->Fill(fRunBin+0.5,fCentralityEBE,EvPlZDCA);
   
+  EvPlZDCsum = fEvPlZDCCflat+fEvPlZDCAflat;
+  if(EvPlZDCsum<-TMath::Pi()) EvPlZDCsum += TMath::TwoPi();
+  if(EvPlZDCsum> TMath::Pi()) EvPlZDCsum -= TMath::TwoPi();
+  fCRCZDCEP[5]->Fill(fRunBin+0.5,fCentralityEBE,EvPlZDCsum);
+  
   fCRCZDCQ2[4]->Fill(fRunBin+0.5,fCentralityEBE,cos(2.*fEvPlZDCCflat));
   fCRCZDCQ2[5]->Fill(fRunBin+0.5,fCentralityEBE,sin(2.*fEvPlZDCCflat));
   fCRCZDCQ2[6]->Fill(fRunBin+0.5,fCentralityEBE,cos(2.*fEvPlZDCAflat));
@@ -19161,10 +19166,12 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   Double_t VZCRe = fVZFlowVect[0][VZH-1].X();
   Double_t VZCIm = fVZFlowVect[0][VZH-1].Y();
   Double_t VZCM  = fVZFlowVect[0][VZH-1].GetMult();
+  Double_t EvPlVZC = TMath::ATan2(VZCIm,VZCRe)/2.;
   // VZ eta > 0
   Double_t VZARe = fVZFlowVect[1][VZH-1].X();
   Double_t VZAIm = fVZFlowVect[1][VZH-1].Y();
   Double_t VZAM  = fVZFlowVect[1][VZH-1].GetMult();
+  Double_t EvPlVZA = TMath::ATan2(VZAIm,VZARe)/2.;
   
   if( VZCM<1. || VZAM<1. ) return;
   if(fZDCESEclEbE<0 || fZDCESEclEbE>=fZDCESEnCl) return;
@@ -19176,39 +19183,6 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   Double_t ZNM = ZCM+ZAM;
   
   // Common variables
-  
-  Double_t uPReA=0., uPImA=0., uPMA=0., uPReC=0., uPImC=0., uPMC=0.;
-  Double_t uNReA=0., uNImA=0., uNMA=0., uNReC=0., uNImC=0., uNMC=0.;
-  
-  uPReA = fCMEQRe[0][h]->GetBinContent(1);
-  uPImA = fCMEQIm[0][h]->GetBinContent(1);
-  uPMA  = fCMEMult[0][h]->GetBinContent(1);
-  uPReC = fCMEQRe[0][h]->GetBinContent(2);
-  uPImC = fCMEQIm[0][h]->GetBinContent(2);
-  uPMC  = fCMEMult[0][h]->GetBinContent(2);
-  
-  // negative charge
-  uNReA = fCMEQRe[1][h]->GetBinContent(1);
-  uNImA = fCMEQIm[1][h]->GetBinContent(1);
-  uNMA  = fCMEMult[1][h]->GetBinContent(1);
-  uNReC = fCMEQRe[1][h]->GetBinContent(2);
-  uNImC = fCMEQIm[1][h]->GetBinContent(2);
-  uNMC  = fCMEMult[1][h]->GetBinContent(2);
-  
-  if (uPMA>1. && uNMA>1. && uPMC>1. && uNMC>1.) {
-    
-    Double_t TwoQpQn = (uPReA*uNReC+uPImA*uNImC)/(uPMA*uNMC) ;
-    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPMA*uNMC);
-    
-    Double_t TwoQpQp = (uPReA*uPReC+uPImA*uPImC)/(uPMA*uPMC) ;
-    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,uPMA*uPMC);
-    
-    Double_t TwoQnQn = (uNReA*uNReC+uNImA*uNImC)/(uNMA*uNMC) ;
-    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNMA*uNMC);
-    
-  }
-  
-  // **********************************************************************************************************
   
   Double_t uPRe=0., uPIm=0., uPM=0., uP2Re=0., uP2Im=0.;
   Double_t uNRe=0., uNIm=0., uNM=0., uN2Re=0., uN2Im=0.;
@@ -19227,37 +19201,48 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
     uN2Re += fCMEQRe[1][h+1]->GetBinContent(EBin);
     uN2Im += fCMEQIm[1][h+1]->GetBinContent(EBin);
   }
+  Double_t EvPlTPC = TMath::ATan2(uP2Im+uN2Im,uP2Re+uN2Re)/2.;
   
   if (uPM>1. && uNM>1.) {
     
-    Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZCRe + (uPRe*uNIm+uPIm*uNRe)*VZCIm) / (uPM*uNM) ;
+    Double_t TwoQpQn = (uPRe*uNRe+uPIm*uNIm)/(uPM*uNM) ;
+    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPM*uNM);
+    
+    Double_t TwoQpQp = (uPRe*uPRe+uPIm*uPIm-uPM)/(uPM*(uPM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,uPM*(uPM-1.));
+    
+    Double_t TwoQnQn = (uNRe*uNRe+uNIm*uNIm-uNM)/(uNM*(uNM-1.)) ;
+    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNM*(uNM-1.));
+    
+  }
+  
+  // **********************************************************************************************************
+  
+  if (uPM>1. && uNM>1.) {
+    
+    Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*cos(2.*EvPlVZC) + (uPRe*uNIm+uPIm*uNRe)*sin(2.*EvPlVZC)) / (uPM*uNM) ;
     fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
-    Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZCRe + (2.*uPRe*uPIm-uP2Im)*VZCIm) / (uPM*(uPM-1.)) ;
+    Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*cos(2.*EvPlVZC) + (2.*uPRe*uPIm-uP2Im)*sin(2.*EvPlVZC)) / (uPM*(uPM-1.)) ;
     fCMETPCCorPro[fZDCESEclEbE][4]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
     
-    Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZCRe + (2.*uNRe*uNIm-uN2Im)*VZCIm) / (uNM*(uNM-1.)) ;
+    Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*cos(2.*EvPlVZC) + (2.*uNRe*uNIm-uN2Im)*sin(2.*EvPlVZC)) / (uNM*(uNM-1.)) ;
     fCMETPCCorPro[fZDCESEclEbE][5]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
     
-    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*VZARe + (uPRe*uNIm+uPIm*uNRe)*VZAIm) / (uPM*uNM) ;
+    TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*cos(2.*EvPlVZA) + (uPRe*uNIm+uPIm*uNRe)*sin(2.*EvPlVZA)) / (uPM*uNM) ;
     fCMETPCCorPro[fZDCESEclEbE][6]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
-    TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*VZARe + (2.*uPRe*uPIm-uP2Im)*VZAIm) / (uPM*(uPM-1.)) ;
+    TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re)*cos(2.*EvPlVZA) + (2.*uPRe*uPIm-uP2Im)*sin(2.*EvPlVZA)) / (uPM*(uPM-1.)) ;
     fCMETPCCorPro[fZDCESEclEbE][7]->Fill(fCentralityEBE,TwoQpQpV,uPM*(uPM-1.));
     
-    TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*VZARe + (2.*uNRe*uNIm-uN2Im)*VZAIm) / (uNM*(uNM-1.)) ;
+    TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re)*cos(2.*EvPlVZA) + (2.*uNRe*uNIm-uN2Im)*sin(2.*EvPlVZA)) / (uNM*(uNM-1.)) ;
     fCMETPCCorPro[fZDCESEclEbE][8]->Fill(fCentralityEBE,TwoQnQnV,uNM*(uNM-1.));
     
     // Resolution corrections
     
-    Double_t TwoT2 = VZARe*VZCRe+VZAIm*VZCIm;
-    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,TwoT2);
-    
-    TwoT2 = ((uP2Re+uN2Re)*VZCRe+(uP2Im+uN2Im)*VZCIm)/(uPM+uNM);
-    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
-    
-    TwoT2 = ((uP2Re+uN2Re)*VZARe+(uP2Im+uN2Im)*VZAIm)/(uPM+uNM);
-    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,TwoT2,uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,cos(2.*(EvPlVZC-EvPlVZA)));
+    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZC)));
+    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZA)));
     
     // ZDC-ESE terms
     
@@ -19541,22 +19526,9 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
     
     if(hr+2==2) {
       if(QMraw>0) {
-        fFlowSPZDCIntPro[fRunBin][hr][0]->Fill(fCentralityEBE,ZARe*ZCRe/NZC/NZA,WZA*WZC);
-        fFlowSPZDCIntPro[fRunBin][hr][1]->Fill(fCentralityEBE,ZAIm*ZCIm/NZC/NZA,WZA*WZC);
-        fFlowSPZDCIntPro[fRunBin][hr][2]->Fill(fCentralityEBE,ZARe*ZCIm/NZC/NZA,WZA*WZC);
-        fFlowSPZDCIntPro[fRunBin][hr][3]->Fill(fCentralityEBE,ZAIm*ZCRe/NZC/NZA,WZA*WZC);
-        // real terms (flow)
-//        fFlowSPZDCIntPro[fRunBin][hr][4]->Fill(fCentralityEBE,Q2Re*ZARe*ZCRe/QM/NZC/NZA,QM*WZA*WZC);
-//        fFlowSPZDCIntPro[fRunBin][hr][5]->Fill(fCentralityEBE,Q2Re*ZAIm*ZCIm/QM/NZC/NZA,QM*WZA*WZC);
-//        fFlowSPZDCIntPro[fRunBin][hr][6]->Fill(fCentralityEBE,Q2Im*ZARe*ZCIm/QM/NZC/NZA,QM*WZA*WZC);
-//        fFlowSPZDCIntPro[fRunBin][hr][7]->Fill(fCentralityEBE,Q2Im*ZAIm*ZCRe/QM/NZC/NZA,QM*WZA*WZC);
         // EP
         Double_t EvPlZDCC = TMath::ATan2(ZCIm,ZCRe);
         Double_t EvPlZDCA = TMath::ATan2(ZAIm,ZARe);
-        
-        // standard EP
-        Double_t flow = (Q2Re*cos(EvPlZDCC+EvPlZDCA)+Q2Im*sin(EvPlZDCC+EvPlZDCA))/QM;
-        fFlowSPZDCIntPro[fRunBin][hr][8]->Fill(fCentralityEBE,flow,QM);
         
         Double_t QARe=0., QAIm=0., QBRe=0., QBIm=0.;
         for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
@@ -19568,27 +19540,42 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
         Double_t EvPlTPCC = TMath::ATan2(QAIm,QARe)/2.;
         Double_t EvPlTPCA = TMath::ATan2(QBIm,QBRe)/2.;
         
+//        fFlowSPZDCIntPro[fRunBin][hr][0]->Fill(fCentralityEBE,ZARe*ZCRe/NZC/NZA,WZA*WZC);
+//        fFlowSPZDCIntPro[fRunBin][hr][1]->Fill(fCentralityEBE,ZAIm*ZCIm/NZC/NZA,WZA*WZC);
+//        fFlowSPZDCIntPro[fRunBin][hr][2]->Fill(fCentralityEBE,ZARe*ZCIm/NZC/NZA,WZA*WZC);
+//        fFlowSPZDCIntPro[fRunBin][hr][3]->Fill(fCentralityEBE,ZAIm*ZCRe/NZC/NZA,WZA*WZC);
+        
+        // standard EP
+        Double_t flow = (Q2Re*cos(EvPlZDCC+EvPlZDCA)+Q2Im*sin(EvPlZDCC+EvPlZDCA))/QM;
+        fFlowSPZDCIntPro[fRunBin][hr][0]->Fill(fCentralityEBE,flow,QM);
+        
         flow = cos(2.*EvPlTPCC-EvPlZDCC-EvPlZDCA);
-        fFlowSPZDCIntPro[fRunBin][hr][9]->Fill(fCentralityEBE,flow);
+        fFlowSPZDCIntPro[fRunBin][hr][1]->Fill(fCentralityEBE,flow);
         
         flow = cos(2.*EvPlTPCA-EvPlZDCC-EvPlZDCA);
-        fFlowSPZDCIntPro[fRunBin][hr][10]->Fill(fCentralityEBE,flow);
+        fFlowSPZDCIntPro[fRunBin][hr][2]->Fill(fCentralityEBE,flow);
         
         flow = cos(2.*(EvPlTPCC-EvPlTPCA));
-        fFlowSPZDCIntPro[fRunBin][hr][11]->Fill(fCentralityEBE,flow);
+        fFlowSPZDCIntPro[fRunBin][hr][3]->Fill(fCentralityEBE,flow);
+        
+        flow = cos(EvPlZDCC-EvPlZDCA);
+        fFlowSPZDCIntPro[fRunBin][hr][4]->Fill(fCentralityEBE,flow);
         
         //flattened EP
         flow = (Q2Re*cos(fEvPlZDCCflat+fEvPlZDCAflat)+Q2Im*sin(fEvPlZDCCflat+fEvPlZDCAflat))/QM;
-        fFlowSPZDCIntPro[fRunBin][hr][4]->Fill(fCentralityEBE,flow,QM);
+        fFlowSPZDCIntPro[fRunBin][hr][5]->Fill(fCentralityEBE,flow,QM);
         
         flow = cos(2.*EvPlTPCC-fEvPlZDCCflat-fEvPlZDCAflat);
-        fFlowSPZDCIntPro[fRunBin][hr][5]->Fill(fCentralityEBE,flow);
-        
-        flow = cos(2.*EvPlTPCA-fEvPlZDCCflat-fEvPlZDCAflat);
         fFlowSPZDCIntPro[fRunBin][hr][6]->Fill(fCentralityEBE,flow);
         
-        flow = cos(2.*(EvPlTPCC-EvPlTPCA));
+        flow = cos(2.*EvPlTPCA-fEvPlZDCCflat-fEvPlZDCAflat);
         fFlowSPZDCIntPro[fRunBin][hr][7]->Fill(fCentralityEBE,flow);
+        
+        flow = cos(2.*(EvPlTPCC-EvPlTPCA));
+        fFlowSPZDCIntPro[fRunBin][hr][8]->Fill(fCentralityEBE,flow);
+        
+        flow = cos(fEvPlZDCCflat-fEvPlZDCAflat);
+        fFlowSPZDCIntPro[fRunBin][hr][9]->Fill(fCentralityEBE,flow);
         
       }
     }
@@ -22020,6 +22007,8 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
   cout << endl;
   cout << endl;
   
+  Double_t BadRuns[18] {139465,139437,139173,139107,139036,138653,138534,138469,138442,138396,138364,138275,138192,137844,137752,137722,137638,137608};
+  
   // integrated flow
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
@@ -22027,7 +22016,7 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
       
       for(Int_t c=1;c<=100.;c++) {
         
-        Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumTwoSq=0., SumWeigSq=0.;
+        Double_t SumTwo=0., SumTwoCorr=0., SumWeig=0., SumWeigCorr=0., SumTwoSq=0., SumWeigSq=0.;
         Double_t stats[6]={0.};
         
         for(Int_t r=0;r<fCRCnRun;r++) {
@@ -22063,7 +22052,15 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
             SumWeig   += sumw;
             SumTwoSq  += sumwx2;
             SumWeigSq += sumw2;
-            SumTwoCorr += (sumwx/sumw - NUAcorRes)*sumw;
+            
+            Bool_t GoodRun = kTRUE;
+            for(Int_t pre=0; pre<18; pre++) {
+              if(fRunList[r] == BadRuns[pre]) GoodRun=kFALSE;
+            }
+            if(GoodRun) {
+              SumTwoCorr += sumwx;
+              SumWeigCorr += sumw;
+            }
           } // end of if(sumw>0.)
         } // end of for(Int_t r=0;r<fCRCnRun;r++)
         
@@ -22079,12 +22076,12 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
         if(1.-pow(termA,2.)>0.) { termB = 1./pow(1.-pow(termA,2.),0.5); }
         Double_t CorrErr = termA*spread*termB; // final error (unbiased estimator for standard deviation)
         
-        Double_t CorrwNUA = SumTwoCorr/SumWeig;
+        Double_t CorrNoBadRuns = SumTwoCorr/SumWeigCorr;
         
         if(CorrErr && hr==0) {
           fFlowSPZDCIntHist[0][j]->SetBinContent(c,Corr);
           fFlowSPZDCIntHist[0][j]->SetBinError(c,CorrErr);
-          fFlowSPZDCIntHist[1][j]->SetBinContent(c,CorrwNUA);
+          fFlowSPZDCIntHist[1][j]->SetBinContent(c,CorrNoBadRuns);
           fFlowSPZDCIntHist[1][j]->SetBinError(c,CorrErr);
         }
         
@@ -26420,7 +26417,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   }
   
   if (fUseZDC) {
-    for(Int_t c=0;c<5;c++) {
+    for(Int_t c=0;c<6;c++) {
       fCRCZDCEP[c] = new TH3D(Form("fCRCZDCEP[%d]",c),
                               Form("fCRCZDCEP[%d]",c),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,100,-TMath::Pi(),TMath::Pi());
       fCRCZDCEP[c]->Sumw2();
