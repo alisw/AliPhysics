@@ -252,6 +252,7 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     }
   }  
 
+  if (accept>0) return 0;
   Double_t chi2 = track->GetPredictedChi2(track->GetCurrentCluster());
   //
 //   track->SetErrorY2(track->GetErrorY2()*1.3);
@@ -259,7 +260,6 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
 //   track->SetErrorZ2(track->GetErrorZ2()*1.3);   
 //   track->SetErrorZ2(track->GetErrorZ2()+0.005);      
     //}
-  if (accept>0) return 0;
   if (track->GetNumberOfClusters()%20==0){
     //    if (track->fHelixIn){
     //  TClonesArray & larr = *(track->fHelixIn);    
@@ -300,10 +300,8 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   Double_t sdistancez2 = sz2+seed->GetSigmaZ2();
   Double_t dy=seed->GetCurrentCluster()->GetY()-yt;
   Double_t dz=seed->GetCurrentCluster()->GetZ()-zt;
-  Double_t rdistancey2 = (seed->GetCurrentCluster()->GetY()-yt)*
-    (seed->GetCurrentCluster()->GetY()-yt)/sdistancey2;
-  Double_t rdistancez2 = (seed->GetCurrentCluster()->GetZ()-zt)*
-    (seed->GetCurrentCluster()->GetZ()-zt)/sdistancez2;
+  Double_t rdistancey2 = dy*dy/sdistancey2;
+  Double_t rdistancez2 = dz*dz/sdistancez2;
   
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
