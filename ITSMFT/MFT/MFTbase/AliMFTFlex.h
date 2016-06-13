@@ -30,7 +30,7 @@ private:
   TGeoVolume*  Make_AGND_DGND(Double_t length, Double_t width, Double_t thickness);
   TGeoVolume*  Make_Kapton(Double_t length, Double_t width, Double_t thickness);
   TGeoVolume*  Make_Varnish(Double_t length, Double_t width, Double_t thickness, Int_t iflag);
-  TGeoVolume*  Make_ElectricComponent(Double_t dx, Double_t dy, Double_t dz, Int_t iflag);
+  TGeoVolumeAssembly*  Make_ElectricComponent(Double_t dx, Double_t dy, Double_t dz, Int_t iflag);
 
   Double_t *fFlexOrigin;
   AliMFTLadderSegmentation * fLadderSeg;
