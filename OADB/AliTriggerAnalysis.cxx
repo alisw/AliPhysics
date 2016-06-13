@@ -79,6 +79,7 @@ fHistTKLAll(0),
 fHistTKLAcc(0),
 fHistVIRvsBCmod4pup(0),
 fHistVIRvsBCmod4acc(0),
+fHistVIRCln(0),
 fHistBBAflagsAll(0),
 fHistBBAflagsAcc(0),
 fHistBBCflagsAll(0),
@@ -204,6 +205,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistSPDVtxPileupCln = new TH1F("fHistSPDVtxPileupCln",";SPD Vtx pileup",2,0,2);
   fHistVIRvsBCmod4pup  = new TH2F("fHistVIRvsBCmod4pup","VIR vs BC%4 for events identified as SPD or V0 pileup;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
   fHistVIRvsBCmod4acc  = new TH2F("fHistVIRvsBCmod4acc","VIR vs BC%4 for accepted events;VIR;BC%4",21,-10.5,10.5,4,-0.5,3.5);
+  fHistVIRCln          = new TH1F("fHistVIRCln","Events cleaned by other cuts",21,-10.5,10.5);
   fHistBBAflagsAll     = new TH1F("fHistBBAflagsAll",";BBA flags;",33,-0.5,32.5);
   fHistBBAflagsAcc     = new TH1F("fHistBBAflagsAcc",";BBA flags;",33,-0.5,32.5);
   fHistBBCflagsAll     = new TH1F("fHistBBCflagsAll",";BBC flags;",33,-0.5,32.5);
@@ -285,6 +287,7 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistList->Add(fHistSPDVtxPileupCln);
   fHistList->Add(fHistVIRvsBCmod4pup);
   fHistList->Add(fHistVIRvsBCmod4acc);
+  fHistList->Add(fHistVIRCln);
   fHistList->Add(fHistBBAflagsAll);
   fHistList->Add(fHistBBAflagsAcc);
   fHistList->Add(fHistBBCflagsAll);
@@ -1272,7 +1275,7 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
     vir[bc] |= nBBC>=fVIRBBCflags;
     vir[bc] |= nBGA>=fVIRBGAflags;
     vir[bc] |= nBGC>=fVIRBGCflags;
-    if (fillHists) {
+    if (fillHists==1) {
       if (bc==10) continue;
       if (!vir[bc]) continue;
       if (!IsSPDOnVsOfPileup(event) && !IsV0MOnVsOfPileup(event)) continue;
@@ -1292,9 +1295,10 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
 
   if (fillHists) {
     for (Int_t bc=0;bc<=20;bc++) {
-      if (bc==10) continue;
       if (!vir[bc]) continue;
-      fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
+      if (fillHists==2) fHistVIRCln->Fill(10-bc);
+      if (bc==10) continue;
+      if (fillHists==1) fHistVIRvsBCmod4acc->Fill(10-bc,bcMod4);
     }
   }
   return kFALSE;
@@ -1517,13 +1521,14 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   acceptDefault &= !isV0Casym;
 
   // Fill histograms for cleaned events
-  if (isV0A & isV0C & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDClusterVsTrackletBG(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0C012vsTklBG(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isSPDOnVsOfPileup &!isV0Casym) IsV0MOnVsOfPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup &!isV0Casym) IsSPDOnVsOfPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup &!isV0Casym) IsSPDVtxPileup(event,2);
-  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup) IsV0Casym(event,2);
-
+  if (isV0A & isV0C                    & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDClusterVsTrackletBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG                    & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0C012vsTklBG(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG                 & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsV0PFPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup                   & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup & !isV0Casym) IsSPDVtxPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup                      & !isSPDOnVsOfPileup & !isV0Casym) IsV0MOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup                      & !isV0Casym) IsSPDOnVsOfPileup(event,2);
+  if (isV0A & isV0C & !isSPDClsVsTklBG & !isV0C012vsTklBG & !isV0PFPileup & !isSPDVtxPileup & !isV0MOnVsOfPileup & !isSPDOnVsOfPileup             ) IsV0Casym(event,2);
+  
   // Fill distributions for events accepted by general cuts
   if (acceptDefault){
     ADTrigger(event, kASide, kFALSE, 2);
