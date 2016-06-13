@@ -108,6 +108,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fRunNumber(-1),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -215,6 +216,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
+  fRunNumber(-1),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -573,6 +575,11 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 
   if (!RetrieveEventObjects())
     return;
+
+  if(InputEvent()->GetRunNumber() != fRunNumber){
+    fRunNumber = InputEvent()->GetRunNumber();
+    RunChanged();
+  }
 
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
