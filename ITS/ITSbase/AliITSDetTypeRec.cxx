@@ -889,7 +889,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
     AliDebug(1,"SPD and SSD V2 Cluster Finder - SDD fast Cluster Finder \n");    
   }
 
-  
+  const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
+  recoparam->PrintFastOrRecoParam(); 
   // Reset Fast-OR fired map
   ResetFastOrFiredMap();
 
@@ -906,7 +907,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
      }
 
   }
-  const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
+  
   AliITSClusterFinder *rec     = 0;
   Int_t id,module,first=0, nSPD=0;
   Bool_t firstCall[3] = {kTRUE,kTRUE,kTRUE};
@@ -956,7 +957,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
     // here removing bits which have no associated clusters 
-    RemoveFastOrFiredFromDead(GetFiredChipMap(treeR));  
+   if(recoparam->GetRemoveFastOrFromDeadMC()) RemoveFastOrFiredFromDead(GetFiredChipMap(treeR));  
   }
 
   AliITSRecPointContainer* rpcont = AliITSRecPointContainer::Instance();
@@ -1031,7 +1032,8 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   AliITSClusterFinder *rec     = 0;
   Int_t id=0;
   const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
-  
+  recoparam->PrintFastOrRecoParam();
+ 
   for(id=0;id<3;id++){
     if (!all && !det[id]) continue;
     rec = (AliITSClusterFinder*)GetReconstructionModel(id);
@@ -1042,7 +1044,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
     rec->SetDetTypeRec(this);
     rec->RawdataToClusters(rawReader);  
     // skip outer layers if NSPD > threshold
-    if (id==0 && recoparam && rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly()) {
+    if (id==0 && rec->GetNClusters()>recoparam->GetMaxSPDClforSPDOnly()) {
       AliInfoF("NSPDclusters %d > threshold %d, skipping SDD,SSD clusterization",
 	       rec->GetNClusters(), recoparam->GetMaxSPDClforSPDOnly());
       break;
@@ -1053,7 +1055,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   if (all || det[0]) { // SPD present
     RemoveFastOrFiredInActive();
     // here removing bits which have no associated clusters 
-    RemoveFastOrFiredFromDead(GetFiredChipMap());
+    if(recoparam->GetRemoveFastOrFromDeadRaw()) RemoveFastOrFiredFromDead(GetFiredChipMap());
    
   }  
 }
