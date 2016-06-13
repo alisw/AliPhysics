@@ -7,8 +7,7 @@ Instructions in AddTask_EPcorrectionsExample.C
  *********************************************************
  */
 
-//#include "AliSysInfo.h"
-#include <iostream>
+#include <Riostream.h>
 
 #include <TGrid.h>
 #include <TROOT.h>
@@ -21,53 +20,33 @@ Instructions in AddTask_EPcorrectionsExample.C
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>
 #include <AliESDEvent.h>
-#include "AliQnCorrectionsFillEvent.h"
-#include "AliQnCorrectionsCuts.h"
-#include "AliQnCorrectionsVarManager.h"
+#include "AliQnCorrectionsCutsSet.h"
 #include "AliQnCorrectionsManager.h"
-//#include "QnCorrectionsHelper.h"
 #include "AliQnCorrectionsHistos.h"
-#include "TSystem.h"
-#include "TROOT.h"
-//#include "TObjectTable.h"
-//#include "QnCorrectionsReducedVarManager.h"
-//#include "AliReducedEvent.h"
-//#include "trainsimulator/localHelper.h"
-// make a change
+#include "AliLog.h"
+
 #include "AliAnalysisTaskFlowVectorCorrections.h"
-
-using std::cout;
-using std::endl;
-
 
 ClassImp(AliAnalysisTaskFlowVectorCorrections)
 
 
-//_________________________________________________________________________________
 AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections() :
-    AliAnalysisTaskSE(),
-    fRunLightWeight(kFALSE),
-    fCalibrateByRun(kTRUE),
-    fUseFriendEvent(kFALSE),
-    fTriggerMask(0),
-    fInitialized(kFALSE),
-    fListInputHistogramsQnCorrections(0x0),
-    fEventQAList(0x0),
-    fEventPlaneManager(0x0),
-    fEventCuts(0x0),
-    fFillEvent(0x0),
-    fEventPlaneHistos(0x0),
-    fLabel(""),
-    fQAhistograms(""),
-    fFillEventQA(kTRUE),
-    fProvideQnVectorsList(kTRUE),
-    fOutputSlotEventQA(-1),
-    fOutputSlotHistQA(-1),
-    fOutputSlotHistQn(-1),
-    fOutputSlotQnVectorsList(-1),
-    fOutputSlotTree(-1),
-    fRunListPath(""),
-    fCalibrationFilePath("")
+AliQnCorrectionsFillEventTask(),
+fCalibrateByRun(kTRUE),
+fCalibrationFile(""),
+fCalibrationFileSource(CALIBSRC_local),
+fTriggerMask(0),
+fEventQAList(0x0),
+fEventCuts(NULL),
+fLabel(""),
+fQAhistograms(""),
+fFillEventQA(kFALSE),
+fProvideQnVectorsList(kFALSE),
+fOutputSlotEventQA(-1),
+fOutputSlotHistQA(-1),
+fOutputSlotHistQn(-1),
+fOutputSlotQnVectorsList(-1),
+fOutputSlotTree(-1)
 {
   //
   // Default constructor
@@ -76,73 +55,99 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections() :
 
 //_________________________________________________________________________________
 AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections(const char* name) :
-  AliAnalysisTaskSE(name),
-  fRunLightWeight(kFALSE),
-  fCalibrateByRun(kTRUE),
-  fUseFriendEvent(kFALSE),
-  fTriggerMask(0),
-  fInitialized(kFALSE),
-  fListInputHistogramsQnCorrections(0x0),
-  fEventQAList(0x0),
-  fEventPlaneManager(0x0),
-  fEventCuts(0x0),
-  fFillEvent(0x0),
-  fEventPlaneHistos(0x0),
-  fLabel(""),
-  fQAhistograms(""),
-  fFillEventQA(kTRUE),
-  fProvideQnVectorsList(kTRUE),
-  fOutputSlotEventQA(-1),
-  fOutputSlotHistQA(-1),
-  fOutputSlotHistQn(-1),
-  fOutputSlotQnVectorsList(-1),
-  fOutputSlotTree(-1),
-  fRunListPath(""),
-  fCalibrationFilePath("")
+    AliQnCorrectionsFillEventTask(name),
+fCalibrateByRun(kTRUE),
+fCalibrationFile(""),
+fCalibrationFileSource(CALIBSRC_local),
+fTriggerMask(0),
+fEventQAList(0x0),
+fEventCuts(NULL),
+fLabel(""),
+fQAhistograms(""),
+fFillEventQA(kFALSE),
+fProvideQnVectorsList(kFALSE),
+fOutputSlotEventQA(-1),
+fOutputSlotHistQA(-1),
+fOutputSlotHistQn(-1),
+fOutputSlotQnVectorsList(-1),
+fOutputSlotTree(-1)
 {
   //
   // Constructor
   //
 
-  //fFillEvent = new QnCorrectionsReducedVarManager();
-  fFillEvent = new AliQnCorrectionsFillEvent();
-
   fEventQAList = new TList();
   fEventQAList->SetName("EventQA");
   fEventQAList->SetOwner(kTRUE);
 
-  fEventPlaneHistos = new AliQnCorrectionsHistos();
-  fFillEvent->SetEventPlaneHistos(fEventPlaneHistos);
-
-
+  fEventHistos = new AliQnCorrectionsHistos();
 }
 
 //_________________________________________________________________________________
 void AliAnalysisTaskFlowVectorCorrections::DefineInOutput(){
 
-  if(!fEventPlaneManager) {std::cout<<"First configure EventPlaneManager!!"<<std::endl; return;}
+  if(!fAliQnCorrectionsManager) {
+    AliFatal("First configure QnCorrecionsManager!!\n");
+    return;
+  }
 
   DefineInput(0,TChain::Class());
-  Int_t outputSlot=1;
-  if(fEventPlaneManager->ShouldFillHistogramsQnCorrections())  {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQn=outputSlot++;}   // Calibration histograms
-  if(fEventPlaneManager->ShouldFillTreeQnVectors())            {DefineOutput(outputSlot, TTree::Class()); fOutputSlotTree=outputSlot++;} // Calibrated qvector tree
-  if(fEventPlaneManager->ShouldFillHistogramsQA())             {DefineOutput(outputSlot, TList::Class()); fOutputSlotHistQA=outputSlot++;}  // Qvector QA histograms
-  if(fProvideQnVectorsList)                                    {DefineOutput(outputSlot, TList::Class()); fOutputSlotQnVectorsList=outputSlot++;}   // Calibrated qvector list
-  if(fFillEventQA)                                             {DefineOutput(outputSlot, TList::Class()); fOutputSlotEventQA=outputSlot++;}   // Event QA histograms
-
-
-  TString paths(gROOT->GetMacroPath());
-  TObjArray* patharray = fRunListPath.Tokenize("/");
-  TString appendpath="";
-  for(Int_t i=0; i<patharray->GetEntries()-1; i++) appendpath=appendpath+patharray->At(i)->GetName()+"/";
-  paths.Append(appendpath);
-
-  gROOT->SetMacroPath(paths);
-  const char* runlistfile = gSystem->Which(gROOT->GetMacroPath(), fRunListPath.Data());
-  fEventPlaneManager->SetFileRunLabels(runlistfile);
-
+  Int_t outputSlot = 1;
+  // Calibration histograms
+  if (fAliQnCorrectionsManager->GetShouldFillOutputHistograms()) {
+    DefineOutput(outputSlot, TList::Class());
+    fOutputSlotHistQn = outputSlot++;
+  }
+  // Calibrated qvector tree
+  if (fAliQnCorrectionsManager->GetShouldFillQnVectorTree()) {
+    DefineOutput(outputSlot, TTree::Class());
+    fOutputSlotTree = outputSlot++;
+  }
+  // Qvector QA histograms
+  if (fAliQnCorrectionsManager->GetShouldFillQAHistograms()) {
+    DefineOutput(outputSlot, TList::Class());
+    fOutputSlotHistQA = outputSlot++;
+  }
+  // Calibrated qvector list
+  if (fProvideQnVectorsList) {
+    DefineOutput(outputSlot, TList::Class());
+    fOutputSlotQnVectorsList=outputSlot++;
+  }
+  // Event QA histograms
+  if (fFillEventQA) {
+    DefineOutput(outputSlot, TList::Class());
+    fOutputSlotEventQA=outputSlot++;
+  }
 }
 
+void AliAnalysisTaskFlowVectorCorrections::SetCalibrationHistogramsFile(CalibrationFileSource source, const char *filename) {
+  TFile *calibfile = NULL;
+
+  fCalibrationFile = filename;
+  fCalibrationFileSource = source;
+
+  switch (fCalibrationFileSource) {
+  case CALIBSRC_local:
+    if (fCalibrationFile.Length() != 0) {
+      if(fCalibrationFile.Contains("alien"))
+        TGrid::Connect("alien://");
+      calibfile = TFile::Open(fCalibrationFile);
+    }
+    if (calibfile != NULL && calibfile->IsOpen()) {
+      AliInfo(Form("\t Calibration file %s open", fCalibrationFile.Data()));
+      fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
+      calibfile->Close();
+    }
+    break;
+  case CALIBSRC_alien:
+    /* sanity check before we go to the grid */
+    if (!fCalibrationFile.Contains("alien"))
+      AliFatal(Form("\t alien was selected as source but %s filename does not contain \"alien\". Aborting!!!", fCalibrationFile.Data()));
+    break;
+  default:
+    AliFatal("Calibration file source not supported. Aborting!!!");
+  }
+}
 
 //_________________________________________________________________________________
 void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
@@ -150,106 +155,93 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
   //
   // Add all histogram manager histogram lists to the output TList
   //
+  this->SetDefaultVarNames();
+  this->SetDetectors();
 
-  fFillEvent->SetEventPlaneManager(fEventPlaneManager);
+  TFile *calibfile = NULL;
 
-  TFile* inputfile = 0x0;
-  if(!(fCalibrationFilePath.EqualTo(""))) {
-    if(fCalibrationFilePath.Contains("alien")) TGrid::Connect("alien://");
-    inputfile = TFile::Open(fCalibrationFilePath);
+  /* get the calibration file if needed */
+  switch (fCalibrationFileSource) {
+  case CALIBSRC_local:
+    break;
+  case CALIBSRC_alien:
+    if (fCalibrationFile.Length() != 0) {
+      TGrid::Connect("alien://");
+      calibfile = TFile::Open(fCalibrationFile);
+    }
+    if (calibfile != NULL && calibfile->IsOpen()) {
+      AliInfo(Form("\t Calibration file %s open", fCalibrationFile.Data()));
+      fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
+      calibfile->Close();
+    }
+    break;
+  default:
+    break;
   }
-  if(inputfile){
-    fEventPlaneManager->SetCalibrationFile(inputfile);
-    inputfile->Close();
-  }
 
-  fEventPlaneManager->Initialize();
+  fAliQnCorrectionsManager->InitializeQnCorrectionsFramework();
 
-  if(fEventPlaneManager->ShouldFillHistogramsQnCorrections()) PostData(fOutputSlotHistQn, fEventPlaneManager->GetListOutputHistogramsQnCorrections());
-  if(fEventPlaneManager->ShouldFillTreeQnVectors())   PostData(fOutputSlotTree, fEventPlaneManager->GetTreeQnVectors());
-  if(fEventPlaneManager->ShouldFillHistogramsQA()) PostData(fOutputSlotHistQA, fEventPlaneManager->GetListHistogramsQA());
-  if(fFillEventQA)   PostData(fOutputSlotEventQA, fEventQAList);
-
+  if (fAliQnCorrectionsManager->GetShouldFillOutputHistograms())
+    PostData(fOutputSlotHistQn, fAliQnCorrectionsManager->GetOutputHistogramsList());
+  if (fAliQnCorrectionsManager->GetShouldFillQnVectorTree())
+    PostData(fOutputSlotTree, fAliQnCorrectionsManager->GetQnVectorTree());
+  if (fAliQnCorrectionsManager->GetShouldFillQAHistograms())
+    PostData(fOutputSlotHistQA, fAliQnCorrectionsManager->GetQAHistogramsList());
+  if (fFillEventQA)
+    PostData(fOutputSlotEventQA, fEventQAList);
 }
 
+/// The current run has changed. Usually it is only sent before
+/// the first event is handled.
+/// Notify the framework manager that the current label has changed.
+void AliAnalysisTaskFlowVectorCorrections::NotifyRun() {
 
+  if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+}
 
-//________________________________________________________________________________________________________
 void AliAnalysisTaskFlowVectorCorrections::UserExec(Option_t *){
   //
   // Main loop. Called for every event
   //
 
-  AliVEvent* event = InputEvent();
-  //AliReducedEvent* event = dynamic_cast<AliReducedEvent*>(GetInputData(0));
+  fEvent = InputEvent();
+  fAliQnCorrectionsManager->ClearEvent();
 
-  fEventPlaneManager->ClearEvent();
+  fDataBank = fAliQnCorrectionsManager->GetDataContainer();
 
-  Float_t* values = fEventPlaneManager->GetDataContainer();
+  FillEventData();
 
+  fEventHistos->FillHistClass("Event_NoCuts", fDataBank);
 
-  fFillEvent->Process((AliAnalysisTaskSE*) this, event, values);
-  //fFillEvent->Process(event, values);
+  if (IsEventSelected(fDataBank)) {
+    fEventHistos->FillHistClass("Event_Analysis", fDataBank);
 
-  if(fCalibrateByRun) fEventPlaneManager->SetCalibrationFileDirectoryName(Form("%d",(Int_t) (values[AliQnCorrectionsVarManager::kRunNo]+10E-6)));
-
-  //if(!fInitialized){ fEventPlaneManager->InitializeCalibrationHistograms(); fInitialized = kTRUE;}
-
-
-
-  fEventPlaneHistos->FillHistClass("Event_NoCuts", values);
-  //for(UShort_t ibit=0; ibit<64; ++ibit) {
-  //HIST::Instance()->FillHistClass("OfflineTriggers_NoCuts", values);
-  //}
-
-
-  // use only selected triggers for event plane calibration averages
-  if(IsEventSelected(values)){//&&TriggerSelected(event)) {
-    fEventPlaneHistos->FillHistClass("Event_Analysis", values);
-    //for(UShort_t ibit=0; ibit<64; ++ibit) {
-    //VAR::FillEventOfflineTriggers(ibit, event, values);
-    //HIST::Instance()->FillHistClass("OfflineTriggers_WithCuts", values);
-    //}
-
-    fEventPlaneManager->Process();
-
-
-
+    fAliQnCorrectionsManager->ProcessEvent();
   }  // end if event selection
 
-  //fQvectorList.Print();
-  //gObjectTable->Print();
-  if(fProvideQnVectorsList) PostData(fOutputSlotQnVectorsList, fEventPlaneManager->GetListQnVectors());
-
-  }  // end loop over events
+  if(fProvideQnVectorsList)
+    PostData(fOutputSlotQnVectorsList, fAliQnCorrectionsManager->GetQnVectorList());
+}  // end loop over events
 
 
-  //__________________________________________________________________
-  void AliAnalysisTaskFlowVectorCorrections::FinishTaskOutput()
-  {
-    //
-    // Finish Task 
-    //
+void AliAnalysisTaskFlowVectorCorrections::FinishTaskOutput()
+{
+  //
+  // Finish Task
+  //
+  fAliQnCorrectionsManager->FinalizeQnCorrectionsFramework();
 
-    fEventPlaneManager->Finalize();
-    //fEventPlaneManager->WriteCalibrationHistogramsToList();
-    //fEventPlaneManager->WriteQaHistogramsToList();// fEventPlaneHistos->HistList());
-
-
-    THashList* hList = (THashList*) fEventPlaneHistos->HistList();
-    for(Int_t i=0; i<hList->GetEntries(); ++i) {
-      THashList* list = (THashList*)hList->At(i);
-      fEventQAList->Add(list);
-    }
-
+  THashList* hList = (THashList*) fEventHistos->HistList();
+  for(Int_t i=0; i<hList->GetEntries(); ++i) {
+    THashList* list = (THashList*)hList->At(i);
+    fEventQAList->Add(list);
   }
+}
 
+Bool_t AliAnalysisTaskFlowVectorCorrections::IsEventSelected(Float_t* values) {
 
-
-  //__________________________________________________________________
-  Bool_t AliAnalysisTaskFlowVectorCorrections::IsEventSelected(Float_t* values) {
-    if(!fEventCuts) return kTRUE;
-    return fEventCuts->IsSelected(values);
-  }
+  if(!fEventCuts) return kTRUE;
+  return fEventCuts->IsSelected(values);
+}
 
 

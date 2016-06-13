@@ -1,0 +1,58 @@
+# run Flow Qn vector corrections configuration file
+#
+
+# run options
+Run options:
+# grid, local, train
+grid
+# real, MC
+real
+
+# SW versions, only valid id grid
+AliPhysicsVersion: vAN-20160420-1
+
+# tasks to incorporate
+# only valid if not in train execution scope
+Use Tender: no
+Use CDB: no
+Use PhysicsSelection: yes
+Use PIDResponse: no
+Use PIDCombinedTask: no
+Use CentralityTask: yes
+Use MultiplicityTask: yes
+
+# Execution conditions
+Use multiplicity: yes
+Is 2015 dataset: yes
+Use ESD: yes
+Use AOD: no
+
+Task level:
+# We put here the event selection criteria
+Centrality: 00-90
+zvertex: -10.0:10.0
+end
+
+Detectors:
+# detectors to use
+Use TPC: yes
+Use SPD: yes
+Use VZERO: yes
+Use TZERO: yes
+Use FMD: yes
+Use rawFMD: no
+Use ZDC: yes
+
+# the corrections file
+Corrections file:
+# source: local, alien, OADB or OCDB
+source: local
+path: ./
+filename: QnVectorCorrectionsHistograms.root
+
+# run the Qn vector analysis task
+Use QnVectorAnalysisTask: no
+# correction steps: raw, plain, rec, align, twist, scale, last
+Expected correction step: last
+Alternative correction step: last
+
