@@ -2,12 +2,13 @@
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
-  Bool_t      InputSameEventAnalysis = 1,      //same event=1 mixed event =0 (currently only used to throw out event in  Run() function)
+  Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
   const char *cellName               = "usedefault",   //probably delete this this is nowhere used
   Double_t    trackptcut             = 0.15,
   Double_t    clusptcut              = 0.30,
+  Bool_t      SavePool               = 0,              //saves a mixed event pool to the output event
   const char *taskname               = "AliAnalysisTask",
   const char *suffix                 = ""
 )
@@ -54,7 +55,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  GammaPi0Name += "Pi0H";
   }
   TString SameMixName;
-  if(InputSameEventAnalysis == 1)
+  if(InputDoMixing == 0)
   {
 	  SameMixName += "SE";
   }
@@ -75,7 +76,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputSameEventAnalysis);
+  AliAnalysisTaskGammaHadron* AnalysisTask = new AliAnalysisTaskGammaHadron(InputGammaOrPi0,InputDoMixing);
 
   //..Add the containers and set the names
   AnalysisTask->SetCaloCellsName(cellName);
@@ -124,7 +125,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 
   //..some additional input for the analysis
   AnalysisTask->SetNeedEmcalGeom(kTRUE);
-
+  AnalysisTask->SetSavePool(SavePool);
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
