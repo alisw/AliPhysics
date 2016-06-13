@@ -169,7 +169,7 @@ void AliTaskCDBconnect::ConnectInputData(Option_t* option)
   // Connect the input data, create CDB manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) AliFatal("No analysis manager");  
-
+  AliAnalysisTask::ConnectInputData(option);
   Int_t run = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
   if (run<0) {
     AliWarning("AliTaskCDBconnect: Could not set run from path");
