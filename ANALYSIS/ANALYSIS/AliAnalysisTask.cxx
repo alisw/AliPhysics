@@ -176,8 +176,31 @@ AliAnalysisTask::~AliAnalysisTask()
 {
 // Dtor.
    if (fTasks) fTasks->Clear();
-   if (fInputs)  {fInputs->Delete(); delete fInputs;}
-   if (fOutputs) {fOutputs->Delete(); delete fOutputs;}
+   if (fInputs)  {
+     //make sure the container knows it does not own the input data (why is it even there?)
+     TIter i(fInputs);
+     while (AliAnalysisDataSlot* dataSlot = static_cast<AliAnalysisDataSlot*>(i())) {
+       AliAnalysisDataContainer* cont = dataSlot->GetContainer();
+       if (cont) {
+         cont->SetDataOwned(kFALSE);
+       }
+     }
+     fInputs->Delete();
+     delete fInputs;
+   }
+   if (fOutputs) {
+     //By convention(design?) the user task deletes the output objects,
+     //make sure the container knows it does not own them
+     TIter i(fOutputs);
+     while (AliAnalysisDataSlot* dataSlot = static_cast<AliAnalysisDataSlot*>(i())) {
+       AliAnalysisDataContainer* cont = dataSlot->GetContainer();
+       if (cont) {
+         cont->SetDataOwned(kFALSE);
+       }
+     }
+     fOutputs->Delete();
+     delete fOutputs;
+   }
 }   
   
 //______________________________________________________________________________
