@@ -1,264 +1,178 @@
-#ifndef ALIQNCORRECTIONS_QNVECTOR_H
-#define ALIQNCORRECTIONS_QNVECTOR_H
+#ifndef ALIQNCORRECTIONS_QNVECTORS_H
+#define ALIQNCORRECTIONS_QNVECTORS_H
+
 /***************************************************************************
  * Package:       FlowVectorCorrections                                    *
  * Authors:       Jaap Onderwaater, GSI, jacobus.onderwaater@cern.ch       *
  *                Ilya Selyuzhenkov, GSI, ilya.selyuzhenkov@gmail.com      *
+ *                Víctor González, UCM, victor.gonzalez@cern.ch            *
  *                Contributors are mentioned in the code where appropriate.*
- * Development:   2012-2015                                                *
+ * Development:   2012-2016                                                *
  * See cxx source for GPL licence et. al.                                  *
  ***************************************************************************/
- 
- 
- 
 
-#include <TArrayF.h>
-#include <TArrayC.h>
+/// \file AliQnCorrectionsQnVector.h
+/// \brief Classes that model Q vectors for different harmonics within the Q vector correction framework
+
+#include <TNamed.h>
 #include <TMath.h>
-#include <TObject.h>
-#include <iostream>
 
-#include "AliQnCorrectionsConstants.h"
+/// The maximum external harmonic number the framework currently support for Q vectors
+#define MAXHARMONICNUMBERSUPPORTED 15
 
-//_________________________________________________________________________
-class AliQnCorrectionsQnVector : public TObject {
+/// \class AliQnCorrectionsQnVector
+/// \brief Class that models and encapsulates a Q vector set
+///
+/// \author Jaap Onderwaater <jacobus.onderwaater@cern.ch>, GSI
+/// \author Ilya Selyuzhenkov <ilya.selyuzhenkov@gmail.com>, GSI
+/// \author Víctor González <victor.gonzalez@cern.ch>, UCM
+/// \date Jan 27, 2016
+class AliQnCorrectionsQnVector : public TNamed {
 
-  
- public:
-        
+public:
+  /// \enum QnVectorNormalizationMethod
+  /// \brief The class of the id of the supported Q vector normalization methods
+  ///
+  /// Actually it is not a class because the C++ level of implementation.
+  /// But full protection will be reached when were possible declaring it
+  /// as a class.
+  ///
+  /// M is the sum of weights.
+  enum QnVectorNormalizationMethod {
+    QVNORM_noCalibration, ///< \f$ \mbox{Q'} = \mbox{Q}\f$
+    QVNORM_QoverSqrtM,    ///< \f$ \mbox{Q'} = \frac{\mbox{Q}}{\sqrt{\mbox{M}}} \f$
+    QVNORM_QoverM,        ///< \f$ \mbox{Q'} = \frac{\mbox{Q}}{\mbox{M}} \f$
+    QVNORM_QoverQlength   ///< \f$ \mbox{Q'} = \frac{\mbox{Q}}{|\mbox{Q}|} \f$
+  };
+
   AliQnCorrectionsQnVector();
-  AliQnCorrectionsQnVector(Int_t nHarmonics);
-  ~AliQnCorrectionsQnVector();
-  AliQnCorrectionsQnVector(const AliQnCorrectionsQnVector &c);
+  AliQnCorrectionsQnVector(const char *name, Int_t nNoOfHarmonics, Int_t *harmonicMap = NULL);
+  AliQnCorrectionsQnVector(const AliQnCorrectionsQnVector &Q);
+  virtual ~AliQnCorrectionsQnVector();
 
-  // setters
-  void SetMaximumHarmonic(Int_t harmonic) { fQvectorX.Set(harmonic); fQvectorY.Set(harmonic); fQnVectorStatus.Set(harmonic);}
-  void SetQx(Int_t harmonic, Float_t qx) { fQvectorX[harmonic-1]= qx;}
-  void SetQy(Int_t harmonic, Float_t qy) { fQvectorY[harmonic-1]= qy;}
-  void SetBin(Int_t bin) { fBin=bin;}
-  void SetQnVectorStatus(Int_t harmonic, Int_t status)   {fQnVectorStatus[harmonic-1] |= (1<<status);}
-  void UnsetQnVectorStatus(Int_t harmonic, Int_t status) {fQnVectorStatus[harmonic-1] |= (0<<status);}
-  void SetQvectorNormalization(UChar_t n) {fQvectorNormalization=n;}
+  void ActivateHarmonic(Int_t harmonic);
+  Int_t GetNoOfHarmonics() const;
+  void GetHarmonicsMap(Int_t *harmonicMap) const;
+  Int_t GetFirstHarmonic() const;
+  Int_t GetNextHarmonic(Int_t harmonic) const;
 
-  void SetSumOfWeights(Float_t mult)   {fSumW = mult;}
-  void SetN(Int_t mult)                   {fN = mult;}
-  void Set(AliQnCorrectionsQnVector* qvec);
-  void Add(AliQnCorrectionsQnVector* qvec);
-  void Add(Double_t phi, Double_t w=1.);
+  /// Sets the X component for the considered harmonic
+  /// \param harmonic the intended harmonic
+  /// \param qx the X component for the Q vector
+  virtual void SetQx(Int_t harmonic, Float_t qx) { fQnX[harmonic] = qx; }
+  /// Sets the Y component for the considered harmonic
+  /// \param harmonic the intended harmonic
+  /// \param qy the Y component for the Q vector
+  virtual void SetQy(Int_t harmonic, Float_t qy) { fQnY[harmonic] = qy; }
+  /// Set the good quality flag
+  /// \param good kTRUE  if the quality is good
+  virtual void SetGood(Bool_t good) { fGoodQuality = good; }
+
+
+  void Set(AliQnCorrectionsQnVector* Qn, Bool_t changename);
+
   void Normalize();
-  void SetQoverM();
-  void SetQtimesM();
-  void SetQoverSquareRootOfM();
-  void Reset();
-
-
-  // getters
-  Int_t nHarmonics() { return fQvectorX.GetSize();}
-  TArrayF Qx() const { return fQvectorX;}
-  TArrayF Qy() const { return fQvectorY;}
-  Float_t Qx(Int_t harmonic) const { return fQvectorX[harmonic-1];}
-  Float_t Qy(Int_t harmonic) const { return fQvectorY[harmonic-1];}
+  /// Provides the length of the Q vector for the considered harmonic
+  /// \param harmonic the intended harmonic
+  /// \return the square root of components square sum
   Float_t Length(Int_t harmonic) const { return  TMath::Sqrt(Qx(harmonic)*Qx(harmonic)+Qy(harmonic)*Qy(harmonic));}
-  Float_t QxNorm(Int_t harmonic) const { return  Qx(harmonic)/Length(harmonic);}
-  Float_t QyNorm(Int_t harmonic) const { return  Qy(harmonic)/Length(harmonic);}
-  Int_t Bin() const { return fBin;}
-  Char_t GetQnVectorStatus(Int_t h) const {return fQnVectorStatus[h-1];} 
-  TArrayC GetQnVectorStatus() const {return fQnVectorStatus;} 
-  Bool_t  CheckQnVectorStatus(Int_t h, Int_t i) const;
-  Float_t SumOfWeights()   const {return fSumW;}
-  Int_t    N()             const {return fN;}
-  Double_t EventPlane(Int_t h) const;
-  UChar_t QvectorNormalization() const {return fQvectorNormalization;}
+  Float_t QxNorm(Int_t harmonic) const;
+  Float_t QyNorm(Int_t harmonic) const;
 
+  virtual void Reset();
 
+  /// Gets the Q vector X component for the considered harmonic
+  /// \param harmonic the intended harmonic
+  /// \return the Q vector X component
+  Float_t Qx(Int_t harmonic) const { return fQnX[harmonic]; }
+  /// Gets the Q vector Y component for the considered harmonic
+  /// \param harmonic the intended harmonic
+  /// \return the Q vector Y component
+  Float_t Qy(Int_t harmonic) const { return fQnY[harmonic]; }
+  /// Get the Qn vector quality flag
+  /// \return Qn vector quality flag
+  Bool_t IsGoodQuality() const { return fGoodQuality; }
 
- private:
-  TArrayF fQvectorX;     // Qx vector components for n harmonics
-  TArrayF fQvectorY;     // Qy vector components for n harmonics
-  TArrayC fQnVectorStatus;  // Bit maps for the event plane status (1 char per detector and per harmonic)
-  Short_t fBin;
-  UChar_t fQvectorNormalization; //  0: Q/sqrt(M)  ,  1: Q/M  , 2:  Q/|Q|,   3: Q 
-  //UChar_t fQnVectorStatus[AliQnCorrectionsConstants::nHarmonics];  // Bit maps for the event plane status (1 char per detector and per harmonic)
-  Float_t fSumW;                     // Sum of weights
-  Int_t   fN;                        // Number of elements (tracks or sectors)
+  /// Gets the number of elements that were used for Q vector building
+  /// \return number of elements
+  Int_t GetN() const { return fN; }
+  Double_t EventPlane(Int_t harmonic) const;
 
-     
-  AliQnCorrectionsQnVector& operator= (const AliQnCorrectionsQnVector &c);
+  virtual void Print(Option_t *) const;
 
+private:
+  /// Assignment operator
+  ///
+  /// Default implementation to protect against its accidental use.
+  /// It will give a compilation error. Don't make it different from
+  /// private!
+  /// \param Qn the Q vector to assign
+  AliQnCorrectionsQnVector& operator= (const AliQnCorrectionsQnVector &Qn);
 
-  ClassDef(AliQnCorrectionsQnVector, 1);
+protected:
+
+  static const Float_t  fMinimumSignificantValue;     ///< the minimum value that will be considered as meaningful for processing
+  static const UInt_t   harmonicNumberMask[];         ///< Mask for each external harmonic number
+
+  Float_t fQnX[MAXHARMONICNUMBERSUPPORTED+1];   ///< the Q vector X component for each harmonic
+  Float_t fQnY[MAXHARMONICNUMBERSUPPORTED+1];   ///< the Q vector Y component for each harmonic
+  Int_t   fHighestHarmonic;                    ///< the highest harmonic number handled
+  UInt_t  fHarmonicMask;                       ///< the mask for the supported harmonics
+  Bool_t  fGoodQuality;                        ///< Qn vector good quality flag
+  Int_t fN;                                    ///< number of elements used for Qn vector building
+
+/// \cond CLASSIMP
+  ClassDef(AliQnCorrectionsQnVector, 2);
+/// \endcond
 };
 
-
-
-//_______________________________________________________________________________
-inline Bool_t AliQnCorrectionsQnVector::CheckQnVectorStatus(Int_t h, Int_t flag) const {
-  //
-  // Check the status of the event plane for a given detector and harmonic
-  //
-  //if(h<fgkEPMinHarmonics || h>fgkEPMaxHarmonics) return kFALSE;
-  return (flag<(AliQnCorrectionsConstants::kUndefined+1) ? (fQnVectorStatus[h-1]&(1<<flag)) : kFALSE);
-}
-
-
-
-//_______________________________________________________________________________
-inline Double_t AliQnCorrectionsQnVector::EventPlane(Int_t harmonic) const
-{
-  //
-  // Event plane for harmonic "harmonic"
-  //
-  //if(harmonic<1 || harmonic>fgkEPMaxHarmonics) return -999.;
-  if(TMath::Abs(Qx(harmonic))<1.E-6&&TMath::Abs(Qy(harmonic))<1.E-6) return 0.;
-  return TMath::ATan2(Qy(harmonic), Qx(harmonic))/Double_t(harmonic);
-}
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::Set(AliQnCorrectionsQnVector* qvec) 
-{
-  //
-  // Add a Q-vector
-  //
-
-  Int_t maxHar = nHarmonics();
-  if(maxHar>qvec->nHarmonics()) maxHar=qvec->nHarmonics(); // copy qvector with as far as smallest range goes
-  fSumW=qvec->SumOfWeights();
-  fN=qvec->N();
-  fBin=qvec->Bin();
-  for(Int_t ih=1; ih<=maxHar; ++ih){
-    fQvectorX[ih-1]=qvec->Qx(ih);
-    fQvectorY[ih-1]=qvec->Qy(ih);
-    fQnVectorStatus[ih-1]=qvec->GetQnVectorStatus(ih);
+/// Get the number of the first harmonic used
+/// \return the number of the first harmonic handled by the Q vector, -1 if none
+inline Int_t AliQnCorrectionsQnVector::GetFirstHarmonic() const {
+  for(Int_t h = 1; h < fHighestHarmonic + 1; h++){
+    if ((fHarmonicMask & harmonicNumberMask[h]) == harmonicNumberMask[h]) {
+      return h;
+    }
   }
-
-
+  return -1;
 }
 
+/// Get the next harmonic to the one passed as parameter
+/// \param harmonic number to find the next one
+/// \return the number of the next to the passed harmonic, -1 if none
+inline Int_t AliQnCorrectionsQnVector::GetNextHarmonic(Int_t harmonic) const {
+  for(Int_t h = harmonic+1; h < fHighestHarmonic + 1; h++){
+    if ((fHarmonicMask & harmonicNumberMask[h]) == harmonicNumberMask[h]) {
+      return h;
+    }
+  }
+  return -1;
+}
 
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::Reset() 
-{
-  //
-  // Add a Q-vector
-  //
-
-  fSumW=0.0;
-  fN=0;
-  fBin=-1;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    fQvectorX[ih-1]=0.0;
-    fQvectorY[ih-1]=0.0;
-    fQnVectorStatus[ih-1]=0;
+/// Provides the X component normalized to one of the Q vector for the considered harmonic
+/// A check for Q vector length significant value is made. Not passing it returns a zero value.
+/// \param harmonic the intended harmonic
+/// \return X component of the normalized Q vector
+inline Float_t AliQnCorrectionsQnVector::QxNorm(Int_t harmonic) const {
+  if (Length(harmonic) < fMinimumSignificantValue) {
+    return 0.0;
+  }
+  else {
+      return  Qx(harmonic)/Length(harmonic);
   }
 }
 
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::Add(AliQnCorrectionsQnVector* qvec) 
-{
-  //
-  // Add a Q-vector
-  //
-
-  fSumW+=qvec->SumOfWeights();
-  fN+=qvec->N();
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    fQvectorX[ih-1]+=qvec->Qx(ih);
-    fQvectorY[ih-1]+=qvec->Qy(ih);
+/// Provides the Y component normalized to one of the Q vector for the considered harmonic
+/// A check for Q vector length significant value is made. Not passing it returns a zero value.
+/// \param harmonic the intended harmonic
+/// \return Y component of the normalized Q vector
+inline Float_t AliQnCorrectionsQnVector::QyNorm(Int_t harmonic) const {
+  if (Length(harmonic) < fMinimumSignificantValue) {
+    return 0.0;
   }
-
-
-}
-
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::Add(Double_t phi, Double_t w) 
-{
-  //
-  // Add a Q-vector
-  //
-
-  fSumW+=w;
-  fN+=1;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    fQvectorX[ih-1]+=w*TMath::Cos(ih*phi);
-    fQvectorY[ih-1]+=w*TMath::Sin(ih*phi);
-  }
-
-}
-
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::SetQoverM() 
-{
-  //
-  // Set Q/M
-  //
-
-  Double_t qx,qy;
-  if(SumOfWeights()<10E-6) return;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    qx = Qx(ih)/SumOfWeights();
-    qy = Qy(ih)/SumOfWeights();
-    SetQx(ih,qx);
-    SetQy(ih,qy);
+  else {
+    return  Qy(harmonic)/Length(harmonic);
   }
 }
 
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::SetQtimesM() 
-{
-  //
-  // Do Q*M
-  //
-
-  Double_t qx,qy;
-  if(SumOfWeights()<10E-6) return;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    qx = Qx(ih)*SumOfWeights();
-    qy = Qy(ih)*SumOfWeights();
-    SetQx(ih,qx);
-    SetQy(ih,qy);
-  }
-}
-
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::SetQoverSquareRootOfM() 
-{
-  //
-  // Set Q/M
-  //
-
-  Double_t qx,qy;
-  if(SumOfWeights()<10E-6) return;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    qx = Qx(ih)/TMath::Sqrt(SumOfWeights());
-    qy = Qy(ih)/TMath::Sqrt(SumOfWeights());
-    SetQx(ih,qx);
-    SetQy(ih,qy);
-  }
-}
-
-
-
-//_______________________________________________________________________________
-inline void AliQnCorrectionsQnVector::Normalize() 
-{
-  //
-  // Normalize Q-vector
-  //
-
-  Double_t qx,qy;
-  if(SumOfWeights()<10E-6) return;
-  for(Int_t ih=1; ih<=nHarmonics(); ++ih){
-    qx = QxNorm(ih);
-    qy = QyNorm(ih);
-    SetQx(ih,qx);
-    SetQy(ih,qy);
-  }
-}
-
-   
-#endif
+#endif /* ALIQNCORRECTIONS_QNVECTORS_H */

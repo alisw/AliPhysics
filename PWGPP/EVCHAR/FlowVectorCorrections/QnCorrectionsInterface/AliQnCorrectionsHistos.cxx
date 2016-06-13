@@ -8,7 +8,6 @@
 */
 
 #include "AliQnCorrectionsHistos.h"
-#include "AliQnCorrectionsVarManager.h"
 
 #include <iostream>
 #include <fstream>

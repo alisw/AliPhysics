@@ -30,10 +30,10 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskFlowVectorCorrections.cxx 
-  AliAnalysisTaskQnAnalysis.cxx
+  AliAnalysisTaskQnVectorAnalysis.cxx 
   AliQnCorrectionsHistos.cxx 
-  AliQnCorrectionsFillEvent.cxx 
-  AliQnCorrectionsVarManager.cxx 
+  AliQnCorrectionsFillEventTask.cxx 
+  AliQnCorrectionsVarManagerTask.cxx 
   )
 
 # Headers from sources
@@ -49,7 +49,7 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase
 # Generate the ROOT map
 # Dependecies
 #set(LIBDEPS ANALYSISalice CDB ITSbase)
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} PWGPPevcharQn)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -83,5 +83,6 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
+install(DIRECTORY macros/ DESTINATION PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/ FILES_MATCHING PATTERN "*.H")
 install(DIRECTORY macros/ DESTINATION PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/ FILES_MATCHING PATTERN "*.C")
 install(DIRECTORY macros/ DESTINATION PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/ FILES_MATCHING PATTERN "*.txt")
