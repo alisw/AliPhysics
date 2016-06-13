@@ -1788,8 +1788,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     
     if(!fIsEsd){
       Double_t frac = 0;
-      Float_t ncls  = Float_t(eTrack->GetTPCncls ());
-      Float_t nclsS = Float_t(eTrack->GetTPCnclsS());
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
       if (  ncls> 0 )  frac =  nclsS / ncls ;
       
       if(frac > 0.4) continue;
@@ -1920,7 +1920,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       //AliError("On a bien des traces pour l'analysos");
     if(!fIsEsd){
       aodEtrack = static_cast<AliAODTrack*>(eTrack);
-      if(!(aodETrack->IsHybridGlobalConstrainedGlobal())){
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal())){
         //Printf("skipping track %d because it's not an hybrid\n",eTrack->GetID());
         continue;
       }
@@ -1930,12 +1930,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       continue;
     
     if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
+    
     if(!fIsEsd){
       Double_t frac = 0;
-      Float_t ncls  = Float_t(eTrack->GetTPCncls ());
-      Float_t nclsS = Float_t(eTrack->GetTPCnclsS());
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
       if (  ncls> 0 )  frac =  nclsS / ncls ;
-    
+      
       if(frac > 0.4) continue;
     }
       //CHECK IF TRACK IS IN BOUNDARIES
@@ -2019,8 +2020,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     
     if((eTrack->GetStatus() & AliAODTrack::kITSrefit)!=AliAODTrack::kITSrefit) continue;
     
-    if(!fIsEsd)
-      if(float(aodEtrack->GetTPCnclsS()/aodEtrack->GetTPCncls()) > 0.4) continue;
+    if(!fIsEsd){
+      Double_t frac = 0;
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
+      if (  ncls> 0 )  frac =  nclsS / ncls ;
+      
+      if(frac > 0.4) continue;
+    }
     
       //CHECK IF TRACK IS IN BOUNDARIES
     phiTrack = eTrack->Phi();
@@ -2095,8 +2102,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     
     if(!fIsEsd){
       Double_t frac = 0;
-      Float_t ncls  = Float_t(eTrack->GetTPCncls ());
-      Float_t nclsS = Float_t(eTrack->GetTPCnclsS());
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
       if (  ncls> 0 )  frac =  nclsS / ncls ;
       
       if(frac > 0.4) continue;
@@ -2176,8 +2183,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     
     if(!fIsEsd){
       Double_t frac = 0;
-      Float_t ncls  = Float_t(eTrack->GetTPCncls ());
-      Float_t nclsS = Float_t(eTrack->GetTPCnclsS());
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
       if (  ncls> 0 )  frac =  nclsS / ncls ;
       
       if(frac > 0.4) continue;
@@ -2246,8 +2253,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
     
     if(!fIsEsd){
       Double_t frac = 0;
-      Float_t ncls  = Float_t(eTrack->GetTPCncls ());
-      Float_t nclsS = Float_t(eTrack->GetTPCnclsS());
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
       if (  ncls> 0 )  frac =  nclsS / ncls ;
       
       if(frac > 0.4) continue;
