@@ -20,11 +20,13 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
  public:
 	AliAnalysisTaskGammaHadron();
 	AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
-  virtual ~AliAnalysisTaskGammaHadron();
+virtual ~AliAnalysisTaskGammaHadron();
 
   //setters for the analysis, currently not many implemented
   void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma       = h        ; }
   void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron      = h        ; }
+  void                        SetSavePool(Bool_t input)                             { fSavePool           = input    ; }
+
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -54,9 +56,10 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
   Double_t                    GetEff(TLorentzVector ParticleVec)                            ;
   Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
-  Bool_t                      fSameEventAnalysis;        // This tells me whether the analysis is done for same event fSameEventAnalysis==1 or mixed events
+  Bool_t                      fDoMixing;                 // This option enables mixed events being used in the analysi
   Bool_t                      fDebug;			        // Can be set for debugging
   Bool_t                      fUsePerTrigWeight;		    // Sets whether you want to look at absolute yields or per trigger yields
+  Bool_t                      fSavePool;                 // Defines whether to save output pools in a root file
 
   // Input histograms
   THnF                       *fHistEffGamma;             // input efficiency for trigger particles
@@ -79,8 +82,10 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   Int_t                       fTrackDepth;               //  #tracks to fill pool
   Int_t                       fPoolSize;                 //  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //  vector representing a list of pools (given by value range) that will be saved
-
-  // Cuts
+  // Event selection types
+  UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
+  UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
+  UInt_t                      fCurrentEventTrigger;      ///<  Trigger of the current event
 
   // MC stuff
   Bool_t                      fParticleLevel;            // Set particle level analysis
@@ -97,7 +102,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
   TList                      *fOutputListQA;           //! Output list
 
   // Histograms -
-  TH1  					    *fHistNoClusPtTrigger;     //! No of calorimeter Clusters as a function of p_T
   TH1  					    *fHistNoClusPt;            //! No of calorimeter Clusters as a function of p_T
   TH1					   **fHistNoClusPtH;           //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
   TH1 					    *fHistPi0;                 //!
