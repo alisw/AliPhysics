@@ -2755,6 +2755,24 @@ fTrackHistEfficiency[5]->Fill(allrecomatchedpid,2);//for allreco matched
 
  //now start the particle identification process:)
 
+// DCA XY cut to check contaminations from lambda using dca sigma cut variation with filterbit 16, only for identified particles 
+     if (fDCAXYCut)
+	{
+	  if (!trkVtx) continue;
+	  
+	  Double_t pos[2];
+	  Double_t covar[3];
+	  AliAODTrack* clone =(AliAODTrack*) track->Clone();
+	  Bool_t success = clone->PropagateToDCA(trkVtx, bSign1, fdcacutvalue, pos, covar);
+	  delete clone;
+	  if (!success)
+	    continue;
+
+// 	  Printf("%f", ((AliAODTrack*)part)->DCA());
+// 	  Printf("%f", pos[0]);
+	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(track->Pt())) continue;
+	}
+ 
 Float_t dEdx = PIDtrack->GetTPCsignal();
  fHistoTPCdEdx->Fill(track->Pt(), dEdx);
 
@@ -3242,7 +3260,25 @@ if (fSampleType=="pp_2_76" || fCentralityMethod.EndsWith("_MANUAL") || (fSampleT
   }
    else tracksUNID=CloneAndReduceTrackList(tracksUNID_t);
   */
-//now start the particle identificaion process:) 
+//now start the particle identificaion process:)
+
+  // DCA XY cut to check contaminations from lambda using dca sigma cut variation with filterbit 16, only for identified particles 
+     if (fDCAXYCut)
+	{
+	  if (!trkVtx) continue;
+	  
+	  Double_t pos[2];
+	  Double_t covar[3];
+	  AliAODTrack* clone =(AliAODTrack*) track->Clone();
+	  Bool_t success = clone->PropagateToDCA(trkVtx, bSign1, fdcacutvalue, pos, covar);
+	  delete clone;
+	  if (!success)
+	    continue;
+
+// 	  Printf("%f", ((AliAODTrack*)part)->DCA());
+// 	  Printf("%f", pos[0]);
+	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(track->Pt())) continue;
+	}
 
 //track passing filterbit 768 have proper TPC response,or need to be checked explicitly before doing PID????
 
@@ -4347,8 +4383,10 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
       }
       //===========================end of PID (so far only for electron rejection)===============================//
      
-// DCA XY cut to check contaminations from lambda using dca sigma cut variation with filterbit 16
-      if (fDCAXYCut)
+// DCA XY cut to check contaminations from lambda using dca sigma cut variation with filterbit 16, only for identified particles
+//But if we put the cut here then it will be for all (identified and unidentified) particles. BUT this cut is mainly used for identified particles.
+     
+     /*if (if(track->Pt() > fminPtTrig) && fDCAXYCut)
 	{
 	  if (!vertex)
 	    return 0;
@@ -4365,7 +4403,7 @@ Int_t AliTwoParticlePIDCorr::ClassifyTrack(AliAODTrack* track,AliAODVertex* vert
 // 	  Printf("%f", pos[0]);
 	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(track->Pt()))
 	    return 0;
-	}
+	}*/
 
 	if (fSharedClusterCut >= 0)
 	{
