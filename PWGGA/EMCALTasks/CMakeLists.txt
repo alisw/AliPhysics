@@ -38,6 +38,7 @@ set(SRCS
     AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
     AliAnalysisTaskEMCALPhoton.cxx
     AliAnalysisTaskEMCALPhotonIsolation.cxx
+    AliAnalysisTaskEMCALPhotonTagged.cxx
     AliAnalysisTaskEMCALPi0Gamma.cxx
     AliAnalysisTaskEMCALPi0PbPb.cxx
     AliAnalysisTaskEMCALPi0V2ShSh.cxx
