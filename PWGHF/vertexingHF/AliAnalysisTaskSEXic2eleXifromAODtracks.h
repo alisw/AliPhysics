@@ -342,6 +342,16 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2F *fHistoEleXiPtvsRapidityWS; //!<! e-Xi pT vs y
 	TH2F *fHistoEleXiPtvsRapidityMCS; //!<! e-Xi pT vs y
 
+  THnSparse* fHistoCorrelationVariablesvsEleXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsEleXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsEleXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
@@ -403,7 +413,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,27); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,28); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
