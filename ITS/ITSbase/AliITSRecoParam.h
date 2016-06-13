@@ -501,6 +501,14 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void ReconstructOnlySPD(){fOptReco="SPD";}
   TString GetOptReco() const {return fOptReco;}
 
+  void SetRemoveFastOrFromDeadRaw(Bool_t flag) {fRemoveFastOrFromDeadRaw=flag;}
+  void SetRemoveFastOrFromDeadMC(Bool_t flag) {fRemoveFastOrFromDeadMC=flag;}
+
+  // Option for FastOr reco conditions
+  Bool_t GetRemoveFastOrFromDeadRaw() const {return fRemoveFastOrFromDeadRaw;}
+  Bool_t GetRemoveFastOrFromDeadMC()  const {return fRemoveFastOrFromDeadMC;}
+  void PrintFastOrRecoParam() const;
+
   // RS Max number of clusters seen in PbPb2011 was 7000
   // Even if you change it, keep it <65535
   enum {kMaxClusterPerLayer=32000}; // max clusters per layer
@@ -797,6 +805,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   // Possibility of reconstructing only part of the ITS
   TString fOptReco;                      // "All" by default. It can be any 
                                          // combination of "SPD" "SDD" and "SSD"
+  // FastOr - Fired chip matching requirement.
+  Bool_t fRemoveFastOrFromDeadRaw;       // flag to remove FO if the chip has no cluster in raw (kFALSE by default)
+  Bool_t fRemoveFastOrFromDeadMC;        // flag to remove FO if the chip has no cluster in MC (kTRUE by default until the SPD will be simlated as ideal)
 
  private:
   AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
@@ -804,7 +815,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,55) // ITS reco parameters
+  ClassDef(AliITSRecoParam,56) // ITS reco parameters
 };
 
 #endif

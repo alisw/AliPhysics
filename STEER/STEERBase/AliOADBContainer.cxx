@@ -28,6 +28,7 @@
 #include <TList.h>
 #include <TBrowser.h>
 #include <TSystem.h>
+#include <TGrid.h>
 #include <TError.h>
 #include <TROOT.h>
 #include "TObjString.h"
@@ -329,6 +330,8 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
   }
   else{
     AliInfo("Couldn't find file, opening it\n");
+    if(TString(fname).Contains("alien://") && ! gGrid)
+      TGrid::Connect("alien://");
     file = TFile::Open(fname);
   }
   // Delete pointer from ExpandPathName()
