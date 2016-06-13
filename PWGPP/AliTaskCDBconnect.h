@@ -34,6 +34,7 @@ public:
   AliGRPManager*            GetGRPManager() const {return (AliGRPManager*)fGRPManager;}
   virtual void              Exec(Option_t *option);
   virtual void              CreateOutputObjects();
+  virtual void              ConnectInputData(Option_t *option = "");
   void                      SetSpecificStorage(const char* calibType, const char* dbString,
                                                Int_t version = -1, Int_t subVersion = -1);
     

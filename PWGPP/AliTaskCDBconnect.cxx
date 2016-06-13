@@ -164,6 +164,25 @@ void AliTaskCDBconnect::CreateOutputObjects()
 }
 
 //______________________________________________________________________________
+void AliTaskCDBconnect::ConnectInputData(Option_t* option)
+{
+  // Connect the input data, create CDB manager.
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) AliFatal("No analysis manager");  
+
+  Int_t run = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
+  if (run<0) {
+    AliWarning("AliTaskCDBconnect: Could not set run from path");
+    return;
+  }
+  if (fRun != run) {
+    fRun = run;
+    InitGRP();
+  }
+}
+
+
+//______________________________________________________________________________
 void AliTaskCDBconnect::Exec(Option_t* /*option*/)
 {
   // Execute all supplied analysis of one event. Notify run change via RunChanged().
