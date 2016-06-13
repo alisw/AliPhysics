@@ -133,6 +133,11 @@ public:
   void ReadFastORBadChannelFromStream(std::istream& stream);
 
   /**
+   * Clear FastOR bad channel list
+   */
+  void ClearFastORBadChannels();
+
+  /**
    * Read the FastOR bad channel map from a text file
    * @param fname Path and name of the file
    */
@@ -155,6 +160,11 @@ public:
    * @param fname Path and name of the file
    */
   void ReadOfflineBadChannelFromFile(const char* fname);
+
+  /**
+   * Clear offline bad channel list.
+   */
+  void ClearOfflineBadChannels();
 
   /**
    * Read the FastOR pedestals from a standard stream

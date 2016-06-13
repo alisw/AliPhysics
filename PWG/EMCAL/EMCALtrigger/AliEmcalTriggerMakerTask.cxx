@@ -13,15 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <TClonesArray.h>
+#include <TGrid.h>
 #include <THashList.h>
 #include <THistManager.h>
 #include <TObjArray.h>
+#include <TParameter.h>
 
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliLog.h"
+#include "AliOADBContainer.h"
 
 #include <bitset>
 #include <sstream>
@@ -37,6 +40,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
   fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
+  fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(0),
   fDoQA(kFALSE),
@@ -51,6 +55,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA
   fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
   fV0InName("AliAODVZERO"),
+  fBadFEEChannelOADB(""),
   fUseL0Amplitudes(kFALSE),
   fCaloTriggersOut(NULL),
   fDoQA(doQA),
@@ -194,6 +199,22 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   }
   if(patches) delete patches;
   return true;
+}
+
+void AliEmcalTriggerMakerTask::RunChanged(){
+  if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
+}
+
+void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
+  fTriggerMaker->ClearOfflineBadChannels();
+  if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
+  AliOADBContainer badchannelDB("EmcalBadChannelsAdditional");
+  TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
+  if(!badchannelmap || !badchannelmap->GetEntries()) return;
+  for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
+    TParameter<int> *channelID = static_cast<TParameter<int> *>(*citer);
+    fTriggerMaker->AddOfflineBadChannel(channelID->GetVal());
+  }
 }
 
 void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){
