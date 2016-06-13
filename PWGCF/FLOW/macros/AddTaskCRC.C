@@ -341,8 +341,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlowQC(bCalculateFlow);
- taskQC->SetCalculateFlowZDC(bCalculateFlow);
- taskQC->SetCalculateFlowVZ(bCalculateFlow);
+ if(bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
+ if(bUseVZERO) taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(kTRUE);
