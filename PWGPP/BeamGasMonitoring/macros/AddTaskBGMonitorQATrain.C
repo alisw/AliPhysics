@@ -1,7 +1,5 @@
 class AliAnalysisDataContainer;
-AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain()
-{
-    //
+AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain(){
     //This macro configures the task for the Beam Gas Monitoring QA
     //==============================================================================
     std::cout << "marker 1 for debuging" << std::endl;
