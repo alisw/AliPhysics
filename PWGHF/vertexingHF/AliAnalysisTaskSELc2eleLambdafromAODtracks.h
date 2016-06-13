@@ -552,6 +552,16 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlWSMix1Away;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlWSMix2Away;         //!<! Feeddown subtraction using Lambda vertex distribution
 
+  THnSparse* fHistoCorrelationVariablesvsEleLambdaPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsEleLambdaPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsEleLambdaPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoCorrelationVariablesvsLambdaPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoCorrelationVariablesvsLambdaPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoCorrelationVariablesvsLambdaPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
   TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
@@ -633,7 +643,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,28); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,29); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
