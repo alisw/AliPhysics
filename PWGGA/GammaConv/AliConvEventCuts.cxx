@@ -2021,8 +2021,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 20) weight = weightsBins[bin];
-            //temporary fix
-            else eventAccepted = kFALSE;
+
         } else if ( fPeriodEnum == kLHC16c3a ){
             Double_t ptHardBinRanges[6] = {  7, 9, 12, 16, 21, 1000};
             Double_t weightsBins[5]     = {  0.00672445, 0.00799158, 0.00678934, 0.00463908, 0.00600068}; //preliminary estimates
@@ -2165,8 +2164,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
-          //temporary fix
-          else eventAccepted = kFALSE;
 
       } else if ( fPeriodEnum == kLHC16c3a ){
           Double_t ptHardBinRanges[6] = {  7, 9, 12, 16, 21, 1000};
