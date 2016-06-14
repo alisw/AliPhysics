@@ -58,6 +58,8 @@
 #include "AliADSDigit.h"
 #include "AliADTriggerSimulator.h"
 #include "AliLog.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliADDigitizer)
 
@@ -70,6 +72,7 @@ ClassImp(AliADDigitizer)
                     fTimeSignalShape(NULL),
                     fChargeSignalShape(NULL),
 		    fEvenOrOdd(kFALSE),
+		    fIsEPOS(kFALSE),
 		    fTask(kHits2Digits),
 		    fAD(NULL)
 {
@@ -88,6 +91,7 @@ ClassImp(AliADDigitizer)
 		     fTimeSignalShape(NULL),
                      fChargeSignalShape(NULL),
 		     fEvenOrOdd(kFALSE),
+		     fIsEPOS(kFALSE),
 		     fTask(task),
 		     fAD(AD)
 {
@@ -106,6 +110,7 @@ ClassImp(AliADDigitizer)
 		     fTimeSignalShape(NULL),
                      fChargeSignalShape(NULL),
 		     fEvenOrOdd(kFALSE),
+		     fIsEPOS(kFALSE),
 		     fTask(kHits2Digits),
 		     fAD(NULL)
 {
@@ -245,6 +250,15 @@ void AliADDigitizer::Digitize(Option_t* /*option*/)
       return;
     }
     AliRunLoader* runLoader = AliRunLoader::Instance();
+   AliHeader *header = runLoader->GetHeader();
+   AliGenEventHeader *genHeader = header->GenEventHeader();
+   
+   TString generatorName = genHeader->GetName();
+   if ( generatorName.Contains("EPOSLHC")){
+    	AliWarning("Late particles cut for EPOSLHC is on"); 
+    	fIsEPOS = kTRUE;
+	} 
+    
     for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); ++iEvent) {
       runLoader->GetEvent(iEvent);
       if (fTask == kHits2Digits) {
@@ -317,9 +331,11 @@ void AliADDigitizer::DigitizeHits()
 	 Int_t nPhot = hit->GetNphot();
 	 Int_t pmt  = hit->GetCell();                          
 	 if (pmt < 0) continue;
-	 //Cut late hits
-	 if(pmt<8 && TMath::Abs(hit->GetTof()-65.19)>3)continue;
-	 if(pmt>7 && TMath::Abs(hit->GetTof()-56.7 )>3)continue;
+	 //Cut late hits in case of EPOS
+	 if ( fIsEPOS ){
+	 	if(pmt<8 && TMath::Abs(hit->GetTof()-65.19)>3)continue;
+	 	if(pmt>7 && TMath::Abs(hit->GetTof()-56.7 )>3)continue;
+	 	}
 	 Int_t trackLabel = hit->GetTrack();
 	 for(Int_t l = 0; l < 3; ++l) {
 	   if (fLabels[pmt][l] < 0) {

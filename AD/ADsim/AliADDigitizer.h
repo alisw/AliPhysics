@@ -108,10 +108,11 @@ public:
    Float_t *fTime[16];               //! Main container used in digitization
    Int_t    fLabels[16][3];          //! Container for MC labels
    Bool_t   fEvenOrOdd;              //! Choise of integrator in central ADC sample
+   Bool_t   fIsEPOS;		     //! EPOS flag
 
    DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
    AliAD  *fAD;                //! Pointer to AliDetector object
-   ClassDef(AliADDigitizer,3)     // digitizer for AD
+   ClassDef(AliADDigitizer,4)     // digitizer for AD
 
 };
 
