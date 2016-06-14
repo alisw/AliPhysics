@@ -34,6 +34,7 @@ AliTender::AliTender():
            AliAnalysisTaskSE(),
            fRun(0),
            fRunChanged(kFALSE),
+           fHandleCDB(kFALSE),
            fCDBkey(0),
            fDefaultStorage(),
            fCDB(NULL),
@@ -50,6 +51,7 @@ AliTender::AliTender(const char* name):
            AliAnalysisTaskSE(name),
            fRun(0),
            fRunChanged(kFALSE),
+           fHandleCDB(kFALSE),
            fCDBkey(0),
            fDefaultStorage(),
            fCDB(NULL),
@@ -101,27 +103,33 @@ void AliTender::ConnectInputData(Option_t* option)
   } else {
      AliFatal("No ESD input event handler connected") ; 
   }
-  // Create CDB manager
-  if (!fDefaultStorage.Length()) AliFatal("Default CDB storage not set.");
-  fCDB = AliCDBManager::Instance();
-  // SetDefault storage. Specific storages must be set by AliTenderSupply::Init()
-  fCDB->SetDefaultStorage(fDefaultStorage);
+  
+  // Obtain run number
   Int_t run = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
-  // Unlock CDB
-  fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
   if (!run) {
      AliWarning("AliTaskCDBconnect: Could not set run from path");
   } else {
      fRun = run;
      fRunChanged = kTRUE;
      printf("AliTender: #### Setting run to: %d\n", fRun);
-     fCDB->SetRun(fRun);
   }   
+
+  // Initialize OCDB (only done when explicitly requested)
+  if(fHandleCDB){
+    // Create CDB manager
+    if (!fDefaultStorage.Length()) AliFatal("Default CDB storage not set.");
+    fCDB = AliCDBManager::Instance();
+    // SetDefault storage. Specific storages must be set by AliTenderSupply::Init()
+    fCDB->SetDefaultStorage(fDefaultStorage);
+    // Unlock CDB
+    fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
+    if(run){ fCDB->SetRun(fRun); }
+    // Lock CDB
+    fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
+  }
   TIter next(fSupplies);
   AliTenderSupply *supply;
   while ((supply=(AliTenderSupply*)next())) supply->Init();
-  // Lock CDB
-  fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
 }
 
 //______________________________________________________________________________
@@ -148,13 +156,18 @@ void AliTender::UserExec(Option_t* option)
   fESD = (AliESDEvent*)fESDhandler->GetEvent();
 
 // Call the user analysis
-  // Unlock CDB
-  fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
+
   // Intercept when the run number changed
   if (fRun != fESD->GetRunNumber()) {
     fRunChanged = kTRUE;
     fRun = fESD->GetRunNumber();
-    fCDB->SetRun(fRun);
+    if(fHandleCDB){
+      // Unlock CDB
+      fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
+      fCDB->SetRun(fRun);
+      // Lock CDB
+      fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
+    } 
   }
   TIter next(fSupplies);
   AliTenderSupply *supply;
@@ -163,9 +176,6 @@ void AliTender::UserExec(Option_t* option)
 
   if (TObject::TestBit(kCheckEventSelection)) fESDhandler->CheckSelectionMask();
 
-  // Lock CDB
-  fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
-  
   TString opt = option;
   if (!opt.Contains("NoPost")) PostData(1, fESD);
 }
