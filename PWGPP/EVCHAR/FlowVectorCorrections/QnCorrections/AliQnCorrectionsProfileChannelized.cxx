@@ -59,9 +59,9 @@ AliQnCorrectionsProfileChannelized::AliQnCorrectionsProfileChannelized(const cha
 /// Releases the memory taken
 AliQnCorrectionsProfileChannelized::~AliQnCorrectionsProfileChannelized() {
 
-  if (fUsedChannel != NULL) delete fUsedChannel;
-  if (fChannelGroup != NULL) delete fChannelGroup;
-  if (fChannelMap != NULL) delete fChannelMap;
+  if (fUsedChannel != NULL) delete [] fUsedChannel;
+  if (fChannelGroup != NULL) delete [] fChannelGroup;
+  if (fChannelMap != NULL) delete [] fChannelMap;
 }
 
 

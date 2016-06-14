@@ -47,8 +47,8 @@ AliQnCorrectionsHistogramChannelized::AliQnCorrectionsHistogramChannelized(const
 /// Releases the memory taken
 AliQnCorrectionsHistogramChannelized::~AliQnCorrectionsHistogramChannelized() {
 
-  if (fUsedChannel != NULL) delete fUsedChannel;
-  if (fChannelMap != NULL) delete fChannelMap;
+  if (fUsedChannel != NULL) delete [] fUsedChannel;
+  if (fChannelMap != NULL) delete [] fChannelMap;
 }
 
 
