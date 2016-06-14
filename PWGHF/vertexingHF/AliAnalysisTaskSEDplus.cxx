@@ -54,6 +54,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
 AliAnalysisTaskSE(),
   fOutput(0), 
   fHistNEvents(0),
+  fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
@@ -79,6 +80,7 @@ AliAnalysisTaskSE(),
   fUseBit(kTRUE),
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
+  fDoTrackVarHist(kFALSE),
   fStepMCAcc(kFALSE),
   fUseQuarkTagInKine(kTRUE),
   fNImpParBins(400),
@@ -136,6 +138,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
+  fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
@@ -161,6 +164,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fUseBit(kTRUE),
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
+  fDoTrackVarHist(kFALSE),
   fStepMCAcc(kFALSE),
   fUseQuarkTagInKine(kTRUE),
   fNImpParBins(400),
@@ -279,6 +283,7 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fPhiEtaCand;
     delete fPhiEtaCandSigReg;
     delete fSPDMult;
+    delete fHistTrackVar;
     delete fMCAccPrompt;
     delete fMCAccBFeed;
   }
@@ -712,6 +717,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   if(fDoLS) CreateLikeSignHistos();
   if(fDoImpPar) CreateImpactParameterHistos();
   if(fReadMC && fStepMCAcc) CreateMCAcceptanceHistos();
+  if(fDoTrackVarHist) CreateTrackVarHistos();
+    
+  PostData(1,fOutput);
 
   if(fFillNtuple==1){
     OpenFile(4); // 4 is the slot number of the ntuple
@@ -945,7 +953,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
       if(isFidAcc){
 
-	Double_t  minPtDau=999.,ptmax=0,maxdca=0,sigvert=0,sumD02=0;
+ 	Double_t  minPtDau=999.,ptmax=0,maxdca=0,sigvert=0,sumD02=0;
 	Double_t dlen=0,cosp=0,dlenxy=0,cospxy=0, ndlenxy=0, dd0max=0;
 	if(fCutsDistr||fFillNtuple||fDoImpPar){
 	  dlen=d->DecayLength();
@@ -980,6 +988,29 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
 	Double_t flagOrigin = 0;
 
+	AliAODTrack *track;
+	if(fDoTrackVarHist) {
+	  for(int i = 0; i < 3; i++) {
+	    Double_t ptTrack = 0, nCrossedRowsTPC = 0, nClustersTPC = 0, ratioCRowsFClu = 0, isSig = 0;
+	    track = (AliAODTrack*)d->GetDaughter(i);
+	    AliESDtrack esdTrack(track);
+	    esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+	    esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+	    esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+	    ptTrack = track->Pt();
+	    nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+	    nClustersTPC = esdTrack.GetTPCNcls();
+	    if(esdTrack.GetTPCNclsF()>0) {
+	      ratioCRowsFClu = nCrossedRowsTPC / esdTrack.GetTPCNclsF();
+	      if(labDp>=0) isSig = 1.;
+	    }
+	    Double_t arrayForTrackSparse[kVarForTrackSparse]={ptCand,invMass,ptTrack,nClustersTPC,nCrossedRowsTPC,ratioCRowsFClu,isSig};
+	    if(passTopolAndPIDCuts){
+	      if(fDoTrackVarHist) fHistTrackVar->Fill(arrayForTrackSparse);
+	    }
+	  }
+	}
+	
 	//Fill histos
 	index=GetHistoIndex(iPtBin);
 	fHistNEvents->Fill(9);
@@ -989,7 +1020,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(fDoImpPar){
 	  fHistMassPtImpPar[0]->Fill(arrayForSparse);
 	}
-	if(passTopolAndPIDCuts){ 
+
+	if(passTopolAndPIDCuts){
 	  fHistNEvents->Fill(10);
 	  nSelected++;
 	  fPtVsMass->Fill(invMass,ptCand);
@@ -1335,6 +1367,29 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
     fOutput->Add(fHistMassPtImpPar[i]);
   }
 }
+//________________________________________________________________________
+void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
+    /// Histos for single track variable cuts studies
+    
+    Int_t nmassbins = GetNBinsHistos();
+
+    Int_t nbins[kVarForTrackSparse]   = {40,nmassbins,40,170,170,100,2};
+    Double_t xmin[kVarForTrackSparse] = {0.,fLowmasslimit,0.,0.,0.,0.,-0.5};
+    Double_t xmax[kVarForTrackSparse] = {40.,fUpmasslimit,40.,170.,170.,1.,1.5};
+    
+    //pt, y
+    fHistTrackVar = new THnSparseF("hHistTrackVar","hHistTrackVar",kVarForTrackSparse,nbins,xmin,xmax);
+    fHistTrackVar->GetAxis(0)->SetTitle("D^{+} p_{T} (GeV/c)");
+    fHistTrackVar->GetAxis(1)->SetTitle("k#pi#pi inv. mass (GeV/c^{2})");
+    fHistTrackVar->GetAxis(2)->SetTitle("track p_{T} (GeV/c)");
+    fHistTrackVar->GetAxis(3)->SetTitle("N TPC clusters");
+    fHistTrackVar->GetAxis(4)->SetTitle("N TPC cross. rows");
+    fHistTrackVar->GetAxis(5)->SetTitle("TPC clust./cross.rows");
+    fHistTrackVar->GetAxis(6)->SetTitle("Bkg = 0, Signal = 1");
+    
+    fOutput->Add(fHistTrackVar);
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
