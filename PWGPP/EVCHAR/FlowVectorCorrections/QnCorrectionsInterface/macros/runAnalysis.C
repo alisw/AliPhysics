@@ -56,7 +56,7 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(
     UInt_t computeBG = 0,
     Bool_t useSpecialOutput=kFALSE);
 extern AliAnalysisTask *AddTaskTender(Bool_t,Bool_t,Bool_t,Bool_t,Bool_t,Bool_t,Bool_t,Bool_t,Bool_t);
-extern AliTaskCDBconnect* AddTaskCDBconnect(const char *path="raw://", Int_t run=0);
+extern AliTaskCDBconnect* AddTaskCDBconnect(const char *path="cvmfs://", Int_t run=0);
 AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections();
 AliMultSelectionTask *AddTaskMultSelection(
     Bool_t lCalibration = kFALSE,
