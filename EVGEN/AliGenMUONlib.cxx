@@ -4220,6 +4220,9 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
     case kChic:
 	func=PtChic;
 	break;
+    case kRho:
+      func=PtRho;
+      break;
     default:
         func=0;
         printf("<AliGenMUONlib::GetPt> unknown parametrisation\n");
@@ -4555,6 +4558,9 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
     case kChic:
 	func=YChic;
 	break;
+    case kRho:
+      func=YRho;
+      break;
     default:
         func=0;
         printf("<AliGenMUONlib::GetY> unknown parametrisation\n");
