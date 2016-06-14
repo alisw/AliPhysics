@@ -41,6 +41,11 @@
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliAnalysisUtils.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenEventHeader.h"
 //#include "AliTriggerAnalysis.h"
 
 #include "AliMCEventHandler.h"
@@ -58,11 +63,13 @@ AliAnalysisTaskCheckPileup::AliAnalysisTaskCheckPileup() :
 AliAnalysisTaskSE("PileupTask"), 
   fReadMC(kFALSE),
   fFillTree(kFALSE),
-  fTrigOpt(0),
+  fUsePhysSel(1),
+  fTrigOpt(-1),
   fUsePFProtection(kFALSE),
   fOutputPrimV(0), 
   fOutputSPDPil(0), 
   fOutputMVPil(0), 
+  fOutputMC(0),
   fHistoXVertSPD(0x0),
   fHistoYVertSPD(0x0),
   fHistoZVertSPD(0x0),
@@ -100,6 +107,10 @@ AliAnalysisTaskSE("PileupTask"),
   fHistoContribTaggingPilMV(0x0),
   fHistoZDiffTaggingPilMV(0x0),
   fHistoZDiffTaggingPilZDiamcutMV(0x0),
+  fHistoNGenCollis(0x0),
+  fHistoNGenCollisSPDstrobe(0x0),
+  fHistoCollisTimeOrbit(0x0),
+  fHistoCollisTimeSPDstrobe(0x0),
   fCounterPerRun(0x0),
   fTrackTree(0x0),
   fTimeStamp(0),
@@ -126,8 +137,9 @@ AliAnalysisTaskSE("PileupTask"),
   DefineOutput(1, TList::Class());  //My private output
   DefineOutput(2, TList::Class());  //My private output
   DefineOutput(3, TList::Class());  //My private output
-  DefineOutput(4, AliCounterCollection::Class());  //My private output
-  DefineOutput(5, TTree::Class());  //My private output
+  DefineOutput(4, TList::Class());  //My private output
+  DefineOutput(5, AliCounterCollection::Class());  //My private output
+  DefineOutput(6, TTree::Class());  //My private output
 }
 //________________________________________________________________________
 AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
@@ -178,10 +190,17 @@ AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
     delete fHistoContribTaggingPilMV;
     delete fHistoZDiffTaggingPilMV;
     delete fHistoZDiffTaggingPilZDiamcutMV;
-   }
+  }
+  if(fOutputMC && !fOutputMC->IsOwner()){
+    delete fHistoNGenCollis;
+    delete fHistoNGenCollisSPDstrobe;
+    delete fHistoCollisTimeOrbit;
+    delete fHistoCollisTimeSPDstrobe;
+  }
   delete fOutputPrimV;
   delete fOutputSPDPil;
   delete fOutputMVPil;
+  delete fOutputMC;
   delete fCounterPerRun;
   delete fTrackTree;
 }
@@ -205,6 +224,10 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fOutputMVPil->SetOwner();
   fOutputMVPil->SetName("OutputHistosSPDPil");
 
+  fOutputMC = new TList;
+  fOutputMC->SetOwner();
+  fOutputMC->SetName("OutputHistosMC");
+
   // Primary vertex histos
   fHistoXVertSPD = new TH1F("hXVertSPD","SPD vertex: x coordinate",100,-0.5,0.5);
   fOutputPrimV->Add(fHistoXVertSPD);
@@ -219,6 +242,17 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fOutputPrimV->Add(fHistoYVertTRK);
   fHistoZVertTRK = new TH1F("hZVertTRK","TRK vertex: z coordinate",300,-15.,15.);
   fOutputPrimV->Add(fHistoZVertTRK);
+
+  // MC histos
+  fHistoNGenCollis=new TH1F("hNGenCollis","",100,-0.5,99.5);  
+  fOutputMC->Add(fHistoNGenCollis);
+  fHistoNGenCollisSPDstrobe=new TH1F("hNGenCollisSPDstrobe","",20,-0.5,19.5);  
+  fOutputMC->Add(fHistoNGenCollisSPDstrobe);
+  fHistoCollisTimeOrbit=new TH2F("hCollisTimeOrbit","",20,-0.5,19.5,161,-80500.,80500.);
+  fOutputMC->Add(fHistoCollisTimeOrbit);
+  fHistoCollisTimeSPDstrobe=new TH2F("hCollisTimeSPDstrobe","",20,-0.5,19.5,161,-1006.25,1006.25);
+  fOutputMC->Add(fHistoCollisTimeSPDstrobe);
+
 
   // Global histos
   fHistoTPCTracksVsTracklets = new TH2F("hTPCTracksVsTracklets","TPC Tracks-Tracklet correlation ; N_{tracklets} ; N_{TPCtracks}",201,-0.5,200.5,201,-0.5,200.5);
@@ -242,9 +276,9 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fHistoNCL1NoPilSPD = new TH1F("hNCL1NoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoNCL1NoPilSPD);
 
-  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of contributors in events tagged as pileup",201,-0.5,200.5);
+  fHistoContribPrimVertPilSPD = new TH1F("hContribPrimVertPilSPD","Number of CL1 in events tagged as pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribPrimVertPilSPD);
-  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of contributors in events without pileup",201,-0.5,200.5);
+  fHistoContribPrimVertNoPilSPD = new TH1F("hContribPrimVertNoPilSPD","Number of CL1 in events without pileup",201,-0.5,200.5);
   fOutputSPDPil->Add(fHistoContribPrimVertNoPilSPD);
 
   fHistoContribFirstPilSPD = new TH1F("hContribFirstPilSPD","Number of contributors to first pileup",101,-0.5,100.5);
@@ -318,8 +352,9 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   PostData(1, fOutputPrimV);
   PostData(2, fOutputSPDPil);
   PostData(3, fOutputMVPil);
-  PostData(4, fCounterPerRun);
-  PostData(5, fTrackTree);
+  PostData(4, fOutputMC);
+  PostData(5, fCounterPerRun);
+  PostData(6, fTrackTree);
 
   return;
 }
@@ -337,29 +372,15 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
 
   Int_t runNumber = esd->GetRunNumber();
 
-  Bool_t isPhysSel = kFALSE;
   TString classes = esd->GetFiredTriggerClasses();
-
-  if(fTrigOpt==0){ 
-    if (classes.Contains("CINT7-B-")){
-      isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
-    }else{
-      return;
-    }
-  }else if(fTrigOpt==1){
-    if (classes.Contains("CVHMV0M-B-")){
-      isPhysSel = ApplyPhysSel(esd);
-    }else{
-      return;
-    }
-  }else if(fTrigOpt==2){
-    if (classes.Contains("CVHMSH2-B-")){
-      isPhysSel = ApplyPhysSel(esd);
-    }else{
-      return;
-    }
-  }
+  if(fTrigOpt==0 && !(classes.Contains("CINT7-B-"))) return; 
+  if(fTrigOpt==1 && !(classes.Contains("CVHMV0M-B-"))) return;
+  if(fTrigOpt==2 && !(classes.Contains("CVHMSH2-B-"))) return;
   fCounterPerRun->Count(Form("Event:Triggered/Run:%d",runNumber));
+
+  Bool_t isPhysSel = kTRUE;
+  if(fUsePhysSel==1) isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+  else if (fUsePhysSel==2) isPhysSel = ApplyPhysSel(esd);
   if(!isPhysSel) return;
 
   // Past future protection
@@ -372,6 +393,35 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
     if(isOutOfBunchPileup11BC!=0) return;
   }
   fCounterPerRun->Count(Form("Event:PhysSel/Run:%d",runNumber));
+
+  if(fReadMC){
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    if (!eventHandler) {
+      Printf("ERROR: Could not retrieve MC event handler");
+      return;
+    }
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    if (!mcEvent) {
+      Printf("ERROR: Could not retrieve MC event");
+      return;
+    }
+    TString genname=mcEvent->GenEventHeader()->ClassName();
+    TList* lgen=0x0;
+    if(genname.Contains("CocktailEventHeader")){
+      AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)mcEvent->GenEventHeader();
+      lgen=cockhead->GetHeaders();
+      fHistoNGenCollis->Fill(lgen->GetEntries());
+      Int_t nInSPDstrobe=0;
+      for(Int_t ig=0; ig<lgen->GetEntries(); ig++){
+	AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(ig);
+	Double_t timens=gh->InteractionTime()*1e9;
+	fHistoCollisTimeOrbit->Fill(ig,timens);
+	if(TMath::Abs(timens)<1000.) fHistoCollisTimeSPDstrobe->Fill(ig,timens);
+	if(timens>-100. && timens<200.) nInSPDstrobe++;
+      }
+      fHistoNGenCollisSPDstrobe->Fill(nInSPDstrobe);
+    }
+  }
 
   const AliESDVertex *spdv=esd->GetPrimaryVertexSPD();
   const AliESDVertex *trkv=esd->GetPrimaryVertexTracks();
@@ -535,8 +585,9 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   PostData(1, fOutputPrimV);
   PostData(2, fOutputSPDPil);
   PostData(3, fOutputMVPil);
-  PostData(4, fCounterPerRun);
-  if(fFillTree) PostData(5, fTrackTree);
+  PostData(4, fOutputMC);
+  PostData(5, fCounterPerRun);
+  if(fFillTree) PostData(6, fTrackTree);
 
   return;
 }      
