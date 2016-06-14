@@ -30,6 +30,8 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag) {fReadMC=flag;}
   void           SetFillTree(Bool_t flag) {fFillTree=flag;}
+  void           SetPhysicsSelectionOption(Int_t opt){fUsePhysSel=opt;}
+  void           SetUseAllTriggers(){fTrigOpt=-1;}
   void           SetTriggerMB(){fTrigOpt=0;}
   void           SetTriggerHighMultV0(){fTrigOpt=1;}
   void           SetTriggerHighMultSPD(){fTrigOpt=2;}
@@ -51,11 +53,13 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
  protected:
   Bool_t fReadMC;           // flag to read Monte Carlo information
   Bool_t fFillTree;      // flag to switch off ntuple
+  Int_t  fUsePhysSel;   // phys sel configuration: 0=no, 1= standard, 2=by hand
   Int_t  fTrigOpt;      // trigger selection
   Bool_t fUsePFProtection;    // flag to switch off ntuple
   TList* fOutputPrimV;        //! 1st list of output histos
   TList* fOutputSPDPil;      //! 2nd list of output histos
   TList* fOutputMVPil;       //! 3rd list of output histos
+  TList* fOutputMC;          //! 4th list of output histos
   // Primary vertex histos
   TH1F* fHistoXVertSPD;      // histogram
   TH1F* fHistoYVertSPD;      // histogram
@@ -97,6 +101,11 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   TH1F* fHistoContribTaggingPilMV;    // histogram
   TH1F* fHistoZDiffTaggingPilMV;      // histogram
   TH1F* fHistoZDiffTaggingPilZDiamcutMV;   // histogram
+  // MC histos
+  TH1F* fHistoNGenCollis; // histogram
+  TH1F* fHistoNGenCollisSPDstrobe; // histogram
+  TH2F* fHistoCollisTimeOrbit; // histogram
+  TH2F* fHistoCollisTimeSPDstrobe; // histogram
 
   AliCounterCollection* fCounterPerRun; // counters
 
@@ -124,7 +133,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   AliAnalysisTaskCheckPileup(const AliAnalysisTaskCheckPileup&); // not implemented
   AliAnalysisTaskCheckPileup& operator=(const AliAnalysisTaskCheckPileup&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPileup,3); // primary vertex analysis
+  ClassDef(AliAnalysisTaskCheckPileup,4); // primary vertex analysis
 };
 
 #endif
