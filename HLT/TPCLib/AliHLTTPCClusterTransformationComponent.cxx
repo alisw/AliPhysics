@@ -292,21 +292,6 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
-  // Initialise the transformation here once more for the case of off-line reprocessing
-  if( fInitializeByObjectInDoEvent != 1 && fOfflineMode && !fgTimeInitialisedFromEvent ){
-    Long_t currentTime = static_cast<AliHLTUInt32_t>(time(NULL));
-    Long_t eventTimeStamp = GetTimeStamp();
-    if( TMath::Abs( fgTransform.GetCurrentTimeStamp() - eventTimeStamp )>60 && 
-	TMath::Abs( currentTime - eventTimeStamp)>60*60*5 ){
-      int err = fgTransform.SetCurrentTimeStamp( eventTimeStamp );
-      if( err!=0 ){
-	HLTError(Form("Cannot set time stamp, AliHLTTPCClusterTransformation returns %d",err));
-	return -ENOENT;
-      }
-    }
-    fgTimeInitialisedFromEvent = 1;
-  }
-
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
     
     const AliHLTComponentBlockData *iter   = blocks+ndx;
