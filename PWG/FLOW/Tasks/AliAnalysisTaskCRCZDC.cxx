@@ -164,15 +164,10 @@ fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
 fhZNAvsZPA(0x0),
 fhZNvsZP(0x0),
-fhZNvsZEM(0x0),
-fhZNvsZEMwV0M(0x0),
-fhZDCvsZEM(0x0),
-fhZDCvsZEMwV0M(0x0),
 fhZNvsVZERO(0x0),
 fhZDCvsVZERO(0x0),
 fhZDCvsTracklets(0x0),
 fhZDCvsNclu1(0x0),
-fhVZEROvsZEM(0x0),
 fhDebunch(0x0),
 fhZNCcentroid(0x0),
 fhZNAcentroid(0x0),
@@ -300,15 +295,10 @@ fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
 fhZNAvsZPA(0x0),
 fhZNvsZP(0x0),
-fhZNvsZEM(0x0),
-fhZNvsZEMwV0M(0x0),
-fhZDCvsZEM(0x0),
-fhZDCvsZEMwV0M(0x0),
 fhZNvsVZERO(0x0),
 fhZDCvsVZERO(0x0),
 fhZDCvsTracklets(0x0),
 fhZDCvsNclu1(0x0),
-fhVZEROvsZEM(0x0),
 fhDebunch(0x0),
 fhZNCcentroid(0x0),
 fhZNAcentroid(0x0),
@@ -585,14 +575,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fOutput->Add(fhZNAvsZPA);
  fhZNvsZP = new TH2F("hZNvsZP","hZNvsZP",200,-50.,80000,200,-50.,200000);
  fOutput->Add(fhZNvsZP);
- fhZNvsZEM = new TH2F("hZNvsZEM","hZNvsZEM",200,0.,2500.,200,0.,200000.);
- fOutput->Add(fhZNvsZEM);
- fhZNvsZEMwV0M = new TH2F("hZNvsZEMwV0M","hZNvsZEM wV0M",200,0.,2500.,200,0.,200000.);
- fOutput->Add(fhZNvsZEMwV0M);
- fhZDCvsZEM = new TH2F("hZDCvsZEM","hZDCvsZEM",200,0.,2500.,250,0.,250000.);
- fOutput->Add(fhZDCvsZEM);
- fhZDCvsZEMwV0M = new TH2F("hZDCvsZEMwV0M","hZDCvsZEM wV0M",200,0.,2500.,250,0.,250000.);
- fOutput->Add(fhZDCvsZEMwV0M);
  fhZNvsVZERO = new TH2F("hZNvsVZERO","hZNvsVZERO",250,0.,25000.,200,0.,200000.);
  fOutput->Add(fhZNvsVZERO);
  fhZDCvsVZERO = new TH2F("hZDCvsVZERO","hZDCvsVZERO",250,0.,25000.,250,0.,250000.);
@@ -601,8 +583,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fOutput->Add(fhZDCvsTracklets);
  fhZDCvsNclu1 = new TH2F("hZDCvsNclu1", "hZDCvsNclu1", 200, 0.,8000.,200,0.,250000.);
  fOutput->Add(fhZDCvsNclu1);
- fhVZEROvsZEM = new TH2F("hVZEROvsZEM","hVZEROvsZEM",250,0.,2500.,250,0.,25000.);
- fOutput->Add(fhVZEROvsZEM);
  fhDebunch = new TH2F("hDebunch","hDebunch",240,-100.,-40.,240,-30.,30.);
  fOutput->Add(fhDebunch);
  fhZNCcentroid = new TH2F("hZNCcentroid","hZNCcentroid",100,-3.5,3.5,100,-3.5,3.5);
@@ -1198,13 +1178,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fhZNCvsZPC->Fill(energyZPC, energyZNC);
   fhZNAvsZPA->Fill(energyZPA, energyZNA);
   fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
-  fhZNvsZEM->Fill(energyZEM1+energyZEM2, energyZNC+energyZNA);
-  fhZDCvsZEM->Fill(energyZEM1+energyZEM2, energyZNA+energyZPA+energyZNC+energyZPC);
-  fhZDCvsZEMwV0M->Fill(energyZEM1+energyZEM2, energyZNA+energyZPA+energyZNC+energyZPC, centrperc);
   fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
   fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
   fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
-  fhVZEROvsZEM->Fill(energyZEM1+energyZEM2, multV0A+multV0C);
   
   Double_t asymmetry = -999.;
   if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
