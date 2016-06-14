@@ -50,8 +50,7 @@
 #include "AliQnCorrectionsHistos.h"
 
 #include "AliQnCorrectionsEventClassVariablesSet.h"
-#include "AliQnCorrectionsCutsBase.h"
-#include "QnCorrectionsHistograms.h"
+#include "AliQnCorrectionsCutWithin.h"
 #include "AliQnCorrectionsDataVector.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliQnCorrectionsDetector.h"
@@ -66,6 +65,9 @@
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
 #include "runAnalysis.H"
+
+using std::cout;
+using std::endl;
 
 #define VAR AliQnCorrectionsVarManagerTask
 
@@ -166,7 +168,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
     taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_alien, inputCalibrationFilename.Data());
   }
   else {
-    Error("\t CALIBRATION FILE SOURCE NOT SUPPORTED. ABORTING!!!");
+    Error("AddTaskFlowQnVectorCorrections", "\t CALIBRATION FILE SOURCE NOT SUPPORTED. ABORTING!!!");
     return NULL;
   }
   cout << "==================================================================================" << endl;

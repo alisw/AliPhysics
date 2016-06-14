@@ -67,6 +67,9 @@ AliMultSelectionTask *AddTaskMultSelection(
 
 #include "runAnalysis.H"
 
+using std::cout;
+using std::endl;
+
 void runAnalysis(const char *sRunMode = "full", Bool_t gridMerge = kTRUE) {
 
   gROOT->LoadMacro("loadRunOptions.C");
