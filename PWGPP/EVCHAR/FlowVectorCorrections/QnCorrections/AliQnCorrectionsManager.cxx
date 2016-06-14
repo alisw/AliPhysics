@@ -80,8 +80,8 @@ AliQnCorrectionsManager::AliQnCorrectionsManager() :
 /// Deletes the memory taken
 AliQnCorrectionsManager::~AliQnCorrectionsManager() {
 
-  if (fDetectorsIdMap != NULL) delete fDetectorsIdMap;
-  if (fDataContainer != NULL) delete fDataContainer;
+  if (fDetectorsIdMap != NULL) delete [] fDetectorsIdMap;
+  if (fDataContainer != NULL) delete [] fDataContainer;
   if (fCalibrationHistogramsList != NULL) delete fCalibrationHistogramsList;
   if (fProcessesNames != NULL) delete fProcessesNames;
 }

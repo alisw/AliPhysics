@@ -69,13 +69,13 @@ AliQnCorrectionsProfileChannelizedIngress::AliQnCorrectionsProfileChannelizedIng
 /// Releases the memory taken
 AliQnCorrectionsProfileChannelizedIngress::~AliQnCorrectionsProfileChannelizedIngress() {
 
-  if (fUsedChannel != NULL) delete fUsedChannel;
-  if (fChannelGroup != NULL) delete fChannelGroup;
-  if (fChannelMap != NULL) delete fChannelMap;
+  if (fUsedChannel != NULL) delete [] fUsedChannel;
+  if (fChannelGroup != NULL) delete [] fChannelGroup;
+  if (fChannelMap != NULL) delete [] fChannelMap;
   if (fValues != NULL) delete fValues;
-  if (fGroupValues != NULL) delete fGroupValues;
-  if (fUsedGroup != NULL) delete fUsedChannel;
-  if (fGroupMap != NULL) delete fChannelMap;
+  if (fGroupValues != NULL) delete [] fGroupValues;
+  if (fUsedGroup != NULL) delete [] fUsedChannel;
+  if (fGroupMap != NULL) delete [] fChannelMap;
 }
 
 
@@ -111,11 +111,11 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
   if (fGroupValues != NULL) delete fGroupValues;
   fValues = NULL;
   fGroupValues = NULL;
-  if (fUsedChannel != NULL) delete fUsedChannel;
-  if (fChannelGroup != NULL) delete fChannelGroup;
-  if (fChannelMap != NULL) delete fChannelMap;
-  if (fUsedGroup != NULL) delete fUsedGroup;
-  if (fGroupMap != NULL) delete fGroupMap;
+  if (fUsedChannel != NULL) delete [] fUsedChannel;
+  if (fChannelGroup != NULL) delete [] fChannelGroup;
+  if (fChannelMap != NULL) delete [] fChannelMap;
+  if (fUsedGroup != NULL) delete [] fUsedGroup;
+  if (fGroupMap != NULL) delete [] fGroupMap;
 
 
   /* lets consider now the channel information */
@@ -250,9 +250,9 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
       fGroupValues->Sumw2();
 
       /* we finished here with this stuff */
-      delete minvals;
-      delete maxvals;
-      delete nbins;
+      delete [] minvals;
+      delete [] maxvals;
+      delete [] nbins;
 
       /* now let's build its content */
       /* the procedure is as follows: we will project and add together the values histogram */
@@ -310,8 +310,8 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
       /* reset the ranges */
       origValues->GetAxis(nVariables)->SetRange(0, 0);
       origEntries->GetAxis(nVariables)->SetRange(0, 0);
-      delete dimToProject;
-      delete binsArray;
+      delete [] dimToProject;
+      delete [] binsArray;
     }
   }
   else

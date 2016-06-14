@@ -74,7 +74,7 @@ void AliQnCorrectionsQnVectorRecentering::CreateSupportDataStructures() {
   Int_t *harmonicsMap = new Int_t[nNoOfHarmonics];
   fDetectorConfiguration->GetHarmonicMap(harmonicsMap);
   fCorrectedQnVector = new AliQnCorrectionsQnVector(szCorrectedQnVectorName, nNoOfHarmonics, harmonicsMap);
-  delete harmonicsMap;
+  delete [] harmonicsMap;
 }
 
 /// Asks for support histograms creation
@@ -105,7 +105,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::CreateSupportHistograms(TList *list)
   Int_t *harmonicsMap = new Int_t[nNoOfHarmonics];
   fDetectorConfiguration->GetHarmonicMap(harmonicsMap);
   fCalibrationHistograms->CreateComponentsProfileHistograms(list,nNoOfHarmonics, harmonicsMap);
-  delete harmonicsMap;
+  delete [] harmonicsMap;
   return kTRUE;
 }
 

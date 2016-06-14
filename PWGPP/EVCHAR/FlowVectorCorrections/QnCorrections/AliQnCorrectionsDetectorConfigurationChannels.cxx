@@ -93,10 +93,10 @@ AliQnCorrectionsDetectorConfigurationChannels::AliQnCorrectionsDetectorConfigura
 /// Releases the memory taken
 AliQnCorrectionsDetectorConfigurationChannels::~AliQnCorrectionsDetectorConfigurationChannels() {
 
-  if (fUsedChannel != NULL) delete fUsedChannel;
-  if (fChannelMap != NULL) delete fChannelMap;
-  if (fChannelGroup != NULL) delete fChannelGroup;
-  if (fHardCodedGroupWeights != NULL) delete fHardCodedGroupWeights;
+  if (fUsedChannel != NULL) delete [] fUsedChannel;
+  if (fChannelMap != NULL) delete [] fChannelMap;
+  if (fChannelGroup != NULL) delete [] fChannelGroup;
+  if (fHardCodedGroupWeights != NULL) delete [] fHardCodedGroupWeights;
 }
 
 /// Incorporates the channels scheme to the detector configuration
