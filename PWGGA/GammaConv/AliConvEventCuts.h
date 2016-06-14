@@ -164,7 +164,21 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kUnknownPeriod
       };
 
+      enum EnergyVar {
+        kUnset        = 0,  // not defined  
+        k900GeV       = 1,  // pp 900 GeV
+        k2760GeV      = 2,  // pp 2.76TeV
+        k5TeV         = 3,  // pp 5 TeV
+        k7TeV         = 4,  // pp 7 TeV
+        k8TeV         = 5,  // pp 8 TeV
+        k13TeV        = 6,  // pp 13 TeV
+        kpPb5TeV      = 7,  // pPb 5 TeV
+        kpPb8TeV      = 8,  // pPb 8 TeV
+        kPbPb2760GeV  = 9,  // PbPb 2.76TeV
+        kPbPb5TeV     = 10, // PbPb 5 TeV
+      };
 
+      
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
       AliConvEventCuts& operator=(const AliConvEventCuts&);
@@ -315,6 +329,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                     }   
 
       PeriodVar GetPeriodEnum ()                                                    { return fPeriodEnum                                        ; }                                                                                    
+      EnergyVar GetEnergyEnum ()                                                    { return fEnergyEnum                                        ; }                                                                                    
       virtual   Bool_t IsSelected(TObject* /*obj*/)                                 { return kTRUE                                              ; }
       virtual   Bool_t IsSelected(TList* /*list*/)                                  { return kTRUE                                              ; }
 
@@ -411,6 +426,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t*                      fNotRejectedEnd;                        //[fnHeaders]
       TString*                    fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            // period selector
+      EnergyVar                   fEnergyEnum;                            // energy selector
+      
       TObjString*                 fCutString;                             // cut number used for analysis
       AliAnalysisUtils*           fUtils;
       Double_t                    fEtaShift;
