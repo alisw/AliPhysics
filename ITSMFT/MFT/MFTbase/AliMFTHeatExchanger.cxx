@@ -32,6 +32,9 @@
 #include "TGeoBoolNode.h"
 #include "AliLog.h"
 #include "AliMFTHeatExchanger.h"
+#include "TGeoBBox.h"
+#include "TGeoVolume.h"
+#include "AliMFTGeometry.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMFTHeatExchanger);
@@ -108,7 +111,11 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
   TGeoTranslation *translation    = 0;
   TGeoRotation    *rotation       = 0;
   TGeoCombiTrans  *transformation = 0;
-  
+
+  TGeoCombiTrans  *transformation1 = 0;
+  TGeoCombiTrans  *transformation2 = 0;
+
+
   // **************************************** Water part ****************************************
   
   // ------------------- Tube shape -------------------
@@ -242,6 +249,9 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
     fHalfDisk->AddNode(cooling, 4, transformation);
 //  }
   
+
+
+
   // **************************************** Carbon Plates ****************************************
   
   TGeoVolumeAssembly *carbonPlate = new TGeoVolumeAssembly(Form("carbonPlate_D0_H%d",half));
@@ -290,7 +300,9 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
     transformation = new TGeoCombiTrans(0., 0., -deltaz/2., rotation);
     fHalfDisk->AddNode(carbonPlate, 4, transformation);
 //  }
-  
+
+
+
   // **************************************** Rohacell Plate ****************************************
   
   TGeoVolumeAssembly *rohacellPlate = new TGeoVolumeAssembly(Form("rohacellPlate_D0_H%d",half));
@@ -335,7 +347,43 @@ void AliMFTHeatExchanger::CreateHalfDisk0(Int_t half) {
     transformation = new TGeoCombiTrans(0., 0., 0., rotation);
     fHalfDisk->AddNode(rohacellPlate, 1, transformation);
 //  }
-  
+ 
+
+
+    // **************************************** Manyfolds right and left, fm  ****************************************
+    
+    Double_t deltay = 0.2;     // ecart par rapport au plan median du MFT
+    Double_t mfX = 2.2; // largeur
+    Double_t mfY = 6.8; // hauteur
+    Double_t mfZ = 1.7; // epaisseur
+
+    TGeoMedium *kMedPeek    = gGeoManager->GetMedium("MFT_PEEK$");
+
+
+    TGeoBBox *boxmanyfold = new TGeoBBox("boxmanyfold", mfX/2, mfY/2, mfZ/2);
+    TGeoBBox *remove = new TGeoBBox("remove", 0.45/2 + AliMFTGeometry::kEpsilon, mfY/2 + AliMFTGeometry::kEpsilon, 0.6/2 + AliMFTGeometry::kEpsilon);
+    TGeoTranslation *tL= new TGeoTranslation ("tL", mfX/2-0.45/2, 0., -mfZ/2+0.6/2);
+    TGeoSubtraction *boxManyFold = new TGeoSubtraction(boxmanyfold, remove, NULL, tL);
+    TGeoCompositeShape *BoxManyFold = new TGeoCompositeShape("BoxManyFold", boxManyFold);
+
+    TGeoTranslation *tR= new TGeoTranslation ("tR", -mfX/2+0.45/2, 0., -mfZ/2+0.6/2);
+    TGeoSubtraction *boxManyFold1 = new TGeoSubtraction(BoxManyFold, remove, NULL, tR);
+    TGeoCompositeShape *BoxManyFold1 = new TGeoCompositeShape("BoxManyFold1", boxManyFold1);
+
+    TGeoVolume *MF1 = new TGeoVolume("MF1", BoxManyFold1, kMedPeek);
+
+    rotation = new TGeoRotation ("rotation", 90., 90., 90.);
+    transformation1 = new TGeoCombiTrans(fSupportXDimensions[disk][0]/2+mfZ/2, mfY/2+deltay, fZPlan[disk], rotation);
+
+    fHalfDisk->AddNode(MF1, 1, transformation1);
+    
+    TGeoVolume *MF2 = new TGeoVolume("MF2", BoxManyFold1, kMedPeek);
+    transformation2 = new TGeoCombiTrans(fSupportXDimensions[disk][0]/2+mfZ/2, -mfY/2-deltay, fZPlan[disk], rotation);
+
+    fHalfDisk->AddNode(MF2, 1, transformation2);
+    
+    // ********************************************************************************************************
+ 
 }
 
 //====================================================================================================================================================
