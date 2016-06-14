@@ -44,6 +44,7 @@
 #pragma link C++ class AliJEfficiency+;
 #pragma link C++ class AliJTrackCut+;
 #pragma link C++ class AliJRunTable+;
+#pragma link C++ class AliJPartLifetime+;
 
 
 #endif /* __CINT__ */
