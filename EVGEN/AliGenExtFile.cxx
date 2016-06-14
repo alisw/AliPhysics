@@ -274,6 +274,7 @@ void AliGenExtFile::Generate()
     // Generated event header
     AliGenEventHeader * header = fReader->GetGenEventHeader();
     if (!header) header = new AliGenEventHeader();
+    header->SetName(GetName());
     header->SetNProduced(fNprimaries);
     header->SetPrimaryVertex(fVertex);
     header->SetInteractionTime(fTime);
