@@ -58,6 +58,7 @@ AliEmcalCellMonitorTask::~AliEmcalCellMonitorTask() {
 void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
   fHistManager = new THistManager("EMCALCellMonitor");
 
+  fHistManager->CreateTH1("events", "Number of events", 1, 0.5, 1.5);
   fHistManager->CreateTH1("cellMasking", "Monitoring for masked cells", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
   fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
@@ -93,6 +94,8 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
   if(fTriggerString.Length()){
     if(!TString(InputEvent()->GetFiredTriggerClasses()).Contains(fTriggerString)) return;
   }
+
+  fHistManager->FillTH1("events", 1);
 
   AliVCaloCells *emcalcells = fInputEvent->GetEMCALCells();
 
