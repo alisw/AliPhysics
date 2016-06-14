@@ -451,15 +451,19 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
   }//End Axes for pp
 
-  static double fakePtr = 0.;
   //Start Common Axes
   fAxes["tpcSplitRatioPad"].set( 20, 0., 1., &fTPCSplitRatioPad );
   fAxes["tpcSplitRatioTime"].set( 20, 0., 1., &fTPCSplitRatioTime );
+  //End Common Axes
+
+
+  //fixed axes - used by fixed histograms
+  //set nbins to 0 to disable the histograms using an axis
+  static double fakePtr = 0.;
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
   fAxes["phiAngles"].set(180, 0., TMath::Pi(), &fakePtr );
   fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr );
-  //End Common Axes
 
   //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
