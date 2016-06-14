@@ -21,6 +21,7 @@
 #include <TH2F.h>
 #include <TChain.h>
 #include "AliESDInputHandlerRP.h"
+#include "AliESDtrackCuts.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisTaskITSsaTracks.h"
 
@@ -218,7 +219,7 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fNtupleTracks= new TNtuple("ntupleTracks","ntupleTracks","pt:px:py:pz:eta:phi:d0xy:d0z:dedx3:dedx4:dedx5:dedx6:truncmean:chi2:status:ITSrefit:TPCin:TPCrefit:ITSpureSA:nITSclu:nTPCclu:clumap:spdin:spdout:sddin:sddout:ssdin:ssdout:label:ptgen:pxgen:pygen:pzgen:etagen:phigen:ntracks:ntracklets:centr:iEvent");
+  fNtupleTracks= new TNtuple("ntupleTracks","ntupleTracks","pt:px:py:pz:eta:phi:d0xy:d0z:dedx3:dedx4:dedx5:dedx6:truncmean:chi2:status:ITSrefit:TPCin:TPCrefit:ITSpureSA:nITSclu:nTPCclu:clumap:spdin:spdout:sddin:sddout:ssdin:ssdout:label:ptgen:pxgen:pygen:pzgen:etagen:phigen:ntracks:ntracklets:centr:xvert:yvert:zvert:iEvent");
   // kinematics: pt, p eta,phi        ->  6 variables
   // impact parameters: d0xy, d0z     ->  2 variables
   // dE/dx: 4 Layers + trunc mean     ->  5 variables
@@ -568,8 +569,12 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
   const AliESDVertex *spdv=esd->GetPrimaryVertexSPD();
   if(spdv->GetNContributors()<=0) return;
   fHistNEvents->Fill(1);
-  
-  const Int_t ntSize=39;
+
+  Float_t xvert=spdv->GetX();
+  Float_t yvert=spdv->GetY();
+  Float_t zvert=spdv->GetZ();
+
+  const Int_t ntSize=42;
   Float_t xnt[ntSize];
   
   Double_t centrality=-1.;
@@ -641,6 +646,19 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
   Int_t nPureSAtracks=0;
   Int_t nITSTPCtracks=0;
 
+  AliESDtrackCuts* esdTrackCutsTPC = new AliESDtrackCuts("esdtrackCutsTPC");
+  esdTrackCutsTPC->SetMinNCrossedRowsTPC(50);
+  esdTrackCutsTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  // esdTrackCutsTPC->SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0); 
+  // esdTrackCutsTPC->SetCutOutDistortedRegionsTPC(kTRUE);
+  esdTrackCutsTPC->SetMaxChi2PerClusterTPC(4);
+  esdTrackCutsTPC->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCutsTPC->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsTPC->SetDCAToVertex2D(kFALSE);
+  esdTrackCutsTPC->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCutsTPC->SetMaxChi2TPCConstrainedGlobal(36);
+  esdTrackCutsTPC->SetMaxChi2PerClusterITS(36);
+
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = esd->GetTrack(iTrack);
     if (!track) continue;
@@ -661,7 +679,10 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Bool_t isTPCrefit=kFALSE;
     Bool_t isPureSA=kFALSE;
     if(status&AliESDtrack::kITSrefit) isITSrefit=kTRUE; 
-    if(status&AliESDtrack::kTPCin) isTPCin=kTRUE; 
+    if(status&AliESDtrack::kTPCin){ 
+      isTPCin=kTRUE; 
+      if(!esdTrackCutsTPC->AcceptTrack(track)) continue;
+    }
     if(status&AliESDtrack::kTPCrefit) isTPCrefit=kTRUE; 
     if(status&AliESDtrack::kITSpureSA) isPureSA=kTRUE;
     Bool_t isSA=kTRUE;
@@ -723,6 +744,9 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     xnt[indexn++]=ntracks;
     xnt[indexn++]=ntracklets;
     xnt[indexn++]=centrality;
+    xnt[indexn++]=xvert;
+    xnt[indexn++]=yvert;
+    xnt[indexn++]=zvert;
     xnt[indexn++]=esd->GetEventNumberInFile();
 
     if(indexn>ntSize) printf("AliAnalysisTaskITSsaTracks: ERROR ntuple insexout of range\n");
@@ -969,6 +993,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       }
     }
   }
+  delete esdTrackCutsTPC;
   fHistPureSAtracksVsTracklets->Fill(nPureSAtracks,ntracklets);
   fHistITSTPCtracksVsTracklets->Fill(nITSTPCtracks,ntracklets);
   PostData(1,fOutput);
