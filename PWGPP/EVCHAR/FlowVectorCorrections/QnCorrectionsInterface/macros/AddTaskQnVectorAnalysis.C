@@ -42,6 +42,9 @@
 
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
+using std::cout;
+using std::endl;
+
 #define VAR AliAnalysisTaskQnVectorAnalysis
 
 void DefineHistogramsQnAnalysis(AliQnCorrectionsHistos* histos, TString histClass);

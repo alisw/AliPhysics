@@ -37,6 +37,9 @@
 #include "AliQnCorrectionsQnVectorBuild.h"
 #include "AliLog.h"
 
+using std::cout;
+using std::endl;
+
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsQnVectorBuild);
 /// \endcond

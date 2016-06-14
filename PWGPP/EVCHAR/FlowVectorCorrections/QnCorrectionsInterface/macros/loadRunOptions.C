@@ -19,7 +19,8 @@
 #include "TSystem.h"
 #include "TROOT.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
 
 #include "runAnalysis.H"
 

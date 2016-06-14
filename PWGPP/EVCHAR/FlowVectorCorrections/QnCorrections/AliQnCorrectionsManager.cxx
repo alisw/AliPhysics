@@ -40,7 +40,10 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-using namespace std;
+
+using std::cout;
+using std::endl;
+using std::setw;
 
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsManager);
