@@ -104,7 +104,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     Printf("Error with Hybrids!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
-  if(dType=="ESD"){
+  if(!bIsMC){
     tracksForAnalysis->SetTrackCutsPeriod(periodstr);
     tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
   }
