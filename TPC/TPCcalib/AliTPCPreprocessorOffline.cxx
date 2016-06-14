@@ -1538,7 +1538,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
       TH2D *hQA = fGainMIP->GetHistGainTime()->Projection(0,1);
       hQA->SetName("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL_QA");
       hQA->SetTitle("MIP calibration collisions; time;d#it{E}/d#it{x} (arb. unit)");
-      hQA->GetXaxis()->SetRangeUser(hQA->FindFirstBinAbove(1), hQA->FindLastBinAbove(1));
+      hQA->GetXaxis()->SetRange(hQA->FindFirstBinAbove(1), hQA->FindLastBinAbove(1));
       fArrQAhist->Add(hQA);
     }
 
@@ -1561,7 +1561,7 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
       TH2D *hQA = fGainMIP->GetHistGainTime()->Projection(0,1);
       hQA->SetName("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL_QA");
       hQA->SetTitle("MIP calibration cosmics; time;d#it{E}/d#it{x} (arb. unit)");
-      hQA->GetXaxis()->SetRangeUser(hQA->FindFirstBinAbove(1), hQA->FindLastBinAbove(1));
+      hQA->GetXaxis()->SetRange(hQA->FindFirstBinAbove(1), hQA->FindLastBinAbove(1));
       fArrQAhist->Add(hQA);
     }
 
