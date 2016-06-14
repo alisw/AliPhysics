@@ -123,7 +123,10 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	int curtime = time(NULL);
 	grpObject.SetTimeStart(curtime);   // ?? not the time issued by ECS
 	grpObject.SetTimeEnd(curtime + 24 * 3600);
-	grpObject.SetBeamType(beamType);
+	
+	if (beamType == "pp") grpObject.SetBeamType("p-p");
+	else grpObject.SetBeamType(beamType);
+	
 	grpObject.SetRunType(runType);
 	grpObject.SetLHCPeriod(getenv("LHC_PERIOD")); // ? This variable is wrong that way!
 
@@ -134,6 +137,7 @@ int AliHLTCreateGRP::CreateGRP(Int_t runNumber, TString detectorList, TString be
 	grpObject.SetDetectorMask(detectMask);
 
 	grpObject.SetBeamEnergy(beamEnergy);
+	grpObject.SetBeamEnergyIsSqrtSHalfGeV(kTRUE);
 
 	grpObject.SetL3Current(l3Current, (AliGRPObject::Stats) 0);
 	grpObject.SetDipoleCurrent(dipoleCurrent, (AliGRPObject::Stats) 0);  
