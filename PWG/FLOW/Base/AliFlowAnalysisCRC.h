@@ -1011,8 +1011,8 @@ public:
  TH1D* GetMultHist() const {return this->fMultHist;}
  void SetCenHist(TH1D* const TH) {this->fCenHist = TH;};
  TH1D* GetCenHist() const {return this->fCenHist;}
-  void SetVtxHist(TH3F* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
-  TH3F* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
+  void SetVtxHist(TH2F* const TH, Int_t const c) {this->fVtxHist[c] = TH;};
+  TH2F* GetVtxHist(Int_t const c) const {return this->fVtxHist[c];}
  void SetRunNumber(Int_t const n) {this->fRunNum = n;};
  Int_t GetRunNumber() const {return this->fRunNum;}
  void SetDataSet(DataSet set) {this->fDataSet = set;};
@@ -1422,6 +1422,12 @@ private:
  TProfile *fCRCQ2ReCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
  TProfile *fCRCQ2ImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
+ TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
+ TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
+ TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
+ TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
+ TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
+ TProfile *fCRCVZSinnC[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
  AliFlowVector fTPCQ2Recenter;
  
  // temp
@@ -1631,7 +1637,7 @@ private:
  TList *fVariousList; //! list to hold various unclassified objects
  TH1D *fMultHist; //! Multiplicity distribution
  TH1D *fCenHist; //! Centrality distribution
- TH3F *fVtxHist[3]; //! primary vertex
+ TH2F *fVtxHist[3]; //! primary vertex
  TH1D* fCenWeightsHist; //! Centrality weights
  TH1D* fCenWeigCalHist; //! Centrality weights
  TH1D* fPtWeightsHist[10]; //! Pt weights

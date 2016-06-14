@@ -249,15 +249,10 @@ private:
  TH2F *fhZNCvsZPC;		//! ZNC vs ZPC;
  TH2F *fhZNAvsZPA;		//! ZNA vs ZPA;
  TH2F *fhZNvsZP;		//! ZNC+ZNA vs ZPC+ZPA;
- TH2F *fhZNvsZEM;		//! ZN vs ZEM;
- TH2F *fhZNvsZEMwV0M;		//! ZN vs ZEM weighted with V0M centr. perc.;
- TH2F *fhZDCvsZEM;		//! ZDC vs ZEM;
- TH2F *fhZDCvsZEMwV0M;		//! ZDC vs ZEM weighted with V0M centr. perc.;
  TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
  TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
  TH2F *fhZDCvsTracklets;	//! ZDC vs N_tracklets;
  TH2F *fhZDCvsNclu1;		//! ZDC vs N_cluster layer 1;
- TH2F *fhVZEROvsZEM;		//! VZERO vs ZEM;
  TH2F *fhDebunch;		//! Debunch;
  TH2F *fhZNCcentroid;		//! ZNC centroid
  TH2F *fhZNAcentroid;		//! ZNA centroid

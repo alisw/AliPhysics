@@ -43,6 +43,7 @@
 #include "AliGenGeVSimEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliMultiplicity.h"
+#include "AliMultSelection.h"
 #include "AliFlowTrackCuts.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrack.h"
@@ -1351,8 +1352,23 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     Double_t MultC = vA.GetMult();
     Double_t MultA = vB.GetMult();
     // init some values for the corrections
-    
-    Double_t Cen = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+    Double_t Cen = - 999;
+    //Added by Bernhard Hohlweger - bhohlweg@cern.ch
+    if(fEvent->GetRunNumber() < 209122){
+    	//For Run1 Data the Old Centrality Percentile Method is available whereas for Run2 a new method was implemented
+    	//Cut was done for the first run of the LHC15a period
+    	Cen = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+    }else{
+    	AliMultSelection *MultSelection = 0x0;
+    	MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+    	if( !MultSelection) {
+    		//If you get this warning (and EventCentrality -999) please check that the AliMultSelectionTask actually ran (before your task)
+    		AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+    	}else{
+    		Cen = MultSelection->GetMultiplicityPercentile("V0M");
+    	}
+    }
+    //14062016 Bernhard Hohlweger
     // default values for vector a (VZEROA)
     Double_t Qxamean(fQxavsV0[n-1]->GetBinContent(fQxavsV0[n-1]->FindBin(Cen)));
     Double_t Qxarms(fQxavsV0[n-1]->GetBinError(fQxavsV0[n-1]->FindBin(Cen)));
