@@ -49,6 +49,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 // //     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
     // switches for additional analysis streams or outputs
+    void SetLightOutput( Bool_t flag )                    { fDoLightOutput              = flag;}
     void SetDoMesonQA(Int_t flag)                         { fDoMesonQA                  = flag                                                            ; }
     void SetDoClusterQA(Int_t flag)                       { fDoClusterQA                = flag                                                            ; }
     void SetPlotHistsExtQA(Bool_t flag)                   { fSetPlotHistsExtQA          = flag                                                            ; }
@@ -95,6 +96,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
+    Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliVEvent*              fInputEvent;                                        // current event
     AliMCEvent*             fMCEvent;                                           // corresponding MC event
     AliStack*               fMCStack;                                           // stack belonging to MC event
@@ -240,7 +242,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 10);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 11);
 };
 
 #endif
