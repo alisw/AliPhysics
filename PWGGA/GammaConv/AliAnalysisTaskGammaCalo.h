@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
     // switches for additional analysis streams or outputs
+    void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
@@ -114,7 +115,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fTrueList;                                            // Array of lists with histograms with MC validated reconstructed properties
     TList**               fMCList;                                              // Array of lists with histograms with pure MC information
     TList**               fTreeList;                                            // Array of lists with tree for validated MC
-    TList**               fHeaderNameList;                                      // Array of lists with header names for MC header selection
     TList*                fOutputContainer;                                     // Output container
     TList*                fClusterCandidates;                                   //! current list of cluster candidates
     TList*                fEventCutArray;                                       // List with Event Cuts
@@ -293,8 +293,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     UChar_t               iFlag;                                                //! flag (0 = gamma, 1 = pi0, 2 = eta)
     
     // hists for nonlineartiy calibration
-    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
-    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
+//    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
+//    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
 
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
@@ -302,6 +302,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fnCuts;                                               // number of cuts to be analysed in parallel
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
+    Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
@@ -320,7 +321,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 19);
+    ClassDef(AliAnalysisTaskGammaCalo, 20);
 };
 
 #endif
