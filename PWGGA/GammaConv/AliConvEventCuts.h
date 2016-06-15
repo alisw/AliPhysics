@@ -347,6 +347,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    PrintCutsWithValues();
       void    InitCutHistograms(  TString name="",
                                   Bool_t preCut = kTRUE);
+      void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
       
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index, 
@@ -403,6 +404,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TList*                      fHistograms;
       TList*                      fHeaderList;
 
+      Bool_t                      fDoLightOutput;                         // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
       Int_t                       fEventQuality;                          // EventQuality
       //cuts
       Int_t                       fIsHeavyIon;                            // flag for heavy ion
@@ -497,7 +499,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,20)
+      ClassDef(AliConvEventCuts,21)
 };
 
 
