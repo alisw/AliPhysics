@@ -149,6 +149,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
       
+    void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
@@ -249,6 +250,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
 
+    Bool_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t    fIsJetJet;                                // Flag for usage of JetJet MC
 
     //for NonLinearity correction
@@ -379,7 +381,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,24)
+    ClassDef(AliCaloPhotonCuts,25)
 };
 
 #endif
