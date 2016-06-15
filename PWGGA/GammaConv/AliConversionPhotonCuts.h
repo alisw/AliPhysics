@@ -126,6 +126,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void PrintCuts();
     void PrintCutsWithValues();
 
+    void SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
@@ -208,6 +209,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TList*            fHistograms;                          //
     AliPIDResponse*   fPIDResponse;                         //
 
+    Bool_t            fDoLightOutput;                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;
 
     //cuts
@@ -330,7 +332,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,10)
+    ClassDef(AliConversionPhotonCuts,11)
 };
 
 #endif
