@@ -68,7 +68,8 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
                               Bool_t    isUsingTHnSparse          = kTRUE,                // enable or disable usage of THnSparses for background estimation
                               Int_t     enableExtMatchAndQA       = 0,                    // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
                               TString   periodNameV0Reader        = "",                   // name of period for V0Reader
-                              Bool_t    enableSortingMCLabels     = kTRUE                 // enable sorting for MC cluster labels
+                              Bool_t    enableSortingMCLabels     = kTRUE,                // enable sorting for MC cluster labels
+                              Bool_t    runLightOutput            = kFALSE                // switch to run light output (only essential histograms for afterburner)
                 ) {
 
   // ================= Load Librariers =================================
@@ -136,6 +137,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -150,6 +152,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -178,6 +181,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
 
   //create cut handler
   CutHandlerCalo cuts;
@@ -311,6 +315,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]    = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -318,12 +323,14 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig               = 1,          
     analysisClusterCuts[i]  = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     MesonCutList->Add(analysisMesonCuts[i]);
