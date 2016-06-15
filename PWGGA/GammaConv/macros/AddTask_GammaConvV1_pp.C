@@ -79,7 +79,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               TString periodNameV0Reader              = "",
                               Bool_t  doMultiplicityWeighting         = kFALSE,                  //
                               TString fileNameInputForMultWeighing    = "Multiplicity.root",    //
-                              TString periodNameAnchor                = ""
+                              TString periodNameAnchor                = "",
+                              Bool_t  runLightOutput                  = kFALSE                // switch to run light output (only essential histograms for afterburner)
                               
                             ) {
 
@@ -152,6 +153,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -165,6 +167,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetLightOutput(runLightOutput);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -197,6 +200,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
   
   CutHandlerConv cuts;
@@ -888,6 +892,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
 
     EventCutList->Add(analysisEventCuts[i]);
@@ -897,6 +902,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+        analysisClusterCuts[i]->SetLightOutput(runLightOutput);
         analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
         ClusterCutList->Add(analysisClusterCuts[i]);
         analysisClusterCuts[i]->SetFillCutHistograms("");   
@@ -907,6 +913,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     
     if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
@@ -916,6 +923,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisMesonCuts[i]          = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");		
