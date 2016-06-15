@@ -128,7 +128,7 @@ else()
   # Standard CMake inclusions and checks if we are actually building AliRoot,
   # i.e. not only the documentation
 
-  # Checking first for DIM, DATE, AMORE and daqDA 
+  # Checking first for DIM, DATE, AMORE and daqDA
   # in case ROOT Extra static library needs to be enabled
 
   # DATE
@@ -189,7 +189,7 @@ else()
 
     if(NOT DATE_FOUND)
       set(DA FALSE)
-      message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" variable")
+      message(FATAL_ERROR "DAs enabled but no DATE support found. Please point to your date installation using \"DATE_CONFIG\" and \"DATE_ENV\" variables")
     endif()
 
     if(NOT daqDA_FOUND)
@@ -201,7 +201,7 @@ else()
       set(DA FALSE)
       message(FATAL_ERROR "DAs enabled but no AMORE support found. Please point to your AMORE installation using \"AMORE_CONFIG\" variable")
     endif()
-      
+
     # Enable static libraries
     set(ALIROOT_STATIC TRUE)
     message(STATUS "DAs enabled")
