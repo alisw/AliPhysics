@@ -35,7 +35,6 @@
 
 #include "AliCluster.h"
 #include "AliESDtrack.h"
-#include "AliESDVertex.h"
 #include "AliITSReconstructor.h"
 #include "AliITStrackV2.h"
 #include "AliTracker.h"

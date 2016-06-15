@@ -42,7 +42,6 @@
 #include "AliCDBManager.h"
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
-#include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
