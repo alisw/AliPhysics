@@ -1,9 +1,10 @@
 AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
-                                                     const char *ntracks            = "usedefault",
-                                                     const char *nclusters          = "usedefault",
-                                                     const char* ncells             = "usedefault",
-                                                     const char *suffix             = ""
-                                                     )
+                                             const char *ntracks                        = "usedefault",
+                                             const char *nclusters                      = "usedefault",
+                                             const char* ncells                         = "usedefault",
+                                             const char *suffix                         = "",
+                                             const char *tag                            = "JetTag"
+                                             )
 {
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
