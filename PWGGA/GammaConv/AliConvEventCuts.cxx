@@ -75,6 +75,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fHeaderList(NULL),
+  fDoLightOutput(kFALSE),
   fEventQuality(-1),
   fIsHeavyIon(0),
   fDetectorCentrality(0),
@@ -177,6 +178,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fHeaderList(ref.fHeaderList),
+  fDoLightOutput(ref.fDoLightOutput),
   fEventQuality(ref.fEventQuality),
   fIsHeavyIon(ref.fIsHeavyIon),
   fDetectorCentrality(ref.fDetectorCentrality),
@@ -342,14 +344,18 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistograms->Add(hReweightMultMC);
   }
   
-  hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
-  fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
-  
-  hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
-  fHistograms->Add(hSPDClusterTrackletBackground);
+  if(!fDoLightOutput){
+    hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+    fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
 
-  hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
-  fHistograms->Add(hCentrality);
+    hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+    fHistograms->Add(hSPDClusterTrackletBackground);
+  }
+
+  if(fIsHeavyIon > 0){
+    hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
+    fHistograms->Add(hCentrality);
+  }
     
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
