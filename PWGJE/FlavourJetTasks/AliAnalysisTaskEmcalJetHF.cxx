@@ -92,9 +92,12 @@ fEMCTrketa(),
 fEMCTrkphi(),
 fHistJetEovP(),
 fHistJetEovPvPt(),
+fHistJetEovPvEP(),
 fHistClusEovP(),
 fHistClusEovPnonlin(),
-fHistClusEovPHadCorr()
+fHistClusEovPHadCorr(),
+fHistClusTrackMatchdPhi(),
+fHistClusTrackMatchdEta()
 {
 }
 
@@ -123,9 +126,12 @@ fEMCTrketa(0),
 fEMCTrkphi(0),
 fHistJetEovP(0),
 fHistJetEovPvPt(0),
+fHistJetEovPvEP(0),
 fHistClusEovP(0),
 fHistClusEovPnonlin(0),
-fHistClusEovPHadCorr(0)
+fHistClusEovPHadCorr(0),
+fHistClusTrackMatchdPhi(0),
+fHistClusTrackMatchdEta(0)
 {
     SetMakeGeneralHistograms(kTRUE);
 }
@@ -178,9 +184,12 @@ void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
     fOutput->Add(fEMCTrkphi);
     fOutput->Add(fHistJetEovP);
     fOutput->Add(fHistJetEovPvPt);
+    fOutput->Add(fHistJetEovPvEP);
     fOutput->Add(fHistClusEovP);
     fOutput->Add(fHistClusEovPnonlin);
     fOutput->Add(fHistClusEovPHadCorr);
+    fOutput->Add(fHistClusTrackMatchdPhi);
+    fOutput->Add(fHistClusTrackMatchdEta);
     
     
     PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -202,11 +211,14 @@ void AliAnalysisTaskEmcalJetHF::AllocateClusterHistograms()
         groupname = clusCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
 
-        fHistClusEovP = new TH1F("ClusEovP","Cluster EovP",130,0,1.3);
-        fHistClusEovPnonlin = new TH1F("ClusEovPnonlin","nonlin Cluster EovP",130,0,1.3);
-        fHistClusEovPHadCorr = new TH1F("ClusEovPHaddCorr","HadCorr Cluster EovP",130,0,1.3);
-        fInvmassULS = new TH1F("fInvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
-        fInvmassLS = new TH1F("fInvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+
+        fInvmassULS               = new TH1F("InvmassULS", "Inv mass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+        fInvmassLS                = new TH1F("InvmassLS", "Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
+        fHistClusEovP             = new TH1F("ClusEovP","Cluster EovP",200,0,1.3);
+        fHistClusEovPnonlin       = new TH1F("ClusEovPnonlin","nonlin Cluster EovP",200,0,5);
+        fHistClusEovPHadCorr      = new TH1F("ClusEovPHaddCorr","HadCorr Cluster EovP",200,0,5);
+        fHistClusTrackMatchdPhi   = new TH1F("HistClusTrackMatchdPhi","Cluster_{Phi} - Track_{Phi}; dPhi; counts;",1000,-2.0,2.0);
+        fHistClusTrackMatchdEta   = new TH1F("HistClusTrackMatchdEta","Cluster_{Eta} - Track_{Eta}; dPhi; counts;",1000,-2.0,2.0);
 
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
@@ -449,6 +461,13 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
             TLorentzVector leadPart;
             jetCont->GetLeadingHadronMomentum(leadPart, jet);
 
+            Double_t JetPhi = jet->Phi();
+            Double_t JetEta = jet->Eta();
+            Double_t ep = jet->Phi() - fEPV0;
+            while (ep < 0) ep += TMath::Pi();
+            while (ep >= TMath::Pi()) ep -= TMath::Pi();//Get Event Plane info
+
+
             //cout<<"JET Corr Pt: "<<corrPt<<"  Pt of Leading Hadron: "<< ptLeading<<endl;
 
             AliParticleContainer* tracks = jetCont->GetParticleContainer();
@@ -457,37 +476,155 @@ void AliAnalysisTaskEmcalJetHF::DoJetLoop()
                     AliVParticle *track = jet->TrackAt(it, tracks->GetArray());
 
                     if (track) {
+                       AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(track);
+                        //Track Quality Cuts
+                        /*
+                        if(fAOD)
+                            if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+
+                        //reject kink
+                        Bool_t kinkmotherpass = kTRUE;
+                        for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
+                            if(Vtrack->GetID() == listofmotherkink[kinkmother]) {
+                                kinkmotherpass = kFALSE;
+                                continue;
+                            }
+                        }
+                        if(!kinkmotherpass) continue;
+
+                        //other cuts
+                        Double_t d0z0[2]={-999,-999}, cov[3];
+                        Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
+                        if(fAOD){
+                            if(Vtrack->GetNumberOfTPCClusters() < 80) continue;
+                            if(Vtrack->GetNumberOfITSClusters() < 3) continue;
+                            if((!(Vtrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+                            if(!(Vtrack->HasPointOnITSLayer(0) || Vtrack->HasPointOnITSLayer(1))) continue;
+
+                            if(Vtrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
+                                if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
+                            //To be done : Add cuts to apply Chi2PerITSCls < 6 and N shared Cls ITS < 4
+                        }
+                        */
+
+                        Int_t    JetTrackLabel = Vtrack->GetID();
                         Double_t JetTrackP = track->P();
                         Double_t JetTrackPt = track->Pt();
-
-
                         Double_t dphi = TVector2::Phi_0_2pi(track->Phi() - jet->Phi());
                         Double_t deta = track->Eta() - jet->Eta();
                         Double_t dist = TMath::Sqrt(deta * deta + dphi * dphi);
 
                         //+++++----Track matching to EMCAL
-                        AliVTrack *Vtrack = dynamic_cast<AliVTrack*>(track);
                         Int_t EMCalIndex = -1;
                         EMCalIndex = Vtrack->GetEMCALcluster();
                         if(EMCalIndex < 0) continue;
 
-                        AliVCluster *clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
-                        if(!(clustMatch && clustMatch->IsEMCAL())) continue;
+                        //AliVCluster *clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+                        AliClusterContainer* ClusterMatchCont = jetCont->GetClusterContainer();
 
-                        Double_t clustMatchE = clustMatch->E();
-                        Double_t clustMatchNonLinE = clustMatch->GetNonLinCorrEnergy();
-                        Double_t clustMatchHadCorr = clustMatch->GetHadCorrEnergy();
+                        if (!ClusterMatchCont) continue;
+                        AliVCluster* clusmatch = ClusterMatchCont->GetCluster(EMCalIndex);
 
-                        //cout<<"Other Track Pt: "<< JetTrackPt << " Track Matched to Cluster Energy: "<< clustMatchE<<endl;
+                        if(clusmatch->E() < 0.500) continue;//Bad Cluster matching below 500 MeV
+                        if(!(clusmatch && clusmatch->IsEMCAL())) continue;
+                        Double_t clustMatchE = clusmatch->E();
+                        Double_t clustMatchNonLinE = clusmatch->GetNonLinCorrEnergy();
+                        Double_t clustMatchHadCorr = clusmatch->GetHadCorrEnergy();
+                        //++++---EMCal Cluster Position----
+                        TVector3 clustpos;
+                        Float_t  emcx[3]; // cluster pos
+                        Double_t detaTrckClus = -999. , dphiTrckClus = -999. , emcphi = -999., emceta = -999. ;
+                        clusmatch->GetPosition(emcx);
+                        clustpos.SetXYZ(emcx[0],emcx[1],emcx[2]);
+                        emcphi = clustpos.Phi();
+                        emceta = clustpos.Eta();
+                        Double_t TrackEtaEMC = -999., TrackPhiEMC = -999., TrackPEMC = -999., TrackPtEMC = -999.;
+
+                        //++++---Jet Electrons Finder----
+                        Double_t fTPCnSigma = 0.0;
+                        fTPCnSigma = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
+
+                        Double_t JetElectronEovP = clustMatchNonLinE / track->P();
+                        TrackEtaEMC  = Vtrack->GetTrackEtaOnEMCal();
+                        TrackPhiEMC  = Vtrack->GetTrackPhiOnEMCal();
+                        TrackPEMC    = Vtrack->GetTrackPOnEMCal();
+                        TrackPtEMC   = Vtrack->GetTrackPtOnEMCal();
+                        detaTrckClus = TrackEtaEMC - track->Eta();
+                        dphiTrckClus = TrackPhiEMC - track->Phi();
+                        Double_t M20 = clusmatch->GetM20();
+                        Double_t M02 = clusmatch->GetM02();
+
+                        //if(fTPCnSigma > -1 && fTPCnSigma < 3 && JetElectronEovP>0.8 && JetElectronEovP<1.2 && M02 > 0.006 && M02 < 0.35)
+                        //{
+                        //++++---Photonic Electrons----
+                        Bool_t fFlagPhotonicElec = kFALSE;
+
+                        Double_t Me  = 0.0005109989;
+                        Double_t Me2 = Me * Me;
+
+                        AliParticleContainer* partContHFE = 0;
+                        TIter next(&fParticleCollArray);
+
+                        SelectPhotonicElectron(JetTrackLabel, Vtrack, fFlagPhotonicElec);
+
+                        /*
+                        while ((partContHFE = static_cast<AliParticleContainer*>(next()))) {
+                            for(auto part : partContHFE->accepted()) {
+                               if (!part) continue;
+                               if (partContHFE->GetLoadedClass()->InheritsFrom("AliVTrack")) {
+                                   const AliVTrack* trackPhotonic = static_cast<const AliVTrack*>(part);
+
+                               SelectPhotonicElectron(trackPhotonic,Vtrack,fFlagPhotonicElec);
+                               }
+                            }//Loop over all particles in Event to look for photonic track match to Jet electron
+                        }
+                        */
+
+                        //++++---Jet HFE Electron Correlations----
+                        Double_t dPhiJetTrk = -999., dEtaJetPhi = -999.;
+
+
                         fHistJetEovP->Fill(clustMatchNonLinE / Vtrack->P());
 
+
+                        fHistClusTrackMatchdEta->Fill(detaTrckClus);
+                        fHistClusTrackMatchdPhi->Fill(emcphi - TrackPhiEMC);
+
+                        //++++---electron selection cuts----
+                        //if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.8 && eop<1.2 && m02 > 0.006 && m02 < 0.35)
+                        //}
 
                     }// Accepted Jet Track
                 }//Track loop
             }//Track Container
-        } //jet loop
+
+
+            //Jet Clusters
+            /*
+            AliClusterContainer* clusters = jets->GetClusterContainer();
+            if (clusters) {
+                for (Int_t ic = 0; ic < jet->GetNumberOfClusters(); ic++) {
+                    AliVCluster *cluster = jet->ClusterAt(ic, clusters->GetArray());
+
+                    if (cluster) {
+                        TLorentzVector nPart;
+                        if (clusters->GetDefaultClusterEnergy() >=0 && clusters->GetDefaultClusterEnergy() < AliVCluster::kLastUserDefEnergy) {
+                            cluster->GetMomentum(nPart, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
+                        }
+                        else {
+                            cluster->GetMomentum(nPart, fVertex);
+                        }
+
+
+                    }
+                }//loop over clusters
+            }//Get Cluster Container
+            */
+
+
+        }//jet loop
     }//Jet Container
-}
+}//DoJetLoop()
 
 /**
  * This function performs a loop over the reconstructed tracks
@@ -531,12 +668,6 @@ void AliAnalysisTaskEmcalJetHF::DoTrackLoop()
 
                 Double_t TrackP = track->P();
 
-                //////////////////////
-                //Photonic Electrons//
-                //////////////////////
-
-                Bool_t fFlagPhotonicElec = kFALSE;
-
                 //----+++Identify Non-HFE
                 //SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
 
@@ -551,13 +682,12 @@ void AliAnalysisTaskEmcalJetHF::DoTrackLoop()
                             Double_t ClusterHadCorr = cluster->GetHadCorrEnergy();
 
                             Double_t sigma = 0.0;
-
-
                             sigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-                            //cout<<"Sigma: " << sigma << endl;
                             fHistClusEovP->Fill(ClusterE / TrackP);
                             fHistClusEovPnonlin->Fill( ClusterNonLinE / TrackP);
                             fHistClusEovPHadCorr->Fill( ClusterHadCorr / TrackP);
+
+
 
                             histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), fCentBin);
                             fHistManager.FillTH2(histname, track->P(), cluster->GetNonLinCorrEnergy() / track->P());
@@ -729,8 +859,6 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
 
     fEventCounter++;
 
-    //cout<<"Event: "<<fEventCounter<<"  Number of Vertices: "<<numberofvertices<<"  Number of Tracks:  "<<ntracks<< endl;
-
     return kTRUE;
 }
 
@@ -759,8 +887,7 @@ void AliAnalysisTaskEmcalJetHF::EMCalClusterInfo()
             clustpos.SetXYZ(emcx[0],emcx[1],emcx[2]);
             emcphi = clustpos.Phi();
             emceta = clustpos.Eta();
-            //fHistClustE->Fill(clustE);
-            //fEMCClsEtaPhi->Fill(emceta,emcphi);
+
         }
     }
 }
@@ -779,16 +906,18 @@ void AliAnalysisTaskEmcalJetHF::SelectPhotonicElectron(Int_t itrack, AliVTrack *
     Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
 
     for(Int_t jTracks = 0; jTracks<fVevent->GetNumberOfTracks(); jTracks++){
-        if(jTracks==itrack) continue;
 
         AliVParticle* VtrackAsso = fVevent->GetTrack(jTracks);
         if (!VtrackAsso) {
             printf("ERROR: Could not receive track %d\n", jTracks);
             continue;
         }
-
         AliVTrack *trackAsso = dynamic_cast<AliVTrack*>(VtrackAsso);
         if(!trackAsso) continue;
+        if(trackAsso->GetID() == itrack){
+            //cout << "Matched track to itself: " << trackAsso->GetID() <<"     " << itrack<<endl;
+            continue;
+        }
 
         if(IsAODanalysis()) {
             AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
