@@ -651,7 +651,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     printf(">>> Set first SM covered by TRD, SM=%d <<< year %d \n", ana->GetFirstSMCoveredByTRD(),year);
   
   // Number of particle type MC histograms
-  ana->FillNOriginHistograms (9); // 15 max
+  ana->FillNOriginHistograms (14); // 18 max
   ana->FillNPrimaryHistograms(4); // 7 max
       
   return ana;
