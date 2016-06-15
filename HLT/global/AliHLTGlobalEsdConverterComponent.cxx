@@ -829,11 +829,11 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 
   // Get ITS SPD vertex
-  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); i!=NULL; i=GetNextInputBlock() ){
+  for( const AliHLTComponentBlockData *i= GetFirstInputBlock(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD); i!=NULL; i=GetNextInputBlock() ){
     fBenchmark.AddInput(i->fSize);
   }
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD); iter != NULL; iter = GetNextInputObject() ) {
     AliESDVertex *vtx = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) );
     pESD->SetPrimaryVertexSPD( vtx );
   }
