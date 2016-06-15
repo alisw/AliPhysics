@@ -209,6 +209,7 @@ void AliEmcalTriggerMakerTask::InitializeBadFEEChannels(){
   fTriggerMaker->ClearOfflineBadChannels();
   if(fBadFEEChannelOADB.Contains("alien://") && !gGrid) TGrid::Connect("alien://");
   AliOADBContainer badchannelDB("EmcalBadChannelsAdditional");
+  badchannelDB.InitFromFile(fBadFEEChannelOADB.Data(), "EmcalBadChannelsAdditional");
   TObjArray *badchannelmap = static_cast<TObjArray *>(badchannelDB.GetObject(InputEvent()->GetRunNumber()));
   if(!badchannelmap || !badchannelmap->GetEntries()) return;
   for(TIter citer = TIter(badchannelmap).Begin(); citer != TIter::End(); ++citer){
