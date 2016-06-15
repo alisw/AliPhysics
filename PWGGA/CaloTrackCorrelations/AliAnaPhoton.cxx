@@ -3551,6 +3551,18 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       {
         mcParticleTag = kmcAntiProton;
       }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCNeutron) )
+      {
+        mcParticleTag = kmcNeutron;
+      }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton) )
+      {
+        mcParticleTag = kmcProton;
+      }
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion) )
+      {
+        mcParticleTag = kmcChPion;
+      }
       else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) )
       {
         mcParticleTag = kmcElectron;
