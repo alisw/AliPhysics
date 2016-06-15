@@ -1268,58 +1268,46 @@ Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2
 //--------------------------------------------------------------------------
 Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
 
- AliParticleContainer *PartCont = GetParticleContainer(0);
- TClonesArray *TracksArray = PartCont->GetArray();
-
- if(!PartCont || !TracksArray) return -99999;
- AliAODTrack *Track = 0x0;
- AliEmcalParticle *EmcalParticle = 0x0;
-
-
- TList *TrackList = new TList();
- Int_t Trigger_Index[100];
- for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
- Int_t Trigger_Counter = 0;
-
- for(Int_t i=0; i <= TracksArray->GetEntriesFast(); i++){
-
-
-   if (fJetShapeSub == kConstSub){
-     EmcalParticle = static_cast<AliEmcalParticle*>(TracksArray->At(i));
-     if (!EmcalParticle) continue;
-     if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
-     if (EmcalParticle->Pt()<0.15) continue;
-
-     if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
-       TrackList->Add(EmcalParticle);
-       Trigger_Index[Trigger_Counter] = i;
-       Trigger_Counter++;
-     }
-   }
-   else{
-     Track = static_cast<AliAODTrack*>(TracksArray->At(i));
-     if (!Track) continue;
-     if(TMath::Abs(Track->Eta())>0.9) continue;
-     if (Track->Pt()<0.15) continue;
-     if (!(Track->TestFilterBit(768))) continue;//what is this and why doesn constituent subtraction not have this?? 
-
-     if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-       TrackList->Add(Track);
-       Trigger_Index[Trigger_Counter] = i;
-       Trigger_Counter++;
-
-     }
-   }
- }
-
- if (Trigger_Counter == 0) return -99999;
- Int_t RandomNumber = 0, Index = 0 ; 
- TRandom3* Random = new TRandom3(0); 
- RandomNumber = Random->Integer(Trigger_Counter);
-
- Index = Trigger_Index[RandomNumber];
- return Index; 
-
+  AliParticleContainer *PartCont = GetParticleContainer(0);
+  TClonesArray *TracksArray = PartCont->GetArray();
+ 
+  if(!PartCont || !TracksArray) return -99999;
+  AliAODTrack *Track = 0x0;
+  AliEmcalParticle *EmcalParticle = 0x0;
+  TList *TrackList = new TList();
+  Int_t Trigger_Index[100];
+  for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
+  Int_t Trigger_Counter = 0;
+  for(Int_t i=0; i <= TracksArray->GetEntriesFast(); i++){
+    if (fJetShapeSub == kConstSub){
+      EmcalParticle = static_cast<AliEmcalParticle*>(TracksArray->At(i));
+      if (!EmcalParticle) continue;
+      if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
+      if (EmcalParticle->Pt()<0.15) continue;
+      if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
+	TrackList->Add(EmcalParticle);
+	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Counter++;
+      }
+    }
+    else{
+      Track = static_cast<AliAODTrack*>(TracksArray->At(i));
+      if (!Track) continue;
+      if(TMath::Abs(Track->Eta())>0.9) continue;
+      if (Track->Pt()<0.15) continue;
+      if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	TrackList->Add(Track);
+	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Counter++;
+      }
+    }
+  }
+  if (Trigger_Counter == 0) return -99999;
+  Int_t RandomNumber = 0, Index = 0 ; 
+  TRandom3* Random = new TRandom3(0); 
+  RandomNumber = Random->Integer(Trigger_Counter);
+  Index = Trigger_Index[RandomNumber];
+  return Index; 
 }
 
 
