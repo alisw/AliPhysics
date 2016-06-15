@@ -31,6 +31,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetLightOutput(Bool_t flag ){fDoLightOutput = flag;}
 
     void SetIsHeavyIon(Int_t flag)                                { fIsHeavyIon                 = flag    ;}
     void SetIsMC(Int_t isMC)                                      { fIsMC                       = isMC    ;}
@@ -82,6 +83,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
     TString                           fV0ReaderName;
+    Bool_t                            fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliGammaConversionAODBGHandler**  fBGHandler;                                 //
     AliConversionAODBGHandlerRP**     fBGHandlerRP;                               //
     AliVEvent*                        fInputEvent;                                //
@@ -303,7 +305,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 30);
+    ClassDef(AliAnalysisTaskGammaConvV1, 31);
 };
 
 #endif
