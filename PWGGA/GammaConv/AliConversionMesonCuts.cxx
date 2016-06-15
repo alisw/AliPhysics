@@ -74,6 +74,7 @@ const char* AliConversionMesonCuts::fgkCutNames[AliConversionMesonCuts::kNCuts] 
 AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *title) :
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
+  fDoLightOutput(kFALSE),
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fMaxR(200),
@@ -146,6 +147,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
 AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref) :
   AliAnalysisCuts(ref),
   fHistograms(NULL),
+  fDoLightOutput(ref.fDoLightOutput),
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fMaxR(ref.fMaxR),
@@ -322,35 +324,37 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistograms->Add(fHistoMesonBGCuts);
   }  
   
-  if (fIsMergedClusterCut == 1){
-    fHistoInvMassBefore=new TH1F(Form("InvMassMeson Before %s",GetCutNumber().Data()),"InvMassMeson Before",1000,0,1);
-    fHistograms->Add(fHistoInvMassBefore);
-    fHistoInvMassAfter=new TH1F(Form("InvMassMeson After %s",GetCutNumber().Data()),"InvMassMeson After",1000,0,1);
-    fHistograms->Add(fHistoInvMassAfter);
-  }  
-  
-  if (additionalHists && fIsMergedClusterCut== 0){
-    fHistoDCAGGMesonBefore=new TH1F(Form("DCAGammaGammaMeson Before %s",GetCutNumber().Data()),"DCAGammaGammaMeson Before",200,0,10);
-    fHistograms->Add(fHistoDCAGGMesonBefore);
+  if(!fDoLightOutput){
+    if (fIsMergedClusterCut == 1){
+      fHistoInvMassBefore=new TH1F(Form("InvMassMeson Before %s",GetCutNumber().Data()),"InvMassMeson Before",1000,0,1);
+      fHistograms->Add(fHistoInvMassBefore);
+      fHistoInvMassAfter=new TH1F(Form("InvMassMeson After %s",GetCutNumber().Data()),"InvMassMeson After",1000,0,1);
+      fHistograms->Add(fHistoInvMassAfter);
+    }
 
-    fHistoDCARMesonPrimVtxBefore=new TH1F(Form("DCARMesonPrimVtx Before %s",GetCutNumber().Data()),"DCARMesonPrimVtx Before",200,0,10);
-    fHistograms->Add(fHistoDCARMesonPrimVtxBefore);
+    if (additionalHists && fIsMergedClusterCut== 0){
+      fHistoDCAGGMesonBefore=new TH1F(Form("DCAGammaGammaMeson Before %s",GetCutNumber().Data()),"DCAGammaGammaMeson Before",200,0,10);
+      fHistograms->Add(fHistoDCAGGMesonBefore);
 
-    fHistoDCAZMesonPrimVtxBefore=new TH1F(Form("DCAZMesonPrimVtx Before %s",GetCutNumber().Data()),"DCAZMesonPrimVtx Before",401,-10,10);
-    fHistograms->Add(fHistoDCAZMesonPrimVtxBefore);
+      fHistoDCARMesonPrimVtxBefore=new TH1F(Form("DCARMesonPrimVtx Before %s",GetCutNumber().Data()),"DCARMesonPrimVtx Before",200,0,10);
+      fHistograms->Add(fHistoDCARMesonPrimVtxBefore);
+
+      fHistoDCAZMesonPrimVtxBefore=new TH1F(Form("DCAZMesonPrimVtx Before %s",GetCutNumber().Data()),"DCAZMesonPrimVtx Before",401,-10,10);
+      fHistograms->Add(fHistoDCAZMesonPrimVtxBefore);
+    }
+
+    if (fIsMergedClusterCut == 0){
+      fHistoDCAGGMesonAfter=new TH1F(Form("DCAGammaGammaMeson After %s",GetCutNumber().Data()),"DCAGammaGammaMeson After",200,0,10);
+      fHistograms->Add(fHistoDCAGGMesonAfter);
+
+      fHistoDCAZMesonPrimVtxAfter=new TH2F(Form("InvMassDCAZMesonPrimVtx After %s",GetCutNumber().Data()),"InvMassDCAZMesonPrimVtx After",800,0,0.8,401,-10,10);
+      fHistograms->Add(fHistoDCAZMesonPrimVtxAfter);
+
+      fHistoDCARMesonPrimVtxAfter=new TH1F(Form("DCARMesonPrimVtx After %s",GetCutNumber().Data()),"DCARMesonPrimVtx After",200,0,10);
+      fHistograms->Add(fHistoDCARMesonPrimVtxAfter);
+    }
   }
 
-  if (fIsMergedClusterCut == 0){
-    fHistoDCAGGMesonAfter=new TH1F(Form("DCAGammaGammaMeson After %s",GetCutNumber().Data()),"DCAGammaGammaMeson After",200,0,10);
-    fHistograms->Add(fHistoDCAGGMesonAfter);
-
-    fHistoDCAZMesonPrimVtxAfter=new TH2F(Form("InvMassDCAZMesonPrimVtx After %s",GetCutNumber().Data()),"InvMassDCAZMesonPrimVtx After",800,0,0.8,401,-10,10);
-    fHistograms->Add(fHistoDCAZMesonPrimVtxAfter);
-
-    fHistoDCARMesonPrimVtxAfter=new TH1F(Form("DCARMesonPrimVtx After %s",GetCutNumber().Data()),"DCARMesonPrimVtx After",200,0,10);
-    fHistograms->Add(fHistoDCARMesonPrimVtxAfter);
-  }
-  
   TH1::AddDirectory(kTRUE);
 }
 
