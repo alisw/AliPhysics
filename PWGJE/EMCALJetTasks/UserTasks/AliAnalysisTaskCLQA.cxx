@@ -6,6 +6,7 @@
 
 #include <complex>
 
+#include "AliAnalysisTaskCLQA.h"
 #include <TChain.h>
 #include <TClonesArray.h>
 #include <TDirectory.h>
@@ -38,7 +39,6 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
-#include "AliAnalysisTaskCLQA.h"
 
 ClassImp(AliAnalysisTaskCLQA)
 
@@ -46,10 +46,12 @@ ClassImp(AliAnalysisTaskCLQA)
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskCLQA", kTRUE),
   fDo2013VertexCut(1),
-  fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
-  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), 
-  fCumMbins(250), fCentCL1In(0), fCentV0AIn(0),
-  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
+  fDoTracking(0), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
+  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
+  fDoHet(0), fHetEtmin(6),
+  fCentCL1In(0), fCentV0AIn(0),
+  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0), 
+  fNtupHet(0), fNtupHetInfo(0)
 {
   // Default constructor.
 
@@ -62,9 +64,11 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) :
   AliAnalysisTaskEmcal(name, kTRUE),
   fDo2013VertexCut(1),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
-  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15),
-  fCumMbins(250), fCentCL1In(0), fCentV0AIn(0),
-  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0)
+  fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
+  fDoHet(0), fHetEtmin(6),
+  fCentCL1In(0), fCentV0AIn(0),
+  fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0), 
+  fNtupHet(0), fNtupHetInfo(0)
 {
   // Standard constructor.
 
@@ -85,15 +89,15 @@ Double_t AliAnalysisTaskCLQA::DeltaPhi(Double_t phia, Double_t phib,
   // Calculate Delta Phi.
 
   Double_t dphi = -999;
-  Double_t pi = TMath::Pi();
+  const Double_t tpi = TMath::TwoPi();
   
-  if (phia < 0)         phia += 2*pi;
-  else if (phia > 2*pi) phia -= 2*pi;
-  if (phib < 0)         phib += 2*pi;
-  else if (phib > 2*pi) phib -= 2*pi;
+  if (phia < 0)         phia += tpi;
+  else if (phia > tpi) phia -= tpi;
+  if (phib < 0)         phib += tpi;
+  else if (phib > tpi) phib -= tpi;
   dphi = phib - phia;
-  if (dphi < rangeMin)      dphi += 2*pi;
-  else if (dphi > rangeMax) dphi -= 2*pi;
+  if (dphi < rangeMin)      dphi += tpi;
+  else if (dphi > rangeMax) dphi -= tpi;
   
   return dphi;
 }
@@ -277,6 +281,7 @@ Bool_t AliAnalysisTaskCLQA::Run()
   // Run various functions.
 
   RunCumulants(fCumMmin,fCumPtMin,fCumPtMax,fCumEtaMin,fCumEtaMax);
+  RunHet(fHetEtmin);
 
   return kTRUE;
 }
@@ -399,9 +404,9 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
       Double_t pt2 = track2->Pt();
       if ((pt2<ptmin) || (pt2>ptmax))
 	continue;
-      Double_t deta=TMath::Abs(eta2-eta1);
-      ((TH3*)fHists[128])->Fill(DeltaPhi(phi1,track2->Phi()),deta,M);
+      ((TH3*)fHists[128])->Fill(DeltaPhi(phi1,track2->Phi()),eta1-eta2,M);
       fHists[129]->Fill(M);
+      Double_t deta=TMath::Abs(eta1-eta2);
       if(deta<1)
 	continue;
       Double_t dphi=TVector2::Phi_0_2pi(phi1-track2->Phi());
@@ -640,6 +645,15 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskCLQA::RunHet(Double_t Etmin)
+{
+  // Run het analysis.
+
+  if (!fDoHet)
+    return;
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskCLQA::SetCumParams(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax)
 {
   // Set parameters for cumulants.
@@ -649,6 +663,14 @@ void AliAnalysisTaskCLQA::SetCumParams(Double_t Mmin, Double_t ptmin, Double_t p
   fCumPtMax  = ptmax;
   fCumEtaMin = etamin;
   fCumEtaMax = etamax;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskCLQA::SetHetParams(Double_t etmin)
+{
+  // Set parameters for het.
+
+  fHetEtmin  = etmin;
 }
 
 //________________________________________________________________________
@@ -816,6 +838,24 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fNtupCum->Branch("zdc", &fNtupZdcInfo, 32*1024, 99);
     if (fDoCumNtuple)
       fOutput->Add(fNtupCum);
+  }
+
+  if (fDoHet) {
+    fNtupHet = new TTree("NtupHet", "Ntuple for het analysis");
+    if (1) {
+      fNtupHet->SetDirectory(0);
+    } else {
+      TFile *f = OpenFile(1); 
+      if (f) {
+	f->SetCompressionLevel(2);
+	fNtupHet->SetDirectory(f);
+	fNtupHet->SetAutoFlush(-4*1024*1024);
+	fNtupHet->SetAutoSave(0);
+      }
+    }
+    fNtupHetInfo = new AliNtupHetInfo;
+    fNtupHet->Branch("het", &fNtupHetInfo, 32*1024, 99);
+    fOutput->Add(fNtupHet);
   }
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram

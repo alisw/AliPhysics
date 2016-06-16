@@ -103,6 +103,7 @@
 #pragma link C++ class JETriggerRejectionAna::AliAnalysisTaskTriggerRejection+;
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
+#pragma link C++ class AliNtupHetInfo+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
