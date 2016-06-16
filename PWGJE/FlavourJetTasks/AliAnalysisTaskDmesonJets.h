@@ -162,24 +162,24 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
     AliJetInfoSummary(const AliDmesonJetInfo& source, std::string n);
-    virtual ~AliJetInfoSummary() {};
+    virtual ~AliJetInfoSummary() {}
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source, std::string n);
 
     /// Transverse momentum of the jet in GeV/c
-    Double32_t  fPt        ; //[0,500,13]
+    Double32_t  fPt        ; //[0,409.6,13]
     /// Eta of the jet
-    Double32_t  fEta       ; //[-2,2,10]
+    Double32_t  fEta       ; //[-2.048,2.048,10]
     /// Phi of the jet
     Double32_t  fPhi       ; //[0,2*pi,10]
     /// Distance between D meson and jet axis
-    Double32_t  fR         ; //[0,2,7]
+    Double32_t  fR         ; //[0,2.56,7]
     /// Z of the D meson
-    Double32_t  fZ         ; //[0,1,10]
+    Double32_t  fZ         ; //[0,1.024,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoSummary, 2);
+    ClassDef(AliJetInfoSummary, 3);
     /// \endcond
   };
 
@@ -187,7 +187,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson
-  /// information in a very compact data structure (30 bits)
+  /// information in a very compact data structure (32 bits)
   class AliDmesonInfoSummary {
   public:
     AliDmesonInfoSummary() : fPt(0), fEta(0), fPhi(0) {;}
@@ -198,14 +198,14 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// Transverse momentum of the D meson in GeV/c
-    Double32_t   fPt     ; //[0,200,12]
+    Double32_t   fPt     ; //[0,204.8,12]
     /// Eta of the jet
-    Double32_t   fEta    ; //[-2,2,9]
+    Double32_t   fEta    ; //[-2.048,2.048,10]
     /// Phi of the jet
-    Double32_t   fPhi    ; //[0,2*pi,9]
+    Double32_t   fPhi    ; //[0,2*pi,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliDmesonInfoSummary, 1);
+    ClassDef(AliDmesonInfoSummary, 2);
     /// \endcond
   };
 
@@ -213,20 +213,21 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D0
   ///
   /// This class encapsulates D0 jet
-  /// information in a very compact data structure (42 bits)
+  /// information in a very compact data structure (48 bits)
   class AliD0InfoSummary : public AliDmesonInfoSummary {
   public:
     AliD0InfoSummary() : AliDmesonInfoSummary(), fInvMass(0) {}
     AliD0InfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliD0InfoSummary() {}
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// Invariant mass of the D0 meson candidate in GeV/c2
-    Double32_t   fInvMass   ; //[0,5,12]
+    Double32_t   fInvMass   ; //[0,6.5536,16]
 
     /// \cond CLASSIMP
-    ClassDef(AliD0InfoSummary, 1);
+    ClassDef(AliD0InfoSummary, 2);
     /// \endcond
   };
 
@@ -234,22 +235,23 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D*
   ///
   /// This class encapsulates D*
-  /// information in a very compact data structure (54 bits)
+  /// information in a very compact data structure (62 bits)
   class AliDStarInfoSummary : public AliDmesonInfoSummary {
   public:
     AliDStarInfoSummary() : AliDmesonInfoSummary(), f2ProngInvMass(0), fDeltaInvMass(0) {}
     AliDStarInfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliDStarInfoSummary() {}
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source);
 
     ///< Invariant mass of the D0 meson candidate in GeV/c2
-    Double32_t   f2ProngInvMass   ; //[0,5,12]
+    Double32_t   f2ProngInvMass   ; //[0,8.192,14]
     ///< Difference between the Kpipi and the Kpi invariant masses in GeV/c2
-    Double32_t   fDeltaInvMass    ; //[0,1,12]
+    Double32_t   fDeltaInvMass    ; //[0,0.8192,16]
 
     /// \cond CLASSIMP
-    ClassDef(AliDStarInfoSummary, 1);
+    ClassDef(AliDStarInfoSummary, 2);
     /// \endcond
   };
 
