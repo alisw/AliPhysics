@@ -39,7 +39,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (pp analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for pp analysis (54 bits)
+   * for pp analysis (49 bits)
    */
   class AliEmcalJetInfoSummaryPP {
   public:
@@ -52,19 +52,20 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     void Set(const AliEmcalJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c
-    Double32_t  fPt           ; //[0,200,12]
+    Double32_t  fPt            ; //[0,512,10]
     /// Eta of the jet
-    Double32_t  fEta          ; //[-2,2,10]
+    Double32_t  fEta           ; //[-1.28,1.28,8]
     /// Phi of the jet
-    Double32_t  fPhi          ; //[0,2*pi,10]
+    Double32_t  fPhi           ; //[0,2*pi,9]
     // Fraction of neutral energy
-    Double32_t  fNEF          ; //[0,1,6]
+    Double32_t  fNEF           ; //[0,1.28,7]
     // Momentum fraction of the leading particle
-    Double32_t  fZLeading     ; //[0,1,8]
-    Char_t      fNConstituents; ///< Number of constituents
+    Double32_t  fZLeading      ; //[0,1.28,7]
+    /// Number of constituents
+    Double32_t  fNConstituents ; //[0,256,8]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPP, 2);
+    ClassDef(AliEmcalJetInfoSummaryPP, 3);
     /// \endcond
   };
 
@@ -73,7 +74,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (Pb-Pb analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for Pb-Pb analysis (96 bits)
+   * for Pb-Pb analysis (86 bits)
    */
   class AliEmcalJetInfoSummaryPbPb {
   public:
@@ -86,27 +87,28 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     void Set(const AliEmcalJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c
-    Double32_t  fPt            ; //[0,200,12]
+    Double32_t  fPt            ; //[0,512,10]
     /// Eta of the jet
-    Double32_t  fEta           ; //[-2,2,10]
+    Double32_t  fEta           ; //[-1.28,1.28,8]
     /// Phi of the jet
-    Double32_t  fPhi           ; //[0,2*pi,10]
+    Double32_t  fPhi           ; //[0,2*pi,9]
     // Fraction of neutral energy
-    Double32_t  fNEF           ; //[0,1,6]
+    Double32_t  fNEF           ; //[0,1.28,7]
     // Momentum fraction of the leading particle
-    Double32_t  fZLeading      ; //[0,1,8]
-    Char_t      fCent          ; ///< Centrality
+    Double32_t  fZLeading      ; //[0,1.28,7]
+    ///< Centrality
+    Double32_t  fCent          ; //[0,128,8]
     /// Angle between the jet axis and the event plane
-    Double32_t  fEP            ; //[0,pi,10]
+    Double32_t  fEP            ; //[0,pi,8]
     /// Jet area
-    Double32_t  fArea          ; //[0,10,11]
+    Double32_t  fArea          ; //[0,5.12,9]
     /// Number of constituents
-    Double32_t  fNConstituents ; //[0,1000,9]
+    Double32_t  fNConstituents ; //[0,1024,9]
     /// Jet corrected pt
-    Double32_t  fCorrPt        ; //[0,200,12]
+    Double32_t  fCorrPt        ; //[-512,512,11]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryPbPb, 2);
+    ClassDef(AliEmcalJetInfoSummaryPbPb, 3);
     /// \endcond
   };
 
@@ -115,7 +117,7 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
    * \brief Class that encapsulates jets in a very compact structure (embedding analysis)
    *
    * Class that encapsulates jets in a very compact structure
-   * for embedding analysis (108 bits)
+   * for embedding analysis (96 bits)
    */
   class AliEmcalJetInfoSummaryEmbedding {
   public:
@@ -128,28 +130,30 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
     void Set(const AliEmcalJetInfo& source);
 
     /// Transverse momentum of the jet in GeV/c
-    Double32_t  fPt            ; //[0,200,12]
+    Double32_t  fPt            ; //[0,512,10]
     /// Eta of the jet
-    Double32_t  fEta           ; //[-2,2,10]
+    Double32_t  fEta           ; //[-1.28,1.28,8]
     /// Phi of the jet
-    Double32_t  fPhi           ; //[0,2*pi,10]
+    Double32_t  fPhi           ; //[0,2*pi,9]
     // Fraction of neutral energy
-    Double32_t  fNEF           ; //[0,1,6]
+    Double32_t  fNEF           ; //[0,1.28,7]
     // Momentum fraction of the leading particle
-    Double32_t  fZLeading      ; //[0,1,8]
-    Char_t      fCent          ; ///< Centrality
+    Double32_t  fZLeading      ; //[0,1.28,7]
+    ///< Centrality
+    Double32_t  fCent          ; //[0,128,8]
     /// Angle between the jet axis and the event plane
-    Double32_t  fEP            ; //[0,pi,10]
+    Double32_t  fEP            ; //[0,pi,8]
     /// Jet area
-    Double32_t  fArea          ; //[0,10,11]
+    Double32_t  fArea          ; //[0,5.12,9]
     /// Number of constituents
-    Double32_t  fNConstituents ; //[0,1000,9]
+    Double32_t  fNConstituents ; //[0,1024,9]
     /// Jet corrected pt
-    Double32_t  fCorrPt        ; //[0,200,12]
-    Double32_t  fMCPt          ; //[0,200,12]
+    Double32_t  fCorrPt        ; //[-512,512,11]
+    /// Jet MC pt
+    Double32_t  fMCPt          ; //[0,512,10]
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetInfoSummaryEmbedding, 2);
+    ClassDef(AliEmcalJetInfoSummaryEmbedding, 3);
     /// \endcond
   };
 
