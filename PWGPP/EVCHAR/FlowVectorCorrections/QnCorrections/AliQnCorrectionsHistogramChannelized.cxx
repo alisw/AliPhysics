@@ -31,14 +31,16 @@ AliQnCorrectionsHistogramChannelized::AliQnCorrectionsHistogramChannelized() :
 /// \param name base for the name of the histograms
 /// \param title base for the title of the histograms
 /// \param ecvs the event classes variables set
+/// \param nNoOfChannels the number of channels associated
 AliQnCorrectionsHistogramChannelized::AliQnCorrectionsHistogramChannelized(const char *name,
       const char *title,
-      AliQnCorrectionsEventClassVariablesSet &ecvs) :
+      AliQnCorrectionsEventClassVariablesSet &ecvs,
+      Int_t nNoOfChannels) :
           AliQnCorrectionsHistogramBase(name, title, ecvs) {
   fValues = NULL;
   fValues = NULL;
   fUsedChannel = NULL;
-  fNoOfChannels = 0;
+  fNoOfChannels = nNoOfChannels;
   fActualNoOfChannels = 0;
   fChannelMap = NULL;
 }

@@ -67,6 +67,7 @@ public:
 private:
   THnF *fValues;              //!<! the values and errors on each event class and channel
   THnF *fGroupValues;         //!<! the values and errors on each event class and group
+  THnC *fValidated;           //!<! bin content validated flag
   Bool_t *fUsedChannel;       //!<! array, which of the detector channels are used for this configuration
   Int_t *fChannelGroup;       //!<! array, the group to which the channel pertains
   Int_t fNoOfChannels;        //!<! The number of channels associated to the whole detector
@@ -80,7 +81,7 @@ private:
 
 
   /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsProfileChannelizedIngress, 1);
+  ClassDef(AliQnCorrectionsProfileChannelizedIngress, 2);
   /// \endcond
 };
 

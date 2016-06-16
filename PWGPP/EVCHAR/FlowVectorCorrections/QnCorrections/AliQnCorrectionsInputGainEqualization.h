@@ -54,6 +54,7 @@
 
 class AliQnCorrectionsProfileChannelizedIngress;
 class AliQnCorrectionsProfileChannelized;
+class QncorrectionsHistogramChannelized;
 
 /// \class AliQnCorrectionsInputGainEqualization
 /// \brief Encapsulates the gain equalization on input data correction step
@@ -133,7 +134,14 @@ public:
   /// \param enable kTRUE / kFALSE for enable / disable it
   void SetUseChannelGroupsWeights(Bool_t enable)
   { fUseChannelGroupsWeights = enable; }
+  /// Set the minimum number of entries for calibration histogram bin content validation
+  /// \param nNoOfEntries the number of entries threshold
+  void SetNoOfEntriesThreshold(Int_t nNoOfEntries) { fMinNoOfEntriesToValidate = nNoOfEntries; }
 
+  /// Informs when the detector configuration has been attached to the framework manager
+  /// Basically this allows interaction between the different framework sections at configuration time
+  /// No action for input gain equalization
+  virtual void AttachedToFrameworkManager() {}
   virtual Bool_t AttachInput(TList *list);
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
@@ -147,23 +155,27 @@ public:
 
 private:
   static const Float_t  fMinimumSignificantValue;     ///< the minimum value that will be considered as meaningful for processing
+  static const Int_t fDefaultMinNoOfEntries;         ///< the minimum number of entries for bin content validation
   static const char *szCorrectionName;               ///< the name of the correction step
   static const char *szKey;                          ///< the key of the correction step for ordering purpose
   static const char *szSupportHistogramName;         ///< the name and title for support histograms
   static const char *szQAHistogramName;              ///< the name and title for QA histograms
+  static const char *szQANotValidatedHistogramName;  ///< the name and title for bin not validated QA histograms
   AliQnCorrectionsProfileChannelizedIngress *fInputHistograms; //!<! the histogram with calibration information
   AliQnCorrectionsProfileChannelized *fCalibrationHistograms; //!<! the histogram for building calibration information
   AliQnCorrectionsProfileChannelized *fQAMultiplicityBefore;  //!<! the channel multiplicity histogram before gain equalization
   AliQnCorrectionsProfileChannelized *fQAMultiplicityAfter;   //!<! the channel multiplicity histogram after gain equalization
+  AliQnCorrectionsHistogramChannelized *fQANotValidatedBin;    //!<! the histogram with non validated bin information
   QnGainEqualizationMethod fEqualizationMethod; ///< the selected equalization method
 
   Float_t fShift;                               ///< the shift (A) parameter for width equalization
   Float_t fScale;                               ///< the scale (B) parameter for width equalization
   Bool_t fUseChannelGroupsWeights;              ///< use group weights extracted from channel multiplicity
   const Float_t *fHardCodedWeights;             //!<! group hard coded weights stored in the detector configuration
+  Int_t fMinNoOfEntriesToValidate;              ///< number of entries for bin content validation threshold
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsInputGainEqualization, 1);
+  ClassDef(AliQnCorrectionsInputGainEqualization, 2);
 /// \endcond
 };
 

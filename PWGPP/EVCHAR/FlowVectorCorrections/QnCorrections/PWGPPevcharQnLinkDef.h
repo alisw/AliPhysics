@@ -31,6 +31,7 @@
 #pragma link C++ class AliQnCorrectionsDetectorConfigurationTracks+;
 #pragma link C++ class AliQnCorrectionsEventClassVariable+;
 #pragma link C++ class AliQnCorrectionsEventClassVariablesSet+;
+#pragma link C++ class AliQnCorrectionsHistogram+;
 #pragma link C++ class AliQnCorrectionsHistogramBase+;
 #pragma link C++ class AliQnCorrectionsHistogramChannelized+;
 #pragma link C++ class AliQnCorrectionsInputGainEqualization+;

@@ -33,15 +33,17 @@
 /// \brief Implementation of procedures for Qn vector recentering.
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileComponents.h"
+#include "AliQnCorrectionsHistogram.h"
 #include "AliQnCorrectionsDetector.h"
 #include "AliLog.h"
 #include "AliQnCorrectionsQnVectorRecentering.h"
 
+const Int_t AliQnCorrectionsQnVectorRecentering::fDefaultMinNoOfEntries = 2;
 const char *AliQnCorrectionsQnVectorRecentering::szCorrectionName = "Recentering and width equalization";
 const char *AliQnCorrectionsQnVectorRecentering::szKey = "CCCC";
 const char *AliQnCorrectionsQnVectorRecentering::szSupportHistogramName = "Qn";
 const char *AliQnCorrectionsQnVectorRecentering::szCorrectedQnVectorName = "rec";
-
+const char *AliQnCorrectionsQnVectorRecentering::szQANotValidatedHistogramName = "QA not validated bin";
 
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsQnVectorRecentering);
@@ -53,7 +55,9 @@ AliQnCorrectionsQnVectorRecentering::AliQnCorrectionsQnVectorRecentering() :
     AliQnCorrectionsCorrectionOnQvector(szCorrectionName, szKey) {
   fInputHistograms = NULL;
   fCalibrationHistograms = NULL;
+  fQANotValidatedBin = NULL;
   fApplyWidthEqualization = kFALSE;
+  fMinNoOfEntriesToValidate = fDefaultMinNoOfEntries;
 }
 
 /// Default destructor
@@ -63,6 +67,8 @@ AliQnCorrectionsQnVectorRecentering::~AliQnCorrectionsQnVectorRecentering() {
     delete fInputHistograms;
   if (fCalibrationHistograms != NULL)
     delete fCalibrationHistograms;
+  if (fQANotValidatedBin != NULL)
+    delete fQANotValidatedBin;
 }
 
 /// Asks for support data structures creation
@@ -97,6 +103,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::CreateSupportHistograms(TList *list)
   if (fInputHistograms != NULL) delete fInputHistograms;
   fInputHistograms = new AliQnCorrectionsProfileComponents((const char *) histoNameAndTitle, (const char *) histoNameAndTitle,
       fDetectorConfiguration->GetEventClassVariablesSet(), "s");
+  fInputHistograms->SetNoOfEntriesThreshold(fMinNoOfEntriesToValidate);
   fCalibrationHistograms = new AliQnCorrectionsProfileComponents((const char *) histoNameAndTitle, (const char *) histoNameAndTitle,
       fDetectorConfiguration->GetEventClassVariablesSet(), "s");
 
@@ -128,6 +135,12 @@ Bool_t AliQnCorrectionsQnVectorRecentering::AttachInput(TList *list) {
 /// \param list list where the histograms should be incorporated for its persistence
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateQAHistograms(TList *list) {
+
+  fQANotValidatedBin = new AliQnCorrectionsHistogram(
+      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+      fDetectorConfiguration->GetEventClassVariablesSet());
+  fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;
 }
 
@@ -192,7 +205,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::Process(const Float_t *variableConta
         }
       } /* correction information not validated, we leave the Q vector untouched */
       else {
-        /* TODO: fill QA histogram */
+        fQANotValidatedBin->Fill(variableContainer, 1.0);
       }
     }
     else {
