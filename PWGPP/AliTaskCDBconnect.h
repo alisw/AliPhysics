@@ -16,6 +16,7 @@ class AliESDInputHandler;
 
 class AliTaskCDBconnect : public AliAnalysisTask {
 private:
+  Bool_t                    fFallBackToRaw;  // allow fallback to raw if cvmfs is not mounted
   Int_t                     fRun;            // Current run
   ULong64_t                 fLock;           // CDB lock
   TString                   fStorage;        // Storage (if cvmfs                   
@@ -28,7 +29,7 @@ private:
   //
 public:
   AliTaskCDBconnect();
-  AliTaskCDBconnect(const char *name, const char *storage="raw://", Int_t run=0);
+  AliTaskCDBconnect(const char *name, const char *storage="raw://", Int_t run=0, Bool_t fallback=kFALSE);
   virtual ~AliTaskCDBconnect();
   Int_t                     GetRun()        const {return fRun;}
   AliGRPManager*            GetGRPManager() const {return (AliGRPManager*)fGRPManager;}
@@ -37,7 +38,8 @@ public:
   virtual void              ConnectInputData(Option_t *option = "");
   void                      SetSpecificStorage(const char* calibType, const char* dbString,
                                                Int_t version = -1, Int_t subVersion = -1);
-    
-  ClassDef(AliTaskCDBconnect,4)  // Class giving CDB connectivity
+  void                      SetFallBackToRaw(Bool_t v)       {fFallBackToRaw = v;}
+  Bool_t                    GetFallBackToRaw()         const {return fFallBackToRaw;}
+  ClassDef(AliTaskCDBconnect,5)  // Class giving CDB connectivity
 };
 #endif
