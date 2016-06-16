@@ -63,8 +63,11 @@ public:
   void SetCutMinCrossRows(Int_t crossRows){fCutCrossRows = crossRows;};
   void SetCutMaxEta(Float_t maxEta){fCutEtaWindow = maxEta;};
   void SetCutRequireITSrefit(Bool_t requireItsRefit = kFALSE){fCutRequireITSrefit = requireItsRefit;};
-  void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;}; 
-  void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;}; 
+  void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;};
+  void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;};
+  //
+  void    SetMinTPCsignalN(Float_t minSignalN) { fMinTPCsignalN=minSignalN; }
+  Float_t GetMinTPCsignalN() const             { return fMinTPCsignalN;     }
   //
   void SetMinMomentumMIP(Float_t minMom = 0.4){fMinMomentumMIP = minMom;};
   void SetMaxMomentumMIP(Float_t maxMom = 0.6){fMaxMomentumMIP = maxMom;};
@@ -94,6 +97,7 @@ private:
   Bool_t  fCutRequireITSrefit;          // if ITSrefit should be required (dangerous in cpass0)
   Float_t fCutMaxDcaXY;                 // max dca_xy (only TPConly resolution is guaranteed!)
   Float_t fCutMaxDcaZ;                  // max dca_z  (dangerous if vDrift is not calibrated)
+  Float_t fMinTPCsignalN;               // minimum number of PID clusters
   //
   // definition of MIP window
   //
@@ -118,7 +122,7 @@ private:
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
-  ClassDef(AliTPCcalibTimeGain, 2);
+  ClassDef(AliTPCcalibTimeGain, 3);
 };
 
 #endif

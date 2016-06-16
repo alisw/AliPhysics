@@ -85,6 +85,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult()
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinTPCsignalN(60),
    fMinMomentumMIP(0),
    fMaxMomentumMIP(0),
    fAlephParameters(),
@@ -120,6 +121,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
    fCutRequireITSrefit(0),
    fCutMaxDcaXY(0),
    fCutMaxDcaZ(0),
+   fMinTPCsignalN(60),
    fMinMomentumMIP(0),
    fMaxMomentumMIP(0),
    fAlephParameters(),
@@ -391,6 +393,9 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
     UInt_t status = track->GetStatus();
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
     if ((status&AliESDtrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
+    //
+    if (track->GetTPCsignalN()<fMinTPCsignalN) continue;
+    //
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
     Float_t primVtxDCA = TMath::Sqrt(dca[0]*dca[0]);
