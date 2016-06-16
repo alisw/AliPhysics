@@ -204,7 +204,45 @@ AliAnalysisTaskPIDBF::AliAnalysisTaskPIDBF(const char *name)
   fHistVZEROAGainEqualizationMap(0),
   fHistVZEROCGainEqualizationMap(0),
   fHistVZEROChannelGainEqualizationMap(0),
-  fUtils(0) {
+  fUtils(0),
+  fHistQAPtBeforeCorrection(0),
+  fHistQAPtBeforeCorrectionWithCentrality(0),
+  fHistQAPtBeforeCorrectionPos(0),
+  fHistQAPtBeforeCorrectionWithCentralityPos(0),
+  fHistQAPtBeforeCorrectionNeg(0),
+  fHistQAPtBeforeCorrectionWithCentralityNeg(0),
+  fHistQAEtaBeforeCorrection(0),
+  fHistQAEtaBeforeCorrectionWithCentrality(0),
+  fHistQAEtaBeforeCorrectionPos(0),
+  fHistQAEtaBeforeCorrectionWithCentralityPos(0),
+  fHistQAEtaBeforeCorrectionNeg(0),
+  fHistQAEtaBeforeCorrectionWithCentralityNeg(0),
+  fHistQAPhiBeforeCorrection(0),
+  fHistQAPhiBeforeCorrectionWithCentrality(0),
+  fHistQAPhiBeforeCorrectionPos(0),
+  fHistQAPhiBeforeCorrectionWithCentralityPos(0),
+  fHistQAPhiBeforeCorrectionNeg(0),
+  fHistQAPhiBeforeCorrectionWithCentralityNeg(0),
+  fHistQAPtAfterCorrection(0),
+  fHistQAPtAfterCorrectionWithCentrality(0),
+  fHistQAPtAfterCorrectionPos(0),
+  fHistQAPtAfterCorrectionWithCentralityPos(0),
+  fHistQAPtAfterCorrectionNeg(0),
+  fHistQAPtAfterCorrectionWithCentralityNeg(0),
+  fHistQAEtaAfterCorrection(0),
+  fHistQAEtaAfterCorrectionWithCentrality(0),
+  fHistQAEtaAfterCorrectionPos(0),
+  fHistQAEtaAfterCorrectionWithCentralityPos(0),
+  fHistQAEtaAfterCorrectionNeg(0),
+  fHistQAEtaAfterCorrectionWithCentralityNeg(0),
+  fHistQAPhiAfterCorrection(0),
+  fHistQAPhiAfterCorrectionWithCentrality(0),
+  fHistQAPhiAfterCorrectionPos(0),
+  fHistQAPhiAfterCorrectionWithCentralityPos(0),
+  fHistQAPhiAfterCorrectionNeg(0),
+  fHistQAPhiAfterCorrectionWithCentralityNeg(0),
+  fQACorrection(kFALSE),
+  fRawType(kFALSE) {
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -374,27 +412,33 @@ void AliAnalysisTaskPIDBF::UserCreateOutputObjects() {
   case kPion_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Pion particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Pion Before Cut ",200,0.0,200);
+if(!fRawType){
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Pion After Cut ",200,0.0,200);
-  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistNSigmaAfterCut);
+}
+  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistEtaTest); 		 	 
   break;
 
   case kKaon_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Kaon particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Kaon Before Cut ",200,0.0,200);
+ if(!fRawType){
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Kaon After Cut ",200,0.0,200);
-  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistNSigmaAfterCut);
+}
+  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistEtaTest); 		 	 
   break;
 
   case kProton_:
   HistEtaTest = new TH1F("HistEtaTest","Eta Distribution of Proton particles ",40,-1.6,1.6);
   HistNSigmaBeforeCut = new TH1F("HistNSigmaBeforeCut","NSigma distribution of Proton Before Cut ",200,0.0,200);
+if(!fRawType){
   HistNSigmaAfterCut = new TH1F("HistNSigmaAfterCut","NSigma distribution of Proton After Cut ",200,0.0,200);
-  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistNSigmaAfterCut);
+}
+  fList->Add(HistNSigmaBeforeCut);
   fList->Add(HistEtaTest); 		 	 
   break;
   } // Switch end
@@ -483,8 +527,96 @@ else {
   TString gRefTrackName[6] = {"tracks","tracksPos","tracksNeg","tracksTPConly","clusITS0","clusITS1"};
   fHistRefTracks  = new TH2F("fHistRefTracks","Nr of Ref tracks/event vs. ref track estimator;;Nr of tracks",6, 0, 6, 400, 0, 20000);
   for(Int_t i = 1; i <= 6; i++)
-    fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
+  fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
+  if(fQACorrection){
+     fHistQAPtBeforeCorrection=new TH1D("fHistQAPtBeforeCorrection","PtQA BeforeCorrection",200,0,10); 
+     fHistQAPtBeforeCorrectionWithCentrality=new TH2D("fHistQAPtBeforeCorrectionWithCentrality","PtQA BeforeCorrection With Centrality",200,0,10,220,-5,105);
+     fHistQAPtBeforeCorrectionPos=new TH1D("fHistQAPtBeforeCorrectionPos","PtQA BeforeCorrection for possitive ",200,0,10);
+     fHistQAPtBeforeCorrectionWithCentralityPos=new TH2D("fHistQAPtBeforeCorrectionWithCentralityPos","PtQA BeforeCorrection With Centrality for possitive",200,0,10,220,-5,105);
+     fHistQAPtBeforeCorrectionNeg=new TH1D("fHistQAPtBeforeCorrectionNeg","PtQA BeforeCorrection for negative ",200,0,10);
+     fHistQAPtBeforeCorrectionWithCentralityNeg=new TH2D("fHistQAPtBeforeCorrectionWithCentralityNeg","PtQA BeforeCorrection With Centrality for Negative",200,0,10,220,-5,105);
+   
+     fHistQAEtaBeforeCorrection=new TH1D("fHistQAEtaBeforeCorrection","EtaQA BeforeCorrection",200,-2,2); 
+     fHistQAEtaBeforeCorrectionWithCentrality=new TH2D("fHistQAEtaBeforeCorrectionWithCentrality","EtaQA BeforeCorrection With Centrality",200,-2,2,220,-5,105);
+     fHistQAEtaBeforeCorrectionPos=new TH1D("fHistQAEtaBeforeCorrectionPos","EtaQA BeforeCorrection for possitive ",200,-2,2);
+     fHistQAEtaBeforeCorrectionWithCentralityPos=new TH2D("fHistQAEtaBeforeCorrectionWithCentralityPos","EtaQA BeforeCorrection With Centrality for possitive",200,-2,2,220,-5,105);
+     fHistQAEtaBeforeCorrectionNeg=new TH1D("fHistQAEtaBeforeCorrectionNeg","EtaQA BeforeCorrection for negative ",200,-2,2);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg=new TH2D("fHistQAEtaBeforeCorrectionWithCentralityNeg","EtaQA BeforeCorrection With Centrality for Negative",200,-2,2,220,-5,105);
+
+     fHistQAPhiBeforeCorrection=new TH1D("fHistQAPhiBeforeCorrection","PhiQA BeforeCorrection",200,0.,2*TMath::Pi()); 
+     fHistQAPhiBeforeCorrectionWithCentrality=new TH2D("fHistQAPhiBeforeCorrectionWithCentrality","PhiQA BeforeCorrection With Centrality",200,0.,2*TMath::Pi(),220,-5,105);
+     fHistQAPhiBeforeCorrectionPos=new TH1D("fHistQAPhiBeforeCorrectionPos","PhiQA BeforeCorrection for possitive ",200,0.,2*TMath::Pi());
+     fHistQAPhiBeforeCorrectionWithCentralityPos=new TH2D("fHistQAPhiBeforeCorrectionWithCentralityPos","PhiQA BeforeCorrection With Centrality for possitive",200,0.,2*TMath::Pi(),220,-5,105);
+     fHistQAPhiBeforeCorrectionNeg=new TH1D("fHistQAPhiBeforeCorrectionNeg","PhiQA BeforeCorrection for negative ",200,0.,2*TMath::Pi());
+     fHistQAPhiBeforeCorrectionWithCentralityNeg=new TH2D("fHistQAPhiBeforeCorrectionWithCentralityNeg","PhiQA BeforeCorrection With Centrality for Negative",200,0.,2*TMath::Pi(),220,-5,105);
+
+     if(gAnalysisLevel !="MCAOD"){
+     fHistQAPtAfterCorrection=new TH1D("fHistQAPtAfterCorrection","PtQA AfterCorrection",200,0,10); 
+     fHistQAPtAfterCorrectionWithCentrality=new TH2D("fHistQAPtAfterCorrectionWithCentrality","PtQA AfterCorrection With Centrality",200,0,10,220,-5,105);
+     fHistQAPtAfterCorrectionPos=new TH1D("fHistQAPtAfterCorrectionPos","PtQA AfterCorrection for possitive ",200,0,10);
+     fHistQAPtAfterCorrectionWithCentralityPos=new TH2D("fHistQAPtAfterCorrectionWithCentralityPos","PtQA AfterCorrection With Centrality for possitive",200,0,10,220,-5,105);
+     fHistQAPtAfterCorrectionNeg=new TH1D("fHistQAPtAfterCorrectionNeg","PtQA AfterCorrection for negative ",200,0,10);
+     fHistQAPtAfterCorrectionWithCentralityNeg=new TH2D("fHistQAPtAfterCorrectionWithCentralityNeg","PtQA AfterCorrection With Centrality for Negative",200,0,10,220,-5,105);
+   
+     fHistQAEtaAfterCorrection=new TH1D("fHistQAEtaAfterCorrection","EtaQA AfterCorrection",200,-2,2); 
+     fHistQAEtaAfterCorrectionWithCentrality=new TH2D("fHistQAEtaAfterCorrectionWithCentrality","EtaQA AfterCorrection With Centrality",200,-2,2,220,-5,105);
+     fHistQAEtaAfterCorrectionPos=new TH1D("fHistQAEtaAfterCorrectionPos","EtaQA AfterCorrection for possitive ",200,-2,2);
+     fHistQAEtaAfterCorrectionWithCentralityPos=new TH2D("fHistQAEtaAfterCorrectionWithCentralityPos","EtaQA AfterCorrection With Centrality for possitive",200,-2,2,220,-5,105);
+     fHistQAEtaAfterCorrectionNeg=new TH1D("fHistQAEtaAfterCorrectionNeg","EtaQA AfterCorrection for negative ",200,-2,2);
+     fHistQAEtaAfterCorrectionWithCentralityNeg=new TH2D("fHistQAEtaAfterCorrectionWithCentralityNeg","EtaQA AfterCorrection With Centrality for Negative",200,-2,2,220,-5,105);
+
+     fHistQAPhiAfterCorrection=new TH1D("fHistQAPhiAfterCorrection","PhiQA AfterCorrection",200,0.,2*TMath::Pi()); 
+     fHistQAPhiAfterCorrectionWithCentrality=new TH2D("fHistQAPhiAfterCorrectionWithCentrality","PhiQA AfterCorrection With Centrality",200,0.,2*TMath::Pi(),220,-5,105);
+     fHistQAPhiAfterCorrectionPos=new TH1D("fHistQAPhiAfterCorrectionPos","PhiQA AfterCorrection for possitive ",200,0.,2*TMath::Pi());
+     fHistQAPhiAfterCorrectionWithCentralityPos=new TH2D("fHistQAPhiAfterCorrectionWithCentralityPos","PhiQA AfterCorrection With Centrality for possitive",200,0.,2*TMath::Pi(),220,-5,105);
+     fHistQAPhiAfterCorrectionNeg=new TH1D("fHistQAPhiAfterCorrectionNeg","PhiQA AfterCorrection for negative ",200,0.,2*TMath::Pi());
+     fHistQAPhiAfterCorrectionWithCentralityNeg=new TH2D("fHistQAPhiAfterCorrectionWithCentralityNeg","PhiQA AfterCorrection With Centrality for Negative",200,0.,2*TMath::Pi(),220,-5,105);
+
+   }
+ }
+  // For QA after and before correction 
+    if(fQACorrection){
+     fList->Add(fHistQAPtBeforeCorrection);
+     fList->Add(fHistQAPtBeforeCorrectionWithCentrality);
+     fList->Add(fHistQAPtBeforeCorrectionPos);
+     fList->Add(fHistQAPtBeforeCorrectionWithCentralityPos);
+     fList->Add(fHistQAPtBeforeCorrectionNeg);
+     fList->Add(fHistQAPtBeforeCorrectionWithCentralityNeg);
+     fList->Add(fHistQAEtaBeforeCorrection);
+     fList->Add(fHistQAEtaBeforeCorrectionWithCentrality);
+     fList->Add(fHistQAEtaBeforeCorrectionPos);
+     fList->Add(fHistQAEtaBeforeCorrectionWithCentralityPos);
+     fList->Add(fHistQAEtaBeforeCorrectionNeg);
+     fList->Add(fHistQAEtaBeforeCorrectionWithCentralityNeg);
+     fList->Add(fHistQAPhiBeforeCorrection);
+     fList->Add(fHistQAPhiBeforeCorrectionWithCentrality);
+     fList->Add(fHistQAPhiBeforeCorrectionPos);
+     fList->Add(fHistQAPhiBeforeCorrectionWithCentralityPos);
+     fList->Add(fHistQAPhiBeforeCorrectionNeg);
+     fList->Add(fHistQAPhiBeforeCorrectionWithCentralityNeg);
+     if(gAnalysisLevel !="MCAOD"){
+     fList->Add(fHistQAPtAfterCorrection);
+     fList->Add(fHistQAPtAfterCorrectionWithCentrality);
+     fList->Add(fHistQAPtAfterCorrectionPos);
+     fList->Add(fHistQAPtAfterCorrectionWithCentralityPos);
+     fList->Add(fHistQAPtAfterCorrectionNeg);
+     fList->Add(fHistQAPtAfterCorrectionWithCentralityNeg);
+     fList->Add(fHistQAEtaAfterCorrection);
+     fList->Add(fHistQAEtaAfterCorrectionWithCentrality);
+     fList->Add(fHistQAEtaAfterCorrectionPos);
+     fList->Add(fHistQAEtaAfterCorrectionWithCentralityPos);
+     fList->Add(fHistQAEtaAfterCorrectionNeg);
+     fList->Add(fHistQAEtaAfterCorrectionWithCentralityNeg);
+     fList->Add(fHistQAPhiAfterCorrection);
+     fList->Add(fHistQAPhiAfterCorrectionWithCentrality);
+     fList->Add(fHistQAPhiAfterCorrectionPos);
+     fList->Add(fHistQAPhiAfterCorrectionWithCentralityPos);
+     fList->Add(fHistQAPhiAfterCorrectionNeg);
+     fList->Add(fHistQAPhiAfterCorrectionWithCentralityNeg);
+   }
+}
+
 
   // Balance function histograms
   // Initialize histograms if not done yet (including the custom binning)
@@ -1640,7 +1772,7 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       //===========================PID===============================//
      
 
-// N.A Changed here for BF with PID
+// Noor Alam:  Changed here for BF with PID
 
 
 if(fUsePID) {
@@ -1671,6 +1803,82 @@ case kPion_:
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+     // For QA after and before correction -----------------------------
+    if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
@@ -1703,6 +1911,82 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+     // For QA after and before correction -----------------------------
+    if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
@@ -1736,6 +2020,82 @@ case kProton_:
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+     // For QA after and before correction -----------------------------
+     if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
@@ -1769,6 +2129,82 @@ else {
       
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+
+     // For QA after and before correction -----------------------------
+    if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
       
       // add the track to the TObjArray
@@ -1922,6 +2358,45 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+} // end QACorrection
+
         //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
 
         // add the track to the TObjArray
@@ -1946,6 +2421,45 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+} // end QACorrection
+
         //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
 
         // add the track to the TObjArray
@@ -1970,6 +2484,45 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+} // end QACorrection
+
         //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
 
         // add the track to the TObjArray
@@ -1997,6 +2550,45 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+} // end QACorrection
+
         //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);   
 
         // add the track to the TObjArray
@@ -2272,6 +2864,28 @@ switch(fParticleType_){
 case kPion_:
 
 if(TMath::Abs(pdgCodeReco) == 211) {
+
+if(fRawType){
+
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+ Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+
+ tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+}
+
+else{
+
 if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
   // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -2290,18 +2904,113 @@ if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
-      } // Pion if loop end
-}
+      } //NSigma Loop end
+} // Else Loop End
+
+}// Pion Loop End
 
    break;
 
  case kKaon_:
 
 if(TMath::Abs(pdgCodeReco) == 321) {
+if(fRawType){
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+ Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+
+ tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+}
+
+else{
+
 if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSigma)){
   // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
@@ -2320,11 +3029,85 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
       } // kaon if loop end
+   }
 }
 
    break;
@@ -2332,6 +3115,26 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
   case kProton_:
 
 if(TMath::Abs(pdgCodeReco) == 2212) {
+if(fRawType){
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      HistEtaTest->Fill(vEta);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality);
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+ Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+
+ tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
+}
+
+else{
+
 if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fPIDNSigma)){
   // fill QA histograms
 
@@ -2351,11 +3154,85 @@ if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProt
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));
       } // Proton if loop end
+   }
 }
 
    break;
@@ -2381,6 +3258,79 @@ else{
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
+ if(fQACorrection){
+
+     fHistQAPtBeforeCorrection->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPtBeforeCorrectionPos->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityPos->Fill(vPt,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtBeforeCorrectionNeg->Fill(vPt);
+     fHistQAPtBeforeCorrectionWithCentralityNeg->Fill(vPt,gCentrality);
+     }
+  
+
+     fHistQAEtaBeforeCorrection->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentrality->Fill(vEta,gCentrality);
+     if(vCharge > 0) {
+     fHistQAEtaBeforeCorrectionPos->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityPos->Fill(vEta,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaBeforeCorrectionNeg->Fill(vEta);
+     fHistQAEtaBeforeCorrectionWithCentralityNeg->Fill(vEta,gCentrality);
+     }
+
+
+     fHistQAPhiBeforeCorrection->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentrality->Fill(vPhi,gCentrality);
+     if(vCharge > 0) {
+     fHistQAPhiBeforeCorrectionPos->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityPos->Fill(vPhi,gCentrality);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiBeforeCorrectionNeg->Fill(vPhi);
+     fHistQAPhiBeforeCorrectionWithCentralityNeg->Fill(vPhi,gCentrality);
+     }
+ 
+     fHistQAPtAfterCorrection->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentrality->Fill(vPt,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAPtAfterCorrectionPos->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityPos->Fill(vPt,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPtAfterCorrectionNeg->Fill(vPt,correction);
+     fHistQAPtAfterCorrectionWithCentralityNeg->Fill(vPt,gCentrality,correction);
+     }
+ 
+
+     fHistQAEtaAfterCorrection->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentrality->Fill(vEta,gCentrality,correction);
+     if(vCharge > 0) {
+     fHistQAEtaAfterCorrectionPos->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityPos->Fill(vEta,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAEtaAfterCorrectionNeg->Fill(vEta,correction);
+     fHistQAEtaAfterCorrectionWithCentralityNeg->Fill(vEta,gCentrality,correction);
+     }
+     
+
+     fHistQAPhiAfterCorrection->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentrality->Fill(vPhi,gCentrality,correction);
+      if(vCharge > 0) {
+     fHistQAPhiAfterCorrectionPos->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityPos->Fill(vPhi,gCentrality,correction);
+     }
+    else if(vCharge < 0) {
+     fHistQAPhiAfterCorrectionNeg->Fill(vPhi,correction);
+     fHistQAPhiAfterCorrectionWithCentralityNeg->Fill(vPhi,gCentrality,correction);
+     }
+} // end QACorrection
+
       //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
 
       // add the track to the TObjArray

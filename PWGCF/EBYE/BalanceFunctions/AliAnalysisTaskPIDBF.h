@@ -216,6 +216,14 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
      fPtTPCMax = ptmax;
       }
 
+// For QA after and before correction 
+
+  void SetQACorrection(Bool_t qacorrection) {fQACorrection = qacorrection;}  
+
+
+// Noor Alam: BF for raw Particle without reconstruction   On 16.06.2016
+  void SetRawType(Bool_t rawType) {fRawType = rawType;}  
+
 
 
 
@@ -433,6 +441,48 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
   TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
   TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
+  
+   
+  // For QA  after and before correction
+  Bool_t fQACorrection; 
+  Bool_t fRawType; 
+  TH1D  *fHistQAPtBeforeCorrection;
+  TH2D  *fHistQAPtBeforeCorrectionWithCentrality;
+  TH1D  *fHistQAPtBeforeCorrectionPos;
+  TH2D  *fHistQAPtBeforeCorrectionWithCentralityPos;
+  TH1D  *fHistQAPtBeforeCorrectionNeg;
+  TH2D  *fHistQAPtBeforeCorrectionWithCentralityNeg;
+  TH1D  *fHistQAEtaBeforeCorrection;
+  TH2D  *fHistQAEtaBeforeCorrectionWithCentrality;
+  TH1D  *fHistQAEtaBeforeCorrectionPos;
+  TH2D  *fHistQAEtaBeforeCorrectionWithCentralityPos;
+  TH1D  *fHistQAEtaBeforeCorrectionNeg;
+  TH2D  *fHistQAEtaBeforeCorrectionWithCentralityNeg;
+  TH1D  *fHistQAPhiBeforeCorrection;
+  TH2D  *fHistQAPhiBeforeCorrectionWithCentrality;
+  TH1D  *fHistQAPhiBeforeCorrectionPos;
+  TH2D  *fHistQAPhiBeforeCorrectionWithCentralityPos;
+  TH1D  *fHistQAPhiBeforeCorrectionNeg;
+  TH2D  *fHistQAPhiBeforeCorrectionWithCentralityNeg;
+  TH1D  *fHistQAPtAfterCorrection;
+  TH2D  *fHistQAPtAfterCorrectionWithCentrality;
+  TH1D  *fHistQAPtAfterCorrectionPos;
+  TH2D  *fHistQAPtAfterCorrectionWithCentralityPos;
+  TH1D  *fHistQAPtAfterCorrectionNeg;
+  TH2D  *fHistQAPtAfterCorrectionWithCentralityNeg;
+  TH1D  *fHistQAEtaAfterCorrection;
+  TH2D  *fHistQAEtaAfterCorrectionWithCentrality;
+  TH1D  *fHistQAEtaAfterCorrectionPos;
+  TH2D  *fHistQAEtaAfterCorrectionWithCentralityPos;
+  TH1D  *fHistQAEtaAfterCorrectionNeg;
+  TH2D  *fHistQAEtaAfterCorrectionWithCentralityNeg;
+  TH1D  *fHistQAPhiAfterCorrection;
+  TH2D  *fHistQAPhiAfterCorrectionWithCentrality;
+  TH1D  *fHistQAPhiAfterCorrectionPos;
+  TH2D  *fHistQAPhiAfterCorrectionWithCentralityPos;
+  TH1D  *fHistQAPhiAfterCorrectionNeg;
+  TH2D  *fHistQAPhiAfterCorrectionWithCentralityNeg;
+
 
   //AliAnalysisUtils
   AliAnalysisUtils *fUtils;//AliAnalysisUtils
