@@ -2028,6 +2028,32 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	if(kExcludeParticle) continue;
       }
 
+      //Include exclusively resonances with a specific PDG value
+      if(fIncludeResonancePDGInMC > -1) {
+	
+	Bool_t kIncludeParticle = kFALSE;
+	
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	
+        if (AODmcTrack){ 
+	  
+	  Int_t gMotherIndex = AODmcTrack->GetMother();
+	  if(gMotherIndex != -1) {
+	    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+	    if(motherTrack) {
+	      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      if(TMath::Abs(pdgCodeOfMother) == fIncludeResonancePDGInMC) {
+		kIncludeParticle = kTRUE;
+	      }
+	    }
+	  }
+	}	
+	
+	//Exclude from the analysis particle that are not decay products from this resonance
+	if(!kIncludeParticle) continue;
+      }
+      
       //Exclude electrons with PDG
       if(fExcludeElectronsInMC) {
 	
