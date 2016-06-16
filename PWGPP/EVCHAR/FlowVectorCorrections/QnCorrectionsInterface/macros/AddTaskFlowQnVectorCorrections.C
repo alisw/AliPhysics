@@ -93,7 +93,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
   }
 
 
-  AliQnCorrectionsManager *QnManager = AliQnCorrectionsManager::GetInstance();
+  AliQnCorrectionsManager *QnManager = new AliQnCorrectionsManager();
   AliAnalysisTaskFlowVectorCorrections *taskQnCorrections = new AliAnalysisTaskFlowVectorCorrections("FlowQnVectorCorrections");
 
   /* let's establish the event cuts for event selection */
@@ -160,7 +160,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
   cout << "=================== CALIBRATION FILE =============================================" << endl;
   TString inputCalibrationFilename = Form("%s/%s", szCorrectionsFilePath.Data(), szCorrectionsFileName.Data());
   if (szCorrectionsSource.EqualTo("local")) {
-    cout << "\t File " << inputCalibrationFilename << " being taken locally when building the task object" << endl;
+    cout << "\t File " << inputCalibrationFilename << endl << "\t being taken locally when building the task object" << endl;
     taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_local, inputCalibrationFilename.Data());
   }
   else if (szCorrectionsSource.EqualTo("alien")) {

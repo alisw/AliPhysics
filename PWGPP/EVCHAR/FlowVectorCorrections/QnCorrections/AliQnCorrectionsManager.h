@@ -59,16 +59,9 @@
 #include "AliQnCorrectionsDetector.h"
 
 class AliQnCorrectionsManager : public TObject {
-protected:
-  static AliQnCorrectionsManager *fTheOnlyManagerInstance; ///< Qn correction manager is a singleton and this is its only instance
 public:
   AliQnCorrectionsManager();
-protected:
   virtual ~AliQnCorrectionsManager();
-
-public:
-  static AliQnCorrectionsManager *GetInstance();
-  static void Destroy();
 
   /// Establishes the list of processes names
   /// \param names an array containing the processes names
@@ -165,7 +158,7 @@ private:
   AliQnCorrectionsManager& operator= (const AliQnCorrectionsManager &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsManager, 3);
+  ClassDef(AliQnCorrectionsManager, 4);
 /// \endcond
 };
 

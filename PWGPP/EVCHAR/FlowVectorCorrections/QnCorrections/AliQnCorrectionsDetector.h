@@ -21,6 +21,7 @@
 class AliQnCorrectionsDetectorConfigurationsSet;
 class AliQnCorrectionsDetectorConfigurationBase;
 class AliQnCorrectionsDetector;
+class AliQnCorrectionsManager;
 
 /// \class AliQnCorrectionsDetector
 /// \brief Detector class within Q vector correction framework
@@ -65,6 +66,7 @@ public:
   const char *GetAcceptedDataDetectorConfigurationName(Int_t index) const
   { return fDataVectorAcceptedConfigurations.At(index)->GetName(); }
 
+  void AttachCorrectionsManager(AliQnCorrectionsManager *manager);
   void AddDetectorConfiguration(AliQnCorrectionsDetectorConfigurationBase *detectorConfiguration);
   AliQnCorrectionsDetectorConfigurationBase *FindDetectorConfiguration(const char *name);
   void FillDetectorConfigurationNameList(TList *list) const;
@@ -80,9 +82,18 @@ private:
   Int_t fDetectorId;            ///< detector Id
   AliQnCorrectionsDetectorConfigurationsSet fConfigurations;  ///< the set of configurations defined for this detector
   AliQnCorrectionsDetectorConfigurationsSet fDataVectorAcceptedConfigurations; ///< the set of configurations that accepted a data vector
+  AliQnCorrectionsManager *fCorrectionsManager; ///< the framework correction manager
+
+private:
+  /// Copy constructor
+  /// Not allowed. Forced private.
+  AliQnCorrectionsDetector(const AliQnCorrectionsDetector &);
+  /// Assignment operator
+  /// Not allowed. Forced private.
+  AliQnCorrectionsDetector& operator= (const AliQnCorrectionsDetector &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsDetector, 1);
+  ClassDef(AliQnCorrectionsDetector, 2);
 /// \endcond
 };
 

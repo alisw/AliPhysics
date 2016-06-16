@@ -64,6 +64,20 @@ AliQnCorrectionsDetectorConfigurationTracks::~AliQnCorrectionsDetectorConfigurat
 
 }
 
+/// Stores the framework manager pointer
+/// Orders the base class to store the correction manager and informs
+/// the Qn vector corrections they are now attached to the framework
+/// \param manager the framework manager
+void AliQnCorrectionsDetectorConfigurationTracks::AttachCorrectionsManager(AliQnCorrectionsManager *manager) {
+  fCorrectionsManager = manager;
+
+  if (manager != NULL) {
+    for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
+      fQnVectorCorrections.At(ixCorrection)->AttachedToFrameworkManager();
+    }
+  }
+}
+
 /// Asks for support data structures creation
 ///
 /// The input data vector bank is allocated and the request is

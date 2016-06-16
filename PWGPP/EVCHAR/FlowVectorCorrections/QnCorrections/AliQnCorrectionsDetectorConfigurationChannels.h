@@ -74,6 +74,8 @@ public:
   void SetQAMultiplicityAxis(Int_t nbins, Float_t min, Float_t max)
   { fQAnBinsMultiplicity = nbins; fQAMultiplicityMin = min; fQAMultiplicityMax = max; }
 
+  virtual void AttachCorrectionsManager(AliQnCorrectionsManager *manager);
+
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);
