@@ -595,21 +595,23 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 	  int runMap = fCorrMapCache0->GetRun();
 	  if (runMap<0) AliErrorF("CorrectionMap Lumi scaling requested but run is not set, current %d will be used",fCurrentRun);
 	  fLumiGraphMap = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType(),runMap);
-	  if (!fLumiGraphMap) AliFatalF("Failed to load CorrectionMapluminosity lumi graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	  // if (!fLumiGraphMap) AliErrorF("Failed to load map lumi graph of type %d, will use constant map",
+	  //				fCurrentRecoParam->GetUseLumiType());
 	}
 	// load lumi graph for this run
 	if (!fLumiGraphRun) {
 	  fLumiGraphRun = AliLumiTools::GetLumiGraph(fCurrentRecoParam->GetUseLumiType(),fCurrentRun);
-	  if (!fLumiGraphRun) AliFatalF("Failed to load run lumi graph of type %d",fCurrentRecoParam->GetUseLumiType());
+	  if (!fLumiGraphRun) AliErrorF("Failed to load run lumi graph of type %d, will use reference correction only",
+					fCurrentRecoParam->GetUseLumiType());
 	}
 	if (needToLoad) {  // calculate average luminosity used for current corr. map
-	  fCorrMapLumiCOG = fCorrMapCache0->GetLuminosityCOG(fLumiGraphMap); // recalculate lumi for new map
+	  fCorrMapLumiCOG = fLumiGraphMap ? fCorrMapCache0->GetLuminosityCOG(fLumiGraphMap) : 0.0; // recalculate lumi for new map
 	  if (!fCorrMapLumiCOG) AliError("Correction map rescaling with luminosity cannot be done, will use constant map");
 	}
 	//
-	fCurrentMapScaling = 1.0;
+	fCurrentMapScaling = fLumiGraphRun ? 1.0 : 0.0;
 	if (fCorrMapLumiCOG>0) {
-	  double lumi = fLumiGraphRun->Eval(fCurrentTimeStamp);
+	  double lumi = fLumiGraphRun ? fLumiGraphRun->Eval(fCurrentTimeStamp) : 0.0;
 	  fCurrentMapScaling = lumi/fCorrMapLumiCOG;
 	  AliInfoF("Luminosity scaling factor %.3f will be used for time %ld (Lumi: current: %.2e COG:%.2e)",
 		   fCurrentMapScaling,fCurrentTimeStamp,lumi,fCorrMapLumiCOG);
