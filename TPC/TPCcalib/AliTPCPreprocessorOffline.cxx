@@ -1468,8 +1468,10 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   //
   // read calibration entries from file
   // 
-  TFile fcalib(fileName);
-  TObject* obj = dynamic_cast<TObject*>(fcalib.Get("TPCCalib"));
+  TFile *fcalib=TFile::Open(fileName);
+  gROOT->cd();
+
+  TObject* obj = dynamic_cast<TObject*>(fcalib->Get("TPCCalib"));
   TObjArray * array = dynamic_cast<TObjArray*>(obj);
   TDirectory * dir = dynamic_cast<TDirectory*>(obj);
   if (dir) {
@@ -1482,9 +1484,9 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
     fGainCosmic = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGainCosmic");
     fGainMult   = ( AliTPCcalibGainMult *)array->FindObject("calibGainMult");
   }else{
-    fGainMIP    = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGain");
-    fGainCosmic = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGainCosmic");
-    fGainMult   = ( AliTPCcalibGainMult *)fcalib.Get("calibGainMult");
+    fGainMIP    = ( AliTPCcalibTimeGain *)fcalib->Get("calibTimeGain");
+    fGainCosmic = ( AliTPCcalibTimeGain *)fcalib->Get("calibTimeGainCosmic");
+    fGainMult   = ( AliTPCcalibGainMult *)fcalib->Get("calibGainMult");
   }
   if (!fGainMult){
     TFile calibMultFile("TPCMultObjects.root");
@@ -1509,6 +1511,7 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
     delete hisT;
   }
 
+  delete fcalib;
 }
 
 //_____________________________________________________________________________
