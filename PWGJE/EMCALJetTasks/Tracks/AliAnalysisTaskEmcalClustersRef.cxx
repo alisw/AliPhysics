@@ -109,6 +109,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
+    fHistos->CreateTH1(Form("hEventCentrality%s", trg->Data()), Form("Event centrality for trigger class %s", trg->Data()), 103, -2., 101.);
     fHistos->CreateTH1(Form("hClusterEnergy%s", trg->Data()), Form("Cluster energy for trigger class %s", trg->Data()), energybinning);
     fHistos->CreateTH1(Form("hClusterET%s", trg->Data()), Form("Cluster transverse energy for trigger class %s", trg->Data()), energybinning);
     fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg->Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg->Data()), energybinning);
@@ -194,12 +195,16 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     AliDebug(1, Form("%s: Reject trigger\n", GetName()));
     return;
   }
+  AliDebug(1, "Event selected");
   AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  if(!mult) std::cout << "Multiplicity selection not found" << std::endl;
   double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
   AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
   if(!fCentralityRange.IsInRange(centrality)){
-    AliDebug(1, Form("%s: reject centrality\n", GetName()));
+    AliDebug(1, Form("%s: reject centrality: %f\n", GetName(), centrality));
     return;
+  } else {
+    AliDebug(1, Form("%s: select centrality %f\n", GetName(), centrality));
   }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
@@ -225,66 +230,84 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
+    fHistos->FillTH1("hEventCentralityMB", centrality);
     if(!(isEMC7 || isDMC7 || isEJ1 || isEJ2 || isEG1 || isEG2 || isDJ1 || isDJ2 || isDG1 || isDG2)){
       fHistos->FillTH1("hEventCountMBexcl", 1);
+      fHistos->FillTH1("hEventCentralityMBexcl", centrality);
     }
   }
 
   if(isEMC7){
     fHistos->FillTH1("hEventCountEMC7", 1);
+    fHistos->FillTH1("hEventCentralityEMC7", centrality);
     if(!(isEJ1 || isEJ2 || isEG1 || isEG2)){
       fHistos->FillTH1("hEventCountEMC7excl", 1);
+      fHistos->FillTH1("hEventCentralityEMC7excl", centrality);
     }
   }
   if(isDMC7){
     fHistos->FillTH1("hEventCountDMC7", 1);
+    fHistos->FillTH1("hEventCentralityDMC7", centrality);
     if(!(isDJ1 || isDJ2 || isDG1 || isDG2)){
-      fHistos->FillTH1("hEventCountEMC7excl", 1);
+      fHistos->FillTH1("hEventCountDMC7excl", 1);
+      fHistos->FillTH1("hEventCentralityDMC7excl", centrality);
     }
   }
 
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
+    fHistos->FillTH1("hEventCentralityEJ2", centrality);
     // Check for exclusive classes
     if(!isEJ1){
       fHistos->FillTH1("hEventCountEJ2excl", 1);
+      fHistos->FillTH1("hEventCentralityEJ2excl", centrality);
     }
   }
   if(isDJ2){
     fHistos->FillTH1("hEventCountDJ2", 1);
+    fHistos->FillTH1("hEventCentralityDJ2", centrality);
     // Check for exclusive classes
     if(!isDJ1){
       fHistos->FillTH1("hEventCountDJ2excl", 1);
+      fHistos->FillTH1("hEventCentralityDJ2excl", centrality);
     }
   }
 
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
+    fHistos->FillTH1("hEventCentralityEJ1", centrality);
   }
   if(isDJ1){
     fHistos->FillTH1("hEventCountDJ1", 1);
+    fHistos->FillTH1("hEventCentralityDJ1", centrality);
   }
 
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
+    fHistos->FillTH1("hEventCentralityEG2", centrality);
     // Check for exclusive classes
     if(!(isEG1)){
       fHistos->FillTH1("hEventCountEG2excl", 1);
+      fHistos->FillTH1("hEventCentralityEG2excl", centrality);
     }
   }
   if(isDG2){
     fHistos->FillTH1("hEventCountDG2", 1);
+    fHistos->FillTH1("hEventCentralityDG2", centrality);
     // Check for exclusive classes
     if(!(isDG1)){
       fHistos->FillTH1("hEventCountDG2excl", 1);
+      fHistos->FillTH1("hEventCentralityDG2excl", centrality);
     }
   }
 
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1);
+    fHistos->FillTH1("hEventCentralityEG1", centrality);
   }
   if(isDG1){
     fHistos->FillTH1("hEventCountDG1", 1);
+    fHistos->FillTH1("hEventCentralityDG1", centrality);
   }
 
   /*
