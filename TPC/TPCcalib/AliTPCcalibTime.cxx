@@ -1577,6 +1577,8 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
+  
+  static const int ITSStandaloneOnly = getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0;
   //
   // 0. Apply standard cuts
   // 
@@ -1586,6 +1588,12 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   AliExternalTrackParam trckIn;
   if ( (track->GetTrackParamIp(trckIn)) < 0) return;
   AliExternalTrackParam * trackIn = &trckIn;
+
+  /*AliExternalTrackParam trckTPCIn;
+  AliExternalTrackParam trck;
+  if ( (track->GetTrackParamTPCInner(trckTPCIn)) < 0) return;
+  if ( (track->GetTrackParam(trck)) < 0) return;
+  printf("XXXXXXXXXXXX X: In %f TPCIn %f P %f, Pt In %f TPCIn %f P %f, Z: In %f TPCIn %f P %f\n", (double) trackIn->GetX(), (double) trckTPCIn.GetX(), (double) trck.GetX(), (double) trackIn->GetSigned1Pt(), (double) trckTPCIn.GetSigned1Pt(), (double) trck.GetSigned1Pt(), (double) trackIn->GetZ(), (double) trckTPCIn.GetZ(), (double) trck.GetZ());*/
 
   AliExternalTrackParam trckOut;
   if ( (track->GetTrackParamOp(trckOut)) < 0) return;
@@ -1604,11 +1612,8 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
 
   AliExternalTrackParam trckITSOut;
 
-  if ( (friendTrack->GetTrackParamITSOut(trckITSOut)) == 0 ){
-    pITS2=trckITSOut;  //TPC-ITS track - snapshot ITS out
-    pITS2.Rotate(pTPC.GetAlpha());
-    AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
-  }
+  //Compare the tracks at inner end of TPC in order to make sure the below cuts make sense
+  AliTracker::PropagateTrackToBxByBz(&pTPC,AliTPCcalibDB::Instance()->GetParameters()->GetInnerRadiusLow(),0.1,0.1,kFALSE);
 
   AliVfriendTrack *itsfriendTrack=0;
   //
@@ -1616,9 +1621,10 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
   //
   Bool_t hasAlone=kFALSE;
   Int_t ntracks=event->GetNumberOfTracks();
-  for (Int_t i=0; i<ntracks; i++){
+  for (Int_t i = ntracks - 1; i >= 0; i--){ //We want to prefer ITS SA tracks, which are inserted after the TPS tracks, so we start from the end, and stop after the first match
     AliVTrack * trackITS = event->GetVTrack(i);
     if (!trackITS) continue;
+    if (ITSStandaloneOnly && trackITS->GetNumberOfTPCClusters()) continue;
     if (trackITS->GetNumberOfITSClusters()<kMinITS) continue;  // minimal amount of clusters
     itsfriendTrack = const_cast<AliVfriendTrack*>(vFriend->GetTrack(i));
     if (!itsfriendTrack) continue;
@@ -1637,9 +1643,16 @@ void  AliTPCcalibTime::ProcessAlignITS(AliVTrack *const track, const AliVfriendT
     if (TMath::Abs(pTPC.GetY()-pITS.GetY())> kMaxDy) continue;
     if (TMath::Abs(pTPC.GetSnp()-pITS.GetSnp())> kMaxAngle) continue;
     hasAlone=kTRUE;
+    break;
   }
   if (!hasAlone) {
+    if (ITSStandaloneOnly) return;
     if (track->GetNumberOfITSClusters()<kMinITS) return;
+    if ( (friendTrack->GetTrackParamITSOut(trckITSOut)) == 0 ){
+      pITS2=trckITSOut;  //TPC-ITS track - snapshot ITS out
+      pITS2.Rotate(pTPC.GetAlpha());
+      AliTracker::PropagateTrackToBxByBz(&pITS2,pTPC.GetX(),0.1,0.1,kFALSE);
+    }
     pITS=pITS2;  // use combined track if it has ITS
   }
 
