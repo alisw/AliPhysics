@@ -231,9 +231,9 @@ macro(createDArpm DETECTOR ALGORITHM)
     configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${DETECTOR}${_ALGORITHM}-da.spec" @ONLY)
 
     add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da.exe POST_BUILD
-                       COMMAND mkdir ARGS -p da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+                       COMMAND mkdir ARGS -p da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/ ${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp
                        COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da.exe da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
-                       COMMAND rpmbuild ARGS --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/root" -bb ${DETECTOR}${_ALGORITHM}-da.spec
+                       COMMAND env ARGS TMPDIR=${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp rpmbuild --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/root" -bb ${DETECTOR}${_ALGORITHM}-da.spec
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                        COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
     )
