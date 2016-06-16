@@ -34,6 +34,7 @@ ClassImp(AliTaskCDBconnect)
 //______________________________________________________________________________
 AliTaskCDBconnect::AliTaskCDBconnect():
   AliAnalysisTask(),
+  fFallBackToRaw(kFALSE),
   fRun(0),
   fLock(0),
   fStorage(),
@@ -45,8 +46,9 @@ AliTaskCDBconnect::AliTaskCDBconnect():
 }
 
 //______________________________________________________________________________
-AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_t run)
+AliTaskCDBconnect::AliTaskCDBconnect(const char* name, const char *storage, Int_t run, Bool_t fallback)
   :AliAnalysisTask(name, "ESD analysis tender car"),
+   fFallBackToRaw(fallback),
    fRun(run),
    fLock(0),
    fStorage(storage),
@@ -89,13 +91,13 @@ void AliTaskCDBconnect::InitGRP()
     }
     //
     Bool_t useCVMFS = kFALSE;
-    fStorage = fStorage.Strip(TString::kTrailing,'/');
-    if (fStorage == "cvmfs:") {
+    TString inpStor = fStorage.Strip(TString::kTrailing,'/');
+    if (inpStor == "cvmfs:") {
       fStorage = Form("local:///cvmfs/alice.cern.ch/calibration/data/%4d/OCDB",year);
       useCVMFS = kTRUE;
     }
-    else if (fStorage.BeginsWith("local:///cvmfs") && fStorage.EndsWith("/OCDB")) {
-      TString tmp = fStorage;
+    else if (inpStor.BeginsWith("local:///cvmfs") && inpStor.EndsWith("/OCDB")) {
+      TString tmp = inpStor;
       tmp.ReplaceAll("local://","");
       TString strYold = tmp(TRegexp("/[0-9][0-9][0-9][0-9]/OCDB"));
       TString strYnew = Form("/%4d/OCDB",year);
@@ -105,12 +107,15 @@ void AliTaskCDBconnect::InitGRP()
       fStorage = Form("local://%s", tmp.Data());
     }
     // check if cvfms is linked    
-    if (useCVMFS){
+    if (useCVMFS) {
       TString cvmfspath = fStorage;
       cvmfspath = cvmfspath.ReplaceAll("local://", "");
       if(gSystem->AccessPathName(cvmfspath.Data(),kFileExists)) {
-	AliErrorF("could not access %s, switching to raw://",fStorage.Data());
-	fStorage = "raw://";
+	if (fFallBackToRaw) {
+	  AliErrorF("could not access %s, switching to raw://",fStorage.Data());
+	  fStorage = "raw://";
+	}
+	else AliFatalF("could not access %s, fallback to raw:// disabled",fStorage.Data());
       }
     }
     AliInfoF("Setting default storage to %s",fStorage.Data());
