@@ -29,6 +29,7 @@
 
 class AliQnCorrectionsDetectorConfigurationsSet;
 class AliQnCorrectionsDetector;
+class AliQnCorrectionsManager;
 
 /// \class AliQnCorrectionsDetectorConfigurationBase
 /// \brief The base of a concrete detector configuration within Q vector correction framework
@@ -85,6 +86,10 @@ public:
   ///
   /// \return detector pointer
   AliQnCorrectionsDetector *GetDetector() { return fDetector; }
+  /// Stores the framework manager pointer
+  /// Pure virtual function
+  /// \param manager the framework manager
+  virtual void AttachCorrectionsManager(AliQnCorrectionsManager *manager) = 0;
 public:
   /// Get the input data bank.
   /// Makes it available for input corrections steps.
@@ -117,6 +122,9 @@ public:
   /// \param store pointer to the memory for storing the harmonics map
   void GetHarmonicMap(Int_t *store) const
   { fCorrectedQnVector.GetHarmonicsMap(store); }
+  /// Get the pointer to the framework manager
+  /// \return the stored pointer to the corrections framework
+  AliQnCorrectionsManager *GetCorrectionsManager() const { return fCorrectionsManager; }
 public:
   /// Asks for support data structures creation
   ///
@@ -212,6 +220,7 @@ private:
 protected:
   static const char *szPlainQnVectorName; ///< the name of the Qn plain, not corrected Qn vectors
   /// set of cuts that define the detector configuration
+  AliQnCorrectionsManager *fCorrectionsManager; /// the framework manager pointer
   AliQnCorrectionsCutsSet *fCuts;         //->
 /// The default initial size of data vectors banks
 #define INITIALDATAVECTORBANKSIZE 100000
@@ -233,7 +242,7 @@ private:
   AliQnCorrectionsDetectorConfigurationBase& operator= (const AliQnCorrectionsDetectorConfigurationBase &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsDetectorConfigurationBase, 1);
+  ClassDef(AliQnCorrectionsDetectorConfigurationBase, 2);
 /// \endcond
 };
 

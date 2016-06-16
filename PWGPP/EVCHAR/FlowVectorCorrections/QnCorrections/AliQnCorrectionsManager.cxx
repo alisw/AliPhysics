@@ -49,7 +49,6 @@ using std::setw;
 ClassImp(AliQnCorrectionsManager);
 /// \endcond
 
-AliQnCorrectionsManager *AliQnCorrectionsManager::fTheOnlyManagerInstance = NULL;
 const Int_t AliQnCorrectionsManager::nMaxNoOfDetectors = 32;
 const Int_t AliQnCorrectionsManager::nMaxNoOfDataVariables = 2048;
 const char *AliQnCorrectionsManager::szCalibrationHistogramsKeyName = "CalibrationHistograms";
@@ -61,7 +60,6 @@ const char *AliQnCorrectionsManager::szAllProcessesListName = "all data";
 /// The class owns the detectors and will be destroyed with it
 AliQnCorrectionsManager::AliQnCorrectionsManager() :
     TObject(), fDetectorsSet(), fProcessListName(szDummyProcessListName) {
-  fTheOnlyManagerInstance = this;
 
   fDetectorsSet.SetOwner(kTRUE);
   fDetectorsIdMap = NULL;
@@ -75,8 +73,6 @@ AliQnCorrectionsManager::AliQnCorrectionsManager() :
   fFillQAHistograms = kFALSE;
   fFillQnVectorTree = kFALSE;
   fProcessesNames = NULL;
-
-  AliWarning("WARNING: Corrections Manager constructor should only be called by the serialization process");
 }
 
 /// Default destructor
@@ -88,19 +84,6 @@ AliQnCorrectionsManager::~AliQnCorrectionsManager() {
   if (fCalibrationHistogramsList != NULL) delete fCalibrationHistogramsList;
   if (fProcessesNames != NULL) delete fProcessesNames;
 }
-
-AliQnCorrectionsManager *AliQnCorrectionsManager::GetInstance() {
-  if (fTheOnlyManagerInstance == NULL) {
-    AliQnCorrectionsManager::fTheOnlyManagerInstance = new AliQnCorrectionsManager();
-  }
-  return fTheOnlyManagerInstance;
-}
-
-void AliQnCorrectionsManager::Destroy() {
-  delete AliQnCorrectionsManager::fTheOnlyManagerInstance;
-  AliQnCorrectionsManager::fTheOnlyManagerInstance = NULL;
-}
-
 
 /// Sets the base list that will own the input calibration histograms
 /// \param calibrationFile the file
@@ -134,6 +117,7 @@ void AliQnCorrectionsManager::AddDetector(AliQnCorrectionsDetector *detector) {
       return;
     }
     fDetectorsSet.Add(detector);
+    detector->AttachCorrectionsManager(this);
   }
   else {
     AliFatal(Form("You are trying to add %s detector with detector Id %d " \

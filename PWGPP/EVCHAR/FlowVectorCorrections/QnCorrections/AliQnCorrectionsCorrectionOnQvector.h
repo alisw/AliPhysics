@@ -34,6 +34,10 @@ public:
   AliQnCorrectionsCorrectionOnQvector(const char *name, const char *key);
   virtual ~AliQnCorrectionsCorrectionOnQvector();
 
+  /// Informs when the detector configuration has been attached to the framework manager
+  /// Basically this allows interaction between the different framework sections at configuration time
+  /// Pure virtual function
+  virtual void AttachedToFrameworkManager() = 0;
   /// Attaches the needed input information to the correction step
   ///
   /// Pure virtual function

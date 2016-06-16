@@ -43,6 +43,8 @@ public:
       Int_t *harmonicMap = NULL);
   virtual ~AliQnCorrectionsDetectorConfigurationTracks();
 
+  virtual void AttachCorrectionsManager(AliQnCorrectionsManager *manager);
+
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);

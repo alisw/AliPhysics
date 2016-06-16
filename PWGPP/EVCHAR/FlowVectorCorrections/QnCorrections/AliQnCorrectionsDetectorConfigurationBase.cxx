@@ -46,6 +46,7 @@ const char *AliQnCorrectionsDetectorConfigurationBase::szPlainQnVectorName = "pl
 AliQnCorrectionsDetectorConfigurationBase::AliQnCorrectionsDetectorConfigurationBase() : TNamed(),
     fPlainQnVector(), fCorrectedQnVector(), fTempQnVector(), fQnVectorCorrections() {
   fDetector = NULL;
+  fCorrectionsManager = NULL;
   fCuts = NULL;
   fDataVectorBank = NULL;
   fQnNormalizationMethod = AliQnCorrectionsQnVector::QVNORM_noCalibration;
@@ -68,6 +69,7 @@ AliQnCorrectionsDetectorConfigurationBase::AliQnCorrectionsDetectorConfiguration
           fQnVectorCorrections() {
 
   fDetector = NULL;
+  fCorrectionsManager = NULL;
   fCuts = NULL;
   fDataVectorBank = NULL;
   fQnNormalizationMethod = AliQnCorrectionsQnVector::QVNORM_noCalibration;
