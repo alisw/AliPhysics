@@ -868,13 +868,8 @@ public:
   TH2F* GetZNvsTCen(Int_t const h) const {return this->fhZNvsTCen[h];};
   void SetCenvsMul(TH2F* const n, Int_t const h) {this->fhCenvsMul[h] = n;};
   TH2F* GetCenvsMul(Int_t const h) const {return this->fhCenvsMul[h];};
-  void SetCenvsDif(TH2F* const n, Int_t const h) {this->fhCenvsDif[h] = n;};
-  TH2F* GetCenvsDif(Int_t const h) const {return this->fhCenvsDif[h];};
-  void SetZNvsMul(TH2F* const n, Int_t const h) {this->fhZNvsMul[h] = n;};
-  TH2F* GetZNvsMul(Int_t const h) const {return this->fhZNvsMul[h];};
-  
-  void SetImpvsNcol(TH2F* const n, Int_t const h) {this->fhImpvsNcol[h] = n;};
-  TH2F* GetImpvsNcol(Int_t const h) const {return this->fhImpvsNcol[h];};
+  void SetZNvsMul(TH2F* const n) {this->fhZNvsMul = n;};
+  TH2F* GetZNvsMul() const {return this->fhZNvsMul;};
   
  void SetZNCenvsMul(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenvsMul[eg][h] = n;};
  TH2F* GetZNCenvsMul(Int_t const eg, Int_t const h) const {return this->fhZNCenvsMul[eg][h];};
@@ -1658,9 +1653,7 @@ private:
  TH2F* fhZNvsCen[2]; //! cen vs mul
   TH2F* fhZNvsTCen[2]; //! cen vs mul
   TH2F* fhCenvsMul[2]; //! cen vs mul
-  TH2F* fhCenvsDif[2]; //! cen vs mul
-  TH2F* fhZNvsMul[2]; //! cen vs mul
-  TH2F* fhImpvsNcol[2]; //! cen vs mul
+  TH2F* fhZNvsMul; //! cen vs mul
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   TF1 *fPolMin[2]; //!
   TF1 *fPolMax[2]; //!
@@ -1670,6 +1663,9 @@ private:
   TF1 *fPolDist[2]; //!
   TF1 *fPolSlope[2]; //!
   TGraph *fCenMetric; //!
+  Double_t fZNCen; // total energy from ZNC-C
+  Double_t fZNAen; // total energy from ZNC-A
+  Double_t fEnNucl; // energy per nucleon (GeV)
   
   const static Int_t fZDCESEnPol=4;
   TF1 *fPolCuts[fZDCESEnPol]; //!
@@ -1683,7 +1679,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 17);
+ ClassDef(AliFlowAnalysisCRC, 18);
  
 };
 

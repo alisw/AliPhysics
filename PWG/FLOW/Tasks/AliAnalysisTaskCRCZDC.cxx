@@ -1074,9 +1074,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    zncEnergy += towZNC[i];
    znaEnergy += towZNA[i];
   }
+   fFlowEvent->SetZNCEnergy(towZNC[0]);
+   fFlowEvent->SetZNAEnergy(towZNA[0]);
   
   if (fUseMCCen) {
-   aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+    if(aod->GetRunNumber() < 209122) aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+    else                             aodZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
   } else {
    const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
    const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
@@ -1113,10 +1116,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     znaEnergy = 0.;
    }
   }
+   
+   Float_t MulA=0., MulC=0.;
+   for(Int_t i=0; i<4; i++) {
+     if(towZNC[i+1]>0.) {
+       MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha);
+     }
+     if(towZNA[i+1]>0.) {
+       MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha);
+     }
+   }
   
   fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-  fFlowEvent->SetZDC2Qsub(xyZNC,towZNC[0],xyZNA,towZNA[0]);
+  fFlowEvent->SetZDC2Qsub(xyZNC,MulC,xyZNA,MulA);
   
   Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
   for(Int_t c=0;c<fCRCnRun;c++) {

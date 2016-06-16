@@ -85,10 +85,8 @@ AliFlowEventSimple::AliFlowEventSimple():
   fNumberOfPOItypes(2),
   fNumberOfPOIs(NULL)
 {
-  for(Int_t i(0); i < 2; i++) {
-   fZNCQ[i] = 0.;
-   fZNAQ[i] = 0.;
-  }
+  fZNCQ = AliFlowVector();
+  fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }
@@ -145,10 +143,8 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   if (method==kGenerate)
     Generate(n,ptDist,phiMin,phiMax,etaMin,etaMax);
  
-  for(Int_t i(0); i < 2; i++) {
-   fZNCQ[i] = 0.;
-   fZNAQ[i] = 0.;
-  }
+  fZNCQ = AliFlowVector();
+  fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }
@@ -186,6 +182,8 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   fNITSCL1(anEvent.fNITSCL1),
   fCentralityTRK(anEvent.fCentralityTRK),
   fRun(anEvent.fRun),
+  fZNCQ(anEvent.fZNCQ),
+  fZNAQ(anEvent.fZNAQ),
   fZNCM(anEvent.fZNCM),
   fZNAM(anEvent.fZNAM),
   fNumberOfPOItypes(anEvent.fNumberOfPOItypes),
@@ -193,10 +191,6 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
 {
   //copy constructor
   memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
-  for(Int_t i(0); i < 2; i++) {
-   fZNCQ[i] = anEvent.fZNCQ[i];
-   fZNAQ[i] = anEvent.fZNAQ[i];
-  }
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
   }
@@ -264,16 +258,14 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fMCReactionPlaneAngleWrap = anEvent.fMCReactionPlaneAngleWrap;
   fShuffleTracks = anEvent.fShuffleTracks;
   fCentrality = anEvent.fCentrality;
-  fCentralityCL1 = anEvent.fCentralityCL1,
-  fNITSCL1 = anEvent.fNITSCL1,
-  fCentralityTRK = anEvent.fCentralityTRK,
+  fCentralityCL1 = anEvent.fCentralityCL1;
+  fNITSCL1 = anEvent.fNITSCL1;
+  fCentralityTRK = anEvent.fCentralityTRK;
   fRun = anEvent.fRun;
+  fZNCQ = anEvent.fZNCQ;
+  fZNAQ = anEvent.fZNAQ;
   fZNCM = anEvent.fZNCM;
   fZNAM = anEvent.fZNAM;
-  for(Int_t i(0); i < 2; i++) {
-   fZNCQ[i] = anEvent.fZNCQ[i];
-   fZNAQ[i] = anEvent.fZNAQ[i];
-  }
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
   }
@@ -724,22 +716,16 @@ void AliFlowEventSimple::Get2Qsub( AliFlowVector* Qarray,
 //-----------------------------------------------------------------------
 void AliFlowEventSimple::GetZDC2Qsub(AliFlowVector* Qarray)
 {
- Qarray[0].Set(fZNCQ[0],fZNCQ[1]);
- Qarray[0].SetMult(fZNCM);
- Qarray[1].Set(fZNAQ[0],fZNAQ[1]);
- Qarray[1].SetMult(fZNAM);
+  Qarray[0] = fZNCQ;
+  Qarray[1] = fZNAQ;
 }
 
 //-----------------------------------------------------------------------------
 
 void AliFlowEventSimple::SetZDC2Qsub(Double_t* QVC, Double_t MC, Double_t* QVA, Double_t MA)
 {
- fZNCQ[0] = QVC[0];
- fZNCQ[1] = QVC[1];
- fZNCM = MC;
- fZNAQ[0] = QVA[0];
- fZNAQ[1] = QVA[1];
- fZNAM = MA;
+  fZNCQ = AliFlowVector(QVC[0],QVC[1],MC,1);
+  fZNAQ = AliFlowVector(QVA[0],QVA[1],MA,1);
 }
 //-----------------------------------------------------------------------
 void AliFlowEventSimple::GetVertexPosition(Double_t* pos)
@@ -840,6 +826,8 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fNITSCL1(-1.),
   fCentralityTRK(-1.),
   fRun(-1),
+  fZNCM(0.),
+  fZNAM(0.),
   fNumberOfPOItypes(2),
   fNumberOfPOIs(new Int_t[fNumberOfPOItypes])
 {
@@ -887,10 +875,8 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   }//for i
   delete pParticle;
  
-  for(Int_t i(0); i < 2; i++) {
-   fZNCQ[i] = 0.;
-   fZNAQ[i] = 0.;
-  }
+  fZNCQ = AliFlowVector();
+  fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }

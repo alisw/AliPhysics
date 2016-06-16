@@ -143,6 +143,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
+  cutsEvent->SetCheckPileup(kTRUE);
   // configure some event cuts, starting with centrality
   if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
     // method used for centrality determination
@@ -183,18 +184,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
   // explicit multiplicity outlier cut
-   if (sDataSet == "2010" || sDataSet == "2011") {
-     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-     if (sDataSet == "2011")
-       cutsEvent->SetLHC11h(kTRUE);
-     else if (sDataSet == "2010")
-       cutsEvent->SetLHC10h(kTRUE);
-   }
-   if (sDataSet == "2015") {
-     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kFALSE);
-   }
-   // enable the qa plots
-   cutsEvent->SetQA(bCutsQA);
+  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+  if (sDataSet == "2011")
+    cutsEvent->SetLHC11h(kTRUE);
+  else if (sDataSet == "2010")
+    cutsEvent->SetLHC10h(kTRUE);
+  // enable the qa plots
+  cutsEvent->SetQA(bCutsQA);
  }
  
  // pass these cuts to your flow event task

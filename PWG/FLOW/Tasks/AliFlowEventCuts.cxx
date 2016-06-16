@@ -382,8 +382,12 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     }
     if(fCutTPCmultiplicityOutliersAOD) 
     {
-      if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
-      else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+      if(event->GetRunNumber() < 209122) {
+        if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
+        else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+      } else {
+        if(multTPC < (-25.+1.17*multGlobal) || multTPC > (30.+1.40*multGlobal)) pass = kFALSE;
+      }
     }
   }
 
