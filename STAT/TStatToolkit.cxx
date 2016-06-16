@@ -1289,16 +1289,24 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
       }
     }
     if (gr) {
-      if (igraph==0){
-	multiGraph->Add(gr,"ap");
-      }else{
-	multiGraph->Add(gr,"p");
+      if (marker<=0) 	{  // explictly speify draw options - try to avoid bug in TMultiGraph draw in xaxis definition
+	multiGraph->Add(gr);
+      }else{      
+	if (igraph==0){
+	  multiGraph->Add(gr,"ap");
+	}else{
+	  multiGraph->Add(gr,"p");
+	}
       }
     }
     if (igraph==0){
       //      multiGraph->GetXaxis()->Copy(*(gr->GetXaxis()));
     }
     Double_t meanT,rmsT=0;
+    if (gr==NULL){
+      ::Error("MakeMultGraph","Not valid sub-expression %s",exprVarArray->At(igraph)->GetName());
+      continue;
+    }
     if (gr->GetN()>2){
       TStatToolkit::EvaluateUni(gr->GetN(),gr->GetY(), meanT,rmsT, TMath::Max(0.75*gr->GetN(),1.));
     }else{
@@ -1315,6 +1323,7 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   //
   for (Int_t igr=0; igr<ngraphs; igr++){
     TGraph * gr = (TGraph*)(multiGraph->GetListOfGraphs()->At(igr));
+    if (gr==NULL) continue;
     gr->SetMinimum(minValue);
     gr->SetMaximum(maxValue);
     if (legend){
