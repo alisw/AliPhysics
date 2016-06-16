@@ -76,6 +76,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
     kCAll
   };
 
+  enum {kRef=0, kSig=1, kTT=2}; //trigger track bins
 
    // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
    AliAnalysisTaskHJetSpectra();
@@ -120,12 +121,10 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   void        SetExternalRhoTaskName(const char* name) {fRhoTaskName = name;}
   void        SetExternalRhoTaskNameMC(const char* name) {fRhoTaskNameMC = name;}
 
-  void SetTT(Double_t ttlow, Double_t tthigh){ fTTlow = ttlow; fTThigh = tthigh; } 
-  void SetTTType(Int_t tttype){ fTTtype = tttype;} 
+  void SetTT(Double_t tlr, Double_t thr,Double_t tls, Double_t ths);
   void SetDphi(Double_t dphi){ fDphiCut = TMath::Pi() - dphi;} 
   void SetDoubleBinPrecision(Bool_t db){ fUseDoubleBinPrecision = db;} 
 
-  void SkipEventsWithSignalTT(Double_t ttlow, Double_t tthigh){ fTTLowToSkip = ttlow; fTTHighToSkip = tthigh; } //skip TT range
 
   void SetNofRandomCones(Int_t nrc){ fNofRandomCones = nrc;}
   void SetMinFractionShared(Double_t f)  { fMinFractionShared = f; }
@@ -204,36 +203,33 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   Bool_t              fInitializedLocal;           //! gc trigger if tracks/jets are loaded  initiates calling   ExecOnce 
 
 
-  Double_t            fTTlow;  //gc trigger particles TT bin lower boundary
-  Double_t            fTThigh; //gc trigger particles TT bin upper boundary
-  Int_t               fTTtype; //trigger particle type 0=single inclusive, 2 = inclusive  
+  Double_t            fTTlow[kTT];  //gc trigger particles TT bin lower boundary
+  Double_t            fTThigh[kTT]; //gc trigger particles TT bin upper boundary
   Double_t            fDphiCut; //minimal azimuthal angle between trigger and assoc jet 
   Bool_t              fUseDoubleBinPrecision; //use double bin precision
 
-   Double_t           fTTLowToSkip;//  skip event that contains particle in the range fTTLowToSkip to fTTHighToSkip
-   Double_t           fTTHighToSkip;// skip event that contains particle in the range fTTLowToSkip to fTTHighToSkip
 
    TH1I               *fHistEvtSelection;     //! gc event statistics
-   TH1D               *fh1Ntriggers[kCAll];  //! trigger counter
-   TH1D               *fh1TriggerMult[kCAll]; //! tirgger multiplicity in event
-   TH1D               *fh1NtriggersGen[kCAll];  //! trigger counter
-   TH1D               *fh1TriggerMultGen[kCAll];  //! trigger multiplicity in event
-   TH2D               *fHJetSpec[kCAll][kRho];//!  TT associated spectrum of jets
-   TH2D               *fHJetSpecGen[kCAll][kRho];//!TT associated spectrum of jets
+   TH1D               *fh1Ntriggers[kCAll][kTT];  //! trigger counter
+   TH1D               *fh1TriggerMult[kCAll][kTT]; //! tirgger multiplicity in event
+   TH1D               *fh1NtriggersGen[kCAll][kTT];  //! trigger counter
+   TH1D               *fh1TriggerMultGen[kCAll][kTT];  //! trigger multiplicity in event
+   TH2D               *fHJetSpec[kCAll][kTT][kRho];//!  TT associated spectrum of jets
+   TH2D               *fHJetSpecGen[kCAll][kTT][kRho];//!TT associated spectrum of jets
 
-   TH1F    *fhRhoTT[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoTT[kCAll][kTT][kRho-1]; //! gc X=rho from perp cone, Y=centrality
    TH1F    *fhRhoIncl[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
  
-   TH1F    *fARhoTT[kCAll][kRho-1]; //! jet area times rho from perp cone
+   TH1F    *fARhoTT[kCAll][kTT][kRho-1]; //! jet area times rho from perp cone
    //TH1F    *fARhoTTGen[kRho-1]; //! #### jet area times rho from perp cone
 
-   TH1D    *fhDeltaPt[kCAll][kRho-1]; //!  delta pT 
-   TH1D    *fhDeltaPtEmb[kCAll][kRho-1]; //! embedded delta pT 
-   TH2D    *fhDeltaPtEmb2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
-   TH1D    *fhDeltaPtEmbPerp[kCAll][kRho-1]; //! embedded delta pT (emb track is perp to TT)
-   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
-   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kRho-1]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
-   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
+   TH1D    *fhDeltaPt[kCAll][kTT][kRho-1]; //!  delta pT 
+   TH1D    *fhDeltaPtEmb[kCAll][kTT][kRho-1]; //! embedded delta pT 
+   TH2D    *fhDeltaPtEmb2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtEmbPerp[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is perp to TT)
+   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
+   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
+   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
 
    TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
@@ -251,38 +247,35 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhVertexZAccept; //! gc vertexZ accepted after vtx cut
    TH1F     *fhVertexZMC;  //! gc vertexZ inclusive in MC
    TH1F     *fhVertexZAcceptMC; //! gc vertexZ accepted after vtx cut in MC
-   TH2F     *fhDphiTriggerJet[kCAll][kRho]; //! gc Delta phi versus jet pT
-   TH2F     *fhDphiTriggerJetGen[kCAll][kRho]; //! gc Delta phi versus jet pT
+   TH2F     *fhDphiTriggerJet[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
+   TH2F     *fhDphiTriggerJetGen[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
 
    TH1F     *fhCentrality[kCAll];     //! centrality 
+   TH1F     *fhCentralityTT[kTT];  //! centrality V0 multiplicity A+C when TT is present
    TH1F     *fhCentralityV0M;  //! centrality V0 multiplicity A+C
    TH1F     *fhCentralityV0A;  //! centrality from V0A
    TH1F     *fhCentralityV0C;  //! centrality from V0C
    TH1F     *fhCentralityZNA;  //! centrality from ZNA
-   TH1F     *fhCentralityV0MTT;  //! centrality V0 multiplicity A+C when TT is present
-   TH1F     *fhCentralityV0ATT;  //! centrality from V0A when TT is present
-   TH1F     *fhCentralityV0CTT;  //! centrality from V0C when TT is present
-   TH1F     *fhCentralityZNATT;  //! centrality from ZNA when TT is present
   
    TH1F     *fhVzeroATotMult[kCAll]; //! V0A multiplicity for given V0A centrality selection
-   TH1F     *fhVzeroATotMultTT[kCAll];   //! V0A multiplicity 
+   TH1F     *fhVzeroATotMultTT[kCAll][kTT];   //! V0A multiplicity 
 
    TH1F     *fhZNAEnergy[kCAll]; //! ZDC A neutral energy for given V0A centrality selection
-   TH1F     *fhZNAEnergyTT[kCAll];   //! ZDC A neutral energy 
+   TH1F     *fhZNAEnergyTT[kCAll][kTT];   //! ZDC A neutral energy 
 
    TH1D     *fhTrackMultiplicity[kCAll]; //! multiplicity of tracks
-   TH1D     *fhTrackMultiplicityTT[kCAll]; //! multiplicity of tracks in event with TT track
+   TH1D     *fhTrackMultiplicityTT[kCAll][kTT]; //! multiplicity of tracks in event with TT track
 
    THnSparse  *fhZNAVzeroATrack[kCAll]; //! ZNA energy versus Vzero A mult versus track mult.
-   THnSparse  *fhZNAVzeroATrackTT[kCAll]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
+   THnSparse  *fhZNAVzeroATrackTT[kCAll][kTT]; //! ZNA energy versus Vzero mult. versus track mult. in events with TT
    
 
    //TProfile*     fh1Xsec;   //! gc pythia cross section and trials
    //TH1F*         fh1Trials; //! gc trials are added
    //TH1F*         fh1PtHard;  //! Pt har of the event...      
    TH1D*         fhImpactParameter[kCAll]; //! impact parameter distribution hijing
-   TH1D*         fhImpactParameterTT[kCAll]; //! impact parameter distribution hijing versus TT
+   TH1D*         fhImpactParameterTT[kCAll][kTT]; //! impact parameter distribution hijing versus TT
 
    TH1D*  fhJetPtGen[kCAll][kRho];
    TH2D*  fhJetPtGenVsJetPtRec[kCAll][kRho];
@@ -292,8 +285,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D*  fhPtTrkSecOrFakeRec[kCAll]; // pt spectrum of reconstructed fake or secondary tracks    
 
  
-   TArrayD  fRhoRec;   // labels of particles on reconstructed track level
-   TArrayD  fRhoMC;   // labels of particles on reconstructed track level
+   TArrayD  fRhoRec[kTT];   // labels of particles on reconstructed track level
+   TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
    TArrayD  fCentralityBins; //bin boaders
 
 
@@ -302,8 +295,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Double_t fZVertexCut; // vertex cut in z 
    Double_t fCutPhi;     // azimuthal cat around TT  to exclude TTjet + recoil jet in perp rho estimate
 
-   AliVParticle* fTrigTracksGen[999]; //list of trigger particle indices true MC
-   AliVParticle* fTrigTracks[999]; //list pf trigger particle indices
+   AliVParticle* fTrigTracksGen[kTT][999]; //list of trigger particle indices true MC
+   AliVParticle* fTrigTracks[kTT][999]; //list pf trigger particle indices
 
    Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
    Double_t ftmpArray[2]; //tmp array
@@ -314,7 +307,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 16); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 17); // Charged jet analysis for pA
 
 };
 #endif
