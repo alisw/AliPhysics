@@ -73,6 +73,10 @@ export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPASS1_GAINCALIBTYPE-$TPC_CPass1
 
 echo "TPC_CPass1_GainCalibType=${TPC_CPass1_GainCalibType}" | tee -a calib.log
 
+export TPC_GainCalib_minSignalN=${ALIEN_JDL_TPC_GAINCALIB_MINSIGNALN-$TPC_GainCalib_minSignalN}
+
+echo "TPC_GainCalib_minSignalN=${TPC_GainCalib_minSignalN}" | tee -a calib.log
+
 CHUNKNAME="$1"
 
 if [ "${CHUNKNAME:0:1}" = "/" ]; then
