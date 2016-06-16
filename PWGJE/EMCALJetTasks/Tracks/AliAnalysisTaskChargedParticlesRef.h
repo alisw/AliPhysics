@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include <string>
 
 class TArrayD;
 class THistManager;
@@ -54,8 +55,9 @@ protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
 
-  void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected);
-  void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
+  void FillEventCounterHists(const std::string &triggerclass, double vtxz, bool isSelected);
+  void FillTrackHistos(const std::string &eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
+  void FillPIDHistos(const std::string &eventclass, const AliVTrack &track);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
