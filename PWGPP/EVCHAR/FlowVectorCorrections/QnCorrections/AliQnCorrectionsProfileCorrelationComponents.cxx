@@ -272,7 +272,7 @@ Long64_t AliQnCorrectionsProfileCorrelationComponents::GetBin(const Float_t *var
 Bool_t AliQnCorrectionsProfileCorrelationComponents::BinContentValidated(Long64_t bin) {
   Int_t nEntries = Int_t(fEntries->GetBinContent(bin));
 
-  if (nEntries < nMinNoOfEntriesValidated) {
+  if (nEntries < fMinNoOfEntriesToValidate) {
     return kFALSE;
   }
   else {

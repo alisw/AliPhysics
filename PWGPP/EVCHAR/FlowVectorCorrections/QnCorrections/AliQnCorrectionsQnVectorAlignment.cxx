@@ -33,15 +33,18 @@
 /// \brief Implementation of procedures for Qn vector alignment correction.
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileCorrelationComponents.h"
+#include "AliQnCorrectionsHistogram.h"
 #include "AliQnCorrectionsDetector.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliLog.h"
 #include "AliQnCorrectionsQnVectorAlignment.h"
 
+const Int_t AliQnCorrectionsQnVectorAlignment::fDefaultMinNoOfEntries = 2;
 const char *AliQnCorrectionsQnVectorAlignment::szCorrectionName = "Alignment";
 const char *AliQnCorrectionsQnVectorAlignment::szKey = "EEEE";
 const char *AliQnCorrectionsQnVectorAlignment::szSupportHistogramName = "QnQn";
 const char *AliQnCorrectionsQnVectorAlignment::szCorrectedQnVectorName = "align";
+const char *AliQnCorrectionsQnVectorAlignment::szQANotValidatedHistogramName = "QA not validated bin";
 
 
 /// \cond CLASSIMP
@@ -51,11 +54,14 @@ ClassImp(AliQnCorrectionsQnVectorAlignment);
 /// Default constructor
 /// Passes to the base class the identity data for the recentering and width equalization correction step
 AliQnCorrectionsQnVectorAlignment::AliQnCorrectionsQnVectorAlignment() :
-    AliQnCorrectionsCorrectionOnQvector(szCorrectionName, szKey) {
+    AliQnCorrectionsCorrectionOnQvector(szCorrectionName, szKey),
+    fDetectorConfigurationForAlignmentName() {
   fInputHistograms = NULL;
   fCalibrationHistograms = NULL;
+  fQANotValidatedBin = NULL;
   fHarmonicForAlignment = -1;
   fDetectorConfigurationForAlignment = NULL;
+  fMinNoOfEntriesToValidate = fDefaultMinNoOfEntries;
 }
 
 /// Default destructor
@@ -65,20 +71,54 @@ AliQnCorrectionsQnVectorAlignment::~AliQnCorrectionsQnVectorAlignment() {
     delete fInputHistograms;
   if (fCalibrationHistograms != NULL)
     delete fCalibrationHistograms;
+  if (fQANotValidatedBin != NULL)
+    delete fQANotValidatedBin;
 }
 
 /// Set the detector configuration used as reference for alignment
+/// The detector configuration name is stored for further use.
+/// If the step is already attached to the framework the reference detector configuration is located and stored
 /// \param name the name of the reference detector configuration
 void AliQnCorrectionsQnVectorAlignment::SetReferenceConfigurationForAlignment(const char *name) {
+  AliInfo(Form("Reference name: %s, attached to detector configuration: %s",
+      name,
+      ((fDetectorConfiguration != NULL) ? "yes" : "no")));
 
-  if (AliQnCorrectionsManager::GetInstance()->FindDetectorConfiguration(name) != NULL) {
-    fDetectorConfigurationForAlignment = AliQnCorrectionsManager::GetInstance()->FindDetectorConfiguration(name);
-  }
-  else {
-    AliFatal(Form("Wrong reference detector configuration %s for %s alignment correction step", name, fDetectorConfiguration->GetName()));
+  fDetectorConfigurationForAlignmentName = name;
+
+  /* we could be in different situations of framework attachment */
+  if (fDetectorConfiguration != NULL) {
+    if (fDetectorConfiguration->GetCorrectionsManager() != NULL) {
+      /* the correction step is already attached to the framework */
+      if (fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data()) != NULL) {
+        fDetectorConfigurationForAlignment = fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data());
+      }
+      else {
+        AliFatal(Form("Wrong reference detector configuration %s for %s alignment correction step",
+            fDetectorConfigurationForAlignmentName.Data(),
+            fDetectorConfiguration->GetName()));
+      }
+    }
   }
 }
 
+/// Informs when the detector configuration has been attached to the framework manager
+/// Basically this allows interaction between the different framework sections at configuration time
+/// Locates the reference detector configuration for alignment if its name has been previously stored
+void AliQnCorrectionsQnVectorAlignment::AttachedToFrameworkManager() {
+  AliInfo(Form("Attached! reference for alignment: %s", fDetectorConfigurationForAlignmentName.Data()));
+
+  if (fDetectorConfigurationForAlignmentName.Length() != 0) {
+    if (fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data()) != NULL) {
+      fDetectorConfigurationForAlignment = fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data());
+    }
+    else {
+      AliFatal(Form("Wrong reference detector configuration %s for %s alignment correction step",
+          fDetectorConfigurationForAlignmentName.Data(),
+          fDetectorConfiguration->GetName()));
+    }
+  }
+}
 
 /// Asks for support data structures creation
 ///
@@ -116,6 +156,7 @@ Bool_t AliQnCorrectionsQnVectorAlignment::CreateSupportHistograms(TList *list) {
   if (fInputHistograms != NULL) delete fInputHistograms;
   fInputHistograms = new AliQnCorrectionsProfileCorrelationComponents((const char *) histoNameAndTitle, (const char *) histoNameAndTitle,
       fDetectorConfiguration->GetEventClassVariablesSet());
+  fInputHistograms->SetNoOfEntriesThreshold(fMinNoOfEntriesToValidate);
   fCalibrationHistograms = new AliQnCorrectionsProfileCorrelationComponents((const char *) histoNameAndTitle, (const char *) histoNameAndTitle,
       fDetectorConfiguration->GetEventClassVariablesSet());
 
@@ -141,6 +182,12 @@ Bool_t AliQnCorrectionsQnVectorAlignment::AttachInput(TList *list) {
 /// \param list list where the histograms should be incorporated for its persistence
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
+
+  fQANotValidatedBin = new AliQnCorrectionsHistogram(
+      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+      fDetectorConfiguration->GetEventClassVariablesSet());
+  fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;
 }
 
@@ -233,7 +280,7 @@ Bool_t AliQnCorrectionsQnVectorAlignment::Process(const Float_t *variableContain
         } /* if the correction is not significant we leave the Q vector untouched */
       } /* if the correction bin is not validated we leave the Q vector untouched */
       else {
-        /* TODO: Fill QA histogram */
+        fQANotValidatedBin->Fill(variableContainer, 1.0);
       }
     }
     else {

@@ -17,6 +17,7 @@ AliQnCorrectionsProfileChannelizedIngress::AliQnCorrectionsProfileChannelizedIng
 
   fValues = NULL;
   fGroupValues = NULL;
+  fValidated = NULL;
   fUsedChannel = NULL;
   fChannelGroup = NULL;
   fNoOfChannels = 0;
@@ -53,6 +54,7 @@ AliQnCorrectionsProfileChannelizedIngress::AliQnCorrectionsProfileChannelizedIng
 
   fValues = NULL;
   fGroupValues = NULL;
+  fValidated = NULL;
   fUsedChannel = NULL;
   fChannelGroup = NULL;
   fNoOfChannels = nNoOfChannels;
@@ -74,6 +76,7 @@ AliQnCorrectionsProfileChannelizedIngress::~AliQnCorrectionsProfileChannelizedIn
   if (fChannelMap != NULL) delete [] fChannelMap;
   if (fValues != NULL) delete fValues;
   if (fGroupValues != NULL) delete [] fGroupValues;
+  if (fValidated != NULL) delete fValidated;
   if (fUsedGroup != NULL) delete [] fUsedChannel;
   if (fGroupMap != NULL) delete [] fChannelMap;
 }
@@ -109,8 +112,10 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
   /* initialize. Remember we own the histograms */
   if (fValues != NULL) delete fValues;
   if (fGroupValues != NULL) delete fGroupValues;
+  if (fValidated != NULL) delete fValidated;
   fValues = NULL;
   fGroupValues = NULL;
+  fValidated = NULL;
   if (fUsedChannel != NULL) delete [] fUsedChannel;
   if (fChannelGroup != NULL) delete [] fChannelGroup;
   if (fChannelMap != NULL) delete [] fChannelMap;
@@ -201,7 +206,22 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
     /* so we got the original histograms */
     /* now we should build the definitive histogram value / error */
     /* and the group value / error histogram if applicable */
-    fValues = DivideTHnF(origValues, origEntries);
+
+    /* let's first prepare the bin validation information */
+    /* we open space for channel variable as well */
+    Int_t nVariables = fEventClassVariables.GetEntriesFast();
+    Double_t *minvals = new Double_t[nVariables+1];
+    Double_t *maxvals = new Double_t[nVariables+1];
+    Int_t *nbins = new Int_t[nVariables+1];
+    /* get the multidimensional structure */
+    fEventClassVariables.GetMultidimensionalConfiguration(nbins,minvals,maxvals);
+    minvals[nVariables] = -0.5;
+    maxvals[nVariables] = -0.5 + fActualNoOfChannels;
+    nbins[nVariables] = fActualNoOfChannels;
+    /* create the values and entries multidimensional histograms */
+    fValidated = new THnC(Form("%s_Validated",(const char *) histoName), Form("%s_Validated",(const char *) histoName),nVariables+1,nbins,minvals,maxvals);
+    /* and now the definitive histogram value /error getting validation information */
+    fValues = DivideTHnF(origValues, origEntries,fValidated);
 
     if (fUseGroups) {
       /* let's then build the groups histogram */
@@ -209,15 +229,6 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
       histoGroupName += GetName();
       TString histoGroupTitle = szGroupHistoPrefix;
       histoGroupTitle += GetTitle();
-
-      /* we open space for group number variable as well */
-      Int_t nVariables = fEventClassVariables.GetEntriesFast();
-      Double_t *minvals = new Double_t[nVariables+1];
-      Double_t *maxvals = new Double_t[nVariables+1];
-      Int_t *nbins = new Int_t[nVariables+1];
-
-      /* get the multidimensional structure */
-      fEventClassVariables.GetMultidimensionalConfiguration(nbins,minvals,maxvals);
 
       /* There will be a wrong external view of the channel number especially */
       /* manifested when there are holes in the channel assignment */
@@ -248,11 +259,6 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
       }
 
       fGroupValues->Sumw2();
-
-      /* we finished here with this stuff */
-      delete [] minvals;
-      delete [] maxvals;
-      delete [] nbins;
 
       /* now let's build its content */
       /* the procedure is as follows: we will project and add together the values histogram */
@@ -313,11 +319,14 @@ Bool_t AliQnCorrectionsProfileChannelizedIngress::AttachHistograms(TList *histog
       delete [] dimToProject;
       delete [] binsArray;
     }
+    /* we finished here with this stuff */
+    delete [] minvals;
+    delete [] maxvals;
+    delete [] nbins;
   }
   else
     return kFALSE;
 
-/* TODO: implement a new structure when we so decide */
   return kTRUE;
 }
 
@@ -336,15 +345,19 @@ Long64_t AliQnCorrectionsProfileChannelizedIngress::GetBin(const Float_t *variab
   return fValues->GetBin(fBinAxesValues);
 }
 
-/* TODO: incorporate a bin validity structure */
 /// Check the validity of the content of the passed bin
 /// For the time being this kind of histograms cannot check
 /// bin content validity so, kTRUE is returned.
 /// \param bin the bin to check its content validity
 /// \return kTRUE if the content is valid kFALSE otherwise
-Bool_t AliQnCorrectionsProfileChannelizedIngress::BinContentValidated(Long64_t) {
+Bool_t AliQnCorrectionsProfileChannelizedIngress::BinContentValidated(Long64_t bin) {
 
-  return kTRUE;
+  if (fValidated->GetBinContent(bin) < 0.5) {
+    return kFALSE;
+  }
+  else {
+    return kTRUE;
+  }
 }
 
 /// Get the bin content for the passed bin number

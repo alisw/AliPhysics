@@ -49,6 +49,7 @@ set(SRCS
   AliQnCorrectionsDetectorConfigurationTracks.cxx
   AliQnCorrectionsEventClassVariable.cxx
   AliQnCorrectionsEventClassVariablesSet.cxx
+  AliQnCorrectionsHistogram.cxx
   AliQnCorrectionsHistogramBase.cxx
   AliQnCorrectionsHistogramChannelized.cxx
   AliQnCorrectionsInputGainEqualization.cxx

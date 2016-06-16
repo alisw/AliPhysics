@@ -67,6 +67,9 @@ public:
   /// \param bin the bin to check its content validity
   /// \return kTRUE if the content is valid kFALSE otherwise
   virtual Bool_t BinContentValidated(Long64_t bin) = 0;
+  /// Set the minimum number of entries needed to validate the bin content
+  /// \param nNoOfEntries the number of entries threshold
+  virtual void SetNoOfEntriesThreshold(Int_t nNoOfEntries) { fMinNoOfEntriesToValidate = nNoOfEntries; }
 
   virtual Float_t GetBinContent(Long64_t bin);
   virtual Float_t GetXBinContent(Int_t harmonic, Long64_t bin);
@@ -107,15 +110,16 @@ public:
 
 protected:
   void FillBinAxesValues(const Float_t *variableContainer, Int_t chgrpId = -1);
-  THnF* DivideTHnF(THnF* values, THnI* entries);
+  THnF* DivideTHnF(THnF* values, THnI* entries, THnC *valid = NULL);
   void CopyTHnF(THnF *hDest, THnF *hSource, Int_t *binsArray);
   void CopyTHnFDimension(THnF *hDest, THnF *hSource, Int_t *binsArray, Int_t dimension);
 
   AliQnCorrectionsEventClassVariablesSet fEventClassVariables;  //!<! The variables set that determines the event classes
   Double_t *fBinAxesValues;                                  //!<! Runtime place holder for computing bin number
   QnCorrectionHistogramErrorMode fErrorMode;                 //!<! The error type for the current instance
+  Int_t fMinNoOfEntriesToValidate;                           // the minimum number of entries for validating a bin content
   /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsHistogramBase, 1);
+  ClassDef(AliQnCorrectionsHistogramBase, 2);
   /// \endcond
   static const char *szChannelAxisTitle;                 ///< The title for the channel extra axis
   static const char *szGroupAxisTitle;                   ///< The title for the channel group extra axis
@@ -133,7 +137,7 @@ protected:
   static const UInt_t correlationXYmask;                 ///< Maks for XY correlation component
   static const UInt_t correlationYXmask;                 ///< Maks for YX correlation component
   static const UInt_t correlationYYmask;                 ///< Maks for YY correlation component
-  static const Int_t nMinNoOfEntriesValidated;           ///< The minimum number of entries for validating a bin content
+  static const Int_t nDefaultMinNoOfEntriesValidated;    ///< The default minimum number of entries for validating a bin content
 };
 
 /// Fills the axes values for the current passed variable container

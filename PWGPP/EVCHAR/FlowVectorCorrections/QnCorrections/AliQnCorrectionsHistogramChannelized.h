@@ -36,7 +36,8 @@ public:
   AliQnCorrectionsHistogramChannelized();
   AliQnCorrectionsHistogramChannelized(const char *name,
       const char *title,
-      AliQnCorrectionsEventClassVariablesSet &ecvs);
+      AliQnCorrectionsEventClassVariablesSet &ecvs,
+      Int_t nNoOfChannels);
   virtual ~AliQnCorrectionsHistogramChannelized();
 
   Bool_t CreateChannelizedHistogram(TList *histogramList, const Bool_t *bUsedChannel);
