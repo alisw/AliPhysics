@@ -94,8 +94,8 @@ void ExtractCTPScalers_4634()
 
   for (Int_t i=0; i<sizeof(classIDs)/sizeof(TString); ++i) {
     for (Int_t j=0; j<sizeof(bunchIDs)/sizeof(TString); ++j) {
-      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244369, "txt/4634/ScanXY.txt",     nBunches[j], 4634);
-      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244375, "txt/4634/ScanOffset.txt", nBunches[j], 4634);
+      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244369, "txt/4634/ScanXY.txt",     nBunches[j], 4634, 0.593, 0.559);
+      ExtractRateFromCTPScalers(classIDs[i], bunchIDs[j], 244375, "txt/4634/ScanOffset.txt", nBunches[j], 4634, 0.593, 0.559);
     }
   }
 }

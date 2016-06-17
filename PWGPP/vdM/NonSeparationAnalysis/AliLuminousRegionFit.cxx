@@ -64,8 +64,7 @@ Bool_t AliLuminousRegionFit::CutOutliers(TTree *t, Bool_t doCut, Double_t sigmaT
 
 Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
 {
-  // see ATLAS-CONF-2010-027 
-
+  // see ATLAS-CONF-2010-027
   TMatrixD sigma(2,2);
 
   Double_t result = 0.0;

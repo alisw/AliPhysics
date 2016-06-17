@@ -11,7 +11,7 @@
 class AliDoubleGaussianBeamProfile : public TObject {  
 public:
 
-  static Bool_t Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile);
+  static Bool_t Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile, Double_t scaleZ=1.0, Bool_t debug=kFALSE);
 
   static Int_t GetNPar() { return 20; }
   static const char* GetParName(Int_t i);

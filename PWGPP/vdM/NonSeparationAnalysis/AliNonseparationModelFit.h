@@ -5,6 +5,7 @@
 
 #include <TObject.h>
 #include <TVectorD.h>
+#include <TMatrixD.h>
 
 class TObjArray;
 class TGraph;
@@ -37,6 +38,9 @@ public:
   Double_t GetChi2Moments() const;
   Double_t GetChi2Rates()   const;
 
+  static Bool_t IsGoodLumiRegionFit(Int_t k, Int_t scanType, const TVectorD& sep,
+				    const TVectorD& mom, const TMatrixDSym& cov);
+
 protected:
 private:
   AliNonseparationModelFit(const AliNonseparationModelFit& );
@@ -47,8 +51,11 @@ private:
 
   TVectorD  fPar;            //!
 
+  Int_t     fNRates;         //!
   Bool_t    fFitToRates;     //!
   Double_t  fScaleRateError; //!
+
+  Bool_t    fFitToOffsetScans; //!
 
   TVectorD  fMuOffsetsX;     //!
   TVectorD  fMuOffsetsY;     //!
