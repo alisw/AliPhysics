@@ -118,6 +118,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseLumiType(AliLumiTools::kLumiCTP),
   fSystCovAmplitude(2.0),
   fDistFluctCorrelation(0.99),
+  fGainCalibMinTPCsignalN(60.),
   fSystErrClInnerRegZ(0),
   fSystErrClInnerRegZSigInv(0),
   fUseSystematicCorrelation(kTRUE)
