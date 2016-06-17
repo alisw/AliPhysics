@@ -116,6 +116,7 @@ public:
    
    Int_t FollowProlongation(AliTPCseed& t, Int_t rf=0, Int_t step=1, Bool_t fromSeeds=0);
    Bool_t GetTrackPoint(Int_t index, AliTrackPoint &p ) const; 
+   void   AddSystCovariance(AliTPCseed* t);
 
    Int_t FollowBackProlongation(AliTPCseed& t, Int_t rf, Bool_t fromSeeds=0);
    Int_t FollowToNext(AliTPCseed& t, Int_t nr);

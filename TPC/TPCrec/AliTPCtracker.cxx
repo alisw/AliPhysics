@@ -107,6 +107,7 @@
 #include "AliESDVertex.h"
 #include "AliKink.h"
 #include "AliV0.h"
+#include "AliVParticle.h"
 #include "AliHelix.h"
 #include "AliRunLoader.h"
 #include "AliTPCClustersRow.h"
@@ -598,6 +599,9 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
       if (!pt) continue; 
       pt->UpdatePoints();
+
+      AddSystCovariance(pt); // correct covariance matrix for clusters syst. error
+
       AddCovariance(pt);
       if (AliTPCReconstructor::StreamLevel()&kStreamFillESD) {
 	(*fDebugStreamer)<<"FillESD"<<  // flag: stream track information in FillESD function (after track Iteration 0)
@@ -609,7 +613,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	pt->PropagateTo(fkParam->GetInnerRadiusLow());
 	pt->SetRow(0); // RS: memorise row
       }
- 
+      
       if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
 	iotrack.~AliESDtrack();
 	new(&iotrack) AliESDtrack;
@@ -790,7 +794,9 @@ void AliTPCtracker::ErrY2Z2(AliTPCseed* seed, const AliTPCclusterMI * cl, double
   errz2 += serrz2;
   seed->SetErrorY2(erry2);
   seed->SetErrorZ2(errz2);
-  //
+  seed->SetErrorY2Syst(serry2);
+  seed->SetErrorZ2Syst(serrz2);
+ //
 }
 
 
@@ -3730,7 +3736,11 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     seed->PropagateTo(fkParam->GetInnerRadiusLow());
     seed->SetRow(0);
     seed->UpdatePoints();
+
+    AddSystCovariance(seed); // correct covariance matrix for clusters syst. error
+
     AddCovariance(seed);
+
     MakeESDBitmaps(seed, esd);
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
@@ -3863,6 +3873,9 @@ Int_t AliTPCtracker::PropagateBack(AliESDEvent *event)
     //
     if (seed->GetKinkIndex(0)<0)  UpdateKinkQualityM(seed);  // update quality informations for kinks
     seed->UpdatePoints();
+    
+    AddSystCovariance(seed); // correct covariance matrix for clusters syst. error
+
     AddCovariance(seed);
     if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
       AliExternalTrackParam paramIn;
@@ -9779,4 +9792,91 @@ void AliTPCtracker::CleanESDTracksObjects(TObjArray* trcList)
     }
   }
   //
+}
+
+//__________________________________________________________________
+void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
+{
+  // calculate correction to covariance matrix at given point
+  //
+  float amplCorr  = AliTPCReconstructor::GetRecoParam()->GetSystCovAmplitude(); // amplitude of correction
+  if (amplCorr<1e-6) return;                                                    // no correction
+  float fluctCorr = AliTPCReconstructor::GetRecoParam()->GetDistFluctCorrelation(); // distortion fluctuations correlation 
+
+  double corY[6]={0},corZ[3]={0},jacobC = kB2C*GetBz()/2;
+  float xArr[kMaxRow][3], xRef = t->GetX();
+  float gammaY[kMaxRow],gammaZ[kMaxRow]; // sysErr^2 / totErr^4
+  int nclFit = 0;
+  for (int ip=kMaxRow;ip--;) {
+    int index = t->GetClusterIndex2(ip);
+    if ( index<0 || (index&0x8000)) continue; // missing or discared cluster
+    const AliTPCTrackerPoints::Point *trpoint =t->GetTrackPoint(ip);
+    xArr[nclFit][0] = 1.;
+    double dx = trpoint->GetX()-xRef;
+    xArr[nclFit][1] = dx;
+    xArr[nclFit][2] = dx*dx;
+    gammaY[nclFit] = trpoint->GetErrYSys2TotSq(); // sysE/totE^2
+    gammaZ[nclFit] = trpoint->GetErrZSys2TotSq(); // sysE/totE^2
+    nclFit++;
+  }
+  // X^{T} W M W^{T} X matrix
+  int cnt=0; 
+  for (int row=0;row<3;row++) {
+    for (int col=0;col<=row;col++) { // matrix is symmetric
+      for (int ip=0;ip<nclFit;ip++) {
+	for (int jp=0;jp<nclFit;jp++) {
+	  double corr = (ip==jp ? 1.0:fluctCorr) * amplCorr;
+	  double xprod = xArr[ip][row]*xArr[jp][col]*corr;
+	  corY[cnt] += xprod*gammaY[ip]*gammaY[jp];
+	  if (row<2) corZ[cnt] += xprod*gammaZ[ip]*gammaZ[jp];
+	}
+      }
+      cnt++;
+    }
+  }
+  //
+  // account for jacobian C->P[4]
+  corY[3] *= jacobC;
+  corY[4] *= jacobC;
+  corY[5] *= jacobC*jacobC;
+  //
+  //
+  double *covP = (double*)t->GetCovariance(),
+    &C00=covP[0],
+    &C10=covP[1] ,&C11=covP[2],
+    &C20=covP[3] ,&C21=covP[4] ,&C22=covP[5],
+    &C30=covP[6] ,&C31=covP[7] ,&C32=covP[8] ,&C33=covP[9],
+    &C40=covP[10],&C41=covP[11],&C42=covP[12],&C43=covP[13],&C44=covP[14];
+  double &g00=corY[0],&g11=corZ[0],&g20=corY[1],&g22=corY[2],&g31=corZ[1],&g33=corZ[2],&g40=corY[3],&g42=corY[4],&g44=corY[5];
+
+  double
+    cg00=C00*g00 + C20*g20 + C40*g40, cg01=C10*g11 + C30*g31, cg02=C00*g20 + C20*g22 + C40*g42, cg03=C10*g31 + C30*g33, cg04=C00*g40 + C20*g42 + C40*g44,
+    cg10=C10*g00 + C21*g20 + C41*g40, cg11=C11*g11 + C31*g31, cg12=C10*g20 + C21*g22 + C41*g42, cg13=C11*g31 + C31*g33, cg14=C10*g40 + C21*g42 + C41*g44,
+    cg20=C20*g00 + C22*g20 + C42*g40, cg21=C21*g11 + C32*g31, cg22=C20*g20 + C22*g22 + C42*g42, cg23=C21*g31 + C32*g33, cg24=C20*g40 + C22*g42 + C42*g44,
+    cg30=C30*g00 + C32*g20 + C43*g40, cg31=C31*g11 + C33*g31, cg32=C30*g20 + C32*g22 + C43*g42, cg33=C31*g31 + C33*g33, cg34=C30*g40 + C32*g42 + C43*g44,
+    cg40=C40*g00 + C42*g20 + C44*g40, cg41=C41*g11 + C43*g31, cg42=C40*g20 + C42*g22 + C44*g42, cg43=C41*g31 + C43*g33, cg44=C40*g40 + C42*g42 + C44*g44;
+  //
+  double 
+    a00 = C00*cg00 + C10*cg01 + C20*cg02 + C30*cg03 + C40*cg04, //  row0
+    a10 = C00*cg10 + C10*cg11 + C20*cg12 + C30*cg13 + C40*cg14, //  row1 
+    a11 = C10*cg10 + C11*cg11 + C21*cg12 + C31*cg13 + C41*cg14,
+    a20 = C00*cg20 + C10*cg21 + C20*cg22 + C30*cg23 + C40*cg24, //  row2 
+    a21 = C10*cg20 + C11*cg21 + C21*cg22 + C31*cg23 + C41*cg24, 
+    a22 = C20*cg20 + C21*cg21 + C22*cg22 + C32*cg23 + C42*cg24,
+    a30 = C00*cg30 + C10*cg31 + C20*cg32 + C30*cg33 + C40*cg34, //  row3
+    a31 = C10*cg30 + C11*cg31 + C21*cg32 + C31*cg33 + C41*cg34, 
+    a32 = C20*cg30 + C21*cg31 + C22*cg32 + C32*cg33 + C42*cg34, 
+    a33 = C30*cg30 + C31*cg31 + C32*cg32 + C33*cg33 + C43*cg34,
+    a40 = C00*cg40 + C10*cg41 + C20*cg42 + C30*cg43 + C40*cg44, //  row4 
+    a41 = C10*cg40 + C11*cg41 + C21*cg42 + C31*cg43 + C41*cg44, 
+    a42 = C20*cg40 + C21*cg41 + C22*cg42 + C32*cg43 + C42*cg44, 
+    a43 = C30*cg40 + C31*cg41 + C32*cg42 + C33*cg43 + C43*cg44, 
+    a44 = C40*cg40 + C41*cg41 + C42*cg42 + C43*cg43 + C44*cg44;
+    
+  C00 += a00;
+  C10 += a10;  C11 += a11;
+  C20 += a20;  C21 += a21;  C22 += a22;
+  C30 += a30;  C31 += a31;  C32 += a32;  C33 += a33;
+  C40 += a40;  C41 += a41;  C42 += a42;  C43 += a43;  C44 += a44;
+  
 }
