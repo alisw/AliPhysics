@@ -119,7 +119,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   if(ESDmult < 0.) return;
   ((TH2*)fHistosQA->At(3))->Fill(3, ESDmult);
 */
-  Double_t vec_hNoEvts[4];   // vector used to fill hNoEvts
+  Double_t vec_hNoEvts[7];   // vector used to fill hNoEvts
   THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(3);
 //   vec_hNoEvts[1] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);				// combined multiplicity with |eta| < 0.8
   vec_hNoEvts[1] = mult_comb08;				// combined multiplicity with |eta| < 0.8
@@ -128,6 +128,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
 //   vec_hNoEvts[3] = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb0408);		// combined multiplicity with 0.4 < |eta| < 0.8
 // vec_hNoEvts[3] = mult_comb0408;		// combined multiplicity with 0.4 < |eta| < 0.8
   vec_hNoEvts[3] = directivity;		// combined multiplicity with 0.4 < |eta| < 0.8
+  if( HasMCdata() ){
+    vec_hNoEvts[4] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kGlob08);
+	vec_hNoEvts[5] = fMCevInfo->GetMultiplicity(AliMESeventInfo::kV0M);
+    vec_hNoEvts[6] = MC_directivity;
+  }
 
 /*
  // !!!!!!!!!!
