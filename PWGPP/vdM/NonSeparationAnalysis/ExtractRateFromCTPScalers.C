@@ -65,7 +65,8 @@ TGraphErrors* DrawRateVsSep(TTree *tRate, TGraph *gSep,
 			    TGraph* gCounter,
 			    Double_t tBeg, Double_t tEnd,
 			    Int_t nB,
-			    TGraphErrors *gRateSepNoCorr) {
+			    TGraphErrors *gRateSepNoCorr,
+			    Double_t pileupA, Double_t pileupC) {
 
   const Double_t *t = gSep->GetX();
   const Double_t *s = gSep->GetY();
@@ -74,7 +75,7 @@ TGraphErrors* DrawRateVsSep(TTree *tRate, TGraph *gSep,
   Double_t tIntervalBeg = 0;
   Double_t tIntervalEnd = 0;
 
-  const RateCorr fRateCorr;
+  const RateCorr fRateCorr(pileupA, pileupC);
 
   const Bool_t isADAND(kFALSE);//title.Contains("ADAND") || kTRUE);
 
@@ -157,7 +158,8 @@ TTree* MakeRateTTree(Long64_t n, Double_t *timeSeconds, Double_t *counter) {
 }
 
 
-void ExtractRateFromCTPScalers(TString classID, TString bunchID, Int_t rn, TString scanInfoFileName, Int_t nBunches, Int_t fillNumber) {
+void ExtractRateFromCTPScalers(TString classID, TString bunchID, Int_t rn, TString scanInfoFileName, Int_t nBunches, Int_t fillNumber,
+			       Double_t pileupA, Double_t pileupC) {
   TTree   *tScanInfo = new TTree;
   tScanInfo->ReadFile(scanInfoFileName, "scanType/C:scanBeg/D:scanEnd:yMaxLin:yMaxLog");
   Long64_t nScans   = tScanInfo->GetEntries();
@@ -192,7 +194,7 @@ void ExtractRateFromCTPScalers(TString classID, TString bunchID, Int_t rn, TStri
     tScanInfo->GetEntry(i);
     Printf("%s %.0f %.0f", scanType, scanBeg, scanEnd);
     gRateVsSepNoCorr[i] = new TGraphErrors;
-    gRateVsSep[i] = DrawRateVsSep(tRate, gSep, gCounter, scanBeg, scanEnd,  nBunches, gRateVsSepNoCorr[i]);
+    gRateVsSep[i] = DrawRateVsSep(tRate, gSep, gCounter, scanBeg, scanEnd,  nBunches, gRateVsSepNoCorr[i], pileupA, pileupC);
   }
   
   TFile::Open(Form("root/%d/%d_%s-%s.root", fillNumber, rn, classID.Data(), bunchID.Data()), "RECREATE");

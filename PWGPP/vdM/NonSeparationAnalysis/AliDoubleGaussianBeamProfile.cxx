@@ -45,6 +45,9 @@ namespace Detail {
   Double_t kappa_b2; // x,y correlation of gaussian b in beam 2
   Double_t w2; // weight of gaussian a in beam 2
 
+  Bool_t   doDebug = kFALSE;
+  Double_t scaleZ  = 5e-3;
+
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
   void DefineRotationMatrix(Double_t xz, Double_t yz, TMatrixD& m)
@@ -238,7 +241,8 @@ namespace Detail {
     Double_t K_Det = 0;
     K = K_Inv;
     K.InvertFast(&K_Det);
-
+    if (doDebug)
+      Printf("det(K)=%e", K_Det);
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // compute mean matrix
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -266,6 +270,13 @@ namespace Detail {
     const Double_t beta = beta_Sum2(0,0)+beta_Sum3(0,0)-beta_Sum1(0,0);
     const Double_t A = TMath::Exp(0.5*beta)*TMath::Sqrt(sigma_t_2*K_Det/(C1_Det*C2_Det))/TMath::TwoPi();
     return A;
+  }
+
+  void ScaleCov(TMatrixD& c, Double_t f) {
+    for (Int_t i=0; i<3; ++i) {
+      c(2,i) *=f;
+      c(i,2) *=f;
+    }
   }
 
   // ------------------------------------------------------------------------
@@ -310,8 +321,9 @@ namespace Detail {
     DefineVector(0.5*delta_x,0.5*delta_y,0,mu0_1);
     TMatrixD a1(3,1); // eq. A4 (there named \vec{a})
 #if 1
-    DefineVector(-TMath::Sin(theta_xz),TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
-		 TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a1);
+    DefineVector(-TMath::Sin(theta_xz),
+		 TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
+		 scaleZ*TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a1);
 #else
     DefineVector(-TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
 		 -TMath::Sin(theta_xz),	       
@@ -332,13 +344,20 @@ namespace Detail {
     DefineVector(-0.5*delta_x,-0.5*delta_y,0,mu0_2);
     TMatrixD a2(3,1); // eq. A4 (there named \vec{b})
 #if 1
-    DefineVector(-TMath::Sin(theta_xz),TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
-		 -TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a2);
+    DefineVector(-TMath::Sin(theta_xz),
+		 TMath::Cos(theta_xz)*TMath::Sin(theta_yz),
+		 -scaleZ*TMath::Cos(theta_xz)*TMath::Cos(theta_yz),a2);
 #else
     DefineVector(-TMath::Cos(-theta_xz)*TMath::Sin(-theta_yz),
 		 -TMath::Sin(-theta_xz),	       
 		 TMath::Cos(-theta_xz)*TMath::Cos(-theta_yz),a2);
 #endif  
+
+    ScaleCov(Cov_a1, scaleZ);
+    ScaleCov(Cov_b1, scaleZ);
+    ScaleCov(Cov_a2, scaleZ);
+    ScaleCov(Cov_b2, scaleZ);
+
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // Compute the time integrated product of the
     // two gaussians.
@@ -349,28 +368,25 @@ namespace Detail {
     // first product: gaussian a1 * gaussian a2
     TMatrixD K_a1a2(3,3);
     TMatrixD alpha_a1a2(3,1);  
-    const Double_t A_a1a2 = w1*w2*
-      GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_a2, alpha_a1a2, K_a1a2);
+
+    Double_t A_a1a2 = w1*w2*GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_a2, alpha_a1a2, K_a1a2);
     // second product: gaussian a1 * gaussian b2
     TMatrixD K_a1b2(3,3);
     TMatrixD alpha_a1b2(3,1);  
-    const Double_t A_a1b2 = w1*(1-w2)*
-      GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_b2, alpha_a1b2, K_a1b2);
+    Double_t A_a1b2 = w1*(1-w2)*GetProduct2GaussiansWebb(mu0_1, a1, Cov_a1, mu0_2, a2, Cov_b2, alpha_a1b2, K_a1b2);
     // third product: gaussian b1 * gaussian a2
     TMatrixD K_b1a2(3,3);
     TMatrixD alpha_b1a2(3,1);  
-    const Double_t A_b1a2 = (1-w1)*w2*
-      GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_a2, alpha_b1a2, K_b1a2);
+    Double_t A_b1a2 = (1-w1)*w2*GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_a2, alpha_b1a2, K_b1a2);
     // fourth product: gaussian b1 * gaussian b2
     TMatrixD K_b1b2(3,3);
     TMatrixD alpha_b1b2(3,1);  
-    const Double_t A_b1b2 = (1-w1)*(1-w2)*
-      GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_b2, alpha_b1b2, K_b1b2);
+    Double_t A_b1b2 = (1-w1)*(1-w2)*GetProduct2GaussiansWebb(mu0_1, a1, Cov_b1, mu0_2, a2, Cov_b2, alpha_b1b2, K_b1b2);
 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
     // Compute the luminosity 
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
-    const Double_t KF = 2.0;
+    const Double_t KF   = 2.0;
     const Double_t SumA = A_a1a2+A_a1b2+A_b1a2+A_b1b2;
     const Double_t Lumi = KF*SumA;
 
@@ -395,6 +411,17 @@ namespace Detail {
     TMatrixD Cov2(K_a1b2,TMatrixD::kPlus,p2);
     TMatrixD Cov3(K_b1a2,TMatrixD::kPlus,p3);
     TMatrixD Cov4(K_b1b2,TMatrixD::kPlus,p4);  
+    if (doDebug) {
+      Printf("p1:"); p1.Print();
+      Printf("p2:"); p2.Print();
+      Printf("p3:"); p3.Print();
+      Printf("p4:"); p4.Print();
+      Printf("Cov1:"); Cov1.Print();
+      Printf("Cov2:"); Cov2.Print();
+      Printf("Cov3:"); Cov3.Print();
+      Printf("Cov4:"); Cov4.Print();
+      Printf("#################### A_a1a2,...=%e %e %e %e", A_a1a2, A_a1b2, A_b1a2, A_b1b2);
+    }
     Cov1 = A_a1a2*Cov1;
     Cov2 = A_a1b2*Cov2;
     Cov3 = A_b1a2*Cov3;
@@ -402,6 +429,13 @@ namespace Detail {
     TMatrixD Cov_Sum1(3,3);
     Cov_Sum1 = Cov1+Cov2+Cov3+Cov4;
     Cov_Sum1 = (1.0/SumA)*Cov_Sum1;
+    
+    if (doDebug) {
+      Printf("Cov1:"); Cov1.Print();
+      Printf("Cov2:"); Cov2.Print();
+      Printf("Cov3:"); Cov3.Print();
+      Printf("Cov4:"); Cov4.Print();
+    }
 
     TMatrixD Cov_Sum2(mean_pos,TMatrixD::kMultTranspose,mean_pos);
     Cov_Sum2 = (1.0/(SumA*SumA))*Cov_Sum2;
@@ -412,25 +446,28 @@ namespace Detail {
     const Double_t Sxy = Cov(0,1)/(Sx*Sy);
   
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
-    // Fill vaules in output array
+    // Fill values in output array
     // ooooooooooooooooooooooooooooooooooooooooooooooooooo
-    profile[0] = Lumi;
+    profile[0] = Lumi * scaleZ*scaleZ*scaleZ;
     profile[1] = mean_pos_norm(0,0);
     profile[2] = mean_pos_norm(1,0);
-    profile[3] = mean_pos_norm(2,0);
+    profile[3] = mean_pos_norm(2,0) / scaleZ;
     //  mean_pos_norm.Print();
     profile[4] = Sx;
     profile[5] = Sy;
-    profile[6] = Sz;
+    profile[6] = Sz / scaleZ;
     profile[7] = Sxy;
   }
 
 }
 
-Bool_t AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile)
+Bool_t AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TVectorD &par, TVectorD &profile, Double_t scaleZ, Bool_t debug)
 {
   if (par.GetNoElements()      < 20) AliFatalClass("par.GetNoElements() < 20");
   if (profile.GetNoElements() !=  8) AliFatalClass("profile.GetNoElements() !=  8");
+
+  Detail::scaleZ  = scaleZ;
+  Detail::doDebug = debug;
 
   Detail::sigma_xa1 = par[ 0];
   Detail::sigma_ya1 = par[ 1];
@@ -481,8 +518,8 @@ Bool_t AliDoubleGaussianBeamProfile::Eval(Double_t sepX, Double_t sepY, const TV
 Double_t AliDoubleGaussianBeamProfile::EvalProfile0(Double_t *x, Double_t *p) {
   const TVectorD par(20, p);
   TVectorD profile(8);
-  Eval(x[0], x[1], par, profile);
-  return profile(0);
+  Eval(x[0], x[1], par, profile, 5e-3);
+  return (TMath::IsNaN(profile(0)) ? 0.0 : profile(0));
 }
 
 const char* AliDoubleGaussianBeamProfile::GetParName(Int_t i)
