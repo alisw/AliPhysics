@@ -84,6 +84,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
 
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
+     void SetErrorY2Syst(Float_t sy2){fErrorY2Syst=sy2;}
+     void SetErrorZ2Syst(Float_t sz2){fErrorZ2Syst=sz2;}
      Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=kMaxRow, Bool_t onlyused = kFALSE);
      Float_t  CookShape(Int_t type);
      //  Float_t CookShape2(Int_t type,Bool_t withQ);
@@ -137,6 +139,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      Bool_t GetInDead() const {return TestBit(kInDead);}
      Float_t GetErrorY2() const {return fErrorY2;}
      Float_t GetErrorZ2() const {return fErrorZ2;}
+     Float_t GetErrorY2Syst() const {return fErrorY2Syst;}
+     Float_t GetErrorZ2Syst() const {return fErrorZ2Syst;}
   Float_t GetCMeanSigmaY2p30() const {return fCMeanSigmaY2p30;}
   Float_t GetCMeanSigmaZ2p30() const {return fCMeanSigmaZ2p30;}
   Float_t GetCMeanSigmaY2p30R() const {return fCMeanSigmaY2p30R;}
@@ -192,6 +196,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      Float_t fCMeanSigmaZ2p30R;   //! current relative mean sigma Z2 - mean30%
      Float_t fErrorY2;           //!sigma of current cluster 
      Float_t fErrorZ2;           //!sigma of current cluster    
+     Float_t fErrorY2Syst;        //!syst sigma of current cluster 
+     Float_t fErrorZ2Syst;        //!syst sigma of current cluster    
      AliTPCclusterMI * fCurrentCluster; //!pointer to the current cluster for prolongation
      Int_t   fCurrentClusterIndex1; //! index of the current cluster
      UChar_t  fNoCluster;         //!indicates number of rows without clusters
@@ -212,7 +218,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      Float_t fMAngular;           // mean angular factor
      Int_t   fPoolID;              //! id in the pool
      AliTPCTrackerPoints fTrackPointsArr;  // track points - array track points
-     ClassDef(AliTPCseed,9)
+     ClassDef(AliTPCseed,10)
 };
 
 

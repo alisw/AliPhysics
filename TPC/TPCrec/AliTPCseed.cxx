@@ -63,6 +63,8 @@ AliTPCseed::AliTPCseed():
   //
   fErrorY2(1e10),
   fErrorZ2(1e10),
+  fErrorY2Syst(0.),
+  fErrorZ2Syst(0.),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
   fNoCluster(0),
@@ -106,6 +108,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fCMeanSigmaZ2p30R(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
+  fErrorY2Syst(0.),
+  fErrorZ2Syst(0.),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
   fNoCluster(0),
@@ -165,6 +169,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fCMeanSigmaZ2p30R(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
+  fErrorY2Syst(0.),
+  fErrorZ2Syst(0.),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
   fNoCluster(0),
@@ -220,6 +226,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fCMeanSigmaZ2p30R(-1.),   //! current mean sigma Z2 - mean2%
   fErrorY2(1e10),
   fErrorZ2(1e10),
+  fErrorY2Syst(0.),
+  fErrorZ2Syst(0.),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
   fNoCluster(0),
@@ -305,6 +313,8 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     fCMeanSigmaZ2p30R = param.fCMeanSigmaZ2p30R;
     fErrorY2        = param.fErrorY2;
     fErrorZ2        = param.fErrorZ2;
+    fErrorY2Syst    = param.fErrorY2Syst;
+    fErrorZ2Syst    = param.fErrorZ2Syst;
     fCurrentCluster = param.fCurrentCluster; // this is not allocated by AliTPCSeed
     fCurrentClusterIndex1 = param.fCurrentClusterIndex1; 
     fNoCluster      = param.fNoCluster;
