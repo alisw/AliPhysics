@@ -10,12 +10,18 @@
   //   **  <varname>_PhysAcc, <varname>_PhysAccMin,  <varname>_PhysAccMax
   // Define status bar configuartion
   //  
+  gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/install/include -I$ALICE_ROOT/STEER\
+   -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCBase  -I$ALICE_ROOT/TPC/TPCRec -I$ALICE_ROOT/TPC/TPCCalib -I$ALICE_PHYSICS/../src/PWGPP/TPC/");
   .L $ALICE_PHYSICS/../src/PWGPP/T0/qaConfig.C+
-  trendingTree=GetExampleTree();
-  tree=trendingTree;
+  period="LHC15o";
+  pass="cpass1_pass1";
+  tree=InitTrees();
+  trendingTree=tree;
   tree->SetAlias("tagID","run");
+
   TString returnString[3];
   qaConfig(trendingTree, returnString);
+  DrawTrending(tree);
 
 */
 
@@ -28,6 +34,13 @@
 #include "TMultiGraph.h"
 #include "TMath.h"
 #include "TLegend.h"
+
+
+//
+// Setup configuration:
+//
+char * year=0, *period=0, *pass=0;
+
 //
 // Drawing configuration:
 //
@@ -62,15 +75,15 @@ Int_t padRightMargin=0.07;
 
 
 TTree * trendingTree=0;
+TTree * rctTree=0, *cpassTree=0;
 
 
-
-TTree * GetExampleTree(){
+TTree * InitTrees(){
   //
   // Example tree for testing
   //
   AliExternalInfo info;
-  TTree * tree = info.GetTreeDataQA("T0","LHC15o","cpass1_pass1");
+  TTree * tree = info.GetTreeDataQA("T0",period, pass);
   return tree;  
 }
 
@@ -106,6 +119,39 @@ Int_t PlotStatusLines(TTree * tree, const char * expr, const char * cut)
 
   return 1;
 }
+ 
+
+TTree * GetCPassTree(const char * period, const * char pass){
+  //
+  // try to find production information about pass OCDB export
+  //
+  TTree * treeProd=0;
+  AliExternalInfo info;
+  treeProdArray = info.GetTreeCPass();
+  treeProdArray->Scan("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")",period,pass).Data(),"col=10:100");
+  // check all candidata production and select one which exports OCDB
+  Int_t entries= treeProdArray->Draw("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")",period,pass).Data(),"col=10:100");  
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    TTree * treeProd0 = info.GetTreeProdCycleByID(TString::Format("%.0f",treeProdArray->GetV1()[ientry]).Data());
+    treeProd0->Draw("1","strstr(outputdir,\"OCDB\")==1");
+    if (treeProd0->Draw("1","strstr(outputdir,\"OCDB\")==1")==0) {
+      delete treeProd0;
+      continue;
+    }
+    treeProd=treeProd0;
+  }
+
+}
+
+Bool_t MyRegExp(const char * chinput,Int_t p1){
+  //
+  //
+  //
+  printf("%s\n",chinput);
+  return p1;
+}
+
+
 
 TObjArray * GetTexDescription(TLatex *latex){
   //
@@ -114,7 +160,8 @@ TObjArray * GetTexDescription(TLatex *latex){
   TObjArray * description= new TObjArray();
   TString sTimestamp  = TString::Format("Creation time:%s",gSystem->GetFromPipe("date").Data());
   TString sUser=TString::Format("User:%s",gSystem->GetFromPipe("echo $USER").Data());  
-  TString sHost=TString::Format("HOST:%s",gSystem->GetFromPipe("echo $HOSTNAME").Data());  
+  TString sPeriod=TString::Format("period:%s",period);  
+  TString sPass=TString::Format("pass:%s",pass);  
   TString sAlirootVer;
   TString sAliphysicsVer;
   if (gSystem->GetFromPipe("echo $ALICE_VER") == "master" || gSystem->GetFromPipe("echo $ALICE_VER") == ""){
@@ -130,9 +177,10 @@ TObjArray * GetTexDescription(TLatex *latex){
   //
   description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY(),sTimestamp.Data()));
   description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-1.1*latex->GetTextSize(),sUser.Data()));
-  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-2.2*latex->GetTextSize(),sHost.Data()));
-  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-3.3*latex->GetTextSize(),sAlirootVer.Data()));
-  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-4.4*latex->GetTextSize(),sAliphysicsVer.Data()));
+  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-2.2*latex->GetTextSize(),sPeriod.Data()));
+  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-3.3*latex->GetTextSize(),sPass.Data()));
+  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-4.4*latex->GetTextSize(),sAlirootVer.Data()));
+  description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-5.5*latex->GetTextSize(),sAliphysicsVer.Data()));
   return description;
 }
 
@@ -265,7 +313,6 @@ void DrawTrending(TTree * tree){
     ((TMultiGraph*) oaMultGr->At(igr))->SetTitle(sYtitle.Data());
     igr++;
   }
-
   //
   // 
   //
@@ -275,19 +322,19 @@ void DrawTrending(TTree * tree){
   // Plot 1.)
   //  
   /****** Resolution  vs ID (run number or period, ...) ******/
-  canvasQA->Clear();
-  gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"resolution:tagID","",marA1,colPosA,1.0);
-  ComputeRange(tree, "resolution", plotmean, plotoutlier);
-  gr->GetHistogram()->SetMinimum(plotmean-2*plotoutlier);
-  gr->GetHistogram()->SetMaximum(plotmean+2*plotoutlier);
-  gr->GetXaxis()->LabelsOption("v");
-  gr->Draw("AP");
-
-  PlotStatusLines(tree,"resolution:tagID","");
-  //PlotTimestamp(entries,entries_tree,c1);
+  canvasQA->Clear(); 
+  TLegend *legend1=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Time resolution ");
+  multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","resolution:tagID:5","","21","1;",kTRUE,0.8,9, legend1);
+  multiLine =TStatToolkit::MakeMultGraph(tree, "T0 <T>","resolution_RobustMean;resolution_WarningMin;resolution_WarningMax;resolution_OutlierMin;resolution_OutlierMax:tagID", "","0;0;0;0;0;0;0;0",bandColors,kTRUE,0,0,0);
+  multiGraph->SetMinimum(-100);
+  multiGraph->SetMaximum(200);
+  multiGraph->Draw();
+  legend1->Draw();
+  multiLine->Draw();
   TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
+  description->DrawClone();
   canvasQA->SaveAs("resolution_vs_TagID.png");
   canvasQA->Clear();
 
@@ -304,10 +351,11 @@ void DrawTrending(TTree * tree){
   multiGraph->Draw();
   multiLine->Draw();
   legend2->Draw();
-  //PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin);  canvasQA->Draw();
+  description->DrawClone();
+
   canvasQA->SaveAs("T0QADeltaTTrending.png");
   canvasQA->Clear();
 
