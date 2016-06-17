@@ -238,8 +238,12 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     //
     point.SetSigmaY(c->GetSigmaY2()/track->GetCurrentSigmaY2());
     point.SetSigmaZ(c->GetSigmaZ2()/track->GetCurrentSigmaZ2());
-    point.SetErrY(sqrt(track->GetErrorY2()));
-    point.SetErrZ(sqrt(track->GetErrorZ2()));
+    float raty = track->GetErrorY2()>0 ? sqrt(track->GetErrorY2Syst())/track->GetErrorY2() : 0;
+    float ratz = track->GetErrorZ2()>0 ? sqrt(track->GetErrorZ2Syst())/track->GetErrorZ2() : 0;
+    point.SetErrYSys2TotSq(raty);
+    point.SetErrZSys2TotSq(ratz);
+    //    point.SetErrY(sqrt(track->GetErrorY2()));
+    //    point.SetErrZ(sqrt(track->GetErrorZ2()));
     //
     point.SetX(track->GetX());
     point.SetY(track->GetY());

@@ -164,11 +164,15 @@ class AliTPCTrackerPoints  {
     //
     Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
     Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
-    Float_t  GetErrZ()   const {return (fErrZ*0.005);}
-    Float_t  GetErrY()   const {return (fErrY*0.005);}
+    //    Float_t  GetErrZ()   const {return (fErrZ*0.005);}
+    //    Float_t  GetErrY()   const {return (fErrY*0.005);}
+    Float_t  GetErrYSys2TotSq() const {return fErrY*15./UCHAR_MAX;}
+    Float_t  GetErrZSys2TotSq() const {return fErrZ*15./UCHAR_MAX;}
     //
-    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
-    void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
+    //    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
+    //    void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
+    void     SetErrZSys2TotSq(Float_t r) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(r*UCHAR_MAX/15.),0,UCHAR_MAX));}
+    void     SetErrYSys2TotSq(Float_t r) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(r*UCHAR_MAX/15.),0,UCHAR_MAX));}
     void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmaz*50.),0,UCHAR_MAX));}
     void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmay*50.),0,UCHAR_MAX));}
 
@@ -181,8 +185,8 @@ class AliTPCTrackerPoints  {
     Char_t    fTAngleY;    ///< angle
     UChar_t   fSigmaZ;     ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
     UChar_t   fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
-    UChar_t   fErrZ;       ///< z error estimate - in  mm - 50 mum precision
-    UChar_t   fErrY;       ///< y error estimate - in  mm - 50 mum precision
+    UChar_t   fErrZ;       ///< z error estimate - in  mm - 50 mum precision or ratio of sysErr/totErr^2 in Z (prec 15./255)
+    UChar_t   fErrY;       ///< y error estimate - in  mm - 50 mum precision or ratio of sysErr/totErr^2 in Y (prec 15./255)
   };
   
  public:
