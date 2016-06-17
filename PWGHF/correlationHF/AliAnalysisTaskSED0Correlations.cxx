@@ -117,6 +117,7 @@ AliAnalysisTaskSE(),
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
+  fMinDPt(2.),
   fFillTrees(kFALSE),
   fFractAccME(100),
   fBranchD(),
@@ -186,6 +187,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fUseDeff(kTRUE),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
+  fMinDPt(2.),
   fFillTrees(kFALSE),
   fFractAccME(100),
   fBranchD(),
@@ -277,6 +279,7 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fUseDeff(source.fUseDeff),
   fUseTrackeff(source.fUseTrackeff),
   fPtAssocLimit(source.fPtAssocLimit),
+  fMinDPt(source.fMinDPt),
   fFillTrees(source.fFillTrees),
   fFractAccME(source.fFractAccME),
   fBranchD(source.fBranchD),
@@ -390,6 +393,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fUseDeff = orig.fUseDeff;
   fUseTrackeff = orig.fUseTrackeff;
   fPtAssocLimit = orig.fPtAssocLimit;
+  fMinDPt = orig.fMinDPt;
   fFillTrees = orig.fFillTrees;
   fFractAccME = orig.fFractAccME; 
   fBranchD = orig.fBranchD;
@@ -865,7 +869,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
  
-      if(d->Pt()<2.) continue; //to save time and merging memory...
+      if(d->Pt() < fMinDPt) continue; //to save time and merging memory...
 
       if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
   	fNentries->Fill(2);
@@ -898,23 +902,23 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         if(!fReadMC) {
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
             if(!fMixing && !fAlreadyFilled) {
- 	         ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-	         ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
+ 	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
             }
-	        if(fFillTrees) FillTreeD0(d,aod); //only for offline correlations
-	        else CalculateCorrelations(d); //correlations on real data
-	      }
+	    if(fFillTrees) FillTreeD0(d,aod); //only for offline correlations
+	    else CalculateCorrelations(d); //correlations on real data
+	  }
         } else { //correlations on MC -> association of selected D0 to MCinfo with MCtruth
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
             Int_t pdgDgD0toKpi[2]={321,211};
     	    Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
             if (labD0>-1) {
               if(!fMixing && !fAlreadyFilled) {
-		        ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	          CalculateCorrelations(d,labD0,mcArray);
-	        }
+	      CalculateCorrelations(d,labD0,mcArray);
+	    }
           }
         }
 
@@ -2779,7 +2783,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     fNtrigD++; //increase by 1 the index of D0 triggers in the event
   } //end of if for tree filling
 
-  fAlreadyFilled++; //A D0 was selected in the event (even if can be also outside mass range)! Enables saving the tracks of the event in the ME offline approach
+  fAlreadyFilled=kTRUE; //A D0 was selected in the event (even if can be also outside mass range)! Enables saving the tracks of the event in the ME offline approach
 
   return;
 
@@ -2939,6 +2943,8 @@ void AliAnalysisTaskSED0Correlations::PrintBinsAndLimits() {
   cout << "--------------------------\n";  
   cout << "PtBin associated maximum edge = "<<fPtAssocLimit<<"\n";
   cout << "--------------------------\n";    
+  cout << "Minimum D-meson pT = "<<fMinDPt<<"\n";
+  cout << "--------------------------\n";  
   cout << "TTree filling = "<<fFillTrees<<"\n";
   cout << "--------------------------\n";  
 }

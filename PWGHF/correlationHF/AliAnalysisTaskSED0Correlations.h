@@ -98,6 +98,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
   void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
+  void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(Bool_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
  
   enum PartType {kTrack,kKCharg,kK0};
@@ -178,6 +179,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t    fUseDeff;			// Use D meson efficiency as weight
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
+  Double_t  fMinDPt;			// Minimum pT of the D0 to allow selection
 
   Bool_t    fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
@@ -190,7 +192,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,10); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,11); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
