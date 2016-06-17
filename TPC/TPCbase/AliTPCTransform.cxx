@@ -765,6 +765,7 @@ TObjArray* AliTPCTransform::LoadCorrectionMaps(Bool_t refMap)
 void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
 {
   // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
+  const float kDistDispThresh = 300e-4; // assume fluctuation dispersion if D[3]>Dref[3]+threshold
   EvalCorrectionMap(roc, row, xyzSect, fLastCorrRef, kTRUE);
   EvalCorrectionMap(roc, row, xyzSect, fLastCorr, kFALSE);
   if (fLastCorr[3]<1e-6) { // run specific map had no parameterization for this region, override by default
@@ -772,7 +773,7 @@ void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyzSect[3])
     fLastCorr[3] = 0.f;
   }
   else {
-    fLastCorr[3] = fLastCorr[3]>fLastCorrRef[3] ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
+    fLastCorr[3] = fLastCorr[3]>(fLastCorrRef[3]+kDistDispThresh) ? TMath::Sqrt(fLastCorr[3]*fLastCorr[3] - fLastCorrRef[3]*fLastCorrRef[3]) : 0;
     if (fCurrentMapScaling!=1.0f) {
       for (int i=3;i--;) fLastCorr[i] = (fLastCorr[i]-fLastCorrRef[i])*fCurrentMapScaling + fLastCorrRef[i];
       fLastCorr[3] *= fCurrentMapScaling;
