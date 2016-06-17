@@ -170,16 +170,23 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
 
   myTask->AddJob(calibGainMult);
 
+  // ===| get reco param                     |==================================
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
+
+  Float_t minTPCsignalN = recoParam->GetGainCalibMinTPCsignalN();
+
   // ===| settings via environment variables |==================================
   //
   // ---| minimum number of PID clusters     |----------------------------------
   const TString sMinTPCsignalN(gSystem->Getenv("TPC_GainCalib_minSignalN"));
   if (!sMinTPCsignalN.IsNull()) {
-    Float_t minTPCsignalN=sMinTPCsignalN.Atof();
+    minTPCsignalN=sMinTPCsignalN.Atof();
     ::Info("AddTaskTPCCalib","Setting minium number of PID clusters for gain calibration from environment variable TPC_CPass0_GainCalib_minSignalN: %.0f", minTPCsignalN);
-    calibTimeGain->SetMinTPCsignalN(minTPCsignalN);
-    calibGainMult->SetMinTPCsignalN(minTPCsignalN);
   }
+
+  calibTimeGain->SetMinTPCsignalN(minTPCsignalN);
+  calibGainMult->SetMinTPCsignalN(minTPCsignalN);
 }
 
 //_____________________________________________________________________________
