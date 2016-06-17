@@ -80,8 +80,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Bool_t  doMultiplicityWeighting         = kFALSE,                  //
                               TString fileNameInputForMultWeighing    = "Multiplicity.root",    //
                               TString periodNameAnchor                = "",
-                              Bool_t  runLightOutput                  = kFALSE                // switch to run light output (only essential histograms for afterburner)
-                              
+                              Bool_t  runLightOutput                  = kFALSE,                // switch to run light output (only essential histograms for afterburner)
+                              Bool_t  enableChargedPrimary            = kFALSE
                             ) {
 
   // ================= Load Librariers =================================
@@ -939,6 +939,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+  task->SetDoChargedPrimary(enableChargedPrimary);
   if (enableClustersForTrigger){
     task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
     task->SetClusterCutList(numberOfCuts,ClusterCutList);
