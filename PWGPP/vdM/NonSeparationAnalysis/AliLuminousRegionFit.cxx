@@ -85,7 +85,7 @@ Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
 //     }
     Double_t det(0);
     sigma.InvertFast(&det);
-    Double_t sum = 0.0;
+    Double_t sum = TMath::Log(TMath::Power(TMath::TwoPi(), 1.5));
     sum += 0.5*TMath::Log(det);
     sum +=     TMath::Log(TMath::Abs(par[5]));
     const Double_t x = fX[0][i] - par[0] - par[7]*(fX[2][i] - par[2]);
@@ -101,7 +101,7 @@ Double_t AliLuminousRegionFit::MinuitFunction(const Double_t *par)
 
 void AliLuminousRegionFit::ComputeMoments(TTree *t,
 					  const TCut& sel, const TVectorD &mu, const TMatrixDSym &cov,
-					  TVectorD &x, TMatrixDSym &cx)
+					  TVectorD &x, TMatrixDSym &cx, Double_t &llRatio)
 {
   fN = t->Draw("xTRKnc:yTRKnc:zTRKnc:covMtxXX:covMtxXY:covMtxYY", sel, "PARA GOFF");
   for (Int_t i=0; i<3; ++i) {
@@ -113,9 +113,9 @@ void AliLuminousRegionFit::ComputeMoments(TTree *t,
   m.UseStaticMinuit(kTRUE);
   m.SetFunction(fcn);
 
-  m.SetLimitedVariable( 0, "#mu_x", mu[0], 0.01*abs(mu[0]),  -1,   1);
-  m.SetLimitedVariable( 1, "#mu_y", mu[1], 0.01*abs(mu[1]),  -1,   1);
-  m.SetLimitedVariable( 2, "#mu_z", mu[2], 0.01*abs(mu[2]), -10,  10);
+  m.SetLimitedVariable( 0, "#mu_x", mu[0], 0.01*TMath::Abs(mu[0]),  -1,   1);
+  m.SetLimitedVariable( 1, "#mu_y", mu[1], 0.01*TMath::Abs(mu[1]),  -1,   1);
+  m.SetLimitedVariable( 2, "#mu_z", mu[2], 0.01*TMath::Abs(mu[2]), -10,  10);
 
   const Double_t sigma[3] = {
     TMath::Sqrt(cov(0,0)),
@@ -133,6 +133,10 @@ void AliLuminousRegionFit::ComputeMoments(TTree *t,
 
   m.Minimize();
   m.PrintResults();
+
+  // log likelihood ratio test
+  const Double_t llNormal = 0.5*(1.0 + TMath::Log(TMath::TwoPi()));
+  llRatio = 2*(m.MinValue() + 3*fN*llNormal)/(fN-m.NDim());
 
   const Double_t *p = m.X();
   for (Int_t i=0; i<10; ++i)
@@ -302,6 +306,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   TMatrixDSym cov(3);     // covariance matrix
   TVectorD    x(10);      // model parameters
   TMatrixDSym cx(10);     // model covariance matrix
+  Double_t    llRatio(0); // LL ratio (goodness of fit)
 
   TTree *tBeamSpot = new TTree;
   tBeamSpot->SetName("TBeamSpot");
@@ -311,6 +316,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
   tBeamSpot->Branch("cov",           cov.GetMatrixArray(), "XX/D:XY:XZ:YX:YY:YZ:YX:YY:YZ");
   tBeamSpot->Branch("modelPar",        x.GetMatrixArray(), "muX/D:muY/D:muZ:sigmaX:sigmaY:sigmaZ:rhoXY:sX:sY:k");
   tBeamSpot->Branch("modelCov",       cx.GetMatrixArray(), "cov[100]/D");
+  tBeamSpot->Branch("llRatio",  &llRatio);
   fListSave->Add(tBeamSpot);
 
   for (Int_t i=0; i<n; ++i) {
@@ -333,7 +339,7 @@ Bool_t AliLuminousRegionFit::DoFit(TString  scanName,
 			      cov(idx[j][0], idx[j][1])/TMath::Sqrt(cov(idx[j][0],idx[j][0])*cov(idx[j][1],idx[j][1])));
     }
     
-    ComputeMoments(tTemp[i], sel, mu, cov, x, cx);
+    ComputeMoments(tTemp[i], sel, mu, cov, x, cx, llRatio);
 
     for (Int_t j=0; j<10; ++j) {
       gModel[j]->SetPoint(gModel[j]->GetN(),    sep[i], x[j]);

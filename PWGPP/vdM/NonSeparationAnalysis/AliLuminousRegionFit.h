@@ -79,7 +79,7 @@ protected:
   }
   void ComputeMoments(TTree *t,
 		      const TCut& sel, const TVectorD &mu, const TMatrixDSym &cov,
-		      TVectorD &x, TMatrixDSym &cx);
+		      TVectorD &x, TMatrixDSym &cx, Double_t &llRatio);
 
   TGraph*       ConfGraph   (TGraph       *g, const char *name, Int_t color=kBlack, Int_t marker=kFullDotLarge, Int_t lineWidth=1);
   TGraphErrors* ConfGraphErr(TGraphErrors *g, const char *name, Int_t color=kRed,   Int_t marker=kFullDiamond);

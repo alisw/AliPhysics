@@ -54,7 +54,7 @@ void MakeLumiRegion_4634() {
 			   sd[i].minNumberOfTracks,
 			   sd[i].vtxFileName,
 			   sd[i].sepFileName);
-    for (Int_t j=1, m=sizeof(bcs)/sizeof(Int_t); j<m; ++j) {
+    for (Int_t j=0, m=sizeof(bcs)/sizeof(Int_t); j<m; ++j) {
       f.DoFit(sd[i].scanName1, sd[i].t1, sd[i].t2, sd[i].scanType1, sd[i].offset1, bcs[j]);
       f.DoFit(sd[i].scanName2, sd[i].t3, sd[i].t4, sd[i].scanType2, sd[i].offset2, bcs[j]);
     }
