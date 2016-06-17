@@ -134,11 +134,11 @@ AliTPCRecoParam::AliTPCRecoParam():
   fSystematicErrorCluster[0]=0;   // sy cluster error
   fSystematicErrorCluster[1]=0;   // sz cluster error
   //
-  fDistortionFractionAsErrorYZ[0] = 0.1; // fraction of used distortion correction is used as an error
-  fDistortionFractionAsErrorYZ[1] = 0.1; // fraction of used distortion correction is used as an error
+  fDistortionFractionAsErrorYZ[0] = -1.; // fraction of used distortion correction is used as an error (if positive)
+  fDistortionFractionAsErrorYZ[1] = -1.; // fraction of used distortion correction is used as an error (if positive)
 
-  fDistDispFractionAsErrorYZ[0] = 1.0; // fraction of used distortion correction is used as an error
-  fDistDispFractionAsErrorYZ[1] = 1.0; // fraction of used distortion correction is used as an error
+  fDistDispFractionAsErrorYZ[0] = 0.6; // fraction of used distortion correction is used as an error (if positive)
+  fDistDispFractionAsErrorYZ[1] = 0.3; // fraction of used distortion correction is used as an error (if positive)
   //
   fCutSharedClusters[0]=0.5; // maximal allowed fraction of shared clusters - shorter track
   fCutSharedClusters[1]=0.25; // maximal allowed fraction of shared clusters - longer  track
@@ -149,8 +149,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fKinkAngleCutChi2[1]=12;    // angular cut for kink finder - to use the partial track                             // form kink
                              // ~ about 2 % rate  for high pt kink finder
   //
-  SetBadPadMaxDistXYZ(999.,999.,999.); // by default accept any distortions
-  SetBadPadMaxErrYZ(999.,999.);        // by default accept any errors
+  SetBadPadMaxDistXYZD(999.,999.,999.,999.); // by default accept any distortions
+  SetBadClusMaxErrYZ(999.,999.);        // by default accept any errors
 }
 
 //_____________________________________________________________________________

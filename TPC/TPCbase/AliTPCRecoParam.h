@@ -177,11 +177,12 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetUseDistDispFractionAsErrorY(double v) {fDistDispFractionAsErrorYZ[0] = v;}
   void     SetUseDistDispFractionAsErrorZ(double v) {fDistDispFractionAsErrorYZ[1] = v;}
 
-  void     SetBadPadMaxDistXYZ(double x,double y,double z)  {fBadPadMaxDistXYZ[0]=x;fBadPadMaxDistXYZ[1]=y;fBadPadMaxDistXYZ[2]=z;}
-  void     SetBadPadMaxErrYZ(double y,double z)             {fBadPadMaxErrYZ[0]=y;fBadPadMaxErrYZ[1]=z;}
+  void     SetBadPadMaxDistXYZD(double x,double y,double z, double d)  {
+    fBadPadMaxDistXYZD[0]=x;fBadPadMaxDistXYZD[1]=y;fBadPadMaxDistXYZD[2]=z;fBadPadMaxDistXYZD[3]=d;}
+  void     SetBadClusMaxErrYZ(double y,double z)             {fBadClusMaxErrYZ[0]=y;fBadClusMaxErrYZ[1]=z;}
 
-  const Double_t* GetBadPadMaxDistXYZ() const {return fBadPadMaxDistXYZ;}
-  const Double_t* GetBadPadMaxErrYZ()   const {return fBadPadMaxErrYZ;}
+  const Double_t* GetBadPadMaxDistXYZD() const {return fBadPadMaxDistXYZD;}
+  const Double_t* GetBadClusMaxErrYZ()   const {return fBadClusMaxErrYZ;}
 
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
   const Double_t * GetSystematicErrorClusterInner() const { return fSystematicErrorClusterInner;}
@@ -299,8 +300,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fSystematicErrorCluster[2];        ///< systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
   Double_t fDistortionFractionAsErrorYZ[2];   ///< use fraction of distortion as additional error
   Double_t fDistDispFractionAsErrorYZ[2];   ///< use fraction of distortion dispersion as additional error
-  Double_t fBadPadMaxDistXYZ[3];            ///< pad considered bad if abs distortion exceeds this value
-  Double_t fBadPadMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
+  Double_t fBadPadMaxDistXYZD[4];            ///< pad considered bad if abs distortion / dispersion exceeds this value
+  Double_t fBadClusMaxErrYZ[2];              ///< pad considered bad if syst.error on cluster exceeds this value
   Bool_t fUseSystematicCorrelation;         ///< switch to use the correlation for the sys
 
   static TVectorD* fgSystErrClustCustom;  //< custom systematic errors for the TPC clusters overriding persistent data member

@@ -1807,12 +1807,12 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
   //  mxdist[0] = 7.; mxdist[1] = 7.; mxdist[2] = 7.;
   //  mxerr[0] = 2.; mxerr[1] = 2.;
   // for test only <<<<<<<<<<
-  const double *padMaxDist = param->GetBadPadMaxDistXYZ();
-  const double *padMaxErr  = param->GetBadPadMaxErrYZ();
+  const double *padMaxDist = param->GetBadPadMaxDistXYZD();
+  const double *padMaxErr  = param->GetBadClusMaxErrYZ();
   const double maxErrY2    = padMaxErr[0]>0 ? padMaxErr[0]*padMaxErr[0] : -1.;
   const double maxErrZ2    = padMaxErr[1]>0 ? padMaxErr[1]*padMaxErr[1] : -1.;
   //
-  const float tgLabTest = 0.4f; // check distortions/errors for this pad for high pt track at tgLab=0.4
+  const float tgLabTest = 0.2f; // check distortions/errors for this pad for high pt track at tgLab=0.2
   AliTPCclusterMI clProbe;
   for (int imap=0;imap<nMaps;imap++) {
     AliInfoF("Querying maps at time %ld",mapsT[imap]);
@@ -1840,7 +1840,7 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
           Bool_t bad = kFALSE;
 
           // does the distortion exceed max.allowed?
-          for (int dir=3;dir--;) if (padMaxDist[dir]>0. && TMath::Abs(clCorr[dir])>padMaxDist[dir]) {
+          for (int dir=4;dir--;) if (padMaxDist[dir]>0. && TMath::Abs(clCorr[dir])>padMaxDist[dir]) {
             bad=kTRUE;
             // printf("ROC%2d row%2d pad%2d bad: distortion[%d]=%.2f exceeds threshold %.2f\n",
             //       isec,npads,irow,dir,clCorr[dir],padMaxDist[dir]);
