@@ -52,6 +52,13 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetAccountDistortions(Int_t v)              {fAccountDistortions = v;}
   Bool_t   GetUseCorrectionMap()                 const {return fUseCorrectionMap;}
   void     SetUseCorrectionMap(Bool_t v=kTRUE)         {fUseCorrectionMap = v;}
+
+  // accounting for systematic error on track cov.matrix level
+  Float_t GetSystCovAmplitude()           const {return fSystCovAmplitude;}
+  Float_t GetDistFluctCorrelation()       const {return fDistFluctCorrelation;}
+  void    SetSystCovAmplitude(float v)          {fSystCovAmplitude = v;}
+  void    SetDistFluctCorrelation(float v)      {fDistFluctCorrelation = v;}
+
   //
   // Outlier filtering configuration
   //
@@ -280,6 +287,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseCorrectionMap;  ///< flag to use parameterized correction map (AliTPCChebCorr)
   Int_t  fCorrMapTimeDepMethod; ///< method used for correction time dependence
   Int_t  fUseLumiType;          ///< luminosity graph to be used for different lumi scalings
+  Float_t fSystCovAmplitude;    ///< apply syst correction to cov.matrix with this amplitude
+  Float_t  fDistFluctCorrelation; ///< assumed correlation between fluctuating points
   //  misscalibration
   //
   TVectorF* fSystErrClInnerRegZ;        //< center of region in Z to apply extra systematic error
@@ -303,7 +312,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 29)
+  ClassDef(AliTPCRecoParam, 30)
   /// \endcond
 };
 
