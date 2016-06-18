@@ -395,7 +395,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
         if(isEMCAL) FillPIDHistos("E2combined", *checktrack);
       } else {
         FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("EJ2only", *checktrack);
+        if(isEMCAL) FillPIDHistos("E2Jonly", *checktrack);
       }
     }
     if(isEJ1){
@@ -411,7 +411,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
         if(isEMCAL) FillPIDHistos("E1combined", *checktrack);
       } else {
         FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("EJ1only", *checktrack);
+        if(isEMCAL) FillPIDHistos("E1Jonly", *checktrack);
       }
     }
     if(isEG2){
@@ -424,7 +424,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       }
       if(!(isEJ2 || isEJ1)){
         FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("EG2only", *checktrack);
+        if(isEMCAL) FillPIDHistos("E2Gonly", *checktrack);
       }
     }
     if(isEG1){
@@ -436,7 +436,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       }
       if(!(isEJ1 || isEJ2)){
         FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("EG1only", *checktrack);
+        if(isEMCAL) FillPIDHistos("E1Gonly", *checktrack);
       }
     }
   }
