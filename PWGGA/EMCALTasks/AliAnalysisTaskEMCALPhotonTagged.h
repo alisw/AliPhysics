@@ -43,6 +43,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   void                   FillClusHists();
   void                   FillMcHists();
   void                   FillQA();
+  void                   ClearAll();
   Float_t                GetClusSource(const AliVCluster *cluster); //returns the pt of the prompt-photon; if doesn't descend from pro-pho returns -0.1
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
@@ -55,7 +56,10 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
   Bool_t                 IsPi0M02(Double_t M02, Double_t Et);
+  Bool_t                 HasPi0InvMass(Int_t idCand, TObjArray *clusters);
+  Int_t                  GetLeadEtClusId();
   AliVCaloCells          *GetVCaloCells();
+  Int_t                  TagEvent(Int_t idx);
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
@@ -82,6 +86,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   void                  SetDistanceToBadCh(Double_t d)          { fDistToBadChan      = d;       }
   void                  SetSmearM02On(Double_t s)               { fSigmaSmear         = s;       }
   void                  SetNLMCut(Int_t n)                      { fNLMCut             = n;       }
+  void                  SetTagLimits(Double_t lEt, Double_t hEt){ fLoEtTag = lEt; fHiEtTag = hEt;}
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -129,6 +134,10 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   Double_t               fDistToBadChan;         // distance to bad channel
   Double_t               fSigmaSmear;            //std dev of the gaussian smearing for the MC M02 values
   Int_t                  fNLMCut;                //maximum of local maxima in a cluster
+  Double_t               fLoEtTag;               //low Et for the event tag cluster
+  Double_t               fHiEtTag;               //high Et for the event tag cluster
+  Double_t               fEtMax;                 //max clus Et in the event
+  TLorentzVector         fMaxClusLV;             //vector for highest Et cluster
 
  private:
   AliESDEvent *fESD;      //! ESD object
@@ -152,6 +161,8 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   TH2F        *fClusEtMcPt;                //!cluster et x mc-pt
   TH2F        *fClusMcDetaDphi;            //!delta-eta x delta-phi(reco-mc)
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
+  TH2F        *fInvMassPt;                 //!inv mass of photon like cluster pairs vs pair pt
+  TH1F        *fMaxEtSpec;                 //!spectrum of the MaxEt clusters
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 
   //QA histos
