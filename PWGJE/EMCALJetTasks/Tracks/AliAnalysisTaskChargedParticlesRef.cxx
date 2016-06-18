@@ -544,9 +544,10 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
     const AliVTrack &trk
 ) {
   if(TMath::Abs(trk.Eta()) > 0.3) return;
-  fHistos->FillTH1(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), TMath::Abs(trk.P())/static_cast<double>(trk.Charge()), trk.GetTPCsignal());
+  double poverz = TMath::Abs(trk.P())/static_cast<double>(trk.Charge());
+  fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), poverz, trk.GetTPCsignal());
   Double_t beta = trk.GetIntegratedLength()/((trk.GetTOFsignal() - fInputHandler->GetPIDResponse()->GetTOFResponse().GetTimeZero()) * TMath::C());
-  fHistos->FillTH1(Form("hTOFBetaEMCAL%s", eventclass.c_str()), beta);
+  fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta);
 
 }
 
