@@ -36,7 +36,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
-                                                                 const Bool_t           i_pPb                     = kFALSE
+                                                                 const Bool_t           i_pPb                     = kFALSE,
+                                                                 const Bool_t           isQA                      = kFALSE
                                                                  )
 {
   
@@ -69,7 +70,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
-  task->SetQA(kTRUE);
+  task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
   task->SetUEMethod(iUEMethod);
@@ -80,11 +81,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetMean4Smear(iMean_SSsmear);
   task->SetExtraIsoCuts(iExtraIsoCuts);
   task->SetAnalysispPb(i_pPb);
-  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
-  
   task->SetNLMCut(bNLMCut,NLMCut);
-  
-  
+
+  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;
