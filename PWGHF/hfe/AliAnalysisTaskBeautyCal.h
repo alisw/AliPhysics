@@ -49,6 +49,7 @@ public:
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
@@ -140,6 +141,8 @@ private:
     TH2D        *fHistDCAde;//!ele cand SPD or
     TH2D        *fHistDCAbe;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
+
+    TH1D        *fHistHFEcorr;//!ele cand SPD or
 
     AliHFEcuts  *fhfeCuts;
 

@@ -92,8 +92,6 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fcentMim(0),
-  fcentMax(0),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -137,6 +135,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistHFEcorr(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -171,8 +170,6 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
-  fcentMim(0),
-  fcentMax(0),
   fOutputList(0),
   fNevents(0),
   fCent(0), 
@@ -216,6 +213,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistHFEcorr(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -426,6 +424,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCApe = new TH2D("fHistDCApe", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCApe);
+
+  fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
+  fOutputList->Add(fHistHFEcorr);
 
   PostData(1,fOutputList);
 }
@@ -762,6 +763,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fMCcheckMother->Fill(abs(pidM));
     }
 
+    if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+
     Bool_t pid_eleD = IsDdecay(pidM);
     Bool_t pid_eleB = IsBdecay(pidM);
     Bool_t pid_eleP = IsPdecay(pidM);
@@ -888,6 +891,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         else
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
+          ElectronAway(iTracks,track); //e+e-
          }
 
         if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
@@ -1005,6 +1009,56 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   }
   fFlagPhotonicElec = flagPhotonicElec;
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
+{
+  ///////////////////////////////////////////
+  //////Non-HFE - Invariant mass method//////
+  ///////////////////////////////////////////
+
+  Int_t ntracks = -999;
+  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+  if(fUseTender) ntracks = fTracks_tender->GetEntries();
+
+  for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
+    AliVParticle* VAssotrack = 0x0;
+    if(!fUseTender) VAssotrack  = fVevent->GetTrack(jtrack);
+    if(fUseTender) VAssotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+    if (!VAssotrack) {
+      printf("ERROR: Could not receive track %d\n", jtrack);
+      continue;
+    }
+
+    AliVTrack *Assotrack = dynamic_cast<AliVTrack*>(VAssotrack);
+    AliAODTrack *aAssotrack = dynamic_cast<AliAODTrack*>(VAssotrack);
+
+    //------reject same track
+    if(jtrack==itrack) continue;
+
+    Double_t ptAsso=-999., nsigma=-999.0;
+
+    nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
+    ptAsso = Assotrack->Pt();
+
+    //------track cuts applied
+
+      if(aAssotrack->GetTPCNcls() < 80) continue;
+      if(aAssotrack->GetITSNcls() < 3) continue;
+      if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      if(!(aAssotrack->HasPointOnITSLayer(0) || aAssotrack->HasPointOnITSLayer(1))) continue;
+
+    //-------loose cut on partner electron
+    if(ptAsso <0.2) continue;
+    if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
+    if(nsigma < 0 || nsigma > 3) continue;
+    Double_t dphie = aAssotrack->Phi() - track->Phi();
+    if(track->Pt()>2.0)fHistHFEcorr->Fill(dphie);
+  }
+}
+
 
 void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, int &pid)
 {
