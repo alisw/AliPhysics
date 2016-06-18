@@ -371,6 +371,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                 = 1,    
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

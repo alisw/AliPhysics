@@ -89,6 +89,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   PrintCutsWithValues();
     
     void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void    SetRunningMode(Int_t mode){fMode = mode; return;}
     void    InitCutHistograms(TString name="",Bool_t additionalHists=kFALSE);
     void    SetFillCutHistograms(TString name=""){if(!fHistograms){InitCutHistograms(name);};}
     TList   *GetCutHistograms(){return fHistograms;}
@@ -144,6 +145,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   protected:
     TList*    fHistograms;
     Bool_t    fDoLightOutput;             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t     fMode;                      // running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
     //cuts
     Int_t     fMesonKind;
     Int_t     fIsMergedClusterCut;        // flag for merged cluster and di cluster analysis
@@ -205,7 +207,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliConversionMesonCuts,15)
+    ClassDef(AliConversionMesonCuts,16)
 };
 
 

@@ -75,6 +75,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   AliAnalysisCuts(name,title),
   fHistograms(NULL),
   fDoLightOutput(kFALSE),
+  fMode(0),
   fMesonKind(0),
   fIsMergedClusterCut(0),
   fMaxR(200),
@@ -148,6 +149,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   AliAnalysisCuts(ref),
   fHistograms(NULL),
   fDoLightOutput(ref.fDoLightOutput),
+  fMode(ref.fMode),
   fMesonKind(ref.fMesonKind),
   fIsMergedClusterCut(ref.fIsMergedClusterCut),
   fMaxR(ref.fMaxR),
@@ -1017,6 +1019,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
   else printf("\t Min theta_{open} pT-dep cut active\n");
   if (!fMaxOpanPtDepCut) printf("\t %3.2f < theta_{open}\n", fMaxOpanCutMeson);
   else printf("\t Max theta_{open} pT-dep cut active\n");
+  printf("\t Running mode for cutselection (0 std, 2 PCM-Calo): %d\n", fMode);
   
   printf("Meson BG settings \n");
   if (!fDoBG){
@@ -1879,71 +1882,140 @@ Bool_t AliConversionMesonCuts::SetToCloseV0sCut(Int_t toClose) {
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
 {// Set Cut
-  switch(useMCPSmearing){
-  case 0:
-    fUseMCPSmearing   = 0;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 1:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-14;
-    fPSigSmearing     = 0.;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 2:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-15;
-    fPSigSmearing     = 0.0;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 3:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.002;
-    break;
-  case 4:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.007;
-    break;
-  case 5:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.003;
-    fPSigSmearingCte  = 0.016;
-    break;
-  case 6:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.016;
-    break;
-  case 7:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.0e-16;
-    fPSigSmearing     = 0.0;
-    fPSigSmearingCte  = 0.;
-    break;
-  case 8:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.014;
-    break;
-  case 9:
-    fUseMCPSmearing   = 1;
-    fPBremSmearing    = 1.;
-    fPSigSmearing     = 0.007;
-    fPSigSmearingCte  = 0.011;
-    break;
+  if(fMode == 2){
+    switch(useMCPSmearing){
+    case 0:
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.010;
+      fPSigSmearingCte  = 0.015;
+      break;
+    case 1:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.015;
+      fPSigSmearingCte  = 0.015;
+      break;
+    case 2:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 3:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.050;
+      fPSigSmearingCte  = 0.030;
+      break;
+    case 4:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.075;
+      fPSigSmearingCte  = 0.050;
+      break;
+    case 5:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.100;
+      fPSigSmearingCte  = 0.050;
+      break;
+    case 6:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.100;
+      fPSigSmearingCte  = 0.100;
+      break;
+    case 7:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1;
+      fPSigSmearing     = 0.200;
+      fPSigSmearingCte  = 0.100;
+      break;
+    case 8:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.200;
+      fPSigSmearingCte  = 0.200;
+      break;
+    case 9:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.400;
+      fPSigSmearingCte  = 0.400;
+      break;
 
-  default:
-    AliError("Warning: UseMCPSmearing not defined");
-    return kFALSE;
+    default:
+      AliError("Warning: UseMCPSmearing not defined");
+      return kFALSE;
+    }
+  }else{
+    switch(useMCPSmearing){
+    case 0:
+      fUseMCPSmearing   = 0;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 1:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-14;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 2:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-15;
+      fPSigSmearing     = 0.0;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 3:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.002;
+      break;
+    case 4:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.007;
+      break;
+    case 5:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.003;
+      fPSigSmearingCte  = 0.016;
+      break;
+    case 6:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.016;
+      break;
+    case 7:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.0e-16;
+      fPSigSmearing     = 0.0;
+      fPSigSmearingCte  = 0.;
+      break;
+    case 8:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.014;
+      break;
+    case 9:
+      fUseMCPSmearing   = 1;
+      fPBremSmearing    = 1.;
+      fPSigSmearing     = 0.007;
+      fPSigSmearingCte  = 0.011;
+      break;
+
+    default:
+      AliError("Warning: UseMCPSmearing not defined");
+      return kFALSE;
+    }
   }
   return kTRUE;
 }
