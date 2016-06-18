@@ -149,7 +149,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 #ifdef __CLING__
   std::stringstream hadcorradd;
   hadcorradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskHadCorr.C("
-      << "\"" << inputTracks << "\", \"" << emcclusters << "\", \"" << outClusName << "\", " << hadcorr << ", " << minPtEt << ", "
+      << "\"" << inputTracks << "\", \"" << clusterColName << "\", \"" << outClusName << "\", " << hadcorr << ", " << minPtEt << ", "
       << phiMatch << ", " << etaMatch << ", " << Eexcl << ", " << (trackclus ? "kTRUE" : "kFALSE") << ", " << (doHistos ? "kTRUE" : "kFALSE") << ")";
   std::string hadcorraddstring = hadcorradd.str();
   AliHadCorrTask *hCorr = (AliHadCorrTask *)gROOT->ProcessLine(hadcorraddstring.c_str());
