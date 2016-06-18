@@ -92,6 +92,10 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged() :
   fDistToBadChan(0),
   fSigmaSmear(0.0),
   fNLMCut(100),
+  fLoEtTag(10.),
+  fHiEtTag(12.),
+  fEtMax(0.),
+  fMaxClusLV(0,0,0,0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -111,6 +115,8 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged() :
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
+  fInvMassPt(0),
+  fMaxEtSpec(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -191,6 +197,10 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged(const char *n
   fDistToBadChan(0),
   fSigmaSmear(0.0),
   fNLMCut(100),
+  fLoEtTag(10.),
+  fHiEtTag(12.),
+  fEtMax(0.),
+  fMaxClusLV(0,0,0,0),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -210,6 +220,8 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged(const char *n
   fClusEtMcPt(0),
   fClusMcDetaDphi(0),
   fNClusPerPho(0),
+  fInvMassPt(0),
+  fMaxEtSpec(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -308,6 +320,11 @@ void AliAnalysisTaskEMCALPhotonTagged::UserCreateOutputObjects()
   fNClusPerPho = new TH2F("hNClusPerPho","Number of clusters per prompt photon;p_{T}^{MC};N_{clus}",500,0,100,11,-0.5,10.5);
   fOutputList->Add(fNClusPerPho);
 
+  fInvMassPt = new TH2F("hInvMassPt","leading cluster inv mass vs pair p_T;p_T;m_{#gamma#gamma}",300,0,30,1000,0,10);
+  fOutputList->Add(fInvMassPt);
+
+  fMaxEtSpec = new TH1F("hMaxEtSpec","E_T spectrum of leading clusters; E_T; dN/dE_T",500,0,100);
+  fOutputList->Add(fMaxEtSpec);
 
   Int_t nEt=fNBinsPt*5, nM02=400, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt,  nNLM=11;
   Int_t bins[] = {nEt, nM02, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt, nNLM};
@@ -583,8 +600,8 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
   TString clusArrayName = "";
   if(fESD){
     l = fESD->GetList();
-    if(fDebug)
-      l->Print();
+    /*if(fDebug)
+      l->Print();*/
     for(int nk=0;nk<l->GetEntries();nk++){
       TObject *obj = (TObject*)l->At(nk);
       TString oname = obj->GetName();
@@ -650,6 +667,16 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
       std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
   fVCells = GetVCaloCells();
+  Int_t leadId = GetLeadEtClusId();
+  if(fEtMax<fLoEtTag || fEtMax>fHiEtTag){
+    ClearAll();
+    return;
+  }
+  Int_t candStatus = TagEvent(leadId);
+  if(0==candStatus){
+    ClearAll();
+    return;
+  }
   FollowGamma();
   CheckTriggerPatch();
   if(fDebug)
@@ -664,14 +691,7 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
     FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
-  if(fESD)
-    fESDClusters->Clear();
-  fSelPrimTracks->Clear();
-  fNClusForDirPho = 0;
-  fNCells50 = 0;
-  fClusIdFromTracks = "";
-  fVecPv.Clear();
-
+  ClearAll();
   PostData(1, fOutputList);
   PostData(2, fQAList);
 }      
@@ -1608,6 +1628,126 @@ Bool_t AliAnalysisTaskEMCALPhotonTagged::IsPi0M02(Double_t M02, Double_t Et)
     if(M02<M02u && M02>M02l)
       return kTRUE;
     return kFALSE;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPhotonTagged::HasPi0InvMass(Int_t iCand, TObjArray *clusters)
+{
+  Bool_t hasIt = kFALSE;
+  if(!clusters)
+    return kFALSE;
+  Int_t nclus = clusters->GetEntriesFast();
+  AliVCluster *ccand = static_cast<AliVCluster*>(clusters->At(iCand));
+
+  if(!ccand)
+    return kTRUE;
+  TLorentzVector lv, pairlv; 
+  Double_t invMass=0;
+  for(Int_t ic=0;ic<nclus;ic++){
+    if(ic==iCand)
+      continue;
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
+    if(!c)
+      continue;
+    if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02)
+      continue;
+    if(c->GetM02()<0.09 && c->GetM02()>0.31)
+      continue;
+    Float_t clsPos[3] = {0,0,0};
+    c->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
+    clsVec -= fVecPv;
+    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+    lv.SetPtEtaPhiM(Et,clsVec.Eta(),clsVec.Phi(),0.);
+    pairlv = lv + fMaxClusLV;
+    invMass = pairlv.M();
+    if(invMass>0.115 && invMass<0.155)
+      hasIt = kTRUE;
+    fInvMassPt->Fill(invMass,pairlv.Pt());
+  }
+  return hasIt;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALPhotonTagged::GetLeadEtClusId()
+{
+  if(fDebug)
+    printf("Getting Highest Et cluster...");
+  TObjArray *clusters = fESDClusters;
+  if (!clusters){
+    clusters = fAODClusters;
+  }
+  if (!clusters){
+    return kFALSE;
+  }
+  Int_t nc = clusters->GetEntriesFast();
+  Int_t idMax = -1;
+  for(Int_t ic=0;ic<nc;ic++){
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
+    if(!c)
+      continue;
+    if(!c->IsEMCAL())
+      continue;
+    Float_t clsPos[3] = {0,0,0};
+    c->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
+    clsVec -= fVecPv;
+    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+    if(Et<fEtMax)
+      continue;
+    fEtMax = Et;
+    idMax = ic;
+    fMaxClusLV.SetPtEtaPhiM(Et,clsVec.Eta(),clsVec.Phi(),0);
+  }
+  fMaxEtSpec->Fill(fEtMax);
+  return idMax;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
+{
+  if(fDebug)
+    printf("Getting Tag Candidates...");
+  Int_t candStatus = 0; //0=no cand, 1=photon, 2=pi0 (merged)
+  Bool_t hasPi0InvMass = kFALSE;
+  TObjArray *clusters = fESDClusters;
+  if (!clusters){
+    clusters = fAODClusters;
+  }
+  if (!clusters){
+    return kFALSE;
+  }
+  Int_t nc = clusters->GetEntriesFast();
+    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(idMax));
+    if(!c)
+      return 0;
+    if(!c->IsEMCAL())
+      return 0;
+    if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02)
+      return 0;
+    Float_t clsPos[3] = {0,0,0};
+    c->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
+    clsVec -= fVecPv;
+    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+    if(c->GetM02()>0.09 && c->GetM02()<0.31){
+      candStatus = 1;
+      if(HasPi0InvMass(idMax,clusters))
+	candStatus = 2;
+    }
+    if(IsPi0M02(Et,c->GetM02()))
+      candStatus = 2;
+  return candStatus;
+}
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonTagged::ClearAll()
+{
+  if(fESD)
+    fESDClusters->Clear();
+  fSelPrimTracks->Clear();
+  fNClusForDirPho = 0;
+  fNCells50 = 0;
+  fClusIdFromTracks = "";
+  fVecPv.Clear();
+  fEtMax = 0.;
+  fMaxClusLV.SetPtEtaPhiM(0,0,0,0);
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonTagged::Terminate(Option_t *) 
