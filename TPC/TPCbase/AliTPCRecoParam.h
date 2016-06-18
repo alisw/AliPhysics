@@ -96,9 +96,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetUseTotCharge(Bool_t flag) {fUseTotCharge = flag;}
   void  SetCtgRange(Double_t ctgRange) {fCtgRange = ctgRange;}
   void  SetUseMultiplicityCorrectionDedx(Bool_t flag) {fUseMultiplicityCorrectionDedx = flag;}
-  //
-  void    SetGainCalibMinTPCsignalN(Float_t minSignalN) { fGainCalibMinTPCsignalN=minSignalN; }
-  Float_t GetGainCalibMinTPCsignalN() const             { return fGainCalibMinTPCsignalN;     }
 
   void  SetUseAlignmentTime(Bool_t flag) {fUseAlignmentTime = flag;}
   void  SetNeighborRowsDedx(Int_t nRows) {fNeighborRowsDedx = nRows;}
@@ -293,7 +290,6 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t  fUseLumiType;          ///< luminosity graph to be used for different lumi scalings
   Float_t fSystCovAmplitude;    ///< apply syst correction to cov.matrix with this amplitude
   Float_t  fDistFluctCorrelation; ///< assumed correlation between fluctuating points
-  Float_t fGainCalibMinTPCsignalN; ///< minimum number of PID clusters used for calibration
   //  misscalibration
   //
   TVectorF* fSystErrClInnerRegZ;        //< center of region in Z to apply extra systematic error
