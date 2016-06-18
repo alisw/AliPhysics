@@ -173,8 +173,9 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   // ===| get reco param                     |==================================
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   AliTPCRecoParam *recoParam = transform->GetCurrentRecoParam();
+  const Int_t spec = par->GetEventSpecie();
 
-  Float_t minTPCsignalN = recoParam->GetGainCalibMinTPCsignalN();
+  Float_t minTPCsignalN = spec&AliRecoParam::kLowMult?100.:90.;
 
   // ===| settings via environment variables |==================================
   //
