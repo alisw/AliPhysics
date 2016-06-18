@@ -58,7 +58,7 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
 #ifdef __CLING__
     std::stringstream aodfilteradd;
     aodfilteradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C("
-        << "\"" << inputTracks << "\", \"tracks\", " << period << "\")";
+        << "\"" << inputTracks << "\", \"tracks\", \"" << period << "\")";
     std::string aodfilteraddstring = aodfilteradd.str();
     AliEmcalAodTrackFilterTask *aodfilter = (AliEmcalAodTrackFilterTask *)gROOT->ProcessLine(aodfilteraddstring.c_str());
 #else
