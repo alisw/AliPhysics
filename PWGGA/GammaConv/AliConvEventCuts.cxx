@@ -4088,7 +4088,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.Contains("LHC15h2")){
     fPeriodEnum = kLHC15h2;
     fEnergyEnum = k8TeV;
-  } else if (periodName.CompareTo("LHC16c2") == 0){
+  } else if ((periodName.CompareTo("LHC16c2") == 0) || (periodName.CompareTo("LHC16c2a") == 0)){
     fPeriodEnum = kLHC16c2;   
     fEnergyEnum = k8TeV;
   // LHC13x anchored MCs
