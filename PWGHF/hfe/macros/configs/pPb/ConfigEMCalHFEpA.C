@@ -128,26 +128,17 @@ Bool_t isCentralitySys 		= kFALSE
 			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
 			printf("======================================================================================\n ");
 		
-		task->SetTPCCalibration();
-		task->SetTPC_mean_sigma(0.63, 1.17);
-		task->SetTPCcal_cut_min(-1);
-		task->SetTPCcal_cut_max(3);
-		
-		if(configIndex==300){
-			
 			task->SetTPCCalibration();
-			task->SetTPC_mean_sigma(1.02, 1.68);
-			task->SetTPCcal_cut_min(-1);
-			task->SetTPCcal_cut_max(3);
-		}
-		
+	        task->SetTPC_mean_sigma(1.02, 1.68);
+		    task->SetTPCcal_cut_min(-1);
+		    task->SetTPCcal_cut_max(3);
+			
 	}
 	
-	if(configIndex==300){	
-		if(period == "e" || period == "f"){
-			task->SetTPCCalibration_eta();
-		}
+	if(period == "e" || period == "f"){
+		task->SetTPCCalibration_eta();
 	}
+	
 	
 	
 			
