@@ -2012,10 +2012,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
       }
     }
   }
-  
-  fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPhiBandTrack);
-  fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  
+  if(fWho==2){
+    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPhiBandTrack);
+    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  }
   ptIso = sumpTConeCharged;
   phiBandtrack = sumpTPhiBandTrack;
 }
@@ -2091,10 +2091,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
       iTracksCone++;
     }
   }
-  
-  fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTrack,sumpTEtaBandTrack);
-  fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  
+  if(fWho==2){
+    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTEtaBandTrack,sumpTEtaBandTrack);
+    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  }
   ptIso = sumpTConeCharged;
   etaBandtrack = sumpTEtaBandTrack;
 }
@@ -2171,10 +2171,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
       if((dist2Cone1 < fIsoConeRadius) || (dist2Cone2 < fIsoConeRadius)) sumpTPerpConeTrack += eTrack->Pt();
     }
   }
-  
-  fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPerpConeTrack );
-  fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  
+  if(fWho==2){
+    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged,sumpTPerpConeTrack );
+    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  }
   
   ptIso = sumpTConeCharged;
   cones = sumpTPerpConeTrack;
@@ -2238,10 +2238,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
       iTracksCone++;
     }
   }
-  
-  fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTTPCexceptB2B);
-  fTrackMultvsPt->Fill(iTracksCone,c.Pt());
-  
+  if(fWho==2){
+    fTrackMultvsSumChargedvsUE->Fill(iTracksCone,sumpTConeCharged, sumpTTPCexceptB2B);
+    fTrackMultvsPt->Fill(iTracksCone,c.Pt());
+  }
   ptIso = sumpTConeCharged;
   full = sumpTTPCexceptB2B;
 }
