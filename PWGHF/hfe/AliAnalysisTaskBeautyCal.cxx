@@ -1054,7 +1054,8 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
     if(ptAsso <0.2) continue;
     if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
     if(nsigma < 0 || nsigma > 3) continue;
-    Double_t dphie = aAssotrack->Phi() - track->Phi();
+    Double_t dphie_tmp = aAssotrack->Phi() - track->Phi();
+    Double_t dphie = atan2(sin(dphie_tmp),cos(dphie_tmp));
     if(track->Pt()>2.0)fHistHFEcorr->Fill(dphie);
   }
 }
