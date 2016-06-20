@@ -67,6 +67,7 @@ public:
   Bool_t CacheLogbook(TString period)                                   {return Cache("Logbook", period, "");}
   Bool_t CacheTriggerClasses(TString period)                            {return Cache("TriggerClasses", period, "");}
   Bool_t CacheProdCycle()                                               {return Cache("MonALISA.ProductionCycle", "", "");}
+  Bool_t CacheCPass()                                                   {return Cache("MonALISA.ProductionCPass", "", "");}
   Bool_t CacheProdCycleByID(TString ID)                                 {return Cache("MonALISA.ProductionCycleID", ID, "");}
 
   TTree* GetTree(TString type, TString period, TString pass);
@@ -77,6 +78,7 @@ public:
   TTree* GetTreeLogbook(TString period)                                 {return GetTree("Logbook", period, "");}
   TTree* GetTreeTriggerClasses(TString period)                          {return GetTree("TriggerClasses", period, "");}
   TTree* GetTreeProdCycle()                                             {return GetTree("MonALISA.ProductionCycle", "", "");}
+  TTree* GetTreeCPass()                                                 {return GetTree("MonALISA.ProductionCPass", "", "");}
   TTree* GetTreeProdCycleByID(TString ID)                               {return GetTree("MonALISA.ProductionCycleID", ID, "");}
 
   TChain* GetChain(TString type, TString period, TString pass);
