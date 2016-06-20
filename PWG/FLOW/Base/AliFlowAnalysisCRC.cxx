@@ -303,6 +303,7 @@ fFlowSPZDCList(NULL),
 fFlowSPZDCRbRList(NULL),
 fFlowQCList(NULL),
 fFlowQCCenBin(100),
+fFlowQCDeltaEta(0.4),
 fFlowSPVZList(NULL),
 fVariousList(NULL),
 fEbEFlowList(NULL),
@@ -845,7 +846,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
             fPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
             fPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
             fPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
-            if(fabs(dEta)>0.2) {
+            if(fabs(dEta)>fFlowQCDeltaEta/2.) {
               Int_t keta = (dEta<0.?0:1);
               fPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
               fPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));

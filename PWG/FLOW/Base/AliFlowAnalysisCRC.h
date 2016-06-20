@@ -890,6 +890,8 @@ public:
  void SetFlowQCList(TList* const TL) {this->fFlowQCList = TL;};
   void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
   Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
+  void SetFlowQCDeltaEta(Double_t const TL) {this->fFlowQCDeltaEta = TL;};
+  Double_t GetFlowQCDeltaEta() const {return this->fFlowQCDeltaEta;};
  void SetFlowQCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorPro[c][eg][h] = TP;};
  TProfile* GetFlowQCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorPro[c][eg][h];};
  void SetFlowQCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowQCNUAPro[c][eg][k] = TP;};
@@ -1584,6 +1586,7 @@ private:
   const static Int_t fFlowQCNPro = 3;
   const static Int_t fFlowQCNNUA = 1;
   Int_t fFlowQCCenBin; //
+  Double_t fFlowQCDeltaEta; //
  TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowQCNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
@@ -1679,7 +1682,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 18);
+ ClassDef(AliFlowAnalysisCRC, 19);
  
 };
 

@@ -195,6 +195,8 @@ public:
  Int_t GetnCenBin() const {return this->fnCenBin;};
   void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
   Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
+  void SetFlowQCDeltaEta(Double_t const TL) {this->fFlowQCDeltaEta = TL;};
+  Double_t GetFlowQCDeltaEta() const {return this->fFlowQCDeltaEta;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
  void SetDataSet(TString const n) {this->fDataSet = n;};
@@ -297,6 +299,7 @@ private:
  Double_t fCRCEtaMax;
  Int_t fnCenBin;
  Int_t fFlowQCCenBin;
+ Double_t fFlowQCDeltaEta;
  Double_t fCenBinWidth;
  TString fDataSet;
  TString fCorrWeight;
@@ -311,7 +314,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 6);
+ ClassDef(AliAnalysisTaskCRC, 7);
 };
 
 //================================================================================================================

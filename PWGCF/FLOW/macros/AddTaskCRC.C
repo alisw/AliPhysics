@@ -21,11 +21,10 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
-                             Double_t dDCAxy=2.4,
-                             Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
+                             Double_t DeltaEta=0.4,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              Bool_t bUseEtaWeights=kFALSE,
@@ -79,6 +78,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Float_t MaxDevZN=10.;
  Bool_t bUsePhiEtaWeights=kFALSE;
  TString PhiEtaWeightsFileName="";
+  Double_t dDCAxy=2.4;
+  Double_t dDCAz=3.2;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -340,6 +341,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  if(bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
  if(bUseVZERO) taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
+ taskQC->SetFlowQCDeltaEta(DeltaEta);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(kTRUE);
   if (ZDCCalibFileName != "" && bUseZDC) {
