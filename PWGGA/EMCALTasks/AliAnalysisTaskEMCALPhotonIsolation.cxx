@@ -2595,7 +2595,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       if(fWho==2){
         fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
           //AliError(Form("Passe bien Fill General histograms"));
-          //isolation=isolation-ue;  // ue subscraction
+        isolation=isolation-ue;  // ue subscraction
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         fEtIsoClust->Fill(vecCOI.Pt(),isolation);
       }
@@ -2652,7 +2652,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       if(fWho==2){
         fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         
-          //isolation=isolation-ue;  // ue subscraction
+         isolation=isolation-ue;  // ue subscraction
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         
         fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
@@ -2804,7 +2804,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
         if(fWho==2) {
           fPtvsM02iso->Fill(vecCOI.Pt(),coi->GetM02());
           fPtIsolatedNTracks->Fill(vecCOI.Pt());
-        }fPtisoT=vecCOI.Pt();
+        }
+        fPtisoT=vecCOI.Pt();
         fM02isoT=m02COI;
         
         if(fM02mincut < m02COI && m02COI < fM02maxcut)
