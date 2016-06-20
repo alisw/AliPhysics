@@ -14,8 +14,8 @@ AliAnalysisTask *AddTaskJPartLifetime(TString cardName, TString cardSetting){
 	pcard->PrintOut();
 
 	//==== JCORRAN TASK
-	AliJPartLifetime *lttask = new AliJPartLifetime(pcard);
-	//lttask->SetCard(pcard);
+	AliJPartLifetime *lttask = new AliJPartLifetime("JPartLifetime","ESD");
+	lttask->SetCard(pcard);
 
 	//==== Add task
 	mgr->AddTask((AliAnalysisTask*) lttask);
