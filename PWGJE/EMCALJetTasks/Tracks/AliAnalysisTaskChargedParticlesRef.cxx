@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
 #include <vector>
 #include <map>
 
@@ -546,7 +547,11 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
   if(TMath::Abs(trk.Eta()) > 0.3) return;
   double poverz = TMath::Abs(trk.P())/static_cast<double>(trk.Charge());
   fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), poverz, trk.GetTPCsignal());
-  Double_t beta = trk.GetIntegratedLength()/((trk.GetTOFsignal() - fInputHandler->GetPIDResponse()->GetTOFResponse().GetTimeZero()) * TMath::C());
+  if(!(trk.GetStatus() & AliVTrack::kTOFpid)) return;
+  // correct for units - TOF in ps, track length in cm
+  Double_t trtime = (trk.GetTOFsignal() - fInputHandler->GetPIDResponse()->GetTOFResponse().GetTimeZero()) * 1e-12;
+  Double_t v = trk.GetIntegratedLength()/(100. * trtime);
+  Double_t beta =  v / TMath::C();
   fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta);
 
 }
