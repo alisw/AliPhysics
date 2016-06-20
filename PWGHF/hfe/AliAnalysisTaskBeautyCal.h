@@ -48,7 +48,7 @@ public:
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -136,6 +136,7 @@ private:
     
     TH2D        *fHistDCAinc;//!ele cand SPD or
     TH2D        *fHistDCApho;//!ele cand SPD or
+    TH2D        *fHistDCAcomb;//!ele cand SPD or
     TH2D        *fHistDCAhfe;//!ele cand SPD or
 
     TH2D        *fHistDCAde;//!ele cand SPD or
