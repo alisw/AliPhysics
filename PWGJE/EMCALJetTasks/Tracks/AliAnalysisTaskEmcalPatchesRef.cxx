@@ -47,7 +47,8 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
         fRequestAnalysisUtil(kTRUE),
         fTriggerStringFromPatches(kFALSE),
         fCentralityRange(-999., 999.),
-        fVertexRange(-999., 999.)
+        fVertexRange(-999., 999.),
+        fRequestCentrality(false)
 {
 }
 
@@ -63,7 +64,8 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
     fCentralityRange(-999., 999.),
-    fVertexRange(-999., 999.)
+    fVertexRange(-999., 999.),
+    fRequestCentrality(false)
 {
   DefineOutput(1, TList::Class());
 }
@@ -155,6 +157,11 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   }
   AliDebug(1, "Event selected");
   AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  // In case a centrality estimator is used, event selection,
+  // otherwise ignore event selection from multiplicity task
+  if(fRequestCentrality){
+    if(mult && !mult->IsEventSelected()) return;
+  }
   double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
   AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
   if(!fCentralityRange.IsInRange(centrality)){

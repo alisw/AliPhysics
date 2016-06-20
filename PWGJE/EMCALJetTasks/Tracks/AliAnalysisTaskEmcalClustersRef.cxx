@@ -58,7 +58,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
     fCentralityRange(-999., 999.),
-    fVertexRange(-999., 999.)
+    fVertexRange(-999., 999.),
+    fRequestCentrality(false)
 {
 }
 
@@ -76,7 +77,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE),
     fCentralityRange(-999., 999.),
-    fVertexRange(-999., 999.)
+    fVertexRange(-999., 999.),
+    fRequestCentrality(false)
 {
   DefineOutput(1, TList::Class());
 }
@@ -197,7 +199,10 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   }
   AliDebug(1, "Event selected");
   AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
-  if(!mult) std::cout << "Multiplicity selection not found" << std::endl;
+  if(!mult) AliError("Multiplicity selection not found");
+  if(fRequestCentrality){
+    if(mult && ! mult->IsEventSelected()) return;
+  }
   double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
   AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
   if(!fCentralityRange.IsInRange(centrality)){
