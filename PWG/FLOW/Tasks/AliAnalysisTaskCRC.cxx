@@ -111,6 +111,7 @@ fCRCEtaMin(0.),
 fCRCEtaMax(0.),
 fnCenBin(10),
 fFlowQCCenBin(100),
+fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
@@ -246,6 +247,7 @@ fCRCEtaMin(0.),
 fCRCEtaMax(0.),
 fnCenBin(10),
 fFlowQCCenBin(100),
+fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
 fCorrWeight("TPCuVZuZDCu"),
@@ -344,6 +346,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
  fQC->SetCalculateFlowQC(fCalculateFlowQC);
   fQC->SetFlowQCCenBin(fFlowQCCenBin);
+  fQC->SetFlowQCDeltaEta(fFlowQCDeltaEta);
  fQC->SetCalculateFlowZDC(fCalculateFlowZDC);
  fQC->SetCalculateFlowVZ(fCalculateFlowVZ);
  fQC->SetUseVZERO(fUseVZERO);
