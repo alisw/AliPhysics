@@ -131,6 +131,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fvalueElectron(0),
   fHistDCAinc(0),
   fHistDCApho(0),
+  fHistDCAcomb(0),
   fHistDCAhfe(0),
   fHistDCAde(0),
   fHistDCAbe(0),
@@ -209,6 +210,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fvalueElectron(0),
   fHistDCAinc(0),
   fHistDCApho(0),
+  fHistDCAcomb(0),
   fHistDCAhfe(0),
   fHistDCAde(0),
   fHistDCAbe(0),
@@ -412,6 +414,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
  
   fHistDCApho = new TH2D("fHistDCApho", "DCA of pho e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCApho);
+
+  fHistDCAcomb = new TH2D("fHistDCAcomb", "DCA of comb e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCAcomb);
 
   fHistDCAhfe = new TH2D("fHistDCAhfe", "DCA of hfe e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAhfe);
@@ -875,24 +880,28 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fSparseElectron->Fill(fvalueElectron);
       }
 
-      Bool_t fFlagNonHFE=kFALSE;
+      Bool_t fFlagNonHFE=kFALSE;  // ULS
+      Bool_t fFlagNonLsHFE=kFALSE;  // LS
       ////////////////////////////////////////////////
       //Track properties of EMCAL electron cadidates//
       ////////////////////////////////////////////////
       if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m02 > 0.006 && m02 < 0.35){ //rough cuts
         //-----Identify Non-HFE
-        SelectPhotonicElectron(iTracks,track,fFlagNonHFE);
+        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
+        //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
 
         fHistDCAinc->Fill(track->Pt(),DCAxy);
         if(fFlagNonHFE)
           { 
-           fHistDCApho->Fill(track->Pt(),DCAxy);
+           fHistDCApho->Fill(track->Pt(),DCAxy); // ULS
           }
         else
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
           ElectronAway(iTracks,track); //e+e-
          }
+     
+        if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
 
         if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
@@ -917,7 +926,7 @@ Bool_t AliAnalysisTaskBeautyCal::ProcessCutStep(Int_t cutStep, AliVParticle *tra
 
 
 //________________________________________________________________________
-void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec)
 {
   ///////////////////////////////////////////
   //////Non-HFE - Invariant mass method//////
@@ -934,7 +943,8 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   esdTrackCutsAsso->SetMaxDCAToVertexXY(2.4);
   esdTrackCutsAsso->SetDCAToVertex2D(kTRUE);
 
-  Bool_t flagPhotonicElec = kFALSE;
+  Bool_t flagULSElec = kFALSE;  // ULS
+  Bool_t flagLSElec = kFALSE;   // LS
 
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
@@ -1004,10 +1014,17 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
     if(fFlagULS)
       if(track->Pt()>1) fInvmassULS->Fill(mass);
 
-    if(mass<0.1 && fFlagULS && !flagPhotonicElec)
-      flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+    if(mass<0.1 && fFlagULS && !flagULSElec)
+      flagULSElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+    if(mass<0.1 && fFlagLS && !flagLSElec)
+      flagLSElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+  
   }
-  fFlagPhotonicElec = flagPhotonicElec;
+  fFlagULSElec = flagULSElec;
+  fFlagLSElec = flagLSElec;
+
+  //cout << "fFlagULSElec = " << fFlagULSElec << " ; fFlagLSElec = " << fFlagLSElec << endl; 
+
 }
 
 
