@@ -9,7 +9,7 @@
  *
  * This task clones the tracks and randomize them in a given acceptance
  * Use ActivateJetRemoval() to remove the given jets from the event before randomization
- * 
+ * Use ActivateJetEmbedding() to embed tracks from an event array (expects PYTHIA tracks or similar)
  *
  * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
  * \date Apr 21, 2016
@@ -44,6 +44,8 @@ public:
   void          SetDistributionV4(TH2D* dist)               {fDistributionV4 = dist;}
   void          SetDistributionV5(TH2D* dist)               {fDistributionV5 = dist;}
   void          ActivateJetRemoval(const char* arrName, Double_t threshold, const char* rhoObj) {fJetRemovalArrayName = arrName; fJetRemovalPtThreshold = threshold; fJetRemovalRhoObj = rhoObj;}
+  void          ActivateJetEmbedding(const char* arrName)   {fJetEmbeddingArrayName = arrName;}
+
 
   void          SetInputArrayName(const char* name)         {fInputArrayName = name;}
   void          SetOutputArrayName(const char* name)        {fOutputArrayName = name;}
@@ -81,6 +83,9 @@ protected:
   TClonesArray*       fJetRemovalArray;           //!<! TClonesArray containing jets
   Double_t            fJetRemovalPtThreshold;     /// threshold at which jets given in fInputJetArray will be removed
 
+  TString             fJetEmbeddingArrayName;     /// Name of the TClonesArray containing tracks for embedding
+  TClonesArray*       fJetEmbeddingArray;         //!<! TClonesArray containing tracks to be embedded
+
   Double_t            fRandomPsi3;                /// eventwise calculated psi 3
   Double_t            fRandomPsi4;                /// eventwise calculated psi 4
   Double_t            fRandomPsi5;                /// eventwise calculated psi 5
@@ -88,8 +93,11 @@ protected:
 
   Bool_t              IsParticleInJet(Int_t part);
   Double_t            GetExternalRho();
+  void                RandomizeTrack(AliAODTrack* particle);
+  AliAODTrack*        GetAODTrack(AliPicoTrack* track);
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 6);
+
+  ClassDef(AliAnalysisTaskParticleRandomizer, 7);
 };
 
 #endif
