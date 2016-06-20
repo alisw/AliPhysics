@@ -30,6 +30,7 @@
 #include "AliAODVertex.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliRDHFCuts.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAODRecoCascadeHF);
@@ -93,7 +94,7 @@ AliAODRecoCascadeHF::~AliAODRecoCascadeHF()
   ///
 }
 //-----------------------------------------------------------------------------
-Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const 
+Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
 {
   ///
   /// 3 prong invariant mass of the D0 daughters and the soft pion
@@ -111,7 +112,7 @@ Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const
   Double_t esum = e[0]+e[1]+e[2];
   Double_t minv = TMath::Sqrt(esum*esum-P()*P());
 
-  return minv; 
+  return minv;
 }
 //----------------------------------------------------------------------------
 Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
@@ -175,7 +176,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   if (finalLabel>=0) {
     // Debug printouts for Lc->V0 bachelor, D+->K0s+pi, Ds->K0s+K cases
-     
+
     if ( isV0 && (dgLabels[0]!=-1 && dgLabels[1]!=-1) ) {
       AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(Getv0());
       Bool_t onTheFly = theV0->GetOnFlyStatus();
@@ -198,7 +199,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                      dgLabels[0],pdgDg[0],dgLabels[1],pdgDg[1]));
       }
     }
-   
+
   }
 
   return finalLabel;
@@ -216,9 +217,9 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
   // cutsDstar[3] = PtMax of pi_s [GeV/c]
   // cutsDstar[4] = theta, angle between the pi_s and decay plane of the D0 [rad]
   //
-  // cutsD0[0] = inv. mass half width [GeV]   
+  // cutsD0[0] = inv. mass half width [GeV]
   // cutsD0[1] = dca [cm]
-  // cutsD0[2] = cosThetaStar 
+  // cutsD0[2] = cosThetaStar
   // cutsD0[3] = pTK [GeV/c]
   // cutsD0[4] = pTPi [GeV/c]
   // cutsD0[5] = d0K [cm]   upper limit!
@@ -228,15 +229,15 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
 
 
   // check that the D0 passes the cuts
-  // (if we have a D*+, it has to pass as D0, 
+  // (if we have a D*+, it has to pass as D0,
   //  if we have a D*-, it has to pass as D0bar)
 
   if(testD0) {
     Int_t okD0=0,okD0bar=0;
     Get2Prong()->SelectD0(cutsD0,okD0,okD0bar);
-    if((Charge()==+1 && !okD0) || (Charge()==-1 && !okD0bar)) return kFALSE; 
+    if((Charge()==+1 && !okD0) || (Charge()==-1 && !okD0bar)) return kFALSE;
   }
- 
+
   if( (PtProng(0)<cutsDstar[2]) || (PtProng(0)>cutsDstar[3]) ) return kFALSE;
 
   Double_t mDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
@@ -246,14 +247,14 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
   Double_t mD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   if(TMath::Abs((mDstar-mD0)-DeltaInvMass())>cutsDstar[1]) return kFALSE;
 
-  Double_t theta = AngleD0dkpPisoft(); 
+  Double_t theta = AngleD0dkpPisoft();
   if(theta>cutsDstar[4]) return kFALSE;
-  
+
   return kTRUE;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0, 
-					 Bool_t okLck0sp, Bool_t okLcLpi, Bool_t okLcLbarpi) const 
+Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
+					 Bool_t okLck0sp, Bool_t okLcLpi, Bool_t okLcLbarpi) const
 {
   /// cuts on Lambdac candidates to V0+bachelor
   /// (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
@@ -267,12 +268,12 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
   /// 7 = dca cut on the cascade (cm)
   /// 8 = dca cut on the V0 (cm)
 
-  //   if ( !Getv0() || !Getv0PositiveTrack() || !Getv0NegativeTrack() ) 
+  //   if ( !Getv0() || !Getv0PositiveTrack() || !Getv0NegativeTrack() )
   //     { AliInfo(Form("Not adapted for ESDv0s, return true...")); return false; }
 
   Double_t mLck0sp,mLcLpi;
   okLck0sp=1; okLcLpi=1; okLcLbarpi=1;
-  
+
   Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
   Double_t mLPDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
@@ -281,7 +282,7 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
   double mk0s = Getv0()->MassK0Short();
   mLck0sp = InvMassLctoK0sP();
 
-  // lambda + pi 
+  // lambda + pi
   double mlambda = Getv0()->MassLambda();
   double malambda = Getv0()->MassAntiLambda();
   mLcLpi = InvMassLctoLambdaPi();
@@ -292,27 +293,27 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
   //   with Lambda pi hypothesis
   if(TMath::Abs(mLcLpi-mLcPDG)>cutsLctoV0[1]) okLcLpi = 0;
   okLcLbarpi = okLcLpi;
- 
+
   // cuts on the v0 mass
   if( TMath::Abs(mk0s-mk0sPDG)>cutsLctoV0[2]) okLck0sp = 0;
-  //if( TMath::Abs(mlambda-mLPDG)>cutsLctoV0[3] && 
+  //if( TMath::Abs(mlambda-mLPDG)>cutsLctoV0[3] &&
   //TMath::Abs(malambda-mLPDG)>cutsLctoV0[3] ) okLcLpi = 0;
   if( !(GetBachelor()->Charge()==+1 && TMath::Abs(mlambda-mLPDG)<=cutsLctoV0[3]) ) okLcLpi = 0;
   if( !(GetBachelor()->Charge()==-1 && TMath::Abs(malambda-mLPDG)<=cutsLctoV0[3]) ) okLcLbarpi = 0;
-  
+
   if(!okLck0sp && !okLcLpi && !okLcLbarpi) return 0;
-  
-  // cuts on the minimum pt of the tracks 
+
+  // cuts on the minimum pt of the tracks
   if(TMath::Abs(GetBachelor()->Pt()) < cutsLctoV0[4]) return 0;
   if(TMath::Abs(Getv0PositiveTrack()->Pt()) < cutsLctoV0[5]) return 0;
   if(TMath::Abs(Getv0NegativeTrack()->Pt()) < cutsLctoV0[6]) return 0;
-  
+
   // cut on the cascade dca
   if( TMath::Abs(GetDCA(0))>cutsLctoV0[7] //||
       //TMath::Abs(Getv0()->DcaPosToPrimVertex())>cutsLctoV0[7] ||
       //TMath::Abs(Getv0()->DcaNegToPrimVertex())>cutsLctoV0[7]
       ) return 0;
-  
+
   // cut on the v0 dca
   if(TMath::Abs(Getv0()->DcaV0Daughters()) > cutsLctoV0[8]) return 0;
 
@@ -347,19 +348,19 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
     return 0;
   }
 
-  // cut on gamma invariant mass veto                                                                                                                      
+  // cut on gamma invariant mass veto
   if (Getv0()->InvMass2Prongs(0,1,11,11) < cutsLctoV0[14]) { // K0S invariant mass veto
     AliDebug(4,Form(" veto on gamma invariant mass doesn't pass the cut"));
     return 0;
   }
 
-  // cut on V0 pT min                                                                                                                                      
-  if (Getv0()->Pt() < cutsLctoV0[15]) { // V0 pT min                                                                                         
+  // cut on V0 pT min
+  if (Getv0()->Pt() < cutsLctoV0[15]) { // V0 pT min
     AliDebug(4,Form(" V0 track Pt=%2.2e > %2.2e",Getv0()->Pt(),cutsLctoV0[15]));
     return 0;
   }
-  
-  return true; 
+
+  return true;
 
 }
 //-----------------------------------------------------------------------------
@@ -411,7 +412,7 @@ Double_t AliAODRecoCascadeHF::DecayLengthV0() const
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -1.;
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
   Double_t posVtx[3] = {0.,0.,0.};
@@ -427,7 +428,7 @@ Double_t AliAODRecoCascadeHF::DecayLengthXYV0() const
   ///
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -1.;
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
   Double_t posVtx[3] = {0.,0.,0.};
@@ -436,7 +437,7 @@ Double_t AliAODRecoCascadeHF::DecayLengthXYV0() const
 
 }
 //-----------------------------------------------------------------------------
-Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const 
+Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const
 {
   ///
   /// Returns cosine of V0 pointing angle wrt primary vertex
@@ -444,7 +445,7 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -999.;
 
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
@@ -454,7 +455,7 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const
 
 }
 //-----------------------------------------------------------------------------
-Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const 
+Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const
 {
   ///
   /// Returns XY cosine of V0 pointing angle wrt primary vertex
@@ -462,7 +463,7 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -999.;
 
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
@@ -480,7 +481,7 @@ Double_t AliAODRecoCascadeHF::NormalizedV0DecayLength() const
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -1.;
   //AliAODVertex *vtxPrimary = GetPrimaryVtx();
   //Double_t posVtx[3] = {0.,0.,0.};
@@ -497,7 +498,7 @@ Double_t AliAODRecoCascadeHF::NormalizedV0DecayLengthXY() const
   ///
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
-  if (!v0) 
+  if (!v0)
     return -1.;
   //AliAODVertex *vtxPrimary = GetPrimaryVtx();
   //Double_t posVtx[3] = {0.,0.,0.};
@@ -506,3 +507,28 @@ Double_t AliAODRecoCascadeHF::NormalizedV0DecayLengthXY() const
   return v0->NormalizedDecayLengthXY(GetPrimaryVtx());
 
 }
+//-----------------------------------------------------------------------------
+Bool_t AliAODRecoCascadeHF::CheckCascadeFlags(AliRDHFCuts::ESele selFlag) {
+  ///
+  /// Check if the cascade candidate has the flag 'selFlag', as required at analysis level.
+  /// Possible flags for cascade are kLctoV0Cuts, kDplustoK0sCuts and kDstoK0sCuts.
+  ///
+
+  Bool_t okCascLc    = HasSelectionBit(AliRDHFCuts::kLctoV0Cuts);
+  Bool_t okCascDplus = HasSelectionBit(AliRDHFCuts::kDplustoK0sCuts);
+  Bool_t okCascDs    = HasSelectionBit(AliRDHFCuts::kDstoK0sCuts);
+
+  if (!okCascLc && !okCascDplus && !okCascDs) {
+    // Cascade candidates don't have any flag: only Lc candidates are stored in the studied delta-AOD
+    //AliDebug(2, "Cascade candidate does not have any flag - candidate accepted if Lc hypothesis is required");
+    if (selFlag==AliRDHFCuts::kLctoV0Cuts) return kTRUE;
+    else return kFALSE;
+  }
+
+  if (selFlag==AliRDHFCuts::kLctoV0Cuts && okCascLc) return kTRUE;
+  if (selFlag==AliRDHFCuts::kDplustoK0sCuts && okCascDplus) return kTRUE;
+  if (selFlag==AliRDHFCuts::kDstoK0sCuts && okCascDs) return kTRUE;
+
+  return kFALSE;
+}
+

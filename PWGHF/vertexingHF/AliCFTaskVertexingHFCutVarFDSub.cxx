@@ -1120,6 +1120,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
       }else if(fDecayChannel==32){
         if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kLcCuts)) isBitSelected = kFALSE;
+      }else if(fDecayChannel==22){
+        if(!((dynamic_cast<AliAODRecoCascadeHF*>(charmCandidate))->CheckCascadeFlags())) isBitSelected = kFALSE; // select only Lc among cascade candidates
       }
       if(!isBitSelected){
         if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
