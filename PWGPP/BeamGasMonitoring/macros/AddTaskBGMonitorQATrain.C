@@ -1,5 +1,7 @@
 class AliAnalysisDataContainer;
-AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain(){
+AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain()
+{
+    //
     //This macro configures the task for the Beam Gas Monitoring QA
     //==============================================================================
     std::cout << "marker 1 for debuging" << std::endl;
@@ -14,6 +16,12 @@ AliAnalysisBGMonitorQATrain* AddTaskBGMonitorQATrain(){
         return NULL;
     }
     std::cout << "marker 3 for debuging" << std::endl;
+    // Input handlers
+    AliESDInputHandler* esdH = new AliESDInputHandler();
+    esdH->SetReadFriends(kTRUE);
+    mgr->SetInputEventHandler(esdH);
+
+
     // Create and configure the task
     AliAnalysisBGMonitorQATrain *taskBGMonitorQATrain = new AliAnalysisBGMonitorQATrain("taskBGMonitorQATrain");
     std::cout << "marker 4 for debuging" << std::endl;
