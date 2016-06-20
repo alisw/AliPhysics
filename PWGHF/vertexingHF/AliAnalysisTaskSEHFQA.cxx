@@ -539,17 +539,17 @@ void AliAnalysisTaskSEHFQA::Init(){
   default:
     AliFatal("Bad initialization for the decay channe - Exiting...");
     break;
-  }  
+  }
 
   const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
   if (copycut){
     copycut->SetName(nameoutput);
-    
+
     // Post the data
     PostData(4,copycut);
   }else{
     AliFatal("Failing initializing AliRDHFCuts object - Exiting...");
-  }	
+  }
 
   return;
 
@@ -668,7 +668,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     hname="hTPCsigvsp";
     fHisTPCsigvsp=new TH2F(hname.Data(),"TPCsig vs p;TPC p[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
- 
+
     hname="hTPCsigvspAC";
     fHisTPCsigvspAC=new TH2F(hname.Data(),"TPCsig vs p;TPCp[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
 
@@ -707,22 +707,22 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hTPCsigNvsPtAllTracks";
       fHisTPCsigNvsPtAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
-      
+
       hname="hTPCsigNvsPhiAllTracks";
       fHisTPCsigNvsPhiAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
-      
+
       hname="hTPCsigNvsEtaAllTracks";
       fHisTPCsigNvsEtaAllTracks=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
-      
+
       hname="hTPCsigNvsPtDaughters";
       fHisTPCsigNvsPtDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. p_{T};p_{T} [GeV/c]; n. points", 200, 0.,20.,161,-0.5,160.5);
-      
+
       hname="hTPCsigNvsPhiDaughters";
       fHisTPCsigNvsPhiDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #phi;#phi [rad]; n. points", 100, 0.,2*TMath::Pi(),161,-0.5,160.5);
-      
+
       hname="hTPCsigNvsEtaDaughters";
       fHisTPCsigNvsEtaDaughters=new TH2F(hname.Data(),"Distribution of n. points used for TPC dE/dx vs. #eta;eta; n. points", 80,-2.,2.,161,-0.5,160.5);
-      
+
       fOutputPID->Add(fHisTPCsigNvsPtAllTracks);
       fOutputPID->Add(fHisTPCsigNvsPhiAllTracks);
       fOutputPID->Add(fHisTPCsigNvsEtaAllTracks);
@@ -730,8 +730,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       fOutputPID->Add(fHisTPCsigNvsPhiDaughters);
       fOutputPID->Add(fHisTPCsigNvsEtaDaughters);
     }
-    
-    
+
+
     if(fReadMC){
       //TOF
       hname="hTOFsigmaMCKSigPid";
@@ -808,7 +808,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisnLayerITSsa->GetXaxis()->SetBinLabel(5,"SDDout");
     fHisnLayerITSsa->GetXaxis()->SetBinLabel(6,"SSDin");
     fHisnLayerITSsa->GetXaxis()->SetBinLabel(7,"SSDout");
-   
+
     hname="hnClsSPD";
     fHisnClsSPD=new TH1F(hname.Data(),"Distribution of number of SPD clusters;nSPDcls;Entries",3,-0.5,2.5);
 
@@ -846,7 +846,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     hname="hd0dauphi_filt";
     fHisd0dauphi_filt=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi, cut level; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
-    
+
     hname="hd0zdau";
     fHisd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
@@ -1021,7 +1021,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       fOutputTrack->Add(fHisSPDclsAllTracks);
 
     }
-    
+
     fOutputTrack->Add(fHisnClsITS);
     fOutputTrack->Add(fHisnClsITSselTr);
     fOutputTrack->Add(fHisnClsITSSA);
@@ -1044,7 +1044,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(fHisd0dauphi_filt);
     fOutputTrack->Add(fHisd0zdau_filt);
     fOutputTrack->Add(fHisd0zdauphi_filt);
-    
+
 
     if(fReadMC){
       hname="hdistrFakeTr";
@@ -1080,7 +1080,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     }
   }
 
-  
+
   if(fOnOff[2] && fCuts->GetUseCentrality()){
 
     //Centrality (Counters)
@@ -1096,10 +1096,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     secondEstimator->AddRubric("run",500000);
     secondEstimator->AddRubric("centralityclass","-10_0/0_10/10_20/20_30/30_40/40_50/50_60/60_70/70_80/80_90/90_100/-990_-980");
     secondEstimator->Init();
- 
+
     fOutputCounters->Add(stdEstimator);
     fOutputCounters->Add(secondEstimator);
- 
+
     //Centrality (Checks)
     fOutputCheckCentrality=new TList();
     fOutputCheckCentrality->SetOwner();
@@ -1125,7 +1125,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     hname="hntrklvsPercentile01";
     fHisntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
-      
+
     hname="hntrklvsPercentile01AllEv";
     fHisntrklvsPercentile01AllEv=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1 - All Events;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
@@ -1171,7 +1171,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(fHisStdSignalSecondSignal);
 
     PostData(6,fOutputCheckCentrality);
-  
+
   } else{
     if(fOnOff[0]){
       TString hname="hNtracklets";
@@ -1471,25 +1471,25 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t pdg=0;
   Int_t *pdgdaughters=0x0;
 
-  if(!aod && AODEvent() && IsStandardAOD()) { 
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aod = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(aodHandler->GetExtensions()) {
-      
+
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
-      
+
       arrayProng3Prong  =(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       arrayProng4Prong  =(TClonesArray*)aodFromExt->GetList()->FindObject("Charm4Prong");
       arrayProngD0toKpi =(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
       arrayProngDstar   =(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
       arrayProngCascades=(TClonesArray*)aodFromExt->GetList()->FindObject("CascadesHF");
-      
+
     switch(fDecayChannel){
 
     case 0:
@@ -1501,16 +1501,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[1]=321;//K
 	  pdgdaughters[2]=211;//pi
 	}
-	break; 
+	break;
     case 1:
       arrayProng=arrayProngD0toKpi;
       pdg=421;
 	if(fReadMC){
 	  pdgdaughters =new Int_t[2];
-	  pdgdaughters[0]=211;//pi 
+	  pdgdaughters[0]=211;//pi
 	  pdgdaughters[1]=321;//K
 	}
-	break; 
+	break;
     case 2:
       arrayProng=arrayProngDstar;
       pdg=413;
@@ -1520,7 +1520,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[0]=321;//K
 	  pdgdaughters[2]=211;//pi (soft?)
 	}
-	break; 
+	break;
     case 3:
       arrayProng=arrayProng3Prong;
       pdg=431;
@@ -1530,7 +1530,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[1]=321;//K
 	  pdgdaughters[2]=211;//pi
 	}
-	break; 
+	break;
     case 4:
       arrayProng=arrayProng4Prong;
       pdg=421;
@@ -1541,7 +1541,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[2]=211;
 	  pdgdaughters[3]=211;
 	}
-	break; 
+	break;
     case 5:
       arrayProng=arrayProng3Prong;
       pdg=4122;
@@ -1551,7 +1551,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[1]=321;//K
 	  pdgdaughters[2]=211;//pi
 	}
-	break; 
+	break;
     case kLambdactoV0:
       arrayProng=arrayProngCascades;
 	pdg=4122;
@@ -1561,7 +1561,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  pdgdaughters[1]=211;//pi
 	  pdgdaughters[2]=211;//pi
 	}
-	break; 
+	break;
       }
     }
   } else if(aod) {
@@ -1571,9 +1571,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     arrayProngD0toKpi =(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
     arrayProngDstar   =(TClonesArray*)aod->GetList()->FindObject("Dstar");
     arrayProngCascades=(TClonesArray*)aod->GetList()->FindObject("CascadesHF");
-      
+
     switch(fDecayChannel){
-      
+
     case 0:
       arrayProng=arrayProng3Prong;
       pdg=411;
@@ -1583,16 +1583,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[1]=321;//K
 	pdgdaughters[2]=211;//pi
       }
-      break; 
+      break;
     case 1:
       arrayProng=arrayProngD0toKpi;
       pdg=421;
       if(fReadMC){
 	pdgdaughters =new Int_t[2];
-	pdgdaughters[0]=211;//pi 
+	pdgdaughters[0]=211;//pi
 	pdgdaughters[1]=321;//K
       }
-      break; 
+      break;
     case 2:
       arrayProng=arrayProngDstar;
       pdg=413;
@@ -1602,7 +1602,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[0]=321;//K
 	pdgdaughters[2]=211;//pi (soft?)
       }
-      break; 
+      break;
     case 3:
       arrayProng=arrayProng3Prong;
       pdg=431;
@@ -1612,7 +1612,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[1]=321;//K
 	pdgdaughters[2]=211;//pi
       }
-      break; 
+      break;
     case 4:
       arrayProng=arrayProng4Prong;
       pdg=421;
@@ -1623,7 +1623,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[2]=211;
 	pdgdaughters[3]=211;
       }
-      break; 
+      break;
     case 5:
       arrayProng=arrayProng3Prong;
       pdg=4122;
@@ -1633,7 +1633,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pdgdaughters[1]=321;//K
 	pdgdaughters[2]=211;//pi
       }
-      break; 
+      break;
     case kLambdactoV0:
       arrayProng=arrayProngCascades;
       pdg=4122;
@@ -1652,7 +1652,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     isSimpleMode=kTRUE;
     fHisNentries->Fill(2);
   }
-  
+
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
@@ -1670,7 +1670,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       delete [] pdgdaughters;
       return;
     }
-    
+
     // load MC header
     mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
@@ -1680,7 +1680,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     }
   }
 
-  
+
   UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Double_t centrality=fCuts->GetCentrality(aod);
   AliAODHeader * header = dynamic_cast<AliAODHeader*>(aod->GetHeader());
@@ -1699,7 +1699,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   trdSelection.CalcTriggers(aod);
 
   if(fReadMC) {
-    if(aod->GetTriggerMask()==0 && 
+    if(aod->GetTriggerMask()==0 &&
        (runNumber>=195344 && runNumber<=195677)){
       AliDebug(3,"Event rejected because of null trigger mask");
       delete [] pdgdaughters;
@@ -1722,7 +1722,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(track->TestFilterBit(1))  nSelTracksTPCOnly++;
       if(track->GetStatus()&AliESDtrack::kITSrefit){
 	nSelTracksTPCITS++;
-	if(nclsSPD>0) nSelTracksTPCITS1SPD++;      
+	if(nclsSPD>0) nSelTracksTPCITS1SPD++;
       }
     }
     if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
@@ -1764,26 +1764,26 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(0.,multiplicity);
       trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:Any/Run:%d",runNumber));
-    }  
+    }
     if(evSelMask & AliVEvent::kMB){
       fHisTrigCent->Fill(1.,centrality);
       fHisTrigMul->Fill(1.,multiplicity);
       trigCount->Count(Form("triggerType:MB/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:MB/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kINT7){ 
+    if(evSelMask & AliVEvent::kINT7){
       fHisTrigCent->Fill(2.,centrality);
       fHisTrigMul->Fill(2.,multiplicity);
       trigCount->Count(Form("triggerType:CINT7/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:CINT7/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kINT8){ 
+    if(evSelMask & AliVEvent::kINT8){
       fHisTrigCent->Fill(3.,centrality);
       fHisTrigMul->Fill(3.,multiplicity);
-      trigCount->Count(Form("triggerType:INT8/Run:%d",runNumber));   
-      trigCount2->Count(Form("triggerType:INT8/Run:%d",runNumber));      
+      trigCount->Count(Form("triggerType:INT8/Run:%d",runNumber));
+      trigCount2->Count(Form("triggerType:INT8/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kCINT5){ 
+    if(evSelMask & AliVEvent::kCINT5){
       fHisTrigCent->Fill(4.,centrality);
       fHisTrigMul->Fill(4.,multiplicity);
     }
@@ -1792,7 +1792,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(5.,multiplicity);
       trigCount->Count(Form("triggerType:Cent/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kSemiCentral){ 
+    if(evSelMask & AliVEvent::kSemiCentral){
       fHisTrigCent->Fill(6.,centrality);
       fHisTrigMul->Fill(6.,multiplicity);
       trigCount->Count(Form("triggerType:SemiCent/Run:%d",runNumber));
@@ -1847,7 +1847,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(14.,multiplicity);
       trigCount->Count(Form("triggerType:MUON/Run:%d",runNumber));
     }
-    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
+    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){
       fHisTrigCent->Fill(15.,centrality);
       fHisTrigMul->Fill(15.,multiplicity);
     }
@@ -1890,9 +1890,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(22.,multiplicity);
     }
   }
-  
 
-  // fix for temporary bug in ESDfilter 
+
+  // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   Double_t magField  = aod->GetMagneticField();
   if(!aod->GetPrimaryVertex() || TMath::Abs(magField)<0.001) {
@@ -1923,36 +1923,36 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kTRUE,evSelByPS=kTRUE;
 
   if(fOnOff[3]){
-     fHisWhyEvRejected->Fill(-1); 
+     fHisWhyEvRejected->Fill(-1);
   }
 
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
     if(fCuts->IsEventRejectedDueToPileup()) {
-      fHisWhyEvRejected->Fill(0); 
+      fHisWhyEvRejected->Fill(0);
       evselByPileup=kFALSE;
     }// rejected for pileup
     if(fCuts->IsEventRejectedDueToCentrality()) {
-      fHisWhyEvRejected->Fill(1); 
+      fHisWhyEvRejected->Fill(1);
       evSelbyCentrality=kFALSE; //rejected by centrality
     }
     if(fCuts->IsEventRejectedDueToNotRecoVertex() ||
-       fCuts->IsEventRejectedDueToVertexContributors()){ 
-      evSelByVertex=kFALSE; 
+       fCuts->IsEventRejectedDueToVertexContributors()){
+      evSelByVertex=kFALSE;
       fHisWhyEvRejected->Fill(2);
     }
     if(fCuts->IsEventRejectedDueToTrigger()){
       fHisWhyEvRejected->Fill(3);
     }
     if(fCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) {
-      evSelByVertex=kFALSE; 
-      if(fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber)); 
+      evSelByVertex=kFALSE;
+      if(fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
       fHisWhyEvRejected->Fill(4);
     }
-    if(fCuts->IsEventRejectedDuePhysicsSelection()) { 
+    if(fCuts->IsEventRejectedDuePhysicsSelection()) {
       evSelByPS=kFALSE;
-      fHisWhyEvRejected->Fill(5); 
+      fHisWhyEvRejected->Fill(5);
     }
   }
   if(evSelected && fOnOff[3]){
@@ -1970,7 +1970,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(evSelMask & AliVEvent::kINT8){
       fHisTrigCentSel->Fill(3.,centrality);
       fHisTrigMulSel->Fill(3.,multiplicity);}
-    if(evSelMask & AliVEvent::kCINT5){ 
+    if(evSelMask & AliVEvent::kCINT5){
       fHisTrigCentSel->Fill(4.,centrality);
       fHisTrigMulSel->Fill(4.,multiplicity);}
     if(evSelMask & AliVEvent::kCentral){
@@ -2044,7 +2044,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigCentSel->Fill(22.,centrality);
       fHisTrigMulSel->Fill(22.,multiplicity);}
   }
-  
+
   if(evSelected || (!evSelbyCentrality && evSelByVertex && evselByPileup && evSelByPS)){ //events selected or not selected because of centrality
     if(fOnOff[2] && fCuts->GetUseCentrality()){
 
@@ -2091,7 +2091,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       //AliCentrality *aodcent = aod->GetCentrality();
       // Float_t spdCentf = aodcent->GetCentralityPercentile("CL1");
       if(stdCentf==-1) {
-         mincent=-10; 
+         mincent=-10;
          stdCent=-1;
       }
       if(mincent==100)mincent--;
@@ -2157,7 +2157,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(vertex->GetNContributors()<=0) vtxTyp=-1;
     TString title=vertex->GetTitle();
     if(title.Contains("Z")) vtxTyp=2;
-    if(title.Contains("3D")) vtxTyp=1;    
+    if(title.Contains("3D")) vtxTyp=1;
     fHisxvtx->Fill(xvtx);
     fHisyvtx->Fill(yvtx);
     fHiszvtx->Fill(zvtx);
@@ -2184,12 +2184,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   // load all the branches and fill the SelectionBit histo
   if(fUseSelectionBit && !isSimpleMode){
-    
+
     //load branches
     Int_t nCand3Prong = arrayProng3Prong->GetEntriesFast();
     Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
     Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
-    
+
     // D+, Ds and Lc
     for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
       AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
@@ -2206,7 +2206,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
 	if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
-      }     
+      }
     }
     // Dstar
     for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
@@ -2225,7 +2225,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
   Bool_t oldPID=pidHF->GetOldPid();
-  if(oldPID){ 
+  if(oldPID){
     Double_t alephParameters[5];
     pidHF->GetTPCBetheBlochParams(alephParameters);
     tpcres->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
@@ -2275,21 +2275,21 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if (track->GetTPCNclsF()>0) {
 	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
       }
-      
+
       Bool_t selTrackNoSPD=selTrack;
       if(selTrack){
 	if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)){
 	  fHisd0TracksTPCITSSPDany->Fill(d0z0[0]);
 	}
       }
-      
+
       AliAODPid *pid = track->GetDetPid();
       if(!pid && fDebug>1) cout<<"No AliAODPid found"<<endl;
 
       if(pid && fOnOff[1]){
 	Double_t times[AliPID::kSPECIES];
 	pid->GetIntegratedTimes(times);
-    
+
 	Double_t tofRes[AliPID::kSPECIES];
 	pid->GetTOFpidResolution(tofRes);
 
@@ -2309,7 +2309,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    fHisTOFflags->Fill(6.);
 	  }
 	}
-      
+
 	if(selTrack && isTOFok){
 	  Double_t tofTime=pid->GetTOFsignal();
 	  AliTOFHeader* tofH=(AliTOFHeader*)aod->GetTOFHeader();
@@ -2317,13 +2317,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
             // with new AOD we need to retrieve startTime, subtract it and retrieve correctly TOF PID resolutions  *PA*
 	    AliTOFPIDResponse tofResp=pidResp->GetTOFResponse();
 	    Double_t startTime = tofResp.GetStartTime(track->P());
-	    Float_t startTimeRes = tofResp.GetStartTimeRes(track->P());  
-	    Int_t startTimeMask = tofResp.GetStartTimeMask(track->P());  
+	    Float_t startTimeRes = tofResp.GetStartTimeRes(track->P());
+	    Int_t startTimeMask = tofResp.GetStartTimeMask(track->P());
 	    fHisTOFstartTimeDistrib->Fill(startTime);
 	    fHisTOFstartTimeMask->Fill(startTimeMask);
 	    fHisTOFstartTimeRes->Fill(startTimeRes);
 	    tofTime-=startTime;
-	    for (Int_t type=0;type<AliPID::kSPECIES;type++) tofRes[type]=tofResp.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMassZ(type)); 
+	    for (Int_t type=0;type<AliPID::kSPECIES;type++) tofRes[type]=tofResp.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMassZ(type));
 	  }
 	  fHisTOFtime->Fill(times[AliPID::kProton]);
 	  fHisTOFtimeKaonHyptime->Fill(track->P(),tofTime-times[3]); //3 is kaon
@@ -2370,8 +2370,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  }
 	}//if TOF status
 	//}
-      
-	if(pidHF && pidHF->CheckStatus(track,"TPC") && selTrack){ 
+
+	if(pidHF && pidHF->CheckStatus(track,"TPC") && selTrack){
 
 	  Double_t TPCp=pid->GetTPCmomentum();
 	  Double_t TPCsignal=pid->GetTPCsignal();
@@ -2380,15 +2380,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  fHisTPCsigvsp->Fill(TPCp,TPCsignal);
 	  //if (pidHF->IsKaonRaw(track, "TOF"))
 	  Double_t nsigma[3]={-10,-10,-10};
-	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kPion,nsigma[0]);	 
-	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kKaon,nsigma[1]);	 
-	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kProton,nsigma[2]);	 
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kPion,nsigma[0]);
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kKaon,nsigma[1]);
+	  pidHF->GetnSigmaTPC(track,(Int_t)AliPID::kProton,nsigma[2]);
 
 	  fHisTPCsigmaK->Fill(TPCp,nsigma[1]);
-	  
-	  fHisTPCsigmaPion->Fill(TPCp,nsigma[0]);	  
+
+	  fHisTPCsigmaPion->Fill(TPCp,nsigma[0]);
 	  fHisTPCsigmaProton->Fill(TPCp,nsigma[2]);
-	  
+
 	  if(fReadMC){
 	    Int_t label=track->GetLabel();
 	    if(label<=0) continue;
@@ -2407,10 +2407,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    fHisTPCsigNvsPhiAllTracks->Fill(track->Phi(),(Float_t)TPCsignalN);
 	    fHisTPCsigNvsEtaAllTracks->Fill(track->Eta(),(Float_t)TPCsignalN);
 	  }
-	  
+
 	}//if TPC status
       } //end PID histograms
-      
+
       Int_t nclsTot=0,nclsSPD=0;
 
       //check clusters of the tracks
@@ -2427,7 +2427,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 	fHisnClsITS->Fill(nclsTot);
 	fHisnClsSPD->Fill(nclsSPD);
-	
+
 	if(fFillDistrTrackEffChecks && track->GetStatus()&AliESDtrack::kITSrefit && track->GetStatus()&AliESDtrack::kTPCrefit){
 
 	  fHisPtAllTracks->Fill(track->Pt());
@@ -2448,22 +2448,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 	  if(!(track->HasPointOnITSLayer(0)) && !(track->HasPointOnITSLayer(1))){ //no SPD points
 	    fHisSPDclsAllTracks->Fill(0);
-	  } 
+	  }
 	  if(track->HasPointOnITSLayer(0) && !(track->HasPointOnITSLayer(1))){ //kOnlyFirst
 	    fHisSPDclsAllTracks->Fill(1);
-	  } 
+	  }
 	  if(!(track->HasPointOnITSLayer(0)) && track->HasPointOnITSLayer(1)){ //kOnlySecond
 	    fHisSPDclsAllTracks->Fill(2);
 	  }
 	  if(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1)){ //kBoth
 	    fHisSPDclsAllTracks->Fill(3);
-	  } 
+	  }
 	  fHisNITSclsvsPtAllTracks->Fill(track->Pt(), nclsTot);
 	  fHisNITSclsvsPhiAllTracks->Fill(track->Phi(), nclsTot);
 	  fHisNITSclsvsEtaAllTracks->Fill(track->Eta(), nclsTot);
 
 	}
-	
+
 	if(track->Pt()>0.3 &&
 	   TMath::Abs(track->Eta())<0.8 &&
 	   track->GetStatus()&AliESDtrack::kITSrefit &&
@@ -2494,10 +2494,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    /*nclsTot>3 &&*/
 	    nclsSPD>0) {//count good tracks
 
-	
+
 	  if(fReadMC && label<0) {
 	    fHisptFakeTr->Fill(track->Pt());
-	    isFakeTrack++;	
+	    isFakeTrack++;
 	  } else {
 	    fHisptGoodTr->Fill(track->Pt());
 	    isGoodTrack++;
@@ -2531,8 +2531,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kD0toKpi && !d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) continue; //skip the D0 from Dstar
 	  if(fDecayChannel==AliAnalysisTaskSEHFQA::kDplustoKpipi && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) continue; //skip the 3 prong !D+
 	}
+  if(fDecayChannel==AliAnalysisTaskSEHFQA::kLambdactoV0 && !((dynamic_cast<AliAODRecoCascadeHF*>(d))->CheckCascadeFlags())) continue;
 
-	if(fReadMC){ 
+	if(fReadMC){
 
 	  Int_t labD = -1;
 	  if (fDecayChannel==AliAnalysisTaskSEHFQA::kLambdactoV0 && (dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0()) {
@@ -2565,7 +2566,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    }
 	    if(mot){
 	      Int_t pdgMotCode = mot->GetPdgCode();
-	
+
 	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(6); //from primary charm
 	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(7); //from beauty
 	    }
@@ -2585,22 +2586,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    else if (id==2)
 	      track=(AliAODTrack*)(dynamic_cast<AliAODRecoCascadeHF*>(d))->Getv0NegativeTrack();
 	  }
-	  else 
+	  else
 	    track=(AliAODTrack*)d->GetDaughter(id);
 
 
 	  // filtering cut level
-	  
+
 	  if (fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(pdg)) && fCuts->IsSelected(d,AliRDHFCuts::kAll,aod)) {
-	    
+
 	    Int_t label=0;
 	    if(fReadMC)label=track->GetLabel();
 	    if(fOnOff[0]){
-	      
+
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
 		fHisptFakeTrFromDaughFilt->Fill(track->Pt());
-	   
+
 		fHisd0f_filt->Fill(d->Getd0Prong(id));
 	      } else {
 		fHisptGoodTrFromDaugh_filt->Fill(track->Pt());
@@ -2623,15 +2624,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  //track quality
 
 	  if (fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(pdg)) && fCuts->IsSelected(d,AliRDHFCuts::kTracks,aod)) {
-	    
+
 	    Int_t label=0;
 	    if(fReadMC)label=track->GetLabel();
 	    if(fOnOff[0]){
-	      
+
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
 		fHisptFakeTrFromDaugh->Fill(track->Pt());
-	   
+
 		fHisd0f->Fill(d->Getd0Prong(id));
 	      } else {
 		fHisptGoodTrFromDaugh->Fill(track->Pt());
@@ -2684,10 +2685,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      fHisNITSclsvsEtaDaughters->Fill(track->Eta(), nITScls);
 	      if(!(track->HasPointOnITSLayer(0)) && !(track->HasPointOnITSLayer(1))){ //no SPD points
 		fHisSPDclsDaughters->Fill(0);
-	      } 
+	      }
 	      if(track->HasPointOnITSLayer(0) && !(track->HasPointOnITSLayer(1))){ //kOnlyFirst
 		fHisSPDclsDaughters->Fill(1);
-	      } 
+	      }
 	      if(!(track->HasPointOnITSLayer(0)) && track->HasPointOnITSLayer(1)){ //kOnlySecond
 		fHisSPDclsDaughters->Fill(2);
 	      }
@@ -2730,12 +2731,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		}
 		if(pidHF && pidHF->CheckStatus(track,"TPC")) fHisTPCsigvspAC->Fill(pid->GetTPCmomentum(),pid->GetTPCsignal());
 	      }
-	      
+
 	    } //end analysis cuts
 	  } //end acceptance and track cuts
 	} //end loop on tracks in the candidate
       } //end loop on candidates
-      
+
     }
   } //end if on pid or track histograms
 
@@ -2746,7 +2747,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(fOnOff[0]) PostData(3,fOutputTrack);
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
-  //Post data 6 done in case of centrality on   
+  //Post data 6 done in case of centrality on
 }
 
 //____________________________________________________________________________
@@ -2826,7 +2827,7 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
       if(!track->InRPSelection()) continue;
       fHisPhiEta[i]->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
     }
-  
+
   //histo filled only for TPCFB1
   if (i==0) {
     fHisCentVsMultRPS->Fill(fFlowEvent->GetNumberOfRPs(),cc);
@@ -2847,13 +2848,13 @@ void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
   }
 
   fOutputPID = dynamic_cast<TList*> (GetOutputData(2));
-  if (!fOutputPID && fOnOff[1]) {     
+  if (!fOutputPID && fOnOff[1]) {
     printf("ERROR: %s not available\n",GetOutputSlot(2)->GetContainer()->GetName());
     return;
   }
 
   fOutputTrack = dynamic_cast<TList*> (GetOutputData(3));
-  if (!fOutputTrack && fOnOff[0]) {     
+  if (!fOutputTrack && fOnOff[0]) {
     printf("ERROR: %s not available\n",GetOutputSlot(3)->GetContainer()->GetName());
     return;
   }

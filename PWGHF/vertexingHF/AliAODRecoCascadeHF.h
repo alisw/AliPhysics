@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //***********************************************************
 // Class AliAODRecoCascadeHF
@@ -22,6 +22,7 @@
 #include "AliAODv0.h"
 #include "AliAODcascade.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliRDHFCuts.h"
 
 class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
 
@@ -60,7 +61,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
     return (AliAODv0*)GetDaughter(1);
     }
 
-  // Cascade 
+  // Cascade
   AliAODcascade* GetCascade() const {
     if ( ! ((AliAODRecoDecay*)GetDaughter(1))->IsA()->InheritsFrom("AliAODcascade") ){
        AliWarning("Object is not of type cascade");
@@ -77,8 +78,8 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
   AliAODTrack* Getv0NegativeTrack() const { return  (AliAODTrack*)Getv0()->GetDaughter(1);  }
 
   // D*->D0pi, D0->Kpi
-  Double_t EDstar() const {return E(413);} 
-  Double_t YDstar() const {return Y(413);} 
+  Double_t EDstar() const {return E(413);}
+  Double_t YDstar() const {return Y(413);}
   Bool_t   SelectDstar(const Double_t *cutsDstar,const Double_t *cutsD0,Bool_t testD0=kTRUE) const;
   Double_t InvMassD0() const {return (Charge()>0 ? Get2Prong()->InvMassD0() : Get2Prong()->InvMassD0bar());}
   Double_t InvMassDstarKpipi() const;
@@ -107,13 +108,15 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
                   Int_t *pdgDg,Int_t *pdgDg2prong,
                   TClonesArray *mcArray, Bool_t isV0=kFALSE) const;
 
+  Bool_t CheckCascadeFlags(AliRDHFCuts::ESele selFlag = AliRDHFCuts::kLctoV0Cuts);
+
   Double_t CosV0PointingAngle() const;
   Double_t CosV0PointingAngleXY() const;
   Double_t DecayLengthV0() const;
   Double_t DecayLengthXYV0() const;
   Double_t NormalizedV0DecayLength() const;
   Double_t NormalizedV0DecayLengthXY() const;
- 
+
  protected:
   Short_t       fIDv0;                // unique track ID, points back to the ESD track
 

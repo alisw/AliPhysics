@@ -77,7 +77,7 @@ ClassImp(AliAnalysisTaskSELc2V0bachelorTMVA);
 /// \endcond
 
 //__________________________________________________________________________
-AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA():  
+AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA():
 AliAnalysisTaskSE(),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -99,64 +99,64 @@ AliAnalysisTaskSE(),
   fHistoLcOnTheFly(0),
   fFillOnlySgn(kFALSE),
   fHistoLcBeforeCuts(0),
-  fHistoFiducialAcceptance(0), 
+  fHistoFiducialAcceptance(0),
   fHistoCodesSgn(0),
   fHistoCodesBkg(0),
   fHistoLcpKpiBeforeCuts(0),
   fVtx1(0),
 
-  fHistoDistanceLcToPrimVtx(0),       
-  fHistoDistanceV0ToPrimVtx(0),      
-  fHistoDistanceV0ToLc(0),            
+  fHistoDistanceLcToPrimVtx(0),
+  fHistoDistanceV0ToPrimVtx(0),
+  fHistoDistanceV0ToLc(0),
 
-  fHistoDistanceLcToPrimVtxSgn(0),    
-  fHistoDistanceV0ToPrimVtxSgn(0),    
+  fHistoDistanceLcToPrimVtxSgn(0),
+  fHistoDistanceV0ToPrimVtxSgn(0),
   fHistoDistanceV0ToLcSgn(0),
 
-  fHistoVtxLcResidualToPrimVtx(0),    
-  fHistoVtxV0ResidualToPrimVtx(0),    
-  fHistoVtxV0ResidualToLc(0),         
+  fHistoVtxLcResidualToPrimVtx(0),
+  fHistoVtxV0ResidualToPrimVtx(0),
+  fHistoVtxV0ResidualToLc(0),
 
-  fHistoMassV0All(0),             
-  fHistoDecayLengthV0All(0),      
-  fHistoLifeTimeV0All(0),         
+  fHistoMassV0All(0),
+  fHistoDecayLengthV0All(0),
+  fHistoLifeTimeV0All(0),
 
-  fHistoMassV0True(0),             
-  fHistoDecayLengthV0True(0),      
-  fHistoLifeTimeV0True(0),         
+  fHistoMassV0True(0),
+  fHistoDecayLengthV0True(0),
+  fHistoLifeTimeV0True(0),
 
-  fHistoMassV0TrueFromAOD(0),             
+  fHistoMassV0TrueFromAOD(0),
 
-  fHistoMassV0TrueK0S(0),             
-  fHistoDecayLengthV0TrueK0S(0),      
-  fHistoLifeTimeV0TrueK0S(0),         
+  fHistoMassV0TrueK0S(0),
+  fHistoDecayLengthV0TrueK0S(0),
+  fHistoLifeTimeV0TrueK0S(0),
 
-  fHistoMassV0TrueK0SFromAOD(0),             
+  fHistoMassV0TrueK0SFromAOD(0),
 
-  fHistoMassLcAll(0),             
-  fHistoDecayLengthLcAll(0),      
-  fHistoLifeTimeLcAll(0),         
+  fHistoMassLcAll(0),
+  fHistoDecayLengthLcAll(0),
+  fHistoLifeTimeLcAll(0),
 
-  fHistoMassLcTrue(0),             
-  fHistoDecayLengthLcTrue(0),      
-  fHistoLifeTimeLcTrue(0),         
+  fHistoMassLcTrue(0),
+  fHistoDecayLengthLcTrue(0),
+  fHistoLifeTimeLcTrue(0),
 
-  fHistoMassLcTrueFromAOD(0),             
+  fHistoMassLcTrueFromAOD(0),
 
-  fHistoMassV0fromLcAll(0),       
+  fHistoMassV0fromLcAll(0),
   fHistoDecayLengthV0fromLcAll(0),
-  fHistoLifeTimeV0fromLcAll(0),   
+  fHistoLifeTimeV0fromLcAll(0),
 
-  fHistoMassV0fromLcTrue(0),       
+  fHistoMassV0fromLcTrue(0),
   fHistoDecayLengthV0fromLcTrue(0),
-  fHistoLifeTimeV0fromLcTrue(0),   
+  fHistoLifeTimeV0fromLcTrue(0),
 
-  fHistoMassLcSgn(0),             
-  fHistoMassLcSgnFromAOD(0),             
-  fHistoDecayLengthLcSgn(0),      
-  fHistoLifeTimeLcSgn(0),         
+  fHistoMassLcSgn(0),
+  fHistoMassLcSgnFromAOD(0),
+  fHistoDecayLengthLcSgn(0),
+  fHistoLifeTimeLcSgn(0),
 
-  fHistoMassV0fromLcSgn(0),       
+  fHistoMassV0fromLcSgn(0),
   fHistoDecayLengthV0fromLcSgn(0),
   fHistoLifeTimeV0fromLcSgn(0),
 
@@ -164,13 +164,13 @@ AliAnalysisTaskSE(),
   fHistoKFV0(0),
   fHistoKFLc(0),
 
-  fHistoMassKFV0(0), 
-  fHistoDecayLengthKFV0(0), 
-  fHistoLifeTimeKFV0(0), 
+  fHistoMassKFV0(0),
+  fHistoDecayLengthKFV0(0),
+  fHistoLifeTimeKFV0(0),
 
-  fHistoMassKFLc(0), 
-  fHistoDecayLengthKFLc(0), 
-  fHistoLifeTimeKFLc(0), 
+  fHistoMassKFLc(0),
+  fHistoDecayLengthKFLc(0),
+  fHistoLifeTimeKFLc(0),
 
   fHistoArmenterosPodolanskiV0KF(0),
   fHistoArmenterosPodolanskiV0KFSgn(0),
@@ -223,78 +223,78 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fHistoLcOnTheFly(0),
   fFillOnlySgn(kFALSE),
   fHistoLcBeforeCuts(0),
-  fHistoFiducialAcceptance(0), 
+  fHistoFiducialAcceptance(0),
   fHistoCodesSgn(0),
   fHistoCodesBkg(0),
   fHistoLcpKpiBeforeCuts(0),
   fVtx1(0),
 
-  fHistoDistanceLcToPrimVtx(0),       
-  fHistoDistanceV0ToPrimVtx(0),      
-  fHistoDistanceV0ToLc(0),            
+  fHistoDistanceLcToPrimVtx(0),
+  fHistoDistanceV0ToPrimVtx(0),
+  fHistoDistanceV0ToLc(0),
 
-  fHistoDistanceLcToPrimVtxSgn(0),    
-  fHistoDistanceV0ToPrimVtxSgn(0),    
+  fHistoDistanceLcToPrimVtxSgn(0),
+  fHistoDistanceV0ToPrimVtxSgn(0),
   fHistoDistanceV0ToLcSgn(0),
 
-  fHistoVtxLcResidualToPrimVtx(0),    
-  fHistoVtxV0ResidualToPrimVtx(0),    
-  fHistoVtxV0ResidualToLc(0),         
+  fHistoVtxLcResidualToPrimVtx(0),
+  fHistoVtxV0ResidualToPrimVtx(0),
+  fHistoVtxV0ResidualToLc(0),
 
-  fHistoMassV0All(0),             
-  fHistoDecayLengthV0All(0),      
-  fHistoLifeTimeV0All(0),         
+  fHistoMassV0All(0),
+  fHistoDecayLengthV0All(0),
+  fHistoLifeTimeV0All(0),
 
-  fHistoMassV0True(0),             
-  fHistoDecayLengthV0True(0),      
-  fHistoLifeTimeV0True(0),   
+  fHistoMassV0True(0),
+  fHistoDecayLengthV0True(0),
+  fHistoLifeTimeV0True(0),
 
-  fHistoMassV0TrueFromAOD(0),                   
+  fHistoMassV0TrueFromAOD(0),
 
-  fHistoMassV0TrueK0S(0),             
-  fHistoDecayLengthV0TrueK0S(0),      
-  fHistoLifeTimeV0TrueK0S(0),   
+  fHistoMassV0TrueK0S(0),
+  fHistoDecayLengthV0TrueK0S(0),
+  fHistoLifeTimeV0TrueK0S(0),
 
-  fHistoMassV0TrueK0SFromAOD(0),                   
+  fHistoMassV0TrueK0SFromAOD(0),
 
-  fHistoMassLcAll(0),             
-  fHistoDecayLengthLcAll(0),      
-  fHistoLifeTimeLcAll(0),         
+  fHistoMassLcAll(0),
+  fHistoDecayLengthLcAll(0),
+  fHistoLifeTimeLcAll(0),
 
-  fHistoMassLcTrue(0),             
-  fHistoDecayLengthLcTrue(0),      
-  fHistoLifeTimeLcTrue(0),         
+  fHistoMassLcTrue(0),
+  fHistoDecayLengthLcTrue(0),
+  fHistoLifeTimeLcTrue(0),
 
-  fHistoMassLcTrueFromAOD(0),             
+  fHistoMassLcTrueFromAOD(0),
 
-  fHistoMassV0fromLcAll(0),       
+  fHistoMassV0fromLcAll(0),
   fHistoDecayLengthV0fromLcAll(0),
-  fHistoLifeTimeV0fromLcAll(0),   
+  fHistoLifeTimeV0fromLcAll(0),
 
-  fHistoMassV0fromLcTrue(0),       
+  fHistoMassV0fromLcTrue(0),
   fHistoDecayLengthV0fromLcTrue(0),
-  fHistoLifeTimeV0fromLcTrue(0),   
+  fHistoLifeTimeV0fromLcTrue(0),
 
-  fHistoMassLcSgn(0),             
-  fHistoMassLcSgnFromAOD(0),             
-  fHistoDecayLengthLcSgn(0),      
-  fHistoLifeTimeLcSgn(0),         
+  fHistoMassLcSgn(0),
+  fHistoMassLcSgnFromAOD(0),
+  fHistoDecayLengthLcSgn(0),
+  fHistoLifeTimeLcSgn(0),
 
-  fHistoMassV0fromLcSgn(0),       
+  fHistoMassV0fromLcSgn(0),
   fHistoDecayLengthV0fromLcSgn(0),
   fHistoLifeTimeV0fromLcSgn(0),
- 
+
   fHistoKF(0),
   fHistoKFV0(0),
   fHistoKFLc(0),
 
-  fHistoMassKFV0(0), 
-  fHistoDecayLengthKFV0(0), 
-  fHistoLifeTimeKFV0(0), 
+  fHistoMassKFV0(0),
+  fHistoDecayLengthKFV0(0),
+  fHistoLifeTimeKFV0(0),
 
-  fHistoMassKFLc(0), 
-  fHistoDecayLengthKFLc(0), 
-  fHistoLifeTimeKFLc(0), 
+  fHistoMassKFLc(0),
+  fHistoDecayLengthKFLc(0),
+  fHistoLifeTimeKFLc(0),
 
   fHistoArmenterosPodolanskiV0KF(0),
   fHistoArmenterosPodolanskiV0KFSgn(0),
@@ -307,7 +307,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCallKFVertexing(kFALSE),
   fKeepingOnlyHIJINGBkg(kFALSE),
   fUtils(0),
-  fHistoBackground(0),  
+  fHistoBackground(0),
   fCutKFChi2NDF(999999.),
   fCutKFDeviationFromVtx(999999.),
   fCutKFDeviationFromVtxV0(0.),
@@ -339,7 +339,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
   /// destructor
   //
   Info("~AliAnalysisTaskSELc2V0bachelorTMVA","Calling Destructor");
-  
+
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -411,21 +411,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
 
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
-{    
+{
   /// The Terminate() function is the last function to be called during
   /// a query. It always runs on the client, it can be used to present
   /// the results graphically or save the results to file.
-  
+
   AliInfo("Terminate");
   AliAnalysisTaskSE::Terminate();
-  
+
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutput) {     
+  if (!fOutput) {
     AliError("fOutput not available");
     return;
   }
 
-  
+
   //AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found", fHistoMCLcK0SpGen->GetEntries()));
   //AliDebug(2, Form("At MC level, %f Lc --> K0S + p were found in the acceptance", fHistoMCLcK0SpGenAcc->GetEntries()));
   //AliDebug(2, Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
@@ -443,23 +443,23 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
     AliInfo(Form("At Reco level, %lld Lc --> K0S + p were found", fVariablesTreeSgn->GetEntries()));
   } else {
     AliInfo("fVariablesTreeSgn not available");
-  }    
-  
+  }
+
   fOutputKF = dynamic_cast<TList*> (GetOutputData(6));
-  if (!fOutputKF) {     
+  if (!fOutputKF) {
     AliError("fOutputKF not available");
     return;
   }
-  
+
   return;
 }
 
 //___________________________________________________________________________
-void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() { 
+void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   /// output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
-  
-  //slot #1  
+
+  //slot #1
   //OpenFile(1);
   fOutput = new TList();
   fOutput->SetOwner();
@@ -568,7 +568,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fCandidateVariableNames[82]="alphaArmLc";
   fCandidateVariableNames[83]="alphaArmLcCharge";
   fCandidateVariableNames[84]="ptArmLc";
-  
+
   fCandidateVariableNames[85]="CosThetaStar";
 
 
@@ -576,12 +576,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
     fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
     fVariablesTreeBkg->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
   }
-	
+
   fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 2, -0.5, 1.5);
   TString labelEv[2] = {"NotSelected", "Selected"};
   for (Int_t ibin = 1; ibin <= fHistoEvents->GetNbinsX(); ibin++){
     fHistoEvents->GetXaxis()->SetBinLabel(ibin, labelEv[ibin-1].Data());
-  }  
+  }
 
   fHistoLc = new TH1F("fHistoLc", "fHistoLc", 2, -0.5, 1.5);
 
@@ -609,9 +609,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
 
   TString labelx[7] = { "kBachInvalid", "kBachFake", "kBachNoProton", "kBachPrimary", "kBachNoLambdaMother",
 			"kBachDifferentLambdaMother",	"kBachCorrectLambdaMother"};
-  TString labely[9] = { "kK0SInvalid", "kK0SFake", "kK0SNoK0S", "kK0SWithoutMother", "kK0SNotFromK0", 
-			"kK0Primary", "kK0NoLambdaMother", "kK0DifferentLambdaMother", "kK0CorrectLambdaMother"};  
-  
+  TString labely[9] = { "kK0SInvalid", "kK0SFake", "kK0SNoK0S", "kK0SWithoutMother", "kK0SNotFromK0",
+			"kK0Primary", "kK0NoLambdaMother", "kK0DifferentLambdaMother", "kK0CorrectLambdaMother"};
+
   for (Int_t ibin = 1; ibin <= fHistoCodesSgn->GetNbinsX(); ibin++){
     fHistoCodesSgn->GetXaxis()->SetBinLabel(ibin, labelx[ibin-1].Data());
     fHistoCodesBkg->GetXaxis()->SetBinLabel(ibin, labelx[ibin-1].Data());
@@ -689,85 +689,85 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
     fHistoDistanceLcToPrimVtx    = new TH1D("fHistoDistanceLcToPrimVtx", "Lc distance to Prim Vertex from KF; distance [cm]", 1000, 0., 1);
     fHistoDistanceV0ToPrimVtx    = new TH1D("fHistoDistanceV0ToPrimVtx", "V0 distance to Prim Vertex from KF; distance [cm]", 1000, 0., 100.);
     fHistoDistanceV0ToLc         = new TH1D("fHistoDistanceV0ToLc", "V0 distance to Lc Vertex from KF; distance [cm]", 1000, 0., 100.);
-    
+
     fHistoDistanceLcToPrimVtxSgn = new TH1D("fHistoDistanceLcToPrimVtxSgn", "Lc Sgn distance to Prim Vertex from KF; distance [cm]", 1000, 0., 1);
     fHistoDistanceV0ToPrimVtxSgn = new TH1D("fHistoDistanceV0ToPrimVtxSgn", "V0 Sgn distance to Prim Vertex from KF; distance [cm]", 1000, 0., 100.);
     fHistoDistanceV0ToLcSgn      = new TH1D("fHistoDistanceV0ToLcSgn", "V0 Sgn distance to Lc Vertex from KF; distance [cm]", 1000, 0., 100.);
-    
+
     fHistoVtxLcResidualToPrimVtx = new TH1D("fHistoVtxLcResidualToPrimVtx", "Residual between MC and KF (MC - KF): Lc to Prim Vtx; distance [cm]", 1000, -5., 5.);
     fHistoVtxV0ResidualToPrimVtx = new TH1D("fHistoVtxV0ResidualToPrimVtx", "Residual between MC and KF (MC - KF): V0 to Prim Vtx; distance [cm]", 1000, -5., 5.);
     fHistoVtxV0ResidualToLc      = new TH1D("fHistoVtxV0ResidualToLc", "Residual between MC and KF: V0 to Lc (MC - KF); distance [cm]", 1000, -5., 5.);
-    
+
     fHistoMassV0All              = new TH1D("fHistoMassV0All", "V0 Mass; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0All       = new TH1D("fHistoDecayLengthV0All", "V0 Decay Length; decayLength", 500, -10, 10.0);
     fHistoLifeTimeV0All          = new TH1D("fHistoLifeTimeV0All", "V0 Life Time; lifeTime", 500, -10.0, 10.0);
-    
+
     fHistoMassV0True             = new TH1D("fHistoMassV0True", "True V0 Mass; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0True      = new TH1D("fHistoDecayLengthV0True", "True V0 Decay Length; decayLength", 500, -10, 10.0);
     fHistoLifeTimeV0True         = new TH1D("fHistoLifeTimeV0True", "True V0 Life Time; lifeTime", 500, -10.0, 10.0);
-    
+
     fHistoMassV0TrueFromAOD      = new TH1D("fHistoMassV0TrueFormAOD", "True V0 Mass (AOD); mass", 500, 0.4, 0.6);
-    
+
     fHistoMassV0TrueK0S          = new TH1D("fHistoMassV0TrueK0S", "True V0-K0S Mass; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0TrueK0S   = new TH1D("fHistoDecayLengthV0TrueK0S", "True V0-K0S Decay Length; decayLength", 500, -10, 10.0);
     fHistoLifeTimeV0TrueK0S      = new TH1D("fHistoLifeTimeV0TrueK0S", "True V0-K0S Life Time; lifeTime", 500, -10.0, 10.0);
-    
+
     fHistoMassV0TrueK0SFromAOD   = new TH1D("fHistoMassV0TrueK0SFormAOD", "True V0-K0S Mass (AOD); mass", 500, 0.4, 0.6);
-    
+
     fHistoMassLcAll              = new TH1D("fHistoMassLcAll", "Lc Mass; mass", 500, 2.0, 3.0);
     fHistoDecayLengthLcAll       = new TH1D("fHistoDecayLengthLcAll", "Lc Decay Length; decayLenght", 100000, -0.1, 0.1);
     fHistoLifeTimeLcAll          = new TH1D("fHistoLifeTimeLcAll", "Lc Life Time; lifeTime", 100000, -0.1, 0.1);
-    
+
     fHistoMassLcTrue             = new TH1D("fHistoMassLcTrue", "True Lc Mass; mass", 500, 2.0, 3.0);
     fHistoDecayLengthLcTrue      = new TH1D("fHistoDecayLengthLcTrue", "True Lc Decay Length; decayLength", 100000, -0.1, 0.1);
     fHistoLifeTimeLcTrue         = new TH1D("fHistoLifeTimeLcTrue", "True Lc Life Time; lifeTime", 100000, -0.1, 0.1);
-    
+
     fHistoMassLcTrueFromAOD      = new TH1D("fHistoMassLcTrueFromAOD", "True Lc Mass (AOD); mass", 500, 2.0, 3.0);
-    
+
     fHistoMassV0fromLcAll        = new TH1D("fHistoMassV0fromLcAll", "V0 mass from Lc built in KF; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0fromLcAll = new TH1D("fHistoDecayLengthV0fromLcAll", "V0 Decay Length from Lc built in KF; decayLength", 500, 0, 10.0);
     fHistoLifeTimeV0fromLcAll    = new TH1D("fHistoLifeTimeV0fromLcAll", "V0 Life Time from Lc built in KF; lifeTime", 500, 0.0, 3.0);
-    
+
     fHistoMassV0fromLcTrue       = new TH1D("fHistoMassV0fromLcTrue", "V0 mass from true Lc built in KF; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0fromLcTrue= new TH1D("fHistoDecayLengthV0fromLcTrue", "V0 Decay Length from true Lc built in KF; decayLength", 500, 0, 10.0);
     fHistoLifeTimeV0fromLcTrue   = new TH1D("fHistoLifeTimeV0fromLcTrue", "V0 Life Time from true Lc built in KF; lifeTime", 500, 0.0, 3.0);
-    
+
     fHistoMassLcSgn              = new TH1D("fHistoMassLcSgn", "True Lc Signal Mass; mass", 500, 2.0, 3.0);
     fHistoMassLcSgnFromAOD       = new TH1D("fHistoMassLcSgnFromAOD", "True Lc Signal Mass (AOD); mass", 500, 2.0, 3.0);
     fHistoDecayLengthLcSgn       = new TH1D("fHistoDecayLengthLcSgn", "True Lc Signal Decay Length; decayLength", 100000, -0.1, 0.1);
     fHistoLifeTimeLcSgn          = new TH1D("fHistoLifeTimeLcSgn", "True Lc Signal Life Time; lifeTime", 100000, -0.1, 0.1);
-    
+
     fHistoMassV0fromLcSgn        = new TH1D("fHistoMassV0fromLcSgn", "V0 from True Lc Signal Mass; mass", 500, 0.4, 0.6);
     fHistoDecayLengthV0fromLcSgn = new TH1D("fHistoDecayLengthV0fromLcSgn", "V0 True Lc Signal Decay Length; decayLength", 500, 0, 10.0);
     fHistoLifeTimeV0fromLcSgn    = new TH1D("fHistoLifeTimeV0fromLcSgn", "V0 True Lc Signal Life Time; lifeTime", 500, 0.0, 3.0);
-    
+
     fHistoKF = new TH2D("fHistoKF", "Summary from KF; V0 KF; Lc KF", 16, -0.5, 15.5, 16, -0.5, 15.5);
     fHistoKFV0 = new TH1D("fHistoKFV0", "Summary from KF; V0 KF", 16, -0.5, 15.5);
     fHistoKFLc = new TH1D("fHistoKFLc", "Summary from KF; V0 KF", 16, -0.5, 15.5);
-    TString axisLabel[16] = {"AllOk", "M_NotOk", "Sm_NotOk", "Dl_NotOk", 
-			     "Lt_NotOk", "M_Sm_NotOk", "M_Dl_NotOk", "M_Lt_NotOk", 
-			     "Dl_Sm_NotOk", "Dl_Lt_NotOk", "Sm_Lt_NotOk", "M_Sm_Dl_NotOk", 
+    TString axisLabel[16] = {"AllOk", "M_NotOk", "Sm_NotOk", "Dl_NotOk",
+			     "Lt_NotOk", "M_Sm_NotOk", "M_Dl_NotOk", "M_Lt_NotOk",
+			     "Dl_Sm_NotOk", "Dl_Lt_NotOk", "Sm_Lt_NotOk", "M_Sm_Dl_NotOk",
 			     "M_Sm_Lt_NotOk", "Sm_Dl_Lt_NotOk", "M_Dl_Lt_NotOk", "All_NotOk"};
-    
+
     for (Int_t ibin = 1; ibin <=16; ibin++){
       fHistoKF->GetXaxis()->SetBinLabel(ibin, axisLabel[ibin-1].Data());
       fHistoKF->GetYaxis()->SetBinLabel(ibin, axisLabel[ibin-1].Data());
       fHistoKFV0->GetXaxis()->SetBinLabel(ibin, axisLabel[ibin-1].Data());
       fHistoKFLc->GetXaxis()->SetBinLabel(ibin, axisLabel[ibin-1].Data());
     }
-    
+
     fHistoMassKFV0 = new TH2D("fHistoMassKFV0", "mass vs sigmaMass for V0; mass; sigmaMass", 500, 0.4, 0.6, 500, 0., 10);
     fHistoDecayLengthKFV0 = new TH2D("fHistoDecayLengthKFV0", "decayLength vs sigmaDecayLength for V0; decayLength; sigmaDecayLength", 500, -10, 10, 500, 0., 10);
     fHistoLifeTimeKFV0 = new TH2D("fHistoLifeTimeKFV0", "lifeTime vs sigmalifeTime for V0; lifeTime; sigmaLifeTime", 500, -10, 10, 500, 0., 10);
-    
+
     fHistoMassKFLc = new TH2D("fHistoMassKFLc", "mass vs sigmaMass for Lc; mass; sigmaMass", 500, 0.4, 0.6, 500, 0., 10);
     fHistoDecayLengthKFLc = new TH2D("fHistoDecayLengthKFLc", "decayLength vs sigmaDecayLength for Lc; decayLength; sigmaDecayLength", 500, -10, 10, 500, 0., 10);
     fHistoLifeTimeKFLc = new TH2D("fHistoLifeTimeKFLc", "lifeTime vs sigmalifeTime for Lc; lifeTime; sigmaLifeTime", 500, -10, 10, 500, 0., 10);
-    
-    fHistoArmenterosPodolanskiV0KF = new TH2D("fHistoArmenterosPodolanskiV0KF", "V0 ArmenterosPodolanski from KF; #alpha; Qt", 1000, -1, 1, 1000, 0, 1); 
-    fHistoArmenterosPodolanskiV0KFSgn = new TH2D("fHistoArmenterosPodolanskiV0KFSgn", "V0 (signal) ArmenterosPodolanski from KF; #alpha; Qt", 1000, -1, 1, 1000, 0, 1); 
-    fHistoArmenterosPodolanskiV0AOD = new TH2D("fHistoArmenterosPodolanskiV0AOD", "V0 ArmenterosPodolanski from AOD; #alpha; Qt", 1000, -1, 1, 1000, 0, 1); 
-    fHistoArmenterosPodolanskiV0AODSgn = new TH2D("fHistoArmenterosPodolanskiV0AODSgn", "V0 (signal) ArmenterosPodolanski from AOD; #alpha; Qt", 1000, -1, 1, 1000, 0, 1); 
+
+    fHistoArmenterosPodolanskiV0KF = new TH2D("fHistoArmenterosPodolanskiV0KF", "V0 ArmenterosPodolanski from KF; #alpha; Qt", 1000, -1, 1, 1000, 0, 1);
+    fHistoArmenterosPodolanskiV0KFSgn = new TH2D("fHistoArmenterosPodolanskiV0KFSgn", "V0 (signal) ArmenterosPodolanski from KF; #alpha; Qt", 1000, -1, 1, 1000, 0, 1);
+    fHistoArmenterosPodolanskiV0AOD = new TH2D("fHistoArmenterosPodolanskiV0AOD", "V0 ArmenterosPodolanski from AOD; #alpha; Qt", 1000, -1, 1, 1000, 0, 1);
+    fHistoArmenterosPodolanskiV0AODSgn = new TH2D("fHistoArmenterosPodolanskiV0AODSgn", "V0 (signal) ArmenterosPodolanski from AOD; #alpha; Qt", 1000, -1, 1, 1000, 0, 1);
   }
 
   fOutputKF = new TList();
@@ -778,70 +778,70 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
     fOutputKF->Add(fHistoDistanceLcToPrimVtx);
     fOutputKF->Add(fHistoDistanceV0ToPrimVtx);
     fOutputKF->Add(fHistoDistanceV0ToLc);
-    
+
     fOutputKF->Add(fHistoDistanceLcToPrimVtxSgn);
     fOutputKF->Add(fHistoDistanceV0ToPrimVtxSgn);
     fOutputKF->Add(fHistoDistanceV0ToLcSgn);
-    
+
     fOutputKF->Add(fHistoVtxLcResidualToPrimVtx);
     fOutputKF->Add(fHistoVtxV0ResidualToPrimVtx);
     fOutputKF->Add(fHistoVtxV0ResidualToLc);
-    
+
     fOutputKF->Add(fHistoMassV0All);
     fOutputKF->Add(fHistoDecayLengthV0All);
     fOutputKF->Add(fHistoLifeTimeV0All);
-    
+
     fOutputKF->Add(fHistoMassV0True);
     fOutputKF->Add(fHistoDecayLengthV0True);
     fOutputKF->Add(fHistoLifeTimeV0True);
-    
+
     fOutputKF->Add(fHistoMassV0TrueFromAOD);
-    
+
     fOutputKF->Add(fHistoMassV0TrueK0S);
     fOutputKF->Add(fHistoDecayLengthV0TrueK0S);
     fOutputKF->Add(fHistoLifeTimeV0TrueK0S);
-    
+
     fOutputKF->Add(fHistoMassV0TrueK0SFromAOD);
-    
+
     fOutputKF->Add(fHistoMassLcAll);
     fOutputKF->Add(fHistoDecayLengthLcAll);
     fOutputKF->Add(fHistoLifeTimeLcAll);
-    
+
     fOutputKF->Add(fHistoMassLcTrue);
     fOutputKF->Add(fHistoDecayLengthLcTrue);
     fOutputKF->Add(fHistoLifeTimeLcTrue);
-    
+
     fOutputKF->Add(fHistoMassLcTrueFromAOD);
-    
+
     fOutputKF->Add(fHistoMassV0fromLcAll);
     fOutputKF->Add(fHistoDecayLengthV0fromLcAll);
     fOutputKF->Add(fHistoLifeTimeV0fromLcAll);
-    
+
     fOutputKF->Add(fHistoMassV0fromLcTrue);
     fOutputKF->Add(fHistoDecayLengthV0fromLcTrue);
     fOutputKF->Add(fHistoLifeTimeV0fromLcTrue);
-    
+
     fOutputKF->Add(fHistoMassLcSgn);
     fOutputKF->Add(fHistoMassLcSgnFromAOD);
     fOutputKF->Add(fHistoDecayLengthLcSgn);
     fOutputKF->Add(fHistoLifeTimeLcSgn);
-    
+
     fOutputKF->Add(fHistoMassV0fromLcSgn);
     fOutputKF->Add(fHistoDecayLengthV0fromLcSgn);
     fOutputKF->Add(fHistoLifeTimeV0fromLcSgn);
-    
+
     fOutputKF->Add(fHistoKF);
     fOutputKF->Add(fHistoKFV0);
     fOutputKF->Add(fHistoKFLc);
-    
+
     fOutputKF->Add(fHistoMassKFV0);
     fOutputKF->Add(fHistoDecayLengthKFV0);
     fOutputKF->Add(fHistoLifeTimeKFV0);
-    
+
     fOutputKF->Add(fHistoMassKFLc);
     fOutputKF->Add(fHistoDecayLengthKFLc);
     fOutputKF->Add(fHistoLifeTimeKFLc);
-    
+
     fOutputKF->Add(fHistoArmenterosPodolanskiV0KF);
     fOutputKF->Add(fHistoArmenterosPodolanskiV0KFSgn);
     fOutputKF->Add(fHistoArmenterosPodolanskiV0AOD);
@@ -870,14 +870,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   TClonesArray *array3Prong = 0;
 
   if (!aodEvent && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-   
+
     if (aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
@@ -890,21 +890,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 
     array3Prong=(TClonesArray*)aodEvent->GetList()->FindObject("Charm3Prong");
   }
-  
+
   if ( !fUseMCInfo && fIspA) {
     fAnalCuts->SetTriggerClass("");
     fAnalCuts->SetTriggerMask(fTriggerMask);
   }
-  
+
   Int_t runnumber = aodEvent->GetRunNumber();
   if (aodEvent->GetTriggerMask() == 0 && (runnumber >= 195344 && runnumber <= 195677)){
     AliDebug(3,"Event rejected because of null trigger mask");
     return;
   }
-  
+
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
-  
-  // mc analysis 
+
+  // mc analysis
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader=0;
 
@@ -928,11 +928,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
       AliInfo(Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fAnalCuts->GetMaxVtxZ(), fAnalCuts->GetMaxVtxZ()));
       return;
     }
-    
+
     //Printf("Filling MC histo");
     FillMCHisto(mcArray);
   }
-  
+
   // AOD primary vertex
   fVtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!fVtx1) return;
@@ -942,7 +942,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 
   if ( !fIsEventSelected ) {
     fHistoEvents->Fill(0);
-    return; // don't take into account not selected events 
+    return; // don't take into account not selected events
   }
   fHistoEvents->Fill(1);
 
@@ -953,7 +953,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
   Int_t nSelectedAnal = 0;
   if (fIsK0sAnalysis) {
     MakeAnalysisForLc2prK0S(arrayLctopKos, mcArray,
-			    nSelectedAnal, fAnalCuts, 
+			    nSelectedAnal, fAnalCuts,
 			    array3Prong, mcHeader);
   }
   fCounter->StoreCandidates(aodEvent,nSelectedAnal,kFALSE);
@@ -969,7 +969,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 
   /// method to fill MC histo: how many Lc --> K0S + p are there at MC level
-  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
+  for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) {
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
     if (!mcPart){
       AliError("Failed casting particle from MC array!, Skipping particle");
@@ -1000,7 +1000,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
       AliAODMCParticle* bachelorMC = daugh0;
       AliAODMCParticle* v0MC = daugh1;
       AliDebug(2, Form("pdgCodeDaugh0 = %d, pdgCodeDaugh1 = %d", pdgCodeDaugh0, pdgCodeDaugh1));
-      if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){ 
+      if ((pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) || (pdgCodeDaugh0 == 2212 && pdgCodeDaugh1 == 311)){
 	// we are in the case of Lc --> K0 + p; now we have to check if the K0 decays in K0S, and if this goes in pi+pi-
 	/// first, we set the bachelor and the v0: above we assumed first proton and second V0, but we could have to change it:
 	if (pdgCodeDaugh0 == 311 && pdgCodeDaugh1 == 2212) {
@@ -1008,11 +1008,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 	  v0MC = daugh0;
 	}
 	AliDebug(2, Form("Number of Daughters of v0 = %d", v0MC->GetNDaughters()));
-	if (v0MC->GetNDaughters() != 1) { 
+	if (v0MC->GetNDaughters() != 1) {
 	  AliDebug(2, "The K0 does not decay in 1 body only! Impossible... Continuing...");
 	  continue;
 	}
-	else { // So far: Lc --> K0 + p, K0 with 1 daughter 
+	else { // So far: Lc --> K0 + p, K0 with 1 daughter
 	  AliDebug(2, "Step 2 ok: The K0 does decay in 1 body only! ");
 	  Int_t labelK0daugh = v0MC->GetDaughter(0);
 	  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelK0daugh));
@@ -1068,7 +1068,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
     }
   } // closing loop over mcArray
 
-  return; 
+  return;
 
 }
 
@@ -1083,41 +1083,41 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
   Int_t pdgCand = 4122;
   Int_t pdgDgLctoV0bachelor[2]={2212, 310};
   Int_t pdgDgV0toDaughters[2]={211, 211};
-  
+
   Int_t pdgDgLctopKpi[3]={2212, 321, 211};
 
   // loop to search for candidates Lc->p+K+pi
   Int_t n3Prong = array3Prong->GetEntriesFast();
   Int_t nCascades= arrayLctopKos->GetEntriesFast();
-  
+
   //AliInfo(Form("\n\n\n\n3 prong candidates = %d, ncascades = %d \n\n\n\n\n", n3Prong, nCascades));
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     //Filling a control histogram with no cuts
     if (fUseMCInfo) {
-      
+
       // find associated MC particle for Lc -> p+K+pi
       Int_t mcLabel = d->MatchToMC(4122, mcArray, 3, pdgDgLctopKpi);
       //Int_t mcLabelTemp = d->MatchToMC(4122, mcArray);
       //Printf("mcLabel = %d, mcLabelTemp = %d", mcLabel, mcLabelTemp);
       if (mcLabel >= 0) {
-	
+
 	AliAODMCParticle *partLcpKpi = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel));
 	if(partLcpKpi){
 	  Int_t pdgCode = partLcpKpi->GetPdgCode();
 	  AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
 	  //AliInfo(Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", mcLabel, pdgCode));
 	  fHistoLcpKpiBeforeCuts->Fill(1);
-					
+
 	}
-      } 
+      }
       else {
 	//AliInfo(Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~", mcLabel));
 	fHistoLcpKpiBeforeCuts->Fill(0);
       }
-    }  
+    }
   }
-  
+
   // loop over cascades to search for candidates Lc->p+K0S
 
   for (Int_t iLctopK0s = 0; iLctopK0s < nCascades; iLctopK0s++) {
@@ -1126,6 +1126,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
     AliAODRecoCascadeHF* lcK0spr = dynamic_cast<AliAODRecoCascadeHF*>(arrayLctopKos->At(iLctopK0s));
     if (!lcK0spr) {
       AliDebug(2,Form("Cascade %d doens't exist, skipping",iLctopK0s));
+      continue;
+    }
+
+    if (!(lcK0spr->CheckCascadeFlags())) {
+      AliDebug(2,Form("Cascade %d is not flagged as Lc candidate",iLctopK0s));
       continue;
     }
 
@@ -1145,9 +1150,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	  if (pdgCode<0) AliDebug(2,Form(" ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ MClabel=%d ~~~~~~~~~~ pdgCode=%d", fmcLabelLc, pdgCode));
 	  pdgCode = TMath::Abs(pdgCode);
 	  fHistoLcBeforeCuts->Fill(1);
-					
+
 	}
-      } 
+      }
       else {
 	fHistoLcBeforeCuts->Fill(0);
 	pdgCode=-1;
@@ -1213,9 +1218,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	  pdgCode = TMath::Abs(pdgCode);
 	  isLc = 1;
 	  fHistoLc->Fill(1);
-					
+
 	}
-      } 
+      }
       else {
 	fHistoLc->Fill(0);
 	pdgCode=-1;
@@ -1238,7 +1243,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	  else {
 	    AliDebug(2, "The candidate is NOT from HIJING, we skip it when filling background");
 	    fHistoBackground->Fill(0);
-	    continue; 
+	    continue;
 	  }
 	}
 	else if (fKeepingOnlyPYTHIABkg){
@@ -1272,7 +1277,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	      else {
 		AliDebug(2, "The candidate is NOT from PYTHIA, we skip it when filling background");
 		fHistoBackground->Fill(3);
-		continue; 
+		continue;
 	      }
 	    }
 	  }
@@ -1281,9 +1286,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
     }
 
     FillLc2pK0Sspectrum(lcK0spr, isLc, nSelectedAnal, cutsAnal, mcArray, iLctopK0s);
-    
+
   }
-  
+
   return;
 
 }
@@ -1326,7 +1331,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
       fHistoLcOnTheFly->Fill(1.);
     }
   }
-  
+
   Double_t dcaV0 = v0part->GetDCA();
   Double_t invmassK0s = v0part->MassK0Short();
 
@@ -1352,7 +1357,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   if (isInV0window == 0) {
     AliDebug(2, "No: The candidate has NOT passed the V0 window cuts!");
     if (isLc) Printf("SIGNAL candidate rejected: V0 window cuts");
-    return;	       
+    return;
   }
   else AliDebug(2, "Yes: The candidate has passed the mass cuts!");
 
@@ -1384,7 +1389,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 
   //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
   Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
-	
+
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
   AliDebug(2, Form("detUsed (TPCTOF case) = %d", detUsed));
   Double_t probProton = -1.;
@@ -1428,7 +1433,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   // checking V0 status (on-the-fly vs offline)
   if ( !( !onFlyV0 || (onFlyV0 && fUseOnTheFlyV0) ) ) {
     AliDebug(2, "On-the-fly discarded");
-    return;		
+    return;
   }
 
   if ( (((cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)) ) {
@@ -1493,7 +1498,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
       if (gammaTrack->GetPdgCode()==22) isGamma = 1;
     }
   }
-		
+
   Int_t pdgTemp = -1;
   if (currentLabel != -1){
     AliAODMCParticle *tempPart = (AliAODMCParticle*)mcArray->At(currentLabel);
@@ -1566,7 +1571,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     fCandidateVariables[15] = bachelor->Pt();
     AliAODTrack *v0pos = (AliAODTrack*)part->Getv0PositiveTrack();
     fCandidateVariables[16] = v0pos->Pt();
-    AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack(); 
+    AliAODTrack *v0neg = (AliAODTrack*)part->Getv0NegativeTrack();
     fCandidateVariables[17] = v0neg->Pt();
     fCandidateVariables[18] = v0part->Getd0Prong(0);
     fCandidateVariables[19] = v0part->Getd0Prong(1);
@@ -1600,10 +1605,10 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     fCandidateVariables[43] = part->Ct(4122);
     fCandidateVariables[44] = v0part->Ct(310, v0part->GetSecondaryVtx());
 
-    EBachelor bachCode = kBachInvalid;	  
+    EBachelor bachCode = kBachInvalid;
     EK0S k0SCode = kK0SInvalid;
     if (fUseMCInfo) {
-      bachCode = CheckBachelor(part, bachelor, mcArray);	  
+      bachCode = CheckBachelor(part, bachelor, mcArray);
       k0SCode = CheckK0S(part, v0part, mcArray);
     }
 
@@ -1678,14 +1683,14 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     TVector3 mom1(bachelor->Px(), bachelor->Py(), bachelor->Pz());
     TVector3 mom2(v0part->Px(), v0part->Py(), v0part->Pz());
     TVector3 momTot(part->Px(), part->Py(), part->Pz());
-    
-    Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();   
-    Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag(); 
-    
+
+    Double_t Ql1 = mom1.Dot(momTot)/momTot.Mag();
+    Double_t Ql2 = mom2.Dot(momTot)/momTot.Mag();
+
     Double_t alphaArmLc = (Ql1 - Ql2)/(Ql1 + Ql2);
     Double_t alphaArmLcCharge = ( bachelor->Charge() > 0 ? (Ql1 - Ql2)/(Ql1 + Ql2) : (Ql2 - Ql1)/(Ql1 + Ql2) );
     Double_t ptArmLc = mom1.Perp(momTot);
-    
+
     fCandidateVariables[82] = alphaArmLc;
     fCandidateVariables[83] = alphaArmLcCharge;
     fCandidateVariables[84] = ptArmLc;
@@ -1693,27 +1698,27 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     Double_t massK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();    // mass K0S PDG
     Double_t massPrPDG = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    // mass Proton PDG
     Double_t massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();    // mass Lc PDG
-    
+
     Double_t pStar = TMath::Sqrt((massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)*(massLcPDG*massLcPDG-massPrPDG*massPrPDG-massK0SPDG*massK0SPDG)-4.*massPrPDG*massPrPDG*massK0SPDG*massK0SPDG)/(2.*massLcPDG);
     Double_t e = part->E(4122);
     Double_t beta = part->P()/e;
     Double_t gamma = e/massLcPDG;
-    
+
     Double_t cts = (Ql1/gamma-beta*TMath::Sqrt(pStar*pStar+massPrPDG*massPrPDG))/pStar;
-    
+
     fCandidateVariables[85] = cts;
 
     if (fUseMCInfo) {
       if (isLc){
 	AliDebug(2, Form("Reco particle %d --> Filling Sgn", iLctopK0s));
 	fVariablesTreeSgn->Fill();
-	fHistoCodesSgn->Fill(bachCode, k0SCode);	  
+	fHistoCodesSgn->Fill(bachCode, k0SCode);
       }
       else {
 	if (fFillOnlySgn == kFALSE){
 	  AliDebug(2, "Filling Bkg");
 	  fVariablesTreeBkg->Fill();
-	  fHistoCodesBkg->Fill(bachCode, k0SCode);	  
+	  fHistoCodesBkg->Fill(bachCode, k0SCode);
 	}
       }
     }
@@ -1721,21 +1726,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
       fVariablesTreeSgn->Fill();
     }
   }
-	
+
   return;
 
 }
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *cascade, AliAODv0* v0part, AliAODTrack* bach, TClonesArray *mcArray,
-							  Double_t* V0KF, Double_t* errV0KF, Double_t* LcKF, Double_t* errLcKF, 
+							  Double_t* V0KF, Double_t* errV0KF, Double_t* LcKF, Double_t* errLcKF,
 							  Double_t* distances, Double_t* armPolKF) {
 
   //
   /// method to perform KF vertexing
   /// elements: [0] = mass, [1] = DecayLength, [2] = lifeTime
   //
- 
+
   Int_t codeKFV0 = -1, codeKFLc = -1;
 
   AliKFVertex primVtxCopy;
@@ -1753,10 +1758,10 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
   primVtxCopy = AliKFVertex(primaryESDVtxCopy);
   nt = primaryESDVtxCopy.GetNContributors();
   ntcheck = nt;
-  
+
   Int_t pdg[2] = {211, -211};
   Int_t pdgLc[2] = {2212, 310};
-  
+
   Int_t pdgDgV0toDaughters[2] = {211, 211};
 
   Int_t mcLabelV0 = v0part->MatchToMC(310, mcArray, 2, pdgDgV0toDaughters);
@@ -1791,21 +1796,21 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     //Printf("v0 daughter %d has label %d", ipr, labelsv0daugh[ipr]);
 
     AliKFParticle daughterKF(*aodTrack, pdg[ipr]); // we assume that the PDG is correct
-    if (aodTrack->Charge() > 0) { // assigning positive and negative track to KF V0 for Armenteros-Podolanski plot 
+    if (aodTrack->Charge() > 0) { // assigning positive and negative track to KF V0 for Armenteros-Podolanski plot
       positiveV0KF = daughterKF;
     }
-    else { 
+    else {
       negativeV0KF = daughterKF;
-    }  
+    }
   }
-  
+
   Double_t xn=0., xp=0.;//, dca;
   AliDebug(2, Form("bField = %f, esdv0Daugh1 = %p, esdv0Daugh2 = %p", fBField, esdv0Daugh1, esdv0Daugh2));
   //  dca = esdv0Daugh1->GetDCA(esdv0Daugh2, fBField, xn, xp);
-    
+
   AliExternalTrackParam tr1(*esdv0Daugh1);
   AliExternalTrackParam tr2(*esdv0Daugh2);
-  tr1.PropagateTo(xn, fBField); 
+  tr1.PropagateTo(xn, fBField);
   tr2.PropagateTo(xp, fBField);
 
   AliKFParticle daughterKF1(tr1, 211);
@@ -1832,7 +1837,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
   if(ftopoConstraint && nt > 0){
     for(Int_t ipr = 0; ipr < 2; ipr++){ // 0 is positive, 1 is negative
       AliAODTrack *aodTrack = (AliAODTrack*)v0part->GetDaughter(ipr);
-      //* subtruct daughters from primary vertex 
+      //* subtruct daughters from primary vertex
       if(!aodTrack->GetUsedForPrimVtxFit()) {
 	//Printf("Track %d was not used for primary vertex, continuing", i);
 	continue;
@@ -1853,15 +1858,15 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 
   //* Get V0 invariant mass
   Double_t massV0 = 999999, sigmaMassV0 = 999999;
-  Int_t retMV0 = V0.GetMass( massV0, sigmaMassV0 ); 
+  Int_t retMV0 = V0.GetMass( massV0, sigmaMassV0 );
   if( retMV0 ) {
     if (massV0 < 0) {
       codeKFV0 = 1; // Mass not ok
       if (sigmaMassV0 > 1e19) codeKFV0 = 5;  // Mass and SigmaMass not ok
     }
     else if (sigmaMassV0 > 1e19) codeKFV0 = 2; // SigmaMass not ok
-  } 
-  fHistoMassKFV0->Fill(massV0, sigmaMassV0);	
+  }
+  fHistoMassKFV0->Fill(massV0, sigmaMassV0);
 
   if (massV0 < 0.4) Printf("\n\n>>>>>>>>>> Found the Funny V0 (mass = %f, sigma = %f, AOD mass = %f): labels of the tracks = %d, %d, id = %d and %d", massV0, sigmaMassV0, v0part->MassK0Short(), labelsv0daugh[0], labelsv0daugh[1], idv0daugh[0], idv0daugh[1]);
   if (massV0 > 0.55) Printf("\n\n>>>>>>>>>> Found the Funny V0 (mass = %f, , sigma = %f, AOD mass = %f): labels of the tracks = %d, %d, id = %d and %d", massV0, sigmaMassV0, v0part->MassK0Short(), labelsv0daugh[0], labelsv0daugh[1], idv0daugh[0], idv0daugh[1]);
@@ -1893,11 +1898,11 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
   //massV0=-1;//return -1;// !!!!
 
   // now use what we just try with the bachelor, to build the Lc
-  
+
   // topological constraint
   nt = primVtxCopy.GetNContributors();
   ntcheck = nt;
-  
+
   Bool_t isMCokLc = kTRUE, isBkgLc = kFALSE;
   AliKFParticle  Lc;
   Int_t labelsLcdaugh[2] = {-1, -1};
@@ -1919,9 +1924,9 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     AliDebug(2, Form("Lc: Chi2 per DOF too big, continuing (%f)", TMath::Sqrt(TMath::Abs(Lc.GetChi2()/Lc.GetNDF()))));
     return -1;
   }
-  
+
   if(ftopoConstraint && nt > 0){
-    //* subtruct daughters from primary vertex 
+    //* subtruct daughters from primary vertex
     if(!bach->GetUsedForPrimVtxFit()) {
       AliDebug(3, "Lc: Bachelor was not used for primary vertex, not subtracting it from primary vertex");
     }
@@ -1938,14 +1943,14 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     //primVtxCopy -= V0;
     //ntcheck--;
   }
-  
-  // Check Lc Chi^2 deviation from primary vertex 
+
+  // Check Lc Chi^2 deviation from primary vertex
   /*
   if( Lc.GetDeviationFromVertex( primVtxCopy ) > fCutKFDeviationFromVtx) {
     AliDebug(2, Form("Lc: Deviation from vertex too big, continuing (%f)", Lc.GetDeviationFromVertex( primVtxCopy )));
     return -1;
   }
-  
+
   if(ftopoConstraint){
     if(ntcheck>0) {
       // Add Lc to primary vertex to improve the primary vertex resolution
@@ -1954,32 +1959,32 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     }
   }
   */
-  //* Check chi^2 
+  //* Check chi^2
   if( TMath::Sqrt( TMath::Abs(Lc.GetChi2()/Lc.GetNDF())) > fCutKFChi2NDF) {
     AliDebug(2, Form("Lc: Final Chi2 per DOF too big, continuing (%f)", TMath::Sqrt( TMath::Abs(Lc.GetChi2()/Lc.GetNDF()))));
     return -1;
   }
 
   if(ftopoConstraint){
-    V0.SetProductionVertex(Lc); 
+    V0.SetProductionVertex(Lc);
   }
-  
+
   // After setting the vertex of the V0, getting/filling some info
 
   //* Get V0 decayLength
   Double_t decayLengthV0 = 999999, sigmaDecayLengthV0 = 999999;
   Int_t retDLV0 = V0.GetDecayLength( decayLengthV0, sigmaDecayLengthV0 );
   if( retDLV0 ) {
-    if (sigmaDecayLengthV0 > 1e19) {  
+    if (sigmaDecayLengthV0 > 1e19) {
       codeKFV0 = 3; // DecayLength not ok
       if (massV0 < 0) {
-	codeKFV0 = 6; // DecayLength and Mass not ok	  
+	codeKFV0 = 6; // DecayLength and Mass not ok
 	if (sigmaMassV0 > 1e19) codeKFV0 = 11;  // DecayLength and Mass and SigmaMass not ok
       }
       else if (sigmaMassV0 > 1e19) codeKFV0 = 8;  // DecayLength and SigmaMass not ok
     }
   }
-  fHistoDecayLengthKFV0->Fill(decayLengthV0, sigmaDecayLengthV0);	
+  fHistoDecayLengthKFV0->Fill(decayLengthV0, sigmaDecayLengthV0);
 
   //* Get V0 life time
   Double_t lifeTimeV0 = 999999, sigmaLifeTimeV0 = 999999;
@@ -1999,26 +2004,26 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 	codeKFV0 = 7; // LifeTime and Mass not ok
 	if (sigmaMassV0 > 1e19) codeKFV0 = 12; // LifeTime and Mass and SigmaMass not ok
       }
-      else if (sigmaMassV0 > 1e19) codeKFV0 = 10;  // LifeTime and SigmaMass not ok      
+      else if (sigmaMassV0 > 1e19) codeKFV0 = 10;  // LifeTime and SigmaMass not ok
     }
-  }  
-  fHistoLifeTimeKFV0->Fill(lifeTimeV0, sigmaLifeTimeV0);	
+  }
+  fHistoLifeTimeKFV0->Fill(lifeTimeV0, sigmaLifeTimeV0);
 
   if (codeKFV0 == -1) codeKFV0 = 0;
   fHistoKFV0->Fill(codeKFV0);
 
   AliDebug(2, Form("V0: mass = %f, decay length = %f, life time = %f", massV0, decayLengthV0, lifeTimeV0 ));
-  
-  fHistoMassV0All->Fill(massV0); 
+
+  fHistoMassV0All->Fill(massV0);
   fHistoDecayLengthV0All->Fill(decayLengthV0);
   fHistoLifeTimeV0All->Fill(lifeTimeV0);
 
   Double_t qtAlphaV0[2] = {0., 0.};
-  Double_t vtxV0KF[3] = {V0.GetX(), V0.GetY(), V0.GetZ()}; 
+  Double_t vtxV0KF[3] = {V0.GetX(), V0.GetY(), V0.GetZ()};
   positiveV0KF.TransportToPoint(vtxV0KF);
   negativeV0KF.TransportToPoint(vtxV0KF);
   V0.GetArmenterosPodolanski(positiveV0KF, negativeV0KF, qtAlphaV0);
-  AliDebug(2, Form("Armenteros-Podolanski variables: alpha = %f, qt = %f", qtAlphaV0[1], qtAlphaV0[0])); 
+  AliDebug(2, Form("Armenteros-Podolanski variables: alpha = %f, qt = %f", qtAlphaV0[1], qtAlphaV0[0]));
   fHistoArmenterosPodolanskiV0KF->Fill(qtAlphaV0[1], qtAlphaV0[0]);
   fHistoArmenterosPodolanskiV0AOD->Fill(v0part->AlphaV0(), v0part->PtArmV0());
   armPolKF[0] = qtAlphaV0[1];
@@ -2045,20 +2050,20 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
       if( daughv01->GetMother() ==  daughv02->GetMother() && daughv01->GetMother()>=0 ){
 	AliDebug(3, Form("The mother has label %d", daughv01->GetMother()));
 	motherV0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughv01->GetMother()));
-	if( motherV0 && TMath::Abs(motherV0->GetPdgCode()) != 21 ){ // These are all V0 that are truly V0, not only K0S, but no gluons 
+	if( motherV0 && TMath::Abs(motherV0->GetPdgCode()) != 21 ){ // These are all V0 that are truly V0, not only K0S, but no gluons
 	  if( motherV0->GetNDaughters() == 2 ){
-	    fHistoMassV0True->Fill(massV0);	
+	    fHistoMassV0True->Fill(massV0);
 	    fHistoDecayLengthV0True->Fill(decayLengthV0);
 	    fHistoLifeTimeV0True->Fill(lifeTimeV0);
 	    fHistoMassV0TrueFromAOD->Fill(v0part->MassK0Short());
 	    if (TMath::Abs(motherV0->GetPdgCode()) == 310){ // These are true V0 that are also K0S
-	      fHistoMassV0TrueK0S->Fill(massV0);	
+	      fHistoMassV0TrueK0S->Fill(massV0);
 	      fHistoDecayLengthV0TrueK0S->Fill(decayLengthV0);
 	      fHistoLifeTimeV0TrueK0S->Fill(lifeTimeV0);
 	      fHistoMassV0TrueK0SFromAOD->Fill(v0part->MassK0Short());
 	    }
 	  }
-	  AliDebug(2, Form("PDG V0 = %d, pi = %d, pj = %d, ndaughters = %d, mc mass = %f, reco mass = %f, v0 mass = %f", motherV0->GetPdgCode(), daughv01->GetPdgCode(), daughv02->GetPdgCode(), motherV0->GetNDaughters(), motherV0->GetCalcMass(), massV0, v0part->MassK0Short()));    
+	  AliDebug(2, Form("PDG V0 = %d, pi = %d, pj = %d, ndaughters = %d, mc mass = %f, reco mass = %f, v0 mass = %f", motherV0->GetPdgCode(), daughv01->GetPdgCode(), daughv02->GetPdgCode(), motherV0->GetNDaughters(), motherV0->GetCalcMass(), massV0, v0part->MassK0Short()));
 	}
 	else if (!motherV0){
 	  AliDebug(3, "could not access MC info for mother, continuing");
@@ -2069,18 +2074,18 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
       }
       else {
 	AliDebug(3, "Background V0!");
-	isBkgV0 = kTRUE; 
+	isBkgV0 = kTRUE;
       }
     }
   }
-      
+
   AliDebug(2, Form("isMCokV0 = %d, isBkgV0 = %d", (Int_t)isMCokV0, (Int_t)isBkgV0));
 
   // Going back to Lc
 
   //* Get Lc invariant mass
   Double_t massLc = 999999, sigmaMassLc= 999999;
-  Int_t retMLc = Lc.GetMass( massLc, sigmaMassLc ); 
+  Int_t retMLc = Lc.GetMass( massLc, sigmaMassLc );
   if( retMLc ) {
     AliDebug(3, Form("----> Could not get mass (%e), and sigma(%e) for Lc, continuing", massLc, sigmaMassLc));
     if (massLc < 0) {
@@ -2089,17 +2094,17 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     }
     else if (sigmaMassLc > 1e19) codeKFLc = 2; // SigmaMass not ok
   }
-  fHistoMassKFLc->Fill(massLc, sigmaMassLc);	
+  fHistoMassKFLc->Fill(massLc, sigmaMassLc);
 
   //* Get Lc Decay length
   Double_t decayLengthLc = 999999, sigmaDecayLengthLc = 999999;
   Int_t retDLLc = Lc.GetDecayLength( decayLengthLc, sigmaDecayLengthLc );
   if( retDLLc ) {
     AliDebug(3, "----> Lc: Could not get decay length, and sigma");
-    if (sigmaDecayLengthLc > 1e19) {  
+    if (sigmaDecayLengthLc > 1e19) {
       codeKFLc = 3; // DecayLength not ok
       if (massLc < 0) {
-	codeKFLc = 6; // DecayLength and Mass not ok	  
+	codeKFLc = 6; // DecayLength and Mass not ok
 	if (sigmaMassLc > 1e19) codeKFLc = 11;  // DecayLength and Mass and SigmaMass not ok
       }
       else if (sigmaMassLc > 1e19) codeKFLc = 8;  // DecayLength and SigmaMass not ok
@@ -2107,7 +2112,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
   }
   AliDebug(3, Form("retDLLc = %d, with decayLength = %f and error = %e", retDLLc, decayLengthLc, sigmaDecayLengthLc));
 
-  fHistoDecayLengthKFLc->Fill(decayLengthLc, sigmaDecayLengthLc);	
+  fHistoDecayLengthKFLc->Fill(decayLengthLc, sigmaDecayLengthLc);
 
   //* Get Lc life time
   Double_t lifeTimeLc = 999999, sigmaLifeTimeLc = 999999;
@@ -2128,58 +2133,58 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 	codeKFLc = 7; // LifeTime and Mass not ok
 	if (sigmaMassLc > 1e19) codeKFLc = 12; // LifeTime and Mass and SigmaMass not ok
       }
-      else if (sigmaMassLc > 1e19) codeKFLc = 10;  // LifeTime and SigmaMass not ok      
+      else if (sigmaMassLc > 1e19) codeKFLc = 10;  // LifeTime and SigmaMass not ok
     }
   }
 
-  fHistoLifeTimeKFLc->Fill(lifeTimeLc, sigmaLifeTimeLc);	
+  fHistoLifeTimeKFLc->Fill(lifeTimeLc, sigmaLifeTimeLc);
 
   AliDebug(2, Form("Lc: mass = %f (error = %e), decay length = %f (error = %e), life time = %f (error = %e) --> codeKFLc = %d", massLc, sigmaMassLc, decayLengthLc, sigmaDecayLengthLc, lifeTimeLc, sigmaLifeTimeLc, codeKFLc));
-  
+
   if (codeKFLc == -1) codeKFLc = 0;
   fHistoKFLc->Fill(codeKFLc);
-  
+
   fHistoKF->Fill(codeKFV0, codeKFLc);
 
   // here we fill the histgrams for all the reconstructed KF vertices for the cascade
-  fHistoMassLcAll->Fill(massLc);            
-  fHistoDecayLengthLcAll->Fill(decayLengthLc);            
-  fHistoLifeTimeLcAll->Fill(lifeTimeLc);            
+  fHistoMassLcAll->Fill(massLc);
+  fHistoDecayLengthLcAll->Fill(decayLengthLc);
+  fHistoLifeTimeLcAll->Fill(lifeTimeLc);
 
-  fHistoMassV0fromLcAll->Fill(massV0); 
+  fHistoMassV0fromLcAll->Fill(massV0);
   fHistoDecayLengthV0fromLcAll->Fill(decayLengthV0);
   fHistoLifeTimeV0fromLcAll->Fill(lifeTimeV0);
-  
+
   Double_t xV0 = V0.GetX();
   Double_t yV0 = V0.GetY();
   Double_t zV0 = V0.GetZ();
-  
+
   Double_t xLc = Lc.GetX();
   Double_t yLc = Lc.GetY();
   Double_t zLc = Lc.GetZ();
-  
+
   Double_t xPrimVtx = primVtxCopy.GetX();
   Double_t yPrimVtx = primVtxCopy.GetY();
   Double_t zPrimVtx = primVtxCopy.GetZ();
-  
+
   Double_t distanceLcToPrimVtx = TMath::Sqrt((xPrimVtx - xLc) * (xPrimVtx - xLc) +
 					     (yPrimVtx - yLc) * (yPrimVtx - yLc) +
 					     (zPrimVtx - zLc) * (zPrimVtx - zLc));
-  
+
   Double_t distanceV0ToPrimVtx = TMath::Sqrt((xPrimVtx - xV0) * (xPrimVtx - xV0) +
 					     (yPrimVtx - yV0) * (yPrimVtx - yV0) +
 					     (zPrimVtx - zV0) * (zPrimVtx - zV0));
-  
+
   Double_t distanceV0ToLc = TMath::Sqrt((xLc - xV0)*(xLc - xV0) +
 					(yLc - yV0)*(yLc - yV0) +
 					(zLc - zV0)*(zLc - zV0));
-  
+
   //Printf("distanceLcToPrimVtx = %e, distanceV0ToPrimVtx= %f, distanceV0ToLc = %f", distanceLcToPrimVtx, distanceV0ToPrimVtx, distanceV0ToLc);
-  
+
   fHistoDistanceLcToPrimVtx->Fill(distanceLcToPrimVtx);
   fHistoDistanceV0ToPrimVtx->Fill(distanceV0ToPrimVtx);
   fHistoDistanceV0ToLc->Fill(distanceV0ToLc);
-  
+
   distances[0] = distanceLcToPrimVtx;
   distances[1] = distanceV0ToPrimVtx;
   distances[2] = distanceV0ToLc;
@@ -2189,7 +2194,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     AliAODMCParticle *daughv01Lc = 0x0;
     AliAODMCParticle *K0S = 0x0;
     AliAODMCParticle *daughv02Lc = 0x0;
-    
+
     if (labelsLcdaugh[0] >= 0) {
       //      Printf("Getting Bachelor from label %d", labelsLcdaugh[1]);
       daughv01Lc = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelsLcdaugh[0]));
@@ -2199,29 +2204,29 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
       }
       else {
 	AliDebug(2, Form("The bachelor has label = %d", daughv01Lc->GetLabel()));
-	if (TMath::Abs(daughv01Lc->GetPdgCode()) != 2212) isBkgLc = kTRUE;      
+	if (TMath::Abs(daughv01Lc->GetPdgCode()) != 2212) isBkgLc = kTRUE;
       }
-    }  
+    }
     else { // The bachelor is a fake
       isBkgLc = kTRUE;
     }
 
     if (labelsLcdaugh[1] >= 0) {
       //Printf("Getting K0S");
-      K0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelsLcdaugh[1]));	
+      K0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(labelsLcdaugh[1]));
       if (!K0S) {
 	AliDebug(3, "Could not access MC info for second daughter of Lc");
 	isMCokLc = kFALSE;
       }
       else{
-	if (TMath::Abs(K0S->GetPdgCode()) != 310) isBkgLc = kTRUE; 
-      }      
+	if (TMath::Abs(K0S->GetPdgCode()) != 310) isBkgLc = kTRUE;
+      }
     }
     else{
       AliDebug(2, "The K0S is not true --> it does not have a label, continuing...");
       isBkgLc = kTRUE;
     }
-  
+
     if (!isBkgLc){ // so far, we only checked that the V0 and the bachelor are not fake, and in particular, we know that the V0 is a K0S since we used the MatchToMC method
       if (isMCokLc) { // We can then access its MC info, and it might then be that also the Lc is a true Lc
 	Int_t iK0 = K0S->GetMother();
@@ -2242,17 +2247,17 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 	      if (daughv01Lc) pdgBach = daughv01Lc->GetPdgCode();
 	      if (daughv02Lc) pdgV0 = daughv02Lc->GetPdgCode();
 	      AliDebug(2, Form("pdgMum = %d, pdgBach = %d, pdgV0 = %d", pdgMum, pdgBach, pdgV0));
-	      
-	      if( motherLc && TMath::Abs(motherLc->GetPdgCode()) != 21 ){ // These are true cascades, we don't know yet if they are Lc	  
-		fHistoMassLcTrue->Fill(massLc);	
-		fHistoDecayLengthLcTrue->Fill(decayLengthLc);            
-		fHistoLifeTimeLcTrue->Fill(lifeTimeLc);            
+
+	      if( motherLc && TMath::Abs(motherLc->GetPdgCode()) != 21 ){ // These are true cascades, we don't know yet if they are Lc
+		fHistoMassLcTrue->Fill(massLc);
+		fHistoDecayLengthLcTrue->Fill(decayLengthLc);
+		fHistoLifeTimeLcTrue->Fill(lifeTimeLc);
 		fHistoMassLcTrueFromAOD->Fill(cascade->InvMassLctoK0sP());
-		
-		fHistoMassV0fromLcTrue->Fill(massV0);	
-		fHistoDecayLengthV0fromLcTrue->Fill(decayLengthV0);            
-		fHistoLifeTimeV0fromLcTrue->Fill(lifeTimeV0);            
-		
+
+		fHistoMassV0fromLcTrue->Fill(massV0);
+		fHistoDecayLengthV0fromLcTrue->Fill(decayLengthV0);
+		fHistoLifeTimeV0fromLcTrue->Fill(lifeTimeV0);
+
 		if (TMath::Abs(motherLc->GetPdgCode()) == 4122 && TMath::Abs(motherV0->GetPdgCode()) == 310 && TMath::Abs(daughv01Lc->GetPdgCode()) == 2212){  // This is Lc --> K0S + p (the check on the PDG code of the V0 is useless, since we used MathcToMC with it, but fine...
 		  AliDebug(2, Form("IT IS SIGNAL!!! with label = %d", motherLc->GetLabel()));
 
@@ -2263,20 +2268,20 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 		  fHistoDistanceV0ToPrimVtxSgn->Fill(distanceV0ToPrimVtx);
 		  fHistoDistanceV0ToLcSgn->Fill(distanceV0ToLc);
 
-		  fHistoMassLcSgn->Fill(massLc);	
+		  fHistoMassLcSgn->Fill(massLc);
 		  fHistoMassLcSgnFromAOD->Fill(cascade->InvMassLctoK0sP());
 
-		  fHistoDecayLengthLcSgn->Fill(decayLengthLc);            
-		  fHistoLifeTimeLcSgn->Fill(lifeTimeLc);            
+		  fHistoDecayLengthLcSgn->Fill(decayLengthLc);
+		  fHistoLifeTimeLcSgn->Fill(lifeTimeLc);
 
-		  fHistoMassV0fromLcSgn->Fill(massV0);	
-		  fHistoDecayLengthV0fromLcSgn->Fill(decayLengthV0);            
-		  fHistoLifeTimeV0fromLcSgn->Fill(lifeTimeV0);    
-		}        
+		  fHistoMassV0fromLcSgn->Fill(massV0);
+		  fHistoDecayLengthV0fromLcSgn->Fill(decayLengthV0);
+		  fHistoLifeTimeV0fromLcSgn->Fill(lifeTimeV0);
+		}
 		else {
 		  isBkgLc = kTRUE;  // it is not a Lc, since the pdg != 4122
 		}
-		
+
 		// if we got here, we can compare with MC information; this part is done also for cases where the cascade is not a Lc!
 		// First, we compare the vtx of the Lc
 		Double_t xLcMC = motherLc->Xv();
@@ -2287,37 +2292,37 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 		Double_t yProtonMC = daughv01Lc->Yv();
 		Double_t zProtonMC = daughv01Lc->Zv();
 		//Printf("Got MC vtx for Proton");
-		
-		Double_t vtxLcResidualToPrimVtx = TMath::Sqrt((xLcMC - xProtonMC) * (xLcMC - xProtonMC) + 
-							      (yLcMC - yProtonMC) * (yLcMC - yProtonMC) + 
+
+		Double_t vtxLcResidualToPrimVtx = TMath::Sqrt((xLcMC - xProtonMC) * (xLcMC - xProtonMC) +
+							      (yLcMC - yProtonMC) * (yLcMC - yProtonMC) +
 							      (zLcMC - zProtonMC) * (zLcMC - zProtonMC)) - distanceLcToPrimVtx;
-		
+
 		// Then, we compare the vtx of the K0s
 		Double_t xV0MC = motherV0->Xv();     //Production vertex of K0S --> Where Lc decays
 		Double_t yV0MC = motherV0->Yv();
 		Double_t zV0MC = motherV0->Zv();
-		
+
 		//Printf("Got MC vtx for V0");
 		Double_t xPionMC = daughv01->Xv(); //Production vertex of Pion --> Where K0S decays
 		Double_t yPionMC = daughv01->Yv();
 		Double_t zPionMC = daughv01->Zv();
 		//Printf("Got MC vtx for Pion");
 		Printf("Vertices: MC:  x = %f, y = %f, z = %f", xPionMC, yPionMC, zPionMC);
-		
-		Double_t vtxV0ResidualToLc = TMath::Sqrt((xV0MC - xPionMC) * (xV0MC - xPionMC) + 
-							 (yV0MC - yPionMC) * (yV0MC - yPionMC) + 
+
+		Double_t vtxV0ResidualToLc = TMath::Sqrt((xV0MC - xPionMC) * (xV0MC - xPionMC) +
+							 (yV0MC - yPionMC) * (yV0MC - yPionMC) +
 							 (zV0MC - zPionMC) * (zV0MC - zPionMC)) - distanceV0ToLc;
-		
+
 		// Then, the K0S vertex wrt primary vertex
-		
-		Double_t vtxV0ResidualToPrimVtx = TMath::Sqrt((xPionMC - xLcMC) * (xPionMC - xLcMC) + 
-							      (yPionMC - yLcMC) * (yPionMC - yLcMC) + 
+
+		Double_t vtxV0ResidualToPrimVtx = TMath::Sqrt((xPionMC - xLcMC) * (xPionMC - xLcMC) +
+							      (yPionMC - yLcMC) * (yPionMC - yLcMC) +
 							      (zPionMC - zLcMC) * (zPionMC - zLcMC)) - distanceV0ToPrimVtx;
-		
+
 		fHistoVtxLcResidualToPrimVtx->Fill(vtxLcResidualToPrimVtx);
 		fHistoVtxV0ResidualToLc->Fill(vtxV0ResidualToLc);
 		fHistoVtxV0ResidualToPrimVtx->Fill(vtxV0ResidualToPrimVtx);
-		
+
 	      } //closing: if( motherLc && TMath::Abs(motherLc->GetPdgCode()) != 21 )
 	      else if (!motherLc){
 		AliDebug(2, "We could not access MC info for Lc mother, so we did nothing");
@@ -2335,7 +2340,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     }  // closing !isBkgLc
   } // closing fUseMCInfo
 
-  //Printf("retMV0 = %d, retMLc = %d", retMV0, retMLc); 
+  //Printf("retMV0 = %d, retMLc = %d", retMV0, retMLc);
   if ( retMV0 == 0 && retMLc == 0){
     V0KF[0] = massV0;
     errV0KF[0] = sigmaMassV0;
@@ -2358,7 +2363,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 AliAnalysisTaskSELc2V0bachelorTMVA::EBachelor AliAnalysisTaskSELc2V0bachelorTMVA::CheckBachelor( AliAODRecoCascadeHF *part,
 												 AliAODTrack* bachelor,
 												 TClonesArray *mcArray ){
-  
+
   //Printf("In CheckBachelor");
 
   /// function to check if the bachelor is a p, if it is a p but not from Lc
@@ -2401,7 +2406,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EBachelor AliAnalysisTaskSELc2V0bachelorTMVA
       else { // it comes from the correct Lc
 	AliDebug(2, Form("The proton comes from a Lc, and it is EXACTLY the candidate we are analyzing"));
 	return kBachCorrectLambdaMother;
-      }      
+      }
     }
   }
 
@@ -2414,7 +2419,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EK0S AliAnalysisTaskSELc2V0bachelorTMVA::Che
 										       AliAODv0* v0part,
 										       //AliAODTrack* v0part,
 										       TClonesArray *mcArray ){
-  
+
   /// function to check if the K0Spart is a p, if it is a p but not from Lc
   /// to be filled for background candidates
 
@@ -2456,7 +2461,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EK0S AliAnalysisTaskSELc2V0bachelorTMVA::Che
       if (K0MotherLabel == -1) {
 	return kK0Primary;
       }
-      AliAODMCParticle *K0Mother = dynamic_cast<AliAODMCParticle*>(mcArray->At(K0MotherLabel)); 
+      AliAODMCParticle *K0Mother = dynamic_cast<AliAODMCParticle*>(mcArray->At(K0MotherLabel));
       if (!K0Mother) return kK0SInvalid;
       Int_t pdgK0Mother = K0Mother->PdgCode();
       if (TMath::Abs(pdgK0Mother) != 4122) { // the K0 does not come from a Lc
@@ -2474,7 +2479,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EK0S AliAnalysisTaskSELc2V0bachelorTMVA::Che
 	  AliDebug(2, Form("The K0S comes from a Lc, and it is EXACTLY the candidate we are analyzing"));
 	  //AliInfo(Form("The K0S comes from a Lc, and it is EXACTLY the candidate we are analyzing"));
 	  return kK0CorrectLambdaMother;
-	}      
+	}
       }
     }
   }
@@ -2482,7 +2487,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EK0S AliAnalysisTaskSELc2V0bachelorTMVA::Che
   return kK0SInvalid;
 
 }
-  
+
 //----------------------------------------------------------------------------
 Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindV0Label(AliAODRecoDecay* v0part, TClonesArray *mcArray) const
 {
@@ -2509,7 +2514,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindV0Label(AliAODRecoDecay* v0part, T
       return -1;
     }
     part = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels));
-    if (!part) { 
+    if (!part) {
       //printf("no MC particle\n");
       return -1;
     }
@@ -2558,7 +2563,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindLcLabel(AliAODRecoCascadeHF* casca
     return -1;
   }
   part = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels));
-  if (!part) { 
+  if (!part) {
     //printf("no MC particle\n");
     return -1;
   }
@@ -2571,7 +2576,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindLcLabel(AliAODRecoCascadeHF* casca
     //printf("no MC mother particle\n");
     return -1;
   }
-  
+
   AliAODv0 *v0 = (AliAODv0*)cascade->GetDaughter(1); // V0
   dgLabels = FindV0Label(v0, mcArray);
   if (dgLabels == -1 ) {
@@ -2579,7 +2584,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindLcLabel(AliAODRecoCascadeHF* casca
     return -1;
   }
   part = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels));
-  if (!part) { 
+  if (!part) {
     //printf("no MC particle\n");
     return -1;
   }

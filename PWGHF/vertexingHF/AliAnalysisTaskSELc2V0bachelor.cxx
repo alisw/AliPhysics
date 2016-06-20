@@ -189,7 +189,7 @@ AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
   /// destructor
   //
   Info("~AliAnalysisTaskSELc2V0bachelor","Calling Destructor");
-  
+
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -254,12 +254,12 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   TClonesArray *arrayLctopKos=0;
 
   if (!aodEvent && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
 
     if (aodHandler->GetExtensions()) {
@@ -285,7 +285,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   CheckEventSelection(aodEvent);
 
 
-  // fix for temporary bug in ESDfilter 
+  // fix for temporary bug in ESDfilter
   fBzkG = (Double_t)aodEvent->GetMagneticField();
   if (TMath::Abs(fBzkG)<0.001) return;
   fCEvents->Fill(2);
@@ -300,7 +300,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   }
   fCEvents->Fill(3);
 
-  // mc analysis 
+  // mc analysis
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader=0;
 
@@ -341,7 +341,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
   if (fVtx1->GetNContributors()>0) // this check is done in IsEventSelected
     fCEvents->Fill(6);
 
-  if ( !fIsEventSelected ) return; // don't take into account not selected events 
+  if ( !fIsEventSelected ) return; // don't take into account not selected events
   fCEvents->Fill(7);
 
   Int_t nSelectedAnal = 0;
@@ -371,20 +371,20 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
 
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
-{    
+{
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
-  
+
   //AliInfo("Terminate","");
   AliAnalysisTaskSE::Terminate();
-  
+
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutput) {     
+  if (!fOutput) {
     AliError("fOutput not available");
     return;
   }
-  
+
   //fCEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fCEvents"));
   if (!fWriteVariableTree) {
     fOutputAll = dynamic_cast<TList*> (GetOutputData(4));
@@ -418,7 +418,7 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
   return;
 }
 //___________________________________________________________________________
-void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() { 
+void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
   /// output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
 
@@ -450,7 +450,7 @@ void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() {
 
     DefineK0SHistos(); // define analysis histograms
     if (fUseMCInfo && fCheckOrigin) DefineSignalHistosSeparatedPerOrigin(); // define analysis histograms for SNG separated for origin
-  
+
     PostData(4,fOutputAll);
     PostData(5,fOutputPIDBach);
 
@@ -494,6 +494,11 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODEvent *aodEve
     AliAODRecoCascadeHF* lcK0Spr = dynamic_cast<AliAODRecoCascadeHF*>(arrayLctopKos->At(iLctopK0S));
     if (!lcK0Spr) {
       AliDebug(2,Form("Cascade %d doens't exist, skipping",iLctopK0S));
+      continue;
+    }
+
+    if (!(lcK0Spr->CheckCascadeFlags())) {
+      AliDebug(2,Form("Cascade %d is not flagged as Lc candidate",iLctopK0S));
       continue;
     }
 
@@ -646,8 +651,8 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
       if (isLc==1) {
 	if (onFlyV0) {
 	  TrackRotation(cutsAnal,part,"Sgn");
-	}     
-	else {  
+	}
+	else {
 	  TrackRotation(cutsAnal,part,"OfflineSgn");
 	}
       }// sgn
@@ -661,7 +666,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
       }
     } // if fUseMCInfo
   } // if fTrackRotation
- 
+
 
 
 
@@ -716,7 +721,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
   Double_t nSigmaTOFka=-999.;
   cutsAnal->GetPidHF()->GetnSigmaTOF(bachelor,3,nSigmaTOFka);
 
-  if (onFlyV0) {  
+  if (onFlyV0) {
 
     fillthis="histArmPodK0S";
     FillArmPodDistribution(v0part,fillthis,isCandidateSelectedCuts,isBachelorID);
@@ -843,7 +848,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 
 //----------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
-{ 
+{
 
   Double_t mLcPDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Double_t mK0SPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
@@ -932,11 +937,11 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     nameHisto="histArmPodK0S";
     titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0S = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
- 
+
     nameHisto="histArmPodLc";
     titleHisto="#Lambda_{c}-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodLc = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
- 
+
     TH2F* allspectrumK0SMass = (TH2F*)spectrumK0SMass->Clone();
     TH2F* allspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone();
     TH2F* allmomentumDistributionK0Svsp = (TH2F*)momentumDistributionK0Svsp->Clone();
@@ -960,7 +965,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     fOutputPIDBach->Add(pidBachmomentumDistributionK0Svsp);
     fOutputPIDBach->Add(pidBachArmenterosPodK0S);
     fOutputPIDBach->Add(pidBachArmenterosPodLc);
- 
+
     nameHisto="histArmPodK0S0";
     titleHisto="V0-candidate Armenteros-Podolanski distribution; #frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}}; p_{T}^{+} [GeV/c]";
     TH2F* armenterosPodK0S0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-1.,1.,300,0.,0.3);
@@ -969,7 +974,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     TH2F* armenterosPodLc0 = new TH2F(nameHisto.Data(),titleHisto.Data(),200,-4.,4.,800,0.,1.6);
     fOutputAll->Add(armenterosPodK0S0);
     fOutputAll->Add(armenterosPodLc0);
- 
+
 
     if (fTrackRotation) {
       TH2F* pidBachTRspectrumLcMassByK0S = (TH2F*)spectrumLcMassByK0S->Clone();
@@ -1880,7 +1885,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
     /*
       hNormRotated->Sumw2();
       hNormRotatedOffline->Sumw2();
- 
+
       hNormRotated->SetMinimum(0);
       hNormRotatedOffline->SetMinimum(0);
     */
@@ -2093,12 +2098,12 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
   TClonesArray *arrayLctopKos=0;
   if (!aodEvent){
     if(AODEvent() && IsStandardAOD()) {
-      // In case there is an AOD handler writing a standard AOD, use the AOD 
-      // event in memory rather than the input (ESD) event.    
+      // In case there is an AOD handler writing a standard AOD, use the AOD
+      // event in memory rather than the input (ESD) event.
       aodEvent = dynamic_cast<AliAODEvent*> (AODEvent());
       // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
       // have to taken from the AOD event hold by the AliAODExtension
-      AliAODHandler* aodHandler = (AliAODHandler*) 
+      AliAODHandler* aodHandler = (AliAODHandler*)
 	((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
 
       if (aodHandler->GetExtensions()) {
@@ -2122,7 +2127,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
 
       if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ3")))->Fill(zVertex);
 
-      // mc analysis 
+      // mc analysis
       TClonesArray *mcArray = 0;
       AliAODMCHeader *mcHeader=0;
 
@@ -3534,7 +3539,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
   /// This is a copy of AliCascadeVertexer::PropagateToDCA(...) method
   //--------------------------------------------------------------------
 
-  // Get AliExternalTrackParam out of the AliAODTracks                                                      
+  // Get AliExternalTrackParam out of the AliAODTracks
   Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
   bachelor->PxPyPz(pxpypz);
   bachelor->XvYvZv(xyz);
@@ -3578,7 +3583,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
     Double_t cvV0[21]; for (Int_t ii=0; ii<21; ii++) cvV0[ii]=cvP[ii]+cvN[ii];
     AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(xyzV0,pxpypzV0,cvV0,0);
   */
- 
+
   // calculation dca
   Double_t dd= Det(x2-x1,y2-y1,z2-z1,px1,py1,pz1,px2,py2,pz2);
   Double_t ax= Det(py1,pz1,py2,pz2);
@@ -3615,7 +3620,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
   xVtxLc = 0.5*(x1+x2);
   yVtxLc = 0.5*(y1+y2);
   zVtxLc = 0.5*(z1+z2);
-  
+
   return dca;
 
 }
@@ -3688,7 +3693,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
   /// Check if this candidate is matched to a MC signal  Lc -> p K0S + X
   /// If no, return -1
   /// If yes, return label (>=0) of the AliAODMCParticle
-  // 
+  //
 
   AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(candidate->Getv0()); // the V0
   AliVTrack *trk = dynamic_cast<AliVTrack*>(candidate->GetBachelor()); // the bachelor
@@ -3757,7 +3762,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
       return 0;
     }
     part = (AliAODMCParticle*)mcArray->At(lab);
-    if(!part) { 
+    if(!part) {
       AliDebug(2,"no MC particle");
       delete [] labelMother;
       return 0;
