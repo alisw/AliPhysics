@@ -10,18 +10,20 @@
   //   **  <varname>_PhysAcc, <varname>_PhysAccMin,  <varname>_PhysAccMax
   // Define status bar configuartion
   //  
+
+  //
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/ -I$ALICE_ROOT/include -I$ALICE_ROOT/install/include -I$ALICE_ROOT/STEER\
    -I$ALICE_ROOT/TPC -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/TOF -I$ALICE_ROOT/RAW  -I$ALICE_ROOT/STAT -I$ALICE_ROOT/TPC/TPCBase  -I$ALICE_ROOT/TPC/TPCRec -I$ALICE_ROOT/TPC/TPCCalib -I$ALICE_PHYSICS/../src/PWGPP/TPC/");
   .L $ALICE_PHYSICS/../src/PWGPP/T0/qaConfig.C+
   period="LHC15o";
   pass="cpass1_pass1";
-  tree=InitTrees();
-  trendingTree=tree;
-  tree->SetAlias("tagID","run");
-
+  treeQAT0=InitTrees();
+  treeQAT0->SetAlias("tagID","run");
+  
   TString returnString[3];
-  qaConfig(trendingTree, returnString);
-  DrawTrending(tree);
+  qaConfig(treeQAT0, returnString);
+  InitSummaryTrending(treeQAT0);
+  DrawSummaryTrending(treeQAT0);
 
 */
 
@@ -36,13 +38,28 @@
 #include "TLegend.h"
 
 
-//
-// Setup configuration:
-//
-char * year=0, *period=0, *pass=0;
+TTree * InitTrees();                                           // can be generic <det> 
+Int_t qaConfig(TTree* tree, TString* returnStrings);           // actual detector configuration for alarms
+void InitSummaryTrending(TTree * tree);                        // can be generic ?
+void DrawSummaryTrending(TTree * tree);                        // actual detector drawing code 
+//      
+void    SetDrawStyle();                                        // "buggy currently"
+TTree * GetCPassTree(const char * period, const  char *pass);  // should move to base code
+TObjArray * GetTexDescription(TLatex *latex);                  // should go to base code
+void logbookConfig(TTree * tree);                              // should go to base code
 
 //
-// Drawing configuration:
+// Macro global variables:
+//
+char * year=0, *period=0, *pass=0;
+TTree * treeQAT0=0;
+TTree * treeRCT=0, *treeCPas0=0, *treeLogbook=0, *treeLogbookDetector=0, *treeLogbookT0=0;
+TCanvas *canvasQA=0;          // central canvas for QA plots
+TObjArray * descriptionQA=0;  // descriptionQA of process  (time/aliroot/root/pariod/pass/user)
+TObjArray*   oaMultGr=0;      // status bar multigraph
+//
+//
+// Drawing configuration can be changed
 //
 // colors & markers:
 Int_t colPosA=kGreen+2; //kRed;
@@ -60,7 +77,6 @@ Float_t markerSize=0.9;
 const char * defColors="1;2;4;3;856;616";
 const char * defMarkers="21;22;25;26;27;28";
 const char * bandColors="1;400;400;632;632;416;416"; // kBlack;kYellow;kYellow;kRed; kRed; kGreeen; kGreen
-
 // shifting of graphs within one run for better visibility:
 Float_t sh_gr0=-0.3;
 Float_t sh_gr1=-0.1;
@@ -71,19 +87,37 @@ Int_t kMaxCanvasWidth=2500;
 // status bar height
 Float_t statPadHeight=0.30; //fraction of canvas height (was 0.25 until Aug 2014)
 Float_t statPadBotMar=0.40; //bottom margin of pad for run numbers
-Int_t padRightMargin=0.07;
+Int_t   padRightMargin=0.07;
 
 
-TTree * trendingTree=0;
-TTree * rctTree=0, *cpassTree=0;
 
 
 TTree * InitTrees(){
   //
-  // Example tree for testing
-  //
+  // Init tree for given period
+  // Bug in root tree ?  - in case more than one friend tree set - indeces looks corrupted 
+  //    0.) Qa tree
+  //    1.) Logbook tree per run
+  //    2.) Logbook tree per run/detector
+  /* 
+    period="LHC15o"; pass="cpass1_pass1"
+  */
+  
   AliExternalInfo info;
   TTree * tree = info.GetTreeDataQA("T0",period, pass);
+  tree->BuildIndex("run");
+  treeLogbook=info.GetTree("Logbook",period,"");
+  treeLogbook->BuildIndex("run");
+  treeLogbook->AddFriend(tree,"QA.");
+  treeLogbookDetector=info.GetTree("Logbook.detector",period,"");
+  if (treeLogbookDetector){
+    treeLogbookT0=treeLogbookDetector->CopyTree("detector==\"T0\"");
+    treeLogbookT0->BuildIndex("run");
+    treeLogbookT0->AddFriend(tree,"QA.");
+  }
+  if (treeLogbookT0) treeLogbookT0->AddFriend(tree,"QA");    //
+  if (treeLogbook)   tree->AddFriend(treeLogbook,"Logbook");        // logbook runs should be superset of pass runs
+
   return tree;  
 }
 
@@ -91,7 +125,7 @@ TTree * InitTrees(){
 void SetDrawStyle(){
   //
   //
-  gROOT->Reset();
+  //
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetLabelSize(0.04,"x");
@@ -99,33 +133,13 @@ void SetDrawStyle(){
   gStyle->SetPadTickY(1);
 }
 
-
-Int_t ComputeRange(TTree* tree, const char* varname, Float_t &plotmean, Float_t &plotoutlier)
-{
-  //the function computes useful numbers for plot ranges from the outlier criteria
-  plotmean    = (Float_t) TFormula("fcn", tree->GetAlias(Form("%s_RobustMean",varname))).Eval(0);
-  plotoutlier = (Float_t) TFormula("fcn", tree->GetAlias(Form("%s_OutlierMax",varname))).Eval(0) - plotmean;
-  return 1;
-}
-
-Int_t PlotStatusLines(TTree * tree, const char * expr, const char * cut)
-{
-  //the function plots status lines
-  const char* alias = "varname_OutlierMin:varname_OutlierMax:varname_WarningMin:varname_WarningMax:varname_PhysAccMin:varname_PhysAccMax:varname_RobustMean";
-  TMultiGraph* mgStatusLines = TStatToolkit::MakeStatusLines(tree,expr,cut,alias);
-
-  if (mgStatusLines) mgStatusLines->Draw("l");
-  else { cout << " no mgStatusLines available!" << endl; return 0; }
-
-  return 1;
-}
  
 
-TTree * GetCPassTree(const char * period, const * char pass){
+TTree * GetCPassTree(const char * period, const  char *pass){
   //
   // try to find production information about pass OCDB export
   //
-  TTree * treeProd=0;
+  TTree * treeProdArray=0, *treeProd=0;
   AliExternalInfo info;
   treeProdArray = info.GetTreeCPass();
   treeProdArray->Scan("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")",period,pass).Data(),"col=10:100");
@@ -143,14 +157,6 @@ TTree * GetCPassTree(const char * period, const * char pass){
 
 }
 
-Bool_t MyRegExp(const char * chinput,Int_t p1){
-  //
-  //
-  //
-  printf("%s\n",chinput);
-  return p1;
-}
-
 
 
 TObjArray * GetTexDescription(TLatex *latex){
@@ -164,6 +170,7 @@ TObjArray * GetTexDescription(TLatex *latex){
   TString sPass=TString::Format("pass:%s",pass);  
   TString sAlirootVer;
   TString sAliphysicsVer;
+  //TString runStat=
   if (gSystem->GetFromPipe("echo $ALICE_VER") == "master" || gSystem->GetFromPipe("echo $ALICE_VER") == ""){
     sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT/../src; git describe; cd $wdir;");
   }else {
@@ -184,6 +191,20 @@ TObjArray * GetTexDescription(TLatex *latex){
   return description;
 }
 
+void logbookConfig(TTree * tree){
+  //
+  //
+  //
+  TStatToolkit::AddMetadata(tree,"totalEvents.Title","N_{events}");
+  TStatToolkit::AddMetadata(tree,"totalEvents.AxisTitle","N_{events}");
+  TStatToolkit::AddMetadata(tree,"totalEvents.Legend","logbook - N_{events}");
+  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Title","N_{phys.ev.}");
+  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.AxisTitle","N_{phys.ev.}");
+  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Legend","logbook - N_{phys.ev.}");
+}
+
+
+
 Int_t qaConfig(TTree* tree, TString* returnStrings)
 {
   // Configure alarms and status bars
@@ -191,10 +212,11 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   //    1.) Define standard aliases Outlier/Warning/PhysAcc for standard variables 
   //    2.) Define custom alaises 
   //    4.) Define status bar layout
-  //    5.) Define metadata descibing variables
+  //    5.) Define metadata describing variables
   //
   // 0. Define standard cut  
   //
+  logbookConfig(tree);
   tree->SetAlias("statisticOK", "abs(resolution)<100");
   Float_t entryFrac=0.8, nsigmaOutlier=6., nsigmaWarning=3., epsilon=1.0e-6;  
   //
@@ -257,25 +279,34 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
     TStatToolkit::AddMetadata(tree,TString::Format("amplPMT%d.AxisTitle",pmt).Data(),"<Q>_{PMT} (a.u.)");
     TStatToolkit::AddMetadata(tree,TString::Format("amplPMT%d.Title",pmt).Data(),"<Q>_{PMT}");
     TStatToolkit::AddMetadata(tree,TString::Format("amplPMT%d.Legend",pmt).Data(),TString::Format("PMT %d",pmt).Data());
+    //
+    TStatToolkit::AddMetadata(tree,TString::Format("timeDelayPMT%d.AxisTitle",pmt).Data(),"#Delta_{T} (a.u.)");
+    TStatToolkit::AddMetadata(tree,TString::Format("timeDelayPMT%d.Title",pmt).Data(),"#Delta_{T}");
+    TStatToolkit::AddMetadata(tree,TString::Format("timeDelayPMT%d.Legend",pmt).Data(),TString::Format("PMT %d",pmt).Data());
   }
-
 }
 
 
-void DrawTrending(TTree * tree){
+
+
+void InitSummaryTrending(TTree * tree){
   //
-  // Draw trending
-  // 
-  tree->SetAlias("tagID","run");
-  TMultiGraph * multiGraph=0;
-  TMultiGraph * multiLine=0;
+  // Init drawing for the <detector> QA
+  //    0.) Make descriptor 
+  //    1.) Make default canvas - addopt canvas width to the number of entries to draw
+  //    2.) process config file qaConfig.C to initialize status aliases (outliers etc.), status bar criteria, status lines, ...
+  //    3.) compute detector  status graphs
+
+  //
+  //   0.) Make descriptor 
+  //
   TLatex *latex= new TLatex;
   latex->SetX(0.11);
   latex->SetY(0.8);
   latex->SetTextSize(0.03);
-  TObjArray * description = GetTexDescription(latex);
+  descriptionQA = GetTexDescription(latex);
   //
-  // 1.) Make default canvas - addopt canvas width to the number of entries to draw
+  //   1.) Make default canvas - addopt canvas width to the number of entries to draw
   //
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"resolution:tagID","");
   Int_t numberOfTags = gr->GetN();
@@ -284,7 +315,7 @@ void DrawTrending(TTree * tree){
   Int_t canvas_width  = SpaceForLegend + (numberOfTags+5)*30;
   Int_t canvas_height = 600; 
   if ( canvas_width>kMaxCanvasWidth)   canvas_width=kMaxCanvasWidth;
-  TCanvas *canvasQA = new TCanvas("canvasQA","canvasQA",canvas_width,canvas_height);
+  canvasQA = new TCanvas("canvasQA","canvasQA",canvas_width,canvas_height);
   canvasQA->SetGrid(3);
   canvasQA->cd();
   gPad->SetTicks(1,2);
@@ -292,7 +323,7 @@ void DrawTrending(TTree * tree){
   double leftlegend  = 1 - 180./canvasQA->GetWw();
   double rightlegend = 1 - 10./canvasQA->GetWw();
   //
-  // 1.) process config file qaConfig.C to initialize status aliases (outliers etc.), status bar criteria, status lines, ...
+  // 2.) process config file qaConfig.C to initialize status aliases (outliers etc.), status bar criteria, status lines, ...
   //
   TString returnStrings[3];
   qaConfig(tree, returnStrings);
@@ -301,10 +332,12 @@ void DrawTrending(TTree * tree){
   TString sCriteria       = returnStrings[2];
   cout << "sStatusbarVars = " << sStatusbarVars.Data() << endl;
   cout << "sCriteria      = " << sCriteria.Data() << endl;
-  // compute TPC status graphs
+  //
+  // 3.) compute detector status graphs
+  //
   TObjArray* oaStatusbarVars = sStatusbarVars.Tokenize(";");
   TObjArray* oaStatusbarNames = sStatusbarNames.Tokenize(";");
-  TObjArray* oaMultGr = new TObjArray();
+  oaMultGr = new TObjArray();
   int igr=0;
   for (Int_t vari=oaStatusbarVars->GetEntriesFast()-1; vari>=0; vari--){ // invert the order of the status graphs
     TString sVar = Form("%s:tagID", oaStatusbarVars->At(vari)->GetName()); //e.g. -> dcar:run
@@ -313,11 +346,44 @@ void DrawTrending(TTree * tree){
     ((TMultiGraph*) oaMultGr->At(igr))->SetTitle(sYtitle.Data());
     igr++;
   }
+}
+
+
+void DrawSummaryTrending(TTree * tree){
   //
-  // 
+  // Make default trending plots
   //
-  
-  Float_t plotmean, plotoutlier;
+  TMultiGraph * multiGraph=0;
+  TMultiGraph * multiLine=0;
+  SetDrawStyle();
+  //
+  // Plot 0. Draw, print basic time info
+  //
+  if (treeLogbook){
+    canvasQA->Clear(); 
+    TLegend *legend0=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Run time information ");
+    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","runDuration;pauseDuration:tagID","",defMarkers,defColors,kTRUE,0.8,9, legend0);
+    multiGraph->Draw();
+    legend0->Draw();
+    TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
+    TStatToolkit::DrawStatusGraphs(oaMultGr);
+    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
+    descriptionQA->DrawClone();
+    canvasQA->SaveAs("timing_vs_TagID.png");
+  }
+
+  if (treeLogbook){
+    canvasQA->Clear(); 
+    TLegend *legendStat=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Statistic information ");
+    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","totalEvents;totalEventsPhysics;totalEventsCalibration:tagID","",defMarkers,defColors,kTRUE,0.8,9, legendStat);
+    multiGraph->Draw();
+    legendStat->Draw();    
+    descriptionQA->DrawClone();
+    TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
+    TStatToolkit::DrawStatusGraphs(oaMultGr);
+    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
+    canvasQA->SaveAs("statistic_vs_TagID.png");
+  }
   //
   // Plot 1.)
   //  
@@ -334,10 +400,9 @@ void DrawTrending(TTree * tree){
   TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
-  description->DrawClone();
+  descriptionQA->DrawClone();
   canvasQA->SaveAs("resolution_vs_TagID.png");
   canvasQA->Clear();
-
   //
   // Plot 2.)
   //  
@@ -354,12 +419,27 @@ void DrawTrending(TTree * tree){
   TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin);  canvasQA->Draw();
-  description->DrawClone();
-
-  canvasQA->SaveAs("T0QADeltaTTrending.png");
+  descriptionQA->DrawClone();  canvasQA->SaveAs("T0QADeltaTTrending.png");
   canvasQA->Clear();
-
-  
-
+  //
+  // Plot 3.)
+  //  
+  /****** Delta PMT  vs ID (run number or period, ...) ******/
+  for (Int_t ipmt=1; ipmt<24; ipmt+=6){
+    canvasQA->Clear();
+    TLegend *legendPMT=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - #DeltaT PMT ");legendPMT->SetNColumns(2);  legendPMT->SetBorderSize(0);
+    TString drawStr="";
+    for (Int_t idr=0; idr<6; idr++) drawStr+=TString::Format("timeDelayPMT%d;",ipmt+idr);
+    drawStr+=":tagID";
+    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>",drawStr,"",defMarkers,defColors,kTRUE,0.8,3, legendPMT);
+    multiGraph->Draw();
+    legendPMT->Draw();
+    TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
+    TStatToolkit::DrawStatusGraphs(oaMultGr);
+    descriptionQA->DrawClone();  
+    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin);  canvasQA->Draw();
+    canvasQA->SaveAs(TString::Format("T0QADeltaPMT%d_%d.png",ipmt,ipmt+5).Data());
+    canvasQA->Clear();
+  }
 
 }
