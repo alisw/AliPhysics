@@ -87,6 +87,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   void                  SetSmearM02On(Double_t s)               { fSigmaSmear         = s;       }
   void                  SetNLMCut(Int_t n)                      { fNLMCut             = n;       }
   void                  SetTagLimits(Double_t lEt, Double_t hEt){ fLoEtTag = lEt; fHiEtTag = hEt;}
+  void                  SetTagType(Double_t tt)                 { fTagType = tt; }
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -136,6 +137,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   Int_t                  fNLMCut;                //maximum of local maxima in a cluster
   Double_t               fLoEtTag;               //low Et for the event tag cluster
   Double_t               fHiEtTag;               //high Et for the event tag cluster
+  Int_t                  fTagType;               //tag type, 0=photon, 1=pi0
   Double_t               fEtMax;                 //max clus Et in the event
   TLorentzVector         fMaxClusLV;             //vector for highest Et cluster
 

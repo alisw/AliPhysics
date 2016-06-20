@@ -94,6 +94,7 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged() :
   fNLMCut(100),
   fLoEtTag(10.),
   fHiEtTag(12.),
+  fTagType(1),
   fEtMax(0.),
   fMaxClusLV(0,0,0,0),
   fESD(0),
@@ -199,6 +200,7 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged(const char *n
   fNLMCut(100),
   fLoEtTag(10.),
   fHiEtTag(12.),
+  fTagType(1),
   fEtMax(0.),
   fMaxClusLV(0,0,0,0),
   fESD(0),
@@ -531,6 +533,74 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
       printf("Event is SPD pile-up!***\n");
     return;
   }
+  TList *l = 0;
+  TString clusArrayName = "";
+  if(fESD){
+    l = fESD->GetList();
+    /*if(fDebug)
+      l->Print();*/
+    for(int nk=0;nk<l->GetEntries();nk++){
+      TObject *obj = (TObject*)l->At(nk);
+      TString oname = obj->GetName();
+      if(oname.Contains("CaloClus"))
+	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="CaloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
+    }
+    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
+    fESDCells = fESD->GetEMCALCells();
+    if(fDebug)
+      printf("ESD cluster mult= %d\n",fESDClusters->GetEntriesFast());
+  }
+  else if(fAOD){
+    l = fAOD->GetList();
+    if(fDebug)
+      l->Print();
+    //fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
+    for(int nk=0;nk<l->GetEntries();nk++){
+      TObject *obj = (TObject*)l->At(nk);
+      TString oname = obj->GetName();
+      if(oname.Contains("aloClus"))
+	clusArrayName = oname;
+      else
+	continue;
+      if(clusArrayName=="caloClusters")
+	fClusArrayNames->Fill(0);
+      else{
+	if(clusArrayName=="EmcCaloClusters")
+	  fClusArrayNames->Fill(1);
+	else
+	  fClusArrayNames->Fill(2);
+      }
+    }
+    fAODClusters = dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
+    fAODCells = fAOD->GetEMCALCells();
+    if(fDebug)
+      printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
+  }
+  if(fDebug){
+    printf("clus array is named %s +++++++++\n",clusArrayName.Data());
+  }
+  Int_t leadId = GetLeadEtClusId();
+  if(fEtMax<fLoEtTag || fEtMax>fHiEtTag){
+    ClearAll();
+    return;
+  }
+  printf("Max Et cluster is %1.1f +++++ (interval should be %1.1f<Et<%1.1f)\n",fEtMax,fLoEtTag,fHiEtTag);
+  Int_t candStatus = TagEvent(leadId);
+  if(0==candStatus && candStatus != fTagType){
+    ClearAll();
+    return;
+  }
+  
   if(fESD)
     fTracks = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("Tracks"));
   if(fAOD)
@@ -596,63 +666,6 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
       printf("AOD Track mult= %d\n",fTrackMult);
   }
   fTrMultDist->Fill(fTrackMult);
-  TList *l = 0;
-  TString clusArrayName = "";
-  if(fESD){
-    l = fESD->GetList();
-    /*if(fDebug)
-      l->Print();*/
-    for(int nk=0;nk<l->GetEntries();nk++){
-      TObject *obj = (TObject*)l->At(nk);
-      TString oname = obj->GetName();
-      if(oname.Contains("CaloClus"))
-	clusArrayName = oname;
-      else
-	continue;
-      if(clusArrayName=="CaloClusters")
-	fClusArrayNames->Fill(0);
-      else{
-	if(clusArrayName=="EmcCaloClusters")
-	  fClusArrayNames->Fill(1);
-	else
-	  fClusArrayNames->Fill(2);
-      }
-    }
-    fESDClusters =  dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
-    fESDCells = fESD->GetEMCALCells();
-    if(fDebug)
-      printf("ESD cluster mult= %d\n",fESDClusters->GetEntriesFast());
-  }
-  else if(fAOD){
-    l = fAOD->GetList();
-    if(fDebug)
-      l->Print();
-    //fAODClusters = dynamic_cast<TClonesArray*>(fAOD->GetCaloClusters());
-    for(int nk=0;nk<l->GetEntries();nk++){
-      TObject *obj = (TObject*)l->At(nk);
-      TString oname = obj->GetName();
-      if(oname.Contains("aloClus"))
-	clusArrayName = oname;
-      else
-	continue;
-      if(clusArrayName=="caloClusters")
-	fClusArrayNames->Fill(0);
-      else{
-	if(clusArrayName=="EmcCaloClusters")
-	  fClusArrayNames->Fill(1);
-	else
-	  fClusArrayNames->Fill(2);
-      }
-    }
-    fAODClusters = dynamic_cast<TClonesArray*>(l->FindObject(clusArrayName));
-    fAODCells = fAOD->GetEMCALCells();
-    if(fDebug)
-      printf("AOD cluster mult= %d\n",fAODClusters->GetEntriesFast());
-  }
-  if(fDebug){
-    printf("clus array is named %s +++++++++\n",clusArrayName.Data());
-  }
-  
   
   fMCEvent = MCEvent();
   if(fMCEvent){
@@ -667,16 +680,6 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
       std::cout<<"ERROR: NO MC EVENT!!!!!!\n";
   }
   fVCells = GetVCaloCells();
-  Int_t leadId = GetLeadEtClusId();
-  if(fEtMax<fLoEtTag || fEtMax>fHiEtTag){
-    ClearAll();
-    return;
-  }
-  Int_t candStatus = TagEvent(leadId);
-  if(0==candStatus){
-    ClearAll();
-    return;
-  }
   FollowGamma();
   CheckTriggerPatch();
   if(fDebug)
@@ -1715,25 +1718,25 @@ Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
     return kFALSE;
   }
   Int_t nc = clusters->GetEntriesFast();
-    AliVCluster *c = static_cast<AliVCluster*>(clusters->At(idMax));
-    if(!c)
-      return 0;
-    if(!c->IsEMCAL())
-      return 0;
-    if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02)
-      return 0;
-    Float_t clsPos[3] = {0,0,0};
-    c->GetPosition(clsPos);
-    TVector3 clsVec(clsPos);
-    clsVec -= fVecPv;
-    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
-    if(c->GetM02()>0.09 && c->GetM02()<0.31){
-      candStatus = 1;
-      if(HasPi0InvMass(idMax,clusters))
-	candStatus = 2;
-    }
-    if(IsPi0M02(Et,c->GetM02()))
+  AliVCluster *c = static_cast<AliVCluster*>(clusters->At(idMax));
+  if(!c)
+    return 0;
+  if(!c->IsEMCAL())
+    return 0;
+  if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02)
+    return 0;
+  Float_t clsPos[3] = {0,0,0};
+  c->GetPosition(clsPos);
+  TVector3 clsVec(clsPos);
+  clsVec -= fVecPv;
+  Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+  if(c->GetM02()>0.09 && c->GetM02()<0.31){
+    candStatus = 1;
+    if(HasPi0InvMass(idMax,clusters))
       candStatus = 2;
+  }
+  if(IsPi0M02(Et,c->GetM02()))
+    candStatus = 2;
   return candStatus;
 }
 //________________________________________________________________________

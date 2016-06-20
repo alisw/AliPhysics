@@ -7,7 +7,10 @@ AliAnalysisTaskEMCALPhotonTagged *AddTaskEMCALPhotonTagged(
 						     TString pathstrsel = "/",
 						     TString trackSelType = "standard",
 						     Int_t   distToBadCh = 0,
-						     Bool_t  useComplTrCuts = kFALSE
+						     Bool_t  useComplTrCuts = kFALSE,
+						     Double_t tagLoEt,
+						     Double_t tagHiEt,
+						     Int_t tagType = 1 //1=photon, 2=pi0
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -33,6 +36,8 @@ AliAnalysisTaskEMCALPhotonTagged *AddTaskEMCALPhotonTagged(
   ana->SetTriggerBit(trigbitname);
   ana->SetMcMode(isMC);
   ana->SetPathStringSelect(pathstrsel.Data());
+  ana->SetTagLimits(tagLoEt,tagHiEt);
+  ana->SetTagType(tagType);
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
   AliESDtrackCuts *cutscomp = new AliESDtrackCuts;
