@@ -33,7 +33,7 @@
 /// \brief Implementation of procedures for Qn vector recentering.
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileComponents.h"
-#include "AliQnCorrectionsHistogram.h"
+#include "AliQnCorrectionsHistogramSparse.h"
 #include "AliQnCorrectionsDetector.h"
 #include "AliLog.h"
 #include "AliQnCorrectionsQnVectorRecentering.h"
@@ -43,7 +43,7 @@ const char *AliQnCorrectionsQnVectorRecentering::szCorrectionName = "Recentering
 const char *AliQnCorrectionsQnVectorRecentering::szKey = "CCCC";
 const char *AliQnCorrectionsQnVectorRecentering::szSupportHistogramName = "Qn";
 const char *AliQnCorrectionsQnVectorRecentering::szCorrectedQnVectorName = "rec";
-const char *AliQnCorrectionsQnVectorRecentering::szQANotValidatedHistogramName = "QA not validated bin";
+const char *AliQnCorrectionsQnVectorRecentering::szQANotValidatedHistogramName = "Rec NvE";
 
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsQnVectorRecentering);
@@ -136,9 +136,9 @@ Bool_t AliQnCorrectionsQnVectorRecentering::AttachInput(TList *list) {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateQAHistograms(TList *list) {
 
-  fQANotValidatedBin = new AliQnCorrectionsHistogram(
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+  fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
       fDetectorConfiguration->GetEventClassVariablesSet());
   fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;

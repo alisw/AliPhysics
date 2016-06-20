@@ -33,7 +33,7 @@
 /// \brief Implementation of procedures for Qn vector alignment correction.
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileCorrelationComponents.h"
-#include "AliQnCorrectionsHistogram.h"
+#include "AliQnCorrectionsHistogramSparse.h"
 #include "AliQnCorrectionsDetector.h"
 #include "AliQnCorrectionsManager.h"
 #include "AliLog.h"
@@ -44,7 +44,7 @@ const char *AliQnCorrectionsQnVectorAlignment::szCorrectionName = "Alignment";
 const char *AliQnCorrectionsQnVectorAlignment::szKey = "EEEE";
 const char *AliQnCorrectionsQnVectorAlignment::szSupportHistogramName = "QnQn";
 const char *AliQnCorrectionsQnVectorAlignment::szCorrectedQnVectorName = "align";
-const char *AliQnCorrectionsQnVectorAlignment::szQANotValidatedHistogramName = "QA not validated bin";
+const char *AliQnCorrectionsQnVectorAlignment::szQANotValidatedHistogramName = "Align NvE";
 
 
 /// \cond CLASSIMP
@@ -183,9 +183,9 @@ Bool_t AliQnCorrectionsQnVectorAlignment::AttachInput(TList *list) {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
 
-  fQANotValidatedBin = new AliQnCorrectionsHistogram(
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+  fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
       fDetectorConfiguration->GetEventClassVariablesSet());
   fQANotValidatedBin->CreateHistogram(list);
   return kTRUE;
