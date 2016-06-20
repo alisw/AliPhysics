@@ -28,7 +28,7 @@ public:
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
   void SetRequestAnalysisUtil(bool doUse) { fRequestAnalysisUtil = doUse; }
-  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); }
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
   void SetVertexRange(double min, double max) { fVertexRange.SetLimits(min, max); }
 
 protected:
@@ -54,6 +54,7 @@ protected:
 
   AliCutValueRange<double>            fCentralityRange;
   AliCutValueRange<double>            fVertexRange;
+  Bool_t                              fRequestCentrality;
 
 private:
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);

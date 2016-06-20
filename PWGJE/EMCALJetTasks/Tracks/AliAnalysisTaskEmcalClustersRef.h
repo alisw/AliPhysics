@@ -34,7 +34,7 @@ public:
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
 
   void SetRequestAnalysisUtil(Bool_t doRequest) { fRequestAnalysisUtil = doRequest; }
-  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); }
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
   void SetVertexRange(double min, double max) { fVertexRange.SetLimits(min, max); }
 
 protected:
@@ -63,6 +63,7 @@ protected:
   Bool_t                              fTriggerStringFromPatches;
   AliCutValueRange<double>            fCentralityRange;
   AliCutValueRange<double>            fVertexRange;
+  Bool_t                              fRequestCentrality;
 
 private:
   AliAnalysisTaskEmcalClustersRef(const AliAnalysisTaskEmcalClustersRef &);
