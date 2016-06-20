@@ -207,7 +207,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
   Int_t onlineMean =  fDigits->MeanTime();
-  
+  Int_t corridor = GetRecoParam() -> GetCorridor();  
+ 
   Bool_t tr[5];
   for (Int_t i=0; i<5; i++) tr[i]=false; 
   
@@ -218,7 +219,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(timeCFD->At(ipmt)>0 ) {
+    if(timeCFD->At(ipmt)>511-corridor &&timeCFD->At(ipmt)<511+corridor  ) {
       Float_t timefull = 0.001*( timeCFD->At(ipmt) - 511 - timeDelayCFD[ipmt])  * channelWidth;
       frecpoints.SetTimeFull(ipmt, 0 ,timefull) ;
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
