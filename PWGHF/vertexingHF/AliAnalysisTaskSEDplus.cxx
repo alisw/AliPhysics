@@ -1002,7 +1002,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    nClustersTPC = esdTrack.GetTPCNcls();
 	    if(esdTrack.GetTPCNclsF()>0) {
 	      ratioCRowsFClu = nCrossedRowsTPC / esdTrack.GetTPCNclsF();
-	      if(labDp>=0) isSig = 1.;
+	      if(labDp>=0){
+		if(isPrimary) isSig = 1.;
+		else if(isFeeddown) isSig = 2.;
+	      }
 	    }
 	    Double_t arrayForTrackSparse[kVarForTrackSparse]={ptCand,invMass,ptTrack,nClustersTPC,nCrossedRowsTPC,ratioCRowsFClu,isSig};
 	    if(passTopolAndPIDCuts){
@@ -1373,9 +1376,9 @@ void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
     
     Int_t nmassbins = GetNBinsHistos();
 
-    Int_t nbins[kVarForTrackSparse]   = {40,nmassbins,40,170,170,100,2};
-    Double_t xmin[kVarForTrackSparse] = {0.,fLowmasslimit,0.,0.,0.,0.,-0.5};
-    Double_t xmax[kVarForTrackSparse] = {40.,fUpmasslimit,40.,170.,170.,1.,1.5};
+    Int_t nbins[kVarForTrackSparse]   = {40,nmassbins,50,170,170,100,3};
+    Double_t xmin[kVarForTrackSparse] = {0.,fLowmasslimit,0.,0.5,0.5,0.,-0.5};
+    Double_t xmax[kVarForTrackSparse] = {40.,fUpmasslimit,5.,170.5,170.5,1.,2.5};
     
     //pt, y
     fHistTrackVar = new THnSparseF("hHistTrackVar","hHistTrackVar",kVarForTrackSparse,nbins,xmin,xmax);
