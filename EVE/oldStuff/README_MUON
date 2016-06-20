@@ -1,0 +1,92 @@
+
+How to run the MUON display
+---------------------------
+
+New (30 May 2008): a new flag argument is added to the MUON_display macro for displaying
+-----------------  the clusters taken from the ESD (default) or from MUONRecPoints:
+
+MUON_displaySimu(x,x,1) - clusters from ESD (default); only clusters of the found tracks
+MUON_displaySimu(x,x,0) - clusters from rec points; all found clusters
+
+New (28 Apr 2008): there are two version of the MUON_display macro
+-----------------
+
+MUON_displaySimu   - to be used with simulations (shows also reference tracks,
+                     Monte-Carlo tracks and hits)
+MUON_displayData   - to be used with reconstructed raw data (with the option
+                     SAVEDIGITS in the reconstruction, "normal" digits are
+                     also produced and can be visualized)
+
+1. Launch 'alieve' executable
+
+   alieve
+
+2. Load the following macros (.L ...)
+
+   alieve_init.C
+   event_goto.C
+   MUON_display.C
+   MUON_geom.C
+   MUON_geomAll.C
+
+3. Initialize
+
+   alieve_init("local://$ALICE_ROOT/OCDB","directory_to_data",event_number)
+
+4. Display simulation digits
+
+   MUON_display(0,0)   - without tracks
+   MUON_display(0,1)   - with tracks
+
+5. Display raw data
+
+   MUON_display(1,0)
+   MUON_display(1,1)
+
+6. Display all geometry defined in Config.C
+
+   MUON_geomAll()
+
+7. Display only the MUON detector
+
+   MUON_geom()
+
+Obs: use the macro MUON_makeGeom.C to create a geometry file starting from a
+Config.C.  The geometry created by the full chain of simulations has a wrong 
+color palette, this is a problem still to be fixed...
+
+8. Navigate in the event list
+
+   event_goto(n)
+
+9. Shift + right mouse button one a muon track opens the context menu:
+   - track and trigger information is available
+
+10. Use mouse buttons or keys:
+
+   Move camera with
+
+   +/J,j  - increase
+   -/K,k  - decrease
+   up/down/left/right arrows
+
+   T,t/W,w  - toggle between filled areas and wired areas
+
+   'Home' key  - reset the position of the camera
+
+Files:
+
+AliEveMUON*.cxx , AliEveMUON*.h   in $ALICE_ROOT/EVE/EveDet
+MUON*.C                           in $ALICE_ROOT/EVE/macros
+
+Note: ... this is $ALICE_ROOT/EVE/README_MUON file.
+
+
+
+
+
+Bogdan Vulpescu, 28 Apr 2008
+LPC Clermont-Ferrand
+vulpescu@clermont.in2p3.fr
+
+

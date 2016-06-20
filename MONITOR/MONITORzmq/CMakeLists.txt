@@ -28,6 +28,7 @@ include_directories(${AliRoot_SOURCE_DIR}/MONITOR/MONITOR
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                     ${ZEROMQ_INCLUDE_DIR}
                    )
 
@@ -70,7 +71,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${M
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB MONITOR ${ZEROMQ_LIBRARIES})
+set(LIBDEPS TPCrec STEERBase STEER ESD CDB MONITOR ${ZEROMQ_LIBRARIES})
 if(DIM_FOUND)
     set(LIBDEPS ${LIBDEPS} ${DIM_LIBRARIES})
 endif()

@@ -15,7 +15,6 @@ public:
     
     void Kill();
 private:
-    bool fFinished;
     AliStorageClientThread *fManager;
     
     static void* Dispatch(void *arg)

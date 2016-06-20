@@ -11,45 +11,28 @@
 #define AliEveConfigManager_H
 
 #include "TObject.h"
-
-class TGPopupMenu;
-
-//______________________________________________________________________________
-// Short description of AliEveConfigManager
-//
+#include "TGMenu.h"
 
 class AliEveConfigManager : public TObject
 {
 public:
-    static AliEveConfigManager* InitializeMaster(bool storageManager=false);
-    static AliEveConfigManager* GetMaster();
+    static AliEveConfigManager* Instance(bool storageManager=false);
     
-    virtual ~AliEveConfigManager() {}
-    
-    void AliEvePopupHandler(Int_t id);
+    void AliEvePopupHandler(int id);
     void SetEventInEventManager();
     void StorageManagerChangedState(int state);
 
     void ConnectEventManagerSignals();
     
-protected:
-    static AliEveConfigManager* fgMaster;  // Main instance.
-    
-    TGPopupMenu      *fAnalysisPopup; // AliEve menu with analysis tools.
-    TGPopupMenu      *fAliEvePopup; // AliEve menu.
-    TGPopupMenu      *fAliEveGeometries; // AliEve submenu - geometries.
-    TGPopupMenu      *fAliEvePictures; // AliEve submenu - saving pictures.
-    TGPopupMenu      *fAliEvePicturesHR; // AliEve submenu - saving pictures in high resolution.
-    TGPopupMenu      *fAliEveDataSelection; // AliEve submenu - Saving/Opening DataSelection macros.
-    TGPopupMenu      *fAliEveVizDBs; // AliEve submenu - Saving/Opening VizDB macros.
-    
-    Bool_t           fLoadCheck; //for Data Selection Save/Load
-    
-    // Storage Manager:
-    TGPopupMenu *fStoragePopup;
-    
 private:
+    static AliEveConfigManager* fInstance;  // Main instance.
     AliEveConfigManager(bool storageManager=false);
+    ~AliEveConfigManager(){}
+    
+    TGPopupMenu *fAliEvePopup;  // AliEve menu
+    TGPopupMenu *fStoragePopup; // Storage Manager menu
+    
+    enum EAliEveMenu{ kStorageListEvents, kStorageMarkEvent, kPreferences };
     
     AliEveConfigManager(const AliEveConfigManager&);            // Not implemented
     AliEveConfigManager& operator=(const AliEveConfigManager&); // Not implemented

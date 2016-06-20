@@ -18,54 +18,32 @@ class AliEveDataSourceOffline : public AliEveDataSource
 public:
     AliEveDataSourceOffline(bool storageManager=false);
     ~AliEveDataSourceOffline();
-    
-    enum EVisibleESDTrees{ kOfflineTree, kHLTTree };
-    
-    void SetAssertElements(Bool_t assertRunloader, Bool_t assertEsd,
-                                  Bool_t assertAod, Bool_t assertRaw);
-    
-    void SearchRawForCentralReconstruction();
-    
-    void SetESDFileName(const TString& esd, EVisibleESDTrees shown=kOfflineTree);
-    void SetESDfriendFileName(const TString& esdf);
-    void SetAODFileName(const TString& aod);
-    void AddAODfriend  (const TString& friendFileName);
-    void SetRawFileName(const TString& raw);
-    void SetGAliceFileName(const TString& galice);
-    void SetFilesPath(const TString& path);
 
     void GotoEvent(Int_t event);
+    void NextEvent();
     
+    void SetFilesPath(const TString& path);
+    
+    void SearchRawForCentralReconstruction();
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
 private:
     void Init(){};// to implement
-    void SetEvent(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd, AliESDfriend *esdf);
-    void NextEvent();
-    void PrevEvent();
     void Open();
     void Close();
     TTree* readESDTree(const char* treeName, int &run);
+    void AddAODfriend  (const TString& friendFileName);
     
-    bool            fIsOpen;         // Are event-files opened.
-    AliEventInfo	fEventInfo;		// Current Event Info
-    Bool_t        fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
-    
-    // names of files:
-    TString  fgGAliceFileName;        // galice.root file
-    TString  fgESDFileName;           // Name by which to open ESD.
-    TString  fgESDfriendsFileName;
-    TString  fgAODFileName;           // Name by which to open AOD.
-    TString  fgRawFileName;           // Name by which to open raw-data file.
+    bool            fIsOpen;            // Are event-files opened.
+    Bool_t          fESDfriendExists;	// Flag specifying if ESDfriend was found during opening of the event-data.
     
     AliEveEventManager *fEventManager;
     
-    EVisibleESDTrees  fgESDvisibleTrees; // trees to open from ESD
-    
-    Bool_t   fgAssertRunLoader;	// Global flag specifying if AliRunLoader must be asserted during opening of the event-data.
-    
-    Bool_t   fgAssertESD;		// Global flag specifying if ESDEvent must be asserted during opening of the event-data.
-    Bool_t   fgAssertAOD;		// Global flag specifying if AODEvent must be asserted during opening of the event-data.
-    Bool_t   fgAssertRaw;		// Global flag specifying if raw-data presence must be asserted during opening of the event-data.
+    // names of files:
+    TString  fgESDFileName;           // Name by which to open ESD
+    TString  fgESDfriendsFileName;    // Name by which to open ESD friend
+    TString  fgAODFileName;           // Name by which to open AOD
+    TString  fgRawFileName;           // Name by which to open raw-data file
+    TString  fgGAliceFileName;        // galice.root file
     
     TList   *fgAODfriends;         // Global list of AOD friend names to be attached during opening of the event-data (empty by default).
     

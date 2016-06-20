@@ -12,8 +12,7 @@ AliEventsCollectorThread::AliEventsCollectorThread(AliStorageClientThread *onlin
 fManager(onlineReconstructionManager),
 fCollectorThread(0),
 fCurrentFile(0),
-fDatabase(0),
-fFinished(false)
+fDatabase(0)
 {
   fDatabase = new AliStorageDatabase();
     
@@ -40,7 +39,6 @@ AliEventsCollectorThread::~AliEventsCollectorThread()
 void AliEventsCollectorThread::Kill()
 {
     if(fCollectorThread){
-        fFinished=true;
         fCollectorThread->Join();
         fCollectorThread->Kill();
     }
@@ -59,14 +57,20 @@ void AliEventsCollectorThread::CollectorHandle()
     vector<struct eventStruct> eventsToUpdate;
     struct eventStruct currentEvent;
     
-    bool receiveStatus = false;
+    int receiveStatus = false;
     
-    while(!fFinished)
+    while(1)
     {
         cout<<"CLIENT -- waiting for event..."<<endl;
         receiveStatus = eventManager->Get(event,EVENTS_SERVER_SUB);
         
-        if(event && receiveStatus)
+        if (receiveStatus == 0){ // timeout
+            continue;
+        }
+        else if(receiveStatus == -1){ // error, socket closed
+            break;
+        }
+        else if(event && receiveStatus)
         {
             cout<<"CLIENT -- received event"<<endl;
             fManager->fReceivingStatus=STATUS_OK;

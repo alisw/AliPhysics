@@ -674,7 +674,7 @@
 	* LinkDef.h:
 	* KineTools.cxx:
 	* KineTools.h:
-	New files: used in alice-macros/kine_tracks.C to set path marks in
+	New files: used in macros/kine_tracks.C to set path marks in
 	imported tracks.
 
 2007-01-30  Matevz Tadel  <matevz.tadel@cern.ch>

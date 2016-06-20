@@ -1,6 +1,5 @@
 //
 //  AliEveGeomGentle.h
-//  xAliRoot
 //
 //  Created by Jeremi Niedziela on 11/05/15.
 //
@@ -14,17 +13,12 @@
 class AliEveGeomGentle
 {
 public:
-    AliEveGeomGentle();
-    ~AliEveGeomGentle();
+    AliEveGeomGentle(){}
+    ~AliEveGeomGentle(){}
     
-    TEveGeoShape* GetGeomGentle(bool register_as_global=kTRUE);
-    TEveGeoShape* GetGeomGentleRphi();
-    TEveGeoShape* GetGeomGentleRhoz();
-    TEveGeoShape* GetGeomGentleTRD(Color_t color=3);
-    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE, Color_t color=3);
-
+    TEveGeoShape* GetSimpleGeom(char* detector);
 private:
-    void DrawDeep(TEveGeoShape *gsre, Color_t color);
+    void DrawDeep(TEveGeoShape *gsre, Color_t color, Char_t transparency, Color_t lineColor);
 };
 
 

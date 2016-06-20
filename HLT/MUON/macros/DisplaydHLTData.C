@@ -31,8 +31,8 @@
  * \code
  *   > gSystem->Load("libAliHLTMUON");
  *   > .L $ALICE_ROOT/EVE/macros/alieve_init.C
- *   > .L $ALICE_ROOT/EVE/alice-macros/event_goto.C
- *   > .L $ALICE_ROOT/EVE/alice-macros/MUON_displayData.C
+ *   > .L $ALICE_ROOT/EVE/macros/event_goto.C
+ *   > .L $ALICE_ROOT/EVE/macros/MUON_displayData.C
  *   > .L $ALICE_ROOT/HLT/MUON/macros/DisplaydHLTData.C
  *   > alieve_init("OCDBpath","DataPath",EventNumber);
  *   > MUON_displayData(1,1,1);

@@ -31,8 +31,6 @@ private:
     AliStorageDatabase *fDatabase;
     void CheckCurrentStorageSize();
     Long64_t GetSizeOfAllChunks();
-    
-    bool fFinished;
 };
 
 

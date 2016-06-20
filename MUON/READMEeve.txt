@@ -13,7 +13,7 @@ http://aliceinfo.cern.ch/Offline/Activities/Visualisation/
 
 \subsection eve_s1_sub1 Macros
 
-Found in $ALICE_ROOT/EVE/alice-macros and $ALICE_ROOT/EVE/macros.
+Found in $ALICE_ROOT/EVE/macros and $ALICE_ROOT/EVE/macros.
 - MUON_displaySimu.C , to be used with simulations (shows also reference 
 tracks, Monte-Carlo tracks and hits)
 - MUON_displayData.C , to be used with reconstructed raw data (with the option
@@ -80,7 +80,7 @@ MUON_displayData(x,x,0) - clusters from rec points
 
 \subsection eve_s1_sub3 Macros
 
-Found in $ALICE_ROOT/EVE/alice-macros and $ALICE_ROOT/EVE/macros.
+Found in $ALICE_ROOT/EVE/macros and $ALICE_ROOT/EVE/macros.
 - muon_init.C , to launch the new display (based on visscan_init.C)
 - muon_raw.C , display digits from raw data
 - muon_digits.C , display digits from MUON.Digits.root file
@@ -120,7 +120,7 @@ Just use the buttons or choose the event number in the bottom panel. You can als
 \section eve_s3 The simplified "gentle" geometry for the event display
 
 Execute from aliroot the macro MUONGenerateGentleGeometry.C and place the resulting file in EVE/alice-data. This file is used by the macro geom_gentle_muon.C
-from EVE/alice-macros.
+from EVE/macros.
 
 This chapter is defined in the READMEeve.txt file.
 

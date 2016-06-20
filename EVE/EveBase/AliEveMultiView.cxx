@@ -8,64 +8,56 @@
  **************************************************************************/
 
 #include "AliEveMultiView.h"
-#include <TGPack.h>
+#include "AliEveInit.h"
+
+#include <TEveProjectionAxes.h>
+#include <TEveBrowser.h>
 #include <TBrowser.h>
 
-//______________________________________________________________________________
-// Full description of AliEveMultiView
-//
+#include <iostream>
+
+using namespace std;
 
 ClassImp(AliEveMultiView)
 
 AliEveMultiView* AliEveMultiView::fgInstance = 0;
 
-AliEveMultiView* AliEveMultiView::Instance()
+AliEveMultiView::AliEveMultiView() :
+fRPhiMgr(0), fRhoZMgr(0),
+f3DView(0), fRPhiView(0), fRhoZView(0),
+f3DGeomScene(0), fRPhiGeomScene(0), fRhoZGeomScene(0),
+f3DEventScene(0),fRPhiEventScene(0), fRhoZEventScene(0)
 {
-    // Return static instance.
+    // Constructor --- creates required scenes, projection managers and GL viewers
     
-    return fgInstance;
-}
-
-AliEveMultiView::AliEveMultiView(Bool_t setMuonView) :
-fRPhiMgr(0), fRhoZMgr(0), fMuonMgr(0),
-f3DView(0), fRPhiView(0), fRhoZView(0), fMuonView(0),
-fRPhiGeomScene(0), fRhoZGeomScene(0), fMuonGeomScene(0),
-fRPhiEventScene(0), fRhoZEventScene(0), fMuonEventScene(0),
-fGeomGentle(0), fGeomGentleRPhi(0), fGeomGentleRhoZ(0),
-fGeomGentleTrd(0), fGeomGentleMuon(0), fIsMuonView(kFALSE),
-fPack(0)
-{
-    // Constructor --- creates required scenes, projection managers
-    // and GL viewers.
-    
-    if (fgInstance)
+    if (fgInstance){
         throw TEveException("AliEveMultiView::AliEveMultiView already instantiated.");
+    }
     fgInstance = this;
     
     // Scenes
-    //========
-    
+    f3DGeomScene  = gEve->SpawnNewScene("3D Geometry","Scene holding 3D geometry.");
     fRPhiGeomScene  = gEve->SpawnNewScene("RPhi Geometry",
                                           "Scene holding projected geometry for the RPhi view.");
     fRhoZGeomScene  = gEve->SpawnNewScene("RhoZ Geometry",
                                           "Scene holding projected geometry for the RhoZ view.");
-    fMuonGeomScene  = gEve->SpawnNewScene("Muon Geometry",
-                                          "Scene holding projected geometry for the Muon view.");
+    
+    f3DEventScene = gEve->SpawnNewScene("3D Event Data","Scene holding 3D event-data.");
     fRPhiEventScene = gEve->SpawnNewScene("RPhi Event Data",
                                           "Scene holding projected event-data for the RPhi view.");
     fRhoZEventScene = gEve->SpawnNewScene("RhoZ Event Data",
                                           "Scene holding projected event-data for the RhoZ view.");
-    fMuonEventScene = gEve->SpawnNewScene("Muon Event Data",
-                                          "Scene holding projected event-data for the Muon view.");
-    
-    fIsMuonView = setMuonView;
     
     // Projection managers
-    //=====================
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    bool showAxes = settings.GetValue("axes.show", false);
     
     fRPhiMgr = new TEveProjectionManager();
     fRPhiMgr->SetProjection(TEveProjection::kPT_RPhi);
     gEve->AddToListTree(fRPhiMgr, kFALSE);
+    
+    if(showAxes)
     {
         TEveProjectionAxes* a = new TEveProjectionAxes(fRPhiMgr);
         a->SetMainColor(kWhite);
@@ -80,6 +72,8 @@ fPack(0)
     fRhoZMgr = new TEveProjectionManager();
     fRhoZMgr->SetProjection(TEveProjection::kPT_RhoZ);
     gEve->AddToListTree(fRhoZMgr, kFALSE);
+    
+    if(showAxes)
     {
         TEveProjectionAxes* a = new TEveProjectionAxes(fRhoZMgr);
         a->SetMainColor(kWhite);
@@ -91,26 +85,7 @@ fPack(0)
         fRhoZGeomScene->AddElement(a);
     }
     
-    if(fIsMuonView)
-    {
-        fMuonMgr = new TEveProjectionManager();
-        fMuonMgr->SetProjection(TEveProjection::kPT_RhoZ);
-        gEve->AddToListTree(fMuonMgr, kFALSE);
-        {
-            TEveProjectionAxes* a = new TEveProjectionAxes(fMuonMgr);
-            a->SetMainColor(kWhite);
-            a->SetTitle("Rho-Z Muon");
-            a->SetTitleSize(0.05);
-            a->SetTitleFont(102);
-            a->SetLabelSize(0.025);
-            a->SetLabelFont(102);
-            fMuonGeomScene->AddElement(a);
-        }
-    }
-    
     // Viewers
-    //=========
-    
     TEveWindowSlot *slot = 0;
     TEveWindowPack *pack = 0;
     
@@ -121,9 +96,9 @@ fPack(0)
     pack->SetShowTitleBar(kFALSE);
     
     pack->NewSlotWithWeight(2)->MakeCurrent(); // new slot is created from pack
-    f3DView = gEve->SpawnNewViewer("3D View", "");
-    f3DView->AddScene(gEve->GetGlobalScene());
-    f3DView->AddScene(gEve->GetEventScene());
+    f3DView = gEve->SpawnNewViewer("3D View MV", "");
+    f3DView->AddScene(f3DGeomScene);
+    f3DView->AddScene(f3DEventScene);
     
     pack = pack->NewSlot()->MakePack(); // new slot created from pack, then slot is destroyed and new pack returned
     pack->SetShowTitleBar(kFALSE);
@@ -133,184 +108,99 @@ fPack(0)
     fRPhiView->AddScene(fRPhiGeomScene);
     fRPhiView->AddScene(fRPhiEventScene);
     
-    fPack = pack;
-    
     pack->NewSlot()->MakeCurrent(); // new slot from pack
     fRhoZView = gEve->SpawnNewViewer("RhoZ View", "");
     fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
     fRhoZView->AddScene(fRhoZGeomScene);
     fRhoZView->AddScene(fRhoZEventScene);
-    
-    if(fIsMuonView)
-    {
-        pack->NewSlot()->MakeCurrent(); // new slot from pack
-        fMuonView = gEve->SpawnNewViewer("RhoZ View Muon", "");
-        fMuonView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-        fMuonView->AddScene(fMuonGeomScene);
-        fMuonView->AddScene(fMuonEventScene);
-    }
 }
 
 AliEveMultiView::~AliEveMultiView()
 {
     DestroyAllGeometries();
-    
-    delete fGeomGentle;
-    delete fGeomGentleRPhi;
-    delete fGeomGentleRhoZ;
-    
-    delete	fRPhiMgr;
+    delete fRPhiMgr;
     delete fRhoZMgr;
-    delete fMuonMgr;
-    
 }
 
-//-------------------------------------------------------------------------
-
-void AliEveMultiView::InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz, TEveGeoShape* gmuon)
+void AliEveMultiView::InitSimpleGeom(TEveGeoShape* geom, bool threeD, bool rPhi, bool rhoZ)
 {
-    // Initialize gentle geometry.
+    if(!geom)
+    {
+        cout<<"AliEveMultiView::InitSimpleGeom -- geometry is NULL!"<<endl;
+        return;
+    }
     
-    fGeomGentle     = g3d;
-    fGeomGentleRPhi = grphi; fGeomGentleRPhi->IncDenyDestroy();
-    fGeomGentleRhoZ = grhoz; fGeomGentleRhoZ->IncDenyDestroy();
-    if(fIsMuonView) { fGeomGentleMuon = gmuon; fGeomGentleMuon->IncDenyDestroy(); }
+    fGeomVector.push_back(geom);
     
-    ImportGeomRPhi(fGeomGentleRPhi);
-    ImportGeomRhoZ(fGeomGentleRhoZ);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
+    if(threeD){
+        gEve->AddElement(geom,f3DGeomScene);
+    }
+    if(rPhi){
+        fRPhiMgr->SetCurrentDepth(-10);
+        fRPhiMgr->ImportElements(geom, fRPhiGeomScene);
+        fRPhiMgr->SetCurrentDepth(0);
+    }
+    if(rhoZ){
+        fRhoZMgr->SetCurrentDepth(-10);
+        fRhoZMgr->ImportElements(geom, fRhoZGeomScene);
+        fRhoZMgr->SetCurrentDepth(0);
+    }
 }
 
-void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
+void AliEveMultiView::ImportEvent(TEveElement* el)
 {
-    // Initialize gentle geometry TRD.
-    
-    fGeomGentleTrd = gtrd;
-    ImportGeomRPhi(fGeomGentleTrd);
-    ImportGeomRhoZ(fGeomGentleTrd);
-    if(fIsMuonView) ImportGeomMuon(fGeomGentleTrd);
+    gEve->AddElement(el,f3DEventScene);
+    fRPhiMgr->ImportElements(el, fRPhiEventScene);
+    fRhoZMgr->ImportElements(el, fRhoZEventScene);
 }
 
-void AliEveMultiView::InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ, Bool_t showMuon)
+void AliEveMultiView::ImportEvent3D(TEveElement* el)
 {
-    // Initialize gentle geometry for MUON.
-    
-    fGeomGentleMuon = gmuon;
-    if (showRPhi) ImportGeomRPhi(fGeomGentleMuon);
-    if (showRhoZ) ImportGeomRhoZ(fGeomGentleMuon);
-    if (showMuon && fIsMuonView) ImportGeomMuon(fGeomGentleMuon);
-    
-}
-
-//-------------------------------------------------------------------------
-
-void AliEveMultiView::SetDepth(Float_t d)
-{
-    // Set current depth on all projection managers.
-    
-    fRPhiMgr->SetCurrentDepth(d);
-    fRhoZMgr->SetCurrentDepth(d);
-    if(fIsMuonView) fMuonMgr->SetCurrentDepth(d);
-    
-}
-
-//-------------------------------------------------------------------------
-
-void AliEveMultiView::ImportGeomRPhi(TEveElement* el)
-{
-    // Import el into r-phi geometry scene.
-    
-    fRPhiMgr->ImportElements(el, fRPhiGeomScene);
-}
-
-void AliEveMultiView::ImportGeomRhoZ(TEveElement* el)
-{
-    // Import el into rho-z geometry scene.
-    
-    fRhoZMgr->ImportElements(el, fRhoZGeomScene);
-}
-
-void AliEveMultiView::ImportGeomMuon(TEveElement* el)
-{
-    // Import el into muon geometry scene.
-    
-    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonGeomScene);
+    gEve->AddElement(el, f3DEventScene);
 }
 
 void AliEveMultiView::ImportEventRPhi(TEveElement* el)
 {
-    // Import el into r-phi event scene.
-    
     fRPhiMgr->ImportElements(el, fRPhiEventScene);
 }
 
 void AliEveMultiView::ImportEventRhoZ(TEveElement* el)
 {
-    // Import el into rho-z event scene.
-    
     fRhoZMgr->ImportElements(el, fRhoZEventScene);
 }
 
-void AliEveMultiView::ImportEventMuon(TEveElement* el)
+void AliEveMultiView::DestroyEvent3D()
 {
-    // Import el into muon event scene.
-    
-    if(fIsMuonView) fMuonMgr->ImportElements(el, fMuonEventScene);
+    f3DEventScene->DestroyElements();
 }
 
 void AliEveMultiView::DestroyEventRPhi()
 {
-    // Destroy all elements in r-phi event scene.
-    
     fRPhiEventScene->DestroyElements();
 }
 
 void AliEveMultiView::DestroyEventRhoZ()
 {
-    // Destroy all elements in rho-z event scene.
-    
     fRhoZEventScene->DestroyElements();
 }
 
-void AliEveMultiView::DestroyEventMuon()
+void AliEveMultiView::DestroyAllEvents()
 {
-    // Destroy all elements in rho-z event scene.
-    
-    if(fIsMuonView) fMuonEventScene->DestroyElements();
-}
-
-
-//-------------------------------------------------------------------------
-
-void AliEveMultiView::SetCenterRPhi(Double_t x, Double_t y, Double_t z)
-{
-    // Set center of r-phi manager.
-    
-    fRPhiMgr->SetCenter(x, y, z);
-}
-
-void AliEveMultiView::SetCenterRhoZ(Double_t x, Double_t y, Double_t z)
-{
-    // Set center of rho-z manager.
-    
-    fRhoZMgr->SetCenter(x, y, z);
-}
-
-void AliEveMultiView::SetCenterMuon(Double_t x, Double_t y, Double_t z)
-{
-    // Set center of rho-z manager.
-    
-    if(fIsMuonView) fMuonMgr->SetCenter(x, y, z);
+    f3DEventScene->DestroyElements();
+    fRPhiEventScene->DestroyElements();
+    fRhoZEventScene->DestroyElements();
 }
 
 void AliEveMultiView::DestroyAllGeometries()
 {
-    // Destroy 3d, r-phi and rho-z geometries.
-    
-    fGeomGentle->DestroyElements();
-    fGeomGentleRPhi->DestroyElements();
-    fGeomGentleRhoZ->DestroyElements();
-    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
-    
+    for(int i=0;i<fGeomVector.size();i++)
+    {
+        if(fGeomVector[i])
+        {
+            fGeomVector[i]->DestroyElements();
+            gEve->RemoveElement(fGeomVector[i],f3DGeomScene);
+            fGeomVector[i] = 0;
+        }
+    }
 }
 

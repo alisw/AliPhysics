@@ -205,14 +205,14 @@ AliEveTrackCounterEditor::AliEveTrackCounterEditor(const TGWindow *p, Int_t widt
 
    AddFrame(fDF, new TGLayoutHints(kLHintsNormal|kLHintsExpandX|kLHintsExpandY));
 
-   AliEveEventManager::GetMaster()->Connect("NewEventLoaded()", "AliEveTrackCounterEditor", this, "UpdateModel()");
+   AliEveEventManager::Instance()->Connect("NewEventLoaded()", "AliEveTrackCounterEditor", this, "UpdateModel()");
 }
 
 AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
 {
   // Destructor.
 
-  AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
+//  AliEveEventManager::Instance()->Disconnect("NewEventLoaded()", this);
 
   if (fScanSummaryFile) {
     fScanSummaryFile->close();
@@ -263,7 +263,7 @@ void AliEveTrackCounterEditor::DoActivate()
    // Activate track-counter
 
    fM->SetActive(kTRUE);
-   AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
+   AliEveEventManager::Instance()->GotoEvent(AliEveEventManager::Instance()->GetEventId());
    fGedEditor->Layout();
 
    if (fScanSummaryFile) {
@@ -277,7 +277,7 @@ void AliEveTrackCounterEditor::DoActivate()
    fScanSummaryFile = new ofstream(fname);
    (*fScanSummaryFile) << "Scan summary" << std::endl;
    (*fScanSummaryFile) << "Scan started at " << dat.GetDate() << " " << dat.GetTime() << std::endl;
-   AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+   AliESDEvent *esd = AliEveEventManager::Instance()->AssertESD();
    (*fScanSummaryFile) << "Run number " << esd->GetRunNumber() << std::endl;
 }
 
@@ -286,7 +286,7 @@ void AliEveTrackCounterEditor::DoDeactivate()
    // Deactivate track-counter.
 
    fM->SetActive(kFALSE);
-   AliEveEventManager::GetMaster()->GotoEvent(AliEveEventManager::GetMaster()->GetEventId());
+   AliEveEventManager::Instance()->GotoEvent(AliEveEventManager::Instance()->GetEventId());
 
    if (fScanSummaryFile) {
      fScanSummaryFile->close();
@@ -302,7 +302,7 @@ void AliEveTrackCounterEditor::DoPrev()
 {
    // Slot for Prev.
 
-   AliEveEventManager::GetMaster()->PrevEvent();
+   AliEveEventManager::Instance()->PrevEvent();
 }
 
 //______________________________________________________________________________
@@ -311,7 +311,7 @@ void AliEveTrackCounterEditor::DoNext()
    // Slot for Next.
 
    if (fScanSummaryFile) {
-     AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+     AliESDEvent *esd = AliEveEventManager::Instance()->AssertESD();
      (*fScanSummaryFile) << std::hex << std::right ;
      fScanSummaryFile->width(5); (*fScanSummaryFile) << esd->GetPeriodNumber() << "   " ;
      fScanSummaryFile->width(6); (*fScanSummaryFile) << esd->GetOrbitNumber() << "   ";
@@ -339,7 +339,7 @@ void AliEveTrackCounterEditor::DoNext()
      (*fScanSummaryFile) << std::endl;
    }
 
-   AliEveEventManager::GetMaster()->NextEvent();
+   AliEveEventManager::Instance()->NextEvent();
 }
 
 //______________________________________________________________________________
@@ -347,7 +347,7 @@ void AliEveTrackCounterEditor::DoSetEvent()
 {
    // Slot for SetEvent.
 
-   AliEveEventManager::GetMaster()->GotoEvent((Int_t) fEventId->GetNumber());
+   AliEveEventManager::Instance()->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
 /******************************************************************************/

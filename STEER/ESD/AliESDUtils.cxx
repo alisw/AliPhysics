@@ -153,7 +153,7 @@ Float_t AliESDUtils::GetCorrSPD2(Float_t spd2raw,Float_t zv)
 }  
 
 //______________________________________________________________________________
-Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts)
+TObjArray*  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const Double_t *cuts)
 {
   // Refit ESD VertexTracks and redo tracks->RelateToVertex
   // Default vertexin algorithm is 6 (multivertexer). To use old vertexed, use algo=1
@@ -194,7 +194,7 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
   }
   if (defAlgo<0 || defAlgo>AliVertexerTracks::kMultiVertexer) {
     printf("Vertexer algorithms 0:%d are supported... \n",defAlgo);
-    return kFALSE;
+    return nullptr;
   }
   //
   if (currRun!=esdEv->GetRunNumber() && kVtxConstr) { // update diamond for this run
@@ -227,9 +227,9 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
     }
     delete pvtx;
   }
-  else return kFALSE;
+  else return nullptr;
   //
-  return kTRUE;
+  return vtFinder->GetVerticesArray();
 }
 //________________________________________________________________________
 Float_t AliESDUtils::GetCorrV0A(Float_t  v0araw, Float_t zv)

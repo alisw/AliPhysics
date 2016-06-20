@@ -13,12 +13,14 @@
 #include "AliEveMultiView.h"
 #include "AliEveDataSourceOffline.h"
 #include "AliEveInit.h"
+#include "AliESDtrack.h"
+#include "AliESDMuonTrack.h"
+
 #ifdef ZMQ
 #include "AliEveDataSourceOnline.h"
 #include "AliEveDataSourceHLTZMQ.h"
 #endif
 
-#include "AliOnlineReconstructionUtil.h"
 #include "AliGRPPreprocessor.h"
 #include <TEnv.h>
 
@@ -32,6 +34,7 @@
 
 #include <TEveElement.h>
 #include <TEveManager.h>
+#include <TEveBrowser.h>
 #include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TTimeStamp.h>
@@ -41,8 +44,8 @@
 #include <iostream>
 
 
-using std::cout;
-using std::endl;
+using namespace std;
+
 //==============================================================================
 //==============================================================================
 // AliEveEventManager
@@ -82,20 +85,16 @@ TEveEventManager("Event", ""),
 fEventId(-1),fEventInfo(),fHasEvent(kFALSE),fCurrentRun(-1),
 fCurrentData(&fEmptyData),fCurrentDataSource(NULL),fDataSourceOnline(NULL),fDataSourceOffline(NULL),fDataSourceHLTZMQ(NULL),
 fAutoLoad(kFALSE), fAutoLoadTime(5),fAutoLoadTimer(0),fAutoLoadTimerRunning(kFALSE),
-fGlobal(0),fGlobalReplace(kTRUE),fGlobalUpdate(kTRUE),fTransients(0),fTransientLists(0),
-fExecutor(0),fViewsSaver(0),fESDdrawer(0),fPEventSelector(0),
+fTransients(0),
+fExecutor(0),fViewsSaver(0),fESDTracksDrawer(0),fAODTracksDrawer(0),fPrimaryVertexDrawer(0),fKinksDrawer(0),fCascadesDrawer(0),fV0sDrawer(0),fMuonTracksDrawer(0),fSPDTracklersDrawer(0),fKineTracksDrawer(0),  fMomentumHistogramsDrawer(0),fPEventSelector(0),
 fgGRPLoaded(false),
-fgMagField(0),
-fSaveViews(false),
-fDrawESDtracksByCategory(false),
-fDrawESDtracksByType(false),
-fFirstEvent(true)
+fgMagField(0)
 {
     InitInternals();
     ChangeDataSource(defaultDataSource);
 }
 
-AliEveEventManager* AliEveEventManager::GetMaster()
+AliEveEventManager* AliEveEventManager::Instance()
 {
     // Get master event-manager.
     if(fgMaster){return fgMaster;}
@@ -105,9 +104,9 @@ AliEveEventManager* AliEveEventManager::GetMaster()
 AliEveEventManager::~AliEveEventManager()
 {
     // Destructor.
-    fAutoLoadTimer->Stop();
-    fAutoLoadTimer->Disconnect("Timeout");
-    fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
+//    fAutoLoadTimer->Stop();
+//    fAutoLoadTimer->Disconnect("Timeout");
+//    fAutoLoadTimer->Disconnect("AutoLoadNextEvent");
 }
 
 void AliEveEventManager::InitInternals()
@@ -125,19 +124,23 @@ void AliEveEventManager::InitInternals()
     fTransients->IncDenyDestroy();
     gEve->AddToListTree(fTransients, kFALSE);
     
-    fTransientLists = new TEveElementList("Transient Lists", "Containers of transient elements.");
-    fTransientLists->IncDenyDestroy();
-    gEve->AddToListTree(fTransientLists, kFALSE);
-    
     fPEventSelector = new AliEveEventSelector(this);
-    fGlobal = new TMap; fGlobal->SetOwnerKeyValue();
     
     fViewsSaver = new AliEveSaveViews();
-    fESDdrawer = new AliEveESDTracks();
+    fESDTracksDrawer = new AliEveESDTracks();
+    fAODTracksDrawer = new AliEveAODTracks();
+    fMomentumHistogramsDrawer = new AliEveMomentumHistograms();
+    fPrimaryVertexDrawer = new AliEvePrimaryVertex();
+    fKinksDrawer = new AliEveESDKinks();
+    fCascadesDrawer = new AliEveESDCascades();
+    fV0sDrawer = new AliEveESDV0s();
+    fMuonTracksDrawer = new AliEveESDMuonTracks();
+    fSPDTracklersDrawer = new AliEveESDSPDTracklets();
+    fKineTracksDrawer = new AliEveKineTracks();
     
 #ifdef ZMQ
     fDataSourceOnline = new AliEveDataSourceOnline();
-    fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();
+    fDataSourceHLTZMQ = new AliEveDataSourceHLTZMQ();    
 #endif
     fDataSourceOffline = new AliEveDataSourceOffline();
 }
@@ -179,11 +182,6 @@ void AliEveEventManager::DestroyTransients()
     
     gEve->GetViewers()->DeleteAnnotations();
     fTransients->DestroyElements();
-    for (TEveElement::List_i i = fTransientLists->BeginChildren();
-         i != fTransientLists->EndChildren(); ++i)
-    {
-        (*i)->DestroyElements();
-    }
     DestroyElements();
     ElementChanged();
 }
@@ -208,48 +206,25 @@ Int_t AliEveEventManager::CurrentEventId()
     return fgMaster->GetEventId();
 }
 
-Bool_t AliEveEventManager::HasRunLoader()
-{
-    // Check if AliRunLoader is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRunLoader;
-}
-
 Bool_t AliEveEventManager::HasESD()
 {
     // Check if AliESDEvent is initialized.
     return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESD;
 }
 
-Bool_t AliEveEventManager::HasESDfriend()
-{
-    // Check if AliESDfriend is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fESDfriend;
-}
-
-Bool_t AliEveEventManager::HasAOD()
-{
-    // Check if AliESDEvent is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fAOD;
-}
-
-Bool_t AliEveEventManager::HasRawReader()
-{
-    // Check if raw-reader is initialized.
-    return fgMaster && fgMaster->fHasEvent && fgMaster->fCurrentData->fRawReader;
-}
-
 AliRunLoader* AliEveEventManager::AssertRunLoader()
 {
     // Make sure AliRunLoader is initialized and return it.
-    // Throws exception in case run-loader is not available.
     // Static utility for macros.
     
-    static const TEveException kEH("AliEveEventManager::AssertRunLoader ");
-    
-    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE)
-        throw (kEH + "ALICE event not ready.");
-    if (fgMaster->fCurrentData->fRunLoader == 0)
-        throw (kEH + "AliRunLoader not initialised.");
+    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE){
+        cout<<"AliEveEventManager::AssertRunLoader : ALICE event not ready."<<endl;
+        return 0;
+    }
+    else if (fgMaster->fCurrentData->fRunLoader == 0){
+        cout<<"AliEveEventManager::AssertRunLoader : AliRunLoader not initialised."<<endl;
+        return 0;
+    }
     return fgMaster->fCurrentData->fRunLoader;
 }
 
@@ -259,12 +234,15 @@ AliESDEvent* AliEveEventManager::AssertESD()
     // Throws exception in case ESD is not available.
     // Static utility for macros.
     
-    static const TEveException kEH("AliEveEventManager::AssertESD ");
-    
-    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE)
-        throw (kEH + "ALICE event not ready.");
+    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE){
+        cout<<"AliEveEventManager::AssertESD() - ALICE event not ready."<<endl;
+        return 0;
+    }
     if (fgMaster->fCurrentData->fESD == 0)
-        throw (kEH + "AliESD not initialised.");
+    {
+        cout<<"AliEveEventManager::AssertESD() - AliESD not initialised."<<endl;
+        return 0;
+    }
     return fgMaster->fCurrentData->fESD;
 }
 
@@ -300,15 +278,6 @@ AliAODEvent* AliEveEventManager::AssertAOD()
 
 AliRawReader* AliEveEventManager::AssertRawReader()
 {
-    // Make sure raw-reader is initialized and return it.
-    
-    static const TEveException kEH("AliEveEventManager::AssertRawReader ");
-    
-    if (fgMaster == 0 || fgMaster->fHasEvent == kFALSE)
-        throw (kEH + "ALICE event not ready.");
-    if (fgMaster->fCurrentData->fRawReader == 0)
-        throw (kEH + "RawReader not ready.");
-    
     return fgMaster->fCurrentData->fRawReader;
 }
 
@@ -319,7 +288,7 @@ AliMagF* AliEveEventManager::AssertMagField()
     // Make sure AliMagF is initialized and returns it.
     // Throws exception in case magnetic field is not available.
     // Static utility for macros.
-    
+
     static const TEveException kEH("AliEveEventManager::AssertMagField ");
     
     //if we already have a field we're done
@@ -405,15 +374,15 @@ TGeoManager* AliEveEventManager::AssertGeometry()
     return gGeoManager;
 }
 
-void AliEveEventManager::RegisterTransient(TEveElement* element)
+void AliEveEventManager::AddElement(TEveElement *element, TEveElement *parent)
 {
-    GetMaster()->fTransients->AddElement(element);
+    gEve->AddElement(element,parent);
 }
 
-//void AliEveEventManager::RegisterTransientList(TEveElement* element)
-//{
-//    GetMaster()->fTransientLists->AddElement(element);
-//}
+void AliEveEventManager::RegisterTransient(TEveElement* element)
+{
+    fTransients->AddElement(element);
+}
 
 //------------------------------------------------------------------------------
 // Autoloading of events
@@ -492,10 +461,23 @@ void AliEveEventManager::AutoLoadNextEvent()
     {
         Warning(kEH, "Called unexpectedly - ignoring the call. Should ONLY be called from an internal timer.");
         return;
-    }
+        }
     
     StopAutoLoadTimer();
+    cout<<"Calling NextEvent method on current data source"<<endl;
+
     fCurrentDataSource->NextEvent();
+    
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    if(settings.GetValue("save.on.autoload",false))
+    {
+        if(fCurrentData->fESD->GetNumberOfTracks() != 0){
+            fViewsSaver->Save(false,Form("alice_%d.png",fEventId));
+        }
+    }
+    
     if (fAutoLoad){
         StartAutoLoadTimer();
     }
@@ -520,54 +502,151 @@ void AliEveEventManager::AfterNewEventLoaded()
       printf("CDB not OK! not executing AfterNewEventLoaded\n");
       return;
     }
+    else if(fCurrentData->fRawReader){
+        InitOCDB(fCurrentData->fRawReader->GetRunNumber());
+    }
+    AliEveMultiView *mv = AliEveMultiView::Instance();
+    mv->DestroyAllEvents();
+    
 
-    cout<<"AliEveEventManager::AfterNewEventLoaded ------------------!!!------------"<<endl;
+    cout<<"\n\n--------- AliEveEventManager::AfterNewEventLoaded ---------\n\n"<<endl;
     
     ElementChanged();
-    
     NewEventDataLoaded();
-    if (fExecutor) fExecutor->ExecMacros();
+    
+//    cout<<"\n\n-------- Executing registered macros ---------\n\n"<<endl;
+    if (fExecutor){
+        fExecutor->ExecMacros();
+    }
+    else{
+        cout<<"no macro executor..."<<endl;
+    }
+//    cout<<"\n\n-------- Macros have been executed ---------\n\n"<<endl;
     
     TEveEventManager::AfterNewEventLoaded();
     NewEventLoaded();
 
-    if(HasESD())
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    if(fCurrentData->fESD && fHasEvent)
     {
-        if(fDrawESDtracksByCategory)fESDdrawer->ByCategory();
-        if(fDrawESDtracksByType)fESDdrawer->ByType();
+        if(settings.GetValue("momentum.histograms.show",false)){fMomentumHistogramsDrawer->Draw();}
+        if(settings.GetValue("tracks.primary.vertex.show",false)){fESDTracksDrawer->PrimaryVertexTracks();}
+        
+        if(settings.GetValue("primary.vertex.global.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.global.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.global.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kGlobal,AliEvePrimaryVertex::kCross);
+        }
+        if(settings.GetValue("primary.vertex.tpc.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.tpc.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.tpc.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kTPC,AliEvePrimaryVertex::kCross);
+        }
+        if(settings.GetValue("primary.vertex.spd.box",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kBox);
+        }
+        if(settings.GetValue("primary.vertex.spd.ellipse",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kEllipse);
+        }
+        if(settings.GetValue("primary.vertex.spd.cross",false)){
+            fPrimaryVertexDrawer->PrimaryVertex(AliEvePrimaryVertex::kSPD,AliEvePrimaryVertex::kCross);
+        }
+        
+        if(settings.GetValue("tracks.byCategory.show",false))fESDTracksDrawer->ByCategory();
+        if(settings.GetValue("tracks.byType.show",true))fESDTracksDrawer->ByType();
+        if(settings.GetValue("tracks.byPt.show",false))fESDTracksDrawer->ByPt();
+        if(settings.GetValue("kinks.show",false)){fKinksDrawer->Draw();}
+        if(settings.GetValue("kinks.points.show",false)){fKinksDrawer->DrawPoints();}
+        if(settings.GetValue("cascades.show",false)){fCascadesDrawer->Draw();}
+        if(settings.GetValue("cascades.points.show",false)){fCascadesDrawer->DrawPoints();}
+        if(settings.GetValue("V0s.show",false)){fV0sDrawer->Draw();}
+        if(settings.GetValue("V0s.points.offline.show",false)){fV0sDrawer->DrawPointsOffline();}
+        if(settings.GetValue("V0s.points.onfly.show",false)){fV0sDrawer->DrawPointsOnfly();}
+        if(settings.GetValue("MUON.show",true)){fMuonTracksDrawer->Draw();}
+        if(settings.GetValue("SPD.tracklets.show",false)){fSPDTracklersDrawer->Draw();}
+        if(settings.GetValue("kine.tracks.show",false)){fKineTracksDrawer->Draw();}
+        if(settings.GetValue("HLT.tracks.show",false)){fESDTracksDrawer->HLTTracks();}
         
         Double_t x[3] = { 0, 0, 0 };
         
-        fCurrentData->fESD->GetPrimaryVertex()->GetXYZ(x);
+        AliESDEvent *esd = fCurrentData->fESD;
+        esd->GetPrimaryVertex()->GetXYZ(x);
         
-        TTimeStamp ts(fCurrentData->fESD->GetTimeStamp());
+        TTimeStamp ts(esd->GetTimeStamp());
         TString win_title("Eve Main Window -- Timestamp: ");
         win_title += ts.AsString("s");
-        win_title += "; Event # in ESD file: ";
-        win_title += fCurrentData->fESD->GetEventNumberInFile();
+        win_title += "; Event: ";
+        win_title += esd->GetEventNumberInFile();
+        win_title += "; Run: ";
+        win_title += esd->GetRunNumber();
         gEve->GetBrowser()->SetWindowName(win_title);
+    }
+    if(fCurrentData->fAOD)
+    {
+        if(settings.GetValue("tracks.aod.byPID.show",false))fAODTracksDrawer->ByPID();
         
-        TEveElement* top = gEve->GetCurrentEvent();
+        Double_t x[3] = { 0, 0, 0 };
         
-        AliEveMultiView *mv = AliEveMultiView::Instance();
+        AliAODEvent *aod = fCurrentData->fAOD;
         
-        mv->ImportEventRPhi(top);
-        mv->ImportEventRhoZ(top);
-        mv->ImportEventMuon(top);
+        aod->GetPrimaryVertex()->GetXYZ(x);
         
-        gEve->GetBrowser()->RaiseWindow();
-        gEve->FullRedraw3D();
-        gSystem->ProcessEvents();
+        TTimeStamp ts(aod->GetTimeStamp());
+        TString win_title("Eve Main Window -- Timestamp: ");
+        win_title += ts.AsString("s");
+        win_title += "; Event: ";
+        win_title += aod->GetEventNumberInFile();
+        win_title += "; Run: ";
+        win_title += aod->GetRunNumber();
+        gEve->GetBrowser()->SetWindowName(win_title);
+    }
+    
+    TEveElement* top = gEve->GetCurrentEvent();
+    mv->ImportEvent(top);
+    
+    gEve->GetBrowser()->RaiseWindow();
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    
+    bool saveViews = settings.GetValue("ALICE_LIVE.send",false);
+    
+    if(saveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+    {
+        fViewsSaver->SaveForAmore();
+        fViewsSaver->SendToAmore();
+    }
+    
+    // animate tracks
+    if(settings.GetValue("tracks.byType.animate",false)){
+        TEveElementList *tracks = (TEveElementList*)gEve->GetCurrentEvent()->FindChild("ESD Tracks by PID");
         
-        if(fFirstEvent)
+        vector<TEveTrackPropagator*> propagators;
+        
+        for(TEveElement::List_i i = tracks->BeginChildren();i != tracks->EndChildren();i++)
         {
-            gROOT->ProcessLine(".x geom_emcal.C");
-            fFirstEvent=false;
+            TEveTrackList* trkList = ((TEveTrackList*)*i);
+            propagators.push_back(trkList->GetPropagator());
         }
-        if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+        int animationSpeed = settings.GetValue("tracks.animation.speed",10);
+        for(int R=0; R<520; R+=animationSpeed)
         {
-            fViewsSaver->SaveForAmore();
-            fViewsSaver->SendToAmore();
+            animationSpeed-=10;
+            if(animationSpeed<10)animationSpeed=10;
+            for(int propIter=0;propIter<propagators.size();propIter++){
+                propagators[propIter]->SetMaxR(R);
+            }
+            gSystem->ProcessEvents();
+            gEve->Redraw3D();
         }
     }
 }
@@ -607,59 +686,6 @@ Bool_t AliEveEventManager::InitGRP()
     return kTRUE;
 }
 
-Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model)
-{
-    // Insert a new visualization-parameter database entry with the default
-    return InsertGlobal(tag, model, fGlobalReplace, fGlobalUpdate);
-}
-
-Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model,
-                                        Bool_t replace, Bool_t update)
-{
-    TPair* pair = (TPair*) fGlobal->FindObject(tag);
-    if (pair)
-    {
-        if (replace)
-        {
-            model->IncDenyDestroy();
-            model->SetRnrChildren(kFALSE);
-            
-            TEveElement* old_model = dynamic_cast<TEveElement*>(pair->Value());
-            if(!old_model) AliFatal("old_model == 0, dynamic cast failed\n");
-            while (old_model->HasChildren())
-            {
-                TEveElement *el = old_model->FirstChild();
-                el->SetVizModel(model);
-                if (update)
-                {
-                    el->CopyVizParams(model);
-                    el->PropagateVizParamsToProjecteds();
-                }
-            }
-            old_model->DecDenyDestroy();
-            
-            pair->SetValue(dynamic_cast<TObject*>(model));
-            return kTRUE;
-        }
-        else
-        {
-            return kFALSE;
-        }
-    }
-    else
-    {
-        model->IncDenyDestroy();
-        model->SetRnrChildren(kFALSE);
-        fGlobal->Add(new TObjString(tag), dynamic_cast<TObject*>(model));
-        return kTRUE;
-    }
-}
-
-TEveElement* AliEveEventManager::FindGlobal(const TString& tag)
-{
-    return dynamic_cast<TEveElement*>(fGlobal->GetValue(tag));
-}
-
 Bool_t AliEveEventManager::InitOCDB(int runNo)
 {
   Bool_t ok = kTRUE;
@@ -676,23 +702,19 @@ Bool_t AliEveEventManager::InitOCDB(int runNo)
       printf("taking OCDB storage path from env ($ocdbStorage)\n");
       ocdbStorage = gSystem->Getenv("ocdbStorage");
     }
-
-    // Handle some special cases for MC (should be in OCDBManager).
-    if (ocdbStorage.BeginsWith("mcideal://"))
-      cdb->SetDefaultStorage("MC", "Ideal");
-    else if (ocdbStorage.BeginsWith("mcresidual://"))
-      cdb->SetDefaultStorage("MC", "Residual");
-    else if (ocdbStorage.BeginsWith("mcfull://"))
-      cdb->SetDefaultStorage("MC", "Full");
     else
     {
-      cdb->SetDefaultStorage(ocdbStorage);
+        //now if we don't have a GRP we need to get one from somewhere
+        cout<<"AliEveEventManager::InitOCDB : GRP Data from prompt reco params"<<endl;
+        fCurrentDataSource->ReceivePromptRecoParameters(runNo);
     }
-
-    //if still not OK - crap out.
-    if (!cdb->IsDefaultStorageSet())
+    
+    //on run change destroy the mag field, it will be reinitialized via AssertMagField/InitGRP
+    if (runNo != cdb->GetRun())
     {
-      AliFatal("could not set the default OCDB!");
+        delete TGeoGlobalMagField::Instance();
+        new TGeoGlobalMagField();
+        fgMaster->fgMagField=NULL;
     }
   }
   cdb->SetRun(runNo);

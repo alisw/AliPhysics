@@ -275,8 +275,8 @@ void AliEveMUONData::LoadRecPointsFromESD(const Char_t *fileName)
   Int_t detElemId, chamber, nTrackParam;
   Double_t clsX, clsY, clsZ, charge;
   
-  if (esdTree->GetEvent(AliEveEventManager::GetMaster()->GetEventId()) <= 0) {
-    cout << "fails to read ESD object for event " << AliEveEventManager::GetMaster()->GetEventId() << endl;
+  if (esdTree->GetEvent(AliEveEventManager::Instance()->GetEventId()) <= 0) {
+    cout << "fails to read ESD object for event " << AliEveEventManager::Instance()->GetEventId() << endl;
     return;
   }
     
@@ -408,7 +408,7 @@ void AliEveMUONData::LoadRaw(TString fileName)
   Int_t iEvent = 0;
   while (fgRawReader->NextEvent())
   {
-    if (iEvent != AliEveEventManager::GetMaster()->GetEventId())
+    if (iEvent != AliEveEventManager::Instance()->GetEventId())
     {
       iEvent++;
       continue;

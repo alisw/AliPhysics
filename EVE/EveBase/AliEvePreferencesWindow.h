@@ -13,6 +13,8 @@
 #include <TGButton.h>
 #include <TGTextEntry.h>
 #include <TQObject.h>
+#include <TGColorSelect.h>
+#include <TGTab.h>
 
 class AliEvePreferencesWindow : public TGMainFrame
 {
@@ -63,6 +65,33 @@ private:
     
     TGTextButton *fSaveAndExitButton;
     TGTextButton *fCancel;
+    
+    TGColorSelect *fColorSelect2658;//tpc
+    TGColorSelect *fColorSelect2668;//tof
+    TGColorSelect *fColorSelect2669;//trd
+    TGColorSelect *fColorSelect2670;//muon
+    TGColorSelect *fColorSelect2671;//spd
+    TGColorSelect *fColorSelect2672;//sdd
+    TGColorSelect *fColorSelect2673;//ssd
+    TGColorSelect *fColorSelect2674;//phos
+    TGColorSelect *fColorSelect2675;//emcal
+    TGColorSelect *fColorSelect2676;//hmpid
+    
+    TGColorSelect *fColorSelect2693;// electron
+    TGColorSelect *fColorSelect2694;// muon
+    TGColorSelect *fColorSelect2695;// pion
+    TGColorSelect *fColorSelect2696;// kaon
+    TGColorSelect *fColorSelect2697;// proton
+    TGColorSelect *fColorSelect2698;// deuteron
+    TGColorSelect *fColorSelect2699;// triton
+    TGColorSelect *fColorSelect2700;// he3
+    TGColorSelect *fColorSelect2701;// alpha
+    TGColorSelect *fColorSelect2702;// photon
+    TGColorSelect *fColorSelect2703;// pi0
+    TGColorSelect *fColorSelect2704;// neutron
+    TGColorSelect *fColorSelect2705;// kaon0
+    TGColorSelect *fColorSelect2706;// elecon
+    TGColorSelect *fColorSelect2707;// unknown
     
     
     AliEvePreferencesWindow(const AliEvePreferencesWindow&);            // Not implemented

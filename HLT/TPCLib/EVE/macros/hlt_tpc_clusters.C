@@ -30,9 +30,9 @@
  *
  * Usage:
  * <pre>
- *   alieve $ALICE_ROOT/EVE/alice-macros/event_next.C \
+ *   alieve $ALICE_ROOT/EVE/macros/event_next.C \
  *          $ALICE_ROOT/EVE/macros/alieve_init.C \
- *          $ALICE_ROOT/EVE/alice-macros/geom_simple.C \
+ *          $ALICE_ROOT/EVE/macros/geom_simple.C \
  *          $ALICE_ROOT/HLT/TPCLib/EVE/macros/hlt_tpc_clusters.C
  * </pre>
  * Display is changed to next event by executing event_next()

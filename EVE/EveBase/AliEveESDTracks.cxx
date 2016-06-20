@@ -36,19 +36,14 @@ fTrueField(kTRUE),
 fRKstepper(kFALSE),
 fAnalCuts(0),
 fDashNoRefit(true),
-fDrawNoRefit(false),
-fWidth(1)
+fDrawNoRefit(false)
 {
-    // default color scheme by category:
-    fColorsByCategory[0] = kMagenta;
-    fColorsByCategory[1] = kMagenta+1;
-    fColorsByCategory[2] = kMagenta+2;
-    fColorsByCategory[3] = kRed;
-    fColorsByCategory[4] = kRed+1;
-    fColorsByCategory[5] = kRed+2;
-    fColorsByCategory[6] = kGreen;
-    fColorsByCategory[7] = kGreen+1;
-    fColorsByCategory[8] = kGreen+2;
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    fWidth =  settings.GetValue("tracks.width",2);
+    fDashNoRefit = settings.GetValue("tracks.noRefit.dash",true);
+    fDrawNoRefit = settings.GetValue("tracks.noRefit.show",true);
 }
 
 AliEveESDTracks::~AliEveESDTracks()
@@ -244,7 +239,7 @@ AliEveTrack* AliEveESDTracks::MakeTrack(AliESDtrack *at, TEveTrackList* cont)
 
 TEveTrackList* AliEveESDTracks::TPCtracks()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
     
     TEveTrackList* cont = new TEveTrackList("TPC Tracks");
@@ -259,29 +254,29 @@ TEveTrackList* AliEveESDTracks::TPCtracks()
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
         ++count;
-	AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
         if (!trf) continue;
-	AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-	if (!tr) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
         AliEveTrack* track = MakeTPCtrack(tr, trf, cont);
         if (!track) continue;
         
         cont->AddElement(track);
     }
     /*
-    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
-    {
-        ++count;
-	AliESDtrack* tr = esd->GetTrack(n);
-        if (!tr) continue;
-	if (!esd_friend->GetTrack(n)) continue;
-        if (!esd_friend->GetTrack(n)) continue;
-        AliEveTrack* track = MakeTPCtrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-        if (!track) continue;
-        
-        cont->AddElement(track);
-    }
-    */
+     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+     {
+     ++count;
+     AliESDtrack* tr = esd->GetTrack(n);
+     if (!tr) continue;
+     if (!esd_friend->GetTrack(n)) continue;
+     if (!esd_friend->GetTrack(n)) continue;
+     AliEveTrack* track = MakeTPCtrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+     if (!track) continue;
+     
+     cont->AddElement(track);
+     }
+     */
     cont->SetTitle(Form("N=%d", count));
     cont->MakeTracks();
     
@@ -292,7 +287,7 @@ TEveTrackList* AliEveESDTracks::TPCtracks()
 
 TEveTrackList* AliEveESDTracks::ITStracks()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
     
     TEveTrackList* cont = new TEveTrackList("ITS Tracks");
@@ -308,15 +303,15 @@ TEveTrackList* AliEveESDTracks::ITStracks()
     Int_t count = 0;
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
-      ++count;
-      AliESDfriendTrack* trf = esd_friend->GetTrack(n);
-      if (!trf) continue;
-      AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-      if (!tr) continue;
-      AliEveTrack* track = MakeITStrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-      if (!track) continue;      
-      
-      cont->AddElement(track);
+        ++count;
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        if (!trf) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
+        AliEveTrack* track = MakeITStrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+        if (!track) continue;
+        
+        cont->AddElement(track);
     }    
     /*
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
@@ -340,7 +335,7 @@ TEveTrackList* AliEveESDTracks::ITStracks()
 
 TEveTrackList* AliEveESDTracks::ITSstandaloneTracks()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     AliESDfriend* esd_friend = AliEveEventManager::AssertESDfriend();
     
     TEveTrackList* cont = new TEveTrackList("ITS Standalone Tracks");
@@ -356,15 +351,15 @@ TEveTrackList* AliEveESDTracks::ITSstandaloneTracks()
     Int_t count = 0;
     for (Int_t n = 0; n < esd_friend->GetNumberOfTracks(); ++n) // RS new format: not all friends are stored
     {
-      ++count;
-      AliESDfriendTrack* trf = esd_friend->GetTrack(n);
-      if (!trf) continue;
-      AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
-      if (!tr) continue;
-      AliEveTrack* track = MakeITSstandaloneTrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
-      if (!track) continue;
-      
-      cont->AddElement(track);
+        ++count;
+        AliESDfriendTrack* trf = esd_friend->GetTrack(n);
+        if (!trf) continue;
+        AliESDtrack* tr =  esd->GetTrack(esd_friend->GetESDIndicesStored() ? trf->GetESDtrackID() : n);
+        if (!tr) continue;
+        AliEveTrack* track = MakeITSstandaloneTrack(esd->GetTrack(n), esd_friend->GetTrack(n), cont);
+        if (!track) continue;
+        
+        cont->AddElement(track);
     }    
     /*
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
@@ -388,7 +383,7 @@ TEveTrackList* AliEveESDTracks::ITSstandaloneTracks()
 
 TEveTrackList* AliEveESDTracks::Tracks()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     TEveTrackList* cont = new TEveTrackList("ESD Tracks");
     cont->SetMainColor(6);
@@ -416,7 +411,7 @@ TEveTrackList* AliEveESDTracks::Tracks()
 
 TEveTrackList* AliEveESDTracks::MItracks()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     TEveTrackList* cont = new TEveTrackList("ESD Tracks MI");
     cont->SetLineColor(5);
@@ -450,7 +445,7 @@ TEveTrackList* AliEveESDTracks::TracksFromArray(TCollection* col, AliESDEvent* e
     // Retrieves AliESDTrack's from collection.
     // See example usage with AliAnalysisTrackCuts in the next function.
     
-    if (esd == 0) esd = AliEveEventManager::GetMaster()->AssertESD();
+    if (esd == 0) esd = AliEveEventManager::Instance()->AssertESD();
     
     TEveTrackList* cont = new TEveTrackList("ESD Tracks");
     cont->SetMainColor(6);
@@ -486,7 +481,7 @@ TEveTrackList* AliEveESDTracks::TracksFromArray(TCollection* col, AliESDEvent* e
 
 void AliEveESDTracks::AliAnalCutsDemo()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     AliESDtrackCuts atc;
     atc.SetPtRange(0.1, 5);
@@ -542,7 +537,19 @@ TEveElementList* AliEveESDTracks::ByCategory()
     // Import ESD tracks, separate them into several containers
     // according to primary-vertex cut and ITS&TPC refit status.
     
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
+    
+    // default color scheme by category:
+    Color_t colors[9];
+    colors[0] = kMagenta;
+    colors[1] = kMagenta+1;
+    colors[2] = kMagenta+2;
+    colors[3] = kRed;
+    colors[4] = kRed+1;
+    colors[5] = kRed+2;
+    colors[6] = kGreen;
+    colors[7] = kGreen+1;
+    colors[8] = kGreen+2;
     
     TEveElementList* cont = new TEveElementList("ESD Tracks by category");
     gEve->AddElement(cont);
@@ -568,7 +575,7 @@ TEveElementList* AliEveESDTracks::ByCategory()
     for (int i=0; i<9; i++) {
         tc[i] = 0;
         SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
-        tl[i]->SetMainColor(fColorsByCategory[i]);
+        tl[i]->SetMainColor(colors[i]);
         tl[i]->SetLineWidth(fWidth);
         cont->AddElement(tl[i]);
     }
@@ -662,9 +669,6 @@ TEveElementList* AliEveESDTracks::ByCategory()
 
 TEveElementList* AliEveESDTracks::ByType()
 {
-    // Import ESD tracks, separate them into several containers
-    // according to primary-vertex cut and ITS&TPC refit status.
-    
     TEnv settings;
     AliEveInit::GetConfig(&settings);
     Color_t colors[15];
@@ -686,13 +690,13 @@ TEveElementList* AliEveESDTracks::ByType()
     colors[14]= settings.GetValue("tracks.byType.unknown",920);
 
     
-    AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent *esd = AliEveEventManager::Instance()->AssertESD();
     
     TEveElementList* cont = new TEveElementList("ESD Tracks by PID");
     gEve->AddElement(cont);
     
     const Int_t   nCont = 15;
-    const Float_t maxR  = 520;
+    const Float_t maxR  = settings.GetValue("tracks.byType.animate",false) ? 0 : 520;
     const Float_t magF  = 0.1*esd->GetMagneticField();
     
     TEveTrackList *tl[nCont];
@@ -725,22 +729,58 @@ TEveElementList* AliEveESDTracks::ByType()
     
     int pid = -1;
     AliESDtrack* at = NULL;
+    bool shading = true;
+    int shade = -3;
+    int firstPid;
+    
+    // check if all tracks have the same PID. If no, turn off shading
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        if(n==0){
+            firstPid = esd->GetTrack(n)->GetPID();
+        }
+        else if(esd->GetTrack(n)->GetPID() != firstPid)
+        {
+            shading = false;
+        }
+    }
     
     for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
     {
         at = esd->GetTrack(n);
         
-        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+        bool good_cont = true;
+        string trackSelection = settings.GetValue("tracks.selection","");
         
-        if(good_cont || fDrawNoRefit)
+        if(trackSelection == "ITSin_noTPCin"){
+            good_cont = at->IsOn(AliESDtrack::kITSin && !at->IsOn(AliESDtrack::kTPCin));
+        }
+        else if(trackSelection == "noTISpureSA"){
+            good_cont = !at->IsOn(AliESDtrack::kITSpureSA);
+        }
+        else if(trackSelection == "TPCrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit);
+        }
+        else if(trackSelection == "TPCrefit_ITSrefit"){
+            good_cont = at->IsOn(AliESDtrack::kTPCrefit) && at->IsOn(AliESDtrack::kITSrefit);
+        }
+        
+        if(good_cont)
         {
             pid = at->GetPID();
+ 
             TEveTrackList* tlist = tl[pid];
             ++tc[pid];
             ++count;
             
             AliEveTrack* track = MakeTrack(at, tlist);
             
+            if(shading){
+                if((kGreen+shade) < 0){shade=0;}
+                track->SetMainColor(kGreen+shade);
+                shade++;
+                if(shade>3)shade=-3;
+            }
             track->SetName(Form("ESD Track idx=%d, pid=%d", at->GetID(), pid));
             tlist->AddElement(track);
         }
@@ -762,9 +802,144 @@ TEveElementList* AliEveESDTracks::ByType()
     return cont;
 }
 
+TEveElementList* AliEveESDTracks::ByPt()
+{
+    AliESDEvent *esd = AliEveEventManager::Instance()->AssertESD();
+    
+    TEveElementList* cont = new TEveElementList("ESD Tracks by Pt");
+    gEve->AddElement(cont);
+    
+    const Int_t   nCont = 6;
+    const Float_t maxR  = 520;
+    const Float_t magF  = 0.1*esd->GetMagneticField();
+
+    TEveTrackList *tl[nCont];
+    Int_t          tc[nCont];
+    Int_t          count = 0;
+
+    Color_t colors[15];
+    // default color scheme by type:
+    colors[0] = kGreen;
+    colors[1] = kSpring+10;
+    colors[2] = kYellow+1;
+    colors[3] = kOrange;
+    colors[4] = kOrange-3;
+    colors[5] = kRed;
+    
+    tl[0] = new TEveTrackList("pt<0.2");
+    tl[1] = new TEveTrackList("0.2<pt<0.4");
+    tl[2] = new TEveTrackList("0.4<pt<0.7");
+    tl[3] = new TEveTrackList("0.7<pt<1.1");
+    tl[4] = new TEveTrackList("1.1<pt<1.6");
+    tl[5] = new TEveTrackList("pt>1.6");
+
+    for (int i=0; i<nCont; i++)
+    {
+        tc[i] = 0;
+        SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
+        tl[i]->SetMainColor(colors[i]);
+        tl[i]->SetLineWidth(fWidth);
+        cont->AddElement(tl[i]);
+    }
+    
+
+    AliESDtrack* at = NULL;
+//    bool shading = settings.GetValue("tracks.shading",false);
+//    int shade = -3;
+    
+//    TH1D *ptHist = new TH1D("ptHist","ptHist",100,0,5);
+    
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        at = esd->GetTrack(n);
+//        ptHist->Fill(abs(at->GetSignedPt()));
+        
+        int index;
+        double pt=abs(at->GetSignedPt());
+        
+        if(pt<=0.2) index = 0;
+        else if(pt>0.2 && pt <= 0.4) index = 1;
+        else if(pt>0.4 && pt <= 0.7) index = 2;
+        else if(pt>0.7 && pt <= 1.1) index = 3;
+        else if(pt>1.1 && pt <= 1.6) index = 4;
+        else if(pt>1.6) index = 5;
+        
+//        bool good_cont = (at->IsOn(AliESDtrack::kITSin) && (!at->IsOn(AliESDtrack::kTPCin)));
+//        
+//        if(good_cont || fDrawNoRefit)
+//        {
+//            pid = at->GetPID();
+//            
+            TEveTrackList* tlist = tl[index];
+            ++tc[index];
+            ++count;
+            
+            AliEveTrack* track = MakeTrack(at, tlist);
+//
+//            if(shading){
+//                if((colors[pid]+shade) < 0){shade=0;}
+//                track->SetMainColor(colors[pid]+shade);
+//                shade++;
+//                if(shade>3)shade=-3;
+//            }
+//            
+            track->SetName(Form("ESD Track idx=%d, pt=%d", at->GetID(), pt));
+            tlist->AddElement(track);
+//        }
+    }
+    
+    for (Int_t ti = 0; ti < nCont; ++ti)
+    {
+        TEveTrackList* tlist = tl[ti];
+        tlist->SetName(Form("%s [%d]", tlist->GetName(), tlist->NumChildren()));
+        tlist->SetTitle(Form("N tracks=%d", tc[ti]));
+        tlist->MakeTracks();
+    }
+    cont->SetTitle(Form("N all tracks = %d", count));
+    // ??? The following does not always work:
+    cont->FindListTreeItem(gEve->GetListTree())->SetOpen(kTRUE);
+
+    gEve->Redraw3D();
+//
+//    ptHist->Draw();
+    
+    return cont;
+}
+
+
+TEveElementList* AliEveESDTracks::PrimaryVertexTracks()
+{
+    AliESDEvent   *esd = AliEveEventManager::Instance()->AssertESD();
+    const AliESDVertex *pv  = esd->GetPrimaryVertex();
+    
+    TEveTrackList* cont = new TEveTrackList("Tracks for Primary Vertex");
+    cont->SetMainColor(7);
+    TEveTrackPropagator* rnrStyle = cont->GetPropagator();
+    rnrStyle->SetMagField(-0.1*esd->GetMagneticField() );
+    rnrStyle->SetRnrFV(kTRUE);
+//    rnrStyle->fFVAtt.SetMarkerColor(2);
+    gEve->AddElement(cont);
+    
+    for (Int_t n=0; n<pv->GetNIndices(); n++)
+    {
+        AliESDtrack* at = esd->GetTrack(pv->GetIndices()[n]);
+        AliEveTrack* track = MakeTrack(at, cont);
+        track->SetLineWidth(4);
+        track->SetLineColor(cont->GetMainColor());
+        track->SetLineStyle(7);
+        gEve->AddElement(track, cont);
+    }
+    
+    cont->MakeTracks();
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
+
 TEveElementList* AliEveESDTracks::ByAnalCuts()
 {
-    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd = AliEveEventManager::Instance()->AssertESD();
     
     if (fAnalCuts == 0)
     {
@@ -842,6 +1017,56 @@ TEveElementList* AliEveESDTracks::ByAnalCuts()
     
     return cont;
 }
+
+TEveTrackList* AliEveESDTracks::HLTTracks()
+{
+    AliEveEventManager* eveManager=AliEveEventManager::Instance();
+    
+    int eventId=eveManager->GetEventId();
+    TFile* esdFile=eveManager->GetESDFile();
+    if (!esdFile) {
+        Warning("AliEveESDTracks::HLTTracks", "can not get esd file from EVE manager");
+        return NULL;
+    }
+    
+    TObject* pObj=NULL;
+    TTree* pHLTTree=NULL;
+    esdFile->GetObject("HLTesdTree", pObj);
+    if (!pObj || (pHLTTree=dynamic_cast<TTree*>(pObj))==NULL) {
+        Info("AliEveESDTracks::HLTTracks", "no HLT ESD tree in ESD file");
+        return NULL;
+    }
+    if (pHLTTree->GetEntries()<=eventId) {
+        Warning("AliEveESDTracks::HLTTracks", "skiping event %d: out of range %lld", eventId, pHLTTree->GetEntries());
+        return NULL;
+    }
+    
+    AliESDEvent* esd=new AliESDEvent;
+    esd->ReadFromTree(pHLTTree);
+    pHLTTree->GetEntry(eventId);
+    
+    TEveTrackList* cont = new TEveTrackList("HLT ESD Tracks");
+    cont->SetMainColor(kCyan+3);
+    SetupPropagator(cont->GetPropagator(),0.1*esd->GetMagneticField(), 520);
+    
+    eveManager->AddElement(cont);
+    
+    Int_t count = 0;
+    for (Int_t n = 0; n < esd->GetNumberOfTracks(); ++n)
+    {
+        ++count;
+        TEveTrack* track = MakeTrack(esd->GetTrack(n), cont);
+        
+        cont->AddElement(track);
+    }
+    cont->SetTitle(Form("N=%d", count));
+    cont->MakeTracks();
+    
+    gEve->Redraw3D();
+    
+    return cont;
+}
+
 
 
 

@@ -301,7 +301,7 @@ void AliEveTRDClusters::Load(const Char_t *w) const
 
   loader->AddChambers(AliTRDgeometry::GetSector(det),AliTRDgeometry::GetStack(det), AliTRDgeometry::GetLayer(det));
   // load first event
-  if(!loader->GoToEvent(AliEveEventManager::GetMaster()->GetEventId())) AliWarning(Form("No data loaded for event %d", AliEveEventManager::GetMaster()->GetEventId()));
+  if(!loader->GoToEvent(AliEveEventManager::Instance()->GetEventId())) AliWarning(Form("No data loaded for event %d", AliEveEventManager::Instance()->GetEventId()));
   // register loader with alieve
   gEve->AddElement(loader->GetChamber(det), *(BeginParents()));
   //loader->SpawnEditor();
@@ -319,7 +319,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   // Constructor.
   SetName("tracklet");
   
-  if(!gGeoManager) AliEveEventManager::GetMaster()->AssertGeometry();
+  if(!gGeoManager) AliEveEventManager::Instance()->AssertGeometry();
   SetUserData(trklt);
   // init tracklet line
   Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());

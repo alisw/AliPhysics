@@ -88,3 +88,13 @@ endif(PYTHIA6)
 
 # Installation
 install(TARGETS alistoragegetpoints RUNTIME DESTINATION bin)
+
+# alistorage2 executable
+add_executable(alistorage2 alistorage2.cxx)
+target_link_libraries(alistorage2 MONITOR MONITORzmq)
+#target_link_libraries(alistorage2 -lzmq)
+
+# Installation
+install(TARGETS alistorage2 RUNTIME DESTINATION bin)
+
+

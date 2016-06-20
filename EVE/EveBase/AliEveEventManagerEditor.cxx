@@ -9,6 +9,9 @@
 
 #include "AliEveEventManagerEditor.h"
 #include "AliEveDataSource.h"
+#include "AliEveDataSourceOffline.h"
+#include "AliEveGeomGentle.h"
+#include "AliEveInit.h"
 #ifdef ZMQ
 #include "AliStorageAdministratorPanelListEvents.h"
 #include "AliStorageAdministratorPanelMarkEvent.h"
@@ -16,31 +19,32 @@
 
 #include <AliESDEvent.h>
 
+#include <TEveProjectionAxes.h>
 #include <TVirtualPad.h>
 #include <TColor.h>
 #include <TEveGValuators.h>
 #include <TGButton.h>
 #include <TGTextView.h>
 #include <TGLabel.h>
-
+#include <TSystem.h>
 #include <TTimeStamp.h>
+#include <TSystemDirectory.h>
+#include <TRegexp.h>
+#include <TEnv.h>
+
 #include <AliRawReader.h>
 #include <AliDAQ.h>
 #include <AliRawEventHeaderBase.h>
 
-
+#include <vector>
+#include <string>
 #include "Riostream.h"
 
 //______________________________________________________________________________
 // GUI editor for AliEveEventManager.
 //
 
-using std::ifstream;
-using std::ofstream;
-using std::ios;
-using std::cout;
-using std::endl;
-using std::string;
+using namespace std;
 
 ClassImp(AliEveEventManagerEditor)
 
@@ -172,7 +176,6 @@ fEventInfo    (0)
         fScreenshot = b = MkTxtButton(f, "Screenshot", 2*width);
         b->Connect("Clicked()", cls, this, "DoScreenshot()");
         
-        
         MkLabel(f, "||", 0, 8, 8);
         
         fRefresh = b = MkTxtButton(f, "Refresh", width + 8);
@@ -207,24 +210,35 @@ fEventInfo    (0)
             fStorageStatus = MkLabel(f,"",0,8,8);
         }
         
-        TGHButtonGroup *horizontal = new TGHButtonGroup(f, "Data Source");
+        fReloadOffline = new TGTextButton(f, "Reload");
+        fReloadOffline->Connect("Clicked()", cls, this, "DoReloadOffline()");
+        fOfflineRunNumber = new TGNumberEntry(f);
+        f->AddFrame(fOfflineRunNumber,new TGLayoutHints(kLHintsNormal,10,5,0,0));
+        f->AddFrame(fReloadOffline,new TGLayoutHints(kLHintsNormal,10,5,0,0));
+
+        
+        fDataSourceGroup = new TGHButtonGroup(f, "Data Source");
 //        horizontal->SetTitlePos(TGGroupFrame::kCenter);
-        fSwitchToHLT     = new TGRadioButton(horizontal, "HLT",AliEveEventManager::kSourceHLT);
-        fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
-        fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
-        horizontal->SetButton(defaultDataSource);
-        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
-        f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
-    }
+        fSwitchToHLT     = new TGRadioButton(fDataSourceGroup, "HLT",AliEveEventManager::kSourceHLT);
+        fSwitchToOnline  = new TGRadioButton(fDataSourceGroup, "Online",AliEveEventManager::kSourceOnline);
+        fSwitchToOffline = new TGRadioButton(fDataSourceGroup, "Offline",AliEveEventManager::kSourceOffline);
+        
+        fDataSourceGroup->SetButton(defaultDataSource);
+        fDataSourceGroup->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
+#ifndef ZMQ
+        fSwitchToHLT->SetEnabled(false);
+        fSwitchToOnline->SetEnabled(false);
+#endif
+        
+        f->AddFrame(fDataSourceGroup, new TGLayoutHints(kLHintsNormal));
+        
+            }
     
     fEventInfo = new TGTextView(this, 400, 600);
     AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
     
     fM->Connect("NewEventLoaded()", cls, this, "Update(=1)");
     fM->Connect("NoEventLoaded()", cls, this, "Update(=0)");
-
-    fM->Connect("EventServerOk()", cls, this, "EventServerChangedState(=1)");
-    fM->Connect("EventServerDown()", cls, this, "EventServerChangedState(=0)");
     
     if(storageManager) // if SM is enabled in general
     {
@@ -310,7 +324,23 @@ void AliEveEventManagerWindow::DoMarkEvent()
 void AliEveEventManagerWindow::DoScreenshot()
 {
     AliEveSaveViews *viewsSaver = new AliEveSaveViews();
-    viewsSaver->SaveWithDialog();
+    viewsSaver->Save();
+}
+
+void AliEveEventManagerWindow::DoReloadOffline()
+{
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    const char* path = Form("%s%ld",settings.GetValue("offline.base.path",""),fOfflineRunNumber->GetIntNumber());
+    
+    cout<<"Changing path to:"<<path<<endl;
+    
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    dataSource->SetFilesPath(path);
+    fM->ChangeDataSource(AliEveEventManager::kSourceOffline);
+    fDataSourceGroup->SetButton(AliEveEventManager::kSourceOffline);
+    dataSource->GotoEvent(0);
 }
 
 //______________________________________________________________________________
@@ -325,10 +355,92 @@ void AliEveEventManagerWindow::DoSetEvent()
 void AliEveEventManagerWindow::DoRefresh()
 {
     // Refresh event status.
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    AliEveMultiView *mv = AliEveMultiView::Instance();
+    AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
+    
+    mv->DestroyAllGeometries();
+    
+    vector<string> detectorsList;
+    string geomPath = settings.GetValue("simple.geom.path","${ALICE_ROOT}/EVE/resources/geometry/run2/");
+    string alirootBasePath = gSystem->Getenv("ALICE_ROOT");
+    size_t alirootPos = geomPath.find("${ALICE_ROOT}");
+    
+    if(alirootPos != string::npos){
+        geomPath.replace(alirootPos,alirootPos+13,alirootBasePath);
+    }
+    
+    TSystemDirectory dir(geomPath.c_str(),geomPath.c_str());
+    TList *files = dir.GetListOfFiles();
+    
+    if (files)
+    {
+        TRegexp e("simple_geom_[A-Z,0-9][A-Z,0-9][A-Z,0-9].root");
+        TRegexp e2("[A-Z,0-9][A-Z,0-9][A-Z,0-9]");
+        
+        TSystemFile *file;
+        TString fname;
+        TIter next(files);
+        
+        while ((file=(TSystemFile*)next()))
+        {
+            fname = file->GetName();
+            if(fname.Contains(e))
+            {
+                TString detName = fname(e2);
+                detName.Resize(3);
+                detectorsList.push_back(detName.Data());
+            }
+        }
+    }
+    else{
+        cout<<"\n\nAliEveInit -- geometry files not found!!!"<<endl;
+        cout<<"Searched directory was:"<<endl;
+        dir.Print();
+    }
+    
+    for(int i=0;i<detectorsList.size();i++)
+    {
+        if(settings.GetValue(Form("%s.draw",detectorsList[i].c_str()), true))
+        {
+            if(detectorsList[i]=="TPC" || detectorsList[i]=="MCH")
+            {
+                // don't load MUON and standard TPC to R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()),true,false);
+            }
+            else if(detectorsList[i]=="RPH")
+            {
+                // special TPC geom from R-Phi view
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom("RPH"),false,true,false);
+            }
+            else
+            {
+                mv->InitSimpleGeom(geomGentle->GetSimpleGeom((char*)detectorsList[i].c_str()));
+            }
+        }
+    }
+
+    
+    AliEveInit::AddMacros();
+    
+    TEveScene *rPhiScene = AliEveMultiView::Instance()->GetRPhiScene();
+    TEveScene *rhoZScene = AliEveMultiView::Instance()->GetRhoZScene();
+    
+    TEveElement::List_i rPhiElement = rPhiScene->BeginChildren();
+    TEveElement::List_i rhoZElement = rhoZScene->BeginChildren();
+    
+    TEveProjectionAxes* rPhiAxes = ((TEveProjectionAxes*)*rPhiElement);
+    TEveProjectionAxes* rhoZAxes = ((TEveProjectionAxes*)*rhoZElement);
+    
+    rPhiAxes->SetRnrSelf(settings.GetValue("axes.show",false));
+    rhoZAxes->SetRnrSelf(settings.GetValue("axes.show",false));
+    
+    gEve->FullRedraw3D();
+    gSystem->ProcessEvents();
+    gEve->Redraw3D();
     
     Int_t ev = fM->GetEventId();
-//    fM->Close();
-//    fM->Open();
     AliEveDataSource *currentDataSource = fM->GetCurrentDataSource();
     currentDataSource->GotoEvent(ev);
 }
@@ -431,21 +543,6 @@ void AliEveEventManagerWindow::StorageManagerChangedState(int state)
         listEventsTab->SetOfflineMode(kFALSE);
         fEventId->SetState(kTRUE);
     }
-#endif
-}
-
-void AliEveEventManagerWindow::EventServerChangedState(int state)
-{
-#ifdef ZMQ
-    cout<<"MAN EDITOR - change state called"<<endl;
-    if (state == 0)// Event Server off
-    {
-    }
-    else if(state == 1)// SM on
-    {
-    }
-//    SetCleanup(kDeepCleanup);
-    Layout();
 #endif
 }
 

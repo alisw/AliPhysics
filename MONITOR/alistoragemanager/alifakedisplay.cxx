@@ -10,6 +10,7 @@
 #include <TThread.h>
 #include <TFile.h>
 #include "TMutex.h"
+#include <TTimeStamp.h>
 
 using namespace std;
 
@@ -53,15 +54,24 @@ int main(int argc, char **argv)
             
             if(event)
             {
-                cout<<"Received event. Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
-                
-                cout<<event->GetPeriodNumber()<<endl;
-                cout<<event->GetOrbitNumber()<<endl;
-                cout<<event->GetBunchCrossNumber()<<endl;
-                for(int i=0;i<100;i++)
+                if(event->GetRunNumber() > 0)
                 {
-                    if(strcmp(event->GetESDRun()->GetTriggerClass(i),"")){
-                        cout<<event->GetESDRun()->GetTriggerClass(i)<<endl;}
+                    cout<<"Received event. Run:"<<event->GetRunNumber()<<"\t event:"<<event->GetEventNumberInFile()<<endl;
+                    
+                    //                TTimeStamp ts(event->GetTimeStamp());
+                    //                cout<<"Timestamp:"<<ts.AsString()<<endl;
+                    
+                    //
+                    //                cout<<event->GetPeriodNumber()<<endl;
+                    //                cout<<event->GetOrbitNumber()<<endl;
+                    //                cout<<event->GetBunchCrossNumber()<<endl;
+                    for(int i=0;i<100;i++)
+                    {
+                        if(strcmp(event->GetESDRun()->GetTriggerClass(i),""))
+                        {
+                            cout<<event->GetESDRun()->GetTriggerClass(i)<<endl;
+                        }
+                    }
                 }
                 delete event;event=0;
             }
@@ -69,30 +79,30 @@ int main(int argc, char **argv)
             {
                 cout<<"NO EVENT"<<endl;
             }
-	    
-	    // Receiving RecPoints:
-	    /*
-
-	    files = manager->GetFiles(ITS_POINTS_SUB);
-
-	
-	    cout<<"Received file."<<endl;
-
-	    //file->Write("ITS.RecPoints.root",kOverwrite);
-	    if(files->files[0]){files->files[0]->SaveAs("ITS.RecPoints.root","recreate");}
-	    if(files->files[1]){files->files[1]->SaveAs("TOF.RecPoints.root","recreate");}
-	    if(files->files[2]){files->files[2]->SaveAs("galice.root","recreate");}
-
-	    for(int i=0;i<10;i++)
-	    {
-	    if(files->files[i])
-	    {
-	    files->files[i]->Close();
-	    delete files->files[i];files->files[i]=0;
-	    }
-	    }	
-	    sleep(2);
-	    */
+            
+            // Receiving RecPoints:
+            /*
+             
+             files = manager->GetFiles(ITS_POINTS_SUB);
+             
+             
+             cout<<"Received file."<<endl;
+             
+             //file->Write("ITS.RecPoints.root",kOverwrite);
+             if(files->files[0]){files->files[0]->SaveAs("ITS.RecPoints.root","recreate");}
+             if(files->files[1]){files->files[1]->SaveAs("TOF.RecPoints.root","recreate");}
+             if(files->files[2]){files->files[2]->SaveAs("galice.root","recreate");}
+             
+             for(int i=0;i<10;i++)
+             {
+             if(files->files[i])
+             {
+             files->files[i]->Close();
+             delete files->files[i];files->files[i]=0;
+             }
+             }
+             sleep(2);
+             */
         }
     }
     else if(atoi(argv[1])==1)
@@ -166,12 +176,12 @@ int main(int argc, char **argv)
     else if(atoi(argv[1])==3)
     {
         socket = SERVER_COMMUNICATION_REQ;
-
+        
         struct serverRequestStruct *requestMessage = new struct serverRequestStruct;
         requestMessage->messageType = REQUEST_LIST_EVENTS;
-//        requestMessage->list = list;
+        //        requestMessage->list = list;
         
-//        struct listRequestStruct list;
+        //        struct listRequestStruct list;
         requestMessage->runNumber[0]=0;
         requestMessage->runNumber[1]=999999;
         requestMessage->eventNumber[0]=0;
@@ -182,7 +192,7 @@ int main(int argc, char **argv)
         requestMessage->multiplicity[1]=999999;
         strcpy(requestMessage->system[0],"p-p");
         strcpy(requestMessage->system[1],"A-A");
-
+        
         
         manager->Send(requestMessage,socket);
         vector<serverListStruct> *tmpVector;
@@ -194,22 +204,22 @@ int main(int argc, char **argv)
         for(int i=0;i<receivedList.size();i++){
             cout<<"ev:"<<receivedList[i].eventNumber<<endl;
         }
-
+        
         int iter=0;
         while(1)
         {
             if(iter<receivedList.size())
             {
-//                struct eventStruct mark;
+                //                struct eventStruct mark;
                 requestMessage->eventsRunNumber = receivedList[iter].runNumber;
                 requestMessage->eventsEventNumber = receivedList[iter].eventNumber;
                 
                 requestMessage->messageType = REQUEST_GET_EVENT;
-//                requestMessage->event = mark;
+                //                requestMessage->event = mark;
                 
                 manager->Send(requestMessage,socket);
                 manager->Get(event,socket);
-             
+                
                 if(event)
                 {
                     cout<<"i:"<<iter<<"\tevent:"<<event->GetEventNumberInFile()<<endl;
@@ -262,12 +272,12 @@ int main(int argc, char **argv)
         
         cout<<"sending server request struct"<<endl;
         struct serverRequestStruct *srs = new struct serverRequestStruct;
-       
+        
         srs->messageType = REQUEST_GET_EVENT;
-//        struct eventStruct es;
+        //        struct eventStruct es;
         srs->eventsRunNumber = 197669;
         srs->eventsEventNumber = 123;
-//        srs->event = es;
+        //        srs->event = es;
         
         manager->Send(srs,socket);
         cout<<"server request struct sent"<<endl;

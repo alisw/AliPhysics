@@ -50,7 +50,7 @@ class AliEveV0 : public TEvePointSet
 public:
   AliEveV0();
   AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0,
-     TEveTrackPropagator* rs);
+     TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos);
   virtual ~AliEveV0();
 
   void MakeV0();
@@ -61,7 +61,8 @@ public:
     fPointingLine->SetLineColor(fMarkerColor);
   }
 
-  void SetRnrStyle(TEveTrackPropagator* rs) { fRnrStyle = rs; }
+  void SetRnrStyleNeg(TEveTrackPropagator* rs) { fRnrStyleNeg = rs; }
+  void SetRnrStylePos(TEveTrackPropagator* rs) { fRnrStylePos = rs; }
 
   Float_t GetDaughterDCA() const { return fDaughterDCA; }
   void SetDaughterDCA(Float_t dca) { fDaughterDCA = dca; }
@@ -92,7 +93,8 @@ public:
   virtual const Text_t* GetName()  const { return Form("ESDv0_%i",fESDIndex); }
   virtual const Text_t* GetTitle() const { return Form("ESDv0_%i",fESDIndex); }
 
-  TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
+  TEveTrackPropagator* GetPropagatorNeg() const  { return fRnrStyleNeg; }
+  TEveTrackPropagator* GetPropagatorPos() const  { return fRnrStylePos; }
 
   AliEveTrack* GetNegTrack() const { return fNegTrack; }
   AliEveTrack* GetPosTrack() const { return fPosTrack; }
@@ -107,7 +109,8 @@ protected:
   AliEveTrack        *fNegTrack; // Representation of negative track.
   AliEveTrack        *fPosTrack; // Representation of positive track.
 
-  TEveTrackPropagator *fRnrStyle; // Track propagator for neg/pos track.
+  TEveTrackPropagator *fRnrStyleNeg; // Track propagator for neg track.
+  TEveTrackPropagator *fRnrStylePos; // Track propagator for pos track.
 
   TEveLine         *fPointingLine; // Representation of pointing line.
 
@@ -139,8 +142,8 @@ class AliEveV0List : public TEveElementList
 
 public:
   AliEveV0List();
-  AliEveV0List(TEveTrackPropagator* rs);
-  AliEveV0List(const Text_t* name, TEveTrackPropagator* rs=0);
+  AliEveV0List(TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos);
+  AliEveV0List(const Text_t* name, TEveTrackPropagator* rsNeg=0,TEveTrackPropagator* rsPos=0);
   virtual ~AliEveV0List() {}
 
   virtual const Text_t* GetTitle() const { return fTitle; }
@@ -150,8 +153,10 @@ public:
 
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
-  void  SetRnrStyle(TEveTrackPropagator* rst) { fRnrStyle = rst; }
-  TEveTrackPropagator* GetPropagator()        { return fRnrStyle; }
+  void  SetRnrStyleNeg(TEveTrackPropagator* rst) { fRnrStyleNeg = rst; }
+  void  SetRnrStylePos(TEveTrackPropagator* rst) { fRnrStylePos = rst; }
+  TEveTrackPropagator* GetPropagatorNeg()        { return fRnrStyleNeg; }
+  TEveTrackPropagator* GetPropagatorPos()        { return fRnrStylePos; }
 
   Bool_t GetRnrV0vtx()     const { return fRnrV0vtx; }
   Bool_t GetRnrV0path()    const { return fRnrV0path; }
@@ -178,8 +183,9 @@ public:
 protected:
   TString              fTitle;    // Title of the object.
 
-  TEveTrackPropagator *fRnrStyle; // Track propagator to be passed do conteined V0s.
-
+  TEveTrackPropagator *fRnrStyleNeg; // Track propagator to be passed do conteined V0s.
+  TEveTrackPropagator *fRnrStylePos; // Track propagator to be passed do conteined V0s.
+    
   Bool_t               fRnrDaughters; // Flag - display daughter tracks.
   Bool_t               fRnrV0vtx;     // Flag - display V0 vertex.
   Bool_t               fRnrV0path;    // Flag - display V0 path.

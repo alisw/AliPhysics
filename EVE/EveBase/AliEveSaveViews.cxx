@@ -7,6 +7,7 @@
 //
 
 #include "AliEveSaveViews.h"
+#include "AliEveMultiView.h"
 #include "AliEveInit.h"
 
 #include <TGFileDialog.h>
@@ -69,8 +70,13 @@ void AliEveSaveViews::ChangeRun()
     // get entry from logbook:
     cout<<"creating sql server...";
     TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
-    cout<<"created"<<endl;
-    
+    if(!server){
+        cout<<"Server could not be created"<<endl;
+        return;
+    }
+    else{
+        cout<<"created"<<endl;
+    }
     TString sqlQuery;
     sqlQuery.Form("SELECT * FROM logbook_trigger_clusters WHERE run = %d",fRunNumber);
     
@@ -108,7 +114,7 @@ void AliEveSaveViews::SaveForAmore()
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
+        fESDEvent = AliEveEventManager::Instance()->AssertESD();
     }
     else
     {
@@ -123,7 +129,7 @@ void AliEveSaveViews::SaveForAmore()
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
+    int Nviewers = 2; // remark: 3D view is counted twice
     
     TASImage *compositeImg = new TASImage(fWidth, fHeight);
     
@@ -141,7 +147,7 @@ void AliEveSaveViews::SaveForAmore()
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
-    for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
+    for(TEveElement::List_i i = (++viewers->BeginChildren()); index < Nviewers+1; i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
         viewFilename = Form("view-%d.png", index);
@@ -200,33 +206,34 @@ void AliEveSaveViews::SaveForAmore()
         }
         index++;
     }
-    /*
-     // Create a glow (bloom) effect
-     TASImage *tempImg = (TASImage*)compositeImg->Clone("tempImg");
-     tempImg->Blur(10.0,10.0);
-     compositeImg->Merge(tempImg, "lighten");
-     if(tempImg){delete tempImg;tempImg=0;}
-     */
     
     // show LIVE bar
     if(fShowLiveBar)
     {
         TTimeStamp ts;
-        TString tNow = ts.AsString("s"); // display date & time
+        UInt_t year,month,day;
+        UInt_t hour,minute,second;
         
-        compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 75, 0, 239, 95);
-        compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 155, 60, 152, 26);
+        ts.GetDate(kFALSE, 0, &year, &month,&day);
+        ts.GetTime(kFALSE, 0, &hour, &minute,&second);
+        
+        TString gmtNow = TString::Format("%u-%.2u-%.2u %.2u:%.2u:%.2u",year,month,day,hour,minute,second);
+        
+        compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 45, 0, 299, 95);
+        compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 125, 60, 212, 26);
         compositeImg->BeginPaint();
-        compositeImg->DrawRectangle(50,0, 264, 94);
-        compositeImg->DrawText(162, 6, "LIVE", 70, "#FF2D00", "FreeSansBold.otf");
-        compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawRectangle(20,0, 324, 94);
+        compositeImg->DrawText(152, 6, "LIVE", 75, "#FF2D00", "FreeSansBold.otf");
+        compositeImg->DrawText(132, 65, gmtNow, 16, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawText(282, 61, "Geneva", 13, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawText(292, 74, "time", 13, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
-        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/resources/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
         if(aliceLogo)
         {
             aliceLogo->Scale(64,87);
-            compositeImg->Merge(aliceLogo, "alphablend", 82, 4);
+            compositeImg->Merge(aliceLogo, "alphablend", 52, 4);
             delete aliceLogo;aliceLogo=0;
         }
     }
@@ -247,6 +254,7 @@ void AliEveSaveViews::SaveForAmore()
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+4 ,fTriggerClasses[0], 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+24,fTriggerClasses[1], 16, "#FFFFFF", "FreeSansBold.otf");
     compositeImg->DrawText(750, fHeight-1.33*fHeightInfoBar+44,fTriggerClasses[2], 16, "#FFFFFF", "FreeSansBold.otf");
+    compositeImg->DrawText(200, 0.2*fHeight-100, "PRELIMINARY", 200, "#80FF0000", "Arial.ttf",TImage::kPlain,0,30.);
     compositeImg->EndPaint();
     // put clusters description in green bar on the bottom:
     compositeImg->Gradient( 90, "#1BDD1B #1DDD1D #01DD01", 0, 0, fHeight-0.33*fHeightInfoBar, fWidth, 0.33*fHeightInfoBar);
@@ -266,7 +274,7 @@ void AliEveSaveViews::SaveForAmore()
     if (++fCurrentFileNumber >= fMaxFiles) fCurrentFileNumber = 0;
 }
 
-void AliEveSaveViews::SaveWithDialog()
+void AliEveSaveViews::Save(bool withDialog,char* filename)
 {
     TEnv settings;
     AliEveInit::GetConfig(&settings);
@@ -275,7 +283,9 @@ void AliEveSaveViews::SaveWithDialog()
     bool info        = settings.GetValue("screenshot.info.draw",true);
     bool projections = settings.GetValue("screenshot.projections.draw",true);
     const char *energyLabel= settings.GetValue("screenshot.force.energy","Energy: unknown");
+    const char *systemLabel= settings.GetValue("screenshot.force.system","System: unknown");
     if(strcmp(energyLabel,"")==0)energyLabel="Energy: unknown";
+    if(strcmp(systemLabel,"")==0)systemLabel="System: unknown";
     
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
@@ -283,7 +293,7 @@ void AliEveSaveViews::SaveWithDialog()
     
     if(AliEveEventManager::HasESD())
     {
-        fESDEvent = AliEveEventManager::GetMaster()->AssertESD();
+        fESDEvent = AliEveEventManager::Instance()->AssertESD();
     }
     else
     {
@@ -292,15 +302,19 @@ void AliEveSaveViews::SaveWithDialog()
     }
     
     TEveViewerList* viewers = gEve->GetViewers();
-    int Nviewers = viewers->NumChildren()-3; // remark: 3D view is counted twice
+    int Nviewers = viewers->NumChildren()-2; // remark: 3D view is counted twice
     
-    int width = 3556;
-    int height= 2000;
+    int width = 3840;
+    int height= 2160;
+    
+    // 3,840 × 2,160 (4K)
+    // 7,680 × 4,320 (8K)
+    // 15,360 × 8,640 (16K)
     
     TASImage *compositeImg = new TASImage(width, height);
     
     // 3D View size
-    int width3DView = projections ? TMath::FloorNint(2.*width/3.) : 3556;            // the width of the 3D view
+    int width3DView = projections ? TMath::FloorNint(2.*width/3.) : width;            // the width of the 3D view
     int height3DView= height;                                   // the height of the 3D view
     float aspectRatio = (float)width3DView/(float)height3DView; // 3D View aspect ratio
     
@@ -314,14 +328,22 @@ void AliEveSaveViews::SaveWithDialog()
     int y = 0;              // y position of the child view
     TString viewFilename;   // save view to this file
     
-    for(TEveElement::List_i i = (++viewers->BeginChildren()); i != viewers->EndChildren(); i++)
+    for(TEveElement::List_i i = viewers->BeginChildren(); i != viewers->EndChildren(); i++)
     { // NB: this skips the first children (first 3D View)
         TEveViewer* view = ((TEveViewer*)*i);
+        
+        if((strcmp(view->GetName(),"3D View MV")!=0) &&
+           (strcmp(view->GetName(),"RPhi View")!=0) &&
+           (strcmp(view->GetName(),"RhoZ View")!=0)){
+            continue;
+        }
+        
         viewFilename = Form("view-%d.png", index);
         
+        
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
-//        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
-//        TASImage *viewImg = new TASImage(viewFilename);
+        //        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
+        //        TASImage *viewImg = new TASImage(viewFilename);
         
         //        tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
         
@@ -330,15 +352,14 @@ void AliEveSaveViews::SaveWithDialog()
         // This improves the quality of pictures in some specific cases
         // but is causes a bug (moving mouse over views makes them disappear
         // on new event being loaded
-
-        TASImage *viewImg;
-         if(index==0){
-             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
-         }
-         else {
-             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
-         }
         
+        TASImage *viewImg;
+        if(index==0){
+            viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+        }
+        else {
+            viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+        }
         
         if(viewImg){
             // copy view image in the composite image
@@ -387,7 +408,7 @@ void AliEveSaveViews::SaveWithDialog()
     //draw ALICE Logo
     if(logo)
     {
-        TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
+        TASImage *aliceLogo = new TASImage(Form("%s/EVE/resources/alice_logo_big.png",gSystem->Getenv("ALICE_ROOT")));
         if(aliceLogo)
         {
             double ratio = 1434./1939.;
@@ -406,14 +427,25 @@ void AliEveSaveViews::SaveWithDialog()
         const char *runNumber = Form("Run:%d",fESDEvent->GetRunNumber());
         const char *timeStamp = Form("Timestamp:%s(UTC)",ts.AsString("s"));
         const char *system;
+        
         if(strcmp(fESDEvent->GetBeamType(),"")!=0)
         {
-            system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+            if(strcmp(fESDEvent->GetBeamType(),"A-A"))
+            {
+                system = "Colliding system:Pb-Pb";
+            }
+            else
+            {
+                system = Form("Colliding system:%s",fESDEvent->GetBeamType());
+            }
         }
         else
         {
-            system = "Colliding system: unknown";
+            system = systemLabel;
         }
+        
+        system = "Colliding system:p-p";
+        
         const char *energy;
         if(fESDEvent->GetBeamEnergy()>=0.0000001)
         {
@@ -436,54 +468,59 @@ void AliEveSaveViews::SaveWithDialog()
     compositeImg->CopyArea(imgToSave, 0,0, width, height);
     
     // Save screenshot to file
-    
-    TGFileInfo fileinfo;
-    const char *filetypes[] = {"PNG images", "*.png", 0, 0};
-    fileinfo.fFileTypes = filetypes;
-    fileinfo.fIniDir = StrDup(".");
-    new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
-    if(!fileinfo.fFilename)
+    if(withDialog)
     {
-        cout<<"AliEveSaveViews::SaveWithDialog() -- couldn't get path from dialog window!!!"<<endl;
-        return;
+        TGFileInfo fileinfo;
+        const char *filetypes[] = {"All types", "*", 0, 0};
+        fileinfo.fFileTypes = filetypes;
+        fileinfo.fIniDir = StrDup(".");
+        new TGFileDialog(gClient->GetDefaultRoot(), gClient->GetDefaultRoot(),kFDOpen, &fileinfo);
+        if(!fileinfo.fFilename)
+        {
+            cout<<"AliEveSaveViews::SaveWithDialog() -- couldn't get path from dialog window!!!"<<endl;
+            return;
+        }
+        
+        imgToSave->WriteImage(fileinfo.fFilename);
+    }
+    else
+    {
+        imgToSave->WriteImage(filename);
     }
     
-    imgToSave->WriteImage(fileinfo.fFilename);
-        
     if(compositeImg){delete compositeImg;compositeImg=0;}
     if(imgToSave){delete imgToSave;imgToSave=0;}
 }
 
 void AliEveSaveViews::BuildEventInfoString()
 {
-    if (AliEveEventManager::HasRawReader())
+    AliRawReader* rawReader = AliEveEventManager::AssertRawReader();
+    if(rawReader)
     {
-        AliRawReader* rawReader = AliEveEventManager::AssertRawReader();
-        if(!rawReader) return;
         fEventInfo.Form("Run: %d  Event#: %d (%s)",
                         rawReader->GetRunNumber(),
                         AliEveEventManager::CurrentEventId(),
                         AliRawEventHeaderBase::GetTypeName(rawReader->GetType())
                         );
-        
-        return;
-    }
-    else if (AliEveEventManager::HasESD())
-    {
-        AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
-        if(!esd)return;
-        fEventInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
-                        esd->GetESDRun()->GetBeamType(),
-                        esd->GetRunNumber(),
-                        esd->GetEventNumberInFile(),
-                        AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
-                        );
         return;
     }
     else
     {
-        fEventInfo="";
-        return;
+        AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
+        if(esd)
+        {
+            fEventInfo.Form("Colliding: %s Run: %d  Event: %d (%s)",
+                            esd->GetESDRun()->GetBeamType(),
+                            esd->GetRunNumber(),
+                            esd->GetEventNumberInFile(),
+                            AliRawEventHeaderBase::GetTypeName(esd->GetEventType())
+                            );
+            return;
+        }
+        else
+        {
+            fEventInfo="";
+        }
     }
 }
 
@@ -492,7 +529,7 @@ void AliEveSaveViews::BuildTriggerClassesStrings()
     ULong64_t mask = 1;
     int sw=0;
     
-    AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
+    AliESDEvent* esd =  AliEveEventManager::Instance()->AssertESD();
     ULong64_t triggerMask = esd->GetTriggerMask();
     ULong64_t triggerMaskNext50 = esd->GetTriggerMaskNext50();
     
@@ -554,6 +591,8 @@ void AliEveSaveViews::BuildClustersInfoString()
         
         clustersDescription.push_back(TString(clustersInfo));
     }
+    
+    fClustersInfo = "";
     
     for (int i=0;i<clustersDescription.size();i++) {
         fClustersInfo+="Cluster ";

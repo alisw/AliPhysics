@@ -20,7 +20,6 @@ class AliEveMacro;
 
 class AliEveMacroExecutor : public TObject
 {
-  friend class AliEveMacroExecutorWindow;
 
 public:
   AliEveMacroExecutor();
@@ -30,10 +29,8 @@ public:
   AliEveMacro* FindMacro(const TString& func);
 
   void ExecMacros();
-
-  void SaveAddedMacros();
-
   void RemoveMacros();
+//  void SaveAddedMacros();
 
 protected:
   TList*   fMacros;
