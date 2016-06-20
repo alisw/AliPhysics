@@ -86,6 +86,7 @@
 /// Correction and data collecting during calibration is performed for all harmonics
 /// defined within the involved detector configuration
 
+class AliQnCorrectionsHistogramSparse;
 
 class AliQnCorrectionsQnVectorAlignment : public AliQnCorrectionsCorrectionOnQvector {
 public:
@@ -120,7 +121,7 @@ private:
   static const char *szQANotValidatedHistogramName;  ///< the name and title for bin not validated QA histograms
   AliQnCorrectionsProfileCorrelationComponents *fInputHistograms; //!<! the histogram with calibration information
   AliQnCorrectionsProfileCorrelationComponents *fCalibrationHistograms; //!<! the histogram for building calibration information
-  AliQnCorrectionsHistogram *fQANotValidatedBin;    //!<! the histogram with non validated bin information
+  AliQnCorrectionsHistogramSparse *fQANotValidatedBin;    //!<! the histogram with non validated bin information
 
   Int_t  fHarmonicForAlignment;              ///< the harmonic number to be used for Qn vector alignment correction
   TString fDetectorConfigurationForAlignmentName; ///< storage for the name of the reference detector configuration for alignment correction

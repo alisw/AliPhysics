@@ -34,7 +34,7 @@
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileChannelizedIngress.h"
 #include "AliQnCorrectionsProfileChannelized.h"
-#include "AliQnCorrectionsHistogramChannelized.h"
+#include "AliQnCorrectionsHistogramChannelizedSparse.h"
 #include "AliQnCorrectionsDetectorConfigurationChannels.h"
 #include "AliLog.h"
 #include "AliQnCorrectionsInputGainEqualization.h"
@@ -45,7 +45,7 @@ const char *AliQnCorrectionsInputGainEqualization::szCorrectionName = "Gain equa
 const char *AliQnCorrectionsInputGainEqualization::szKey = "CCCC";
 const char *AliQnCorrectionsInputGainEqualization::szSupportHistogramName = "Multiplicity";
 const char *AliQnCorrectionsInputGainEqualization::szQAHistogramName = "QA Multiplicity";
-const char *AliQnCorrectionsInputGainEqualization::szQANotValidatedHistogramName = "QA not validated bin";
+const char *AliQnCorrectionsInputGainEqualization::szQANotValidatedHistogramName = "GE NvE";
 
 /// Default value for the shift parameter
 #define GAINEQUALIZATION_SHIFTDEFAULT 0.0
@@ -180,9 +180,9 @@ Bool_t AliQnCorrectionsInputGainEqualization::CreateQAHistograms(TList *list) {
       ownerConfiguration->GetEventClassVariablesSet(),ownerConfiguration->GetNoOfChannels());
   fQAMultiplicityAfter->CreateProfileHistograms(list,
       ownerConfiguration->GetUsedChannelsMask(), ownerConfiguration->GetChannelsGroups());
-  fQANotValidatedBin = new AliQnCorrectionsHistogramChannelized(
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
-      Form("%s %s %s", szQANotValidatedHistogramName, szCorrectionName, fDetectorConfiguration->GetName()),
+  fQANotValidatedBin = new AliQnCorrectionsHistogramChannelizedSparse(
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
       ownerConfiguration->GetEventClassVariablesSet(),
       ownerConfiguration->GetNoOfChannels());
   fQANotValidatedBin->CreateChannelizedHistogram(list, ownerConfiguration->GetUsedChannelsMask());

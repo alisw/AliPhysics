@@ -1,15 +1,16 @@
-#ifndef ALIQNCORRECTIONS_HISTOGRAM_H
-#define ALIQNCORRECTIONS_HISTOGRAM_H
+#ifndef ALIQNCORRECTIONS_HISTOGRAMSPARSE_H
+#define ALIQNCORRECTIONS_HISTOGRAMSPARSE_H
 
-/// \file AliQnCorrectionsHistogram.h
-/// \brief Single multidimensional histograms
+/// \file AliQnCorrectionsHistogramSparse.h
+/// \brief Single multidimensional sparse histograms
 
 #include "AliQnCorrectionsHistogramBase.h"
+#include <THnSparse.h>
 
-/// \class AliQnCorrectionsHistogram
-/// \brief Single histogram class for the Q vector correction histograms
+/// \class AliQnCorrectionsHistogramSparse
+/// \brief Single sparse histogram class for the Q vector correction histograms
 ///
-/// Encapsulates a multi dimensional histogram. Each dimension
+/// Encapsulates a multi dimensional sparse histogram. Each dimension
 /// corresponds to one of the event classes variables so,
 /// the number of dimensions matches the number of variables within
 /// the set passed in the constructor.
@@ -21,14 +22,14 @@
 /// \author Jaap Onderwaater <jacobus.onderwaater@cern.ch>, GSI
 /// \author Ilya Selyuzhenkov <ilya.selyuzhenkov@gmail.com>, GSI
 /// \author Víctor González <victor.gonzalez@cern.ch>, UCM
-/// \date Jun 16, 2016
-class AliQnCorrectionsHistogram : public AliQnCorrectionsHistogramBase {
+/// \date Jun 18, 2016
+class AliQnCorrectionsHistogramSparse : public AliQnCorrectionsHistogramBase {
 public:
-  AliQnCorrectionsHistogram();
-  AliQnCorrectionsHistogram(const char *name,
+  AliQnCorrectionsHistogramSparse();
+  AliQnCorrectionsHistogramSparse(const char *name,
       const char *title,
       AliQnCorrectionsEventClassVariablesSet &ecvs);
-  virtual ~AliQnCorrectionsHistogram();
+  virtual ~AliQnCorrectionsHistogramSparse();
 
   Bool_t CreateHistogram(TList *histogramList);
 
@@ -45,10 +46,10 @@ public:
   virtual void Fill(const Float_t *variableContainer, Int_t nChannel, Float_t weight)
   { AliQnCorrectionsHistogramBase::Fill(variableContainer, nChannel, weight); }
 private:
-  THnF *fValues;              //!<! Cumulates values for each of the event classes
+  THnSparseF *fValues;              //!<! Cumulates values for each of the event classes
 
   /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsHistogram, 1);
+  ClassDef(AliQnCorrectionsHistogramSparse, 1);
   /// \endcond
 };
 

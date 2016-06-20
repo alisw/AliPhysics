@@ -34,6 +34,8 @@
 #pragma link C++ class AliQnCorrectionsHistogram+;
 #pragma link C++ class AliQnCorrectionsHistogramBase+;
 #pragma link C++ class AliQnCorrectionsHistogramChannelized+;
+#pragma link C++ class AliQnCorrectionsHistogramChannelizedSparse+;
+#pragma link C++ class AliQnCorrectionsHistogramSparse+;
 #pragma link C++ class AliQnCorrectionsInputGainEqualization+;
 #pragma link C++ class AliQnCorrectionsManager+;
 #pragma link C++ class AliQnCorrectionsProfile+;

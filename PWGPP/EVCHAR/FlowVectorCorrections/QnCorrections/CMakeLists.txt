@@ -52,6 +52,8 @@ set(SRCS
   AliQnCorrectionsHistogram.cxx
   AliQnCorrectionsHistogramBase.cxx
   AliQnCorrectionsHistogramChannelized.cxx
+  AliQnCorrectionsHistogramChannelizedSparse.cxx
+  AliQnCorrectionsHistogramSparse.cxx
   AliQnCorrectionsInputGainEqualization.cxx
   AliQnCorrectionsManager.cxx
   AliQnCorrectionsProfile.cxx
