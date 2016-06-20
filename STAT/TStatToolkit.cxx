@@ -1253,7 +1253,7 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
   TObjArray*exprVarErrArray=(exprVars->GetEntries()>2)?  TString(exprVars->At(2)->GetName()).Tokenize(";"):0;
   TObjArray*exprColors= TString(colors).Tokenize(";");
   TObjArray*exprMarkers= TString(markers).Tokenize(";");
-  Int_t notOK=exprVarArray->GetEntries()<2;
+  Int_t notOK=exprVarArray->GetEntries()<1;
   notOK+=2*(exprVarArray->GetEntriesFast()>exprColors->GetEntriesFast());
   notOK+=4*(exprVarArray->GetEntriesFast()>exprMarkers->GetEntriesFast());
   if (exprVarErrArray) notOK+=8*(exprVarArray->GetEntriesFast()!=exprVarErrArray->GetEntriesFast());
@@ -1267,10 +1267,10 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
     return 0;
   }
 
-
+  Int_t ngraphs = exprVarArray->GetEntries();
   Double_t minValue=1;
   Double_t maxValue=-1;
-  Int_t ngraphs = exprVarArray->GetEntries();
+  TVectorF vecMean(ngraphs);
   for (Int_t igraph=0; igraph<ngraphs; igraph++){
     Int_t color=TString(exprColors->At(igraph)->GetName()).Atoi();
     Int_t marker=TString(exprMarkers->At(igraph)->GetName()).Atoi();
@@ -1317,9 +1317,13 @@ TMultiGraph * TStatToolkit::MakeMultGraph(TTree * tree, const char *groupName, c
       maxValue=meanT+sigmaRange*rmsT;
       minValue=meanT-sigmaRange*rmsT;
     }
+    vecMean[igraph]=meanT;
     if (minValue>meanT-sigmaRange*rmsT) minValue=meanT-sigmaRange*rmsT;
     if (maxValue<meanT+sigmaRange*rmsT) maxValue=meanT+sigmaRange*rmsT;
   }
+  Double_t rmsGraphs = TMath::RMS(ngraphs,  vecMean.GetMatrixArray());
+  minValue-=sigmaRange*rmsGraphs;
+  maxValue+=sigmaRange*rmsGraphs;
   //
   for (Int_t igr=0; igr<ngraphs; igr++){
     TGraph * gr = (TGraph*)(multiGraph->GetListOfGraphs()->At(igr));
