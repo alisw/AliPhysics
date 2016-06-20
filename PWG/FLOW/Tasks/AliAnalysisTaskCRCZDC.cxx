@@ -727,65 +727,77 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    AliError("Could not find MC Header in AOD");
    return;
   }
+   
+   Double_t centr = fCutsEvent->GetCentrality(InputEvent(),McEvent);
+   if (centr<fCentrLowLim || centr>=fCentrUpLim ) return;
+   Int_t CenBin = -1;
+   if (centr>0. && centr<5.) CenBin=0;
+   if (centr>5. && centr<10.) CenBin=1;
+   if (centr>10. && centr<20.) CenBin=2;
+   if (centr>20. && centr<30.) CenBin=3;
+   if (centr>30. && centr<40.) CenBin=4;
+   if (centr>40. && centr<50.) CenBin=5;
+   if (centr>50. && centr<60.) CenBin=6;
+   if (centr>60. && centr<70.) CenBin=7;
+   if (centr>70. && centr<80.) CenBin=8;
+   if (centr>80. && centr<90.) CenBin=9;
+   if(CenBin==-1) return;
   
   // reconstructed ==> POIs
-  Int_t AODPOIs = 0, AODbads = 0;
-  for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
-   AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
-   if (!AODPart) {
-    printf("ERROR: Could not receive AODPart %d\n", jTracks);
-    continue;
+   Int_t AODPOIs = 0, AODbads = 0;
+   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
+     AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
+     if (!AODPart) {
+       printf("ERROR: Could not receive AODPart %d\n", jTracks);
+       continue;
+     }
+     AliAODTrack *AODTrack = (AliAODTrack*)aod->GetTrack(jTracks);
+     if (!AODTrack) {
+       printf("ERROR: Could not receive AODTrack %d\n", jTracks);
+       continue;
+     }
+     if(!fCutsPOI->PassesAODcuts(AODTrack)) AODbads++;
+     if(!fCutsPOI->PassesAODcuts(AODTrack)) continue;
+     fFlowTrack->Set(AODPart);
+     fFlowTrack->SetSource(AliFlowTrack::kFromAOD);
+     fFlowTrack->SetForRPSelection(kFALSE);
+     fFlowTrack->SetForPOISelection(kTRUE);
+     fFlowEvent->IncrementNumberOfPOIs(1);
+     fFlowEvent->InsertTrack(fFlowTrack);
+     AODPOIs++;
+     fPtSpecRec[CenBin]->Fill(AODPart->Pt());
    }
-   AliAODTrack *AODTrack = (AliAODTrack*)aod->GetTrack(jTracks);
-   if (!AODTrack) {
-    printf("ERROR: Could not receive AODTrack %d\n", jTracks);
-    continue;
+   
+   // generated (physical primaries) ==> RPs
+   Int_t MCPrims = 0, MCSecos = 0, SN=0;
+   for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
+     AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(jTracks);
+     if (!AODMCtrack) {
+       printf("ERROR: Could not receive MC track %d\n", jTracks);
+       continue;
+     }
+     if(!fCutsPOI->PassesCuts(AODMCtrack)) MCSecos++;
+     if(!fCutsPOI->PassesCuts(AODMCtrack)) continue;
+     if(AODMCtrack->IsPhysicalPrimary()) continue;
+     fFlowTrack->Set(AODMCtrack);
+     fFlowTrack->SetSource(AliFlowTrack::kFromMC);
+     fFlowTrack->SetForRPSelection(kTRUE);
+     fFlowEvent->IncrementNumberOfPOIs(0);
+     fFlowTrack->SetForPOISelection(kFALSE);
+     fFlowEvent->InsertTrack(fFlowTrack);
+     MCPrims++;
+     fPtSpecGen[CenBin]->Fill(AODMCtrack->Pt());
    }
-   if(!fCutsPOI->PassesAODcuts(AODTrack)) AODbads++;
-   if(!fCutsPOI->PassesAODcuts(AODTrack)) continue;
-   fFlowTrack->Set(AODPart);
-   fFlowTrack->SetSource(AliFlowTrack::kFromAOD);
-   fFlowTrack->SetForRPSelection(kFALSE);
-   fFlowTrack->SetForPOISelection(kTRUE);
-   fFlowEvent->IncrementNumberOfPOIs(1);
-   fFlowEvent->InsertTrack(fFlowTrack);
-   AODPOIs++;
-  }
-  // generated (physical primaries) ==> RPs
-  Int_t MCPrims = 0, MCSecos = 0, SN=0;
-  for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
-   AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(jTracks);
-   if (!AODMCtrack) {
-    printf("ERROR: Could not receive MC track %d\n", jTracks);
-    continue;
-   }
-//    Double_t ZDCEta = 8.79; // to be checked
-//    if(AODMCtrack->GetPdgCode() == 2112 && fabs(AODMCtrack->Eta()) > ZDCEta) {
-//      printf("Candidate NS: m %e, E %e, eta %e \n",AODMCtrack->GetCalcMass(),AODMCtrack->E(),AODMCtrack->Eta());
-//      SN++;
-//    }
-    
-   if(!fCutsPOI->PassesCuts(AODMCtrack)) MCSecos++;
-   if(!fCutsPOI->PassesCuts(AODMCtrack)) continue;
-   if(AODMCtrack->IsPhysicalPrimary()) continue;
-   fFlowTrack->Set(AODMCtrack);
-   fFlowTrack->SetSource(AliFlowTrack::kFromMC);
-   fFlowTrack->SetForRPSelection(kTRUE);
-   fFlowEvent->IncrementNumberOfPOIs(0);
-   fFlowTrack->SetForPOISelection(kFALSE);
-   fFlowEvent->InsertTrack(fFlowTrack);
-   MCPrims++;
-  }
    fGenHeader = McEvent->GenEventHeader();
    if(fGenHeader) fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
-//  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
-  fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
-  fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
-  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
-  fFlowEvent->SetRun(aod->GetRunNumber());
-//  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
+   //  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
+   fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
+   fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
+   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+   fFlowEvent->SetRun(aod->GetRunNumber());
+   //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
  }
- 
+  
  if(fAnalysisType ==  "MCESD") {
   
   fFlowEvent->ClearFast();
