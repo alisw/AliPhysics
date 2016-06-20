@@ -118,6 +118,7 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged() :
   fNClusPerPho(0),
   fInvMassPt(0),
   fMaxEtSpec(0),
+  fTagCandEtType(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -224,6 +225,7 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged(const char *n
   fNClusPerPho(0),
   fInvMassPt(0),
   fMaxEtSpec(0),
+  fTagCandEtType(0),
   fHnOutput(0),
   fQAList(0),
   fNTracks(0),     
@@ -327,6 +329,9 @@ void AliAnalysisTaskEMCALPhotonTagged::UserCreateOutputObjects()
 
   fMaxEtSpec = new TH1F("hMaxEtSpec","E_T spectrum of leading clusters; E_T; dN/dE_T",500,0,100);
   fOutputList->Add(fMaxEtSpec);
+
+  fTagCandEtType = new TH2F("hTagCandEtType","Tag candidate type vs E_T;E_T (GeV);type",500,0,100,5,-0.5,4.5);
+  fOutputList->Add(fTagCandEtType);
 
   Int_t nEt=fNBinsPt*5, nM02=400, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=fNBinsPt,  nNLM=11;
   Int_t bins[] = {nEt, nM02, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt, nNLM};
@@ -594,7 +599,6 @@ void AliAnalysisTaskEMCALPhotonTagged::UserExec(Option_t *)
     ClearAll();
     return;
   }
-  printf("Max Et cluster is %1.1f +++++ (interval should be %1.1f<Et<%1.1f)\n",fEtMax,fLoEtTag,fHiEtTag);
   Int_t candStatus = TagEvent(leadId);
   if(0==candStatus && candStatus != fTagType){
     ClearAll();
@@ -1737,6 +1741,7 @@ Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
   }
   if(IsPi0M02(Et,c->GetM02()))
     candStatus = 2;
+  fTagCandEtType->Fill(Et,candStatus);
   return candStatus;
 }
 //________________________________________________________________________

@@ -165,6 +165,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
   TH2F        *fInvMassPt;                 //!inv mass of photon like cluster pairs vs pair pt
   TH1F        *fMaxEtSpec;                 //!spectrum of the MaxEt clusters
+  TH2F        *fTagCandEtType;             //!tag candidate type vs Et
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 
   //QA histos
