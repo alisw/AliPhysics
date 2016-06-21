@@ -130,6 +130,39 @@ Float_t AliCheb2DStackF::Eval(int sliceID, int dimOut, const float *par) const
 }
 
 //____________________________________________________________________
+void AliCheb2DStackF::EvalDeriv(int sliceID, int dim, const float  *par, float *res) const
+{
+  // evaluate Chebyshev parameterization derivative over input dimension dim
+  float p0,p1;
+  MapToInternal(sliceID,par,p0,p1);
+  int pid = sliceID*fDimOut;
+  const UChar_t *rows = &fNRows[pid];                      // array of fDimOut rows for current slice
+  const UChar_t *cols = &fNCols[fColEntry[sliceID]];       // array of columns per row for current slice
+  const Float_t *cfs  = &fCoeffs[fCoeffsEntry[sliceID]];   // array of coefficients for current slice
+  float sclMap = fBScaleZ; // to convert derivative from -1:1 mapped range to real one
+  if (dim==0) { 
+    float tmn = fBMin[ktgp], tmx = fBMax[ktgp];
+    if (fRowXI) {
+      tmn += fDead[0]*fRowXI[sliceID];
+      tmx -= fDead[1]*fRowXI[sliceID];
+    }
+    sclMap = 2./(tmx-tmn);
+  } 
+  for (int id=0;id<fDimOut;id++) {
+    int nr = *rows++;                            // N rows in the matrix of coeffs for given dimension 
+    for (int ir=0;ir<nr;ir++) {
+      int nc = *cols++;                          // N of significant colums at this row
+      if (dim==1) fWSpace[ir] = ChebEval1Deriv(p1,cfs,nc); // coeffs of derivative over internal var.
+      else        fWSpace[ir] = ChebEval1D(p1,cfs,nc);     // coeffs for external var.
+      cfs += nc;                                 // prepare coefs for the next row
+    }
+    if (dim==1) res[id] = ChebEval1D(p0,fWSpace,nr) * sclMap;
+    else        res[id] = ChebEval1Deriv(p0,fWSpace,nr) * sclMap;
+  }
+  //
+}
+
+//____________________________________________________________________
 void AliCheb2DStackF::CreateParams(stFun_t fun, const int *np, const float* prc)
 {
   // create parameterizations

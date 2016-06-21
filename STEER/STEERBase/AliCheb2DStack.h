@@ -37,6 +37,8 @@ class AliCheb2DStack : public TObject
   const float*    GetXRowInv() const {return fRowXI;}
   virtual void     Eval(int sliceID, const float *par, float *res) const = 0;
   virtual Float_t  Eval(int sliceID, int dimOut, const float *par) const = 0;
+  virtual void     EvalDeriv(int sliceID, int dim, const Float_t  *par, float* res) const = 0;
+
   Bool_t        IsInside(const float *par) const;
   //
   void          Print(const Option_t* opt="")            const;
@@ -44,6 +46,8 @@ class AliCheb2DStack : public TObject
   //
   static float  ChebEval1D(float x, const float* array, int ncf);
   static float  ChebEval1D(float x, const Short_t* array, int ncf);
+  static float  ChebEval1Deriv(float x, const float* array, int ncf);
+  static float  ChebEval1Deriv(float x, const Short_t* array, int ncf);
   static void   SetDefPrecision(float prc=1e-4) {fgkDefPrec = prc>1e-8 ? prc:1e-8;}
   static float  GetDefPrecision() {return fgkDefPrec;}
   //
@@ -176,6 +180,50 @@ inline float AliCheb2DStack::ChebEval1D(float x, const Short_t* array, int ncf)
   //
 }
 
+
+//__________________________________________________________________________________________
+inline float AliCheb2DStack::ChebEval1Deriv(float x, const float* array, int ncf) 
+{
+  // evaluate 1D Chebyshev parameterization. x is the argument mapped to [-1:1] interval
+  if (--ncf<1) return 0;
+  Float_t b0, b1(0), b2(0), x2(x+x);
+  float dcf0(0),dcf1,dcf2(0);
+  b0 = dcf1 = 2*ncf*array[ncf];
+  if (!(--ncf)) return b0/2;
+
+  for (int i=ncf;i--;) {
+    b2 = b1;
+    b1 = b0;
+    dcf0 = dcf2 + 2*(i+1)*array[i+1];
+    b0 = dcf0 + x2*b1 -b2;
+    dcf2 = dcf1;  
+    dcf1 = dcf0;
+  }
+  return b0 - x*b1 - dcf0/2;
+  //
+}
+
+//__________________________________________________________________________________________
+inline float AliCheb2DStack::ChebEval1Deriv(float x, const Short_t* array, int ncf) 
+{
+  // evaluate 1D Chebyshev parameterization. x is the argument mapped to [-1:1] interval
+  if (--ncf<1) return 0;
+  Float_t b0, b1(0), b2(0), x2(x+x);
+  float dcf0(0),dcf1,dcf2(0);
+  b0 = dcf1 = 2*ncf*array[ncf];
+  if (!(--ncf)) return b0/2;
+
+  for (int i=ncf;i--;) {
+    b2 = b1;
+    b1 = b0;
+    dcf0 = dcf2 + 2*(i+1)*array[i+1];
+    b0 = dcf0 + x2*b1 -b2;
+    dcf2 = dcf1;  
+    dcf1 = dcf0;
+  }
+  return b0 - x*b1 - dcf0/2;
+  //
+}
 
 
 #endif
