@@ -57,6 +57,8 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliESDEvent* esdEvent) {
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
+  for (Int_t bc=0; bc<21; ++bc)
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
 }
 
 void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -75,9 +77,22 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnal
   fTime[1] = esdAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
-  for (Int_t ch=0; ch<16; ++ch) {
-    fBB[ch/8] += esdAD->GetBBFlag(ch);
-    fBG[ch/8] += esdAD->GetBGFlag(ch);
+  for (Int_t ch=0; ch<4; ++ch) {
+    fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
+    fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
+    fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
+    fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+  }
+
+  for (Int_t bc=0; bc<21; ++bc) {
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+    for (Int_t ch=0; ch<4; ++ch) {
+      fPFBBC[bc] += (esdAD->GetPFBBFlag(ch, bc) && esdAD->GetPFBBFlag(ch+4, bc));
+      fPFBGC[bc] += (esdAD->GetPFBGFlag(ch, bc) && esdAD->GetPFBGFlag(ch+4, bc));
+
+      fPFBBA[bc] += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
+      fPFBGA[bc] += (esdAD->GetPFBGFlag(ch+8, bc) && esdAD->GetPFBGFlag(ch+12, bc));
+    }
   }
 }
 void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -100,6 +115,16 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnal
   for (Int_t ch=0; ch<64; ++ch) {
     fBB[ch/32] += esdV0->GetBBFlag(ch);
     fBG[ch/32] += esdV0->GetBGFlag(ch);
+  }
+
+  for (Int_t bc=0; bc<21; ++bc) {
+    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+    for (Int_t ch=0; ch<32; ++ch) {
+      fPFBBC[bc] += esdV0->GetPFBBFlag(ch,    bc);
+      fPFBGC[bc] += esdV0->GetPFBGFlag(ch,    bc);
+      fPFBBA[bc] += esdV0->GetPFBBFlag(ch+32, bc);
+      fPFBGA[bc] += esdV0->GetPFBGFlag(ch+32, bc);
+    }
   }
 }
 
