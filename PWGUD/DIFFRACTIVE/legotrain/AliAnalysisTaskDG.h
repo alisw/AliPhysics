@@ -94,6 +94,8 @@ public:
 	fBB[i] = fBG[i] = -1;
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
+      for (Int_t bc=0; bc<21; ++bc)
+	fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     }
 
     void FillAD(const AliESDEvent *, AliTriggerAnalysis &);
@@ -106,7 +108,10 @@ public:
     Char_t     fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
-
+    Double32_t fPFBBA[21];          //[0,32,5]
+    Double32_t fPFBBC[21];          //[0,32,5]
+    Double32_t fPFBGA[21];          //[0,32,5]
+    Double32_t fPFBGC[21];          //[0,32,5]
   } ;
 
   class TreeData : public TObject {
@@ -126,7 +131,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 2);
+    ClassDef(TreeData, 3);
   } ;
 
   struct TrackData : public TObject {
@@ -202,7 +207,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 3);
+  ClassDef(AliAnalysisTaskDG, 4);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
