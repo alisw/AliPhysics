@@ -74,6 +74,9 @@ public:
   /// Enables disables the filling of QA histograms
   /// \param enable kTRUE for enabling QA histograms filling
   void SetShouldFillQAHistograms(Bool_t enable = kTRUE) { fFillQAHistograms = enable; }
+  /// Enables disables the filling of non validated entries QA histograms
+  /// \param enable kTRUE for enabling non validated entries QA histograms filling
+  void SetShouldFillNveQAHistograms(Bool_t enable = kTRUE) { fFillNveQAHistograms = enable; }
   /// Enables disables the output of Qn vector on a TTree structure
   /// \param enable kTRUE for enabling Qn vector output into a TTree
   void SetShouldFillQnVectorTree(Bool_t enable = kTRUE) { fFillQnVectorTree = enable; }
@@ -95,6 +98,9 @@ public:
   /// Get whether the QA histograms should be filled
   /// \return kTRUE if the QA histograms should be filled
   Bool_t GetShouldFillQAHistograms() const { return fFillQAHistograms; }
+  /// Get whether the non validated entries QA histograms should be filled
+  /// \return kTRUE if the non validated entries QA histograms should be filled
+  Bool_t GetShouldFillNveQAHistograms() const { return fFillNveQAHistograms; }
   /// Get whether the Qn vector tree should be populated
   /// \return kTRUE if the Qn vector should be written into a TTree
   Bool_t GetShouldFillQnVectorTree() const { return fFillQnVectorTree; }
@@ -104,6 +110,9 @@ public:
   /// Gets the QA histograms list
   /// \return the list of QA histograms
   TList *GetQAHistogramsList() const { return fQAHistogramsList; }
+  /// Gets the non validated entries QA histograms list
+  /// \return the list of QA histograms
+  TList *GetNveQAHistogramsList() const { return fNveQAHistogramsList; }
   /// Gets the Qn vector tree
   /// \return the tree of histograms for building correction parameters
   TTree *GetQnVectorTree() const { return fQnVectorTree; }
@@ -118,6 +127,10 @@ public:
   /// \return the calibration QA histograms container name
   const char *GetCalibrationQAHistogramsContainerName() const
   { return szCalibrationQAHistogramsKeyName; }
+  /// Gets the name of the non validated calibration entries QA histograms container
+  /// \return the calibration QA histograms container name
+  const char *GetCalibrationNveQAHistogramsContainerName() const
+  { return szCalibrationNveQAHistogramsKeyName; }
 
 
   void PrintFrameworkConfiguration() const;
@@ -133,6 +146,7 @@ private:
   static const Int_t nMaxNoOfDataVariables;          ///< the maximum number of variables currently supported by the framework
   static const char *szCalibrationHistogramsKeyName; ///< the name of the key under which calibration histograms lists are stored
   static const char *szCalibrationQAHistogramsKeyName; ///< the name of the key under which calibration QA histograms lists are stored
+  static const char *szCalibrationNveQAHistogramsKeyName; ///< the name of the key under which non validated calibration entries QA histograms lists are stored
   static const char *szDummyProcessListName;         ///< accepted temporary name before getting the definitive one
   static const char *szAllProcessesListName;         ///< the name of the list that collects data from all concurrent processes
   TList fDetectorsSet;                  ///< the list of detectors
@@ -141,10 +155,12 @@ private:
   TList *fCalibrationHistogramsList;    ///< the list of the input calibration histograms
   TList *fSupportHistogramsList;        //!<! the list of the support histograms
   TList *fQAHistogramsList;             //!<! the list of QA histograms
+  TList *fNveQAHistogramsList;          //!<! the list of not validated entries QA histograms
   TTree *fQnVectorTree;                 //!<! the tree to out Qn vectors
   TList *fQnVectorList;                 //!<! list that contains the current event corrected Qn vectors
   Bool_t fFillOutputHistograms;         ///< kTRUE if output histograms for building correction parameters must be filled
   Bool_t fFillQAHistograms;             ///< kTRUE if QA histograms must be filled
+  Bool_t fFillNveQAHistograms;          ///< kTRUE if non validated entries QA histograms must be filled
   Bool_t fFillQnVectorTree;             ///< kTRUE if Qn vectors must be written in a TTree structure
   TString fProcessListName;             ///< the name of the list associated to the current process
   TObjArray *fProcessesNames;           ///< array with the list of processes names
@@ -158,7 +174,7 @@ private:
   AliQnCorrectionsManager& operator= (const AliQnCorrectionsManager &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsManager, 4);
+  ClassDef(AliQnCorrectionsManager, 5);
 /// \endcond
 };
 

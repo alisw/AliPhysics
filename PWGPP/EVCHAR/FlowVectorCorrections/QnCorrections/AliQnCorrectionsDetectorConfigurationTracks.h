@@ -48,6 +48,7 @@ public:
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);
+  virtual Bool_t CreateNveQAHistograms(TList *list);
   virtual Bool_t AttachCorrectionInputs(TList *list);
 
   /// Ask for processing corrections for the involved detector configuration

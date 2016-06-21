@@ -117,7 +117,7 @@ protected:
   AliQnCorrectionsEventClassVariablesSet fEventClassVariables;  //!<! The variables set that determines the event classes
   Double_t *fBinAxesValues;                                  //!<! Runtime place holder for computing bin number
   QnCorrectionHistogramErrorMode fErrorMode;                 //!<! The error type for the current instance
-  Int_t fMinNoOfEntriesToValidate;                           // the minimum number of entries for validating a bin content
+  Int_t fMinNoOfEntriesToValidate;                           ///< the minimum number of entries for validating a bin content
   /// \cond CLASSIMP
   ClassDef(AliQnCorrectionsHistogramBase, 2);
   /// \endcond

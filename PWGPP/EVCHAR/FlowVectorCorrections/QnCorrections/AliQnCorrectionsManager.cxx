@@ -53,6 +53,7 @@ const Int_t AliQnCorrectionsManager::nMaxNoOfDetectors = 32;
 const Int_t AliQnCorrectionsManager::nMaxNoOfDataVariables = 2048;
 const char *AliQnCorrectionsManager::szCalibrationHistogramsKeyName = "CalibrationHistograms";
 const char *AliQnCorrectionsManager::szCalibrationQAHistogramsKeyName = "CalibrationQAHistograms";
+const char *AliQnCorrectionsManager::szCalibrationNveQAHistogramsKeyName = "CalibrationQANveHistograms";
 const char *AliQnCorrectionsManager::szDummyProcessListName = "dummyprocess";
 const char *AliQnCorrectionsManager::szAllProcessesListName = "all data";
 
@@ -67,10 +68,12 @@ AliQnCorrectionsManager::AliQnCorrectionsManager() :
   fCalibrationHistogramsList = NULL;
   fSupportHistogramsList = NULL;
   fQAHistogramsList = NULL;
+  fNveQAHistogramsList = NULL;
   fQnVectorTree = NULL;
   fQnVectorList = NULL;
   fFillOutputHistograms = kFALSE;
   fFillQAHistograms = kFALSE;
+  fFillNveQAHistograms = kFALSE;
   fFillQnVectorTree = kFALSE;
   fProcessesNames = NULL;
 }
@@ -199,6 +202,9 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
     fQAHistogramsList = new TList();
     fQAHistogramsList->SetName(szCalibrationQAHistogramsKeyName);
     fQAHistogramsList->SetOwner(kTRUE);
+    fNveQAHistogramsList = new TList();
+    fNveQAHistogramsList->SetName(szCalibrationNveQAHistogramsKeyName);
+    fNveQAHistogramsList->SetOwner(kTRUE);
   }
 
 
@@ -211,7 +217,7 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
       newList->SetOwner(kTRUE);
       fSupportHistogramsList->Add(newList);
 
-      /* and the QA histograms list if needed */
+      /* the QA histograms list if needed */
       TList *newQAList = NULL;
       if (GetShouldFillQAHistograms()) {
         newQAList = new TList();
@@ -220,17 +226,33 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
         fQAHistogramsList->Add(newQAList);
       }
 
+      /* the non validated entries QA histograms list if needed */
+      TList *newNveQAList = NULL;
+      if (GetShouldFillNveQAHistograms()) {
+        newNveQAList = new TList();
+        newNveQAList->SetName(((TObjString *) fProcessesNames->At(i))->GetName());
+        newNveQAList->SetOwner(kTRUE);
+        fNveQAHistogramsList->Add(newNveQAList);
+      }
+
       /* leave the selected process list name for a latter time */
       if (!fProcessListName.EqualTo(fProcessesNames->At(i)->GetName())) {
         /* build the support histograms list associated to the process */
         for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
           ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateSupportHistograms(newList);
         }
-        /* and the QA histograms list if needed */
+        /* the QA histograms list if needed */
         if (GetShouldFillQAHistograms()) {
           /* and pass it to the detectors for QA histograms creation */
           for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
             ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateQAHistograms(newQAList);
+          }
+        }
+        /* the non validated entries QA histograms list if needed */
+        if (GetShouldFillNveQAHistograms()) {
+          /* and pass it to the detectors for non validated entries QA histograms creation */
+          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateNveQAHistograms(newNveQAList);
           }
         }
       }
@@ -243,11 +265,16 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
     /* let's see first whether we have the current process name within the processes names list */
     TList *processList;
     TList *processQAList;
+    TList *processNveQAList;
     if (fProcessesNames != NULL && fProcessesNames->GetEntries() != 0 && fSupportHistogramsList->FindObject(fProcessListName) != NULL) {
       processList = (TList *) fSupportHistogramsList->FindObject(fProcessListName);
-      /* and the QA histograms list if needed */
+      /* the QA histograms list if needed */
       if (GetShouldFillQAHistograms()) {
         processQAList = (TList *) fQAHistogramsList->FindObject(fProcessListName);
+      }
+      /* the non validated entries QA histograms list if needed */
+      if (GetShouldFillNveQAHistograms()) {
+        processNveQAList = (TList *) fNveQAHistogramsList->FindObject(fProcessListName);
       }
     }
     else {
@@ -256,13 +283,21 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
       processList->SetOwner(kTRUE);
       /* we add it but probably temporarily */
       fSupportHistogramsList->Add(processList);
-      /* and the QA histograms list if needed */
+      /* the QA histograms list if needed */
       if (GetShouldFillQAHistograms()) {
         processQAList = new TList();
         processQAList->SetName((const char *) fProcessListName);
         processQAList->SetOwner(kTRUE);
         /* we add it but probably temporarily */
         fQAHistogramsList->Add(processQAList);
+      }
+      /* the non validated QA histograms list if needed */
+      if (GetShouldFillNveQAHistograms()) {
+        processNveQAList = new TList();
+        processNveQAList->SetName((const char *) fProcessListName);
+        processNveQAList->SetOwner(kTRUE);
+        /* we add it but probably temporarily */
+        fNveQAHistogramsList->Add(processNveQAList);
       }
     }
     /* now transfer the order to the defined detectors */
@@ -276,11 +311,18 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
     if (!retvalue) {
       AliFatal("Failed to build the necessary support histograms.");
     }
-    /* and now the QA histograms list if needed */
+    /* the QA histograms list if needed */
     if (GetShouldFillQAHistograms()) {
       /* pass it to the detectors for QA histograms creation */
       for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
         ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateQAHistograms(processQAList);
+      }
+    }
+    /* the non validated QA histograms list if needed */
+    if (GetShouldFillNveQAHistograms()) {
+      /* pass it to the detectors for non validated entries QA histograms creation */
+      for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+        ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateNveQAHistograms(processNveQAList);
       }
     }
   }
@@ -344,7 +386,7 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
           /* nop! we raise an execution error */
           AliFatal(Form("The name of the process you want to run: %s, is not in the list of concurrent processes", name));
         }
-        /* and now the QA histograms list if needed */
+        /* the QA histograms list if needed */
         if (GetShouldFillQAHistograms()) {
           /* the new process name should be in the list of processes names */
           if (fQAHistogramsList->FindObject(name) != NULL) {
@@ -363,14 +405,38 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
             AliFatal(Form("The name of the process you want to run: %s, is not in the QA list of concurrent processes", name));
           }
         }
+        /* the non validated entries QA histograms list if needed */
+        if (GetShouldFillNveQAHistograms()) {
+          /* the new process name should be in the list of processes names */
+          if (fNveQAHistogramsList->FindObject(name) != NULL) {
+            /* now we have to substitute the provisional process name list with the temporal one but renamed */
+            TList *previousempty = (TList*) fNveQAHistogramsList->FindObject(name);
+            Int_t finalindex = fNveQAHistogramsList->IndexOf(previousempty);
+            fNveQAHistogramsList->RemoveAt(finalindex);
+            delete previousempty;
+            TList *previoustemp = (TList *) fNveQAHistogramsList->FindObject((const char *)fProcessListName);
+            fNveQAHistogramsList->Remove(previoustemp);
+            previoustemp->SetName(name);
+            fNveQAHistogramsList->AddAt(previoustemp, finalindex);
+          }
+          else {
+            /* nop! we raise an execution error */
+            AliFatal(Form("The name of the process you want to run: %s, is not in the non validated entries QA list of concurrent processes", name));
+          }
+        }
       }
       else {
         TList *processList = (TList *) fSupportHistogramsList->FindObject((const char *)fProcessListName);
         processList->SetName(name);
-        /* and now the QA histograms list if needed */
+        /* the QA histograms list if needed */
         if (GetShouldFillQAHistograms()) {
           TList *processQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
           processQAList->SetName(name);
+        }
+        /* the non validated entries QA histograms list if needed */
+        if (GetShouldFillNveQAHistograms()) {
+          TList *processNveQAList = (TList *) fNveQAHistogramsList->FindObject((const char *)fProcessListName);
+          processNveQAList->SetName(name);
         }
       }
 
@@ -652,10 +718,15 @@ void AliQnCorrectionsManager::FinalizeQnCorrectionsFramework() {
 
   TList *processList = (TList *) fSupportHistogramsList->FindObject((const char *)fProcessListName);
   fSupportHistogramsList->Add(processList->Clone(szAllProcessesListName));
-  /* and now the QA histograms list if needed */
+  /* the QA histograms list if needed */
   if (GetShouldFillQAHistograms()) {
     TList *processQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
     fQAHistogramsList->Add(processQAList->Clone(szAllProcessesListName));
+  }
+  /* the non validated entries QA histograms list if needed */
+  if (GetShouldFillNveQAHistograms()) {
+    TList *processNveQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
+    fNveQAHistogramsList->Add(processNveQAList->Clone(szAllProcessesListName));
   }
 }
 

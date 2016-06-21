@@ -146,6 +146,7 @@ public:
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);
+  virtual Bool_t CreateNveQAHistograms(TList *list);
 
   virtual Bool_t Process(const Float_t *variableContainer);
   /// Clean the correction to accept a new event

@@ -44,6 +44,7 @@ fFillEventQA(kFALSE),
 fProvideQnVectorsList(kFALSE),
 fOutputSlotEventQA(-1),
 fOutputSlotHistQA(-1),
+fOutputSlotHistNveQA(-1),
 fOutputSlotHistQn(-1),
 fOutputSlotQnVectorsList(-1),
 fOutputSlotTree(-1)
@@ -67,6 +68,7 @@ fQAhistograms(""),
 fFillEventQA(kFALSE),
 fProvideQnVectorsList(kFALSE),
 fOutputSlotEventQA(-1),
+fOutputSlotHistNveQA(-1),
 fOutputSlotHistQA(-1),
 fOutputSlotHistQn(-1),
 fOutputSlotQnVectorsList(-1),
@@ -107,6 +109,11 @@ void AliAnalysisTaskFlowVectorCorrections::DefineInOutput(){
   if (fAliQnCorrectionsManager->GetShouldFillQAHistograms()) {
     DefineOutput(outputSlot, TList::Class());
     fOutputSlotHistQA = outputSlot++;
+  }
+  // Qvector non validated entries QA histograms
+  if (fAliQnCorrectionsManager->GetShouldFillNveQAHistograms()) {
+    DefineOutput(outputSlot, TList::Class());
+    fOutputSlotHistNveQA = outputSlot++;
   }
   // Calibrated qvector list
   if (fProvideQnVectorsList) {
@@ -187,6 +194,8 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
     PostData(fOutputSlotTree, fAliQnCorrectionsManager->GetQnVectorTree());
   if (fAliQnCorrectionsManager->GetShouldFillQAHistograms())
     PostData(fOutputSlotHistQA, fAliQnCorrectionsManager->GetQAHistogramsList());
+  if (fAliQnCorrectionsManager->GetShouldFillNveQAHistograms())
+    PostData(fOutputSlotHistNveQA, fAliQnCorrectionsManager->GetNveQAHistogramsList());
   if (fFillEventQA)
     PostData(fOutputSlotEventQA, fEventQAList);
 }

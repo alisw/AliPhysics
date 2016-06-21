@@ -62,6 +62,7 @@ public:
   AliQnCorrectionsCutsSet* GetEventCuts()  const {return fEventCuts;}
   Int_t OutputSlotEventQA()        const {return fOutputSlotEventQA;}
   Int_t OutputSlotHistQA()        const {return fOutputSlotHistQA;}
+  Int_t OutputSlotHistNveQA()        const {return fOutputSlotHistNveQA;}
   Int_t OutputSlotHistQn()        const {return fOutputSlotHistQn;}
   Int_t OutputSlotGetListQnVectors() const {return fOutputSlotQnVectorsList;}
   Int_t OutputSlotTree()          const {return fOutputSlotTree;}
@@ -82,6 +83,7 @@ private:
   Bool_t fProvideQnVectorsList;
   Int_t fOutputSlotEventQA;
   Int_t fOutputSlotHistQA;
+  Int_t fOutputSlotHistNveQA;
   Int_t fOutputSlotHistQn;
   Int_t fOutputSlotQnVectorsList;
   Int_t fOutputSlotTree;
@@ -89,7 +91,7 @@ private:
   AliAnalysisTaskFlowVectorCorrections(const AliAnalysisTaskFlowVectorCorrections &c);
   AliAnalysisTaskFlowVectorCorrections& operator= (const AliAnalysisTaskFlowVectorCorrections &c);
 
-  ClassDef(AliAnalysisTaskFlowVectorCorrections, 3);
+  ClassDef(AliAnalysisTaskFlowVectorCorrections, 4);
 };
 
 #endif // ALIANALYSISTASKFLOWVECTORCORRECTION_H
