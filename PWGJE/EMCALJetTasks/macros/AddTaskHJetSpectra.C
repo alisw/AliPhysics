@@ -539,7 +539,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         Form("JetEmbeddingFromGenTask_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb),//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,  TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -564,7 +564,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
-                           Form("SigleTrackEmb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb), 
+                           Form("SigleTrackEmb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix), 
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -575,8 +575,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //FK//?// embSingle->SetMasslessParticles(kTRUE);
 
       embSingle->SetCopyArray(kTRUE);
-      embSingle->SetSuffix(Form("TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",
-         TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb));
+      embSingle->SetSuffix(Form("TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+         TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix));
       kGenPartices = embSingle->GetOutTrackName(); 
    }
  
@@ -585,13 +585,13 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       // Branch merger  merge reconstructed tracks with embedded pythia generated 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskMergeBranches.C");
       AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),
-      Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,
-         TMath::Nint(10*jetRadius), cntype.Data(), ptHardMinEmb,ptHardMaxEmb),"");
+      Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",TMath::Nint(ttLowR), TMath::Nint(ttHighR),TMath::Nint(ttLowS), TMath::Nint(ttHighS),typeOfData, typeOfAnal,
+         TMath::Nint(10*jetRadius), cntype.Data(), ptHardMinEmb,ptHardMaxEmb,suffix),"");
       brmergTask->SetCopyArray(kTRUE);
       brmergTask->SelectCollisionCandidates(trigger);
 
-      recoTracks.Append(Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f",
-        TMath::Nint(ttLowR), TMath::Nint(ttHighR),  TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb)); //reconstructed level are  tracks +ebeded tracks
+      recoTracks.Append(Form("Emb_TT%d%d_%d%d_AN%d%d_R%02d_%s_PT%.0f%.0f%s",
+        TMath::Nint(ttLowR), TMath::Nint(ttHighR),  TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, TMath::Nint(10*jetRadius), cntype.Data(),ptHardMinEmb,ptHardMaxEmb,suffix)); //reconstructed level are  tracks +ebeded tracks
       mcParticles = kGenPartices.Data(); //generator level are embedded particles
    }
 
@@ -608,7 +608,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       apx.Append(Form("_PT%.0f%.0f",ptHardMinEmb,ptHardMaxEmb));
    } 
 
-   TString note = Form("_TT%d%d_%d%d_AN%d%d_%s%s", TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, cntype.Data(), apx.Data());
+   TString note = Form("_TT%d%d_%d%d_AN%d%d_%s%s%s", TMath::Nint(ttLowR), TMath::Nint(ttHighR), TMath::Nint(ttLowS), TMath::Nint(ttHighS), typeOfData, typeOfAnal, cntype.Data(), apx.Data(), suffix);
  
    //REAL TRACKS - JET CLUSTERIZER 
    AliEmcalJetTask* jetFinderTask = 0x0;
