@@ -203,6 +203,8 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
       gSystem->Exec(command.Data());
 
       // Store it in a tree inside a root file
+      TFile tempfile(internalFilename, "RECREATE");
+      tempfile.cd();
       TTree tree(treeName, treeName);
 
       if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
@@ -213,8 +215,6 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         return kFALSE;
       }
 
-      TFile tempfile(internalFilename, "RECREATE");
-      tempfile.cd();
       tree.Write();
       tempfile.Close();
       AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
