@@ -102,7 +102,7 @@ private:
   Bool_t AddTree(TTree* tree, TString type);
   Bool_t AddChain(TString type, TString period, TString pass);
   void SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
-                      TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass);
+                      TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString &indexName);
   const TString GetYearFromPeriod(const TString& period);
   const TString Wget(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation);
   const TString CreatePath(TString type, TString period, TString pass);

@@ -17,6 +17,7 @@
 #include "TFile.h"
 #include "TChain.h"
 #include "TMath.h"
+#include "TStatToolkit.h"
 
 ClassImp(AliExternalInfo)
 
@@ -97,7 +98,7 @@ void AliExternalInfo::PrintConfig(){
 
 /// Sets up all variables according to period, pass and type. Extracts information from the config file
 void AliExternalInfo::SetupVariables(TString& internalFilename, TString& internalLocation, Bool_t& resourceIsTree, TString& pathStructure, \
-                                     TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass){
+                                     TString& detector, TString& rootFileName, TString& treeName, const TString& type, const TString& period, const TString& pass, TString & indexName){
   // Check if resource is a tree in a root file or not
   pathStructure = CreatePath(type, period, pass);
 
@@ -116,7 +117,8 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
 
   rootFileName = fLocationTimeOutMap[type + ".filename"];
   treeName     = fLocationTimeOutMap[type + ".treename"];
-
+  indexName= fLocationTimeOutMap[type + ".indexname"];
+  if (indexName.Length()<=0) indexName="run";
   // Create the local path where to store the information of the resource
   internalLocation += pathStructure;
   AliInfo(TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
@@ -152,12 +154,13 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
   TString rootFileName = "";
   TString treeName = "";
   TString pathStructure = "";
+  TString indexName=""; 
 
   // initialization of external variables
   externalLocation = fLocationTimeOutMap[type + ".location"];
 
   // Setting up all the local variables
-  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   // Checking if resource needs to be downloaded
   const Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
@@ -240,11 +243,12 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
   TString rootFileName = "";
   TString treeName = "";
   TString pathStructure = "";
+  TString indexName=""; 
 
   TTree* tree = 0x0;
 
   // Setting up all the local variables
-  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
 
@@ -302,9 +306,11 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
   TString rootFileName = "";
   TString treeName = "";
   TString pathStructure = "";
+  TString indexName=""; 
+ 
 
   // Setting up all the local variables
-  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   TString cmd = TString::Format("/bin/ls %s", internalFilename.Data());
   // std::cout << "==== cmd: " << cmd << std::endl;
@@ -352,8 +358,28 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass){
 /// @TODO Add 'return false' when adding to the friends tree was not successful
 /// \return kTRUE
 Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
+  //
+  //
+  //
+  TString indexName= fLocationTimeOutMap[type + ".indexname"];
+  if (indexName.Length()>0){
+    if (tree->BuildIndex(indexName)<0){
+      ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
+    }
+  }else{
+    if ( tree->GetListOfBranches()->FindObject("run") || tree->GetListOfAliases()->FindObject("run")) {
+      tree->BuildIndex("run");
+      indexName="run";
+    }
+    else{
+      if ( tree->GetListOfBranches()->FindObject("raw_run")) {
+	tree->BuildIndex("raw_run");
+	indexName="raw_run";
+      }
+    }
+  }
+  TStatToolkit::AddMetadata(tree,"TTree.indexName",indexName.Data());
 
-  if (tree->BuildIndex("run") < 0) tree->BuildIndex("raw_run");
   TString name = "";
 
   if(type.Contains("QA")){ // use TPC instead of QA.TPC
@@ -387,9 +413,10 @@ Bool_t AliExternalInfo::AddChain(TString type, TString period, TString pass){
   TString rootFileName = "";
   TString treeName = "";
   TString pathStructure = "";
+  TString indexName=""; 
 
   // Setting up all the local variables
-  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass);
+  SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
   AliInfo(TString::Format("Add to internal Chain: %s", internalFilename.Data()));
   AliInfo(TString::Format("with tree name: %s",        treeName.Data()));
   fChain->AddFile(internalFilename.Data(), TChain::kBigNumber, treeName);
