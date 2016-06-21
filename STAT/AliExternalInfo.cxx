@@ -367,7 +367,7 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
       ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
     }
   }else{
-    if ( tree->GetListOfBranches()->FindObject("run") || tree->GetListOfAliases()->FindObject("run")) {
+    if ( tree->GetListOfBranches()->FindObject("run") || ( tree->GetListOfAliases() && tree->GetListOfAliases()->FindObject("run"))) {
       tree->BuildIndex("run");
       indexName="run";
     }
@@ -525,3 +525,35 @@ const TString AliExternalInfo::Wget(TString& mifFilePath, const TString& interna
                                      mifFilePath.Data(), externalLocation.Data());
   return command;
 }
+
+
+/// \param period  LHC period
+/// \param pass    calibratio pass
+
+TTree * AliExternalInfo::GetCPassTree(const char * period, const  char *pass){
+  //
+  // Try to find production information about pass OCDB export
+  // To find the production description field of the overlal production table is queried
+  //
+  // Warnig:
+  //    In some cases mif format internaly used not stable 
+  //    Unit consistency test should be part of procedure
+  //
+  TTree * treeProdArray=0, *treeProd=0;
+  AliExternalInfo info;
+  treeProdArray = info.GetTreeCPass();
+  treeProdArray->Scan("ID:Description:Tag",TString::Format("strstr(Tag,\"%s\")&&strstr(Tag,\"%s\")&& strstr(Description,\"merging\")",period,pass).Data(),"col=10:100:100");
+  // check all candidata production and select one which exports OCDB
+  Int_t entries= treeProdArray->Draw("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")&& strstr(Description,\"merging\")",period,pass).Data(),"goff");  
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    TTree * treeProd0 = info.GetTreeProdCycleByID(TString::Format("%.0f",treeProdArray->GetV1()[ientry]).Data());
+    Int_t status = treeProd0->Draw("1","strstr(outputdir,\"OCDB\")==1","goff");       // check presence of the OCDB 
+    if (status==0) {
+      delete treeProd0;
+      continue;
+    }
+    treeProd=treeProd0;
+  }
+  return treeProd;
+}
+

@@ -80,6 +80,7 @@ public:
   TTree* GetTreeProdCycle()                                             {return GetTree("MonALISA.ProductionCycle", "", "");}
   TTree* GetTreeCPass()                                                 {return GetTree("MonALISA.ProductionCPass", "", "");}
   TTree* GetTreeProdCycleByID(TString ID)                               {return GetTree("MonALISA.ProductionCycleID", ID, "");}
+  TTree*  GetCPassTree(const char * period, const  char *pass); 
 
   TChain* GetChain(TString type, TString period, TString pass);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}
