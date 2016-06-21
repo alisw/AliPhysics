@@ -768,7 +768,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fMCcheckMother->Fill(abs(pidM));
     }
 
-    if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+    //if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
 
     Bool_t pid_eleD = IsDdecay(pidM);
     Bool_t pid_eleB = IsBdecay(pidM);
@@ -1068,12 +1068,12 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
       if(!(aAssotrack->HasPointOnITSLayer(0) || aAssotrack->HasPointOnITSLayer(1))) continue;
 
     //-------loose cut on partner electron
-    if(ptAsso <0.2) continue;
+    if(ptAsso <1.5) continue;
     if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
     if(nsigma < 0 || nsigma > 3) continue;
     Double_t dphie_tmp = aAssotrack->Phi() - track->Phi();
     Double_t dphie = atan2(sin(dphie_tmp),cos(dphie_tmp));
-    if(track->Pt()>2.0)fHistHFEcorr->Fill(dphie);
+    if(track->Pt()>2.5)fHistHFEcorr->Fill(dphie);
   }
 }
 
