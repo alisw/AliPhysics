@@ -174,7 +174,6 @@ class AliVertexerTracks : public TObject {
 			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
   void     VertexFitter(Bool_t vfit=kTRUE, Bool_t chiCalc=kTRUE,Int_t useWeights=0);
-  void     VertexFitterNew(Bool_t vfit=kTRUE, Bool_t chiCalc=kTRUE,Int_t useWeights=0);
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
   void     TooFewTracks();
 
