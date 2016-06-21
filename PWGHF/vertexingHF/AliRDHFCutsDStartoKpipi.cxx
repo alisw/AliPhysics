@@ -350,7 +350,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(dd)) return 0;
+    if(!AreDaughtersSelected(dd,aod)) return 0;
     if(fTrackCutsSoftPi) {
       AliAODVertex *vAOD = d->GetPrimaryVtx();
       Double_t pos[3],cov[6];

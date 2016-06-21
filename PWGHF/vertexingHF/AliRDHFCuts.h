@@ -276,8 +276,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelectedForCentrFlattening(Float_t centvalue);
   Bool_t IsEventSelected(AliVEvent *event);
-  Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
-  Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const;
+  Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd, const AliAODEvent* aod=0x0) const;
+  Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts, const AliAODEvent* aod=0x0) const;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF * /*rd*/) {return 1;}
   void SetupPID(AliVEvent *event);
 
@@ -354,6 +354,11 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   Bool_t CheckPtDepCrossedRows(TString rows,Bool_t print=kFALSE) const;
 
+  void SetUseCutGeoNcrNcl(Bool_t opt){fUseCutGeoNcrNcl=opt;}
+  void ConfigureCutGeoNcrNcl(Double_t dz, Double_t len, Double_t onept, Double_t fncr, Double_t fncl){
+    fDeadZoneWidth=dz;  fCutGeoNcrNclLength=len; fCutGeoNcrNclGeom1Pt=onept;
+    fCutGeoNcrNclFractionNcr=fncr; fCutGeoNcrNclFractionNcl=fncl;
+  }
 
 
  protected:
@@ -426,10 +431,16 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fCutRatioSignalNOverCrossRowsTPC;   /// min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0 
   TString fCutMinCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
   TFormula *f1CutMinNCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
- 
+  Bool_t fUseCutGeoNcrNcl; /// flag for enabling/disabling geometrical cut on TPC track
+  Double_t fDeadZoneWidth;       /// 1st parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclLength;  /// 2nd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+  
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,36);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,37);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

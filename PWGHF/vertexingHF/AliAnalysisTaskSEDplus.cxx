@@ -477,8 +477,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after topological cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+PID cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"D+ not on-the-fly reco");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+SingleTrack cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"D+ not on-the-fly reco");
  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
   fHistNEvents->Sumw2();
@@ -883,8 +884,14 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       }
 
       Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+      Bool_t passSingleTrackCuts=kTRUE;
+      if(fRDCutsAnalysis->GetIsSelectedCuts() && fRDCutsAnalysis->GetIsSelectedPID() && !passTopolAndPIDCuts) passSingleTrackCuts=kFALSE;
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
+      fHistNEvents->Fill(9);
+      if(!passSingleTrackCuts) continue;
+      fHistNEvents->Fill(10);
+      if(passTopolAndPIDCuts) fHistNEvents->Fill(11);
 
       Double_t etaD=d->Eta();
       Double_t phiD=d->Phi();
@@ -1016,16 +1023,13 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	
 	//Fill histos
 	index=GetHistoIndex(iPtBin);
-	fHistNEvents->Fill(9);
 	nSelectednopid++;
 	fPtVsMassNoPid->Fill(invMass,ptCand);
 	fMassHistNoPid[index]->Fill(invMass);
 	if(fDoImpPar){
 	  fHistMassPtImpPar[0]->Fill(arrayForSparse);
 	}
-
 	if(passTopolAndPIDCuts){
-	  fHistNEvents->Fill(10);
 	  nSelected++;
 	  fPtVsMass->Fill(invMass,ptCand);
 	  fMassHist[index]->Fill(invMass);
