@@ -594,7 +594,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
+    if(!AreDaughtersSelected(d,aod)) return 0;
   }
 
 
