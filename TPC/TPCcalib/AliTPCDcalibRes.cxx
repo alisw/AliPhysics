@@ -71,7 +71,8 @@ const Float_t AliTPCDcalibRes::kTPCRowDX[AliTPCDcalibRes::kNPadRows] = { // pad-
 };
 
 
-AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstance = 0;
+AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstance    = 0;
+AliTPCDcalibRes* AliTPCDcalibRes::fgUsedInstanceExt = 0;
 
 
 ClassImp(AliTPCDcalibRes)
@@ -4040,7 +4041,8 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
     return;
   }
   //
-  AliTPCDcalibRes* calib = AliTPCDcalibRes::GetUsedInstance();
+  AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance(), 
+    *calibExt = AliTPCDcalibRes::GetUsedInstanceExt();
 
   float x = AliTPCDcalibRes::GetTPCRowX(row);
   float dist[AliTPCDcalibRes::kResDim] = {0};
@@ -4051,43 +4053,15 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   //
   Bool_t res = calib->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, dist);
   if (!res) { printf("Failed to evaluate smooth distortion\n"); exit(1); }
-
-  /*
-  // Marian stored Z track coordinate instead of cluster one, need to correct for this
-  if (fApplyZt2Zc) {
-    float deriv[AliTPCDcalibRes::kResDim*3];
-    const double inversionEps = 20e-4; // when inverting, stop Newton-Raphson iterations at this eps
-    const int    inversionMaxIt = 3; // when inverting, stop Newton-Raphson after some numbers of iterations
-    double change = 0, xInv = 1./x;
-    float zc = z2x*x;
-    float zt = zc + dist[kResZ]; // 1st guess on true zt at measured zc
-    //
-    // use Newton-Raphson method for NDLocal inversion to get zt = F(zc) from 
-    // dz == zt - zc = NDLoc(zt)   ->  zc - [zt - NDLoc(zt)]=0 
-    // ->  zt_{i+1} = zt_i - (zc - [zt - NDLoct(zt_i)])/(-d[zt_i-NDLoc(zt_i)]/dz)
-    //
-    int it = 0;
-    do {
-      z2x = zt*xInv;
-      res = GetSmoothEstimate(sector, x, y2x, z2x, dist, deriv);
-      if (!res) {printf("Failed to evaluate smooth distortion\n");exit(1);}
-      double bot = 1. - deriv[kResZ*3+2]*xInv;  // dF(zt_i)/dz
-      if (TMath::Abs(bot)<1e-6) break;
-      double top = zc - (zt - dist[kResZ]); // zc - F(zt_i) 
-      double change = top/bot;
-      //  printf("It %d Eps:%+e, Zc:%+e, Zt:%+e Ztn:%+e DZ:%+e | dztmp: :%+e DD:%+e\n",
-      //     it,change,zc,zt,zt+change,dz,dztmp,deriv[kndZ2R]*xInv);
-      zt += change;
-      it++;
-    } while(it<inversionMaxIt && TMath::Abs(change)>inversionEps);
-    //
-    // now query at fixed Z2X
-    z2x = zt*xInv;
-    res = GetSmoothEstimate(sector, x, y2x, z2x, dist);
-    if (!res) {printf("Failed to evaluate smooth distortion\n");exit(1);}
+  //
+  //check if extra instance was not set, in this case, average over 2
+  if (calibExt) {
+    float distExt[AliTPCDcalibRes::kResDim] = {0};
+    res = calibExt->GetSmoothEstimate(sector, x, y2x, z2x, 0xff, distExt);
+    if (!res) { printf("Failed to evaluate smooth distortion for Extra param\n"); exit(1); }
+    for (int i=AliTPCDcalibRes::kResDim;i--;) dist[i] = 0.5*(dist[i]+distExt[i]);
   }
-  */
-
+  //
   for (int i=0;i<AliTPCDcalibRes::kResDim;i++) corrLoc[i] = dist[i];
   //
 }

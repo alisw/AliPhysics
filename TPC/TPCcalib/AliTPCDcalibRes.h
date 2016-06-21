@@ -387,6 +387,8 @@ class AliTPCDcalibRes: public TNamed
   static TTree*           LoadTree(const char* fname="voxelResTree.root",Int_t mStyle=7,Int_t mCol=kBlack);
   static void SetUsedInstance(AliTPCDcalibRes* inst) {fgUsedInstance = inst;}
   static AliTPCDcalibRes* GetUsedInstance()          {return fgUsedInstance;}
+  static void SetUsedInstanceExt(AliTPCDcalibRes* inst) {fgUsedInstanceExt = inst;}
+  static AliTPCDcalibRes* GetUsedInstanceExt()          {return fgUsedInstanceExt;}
   static float GetTPCRowX(int r)                     {return kTPCRowX[r];}
  protected:
   //
@@ -541,6 +543,7 @@ class AliTPCDcalibRes: public TNamed
   int   fArrSectID[kNPadRows];            //! cluster sector id 
   //
   static AliTPCDcalibRes* fgUsedInstance; //! interface instance to use for parameterization
+  static AliTPCDcalibRes* fgUsedInstanceExt; //! interface to extra instance if average of 2 maps to be used
   //
   static const float kMaxResid;     // max range of distortions, must be <= than the double32_t range of dst_t
   static const float kMaxResidZVD;  // max range of distortions in VDrift calib, must be <= than the double32_t range of dtv_t
