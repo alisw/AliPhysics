@@ -298,34 +298,34 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
     histname = TString::Format("%s/histo_g_%d", groupname.Data(), fCentBin);
     TH1D* fHg = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_n70%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_n70_%d", groupname.Data(), fCentBin);
     TH1D* fHg_n70 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_n75%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_n75_%d", groupname.Data(), fCentBin);
     TH1D* fHg_n75 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_n80%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_n80_%d", groupname.Data(), fCentBin);
     TH1D* fHg_n80 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_n85%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_n85_%d", groupname.Data(), fCentBin);
     TH1D* fHg_n85 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_n90%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_n90_%d", groupname.Data(), fCentBin);
     TH1D* fHg_n90 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_pt70%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_pt70_%d", groupname.Data(), fCentBin);
     TH1D* fHg_pt70 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_pt75%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_pt75_%d", groupname.Data(), fCentBin);
     TH1D* fHg_pt75 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_pt80%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_pt80_%d", groupname.Data(), fCentBin);
     TH1D* fHg_pt80 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_pt85%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_pt85_%d", groupname.Data(), fCentBin);
     TH1D* fHg_pt85 = (TH1D*)GetHistogram(histname.Data());
 
-    histname = TString::Format("%s/histo_g_pt90%d", groupname.Data(), fCentBin);
+    histname = TString::Format("%s/histo_g_pt90_%d", groupname.Data(), fCentBin);
     TH1D* fHg_pt90 = (TH1D*)GetHistogram(histname.Data());
 
     histname = TString::Format("%s/histo_ptd_%d", groupname.Data(), fCentBin);
@@ -574,12 +574,14 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
     std::vector< int > jet_sorted_idxvec ;
 
     // loop over all jets
-    for(auto jet : jetCont->accepted())
+    for( auto jet : jetCont->accepted())
       {
-      if (!jet) continue;
+      if (!jet) { continue; }
       Int_t track_idx = -999; // index variable for tracks
+      jet_pt = 0. ; jet_npart = 0; jet_nconst = 0;
 
       // jet : Sorting by p_T jet constituents
+      jet_sorted_idxvec.clear();
       jet_sorted_idxvec = jet->SortConstituentsPt ( fTracksContArray );
 
       jet_pt = jet->Pt();
@@ -627,7 +629,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
       for ( Size_t i = 0; i < jet_npart; i++ )
         {
         track_idx = jet_sorted_idxvec.at (i);
-        track = jet->TrackAt ( track_idx, fTracksContArray );
+        track = dynamic_cast<AliVParticle*>(fTracksContArray->At( track_idx ));
         if (!track) { std::cout << "Parsing tracks of jets :: track not defined but it should!!!" << std::endl; continue; }
 
         Double_t dpart = jet->DeltaR ( track );
@@ -778,27 +780,22 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
       fHptd->Fill( TMath::Sqrt(sum_part_pt2_tot)/sum_part_pt_tot );
 
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_n70)/sum_part_pt_n70 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_n75)/sum_part_pt_n75 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_n80)/sum_part_pt_n80 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_n85)/sum_part_pt_n85 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_n90)/sum_part_pt_n90 );
+      fHptd_n70->Fill( TMath::Sqrt(sum_part_pt2_n70)/sum_part_pt_n70 );
+      fHptd_n75->Fill( TMath::Sqrt(sum_part_pt2_n75)/sum_part_pt_n75 );
+      fHptd_n80->Fill( TMath::Sqrt(sum_part_pt2_n80)/sum_part_pt_n80 );
+      fHptd_n85->Fill( TMath::Sqrt(sum_part_pt2_n85)/sum_part_pt_n85 );
+      fHptd_n90->Fill( TMath::Sqrt(sum_part_pt2_n90)/sum_part_pt_n90 );
 
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_pt70)/sum_part_pt_pt70 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_pt75)/sum_part_pt_pt75 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_pt80)/sum_part_pt_pt80 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_pt85)/sum_part_pt_pt85 );
-      fHptd->Fill( TMath::Sqrt(sum_part_pt2_pt90)/sum_part_pt_pt90 );
-
-
-      jet_sorted_idxvec.clear();
-
+      fHptd_pt70->Fill( TMath::Sqrt(sum_part_pt2_pt70)/sum_part_pt_pt70 );
+      fHptd_pt75->Fill( TMath::Sqrt(sum_part_pt2_pt75)/sum_part_pt_pt75 );
+      fHptd_pt80->Fill( TMath::Sqrt(sum_part_pt2_pt80)/sum_part_pt_pt80 );
+      fHptd_pt85->Fill( TMath::Sqrt(sum_part_pt2_pt85)/sum_part_pt_pt85 );
+      fHptd_pt90->Fill( TMath::Sqrt(sum_part_pt2_pt90)/sum_part_pt_pt90 );
 
       }
       // end of loopt over all jets
 
     jet = NULL; track = NULL;
-
     }
     // end of loop over jet container collection
 
@@ -1165,7 +1162,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
 
       //=====================================================================================
       // Distribution of girth (radial girth) g = sum_jet_parts ( r_i * ( pt_i/pt_jet ) )
-      Int_t hg_nbin = 100; Double_t hg_binwidth = 0.01; Double_t hg_low = 0.;
+      Int_t hg_nbin = 1000; Double_t hg_binwidth = 0.01; Double_t hg_low = 0.;
       Double_t hg_high = hg_low + hg_binwidth * hg_nbin;
 
       //########################################################
@@ -1175,52 +1172,52 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //########################################################
 
       //########################################################
-      histname = TString::Format("%s/histo_g_n70%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_n70_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_n75%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_n75_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_n80%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_n80_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_n85%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_n85_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_n90%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_n90_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
       //########################################################
 
       //########################################################
-      histname = TString::Format("%s/histo_g_pt70%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_pt70_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_pt75%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_pt75_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_pt80%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_pt80_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_pt85%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_pt85_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
 
-      histname = TString::Format("%s/histo_g_pt90%d", groupname.Data(), cent);
+      histname = TString::Format("%s/histo_g_pt90_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s - all jets;g;1/N_{jets} dN/dg", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, hg_nbin, hg_low, hg_high);
       //########################################################
 
       //=====================================================================================
       // Distribution of dispersion d pt_D = sqrt ( sum (pt_i^2) )/sum (pt_i)
-      Int_t hptd_nbin = 100; Double_t hptd_binwidth = 0.01; Double_t hptd_low = 0.;
+      Int_t hptd_nbin = 1000; Double_t hptd_binwidth = 0.01; Double_t hptd_low = 0.;
       Double_t hptd_high = hptd_low + hptd_binwidth * hptd_nbin;
 
       //########################################################
