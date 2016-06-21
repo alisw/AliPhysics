@@ -79,6 +79,7 @@ public:
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);
+  virtual Bool_t CreateNveQAHistograms(TList *list);
 
   /// Activate the processing for the passed harmonic
   /// \param harmonic the desired harmonic number to activate

@@ -342,6 +342,39 @@ Bool_t AliQnCorrectionsDetectorConfigurationChannels::CreateQAHistograms(TList *
   return retValue;
 }
 
+/// Asks for non validated entries QA histograms creation
+///
+/// A new histograms list is created for the detector and incorporated
+/// to the passed list. Then the new list is passed first to the input data corrections
+/// and then to the Q vector corrections.
+/// \param list list where the histograms should be incorporated for its persistence
+/// \return kTRUE if everything went OK
+Bool_t AliQnCorrectionsDetectorConfigurationChannels::CreateNveQAHistograms(TList *list) {
+  TList *detectorConfigurationList = new TList();
+  detectorConfigurationList->SetName(this->GetName());
+  detectorConfigurationList->SetOwner(kTRUE);
+
+  /* now propagate it to the input data corrections */
+  Bool_t retValue = kTRUE;
+  for (Int_t ixCorrection = 0; ixCorrection < fInputDataCorrections.GetEntries(); ixCorrection++) {
+    retValue = retValue && (fInputDataCorrections.At(ixCorrection)->CreateNveQAHistograms(detectorConfigurationList));
+  }
+
+  /* if everything right propagate it to Q vector corrections */
+  if (retValue) {
+    for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
+      retValue = retValue && (fQnVectorCorrections.At(ixCorrection)->CreateNveQAHistograms(detectorConfigurationList));
+    }
+  }
+  /* now incorporate the list to the passed one */
+  if (detectorConfigurationList->GetEntries() != 0)
+    list->Add(detectorConfigurationList);
+  else
+    delete detectorConfigurationList;
+
+  return retValue;
+}
+
 /// Asks for attaching the needed input information to the correction steps
 ///
 /// The detector list is extracted from the passed list and then

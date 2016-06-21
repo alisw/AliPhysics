@@ -147,6 +147,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
 
   QnManager->SetShouldFillQnVectorTree(kFALSE);
   QnManager->SetShouldFillQAHistograms(kTRUE);
+  QnManager->SetShouldFillNveQAHistograms(kTRUE);
   QnManager->SetShouldFillOutputHistograms(kTRUE);
 
   taskQnCorrections->SetFillExchangeContainerWithQvectors(kTRUE);
@@ -207,6 +208,15 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrections() {
           AliAnalysisManager::kOutputContainer,
           "CalibrationQA.root");
     mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotHistQA(), cOutputHistQA );
+  }
+
+  if (QnManager->GetShouldFillNveQAHistograms()) {
+    AliAnalysisDataContainer *cOutputHistNveQA =
+      mgr->CreateContainer(QnManager->GetCalibrationNveQAHistogramsContainerName(),
+          TList::Class(),
+          AliAnalysisManager::kOutputContainer,
+          "CalibrationNveQA.root");
+    mgr->ConnectOutput(taskQnCorrections, taskQnCorrections->OutputSlotHistNveQA(), cOutputHistNveQA );
   }
 
   if (taskQnCorrections->GetFillEventQA()) {

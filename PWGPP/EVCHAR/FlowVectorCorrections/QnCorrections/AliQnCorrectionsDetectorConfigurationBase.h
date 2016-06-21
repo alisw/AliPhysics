@@ -148,6 +148,14 @@ public:
   /// \return kTRUE if everything went OK
   virtual Bool_t CreateQAHistograms(TList *list) = 0;
 
+  /// Asks for non validated entries QA histograms creation
+  ///
+  /// The request is transmitted to the different corrections.
+  /// Pure virtual function
+  /// \param list list where the histograms should be incorporated for its persistence
+  /// \return kTRUE if everything went OK
+  virtual Bool_t CreateNveQAHistograms(TList *list) = 0;
+
   /// Asks for attaching the needed input information to the correction steps
   ///
   /// The request is transmitted to the different corrections.

@@ -136,6 +136,16 @@ Bool_t AliQnCorrectionsQnVectorRecentering::AttachInput(TList *list) {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorRecentering::CreateQAHistograms(TList *list) {
 
+  return kTRUE;
+}
+
+/// Asks for non validated entries QA histograms creation
+///
+/// Allocates the histogram objects and creates the non validated entries QA histograms.
+/// \param list list where the histograms should be incorporated for its persistence
+/// \return kTRUE if everything went OK
+Bool_t AliQnCorrectionsQnVectorRecentering::CreateNveQAHistograms(TList *list) {
+
   fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
       Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
       Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
@@ -205,7 +215,7 @@ Bool_t AliQnCorrectionsQnVectorRecentering::Process(const Float_t *variableConta
         }
       } /* correction information not validated, we leave the Q vector untouched */
       else {
-        fQANotValidatedBin->Fill(variableContainer, 1.0);
+        if (fQANotValidatedBin != NULL) fQANotValidatedBin->Fill(variableContainer, 1.0);
       }
     }
     else {

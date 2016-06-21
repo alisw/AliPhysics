@@ -183,6 +183,16 @@ Bool_t AliQnCorrectionsQnVectorAlignment::AttachInput(TList *list) {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
 
+  return kTRUE;
+}
+
+/// Asks for non validated entries QA histograms creation
+///
+/// Allocates the histogram objects and creates the non validated entries QA histograms.
+/// \param list list where the histograms should be incorporated for its persistence
+/// \return kTRUE if everything went OK
+Bool_t AliQnCorrectionsQnVectorAlignment::CreateNveQAHistograms(TList *list) {
+
   fQANotValidatedBin = new AliQnCorrectionsHistogramSparse(
       Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
       Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
@@ -280,7 +290,7 @@ Bool_t AliQnCorrectionsQnVectorAlignment::Process(const Float_t *variableContain
         } /* if the correction is not significant we leave the Q vector untouched */
       } /* if the correction bin is not validated we leave the Q vector untouched */
       else {
-        fQANotValidatedBin->Fill(variableContainer, 1.0);
+        if (fQANotValidatedBin != NULL) fQANotValidatedBin->Fill(variableContainer, 1.0);
       }
     }
     else {

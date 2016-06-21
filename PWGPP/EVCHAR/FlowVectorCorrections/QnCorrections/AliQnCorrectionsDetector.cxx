@@ -105,6 +105,19 @@ Bool_t AliQnCorrectionsDetector::CreateQAHistograms(TList *list) {
   return retValue;
 }
 
+/// Asks for non validated entries QA histograms creation
+///
+/// The request is transmitted to the attached detector configurations
+/// \param list list where the histograms should be incorporated for its persistence
+/// \return kTRUE if everything went OK
+Bool_t AliQnCorrectionsDetector::CreateNveQAHistograms(TList *list) {
+  Bool_t retValue = kTRUE;
+  for (Int_t ixConfiguration = 0; ixConfiguration < fConfigurations.GetEntriesFast(); ixConfiguration++) {
+    retValue = retValue && (fConfigurations.At(ixConfiguration)->CreateNveQAHistograms(list));
+  }
+  return retValue;
+}
+
 /// Asks for attaching the needed input information to the correction steps
 ///
 /// The request is transmitted to the attached detector configurations

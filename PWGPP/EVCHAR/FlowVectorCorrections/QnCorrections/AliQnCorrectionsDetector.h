@@ -56,6 +56,7 @@ public:
   void CreateSupportDataStructures();
   Bool_t CreateSupportHistograms(TList *list);
   Bool_t CreateQAHistograms(TList *list);
+  Bool_t CreateNveQAHistograms(TList *list);
   Bool_t AttachCorrectionInputs(TList *list);
   Bool_t ProcessCorrections(const Float_t *variableContainer);
   void IncludeQnVectors(TList *list);
