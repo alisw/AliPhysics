@@ -957,7 +957,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
             AliWarning("Cannot compute multiplicity with SPD tracklets from AOD");
             return 1E20;
          }
-      } else if (fCentralityType.Contains("ALIMULTSELECTION")) {
+      } else if (fCentralityType.Contains("AliMultSelection")) {
 	 TObjArray* a=(TObjArray*) fCentralityType.Tokenize("_");
 	 if (!a) {
             AliWarning("Problem with AliRsnMiniAnalysisTask::fCentralityType string");
