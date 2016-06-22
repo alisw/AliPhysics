@@ -1742,12 +1742,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 2.5, fWeightJetJetMC); // pi0
         } else if (motherPDG == 221){
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 3.5, fWeightJetJetMC); // eta
-        } else if (motherPDG == 411 || motherPDG == 421 || motherPDG == 431 ||
-                 motherPDG == 443 || motherPDG == 100443 || motherPDG == 200443 ) {
-          fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 4.5, fWeightJetJetMC); // c
-        } else if (motherPDG == 511 || motherPDG == 521 || motherPDG == 531 ||
-                 motherPDG == 553 || motherPDG == 100553 || motherPDG == 200553 ) {
+        } else if ( int(motherPDG/100.)==5 || int(motherPDG/1000.)==5 ){
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 5.5, fWeightJetJetMC); // b
+        } else if ( int(motherPDG/100.)==4 || int(motherPDG/1000.)==4 ){
+          fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 4.5, fWeightJetJetMC); // c
         } else if (motherPDG == 23 || motherPDG == 24){
           fHistoTrueClusElectronPtvsSource[fiCut]->Fill(mesoncand->Pt(), 6.5, fWeightJetJetMC); // W/Z
         } else if (motherPDG == 15) {
