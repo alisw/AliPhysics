@@ -1746,6 +1746,16 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 //   histQtot->GetXaxis()->SetRange(1,3);
   TGraphErrors *fitPadRegionQmax = AliTPCcalibBase::FitSlices(histQmax,200,1,.15,.85);
   TGraphErrors *fitPadRegionQtot = AliTPCcalibBase::FitSlices(histQtot,200,1,.15,.85);
+  if (fitPadRegionQmax->GetN()<3) {
+    AliError("Pad region calibration for Qmax failed. Using default values.");
+    for (Int_t ireg=0; ireg<3; ++ireg) fitPadRegionQmax->SetPoint(ireg, Double_t(ireg), 1.);
+  }
+
+  if (fitPadRegionQtot->GetN()<3) {
+    AliError("Pad region calibration for Qtot failed. Using default values.");
+    for (Int_t ireg=0; ireg<3; ++ireg) fitPadRegionQtot->SetPoint(ireg, Double_t(ireg), 1.);
+  }
+
   histQmax->GetXaxis()->SetRange(0,-1);
   histQtot->GetXaxis()->SetRange(0,-1);
   fitPadRegionQmax->RemovePoint(3);
