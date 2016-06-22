@@ -709,7 +709,9 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     //you have to set a flag and the limits of the pT interval for your trigger
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);    
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
-    AliParticleContainer *PartCont = GetParticleContainer(0);
+    AliParticleContainer *PartCont =NULL;
+    if (fJetShapeSub==kConstSub) PartCont = GetParticleContainer(1);
+    else PartCont = GetParticleContainer(0);
     TClonesArray *TrackArray = PartCont->GetArray();
     TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
@@ -1268,7 +1270,9 @@ Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2
 //--------------------------------------------------------------------------
 Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
 
-  AliParticleContainer *PartCont = GetParticleContainer(0);
+  AliParticleContainer *PartCont = NULL;
+  if (fJetShapeSub==kConstSub) PartCont = GetParticleContainer(1);
+  else PartCont = GetParticleContainer(0);
   TClonesArray *TracksArray = PartCont->GetArray();
  
   if(!PartCont || !TracksArray) return -99999;
