@@ -3515,7 +3515,7 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
 	  u2Vec[0] = dxw*dxw;
 	  u2Vec[1] = dfw*dfw;
 	  u2Vec[2] = dzw*dzw;
-	  double kernW = GetKernelWeight(u2Vec,3);
+	  double kernW = GetKernelWeight(u2Vec,3, fKernelType);
 	  if (kernW<kZeroK) continue; 
 	  // new point is validated	  
 	  nOccX[ix-ixMn]++;
@@ -3673,7 +3673,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
  double w, int kType,Bool_t usePol2,                       // kernel width and type, do we use pol1 or pol2 interpolation
  Bool_t xIncreasing,                                       // are points increasing in X
  float  maxD2Range                                         // may increase kernel width up to maxD2Range*dataRange
- ) const 
+ )
 {
   // get kernel (width w) smoothed value at xQuery for (opionally ordered in x-increasing) array x,y (optionally err)
   int minPoints = 3+usePol2;
@@ -3710,7 +3710,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
       xSel[npUse] = df;  // we fit wrt queried point!
       ySel[npUse] = y[ip];
       df *= df*ws2;
-      wSel[npUse] = GetKernelWeight(&df,1);
+      wSel[npUse] = GetKernelWeight(&df,1,kType);
       w2Sum += wSel[npUse];
       if (wSel[npUse]<kEps) continue; 
       if (err && err[ip]>0) wSel[npUse] /= err[ip]*err[ip];
@@ -3725,7 +3725,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
   Bool_t res = kFALSE;
   if (npUse<minPoints) {
     valerr[0] = valerr[1] = 0.f;
-    AliErrorF("Found only %d points, %d required",npUse,minPoints);
+    AliErrorClassF("Found only %d points, %d required",npUse,minPoints);
   }
   else {
     float resVal[3],resErr[6];
@@ -3742,22 +3742,22 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
 }
 
 //_____________________________________
-Double_t AliTPCDcalibRes::GetKernelWeight(double* u2vec,int np) const
+Double_t AliTPCDcalibRes::GetKernelWeight(double* u2vec,int np, int kernelType)
 {
   double w = 1;
-  if (fKernelType == kEpanechnikovKernel) {
+  if (kernelType == kEpanechnikovKernel) {
     for (int i=np;i--;) {
       if (u2vec[i]>1) return 0.;
       w *= 3./4.*(1.-u2vec[i]);
     }
   }
-  else if (fKernelType == kGaussianKernel) {
+  else if (kernelType == kGaussianKernel) {
     double u2 = 0;
     for (int i=np;i--;) u2 += u2vec[i];
     w = u2<kMaxGaussStdDev*kMaxGaussStdDev*np ? TMath::Exp(-u2)/TMath::Sqrt(2.*TMath::Pi()) : 0;
   }
   else {
-    AliFatalF("Kernel type %d is not defined",fKernelType);
+    AliFatalClassF("Kernel type %d is not defined",kernelType);
   }
   return w;
 }
@@ -4017,6 +4017,52 @@ Bool_t AliTPCDcalibRes::FindVoxelBin(int sectID, float x, float y, float z, UCha
   int binF = GetY2XBinExact(voxVars[kVoxF],binX);
   if (binF<0||binF>=fNY2XBins) return kFALSE;
   bin[kVoxF] = binF;
+  //
+  return kTRUE;
+}
+
+//_____________________________________________________
+Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect18, float x, float y, float z, 
+				     float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim])
+{
+  // calculate the gradient of distortion+dispersion vs x, (y/x) and (z/x) at point x,y,z of sector sectID
+  //
+  memset(grad,0,kResDimG*kResDim*sizeof(float));
+  if (x<50) return kFALSE; // protection
+
+  // 1) go to ROC sector/row convention, find rows above and below
+  int row159 = GetRowID(x);
+  if (row159<0) row159 = 0;
+  else if (row159>=kNPadRows) row159 = kNPadRows-1;
+  float xRow = kTPCRowX[row159];
+  int rowB[2],rocB[2]; // bounding rows
+  if (x<xRow) {
+    rowB[1] = row159;
+    rowB[0] = row159 ? row159-1:0;    
+  }
+  else {
+    rowB[0] = row159;
+    rowB[1] = row159<kNPadRows-1 ? row159+1:row159;
+  }
+  // weight for extrapolation between rows
+  float wx = rowB[0]==rowB[1] ? 0.f : (x-kTPCRowX[rowB[0]])/(kTPCRowX[rowB[1]]-kTPCRowX[rowB[0]]);
+  //
+  int roc = sect18%kNSect;
+  if (z<0) roc += kNSect;
+  //
+  rocB[0] = rocB[1] = roc;
+  for (int i=0;i<2;i++) if (rowB[i]>=kNRowIROC) {rocB[i] += kNSect2; rowB[i] -= kNRowIROC;} 
+  //
+  float point[2] = {y/x,z/x};
+  const int kNTestPnt = 4;
+  float grTmp[kNTestPnt][kResDim];
+  //
+  // 2) easy part: calculate Cheb. derivatives in Y,Z directly from 
+  for (int id=0;id<2;id++) { // d/d(y/x) and  d/d(z/x)
+    cheb->EvalDeriv(rocB[0], rowB[0],id, point, grTmp[0]); 
+    cheb->EvalDeriv(rocB[1], rowB[1],id, point, grTmp[1]); 
+    for (int i=kResDim;i--;) grad[id+1][i] = grTmp[0][i]+(grTmp[1][i]-grTmp[0][i])*wx;
+  }
   //
   return kTRUE;
 }

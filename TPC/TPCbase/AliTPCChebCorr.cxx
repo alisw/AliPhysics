@@ -335,3 +335,12 @@ Int_t AliTPCChebCorr::GetNMaskedRows(int sector72,TBits* masked) const
   }
   return nmasked;
 }
+
+//__________________________________________
+void AliTPCChebCorr::EvalDeriv(int sector, int row, int dimD, float tz[2], float* d2ddim) const
+{
+  // calculate derivative over input dimension dimD (0:y2x, 1: z2x)
+  if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  const AliCheb2DStack* par = GetParam(sector,tz[0],tz[1]);
+  par->EvalDeriv(row,dimD,tz,d2ddim);
+}

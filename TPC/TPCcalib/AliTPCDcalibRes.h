@@ -209,7 +209,11 @@ class AliTPCDcalibRes: public TNamed
   static Bool_t  GetTruncNormMuSig(double a, double b, double &mean, double &sig);
   static void    TruncNormMod(double a, double b, double mu0, double sig0, double &muCf, double &sigCf);
   static Double_t GetLogL(TH1F* histo, int bin0, int bin1, double &mu, double &sig, double &logL0);
-
+  static Bool_t  GetSmooth1D(double xQuery,double valerr[2],int np,const double* x,const double* y,const double* err,
+			     double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,
+			     Bool_t xIncreasing=kTRUE, Float_t maxD2Range=3.0);
+  static Bool_t  GradientCheb(const AliTPCChebCorr* cheb, int sect18, float x, float y, float z, 
+			      float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim]);
   //------------------------------------
   
 
@@ -217,16 +221,13 @@ class AliTPCDcalibRes: public TNamed
   Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
   void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
 			float scX=1.f,float scP=1.f,float scZ=1.f);
-  Bool_t  GetSmooth1D(double xQuery,double valerr[2],int np,const double* x,const double* y,const double* err,
-		      double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,
-		      Bool_t xIncreasing=kTRUE, Float_t maxD2Range=3.0) const;
   Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
   void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
   //  
   void    CreateCorrectionObject();
   void    InitBinning();
   Int_t   GetXBin(float x);
-  Int_t   GetRowID(float x);
+  static  Int_t  GetRowID(float x);
   
   Bool_t  FindVoxelBin(int sectID, float x, float y, float z, UChar_t bin[kVoxHDim],float voxVars[kVoxHDim]);
   TH1F*   GetEventsRateHisto()          const {return fEvRateH;}
@@ -265,7 +266,7 @@ class AliTPCDcalibRes: public TNamed
   void    FindVoxel(float x, float y2x, float z2x, int &ix,int &ip, int &iz);
   void    FindVoxel(float x, float y2x, float z2x, UChar_t &ix,UChar_t &ip, UChar_t &iz);
   void    GetVoxelCoordinates(int isec, int ix, int ip, int iz,float &x, float &p, float &z);
-  Double_t GetKernelWeight(double *u2vec, int np) const;
+  static Double_t GetKernelWeight(double *u2vec, int np, int kernelType);
 
   Long64_t    GetBin2Fill(const UChar_t binVox[kVoxDim], UShort_t bVal) const;
   UShort_t    GetVoxGBin(const UChar_t bvox[kVoxDim]) const;
