@@ -1578,8 +1578,10 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 //-------------------------------------------------------------
 Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){ 
   if (fPeriodEnum == kLHC15o ||  // PbPb 5TeV 
-      fPeriodEnum == kLHC15k1 || fPeriodEnum == kLHC15k1a || fPeriodEnum == kLHC15k1_plus  || fPeriodEnum == kLHC15k1b  // MC PbPb 5TeV
-     ){
+      fPeriodEnum == kLHC15k1 || fPeriodEnum == kLHC15k1a || fPeriodEnum == kLHC15k1_plus  || fPeriodEnum == kLHC15k1b || // MC PbPb 5TeV
+      fPeriodEnum == kLHC15fm || // pp 13TeV
+      fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 // MC pp 13TeV
+      ){
       return kTRUE;
   } else {
      return kFALSE;

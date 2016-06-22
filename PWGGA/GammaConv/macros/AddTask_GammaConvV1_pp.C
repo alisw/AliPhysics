@@ -779,6 +779,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000"); // dEdx 4 sigma below e
     cuts.AddCut("00010113", "00200079227302008250404000", "0152101500000000"); // pT cut at 0
     cuts.AddCut("00010113", "00200079327302008250404000", "0152101500000000");
+  } else if (trainConfig == 118) {
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); // standard cut Gamma pp 13TeV
+    cuts.AddCut("30110113", "00200009227302008250404000", "0152101500000000"); // mult.: 0-5%
+    cuts.AddCut("31310113", "00200009227302008250404000", "0152101500000000"); // mult.: 5-15%
+    cuts.AddCut("33610113", "00200009227302008250404000", "0152101500000000"); // mult.: 15-30%
+  } else if (trainConfig == 119) {
+    cuts.AddCut("13510113", "00200009227302008250404000", "0152101500000000"); // mult.: 30-50%
+    cuts.AddCut("15010113", "00200009227302008250404000", "0152101500000000"); // mult.: 50-100%
+    cuts.AddCut("10110113", "00200009227302008250404000", "0152101500000000"); // mult.: 0-10%
+    cuts.AddCut("11010113", "00200009227302008250404000", "0152101500000000"); // mult.: 10-100%
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
