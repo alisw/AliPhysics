@@ -51,14 +51,14 @@ public:
   // These histograms can be created using the CreateDataManagerHistograms()
   virtual void CreateEventTrackHistos() = 0; // Creation of basic event histograms
   
+  AliJHistManager *fHMG; // Histogram manager
+  
   // Histograms filled in AliJDataManager.cxx
   AliJTH1D fhTrackSelection; // checking bit convention
   AliJTH1D fhEvents; // event count in centrality classes
   AliJTH1D fhEventTrigger; // event count per trigger bits
   AliJTH1D fhZVertRaw; // z-vertex distribution
   AliJTH2D fhVertexZTriggVtx; // number of vertices and z-vertex distribution
-  
-  AliJHistManager *fHMG; // Histogram manager
   
 protected:
   void CreateDataManagerHistograms(); // Creation of histograms needed in AliJDataManager.cxx

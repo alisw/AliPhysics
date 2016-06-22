@@ -222,6 +222,9 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   
   // Tell the correlation analysis to use the defined acceptance correction
   fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+  if(fcard->Get("UseZVertexBins") == 1){
+    fcorrelations->UseZVertexAcceptance(true);
+  }
   
   // If we want to save the acceptance correction histograms to file for quality assurance, do it
   // Note that the histograms are there only if they are provided from the inclusive file
