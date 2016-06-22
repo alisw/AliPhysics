@@ -22,8 +22,13 @@
  * Default constructor
  */
 AliJHistogramInterface::AliJHistogramInterface() :
-  fCard(0x0),
   fHMG(NULL),
+  fhTrackSelection(),
+  fhEvents(),
+  fhEventTrigger(),
+  fhZVertRaw(),
+  fhVertexZTriggVtx(),
+  fCard(0x0),
   fCentBin(),
   fVtxBin(),
   fPTtBin(),
@@ -36,12 +41,7 @@ AliJHistogramInterface::AliJHistogramInterface() :
   fMassBin(),
   fTypBin(),
   fTypBin3(),
-  fPairPtBin(),
-  fhTrackSelection(),
-  fhEvents(),
-  fhEventTrigger(),
-  fhZVertRaw(),
-  fhVertexZTriggVtx()
+  fPairPtBin()
 {   // default constructor
 
 }
@@ -52,8 +52,13 @@ AliJHistogramInterface::AliJHistogramInterface() :
  *  AliJCard *cardP = JCard to be initialized for the histogram interface
  */
 AliJHistogramInterface::AliJHistogramInterface(AliJCard *cardP) :
-  fCard(cardP),
   fHMG(NULL),
+  fhTrackSelection(),
+  fhEvents(),
+  fhEventTrigger(),
+  fhZVertRaw(),
+  fhVertexZTriggVtx(),
+  fCard(cardP),
   fCentBin(),
   fVtxBin(),
   fPTtBin(),
@@ -66,12 +71,7 @@ AliJHistogramInterface::AliJHistogramInterface(AliJCard *cardP) :
   fMassBin(),
   fTypBin(),
   fTypBin3(),
-  fPairPtBin(),
-  fhTrackSelection(),
-  fhEvents(),
-  fhEventTrigger(),
-  fhZVertRaw(),
-  fhVertexZTriggVtx()
+  fPairPtBin()
 {   // constructor
 
     fHMG = new AliJHistManager( "HistManager","AliJHistos");
@@ -96,8 +96,13 @@ AliJHistogramInterface::AliJHistogramInterface(AliJCard *cardP) :
  * Copy contructor
  */
 AliJHistogramInterface::AliJHistogramInterface(const AliJHistogramInterface& obj) :
-  fCard(obj.fCard),
   fHMG(obj.fHMG),
+  fhTrackSelection(obj.fhTrackSelection),
+  fhEvents(obj.fhEvents),
+  fhEventTrigger(obj.fhEventTrigger),
+  fhZVertRaw(obj.fhZVertRaw),
+  fhVertexZTriggVtx(obj.fhVertexZTriggVtx),
+  fCard(obj.fCard),
   fCentBin(obj.fCentBin),
   fVtxBin(obj.fVtxBin),
   fPTtBin(obj.fPTtBin),
@@ -110,12 +115,7 @@ AliJHistogramInterface::AliJHistogramInterface(const AliJHistogramInterface& obj
   fMassBin(obj.fMassBin),
   fTypBin(obj.fTypBin),
   fTypBin3(obj.fTypBin3),
-  fPairPtBin(obj.fPairPtBin),
-  fhTrackSelection(obj.fhTrackSelection),
-  fhEvents(obj.fhEvents),
-  fhEventTrigger(obj.fhEventTrigger),
-  fhZVertRaw(obj.fhZVertRaw),
-  fhVertexZTriggVtx(obj.fhVertexZTriggVtx)
+  fPairPtBin(obj.fPairPtBin)
 {   // copy constructor
   
 }

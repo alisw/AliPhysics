@@ -35,9 +35,12 @@ public:
   double GetAcceptanceCorrection3DNearSideInclusive(double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Calculate the acceptance correction from a two dimensional histogram
 
   double GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for traditional near side
+  double GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Acceptance correction for traditional near side
   double GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction for 3D near side
+  double GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Acceptance correction for 3D near side
   
   double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction using near side and sampling definitions as given in parameters
+  double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Acceptance correction using near side and sampling definitions as given in parameters
   
   AliJAcceptanceCorrection& operator=(const AliJAcceptanceCorrection& a); // Equal sign operator
   TH2D *GetAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptanceCalculation;} // Getter for calculated acceptance

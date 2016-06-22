@@ -45,6 +45,7 @@ public:
   void FillCorrelationHistograms (fillType fTyp, int cBin, int zBin, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2); // correlation histogram filler
   
   void SetSamplingInclusive(){fsamplingMethod = 1;} // Setter for inclusive sampling
+  void UseZVertexAcceptance(bool useZ){fUseZVertexBinsAcceptance = useZ;} // Setter for fUseZVertexBinsAcceptance
   void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
   
   
@@ -73,6 +74,7 @@ protected:
   double fDeltaPhiPiPi;  // The same as above but measured from -pi to pi
   double fDeltaEta;  // Difference of the pseudorapidities of the trigger and associated particles
   double fXlong;  // The xlong value of the trigger and associated particles
+  int fZBin; // z-vertex bin
   
   bool fNearSide;  // true if near side correlation, false if away side
   bool fNearSide3D; // near side defined by the half ball around the trigger
@@ -84,14 +86,13 @@ protected:
 
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
-  double fGeometricAcceptanceCorrection;   // Acceptance correction due to the detector geometry
-  double fGeometricAcceptanceCorrection3D; // Acceptance correction due to the detector geometry for 3D near side
+  bool fUseZVertexBinsAcceptance; // false = integrate over z-vertex bins, true = Do acceptance correction in z-vertex bins
   
 private:
   
   void FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2, bool fill2DBackground); // jT histogram filler
   void FillDeltaEtaHistograms(fillType fTyp); // deltaEta histogram filler
-  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zBin); // deltaEta deltaPhi histogram filler
+  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp); // deltaEta deltaPhi histogram filler
   void FillPtaHistograms(fillType fTyp); // pTa histogram filler
   void FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign); // jT distribution filler
   void FillJtBackgroundHistograms(int assocType, int gapType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hBackground, AliJTH1D &hBackgroundLikeSign, AliJTH1D &hBackgroundUnlikeSign, AliJTH1D &hPtAssoc, AliJTH2D &hBackground2D, bool fill2DBackground); // jT background filler

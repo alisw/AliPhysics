@@ -580,6 +580,27 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int sampling
 }
 
 /*
+ * Get the acceptance correction for traditional near side definition either from triangle
+ * or from 2D deltaEta deltaPhi mixed event distribution based on the sampling method flag
+ *
+ *  int samplingMethod = 0 for triangle, 1 for mixed event
+ *  double deltaEta = deltaEta for the particle pair
+ *  double deltaPhi = deltaPhi for the particle pair
+ *  int centralityBin = bin index for centrality
+ *  int zVertexBin = z-vertex bin
+ *  int triggerBin = bin index for trigger particle transverse momentum
+ */
+double AliJAcceptanceCorrection::GetAcceptanceCorrectionTraditional(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
+  
+  if(samplingMethod == 0){
+    return GetAcceptanceCorrectionTriangle(deltaEta);
+  } else {
+    return GetAcceptanceCorrectionTraditionalInclusive(deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
+  }
+  
+}
+
+/*
  * Get the acceptance correction for 3D near side definition either from triangle
  * or from 2D deltaEta deltaPhi mixed event distribution based on the sampling method flag
  *
@@ -595,6 +616,27 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingM
     return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
   } else {
     return GetAcceptanceCorrection3DNearSideInclusive(deltaEta,deltaPhi,centralityBin,triggerBin);
+  }
+  
+}
+
+/*
+ * Get the acceptance correction for 3D near side definition either from triangle
+ * or from 2D deltaEta deltaPhi mixed event distribution based on the sampling method flag
+ *
+ *  int samplingMethod = 0 for triangle, 1 for mixed event
+ *  double deltaEta = deltaEta for the particle pair
+ *  double deltaPhi = deltaPhi for the particle pair
+ *  int centralityBin = bin index for centrality
+ *  int zVertexBin = z-vertex bin
+ *  int triggerBin = bin index for trigger particle transverse momentum
+ */
+double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSide(int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
+  
+  if(samplingMethod == 0){
+    return GetAcceptanceCorrection3DNearSideCalculation(deltaEta,deltaPhi);
+  } else {
+    return GetAcceptanceCorrection3DNearSideInclusive(deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   }
   
 }
@@ -617,6 +659,29 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition,
     return GetAcceptanceCorrection3DNearSide(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
   } else {
     return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,triggerBin);
+  }
+  
+}
+
+/*
+ * Get the acceptance correction for traditional or 3D near side either from triangle
+ * or from 2D deltaEta deltaPhi mixed event distribution based on the sampling method
+ * near side definition flags
+ *
+ *  int nearSideDefinition = 0 or 1 for 3D near side, anything else for traditional
+ *  int samplingMethod = 0 for triangle, 1 for mixed event
+ *  double deltaEta = deltaEta for the particle pair
+ *  double deltaPhi = deltaPhi for the particle pair
+ *  int centralityBin = bin index for centrality
+ *  int zVertexBin = z-vertex bin
+ *  int triggerBin = bin index for trigger particle transverse momentum
+ */
+double AliJAcceptanceCorrection::GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin){
+  
+  if(nearSideDefinition == 0 || nearSideDefinition == 1){
+    return GetAcceptanceCorrection3DNearSide(samplingMethod,deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
+  } else {
+    return GetAcceptanceCorrectionTraditional(samplingMethod,deltaEta,deltaPhi,centralityBin,zVertexBin,triggerBin);
   }
   
 }

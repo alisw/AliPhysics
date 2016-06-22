@@ -44,6 +44,7 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fDeltaPhiPiPi(0),
   fDeltaEta(0),
   fXlong(0),
+  fZBin(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -52,8 +53,7 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fCentralityBin(0),
   fXlongBin(0),
   fIsLikeSign(false),
-  fGeometricAcceptanceCorrection(1),
-  fGeometricAcceptanceCorrection3D(1)
+  fUseZVertexBinsAcceptance(false)
 {
   // constructor
   fmaxEtaRange    = fcard->Get("EtaRange");
@@ -86,6 +86,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fDeltaPhiPiPi(0),
   fDeltaEta(0),
   fXlong(0),
+  fZBin(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -94,8 +95,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fCentralityBin(0),
   fXlongBin(0),
   fIsLikeSign(false),
-  fGeometricAcceptanceCorrection(1),
-  fGeometricAcceptanceCorrection3D(1)
+  fUseZVertexBinsAcceptance(false)
 {
   // default constructor
 }
@@ -122,6 +122,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fDeltaPhiPiPi(in.fDeltaPhiPiPi),
   fDeltaEta(in.fDeltaEta),
   fXlong(in.fXlong),
+  fZBin(in.fZBin),
   fNearSide(in.fNearSide),
   fNearSide3D(in.fNearSide3D),
   fEtaGapBin(in.fEtaGapBin),
@@ -130,8 +131,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fCentralityBin(in.fCentralityBin),
   fXlongBin(in.fXlongBin),
   fIsLikeSign(in.fIsLikeSign),
-  fGeometricAcceptanceCorrection(in.fGeometricAcceptanceCorrection),
-  fGeometricAcceptanceCorrection3D(in.fGeometricAcceptanceCorrection3D)
+  fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance)
 {
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -158,6 +158,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fDeltaPhiPiPi = in.fDeltaPhiPiPi;
   fDeltaEta = in.fDeltaEta;
   fXlong = in.fXlong;
+  fZBin = in.fZBin;
   fNearSide = in.fNearSide;
   fNearSide3D = in.fNearSide3D;
   fEtaGapBin = in.fEtaGapBin;
@@ -166,12 +167,11 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
   fIsLikeSign = in.fIsLikeSign;
-  fGeometricAcceptanceCorrection = in.fGeometricAcceptanceCorrection;
-  fGeometricAcceptanceCorrection3D = in.fGeometricAcceptanceCorrection3D;
   fnReal = in.fnReal;
   fnMix = in.fnMix;
   fsamplingMethod = in.fsamplingMethod;
   fmaxEtaRange = in.fmaxEtaRange;
+  fUseZVertexBinsAcceptance = in.fUseZVertexBinsAcceptance;
   
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -259,14 +259,10 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   fPhiGapBinNear = fcard->GetBin( kEtaGapType, fabs(fDeltaPhiPiPi) );
   fRGapBinNear   = fcard->GetBin( kRGapType, fabs(ftk1->DeltaR(*ftk2)));
   fCentralityBin = CentBin;
-  
+  fZBin = zBin;
   
   fXlong = vTrigger.Vect().Dot(vAssoc.Vect())/pow(vTrigger.P(),2);
   fXlongBin = fcard->GetBin(kXeType, TMath::Abs(fXlong));
-  
-  // Acceptance correction from mixed events is provided by the acceptance correction class
-  fGeometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrectionTraditional(fsamplingMethod, fDeltaEta, fDeltaPhiPiPi, fCentralityBin, fpttBin);
-  fGeometricAcceptanceCorrection3D = fAcceptanceCorrection->GetAcceptanceCorrection3DNearSide(fsamplingMethod, fDeltaEta, fDeltaPhiPiPi, fCentralityBin, fpttBin);
   
   // Check that the bins make sense. If not, do not fill anything.
   if(fpttBin<0 || fptaBin<0 || fEtaGapBin<0 ){
@@ -289,7 +285,7 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   
   FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
-  FillDeltaEtaDeltaPhiHistograms(fTyp,zBin);  // Fill the 2D correlation functions
+  FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
   
 }
@@ -346,7 +342,12 @@ void AliJJtCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocTy
   
   // Calculate jT, invariant mass and the correction factor for jT
   double jt = vAssoc->Perp(vTrigger->Vect());
-  double geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fpttBin);
+  double geometricAcceptanceCorrection = 0;
+  if(fUseZVertexBinsAcceptance){
+    geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fZBin,fpttBin);
+  } else {
+    geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fpttBin);
+  }
   double weight = jt > 1e-3 ? geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
   double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
   
@@ -408,7 +409,12 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
   double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
   
   // Find the acceptance correction for the found particle pair
-  double geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fpttBin);
+  double geoAccCorrRndm = 0;
+  if(fUseZVertexBinsAcceptance){
+    geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fZBin,fpttBin);
+  } else {
+    geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fpttBin);
+  }
   
   // Fill the background histograms
   if(iBin>=0){ //
@@ -612,21 +618,20 @@ void AliJJtCorrelations::FillDeltaEtaHistograms(fillType fTyp)
  * Fill deltaEta deltaPhi histograms to be used for acceptance correction
  *
  *  fillType fTyp = real or mixed events
- *  int zVertexBin = bin index for z-vertex bin
  */
-void AliJJtCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp, int zVertexBin)
+void AliJJtCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
 {
   // This method fills the two dimensional DeltaEta,DeltaPhi histograms
   // No acceptance correction here, since we want to see tha structure caused by acceptance effects
   
   // Fill the histogram in pTa bins
   if(fNearSide){
-    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][zVertexBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
   // Fill the histogram in xlong bins
   if(fNearSide3D && fXlongBin >= 0){
-    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][zVertexBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][fZBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   
 }
