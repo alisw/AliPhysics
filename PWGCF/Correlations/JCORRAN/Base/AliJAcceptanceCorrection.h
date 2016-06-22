@@ -48,6 +48,7 @@ public:
   void SetMinCountsPerBinInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBinInclusive
   
   void SetLeadingParticle(bool leadingParticle){ fLeadingParticleCorrelation = leadingParticle; } // Setter for fLeadingParticleCorrelation
+  void SetTestMode(bool mode){ fTestMode = mode; } // Setter for fTestMode
 
 private:
   void NormalizeAcceptanceTraditional(AliJTH1D &acceptanceHisto, corrType assocType); // Normalize one dimensional histograms to interval [0,1]
@@ -73,6 +74,7 @@ private:
   bool fDEtaDPhiNearLoaded; // Tells whether the two dimensional traditional near side mixed event histogram is loaded or not
   bool fDEtaDPhi3DNearLoaded; // Tells whether the two dimensional 3D near side mixed event histogram is loaded or not
   bool fLeadingParticleCorrelation; // Tells whether the acceptance histograms are done with leading particle
+  bool fTestMode; // True = mixed event distributions not properly corrected in 3D near side. This setting can be used to test the effect of doing this correctly vs. doing thing wrong
 };
 
 #endif

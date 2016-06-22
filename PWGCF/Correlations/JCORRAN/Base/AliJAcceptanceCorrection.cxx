@@ -37,7 +37,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection() :
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
-    fLeadingParticleCorrelation(true)
+    fLeadingParticleCorrelation(true),
+    fTestMode(false)
 {
   // default constructor
   Generate3DAcceptanceCorrection();
@@ -56,7 +57,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(AliJCard *inputCard) :
     fDEtaNearLoaded(false),
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
-    fLeadingParticleCorrelation(true)
+    fLeadingParticleCorrelation(true),
+    fTestMode(false)
 {
   // Constructor with JCard
   Generate3DAcceptanceCorrection();
@@ -75,7 +77,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
     fDEtaNearLoaded(a.fDEtaNearLoaded),
     fDEtaDPhiNearLoaded(a.fDEtaDPhiNearLoaded),
     fDEtaDPhi3DNearLoaded(a.fDEtaDPhi3DNearLoaded),
-    fLeadingParticleCorrelation(a.fLeadingParticleCorrelation)
+    fLeadingParticleCorrelation(a.fLeadingParticleCorrelation),
+    fTestMode(a.fTestMode)
 {
   //copy constructor
 }
@@ -106,6 +109,7 @@ AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAccepta
     fDEtaDPhiNearLoaded = a.fDEtaDPhiNearLoaded;
     fDEtaDPhi3DNearLoaded = a.fDEtaDPhi3DNearLoaded;
     fLeadingParticleCorrelation = a.fLeadingParticleCorrelation;
+    fTestMode = a.fTestMode;
   }
   return *this;
 }
@@ -520,6 +524,12 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(d
   // Calculate the correction to histogram based on these results
   if(nearSideLength + outsideAcceptance < 1e-6) return 0;
   double denominator = nearSideLength / (nearSideLength + outsideAcceptance);
+  
+  // For the test mode, do not do the proper correction here. Just normalize to interval [0,1]
+  if(fTestMode){
+    double etaRange = fCard->Get("EtaRange");
+    denominator = nearSideLength / (2*sqrt(2)*etaRange);
+  }
   
   // Return the correction
   if(denominator > 1e-6)

@@ -203,6 +203,9 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   // Set the number of hits per bin required in the acceptance correction histograms
   int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
   fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
+  if(fcard->Get("AcceptanceTestMode") == 1){
+    fAcceptanceCorrection->SetTestMode(true);
+  }
   
   // Create the class doing correlation analysis
   fcorrelations = new AliJJtCorrelations( fcard, fhistos);

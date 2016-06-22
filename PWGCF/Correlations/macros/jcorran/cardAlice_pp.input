@@ -88,3 +88,4 @@ QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = qu
 #======= Acceptance correction =======
 HitsPerBinAcceptance   500 # Number of hits per bin required for acceptance correction histograms
 UseZVertexBins 0 # 0 = integrate over z-vertex bins, 1 = Do acceptance correction in z-vertex bins
+AcceptanceTestMode 0 # 0 = always use this in analysis, 1 = test mode, mixed event distribution not properly corrected in 3D near side to see the effect of correction
