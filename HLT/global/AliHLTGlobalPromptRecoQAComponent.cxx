@@ -1121,8 +1121,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     //gather all per slice/patch cluster blocks in the access arrays
-    if ( iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType()))
+    if ( iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType))
     {
+      HLTInfo("have raw TPC clusters");
       Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
       Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
       if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
@@ -1176,7 +1177,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     if ( fHistClusterChargeTot &&
-         iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC) )
+         iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
     {
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
       for (unsigned i = 0;i < clusters->fCount;i++)
@@ -1248,7 +1249,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
     //cluster phi vs padrow
     if ( fHistTPCallClustersRowPhi &&
-        iter->fDataType == (AliHLTTPCDefinitions::RawClustersDataType() | kAliHLTDataOriginTPC) )
+        iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
     {
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
       Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
