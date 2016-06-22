@@ -26,6 +26,8 @@ const Int_t nptbins=6;
 Int_t fCollisionSystem=kpp7TeV;
 Int_t fDataType=kData;
 Int_t fPass=kPass2;
+Bool_t fChangeK0ScutOnMC=kTRUE;
+Bool_t fChangeAlsoLambdaVetoOnMC=kTRUE;
 
 const Float_t kmInvPipPim_pp7TeV_pass2[nptbins] = {0.00432330, 0.00454560, 0.00481579, 0.00505379, 0.00542286, 0.00602017};
 const Float_t kmInvPipPim_pp7TeV_pass4[nptbins] = {0.00398116, 0.00412519, 0.00432494, 0.00454682, 0.00486837, 0.00537445};
@@ -34,6 +36,14 @@ const Float_t kmInvPipPim_LHC10f7a[nptbins]     = {0.00398520, 0.00419456, 0.004
 const Float_t kmInvPipPim_LHC11b2[nptbins]      = {0.00385273, 0.00394676, 0.00412335, 0.00420992, 0.00445422, 0.00493645};
 const Float_t kmInvPipPim_LHC15a2a[nptbins]     = {0.00376002, 0.00386896, 0.00399314, 0.00412475, 0.00435170, 0.00466817};
 const Float_t kmInvPipPim_LHC13d3[nptbins]      = {0.00358776, 0.00370684, 0.00383341, 0.00402011, 0.00439230, 0.00489222};
+
+const Float_t kmInvPPi_pp7TeV_pass2[nptbins]    = {0.00203633, 0.00196967, 0.00196595, 0.00199441, 0.00202691, 0.00211474};
+const Float_t kmInvPPi_pp7TeV_pass4[nptbins]    = {0.00194356, 0.00185442, 0.00184579, 0.00187065, 0.00193578, 0.00210853};
+const Float_t kmInvPPi_pPb[nptbins]             = {0.00214349, 0.00199650, 0.00192680, 0.00192083, 0.00199756, 0.00213533};
+const Float_t kmInvPPi_LHC10f7a[nptbins]        = {0.00190966, 0.00182307, 0.00177527, 0.00183747, 0.00181431, 0.00204811};
+const Float_t kmInvPPi_LHC11b2[nptbins]         = {0.00185630, 0.00180454, 0.00179920, 0.00182468, 0.00189292, 0.00204497};
+const Float_t kmInvPPi_LHC15a2a[nptbins]        = {0.00187642, 0.00175389, 0.00171987, 0.00171276, 0.00180925, 0.00194709};
+const Float_t kmInvPPi_LHC13d3[nptbins]         = {0.00205320, 0.00191146, 0.00179558, 0.00182894, 0.00185072, 0.00208818};
 
 void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
@@ -75,18 +85,36 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
   RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kFALSE);//(kTRUE);
+  if (fCollisionSystem==kpPb) {
+    // //
+    // // Trigger selection
+    // //
+    RDHFLctoV0An->SetTriggerClass("");     
+    if (fDataType==kData) {
+      RDHFLctoV0An->SetTriggerMask(AliVEvent::kINT7);
+    } else if (fDataType==kLHC13d3) {
+      RDHFLctoV0An->SetTriggerMask(AliVEvent::kINT7 | AliVEvent::kMB);
+    }
+    // multi vertexer pileup rejection
+    RDHFLctoV0An-> SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); 
+  }
   RDHFLctoV0An->SetLowPtCut(1.0); // default value 1.0 GeV/c
-  RDHFLctoV0An->SetHighPtCut(3.0); // default value 2.5 GeV/c
-  RDHFLctoV0An->SetPidSelectionFlag(4); // 0 -> TOF AND TPC
-                                        // 1 -> if (TOF) TOF else TPC w veto
-                                        // 2 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
-                                        // 3 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
-                                        // 4 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s}
-                                        // 5 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
-                                        // 6 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else -3s<TPC<2s}
-                                        // 7 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
-                                        // 8 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else -2<TPC<3s}
-                                        // 9 -> combined: TOF, TPC
+  if (fCollisionSystem==kpp7TeV) {
+    RDHFLctoV0An->SetHighPtCut(3.0); // default value 2.5 GeV/c
+    RDHFLctoV0An->SetPidSelectionFlag(4); // 0 -> TOF AND TPC
+  } else if (fCollisionSystem==kpPb) {
+    RDHFLctoV0An->SetHighPtCut(999.); // default value 2.5 GeV/c
+    RDHFLctoV0An->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
+                                          // 1 -> if (TOF) TOF else TPC w veto
+                                          // 2 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                          // 3 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
+                                          // 4 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s}
+                                          // 5 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
+                                          // 6 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else -3s<TPC<2s}
+                                          // 7 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
+                                          // 8 -> if (p<1) TPC@2s else if (1<=p<2.5) {if (TOF) TOF@3s else TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s else -2<TPC<3s}
+                                          // 9 -> combined: TOF, TPC
+  }
   RDHFLctoV0An->SetNPtBins(nptbins);
 
   Float_t* ptbins;
@@ -127,11 +155,21 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
       anacutsval[2][5]=0.01000; // inv. mass V0 if K0S [GeV/c2]
       if (fDataType==kLHC10f7a) {
 	for (Int_t ii=0; ii<nptbins; ii++) {
-	  anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_LHC10f7a[ii]; // inv. mass V0 if K0S [GeV/c2]
+	  if (fChangeK0ScutOnMC) {
+	    anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_LHC10f7a[ii]; // inv. mass V0 if K0S [GeV/c2]
+	    if (fChangeAlsoLambdaVetoOnMC) {
+	      anacutsval[13][ii]=anacutsval[13][ii]/kmInvPPi_pp7TeV_pass2[ii]*kmInvPPi_LHC10f7a[ii]; // inv. mass Lambda/LambdaBar [GeV/c2]
+	    }
+	  }
 	}
       } else if (fDataType==kLHC11b2) {
 	for (Int_t ii=0; ii<nptbins; ii++) {
-	  anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_LHC11b2[ii]; // inv. mass V0 if K0S [GeV/c2]
+	  if (fChangeK0ScutOnMC) {
+	    anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_LHC11b2[ii]; // inv. mass V0 if K0S [GeV/c2]
+	    if (fChangeAlsoLambdaVetoOnMC) {
+	      anacutsval[13][ii]=anacutsval[13][ii]/kmInvPPi_pp7TeV_pass2[ii]*kmInvPPi_LHC11b2[ii]; // inv. mass Lambda/LambdaBar [GeV/c2]
+	    }
+	  }
 	}
       }
 
@@ -148,7 +186,12 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
       }
       if (fDataType==kLHC15a2a) {
 	for (Int_t ii=0; ii<nptbins; ii++) {
-	  anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_LHC15a2a[ii]; // inv. mass V0 if K0S [GeV/c2]
+	  if (fChangeK0ScutOnMC) {
+	    anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass4[ii]*kmInvPipPim_LHC15a2a[ii]; // inv. mass V0 if K0S [GeV/c2]
+	    if (fChangeAlsoLambdaVetoOnMC) {
+	      anacutsval[13][ii]=anacutsval[13][ii]/kmInvPPi_pp7TeV_pass4[ii]*kmInvPPi_LHC15a2a[ii]; // inv. mass Lambda/LambdaBar [GeV/c2]
+	    }
+	  }
 	}
       }
     }
@@ -162,59 +205,114 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
     anacutsval[2][5]=0.011; // inv. mass V0 if K0S [GeV/c2]
     if (fDataType==kLHC13d3) {
       for (Int_t ii=0; ii<nptbins; ii++) {
-	anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pPb[ii]*kmInvPipPim_LHC13d3[ii]; // inv. mass V0 if K0S [GeV/c2]
+	if (fChangeK0ScutOnMC) {
+	  anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pPb[ii]*kmInvPipPim_LHC13d3[ii]; // inv. mass V0 if K0S [GeV/c2]
+	  if (fChangeAlsoLambdaVetoOnMC) {
+	    anacutsval[13][ii]=anacutsval[13][ii]/kmInvPPi_pPb[ii]*kmInvPPi_LHC13d3[ii]; // inv. mass Lambda/LambdaBar [GeV/c2]
+	  }
+	}
       }
     }
   }
 
-  anacutsval[4][0]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
-  anacutsval[4][1]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
-  anacutsval[4][2]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
-  anacutsval[4][3]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
-  anacutsval[4][4]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
-  anacutsval[4][5]=1.1;    // pT min bachelor track [GeV/c] // AOD by construction
+  if (fCollisionSystem==kpp7TeV) {
 
-  anacutsval[5][0]=0.2;    // pT min V0-positive track [GeV/c]
-  anacutsval[5][1]=0.2;    // pT min V0-positive track [GeV/c]
-  anacutsval[5][2]=0.2;    // pT min V0-positive track [GeV/c]
-  anacutsval[5][3]=0.2;    // pT min V0-positive track [GeV/c]
-  anacutsval[5][4]=0.2;    // pT min V0-positive track [GeV/c]
-  anacutsval[5][5]=0.3;    // pT min V0-positive track [GeV/c]
+    anacutsval[4][0]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][1]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][2]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][3]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][4]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][5]=1.1;    // pT min bachelor track [GeV/c] // AOD by construction
 
-  anacutsval[6][0]=0.2;    // pT min V0-negative track [GeV/c]
-  anacutsval[6][1]=0.2;    // pT min V0-negative track [GeV/c]
-  anacutsval[6][2]=0.2;    // pT min V0-negative track [GeV/c]
-  anacutsval[6][3]=0.2;    // pT min V0-negative track [GeV/c]
-  anacutsval[6][4]=0.2;    // pT min V0-negative track [GeV/c]
-  anacutsval[6][5]=0.3;    // pT min V0-negative track [GeV/c]
+    anacutsval[5][0]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][1]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][2]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][3]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][4]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][5]=0.3;    // pT min V0-positive track [GeV/c]
 
-  anacutsval[10][0]=0.05;  // d0 max bachelor wrt PV [cm]
-  anacutsval[10][1]=0.05;  // d0 max bachelor wrt PV [cm]
-  anacutsval[10][2]=0.10;  // d0 max bachelor wrt PV [cm]
-  anacutsval[10][3]=0.10;  // d0 max bachelor wrt PV [cm]
-  anacutsval[10][4]=0.10;  // d0 max bachelor wrt PV [cm]
-  anacutsval[10][5]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[6][0]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][1]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][2]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][3]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][4]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][5]=0.3;    // pT min V0-negative track [GeV/c]
 
-  anacutsval[11][0]=0.05;  // d0 max V0 wrt PV [cm]
-  anacutsval[11][1]=0.05;  // d0 max V0 wrt PV [cm]
-  anacutsval[11][2]=0.09;  // d0 max V0 wrt PV [cm]
-  anacutsval[11][3]=0.09;  // d0 max V0 wrt PV [cm]
-  anacutsval[11][4]=999.;  // d0 max V0 wrt PV [cm]
-  anacutsval[11][5]=999.;  // d0 max V0 wrt PV [cm]
+    anacutsval[10][0]=0.05;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][1]=0.05;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][2]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][3]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][4]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][5]=0.10;  // d0 max bachelor wrt PV [cm]
 
-  anacutsval[14][0]=0.100; // mass Gamma veto [GeV/c2]
-  anacutsval[14][1]=0.100; // mass Gamma veto [GeV/c2]
-  anacutsval[14][2]=0.300; // mass Gamma veto [GeV/c2]
-  anacutsval[14][3]=0.300; // mass Gamma veto [GeV/c2]
-  anacutsval[14][4]=0.300; // mass Gamma veto [GeV/c2]
-  anacutsval[14][5]=0.300; // mass Gamma veto [GeV/c2]
+    anacutsval[11][0]=0.05;  // d0 max V0 wrt PV [cm]
+    anacutsval[11][1]=0.05;  // d0 max V0 wrt PV [cm]
+    anacutsval[11][2]=0.09;  // d0 max V0 wrt PV [cm]
+    anacutsval[11][3]=0.09;  // d0 max V0 wrt PV [cm]
+    anacutsval[11][4]=999.;  // d0 max V0 wrt PV [cm]
+    anacutsval[11][5]=999.;  // d0 max V0 wrt PV [cm]
 
-  anacutsval[15][0]=0.5; // pT min V0 track [GeV/c]
-  anacutsval[15][1]=0.6; // pT min V0 track [GeV/c]
-  anacutsval[15][2]=0.7; // pT min V0 track [GeV/c]
-  anacutsval[15][3]=1.0; // pT min V0 track [GeV/c]
-  anacutsval[15][4]=1.1; // pT min V0 track [GeV/c]
-  anacutsval[15][5]=1.2; // pT min V0 track [GeV/c]
+    anacutsval[14][0]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][1]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][2]=0.300; // mass Gamma veto [GeV/c2]
+    anacutsval[14][3]=0.300; // mass Gamma veto [GeV/c2]
+    anacutsval[14][4]=0.300; // mass Gamma veto [GeV/c2]
+    anacutsval[14][5]=0.300; // mass Gamma veto [GeV/c2]
+
+    anacutsval[15][0]=0.5; // pT min V0 track [GeV/c]
+    anacutsval[15][1]=0.6; // pT min V0 track [GeV/c]
+    anacutsval[15][2]=0.7; // pT min V0 track [GeV/c]
+    anacutsval[15][3]=1.0; // pT min V0 track [GeV/c]
+    anacutsval[15][4]=1.1; // pT min V0 track [GeV/c]
+    anacutsval[15][5]=1.2; // pT min V0 track [GeV/c]
+
+  } else if (fCollisionSystem==kpPb) {
+
+    anacutsval[4][0]=0.5;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][1]=0.6;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][2]=0.7;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][3]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[4][4]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
+    anacutsval[5][5]=0.9;    // pT min bachelor track [GeV/c] // AOD by construction
+
+    anacutsval[5][0]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][1]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][2]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][3]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][4]=0.2;    // pT min V0-positive track [GeV/c]
+    anacutsval[5][5]=0.3;    // pT min V0-positive track [GeV/c]
+
+    anacutsval[6][0]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][1]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][2]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][3]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][4]=0.2;    // pT min V0-negative track [GeV/c]
+    anacutsval[6][5]=0.3;    // pT min V0-negative track [GeV/c]
+
+    anacutsval[10][0]=0.05;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][1]=0.05;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][2]=0.08;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][3]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][4]=0.10;  // d0 max bachelor wrt PV [cm]
+    anacutsval[10][5]=0.10;  // d0 max bachelor wrt PV [cm]
+
+    for (Int_t ipt2=0; ipt2<nptbins; ipt2++) anacutsval[11][ipt2]=999.;  // d0 max V0 wrt PV [cm]
+
+    anacutsval[14][0]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][1]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][2]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][3]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][4]=0.100; // mass Gamma veto [GeV/c2]
+    anacutsval[14][5]=0.100; // mass Gamma veto [GeV/c2]
+
+    anacutsval[15][0]=0.8; // pT min V0 track [GeV/c]
+    anacutsval[15][1]=0.8; // pT min V0 track [GeV/c]
+    anacutsval[15][2]=0.8; // pT min V0 track [GeV/c]
+    anacutsval[15][3]=1.2; // pT min V0 track [GeV/c]
+    anacutsval[15][4]=1.0; // pT min V0 track [GeV/c]
+    anacutsval[15][5]=1.2; // pT min V0 track [GeV/c]
+
+  }
 
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
 
@@ -263,7 +361,12 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   cout<<"This is the (anal) object I'm going to save:"<<endl;
   RDHFLctoV0An->PrintAll();
-  TFile* fout=new TFile("Lc2pK0SCuts.root","RECREATE"); 
+  TFile* fout;
+  if (fDataType==kData) {
+    fout=new TFile("Lc2pK0SCuts.root","RECREATE");
+  } else {
+    fout=new TFile("Lc2pK0SCuts.root","RECREATE");
+  }
   fout->cd();
   RDHFLctoV0An->Write();
   fout->Close();
@@ -455,12 +558,12 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     tighterval[11][ipt] =0.005; // mass Lambda/LambdaBar veto [GeV/c2]
     tighterval[12][ipt] =0.100; // mass Gamma veto [GeV/c2]
   }
-  tighterval[0][13]=0.0; // pT min V0 track [GeV/c]
-  tighterval[1][13]=0.6; // pT min V0 track [GeV/c]
-  tighterval[2][13]=0.8; // pT min V0 track [GeV/c]
-  tighterval[3][13]=0.8; // pT min V0 track [GeV/c]
-  tighterval[4][13]=0.8; // pT min V0 track [GeV/c]
-  tighterval[5][13]=0.8; // pT min V0 track [GeV/c]
+  tighterval[13][0]=0.0; // pT min V0 track [GeV/c]
+  tighterval[13][1]=0.6; // pT min V0 track [GeV/c]
+  tighterval[13][2]=0.8; // pT min V0 track [GeV/c]
+  tighterval[13][3]=0.8; // pT min V0 track [GeV/c]
+  tighterval[13][4]=0.8; // pT min V0 track [GeV/c]
+  tighterval[13][5]=0.8; // pT min V0 track [GeV/c]
 
   TString name=""; 
   Int_t arrdim=dim*nptbins;
@@ -491,9 +594,6 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjBachelor->SetTOF(kTRUE);
   pidObjBachelor->SetTOFdecide(kFALSE);
   RDHFLctoV0->SetPidHF(pidObjBachelor);
-
-  //activate pileup rejection (for pp)
-  //RDHFLctoV0->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
   //Do not recalculate the vertex
   RDHFLctoV0->SetRemoveDaughtersFromPrim(kFALSE); //activate for pp
