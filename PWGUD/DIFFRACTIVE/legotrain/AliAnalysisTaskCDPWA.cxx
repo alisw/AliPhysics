@@ -81,8 +81,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fCombmode(0)
 	, fTree(0x0)
 	, fTree_Comb(0x0)
-	, fCheckTwoPion(0)
-	, fCheckFourPion(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fCheckFourPion_ITSSA(0)
 	, fMultiplicity(0)
@@ -183,6 +181,10 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	// standard constructor (the one which should be used)
 	//
 	// slot in TaskSE must start from 1
+	for (Int_t i = 0; i < 3; i++) {
+		fCheckTwoPion[i] = kFALSE;
+		fCheckFourPion[i] = kFALSE;
+	}
 
 	for (Int_t i = 0; i < 7; i++) {
 		fMC_Eta[i] = 0x0;
@@ -200,53 +202,57 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	for (Int_t i = 0; i < 3; i++) {
 		fVertex[i] = -999.;
 	}
-	for (Int_t i = 0; i < 2; i++) {//Two Pion
-		fTwoPionMask_TPC[i] = 0;
-		fTwoPionMask_TOF[i] = 0;
-		fTwoPionMask_ITS[i] = 0;
-		fTwoPionMask_TRD[i] = 0;
-		fTwoPionMask_tot[i] = 0;
-		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fTwoPionTrack[i][j] = 0;
-			fTwoPionTPCSigma[i][j] = 0;
-			fTwoPionTOFSigma[i][j] = 0;
-			fTwoPionITSSigma[i][j] = 0;
-			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fTwoPionBayesProb_TPC[i][j] = 0;
-				fTwoPionBayesProb_TOF[i][j] = 0;
-				fTwoPionBayesProb_ITS[i][j] = 0;
-				fTwoPionBayesProb_TRD[i][j] = 0;
-				fTwoPionBayesProb_tot[i][j] = 0;
-				fTwoPionTPCProb[i][j] = 0;
-				fTwoPionTOFProb[i][j] = 0;
-				fTwoPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 2; i++) {//Two Pion
+			fTwoPionMask_TPC[k][i] = 0;
+			fTwoPionMask_TOF[k][i] = 0;
+			fTwoPionMask_ITS[k][i] = 0;
+			fTwoPionMask_TRD[k][i] = 0;
+			fTwoPionMask_tot[k][i] = 0;
+			fTwoPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fTwoPionTrack[k][i][j] = 0;
+				fTwoPionTPCSigma[k][i][j] = 0;
+				fTwoPionTOFSigma[k][i][j] = 0;
+				fTwoPionITSSigma[k][i][j] = 0;
+				fTwoPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fTwoPionBayesProb_TPC[k][i][j] = 0;
+					fTwoPionBayesProb_TOF[k][i][j] = 0;
+					fTwoPionBayesProb_ITS[k][i][j] = 0;
+					fTwoPionBayesProb_TRD[k][i][j] = 0;
+					fTwoPionBayesProb_tot[k][i][j] = 0;
+					fTwoPionTPCProb[k][i][j] = 0;
+					fTwoPionTOFProb[k][i][j] = 0;
+					fTwoPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
-	for (Int_t i = 0; i < 4; i++) {//Four Pion
-		fFourPionMask_TPC[i] = 0;
-		fFourPionMask_TOF[i] = 0;
-		fFourPionMask_ITS[i] = 0;
-		fFourPionMask_TRD[i] = 0;
-		fFourPionMask_tot[i] = 0;
-		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fFourPionTrack[i][j] = 0;
-			fFourPionTPCSigma[i][j] = 0;
-			fFourPionTOFSigma[i][j] = 0;
-			fFourPionITSSigma[i][j] = 0;
-			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fFourPionBayesProb_TPC[i][j] = 0;
-				fFourPionBayesProb_TOF[i][j] = 0;
-				fFourPionBayesProb_ITS[i][j] = 0;
-				fFourPionBayesProb_TRD[i][j] = 0;
-				fFourPionBayesProb_tot[i][j] = 0;
-				fFourPionTPCProb[i][j] = 0;
-				fFourPionTOFProb[i][j] = 0;
-				fFourPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 4; i++) {//Four Pion
+			fFourPionMask_TPC[k][i] = 0;
+			fFourPionMask_TOF[k][i] = 0;
+			fFourPionMask_ITS[k][i] = 0;
+			fFourPionMask_TRD[k][i] = 0;
+			fFourPionMask_tot[k][i] = 0;
+			fFourPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fFourPionTrack[k][i][j] = 0;
+				fFourPionTPCSigma[k][i][j] = 0;
+				fFourPionTOFSigma[k][i][j] = 0;
+				fFourPionITSSigma[k][i][j] = 0;
+				fFourPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fFourPionBayesProb_TPC[k][i][j] = 0;
+					fFourPionBayesProb_TOF[k][i][j] = 0;
+					fFourPionBayesProb_ITS[k][i][j] = 0;
+					fFourPionBayesProb_TRD[k][i][j] = 0;
+					fFourPionBayesProb_tot[k][i][j] = 0;
+					fFourPionTPCProb[k][i][j] = 0;
+					fFourPionTOFProb[k][i][j] = 0;
+					fFourPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
@@ -303,8 +309,6 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fCombmode(0)
 	, fTree(0x0)
 	, fTree_Comb(0x0)
-	, fCheckTwoPion(0)
-	, fCheckFourPion(0)
 	, fCheckTwoPion_ITSSA(0)
 	, fCheckFourPion_ITSSA(0)
 	, fMultiplicity(0)
@@ -401,6 +405,10 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_DG_Process(0x0)
 	, fMult_Rec_NG_Process(0x0)
 {
+	for (Int_t i = 0; i < 3; i++) {
+		fCheckTwoPion[i] = kFALSE;
+		fCheckFourPion[i] = kFALSE;
+	}
 	for (Int_t i = 0; i < 7; i++) {
 		fMC_Eta[i] = 0x0;
 		fMC_DiffMass[i] = 0x0;
@@ -416,53 +424,57 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	for (Int_t i = 0; i < 3; i++) {
 		fVertex[i] = -999.;
 	}
-	for (Int_t i = 0; i < 2; i++) {//Two Pion
-		fTwoPionMask_TPC[i] = 0;
-		fTwoPionMask_TOF[i] = 0;
-		fTwoPionMask_ITS[i] = 0;
-		fTwoPionMask_TRD[i] = 0;
-		fTwoPionMask_tot[i] = 0;
-		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fTwoPionTrack[i][j] = 0;
-			fTwoPionTPCSigma[i][j] = 0;
-			fTwoPionTOFSigma[i][j] = 0;
-			fTwoPionITSSigma[i][j] = 0;
-			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fTwoPionBayesProb_TPC[i][j] = 0;
-				fTwoPionBayesProb_TOF[i][j] = 0;
-				fTwoPionBayesProb_ITS[i][j] = 0;
-				fTwoPionBayesProb_TRD[i][j] = 0;
-				fTwoPionBayesProb_tot[i][j] = 0;
-				fTwoPionTPCProb[i][j] = 0;
-				fTwoPionTOFProb[i][j] = 0;
-				fTwoPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 2; i++) {//Two Pion
+			fTwoPionMask_TPC[k][i] = 0;
+			fTwoPionMask_TOF[k][i] = 0;
+			fTwoPionMask_ITS[k][i] = 0;
+			fTwoPionMask_TRD[k][i] = 0;
+			fTwoPionMask_tot[k][i] = 0;
+			fTwoPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fTwoPionTrack[k][i][j] = 0;
+				fTwoPionTPCSigma[k][i][j] = 0;
+				fTwoPionTOFSigma[k][i][j] = 0;
+				fTwoPionITSSigma[k][i][j] = 0;
+				fTwoPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fTwoPionBayesProb_TPC[k][i][j] = 0;
+					fTwoPionBayesProb_TOF[k][i][j] = 0;
+					fTwoPionBayesProb_ITS[k][i][j] = 0;
+					fTwoPionBayesProb_TRD[k][i][j] = 0;
+					fTwoPionBayesProb_tot[k][i][j] = 0;
+					fTwoPionTPCProb[k][i][j] = 0;
+					fTwoPionTOFProb[k][i][j] = 0;
+					fTwoPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
-	for (Int_t i = 0; i < 4; i++) {//Four Pion
-		fFourPionMask_TPC[i] = 0;
-		fFourPionMask_TOF[i] = 0;
-		fFourPionMask_ITS[i] = 0;
-		fFourPionMask_TRD[i] = 0;
-		fFourPionMask_tot[i] = 0;
-		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fFourPionTrack[i][j] = 0;
-			fFourPionTPCSigma[i][j] = 0;
-			fFourPionTOFSigma[i][j] = 0;
-			fFourPionITSSigma[i][j] = 0;
-			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fFourPionBayesProb_TPC[i][j] = 0;
-				fFourPionBayesProb_TOF[i][j] = 0;
-				fFourPionBayesProb_ITS[i][j] = 0;
-				fFourPionBayesProb_TRD[i][j] = 0;
-				fFourPionBayesProb_tot[i][j] = 0;
-				fFourPionTPCProb[i][j] = 0;
-				fFourPionTOFProb[i][j] = 0;
-				fFourPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 4; i++) {//Four Pion
+			fFourPionMask_TPC[k][i] = 0;
+			fFourPionMask_TOF[k][i] = 0;
+			fFourPionMask_ITS[k][i] = 0;
+			fFourPionMask_TRD[k][i] = 0;
+			fFourPionMask_tot[k][i] = 0;
+			fFourPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fFourPionTrack[k][i][j] = 0;
+				fFourPionTPCSigma[k][i][j] = 0;
+				fFourPionTOFSigma[k][i][j] = 0;
+				fFourPionITSSigma[k][i][j] = 0;
+				fFourPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fFourPionBayesProb_TPC[k][i][j] = 0;
+					fFourPionBayesProb_TOF[k][i][j] = 0;
+					fFourPionBayesProb_ITS[k][i][j] = 0;
+					fFourPionBayesProb_TRD[k][i][j] = 0;
+					fFourPionBayesProb_tot[k][i][j] = 0;
+					fFourPionTPCProb[k][i][j] = 0;
+					fFourPionTOFProb[k][i][j] = 0;
+					fFourPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
@@ -591,8 +603,10 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	OpenFile(1);
 	fTree = new TTree("tree1","PWAtree");
 	//For Data + Rec
-	fTree->Branch("CheckTwoPion",&fCheckTwoPion);
-	fTree->Branch("CheckFourPion",&fCheckFourPion);
+	for (Int_t i = 0; i < 3; i++) {
+		fTree->Branch(Form("CheckTwoPion_%d",i),&fCheckTwoPion[i]);
+		fTree->Branch(Form("CheckFourPion_%d",i),&fCheckFourPion[i]);
+	}
 	fTree->Branch("CheckTwoPion_ITSSA",&fCheckTwoPion_ITSSA);
 	fTree->Branch("CheckFourPion_ITSSA",&fCheckFourPion_ITSSA);
 	fTree->Branch("SPDFired",&fSPDFired);
@@ -614,53 +628,57 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 			fTree->Branch(Form("ADCharge_%d",i),&fADCharge[i]);
 		}
 	}
-	for (Int_t i = 0; i < 2; i++) {
-		fTree->Branch(Form("TwoPionMask_TPC_%d",i),&fTwoPionMask_TPC[i]);
-		fTree->Branch(Form("TwoPionMask_TOF_%d",i),&fTwoPionMask_TOF[i]);
-		fTree->Branch(Form("TwoPionMask_ITS_%d",i),&fTwoPionMask_ITS[i]);
-		fTree->Branch(Form("TwoPionMask_TRD_%d",i),&fTwoPionMask_TRD[i]);
-		fTree->Branch(Form("TwoPionMask_tot_%d",i),&fTwoPionMask_tot[i]);
-		fTree->Branch(Form("TwoPionDetMask_tot_%d",i),&fTwoPionDetMask_tot[i]);
-		for (Int_t j = 0; j < 10; j++) {
-			fTree->Branch(Form("TwoPionTrack_%d_%d",i,j),&fTwoPionTrack[i][j]);
-			fTree->Branch(Form("TwoPionTPCSigma_%d_%d",i,j),&fTwoPionTPCSigma[i][j]);
-			fTree->Branch(Form("TwoPionTOFSigma_%d_%d",i,j),&fTwoPionTOFSigma[i][j]);
-			fTree->Branch(Form("TwoPionITSSigma_%d_%d",i,j),&fTwoPionITSSigma[i][j]);
-			fTree->Branch(Form("TwoPionTrack_ITSSA_%d_%d",i,j),&fTwoPionTrack_ITSSA[i][j]);
-			if ( j < AliPID::kSPECIES) {
-				fTree->Branch(Form("TwoPionBayesProb_TPC_%d_%d",i,j),&fTwoPionBayesProb_TPC[i][j]);
-				fTree->Branch(Form("TwoPionBayesProb_TOF_%d_%d",i,j),&fTwoPionBayesProb_TOF[i][j]);
-				fTree->Branch(Form("TwoPionBayesProb_ITS_%d_%d",i,j),&fTwoPionBayesProb_ITS[i][j]);
-				fTree->Branch(Form("TwoPionBayesProb_TRD_%d_%d",i,j),&fTwoPionBayesProb_TRD[i][j]);
-				fTree->Branch(Form("TwoPionBayesProb_tot_%d_%d",i,j),&fTwoPionBayesProb_tot[i][j]);
-				fTree->Branch(Form("TwoPionTPCProb_%d_%d",i,j),&fTwoPionTPCProb[i][j]);
-				fTree->Branch(Form("TwoPionTOFProb_%d_%d",i,j),&fTwoPionTOFProb[i][j]);
-				fTree->Branch(Form("TwoPionITSProb_%d_%d",i,j),&fTwoPionITSProb[i][j]);
+	for (Int_t k = 0; k < 3; k++) {
+		for (Int_t i = 0; i < 2; i++) {
+			fTree->Branch(Form("TwoPionMask_TPC_%d_%d",k,i),&fTwoPionMask_TPC[k][i]);
+			fTree->Branch(Form("TwoPionMask_TOF_%d_%d",k,i),&fTwoPionMask_TOF[k][i]);
+			fTree->Branch(Form("TwoPionMask_ITS_%d_%d",k,i),&fTwoPionMask_ITS[k][i]);
+			fTree->Branch(Form("TwoPionMask_TRD_%d_%d",k,i),&fTwoPionMask_TRD[k][i]);
+			fTree->Branch(Form("TwoPionMask_tot_%d_%d",k,i),&fTwoPionMask_tot[k][i]);
+			fTree->Branch(Form("TwoPionDetMask_tot_%d_%d",k,i),&fTwoPionDetMask_tot[k][i]);
+			for (Int_t j = 0; j < 10; j++) {
+				fTree->Branch(Form("TwoPionTrack_%d_%d_%d",k,i,j),&fTwoPionTrack[k][i][j]);
+				fTree->Branch(Form("TwoPionTPCSigma_%d_%d_%d",k,i,j),&fTwoPionTPCSigma[k][i][j]);
+				fTree->Branch(Form("TwoPionTOFSigma_%d_%d_%d",k,i,j),&fTwoPionTOFSigma[k][i][j]);
+				fTree->Branch(Form("TwoPionITSSigma_%d_%d_%d",k,i,j),&fTwoPionITSSigma[k][i][j]);
+				fTree->Branch(Form("TwoPionTrack_ITSSA_%d_%d_%d",k,i,j),&fTwoPionTrack_ITSSA[k][i][j]);
+				if ( j < AliPID::kSPECIES) {
+					fTree->Branch(Form("TwoPionBayesProb_TPC_%d_%d_%d",k,i,j),&fTwoPionBayesProb_TPC[k][i][j]);
+					fTree->Branch(Form("TwoPionBayesProb_TOF_%d_%d_%d",k,i,j),&fTwoPionBayesProb_TOF[k][i][j]);
+					fTree->Branch(Form("TwoPionBayesProb_ITS_%d_%d_%d",k,i,j),&fTwoPionBayesProb_ITS[k][i][j]);
+					fTree->Branch(Form("TwoPionBayesProb_TRD_%d_%d_%d",k,i,j),&fTwoPionBayesProb_TRD[k][i][j]);
+					fTree->Branch(Form("TwoPionBayesProb_tot_%d_%d_%d",k,i,j),&fTwoPionBayesProb_tot[k][i][j]);
+					fTree->Branch(Form("TwoPionTPCProb_%d_%d_%d",k,i,j),&fTwoPionTPCProb[k][i][j]);
+					fTree->Branch(Form("TwoPionTOFProb_%d_%d_%d",k,i,j),&fTwoPionTOFProb[k][i][j]);
+					fTree->Branch(Form("TwoPionITSProb_%d_%d_%d",k,i,j),&fTwoPionITSProb[k][i][j]);
+				}
 			}
 		}
 	}
-	for (Int_t i = 0; i < 4; i++) {
-		fTree->Branch(Form("FourPionMask_TPC_%d",i),&fFourPionMask_TPC[i]);
-		fTree->Branch(Form("FourPionMask_TOF_%d",i),&fFourPionMask_TOF[i]);
-		fTree->Branch(Form("FourPionMask_ITS_%d",i),&fFourPionMask_ITS[i]);
-		fTree->Branch(Form("FourPionMask_TRD_%d",i),&fFourPionMask_TRD[i]);
-		fTree->Branch(Form("FourPionMask_tot_%d",i),&fFourPionMask_tot[i]);
-		fTree->Branch(Form("FourPionDetMask_tot_%d",i),&fFourPionDetMask_tot[i]);
-		for (Int_t j = 0; j < 10; j++) {
-			fTree->Branch(Form("FourPionTrack_%d_%d",i,j),&fFourPionTrack[i][j]);
-			fTree->Branch(Form("FourPionTPCSigma_%d_%d",i,j),&fFourPionTPCSigma[i][j]);
-			fTree->Branch(Form("FourPionTOFSigma_%d_%d",i,j),&fFourPionTOFSigma[i][j]);
-			fTree->Branch(Form("FourPionITSSigma_%d_%d",i,j),&fFourPionITSSigma[i][j]);
-			fTree->Branch(Form("FourPionTrack_ITSSA_%d_%d",i,j),&fFourPionTrack_ITSSA[i][j]);
-			if ( j < AliPID::kSPECIES) {
-				fTree->Branch(Form("FourPionBayesProb_TPC_%d_%d",i,j),&fFourPionBayesProb_TPC[i][j]);
-				fTree->Branch(Form("FourPionBayesProb_TOF_%d_%d",i,j),&fFourPionBayesProb_TOF[i][j]);
-				fTree->Branch(Form("FourPionBayesProb_ITS_%d_%d",i,j),&fFourPionBayesProb_ITS[i][j]);
-				fTree->Branch(Form("FourPionBayesProb_TRD_%d_%d",i,j),&fFourPionBayesProb_TRD[i][j]);
-				fTree->Branch(Form("FourPionBayesProb_tot_%d_%d",i,j),&fFourPionBayesProb_tot[i][j]);
-				fTree->Branch(Form("FourPionTPCProb_%d_%d",i,j),&fFourPionTPCProb[i][j]);
-				fTree->Branch(Form("FourPionTOFProb_%d_%d",i,j),&fFourPionTOFProb[i][j]);
-				fTree->Branch(Form("FourPionITSProb_%d_%d",i,j),&fFourPionITSProb[i][j]);
+	for (Int_t k = 0; k < 3; k++) {
+		for (Int_t i = 0; i < 4; i++) {
+			fTree->Branch(Form("FourPionMask_TPC_%d_%d",k,i),&fFourPionMask_TPC[k][i]);
+			fTree->Branch(Form("FourPionMask_TOF_%d_%d",k,i),&fFourPionMask_TOF[k][i]);
+			fTree->Branch(Form("FourPionMask_ITS_%d_%d",k,i),&fFourPionMask_ITS[k][i]);
+			fTree->Branch(Form("FourPionMask_TRD_%d_%d",k,i),&fFourPionMask_TRD[k][i]);
+			fTree->Branch(Form("FourPionMask_tot_%d_%d",k,i),&fFourPionMask_tot[k][i]);
+			fTree->Branch(Form("FourPionDetMask_tot_%d_%d",k,i),&fFourPionDetMask_tot[k][i]);
+			for (Int_t j = 0; j < 10; j++) {
+				fTree->Branch(Form("FourPionTrack_%d_%d_%d",k,i,j),&fFourPionTrack[k][i][j]);
+				fTree->Branch(Form("FourPionTPCSigma_%d_%d_%d",k,i,j),&fFourPionTPCSigma[k][i][j]);
+				fTree->Branch(Form("FourPionTOFSigma_%d_%d_%d",k,i,j),&fFourPionTOFSigma[k][i][j]);
+				fTree->Branch(Form("FourPionITSSigma_%d_%d_%d",k,i,j),&fFourPionITSSigma[k][i][j]);
+				fTree->Branch(Form("FourPionTrack_ITSSA_%d_%d_%d",k,i,j),&fFourPionTrack_ITSSA[k][i][j]);
+				if ( j < AliPID::kSPECIES) {
+					fTree->Branch(Form("FourPionBayesProb_TPC_%d_%d_%d",k,i,j),&fFourPionBayesProb_TPC[k][i][j]);
+					fTree->Branch(Form("FourPionBayesProb_TOF_%d_%d_%d",k,i,j),&fFourPionBayesProb_TOF[k][i][j]);
+					fTree->Branch(Form("FourPionBayesProb_ITS_%d_%d_%d",k,i,j),&fFourPionBayesProb_ITS[k][i][j]);
+					fTree->Branch(Form("FourPionBayesProb_TRD_%d_%d_%d",k,i,j),&fFourPionBayesProb_TRD[k][i][j]);
+					fTree->Branch(Form("FourPionBayesProb_tot_%d_%d_%d",k,i,j),&fFourPionBayesProb_tot[k][i][j]);
+					fTree->Branch(Form("FourPionTPCProb_%d_%d_%d",k,i,j),&fFourPionTPCProb[k][i][j]);
+					fTree->Branch(Form("FourPionTOFProb_%d_%d_%d",k,i,j),&fFourPionTOFProb[k][i][j]);
+					fTree->Branch(Form("FourPionITSProb_%d_%d_%d",k,i,j),&fFourPionITSProb[k][i][j]);
+				}
 			}
 		}
 	}
@@ -1132,53 +1150,57 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 {
 	// Initialize all tree varialbles------------------------------------------
-	for (Int_t i = 0; i < 2; i++) {//Two Pion
-		fTwoPionMask_TPC[i] = 0;
-		fTwoPionMask_TOF[i] = 0;
-		fTwoPionMask_ITS[i] = 0;
-		fTwoPionMask_TRD[i] = 0;
-		fTwoPionMask_tot[i] = 0;
-		fTwoPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fTwoPionTrack[i][j] = 0;
-			fTwoPionTPCSigma[i][j] = 0;
-			fTwoPionTOFSigma[i][j] = 0;
-			fTwoPionITSSigma[i][j] = 0;
-			fTwoPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fTwoPionBayesProb_TPC[i][j] = 0;
-				fTwoPionBayesProb_TOF[i][j] = 0;
-				fTwoPionBayesProb_ITS[i][j] = 0;
-				fTwoPionBayesProb_TRD[i][j] = 0;
-				fTwoPionBayesProb_tot[i][j] = 0;
-				fTwoPionTPCProb[i][j] = 0;
-				fTwoPionTOFProb[i][j] = 0;
-				fTwoPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 2; i++) {//Two Pion
+			fTwoPionMask_TPC[k][i] = 0;
+			fTwoPionMask_TOF[k][i] = 0;
+			fTwoPionMask_ITS[k][i] = 0;
+			fTwoPionMask_TRD[k][i] = 0;
+			fTwoPionMask_tot[k][i] = 0;
+			fTwoPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fTwoPionTrack[k][i][j] = 0;
+				fTwoPionTPCSigma[k][i][j] = 0;
+				fTwoPionTOFSigma[k][i][j] = 0;
+				fTwoPionITSSigma[k][i][j] = 0;
+				fTwoPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fTwoPionBayesProb_TPC[k][i][j] = 0;
+					fTwoPionBayesProb_TOF[k][i][j] = 0;
+					fTwoPionBayesProb_ITS[k][i][j] = 0;
+					fTwoPionBayesProb_TRD[k][i][j] = 0;
+					fTwoPionBayesProb_tot[k][i][j] = 0;
+					fTwoPionTPCProb[k][i][j] = 0;
+					fTwoPionTOFProb[k][i][j] = 0;
+					fTwoPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
-	for (Int_t i = 0; i < 4; i++) {//Four Pion
-		fFourPionMask_TPC[i] = 0;
-		fFourPionMask_TOF[i] = 0;
-		fFourPionMask_ITS[i] = 0;
-		fFourPionMask_TRD[i] = 0;
-		fFourPionMask_tot[i] = 0;
-		fFourPionDetMask_tot[i] = 0;
-		for (Int_t j = 0; j < 10; j++) {
-			fFourPionTrack[i][j] = 0;
-			fFourPionTPCSigma[i][j] = 0;
-			fFourPionTOFSigma[i][j] = 0;
-			fFourPionITSSigma[i][j] = 0;
-			fFourPionTrack_ITSSA[i][j] = 0;
-			if ( j < AliPID::kSPECIES) {
-				fFourPionBayesProb_TPC[i][j] = 0;
-				fFourPionBayesProb_TOF[i][j] = 0;
-				fFourPionBayesProb_ITS[i][j] = 0;
-				fFourPionBayesProb_TRD[i][j] = 0;
-				fFourPionBayesProb_tot[i][j] = 0;
-				fFourPionTPCProb[i][j] = 0;
-				fFourPionTOFProb[i][j] = 0;
-				fFourPionITSProb[i][j] = 0;
+	for (Int_t k = 0; k < 3; k++) {//Systematics
+		for (Int_t i = 0; i < 4; i++) {//Four Pion
+			fFourPionMask_TPC[k][i] = 0;
+			fFourPionMask_TOF[k][i] = 0;
+			fFourPionMask_ITS[k][i] = 0;
+			fFourPionMask_TRD[k][i] = 0;
+			fFourPionMask_tot[k][i] = 0;
+			fFourPionDetMask_tot[k][i] = 0;
+			for (Int_t j = 0; j < 10; j++) {
+				fFourPionTrack[k][i][j] = 0;
+				fFourPionTPCSigma[k][i][j] = 0;
+				fFourPionTOFSigma[k][i][j] = 0;
+				fFourPionITSSigma[k][i][j] = 0;
+				fFourPionTrack_ITSSA[k][i][j] = 0;
+				if ( j < AliPID::kSPECIES) {
+					fFourPionBayesProb_TPC[k][i][j] = 0;
+					fFourPionBayesProb_TOF[k][i][j] = 0;
+					fFourPionBayesProb_ITS[k][i][j] = 0;
+					fFourPionBayesProb_TRD[k][i][j] = 0;
+					fFourPionBayesProb_tot[k][i][j] = 0;
+					fFourPionTPCProb[k][i][j] = 0;
+					fFourPionTOFProb[k][i][j] = 0;
+					fFourPionITSProb[k][i][j] = 0;
+				}
 			}
 		}
 	}
@@ -1190,9 +1212,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	}
 	for (Int_t i = 0; i < 3; i++) {
 		fVertex[i] = -999.;
+		fCheckTwoPion[i] = kFALSE;
+		fCheckFourPion[i] = kFALSE;
 	}
-	fCheckTwoPion = kFALSE;
-	fCheckFourPion = kFALSE;
 	fCheckTwoPion_ITSSA = kFALSE;
 	fCheckFourPion_ITSSA = kFALSE;
 
@@ -1578,12 +1600,32 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	Bool_t is10bc = kFALSE;
 	if (fPeriod <= 2) is10bc=kTRUE;
 	AliMultiplicitySelectionCPPWA *selec = new AliMultiplicitySelectionCPPWA();
-	//(clusterCut,useITSSA,isRun2)
-	if (!fIsRun2) selec->InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE);// 1 = b,c and 0 = d,e
-	else selec->InitDefaultTrackCuts(0,0,kTRUE);
+	//(clusterCut,useITSSA,isRun2,nCluster)
+	if (!fIsRun2) selec->InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,70);// 1 = b,c and 0 = d,e
+	else selec->InitDefaultTrackCuts(0,0,kTRUE,120);//120 is default in Run2
 	TArrayI indices;
 	Int_t Nsel = selec->GetNumberOfITSTPCtracks(fESDEvent,indices);
 	fMultiplicity = Nsel;
+	fCheckTwoPion[0] = (Nsel == 2) ? kTRUE : kFALSE;
+	fCheckFourPion[0] = (Nsel == 4) ? kTRUE : kFALSE;
+
+	//Systematics for trackcuts
+	TArrayI indices_p10;
+	AliMultiplicitySelectionCPPWA *selec_p10 = new AliMultiplicitySelectionCPPWA();
+	if (!fIsRun2) selec_p10->InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,80);
+	else selec_p10->InitDefaultTrackCuts(0,0,kTRUE,130);
+	Int_t Nsel_p10 = selec_p10->GetNumberOfITSTPCtracks(fESDEvent,indices_p10);
+	fCheckTwoPion[1] = (Nsel_p10 == 2) ? kTRUE : kFALSE;
+	fCheckFourPion[1] = (Nsel_p10 == 4) ? kTRUE : kFALSE;
+
+	TArrayI indices_m10;
+	AliMultiplicitySelectionCPPWA *selec_m10 = new AliMultiplicitySelectionCPPWA();
+	if (!fIsRun2) selec_m10->InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,60);
+	else selec_m10->InitDefaultTrackCuts(0,0,kTRUE,110);
+	Int_t Nsel_m10 = selec->GetNumberOfITSTPCtracks(fESDEvent,indices_m10);
+	fCheckTwoPion[2] = (Nsel_m10 == 2) ? kTRUE : kFALSE;
+	fCheckFourPion[2] = (Nsel_m10 == 4) ? kTRUE : kFALSE;
+
 	Double_t pionmass = 0.139570;
 	TLorentzVector lv_track1;
 	TLorentzVector lv_track2;
@@ -1685,12 +1727,12 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		fMultDG->Fill(nmbTrk_DG);
 	}
 
-	Bool_t fCheck2tracks = kFALSE;
-	Bool_t fCheck4tracks = kFALSE;
 	Bool_t fCheck2tracks_ITSSA = kFALSE;
 	Bool_t fCheck4tracks_ITSSA = kFALSE;
 
 	delete selec;
+	delete selec_p10;
+	delete selec_m10;
 	//-------------------------------------------------------------------------
 
 	//ITSSA trackcuts + Martin's selection-------------------------------------
@@ -1710,8 +1752,8 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	//ITSSA + Martin's trackcuts
 	AliMultiplicitySelectionCPPWA *selec_ITSSA = new AliMultiplicitySelectionCPPWA();
-	if (!fIsRun2) selec_ITSSA->InitDefaultTrackCuts((Int_t)is10bc,1,kFALSE);// 1 = 10b and 10c, 0 = 10d and 10e
-	else selec_ITSSA->InitDefaultTrackCuts(0,1,kTRUE);
+	if (!fIsRun2) selec_ITSSA->InitDefaultTrackCuts((Int_t)is10bc,1,kFALSE,70);// 1 = 10b and 10c, 0 = 10d and 10e
+	else selec_ITSSA->InitDefaultTrackCuts(0,1,kTRUE,120);
 	TArrayI indices_ITSSA;
 	Int_t Nsel_ITSSA = selec_ITSSA->GetNumberOfITSSAtracks(fESDEvent,indices_ITSSA);
 	fCheck2tracks_ITSSA = (Nsel_ITSSA == 2) ? kTRUE : kFALSE;
@@ -1764,145 +1806,401 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		}
 	}
 
-	fCheck2tracks = (Nsel == 2) ? kTRUE : kFALSE;
-	fCheck4tracks = (Nsel == 4) ? kTRUE : kFALSE;
-
-	if (fCheck2tracks) {
+	if (fCheckTwoPion[0]) {
 		for (Int_t i = 0; i < 2; i++) {
 			AliESDtrack *track = fESDEvent->GetTrack(indices.At(i));
 			if(!track) {
 				PostOutputs();
 				return;
 			}
-			fTwoPionTrack[i][0] = track->Px();
-			fTwoPionTrack[i][1] = track->Py();
-			fTwoPionTrack[i][2] = track->Pz();
-			fTwoPionTrack[i][3] = track->E();
-			fTwoPionTrack[i][4] = track->GetSign();
-			fTwoPionTrack[i][5] = track->GetIntegratedLength();
+			fTwoPionTrack[0][i][0] = track->Px();
+			fTwoPionTrack[0][i][1] = track->Py();
+			fTwoPionTrack[0][i][2] = track->Pz();
+			fTwoPionTrack[0][i][3] = track->E();
+			fTwoPionTrack[0][i][4] = track->GetSign();
+			fTwoPionTrack[0][i][5] = track->GetIntegratedLength();
 			//TPC (by L.Goerlich)
-			fTwoPionTPCSigma[i][0] = track->GetTPCsignal();
-			fTwoPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
-			fTwoPionTPCSigma[i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-			fTwoPionTPCSigma[i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
-			fTwoPionTPCSigma[i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
-			fTwoPionTPCSigma[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			fTwoPionTPCSigma[0][i][0] = track->GetTPCsignal();
+			fTwoPionTPCSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTPCSigma[0][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fTwoPionTPCSigma[0][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fTwoPionTPCSigma[0][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fTwoPionTPCSigma[0][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
 			//TOF (by L.Goerlich)
-			fTwoPionTOFSigma[i][0] = track->GetTOFsignal();
-			fTwoPionTOFSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
-			fTwoPionTOFSigma[i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-			fTwoPionTOFSigma[i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
-			fTwoPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			fTwoPionTOFSigma[0][i][0] = track->GetTOFsignal();
+			fTwoPionTOFSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTOFSigma[0][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fTwoPionTOFSigma[0][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fTwoPionTOFSigma[0][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 			//ITS (by L.Goerlich)
-			fTwoPionITSSigma[i][0] = track->GetITSsignal();
-			fTwoPionITSSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
-			fTwoPionITSSigma[i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
-			fTwoPionITSSigma[i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
-			fTwoPionITSSigma[i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
-			fTwoPionITSSigma[i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
-			fTwoPionITSSigma[i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
-			fTwoPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
-			fTwoPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
-			fTwoPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			fTwoPionITSSigma[0][i][0] = track->GetITSsignal();
+			fTwoPionITSSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionITSSigma[0][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fTwoPionITSSigma[0][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fTwoPionITSSigma[0][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fTwoPionITSSigma[0][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fTwoPionITSSigma[0][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fTwoPionITSSigma[0][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fTwoPionITSSigma[0][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fTwoPionITSSigma[0][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
 			//TPC,TOF,ITS Prob (by P.Buehler)
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fTwoPionTPCProb[i]);
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fTwoPionTOFProb[i]);
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fTwoPionITSProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fTwoPionTPCProb[0][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fTwoPionTOFProb[0][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fTwoPionITSProb[0][i]);
 
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-			fTwoPionMask_TPC[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TPC[i]);
+			fTwoPionMask_TPC[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TPC[0][i]);
 			//TOF
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-			fTwoPionMask_TOF[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TOF[i]);
+			fTwoPionMask_TOF[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TOF[0][i]);
 			//ITS
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
-			fTwoPionMask_ITS[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_ITS[i]);
+			fTwoPionMask_ITS[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_ITS[0][i]);
 			//TRD
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
-			fTwoPionMask_TRD[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TRD[i]);
+			fTwoPionMask_TRD[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TRD[0][i]);
 			//TPC|TOF|ITS|TRD
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
 					AliPIDResponse::kDetTOF |
 					AliPIDResponse::kDetITS |
 					AliPIDResponse::kDetTRD);
-			fTwoPionMask_tot[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_tot[i]);
-			fTwoPionDetMask_tot[i] = (UInt_t)fPIDCombined->GetDetectorMask();
+			fTwoPionMask_tot[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_tot[0][i]);
+			fTwoPionDetMask_tot[0][i] = (UInt_t)fPIDCombined->GetDetectorMask();
 
 		}
 
-		fCheckTwoPion = kTRUE;
 	}
 
-	if (fCheck4tracks) {
+	//Systematics for cluster +10
+	if (fCheckTwoPion[1]) {
+		for (Int_t i = 0; i < 2; i++) {
+			AliESDtrack *track = fESDEvent->GetTrack(indices_p10.At(i));
+			if(!track) {
+				PostOutputs();
+				return;
+			}
+			fTwoPionTrack[1][i][0] = track->Px();
+			fTwoPionTrack[1][i][1] = track->Py();
+			fTwoPionTrack[1][i][2] = track->Pz();
+			fTwoPionTrack[1][i][3] = track->E();
+			fTwoPionTrack[1][i][4] = track->GetSign();
+			fTwoPionTrack[1][i][5] = track->GetIntegratedLength();
+			//TPC (by L.Goerlich)
+			fTwoPionTPCSigma[1][i][0] = track->GetTPCsignal();
+			fTwoPionTPCSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTPCSigma[1][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fTwoPionTPCSigma[1][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fTwoPionTPCSigma[1][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fTwoPionTPCSigma[1][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fTwoPionTOFSigma[1][i][0] = track->GetTOFsignal();
+			fTwoPionTOFSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTOFSigma[1][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fTwoPionTOFSigma[1][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fTwoPionTOFSigma[1][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fTwoPionITSSigma[1][i][0] = track->GetITSsignal();
+			fTwoPionITSSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionITSSigma[1][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fTwoPionITSSigma[1][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fTwoPionITSSigma[1][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fTwoPionITSSigma[1][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fTwoPionITSSigma[1][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fTwoPionITSSigma[1][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fTwoPionITSSigma[1][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fTwoPionITSSigma[1][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fTwoPionTPCProb[1][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fTwoPionTOFProb[1][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fTwoPionITSProb[1][i]);
+
+			//Bayesian,combined(UInt_t)
+			//TPC 
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			fTwoPionMask_TPC[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TPC[1][i]);
+			//TOF
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			fTwoPionMask_TOF[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TOF[1][i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fTwoPionMask_ITS[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_ITS[1][i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fTwoPionMask_TRD[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TRD[1][i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fTwoPionMask_tot[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_tot[1][i]);
+			fTwoPionDetMask_tot[1][i] = (UInt_t)fPIDCombined->GetDetectorMask();
+
+		}
+	}
+	if (fCheckTwoPion[2]) {//Systematics for cluster -10
+		for (Int_t i = 0; i < 2; i++) {
+			AliESDtrack *track = fESDEvent->GetTrack(indices_m10.At(i));
+			if(!track) {
+				PostOutputs();
+				return;
+			}
+			fTwoPionTrack[2][i][0] = track->Px();
+			fTwoPionTrack[2][i][1] = track->Py();
+			fTwoPionTrack[2][i][2] = track->Pz();
+			fTwoPionTrack[2][i][3] = track->E();
+			fTwoPionTrack[2][i][4] = track->GetSign();
+			fTwoPionTrack[2][i][5] = track->GetIntegratedLength();
+			//TPC (by L.Goerlich)
+			fTwoPionTPCSigma[2][i][0] = track->GetTPCsignal();
+			fTwoPionTPCSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTPCSigma[2][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fTwoPionTPCSigma[2][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fTwoPionTPCSigma[2][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fTwoPionTPCSigma[2][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fTwoPionTOFSigma[2][i][0] = track->GetTOFsignal();
+			fTwoPionTOFSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionTOFSigma[2][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fTwoPionTOFSigma[2][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fTwoPionTOFSigma[2][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fTwoPionITSSigma[2][i][0] = track->GetITSsignal();
+			fTwoPionITSSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fTwoPionITSSigma[2][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fTwoPionITSSigma[2][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fTwoPionITSSigma[2][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fTwoPionITSSigma[2][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fTwoPionITSSigma[2][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fTwoPionITSSigma[2][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fTwoPionITSSigma[2][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fTwoPionITSSigma[2][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fTwoPionTPCProb[2][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fTwoPionTOFProb[2][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fTwoPionITSProb[2][i]);
+
+			//Bayesian,combined(UInt_t)
+			//TPC 
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			fTwoPionMask_TPC[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TPC[2][i]);
+			//TOF
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			fTwoPionMask_TOF[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TOF[2][i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fTwoPionMask_ITS[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_ITS[2][i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fTwoPionMask_TRD[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_TRD[2][i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fTwoPionMask_tot[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fTwoPionBayesProb_tot[2][i]);
+			fTwoPionDetMask_tot[2][i] = (UInt_t)fPIDCombined->GetDetectorMask();
+
+		}
+	}
+
+	if (fCheckFourPion[0]) {
 		for (Int_t i = 0; i < 4; i++) {
 			AliESDtrack *track = fESDEvent->GetTrack(indices.At(i));
 			if(!track) {
 				PostOutputs();
 				return;
 			}
-			fFourPionTrack[i][0] = track->Px();
-			fFourPionTrack[i][1] = track->Py();
-			fFourPionTrack[i][2] = track->Pz();
-			fFourPionTrack[i][3] = track->E();
-			fFourPionTrack[i][4] = track->GetSign();
-			fFourPionTrack[i][5] = track->GetIntegratedLength();
+			fFourPionTrack[0][i][0] = track->Px();
+			fFourPionTrack[0][i][1] = track->Py();
+			fFourPionTrack[0][i][2] = track->Pz();
+			fFourPionTrack[0][i][3] = track->E();
+			fFourPionTrack[0][i][4] = track->GetSign();
+			fFourPionTrack[0][i][5] = track->GetIntegratedLength();
 			//TPC (by L.Goerlich)
-			fFourPionTPCSigma[i][0] = track->GetTPCsignal();
-			fFourPionTPCSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
-			fFourPionTPCSigma[i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
-			fFourPionTPCSigma[i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
-			fFourPionTPCSigma[i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
-			fFourPionTPCSigma[i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			fFourPionTPCSigma[0][i][0] = track->GetTPCsignal();
+			fFourPionTPCSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTPCSigma[0][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fFourPionTPCSigma[0][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fFourPionTPCSigma[0][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fFourPionTPCSigma[0][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
 			//TOF (by L.Goerlich)
-			fFourPionTOFSigma[i][0] = track->GetTOFsignal();
-			fFourPionTOFSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
-			fFourPionTOFSigma[i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-			fFourPionTOFSigma[i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
-			fFourPionTOFSigma[i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			fFourPionTOFSigma[0][i][0] = track->GetTOFsignal();
+			fFourPionTOFSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTOFSigma[0][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fFourPionTOFSigma[0][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fFourPionTOFSigma[0][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
 			//ITS (by L.Goerlich)
-			fFourPionITSSigma[i][0] = track->GetITSsignal();
-			fFourPionITSSigma[i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
-			fFourPionITSSigma[i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
-			fFourPionITSSigma[i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
-			fFourPionITSSigma[i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
-			fFourPionITSSigma[i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
-			fFourPionITSSigma[i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
-			fFourPionITSSigma[i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
-			fFourPionITSSigma[i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
-			fFourPionITSSigma[i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			fFourPionITSSigma[0][i][0] = track->GetITSsignal();
+			fFourPionITSSigma[0][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fFourPionITSSigma[0][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fFourPionITSSigma[0][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fFourPionITSSigma[0][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fFourPionITSSigma[0][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fFourPionITSSigma[0][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fFourPionITSSigma[0][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fFourPionITSSigma[0][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fFourPionITSSigma[0][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
 			//TPC,TOF,ITS Prob (by P.Buehler)
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fFourPionTPCProb[i]);
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fFourPionTOFProb[i]);
-			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fFourPionITSProb[i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fFourPionTPCProb[0][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fFourPionTOFProb[0][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fFourPionITSProb[0][i]);
 			//Bayesian,combined(UInt_t)
 			//TPC 
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-			fFourPionMask_TPC[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TPC[i]);
+			fFourPionMask_TPC[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TPC[0][i]);
 			//TOF
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-			fFourPionMask_TOF[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TOF[i]);
+			fFourPionMask_TOF[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TOF[0][i]);
 			//ITS
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
-			fFourPionMask_ITS[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_ITS[i]);
+			fFourPionMask_ITS[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_ITS[0][i]);
 			//TRD
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
-			fFourPionMask_TRD[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TRD[i]);
+			fFourPionMask_TRD[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TRD[0][i]);
 			//TPC|TOF|ITS|TRD
 			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
 					AliPIDResponse::kDetTOF |
 					AliPIDResponse::kDetITS |
 					AliPIDResponse::kDetTRD);
-			fFourPionMask_tot[i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_tot[i]);
-			fFourPionDetMask_tot[i] = (UInt_t)fPIDCombined->GetDetectorMask();
+			fFourPionMask_tot[0][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_tot[0][i]);
+			fFourPionDetMask_tot[0][i] = (UInt_t)fPIDCombined->GetDetectorMask();
 
 		}
-		fCheckFourPion = kTRUE;
+	}
+	if (fCheckFourPion[1]) {
+		for (Int_t i = 0; i < 4; i++) {
+			AliESDtrack *track = fESDEvent->GetTrack(indices_p10.At(i));
+			if(!track) {
+				PostOutputs();
+				return;
+			}
+			fFourPionTrack[1][i][0] = track->Px();
+			fFourPionTrack[1][i][1] = track->Py();
+			fFourPionTrack[1][i][2] = track->Pz();
+			fFourPionTrack[1][i][3] = track->E();
+			fFourPionTrack[1][i][4] = track->GetSign();
+			fFourPionTrack[1][i][5] = track->GetIntegratedLength();
+			//TPC (by L.Goerlich)
+			fFourPionTPCSigma[1][i][0] = track->GetTPCsignal();
+			fFourPionTPCSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTPCSigma[1][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fFourPionTPCSigma[1][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fFourPionTPCSigma[1][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fFourPionTPCSigma[1][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fFourPionTOFSigma[1][i][0] = track->GetTOFsignal();
+			fFourPionTOFSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTOFSigma[1][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fFourPionTOFSigma[1][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fFourPionTOFSigma[1][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fFourPionITSSigma[1][i][0] = track->GetITSsignal();
+			fFourPionITSSigma[1][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fFourPionITSSigma[1][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fFourPionITSSigma[1][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fFourPionITSSigma[1][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fFourPionITSSigma[1][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fFourPionITSSigma[1][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fFourPionITSSigma[1][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fFourPionITSSigma[1][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fFourPionITSSigma[1][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fFourPionTPCProb[1][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fFourPionTOFProb[1][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fFourPionITSProb[1][i]);
+			//Bayesian,combined(UInt_t)
+			//TPC 
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			fFourPionMask_TPC[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TPC[1][i]);
+			//TOF
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			fFourPionMask_TOF[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TOF[1][i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fFourPionMask_ITS[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_ITS[1][i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fFourPionMask_TRD[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TRD[1][i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fFourPionMask_tot[1][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_tot[1][i]);
+			fFourPionDetMask_tot[1][i] = (UInt_t)fPIDCombined->GetDetectorMask();
+
+		}
+	}
+	if (fCheckFourPion[2]) {
+		for (Int_t i = 0; i < 4; i++) {
+			AliESDtrack *track = fESDEvent->GetTrack(indices_p10.At(i));
+			if(!track) {
+				PostOutputs();
+				return;
+			}
+			fFourPionTrack[2][i][0] = track->Px();
+			fFourPionTrack[2][i][1] = track->Py();
+			fFourPionTrack[2][i][2] = track->Pz();
+			fFourPionTrack[2][i][3] = track->E();
+			fFourPionTrack[2][i][4] = track->GetSign();
+			fFourPionTrack[2][i][5] = track->GetIntegratedLength();
+			//TPC (by L.Goerlich)
+			fFourPionTPCSigma[2][i][0] = track->GetTPCsignal();
+			fFourPionTPCSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTPCSigma[2][i][2] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+			fFourPionTPCSigma[2][i][3] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon);
+			fFourPionTPCSigma[2][i][4] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+			fFourPionTPCSigma[2][i][5] = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
+			//TOF (by L.Goerlich)
+			fFourPionTOFSigma[2][i][0] = track->GetTOFsignal();
+			fFourPionTOFSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk);
+			fFourPionTOFSigma[2][i][2] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+			fFourPionTOFSigma[2][i][3] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+			fFourPionTOFSigma[2][i][4] = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+			//ITS (by L.Goerlich)
+			fFourPionITSSigma[2][i][0] = track->GetITSsignal();
+			fFourPionITSSigma[2][i][1] = (Double_t)(fPIDResponse->CheckPIDStatus(AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk);
+			fFourPionITSSigma[2][i][2] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kPion);
+			fFourPionITSSigma[2][i][3] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kKaon);
+			fFourPionITSSigma[2][i][4] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kProton);
+			fFourPionITSSigma[2][i][5] = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
+			fFourPionITSSigma[2][i][6] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kPion);
+			fFourPionITSSigma[2][i][7] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kKaon);
+			fFourPionITSSigma[2][i][8] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kProton);
+			fFourPionITSSigma[2][i][9] = fPIDResponse->GetSignalDelta(AliPIDResponse::kITS,track,AliPID::kElectron);
+			//TPC,TOF,ITS Prob (by P.Buehler)
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,track,AliPID::kSPECIES,fFourPionTPCProb[2][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,track,AliPID::kSPECIES,fFourPionTOFProb[2][i]);
+			fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,track,AliPID::kSPECIES,fFourPionITSProb[2][i]);
+			//Bayesian,combined(UInt_t)
+			//TPC 
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+			fFourPionMask_TPC[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TPC[2][i]);
+			//TOF
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+			fFourPionMask_TOF[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TOF[2][i]);
+			//ITS
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetITS);
+			fFourPionMask_ITS[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_ITS[2][i]);
+			//TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTRD);
+			fFourPionMask_TRD[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_TRD[2][i]);
+			//TPC|TOF|ITS|TRD
+			fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC |
+					AliPIDResponse::kDetTOF |
+					AliPIDResponse::kDetITS |
+					AliPIDResponse::kDetTRD);
+			fFourPionMask_tot[2][i] = fPIDCombined->ComputeProbabilities(track,fPIDResponse,fFourPionBayesProb_tot[2][i]);
+			fFourPionDetMask_tot[2][i] = (UInt_t)fPIDCombined->GetDetectorMask();
+
+		}
 	}
 	//-------------------------------------------------------------------------
 
 	//For ITSSA track----------------------------------------------------------
+	/*
 	if (fCheck2tracks_ITSSA) {
 		for (Int_t j = 0; j < 10; j++) {
 			for (Int_t i = 0; i < 2; i++) {
@@ -1943,9 +2241,12 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		}
 		fCheckFourPion_ITSSA = kTRUE;
 	}
+	*/
 	//-------------------------------------------------------------------------
 	
 	indices = 0x0;
+	indices_p10 = 0x0;
+	indices_m10 = 0x0;
 	indices_ITSSA = 0x0;
 
 	if(!fIsMC) {//Reduce output size (only for 2tracks and 4tracks)
@@ -1953,7 +2254,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 		       fTree->Fill();
 		}
  		else {
-			if(fCheck2tracks || fCheck4tracks || fCheck2tracks_ITSSA || fCheck4tracks_ITSSA) fTree->Fill();
+			if(fCheckTwoPion[0] || fCheckTwoPion[1] || fCheckTwoPion[2] || fCheckFourPion[0] || fCheckFourPion[1] || fCheckFourPion[2]) fTree->Fill();
 		}
 	}
 
@@ -2018,7 +2319,7 @@ Bool_t AliAnalysisTaskCDPWA::CutEvent(
 			kpr0 = kFALSE;
 		}
 	}
-	Double_t cutVertex = 10.;
+	Double_t cutVertex = 15.;
 	if (fIsRun2) cutVertex = 15.;//For run2
 	const Bool_t kpriv = kpr0 && (fabs(vertex->GetZ()) < cutVertex);
 	if(!kpriv) return kFALSE;

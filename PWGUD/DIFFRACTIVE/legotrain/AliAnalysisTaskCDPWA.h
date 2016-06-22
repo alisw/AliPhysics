@@ -207,52 +207,52 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fZDCGap;//!
 		Int_t fRunNumber;//!
 		Int_t fPeriod;//!
-		Bool_t fCheckTwoPion; //! Check that this event has 2 tracks
-		Bool_t fCheckFourPion; //! Check that this event has 4 tracks
+		Bool_t fCheckTwoPion[3]; //! Check that this event has 2 tracks
+		Bool_t fCheckFourPion[3]; //! Check that this event has 4 tracks
 		Bool_t fCheckTwoPion_ITSSA;//! Check that this event has 2 ITSSA_track events
 		Bool_t fCheckFourPion_ITSSA;//! Check that this event has 2 ITSSA_track events
 		Int_t fMultiplicity;//!
 		Double_t fVertex[3];//! Vertex information
 
-		Double_t fTwoPionTrack[2][10]; //! Two track Momentum, Energy and Sign
-		Double_t fTwoPionTPCSigma[2][10]; //! Two track TPC sigma for PID
-		Double_t fTwoPionTOFSigma[2][10]; //! Two track TOF sigma for PID
-		Double_t fTwoPionITSSigma[2][10]; //! Two track ITS sigma for PID
-		UInt_t fTwoPionMask_TPC[2]; //! Two track mask for TPC
-		UInt_t fTwoPionMask_TOF[2]; //! Two track mask for TOF
-		UInt_t fTwoPionMask_ITS[2]; //! Two track mask for ITS
-		UInt_t fTwoPionMask_TRD[2]; //! Two track mask for TRD
-		UInt_t fTwoPionMask_tot[2]; //! Two track mask for TRD
-		UInt_t fTwoPionDetMask_tot[2]; //! Two track mask for TRD
-		Double_t fTwoPionBayesProb_TPC[2][5]; //!Bayesian probabilities for TPC
-		Double_t fTwoPionBayesProb_TOF[2][5]; //!Bayesian probabilities for TOF
-		Double_t fTwoPionBayesProb_ITS[2][5]; //!Bayesian probabilities for ITS
-		Double_t fTwoPionBayesProb_TRD[2][5]; //!Bayesian probabilities for TRD
-		Double_t fTwoPionBayesProb_tot[2][5]; //!Bayesian probabilities for tot
-		Double_t fTwoPionTrack_ITSSA[2][10]; //! Two track(ITSSA) Momentum, Energy and Sign
-		Double_t fTwoPionTPCProb[2][5];//!
-		Double_t fTwoPionTOFProb[2][5];//!
-		Double_t fTwoPionITSProb[2][5];//!
+		Double_t fTwoPionTrack[3][2][10]; //! Two track Momentum, Energy and Sign
+		Double_t fTwoPionTPCSigma[3][2][10]; //! Two track TPC sigma for PID
+		Double_t fTwoPionTOFSigma[3][2][10]; //! Two track TOF sigma for PID
+		Double_t fTwoPionITSSigma[3][2][10]; //! Two track ITS sigma for PID
+		UInt_t fTwoPionMask_TPC[3][2]; //! Two track mask for TPC
+		UInt_t fTwoPionMask_TOF[3][2]; //! Two track mask for TOF
+		UInt_t fTwoPionMask_ITS[3][2]; //! Two track mask for ITS
+		UInt_t fTwoPionMask_TRD[3][2]; //! Two track mask for TRD
+		UInt_t fTwoPionMask_tot[3][2]; //! Two track mask for TRD
+		UInt_t fTwoPionDetMask_tot[3][2]; //! Two track mask for TRD
+		Double_t fTwoPionBayesProb_TPC[3][2][5]; //!Bayesian probabilities for TPC
+		Double_t fTwoPionBayesProb_TOF[3][2][5]; //!Bayesian probabilities for TOF
+		Double_t fTwoPionBayesProb_ITS[3][2][5]; //!Bayesian probabilities for ITS
+		Double_t fTwoPionBayesProb_TRD[3][2][5]; //!Bayesian probabilities for TRD
+		Double_t fTwoPionBayesProb_tot[3][2][5]; //!Bayesian probabilities for tot
+		Double_t fTwoPionTrack_ITSSA[3][2][10]; //! Two track(ITSSA) Momentum, Energy and Sign
+		Double_t fTwoPionTPCProb[3][2][5];//!
+		Double_t fTwoPionTOFProb[3][2][5];//!
+		Double_t fTwoPionITSProb[3][2][5];//!
 
-		Double_t fFourPionTrack[4][10]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionTPCSigma[4][10]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionTOFSigma[4][10]; //! Four track Momentum, Energy and Sign
-		Double_t fFourPionITSSigma[4][10]; //! Four track Momentum, Energy and Sign
-		UInt_t fFourPionMask_TPC[4]; //! Four track mask for TPC
-		UInt_t fFourPionMask_TOF[4]; //! Four track mask for TOF
-		UInt_t fFourPionMask_ITS[4]; //! Four track mask for ITS
-		UInt_t fFourPionMask_TRD[4]; //! Four track mask for TRD
-		UInt_t fFourPionMask_tot[4]; //! Four track mask for TRD
-		UInt_t fFourPionDetMask_tot[4]; //! Four track mask for TRD
-		Double_t fFourPionBayesProb_TPC[4][5]; //!Bayesian probabilities for TPC
-		Double_t fFourPionBayesProb_TOF[4][5]; //!Bayesian probabilities for TOF
-		Double_t fFourPionBayesProb_ITS[4][5]; //!Bayesian probabilities for ITS
-		Double_t fFourPionBayesProb_TRD[4][5]; //!Bayesian probabilities for TRD
-		Double_t fFourPionBayesProb_tot[4][5]; //!Bayesian probabilities for tot
-		Double_t fFourPionTrack_ITSSA[4][10];//!
-		Double_t fFourPionTPCProb[4][5];//!
-		Double_t fFourPionTOFProb[4][5];//!
-		Double_t fFourPionITSProb[4][5];//!
+		Double_t fFourPionTrack[3][4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTPCSigma[3][4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTOFSigma[3][4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionITSSigma[3][4][10]; //! Four track Momentum, Energy and Sign
+		UInt_t fFourPionMask_TPC[3][4]; //! Four track mask for TPC
+		UInt_t fFourPionMask_TOF[3][4]; //! Four track mask for TOF
+		UInt_t fFourPionMask_ITS[3][4]; //! Four track mask for ITS
+		UInt_t fFourPionMask_TRD[3][4]; //! Four track mask for TRD
+		UInt_t fFourPionMask_tot[3][4]; //! Four track mask for TRD
+		UInt_t fFourPionDetMask_tot[3][4]; //! Four track mask for TRD
+		Double_t fFourPionBayesProb_TPC[3][4][5]; //!Bayesian probabilities for TPC
+		Double_t fFourPionBayesProb_TOF[3][4][5]; //!Bayesian probabilities for TOF
+		Double_t fFourPionBayesProb_ITS[3][4][5]; //!Bayesian probabilities for ITS
+		Double_t fFourPionBayesProb_TRD[3][4][5]; //!Bayesian probabilities for TRD
+		Double_t fFourPionBayesProb_tot[3][4][5]; //!Bayesian probabilities for tot
+		Double_t fFourPionTrack_ITSSA[3][4][10];//!
+		Double_t fFourPionTPCProb[3][4][5];//!
+		Double_t fFourPionTOFProb[3][4][5];//!
+		Double_t fFourPionITSProb[3][4][5];//!
 
 		Double_t fMCGenProtonTrack[4][5]; //! Info of generated Proton 1 after scattering
 		Double_t fMCGenPionTrack[4][5]; //! Info of generated Pion 1 after scattering

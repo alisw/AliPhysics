@@ -60,7 +60,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		Bool_t AcceptTrack(AliESDtrack *track, Bool_t asPrimary = kFALSE);
 		Bool_t TestFiredChips(AliESDEvent *esd, TArrayI indices);
 
-		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2);
+		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nCluster);
 		void AddPrimaryTrackCut(AliESDtrackCuts *cut);
 
 		void IgnoreV0s(Bool_t k=kFALSE) {fkIgnoreV0s = k;}

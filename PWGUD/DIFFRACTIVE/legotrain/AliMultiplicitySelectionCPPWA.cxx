@@ -69,7 +69,7 @@ AliMultiplicitySelectionCPPWA::~AliMultiplicitySelectionCPPWA()
 	fTrackCutListPrim = 0;
 }
 //Member function
-void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2)
+void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nCluster)
 {
 	//Important message for 7TeV analysis (LHC10b,c,d,e)
 	/*
@@ -95,7 +95,7 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 			AliESDtrackCuts *fcutITSTPC_P = new AliESDtrackCuts;// = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0);
 			//fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 			fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
-			fcutITSTPC_P -> SetMinNCrossedRowsTPC(120);
+			fcutITSTPC_P -> SetMinNCrossedRowsTPC(nCluster);
 			fcutITSTPC_P -> SetMaxDCAToVertexZ(2);
 			fcutITSTPC_P -> SetEtaRange(-0.9,0.9);
 			fcutITSTPC_P -> SetMaxChi2PerClusterTPC(4);
@@ -127,6 +127,13 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 		if (ITSSACut == kFALSE) {//ITS+TPC
 			AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
 			fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			if (clusterCut == 1) {//For 10b,c
+				fcutITSTPC_P->SetMinNCrossedRowsTPC(nCluster);
+			}
+			else {
+				fcutITSTPC_P->SetMinNClustersTPC(nCluster);
+			}
+
 			fcutITSTPC_P->SetName("ITSTPC");
 			AddPrimaryTrackCut(fcutITSTPC_P);
 			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
@@ -443,7 +450,7 @@ Bool_t AliMultiplicitySelectionCPPWA::TestFiredChips(AliESDEvent *esd, TArrayI i
 
 	for(Int_t iT = 0; iT< Ntracks; iT++)
 	{
-//		printf("AliMultiplicitySelectionCP1::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
+//		printf("AliMultiplicitySelectionCPPWA::TestFiredChips:  indices.At(%d) = %d \n", iT, indices.At(iT));
 
 		Int_t statusLay;
 		Int_t idet = -1;
