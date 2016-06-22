@@ -68,6 +68,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
 							 Bool_t isFineNtrkBin = kFALSE)
 {
 
+  if ( (isPPData && isPPbData) ||
+       (!isPPData && !isPPbData) ) {
+    printf("You have to choose the data kind; bad choise isPPData=%d isPPbData=%d\n",isPPData,isPPbData);
+    return;
+  }
 
   printf("Adding CF task using cuts from file %s\n",cutFile);
   if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -135,7 +140,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Int_t nbinmult_100_400 =  3; //bins in multiplicity between 100 and 400
   if(isPPbData) nbinmult += nbinmult_100_400;
 
-  const Int_t nbinpt         =  11; //bins in pt from 0,1,2,3,4,5,6,8,12,17,25,35 GeV
+  const Int_t nbinpt         = cutsLctoV0->GetNPtBins(); // bins in pT
   const Int_t nbiny          =  24; //bins in y Lc
   const Int_t nbinphi        =  18; //bins in phi Lc
   const Int_t nbinonFly      =   2; //bins in onFlyStatus x V0
@@ -226,19 +231,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   // values for bin lower bounds
 
   // pt
+  Float_t* floatbinLimpT = cutsLctoV0->GetPtBinLimits();
   Double_t *binLimpT=new Double_t[iBin[ipT]+1];
-  binLimpT[ 0]= 0.;
-  binLimpT[ 1]= 1.;
-  binLimpT[ 2]= 2.;
-  binLimpT[ 3]= 3.;
-  binLimpT[ 4]= 4.;
-  binLimpT[ 5]= 5.;
-  binLimpT[ 6]= 6.;
-  binLimpT[ 7]= 8.;
-  binLimpT[ 8]=12.;
-  binLimpT[ 9]=17.;
-  binLimpT[10]=25.;
-  binLimpT[11]=35.;
+  for (Int_t ibinpT = 0 ; ibinpT<iBin[ipT]+1; ibinpT++){
+    binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+    printf("binLimpT[%d]=%f\n",ibinpT,binLimpT[ibinpT]);
+  }
 
   // y
   Double_t *binLimy=new Double_t[iBin[iy]+1];
