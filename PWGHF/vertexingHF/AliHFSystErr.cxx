@@ -97,16 +97,19 @@ void AliHFSystErr::Init(Int_t decay){
   /// Variables/histos initialization
   //
 
-  if ((fRunNumber>11) && fIsLowEnergy==false) { 
-    AliFatal("Only settings for 2010 and the low energy runs are implemented so far");
-  }
+//  if ((fRunNumber>11) && fIsLowEnergy==false) {
+//    AliFatal("Only settings for 2010 and the low energy runs are implemented so far");
+//  }
 
   switch(decay) {
   case 1: // D0->Kpi
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitD0toKpi2010ppLowEn();
-      else if(fIsLowPtAnalysis) InitD0toKpi2010ppLowPtAn();
-      else InitD0toKpi2010pp();
+      else if(fRunNumber == 10){
+          if(fIsLowPtAnalysis) InitD0toKpi2010ppLowPtAn();
+          else if(fIsPass4Analysis) AliFatal("Not yet implemented");
+          else InitD0toKpi2010pp();
+      } else AliFatal("Not yet implemented");
     } 
     else if (fCollisionType==1) {
       if (fRunNumber == 10){
@@ -169,9 +172,13 @@ void AliHFSystErr::Init(Int_t decay){
     if(fIsLowPtAnalysis) AliFatal("Not yet implemented");
     if (fCollisionType==0) {
       if (fIsLowEnergy) InitDplustoKpipi2010ppLowEn();
-      else if(fIsPass4Analysis) InitDplustoKpipi2010ppPass4();
-      else InitDplustoKpipi2010pp();
-    } 
+      else if(fRunNumber == 10){
+          if(fIsPass4Analysis) InitDplustoKpipi2010ppPass4();
+          else InitDplustoKpipi2010pp();
+      } else if(fRunNumber == 12){
+          InitDplustoKpipi2012pp();
+      } else AliFatal("Not yet implemented");
+    }
     else if (fCollisionType==1) {
       if(fIsLowPtAnalysis) AliFatal("Not yet implemented");
       if (fRunNumber == 10){
@@ -231,7 +238,12 @@ void AliHFSystErr::Init(Int_t decay){
     if(fIsLowPtAnalysis) AliFatal("Not yet implemented");
     if (fCollisionType==0) {
       if(fIsLowEnergy)  InitDstartoD0pi2010ppLowEn();
-      else InitDstartoD0pi2010pp();
+      else if(fRunNumber == 10){
+          if(fIsPass4Analysis) AliFatal("Not yet implemented");
+          else InitDstartoD0pi2010pp();
+      } else if(fRunNumber == 12){
+          InitDstartoD0pi2012pp();
+      } else AliFatal("Not yet implemented");
     }
     else if (fCollisionType==1) {
       if (fRunNumber == 10){
@@ -1081,6 +1093,53 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
   */
   return;
 }
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDplustoKpipi2012pp(){
+    //
+    // D+->Kpipi syst errors
+    //  2012 pp sample
+    //
+
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",36,0,36);
+    for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // 4% error on sigmaV0and
+
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",36,0,36);
+    for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.025); //   PDG2015
+
+    // Tracking efficiency
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+    for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.09); // 9% (3% per track)
+
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+    fRawYield->SetBinContent(1,1);
+    fRawYield->SetBinContent(2,0.07);
+    fRawYield->SetBinContent(3,0.05);
+    for(Int_t i=4;i<=36;i++) fRawYield->SetBinContent(i,0.04);
+
+    // Cuts efficiency (from cuts variation)
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+    fCutsEff->SetBinContent(1,1.);
+    fCutsEff->SetBinContent(2,0.07);
+    for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.05); // 10%
+
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+    for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+
+    // MC dN/dpt
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+    for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+    for(Int_t i=2;i<=3;i++) fMCPtShape->SetBinContent(i,0.02);
+    for(Int_t i=4;i<=5;i++) fMCPtShape->SetBinContent(i,0.01);
+
+    return;
+}
+
+
  //--------------------------------------------------------------------------
 void AliHFSystErr::InitDstoKKpi2010pp() {
   // 
@@ -1868,6 +1927,55 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
 
   return;
 }
+
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstartoD0pi2012pp() {
+    //
+    // D*+->D0pi syst errors.
+    //  2012 pp sample
+    //
+
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",24,0,24);
+    for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.05); // 5% error on sigmaV0and
+
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",24,0,24);
+    for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.013); // 1.3% PDG2015
+
+    // Tracking efficiency
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+    for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 9% (3% per track)
+
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+    fRawYield->SetBinContent(1,1.0);
+    fRawYield->SetBinContent(2,0.08);
+    fRawYield->SetBinContent(3,0.06);
+    for(Int_t i=4;i<=8;i++) fRawYield->SetBinContent(i,0.03);
+    for(Int_t i=9;i<=24;i++) fRawYield->SetBinContent(i,0.02);
+
+    // Cuts efficiency (from cuts variation)
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+    fCutsEff->SetBinContent(1,1.0);
+    for(Int_t i=2;i<=3;i++) fCutsEff->SetBinContent(i,0.10);
+    for(Int_t i=4;i<=7;i++) fCutsEff->SetBinContent(i,0.05);
+    for(Int_t i=8;i<=24;i++) fCutsEff->SetBinContent(i,0.01);
+
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+    for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00);
+
+    // MC dN/dpt  (copied from D0 : will update later)
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+    for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+    for(Int_t i=2;i<=3;i++) fMCPtShape->SetBinContent(i,0.02);
+    for(Int_t i=4;i<=5;i++) fMCPtShape->SetBinContent(i,0.01);
+
+    return;
+}
+
 
 //------------------------------------------------------------------------
 void AliHFSystErr::InitDstartoD0pi2010PbPb020() {
