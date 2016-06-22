@@ -78,8 +78,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Float_t MaxDevZN=10.;
  Bool_t bUsePhiEtaWeights=kFALSE;
  TString PhiEtaWeightsFileName="";
-  Double_t dDCAxy=2.4;
-  Double_t dDCAz=3.2;
+  Double_t dDCAxy=1000.;
+  Double_t dDCAz=1000.;
  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
