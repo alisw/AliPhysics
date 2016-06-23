@@ -1767,7 +1767,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
     FillPionHists();
     FillMixHists(MulClass,vtxClass,ptClass,phitrig,thetatrig);
     
-    FillOtherHists();
+    //FillOtherHists();
   }
   FillMcHists();
   if(fDoNtuple)
@@ -1935,8 +1935,8 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
   fHClustNoEvt->Fill(nclus);
   thisEvent.SetGlobalInfo(0,0,0);
   
-  if(nclus > 800){
-    AliError("Attention! More than 700 clusters in event!");
+  if(nclus > 1000){
+    AliError("Attention! More than 1000 clusters in event!");
     return 0;
   }
   
