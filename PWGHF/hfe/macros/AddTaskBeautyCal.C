@@ -125,6 +125,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     mgr->ConnectInput(hfecalqaL07, 0, cinput);
     mgr->ConnectOutput(hfecalqaL07, 1, coutput1);
     
+    /*
     // + kEMC8
     AliAnalysisTaskBeautyCal *hfecalqaL08 = new AliAnalysisTaskBeautyCal("emcqa");
     mgr->AddTask(hfecalqaL08);
@@ -148,6 +149,31 @@ AliAnalysisTask *AddTaskBeautyCal(
     mgr->ConnectInput(hfecalqaL08, 0, cinput);
     mgr->ConnectOutput(hfecalqaL08, 1, coutput1);
     
+    */
+
+    // + kcentral
+    AliAnalysisTaskBeautyCal *hfecalqaCent = new AliAnalysisTaskBeautyCal("emcqa");
+    mgr->AddTask(hfecalqaCent);
+    hfecalqaCent->SelectCollisionCandidates(AliVEvent::kCentral);
+    hfecalqaCent->SetElecIDsparse(FillElecSparse);
+    hfecalqaCent->SetTenderSwitch(UseTender);
+    hfecalqaCent->SetThresholdEG1(thEG1ADC);
+    hfecalqaCent->SetThresholdEG2(thEG2ADC);
+    hfecalqaCent->SetClusterTypeEMC(ClsTypeEMC);
+    hfecalqaCent->SetClusterTypeDCAL(ClsTypeDCAL);
+    hfecalqaCent->SetCentralityMim(MimCent);
+    hfecalqaCent->SetCentralityMax(MaxCent);
+    
+    TString containerNameCent = mgr->GetCommonFileName();
+    containerNameCent += ":PWGHF_hfeBeautyCalCent";
+    containerNameCent += ContNameExt;
+    TString SubcontainerNameCent = Form("BeautyCalCent_%s",calib);
+    SubcontainerNameCent += ContNameExt;
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerNameCent, TList::Class(),AliAnalysisManager::kOutputContainer, containerNameCent.Data());
+    mgr->ConnectInput(hfecalqaCent, 0, cinput);
+    mgr->ConnectOutput(hfecalqaCent, 1, coutput1);
+
     
     // EMCal EGA
     if(ispPb)
