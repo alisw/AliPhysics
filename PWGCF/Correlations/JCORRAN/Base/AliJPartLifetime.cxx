@@ -88,8 +88,6 @@ AliJPartLifetime::AliJPartLifetime(const AliJPartLifetime& ap) :
 //_____________________________________________________________________________
 AliJPartLifetime& AliJPartLifetime::operator = (const AliJPartLifetime& ap)
 {
-	// assignment operator
-
 	AliInfo("----DEBUG AliJPartLifetime operator= ----");
 	this->~AliJPartLifetime();
 	new(this) AliJPartLifetime(ap);
@@ -121,15 +119,12 @@ AliJPartLifetime::~AliJPartLifetime()
 
 //___________________________________________________________________
 void AliJPartLifetime::UserCreateOutputObjects()
-
 {
-	//printf("------ create objects\n");
 	// Histograms container
 	fOutput = new TList();
 	fOutput->SetOwner(kTRUE);
 
-	//fcard = new AliJCard("k0s_card.input");
-	//fcard->PrintOut();
+	fcard->PrintOut();
 	//-----------------------------------------------------------------------
 
 	// TrackCuts for strangeness measure-------------------------------------
@@ -155,11 +150,10 @@ void AliJPartLifetime::UserCreateOutputObjects()
 	// Vertex distributions--------------------------------------------------
 
 	const char *lname[] = {"AllEvents","PassingPS","AfterPileUpRejection","GoodVertex","GoodVertexCut"};
-	const UInt_t binsize = sizeof(lname)/sizeof(lname[0])-1;
+	const uint binsize = sizeof(lname)/sizeof(lname[0])-1;
 	fEventNumbers = new TH1D("EventNumbers","",binsize,0,binsize);
-	for (UInt_t i=0; i < binsize; i++)
+	for (uint i = 0; i < binsize; i++)
 		fEventNumbers->GetXaxis()->SetBinLabel(i+1,lname[i]);
-
 	fOutput->Add(fEventNumbers);
 
 	uint triggc = fcard->GetNoOfBins(kTriggType);
@@ -168,16 +162,11 @@ void AliJPartLifetime::UserCreateOutputObjects()
 	for (uint i = 0; i < kAll; i++){
 		//==================================
 		//  trigger pt histos
-		//==================================f
+		//==================================
 		double ptbw = 10/100.0;  //see hPt histo below, let's make 10 bins per 1GeV/c
-		for (uint hit = 0; hit < triggc; hit++)
-		{
-			float pTt1 = fcard->GetBinBorder(kTriggType, hit);
-			float pTt2 = fcard->GetBinBorder(kTriggType, hit + 1);
-
-			char htit[256], hname[256];
-			sprintf(htit,"pTt: %3.1f-%3.1f", pTt1, pTt2);
-			sprintf(hname,"hTriggPtBin%02d", hit);
+		for (uint hit = 0; hit < triggc; hit++){
+			double pTt1 = fcard->GetBinBorder(kTriggType, hit);
+			double pTt2 = fcard->GetBinBorder(kTriggType, hit + 1);
 
 			uint bc = (uint)TMath::Ceil((pTt2-pTt1)/ptbw);
 
@@ -193,7 +182,7 @@ void AliJPartLifetime::UserCreateOutputObjects()
 			fProperTime[i][hit] = new TH1D(Form("Tau_%s_%u",tname[i],hit),"Tau",300,0,30);
 			fOutput->Add(fProperTime[i][hit]);
 
-			fhTriggPtBin[i][hit] = new TH1D(hname,htit,bc,pTt1,pTt2);
+			fhTriggPtBin[i][hit] = new TH1D(Form("hTriggPtBin%02d",hit),Form("pTt: %3.1f-%3.1f",pTt1,pTt2),bc,pTt1,pTt2);
 			fhTriggPtBin[i][hit]->Sumw2();
 			fOutput->Add(fhTriggPtBin[i][hit]);
 		}
@@ -204,7 +193,9 @@ void AliJPartLifetime::UserCreateOutputObjects()
 		fOutput->Add(fpTspectra[i]);
 	}
 
-	//fcard->WriteCard(gDirectory);
+	OpenFile(1);
+	TDirectory *dircard = gDirectory;
+	fcard->WriteCard(dircard);
 
 	PostData(1, fOutput);
 }
@@ -241,10 +232,8 @@ void AliJPartLifetime::UserExec(Option_t* )
 	AliGenDPMjetEventHeader* dpmHeader = NULL;
 
 	if(IsMC) { // get access to event generator headers
-		pythiaGenHeader =
-			dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
-		dpmHeader =
-			dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
+		pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
+		dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(mcEvent->GenEventHeader());
 
 		Double_t eta=-20;
 		Int_t nPrim  = stack->GetNprimary();
@@ -298,7 +287,6 @@ void AliJPartLifetime::UserExec(Option_t* )
 		}
 	}
 
-
 	Bool_t IsGoodTPCVertex = kFALSE;
 	Bool_t IsGoodTPCVertexCut = kFALSE;
 
@@ -316,9 +304,8 @@ void AliJPartLifetime::UserExec(Option_t* )
 		}
 
 	}
-	if (IsGoodVertexCut && IsGoodTPCVertexCut && TMath::Abs(tpczvtx-spdzvtx)>0.5)
+	if (IsGoodVertexCut && IsGoodTPCVertexCut && TMath::Abs(tpczvtx-spdzvtx) > 0.5)
 		IsGoodTPCVertexCut = kFALSE;
-
 
 	if (IsEventSelected){
 		if (IsGoodVertex)
