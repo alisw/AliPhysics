@@ -38,13 +38,12 @@
 #include "TLegend.h"
 
 
-TTree * InitTrees();                                           // can be generic <det> 
-Int_t qaConfig(TTree* tree, TString* returnStrings);           // actual detector configuration for alarms
-void InitSummaryTrending(TTree * tree);                        // can be generic ?
-void DrawSummaryTrending(TTree * tree);                        // actual detector drawing code 
+TTree * InitTrees();                                           // can be generic <det>   QA.<Det>, Logbook, Logbook.<det>, RCT.
+Int_t   qaConfig(TTree* tree, TString* returnStrings);         // actual detector configuration for alarms
+void    InitSummaryTrending(TTree * tree);                     // can be generic ?
+void    DrawSummaryTrending(TTree * tree);                     // actual detector drawing code 
 //      
-void    SetDrawStyle();                                        // "buggy currently"
-TTree * GetCPassTree(const char * period, const  char *pass);  // should move to base code
+void    SetDrawStyle();                                        // setting Defaul draw style
 TObjArray * GetTexDescription(TLatex *latex);                  // should go to base code
 void logbookConfig(TTree * tree);                              // should go to base code
 
@@ -53,7 +52,7 @@ void logbookConfig(TTree * tree);                              // should go to b
 //
 char * year=0, *period=0, *pass=0;
 TTree * treeQAT0=0;
-TTree * treeRCT=0, *treeCPas0=0, *treeLogbook=0, *treeLogbookDetector=0, *treeLogbookT0=0;
+TTree * treeRCT=0, *treeCPas0=0, *treeLogbook=0, *treeLogbookDetector=0, *treeLogbookT0=0, *treeLogbookTPC=0;
 TCanvas *canvasQA=0;          // central canvas for QA plots
 TObjArray * descriptionQA=0;  // descriptionQA of process  (time/aliroot/root/pariod/pass/user)
 TObjArray*   oaMultGr=0;      // status bar multigraph
@@ -96,9 +95,15 @@ TTree * InitTrees(){
   //
   // Init tree for given period
   // Bug in root tree ?  - in case more than one friend tree set - indeces looks corrupted 
-  //    0.) Qa tree
+  //    0.) QA tree Raw+MC (if exist)
   //    1.) Logbook tree per run
   //    2.) Logbook tree per run/detector
+  //    3.) RCT table
+  //    4.) Cpass table 
+  // 
+  //  tree is created with addition of friend trees which can be used in queries
+  //  queries as analog to the SQL statement
+
   /* 
     period="LHC15o"; pass="cpass1_pass1"
   */
@@ -114,9 +119,33 @@ TTree * InitTrees(){
     treeLogbookT0=treeLogbookDetector->CopyTree("detector==\"T0\"");
     treeLogbookT0->BuildIndex("run");
     treeLogbookT0->AddFriend(tree,"QA.");
+    //
+    treeLogbookTPC=treeLogbookDetector->CopyTree("detector==\"TPC\"");
+    treeLogbookTPC->BuildIndex("run");
+    treeLogbookTPC->AddFriend(tree,"QA.");
   }
-  if (treeLogbookT0) treeLogbookT0->AddFriend(tree,"QA");    //
+  treeRCT=info.GetTree("MonALISA.RCT","LHC15o","pass1");
+  
+
+  //                    external info can have different entry granularity/check run counters
+  TVectorF runCounter(5);
+  runCounter[0]=tree->Draw("run","1","goff");
   if (treeLogbook)   tree->AddFriend(treeLogbook,"Logbook");        // logbook runs should be superset of pass runs
+  if (treeLogbookT0) treeLogbookT0->AddFriend(tree,"QA");    //
+  runCounter[1]=tree->Draw("run","1","goff");
+  if (treeLogbookT0)   {
+    tree->AddFriend(treeLogbookT0,"LogbookT0");  // logbook runs should be superset of pass runs
+  }
+  runCounter[2]=tree->Draw("run","1","goff");
+  if (treeLogbookTPC)   {
+    tree->AddFriend(treeLogbookTPC,"LogbookTPC");  // logbook runs should be superset of pass runs
+  }
+  runCounter[3]=tree->Draw("run","1","goff");
+  if (treeRCT)   {
+    tree->AddFriend(treeRCT,"RCT");  // logbook status from RCT
+  }
+  runCounter[4]=tree->Draw("run","1","goff");
+  runCounter.Print();
 
   return tree;  
 }
@@ -134,29 +163,6 @@ void SetDrawStyle(){
 }
 
  
-
-TTree * GetCPassTree(const char * period, const  char *pass){
-  //
-  // try to find production information about pass OCDB export
-  //
-  TTree * treeProdArray=0, *treeProd=0;
-  AliExternalInfo info;
-  treeProdArray = info.GetTreeCPass();
-  treeProdArray->Scan("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")",period,pass).Data(),"col=10:100");
-  // check all candidata production and select one which exports OCDB
-  Int_t entries= treeProdArray->Draw("ID:Description",TString::Format("strstr(Description,\"%s\")&&strstr(Description,\"%s\")",period,pass).Data(),"col=10:100");  
-  for (Int_t ientry=0; ientry<entries; ientry++){
-    TTree * treeProd0 = info.GetTreeProdCycleByID(TString::Format("%.0f",treeProdArray->GetV1()[ientry]).Data());
-    treeProd0->Draw("1","strstr(outputdir,\"OCDB\")==1");
-    if (treeProd0->Draw("1","strstr(outputdir,\"OCDB\")==1")==0) {
-      delete treeProd0;
-      continue;
-    }
-    treeProd=treeProd0;
-  }
-
-}
-
 
 
 TObjArray * GetTexDescription(TLatex *latex){
@@ -201,6 +207,14 @@ void logbookConfig(TTree * tree){
   TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Title","N_{phys.ev.}");
   TStatToolkit::AddMetadata(tree,"totalEventsPhysics.AxisTitle","N_{phys.ev.}");
   TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Legend","logbook - N_{phys.ev.}");
+  //
+  TStatToolkit::AddMetadata(tree,"LogbookT0.eventCountPhysics.Title","T0 - N_{events}");
+  TStatToolkit::AddMetadata(tree,"LogbookT0.eventCountPhysics.AxisTitle","T0 - N_{events}");
+  TStatToolkit::AddMetadata(tree,"LogbookT0.eventCountPhysics.Legend","T0 - N_{events}");
+  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.Title","TPC - N_{events}");
+  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.AxisTitle","TPC - N_{events}");
+  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.Legend","TPC - N_{events}");
+
 }
 
 
@@ -264,7 +278,7 @@ Int_t qaConfig(TTree* tree, TString* returnStrings)
   TStatToolkit::AddMetadata(tree,"resolution.Title","Time resolution");
   TStatToolkit::AddMetadata(tree,"resolution.AxisTitle","Time resolution (ps)");
   //
-  TStatToolkit::AddMetadata(tree,"tzeroOrAPlusOrC.Title","Delta T");
+  TStatToolkit::AddMetadata(tree,"tzeroOrAPlusOrC.Title","#Delta_{T}");
   TStatToolkit::AddMetadata(tree,"tzeroOrAPlusOrC.AxisTitle","#DeltaT (ps)");
   TStatToolkit::AddMetadata(tree,"tzeroOrAPlusOrC.Legend","(A+C)");
   TStatToolkit::AddMetadata(tree,"tzeroOrA.Title","#Delta_{T}");
@@ -361,27 +375,27 @@ void DrawSummaryTrending(TTree * tree){
   //
   if (treeLogbook){
     canvasQA->Clear(); 
-    TLegend *legend0=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Run time information ");
-    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","runDuration;pauseDuration:tagID","",defMarkers,defColors,kTRUE,0.8,9, legend0);
+    TLegend *legendTime=new TLegend(0.11,0.03,0.3,0.3,"T0 default QA - Run time information ");  legendTime->SetNColumns(2);   legendTime->SetBorderSize(0);
+    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","runDuration;pauseDuration:tagID","",defMarkers,defColors,kTRUE,0.8,9, legendTime);
     multiGraph->Draw();
-    legend0->Draw();
     TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
     TStatToolkit::DrawStatusGraphs(oaMultGr);
-    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
+    legendTime->Draw();
     descriptionQA->DrawClone();
+    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
     canvasQA->SaveAs("timing_vs_TagID.png");
   }
 
   if (treeLogbook){
     canvasQA->Clear(); 
-    TLegend *legendStat=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Statistic information ");
-    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","totalEvents;totalEventsPhysics;totalEventsCalibration:tagID","",defMarkers,defColors,kTRUE,0.8,9, legendStat);
+    TLegend *legendStat=new TLegend(0.11,0.03,0.3,0.3,"T0 default QA - Statistic information "); legendStat->SetNColumns(2);   legendStat->SetBorderSize(0);
+    multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","totalEvents;totalEventsPhysics;LogbookT0.eventCountPhysics;LogbookTPC.eventCountPhysics:tagID","",defMarkers,defColors,kTRUE,0.8,9, legendStat);
     multiGraph->Draw();
-    legendStat->Draw();    
     descriptionQA->DrawClone();
     TStatToolkit::AddStatusPad(canvasQA, statPadHeight, statPadBotMar);
     TStatToolkit::DrawStatusGraphs(oaMultGr);
-    canvasQA->cd(1)->SetRightMargin(padRightMargin); canvasQA->cd(2)->SetRightMargin(padRightMargin); canvasQA->Draw("ap");
+    legendStat->Draw();    
+    canvasQA->cd(1)->SetRightMargin(padRightMargin);     canvasQA->cd(2)->SetRightMargin(padRightMargin);     canvasQA->Draw("ap");
     canvasQA->SaveAs("statistic_vs_TagID.png");
   }
   //
@@ -389,7 +403,7 @@ void DrawSummaryTrending(TTree * tree){
   //  
   /****** Resolution  vs ID (run number or period, ...) ******/
   canvasQA->Clear(); 
-  TLegend *legend1=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - Time resolution ");
+  TLegend *legend1=new TLegend(0.11,0.103,0.3,0.3,"T0 default QA - Time resolution ");
   multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","resolution:tagID:5","","21","1;",kTRUE,0.8,9, legend1);
   multiLine =TStatToolkit::MakeMultGraph(tree, "T0 <T>","resolution_RobustMean;resolution_WarningMin;resolution_WarningMax;resolution_OutlierMin;resolution_OutlierMax:tagID", "","0;0;0;0;0;0;0;0",bandColors,kTRUE,0,0,0);
   multiGraph->SetMinimum(-100);
@@ -408,9 +422,7 @@ void DrawSummaryTrending(TTree * tree){
   //  
   /****** Delta  vs ID (run number or period, ...) ******/
   canvasQA->Clear();
-  TLegend *legend2=new TLegend(0.11,0.11,0.3,0.3,"T0 default QA - #DeltaT ");
-  legend2->SetNColumns(2);
-  legend2->SetBorderSize(0);
+  TLegend *legend2=new TLegend(0.11,0.03,0.3,0.3,"T0 default QA - #DeltaT "); legend2->SetNColumns(2);   legend2->SetBorderSize(0);
   multiGraph=TStatToolkit::MakeMultGraph(tree, "T0 <T>","tzeroOrAPlusOrC;tzeroOrA;tzeroOrC:tagID:10;10;10","","21;22;25;26;27;28","1;2;4;3;856;616",kTRUE,0.8,9, legend2);
   multiLine =TStatToolkit::MakeMultGraph(tree, "T0 <T>","tzeroOrAPlusOrC_RobustMean;tzeroOrAPlusOrC_WarningMin;tzeroOrAPlusOrC_WarningMax;tzeroOrAPlusOrC_OutlierMin;tzeroOrAPlusOrC_OutlierMax:tagID", "","0;0;0;0;0;0;0;0",bandColors,kTRUE,0,0,0);
   multiGraph->Draw();
