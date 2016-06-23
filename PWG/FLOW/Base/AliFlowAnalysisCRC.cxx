@@ -26623,7 +26623,6 @@ void AliFlowAnalysisCRC::BookEverythingForCME()
   
   for (Int_t i=0; i<fCMETPCnHist2D; i++) {
     fCMETPCCorPro2D[i] = new TProfile2D(Form("fCMETPCCorPro2D[%d]",i),Form("fCMETPCCorPro2D[%d]",i),250,0.,25000.,200,0.,200.);
-    fCMETPCCorPro2D[i]->SetErrorOption("s");
     fCMETPCCorPro2D[i]->Sumw2();
     fCMETPCList->Add(fCMETPCCorPro2D[i]);
   }
