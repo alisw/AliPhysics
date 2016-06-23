@@ -5,13 +5,20 @@
 /// Test Macro, shows how to load EMCal Digits and Geometry, and how can we get 
 /// some of the parameters and variables.
 ///
+/// Pass some parameters to be more or less verbose, geometrical location, 
+/// MC primaries and minimum amplitude cut
+///
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
 ///
 /// Main executing method
 ///
-void TestEMCALDigit()
+/// \param ampMin: print digits avobe this valie
+/// \param printMC: print digit MC information
+/// \param printMC: print digit geometrical location
+///
+void TestEMCALDigit(Float_t ampMin = 6, Bool_t printMC = kFALSE, Bool_t printGeo = kFALSE)
 {
   //
   // Get EMCAL Detector and Geometry.
@@ -26,18 +33,21 @@ void TestEMCALDigit()
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
   (rl->GetDetectorLoader("EMCAL"));
   
-  TGeoManager::Import("geometry.root");
-  
-  AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
-  AliEMCALGeometry * geom ;
-  if(alirun)
+  if(printGeo)
   {
-    AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
-    geom = emcal->GetGeometry();
+    TGeoManager::Import("geometry.root");
+
+    AliRun * alirun   = rl->GetAliRun(); // Needed to get Geometry
+    AliEMCALGeometry * geom ;
+    if(alirun)
+    {
+      AliEMCAL * emcal  = (AliEMCAL*)alirun->GetDetector("EMCAL");
+      geom = emcal->GetGeometry();
+    }
+    
+    if (geom == 0) cout<<"Did not get geometry from EMCALLoader"<<endl;
+    //  else           geom->PrintGeometry();
   }
-  
-  if (geom == 0) cout<<"Did not get geometry from EMCALLoader"<<endl;
-  //  else           geom->PrintGeometry();
   
   // Load Digits
   rl->LoadDigits("EMCAL");
@@ -59,6 +69,7 @@ void TestEMCALDigit()
   Int_t ieta    =  0 ;
   Int_t nprimaries = 0 ;
   Int_t nparents   = 0 ;
+  Int_t type    = -1;
   
   AliEMCALDigit * dig;
   
@@ -91,34 +102,40 @@ void TestEMCALDigit()
       id   = dig->GetId() ;       // cell (digit) absolute Id. number.
       amp  = dig->GetAmplitude(); // amplitude in cell (digit).
       time = dig->GetTime()*1.e9; // time of creation of digit after collision.
+      type = dig->GetType();
       
-      printf("*** Cell ID %d, Amplitude %f, Time %f\n",id,amp,time);
+      if(amp < ampMin) continue ;
+      
+      printf("*** Cell ID %d, Amplitude %4.2f, Time %4.2f, Type %d\n",id,amp,time,type);
 
       //
       // MC
       //
-      nprimaries = dig->GetNprimary() ;
-      nparents   = dig->GetNiparent() ;
-      
-      
-      if ( nprimaries > 0 || nparents > 0) printf("N primary %d; N parent %d\n", nprimaries, nparents);
-      
-      if(nprimaries > 0)
+      if(printMC)
       {
-        for(Int_t iprim = 0; iprim < nprimaries; iprim++)
+        nprimaries = dig->GetNprimary() ;
+        nparents   = dig->GetNiparent() ;
+        
+        
+        if ( nprimaries > 0 || nparents > 0) printf("N primary %d; N parent %d\n", nprimaries, nparents);
+        
+        if(nprimaries > 0)
+        {
+          for(Int_t iprim = 0; iprim < nprimaries; iprim++)
           printf(" \t primary %d, label %d, edep %2.3f\n", iprim, dig->GetPrimary(iprim+1), dig->GetDEPrimary(iprim+1));
-      }
-
-      if(nparents > 0)
-      {
-        for(Int_t ipar = 0; ipar < nparents; ipar++)
+        }
+        
+        if(nparents > 0)
+        {
+          for(Int_t ipar = 0; ipar < nparents; ipar++)
           printf("\t parent  %d, label %d, edep %2.3f\n", ipar , dig->GetIparent(ipar +1), dig->GetDEParent (ipar +1));
+        }
       }
       
       //
       // Geometry methods
       //
-      if(geom)
+      if( printGeo && geom)
       {
         // Get SM number and in module (4x4 cells) indexes
         geom->GetCellIndex(id,iSupMod,iTower,iIphi,iIeta); 
