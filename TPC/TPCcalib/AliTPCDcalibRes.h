@@ -212,7 +212,7 @@ class AliTPCDcalibRes: public TNamed
   static Bool_t  GetSmooth1D(double xQuery,double valerr[2],int np,const double* x,const double* y,const double* err,
 			     double wKernel,int kType=kGaussianKernel,Bool_t usePoly2=kFALSE,
 			     Bool_t xIncreasing=kTRUE, Float_t maxD2Range=3.0);
-  static Bool_t  GradientCheb(const AliTPCChebCorr* cheb, int sect18, float x, float y, float z, 
+  static Bool_t  GradientCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
 			      float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim]);
   //------------------------------------
   

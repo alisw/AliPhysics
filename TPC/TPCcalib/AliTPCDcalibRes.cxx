@@ -4022,7 +4022,7 @@ Bool_t AliTPCDcalibRes::FindVoxelBin(int sectID, float x, float y, float z, UCha
 }
 
 //_____________________________________________________
-Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect18, float x, float y, float z, 
+Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
 				     float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim])
 {
   // calculate the gradient of distortion+dispersion vs x, (y/x) and (z/x) at point x,y,z of sector sectID
@@ -4047,15 +4047,13 @@ Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect18, flo
   // weight for extrapolation between rows
   float wx = rowB[0]==rowB[1] ? 0.f : (x-kTPCRowX[rowB[0]])/(kTPCRowX[rowB[1]]-kTPCRowX[rowB[0]]);
   //
-  int roc = sect18%kNSect;
-  if (z<0) roc += kNSect;
+  int roc = sect36;
   //
   rocB[0] = rocB[1] = roc;
   for (int i=0;i<2;i++) if (rowB[i]>=kNRowIROC) {rocB[i] += kNSect2; rowB[i] -= kNRowIROC;} 
   //
-  float point[2] = {y/x,z/x};
-  const int kNTestPnt = 4;
-  float grTmp[kNTestPnt][kResDim];
+  float grTmp[2][kResDim], point[2] = {y/x,z/x};
+  const int kNRowMargin = 2, kNTestPnt=kNRowMargin*2+2;    
   //
   // 2) easy part: calculate Cheb. derivatives in Y,Z directly from 
   for (int id=0;id<2;id++) { // d/d(y/x) and  d/d(z/x)
@@ -4064,6 +4062,40 @@ Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect18, flo
     for (int i=kResDim;i--;) grad[id+1][i] = grTmp[0][i]+(grTmp[1][i]-grTmp[0][i])*wx;
   }
   //
+  // 3) gradient in X: expand boundaries down and up by 2 padrows
+  int rowMin = rowB[0]-kNRowMargin, rowMax = rowB[1]+kNRowMargin;
+  if (rowMin<0)            {rowMin = 0; rowMax = rowMin+kNTestPnt-1;}
+  if (rowMax>=kNPadRows-1) {rowMax = kNPadRows-1; rowMin = rowMax-(kNTestPnt-1);}
+  //
+  int cntR=0;
+  double valTmp[kResDim][kNTestPnt],xPnt[kNTestPnt];
+  for (int irow=rowMin;irow<=rowMax;irow++) {
+    int row=irow, roc=sect36;
+    if (row>=kNRowIROC) {roc-=kNRowIROC; roc += kNSect2;}
+    xPnt[cntR] = kTPCRowX[irow];
+    cheb->Eval(roc, row, y/xPnt[cntR], z/xPnt[cntR] , grTmp[0]);    
+    for (int i=kResDim;i--;) valTmp[i][cntR] = grTmp[0][i];
+    cntR++;
+  }
+  // 
+  // calculate 4-points Richardson derivative over X for each dimension
+  const double kXStep=0.4;
+  double wKernel=(xPnt[kNTestPnt-1]-xPnt[0])/(kNTestPnt-1);
+  double valerr[2], richVal[4];
+  for (int id=kResDim;id--;) {
+    float dx = kXStep;
+    for (int ih=0;ih<2;ih++) {
+      GetSmooth1D(x+dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+      richVal[2*ih  ] = valerr[0];
+      GetSmooth1D(x-dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+      richVal[2*ih+1] = valerr[0];
+      dx *= 0.5;
+    }
+    double d1 = (richVal[0]-richVal[1])/(2.*kXStep);
+    double d2 = (richVal[2]-richVal[3])/kXStep;
+    grad[0][id] = (4.*d2-d1)/3.;
+  }
+
   return kTRUE;
 }
 
