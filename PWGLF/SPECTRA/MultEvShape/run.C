@@ -79,6 +79,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   } else {  // for MC
     aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
   }
+  aliTender->SetHandleOCDB(kTRUE);
   //aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
   // aliTender->SetDefaultCDBStorage(Form("local://%s/local/alice/data/2010/OCDB", gSystem->ExpandPathName("$HOME")));
 
