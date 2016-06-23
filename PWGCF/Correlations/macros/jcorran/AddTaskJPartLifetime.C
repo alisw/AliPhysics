@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJPartLifetime(TString cardName, TString cardSetting){
+AliAnalysisTask *AddTaskJPartLifetime(TString taskName="JPartLifetime", TString cardName="card_k0s.input", TString cardSetting=""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 	// surfix in last arguments are added for subwagons.
@@ -14,7 +14,7 @@ AliAnalysisTask *AddTaskJPartLifetime(TString cardName, TString cardSetting){
 	pcard->PrintOut();
 
 	//==== JCORRAN TASK
-	AliJPartLifetime *lttask = new AliJPartLifetime("JPartLifetime","ESD");
+	AliJPartLifetime *lttask = new AliJPartLifetime(taskName.Data(),"ESD");
 	lttask->SetCard(pcard);
 
 	//==== Add task
