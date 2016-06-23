@@ -984,6 +984,8 @@ public:
   TH1D* GetCMETPCCorHist(Int_t const c, Int_t const h) const {return this->fCMETPCCorHist[c][h];};
   void SetCMETPCFinalHist(TH1D* const TH, Int_t const c, Int_t const h) {this->fCMETPCFinalHist[c][h] = TH;};
   TH1D* GetCMETPCFinalHist(Int_t const c, Int_t const h) const {return this->fCMETPCFinalHist[c][h];};
+  void SetCMETPCCorPro2D(TProfile2D* const TP, Int_t const c) {this->fCMETPCCorPro2D[c] = TP;};
+  TProfile2D* GetCMETPCCorPro2D(Int_t const c) const {return this->fCMETPCCorPro2D[c];};
  // CME TPC-ZDCs:
  void SetCMEZDCCorPro(TProfile* const TP, Int_t const eg, Int_t const h) {this->fCMEZDCCorPro[eg][h] = TP;};
  TProfile* GetCMEZDCCorPro(Int_t const eg, Int_t const h) const {return this->fCMEZDCCorPro[eg][h];};
@@ -1534,7 +1536,9 @@ private:
   TProfile *fCMETPCCorPro[fZDCESEnCl][fCMETPCnHist]; //! correlation profile, [CRCBin][eg]
   TH1D *fCMETPCCorHist[fZDCESEnCl][fCMETPCnHist]; //! <<2'>>, [CRCBin][eg]
   TH1D *fCMETPCFinalHist[fZDCESEnCl][fCMETPCnHist]; //! <<2'>>, [CRCBin][eg]
- 
+  const static Int_t fCMETPCnHist2D = 3;
+  TProfile2D* fCMETPCCorPro2D[fCMETPCnHist2D]; //!
+  
  // CRC2
   const static Int_t fkNCorCRC2 = 6;
  TList *fCRC2List; //! ZDCERO CRC List

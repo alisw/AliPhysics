@@ -67,6 +67,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliAnalysisTaskCRCZDC.h"
+#include "AliMultSelection.h"
 
 // ALICE Correction Framework
 #include "AliCFManager.h"
@@ -190,7 +191,9 @@ fCRCnRun(0),
 fZDCGainAlpha(0.395),
 fDataSet("2010"),
 fStack(0x0),
-fCutTPC(kFALSE)
+fCutTPC(kFALSE),
+fCenDis(0x0),
+fMCStack(0x0)
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -218,12 +221,15 @@ fCutTPC(kFALSE)
   fRunList[r] = 0;
  }
  this->InitializeRunArrays();
- fMyTRandom3 = new TRandom3(1);
- gRandom->SetSeed(fMyTRandom3->Integer(65539));
- for(Int_t c=0; c<10; c++) {
-  fPtSpecGen[c] = NULL;
-  fPtSpecRec[c] = NULL;
- }
+  fMyTRandom3 = new TRandom3(1);
+  gRandom->SetSeed(fMyTRandom3->Integer(65539));
+  for(Int_t c=0; c<10; c++) {
+    fPtSpecGen[c] = NULL;
+    fPtSpecFB32[c] = NULL;
+    fPtSpecFB96[c] = NULL;
+    fPtSpecFB128[c] = NULL;
+    fPtSpecFB768[c] = NULL;
+  }
 }
 
 //________________________________________________________________________
@@ -326,7 +332,9 @@ fHijingGenHeader(NULL),
 fFlowTrack(NULL),
 fAnalysisUtil(NULL),
 fStack(0x0),
-fCutTPC(kFALSE)
+fCutTPC(kFALSE),
+fCenDis(0x0),
+fMCStack(0x0)
 {
  
  for(int i=0; i<5; i++){
@@ -364,10 +372,13 @@ fCutTPC(kFALSE)
  DefineOutput(1, AliFlowEventSimple::Class());
  DefineOutput(2, TList::Class());
  
- for(Int_t c=0; c<10; c++) {
-  fPtSpecGen[c] = NULL;
-  fPtSpecRec[c] = NULL;
- }
+  for(Int_t c=0; c<10; c++) {
+    fPtSpecGen[c] = NULL;
+    fPtSpecFB32[c] = NULL;
+    fPtSpecFB96[c] = NULL;
+    fPtSpecFB128[c] = NULL;
+    fPtSpecFB768[c] = NULL;
+  }
  
 }
 
@@ -450,13 +461,22 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
   fOutput->Add(fQAList);
  }
+  
+  fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
+  fOutput->Add(fCenDis);
  
  Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
  for(Int_t c=0; c<10; c++) {
-  fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
-  fOutput->Add(fPtSpecGen[c]);
-  fPtSpecRec[c] = new TH1F(Form("fPtSpecRec[%d]",c), Form("fPtSpecRec[%d]",c), 24, xmin);
-  fOutput->Add(fPtSpecRec[c]);
+   fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
+   fOutput->Add(fPtSpecGen[c]);
+   fPtSpecFB32[c] = new TH1F(Form("fPtSpecFB32[%d]",c), Form("fPtSpecFB32[%d]",c), 24, xmin);
+   fOutput->Add(fPtSpecFB32[c]);
+   fPtSpecFB96[c] = new TH1F(Form("fPtSpecFB96[%d]",c), Form("fPtSpecFB96[%d]",c), 24, xmin);
+   fOutput->Add(fPtSpecFB96[c]);
+   fPtSpecFB128[c] = new TH1F(Form("fPtSpecFB128[%d]",c), Form("fPtSpecFB128[%d]",c), 24, xmin);
+   fOutput->Add(fPtSpecFB128[c]);
+   fPtSpecFB768[c] = new TH1F(Form("fPtSpecFB768[%d]",c), Form("fPtSpecFB768[%d]",c), 24, xmin);
+   fOutput->Add(fPtSpecFB768[c]);
  }
  
  fAnalysisUtil = new AliAnalysisUtils;
@@ -711,92 +731,112 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
  }
  
- if (fAnalysisType == "MCAOD") {
-  
-  fFlowEvent->ClearFast();
-  AliAODMCHeader *mcHeader;
-  TClonesArray* mcArray;
-  
-  mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-  if(!mcArray){
-   AliError("Array of MC particles not found");
-   return;
+  if (fAnalysisType == "MCAOD") {
+    
+    //check event cuts
+    if (InputEvent()) {
+      if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+      if(fRejectPileUp && fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+    }
+    
+    fFlowEvent->ClearFast();
+    
+    if(!McEvent) {
+      AliError("ERROR: Could not retrieve MCEvent");
+      return;
+    }
+
+    fMCStack = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!fMCStack){
+      AliError("ERROR: Could not retrieve MCStack");
+      return;
+    }
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+      AliError("Could not find MC Header in AOD");
+      return;
+    }
+    
+    // get centrality (from MultSelection)
+    Float_t centr = 300;
+    AliMultSelection *MultSelection = 0x0;
+    MultSelection = (AliMultSelection * ) aod->FindListObject("MultSelection");
+    if( !MultSelection) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+    }else{
+      centr = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+    fCenDis->Fill(centr);
+    
+    // centrality bin
+    if (centr<fCentrLowLim || centr>=fCentrUpLim ) return;
+    Int_t CenBin = -1;
+    if (centr>0. && centr<5.) CenBin=0;
+    if (centr>5. && centr<10.) CenBin=1;
+    if (centr>10. && centr<20.) CenBin=2;
+    if (centr>20. && centr<30.) CenBin=3;
+    if (centr>30. && centr<40.) CenBin=4;
+    if (centr>40. && centr<50.) CenBin=5;
+    if (centr>50. && centr<60.) CenBin=6;
+    if (centr>60. && centr<70.) CenBin=7;
+    if (centr>70. && centr<80.) CenBin=8;
+    if (centr>80. && centr<90.) CenBin=9;
+    if(CenBin==-1) return;
+    
+    // reconstructed
+    Int_t AODPOIs = 0, AODbads = 0;
+    for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
+      
+      Bool_t FlagTPC=kFALSE, FlagGlob=kFALSE;
+      
+      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(jTracks));
+      if(!track) continue;
+      
+      // select primaries
+      Int_t lp = TMath::Abs(track->GetLabel());
+      if (!((AliAODMCParticle*)fMCStack->At(lp))->IsPhysicalPrimary()) continue;
+      
+      // general kinematic & quality cuts
+      if (track->Pt() < .2 || track->Pt() > 8. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
+      
+      AODPOIs++;
+      
+      // test filter bits
+      if (track->TestFilterBit(32)) fPtSpecFB32[CenBin]->Fill(track->Pt());
+      if (track->TestFilterBit(96)) fPtSpecFB96[CenBin]->Fill(track->Pt());
+      if (track->TestFilterBit(128)) fPtSpecFB128[CenBin]->Fill(track->Pt());
+      if (track->TestFilterBit(768)) fPtSpecFB768[CenBin]->Fill(track->Pt());
+    }
+    
+    // generated (physical primaries)
+    Int_t MCPrims = 0, MCSecos = 0, SN=0;
+    for(Int_t jTracks = 0; jTracks<fMCStack->GetEntries(); jTracks++) {
+      AliAODMCParticle *MCpart = (AliAODMCParticle*)fMCStack->At(jTracks);
+      if (!MCpart) {
+        printf("ERROR: Could not receive MC track %d\n", jTracks);
+        continue;
+      }
+      
+      // select charged primaries
+      if ( MCpart->Charge() == 0. || !MCpart->IsPhysicalPrimary() ) continue;
+      // kinematic cuts
+      if ( MCpart->Pt() < 0.2 || MCpart->Pt() > 8. || TMath::Abs(MCpart->Eta()) > .8 ) continue;
+      
+      MCPrims++;
+      
+      fPtSpecGen[CenBin]->Fill(MCpart->Pt());
+    }
+    
+    fGenHeader = McEvent->GenEventHeader();
+    if(fGenHeader) fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
+    //  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
+    fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
+    fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
+    if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+    fFlowEvent->SetRun(aod->GetRunNumber());
+    //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
   }
-  mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-  if (!mcHeader) {
-   AliError("Could not find MC Header in AOD");
-   return;
-  }
-   
-   Double_t centr = fCutsEvent->GetCentrality(InputEvent(),McEvent);
-   if (centr<fCentrLowLim || centr>=fCentrUpLim ) return;
-   Int_t CenBin = -1;
-   if (centr>0. && centr<5.) CenBin=0;
-   if (centr>5. && centr<10.) CenBin=1;
-   if (centr>10. && centr<20.) CenBin=2;
-   if (centr>20. && centr<30.) CenBin=3;
-   if (centr>30. && centr<40.) CenBin=4;
-   if (centr>40. && centr<50.) CenBin=5;
-   if (centr>50. && centr<60.) CenBin=6;
-   if (centr>60. && centr<70.) CenBin=7;
-   if (centr>70. && centr<80.) CenBin=8;
-   if (centr>80. && centr<90.) CenBin=9;
-   if(CenBin==-1) return;
-  
-  // reconstructed ==> POIs
-   Int_t AODPOIs = 0, AODbads = 0;
-   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
-     AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
-     if (!AODPart) {
-       printf("ERROR: Could not receive AODPart %d\n", jTracks);
-       continue;
-     }
-     AliAODTrack *AODTrack = (AliAODTrack*)aod->GetTrack(jTracks);
-     if (!AODTrack) {
-       printf("ERROR: Could not receive AODTrack %d\n", jTracks);
-       continue;
-     }
-     if(!fCutsPOI->PassesAODcuts(AODTrack)) AODbads++;
-     if(!fCutsPOI->PassesAODcuts(AODTrack)) continue;
-     fFlowTrack->Set(AODPart);
-     fFlowTrack->SetSource(AliFlowTrack::kFromAOD);
-     fFlowTrack->SetForRPSelection(kFALSE);
-     fFlowTrack->SetForPOISelection(kTRUE);
-     fFlowEvent->IncrementNumberOfPOIs(1);
-     fFlowEvent->InsertTrack(fFlowTrack);
-     AODPOIs++;
-     fPtSpecRec[CenBin]->Fill(AODPart->Pt());
-   }
-   
-   // generated (physical primaries) ==> RPs
-   Int_t MCPrims = 0, MCSecos = 0, SN=0;
-   for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
-     AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)mcArray->At(jTracks);
-     if (!AODMCtrack) {
-       printf("ERROR: Could not receive MC track %d\n", jTracks);
-       continue;
-     }
-     if(!fCutsPOI->PassesCuts(AODMCtrack)) MCSecos++;
-     if(!fCutsPOI->PassesCuts(AODMCtrack)) continue;
-     if(AODMCtrack->IsPhysicalPrimary()) continue;
-     fFlowTrack->Set(AODMCtrack);
-     fFlowTrack->SetSource(AliFlowTrack::kFromMC);
-     fFlowTrack->SetForRPSelection(kTRUE);
-     fFlowEvent->IncrementNumberOfPOIs(0);
-     fFlowTrack->SetForPOISelection(kFALSE);
-     fFlowEvent->InsertTrack(fFlowTrack);
-     MCPrims++;
-     fPtSpecGen[CenBin]->Fill(AODMCtrack->Pt());
-   }
-   fGenHeader = McEvent->GenEventHeader();
-   if(fGenHeader) fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
-   //  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
-   fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
-   fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
-   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
-   fFlowEvent->SetRun(aod->GetRunNumber());
-   //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
- }
   
  if(fAnalysisType ==  "MCESD") {
   
@@ -921,8 +961,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->IncrementNumberOfPOIs(1);
    fFlowEvent->InsertTrack(fFlowTrack);
    ESDPrims++;
-   
-   fPtSpecRec[CenBin]->Fill(track->Pt());
    
   }
   
