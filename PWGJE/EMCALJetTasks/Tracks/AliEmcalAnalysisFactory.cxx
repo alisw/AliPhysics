@@ -4,6 +4,8 @@
  *  Created on: Feb 23, 2016
  *      Author: markus
  */
+#include <functional>
+#include <vector>
 
 #include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
@@ -22,36 +24,72 @@ namespace EMCalTriggerPtAnalysis {
 AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cut, Bool_t aod){
   AliEmcalTrackSelection *result = NULL;
   if(!aod){
-    AliESDtrackCuts *esdcuts = NULL;
-    if(cut == "standard"){
-      esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+    std::vector<AliVCuts *> trackcuts;
+    if(cut.Contains("standard")){
+      AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
       esdcuts->DefineHistograms(kRed);
       esdcuts->SetName("Standard Track cuts");
       esdcuts->SetMinNCrossedRowsTPC(120);
       esdcuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    } else if(cut == "hybrid"){
-      esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+      trackcuts.push_back(esdcuts);
+    }
+    if(cut.Contains("hybrid")){
+      AliESDtrackCuts *esdcuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
       esdcuts->SetName("Global Hybrid tracks, loose DCA");
       esdcuts->SetMaxDCAToVertexXY(2.4);
       esdcuts->SetMaxDCAToVertexZ(3.2);
       esdcuts->SetDCAToVertex2D(kTRUE);
       esdcuts->SetMaxChi2TPCConstrainedGlobal(36);
       esdcuts->SetMaxFractionSharedTPCClusters(0.4);
+      trackcuts.push_back(esdcuts);
+    }
+    if(cut.Contains("geo")){
+      AliEMCalTriggerExtraCuts *geocuts = new AliEMCalTriggerExtraCuts();
+      geocuts->SetMinTPCTrackLengthCut();
+      trackcuts.push_back(geocuts);
     }
     result = new AliEmcalTrackSelectionESD;
-    result->AddTrackCuts(esdcuts);
+    for(std::vector<AliVCuts *>::iterator it = trackcuts.begin(); it != trackcuts.end(); ++it)
+      result->AddTrackCuts(*it);
   } else {
     AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
     result = aodsel;
-    if(cut == "standard"){
+    std::vector<AliVCuts *> trackcuts;
+    // C++11 Lambda: Do not create multiple extra cut objects in case of AODs. If extra cut object does already exist -
+    // specify new cut in the same object.
+    std::function<AliEMCalTriggerExtraCuts *(const std::vector<AliVCuts *> &)> FindTrackCuts = [] (const std::vector<AliVCuts *> &cuts) -> AliEMCalTriggerExtraCuts * {
+      AliEMCalTriggerExtraCuts *found = nullptr;
+      for(std::vector<AliVCuts *>::const_iterator cutiter = cuts.begin(); cutiter != cuts.end(); ++cutiter){
+        if((*cutiter)->IsA() == AliEMCalTriggerExtraCuts::Class()){
+          found = static_cast<AliEMCalTriggerExtraCuts *>(*cutiter);
+          break;
+        }
+      }
+      return found;
+    };
+    if(cut.Contains("standard")){
       aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-      AliEMCalTriggerExtraCuts *extracuts = new AliEMCalTriggerExtraCuts;
+      AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
+      if(!extracuts){
+        extracuts = new AliEMCalTriggerExtraCuts;
+        trackcuts.push_back(extracuts);
+      }
       extracuts->SetMinTPCCrossedRows(120);
-      aodsel->AddTrackCuts(extracuts);
-    } else if(cut == "hybrid"){
+    }
+    if(cut.Contains("hybrid")){
       aodsel->AddFilterBit(256);
       aodsel->AddFilterBit(512);
     }
+    if(cut.Contains("geo")){
+      AliEMCalTriggerExtraCuts *extracuts = FindTrackCuts(trackcuts);
+      if(!extracuts){
+        extracuts = new AliEMCalTriggerExtraCuts;
+        trackcuts.push_back(extracuts);
+      }
+      extracuts->SetMinTPCTrackLengthCut();
+    }
+    for(std::vector<AliVCuts *>::iterator it = trackcuts.begin(); it != trackcuts.end(); ++it)
+      result->AddTrackCuts(*it);
   }
 
   return result;
