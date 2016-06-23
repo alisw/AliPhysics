@@ -204,13 +204,14 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
+      gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
 
       // Store it in a tree inside a root file
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
       TTree tree(treeName, treeName);
 
-      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
+      if ( (tree.ReadFile(mifFilePath+"RunFix", "", '\"')) > 0) {
         AliInfo("-- Successfully read in tree");
       }
       else {
@@ -363,6 +364,11 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
   //
   TString indexName= fLocationTimeOutMap[type + ".indexname"];
   if (indexName.Length()>0){
+    if (tree->GetBranch(indexName)) {
+      tree->GetBranch(indexName)->SetName("run");
+      tree->BuildIndex("run");
+      indexName="run";
+    }
     if (tree->BuildIndex(indexName)<0){
       ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
     }
