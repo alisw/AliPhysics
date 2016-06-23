@@ -767,7 +767,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wPhiEta = 1./fPtWeightsHist[fCenBin]->Interpolate(dPt);
-          else wPhiEta = 0.;
+          else wPhiEta = 1.;
         }
         if(fUseEtaWeights && fEtaWeightsHist[fCenBin][0][0]) {
           Int_t ptbin = GetCRCPtBin(dPt);
@@ -16327,6 +16327,10 @@ void AliFlowAnalysisCRC::InitializeArraysForCME()
     }
   }
   
+  for (Int_t i=0; i<fCMETPCnHist2D; i++) {
+    fCMETPCCorPro2D[i] = NULL;
+  }
+  
 } // end of AliFlowAnalysisCRC::InitializeArraysForCME()
 
 //=======================================================================================================================
@@ -18359,7 +18363,7 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fZDCESEclEbE=-1;
     Double_t DifMin=1.E3;
     for (Int_t k=0; k<fZDCESEnPol; k++) {
-      Double_t PolV = fPolCuts[k]->Eval(fCentralityEBE)-fCorrMap[CenBin];
+      Double_t PolV = fPolCuts[k]->Eval(fCentralityEBE);
       if(ZNM<PolV && PolV-ZNM<DifMin) {
         fZDCESEclEbE=k;
         DifMin=PolV-ZNM;
@@ -19241,6 +19245,10 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
     
     fCMETPCCorPro[fZDCESEclEbE][12]->Fill(fCentralityEBE,fZNCen+fZNAen);
     fCMETPCCorPro[fZDCESEclEbE][13]->Fill(fCentralityEBE,uPM+uNM);
+    
+    fCMETPCCorPro2D[0]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQn,uPM*uNM);
+    fCMETPCCorPro2D[1]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQp,uPM*uPM-uP2M);
+    fCMETPCCorPro2D[2]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQnQn,uNM*uNM-uN2M);
     
   } // end of if (uPM>1. && uNM>1.)
   
@@ -25203,6 +25211,12 @@ void AliFlowAnalysisCRC::GetPointersForCME()
     }
   }
   
+  for (Int_t i=0; i<fCMETPCnHist2D; i++) {
+    TProfile2D *CMETPCCorPro2D = dynamic_cast<TProfile2D*>(fCMETPCList->FindObject(Form("fCMETPCCorPro2D[%d]",i)));
+    if(CMETPCCorPro2D) { this->SetCMETPCCorPro2D(CMETPCCorPro2D,i); }
+    else { cout<<"WARNING: CMETPCCorPro2D is NULL in AFAWQC::GPFCME() !!!!"<<endl; }
+  }
+  
 } // end void AliFlowAnalysisCRC::GetPointersForCME()
 
 //=======================================================================================================================
@@ -26605,6 +26619,13 @@ void AliFlowAnalysisCRC::BookEverythingForCME()
       fCMETPCFinalHist[k][h]->Sumw2();
       fCMETPCList->Add(fCMETPCFinalHist[k][h]);
     }
+  }
+  
+  for (Int_t i=0; i<fCMETPCnHist2D; i++) {
+    fCMETPCCorPro2D[i] = new TProfile2D(Form("fCMETPCCorPro2D[%d]",i),Form("fCMETPCCorPro2D[%d]",i),250,0.,25000.,200,0.,200.);
+    fCMETPCCorPro2D[i]->SetErrorOption("s");
+    fCMETPCCorPro2D[i]->Sumw2();
+    fCMETPCList->Add(fCMETPCCorPro2D[i]);
   }
   
 } // end of AliFlowAnalysisCRC::BookEverythingForCME()

@@ -287,8 +287,13 @@ private:
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
  AliStack* fStack; //!
  TH1F *fPtSpecGen[10];		//! PtSpecGen
- TH1F *fPtSpecRec[10];		//! PtSpecRec
+ TH1F *fPtSpecFB32[10];		//! PtSpecRec FB32
+ TH1F *fPtSpecFB96[10];		//! PtSpecRec FB96
+ TH1F *fPtSpecFB128[10];  //! PtSpecRec FB128
+ TH1F *fPtSpecFB768[10];  //! PtSpecRec FB768
  Bool_t fCutTPC;
+ TH1F *fCenDis; //! centrality distribution
+ TClonesArray* fMCStack; //! MC stack
  
  ClassDef(AliAnalysisTaskCRCZDC,4);
  

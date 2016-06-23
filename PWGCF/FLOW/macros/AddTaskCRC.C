@@ -140,7 +140,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  else if (EvTrigger == "Any")
   taskFE->SelectCollisionCandidates(AliVEvent::kAny);
   // add the task to the manager
-  mgr->AddTask(taskFE);
+ mgr->AddTask(taskFE);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
@@ -184,14 +184,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
-  // explicit multiplicity outlier cut
-  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-  if (sDataSet == "2011")
-    cutsEvent->SetLHC11h(kTRUE);
-  else if (sDataSet == "2010")
-    cutsEvent->SetLHC10h(kTRUE);
   // enable the qa plots
   cutsEvent->SetQA(bCutsQA);
+  // explicit multiplicity outlier cut
+  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+  if (sDataSet == "2011") cutsEvent->SetLHC11h(kTRUE);
+  if (sDataSet == "2010") cutsEvent->SetLHC10h(kTRUE);
  }
  
  // pass these cuts to your flow event task
