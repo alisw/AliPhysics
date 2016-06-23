@@ -551,7 +551,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
         // data or signal to the final digit.
         if(amp2 > digit->GetAmplitude())  digit->SetTime(time2);
         
-        //Mark the new digit as embedded
+        // Mark the new digit as embedded
         digit->SetType(AliEMCALDigit::kEmbedded);
         
         if(digit2->GetAmplitude()>0.01 && e0> 0.01 )
@@ -601,7 +601,16 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     digit->SetIndexInList(idigit++) ;
     digit->SetAmplitude(ampADC) ;
     digit->SetTime(time);
-
+    
+    // High Gain or Low Gain
+    if ( digit->GetType() != AliEMCALDigit::kEmbedded )
+    {
+      if ( digit->GetAmplitude() >  CaloConstants::OVERFLOWCUT ) 
+        digit->SetType(AliEMCALDigit::kLG);
+      else
+        digit->SetType(AliEMCALDigit::kHG);
+    }
+    
   } // digit loop
   
   digits->Compress() ;
