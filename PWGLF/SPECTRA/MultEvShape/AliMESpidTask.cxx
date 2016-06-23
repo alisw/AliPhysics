@@ -631,11 +631,11 @@ Bool_t AliMESpidTask::BuildQAHistos()
   fNoEvt->GetXaxis()->SetBinLabel(4, "Analyzed");
   fHistosQA->AddAt(fNoEvt, 3);
 */
-  const Int_t ndimNoEvts(4);
-  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {4, 150, 102, 20};
-  const Double_t cldMinNoEvts[ndimNoEvts]  = {-0.5, 0.5, 0., 0.},
-  cldMaxNoEvts[ndimNoEvts]  = {3.5, 150.5, 100., 1.};
-  THnSparseD *hNoEvts = new THnSparseD("NoEvts","NoEvts;step;combined 0.8;V0M;directivity;",ndimNoEvts, cldNbinsNoEvts, cldMinNoEvts, cldMaxNoEvts);
+  const Int_t ndimNoEvts(7);
+  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {4, 150, 102, 20, 150, 102, 20};
+  const Double_t cldMinNoEvts[ndimNoEvts]  = {-0.5, 0.5, 0., 0., 0.5, 0., 0.},
+  cldMaxNoEvts[ndimNoEvts]  = {3.5, 150.5, 100., 1., 150.5, 100., 1.};
+  THnSparseD *hNoEvts = new THnSparseD("NoEvts","NoEvts;step;combined 0.8;V0M;directivity;MCmultiplicity;MCV0M;MCdirectivity;",ndimNoEvts, cldNbinsNoEvts, cldMinNoEvts, cldMaxNoEvts);
   hNoEvts->GetAxis(0)->SetBinLabel(1, "Tender OK");
   hNoEvts->GetAxis(0)->SetBinLabel(2, "Pile-up Rejection");
   hNoEvts->GetAxis(0)->SetBinLabel(3, "Vertex Cut");
