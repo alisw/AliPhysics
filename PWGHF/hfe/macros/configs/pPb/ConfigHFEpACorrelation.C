@@ -12,7 +12,9 @@
 //configIndex = 9 ---> TPC PID: -0.5 to 3.0
 //configIndex = 10 ---> V0A -> other
 //configIndex = 11 ---> Associated hadron with SPD::kAny cut
-//configIndex = 11 ---> SPD kFirst + 3 ITS cls
+//configIndex = 12 ---> SPD kFirst + 2 ITS cls
+//configIndex = 13 ---> SPD kFirst + 4 ITS cls
+//configIndex = 14 ---> SPD kAny + 4 ITS cls
 //Configurations for the Assoated pT Cut
 //configIndex = 20 ---> Default (same as 0)
 //configIndex = 21 ---> pT>0.3
@@ -49,11 +51,13 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     Bool_t SetFinepTBinning;
     Int_t HadronCutType = 0;
     //To be able to vary the other configurations alongside with the new Hadrons Cuts
+    printf("Config index: %d\n",configIndex);
     if(configIndex>999)
     {
         HadronCutType = (Int_t) configIndex/1000;
         configIndex = (Int_t) (configIndex - HadronCutType*1000);
     }
+    printf("ConfigIndex after hadron determination: %d  HadronCutType: %d", configIndex, HadronCutType);
     //Test Diferent pT Binning
     if(configIndex>99)
     {
@@ -90,6 +94,16 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
         hfecuts->SetMinNClustersITS(2);
+    }
+    else if (configIndex == 13)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+        hfecuts->SetMinNClustersITS(4);
+    }
+    else if (configIndex == 14)
+    {
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
+        hfecuts->SetMinNClustersITS(4);
     }
     else
     {
