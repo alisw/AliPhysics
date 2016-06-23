@@ -67,7 +67,7 @@ class EmcEvent {
 	Float_t TrigPhi; // phi of highest pT hit on EMCal
   Float_t TrigTheta; // eta of highest pT hit ...
   
-  const static int nMaxHit = 800;
+  const static int nMaxHit = 1000;
   
   int nHits;
   EmcHit hit[nMaxHit];
