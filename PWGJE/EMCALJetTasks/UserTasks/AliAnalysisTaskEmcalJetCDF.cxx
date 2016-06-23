@@ -367,7 +367,7 @@ Bool_t AliAnalysisTaskEmcalJetCDF::FillHistograms()
 
     // get particles connected to jets
     AliParticleContainer* fTracksCont = jetCont->GetParticleContainer();
-    if (!fTracksCont) { std::cout << "*********   JET CONTAINER WITHOUT TRACKS CONTAINER   *********" << endl; continue; }
+    if (!fTracksCont) { std::cout << "*********   JET CONTAINER WITHOUT TRACKS CONTAINER   *********" << std::endl; continue; }
     TClonesArray* fTracksContArray = fTracksCont->GetArray();
 
     // Multiplicity in event - accepted tracks in tracks container
