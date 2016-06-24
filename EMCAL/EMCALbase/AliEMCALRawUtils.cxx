@@ -291,7 +291,6 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   // (use high gain if signal < cut value, otherwise low gain)
   else 
   {
-    printf("\t Digit already existed\n");
     if (lowGain)
     {
       // New digit is low gain
