@@ -121,7 +121,6 @@ AliEMCALRawResponse::RawSampledResponse(Double_t dtime, Double_t damp,
     {  
       adcH[iTime] = MAXBINVALUE ;
       lowGain = kTRUE ; 
-      printf("\t \t low gain!, high adc %d\n",adcH[iTime]);
     }
 
     signal /= HGLGFACTOR;
