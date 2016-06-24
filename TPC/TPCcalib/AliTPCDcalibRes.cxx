@@ -4022,11 +4022,17 @@ Bool_t AliTPCDcalibRes::FindVoxelBin(int sectID, float x, float y, float z, UCha
 }
 
 //_____________________________________________________
-Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
+Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
+				     float val[AliTPCDcalibRes::kResDim],
 				     float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim])
 {
   // calculate the gradient of distortion+dispersion vs x, (y/x) and (z/x) at point x,y,z of sector sectID
+  // and the corrected value
   //
+  val[kResX] = x;
+  val[kResY] = y;
+  val[kResZ] = z;
+  val[kResD] = 0.f;
   memset(grad,0,kResDimG*kResDim*sizeof(float));
   if (x<50) return kFALSE; // protection
 
@@ -4056,10 +4062,11 @@ Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect36, flo
   const int kNRowMargin = 2, kNTestPnt=kNRowMargin*2+2;    
   //
   // 2) easy part: calculate Cheb. derivatives in Y,Z directly from 
-  for (int id=0;id<2;id++) { // d/d(y/x) and  d/d(z/x)
+  for (int id=0;id<2;id++) { // d/d(y/x) and  d/d(z/x) -> d/dy and d/dz
     cheb->EvalDeriv(rocB[0], rowB[0],id, point, grTmp[0]); 
     cheb->EvalDeriv(rocB[1], rowB[1],id, point, grTmp[1]); 
-    for (int i=kResDim;i--;) grad[id+1][i] = grTmp[0][i]+(grTmp[1][i]-grTmp[0][i])*wx;
+    // scale by x since we need derivatives over y,z coordinates
+    for (int i=kResDim;i--;) grad[id+1][i] = (grTmp[0][i]+(grTmp[1][i]-grTmp[0][i])*wx)/x;
   }
   //
   // 3) gradient in X: expand boundaries down and up by 2 padrows
@@ -4083,6 +4090,10 @@ Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect36, flo
   double wKernel=(xPnt[kNTestPnt-1]-xPnt[0])/(kNTestPnt-1);
   double valerr[2], richVal[4];
   for (int id=kResDim;id--;) {
+    // calculate value
+    GetSmooth1D(x,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+    val[id] += valerr[0]; // correction + "measured value"
+    //
     float dx = kXStep;
     for (int ih=0;ih<2;ih++) {
       GetSmooth1D(x+dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
@@ -4096,6 +4107,78 @@ Bool_t AliTPCDcalibRes::GradientCheb(const AliTPCChebCorr* cheb, int sect36, flo
     grad[0][id] = (4.*d2-d1)/3.;
   }
 
+  return kTRUE;
+}
+
+//_____________________________________________________
+Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36, 
+				    const float vecIn[AliTPCDcalibRes::kResDimG], 
+				    float vecOut[AliTPCDcalibRes::kResDim],
+				    int maxIt, float minDelta)
+{
+  // apply distortion (inverse of the correction map cheb) to point vecIn, producing vecOut
+  //
+  // Do Newton-Raphson inversion: original Cheb.correction Corr implements
+  // \vec[r_corr] = \vec[r_meas] + Corr(\vec[r_meas]), where \vec[r_corr] is corrected coordinat
+  // of ionization point and \vec[r_meas] is its distorted image in the chamber.
+  //
+  // Hence we need to find an inverse vector f-n F^-1 of \vec[r_corr] of the vector f-n 
+  // F = \vec[r_meas]-\vec[r_corr] + Corr(\vec[r_meas]) = 0 of \vec[r_meas]
+  // We do this with Newton-Raphson iterations
+  //
+  // D(F(\vec[r_meas](n)))/D(\vec[r_meas](n)) . {\vec[r_meas](n+1) - \vec[r_meas](n)}= - F(\vec[r_meas](n))
+  // 
+  // Abandon iterations above maxIt or with total change < minDelta
+  //
+  float grad[kResDimG][kResDim], fun[kResDim]={0.};
+  const float kEps = 1e-12;
+  for (int id=kResDim;id--;) vecOut[id] = vecIn[id]; 
+  vecOut[kResD] = 0.f; // dispersion
+  //
+  float minDelta2 = minDelta*minDelta, deltaR2;
+  int it = 0;
+
+  do {
+    //
+    // calculate corrected value and gradient of correction
+    GradCorrCheb(cheb, sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad); 
+    for (int id=3;id--;) {
+      fun[id] -= vecIn[id];  // value of F = vec_meas + vec_corrections - vec_correct
+      grad[id][id] += 1.0f; // convert gradient of correction to gradienf of vs current estimate of vec_meas
+    }
+    // solve linear system grad . delta = -F
+    
+    double det =  grad[0][0]*(grad[1][1]*grad[2][2] - grad[1][2]*grad[2][1])
+      -           grad[0][1]*(grad[1][0]*grad[2][2] - grad[1][2]*grad[2][0])
+      +           grad[0][2]*(grad[1][0]*grad[2][1] - grad[1][1]*grad[2][0]);
+    if (TMath::Abs(det)<kEps) break;
+    det = -1./det;
+    float delta[3];
+    delta[kResX]= det*
+      (fun[0]    *(grad[1][1]*grad[2][2] - grad[1][2]*grad[2][1]) -
+       grad[0][1]*(    fun[1]*grad[2][2] - grad[1][2]*fun[2]    ) +
+       grad[0][2]*(    fun[1]*grad[2][1] - grad[1][1]*fun[2]    ));
+    
+    delta[kResY]= det* 
+      (grad[0][0]*(    fun[1]*grad[2][2] - grad[1][2]*grad[2][1]) -
+       fun[0]*    (grad[1][0]*grad[2][2] - grad[1][2]*grad[2][0]) +
+       grad[0][2]*(grad[1][0]*fun[2]     - fun[1]    *grad[2][0]));
+    
+    delta[kResZ]= det*
+      (grad[0][0]*(grad[1][1]*fun[2]     - fun[1]    *grad[2][1]) -
+       grad[0][1]*(grad[1][0]*fun[2]     - fun[1]    *grad[2][0]) +
+       fun[0]    *(grad[1][0]*grad[2][1] - grad[1][1]*grad[2][0]));
+    //
+    deltaR2 = 0.f;
+    for (int id=3;id--;) {
+      deltaR2 += delta[id]*delta[id];
+      vecOut[id] += delta[id];    
+    }
+    //
+  } while(++it<maxIt && deltaR2>minDelta2);
+
+  vecOut[kResD] = fun[kResD]; // dispersion at last queried point
+  //
   return kTRUE;
 }
 
