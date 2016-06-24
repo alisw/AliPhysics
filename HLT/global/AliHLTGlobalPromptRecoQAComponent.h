@@ -35,11 +35,12 @@ struct axisStruct {
   double high;
   double* value;
   std::map<std::string,bool> histograms;
-  axisStruct() : bins(0), low(0.), high(1.), value(NULL), histograms() {}
-  axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms) {}
-  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; value=s.value; histograms=s.histograms; return *this;}
-  void set( int b, double l, double h, double* v )
-  { bins=b; low=l; high=h; value=v; }
+  string description;
+  axisStruct() : bins(0), low(0.), high(1.), value(NULL), histograms(), description() {}
+  axisStruct(const axisStruct& s) : bins(s.bins), low(s.low), high(s.high), value(s.value), histograms(s.histograms), description(s.description) {}
+  axisStruct& operator=(const axisStruct& s) {bins=s.bins; low=s.low; high=s.high; value=s.value; histograms=s.histograms; description=s.description; return *this;}
+  void set( int b, double l, double h, double* v, string desc="" )
+  { bins=b; low=l; high=h; value=v; description=desc; }
 };
 
 struct histStruct {
@@ -107,7 +108,7 @@ class AliHLTGlobalPromptRecoQAComponent : public AliHLTProcessor, public AliOpti
 
 
   void NewAxis(string config);
-  void NewAxis(string name, int bins, float low, float high);
+  void NewAxis(string name, int bins, float low, float high, string desc="");
   void NewHistogram(string trigName, string histName, string histTitle, string xname, string yname, string config="" );
   void NewHistogram(std::string histConfig);
   void CreateFixedHistograms();

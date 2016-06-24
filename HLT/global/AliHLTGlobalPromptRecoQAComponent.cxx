@@ -462,8 +462,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   static double fakePtr = 0.;
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
-  fAxes["phiAngles"].set(180, 0., TMath::TwoPi(), &fakePtr );
-  fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr );
+  fAxes["phiAngles"].set(180, 0., TMath::TwoPi(), &fakePtr, "phi(rad)");
+  fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr, "padrow" );
 
   //Start Histograms
   NewHistogram(",fHistSPDclusters_SPDrawSize,SPD clusters vs SPD raw size,rawSizeSPD,nClustersSPD");
@@ -645,12 +645,26 @@ void AliHLTGlobalPromptRecoQAComponent::NewHistogram(
   {
     //both axes specified, TH2
     hist.hist = new TH2F(histName.c_str(), histTitle.c_str(), x.bins, x.low, x.high, y.bins, y.low, y.high);
+    string axistitle = xname;
+    if (!x.description.empty()) axistitle=x.description;
+    hist.hist->SetXTitle(axistitle.c_str());
+    axistitle = yname;
+    if (!y.description.empty()) axistitle=y.description;
+    hist.hist->SetYTitle(axistitle.c_str());
   }
   else
   {
     //only one axis specified (the case of both axes empty is excluded above)
-    if (xname.empty()) ax=&y;
+    string axistitle = xname;
+    if (!x.description.empty()) axistitle=x.description;
+    if (xname.empty()) {
+      ax=&y;
+      axistitle=yname;
+      if (!y.description.empty()) axistitle=y.description;
+    }
     hist.hist = new TH1F(histName.c_str(), histTitle.c_str(), (*ax).bins, (*ax).low, (*ax).high);
+    if (!x.description.empty()) axistitle=x.description;
+    hist.hist->SetXTitle(axistitle.c_str());
   }
   hist.x = *ax;
   hist.y = y;
@@ -682,28 +696,36 @@ void AliHLTGlobalPromptRecoQAComponent::NewAxis(string config)
   }
   if (tokens.size()==4)
   {
-    NewAxis(tokens[0],atoi(tokens[1].c_str()),atof(tokens[2].c_str()),atof(tokens[3].c_str()));
+    NewAxis(tokens[0],atoi(tokens[1].c_str()),atof(tokens[2].c_str()),
+                      atof(tokens[3].c_str()));
+  }
+  else if (tokens.size()==5)
+  {
+    NewAxis(tokens[0],atoi(tokens[1].c_str()),atof(tokens[2].c_str()),
+                      atof(tokens[3].c_str()),tokens[4]);
   }
   else
   {
-    HLTWarning("axis token string should contain varName,nbins,low,high (%s)",
+    HLTWarning("axis token string should contain varName,nbins,low,high [,description] (%s)",
         config.c_str());
   }
 }
 
 //__________________________________________________________________________________________________
-void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low, float high)
+void AliHLTGlobalPromptRecoQAComponent::NewAxis(string name, int bins, float low, float high, string desc)
 {
   if (bins>200)
   {
     HLTWarning("%i is too many bins for %s, setting max=200",bins,name.c_str());
     bins=200;
   }
-  fAxes[name].bins=bins;
-  fAxes[name].low=low;
-  fAxes[name].high=high;
+  axisStruct& axis = fAxes[name];
+  axis.bins=bins;
+  axis.low=low;
+  axis.high=high;
+  axis.description=desc;
   //reinitialize the histograms that use this axis
-  for (std::map<std::string,bool>::iterator i=fAxes[name].histograms.begin(); i!=fAxes[name].histograms.end(); ++i)
+  for (std::map<std::string,bool>::iterator i=axis.histograms.begin(); i!=axis.histograms.end(); ++i)
   {
     NewHistogram(fHistograms[i->first].config);
   }
