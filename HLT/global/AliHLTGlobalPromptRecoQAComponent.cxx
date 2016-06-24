@@ -150,8 +150,10 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fhltRatio(0.)
   , fHistClusterChargeTot(NULL)
   , fHistTPCTrackPt(NULL)
-  , fHistTPCattachedClustersRowPhi(NULL)
-  , fHistTPCallClustersRowPhi(NULL)
+  , fHistTPCAattachedClustersRowPhi(NULL)
+  , fHistTPCAallClustersRowPhi(NULL)
+  , fHistTPCCattachedClustersRowPhi(NULL)
+  , fHistTPCCallClustersRowPhi(NULL)
 {
   // see header file for class documentation
   // or
@@ -518,8 +520,10 @@ void AliHLTGlobalPromptRecoQAComponent::DeleteFixedHistograms()
 {
   delete fHistClusterChargeTot; fHistClusterChargeTot=NULL;
   delete fHistTPCTrackPt; fHistTPCTrackPt=NULL;
-  delete fHistTPCallClustersRowPhi; fHistTPCallClustersRowPhi=NULL;
-  delete fHistTPCattachedClustersRowPhi; fHistTPCattachedClustersRowPhi=NULL;
+  delete fHistTPCAallClustersRowPhi; fHistTPCAallClustersRowPhi=NULL;
+  delete fHistTPCAattachedClustersRowPhi; fHistTPCAattachedClustersRowPhi=NULL;
+  delete fHistTPCCallClustersRowPhi; fHistTPCCallClustersRowPhi=NULL;
+  delete fHistTPCCattachedClustersRowPhi; fHistTPCCattachedClustersRowPhi=NULL;
 }
 
 //__________________________________________________________________________________________________
@@ -543,12 +547,20 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   axisStruct& axisAngles = fAxes["phiAngles"];
   axisStruct& axisPadrows = fAxes["tpcPadRows"];
   if (axisAngles.bins>0 && axisPadrows.bins>0) {
-    fHistTPCallClustersRowPhi = new TH2F("fHistTPCallClustersRowPhi",
-        "All TPC clusters (padrow vs. phi), raw cluster coordinates",
+    fHistTPCAallClustersRowPhi = new TH2F("fHistTPCAallClustersRowPhi",
+        "TPCA clusters all (padrow vs. phi), raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
-    fHistTPCattachedClustersRowPhi = new TH2F("fHistTPCattachedClustersRowPhi",
-        "TPC clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
+    fHistTPCAattachedClustersRowPhi = new TH2F("fHistTPCAattachedClustersRowPhi",
+        "TPCA clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
+        axisAngles.bins, axisAngles.low, axisAngles.high,
+        axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCCallClustersRowPhi = new TH2F("fHistTPCCallClustersRowPhi",
+        "TPCC clusters all (padrow vs. phi), raw cluster coordinates",
+        axisAngles.bins, axisAngles.low, axisAngles.high,
+        axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCCattachedClustersRowPhi = new TH2F("fHistTPCCattachedClustersRowPhi",
+        "TPCC clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
   }
@@ -1209,7 +1221,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     //cluster phi vs padrow for clusters attached to tracks
-    if ( fHistTPCattachedClustersRowPhi &&
+    if ( fHistTPCAattachedClustersRowPhi && fHistTPCCattachedClustersRowPhi &&
          iter->fDataType == (kAliHLTDataTypeTrack | kAliHLTDataOriginTPC) )
     {
       AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
@@ -1254,13 +1266,17 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
           AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
 
           //Fill the hist
-          fHistTPCattachedClustersRowPhi->Fill(phi,slicerow);
+          if (slice < 18) {
+            fHistTPCAattachedClustersRowPhi->Fill(phi,slicerow);
+          } else {
+            fHistTPCCattachedClustersRowPhi->Fill(phi,slicerow);
+          }
         }
       }
     }
 
     //cluster phi vs padrow
-    if ( fHistTPCallClustersRowPhi &&
+    if ( fHistTPCAallClustersRowPhi && fHistTPCCallClustersRowPhi &&
         iter->fDataType == (AliHLTTPCDefinitions::fgkRawClustersDataType) )
     {
       AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*) iter->fPtr;
@@ -1289,7 +1305,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
 
         //Fill the hist
-        fHistTPCallClustersRowPhi->Fill(phi,slicerow);
+        if (slice<18) {
+          fHistTPCAallClustersRowPhi->Fill(phi,slicerow);
+        } else {
+          fHistTPCCallClustersRowPhi->Fill(phi,slicerow);
+        }
       }
     }
   }
@@ -1301,11 +1321,17 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     fHistClusterChargeTot->Reset();
   }
-  if (PushBack(fHistTPCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCattachedClustersRowPhi->Reset();
+  if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCAattachedClustersRowPhi->Reset();
   }
-  if (PushBack(fHistTPCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCallClustersRowPhi->Reset();
+  if (PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCCallClustersRowPhi->Reset();
+  }
+  if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCAattachedClustersRowPhi->Reset();
+  }
+  if (PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCCallClustersRowPhi->Reset();
   }
 
   //convert the numbers fo floats for histograms

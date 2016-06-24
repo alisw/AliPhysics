@@ -201,8 +201,10 @@ protected:
   //These are not created dynamically because that would require quite some CPU resources.
   TH1D* fHistClusterChargeTot;
   TH1D* fHistTPCTrackPt;
-  TH2F* fHistTPCattachedClustersRowPhi;
-  TH2F* fHistTPCallClustersRowPhi;
+  TH2F* fHistTPCAattachedClustersRowPhi;
+  TH2F* fHistTPCAallClustersRowPhi;
+  TH2F* fHistTPCCattachedClustersRowPhi;
+  TH2F* fHistTPCCallClustersRowPhi;
 
   ClassDef(AliHLTGlobalPromptRecoQAComponent, 0)
 };
