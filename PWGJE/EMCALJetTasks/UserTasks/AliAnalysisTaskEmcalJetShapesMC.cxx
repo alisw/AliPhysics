@@ -126,6 +126,10 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
 {
   // Standard constructor.
   
+  
+  for(Int_t i=0;i<23;i++){
+    fShapesVar[i]=0;}
+  
   SetMakeGeneralHistograms(kTRUE);
 
   DefineOutput(1, TList::Class());
@@ -137,25 +141,30 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 {
-  // Destructor.
+  if(fTreeObservableTagging){
+    delete fTreeObservableTagging;
+    fTreeObservableTagging = 0;
+  }
+
 }
 
 //________________________________________________________________________
  void AliAnalysisTaskEmcalJetShapesMC::UserCreateOutputObjects()
 {
   // Create user output.
-
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
-  TH1::AddDirectory(kFALSE);
+  TH1::AddDirectory(oldStatus);
 
   //fTreeObservableTagging = new TTree("fTreeJetShape", "fTreeJetShape");
 
+  //TH1::AddDirectory(oldStatus);
+  
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 21;
+  const Int_t nVar = 23;
 
   fShapesVar = new Float_t [nVar];
   TString *fShapesVarNames = new TString [nVar];
@@ -172,16 +181,18 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[9] = "Nsubjet1";
   fShapesVarNames[10] = "Nsubjet2";
   fShapesVarNames[11] = "SubjetFraction";
-  fShapesVarNames[12] = "weightPythia";
-  
-  fShapesVarNames[13] = "NT70";
-  fShapesVarNames[14] = "nConstNT70";
-  fShapesVarNames[15] = "NT80";
-  fShapesVarNames[16] = "nConstNT80";
-  fShapesVarNames[17] = "NT90";
-  fShapesVarNames[18] = "nConstNT90";
-  fShapesVarNames[19] = "NT95";
-  fShapesVarNames[20] = "nConstNT95";
+  fShapesVarNames[12] = "DeltaR";
+  fShapesVarNames[13] = "OpenAngle";
+  fShapesVarNames[14] = "weightPythia";
+
+  fShapesVarNames[15] = "NT70";
+  fShapesVarNames[16] = "nConstNT70";
+  fShapesVarNames[17] = "NT80";
+  fShapesVarNames[18] = "nConstNT80";
+  fShapesVarNames[19] = "NT90";
+  fShapesVarNames[20] = "nConstNT90";
+  fShapesVarNames[21] = "NT95";
+  fShapesVarNames[22] = "nConstNT95";
 
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -217,7 +228,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   
   //fOutput->Add(fTreeObservableTagging);
   
-  TH1::AddDirectory(oldStatus);
+ 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here
   PostData(2, fTreeObservableTagging);
   
@@ -237,7 +248,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::Run()
 Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
 {
   // Fill histograms.
-  //cout<<"base container"<<endl;
+  cout<<"IntoFillHistograms"<<endl;
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
   
@@ -320,7 +331,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
         Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
         kWeight=partonsInfo->GetPythiaEventWeight();
         //Printf("kWeight=%f",  kWeight);
-        fShapesVar[12] = kWeight;
+        fShapesVar[14] = kWeight;
         
         Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
         fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
@@ -353,7 +364,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
       
       AliEmcalJetFinder *Reclusterer1; //Object containg Subjets from Subtracted Hybrid Jets
-      Reclusterer1 = Recluster(jet1, 0, fSubjetRadius, 0, 0, "SubJetFinder_1");
+      Reclusterer1 = Recluster(jet1, 0, fJetRadius, fSubjetRadius, 1, 0, "SubJetFinder_1");
       
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
@@ -363,13 +374,16 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[6] = GetJetCircularity(jet1,0);
       fShapesVar[7] = GetJetLeSub(jet1,0);
       fShapesVar[8] = GetJetCoreFrac(jet1,0);
-      fShapesVar[9] = NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 1, 0, 1);
-      fShapesVar[10]= NSubJettiness(jet1, 0, fJetRadius, Reclusterer1, 2, 0, 1);
+      fShapesVar[9] = NSubJettiness(jet1, 0, Reclusterer1, 1, 0, 1);
+      fShapesVar[10]= NSubJettiness(jet1, 0, Reclusterer1, 2, 0, 1);
       fShapesVar[11]= GetSubjetFraction(jet1,0,fJetRadius,Reclusterer1);
+      fShapesVar[12]= fjNSubJettiness(jet1,0, 2, 0, 1, 2);
+      fShapesVar[13]= fjNSubJettiness(jet1,0, 2, 0, 1, 1);
       
       Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       NTValues(jet1, 0, nTFractions);
-      for (Int_t ishape=13; ishape<21; ishape++) fShapesVar[ishape] = nTFractions[ishape-13];
+      //shape 14 is pythia weight!
+      for (Int_t ishape=15; ishape<23; ishape++) fShapesVar[ishape] = nTFractions[ishape-15];
     
       
       fTreeObservableTagging->Fill();
@@ -621,15 +635,19 @@ Float_t AliAnalysisTaskEmcalJetShapesMC::GetJetLeSub(AliEmcalJet *jet, Int_t jet
    
 
 //________________________________________________________________________
-AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name){
+AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name){
   
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
   AliEmcalJetFinder *Reclusterer = new AliEmcalJetFinder(Name); //JetFinder Object for reclustered jets
   Reclusterer->SetRadius(SubJetRadius);
   Reclusterer->SetJetMinPt(SubJetMinPt);
   Reclusterer->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt
+  Reclusterer->SetJetMaxEta(0.9-JetRadius);
+  Reclusterer->SetRecombSheme(0);
   const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
-  Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+
+  //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+  Double_t dVtx[3]={0.,0.,0.};
   if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
   return Reclusterer;
 }
@@ -637,7 +655,7 @@ AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, 
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B){
+Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B){
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
   AliEmcalJet *SubJet=NULL;
   Double_t DeltaR1=0;
@@ -667,8 +685,8 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t 
       }
     }
     SubJetiness_Numerator=SubJetiness_Numerator+(JetParticle->Pt()*DeltaR1);
-    if (A>=0) SubJetiness_Denominator=SubJetiness_Denominator+(TMath::Power((Reclusterer->GetJet(SubJetOrdering(Jet,Reclusterer,1,0,kTRUE))->Pt()),A)*JetParticle->Pt()*TMath::Power(JetRadius,B));
-    else  SubJetiness_Denominator=SubJetiness_Denominator+(TMath::Power((Reclusterer->GetJet(SubJetOrdering(Jet,Reclusterer,N,0,kTRUE))->Pt()),A)*JetParticle->Pt()*TMath::Power(JetRadius,B));
+    if (A>=0) SubJetiness_Denominator=SubJetiness_Denominator+(TMath::Power((Reclusterer->GetJet(SubJetOrdering(Jet,Reclusterer,1,0,kTRUE))->Pt()),A)*JetParticle->Pt()*TMath::Power(fJetRadius,B));
+    else  SubJetiness_Denominator=SubJetiness_Denominator+(TMath::Power((Reclusterer->GetJet(SubJetOrdering(Jet,Reclusterer,N,0,kTRUE))->Pt()),A)*JetParticle->Pt()*TMath::Power(fJetRadius,B));
   }
   if (SubJetiness_Denominator!=0 && !Error) return SubJetiness_Numerator/SubJetiness_Denominator;
   else return -2;
@@ -902,6 +920,45 @@ void AliAnalysisTaskEmcalJetShapesMC::NTValues(AliEmcalJet *jet, Int_t jetContNb
     }
   }
 }
+//_________________________________________________________________________________________________
+Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option){
+  
+  //WARNING!!! Only works for parent jets that are clustered with Anti-Kt! To change go to AliEmcalJetFinder.cxx and look at the Nsubjettiness() function
+  
+  //Algorithm==0 -> kt_axes;
+  // Algorithm==1 -> ca_axes;
+  //Algorithm==2 -> antikt_0p2_axes;
+  //Algorithm==3 -> wta_kt_axes;
+  //Algorithm==4 -> wta_ca_axes;
+  //Algorithm==5 -> onepass_kt_axes;
+  //Algorithm==6 -> onepass_ca_axes;
+  //Algorithm==7 -> onepass_antikt_0p2_axes;
+  //Algorithm==8 -> onepass_wta_kt_axes;
+  //Algorithm==9 -> onepass_wta_ca_axes;
+  //Algorithm==10 -> min_axes;
+  
+  
+  //Option==0 returns Nsubjettiness Value
+  //Option==1 && N==2 returns opening angle between two subjet axes(Delta R?)
+  //Option==2 && N==2 returns Delta R
+  
+  if (Jet->GetNumberOfTracks()>=N){
+    AliJetContainer *JetCont = GetJetContainer(JetContNb);
+    AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
+    JetFinder->SetJetMaxEta(0.9-fJetRadius);
+    JetFinder->SetRadius(fJetRadius);
+    JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
+    JetFinder->SetRecombSheme(0);
+    JetFinder->SetJetMinPt(Jet->Pt());
+    const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
+    //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
+    Double_t dVtx[3]={0,0,0};
+    return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option);
+    
+  }
+  else return -2;
+}
+
 
 
 //________________________________________________________________________
@@ -992,11 +1049,20 @@ void AliAnalysisTaskEmcalJetShapesMC::Terminate(Option_t *)
 {
   // Called once at the end of the analysis.
 
-  // fTreeObservableTagging = dynamic_cast<TTree*>(GetOutputData(1));
-  // if (!fTreeObservableTagging){
-  //   Printf("ERROR: fTreeObservableTagging not available"); 
-  //   return;
-  // }
+  AliInfo("Terminate");
+  AliAnalysisTaskSE::Terminate();
+  
+  fOutput = dynamic_cast<AliEmcalList*> (GetOutputData(1));
+  if (!fOutput) {
+    AliError("fOutput not available");
+    return;
+  }
+
+  fTreeObservableTagging = dynamic_cast<TTree*>(GetOutputData(2));
+  if (!fTreeObservableTagging){
+    Printf("ERROR: fTreeObservableTagging not available");
+    return;
+  }
 
 }
 

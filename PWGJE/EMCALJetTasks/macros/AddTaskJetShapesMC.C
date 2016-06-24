@@ -30,7 +30,7 @@ AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(const char * njetsBase,
   //==============================================================================
   if (!mgr->GetInputEventHandler())
     {
-      ::Error("AddTaskEmcalQGTagging", "This task requires an input event handler");
+      ::Error("AddTaskJetShapesMC", "This task requires an input event handler");
       return NULL;
     }
 
@@ -38,8 +38,8 @@ AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(const char * njetsBase,
   TString wagonName2 = Form("JetShapesMC_%s_Tree%s%s",njetsBase,trigClass.Data(),tag.Data());
 
   //Configure jet tagger task
-  AliAnalysisTaskEmcalJetShapesMC *task = new AliAnalysisTaskEmcalJetShapesMC(Form("JetShapesMC_%s", njetsBase));
-
+  AliAnalysisTaskEmcalJetShapesMC *task = new AliAnalysisTaskEmcalJetShapesMC(wagonName1.Data());
+  
   //task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
