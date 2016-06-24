@@ -121,7 +121,7 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   Double_t               fMaxPtTrack;            //track with highest pt in event
   Double_t               fMaxEClus;              //cluster with highest energy in event
   Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
-  ULong_t                fFilterBit;             // Track selection bit, for AODs 
+  ULong_t                fFilterBit;             // Track selection bit, for AODsfs 
   Bool_t                 fSelHybrid;             // bool to select hybrid tracks
   Bool_t                 fFillQA;                // bool to fill the QA plots
   TString                fClusIdFromTracks;      // string to hold the list of cluster ids given by tracks
@@ -165,6 +165,8 @@ class AliAnalysisTaskEMCALPhotonTagged : public AliAnalysisTaskSE {
   TH2F        *fNClusPerPho;               //!delta-eta x delta-phi(reco-mc)
   TH2F        *fInvMassPt;                 //!inv mass of photon like cluster pairs vs pair pt
   TH1F        *fMaxEtSpec;                 //!spectrum of the MaxEt clusters
+  TH1F        *fMaxEtSpecCut;              //!spectrum of the MaxEt clusters after Et cut
+  TH1F        *fMaxEtSpecCutTM;            //!spectrum of the MaxEt clusters after Et cut and TM
   TH2F        *fTagCandEtType;             //!tag candidate type vs Et
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
 

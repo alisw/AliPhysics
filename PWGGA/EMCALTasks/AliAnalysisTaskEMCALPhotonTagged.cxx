@@ -118,6 +118,8 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged() :
   fNClusPerPho(0),
   fInvMassPt(0),
   fMaxEtSpec(0),
+  fMaxEtSpecCut(0),
+  fMaxEtSpecCutTM(0),
   fTagCandEtType(0),
   fHnOutput(0),
   fQAList(0),
@@ -225,6 +227,8 @@ AliAnalysisTaskEMCALPhotonTagged::AliAnalysisTaskEMCALPhotonTagged(const char *n
   fNClusPerPho(0),
   fInvMassPt(0),
   fMaxEtSpec(0),
+  fMaxEtSpecCut(0),
+  fMaxEtSpecCutTM(0),
   fTagCandEtType(0),
   fHnOutput(0),
   fQAList(0),
@@ -329,6 +333,12 @@ void AliAnalysisTaskEMCALPhotonTagged::UserCreateOutputObjects()
 
   fMaxEtSpec = new TH1F("hMaxEtSpec","E_T spectrum of leading clusters; E_T; dN/dE_T",500,0,100);
   fOutputList->Add(fMaxEtSpec);
+
+  fMaxEtSpecCut = new TH1F("hMaxEtSpecCut","E_T spectrum of leading clusters (after E_T cut); E_T; dN/dE_T",500,0,100);
+  fOutputList->Add(fMaxEtSpecCut);
+
+  fMaxEtSpecCutTM = new TH1F("hMaxEtSpecCutTM","E_T spectrum of leading clusters (after E_T cut and TM); E_T; dN/dE_T",500,0,100);
+  fOutputList->Add(fMaxEtSpecCutTM);
 
   fTagCandEtType = new TH2F("hTagCandEtType","Tag candidate type vs E_T;E_T (GeV);type",500,0,100,5,-0.5,4.5);
   fOutputList->Add(fTagCandEtType);
@@ -1720,20 +1730,25 @@ Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
   }
   if (!clusters){
     return kFALSE;
-  }
+  } 
+  fMaxEtSpecCut->Fill(fEtMax);
   Int_t nc = clusters->GetEntriesFast();
   AliVCluster *c = static_cast<AliVCluster*>(clusters->At(idMax));
   if(!c)
     return 0;
   if(!c->IsEMCAL())
     return 0;
-  if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02)
+  if(c->GetTrackDx()<0.03 && c->GetTrackDz()<0.02){
+    fMaxEtSpecCutTM->Fill(fEtMax);
     return 0;
+  }
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);
   clsVec -= fVecPv;
   Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
+  if(Et!=fEtMax)
+    AliFatal("Et not consistent with max Et in event!!!\n");
   if(c->GetM02()>0.09 && c->GetM02()<0.31){
     candStatus = 1;
     if(HasPi0InvMass(idMax,clusters))
