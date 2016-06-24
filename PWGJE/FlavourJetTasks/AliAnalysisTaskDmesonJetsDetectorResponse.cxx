@@ -232,7 +232,8 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       fCurrentJetInfoReco[ij]->Set(dmeson_reco.second, fRecontructed->GetJetDefinitions()[ij].GetName());
       accJets++;
     }
-    if (accJets == 0) continue;
+    // always fill D meson tree, even if no jet was accepted
+    //if (accJets == 0) continue;
 
     if (dmeson_reco.second.fMCLabel >= 0) {
       std::map<int, AliDmesonJetInfo>::iterator it = truthDmesons.find(dmeson_reco.second.fMCLabel);
