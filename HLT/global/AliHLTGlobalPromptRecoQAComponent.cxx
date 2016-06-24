@@ -551,18 +551,29 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
         "TPCA clusters all (padrow vs. phi), raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCAallClustersRowPhi->SetXTitle(axisAngles.description.c_str());
+    fHistTPCAallClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
+
     fHistTPCAattachedClustersRowPhi = new TH2F("fHistTPCAattachedClustersRowPhi",
         "TPCA clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCAattachedClustersRowPhi->SetXTitle(axisAngles.description.c_str());
+    fHistTPCAattachedClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
+
     fHistTPCCallClustersRowPhi = new TH2F("fHistTPCCallClustersRowPhi",
         "TPCC clusters all (padrow vs. phi), raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCCallClustersRowPhi->SetXTitle(axisAngles.description.c_str());
+    fHistTPCCallClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
+
     fHistTPCCattachedClustersRowPhi = new TH2F("fHistTPCCattachedClustersRowPhi",
         "TPCC clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
+    fHistTPCCattachedClustersRowPhi->SetXTitle(axisAngles.description.c_str());
+    fHistTPCCattachedClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
   }
 }
 
