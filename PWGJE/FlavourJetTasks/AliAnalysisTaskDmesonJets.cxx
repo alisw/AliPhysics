@@ -1612,10 +1612,10 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       fCurrentJetInfo[ij]->Set(dmeson_pair.second, fJetDefinitions[ij].GetName());
       accJets++;
     }
-    if (accJets > 0) {
+    if (kTRUE || accJets > 0) { // always fill D meson tree, even if no jet was accepted
       fTree->Fill();
     }
-    else {
+    else { // this is never executed
       hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
       hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
