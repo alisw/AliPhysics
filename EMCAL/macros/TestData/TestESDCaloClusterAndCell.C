@@ -110,8 +110,7 @@ void TestESDCaloClusterAndCell(TString det = "EMCAL", const UInt_t eventsToProce
 
   
   //Define few variables to be used in macro
-  TString alirunName = "" ; 
-
+  TString alirunName = "" ;
   UInt_t event ;
   Float_t pos[3] ; 
 
@@ -184,9 +183,9 @@ void TestESDCaloClusterAndCell(TString det = "EMCAL", const UInt_t eventsToProce
       UShort_t * index = clus->GetCellsAbsId() ;
       Double_t * fraction = clus->GetCellsAmplitudeFraction() ;
       //Print cluster info
-      cout<<"Cluster "<<iclus <<"; digits mult "<<mult<<"; type "<<(Int_t )clus->GetClusterType()
+      cout<<"Cluster "<<iclus <<"; digits mult "<<mult<<"; type "<<(Int_t )clus->GetType()
 	  <<"; Energy "<<energy
-	  <<"; Phi "<<vpos.Phi()*180/TMath::Pi()<<"; Eta "<<vpos.Eta()
+	  <<"; Phi "<<(vpos.Phi()*180/TMath::Pi())<<"; Eta "<<vpos.Eta()
 	  <<"; label "<<iprim<<endl;      
       //Print primary info
       if(iprim>=0 && iprim < sta->GetNtrack()){
