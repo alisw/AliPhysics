@@ -66,6 +66,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTCommonCDBEntries.h"
 #include "TList.h"
+#include "TTimeStamp.h"
 
 /* Matthias Dec 2006
  * The names have been changed for Aliroot's coding conventions sake
@@ -1909,6 +1910,9 @@ class AliHLTComponent : public AliHLTLogging {
   int fPushbackPeriod;                                             //! transient
   /// time of last executed PushBack
   int fLastPushBackTime;                                           //! transient
+
+  /// current event's timestamp
+  TTimeStamp fCurrentTime;                                         //! transient
   
   /// Event modulo for down scaling the processing rate.
   int fEventModulo;                                                //! transient

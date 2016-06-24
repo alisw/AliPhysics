@@ -108,7 +108,8 @@ AliHLTComponent::AliHLTComponent()
   , fLastObjectSize(0)
   , fpCTPData(NULL)
   , fPushbackPeriod(0)
-  , fLastPushBackTime(-1),
+  , fLastPushBackTime(-1)
+  , fCurrentTime(),
   fEventModulo(-1),
   fSchema(),
   fUseSchema(0),
@@ -1477,8 +1478,7 @@ bool AliHLTComponent::CheckPushbackPeriod()
 {
   if (fPushbackPeriod>0) {
     // suppress the output
-    TTimeStamp time;
-    if (fLastPushBackTime<0 || (int)time.GetSec()-fLastPushBackTime<fPushbackPeriod) return false;
+    if (fLastPushBackTime<0 || (int)fCurrentTime.GetSec()-fLastPushBackTime<fPushbackPeriod) return false;
   }
   return(true);
 }
@@ -1944,6 +1944,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   fOutputBlocks.clear();
   outputBlockCnt=0;
   outputBlocks=NULL;
+
+  fCurrentTime.Set();
 
   AliHLTComponentBlockDataList forwardedBlocks;
 
