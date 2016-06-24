@@ -217,7 +217,7 @@ void AliEMCALRawUtils::Digits2Raw()
         }
         
         // out of time range signal (?)
-        if (digit->GetTimeR() >  TIMEBINMAX  )
+        if ( digit->GetTime() >  TIMEBINMAX  )
         {
           AliInfo("Signal is out of time range.\n");
           buffers[iDDL]->FillBuffer((Int_t)digit->GetAmplitude());
@@ -228,13 +228,14 @@ void AliEMCALRawUtils::Digits2Raw()
         }
         else
         {
-          Bool_t lowgain = AliEMCALRawResponse::RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(),
+          Bool_t lowgain = AliEMCALRawResponse::RawSampledResponse(digit->GetTime(), digit->GetAmplitude(),
                                                                    adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
       
+          buffers[iDDL]->WriteChannel(ieta, iphi, 1, TIMEBINS, adcValuesHigh.GetArray(), AliEMCALRawResponse::GetRawFormatThreshold() );
+
           if (lowgain) 
             buffers[iDDL]->WriteChannel(ieta, iphi, 0, TIMEBINS, adcValuesLow .GetArray(), AliEMCALRawResponse::GetRawFormatThreshold() );
-          else 
-            buffers[iDDL]->WriteChannel(ieta, iphi, 1, TIMEBINS, adcValuesHigh.GetArray(), AliEMCALRawResponse::GetRawFormatThreshold() );
+          
         }
       }// iDDL under the limits
     }// Digit exists
@@ -262,65 +263,66 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
 {
   AliEMCALDigit *digit = 0, *tmpdigit = 0;
   TIter nextdigit(digitsArr);
- 
+  
   while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) 
   {
     if (tmpdigit->GetId() == id) digit = tmpdigit;
   }
-
+  
   // No digit existed for this tower; create one.
   if (!digit)
   {
     Int_t type = AliEMCALDigit::kHG; // use enum in AliEMCALDigit
-      
+    
     if (lowGain) 
     {
-	  amp *= HGLGFACTOR;
-	  type = AliEMCALDigit::kLGnoHG;
+      amp *= HGLGFACTOR;
+      type = AliEMCALDigit::kLGnoHG;
     }
     
     Int_t idigit = digitsArr->GetEntries();
-      
+    
     new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit, chi2, ndf);
-      
+
     AliDebug(2,Form("Add digit Id %d for the first time, type %d", id, type));
   }// digit added first time.
-    
+  
   // A digit already exists, check range
   // (use high gain if signal < cut value, otherwise low gain)
   else 
   {
+    printf("\t Digit already existed\n");
     if (lowGain)
-	{
+    {
       // New digit is low gain
-	  if (digit->GetAmplitude() >  OVERFLOWCUT ) 
+      if ( digit->GetAmplitude() >  OVERFLOWCUT ) 
       {
         // Use if previously stored (HG) digit is out of range
         digit->SetAmplitude( HGLGFACTOR * amp);
         digit->SetTime(time);
         digit->SetType(AliEMCALDigit::kLG);
-          
+        
         AliDebug(2,Form("Add LG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
       }
-	} // New low gain digit
+    } // New low gain digit
     else
     {
       // New digit is high gain
-	  if (amp <  OVERFLOWCUT  )
+      if ( amp <  OVERFLOWCUT  )
       {
         // New digit is high gain; use if not out of range
         digit->SetAmplitude(amp);
         digit->SetTime(time);
         digit->SetType(AliEMCALDigit::kHG);
-        
+
         AliDebug(2,Form("Add HG digit ID %d for the second time, type %d", digit->GetId(), digit->GetType()));
       }
       else
       {
         // HG out of range, just change flag value to show that HG did exist
-	    digit->SetType(AliEMCALDigit::kLG);
-          
-	    AliDebug(2,Form("Change LG digit to HG, ID %d, type %d", digit->GetId(), digit->GetType()));
+        digit->SetType(AliEMCALDigit::kLG);
+
+        AliDebug(2,Form("Change LG digit to HG, ID %d, type %d", digit->GetId(), digit->GetType()));
       }
     } // New high gain digit
   }// Digit existed replace it
@@ -423,7 +425,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
         AliCaloFitResults res =  fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2());
                 
         if(res.GetAmp() >= fNoiseThreshold )
-        {
+        {          
           AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() );
         }
       }// ALTRO
