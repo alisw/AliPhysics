@@ -124,7 +124,7 @@ void TestESD()
     {
       if(kPrintMisalMatrix) 
       {
-        printf("Misalign matrid for: mod %d, matrix %p\n",mod, esd->GetEMCALMatrix(mod));
+        printf("Misalign matrix for: mod %d, matrix %p\n",mod, esd->GetEMCALMatrix(mod));
 
         (esd->GetEMCALMatrix(mod))->Print("");
       }
@@ -174,8 +174,10 @@ void TestESD()
       //Int_t type        = cells.GetType();
       for (Int_t icell=  0; icell <  nTotalCells; icell++) 
       {
-        cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" - ID: "<<cells.GetCellNumber(icell)<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
-        cout << "; MC label "<<cells.GetMCLabel(icell)<<"; Embeded E fraction "<<cells.GetEFraction(icell);
+        Int_t cellid = cells.GetCellNumber(icell);
+        cout<<"Cell   : "    <<icell<<"/"<<nTotalCells  <<" - ID: "<<cells.GetCellNumber(icell)<<"; High Gain? "<<cells.GetHighGain(icell);
+        cout<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
+        cout<<"; MC label "  <<cells.GetMCLabel(icell)  <<"; Embeded E fraction "<<cells.GetEFraction(icell);
         cout<<endl;	       
       }// cell loop
     }
@@ -396,8 +398,10 @@ void TestESD()
           Double_t ampFract = fraction[i];
           Float_t  amp      = cells.GetCellAmplitude(absId) ;
           Double_t time     = cells.GetCellTime(absId);
+          Bool_t   hg       = cells.GetCellHighGain(absId);
           
-          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
+          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp;
+          cout<< "; Fraction "<<ampFract<<"; Time " <<time*1e9<<"; High Gain? "<<hg<<endl;
 
           if(kPrintKine)
           {

@@ -15,7 +15,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 //Root include files 
-//#include <Riostream.h>
+#include <Riostream.h>
 #include <TFile.h>
 //#include <TSystem.h>
 #include <TH1F.h>
@@ -148,8 +148,9 @@ void TestAOD()
       //Int_t type        = cells.GetType();
       for (Int_t icell=  0; icell <  nTotalCells; icell++) 
       {
-        cout<<"Cell   : "<<icell<<"/"<<nTotalCells<<" - ID: "<<cells.GetCellNumber(icell)<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
-        cout << "; MC label "<<cells.GetMCLabel(icell)<<"; Embeded E fraction "<<cells.GetEFraction(icell);
+        cout<<"Cell   : "    <<icell<<"/"<<nTotalCells  <<" - ID: "<<cells.GetCellNumber(icell)<<"; High Gain? "<<cells.GetHighGain(icell);
+        cout<<"; Amplitude: "<<cells.GetAmplitude(icell)<<"; Time: "<<cells.GetTime(icell)*1e9;
+        cout<<"; MC label "  <<cells.GetMCLabel(icell)  <<"; Embeded E fraction "<<cells.GetEFraction(icell);
         cout<<endl;	       
       }// cell loop
     }
@@ -240,8 +241,8 @@ void TestAOD()
       cout << "Cluster: " << icl+1 << "/" << nclus << " Energy: " << energy << "; Phi: " 
       << cphi*TMath::RadToDeg() << "; Eta: " << ceta 
       << "; NCells: " << nCells  << "; NLM: " << nlm
-      << "; #Labels: " << nLabels << " Index: " 
-      << labelIndex << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
+      << "; #Labels: " << nLabels << " Index: " << labelIndex 
+      << "; Time "<<clus->GetTOF()*1e9<<" ns "<<endl;
       
       if(nMatched > 0)
       {
@@ -281,8 +282,14 @@ void TestAOD()
             particle = (AliAODMCParticle*)arr->At((clus->GetLabels())[i]);
             //or Int_t *labels = clus->GetLabels();
             //particle = stack->Particle(labels[i]);
-            cout<<"         Other contributing primary: "<<particle->GetName()<< "; Energy "<<particle->Energy()<<
-            "; deposited energy fraction = "<<clus->GetClusterMCEdepFraction(i)<<endl;
+            if(!particle)
+            {
+              printf("\t \t MC particle not found!!!\n");
+              continue;
+            }
+            
+            printf("\t \t Other contributing primary: %s; Energy %2.2f; deposited E_frac %2.2f \n",
+                   particle->GetName(),particle->E(),clus->GetClusterMCEdepFraction(i));
           }
         }
         else if( labelIndex >= arr->GetEntriesFast()) 
@@ -376,8 +383,10 @@ void TestAOD()
           Double_t ampFract = fraction[i];
           Float_t  amp      = cells.GetCellAmplitude(absId) ;
           Double_t time     = cells.GetCellTime(absId);
-          
-          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp << "; Fraction "<<ampFract<<"; Time " <<time*1e9<<endl;
+          Bool_t   hg       = cells.GetCellHighGain(absId);
+
+          cout<<"\t Cluster Cell: AbsID : "<< absId << " == "<<clus->GetCellAbsId(i) <<"; Amplitude "<< amp;
+          cout<< "; Fraction "<<ampFract<<"; Time " <<time*1e9<<"; High Gain? "<<hg<<endl;
           
           if(kPrintKine)
           {
@@ -406,13 +415,13 @@ void TestAOD()
             
             // Gives label of cell in eta-phi position per each supermodule
             // Need alignment matrices, comment for now.
-            //Float_t cellPhi = 0;
-            //Float_t cellEta = 0;
-            //geom->EtaPhiFromIndex(absId,cellEta,cellPhi);
+//            Float_t cellPhi = 0;
+//            Float_t cellEta = 0;
+//            geom->EtaPhiFromIndex(absId,cellEta,cellPhi);
             
             cout<< "                SModule "<<iSupMod<<"; Tower "<<iTower <<"; Eta "<<iIeta
             <<"; Phi "<<iIphi<<"; Index: Cell Eta "<<ieta<<"; Cell Phi "<<iphi
-            <<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()
+//          <<"; Global: Cell Eta "<<cellEta<<"; Cell Phi "<<cellPhi*TMath::RadToDeg()
             <<endl;
             
             if      ( i  == 0      ) sm = iSupMod ;
