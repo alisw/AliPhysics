@@ -101,9 +101,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   void                               NTValues(AliEmcalJet *jet, Int_t jetContNb, Float_t* nTFractions);
   
-  AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
+  AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 
-  Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
+  Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
   Double_t                           SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   
   Double_t                           GetSubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer);
@@ -112,6 +112,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetCoreFrac(AliEmcalJet *jet, Int_t jetContNb=0);
 
  
+  Double_t                           fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option);
+
+  
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
 
@@ -120,7 +123,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                            *fShapesVar;//!<!      jet shapes used for the tagging
+  Float_t                            *fShapesVar;//     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
@@ -139,16 +142,16 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fDerivSubtrOrder;
 
   
-  TH2F                                *fPhiJetCorr6;//!<!
-  TH2F                                *fPhiJetCorr7;//!<!
-  TH2F                                *fEtaJetCorr6;//!<!
-  TH2F                                *fEtaJetCorr7;//!<!
-  TH2F                                *fPtJetCorr;//!<!
-  TH1F                                *fPtJet;//!<!
-  TH2F                                *fhpTjetpT; //!<! control plot fo the recoil analysis
-  TH1F                                *fhPt;//!<!
-  TH1F                                *fhPhi;//!<!
-  TH2F                                *fNbOfConstvspT;//!<!
+  TH2F                                *fPhiJetCorr6;//
+  TH2F                                *fPhiJetCorr7;//
+  TH2F                                *fEtaJetCorr6;//
+  TH2F                                *fEtaJetCorr7;//
+  TH2F                                *fPtJetCorr;//
+  TH1F                                *fPtJet;//
+  TH2F                                *fhpTjetpT; //
+  TH1F                                *fhPt;//
+  TH1F                                *fhPhi;//
+  TH2F                                *fNbOfConstvspT;//
 
   TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
 
@@ -156,7 +159,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetShapesMC(const AliAnalysisTaskEmcalJetShapesMC&);            // not implemented
   AliAnalysisTaskEmcalJetShapesMC &operator=(const AliAnalysisTaskEmcalJetShapesMC&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetShapesMC, 1);
+  ClassDef(AliAnalysisTaskEmcalJetShapesMC, 2);
 };
 #endif
 
