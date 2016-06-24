@@ -462,7 +462,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   static double fakePtr = 0.;
   fAxes["tpcTrackPt"].set( 100, 0., 5., &fakePtr );
   fAxes["tpcClusterCharge"].set( 100, 0, 499, &fakePtr );
-  fAxes["phiAngles"].set(180, 0., TMath::Pi(), &fakePtr );
+  fAxes["phiAngles"].set(180, 0., TMath::TwoPi(), &fakePtr );
   fAxes["tpcPadRows"].set(159, 0., 159., &fakePtr );
 
   //Start Histograms
@@ -541,14 +541,14 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
 
   //cluster occupancies (attached and non)
   axisStruct& axisAngles = fAxes["phiAngles"];
-  axisStruct& axisPadrows = fAxes["padRows"];
+  axisStruct& axisPadrows = fAxes["tpcPadRows"];
   if (axisAngles.bins>0 && axisPadrows.bins>0) {
     fHistTPCallClustersRowPhi = new TH2F("fHistTPCallClustersRowPhi",
-        "All TPC clusters (padrow vs. phi)",
+        "All TPC clusters (padrow vs. phi), raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
     fHistTPCattachedClustersRowPhi = new TH2F("fHistTPCattachedClustersRowPhi",
-        "TPC clusters attached to tracks (padrow vs. phi)",
+        "TPC clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
   }
@@ -1171,9 +1171,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         fHistTPCTrackPt->Fill(1. / track->fq1Pt);
         pCurrent += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
       }
-      if (PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-        fHistTPCTrackPt->Reset();
-      }
     }
 
     if ( fHistClusterChargeTot &&
@@ -1187,9 +1184,6 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         nTPCHitsSplitPad += cluster.GetFlagSplitPad();
         nTPCHitsSplitTime += cluster.GetFlagSplitTime();
       }
-      if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-        fHistClusterChargeTot->Reset();
-      }
     }
 
     //cluster phi vs padrow for clusters attached to tracks
@@ -1198,13 +1192,14 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
       const AliHLTUInt8_t* currentTrackPtr = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
+      HLTInfo("filling clusters attached to tracks");
       for (AliHLTUInt32_t i = 0; i < tracks->fCount; i++)
       {
         const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(currentTrackPtr);
         currentTrackPtr += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
 
         //cut on number of points
-        Int_t fMinNPoints = 100;
+        Int_t fMinNPoints = 80;
         if (track->fNPoints < fMinNPoints) continue;
 
         for (UInt_t i=0; i<track->fNPoints; i++)
@@ -1236,14 +1231,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
           Float_t phi = atan2(y,x);
           AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
 
-          printf("pad: %u slicerow: %u\n", pad,slicerow);
-
           //Fill the hist
           fHistTPCattachedClustersRowPhi->Fill(phi,slicerow);
         }
-      }
-      if (PushBack(fHistTPCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-        fHistTPCattachedClustersRowPhi->Reset();
       }
     }
 
@@ -1259,6 +1249,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         continue;
       }
 
+      HLTInfo("filling clusters attached to tracks");
       for (unsigned i = 0;i < clusters->fCount;i++)
       {
         AliHLTTPCRawCluster& clusterRAW = clusters->fClusters[i];
@@ -1275,17 +1266,25 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         Float_t phi = atan2(y,x);
         AliHLTTPCGeometry::Local2GlobalAngle(&phi,slice);
 
-        printf("pad: %u slicerow: %u\n", pad,slicerow);
-
         //Fill the hist
         fHistTPCallClustersRowPhi->Fill(phi,slicerow);
-      }
-      if (PushBack(fHistTPCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-        fHistTPCallClustersRowPhi->Reset();
       }
     }
   }
 
+  //push fixed histograms
+  if (PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCTrackPt->Reset();
+  }
+  if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistClusterChargeTot->Reset();
+  }
+  if (PushBack(fHistTPCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCattachedClustersRowPhi->Reset();
+  }
+  if (PushBack(fHistTPCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCallClustersRowPhi->Reset();
+  }
 
   //convert the numbers fo floats for histograms
   fnClustersSPD = nClustersSPD;
