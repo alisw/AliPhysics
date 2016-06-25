@@ -955,7 +955,7 @@ Int_t AliTPCcalibDB::InitDeadMap()
         if (ddlId>=0 && !ddlMap[ddlId]) roc->SetValue(irow, ipad ,0);
 
         // mask channels if error on space point coorection is too large
-        if (maskedPads && maskedPads[iROC].TestBitNumber(channel0+ipad)) roc->SetValue(irow, ipad ,0);
+        if (maskedPads[iROC].TestBitNumber(channel0+ipad)) roc->SetValue(irow, ipad ,0);
 
         if (roc->GetValue(irow, ipad)<0.0001) {
           ++numberOfDeactivatedChannels;

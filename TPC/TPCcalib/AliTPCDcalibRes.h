@@ -667,7 +667,7 @@ inline Int_t AliTPCDcalibRes::GetY2XBin(float y2x, int ix)
   // get closest y2x bin at given x range
   int bf = ( y2x + fMaxY2X[ix] ) * GetDY2XI(ix);
   if (bf<0) bf = 0;
-  else if (bf>=fNY2XBins) fNY2XBins-1;
+  else if (bf>=fNY2XBins) bf = fNY2XBins-1;
   return bf;
 }
 

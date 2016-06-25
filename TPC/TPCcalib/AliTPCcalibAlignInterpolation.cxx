@@ -3224,7 +3224,7 @@ Float_t  AliTPCcalibAlignInterpolation::CalculateDistance(const TVectorF &track0
   //    - |vecDelta|<0.5 cm  kMaxDeltaClusterCut=0.5; 
   //
   // Parameters of algorithm for the moment set as a constant 
-  const Int_t   kMinFractionPoints=0.5;
+  const Float_t   kMinFractionPoints=0.5;
   const Float_t kMaxDist=20;
   const Float_t kMaxDistTrack=5;
   Float_t maxRMSTrack=rmsTrack;
