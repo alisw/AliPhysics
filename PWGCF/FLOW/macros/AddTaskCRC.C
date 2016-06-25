@@ -130,7 +130,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskFE->SetAnalysisType(analysisType);
  // set the trigger selection
  if (EvTrigger == "Cen")
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  taskFE->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
  else if (EvTrigger == "SemiCen")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")

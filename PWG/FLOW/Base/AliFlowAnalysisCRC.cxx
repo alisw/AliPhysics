@@ -18362,11 +18362,12 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   if(fMinMulZN==5) {
     fZDCESEclEbE=-1;
     Double_t DifMin=1.E3;
+    Double_t ZNS = fZNCen+fZNAen;
     for (Int_t k=0; k<fZDCESEnPol; k++) {
       Double_t PolV = fPolCuts[k]->Eval(fCentralityEBE);
-      if(ZNM<PolV && PolV-ZNM<DifMin) {
+      if(ZNS<PolV && PolV-ZNS<DifMin) {
         fZDCESEclEbE=k;
-        DifMin=PolV-ZNM;
+        DifMin=PolV-ZNS;
       }
     }
     if (fZDCESEclEbE==-1) fZDCESEclEbE=fZDCESEnPol;
