@@ -391,11 +391,21 @@ Double_t AliEmcalJet::DeltaR(const AliVParticle* part) const
 }
 
 /**
- * Sorting jet constituents by pT (decreasing)
+ * Sorting jet constituents by pT (decreasing)  
+ * It returns a standard vector with the indexes of the constituents relative to fTrackIDs.
+ * To retrieve the track do:
+ * ~~~{.cxx}
+ * TClonesArray* fTracksContArray = jetCont->GetParticleContainer()->GetArray();
+ * std::vector< int > index_sorted_list = jet->GetPtSortedTrackConstituentIndexes(fTracksContArray);
+ * for (std::size_t i = 0; i < jet->GetNumberOfTracks(); i++ ) {
+ * track = jet->TrackAt ( index_sorted_list.at (i), fTracksContArray );
+ * // use track;
+ * }
+ * ~~~
  * @param tracks Array containing pointers to the tracks from which jet constituents are drawn
- * @return Standard vector with the list of track indexes
+ * @return Standard vector with the list of constituent indexes (relative to fTrackIDs)
  */
-std::vector<int> AliEmcalJet::SortConstituentsPt(TClonesArray* tracks) const
+std::vector<int> AliEmcalJet::GetPtSortedTrackConstituentIndexes(TClonesArray* tracks) const
 {
   typedef std::pair<Double_t, Int_t> ptidx_pair;
 

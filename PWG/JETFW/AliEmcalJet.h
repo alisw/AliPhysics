@@ -194,7 +194,7 @@ class AliEmcalJet : public AliVParticle
 
   // Sorting methods
   void              SortConstituents();
-  std::vector<int>  SortConstituentsPt(TClonesArray *tracks) const;
+  std::vector<int>  GetPtSortedTrackConstituentIndexes(TClonesArray *tracks) const;
 
   // Trigger
   Bool_t            IsTriggerJet(UInt_t trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
