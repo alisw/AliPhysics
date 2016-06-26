@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-AlianalysisTaskDiffCrossSections* AddAnalysisTaskDiffCrossSections(Bool_t isMC,
+AliAnalysisTaskDiffCrossSections* AddAnalysisTaskDiffCrossSections(Bool_t isMC,
 								   TString mcType,
 								   TString triggerSelection)
 {
@@ -14,7 +14,7 @@ AlianalysisTaskDiffCrossSections* AddAnalysisTaskDiffCrossSections(Bool_t isMC,
     mgr->SetMCtruthEventHandler(handler);
   }
 
-  AlianalysisTaskDiffCrossSections* task = new AlianalysisTaskDiffCrossSections;
+  AliAnalysisTaskDiffCrossSections* task = new AliAnalysisTaskDiffCrossSections;
   // task->SelectCollisionCandidates(AliVEvent::kMB);
 
   task->SetIsMC(isMC);

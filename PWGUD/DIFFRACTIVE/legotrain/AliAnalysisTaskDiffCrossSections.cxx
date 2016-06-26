@@ -19,13 +19,13 @@
 #include "AliESDVZERO.h"
 #include "AliESDAD.h"
 
-#include "AlianalysisTaskDiffCrossSections.h"
+#include "AliAnalysisTaskDiffCrossSections.h"
 
-ClassImp(AlianalysisTaskDiffCrossSections);
-ClassImp(AlianalysisTaskDiffCrossSections::TreeData);
-ClassImp(AlianalysisTaskDiffCrossSections::MCInfo);
+ClassImp(AliAnalysisTaskDiffCrossSections);
+ClassImp(AliAnalysisTaskDiffCrossSections::TreeData);
+ClassImp(AliAnalysisTaskDiffCrossSections::MCInfo);
 
-void AlianalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType) {
+void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType) {
   fEventType = kInvalid;
   if (!mcEvent)
     AliFatal("NULL == mcEvent");
@@ -126,7 +126,7 @@ void AlianalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
   }
 }
 
-void AlianalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEvent) {
+void AliAnalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEvent) {
   const AliESDHeader *esdHeader = esdEvent->GetHeader();
   if (NULL == esdHeader) // this is already dealt with in UserExec
     return;
@@ -146,12 +146,12 @@ void AlianalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEve
   fTimeStamp       = esdHeader->GetTimeStamp();
 }
 
-void AlianalysisTaskDiffCrossSections::ADV0::FillInvalid() {
+void AliAnalysisTaskDiffCrossSections::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fCharge[0] = fCharge[1] = fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1.0f;
 }
 
-void AlianalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
   fDecisionOnline[0]  = trigAna.ADTrigger(esdEvent, AliTriggerAnalysis::kCSide, kFALSE);
   fDecisionOnline[1]  = trigAna.ADTrigger(esdEvent, AliTriggerAnalysis::kASide, kFALSE);
 
@@ -177,7 +177,7 @@ void AlianalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
   for (Int_t ch=0; ch<16; ++ch)
     fCharge[ch/8] += esdAD->GetMultiplicity(ch);
 }
-void AlianalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
   fDecisionOnline[0]  = trigAna.V0Trigger(esdEvent, AliTriggerAnalysis::kCSide, kFALSE);
   fDecisionOnline[1]  = trigAna.V0Trigger(esdEvent, AliTriggerAnalysis::kASide, kFALSE);
 
@@ -204,7 +204,7 @@ void AlianalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
 }
 
 
-AlianalysisTaskDiffCrossSections::AlianalysisTaskDiffCrossSections(const char *name)
+AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *name)
   : AliAnalysisTaskSE(name)
   , fIsMC(kFALSE)
   , fMCType("")
@@ -223,7 +223,7 @@ AlianalysisTaskDiffCrossSections::AlianalysisTaskDiffCrossSections(const char *n
   DefineOutput(1, TTree::Class());
 }
 
-AlianalysisTaskDiffCrossSections::~AlianalysisTaskDiffCrossSections()
+AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 {
   const AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (NULL != man && man->GetAnalysisType() == AliAnalysisManager::kProofAnalysis)
@@ -234,7 +234,7 @@ AlianalysisTaskDiffCrossSections::~AlianalysisTaskDiffCrossSections()
   fTE = NULL;
 }
 
-void AlianalysisTaskDiffCrossSections::SetBranches(TTree* t) {
+void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
   t->Branch("AliAnalysisTaskDG::TreeData", &fTreeData);
   t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
   t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
@@ -243,7 +243,7 @@ void AlianalysisTaskDiffCrossSections::SetBranches(TTree* t) {
     t->Branch("AliAnalysisTaskDG::MCInfo", &fMCInfo);
 }
 
-void AlianalysisTaskDiffCrossSections::UserCreateOutputObjects()
+void AliAnalysisTaskDiffCrossSections::UserCreateOutputObjects()
 {
   TDirectory *owd = gDirectory;
   OpenFile(1);
@@ -254,10 +254,10 @@ void AlianalysisTaskDiffCrossSections::UserCreateOutputObjects()
   owd->cd();
 }
 
-void AlianalysisTaskDiffCrossSections::NotifyRun() {
+void AliAnalysisTaskDiffCrossSections::NotifyRun() {
 }
 
-void AlianalysisTaskDiffCrossSections::UserExec(Option_t *)
+void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 {
   AliVEvent *event = InputEvent();
   if (NULL == event) {
@@ -334,7 +334,7 @@ void AlianalysisTaskDiffCrossSections::UserExec(Option_t *)
   PostData(1, fTE);
 }
 
-void AlianalysisTaskDiffCrossSections::Terminate(Option_t*)
+void AliAnalysisTaskDiffCrossSections::Terminate(Option_t*)
 {
   fTE  = dynamic_cast<TTree*>(GetOutputData(1));
   if (NULL == fTE)
