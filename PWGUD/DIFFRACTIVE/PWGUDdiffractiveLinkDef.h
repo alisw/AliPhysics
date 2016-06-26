@@ -23,6 +23,11 @@
 #pragma link C++ class AliAnalysisTaskDG::TrackData++;
 #pragma link C++ class AliAnalysisTaskDG::EventInfo++;
 #pragma link C++ class AliAnalysisTaskDG::ADV0++;
-#pragma link C++ class AliTriggerStudy0STP;
+#pragma link C++ class AliTriggerStudy0STP+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::EventInfo+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::ADV0+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::TreeData+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::MCInfo+;
 
 #endif

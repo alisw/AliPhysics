@@ -22,11 +22,11 @@ class AliESDEvent;
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisUtils.h"
 
-class AlianalysisTaskDiffCrossSections : public AliAnalysisTaskSE {
+class AliAnalysisTaskDiffCrossSections : public AliAnalysisTaskSE {
 public:
 
-  AlianalysisTaskDiffCrossSections(const char *name="AlianalysisTaskDiffCrossSections");
-  virtual ~AlianalysisTaskDiffCrossSections();
+  AliAnalysisTaskDiffCrossSections(const char *name="AliAnalysisTaskDiffCrossSections");
+  virtual ~AliAnalysisTaskDiffCrossSections();
   
   virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
@@ -147,8 +147,8 @@ protected:
   void SetBranches(TTree* t);
 
 private:  
-  AlianalysisTaskDiffCrossSections(const AlianalysisTaskDiffCrossSections&); // not implemented
-  AlianalysisTaskDiffCrossSections& operator=(const AlianalysisTaskDiffCrossSections&); // not implemented
+  AliAnalysisTaskDiffCrossSections(const AliAnalysisTaskDiffCrossSections&); // not implemented
+  AliAnalysisTaskDiffCrossSections& operator=(const AliAnalysisTaskDiffCrossSections&); // not implemented
 
   Bool_t           fIsMC;                //
   TString          fMCType;              //
@@ -164,7 +164,7 @@ private:
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
   
-  ClassDef(AlianalysisTaskDiffCrossSections, 1);
+  ClassDef(AliAnalysisTaskDiffCrossSections, 1);
 } ;
 
 #endif // ALIANALYSISTASKDIFFCROSSSECTIONS_H
