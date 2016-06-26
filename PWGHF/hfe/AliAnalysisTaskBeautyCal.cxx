@@ -774,6 +774,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     Bool_t pid_eleB = IsBdecay(pidM);
     Bool_t pid_eleP = IsPdecay(pidM);
 
+        if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
+        if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
+        if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
+
     ////////////////////
     //Track properties//
     ///////////////////
@@ -902,11 +906,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
-
+/*
         if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
         if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
-   
+*/   
       }
     }
   } //track loop
