@@ -132,7 +132,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
     UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
-    UserTasks/AliAnalysisTaskEmcalJetCDFUE.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
     UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
