@@ -583,7 +583,7 @@ Float_t AliAnalysisTaskEmcalJetShapesMC::LeSub(AliEmcalJet *jet, Int_t jetContNb
   AliVParticle *vp1 = 0x0;
   AliVParticle *vp2 = 0x0;
   std::vector<int> ordindex;
-  ordindex=jet->SortConstituentsPt(jetCont->GetParticleContainer()->GetArray());
+  ordindex=jet->GetPtSortedTrackConstituentIndexes(jetCont->GetParticleContainer()->GetArray());
   //Printf("Nbof const = %d", jet->GetNumberOfTracks());
   //Printf("ordindex[0] = %d, ordindex[1] = %d", ordindex[0], ordindex[1]);
   
@@ -887,7 +887,7 @@ void AliAnalysisTaskEmcalJetShapesMC::NTValues(AliEmcalJet *jet, Int_t jetContNb
   
   AliVParticle *vp1 = 0x0;
   std::vector<int> ordindex;
-  ordindex=jet->SortConstituentsPt(jetCont->GetParticleContainer()->GetArray());
+  ordindex=jet->GetPtSortedTrackConstituentIndexes(jetCont->GetParticleContainer()->GetArray());
   //Printf("Nbof const = %d", jet->GetNumberOfTracks());
   //Printf("ordindex[0] = %d, ordindex[1] = %d", ordindex[0], ordindex[1]);
   //if(ordindex.size()<2) return -1;
