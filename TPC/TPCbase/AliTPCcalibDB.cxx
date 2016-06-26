@@ -1875,6 +1875,7 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
   npadsTotMasked += npadsMasked;
   AliInfoF("masked %d pads (%d full padrows, %d individual pads)",
            npadsTotMasked,nrowsMasked,npadsMasked);
+  transform->ResetCache();
   return npadsTotMasked;
   //
 }

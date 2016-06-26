@@ -310,11 +310,31 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   /// Drift Velocity
   /// Current implementation - common drift velocity - for full chamber
   /// TODO: use a map or parametrisation!
+  /// 
+  /// If called with NULL x pointer, just reset the cache
+  static time_t lastStamp=-1;  //cached values
+  static Double_t lastCorr = 1;
+  // simple caching non thread save
+  static Double_t vdcorrectionTime=1;
+  static Double_t vdcorrectionTimeGY=0;
+  static Double_t time0corrTime=0;
+  static Double_t deltaZcorrTime=0;
+  static time_t    lastStampT=-1;
+
+  if (!x) {
+    AliInfo("Reseting cache");
+    lastStamp=-1;
+    lastCorr = 1;
+    vdcorrectionTime=1;
+    vdcorrectionTimeGY=0;
+    time0corrTime=0;
+    deltaZcorrTime=0;
+    lastStampT=-1;
+    return;
+  }
 
   if (!fCurrentRecoParam) return;
   const  Int_t kMax =60;  // cache for 60 seconds
-  static time_t lastStamp=-1;  //cached values
-  static Double_t lastCorr = 1;
   //
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   AliTPCParam  * param    = calib->GetParameters();
@@ -334,12 +354,6 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
     }
   }
   //
-  // simple caching non thread save
-  static Double_t vdcorrectionTime=1;
-  static Double_t vdcorrectionTimeGY=0;
-  static Double_t time0corrTime=0;
-  static Double_t deltaZcorrTime=0;
-  static time_t    lastStampT=-1;
   //
   Bool_t isChange=(lastStampT!=(Int_t)fCurrentTimeStamp)||lastStamp<0;
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
@@ -512,7 +526,8 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
   //
   Bool_t timeChanged = lastTimeStamp!=fCurrentTimeStamp;
   if (!fCurrentRecoParam) {
-    AliWarning("RecoParam is not set, do nothing");
+    AliWarning("RecoParam is not set, reseting last timestamp");
+    lastTimeStamp = -1;
     return fTimeDependentUpdated;
   }
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
@@ -1086,3 +1101,16 @@ Double_t AliTPCTransform::ErrZ2Syst(const AliTPCclusterMI * cl, const double tgA
   return sysErr2;
 }
 
+//_________________________________
+void AliTPCTransform::ResetCache()
+{
+  // reset cached values for last time bin, consider as tmp measure. Preferable to use data members
+  // instead of static vars.
+  //
+  AliInfo("Reseting Transform in view of possible RecoParam modification");
+  fCurrentRecoParam = 0;
+  fCurrentMapScaling = 1.0;
+  SetCurrentTimeStamp(-1);
+  Local2RotatedGlobal(-1,0); // this will reset the cached values for VDrift
+  //
+}
