@@ -50,7 +50,7 @@
 #include <set>
 
 //_________________________________________________________________________________________________
-void AssertMapping() {
+void AssertMapping(Int_t runNumber=0) {
 
 	AliCDBManager* cdbm = AliCDBManager::Instance();
 
@@ -59,7 +59,7 @@ void AssertMapping() {
 				"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
 	}
 
-	cdbm->SetRun(0);
+	cdbm->SetRun(runNumber);
 
 	AliMpCDB::LoadAll();
 }
@@ -75,9 +75,7 @@ AliMergeableCollection* BPEVO(Int_t runNumber, const char* output = "mchbepevo.c
 				"local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
 	}
 
-	AssertMapping();
-
-	cdb->SetRun(runNumber);
+	AssertMapping(runNumber);
 
 	AliCDBEntry* e = cdb->Get("MUON/Calib/BPEVO");
 
