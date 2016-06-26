@@ -15,7 +15,7 @@ TString bitNames[NBITS] = {
     "kHighMultSPD",
     "kEMC1",
     "kINT5",
-    "kINT7inMUFAST",
+    "kINT7inMUON",
     "kMuonSingleHighPt7",
     "kMuonLikeLowPt7",
     "kMuonUnlikeLowPt7",
@@ -232,7 +232,9 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=243399 && run<=243984) { refSigma=6700.; refEff = 0.90; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=243985 && run<=244912) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   else if (run>=244913 && run<=246994) { refSigma=4600.; refEff = 0.60; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
-  else if (run>=246995               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Cvetan and Alberica
+  else if (run>=246995 && run<=256147) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=256148 && run<=256157) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
+  else if (run>=256158               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
@@ -279,7 +281,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     cl->GetDownscaleFactor(class_ds[i]);
   }
 
-  if (run>=244917) {
+  // special treatment for Pb-Pb
+  if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
       TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
@@ -300,8 +303,28 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       delete tokens;
     }
   }
-  
-  
+  // special treatment for DG
+  if (run>=256504) {
+    Int_t iCUP13=-1;
+    Int_t iCTRUE_NOPF=-1;
+    Int_t iCTRUE_SPD1=-1;
+    Int_t iCEMC7=-1;
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (TString(cl->GetName()).EqualTo("CCUP13-B-SPD1-CENTNOTRD")  ) iCUP13=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-SPD1-CENTNOTRD")   ) iCTRUE_SPD1=i;
+      if (TString(cl->GetName()).EqualTo("CTRUE-B-NOPF-CENTNOTRD")   ) iCTRUE_NOPF=i;
+      if (TString(cl->GetName()).EqualTo("CEMC7EG1-B-NOPF-CENTNOTRD")) iCEMC7=i;
+    }
+    if (iCUP13>=0 && iCTRUE_NOPF>=0 && iCTRUE_SPD1>=0 && iCEMC7>=0) {
+      class_lifetime[iCUP13] =class_lifetime[iCEMC7];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
+      class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
+      class_lifetime[iCUP13]*=class_ds[iCUP13];
+      class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
+      printf("lumi=%f\n",class_lumi[iCUP13]);
+    }
+  }
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
