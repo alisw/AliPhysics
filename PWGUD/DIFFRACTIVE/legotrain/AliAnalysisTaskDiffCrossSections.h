@@ -37,7 +37,14 @@ public:
   void SetMCType(TString s) { fMCType = s; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
 
-  TString GetTreeName() const { return "TE"; }
+  TString GetTreeName() const { 
+    TString s = "TE";
+    if (!fIsMC && fTriggerSelection != "") {
+      s += fTriggerSelection;
+      s.ReplaceAll("|", "_");
+    }
+    return s;
+  }
   TString GetResultsFileName() const { return "results.root"; }
 
   struct EventInfo {
