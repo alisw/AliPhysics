@@ -128,6 +128,10 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
       "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
   };
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
+  // Binning for the PID histogram
+  const int kdimPID = 3;
+  const int knbinsPID[kdimPID] = {1000., 200., 300};
+  const double kminPID[kdimPID] = {-100., 0.,  0.}, kmaxPID[kdimPID] = {100., 200., 1.5};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
@@ -142,6 +146,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
     fHistos->CreateTH1(Form("hPtEMCALEtaCentNewBinning%s", trg->Data()), Form("Charged particle in EMCAL pt distribution central eta new binning trigger %s", trg->Data()), newbinning);
     fHistos->CreateTH2(Form("hTPCdEdxEMCAL%s", trg->Data()), Form("TPC dE/dx of charged particles in the EMCAL region for trigger %s", trg->Data()), 400, -20., 20., 200, 0., 200.);
     fHistos->CreateTH2(Form("hTOFBetaEMCAL%s", trg->Data()), Form("TOF beta  of charged particles in the EMCAL region for trigger %s", trg->Data()), 400, -20., 20., 150, 0., 1.5);
+    fHistos->CreateTHnSparse(Form("hPIDcorrEMCAL%s", trg->Data()), Form("Correlation of PID observables for Trigger %s", trg->Data()), kdimPID, knbinsPID, kminPID, kmaxPID);
     fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution all eta old binning trigger %s", trg->Data()), oldbinning);
     fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution central eta old binning trigger %s", trg->Data()), oldbinning);
     fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution all eta new binning trigger %s", trg->Data()), newbinning);
@@ -555,7 +560,8 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
   Double_t v = trk.GetIntegratedLength()/(100. * trtime);
   Double_t beta =  v / TMath::C();
   fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta);
-
+  double datapoint[3] = {poverz, trk.GetTPCsignal(), beta};
+  fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.c_str()), datapoint);
 }
 
 /**
