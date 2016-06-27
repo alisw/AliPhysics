@@ -55,7 +55,6 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fJetShapeType(kGenShapes),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fJetRadius(0.4),
@@ -85,6 +84,8 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fTreeObservableTagging(0x0)
 
 {
+  for(Int_t i=0;i<23;i++){
+    fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -96,7 +97,6 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fJetShapeType(kGenShapes),
   fJetShapeSub(kNoSub),
   fJetSelection(kInclusive),
-  fShapesVar(0),
   fPtThreshold(-9999.),
   fRMatching(0.2),
   fSelectedShapes(0), 
@@ -166,7 +166,6 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   
   const Int_t nVar = 23;
 
-  fShapesVar = new Float_t [nVar];
   TString *fShapesVarNames = new TString [nVar];
   
   fShapesVarNames[0] = "partonCode";
