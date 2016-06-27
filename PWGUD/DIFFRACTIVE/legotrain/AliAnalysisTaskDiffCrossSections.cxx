@@ -146,6 +146,17 @@ void AliAnalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEve
   fTimeStamp       = esdHeader->GetTimeStamp();
 }
 
+void AliAnalysisTaskDiffCrossSections::VtxInfo::Fill(const AliESDVertex *vtx) {
+  if (vtx) {
+    fZ      = vtx->GetZ();
+    fNcontr = vtx->GetNContributors();
+    AliErrorClass("NULL == vtx");
+  } else {
+    fZ      =  0.0f;
+    fNcontr = -4;
+  }
+}
+
 void AliAnalysisTaskDiffCrossSections::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fCharge[0] = fCharge[1] = fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1.0f;
@@ -214,7 +225,6 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fTE(NULL)
   , fFastOrMap()
   , fFiredChipMap()
-  , fVertexSPD()
   , fTreeData()
   , fMCInfo()
 {  
@@ -237,8 +247,7 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
   t->Branch("AliAnalysisTaskDG::TreeData", &fTreeData);
   t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
-  t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
-  t->Branch("VertexSPD",    &fVertexSPD,    32000, 0);
+  //  t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
   if (fIsMC)
     t->Branch("AliAnalysisTaskDG::MCInfo", &fMCInfo);
 }
@@ -318,7 +327,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
-  fVertexSPD    = *(esdEvent->GetPrimaryVertexSPD());
+  fTreeData.fVtxInfo.Fill(esdEvent->GetPrimaryVertexSPD());
 
   fFastOrMap    = mult->GetFastOrFiredChips();
   fFiredChipMap = mult->GetFiredChipMap();
