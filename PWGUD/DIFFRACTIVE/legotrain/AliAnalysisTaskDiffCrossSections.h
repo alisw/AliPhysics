@@ -107,11 +107,23 @@ public:
     Double32_t fDecisionOffline[2]; //[-1,3,2]
   } ;
 
+  struct VtxInfo {
+    VtxInfo()
+      : fZ(0)
+      , fNcontr(-4) {}
+
+    void Fill(const AliESDVertex*);
+
+    Double32_t fZ;      // [-32,32,7]
+    Char_t     fNcontr; //
+  } ;
+
   class TreeData : public TObject {
   public:
     TreeData() 
       : TObject()
       , fEventInfo()
+      , fVtxInfo()
       , fV0Info()
       , fADInfo()
       , fPhysSelBits(0)
@@ -119,6 +131,7 @@ public:
       , fIsSPDClusterVsTrackletBG(kFALSE) {}
 
     EventInfo fEventInfo;
+    VtxInfo   fVtxInfo;
     ADV0      fV0Info;
     ADV0      fADInfo;
     UInt_t    fPhysSelBits;
@@ -167,7 +180,6 @@ private:
   TTree           *fTE;                  //!
   TBits            fFastOrMap;           //!
   TBits            fFiredChipMap;        //!
-  AliESDVertex     fVertexSPD;           //!
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
   
