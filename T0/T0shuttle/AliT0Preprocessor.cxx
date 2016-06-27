@@ -254,35 +254,21 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
   // return=6 : failed to retrieve DAQ data from OCDB
   // return=7 : failed to store T0 OCDB data
   // return=8 : not enough data for equalizing
-  Bool_t dcsDP = ProcessDCS();
-  Log(Form("dcsDP = %d",dcsDP));	
   TString runType = GetRunType();
   Log(Form("RunType: %s",runType.Data()));
   //processing
   if(runType == "STANDALONE"){
-    if(dcsDP==1){
-      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-      return iresultDCS;
-    }
-  }
+    // do nothing
+   }
   
   if(runType == "AMPLITUDE_CALIBRATION"){
-    Int_t iresultLaser = ProcessLaser();
-    if(dcsDP==1){
-      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-      return iresultDCS;
-    }
-    
+    Int_t iresultLaser = ProcessLaser();    
     Log(Form("iresultLaser = %d",iresultLaser));
     return iresultLaser;
   }
   
   else if(runType == "PHYSICS"){
     Int_t iresultPhysics = ProcessPhysics();
-    if(dcsDP==1){
-      Int_t iresultDCS = ProcessDCSDataPoints(dcsAliasMap);
-      return iresultDCS;
-    }
     Log(Form("iresultPhysics = %d",iresultPhysics));
 	  return iresultPhysics; 
       }
