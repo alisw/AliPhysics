@@ -216,9 +216,6 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
       fUtils->SetUseMVPlpSelection(kTRUE);
       fUtils->SetUseOutOfBunchPileUp(kTRUE);
   }
-  if (that.fMultSelection) {
-    fMultSelection = new AliMultSelection();
-  }
 }
 
 ////-----------------------------------------------------------------------
@@ -233,7 +230,6 @@ AliFlowEventCuts::~AliFlowEventCuts()
       delete fUtils;
       fUtils = NULL;
   }
-  if (fMultSelection) delete fMultSelection;
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
@@ -276,9 +272,6 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
       fUtils = new AliAnalysisUtils();
       fUtils->SetUseMVPlpSelection(kTRUE);
       fUtils->SetUseOutOfBunchPileUp(kTRUE);
-  }
-  if (that.fMultSelection) {
-    fMultSelection = new AliMultSelection();
   }
   
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
