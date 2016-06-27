@@ -46,6 +46,7 @@ public:
   virtual ~AliTriggerAnalysis();
   void EnableHistograms(Bool_t isLowFlux = kFALSE);
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
+  void ApplyPileupCuts(Bool_t val = kTRUE) { fPileupCutsEnabled = val; }
   void SetParameters(AliOADBTriggerAnalysis* oadb);
   Bool_t IsTriggerFired(const AliVEvent* event, Trigger trigger);
   Int_t EvaluateTrigger(const AliVEvent* event, Trigger trigger);
@@ -101,8 +102,9 @@ protected:
   
   TH1F* fSPDGFOEfficiency;   //! FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
   
-  Bool_t  fDoFMD;            // If false, skips the FMD (physics selection runs much faster)
-  Bool_t  fMC;               // flag if MC is analyzed
+  Bool_t fDoFMD;             // If false, skips the FMD (physics selection runs much faster)
+  Bool_t fMC;                // flag if MC is analyzed
+  Bool_t fPileupCutsEnabled; // flag to enable/disable cuts sensitive to in/out-of-bunch pileup
   
   TList* fHistList;          //
   TH1F* fHistStat;           //!
@@ -164,7 +166,7 @@ protected:
 
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
   
-  ClassDef(AliTriggerAnalysis, 34)
+  ClassDef(AliTriggerAnalysis, 35)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

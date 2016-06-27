@@ -52,6 +52,8 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fMC(kFALSE),
+fPileupCutsEnabled(kTRUE),
 fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
@@ -110,8 +112,7 @@ fHistFMDSum(0),
 fHistT0(0),
 fHistOFOvsTKLAcc(0),
 fHistV0MOnVsOfAcc(0),
-fTriggerClasses(new TMap),
-fMC(kFALSE)
+fTriggerClasses(new TMap)
 {
   // constructor
   fHistList->SetName("histos");
@@ -1178,6 +1179,7 @@ Bool_t AliTriggerAnalysis::IsIncompleteEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliVEvent* event, Int_t fillHists){
   // rejects BG based on the cluster vs tracklet correlation
   // returns true if the event is BG
+  if (!fPileupCutsEnabled) return kFALSE;
   const AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) { 
     AliError("No multiplicity object"); 
@@ -1218,6 +1220,7 @@ Bool_t AliTriggerAnalysis::IsV0C012vsTklBG(const AliVEvent* event, Int_t fillHis
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
@@ -1235,6 +1238,7 @@ Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillH
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVMultiplicity* mult = event->GetMultiplicity();
   if (!mult) {
     AliError("AliVMultiplicity not available");
@@ -1253,6 +1257,7 @@ Bool_t AliTriggerAnalysis::IsSPDOnVsOfPileup(const AliVEvent* event, Int_t fillH
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists){
   if (fMC) return kFALSE;
+  if (!fPileupCutsEnabled) return kFALSE;
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
@@ -1307,6 +1312,7 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
 
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsSPDVtxPileup(const AliVEvent* event, Int_t fillHists) {
+  if (!fPileupCutsEnabled) return kFALSE;
   Bool_t pileup = event->IsPileupFromSPD(fVtxMinContributors,fVtxMinZdist,fVtxNSigmaZdist,fVtxNSigmaDiamXY,fVtxNSigmaDiamZ);
   if      (fillHists==1) fHistSPDVtxPileupAll->Fill(pileup);
   else if (fillHists==2) fHistSPDVtxPileupCln->Fill(pileup);
@@ -1445,7 +1451,6 @@ Bool_t AliTriggerAnalysis::TKLTrigger(const AliVEvent* event, Int_t fillHists){
 }
 
 
-
 //-------------------------------------------------------------------------------------------------
 Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   // Merge a list of objects with this (needed for PROOF).
@@ -1470,6 +1475,9 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
 
 //-------------------------------------------------------------------------------------------------
 void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDecision, Bool_t offlineDecision){
+  Bool_t pileupCutsStatus = fPileupCutsEnabled;
+  fPileupCutsEnabled = kTRUE;
+
   SPDFiredChips(event,1,kTRUE,0);
   Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
   Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
@@ -1541,6 +1549,7 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
     SH1Trigger(event,2);
     TKLTrigger(event,2);
   }
+  fPileupCutsEnabled = pileupCutsStatus;
 
 //  TODO: Adjust for AOD
 //  AliESDZDC* zdcData = event->GetESDZDC();

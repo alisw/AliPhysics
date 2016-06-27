@@ -59,6 +59,7 @@ public:
   virtual void Print(const Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms(const char* folder = 0);
+  void ApplyPileupCuts(Bool_t val) { fPileupCutsEnabled = val; }
   
   const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
@@ -91,6 +92,7 @@ protected:
   TString fPassName;          // pass name for current run
   Int_t fCurrentRun;          // run number for which the object is initialized
   Bool_t fMC;                 // flag if MC is analyzed
+  Bool_t fPileupCutsEnabled;  // flag to enable/disable cuts sensitive to in/out-of-bunch pileup
   Bool_t fIsPP;               // True if processing pp run, false if heavy ion
   Bool_t fReadOCDB;           // Flag to read thresholds from OCDB
   Bool_t fUseBXNumbers;       // Explicitly select "good" bunch crossing numbers
@@ -108,7 +110,7 @@ protected:
   TPRegexp* fRegexp;        //! regular expression for trigger tokens
   TList* fCashedTokens;     //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 21)
+  ClassDef(AliPhysicsSelection, 22)
 private:
   AliPhysicsSelection(const AliPhysicsSelection&);
   AliPhysicsSelection& operator=(const AliPhysicsSelection&);

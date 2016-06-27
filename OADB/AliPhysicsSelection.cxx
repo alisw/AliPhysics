@@ -114,6 +114,7 @@ AliAnalysisCuts("AliPhysicsSelection", "AliPhysicsSelection"),
 fPassName(""),
 fCurrentRun(-1),
 fMC(kFALSE),
+fPileupCutsEnabled(kTRUE),
 fIsPP(kFALSE),
 fReadOCDB(kFALSE),
 fUseBXNumbers(0),
@@ -479,6 +480,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis(Form("TriggerAnalysis%i",i));
       triggerAnalysis->SetParameters(fTriggerOADB);
       triggerAnalysis->SetAnalyzeMC(fMC);
+      triggerAnalysis->ApplyPileupCuts(fPileupCutsEnabled);
       triggerAnalysis->EnableHistograms(fIsPP);
       fTriggerAnalysis.Add(triggerAnalysis);
     }
