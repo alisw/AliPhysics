@@ -39,7 +39,7 @@ AliTPCChebDist::AliTPCChebDist()
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist(const char* name, const char* title, 
 			       int nps, int nzs, float zmaxAbs)
-  :AliTPCChebCorr(name,title,nps,nzs,zmaxAbs)
+  :AliTPCChebCorr(name,title,nps,nzs,zmaxAbs,0,0)
   ,fXMin(fgRMinTPC)
   ,fXMax(fgRMaxTPC)
 {

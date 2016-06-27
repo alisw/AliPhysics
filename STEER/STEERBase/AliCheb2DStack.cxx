@@ -68,7 +68,8 @@ AliCheb2DStack::AliCheb2DStack(int nSlices, int dimOut, const float bmin[2],cons
   if (dead) {
     fDead[0] = dead[0];
     fDead[1] = dead[1];
-    if (!rowXI) AliError("Dead zones will be ignored since the inverse radii are not provided");
+    if (!rowXI && (TMath::Abs(fDead[0])>fgkDefPrec || TMath::Abs(fDead[1])>fgkDefPrec)  ) 
+      AliErrorF("Dead zones %.2f/%.2f will be ignored since the inverse radii are not provided",fDead[0],fDead[1]);
   }
 }
 

@@ -36,7 +36,6 @@ class AliTPCChebDist : public AliTPCChebCorr
   virtual  Bool_t   IsCorrection()               const {return kFALSE;}
   virtual  Bool_t   IsDistorttion()              const {return kTRUE;}
   //
- protected:
   Int_t    X2Slice(float x) const;
   Float_t  Slice2X(int ix)  const;
   //

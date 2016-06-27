@@ -4182,6 +4182,7 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
   return kTRUE;
 }
 
+
 //=====================================================================
 ///////////////////////////////////////////////////
 //
@@ -4198,7 +4199,7 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   static int sector=0;
   if (!tzLoc || !corrLoc) {
     sector = row%AliTPCDcalibRes::kNSect2; 
-    printf("training Sector%d\n",sector);
+    printf("training corrections in Sector%d\n",sector);
     return;
   }
   //
@@ -4227,3 +4228,80 @@ void trainCorr(int row, float* tzLoc, float* corrLoc)
   //
 }
 //======================================================================================
+///////////////////////////////////////////////////
+//
+// This is a special non-meber f-n for cheb. inverse learning
+//
+static const AliTPCChebCorr* fgCorrForInv=0;
+static const AliTPCChebDist* fgDistDest=0;
+void SetCorrForInv(const AliTPCChebCorr* corr) {fgCorrForInv = corr;}
+void SetDistDest(const AliTPCChebDist* dist) {fgDistDest = dist;}
+
+void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim])
+{
+  // Distortion Cheb. object training f-n: compute distortion as inverse of cheb. correction.
+  //
+  // The chebyshev correction should be set beforehand using static SetCorrForInv(corr)
+  // xslice - slice in the stack
+  // tzLoc: y/x, z/x of primary ionization
+  // distLoc: x, y, z distortion + dispersion, in sector frame
+  // when called with distLoc or tzLoc pointer at 0, xslice sets the sector ID in 0-36 format
+
+  if (!fgCorrForInv) {
+    printf("The correction to invert must be set using SetCorrForInv(chebCorr)\n");
+    exit(1);
+  }
+  if (!fgDistDest) {
+    printf("The target distortion object must be set using SetDistDest(chebDist)\n");
+    exit(1);
+  }
+  static int sector=0;
+  if (!distLoc || !tzLoc) {
+    sector = xslice%AliTPCDcalibRes::kNSect2;
+    printf("training distorions in Sector%d\n",sector);
+    return;
+  }
+  //
+  float xyzPrim[AliTPCDcalibRes::kResDimG];
+  xyzPrim[AliTPCDcalibRes::kResX] = fgDistDest->Slice2X(xslice);
+  xyzPrim[AliTPCDcalibRes::kResY] = tzLoc[0]*xyzPrim[AliTPCDcalibRes::kResX];
+  xyzPrim[AliTPCDcalibRes::kResZ] = tzLoc[1]*xyzPrim[AliTPCDcalibRes::kResX];
+  //
+  float xyzCl[AliTPCDcalibRes::kResDim];
+  AliTPCDcalibRes::DistortCheb(fgCorrForInv,sector, xyzPrim, xyzCl);
+  //
+  for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
+  //
+}
+//======================================================================================
+
+//_____________________________________________________________________
+AliTPCChebDist* AliTPCDcalibRes::CreateDistortionObject(AliTPCChebCorr* correction, int npY2X, int npZ2X, 
+							const float prec[AliTPCDcalibRes::kResDim])
+{
+  // create distortion object by inverting correction object
+  if (!correction) return 0;
+  correction->Init();
+  SetCorrForInv(correction);
+  AliTPCChebDist* dist = new AliTPCChebDist(Form("%s_InvDist",correction->GetName()),
+					    Form("%s Inverted",correction->GetTitle()));
+  //  
+  SetDistDest(dist);
+  dist->SetUseFloatPrec(kFALSE);
+  dist->SetRun(correction->GetRun());
+  dist->SetTimeStampStart( correction->GetTimeStampStart() );
+  dist->SetTimeStampEnd( correction->GetTimeStampEnd() );
+  dist->SetTimeDependent( correction->GetTimeDependent() );
+  dist->SetUseZ2R( correction->GetUseZ2R() );
+  dist->SetFieldType( correction->GetFieldType() );
+  //
+  int npCheb[kResDim][2];
+  for (int i=0;i<kResDim;i++) {
+    npCheb[i][0] = TMath::Min(5,npY2X);
+    npCheb[i][1] = TMath::Min(5,npZ2X);
+  }
+  const float defPrec[AliTPCDcalibRes::kResDim] = {100e-4,100e-4,100e-4,100e-4};
+  const float* precUse = prec ? prec : defPrec;
+  dist->Parameterize(trainDist,kResDim,npCheb,precUse);
+}
+

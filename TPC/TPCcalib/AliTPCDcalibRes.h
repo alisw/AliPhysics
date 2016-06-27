@@ -32,6 +32,7 @@
 #include "TStatToolkit.h"
 #include "AliSymMatrix.h"
 #include "AliTPCChebCorr.h"
+#include "AliTPCChebDist.h"
 
 
 class AliTPCDcalibRes: public TNamed
@@ -217,6 +218,7 @@ class AliTPCDcalibRes: public TNamed
 			      float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim]);
   static Bool_t  DistortCheb(const AliTPCChebCorr* cheb, int sect36, const float vecIn[AliTPCDcalibRes::kResDimG], 
 			     float vecOut[AliTPCDcalibRes::kResDim], int maxIt=15, float minDelta=50e-4);
+  static AliTPCChebDist* CreateDistortionObject(AliTPCChebCorr* correction, int npy=17, int npz=7, const float prec[AliTPCDcalibRes::kResDim]=0);
   //------------------------------------
   
 
