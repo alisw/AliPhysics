@@ -11,6 +11,8 @@ class AliHLTexampleMergeableContainer : public TObject, public AliMergeable {
 
 private:
   AliHLTObjArray* fContainer;
+  AliHLTexampleMergeableContainer(const AliHLTexampleMergeableContainer&);
+  AliHLTexampleMergeableContainer& operator=(const AliHLTexampleMergeableContainer&);
 
 public:
   AliHLTexampleMergeableContainer(TRootIoCtor*): TObject(), AliMergeable(), fContainer(NULL) {

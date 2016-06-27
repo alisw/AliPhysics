@@ -52,6 +52,8 @@ using std::endl;
 #define SYSTEM_ERROR 2
 #define FATAL_ERROR 3
 
+using namespace AliZMQhelpers;
+
 
 /**
  * The signal handler class is used to trap quit and interupt signals from
@@ -480,11 +482,11 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
     //Printf("have an TObject");
     TH1F* hist = dynamic_cast<TH1F*>(object);
     if (!hist) {delete object; continue;}
-    const char* name = hist->GetName();
+    std::string name = hist->GetName();
     //Printf("is a TH1F named: %s",name);
     bool useful=false;
     for (int i=0;i<3;i++){
-      if (primaryName[i].compare(name)==0) {
+      if (name.find(primaryName[i])!=std::string::npos) {
         delete fPrimary[i]; fPrimary[i]=NULL;
         //Printf("matched name: %s, i: %i",name,i);
         fPrimary[i]=hist;
@@ -493,7 +495,7 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
       }
     }
     for (int i=0;i<3;i++){
-      if (primaryDefMultName[i].compare(name)==0){
+      if (name.find(primaryDefMultName[i])!=std::string::npos){
         delete fPrimaryDefMult[i]; fPrimaryDefMult[i]=NULL;
         //Printf("matched name: %s, i: %i",name,i);
         fPrimaryDefMult[i]=hist;

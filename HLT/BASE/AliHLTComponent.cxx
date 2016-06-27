@@ -746,16 +746,6 @@ int AliHLTComponent::CheckOCDBEntries(const TMap* const externList)
   return iResult;
 }
 
-void AliHLTComponent::DataType2Topic( const AliHLTComponentDataType type, 
-                                      char *output ) 
-{
-  // this produces a fixed length string, first 8 chars are the data type id, 4 last are origin
-  // so for 
-  //memset( output, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize );
-  memcpy( output, type.fID, kAliHLTComponentDataTypefIDsize );
-  memcpy( output+kAliHLTComponentDataTypefIDsize, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
-}
-
 void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const
 {
   // see header file for function documentation

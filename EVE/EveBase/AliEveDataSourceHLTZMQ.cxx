@@ -21,12 +21,13 @@
 #include "AliCDBEntry.h"
 
 #ifdef ZMQ
-#include "AliZMQhelpers.h"
+#include "AliHLTZMQhelpers.h"
 #include "zmq.h"
 #endif
 
 
 using namespace std;
+using namespace AliZMQhelpers;
 
 AliEveDataSourceHLTZMQ::AliEveDataSourceHLTZMQ(bool storageManager) :
     AliEveDataSource("HLT"),

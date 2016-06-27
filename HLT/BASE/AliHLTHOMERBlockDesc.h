@@ -151,10 +151,6 @@ public:
    */
   void ComponentDataType(AliHLTComponentDataType& dataType);
 
-  /** Fill a topic string with data type and origin
-   */
-  void Topic(char* topic, int topicSize=kAliHLTComponentDataTypeTopicSize);
-
   ///////////////////////////////////////////////////////////////////////////////////
 
 private:

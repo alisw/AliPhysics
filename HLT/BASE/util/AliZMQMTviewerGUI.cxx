@@ -21,9 +21,10 @@
 #include "TRootCanvas.h"
 #include "TGStatusBar.h"
 #include "TPad.h"
-#include "AliHLTDataTypes.h"
 
 ClassImpQ(AliZMQMTviewerGUI)
+
+using namespace std;
 
 const char* AliZMQMTviewerGUI::fUSAGE =
 "ZMQhstViewer: Draw() all ROOT drawables in a message\n"

@@ -1,20 +1,23 @@
 #ifndef __AliHLTZMQsource__
 #define __AliHLTZMQsource__
-//* This file is property of and copyright by the                          * 
+//* This file is property of and copyright by the                          *
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
 //  @file   AliHLTZMQsource.h
 //  @author Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
-//  @date   
+//  @date
 //  @brief  An HLT ZMQ data source component.
-// 
+//
 
 #include "AliHLTComponent.h"
 #include "AliZMQhelpers.h"
+#include "AliOptionParser.h"
 #include <TList.h>
 
 class TFile;
+
+using namespace AliZMQhelpers;
 
 class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
   public:
@@ -36,9 +39,9 @@ class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
     int DoDeinit();
 
     int DoProcessing( const AliHLTComponentEventData& evtData,
-                      const AliHLTComponentBlockData* blocks, 
+                      const AliHLTComponentBlockData* blocks,
                       AliHLTComponentTriggerData& trigData,
-                      AliHLTUInt8_t* outputPtr, 
+                      AliHLTUInt8_t* outputPtr,
                       AliHLTUInt32_t& size,
                       AliHLTComponentBlockDataList& outputBlocks,
                       AliHLTComponentEventDoneData*& edd );
@@ -61,6 +64,11 @@ class AliHLTZMQsource : public AliHLTComponent, public AliOptionParser  {
     Bool_t fZMQneverBlock;    //dont block on receive
     Bool_t fForwardHLTinput;  //forward everything on HLT input as well as ZMQ input
     unsigned long fOutputBufferSize;    //output buffer size
+    void* fZMQinit;           //init socket
+    TString fZMQinitConfig;   //init socket config string
+    aliZMQmsg fIncomingData;  //the incoming messages
+    Bool_t fSkipSOR;          //whether to skip SOR
+    Bool_t fOnlyOnDataEvents; //inject only in data events
 
     ClassDef(AliHLTZMQsource, 0)
 };

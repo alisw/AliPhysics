@@ -3,6 +3,8 @@ import zmq,sys
 import signal
 import re
 import time
+import binascii
+import o2header
 
 def Exit_gracefully(signal, frame):
   context.destroy()
@@ -74,6 +76,16 @@ elif endpoint[0]=='@':
     print "bind to: "+endpoint[1:]
     socket.bind(str(endpoint[1:]))
 
+# fill in the header information
+for idx in range(0, len(theMessage)):
+    if idx%2:
+        continue
+    payloadSize=len(theMessage[idx+1])
+    origin=theMessage[idx][8:12]
+    if origin[:3]=="***":
+        origin=origin[:3]+'\0'
+    theMessage[idx]=o2header.make(theMessage[idx],origin,payloadSize);
+
 #avoid late subscriber syndrome
 if mode=="PUB":
   time.sleep(0.5)
@@ -85,16 +97,18 @@ if mode=="REQ" or mode=="PUSH" or mode=="PUB":
 
 while True:
   if mode=="SUB" or mode=="PULL" or mode=="REP" or mode=="REQ":
+    #raw_input("press a key...")
     msg = socket.recv_multipart();
     print "###################################################"
     i=0;
     for message in msg:
+      dirty = str(message)[0:2000]
+      clean = re.sub('[^\s!-~]', '.', dirty)
       if i==0:
-        print "topic: "+str(message)
+        print "topic: "+clean
+        o2header.dump(message)
         i=1
       elif i==1:
-        dirty = str(message)[0:80]
-        clean = re.sub('[^\s!-~]', '.', dirty)
         print "message size: "+str(sys.getsizeof(message))
         print clean
         print "___________________________________________________"
