@@ -2024,10 +2024,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                              70, 85, 99, 115, 132,
                                              150, 169, 190, 212, 235,
                                              1000000};
-            Double_t weightsBins[20]     = {  0.956415, 0.821379, 0.778703, 0.505199, 0.258559,
-                                              0.127309, 0.0465009, 0.0177292, 0.00793543, 0.00287085,
-                                              0.00120106, 0.000452849, 0.000233323, 0.000114117, 5.84248e-05,
-                                              3.10809e-05, 1.76776e-05, 9.68772e-06, 5.46624e-06, 8.071e-06};
+            Double_t weightsBins[20]     = {  28.3084, 8.43277, 4.07753, 1.54359, 0.543318,
+                                              0.208394, 0.0652349, 0.0186904, 0.00834528, 0.00301414,
+                                              0.00125939, 0.000474403, 0.000244052, 0.00011924, 6.09838e-05,
+                                              3.24148e-05, 1.84314e-05, 1.00926e-05, 5.68632e-06, 8.38092e-06};
             Int_t bin = 0;
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 20) weight = weightsBins[bin];
@@ -2167,10 +2167,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
                                            70, 85, 99, 115, 132,
                                            150, 169, 190, 212, 235,
                                            1000000};
-          Double_t weightsBins[20]     = {  0.956415, 0.821379, 0.778703, 0.505199, 0.258559,
-                                            0.127309, 0.0465009, 0.0177292, 0.00793543, 0.00287085,
-                                            0.00120106, 0.000452849, 0.000233323, 0.000114117, 5.84248e-05,
-                                            3.10809e-05, 1.76776e-05, 9.68772e-06, 5.46624e-06, 8.071e-06};
+          Double_t weightsBins[20]     = {  28.3084, 8.43277, 4.07753, 1.54359, 0.543318,
+                                            0.208394, 0.0652349, 0.0186904, 0.00834528, 0.00301414,
+                                            0.00125939, 0.000474403, 0.000244052, 0.00011924, 6.09838e-05,
+                                            3.24148e-05, 1.84314e-05, 1.00926e-05, 5.68632e-06, 8.38092e-06};
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
@@ -4090,7 +4090,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.Contains("LHC15h2")){
     fPeriodEnum = kLHC15h2;
     fEnergyEnum = k8TeV;
-  } else if ((periodName.CompareTo("LHC16c2") == 0) || (periodName.CompareTo("LHC16c2a") == 0)){
+  } else if (periodName.CompareTo("LHC16c2") == 0){
     fPeriodEnum = kLHC16c2;   
     fEnergyEnum = k8TeV;
   // LHC13x anchored MCs
