@@ -479,7 +479,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
    fOutput->Add(fPtSpecFB768[c]);
  }
  
- fAnalysisUtil = new AliAnalysisUtils;
+ fAnalysisUtil = new AliAnalysisUtils();
  
  for(int i=0; i<5; i++){
   char hname[20];

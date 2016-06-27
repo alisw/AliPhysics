@@ -129,22 +129,22 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  if (analysisTypeUser == "AOD") analysisType = "AUTOMATIC";
  taskFE->SetAnalysisType(analysisType);
  // set the trigger selection
- if (EvTrigger == "Cen")
-  taskFE->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
- else if (EvTrigger == "SemiCen")
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
- else if (EvTrigger == "MB")
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB);
- if (EvTrigger == "MB" && sDataSet == "2015")
-   taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
- else if (EvTrigger == "Any")
-  taskFE->SelectCollisionCandidates(AliVEvent::kAny);
+  if (EvTrigger == "Cen")
+    taskFE->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
+  if (EvTrigger == "SemiCen")
+    taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
+  if (EvTrigger == "MB")
+    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+  if (EvTrigger == "MB" && sDataSet == "2015")
+    taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
+  if (EvTrigger == "Any")
+    taskFE->SelectCollisionCandidates(AliVEvent::kAny);
   // add the task to the manager
  mgr->AddTask(taskFE);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
-  cutsEvent->SetCheckPileup(kTRUE);
+  cutsEvent->SetCheckPileup(kFALSE);
   // configure some event cuts, starting with centrality
   if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
     // method used for centrality determination
