@@ -43,6 +43,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 #include <iostream>
 using namespace std;
 
@@ -66,6 +67,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -117,6 +119,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010()),
   fStandardGlobalCuts(AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -168,6 +171,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fStandardTPCcuts(NULL),
   fStandardGlobalCuts(NULL),
   fUtils(NULL),
+  fMultSelection(NULL),
   fCutPrimaryVertexX(that.fCutPrimaryVertexX),
   fPrimaryVertexXmax(that.fPrimaryVertexXmax),
   fPrimaryVertexXmin(that.fPrimaryVertexXmin),
@@ -212,6 +216,9 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
       fUtils->SetUseMVPlpSelection(kTRUE);
       fUtils->SetUseOutOfBunchPileUp(kTRUE);
   }
+  if (that.fMultSelection) {
+    fMultSelection = new AliMultSelection();
+  }
 }
 
 ////-----------------------------------------------------------------------
@@ -226,6 +233,7 @@ AliFlowEventCuts::~AliFlowEventCuts()
       delete fUtils;
       fUtils = NULL;
   }
+  if (fMultSelection) delete fMultSelection;
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
@@ -269,7 +277,10 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
       fUtils->SetUseMVPlpSelection(kTRUE);
       fUtils->SetUseOutOfBunchPileUp(kTRUE);
   }
-
+  if (that.fMultSelection) {
+    fMultSelection = new AliMultSelection();
+  }
+  
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
@@ -386,7 +397,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
         if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
         else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
       } else {
-        if(multTPC < (-25.+1.17*multGlobal) || multTPC > (30.+1.40*multGlobal)) pass = kFALSE;
+        if(multTPC < (-15.5+1.16*multGlobal) || multTPC > (15.8+1.28*multGlobal)) pass = kFALSE;
       }
     }
   }
@@ -440,8 +451,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
    } // if(!fUseNewCentralityFramework)
    else
    {
-    AliMultSelection *MultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
-    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    fMultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
+    Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
     if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
     {
       pass=kFALSE;
@@ -513,9 +524,9 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     }
     else {
       if (fCutCentralityPercentile) {
-    	AliMultSelection *MultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
-    	Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
-    	if(!MultSelection){
+    	fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+    	Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    	if(!fMultSelection){
     	  AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
     	}
         if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
@@ -595,15 +606,15 @@ Float_t AliFlowEventCuts::GetCentrality(AliVEvent* event, AliMCEvent* /*mcEvent*
   {
    if (esdEvent)
    {
-    AliMultSelection *MultSelection = (AliMultSelection *) esdEvent->FindListObject("MultSelection");
-    Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+    fMultSelection = (AliMultSelection *) esdEvent->FindListObject("MultSelection");
+    Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
     centrality = lPercentile;
    }
    else if (aodEvent)
    {
-     AliMultSelection *MultSelection = (AliMultSelection *) aodEvent->FindListObject("MultSelection");
-     Float_t lPercentile = MultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
-     if(!MultSelection){
+     fMultSelection = (AliMultSelection *) aodEvent->FindListObject("MultSelection");
+     Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+     if(!fMultSelection){
        AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
      }
      centrality = lPercentile;
@@ -707,8 +718,8 @@ void AliFlowEventCuts::DefineHistograms()
   fQA->Add(after);
   before->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
   after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
-  before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
-  after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
+  before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
+  after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
   TH1::AddDirectory(adddirstatus);
 }
 
