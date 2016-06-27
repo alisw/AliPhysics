@@ -4038,8 +4038,11 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
 
   // 1) go to ROC sector/row convention, find rows above and below
   int row159 = GetRowID(x);
-  if (row159<0) row159 = 0;
-  else if (row159>=kNPadRows) row159 = kNPadRows-1;
+  if (row159<0) {
+    if    (row159==-1) row159 = 0; // below min R
+    else if (row159==-2) row159 = kNPadRows-1; // above max R
+    else row159 = x>(kTPCRowX[kNRowIROC]+kTPCRowX[kNRowIROC-1])*0.5 ? kNRowIROC : kNRowIROC-1;
+  }
   float xRow = kTPCRowX[row159];
   int rowB[2],rocB[2]; // bounding rows
   if (x<xRow) {
@@ -4050,6 +4053,7 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
     rowB[0] = row159;
     rowB[1] = row159<kNPadRows-1 ? row159+1:row159;
   }
+  int rowB159[2] = {rowB[0],rowB[1]}; // save 0-158 convention rows
   // weight for extrapolation between rows
   float wx = rowB[0]==rowB[1] ? 0.f : (x-kTPCRowX[rowB[0]])/(kTPCRowX[rowB[1]]-kTPCRowX[rowB[0]]);
   //
@@ -4070,7 +4074,7 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
   }
   //
   // 3) gradient in X: expand boundaries down and up by 2 padrows
-  int rowMin = rowB[0]-kNRowMargin, rowMax = rowB[1]+kNRowMargin;
+  int rowMin = rowB159[0]-kNRowMargin, rowMax = rowB159[1]+kNRowMargin;
   if (rowMin<0)            {rowMin = 0; rowMax = rowMin+kNTestPnt-1;}
   if (rowMax>=kNPadRows-1) {rowMax = kNPadRows-1; rowMin = rowMax-(kNTestPnt-1);}
   //
@@ -4271,6 +4275,7 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
   AliTPCDcalibRes::DistortCheb(fgCorrForInv,sector, xyzPrim, xyzCl);
   //
   for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
+  distLoc[AliTPCDcalibRes::kResD] = xyzCl[AliTPCDcalibRes::kResD];
   //
 }
 //======================================================================================
@@ -4284,7 +4289,10 @@ AliTPCChebDist* AliTPCDcalibRes::CreateDistortionObject(AliTPCChebCorr* correcti
   correction->Init();
   SetCorrForInv(correction);
   AliTPCChebDist* dist = new AliTPCChebDist(Form("%s_InvDist",correction->GetName()),
-					    Form("%s Inverted",correction->GetTitle()));
+					    Form("%s Inverted",correction->GetTitle()),
+					    correction->GetNStacksSector(),
+					    correction->GetNStacksZ(),
+					    correction->GetZMax());
   //  
   SetDistDest(dist);
   dist->SetUseFloatPrec(kFALSE);
