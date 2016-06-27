@@ -225,8 +225,8 @@ int AliHLTGlobalPromptRecoQAComponent::Reset(bool resetDownstream)
     rc = PushBack("reset", kAliHLTDataTypeConfig|kAliHLTDataOriginHLT);
   }
 
-  fHistClusterChargeTot->Reset();
-  fHistTPCTrackPt->Reset();
+  DeleteFixedHistograms();
+  CreateFixedHistograms();
   return 0;
 }
 
@@ -548,28 +548,28 @@ void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
   axisStruct& axisPadrows = fAxes["tpcPadRows"];
   if (axisAngles.bins>0 && axisPadrows.bins>0) {
     fHistTPCAallClustersRowPhi = new TH2F("fHistTPCAallClustersRowPhi",
-        "TPCA clusters all (padrow vs. phi), raw cluster coordinates",
+        "TPCA clusters all, raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
     fHistTPCAallClustersRowPhi->SetXTitle(axisAngles.description.c_str());
     fHistTPCAallClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
 
     fHistTPCAattachedClustersRowPhi = new TH2F("fHistTPCAattachedClustersRowPhi",
-        "TPCA clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
+        "TPCA clusters attached to tracks, raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
     fHistTPCAattachedClustersRowPhi->SetXTitle(axisAngles.description.c_str());
     fHistTPCAattachedClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
 
     fHistTPCCallClustersRowPhi = new TH2F("fHistTPCCallClustersRowPhi",
-        "TPCC clusters all (padrow vs. phi), raw cluster coordinates",
+        "TPCC clusters all, raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
     fHistTPCCallClustersRowPhi->SetXTitle(axisAngles.description.c_str());
     fHistTPCCallClustersRowPhi->SetYTitle(axisPadrows.description.c_str());
 
     fHistTPCCattachedClustersRowPhi = new TH2F("fHistTPCCattachedClustersRowPhi",
-        "TPCC clusters attached to tracks (padrow vs. phi) raw cluster coordinates",
+        "TPCC clusters attached to tracks, raw cluster coordinates",
         axisAngles.bins, axisAngles.low, axisAngles.high,
         axisPadrows.bins, axisPadrows.low, axisPadrows.high);
     fHistTPCCattachedClustersRowPhi->SetXTitle(axisAngles.description.c_str());
@@ -1182,6 +1182,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
     if ( iter->fDataType == (AliHLTTPCDefinitions::ClustersXYZDataType()))
     {
+      HLTInfo("have TPC XYZ clusters");
       Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
       Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
       if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice() || patch<0 || patch>=AliHLTTPCGeometry::GetNPatches()) {
@@ -1237,7 +1238,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     {
       AliHLTTracksData* tracks = static_cast<AliHLTTracksData*>(iter->fPtr);
       const AliHLTUInt8_t* currentTrackPtr = reinterpret_cast<const AliHLTUInt8_t*>(tracks->fTracklets);
-      HLTInfo("filling clusters attached to tracks");
+      HLTInfo("filling clusters attached to tracks, ntracks=%i",tracks->fCount);
       for (AliHLTUInt32_t i = 0; i < tracks->fCount; i++)
       {
         const AliHLTExternalTrackParam* track = reinterpret_cast<const AliHLTExternalTrackParam*>(currentTrackPtr);
@@ -1257,10 +1258,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
           const AliHLTTPCRawClusterData* clusterRAWdata = clusterRAWblocks[slice][patch];
 
           if (!clusterRAWdata) continue;
-          if (!clusterXYZdata) continue;
+          //if (!clusterXYZdata) continue;
 
           UInt_t index = AliHLTTPCGeometry::CluID2Index( clusterID );
-          const AliHLTTPCClusterXYZ& clusterXYZ = clusterXYZdata->fClusters[index];
+          //const AliHLTTPCClusterXYZ& clusterXYZ = clusterXYZdata->fClusters[index];
           const AliHLTTPCRawCluster& clusterRAW = clusterRAWdata->fClusters[index];
 
           Int_t pad = clusterRAW.fPad;
@@ -1298,7 +1299,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         continue;
       }
 
-      HLTInfo("filling clusters attached to tracks");
+      HLTInfo("filling raw clusters, n=%i",clusters->fCount);
       for (unsigned i = 0;i < clusters->fCount;i++)
       {
         AliHLTTPCRawCluster& clusterRAW = clusters->fClusters[i];
@@ -1335,11 +1336,11 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     fHistTPCAattachedClustersRowPhi->Reset();
   }
-  if (PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCCallClustersRowPhi->Reset();
+  if (PushBack(fHistTPCCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCCattachedClustersRowPhi->Reset();
   }
-  if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCAattachedClustersRowPhi->Reset();
+  if (PushBack(fHistTPCAallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
+    fHistTPCAallClustersRowPhi->Reset();
   }
   if (PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
     fHistTPCCallClustersRowPhi->Reset();
