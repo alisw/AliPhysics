@@ -890,7 +890,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
   }
 
   const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
-  recoparam->PrintFastOrRecoParam(); 
+  if(recoparam) recoparam->PrintFastOrRecoParam();
   // Reset Fast-OR fired map
   ResetFastOrFiredMap();
 
@@ -1032,7 +1032,7 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   AliITSClusterFinder *rec     = 0;
   Int_t id=0;
   const AliITSRecoParam* recoparam = AliITSReconstructor::GetRecoParam();
-  recoparam->PrintFastOrRecoParam();
+  if(recoparam) recoparam->PrintFastOrRecoParam();
  
   for(id=0;id<3;id++){
     if (!all && !det[id]) continue;
