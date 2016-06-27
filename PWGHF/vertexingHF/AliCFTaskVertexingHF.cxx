@@ -1086,7 +1086,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
           }
 
           //Number of ITS cluster requirements
-          Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks);
+          Int_t recoITSnCluster = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kTracks, aodEvent);
           if (recoITSnCluster){
             fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoITSClusters, fWeight) ;
             icountRecoITSClusters++;
