@@ -127,6 +127,8 @@ protected:
   Int_t fPrintDownscale;
   Int_t fEventsSinceSkip;
   Bool_t fPushEmptyHistograms;
+  Bool_t fResetAfterPush;
+
 
   std::map<string,histStruct> fHistograms;
   std::map<string,axisStruct> fAxes;

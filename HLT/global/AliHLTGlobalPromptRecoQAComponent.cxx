@@ -89,6 +89,7 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fPrintDownscale(1)
   , fEventsSinceSkip(0)
   , fPushEmptyHistograms(false)
+  , fResetAfterPush(true)
   , fHistograms()
   , fAxes()
   , fnClustersSPD(0.)
@@ -196,6 +197,8 @@ int AliHLTGlobalPromptRecoQAComponent::ProcessOption(TString option, TString val
     fPrintDownscale = atoi(value);
   } else if (option.EqualTo("PushEmptyHistograms")) {
     fPushEmptyHistograms=kTRUE;
+  } else if (option.EqualTo("ResetAfterPush")) {
+    fResetAfterPush=(value.Contains("0"))?false:true;
   } else if (option.EqualTo("pushback-period")) {
   } else {
     HLTError("invalid option: %s", value.Data());
@@ -786,7 +789,7 @@ int AliHLTGlobalPromptRecoQAComponent::FillHistograms()
          PushBack(hist.hist, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT) > 0 )
     {
       nPushedHistograms++;
-      hist.hist->Reset();
+      if (fResetAfterPush) hist.hist->Reset();
     }
   }
   return nPushedHistograms;
@@ -1328,22 +1331,22 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
 
   //push fixed histograms
   if (PushBack(fHistTPCTrackPt, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCTrackPt->Reset();
+    if (fResetAfterPush) fHistTPCTrackPt->Reset();
   }
   if (PushBack(fHistClusterChargeTot, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistClusterChargeTot->Reset();
+    if (fResetAfterPush) fHistClusterChargeTot->Reset();
   }
   if (PushBack(fHistTPCAattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCAattachedClustersRowPhi->Reset();
+    if (fResetAfterPush) fHistTPCAattachedClustersRowPhi->Reset();
   }
   if (PushBack(fHistTPCCattachedClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCCattachedClustersRowPhi->Reset();
+    if (fResetAfterPush) fHistTPCCattachedClustersRowPhi->Reset();
   }
   if (PushBack(fHistTPCAallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCAallClustersRowPhi->Reset();
+    if (fResetAfterPush) fHistTPCAallClustersRowPhi->Reset();
   }
   if (PushBack(fHistTPCCallClustersRowPhi, kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT)>0) {
-    fHistTPCCallClustersRowPhi->Reset();
+    if (fResetAfterPush) fHistTPCCallClustersRowPhi->Reset();
   }
 
   //convert the numbers fo floats for histograms
