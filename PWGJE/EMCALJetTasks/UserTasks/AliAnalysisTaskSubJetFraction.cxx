@@ -1278,7 +1278,6 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
   if(!PartCont || !TracksArray) return -99999;
   AliAODTrack *Track = 0x0;
   AliEmcalParticle *EmcalParticle = 0x0;
-  TList *TrackList = new TList();
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
@@ -1289,7 +1288,6 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
       if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
       if (EmcalParticle->Pt()<0.15) continue;
       if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
-	TrackList->Add(EmcalParticle);
 	Trigger_Index[Trigger_Counter] = i;
 	Trigger_Counter++;
       }
@@ -1300,7 +1298,6 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
       if(TMath::Abs(Track->Eta())>0.9) continue;
       if (Track->Pt()<0.15) continue;
       if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	TrackList->Add(Track);
 	Trigger_Index[Trigger_Counter] = i;
 	Trigger_Counter++;
       }
