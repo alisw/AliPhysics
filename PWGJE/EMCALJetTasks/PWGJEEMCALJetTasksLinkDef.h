@@ -56,6 +56,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalDiJetBase+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
+#pragma link C++ class AliAnalysisTaskEmcalDijetImbalance+;
 #pragma link C++ class AliAnalysisTaskEmcalHighMultTrigger+;
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
