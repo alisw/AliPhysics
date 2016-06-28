@@ -132,7 +132,6 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,fSparseMassLS(0)
 ,fakepT(0)
 ,fakepTgraterFive(0)
-,fcocktail(0)
 ,WeightsForEnhanced(0)
 ,fNoEventsStackHFE(0)
 ,fminITSnsigmaLowpT(-1)
@@ -149,6 +148,10 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,fULS(0)
 ,fLS(0)
 ,Rconv_pT(0)
+,tiltup(0)
+,tiltdw(0)
+,fcentral(0)
+,fsemicentral(0)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -239,7 +242,6 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fSparseMassLS(0)
 ,fakepT(0)
 ,fakepTgraterFive(0)
-,fcocktail(0)
 ,WeightsForEnhanced(0)
 ,fNoEventsStackHFE(0)
 ,fminITSnsigmaLowpT(-1)
@@ -256,6 +258,10 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fULS(0)
 ,fLS(0)
 ,Rconv_pT(0)
+,tiltup(0)
+,tiltdw(0)
+,fcentral(0)
+,fsemicentral(0)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -615,9 +621,9 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         Int_t trkIndexElectron = AODMCElectron->GetLabel();//gives index of the particle in original MCparticle array
         MCElectron = IsFromBGEventAOD(trkIndexElectron);//check if the particle comes from hijing or from enhanced event
         if(MCElectron){
-        if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
-            fITSnsigmaElectron->Fill(p,fITSnSigma);
-        }
+            if(TMath::Abs(MCtrack->GetPdgCode()) == 11){
+                fITSnsigmaElectron->Fill(p,fITSnSigma);
+            }
         }
         
         //Electron id
@@ -732,32 +738,50 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             if(MCMotherAll->GetPdgCode()==221) incls[2] = kEta;
             
             if(WeightsForEnhanced){//accept only Enhanced event using HIJING weights for MC closure test
-                if(!fcocktail){
-                    if(MChijingAll) continue;
-                }
-                if(fcocktail){
-                    if(!MChijingAll) continue;
-                }
+                if(!MChijingAll) continue;
+                
                 
                 // Weights
                 Double_t weightsRaphaelle = -1.;
                 Double_t ptmotherw = -1.;
                 Int_t electronsource = GetElecSourceType(MCPhotoEleAll,mcArray,ptmotherw);
-                if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
-                    if(fcocktail)weightsRaphaelle = GetMCweightPi0(ptmotherw);
-                    if(!fcocktail)weightsRaphaelle = GetMCweightPi0HIJING(ptmotherw);
-                    fIncl->Fill(incls,weightsRaphaelle);
-                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-                    // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                if(fcentral){
+                    if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
+                        if(!tiltup && !tiltdw)weightsRaphaelle = GetMCweightPi0(ptmotherw);
+                        if(tiltup && !tiltdw)weightsRaphaelle = GetMCweightPi0tiltUp(ptmotherw);
+                        if(!tiltup && tiltdw)weightsRaphaelle = GetMCweightPi0tiltDw(ptmotherw);
+                        fIncl->Fill(incls,weightsRaphaelle);
+                        SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                        // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    }
+                    if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
+                        if(!tiltup && !tiltdw)weightsRaphaelle = GetMCweightEta(ptmotherw);
+                        if(tiltup && !tiltdw)weightsRaphaelle = GetMCweightEtatiltUp(ptmotherw);
+                        if(!tiltup && tiltdw)weightsRaphaelle = GetMCweightEtatiltDw(ptmotherw);
+                        fIncl->Fill(incls,weightsRaphaelle);
+                        SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                        //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    }
                 }
-                if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
-                    if(fcocktail) weightsRaphaelle = GetMCweightEta(ptmotherw);
-                    if(!fcocktail) weightsRaphaelle = GetMCweightEtaHIJING(ptmotherw);
-                    fIncl->Fill(incls,weightsRaphaelle);
-                    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-                    //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                if(fsemicentral){
+                    if((electronsource==kPi0NoFeedDown) || (electronsource==kGPi0NoFeedDown)) {
+                        if(!tiltup && !tiltdw)weightsRaphaelle = GetMCweightPi02040(ptmotherw);
+                        if(tiltup && !tiltdw)weightsRaphaelle = GetMCweightPi0tiltUp2040(ptmotherw);
+                        if(!tiltup && tiltdw)weightsRaphaelle = GetMCweightPi0tiltDw2040(ptmotherw);
+                        fIncl->Fill(incls,weightsRaphaelle);
+                        SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                        // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    }
+                    if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
+                        if(!tiltup && !tiltdw)weightsRaphaelle = GetMCweightEta2040(ptmotherw);
+                        if(tiltup && !tiltdw)weightsRaphaelle = GetMCweightEtatiltUp2040(ptmotherw);
+                        if(!tiltup && tiltdw)weightsRaphaelle = GetMCweightEtatiltDw2040(ptmotherw);
+                        fIncl->Fill(incls,weightsRaphaelle);
+                        SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                        //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+                    }
                 }
-                
+            
             }//with whatever weights (or HIJING +Enh with cocktail weight or Enhanced only with HIJING weights)
             
             if(!WeightsForEnhanced){
@@ -1614,39 +1638,6 @@ Int_t AliAnalysisTaskHFEEfficiency::GetElecSourceType(AliAODMCParticle *electron
 //================================================================================================
 //_________________________________________
 //_________________________________________
-Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0HIJING(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
-{
-    double weight = 1.0;
-    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
-    
-    if(mcPi0pT <=4){
-        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
-    }
-    if(mcPi0pT >4){
-        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
-    }
-    //  cout << "weight in cal pi0 : " << weight << endl;
-    return weight;
-}
-//_________________________________________
-Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtaHIJING(Double_t mcEtapT) // make the function in first iteration DONE
-{
-    double weight = 1.0;
-    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
-    
-    if(mcEtapT <=4){
-        weight =    (4.26858e+02)/pow((exp(-(-8.76512e-04)*mcEtapT-(9.31692e-03)*mcEtapT*mcEtapT)+(mcEtapT/(2.68479e+00))),(7.82650e+00)); //Met 1 From EMCal Task
-    }
-    if(mcEtapT >4){
-        weight =    (1.39558e+03)/pow((exp(-(-1.21075e-02)*mcEtapT-(3.54914e-02)*mcEtapT*mcEtapT)+(mcEtapT/(1.13185e+00))),(5.50479e+00)); //Met 1 From EMCal Task
-    }
-    //  cout << "weight in cal eta : " << weight << endl;
-    
-    return weight;
-}
-//_________________________________________
-
-//_________________________________________
 Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
 {
     double weight = 1.0;
@@ -1662,7 +1653,70 @@ Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0(Double_t mcPi0pT) // make 
     return weight;
 }
 //_________________________________________
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltUp(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
+{
+    double weight = 1.0;
+    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
+    
+    if(mcPi0pT <=4){
+        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+    }
+    if(mcPi0pT >4){
+        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal pi0 : " << weight << endl;
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltDw(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
+{
+    double weight = 1.0;
+    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
+    
+    if(mcPi0pT <=4){
+        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+    }
+    if(mcPi0pT >4){
+        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal pi0 : " << weight << endl;
+    return weight;
+}
+//_________________________________________
 Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEta(Double_t mcEtapT) // make the function in first iteration DONE
+{
+    double weight = 1.0;
+    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
+    
+    if(mcEtapT <=5.5){
+        weight =    (4.01348e-01)/pow((exp(-(9.64548e-01)*mcEtapT-(7.30011e-02)*mcEtapT*mcEtapT)+(mcEtapT/(2.92423e+00))),(2.32353e+00)); //Met 1 From EMCal Task
+    }
+    if(mcEtapT >5.5){
+        weight =    (1.42169e-01)/pow((exp(-(-8.71455e+01)*mcEtapT-(7.94280e+00)*mcEtapT*mcEtapT)+(mcEtapT/(7.36452e+01))),(2.55991e-03)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal eta : " << weight << endl;
+    
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltUp(Double_t mcEtapT) // make the function in first iteration DONE
+{
+    double weight = 1.0;
+    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
+    
+    if(mcEtapT <=4){
+        weight =    (4.26858e+02)/pow((exp(-(-8.76512e-04)*mcEtapT-(9.31692e-03)*mcEtapT*mcEtapT)+(mcEtapT/(2.68479e+00))),(7.82650e+00)); //Met 1 From EMCal Task
+    }
+    if(mcEtapT >4){
+        weight =    (1.39558e+03)/pow((exp(-(-1.21075e-02)*mcEtapT-(3.54914e-02)*mcEtapT*mcEtapT)+(mcEtapT/(1.13185e+00))),(5.50479e+00)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal eta : " << weight << endl;
+    
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltDw(Double_t mcEtapT) // make the function in first iteration DONE
 {
     double weight = 1.0;
     // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
@@ -1745,5 +1799,100 @@ void AliAnalysisTaskHFEEfficiency::SetIDCuts(Double_t minTOFnSigma, Double_t max
 }
 //_____________________________________________________________________________
 
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi02040(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
+{
+    double weight = 1.0;
+    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
+    
+    if(mcPi0pT <=4){
+        weight =    (8.52613e-01)/pow((exp(-(8.40269e-01)*mcPi0pT-(-4.34674e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(3.31267e+00))),(2.56504e+00)); //Met 1 From EMCal Task
+    }
+    if(mcPi0pT >4){
+        weight =    (1.58170e+02)/pow((exp(-(-9.51650e-02)*mcPi0pT-(1.43834e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.01125e+01))),(1.29361e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal pi0 : " << weight << endl;
+    return weight;
+}
+//_________________________________________
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltUp2040(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
+{
+    double weight = 1.0;
+    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
+    
+    if(mcPi0pT <=4){
+        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+    }
+    if(mcPi0pT >4){
+        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal pi0 : " << weight << endl;
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightPi0tiltDw2040(Double_t mcPi0pT) // make the function in first iteration DONE (HERE 20-40%)
+{
+    double weight = 1.0;
+    //  cout << "pi0 weigth in weigth cal : " << mcPi0pT <<endl;
+    
+    if(mcPi0pT <=4){
+        weight =    (4.12098e+02)/pow((exp(-(-4.10306e-02)*mcPi0pT-(9.78812e-03)*mcPi0pT*mcPi0pT)+(mcPi0pT/(1.48929e+01))),(2.84305e+01)); //Met 1 From EMCal Task
+    }
+    if(mcPi0pT >4){
+        weight =    (3.43908e+02)/pow((exp(-(-1.33960e-01)*mcPi0pT-(1.27930e-02)*mcPi0pT*mcPi0pT)+(mcPi0pT/(4.13397e+00))),(1.17806e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal pi0 : " << weight << endl;
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEta2040(Double_t mcEtapT) // make the function in first iteration DONE
+{
+    double weight = 1.0;
+    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
+    
+    if(mcEtapT <=4){
+        weight =    (8.38897e-01)/pow((exp(-(2.69050e-02)*mcEtapT-(8.25401e-01)*mcEtapT*mcEtapT)+(mcEtapT/(1.92761e+00))),(1.48011e+00)); //Met 1 From EMCal Task
+    }
+    if(mcEtapT >4){
+        weight =    (8.83196e+01)/pow((exp(-(-1.24373e-02)*mcEtapT-(6.69093e-03)*mcEtapT*mcEtapT)+(mcEtapT/(1.57278e+01))),(3.14751e+01)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal eta : " << weight << endl;
+    
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltUp2040(Double_t mcEtapT) // make the function in first iteration DONE
+{
+    double weight = 1.0;
+    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
+    
+    if(mcEtapT <=4){
+        weight =    (4.26858e+02)/pow((exp(-(-8.76512e-04)*mcEtapT-(9.31692e-03)*mcEtapT*mcEtapT)+(mcEtapT/(2.68479e+00))),(7.82650e+00)); //Met 1 From EMCal Task
+    }
+    if(mcEtapT >4){
+        weight =    (1.39558e+03)/pow((exp(-(-1.21075e-02)*mcEtapT-(3.54914e-02)*mcEtapT*mcEtapT)+(mcEtapT/(1.13185e+00))),(5.50479e+00)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal eta : " << weight << endl;
+    
+    return weight;
+}
+//_________________________________________
+Double_t AliAnalysisTaskHFEEfficiency::GetMCweightEtatiltDw2040(Double_t mcEtapT) // make the function in first iteration DONE
+{
+    double weight = 1.0;
+    // cout << "eta weigth in weigth cal : " << mcEtapT <<endl;
+    
+    if(mcEtapT <=5.5){
+        weight =    (4.01348e-01)/pow((exp(-(9.64548e-01)*mcEtapT-(7.30011e-02)*mcEtapT*mcEtapT)+(mcEtapT/(2.92423e+00))),(2.32353e+00)); //Met 1 From EMCal Task
+    }
+    if(mcEtapT >5.5){
+        weight =    (1.42169e-01)/pow((exp(-(-8.71455e+01)*mcEtapT-(7.94280e+00)*mcEtapT*mcEtapT)+(mcEtapT/(7.36452e+01))),(2.55991e-03)); //Met 1 From EMCal Task
+    }
+    //  cout << "weight in cal eta : " << weight << endl;
+    
+    return weight;
+}
+//_________________________________________
 
 
