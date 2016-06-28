@@ -2958,13 +2958,13 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 //____________________________________________________________
 Double_t AliGenMUONlib::PtRho( const Double_t *px, const Double_t */*dummy*/)
 {
-// Omega pT
+// Rho pT
   return PtScal(*px,5);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YRho( const Double_t *px, const Double_t */*dummy*/)
 {
-// Omega y
+// Rho y
     Double_t *dum=0;
     return YJpsi(px,dum);
 }
@@ -2972,7 +2972,7 @@ Double_t AliGenMUONlib::YRho( const Double_t *px, const Double_t */*dummy*/)
 //
 Int_t AliGenMUONlib::IpRho(TRandom *)
 {
-// Omega composition
+// Rho composition
     return 113;
 }
 
@@ -4788,6 +4788,9 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* tname) const
 	break;
     case kChic:
         func=IpChic;
+        break;
+    case kRho:
+        func=IpRho;
         break;
     default:
         func=0;
