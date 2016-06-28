@@ -1251,7 +1251,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
         currentTrackPtr += sizeof(AliHLTExternalTrackParam) + track->fNPoints * sizeof(UInt_t);
 
         //cut on number of points
-        Int_t fMinNPoints = 80;
+        Int_t fMinNPoints = 10;
         if (track->fNPoints < fMinNPoints) continue;
 
         for (UInt_t i=0; i<track->fNPoints; i++)
