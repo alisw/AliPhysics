@@ -1120,6 +1120,8 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,mstatITS, 1, 5.);
   TObjArray * arrayITSB= AliTPCcalibDButil::SmoothRelKalman(arrayITSP,arrayITSM);
+  if (arrayITSB == NULL) AliWarning("Failed to create ALIGN_ITSB_TPC object!");
+
   TObjArray * arrayTOFP= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 0, 5.);
   TObjArray * arrayTOFM= AliTPCcalibDButil::SmoothRelKalman(arrayTOF,mstatTOF, 1, 5.);
   TObjArray * arrayTOFB= AliTPCcalibDButil::SmoothRelKalman(arrayTOFP,arrayTOFM);
