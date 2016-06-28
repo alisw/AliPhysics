@@ -118,6 +118,8 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(TObjA
 		AliCDBManager* cdbManager = AliCDBManager::Instance();
 		
 		static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
+		preprocessor->SetTimeGainRange(0.5,5.0);
+		preprocessor->SetMaxVDriftCorr(0.2);
 		preprocessor->CalibTimeVdrift(timeObj, GetRunNo(), GetRunNo());
 		preprocessor->CreateDriftCDBentryObject(GetRunNo(), GetRunNo());
 		retVal = preprocessor->GetDriftCDBentry();
