@@ -2546,6 +2546,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
   
     TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
+    cout << firedTrigClass.Data() << endl;
     // if no trigger has been selected manually, select kAny in case of presel (also important for AOD filtering!)
     // in other cases select standards depending on system
     if (!fTriggerSelectedManually){
@@ -2644,7 +2645,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
             }
           }
           if (isSelected != 0 ){
-//             cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
+            cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
             if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
@@ -2761,6 +2762,9 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
     if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(35);
   }
 
+  
+  cout << fSpecialTrigger<< "\t" << isSelected << endl;
+  
   if(hTriggerClassSelected && isSelected){
     if (mimickedTrigger){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
