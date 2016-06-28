@@ -130,7 +130,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   // Binning for the PID histogram
   const int kdimPID = 3;
-  const int knbinsPID[kdimPID] = {1000., 200., 300};
+  const int knbinsPID[kdimPID] = {1000, 200, 300};
   const double kminPID[kdimPID] = {-100., 0.,  0.}, kmaxPID[kdimPID] = {100., 200., 1.5};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
