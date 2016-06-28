@@ -53,7 +53,7 @@ AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
 fMC(kFALSE),
-fPileupCutsEnabled(kTRUE),
+fPileupCutsEnabled(kFALSE),
 fDoFMD(kFALSE),
 fHistList(new TList()),
 fHistStat(0),
