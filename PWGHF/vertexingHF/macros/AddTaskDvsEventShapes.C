@@ -18,6 +18,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        TString estimatorFilename="",
                                                        Double_t refMult=9.26,
                                                        Bool_t subtractDau=kFALSE,
+                                                       Bool_t subtractDauFromSphero=kFALSE,
                                                        Int_t NchWeight=0,
                                                        Int_t recoEstimator = AliAnalysisTaskSEDvsEventShapes::kNtrk10,
                                                        Int_t MCEstimator = AliAnalysisTaskSEDvsEventShapes::kEta10,
@@ -76,7 +77,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
         Name="DStar";
     }
     
-    AliAnalysisTaskSEDvsEventShapes *dMultTask = new AliAnalysisTaskSEDvsEventShapes("dMultAnalysis",pdgMeson,analysiscuts,isPPbData);
+    AliAnalysisTaskSEDvsEventShapes *dMultTask = new AliAnalysisTaskSEDvsEventShapes("dEvtShapeAnalysis",pdgMeson,analysiscuts,isPPbData);
     dMultTask->SetReadMC(readMC);
     dMultTask->SetDebugLevel(0);
     dMultTask->SetUseBit(kTRUE);
@@ -85,6 +86,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     dMultTask->SetEventShapeParameters(ptMin, ptMax, etaMin, etaMax, minMult, phiStepSizeDeg, filtbit1, filtbit2); //parameters to calculate Sphero(i)city
     dMultTask->SetCalculationsForSphericity(CalculateSphericity);
     dMultTask->SetSubtractTrackletsFromDaughters(subtractDau);
+    dMultTask->SetRecomputeSpherocityWithoutDau(subtractDauFromSphero);
     dMultTask->SetMultiplicityEstimator(recoEstimator);
     dMultTask->SetMCPrimariesEstimator(MCEstimator);
     dMultTask->SetMCOption(MCOption);
@@ -204,17 +206,16 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     
     TString outputfile = AliAnalysisManager::GetCommonFileName();
-    if(CalculateSphericity){ outputfile += ":PWG3_D2H_DSpheri_";}
-    else{ outputfile += ":PWG3_D2H_DSphero_";}
-    outputfile += Name.Data();
-    outputfile += finDirname.Data();
+    outputfile += ":PWG3_D2H_DEvtShape_";
+    outputfile += Name.Data(); 
+    outputfile += finDirname.Data(); 
     
     AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(cutsname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutput = mgr->CreateContainer(outname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     AliAnalysisDataContainer *coutputProf = mgr->CreateContainer(profname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
     if(readMC) AliAnalysisDataContainer *coutputEffCorr = mgr->CreateContainer(effname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-    
+
     
     mgr->ConnectInput(dMultTask,0,mgr->GetCommonInputContainer());
     

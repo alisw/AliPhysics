@@ -24,6 +24,7 @@
 #include <TClonesArray.h>
 #include <TCanvas.h>
 #include <TList.h>
+#include <TMath.h>
 #include <TString.h>
 #include <TDatabasePDG.h>
 #include <TH1F.h>
@@ -64,13 +65,15 @@ fHistNtrVsZvtx(0),
 fHistNtrCorrVsZvtx(0),
 fHistNtrVsSo(0),
 fHistNtrCorrVsSo(0),
+fHistNtrVsSpheri(0),
+fHistNtrCorrVsSpheri(0),
 fHistGenPrimaryParticlesInelGt0(0),
 fHistNtrCorrPSSel(0),
 fHistNtrCorrEvSel(0),
 fHistNtrCorrEvWithCand(0),
 fHistNtrCorrEvWithD(0),
-fSparseSpherocity(0),
-fSparseSpherocitywithNoPid(0),
+fSparseEvtShape(0),
+fSparseEvtShapewithNoPid(0),
 fMCAccGenPrompt(0),
 fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
@@ -114,6 +117,7 @@ fEtaAccCut(0.9),
 fPtAccCut(0.1),
 fUseQuarkTag(kTRUE),
 fCalculateSphericity(kFALSE),
+fRecomputeSpherocity(kFALSE),
 fDoVZER0ParamVertexCorr(1)
 {
     // Default constructor
@@ -134,13 +138,15 @@ fHistNtrVsZvtx(0),
 fHistNtrCorrVsZvtx(0),
 fHistNtrVsSo(0),
 fHistNtrCorrVsSo(0),
+fHistNtrVsSpheri(0),
+fHistNtrCorrVsSpheri(0),
 fHistGenPrimaryParticlesInelGt0(0),
 fHistNtrCorrPSSel(0),
 fHistNtrCorrEvSel(0),
 fHistNtrCorrEvWithCand(0),
 fHistNtrCorrEvWithD(0),
-fSparseSpherocity(0),
-fSparseSpherocitywithNoPid(0),
+fSparseEvtShape(0),
+fSparseEvtShapewithNoPid(0),
 fMCAccGenPrompt(0),
 fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
@@ -184,6 +190,7 @@ fEtaAccCut(0.9),
 fPtAccCut(0.1),
 fUseQuarkTag(kTRUE),
 fCalculateSphericity(kFALSE),
+fRecomputeSpherocity(kFALSE),
 fDoVZER0ParamVertexCorr(1)
 {
     //
@@ -358,28 +365,29 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     TString histoNtrName;
     TString histoNtrCorrName;
     TString parNameNtr;
-    if(fCalculateSphericity){
-        histoNtrName = "hNtrVsSpheri";
-        histoNtrCorrName = "hNtrCorrVsSpheri";
-        parNameNtr = "Spheri";
-    }
-    else{
-        histoNtrName = "hNtrVsSphero";
-        histoNtrCorrName = "hNtrCorrVsSphero";
-        parNameNtr = "Sphero";
-    }
+    
+    histoNtrName = "hNtrVsSphero";
+    histoNtrCorrName = "hNtrCorrVsSphero";
+    parNameNtr = "Sphero";
     
     fHistNtrVsSo = new TH2F(histoNtrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsSo = new TH2F(histoNtrCorrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
     
+    TString histoNtrSphriName;
+    TString histoNtrCorrSphriName;
+    TString parNameNtrSphri;
+    
+    histoNtrSphriName = "hNtrVsSpheri";
+    histoNtrCorrSphriName = "hNtrCorrVsSpheri";
+    parNameNtrSphri = "Spheri";
+
+    if(fCalculateSphericity){
+        fHistNtrVsSpheri = new TH2F(histoNtrSphriName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtrSphri.Data(),parNameNtrSphri.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
+        fHistNtrCorrVsSpheri = new TH2F(histoNtrCorrSphriName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtrSphri.Data(),parNameNtrSphri.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
+    }
+    
     fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",nMultBins,firstMultBin,lastMultBin);
     
-    
-    fHistNtrCorrPSSel->Sumw2();
-    fHistNtrCorrEvSel->Sumw2();
-    fHistNtrCorrEvWithCand->Sumw2();
-    fHistNtrCorrEvWithD->Sumw2();
-    fHistGenPrimaryParticlesInelGt0->Sumw2();
     
     fOutput->Add(fHistNtrCorrPSSel);
     fOutput->Add(fHistNtrCorrEvSel);
@@ -390,6 +398,10 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fOutput->Add(fHistNtrCorrVsZvtx);
     fOutput->Add(fHistNtrVsSo);
     fOutput->Add(fHistNtrCorrVsSo);
+    if(fCalculateSphericity){
+        fOutput->Add(fHistNtrVsSpheri);
+        fOutput->Add(fHistNtrCorrVsSpheri);
+    }
     fOutput->Add(fHistGenPrimaryParticlesInelGt0);
     
     fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
@@ -405,7 +417,6 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistNEvents->GetXaxis()->SetBinLabel(10,"D after cuts (No PID)");
     fHistNEvents->GetXaxis()->SetBinLabel(11,"D after cuts + PID)");
     fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
-    fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
     
@@ -414,34 +425,39 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xminSo[4]={0., fLowmasslimit,0., firstMultBin};
     Double_t xmaxSo[4]={24., fUpmasslimit, 1., lastMultBin};
     
-    TString histoName;
-    TString histoNameNoPid;
-    TString parName;
+    Int_t nbinsSoSpheri[5]={48, fNMassBins, 20, nMultBins, 20};
+    Double_t xminSoSpheri[5]={0., fLowmasslimit,0., firstMultBin, 0.};
+    Double_t xmaxSoSpheri[5]={24., fUpmasslimit, 1., lastMultBin, 1.};
     
-    if(fCalculateSphericity){
-        histoName = "hSparseSphericity";
-        histoNameNoPid = "hSparseSphericitywithNoPid";
-        parName = "Sphericity";
-    }
-    else{
-        histoName = "hSparseSpherocity";
-        histoNameNoPid = "hSparseSpherocitywithNoPid";
-        parName = "Spherocity";
-    }
+    Int_t nbinsSowithMultUncorr[5]={48, fNMassBins, 20, nMultBins, nMultBins};
+    Double_t xminSowithMultUncorr[5]={0., fLowmasslimit,0., firstMultBin, firstMultBin};
+    Double_t xmaxSowithMultUncorr[5]={24., fUpmasslimit, 1., lastMultBin, lastMultBin};
+    
+    Int_t nbinsSoSpheriwithMultUncorr[6]={48, fNMassBins, 20, nMultBins, nMultBins, 20};
+    Double_t xminSoSpheriwithMultUncorr[6]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0.};
+    Double_t xmaxSoSpheriwithMultUncorr[6]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1.};
+    
+    TString histoName = "hSparseEvtShape";
+    TString histoNameNoPid = "hSparseEvtShapewithNoPid";
+    TString parNameSo = "Spherocity";
+    TString parNameSpheri = "Sphericity";
+    
     if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-        Int_t nbinsSowithMultUncorr[5]={48, fNMassBins, 20, nMultBins, nMultBins};
-        Double_t xminSowithMultUncorr[5]={0., fLowmasslimit,0., firstMultBin, firstMultBin};
-        Double_t xmaxSowithMultUncorr[5]={24., fUpmasslimit, 1., lastMultBin, lastMultBin};
-        fSparseSpherocity = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr;", parName.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
+        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
+        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
     }
     else{
-        fSparseSpherocity = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parName.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
     }
     
-    if(fFillSoSparseChecks == 2|| fFillSoSparseChecks == 3) fSparseSpherocitywithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parName.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+    if(fFillSoSparseChecks == 2|| fFillSoSparseChecks == 3) {
+        if(fCalculateSphericity) fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+        else  fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+    }
     
-    fOutput->Add(fSparseSpherocity);
-    if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseSpherocitywithNoPid);
+    fOutput->Add(fSparseEvtShape);
+    if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseEvtShapewithNoPid);
     
     Int_t nbinsPrompt[4]={48, nMultBins, 20, 100};
     Int_t nbinsFeeddown[4]={48, nMultBins, 20, 100};
@@ -539,481 +555,512 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
 {
-    // Execute analysis for current event:
-    // heavy flavor candidates association to MC truth
+  // Execute analysis for current event:
+  // heavy flavor candidates association to MC truth
     
-    AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
     
-    TClonesArray *arrayCand = 0;
-    TString arrayName="";
-    UInt_t pdgDau[3];
-    Int_t nDau=0;
-    Int_t selbit=0;
-    if(fPdgMeson==411){
-        arrayName="Charm3Prong";
-        pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=211;
-        nDau=3;
-        selbit=AliRDHFCuts::kDplusCuts;
-    }else if(fPdgMeson==421){
-        arrayName="D0toKpi";
-        pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=0;
-        nDau=2;
-        selbit=AliRDHFCuts::kD0toKpiCuts;
-    }else if(fPdgMeson==413){
-        arrayName="Dstar";
-        pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=0; // Quoting here D0 daughters (D* ones on another variable later)
-        nDau=2;
-        selbit=AliRDHFCuts::kDstarCuts;
+  TClonesArray *arrayCand = 0;
+  TString arrayName="";
+  UInt_t pdgDau[3];
+  Int_t nDau=0;
+  Int_t selbit=0;
+  if(fPdgMeson==411){
+    arrayName="Charm3Prong";
+    pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=211;
+    nDau=3;
+    selbit=AliRDHFCuts::kDplusCuts;
+  }else if(fPdgMeson==421){
+    arrayName="D0toKpi";
+    pdgDau[0]=211; pdgDau[1]=321; pdgDau[2]=0;
+    nDau=2;
+    selbit=AliRDHFCuts::kD0toKpiCuts;
+  }else if(fPdgMeson==413){
+    arrayName="Dstar";
+    pdgDau[0]=321; pdgDau[1]=211; pdgDau[2]=0; // Quoting here D0 daughters (D* ones on another variable later)
+    nDau=2;
+    selbit=AliRDHFCuts::kDstarCuts;
+  }
+    
+  if(!aod && AODEvent() && IsStandardAOD()) {
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
+    aod = dynamic_cast<AliAODEvent*> (AODEvent());
+    // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
+    // have to taken from the AOD event hold by the AliAODExtension
+    AliAODHandler* aodHandler = (AliAODHandler*)
+      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    if(aodHandler->GetExtensions()) {
+      AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
+      AliAODEvent *aodFromExt = ext->GetAOD();
+      arrayCand=(TClonesArray*)aodFromExt->GetList()->FindObject(arrayName.Data());
     }
+  } else if(aod) {
+    arrayCand=(TClonesArray*)aod->GetList()->FindObject(arrayName.Data());
+  }
     
-    if(!aod && AODEvent() && IsStandardAOD()) {
-        // In case there is an AOD handler writing a standard AOD, use the AOD
-        // event in memory rather than the input (ESD) event.
-        aod = dynamic_cast<AliAODEvent*> (AODEvent());
-        // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
-        // have to taken from the AOD event hold by the AliAODExtension
-        AliAODHandler* aodHandler = (AliAODHandler*)
-        ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-        if(aodHandler->GetExtensions()) {
-            AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
-            AliAODEvent *aodFromExt = ext->GetAOD();
-            arrayCand=(TClonesArray*)aodFromExt->GetList()->FindObject(arrayName.Data());
-        }
-    } else if(aod) {
-        arrayCand=(TClonesArray*)aod->GetList()->FindObject(arrayName.Data());
-    }
-    
-    if(!aod || !arrayCand) {
-        printf("AliAnalysisTaskSEDvsEventShapes::UserExec: Charm3Prong branch not found!\n");
-        return;
-    }
-    
-    if(fisPPbData && fReadMC){
-        Int_t runnumber = aod->GetRunNumber();
-        if(aod->GetTriggerMask()==0 &&
-           (runnumber>=195344 && runnumber<=195677)){
-            AliDebug(3,"Event rejected because of null trigger mask");
-            return;
-        }
-    }
-    
-    // fix for temporary bug in ESDfilter
-    // the AODs with null vertex pointer didn't pass the PhysSel
-    if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
-    
-    Int_t countTreta1=0, countTreta03=0, countTreta05=0, countTreta16=0;
-    AliAODTracklets* tracklets=aod->GetTracklets();
-    Int_t nTr=tracklets->GetNumberOfTracklets();
-    for(Int_t iTr=0; iTr<nTr; iTr++){
-        Double_t theta=tracklets->GetTheta(iTr);
-        Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-        if(eta>-0.3 && eta<0.3) countTreta03++;
-        if(eta>-0.5 && eta<0.5) countTreta05++;
-        if(eta>-1.0 && eta<1.0) countTreta1++;
-        if(eta>-1.6 && eta<1.6) countTreta16++;
-    }
-    
-    Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
-    Int_t vzeroMultEq=0, vzeroMultAEq=0, vzeroMultCEq=0;
-    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
-    if(vzeroAOD) {
-        vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
-        vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
-        vzeroMult = vzeroMultA + vzeroMultC;
-        vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod));
-        vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod));
-        vzeroMultEq = vzeroMultAEq + vzeroMultCEq;
-    }
-    
-    Int_t countMult = countTreta1;
-    if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
-    else if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
-    else if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
-    else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
-    else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
-    else if(fMultiplicityEstimator==kVZEROEq) { countMult = vzeroMultEq; }
-    else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
-    
-    Double_t spherocity;
-    if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
-        spherocity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
-    }
-    else{
-        spherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
-    }
-    Double_t St=1;
-    // printf("hello \n");
-    fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
-    fHistNEvents->Fill(0); // count event
-    
-    Double_t countTreta1corr=countTreta1;
-    Double_t countCorr=countMult;
-    AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-    // In case of VZERO multiplicity, consider the zvtx correction flag
-    //  fDoVZER0ParamVertexCorr: 0= none, 1= usual d2h, 2=AliESDUtils
-    Bool_t isDataDrivenZvtxCorr=kTRUE;
-    Bool_t isVtxOk=kFALSE;
-    Int_t vzeroMultACorr=vzeroMultA, vzeroMultCCorr=vzeroMultC, vzeroMultCorr=vzeroMult;
-    Int_t vzeroMultAEqCorr=vzeroMultAEq, vzeroMultCEqCorr=vzeroMultCEq, vzeroMultEqCorr=vzeroMultEq;
-    if(vtx1){
-        if(vtx1->GetNContributors()>0){
-            fHistNEvents->Fill(1);
-            isVtxOk=kTRUE;
-        }
-    }
-    if(isVtxOk){
-        if( (fMultiplicityEstimator==kVZERO) || (fMultiplicityEstimator==kVZEROA) ||
-           (fMultiplicityEstimator==kVZEROEq) || (fMultiplicityEstimator==kVZEROAEq) ){
-            if(fDoVZER0ParamVertexCorr==0){
-                // do not correct
-                isDataDrivenZvtxCorr=kFALSE;
-            } else if (fDoVZER0ParamVertexCorr==2){
-                // use AliESDUtils correction
-                Float_t zvtx = vtx1->GetZ();
-                isDataDrivenZvtxCorr=kFALSE;
-                vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultA,zvtx));
-                vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(vzeroMultC,zvtx));
-                vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
-                vzeroMultAEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultAEq,zvtx));
-                vzeroMultCEqCorr =static_cast<Int_t>( AliESDUtils::GetCorrV0C(vzeroMultCEq,zvtx));
-                vzeroMultEqCorr = vzeroMultAEqCorr + vzeroMultCEqCorr;
-                if(fMultiplicityEstimator==kVZERO) { countCorr = vzeroMultCorr; }
-                else if(fMultiplicityEstimator==kVZEROA) { countCorr = vzeroMultACorr; }
-                else if(fMultiplicityEstimator==kVZEROEq) { countCorr = vzeroMultEqCorr; }
-                else if(fMultiplicityEstimator==kVZEROAEq) { countCorr = vzeroMultAEqCorr; }
-            }
-        }
-    }
-    // Data driven multiplicity z-vertex correction
-    if(isVtxOk && isDataDrivenZvtxCorr){
-        TProfile* estimatorAvg = GetEstimatorHistogram(aod);
-        if(estimatorAvg){
-            countTreta1corr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult));
-            countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,vtx1->GetZ(),fRefMult));
-        }
-    }
-    
-    fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);
-    
-    Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
-    
-    if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
-    if(fRDCutsAnalysis->GetWhyRejection()==7) fHistNEvents->Fill(4);
-    if(fRDCutsAnalysis->GetWhyRejection()==6) fHistNEvents->Fill(5);
-    if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(6);
-    
-    Bool_t isEvPSRejected = fRDCutsAnalysis->IsEventRejectedDuePhysicsSelection();
-    
-    if(!isEvPSRejected){
-        fHistNtrCorrPSSel->Fill(countCorr);
-    }
-    
-    TClonesArray *arrayMC=0;
-    AliAODMCHeader *mcHeader=0;
-    
-    // load MC particles
-    if(fReadMC){
-        
-        arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-        if(!arrayMC) {
-            printf("AliAnalysisTaskSEDvsEventShapes::UserExec: MC particles branch not found!\n");
-            return;
-        }
-        // load MC header
-        mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-        if(!mcHeader) {
-            printf("AliAnalysisTaskSEDvsEventShapes::UserExec: MC header branch not found!\n");
-            return;
-        }
-        
-        FillMCGenAccHistos(arrayMC, mcHeader, countCorr, spherocity, isEvSel);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
-    }
-    
-    if(!isEvSel)return;
-    
-    if(vtx1){
-        fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
-        fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countCorr);
-        fHistNtrVsSo->Fill(spherocity,countMult);
-        fHistNtrCorrVsSo->Fill(spherocity,countCorr);
-    }
-    
-    Double_t nchWeight=1.0;
-    
-    if(fReadMC){
-        Int_t nChargedMCEta10=0, nChargedMCEta03=0, nChargedMCEta05=0, nChargedMCEta16=0, nChargedMCEtam37tm17=0, nChargedMCEta28t51=0;
-        Int_t nChargedMCPrimaryEta10=0, nChargedMCPrimaryEta03=0, nChargedMCPrimaryEta05=0, nChargedMCPrimaryEta16=0, nChargedMCPrimaryEtam37tm17=0, nChargedMCPrimaryEta28t51=0;
-        Int_t nChargedMCPhysicalPrimaryEta10=0, nChargedMCPhysicalPrimaryEta03=0, nChargedMCPhysicalPrimaryEta05=0, nChargedMCPhysicalPrimaryEta16=0, nChargedMCPhysicalPrimaryEtam37tm17=0, nChargedMCPhysicalPrimaryEta28t51=0;
-        for(Int_t i=0; i<arrayMC->GetEntriesFast(); i++){
-            AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
-            Int_t charge = part->Charge();
-            Double_t eta = part->Eta();
-            Bool_t isPrim = part->IsPrimary();
-            Bool_t isPhysPrim = part->IsPhysicalPrimary();
-            if(charge!=0) {
-                if(eta>-0.3 && eta< 0.3) {
-                    nChargedMCEta03++;
-                    if(isPrim) nChargedMCPrimaryEta03++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEta03++;
-                }
-                if(eta>-0.5 && eta< 0.5) {
-                    nChargedMCEta05++;
-                    if(isPrim) nChargedMCPrimaryEta05++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEta05++;
-                }
-                if(eta>-1.0 && eta< 1.0) {
-                    nChargedMCEta10++;
-                    if(isPrim) nChargedMCPrimaryEta10++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEta10++;
-                }
-                if(eta>-1.6 && eta< 1.6) {
-                    nChargedMCEta16++;
-                    if(isPrim) nChargedMCPrimaryEta16++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEta16++;
-                }
-                if(eta>-3.7 && eta<-1.7) {
-                    nChargedMCEtam37tm17++;
-                    if(isPrim) nChargedMCPrimaryEtam37tm17++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEtam37tm17++;
-                }
-                if(eta> 2.8 && eta< 5.1) {
-                    nChargedMCEta28t51++;
-                    if(isPrim) nChargedMCPrimaryEta28t51++;
-                    if(isPhysPrim) nChargedMCPhysicalPrimaryEta28t51++;
-                }
-            }
-        }
-        Int_t nChargedMC=nChargedMCEta10;
-        Int_t nChargedMCPrimary=nChargedMCPrimaryEta10;
-        Int_t nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
-        
-        // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
-        if(fUseNchWeight>0){
-            
-            Double_t tmpweight = 1.0;
-            Double_t tmpXweight=nChargedMCPhysicalPrimary; // Nch weights
-            if(fUseNchWeight==2) tmpXweight=countMult;     // Ntrk weights
-            
-            if(tmpXweight<=0) tmpweight = 0.0;
-            else{
-                Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(tmpXweight));
-                //printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
-                Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(tmpXweight));
-                tmpweight = pMC>0 ? pMeas/pMC : 0.;
-            }
-            nchWeight *= tmpweight;
-            AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
-        }
-        
-        // Now recompute the variables in case another MC estimator is considered
-        if(fMCPrimariesEstimator==kEta10to16){
-            nChargedMC = nChargedMCEta16 - nChargedMCEta10;
-            nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;
-            nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta16 - nChargedMCPhysicalPrimaryEta10;
-        } else if(fMCPrimariesEstimator==kEta05){
-            nChargedMC = nChargedMCEta05;
-            nChargedMCPrimary = nChargedMCPrimaryEta05;
-            nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta05;
-        } else if(fMCPrimariesEstimator==kEta03){
-            nChargedMC = nChargedMCEta03;
-            nChargedMCPrimary = nChargedMCPrimaryEta03;
-            nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta03;
-        } else if(fMCPrimariesEstimator==kEtaVZERO){
-            nChargedMC = nChargedMCEtam37tm17 + nChargedMCEta28t51;
-            nChargedMCPrimary = nChargedMCPrimaryEtam37tm17 + nChargedMCPrimaryEta28t51;
-            nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEtam37tm17 + nChargedMCPhysicalPrimaryEta28t51;
-        } else if(fMCPrimariesEstimator==kEtaVZEROA){
-            nChargedMC = nChargedMCEta28t51;
-            nChargedMCPrimary = nChargedMCPrimaryEta28t51;
-            nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta28t51;
-        }
-        // Here fill the MC correlation plots
-        if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
-            fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary,nchWeight);
-        }
-    }
-    
-    Int_t nCand = arrayCand->GetEntriesFast();
-    Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
-    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-    Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
-    Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
-    
-    // pdg of daughters needed for D* too
-    UInt_t pdgDgDStartoD0pi[2]={421,211};
-    
-    Double_t aveMult=0.;
-    Double_t nSelCand=0.;
-    for (Int_t iCand = 0; iCand < nCand; iCand++) {
-        AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
-        AliAODRecoCascadeHF *dCascade = NULL;
-        if(fPdgMeson==413) dCascade = (AliAODRecoCascadeHF*)d;
-        
-        fHistNEvents->Fill(7);
-        if(fUseBit && !d->HasSelectionBit(selbit)){
-            fHistNEvents->Fill(8);
-            continue;
-        }
-        
-        Double_t ptCand = d->Pt();
-        Double_t rapid=d->Y(fPdgMeson);
-        Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
-        if(!isFidAcc) continue;
-        
-        Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
-        Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
-        if(passTopolCuts==0) continue;
-        nSelectedNoPID++;
-        fHistNEvents->Fill(9);
-        if(passAllCuts){
-            nSelectedPID++;
-            fHistNEvents->Fill(10);
-        }
-        Double_t multForCand = countCorr;
-        
-        if(fSubtractTrackletsFromDau){
-            // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
-            AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
-            if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
-            
-            for(Int_t iDau=0; iDau<nDau; iDau++){
-                AliAODTrack *t = NULL;
-                if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
-                else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
-                if(!t) continue;
-                if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
-                    if(multForCand>0) multForCand-=1;
-                }
-            }
-        }
-        Bool_t isPrimary=kTRUE;
-        Double_t trueImpParXY=9999.;
-        Double_t impparXY=d->ImpParXY()*10000.;
-        Double_t dlen=0.1; //FIXME
-        Double_t mass[2];
-        if(fPdgMeson==411){
-            mass[0]=d->InvMass(nDau,pdgDau);
-            mass[1]=-1.;
-            if(TMath::Abs(mass[0]-mDplusPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
-        }else if(fPdgMeson==421){
-            UInt_t pdgdaughtersD0[2]={211,321};//pi,K
-            UInt_t pdgdaughtersD0bar[2]={321,211};//K,pi
-            mass[0]=d->InvMass(2,pdgdaughtersD0);
-            mass[1]=d->InvMass(2,pdgdaughtersD0bar);
-            if(TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs(mass[1]-mD0PDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
-        }else if(fPdgMeson==413){
-            // FIXME
-            mass[0]=dCascade->DeltaInvMass();
-            mass[1]=-1.;
-            if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.0015) nSelectedInMassPeak++; //1 MeV for now... FIXME
-        }
-        
-        Int_t labD=-1;
-        
-        for(Int_t iHyp=0; iHyp<2; iHyp++){
-            if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
-            Double_t invMass=mass[iHyp];
-            Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
-            
-            if(fReadMC){
-                if(fPdgMeson==413){
-                    labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
-                } else {
-                    labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
-                }
-        
-                Bool_t fillHisto=fDoImpPar;
-                if(labD>=0){
-                    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
-                    Int_t code=partD->GetPdgCode();
-                    Int_t Origin = AliVertexingHFUtils::CheckOrigin(arrayMC,partD, fUseQuarkTag);
-                    if(Origin==5) isPrimary=kFALSE;
-                    if(code<0 && iHyp==0) fillHisto=kFALSE;
-                    if(code>0 && iHyp==1) fillHisto=kFALSE;
-                    if(!isPrimary){
-                        if(fPdgMeson==411){
-                            trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDplus(mcHeader,arrayMC,partD)*10000.;
-                        }else if(fPdgMeson==421){
-                            trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDzero(mcHeader,arrayMC,partD)*10000.;
-                        }else if(fPdgMeson==413){
-                            trueImpParXY=0.; /// FIXME
-                        }
-                        Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,multForCand};
-                        if(fillHisto && passAllCuts){
-                            fHistMassPtImpPar[2]->Fill(arrayForSparse);
-                            fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
-                        }
-                    }else{
-                        if(fillHisto && passAllCuts) fHistMassPtImpPar[1]->Fill(arrayForSparse);
-                    }
-                }else{
-                    if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse);
-                }
-                if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
-                if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;
-            }
-            if(fPdgMeson==421){
-                if(iHyp==0 && !(passTopolCuts&1)) continue; // candidate not passing as D0
-                if(iHyp==1 && !(passTopolCuts&2)) continue; // candidate not passing as D0bar
-            }
-            if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3){   //Filling THnSparse for Spherocity without PID
-                fSparseSpherocitywithNoPid->Sumw2();
-                Double_t arrayForSparseSoNoPid[4]={ptCand, invMass, spherocity, multForCand};
-                fSparseSpherocitywithNoPid->Fill(arrayForSparseSoNoPid);
-            }
-            if(fPdgMeson==421){
-                if(iHyp==0 && !(passAllCuts&1)) continue; // candidate not passing as D0
-                if(iHyp==1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
-            }
-            if(passAllCuts){
-                aveMult+=multForCand;
-                nSelCand+=1.;
-                
-                if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-                    fSparseSpherocity->Sumw2();
-                    Double_t arrayForSparseSowithMultUnncorr[5]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1};
-                    fSparseSpherocity->Fill(arrayForSparseSowithMultUnncorr);
-                }
-                else{
-                    fSparseSpherocity->Sumw2();
-                    Double_t arrayForSparseSo[4]={ptCand, invMass, spherocity, multForCand};
-                    fSparseSpherocity->Fill(arrayForSparseSo);
-                }
-                
-                if(labD>=0){
-		  Bool_t keepCase=kTRUE;
-		  if(fPdgMeson==421){
-                    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
-                    Int_t code=partD->GetPdgCode();
-		    if(code<0 && iHyp==0) keepCase=kFALSE;
-                    if(code>0 && iHyp==1) keepCase=kFALSE;
-		  }
-		  if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity);
-                }
-                if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse);
-
-            }
-        }
-    }
-    if(fSubtractTrackletsFromDau && nSelCand>0){
-        aveMult/=nSelCand;
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);
-    }else{
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
-    }
-
-    fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
-    fCounterCandidates->StoreCandidates(aod,nSelectedPID,kFALSE);
-    fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
-    if(nSelectedPID>0)  fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
-    if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
-    
-    PostData(1,fOutput);
-    PostData(2,fListCuts);
-    PostData(3,fOutputCounters);
-    PostData(5,fOutputEffCorr);
-    
+  if(!aod || !arrayCand) {
+    printf("AliAnalysisTaskSEDvsEventShapes::UserExec: Charm3Prong branch not found!\n");
     return;
+  }
+    
+  if(fisPPbData && fReadMC){
+    Int_t runnumber = aod->GetRunNumber();
+    if(aod->GetTriggerMask()==0 &&
+       (runnumber>=195344 && runnumber<=195677)){
+      AliDebug(3,"Event rejected because of null trigger mask");
+      return;
+    }
+  }
+    
+  // fix for temporary bug in ESDfilter
+  // the AODs with null vertex pointer didn't pass the PhysSel
+  if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
+    
+  Int_t countTreta1=0, countTreta03=0, countTreta05=0, countTreta16=0;
+  AliAODTracklets* tracklets=aod->GetTracklets();
+  Int_t nTr=tracklets->GetNumberOfTracklets();
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    Double_t theta=tracklets->GetTheta(iTr);
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    if(eta>-0.3 && eta<0.3) countTreta03++;
+    if(eta>-0.5 && eta<0.5) countTreta05++;
+    if(eta>-1.0 && eta<1.0) countTreta1++;
+    if(eta>-1.6 && eta<1.6) countTreta16++;
+  }
+    
+  Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+  Int_t vzeroMultEq=0, vzeroMultAEq=0, vzeroMultCEq=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+  if(vzeroAOD) {
+    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+    vzeroMult = vzeroMultA + vzeroMultC;
+    vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod));
+    vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod));
+    vzeroMultEq = vzeroMultAEq + vzeroMultCEq;
+  }
+    
+  Int_t countMult = countTreta1;
+  if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
+  else if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
+  else if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
+  else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+  else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
+  else if(fMultiplicityEstimator==kVZEROEq) { countMult = vzeroMultEq; }
+  else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
+    
+  Double_t spherocity;
+  Double_t sphericity;
+  if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
+    sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
+  }
+  spherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
+    
+  Double_t St=1;
+  fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
+  fHistNEvents->Fill(0); // count event
+    
+  Double_t countTreta1corr=countTreta1;
+  Double_t countCorr=countMult;
+  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+  // In case of VZERO multiplicity, consider the zvtx correction flag
+  //  fDoVZER0ParamVertexCorr: 0= none, 1= usual d2h, 2=AliESDUtils
+  Bool_t isDataDrivenZvtxCorr=kTRUE;
+  Bool_t isVtxOk=kFALSE;
+  Int_t vzeroMultACorr=vzeroMultA, vzeroMultCCorr=vzeroMultC, vzeroMultCorr=vzeroMult;
+  Int_t vzeroMultAEqCorr=vzeroMultAEq, vzeroMultCEqCorr=vzeroMultCEq, vzeroMultEqCorr=vzeroMultEq;
+  if(vtx1){
+    if(vtx1->GetNContributors()>0){
+      fHistNEvents->Fill(1);
+      isVtxOk=kTRUE;
+    }
+  }
+  if(isVtxOk){
+    if( (fMultiplicityEstimator==kVZERO) || (fMultiplicityEstimator==kVZEROA) ||
+	(fMultiplicityEstimator==kVZEROEq) || (fMultiplicityEstimator==kVZEROAEq) ){
+      if(fDoVZER0ParamVertexCorr==0){
+	// do not correct
+	isDataDrivenZvtxCorr=kFALSE;
+      } else if (fDoVZER0ParamVertexCorr==2){
+	// use AliESDUtils correction
+	Float_t zvtx = vtx1->GetZ();
+	isDataDrivenZvtxCorr=kFALSE;
+	vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultA,zvtx));
+	vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(vzeroMultC,zvtx));
+	vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
+	vzeroMultAEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultAEq,zvtx));
+	vzeroMultCEqCorr =static_cast<Int_t>( AliESDUtils::GetCorrV0C(vzeroMultCEq,zvtx));
+	vzeroMultEqCorr = vzeroMultAEqCorr + vzeroMultCEqCorr;
+	if(fMultiplicityEstimator==kVZERO) { countCorr = vzeroMultCorr; }
+	else if(fMultiplicityEstimator==kVZEROA) { countCorr = vzeroMultACorr; }
+	else if(fMultiplicityEstimator==kVZEROEq) { countCorr = vzeroMultEqCorr; }
+	else if(fMultiplicityEstimator==kVZEROAEq) { countCorr = vzeroMultAEqCorr; }
+      }
+    }
+  }
+  // Data driven multiplicity z-vertex correction
+  if(isVtxOk && isDataDrivenZvtxCorr){
+    TProfile* estimatorAvg = GetEstimatorHistogram(aod);
+    if(estimatorAvg){
+      countTreta1corr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult));
+      countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,vtx1->GetZ(),fRefMult));
+    }
+  }
+    
+  fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);
+    
+  Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
+    
+  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
+  if(fRDCutsAnalysis->GetWhyRejection()==7) fHistNEvents->Fill(4);
+  if(fRDCutsAnalysis->GetWhyRejection()==6) fHistNEvents->Fill(5);
+  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(6);
+    
+  Bool_t isEvPSRejected = fRDCutsAnalysis->IsEventRejectedDuePhysicsSelection();
+    
+  if(!isEvPSRejected){
+    fHistNtrCorrPSSel->Fill(countCorr);
+  }
+    
+  TClonesArray *arrayMC=0;
+  AliAODMCHeader *mcHeader=0;
+    
+  // load MC particles
+  if(fReadMC){
+        
+    arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if(!arrayMC) {
+      printf("AliAnalysisTaskSEDvsEventShapes::UserExec: MC particles branch not found!\n");
+      return;
+    }
+    // load MC header
+    mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if(!mcHeader) {
+      printf("AliAnalysisTaskSEDvsEventShapes::UserExec: MC header branch not found!\n");
+      return;
+    }
+        
+    FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, isEvSel);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
+  }
+    
+  if(!isEvSel)return;
+    
+  if(vtx1){
+    fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
+    fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countCorr);
+    fHistNtrVsSo->Fill(spherocity,countMult);
+    fHistNtrCorrVsSo->Fill(spherocity,countCorr);
+    if(fCalculateSphericity){
+      fHistNtrVsSpheri->Fill(sphericity,countMult);
+      fHistNtrCorrVsSpheri->Fill(sphericity,countCorr);
+    }
+  }
+    
+  Double_t nchWeight=1.0;
+    
+  if(fReadMC){
+    Int_t nChargedMCEta10=0, nChargedMCEta03=0, nChargedMCEta05=0, nChargedMCEta16=0, nChargedMCEtam37tm17=0, nChargedMCEta28t51=0;
+    Int_t nChargedMCPrimaryEta10=0, nChargedMCPrimaryEta03=0, nChargedMCPrimaryEta05=0, nChargedMCPrimaryEta16=0, nChargedMCPrimaryEtam37tm17=0, nChargedMCPrimaryEta28t51=0;
+    Int_t nChargedMCPhysicalPrimaryEta10=0, nChargedMCPhysicalPrimaryEta03=0, nChargedMCPhysicalPrimaryEta05=0, nChargedMCPhysicalPrimaryEta16=0, nChargedMCPhysicalPrimaryEtam37tm17=0, nChargedMCPhysicalPrimaryEta28t51=0;
+    for(Int_t i=0; i<arrayMC->GetEntriesFast(); i++){
+      AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
+      Int_t charge = part->Charge();
+      Double_t eta = part->Eta();
+      Bool_t isPrim = part->IsPrimary();
+      Bool_t isPhysPrim = part->IsPhysicalPrimary();
+      if(charge!=0) {
+	if(eta>-0.3 && eta< 0.3) {
+	  nChargedMCEta03++;
+	  if(isPrim) nChargedMCPrimaryEta03++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta03++;
+	}
+	if(eta>-0.5 && eta< 0.5) {
+	  nChargedMCEta05++;
+	  if(isPrim) nChargedMCPrimaryEta05++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta05++;
+	}
+	if(eta>-1.0 && eta< 1.0) {
+	  nChargedMCEta10++;
+	  if(isPrim) nChargedMCPrimaryEta10++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta10++;
+	}
+	if(eta>-1.6 && eta< 1.6) {
+	  nChargedMCEta16++;
+	  if(isPrim) nChargedMCPrimaryEta16++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta16++;
+	}
+	if(eta>-3.7 && eta<-1.7) {
+	  nChargedMCEtam37tm17++;
+	  if(isPrim) nChargedMCPrimaryEtam37tm17++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEtam37tm17++;
+	}
+	if(eta> 2.8 && eta< 5.1) {
+	  nChargedMCEta28t51++;
+	  if(isPrim) nChargedMCPrimaryEta28t51++;
+	  if(isPhysPrim) nChargedMCPhysicalPrimaryEta28t51++;
+	}
+      }
+    }
+    Int_t nChargedMC=nChargedMCEta10;
+    Int_t nChargedMCPrimary=nChargedMCPrimaryEta10;
+    Int_t nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
+        
+    // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
+    if(fUseNchWeight>0){
+            
+      Double_t tmpweight = 1.0;
+      Double_t tmpXweight=nChargedMCPhysicalPrimary; // Nch weights
+      if(fUseNchWeight==2) tmpXweight=countMult;     // Ntrk weights
+            
+      if(tmpXweight<=0) tmpweight = 0.0;
+      else{
+	Double_t pMeas = fHistoMeasNch->GetBinContent(fHistoMeasNch->FindBin(tmpXweight));
+	//printf(" pMeas=%2.2f  and histo MCNch %s \n",pMeas,fHistoMCNch);
+	Double_t pMC = fHistoMCNch->GetBinContent(fHistoMCNch->FindBin(tmpXweight));
+	tmpweight = pMC>0 ? pMeas/pMC : 0.;
+      }
+      nchWeight *= tmpweight;
+      AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
+    }
+        
+    // Now recompute the variables in case another MC estimator is considered
+    if(fMCPrimariesEstimator==kEta10to16){
+      nChargedMC = nChargedMCEta16 - nChargedMCEta10;
+      nChargedMCPrimary = nChargedMCPrimaryEta16 - nChargedMCPrimaryEta10;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta16 - nChargedMCPhysicalPrimaryEta10;
+    } else if(fMCPrimariesEstimator==kEta05){
+      nChargedMC = nChargedMCEta05;
+      nChargedMCPrimary = nChargedMCPrimaryEta05;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta05;
+    } else if(fMCPrimariesEstimator==kEta03){
+      nChargedMC = nChargedMCEta03;
+      nChargedMCPrimary = nChargedMCPrimaryEta03;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta03;
+    } else if(fMCPrimariesEstimator==kEtaVZERO){
+      nChargedMC = nChargedMCEtam37tm17 + nChargedMCEta28t51;
+      nChargedMCPrimary = nChargedMCPrimaryEtam37tm17 + nChargedMCPrimaryEta28t51;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEtam37tm17 + nChargedMCPhysicalPrimaryEta28t51;
+    } else if(fMCPrimariesEstimator==kEtaVZEROA){
+      nChargedMC = nChargedMCEta28t51;
+      nChargedMCPrimary = nChargedMCPrimaryEta28t51;
+      nChargedMCPhysicalPrimary = nChargedMCPhysicalPrimaryEta28t51;
+    }
+    // Here fill the MC correlation plots
+    if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
+      fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary,nchWeight);
+    }
+  }
+    
+  Int_t nCand = arrayCand->GetEntriesFast();
+  Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
+  Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    
+  // pdg of daughters needed for D* too
+  UInt_t pdgDgDStartoD0pi[2]={421,211};
+    
+  Double_t aveMult=0.;
+  Double_t nSelCand=0.;
+  for (Int_t iCand = 0; iCand < nCand; iCand++) {
+    AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
+    AliAODRecoCascadeHF *dCascade = NULL;
+    if(fPdgMeson==413) dCascade = (AliAODRecoCascadeHF*)d;
+        
+    fHistNEvents->Fill(7);
+    if(fUseBit && !d->HasSelectionBit(selbit)){
+      fHistNEvents->Fill(8);
+      continue;
+    }
+        
+    Double_t ptCand = d->Pt();
+    Double_t rapid=d->Y(fPdgMeson);
+    Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
+    if(!isFidAcc) continue;
+        
+    Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+    Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
+    if(passTopolCuts==0) continue;
+    nSelectedNoPID++;
+    fHistNEvents->Fill(9);
+    if(passAllCuts){
+      nSelectedPID++;
+      fHistNEvents->Fill(10);
+    }
+    Double_t multForCand = countCorr;
+        
+    if(fSubtractTrackletsFromDau){
+      // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+      AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
+      if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+            
+      for(Int_t iDau=0; iDau<nDau; iDau++){
+	AliAODTrack *t = NULL;
+	if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
+	else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
+	if(!t) continue;
+	if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
+	  if(multForCand>0) multForCand-=1;
+	}
+      }
+    }
+        
+    if(fRecomputeSpherocity){
+      // subtract D-meson daughters from spherocity calculation !!
+      Int_t totTrkToSkip = d->GetNDaughters();
+      const Int_t nTrkToSkip = totTrkToSkip;
+      Int_t idToSkip[nTrkToSkip];
+      for(Int_t i=0; i<nTrkToSkip; i++) idToSkip[i]=-1;
+          
+      for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
+	AliAODTrack *t = NULL;
+	t = dynamic_cast<AliAODTrack*>(d->GetDaughter(iDau));
+	if(!t) continue;
+	idToSkip[iDau] = t->GetID();
+      }
+      spherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+    }
+        
+    Bool_t isPrimary=kTRUE;
+    Double_t trueImpParXY=9999.;
+    Double_t impparXY=d->ImpParXY()*10000.;
+    Double_t dlen=0.1; //FIXME
+    Double_t mass[2];
+    if(fPdgMeson==411){
+      mass[0]=d->InvMass(nDau,pdgDau);
+      mass[1]=-1.;
+      if(TMath::Abs(mass[0]-mDplusPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
+    }else if(fPdgMeson==421){
+      UInt_t pdgdaughtersD0[2]={211,321};//pi,K
+      UInt_t pdgdaughtersD0bar[2]={321,211};//K,pi
+      mass[0]=d->InvMass(2,pdgdaughtersD0);
+      mass[1]=d->InvMass(2,pdgdaughtersD0bar);
+      if(TMath::Abs(mass[0]-mD0PDG)<0.02 || TMath::Abs(mass[1]-mD0PDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
+    }else if(fPdgMeson==413){
+      // FIXME
+      mass[0]=dCascade->DeltaInvMass();
+      mass[1]=-1.;
+      if(TMath::Abs(mass[0]-(mDstarPDG-mD0PDG))<0.0015) nSelectedInMassPeak++; //1 MeV for now... FIXME
+    }
+        
+    Int_t labD=-1;
+        
+    for(Int_t iHyp=0; iHyp<2; iHyp++){
+      if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
+      Double_t invMass=mass[iHyp];
+      Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
+            
+      if(fReadMC){
+	if(fPdgMeson==413){
+	  labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+	} else {
+	  labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
+	}
+                
+	Bool_t fillHisto=fDoImpPar;
+	if(labD>=0){
+	  AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+	  Int_t code=partD->GetPdgCode();
+	  Int_t Origin = AliVertexingHFUtils::CheckOrigin(arrayMC,partD, fUseQuarkTag);
+	  if(Origin==5) isPrimary=kFALSE;
+	  if(code<0 && iHyp==0) fillHisto=kFALSE;
+	  if(code>0 && iHyp==1) fillHisto=kFALSE;
+	  if(!isPrimary){
+	    if(fPdgMeson==411){
+	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDplus(mcHeader,arrayMC,partD)*10000.;
+	    }else if(fPdgMeson==421){
+	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDzero(mcHeader,arrayMC,partD)*10000.;
+	    }else if(fPdgMeson==413){
+	      trueImpParXY=0.; /// FIXME
+	    }
+	    Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,multForCand};
+	    if(fillHisto && passAllCuts){
+	      fHistMassPtImpPar[2]->Fill(arrayForSparse);
+	      fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
+	    }
+	  }else{
+	    if(fillHisto && passAllCuts) fHistMassPtImpPar[1]->Fill(arrayForSparse);
+	  }
+	}else{
+	  if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse);
+	}
+	if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
+	if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;
+      }
+      if(fPdgMeson==421){
+	if(iHyp==0 && !(passTopolCuts&1)) continue; // candidate not passing as D0
+	if(iHyp==1 && !(passTopolCuts&2)) continue; // candidate not passing as D0bar
+      }
+      if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3){   //Filling THnSparse for Spherocity without PID
+	if(fCalculateSphericity){ 
+	  Double_t arrayForSparseSoNoPid[5]={ptCand, invMass, spherocity, multForCand, sphericity};
+	  fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid);
+	}else{ 
+	  Double_t arrayForSparseSoNoPid[4]={ptCand, invMass, spherocity, multForCand};
+	  fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid);
+	}
+      }
+      if(fPdgMeson==421){
+	if(iHyp==0 && !(passAllCuts&1)) continue; // candidate not passing as D0
+	if(iHyp==1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
+      }
+      if(passAllCuts){
+	aveMult+=multForCand;
+	nSelCand+=1.;
+                
+	if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
+	  if(fCalculateSphericity){ 
+	    Double_t arrayForSparseSowithMultUnncorr[6]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1, sphericity}; 
+	    fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr);
+	  }else{ 
+	    Double_t arrayForSparseSowithMultUnncorr[5]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1}; 
+	    fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr);
+	  }
+	}
+	else{
+	  if(fCalculateSphericity){ 
+	    Double_t arrayForSparseSo[5]={ptCand, invMass, spherocity, multForCand, sphericity};
+	    fSparseEvtShape->Fill(arrayForSparseSo);
+	  }else{ 
+	    Double_t arrayForSparseSo[4]={ptCand, invMass, spherocity, multForCand};
+	    fSparseEvtShape->Fill(arrayForSparseSo);
+	  }
+	}
+                
+	if(labD>=0){
+	  Bool_t keepCase=kTRUE;
+	  if(fPdgMeson==421){
+	    AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+	    Int_t code=partD->GetPdgCode();
+	    if(code<0 && iHyp==0) keepCase=kFALSE;
+	    if(code>0 && iHyp==1) keepCase=kFALSE;
+	  }
+	  if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity);
+	}
+	if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse);
+      }
+    }
+  }
+  if(fSubtractTrackletsFromDau && nSelCand>0){
+    aveMult/=nSelCand;
+    fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);
+  }else{
+    fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
+  }
+    
+  fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
+  fCounterCandidates->StoreCandidates(aod,nSelectedPID,kFALSE);
+  fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
+  if(nSelectedPID>0)  fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
+  if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
+    
+  PostData(1,fOutput);
+  PostData(2,fListCuts);
+  PostData(3,fOutputCounters);
+  PostData(5,fOutputEffCorr);
+    
+  return;
 }
 
 //________________________________________________________________________
@@ -1161,18 +1208,50 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel){
+void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel){
     
     /// Fill MC acceptance histos at generator level
     
     Int_t nProng=2;
-    Int_t totPart = arrayMC->GetEntriesFast();
+    Int_t totPart = arrayMC->GetEntriesFast(); //number of particles
+    Int_t totTracks = aod->GetNumberOfTracks(); // number of tracks
+    
+    const Int_t nPart = totPart;
+    Int_t trkToSkip[nPart];
+    for(Int_t i=0; i<nPart; i++) trkToSkip[i]=-1; //stores ID of tracks at i'th label of particle
+    
+    if(fRecomputeSpherocity){
+        for(Int_t it=0; it<totTracks; it++){
+            AliAODTrack *t=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+            if(!t) continue;
+            if(!(t->TestFilterMask(BIT(4)))) continue;
+            //if(!(t->HasPointOnITSLayer(0)) && !(t->HasPointOnITSLayer(1))) continue;
+            
+            Int_t lab=t->GetLabel();
+            Int_t id=t->GetID();
+            Double_t pt = t->Pt();
+            if(id<0) continue;
+            if(pt<0.3) continue;
+            if(lab<0) lab = -1*lab;
+            AliAODMCParticle* genDup = dynamic_cast<AliAODMCParticle*>(arrayMC->At(lab));
+            Double_t xver = genDup->Xv();
+            Double_t yver = genDup->Yv();
+            Double_t rver = TMath::Sqrt(xver*xver + yver*yver);
+            if(rver>3) continue;
+	    //            if(trkToSkip[lab]!=-1) cout << "Duplicate entry at track "<<it<<" previous ID is "<<trkToSkip[lab]<<endl;
+            trkToSkip[lab] = id;
+        }
+    }
     
     if(fPdgMeson==421){
         nProng=2;
     }else if(fPdgMeson==411 || fPdgMeson==431){
         nProng=3;
     }
+    
+    Int_t nTrkToSkip = nProng;
+    Int_t idToSkip[nTrkToSkip];
+    for(Int_t i=0; i<nPart; i++) trkToSkip[i]=-1;
     
     Double_t zMCVertex = mcHeader->GetVtxZ(); //vertex MC
     
@@ -1205,6 +1284,19 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(TClonesArray *arrayMC, 
             
             if(labDau[0]==-1){
                 continue; //protection against unfilled array of labels
+            }
+            
+            if(fRecomputeSpherocity && isGoodDecay){
+                for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
+                    Int_t indexDau = mcGenPart->GetDaughter(iDau);  //index of daughter i.e. label
+                    if(indexDau<0) {
+		      //cout << "HERE negative indexDau at track "<<endl; 
+		      indexDau = -1*indexDau;
+		    }
+                    idToSkip[iDau] = trkToSkip[indexDau];
+                }
+                spherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+                
             }
             
             Double_t pt = mcGenPart->Pt();
