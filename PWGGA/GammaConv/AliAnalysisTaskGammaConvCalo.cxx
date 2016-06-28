@@ -3363,8 +3363,8 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
         
         if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-          if (!fDoLightOutput && matched){
-            fHistoMotherMatchedInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
+          if (matched){
+            if(!fDoLightOutput) fHistoMotherMatchedInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
           }else {
             fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
           }
