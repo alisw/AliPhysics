@@ -112,9 +112,7 @@ AliEMCALRawResponse::RawSampledResponse(Double_t dtime, Double_t damp,
       noise = gRandom->Gaus(0.,fgFEENoise);
       signal += noise; 
     }
-    
-    if(signal < 6) continue;
-    
+        
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     
     if ( adcH[iTime] > MAXBINVALUE ) // larger than 10 bits 
