@@ -252,6 +252,8 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   
   //prepare rho from data to be used as weighting factor
   if(!fPathRhoDistr.IsNull() && !fNameTHnSparseRhoDistr.IsNull()){
+  	  fhRhoData = new TH1D*[fnPtDetBinsForRho];
+  	  fhRhoMData = new TH1D*[fnPtDetBinsForRho];
   	  if(fPathRhoDistr.Contains("alien")) {
   	  	  TGrid::Connect("alien://");
   	  }
@@ -570,8 +572,7 @@ void AliAnalysisTaskJetShapeBase::SetRhoWeights(Int_t nbins, Double_t *binlims, 
 	
 	fMaxRhoAvail = maxrho;
 
-	fhRhoData = new TH1D*[fnPtDetBinsForRho];
-	fhRhoMData = new TH1D*[fnPtDetBinsForRho];
+	Printf("Set Rho Weights done");
 	return;
 }
 
@@ -600,7 +601,7 @@ Double_t AliAnalysisTaskJetShapeBase::GetRhoFactor(Double_t ptdet, Double_t rhoC
 	}
 	
 	binrho = fhRhoData[binpt]->FindBin(rhoCurrent);
-	if(rhoCurrent > 4 && binpt == 1) Printf("Bin rho is %d (%f) -> %f", binrho, rhoCurrent,  fhRhoData[binpt]->GetBinContent(binrho));
+	//if(rhoCurrent > 4 && binpt == 1) Printf("Bin rho is %d (%f) -> %f", binrho, rhoCurrent,  fhRhoData[binpt]->GetBinContent(binrho));
 	
 	return fhRhoData[binpt]->GetBinContent(binrho);
 }
