@@ -89,6 +89,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fVecD(0x0),
   fVecP(0x0),
   fnPtDetBinsForRho(-1),
+  fnBinsLimsForRho(0),
   fPtDetBinsForRho(),
   fPathRhoDistr(""),
   fNameTHnSparseRhoDistr(""),
@@ -181,6 +182,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fVecD(0x0),
   fVecP(0x0), 
   fnPtDetBinsForRho(-1),
+  fnBinsLimsForRho(0),
   fPtDetBinsForRho(),
   fPathRhoDistr(""),
   fNameTHnSparseRhoDistr(""),
@@ -563,8 +565,9 @@ void AliAnalysisTaskJetShapeBase::SetRhoWeights(Int_t nbins, Double_t *binlims, 
 	Printf("AliAnalysisTaskJetShapeBase Info: Setting up rho weights. They'll be read in the UserCreateOutputObject");
 	
 	fnPtDetBinsForRho = nbins;
-	fPtDetBinsForRho = new Double_t[fnPtDetBinsForRho+1];
-	for(Int_t i = 0; i<fnPtDetBinsForRho+1; i++){
+	fnBinsLimsForRho = nbins+1;
+	fPtDetBinsForRho = new Double_t[fnBinsLimsForRho];
+	for(Int_t i = 0; i<fnBinsLimsForRho; i++){
 		fPtDetBinsForRho[i] = binlims[i];
 	}
 	fPathRhoDistr = pathname;

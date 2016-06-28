@@ -135,7 +135,10 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   TLorentzVector *fVecD;                                           //!<! vector with detector level jet
   TLorentzVector *fVecP;                                           //!<! vector with particle level jet
   Int_t          fnPtDetBinsForRho;                                ///< Number of data rho (rhom) distributions in input (they are pT bins, 2 is pretty fine). If it is -1 (default) do not use this weighting
-  Double_t       *fPtDetBinsForRho;                                ///< limits of the pT bins corresponding to each rho (rhom) distribution from data
+  Int_t          fnBinsLimsForRho;                                 ///< number of limits, namely fnPtDetBinsForRho+1
+  /// limits of the pT bins corresponding to each rho (rhom) distribution from data
+  Double_t       *fPtDetBinsForRho;                            //[fnBinsLimsForRho]                    
+  
   TString        fPathRhoDistr;                                    ///< path to the file where the rho distibution from data is. Can be an alien path.
   TString        fNameTHnSparseRhoDistr;                           ///< base name of the histograms to be read (e.g."hRhoDataR_Bin"), the bin number is added
   TH1D           **fhRhoData;                                     //!<! rho distributions from data for different bins of pTDet leading
