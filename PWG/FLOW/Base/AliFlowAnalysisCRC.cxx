@@ -16862,6 +16862,8 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
   for (Int_t c=0; c<2; c++) {
     fhZNvsCen[c] = NULL;
     fhZNvsTCen[c] = NULL;
+  }
+  for (Int_t c=0; c<fZDCESEnCl+1; c++) {
     fhCenvsMul[c] = NULL;
   }
   fhZNvsMul = NULL;
@@ -16996,7 +16998,9 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
     fhZNvsTCen[c] = new TH2F(Form("fhZNvsTCen[%d]",c), Form("fhZNvsTCen[%d]",c), 100, 0., 100., 500, 0., 200.);
     fhZNvsTCen[c]->Sumw2();
     fVariousList->Add(fhZNvsTCen[c]);
-    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 625, 0., 25000, 500, 0., 100.);
+  }
+  for (Int_t c=0; c<fZDCESEnCl+1; c++) {
+    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 625, 0., 2500.);
     fhCenvsMul[c]->Sumw2();
     fVariousList->Add(fhCenvsMul[c]);
   }
@@ -18387,9 +18391,12 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
     fhZNCvsZNA[fCenBin]->Fill(fZNCen,fZNAen);
     fhZNvsCen[0]->Fill(fCentralityEBE,fZNCen+fZNAen);
     fhZNvsCen[1]->Fill(fNewCentralityEBE,fZNCen+fZNAen);
-    fhCenvsMul[0]->Fill(VZM,fCentralityEBE);
-    fhCenvsMul[1]->Fill(VZM,fNewCentralityEBE);
     fhZNvsMul->Fill(VZM,fZNCen+fZNAen);
+    
+    if(fZDCESEclEbE>=0 && fZDCESEclEbE<fZDCESEnCl) {
+      fhCenvsMul[fZDCESEclEbE]->Fill(fCentralityEBE,fNumberOfPOIsEBE);
+      fhCenvsMul[fZDCESEnCl]->Fill(fCentralityEBE,fNumberOfPOIsEBE);
+    }
   }
   
   return PassZDCcuts;
@@ -25526,9 +25533,12 @@ void AliFlowAnalysisCRC::GetPointersForVarious()
     if(ZNvsCen) this->SetZNvsCen(ZNvsCen,c);
     TH2F* ZNvsTCen = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNvsTCen[%d]",c)));
     if(ZNvsTCen) this->SetZNvsTCen(ZNvsTCen,c);
+  }
+  for (Int_t c=0; c<fZDCESEnCl+1; c++) {
     TH2F* CenvsMul = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhCenvsMul[%d]",c)));
     if(CenvsMul) this->SetCenvsMul(CenvsMul,c);
   }
+    
   TH2F* ZNvsMul = dynamic_cast<TH2F*>(fVariousList->FindObject("fhZNvsMul"));
   if(ZNvsMul) this->SetZNvsMul(ZNvsMul);
   
