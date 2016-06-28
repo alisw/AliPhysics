@@ -126,6 +126,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
      
   } else fRhoM = rhomParam->GetVal();
   
+  
   Int_t njet1 = 0, ntagjet2 = 0;
   
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
@@ -175,6 +176,9 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t var = mjetS;
       //Double_t ptjetSMinusEmbTrpt = ptjetS;
       Double_t ptjetSMinusEmbTrpt = ptUnsubjet1;
+      
+      Double_t rhofactor = GetRhoFactor(ptjet1, fRho); // the pt used in the mass task is the one subtracted with area based method
+      
       if(fJetMassVarType==kRatMPt) {
       	 if(ptjetS>0. || ptjetS<0.) var = mjetS/ptjetS;
       	 else var = -999.;
@@ -287,13 +291,15 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       	 if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
       	 //M sub;M true;#it{p}_{T,sub};#it{p}_{T,true};#it{p}_{T,lead trk}
+      	 if(fRho > 4 && ptjet1 > 40) Printf("Bin rho is (%f) -> %f", fRho,  rhofactor);
+      	 fRhoFactorQA->Fill(rhofactor);
       	 if(fFromTree){
       	 	// Mass sub; Mass true;#it{p}_{T,sub};#it{p}_{T,true};%s (emb, det); #it{p}_{T,emb det}; #rho; #rho_{m};
       	    Double_t varsp[8] = {var,var2,ptjetS,ptJetR, fVecD->M(), fVecD->Pt(), fRho, fRhoM};
-      	    fhnMassResponse[fCentBin]->Fill(varsp);
+      	    fhnMassResponse[fCentBin]->Fill(varsp, rhofactor);
       	 } else {
       	    Double_t varsp[7] = {var,var2,ptjetS,ptJetR,jetS->MaxTrackPt(), fRho, fRhoM};
-      	    fhnMassResponse[fCentBin]->Fill(varsp);
+      	    fhnMassResponse[fCentBin]->Fill(varsp, rhofactor);
       	 }
       	 Double_t varsp1[8];
       	 //#it{M}_{det,Const} - #it{M}_{part}; #it{p}_{T,det,Const} - #it{p}_{T,part}; #it{M}_{det,Const};  #it{M}_{part}; #it{p}_{T,det,Const}; #it{p}_{T,part}; #it{p}_{T,det,A}
