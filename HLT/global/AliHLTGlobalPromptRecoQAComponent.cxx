@@ -352,6 +352,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
   // see header file for class documentation
   int iResult=0;
 
+  //Disable adding histograms to gDirectory
+  TH1::AddDirectory(kFALSE);
+
   //Init the CTP data
   if (SetupCTPData() == -ENOMEM)
   {
