@@ -276,6 +276,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // compressed cluster ids 
     handler->CreateConfiguration("TPC-compressed-cluster-ids", "BlockFilter"   , "TPC-compression", "-datatype 'CLIDSTRK' 'TPC ' -datatype 'REMCLIDS' 'TPC '");  
+    handler->CreateConfiguration("TPC-compressed-clusters-no-ids", "BlockFilter"   , "TPC-compression", "-datatype 'COMPDESC' 'TPC ' -datatype 'CLUSNOTC' 'TPC ' -datatype 'REMCLSCM' 'TPC ' -datatype 'CLSTRKCM' 'TPC ' -datatype 'CLSFLAGS' 'TPC '");
  
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
