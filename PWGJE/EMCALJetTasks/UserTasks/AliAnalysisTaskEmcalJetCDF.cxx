@@ -1372,7 +1372,7 @@ std::vector<Int_t> NS_AliAnalysisTaskEmcalJetCDF::SortTracksPt ( AliVEvent* even
   for ( Int_t i_entry = 0; i_entry < entries; i_entry++ )
       {
       AliVParticle* track = event->GetTrack ( i_entry );
-      if ( !track ) { cout << Form ("Unable to find track %d in collection %s", i_entry, event->GetName()) << endl ; continue; }
+      if ( !track ) { std::cout << Form ("Unable to find track %d in collection %s", i_entry, event->GetName()) << std::endl ; continue; }
 
       pair_list.push_back ( std::make_pair ( track->Pt(), i_entry ) );
       }
