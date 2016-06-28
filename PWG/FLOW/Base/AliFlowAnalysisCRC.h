@@ -1659,7 +1659,7 @@ private:
  TH2F* fhZNResvsCen[fCRCMaxnCen][2]; //! res vs rad
  TH2F* fhZNvsCen[2]; //! cen vs mul
   TH2F* fhZNvsTCen[2]; //! cen vs mul
-  TH2F* fhCenvsMul[2]; //! cen vs mul
+  TH2F* fhCenvsMul[fZDCESEnCl+1]; //! cen vs mul
   TH2F* fhZNvsMul; //! cen vs mul
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   TF1 *fPolMin[2]; //!
