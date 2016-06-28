@@ -78,6 +78,7 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fVerbosity(0)
   , fESD(NULL)
   , fESDfriend(NULL)
+  , fScaleDownTracks(0)
   , fSolenoidBz(-5.00668)
   , fMakeFriends(0)
   , fBenchmark("EsdConverter")
@@ -103,71 +104,10 @@ AliHLTGlobalEsdConverterComponent::~AliHLTGlobalEsdConverterComponent()
   }
 }
 
-int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
-{
-  // see header file for class documentation
-  int iResult=0;
-  if (!arguments) return iResult;
-
-  TString allArgs=arguments;
-  TString argument;
-  int bMissingParam=0;
-
-  TObjArray* pTokens=allArgs.Tokenize(" ");
-  if (pTokens) {
-    for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->String();	
-      if (argument.IsNull()) continue;
-      
-      if (argument.CompareTo("-solenoidBz")==0) {
-	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
-	continue;
-      } else if (argument.CompareTo("-make-friends")==0) {
-	fMakeFriends = 1;
-      }	else {
-	HLTError("unknown argument %s", argument.Data());
-	iResult=-EINVAL;
-	break;
-      }
-    }
-    delete pTokens;
-  }
-  if (bMissingParam) {
-    HLTError("missing parameter for argument %s", argument.Data());
-    iResult=-EINVAL;
-  }
-
-  return iResult;
-}
-
 int AliHLTGlobalEsdConverterComponent::Reconfigure(const char* cdbEntry, const char* chainId)
 {
   // see header file for class documentation
-  int iResult=0;
-  const char* path=NULL;
-  const char* defaultNotify="";
-  if (cdbEntry) {
-    path=cdbEntry;
-    defaultNotify=" (default)";
-  }
-  if (path) {
-    HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
-    if (pEntry) {
-      TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
-      if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->String().Data());
-	iResult=Configure(pString->String().Data());
-      } else {
-	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
-      }
-    } else {
-      HLTError("can not fetch object \"%s\" from CDB", path);
-    }
-  }
-  
-  return iResult;
+  return 0;
 }
 
 void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
@@ -270,6 +210,9 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	continue;
       } else if (argument.CompareTo("-make-friends")==0) {
 	fMakeFriends = 1;      
+      } else if ( argument.CompareTo( "-ScaleDownTracks" ) == 0 ) {
+	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
+        fScaleDownTracks = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       } else if (argument.Contains("-skipobject=")) {
 	argument.ReplaceAll("-skipobject=", "");
 	skipObjects=argument;
@@ -513,8 +456,34 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     fPartitionClusters[i]  = 0;
     fNPartitionClusters[i] = 0;    
   }
+  
+  bool storeTracks = true;
+  if (fScaleDownTracks)
+  {
+    bool tracksPresent = 0;
+    static int nEventsWithTracks = 0;
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);pBlock!=NULL; pBlock=GetNextInputBlock())
+    {
+      if (((AliHLTTracksData*) pBlock->fPtr)->fCount)
+      {
+        tracksPresent = 1;
+      }
+    }
+    {
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData | kAliHLTDataOriginITS);
+      if (pBlock)
+      {
+        AliHLTITSSAPTrackerDataContainer* inPtr = reinterpret_cast<AliHLTITSSAPTrackerDataContainer*>(pBlock->fPtr);
+        if (inPtr->fCount) tracksPresent = 1;
+      }
+    }
+    if (tracksPresent)
+    {
+      if (++nEventsWithTracks % fScaleDownTracks) storeTracks = false;
+    }
+  }
 
-  if( pESDfriend ){
+  if( pESDfriend && storeTracks){
 
     int nInputClusters = 0;
     
@@ -652,7 +621,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   std::map<int,int> mapTpcId2esdId;
 
   // 2) convert the TPC tracks to ESD tracks
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
+  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     if (pInputESD && pInputESD->GetNumberOfTracks()>0) {
       HLTWarning("Tracks array already filled from the input esd block, additional filling from TPC tracks block might cause inconsistent content");
@@ -842,7 +811,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // Get ITS Standalone primary (SAP) Tracks
 
-  {
+  if (storeTracks) {
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
     if (pBlock) {
       fBenchmark.AddInput(pBlock->fSize);
@@ -882,7 +851,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // Furthermore there seems to be a bug as the data blocks describe track parameters around the
   // vertex, not at the outer ITS
   // bug https://savannah.cern.ch/bugs/index.php?69872
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
+  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
@@ -908,7 +877,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
   // 3.2. now update ESD tracks with the ITS info
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
+  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
@@ -989,7 +958,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // TODO 2010-07-12 this propagates also the TPC inner param to beamline
   // sounds not very reasonable
   // https://savannah.cern.ch/bugs/index.php?69873
-  if( pESD->GetPrimaryVertex() && pESD->GetPrimaryVertex()->GetStatus() ){
+  if( storeTracks && pESD->GetPrimaryVertex() && pESD->GetPrimaryVertex()->GetStatus() ){
     for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
       if (!pESD->GetTrack(i) || 
 	  !pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
@@ -1010,7 +979,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // with the current sequence we have the latter case as the DCA operations above
   // change the TPC inner parameters
   /*
-  for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
+  if (storeTracks) for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
     if (!pESD->GetTrack(i) || 
 	!pESD->GetTrack(i)->GetTPCInnerParam() ||
 	pESD->GetTrack(i)->IsOn(AliESDtrack::kTPCrefit)) continue;
@@ -1022,7 +991,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   */
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
+  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
@@ -1206,7 +1175,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     }
   }
 
-  if( fMakeFriends && pESDfriend ){ // create friend track
+  if( storeTracks && fMakeFriends && pESDfriend ){ // create friend track
     pESD->SetESDfriend( pESDfriend );
  }
   

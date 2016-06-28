@@ -92,13 +92,6 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    */
   int Reconfigure(const char* cdbEntry, const char* chainId);
 
-  /**
-   * Configure the component.
-   * Parse a string for the configuration arguments and set the component
-   * properties.
-   */
-  int Configure(const char* arguments);
-
   /// write object to TTree or directly
   int fWriteTree; //!transient
 
@@ -117,6 +110,7 @@ protected:
 
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
+  Int_t fScaleDownTracks; //!
 
   Bool_t fMakeFriends; // flag to create friends
   AliTPCclusterMI   *fPartitionClusters[fkNPartition];  //! arrays of cluster data for each TPC partition
