@@ -1887,62 +1887,62 @@ Bool_t AliConversionMesonCuts::SetMCPSmearing(Int_t useMCPSmearing)
     case 0:
       fUseMCPSmearing   = 0;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.010;
-      fPSigSmearingCte  = 0.015;
+      fPSigSmearing     = 0.;
+      fPSigSmearingCte  = 0.;
       break;
     case 1:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1;
-      fPSigSmearing     = 0.015;
-      fPSigSmearingCte  = 0.015;
+      fPSigSmearing     = 0.010;
+      fPSigSmearingCte  = 0.010;
       break;
     case 2:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1;
-      fPSigSmearing     = 0.030;
-      fPSigSmearingCte  = 0.030;
+      fPSigSmearing     = 0.015;
+      fPSigSmearingCte  = 0.010;
       break;
     case 3:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.050;
-      fPSigSmearingCte  = 0.030;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.010;
       break;
     case 4:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.075;
-      fPSigSmearingCte  = 0.050;
+      fPSigSmearing     = 0.020;
+      fPSigSmearingCte  = 0.020;
       break;
     case 5:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.100;
-      fPSigSmearingCte  = 0.050;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.020;
       break;
     case 6:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.100;
-      fPSigSmearingCte  = 0.100;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.030;
       break;
     case 7:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1;
-      fPSigSmearing     = 0.200;
-      fPSigSmearingCte  = 0.100;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.050;
       break;
     case 8:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.200;
-      fPSigSmearingCte  = 0.200;
+      fPSigSmearing     = 0.030;
+      fPSigSmearingCte  = 0.060;
       break;
     case 9:
       fUseMCPSmearing   = 1;
       fPBremSmearing    = 1.;
-      fPSigSmearing     = 0.400;
-      fPSigSmearingCte  = 0.400;
+      fPSigSmearing     = 0.075;
+      fPSigSmearingCte  = 0.050;
       break;
 
     default:
