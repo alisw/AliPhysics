@@ -78,7 +78,11 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
                                 TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
                                 Bool_t    enableSortingMCLabels         = kTRUE,                  // enable sorting for MC cluster labels
-                                Bool_t    runLightOutput                = kFALSE                  // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput                = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
+                                Double_t  bremSmear                     = 1.,
+                                Double_t  smearPar                      = 0.,                     // conv photon smearing params
+                                Double_t  smearParConst                 = 0.                      // conv photon smearing params
               ) {
   
   Int_t isHeavyIon = 0;
@@ -1291,6 +1295,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);

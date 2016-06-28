@@ -97,6 +97,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void    SmearVirtualPhoton(AliAODConversionPhoton* photon);
     TLorentzVector SmearElectron(TLorentzVector particle);
 
+    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1.;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
+
     //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
