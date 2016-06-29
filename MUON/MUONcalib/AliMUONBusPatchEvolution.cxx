@@ -703,7 +703,7 @@ void AliMUONBusPatchEvolution::ShrinkTimeAxis()
   std::map<int, int> lastbins;
   std::map<int, int> firstbins;
   std::map<int, int> nbins;
-  std::map<int, std::vector<TH1F*>> histos;
+  std::map<int, std::vector<TH1F*> > histos;
 
   std::set<int> timeResolutions;
 
@@ -757,7 +757,7 @@ void AliMUONBusPatchEvolution::ShrinkTimeAxis()
     int nb = nbins[timeRes];
     const std::vector<TH1F*>& v = histos[timeRes];
 
-    std::map<int, std::vector<TH1F*>>::const_iterator hit;
+    std::map<int, std::vector<TH1F*> >::const_iterator hit;
     for (std::vector<TH1F*>::size_type iv = 0; iv < v.size(); ++iv) {
       TH1F* hold = static_cast<TH1F*>(v[iv]);
 
