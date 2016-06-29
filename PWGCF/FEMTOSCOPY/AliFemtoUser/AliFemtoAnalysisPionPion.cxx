@@ -491,7 +491,7 @@ void AliFemtoAnalysisPionPion::AddStanardCutMonitors()
 
   if (fFirstParticleCut) {
     fFirstParticleCut->AddCutMonitor(new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis),
-                                     new AliFemtoCutMonitorPionPion::Pion(true, p1_type_str, fMCAnalysis));
+                                     new AliFemtoCutMonitorPionPion::Pion(false, p1_type_str, fMCAnalysis));
   }
 
   if (!identical) {
