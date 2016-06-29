@@ -1282,7 +1282,7 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  while ((Particle=PartCont->GetNextAcceptTrack())){
+  while ((Particle=PartCont->GetNextAcceptParticle())){
     if (fJetShapeSub == kConstSub){
       EmcalParticle = static_cast<AliEmcalParticle*>(Particle);
       if (!EmcalParticle) continue;
