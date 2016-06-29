@@ -1497,6 +1497,8 @@ TObject* NS_AliAnalysisTaskEmcalJetCDF::AddTaskEmcalJetCDF ( const char* ntracks
   if ( !tracks.IsNull())
     { cdfTask->AddParticleContainer(tracks.Data()); }
 
+  cdfTask->AddClusterContainer(clusters.Data());
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
