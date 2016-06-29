@@ -424,10 +424,12 @@ void ConfigOCDB(Int_t run){
   if (tpcGainCalibType==AliTPCPreprocessorOffline::kFullGainCalib) {
     tpcRecoParam->SetUseGainCorrectionTime(0);
     tpcRecoParam->SetUseRPHICorrection(kFALSE);
-    tpcRecoParam->SetUseTOFCorrection(kFALSE);
     tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
     tpcRecoParam->SetCorrectionHVandPTMode(1);
   }
+
+  // TOF correction should always be on
+  // tpcRecoParam->SetUseTOFCorrection(kFALSE);
 
   // ===| For the rest, in CPass1 use a default setting |=======================
   //
