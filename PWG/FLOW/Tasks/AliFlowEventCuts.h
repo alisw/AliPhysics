@@ -27,7 +27,7 @@ class AliMultSelection;
 class AliFlowEventCuts : public AliFlowEventSimpleCuts {
 
  public:
-  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters };
+  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters, kZDC };
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");
@@ -146,7 +146,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
   Bool_t fCheckPileUp; //pile-up
-  ClassDef(AliFlowEventCuts,7)
+  ClassDef(AliFlowEventCuts,8)
 };
 
 #endif
