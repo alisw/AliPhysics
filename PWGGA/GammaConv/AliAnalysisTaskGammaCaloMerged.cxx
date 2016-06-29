@@ -1249,6 +1249,7 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
   
+  
   Int_t nclus = 0;
   nclus = fInputEvent->GetNumberOfCaloClusters();
   
@@ -1256,7 +1257,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
   
   if(nclus == 0)  return;
   
-  fNClusterCandidates = 0;
+//   cout << "new event with accepted clusters: \t trigger \t" << (((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSpecialTriggerName()).Data() <<endl; 
+  
+  fNClusterCandidates       = 0;
   fNClusterMergedCandidates = 0;
   
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
