@@ -709,9 +709,9 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     //you have to set a flag and the limits of the pT interval for your trigger
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);    
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
-    AliParticleContainer *PartCont =NULL;
-    if (fJetShapeSub==kConstSub) PartCont = GetParticleContainer(1);
-    else PartCont = GetParticleContainer(0);
+    AliTrackContainer *PartCont =NULL;
+    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
+    else PartCont = GetTrackContainer(0);
     TClonesArray *TrackArray = PartCont->GetArray();
     TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
@@ -1270,35 +1270,37 @@ Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2
 //--------------------------------------------------------------------------
 Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
 
-  AliParticleContainer *PartCont = NULL;
-  if (fJetShapeSub==kConstSub) PartCont = GetParticleContainer(1);
-  else PartCont = GetParticleContainer(0);
+  AliTrackContainer *PartCont = NULL;
+  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
+  else PartCont = GetTrackContainer(0);
   TClonesArray *TracksArray = PartCont->GetArray();
  
   if(!PartCont || !TracksArray) return -99999;
+  AliVParticle *Particle=0x0;
   AliAODTrack *Track = 0x0;
   AliEmcalParticle *EmcalParticle = 0x0;
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  for(Int_t i=0; i <= TracksArray->GetEntriesFast(); i++){
+  //for(Int_t i=0; i <= TracksArray->GetEntriesFast(); i++){
+  while ((Particle=PartCont->GetNextAcceptTrack())){
     if (fJetShapeSub == kConstSub){
-      EmcalParticle = static_cast<AliEmcalParticle*>(TracksArray->At(i));
+      EmcalParticle = static_cast<AliEmcalParticle*>(Particle);
       if (!EmcalParticle) continue;
       if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
       if (EmcalParticle->Pt()<0.15) continue;
       if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Index[Trigger_Counter] = Particle->GetLabel();
 	Trigger_Counter++;
       }
     }
     else{
-      Track = static_cast<AliAODTrack*>(TracksArray->At(i));
+      Track = static_cast<AliAODTrack*>(Particle);
       if (!Track) continue;
       if(TMath::Abs(Track->Eta())>0.9) continue;
       if (Track->Pt()<0.15) continue;
       if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Index[Trigger_Counter] = Particle->GetLabel();
 	Trigger_Counter++;
       }
     }
@@ -1373,7 +1375,7 @@ AliEmcalJetFinder *AliAnalysisTaskSubJetFraction::Recluster(AliEmcalJet *Jet, In
     if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
   }
   else{
-    Double_t dVtx[3]={0,0,0};
+    Double_t dVtx[3]={1,1,1};
     if(Reclusterer->AliEmcalJetFinder::Filter(Jet, JetCont, dVtx)){;}  //reclustering jet1 using the jetfinderobject Reclusterer
   }
   return Reclusterer;
@@ -1569,7 +1571,7 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
 	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
       }
       else{
-	Double_t dVtx[3]={0,0,0};
+	Double_t dVtx[3]={1,1,1};
 	return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubJetRadius,Beta,Option);
       }
     }
