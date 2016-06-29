@@ -288,23 +288,24 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
   fdEdX = new TH2F(
     "dEdX" + pf,
-    Form(title_format,
-         "dE/dx vs p",
-         "p (GeV);"
-         "dE/dx;"
-         "N_{tracks}"),
+    Form(title_format, "dE/dx vs p",
+                       "p (GeV);"
+                       "dE/dx;"
+                       "N_{tracks}"),
     128, 0, 6.0,
-    128, 0, 500.0);
+    128, 0, 500.0
+  );
   fdEdX->Sumw2();
 
   fImpact = new TH2F(
     "impact" + pf,
-    Form(title_format,
-         "Track impact parameter components",
-         "z (cm?); r (cm?); N_{#pi}"
-        ),
+    Form(title_format, "Track impact parameter components",
+                       "z (cm?); "
+                       "r (cm?); "
+                       "N_{#pi}  "),
     256, -0.25, 0.25,
-    256, -0.01, 0.1);
+    256, -0.01, 0.1
+  );
   fImpact->Sumw2();
 
   if (is_mc_analysis) {
@@ -330,8 +331,9 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
     fMC_type = new TH1I(
       "mc_pdg",
-      TString::Format(title_format,
-        "PDG Code; Code; N_{code};"),
+      TString::Format(title_format, "PDG Code",
+                                    "Code;"
+                                    "N_{code};"),
       codes.size(), -0.5, codes.size() - 0.5
     );
 
@@ -344,10 +346,10 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
 
     fMC_parent = new TH2I(
       "mc_parent_pdg",
-      TString::Format(title_format,
-        "Parent PDG Code; Daughter PID; Parent;"),
-        codes.size(), -0.5, codes.size() - 0.5,
-        parent_codes.size(), -0.5, parent_codes.size() - 0.5
+      TString::Format(title_format, "Parent PDG Code",
+                                    "Daughter PID; Parent;"),
+      codes.size(), -0.5, codes.size() - 0.5,
+      parent_codes.size(), -0.5, parent_codes.size() - 0.5
     );
 
     for (Int_t bin = 0; bin < codes.size(); bin++) {
