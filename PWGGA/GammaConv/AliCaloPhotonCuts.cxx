@@ -126,6 +126,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fExoticEnergyFracCluster(0),
   fExoticMinEnergyCell(1),
   fUseExoticCluster(0),
+  fDoExoticsQA(kFALSE),
   fMinEnergy(0),
   fSeedEnergy(0.1),
   fLocMaxCutEDiff(0.03),
@@ -213,7 +214,12 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistClusterdEtadPtBeforeQA(NULL),
   fHistClusterdPhidPtBeforeQA(NULL),
   fHistClusterM20M02BeforeQA(NULL),
-  fHistClusterM20M02AfterQA(NULL)
+  fHistClusterM20M02AfterQA(NULL),
+  fHistClusterEtavsPhiExotics(NULL),
+  fHistClusterEM02Exotics(NULL),
+  fHistClusterEnergyvsNCellsExotics(NULL),
+  fHistClusterEEstarExotics(NULL)
+
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -263,6 +269,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fExoticEnergyFracCluster(ref.fExoticEnergyFracCluster),
   fExoticMinEnergyCell(ref.fExoticMinEnergyCell),
   fUseExoticCluster(ref.fUseExoticCluster),
+  fDoExoticsQA(ref.fDoExoticsQA),
   fMinEnergy(ref.fMinEnergy),
   fSeedEnergy(ref.fSeedEnergy),
   fLocMaxCutEDiff(ref.fLocMaxCutEDiff),
@@ -350,7 +357,11 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterdEtadPtBeforeQA(NULL),
   fHistClusterdPhidPtBeforeQA(NULL),
   fHistClusterM20M02BeforeQA(NULL),
-  fHistClusterM20M02AfterQA(NULL)
+  fHistClusterM20M02AfterQA(NULL),
+  fHistClusterEtavsPhiExotics(NULL),
+  fHistClusterEM02Exotics(NULL),
+  fHistClusterEnergyvsNCellsExotics(NULL),
+  fHistClusterEEstarExotics(NULL)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -379,12 +390,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
   TH1::AddDirectory(kFALSE);
 
+  if (fDoLightOutput) 
+    fDoExoticsQA    = kFALSE;
+  
   if(fHistograms != NULL){
     delete fHistograms;
     fHistograms=NULL;
   }
   if(fHistograms==NULL){
-    fHistograms=new TList();
+    fHistograms     = new TList();
     fHistograms->SetOwner(kTRUE);
     if(name=="")fHistograms->SetName(Form("CaloCuts_%s",GetCutNumber().Data()));
     else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
@@ -395,7 +409,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistExtQA=NULL;
   }
   if(fHistExtQA==NULL){
-    fHistExtQA=new TList();
+    fHistExtQA      = new TList();
     fHistExtQA->SetOwner(kTRUE);
     if(name=="")fHistExtQA->SetName(Form("CaloExtQA_%s",GetCutNumber().Data()));
     else fHistExtQA->SetName(Form("%s_ExtQA_%s",name.Data(),GetCutNumber().Data()));
@@ -749,6 +763,39 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     }
   }
 
+  if (fDoExoticsQA){
+    if( fClusterType == 1 ){ //EMCAL
+      const Int_t nEmcalEtaBins             = 96;
+      const Int_t nEmcalPhiBins             = 124;
+      Float_t EmcalEtaBins[nEmcalEtaBins+1] = {-0.66687,-0.653,-0.63913,-0.62526,-0.61139,-0.59752,-0.58365,-0.56978,-0.55591,-0.54204,-0.52817,-0.5143,-0.50043,-0.48656,-0.47269,-0.45882,-0.44495,-0.43108,-0.41721,-0.40334,-0.38947,-0.3756,-0.36173,-0.34786,-0.33399,-0.32012,-0.30625,-0.29238,-0.27851,-0.26464,-0.25077,-0.2369,-0.22303,-0.20916,-0.19529,-0.18142,-0.16755,-0.15368,-0.13981,-0.12594,-0.11207,-0.0982,-0.08433,-0.07046,-0.05659,-0.04272,-0.02885,-0.01498,-0.00111,0.01276,0.02663,0.0405,0.05437,0.06824,0.08211,0.09598,0.10985,0.12372,0.13759,0.15146,0.16533,0.1792,0.19307,0.20694,0.22081,0.23468,0.24855,0.26242,0.27629,0.29016,0.30403,0.3179,0.33177,0.34564,0.35951,0.37338,0.38725,0.40112,0.41499,0.42886,0.44273,0.4566,0.47047,0.48434,0.49821,0.51208,0.52595,0.53982,0.55369,0.56756,0.58143,0.5953,0.60917,0.62304,0.63691,0.65078,0.66465};
+      Float_t EmcalPhiBins[nEmcalPhiBins+1] = {1.408,1.4215,1.435,1.4485,1.462,1.4755,1.489,1.5025,1.516,1.5295,1.543,1.5565,1.57,1.5835,1.597,1.6105,1.624,1.6375,1.651,1.6645,1.678,1.6915,1.705,1.7185,1.732,1.758,1.7715,1.785,1.7985,1.812,1.8255,1.839,1.8525,1.866,1.8795,1.893,1.9065,1.92,1.9335,1.947,1.9605,1.974,1.9875,2.001,2.0145,2.028,2.0415,2.055,2.0685,2.082,2.108,2.1215,2.135,2.1485,2.162,2.1755,2.189,2.2025,2.216,2.2295,2.243,2.2565,2.27,2.2835,2.297,2.3105,2.324,2.3375,2.351,2.3645,2.378,2.3915,2.405,2.4185,2.432,2.456,2.4695,2.483,2.4965,2.51,2.5235,2.537,2.5505,2.564,2.5775,2.591,2.6045,2.618,2.6315,2.645,2.6585,2.672,2.6855,2.699,2.7125,2.726,2.7395,2.753,2.7665,2.78,2.804,2.8175,2.831,2.8445,2.858,2.8715,2.885,2.8985,2.912,2.9255,2.939,2.9525,2.966,2.9795,2.993,3.0065,3.02,3.0335,3.047,3.0605,3.074,3.0875,3.101,3.1145,3.128};
+
+      fHistClusterEtavsPhiExotics     = new TH2F(Form("EtaPhi_Exotics %s",GetCutNumber().Data()),"EtaPhi_Exotics",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+      fHistograms->Add(fHistClusterEtavsPhiExotics);
+    } else if( fClusterType == 2 ){ //EMCAL
+      const Int_t nPhosEtaBins        = 56;
+      const Int_t nPhosPhiBins        = 192;
+      const Float_t PhosEtaRange[2]   = {-0.16, 0.16};
+      const Float_t PhosPhiRange[2]   = {4.5, 5.6};
+
+      fHistClusterEtavsPhiExotics     = new TH2F(Form("EtaPhi_Exotics %s",GetCutNumber().Data()),"EtaPhi_Exotics",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+      fHistograms->Add(fHistClusterEtavsPhiExotics);
+    }
+    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",100,0,50,40,0,4);
+    fHistograms->Add(fHistClusterEM02Exotics);
+    fHistClusterEnergyvsNCellsExotics = new TH2F(Form("ClusterEnergyVsNCells_Exotics %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_Exotics",100,0,50,50,0,50);
+    fHistograms->Add(fHistClusterEnergyvsNCellsExotics);
+    fHistClusterEEstarExotics         = new TH2F(Form("ClusterEnergyVsEnergystar_Exotics %s",GetCutNumber().Data()),"ClusterEnergyVsEnergystar_Exotics",100,0,50,100,0,50);
+    fHistograms->Add(fHistClusterEEstarExotics);
+    
+    if (fIsJetJet){
+      fHistClusterEtavsPhiExotics->Sumw2();
+      fHistClusterEM02Exotics->Sumw2();
+      fHistClusterEnergyvsNCellsExotics->Sumw2();
+      fHistClusterEEstarExotics->Sumw2();
+    }
+  }
+  
   fVectorMatchedClusterIDs.clear();
 
   TH1::AddDirectory(kTRUE);
@@ -946,7 +993,15 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex,cluster->E());
   cutIndex++;
 
+  // cluster position defintion
+  Float_t clusPos[3]={0,0,0};
+  cluster->GetPosition(clusPos);
+  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
+  Double_t etaCluster = clusterVector.Eta();
+  Double_t phiCluster = clusterVector.Phi();
+  if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
+  
   Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
   Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
 //   cout << "mine: " << nLM << "\t Gustavo: " << nLMGustavo << endl;
@@ -999,6 +1054,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   Float_t energyStar      = 0;
   if(fUseExoticCluster && IsExoticCluster(cluster, event, energyStar)){
     if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//3
+    if (fDoExoticsQA){
+      if(fHistClusterEtavsPhiExotics) fHistClusterEtavsPhiExotics->Fill(phiCluster, etaCluster, weight);
+      if(fHistClusterEM02Exotics) fHistClusterEM02Exotics->Fill(cluster->E(), cluster->GetM02(), weight);
+      if(fHistClusterEnergyvsNCellsExotics) fHistClusterEnergyvsNCellsExotics->Fill(cluster->E(), cluster->GetNCells(), weight);
+      if(fHistClusterEEstarExotics) fHistClusterEEstarExotics->Fill(cluster->E(),energyStar, weight);
+    }  
     return kFALSE;
   }
   cutIndex++;//4, next cut
@@ -1069,12 +1130,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//10
 
   // Histos after Cuts
-  Float_t clusPos[3]={0,0,0};
-  cluster->GetPosition(clusPos);
-  TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
-  Double_t etaCluster = clusterVector.Eta();
-  Double_t phiCluster = clusterVector.Phi();
-  if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
   if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster, etaCluster, weight);
   if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E(), weight);
