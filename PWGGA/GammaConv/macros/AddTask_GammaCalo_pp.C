@@ -694,6 +694,12 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 211){  // EMCAL clusters, different triggers no NonLinearity
     cuts.AddCut("00000113","1111100013032220000","0163103100000050");
 
+  } else if (trainConfig == 299){ // EMCAL clusters pp, jet triggers
+    cuts.AddCut("00045113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00046113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00091113","1111111063032220000","0163103100000050"); // std
+    cuts.AddCut("00092113","1111111063032220000","0163103100000050"); // std
+
   // ************************************* PHOS cuts ****************************************************
   } else if (trainConfig == 301) { //PHOS clusters
     cuts.AddCut("00003113","2444400040033200000","0163103100000050"); //pp LHC11a with SDD, PHOS
