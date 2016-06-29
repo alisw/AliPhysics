@@ -1282,7 +1282,6 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  //for(Int_t i=0; i <= TracksArray->GetEntriesFast(); i++){
   while ((Particle=PartCont->GetNextAcceptTrack())){
     if (fJetShapeSub == kConstSub){
       EmcalParticle = static_cast<AliEmcalParticle*>(Particle);
@@ -1290,8 +1289,13 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
       if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
       if (EmcalParticle->Pt()<0.15) continue;
       if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = Particle->GetLabel();
-	Trigger_Counter++;
+	for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){
+	  if (EmcalParticle==static_cast<AliEmcalParticle*>(TracksArray->At(i))){
+	    Trigger_Index[Trigger_Counter] = i;
+	    Trigger_Counter++;
+	    break;
+	  }
+	}
       }
     }
     else{
@@ -1300,8 +1304,13 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
       if(TMath::Abs(Track->Eta())>0.9) continue;
       if (Track->Pt()<0.15) continue;
       if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = Particle->GetLabel();
-	Trigger_Counter++;
+	for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){
+	  if (Track==static_cast<AliAODTrack*>(TracksArray->At(i))){
+	    Trigger_Index[Trigger_Counter] = i;
+	    Trigger_Counter++;
+	    break;
+	  }
+	}
       }
     }
   }
