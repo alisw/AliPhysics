@@ -278,10 +278,6 @@ protected:
   TH2                   *fHCellIndexEnergy;      //!histo for cell energy vs cell number
   TH2                   *fHCellIndexEnergyAfterCuts;      //!histo for cell energy vs cell number
   
-  // histogram for emcal and dcal
-//  TH1                   *fHCellIndexEMCAL;      //!histo for cell energy vs cell number
-//  TH1                   *fHCellIndexDCAL;       //!histo for cell energy vs cell number
-  
   // histograms for clusters
   TH1                   *fHClusters;                  //!histo for cuts
   TH1                   *fHClustAllEtaPhi;        //!histo for all clusters eta and phi
