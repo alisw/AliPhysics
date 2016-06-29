@@ -2546,7 +2546,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
   
     TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-    cout << firedTrigClass.Data() << endl;
     // if no trigger has been selected manually, select kAny in case of presel (also important for AOD filtering!)
     // in other cases select standards depending on system
     if (!fTriggerSelectedManually){
@@ -2576,6 +2575,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected(); 
       if (isSelected && !fPreSelCut){
+//         cout << firedTrigClass.Data() << endl;
 //         cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
 //         if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
 //           if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(fInputEvent);
@@ -2645,7 +2645,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
             }
           }
           if (isSelected != 0 ){
-            cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
+//             cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
             if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
@@ -2710,7 +2710,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
+  if (fMimicTrigger && isMC > 0) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
 //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
   
   // Fill Histogram
@@ -2762,9 +2762,6 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
     if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(35);
   }
 
-  
-  cout << fSpecialTrigger<< "\t" << isSelected << endl;
-  
   if(hTriggerClassSelected && isSelected){
     if (mimickedTrigger){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
