@@ -236,7 +236,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
-    void        SetExoticsMinCellEnergyCut(Double_t minE)       {fExoticMinEnergyCell = minE; return;}
+    void        SetExoticsMinCellEnergyCut(Double_t minE)       { fExoticMinEnergyCell = minE; return;}
+    void        SetExoticsQA(Bool_t enable)                     { fDoExoticsQA         = enable; return;}
     
   protected:
     TList      *fHistograms;
@@ -284,6 +285,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
     Bool_t    fUseExoticCluster;                        // flag for switching on exotic cluster cut
+    Bool_t    fDoExoticsQA;                             // flag for switching on exotic cluster cut
     Double_t  fMinEnergy;                               // minium energy per cluster
     Double_t  fSeedEnergy;                              // seed energy for clusters
     Double_t  fLocMaxCutEDiff;                          // cut on energy difference between two cells
@@ -385,6 +387,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterM20M02BeforeQA;               // 2-dim plot M20 vs. M02
     TH2F*     fHistClusterM20M02AfterQA;                // 2-dim plot M20 vs. M20
 
+    // QA histograms for exotic clusters
+    TH2F*     fHistClusterEtavsPhiExotics;              // eta-phi-distribution of exotic clusters
+    TH2F*     fHistClusterEM02Exotics;                  // 2-dim plot E vs. M02 for exotic clusters
+    TH2F*     fHistClusterEnergyvsNCellsExotics;        // Cluster Energy vs NCells
+    TH2F*     fHistClusterEEstarExotics;                // 2-dim plot E vs. Estar for exotic clusters
+    
   private:
 
     ClassDef(AliCaloPhotonCuts,26)
