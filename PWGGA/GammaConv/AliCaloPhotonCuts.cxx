@@ -996,7 +996,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   cutIndex++;//3, next cut
 
   // exotic cluster cut 
-  if(fUseExoticCluster && IsExoticCluster(cluster, event)){
+  Float_t energyStar      = 0;
+  if(fUseExoticCluster && IsExoticCluster(cluster, event, energyStar)){
     if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//3
     return kFALSE;
   }
@@ -4062,12 +4063,13 @@ TString AliCaloPhotonCuts::GetCutNumber(){
 //___________________________________________________________________
 // Check if the cluster highest energy tower is exotic.
 //___________________________________________________________________
-Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *event ) {  
+Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *event, Float_t &energyStar ) {  
   
   if (!cluster) {
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
+  energyStar              = 0; 
   
   AliVCaloCells* cells    = NULL;
   if (fClusterType == 1 ) 
@@ -4080,6 +4082,7 @@ Bool_t AliCaloPhotonCuts::IsExoticCluster( AliVCluster *cluster, AliVEvent *even
   Int_t largestCellID     = FindLargestCellInCluster(cluster,event);  
   Float_t ecell1          = cells->GetCellAmplitude(largestCellID); ; 
   Float_t eCross          = GetECross(largestCellID,cells);
+  energyStar              = ecell1+eCross;
   
   if (ecell1 < fExoticMinEnergyCell)
     return kFALSE;
