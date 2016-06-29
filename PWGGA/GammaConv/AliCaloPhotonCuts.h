@@ -233,7 +233,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t    GetDistanceBetweenClusters(AliVCluster* cluster1, AliVCluster* cluster2);
     void        SetLogBinningXTH2 (TH2* histoRebin);
       
-    Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event );
+    Bool_t      IsExoticCluster ( AliVCluster *cluster, AliVEvent *event, Float_t& energyStar );
     Float_t     GetECross ( Int_t absID, AliVCaloCells* cells );
     Bool_t      AcceptCellByBadChannelMap (Int_t absID );
     void        SetExoticsMinCellEnergyCut(Double_t minE)       {fExoticMinEnergyCell = minE; return;}
