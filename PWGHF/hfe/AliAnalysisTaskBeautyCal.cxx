@@ -136,6 +136,9 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistDCAdeSemi(0),
+  fHistDCAbeSemi(0),
+  fHistDCApeSemi(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -215,6 +218,9 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
+  fHistDCAdeSemi(0),
+  fHistDCAbeSemi(0),
+  fHistDCApeSemi(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -429,6 +435,15 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCApe = new TH2D("fHistDCApe", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCApe);
+
+  fHistDCAdeSemi = new TH2D("fHistDCAdeSemi", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCAdeSemi);
+ 
+  fHistDCAbeSemi = new TH2D("fHistDCAbeSemi", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCAbeSemi);
+
+  fHistDCApeSemi = new TH2D("fHistDCApeSemi", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCApeSemi);
 
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
@@ -903,6 +918,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
           ElectronAway(iTracks,track); //e+e-
+          if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
+          if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
+          if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
