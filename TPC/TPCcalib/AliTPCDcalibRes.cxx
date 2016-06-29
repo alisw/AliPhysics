@@ -3725,7 +3725,8 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
   Bool_t res = kFALSE;
   if (npUse<minPoints) {
     valerr[0] = valerr[1] = 0.f;
-    AliErrorClassF("Found only %d points, %d required",npUse,minPoints);
+    AliErrorClassF("Xquery=%+.4e: X0:%+.4e X%d: %+.4e: found only %d points, %d required",
+		   xQuery, x[0], np, x[np-1],npUse,minPoints);
   }
   else {
     float resVal[3],resErr[6];
@@ -4082,7 +4083,7 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
   double valTmp[kResDim][kNTestPnt],xPnt[kNTestPnt];
   for (int irow=rowMin;irow<=rowMax;irow++) {
     int row=irow, roc=sect36;
-    if (row>=kNRowIROC) {roc-=kNRowIROC; roc += kNSect2;}
+    if (row>=kNRowIROC) {row-=kNRowIROC; roc += kNSect2;}
     xPnt[cntR] = kTPCRowX[irow];
     cheb->Eval(roc, row, y/xPnt[cntR], z/xPnt[cntR] , grTmp[0]);    
     for (int i=kResDim;i--;) valTmp[i][cntR] = grTmp[0][i];
@@ -4134,12 +4135,12 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
   // 
   // Abandon iterations above maxIt or with total change < minDelta
   //
-  float grad[kResDimG][kResDim], fun[kResDim]={0.};
+  float grad[kResDimG][kResDim], fun[kResDim]={0.}, delta0[kResDim];
   const float kEps = 1e-12;
   for (int id=kResDim;id--;) vecOut[id] = vecIn[id]; 
   vecOut[kResD] = 0.f; // dispersion
   //
-  float minDelta2 = minDelta*minDelta, deltaR2;
+  float minDelta2 = minDelta*minDelta, deltaR2, deltaR2Prev=0;
   int it = 0;
 
   do {
@@ -4148,8 +4149,10 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
     GradCorrCheb(cheb, sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad); 
     for (int id=3;id--;) {
       fun[id] -= vecIn[id];  // value of F = vec_meas + vec_corrections - vec_correct
-      grad[id][id] += 1.0f; // convert gradient of correction to gradienf of vs current estimate of vec_meas
+      grad[id][id] += 1.0f; // convert gradient of correction to gradient of F vs current estimate of vec_meas
     }
+    if (it==0) memcpy(delta0,fun,sizeof(float)*kResDim); // save for emergency exit
+
     // solve linear system grad . delta = -F
     
     double det =  grad[0][0]*(grad[1][1]*grad[2][2] - grad[1][2]*grad[2][1])
@@ -4179,6 +4182,14 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
       vecOut[id] += delta[id];    
     }
     //
+    if (it && deltaR2>deltaR2Prev) {
+      AliErrorClassF("Runaway @ iter%d for S%2d {%.3f %.3f %.3f}? deltaR2=%e > deltaR2Prev=%e",it,
+		     sect36, vecIn[0],vecIn[1],vecIn[2],deltaR2,deltaR2Prev);
+      for (int id=3;id--;) { vecOut[id] = vecIn[id] + delta0[id];}
+      fun[kResD] = delta0[kResD];
+      break;
+    }
+    deltaR2Prev = deltaR2;
   } while(++it<maxIt && deltaR2>minDelta2);
 
   vecOut[kResD] = fun[kResD]; // dispersion at last queried point
@@ -4311,5 +4322,7 @@ AliTPCChebDist* AliTPCDcalibRes::CreateDistortionObject(AliTPCChebCorr* correcti
   const float defPrec[AliTPCDcalibRes::kResDim] = {100e-4,100e-4,100e-4,100e-4};
   const float* precUse = prec ? prec : defPrec;
   dist->Parameterize(trainDist,kResDim,npCheb,precUse);
+  //
+  return dist;
 }
 
