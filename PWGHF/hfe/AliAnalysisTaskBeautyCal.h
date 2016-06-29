@@ -142,6 +142,9 @@ private:
     TH2D        *fHistDCAde;//!ele cand SPD or
     TH2D        *fHistDCAbe;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
+    TH2D        *fHistDCAdeSemi;//!ele cand SPD or
+    TH2D        *fHistDCAbeSemi;//!ele cand SPD or
+    TH2D        *fHistDCApeSemi;//!ele cand SPD or
 
     TH1D        *fHistHFEcorr;//!ele cand SPD or
 
