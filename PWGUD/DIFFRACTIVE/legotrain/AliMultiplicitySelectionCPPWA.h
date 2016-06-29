@@ -1,5 +1,5 @@
-#ifndef __ALIMULTIPLICITYSELECTIONCPPWA_H__
-#define __ALIMULTIPLICITYSELECTIONCPPWA_H__
+#ifndef __ALIMULTIPLICITYSELECTIONCP1_H__
+#define __ALIMULTIPLICITYSELECTIONCP1_H__
 
 #ifndef __CINT__
 #include "TObject.h"
@@ -20,6 +20,9 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		Double_t fTrackEtaMin;    // EtaMin, used in second loop
 		Double_t fTrackEtaMax;    // EtaMax, used in second loop
 		Bool_t fkCheckReferenceMultiplicity; // should be kFALSE for LHC10{b,c} pass2
+		Double_t fNClusterTPCSys;//Number of cluster for sys
+		Double_t fMaxDCAzSys;
+		Double_t fMaxChi2Sys;
 
 		TList *fTrackCutListPrim; // TList with primary track selection cuts
 
@@ -60,7 +63,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		Bool_t AcceptTrack(AliESDtrack *track, Bool_t asPrimary = kFALSE);
 		Bool_t TestFiredChips(AliESDEvent *esd, TArrayI indices);
 
-		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nCluster);
+		void InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nSys);
 		void AddPrimaryTrackCut(AliESDtrackCuts *cut);
 
 		void IgnoreV0s(Bool_t k=kFALSE) {fkIgnoreV0s = k;}

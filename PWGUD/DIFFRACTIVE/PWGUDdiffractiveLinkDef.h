@@ -10,6 +10,9 @@
 #pragma link C++ class AliAnalysisTaskCDTree+;
 #pragma link C++ class AliMultiplicitySelectionCP+;
 #pragma link C++ class AliAnalysisTaskCDPWA+;
+#pragma link C++ class AliAnalysisTaskCDPWA::EventInfo+;
+#pragma link C++ class AliAnalysisTaskCDPWA::CombInfo+;
+#pragma link C++ class AliAnalysisTaskCDPWA::TrackInfo+;
 #pragma link C++ class AliMultiplicitySelectionCPPWA+;
 #pragma link C++ class AliCDMesonBaseStripped+;
 #pragma link C++ class AliCDMesonBase+;
