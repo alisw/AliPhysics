@@ -19225,6 +19225,12 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
     Double_t TwoQnQn = (uNRe*uNRe+uNIm*uNIm-uN2M)/(uNM*uNM-uN2M) ;
     fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNM*uNM-uN2M);
     
+    //NUA
+    fCMETPCCorPro[fZDCESEclEbE][15]->Fill(fCentralityEBE,uPRe/uPM,uPM);
+    fCMETPCCorPro[fZDCESEclEbE][16]->Fill(fCentralityEBE,uPIm/uPM,uPM);
+    fCMETPCCorPro[fZDCESEclEbE][17]->Fill(fCentralityEBE,uNRe/uNM,uNM);
+    fCMETPCCorPro[fZDCESEclEbE][18]->Fill(fCentralityEBE,uNIm/uNM,uNM);
+    
     Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*cos(2.*EvPlVZC) + (uPRe*uNIm+uPIm*uNRe)*sin(2.*EvPlVZC)) / (uPM*uNM) ;
     fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
     
@@ -21755,6 +21761,12 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
       Double_t QNQN   = fCMETPCCorHist[k][2]->GetBinContent(c);
       Double_t QNQNer = fCMETPCCorHist[k][2]->GetBinError(c);
       
+      //NUA
+      Double_t QPRe = fCMETPCCorHist[k][15]->GetBinContent(c);
+      Double_t QPIm = fCMETPCCorHist[k][16]->GetBinContent(c);
+      Double_t QNRe = fCMETPCCorHist[k][17]->GetBinContent(c);
+      Double_t QNIm = fCMETPCCorHist[k][18]->GetBinContent(c);
+      
       // Gamma
       Double_t QPQNGC   = fCMETPCCorHist[k][3]->GetBinContent(c);
       Double_t QPQNGCer = fCMETPCCorHist[k][3]->GetBinError(c);
@@ -21787,19 +21799,24 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
       if(ResVAVC>0.) {
         Double_t DeltaOp = QPQN;
         Double_t DeltaOper = QPQNer;
-        //      printf(" delta, oppo charges: %e, %e \n",DeltaOp,DeltaOper);
         fCMETPCFinalHist[k][0]->SetBinContent(c,DeltaOp);
         fCMETPCFinalHist[k][0]->SetBinError(c,DeltaOper);
+        // NUA corrected
+        fCMETPCFinalHist[k][10]->SetBinContent(c,DeltaOp-(QPRe*QNRe+QPIm*QNIm));
+        fCMETPCFinalHist[k][10]->SetBinError(c,DeltaOper);
+        
         Double_t DeltaSa = (QPQP+QNQN)/2.;
         Double_t DeltaSaer = pow(pow(QPQPer,2.)+pow(QNQNer,2.),0.5)/2.;
-        //      printf(" delta, same charges: %e, %e \n",DeltaSa,DeltaSaer);
         fCMETPCFinalHist[k][1]->SetBinContent(c,DeltaSa);
         fCMETPCFinalHist[k][1]->SetBinError(c,DeltaSaer);
+        // NUA corrected
+        fCMETPCFinalHist[k][11]->SetBinContent(c,DeltaSa-(QPRe*QPRe+QPIm*QPIm+QNRe*QNRe+QNIm*QNIm)/2.);
+        fCMETPCFinalHist[k][11]->SetBinError(c,DeltaSaer);
         
         Double_t Res = fabs(ResVAVC*ResTPVC/ResTPVA);
         Double_t Reser = sqrt( pow(ResVAVCer*ResTPVC/ResTPVA,2.)+pow(ResTPVCer*ResVAVC/ResTPVA,2.)+pow(ResTPVAer*ResVAVC*ResTPVC/(ResTPVA*ResTPVA),2.) );
-        fCMETPCFinalHist[k][9]->SetBinContent(c,Res);
-        fCMETPCFinalHist[k][9]->SetBinError(c,Reser);
+        fCMETPCFinalHist[k][8]->SetBinContent(c,Res);
+        fCMETPCFinalHist[k][8]->SetBinError(c,Reser);
         
         Double_t GammaOpC = QPQNGC/sqrt(Res);
         Double_t GammaOpCer = pow(QPQNGCer/(2.*sqrt(Res)),2.) + pow(QPQNGC*Reser/(2.*pow(Res,1.5)),2.);
@@ -21816,8 +21833,8 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
         fCMETPCFinalHist[k][3]->SetBinError(c,GammaSaCer);
         
         Res = fabs(ResVAVC*ResTPVA/ResTPVC);
-        fCMETPCFinalHist[k][10]->SetBinContent(c,Res);
-        fCMETPCFinalHist[k][10]->SetBinError(c,Reser);
+        fCMETPCFinalHist[k][9]->SetBinContent(c,Res);
+        fCMETPCFinalHist[k][9]->SetBinError(c,Reser);
         
         Double_t GammaOpA = QPQNGA/sqrt(Res);
         Double_t GammaOpAer = pow(QPQNGAer/(2.*sqrt(Res)),2.) + pow(QPQNGA*Reser/(2.*pow(Res,1.5)),2.);
@@ -21846,11 +21863,6 @@ void AliFlowAnalysisCRC::FinalizeCMETPC()
           fCMETPCFinalHist[k][7]->SetBinContent(c,Flow);
           fCMETPCFinalHist[k][7]->SetBinError(c,Flower);
         }
-        
-        Double_t DeltaDiff = DeltaOp-DeltaSa;
-        Double_t DeltaDiffer = sqrt(pow(DeltaOper,2.)+pow(DeltaSaer,2.));
-        fCMETPCFinalHist[k][8]->SetBinContent(c,DeltaDiff);
-        fCMETPCFinalHist[k][8]->SetBinError(c,DeltaDiffer);
         
       }
       
@@ -21975,11 +21987,9 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
         
         Double_t V2=0., V2er=0.;
         if(z==0) {
-          printf("ZDC-C \n");
           V2   = (VAVC*VCVT)/VAVT;
           V2er = pow(VAVCer*VCVT/VAVT,2.) + pow(VAVC*VCVTer/VAVT,2.) + pow(VAVC*VCVT*VAVTer/pow(VAVT,2.),2.);
         } else {
-          printf("ZDC-A \n");
           V2   = (VAVC*VAVT)/VCVT;
           V2er = pow(VAVCer*VAVT/VCVT,2.) + pow(VAVC*VAVTer/VCVT,2.) + pow(VAVC*VAVT*VCVTer/pow(VCVT,2.),2.);
         }
@@ -21989,19 +21999,19 @@ void AliFlowAnalysisCRC::FinalizeCMEZDC()
         Double_t GammaOp = QPQNG[z]/pow(TMath::Abs(V2),0.5);
         Double_t GammaOper = pow(QPQNGer[z]/pow(TMath::Abs(V2),0.5),2.) + pow(QPQNG[z]*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
         GammaOper = pow(GammaOper,0.5);
-        printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
+//        printf(" gamma, oppo ch.: %e, %e \n",GammaOp,GammaOper);
         Double_t GammaSa = (QPQPG[z]+QNQNG[z])/(2.*pow(TMath::Abs(V2),0.5));
         Double_t GammaSaer = pow(QPQPGer[z]/pow(TMath::Abs(V2),0.5),2.) + pow(QPQPG[z]*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.)
         + pow(QNQNGer[z]/pow(TMath::Abs(V2),0.5),2.) + pow(QNQNG[z]*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
         GammaSaer = pow(GammaSaer,0.5)/2.;
-        printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
+//        printf(" gamma, same ch.: %e, %e \n",GammaSa,GammaSaer);
         
         Double_t GammaDer = pow(QDGer[z]/pow(TMath::Abs(V2),0.5),2.) + pow(QDG[z]*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
         GammaDer = pow(GammaDer,0.5);
-        printf(" gamma dipole   : %e, %e \n",QDG[z]/pow(TMath::Abs(V2),0.5),GammaDer);
+//        printf(" gamma dipole   : %e, %e \n",QDG[z]/pow(TMath::Abs(V2),0.5),GammaDer);
         Double_t GammaRer = pow(QRGer[z]/pow(TMath::Abs(V2),0.5),2.) + pow(QRG[z]*V2er/(2.*pow(TMath::Abs(V2),1.5)),2.);
         GammaRer = pow(GammaRer,0.5);
-        printf(" gamma random   : %e, %e \n \n",QRG[z]/pow(TMath::Abs(V2),0.5),GammaRer);
+//        printf(" gamma random   : %e, %e \n \n",QRG[z]/pow(TMath::Abs(V2),0.5),GammaRer);
         
       }
       

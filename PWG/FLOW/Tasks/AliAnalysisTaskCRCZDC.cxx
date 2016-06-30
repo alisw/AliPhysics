@@ -759,14 +759,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     // get centrality (from MultSelection)
     Float_t centr = 300;
-    AliMultSelection *MultSelection = 0x0;
-    MultSelection = (AliMultSelection * ) aod->FindListObject("MultSelection");
-    if( !MultSelection) {
-      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-    }else{
-      centr = MultSelection->GetMultiplicityPercentile("V0M");
+    if(fDataSet == "2015") {
+      AliMultSelection *MultSelection = 0x0;
+      MultSelection = (AliMultSelection * ) aod->FindListObject("MultSelection");
+      if( !MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+      }else{
+        centr = MultSelection->GetMultiplicityPercentile("V0M");
+      }
+    } else {
+      AliCentrality* alicentr = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
+      centr = alicentr->GetCentralityPercentile("V0M");
     }
+    
     fCenDis->Fill(centr);
     
     // centrality bin
