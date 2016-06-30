@@ -2503,7 +2503,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    isGoodTrack++;
 	  }
 
-	  if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts())){
+	  if(fCuts->IsDaughterSelected(track,&vESD,fCuts->GetTrackCuts(),aod)){
 	    isSelTrack++;
 	  }//select tracks for our analyses
 

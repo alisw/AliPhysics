@@ -348,7 +348,7 @@ void AliRDHFCutsLctoV0::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
+Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
   //
   // Apply selection
   //
@@ -430,7 +430,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (!AreLctoV0DaughtersSelected(d)) return 0;
+    if (!AreLctoV0DaughtersSelected(d,aod)) return 0;
 
   }
 
@@ -1006,7 +1006,7 @@ Int_t AliRDHFCutsLctoV0::CombineCuts(Int_t returnvalueTrack, Int_t returnvalue, 
 }
 
 //----------------------------------
-Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex) {
+Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel, Int_t cutIndex, AliAODEvent* aod) {
   //
   // Apply selection on single cut
   //
@@ -1082,7 +1082,7 @@ Int_t AliRDHFCutsLctoV0::IsSelectedSingleCut(TObject* obj, Int_t selectionLevel,
   if (selectionLevel==AliRDHFCuts::kAll ||
       selectionLevel==AliRDHFCuts::kTracks) {
 
-    if (!AreLctoV0DaughtersSelected(d)) return 0;
+    if (!AreLctoV0DaughtersSelected(d,aod)) return 0;
 
   }
 
@@ -1509,7 +1509,7 @@ Bool_t AliRDHFCutsLctoV0::IsInFiducialAcceptance(Double_t pt, Double_t y) const
   return kTRUE;
 }
 //---------------------------------------------------------------------------
-Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) const{
+Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd, AliAODEvent* aod) const{
   //
   // Daughter tracks selection
   //
@@ -1542,7 +1542,7 @@ Bool_t AliRDHFCutsLctoV0::AreLctoV0DaughtersSelected(AliAODRecoDecayHF *dd) cons
   Double_t cov[6]; vAOD->GetCovarianceMatrix(cov);
   const AliESDVertex vESD(pos,cov,100.,100);
 
-  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts)) return kFALSE;
+  if (!IsDaughterSelected(bachelorTrack,&vESD,fTrackCuts,aod)) return kFALSE;
 
   if (!fV0daughtersCuts) {
     AliFatal("Cut object is not defined for V0daughters. Candidate accepted.");
