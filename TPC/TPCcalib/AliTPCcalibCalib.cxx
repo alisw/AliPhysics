@@ -174,7 +174,6 @@ void     AliTPCcalibCalib::Process(AliVEvent *event){
     AliExternalTrackParam prmOut;
     track->GetTrackParamOp(prmOut);
     friendTrack->ResetTrackParamTPCOut(&prmOut);
-    friendTrack->ResetTPCseed(seed);
   }
   return;
 }
