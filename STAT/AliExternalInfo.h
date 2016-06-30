@@ -71,6 +71,7 @@ public:
   Bool_t CacheProdCycleByID(TString ID)                                 {return Cache("MonALISA.ProductionCycleID", ID, "");}
 
   TTree* GetTree(TString type, TString period, TString pass);
+  TTree* GetTree(TString type, TString period, TString pass, TString friendList);
   TTree* GetTreeMC()                                                    {return GetTree("MonALISA.MC", "", "");}
   // TTree* GetTreeMC(TString period = "", TString anchorYear = "", TString productionTag = "") {return GetTree("MonALISA.MC", "", "");} // deprecated; not supported anymore
   TTree* GetTreeRCT(TString period, TString pass)                       {return GetTree("MonALISA.RCT", period, pass);}

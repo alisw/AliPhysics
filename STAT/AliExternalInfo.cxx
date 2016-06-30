@@ -293,6 +293,57 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass){
 }
 
 /// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
+/// \param period Period, e.g. 'LHC15f'
+/// \param pass E.g. 'pass2' or 'passMC'
+/// \param friendList - semicolomn separated array of "friend" trees attached to the tree
+/// Returns the tree with the information from the corresponding resource - trees from the friendList are added as friend trees
+/// see example usage
+/// \return TTree* with corresponding resource
+
+TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TString friendList){
+  //  
+  /*
+    Example usage:
+     treerawTPC = info.GetTree("QA.rawTPC","LHC16f","cpass1_pass1","Logbook;Logbook.detector;QA.TPC;QA.TRD;QA.TOF;MonALISA.RCT");
+     treerawTPC->Draw("QA.TPC.meanMIP:gainMIP","abs(QA.TPC.meanMIP-50)<2&&gainMIP>1","")
+
+   */
+  TTree * tree = GetTree(type, period,pass);  
+  if (tree==NULL) tree=  GetTree(type, period,"");
+  if (tree==NULL) tree=  GetTree(type, "","");
+  if (tree==NULL){
+    ::Error("AliExternalInfo::GetTree","Friend tree %s not valid or empty",type.Data()); 
+    return 0;
+  }
+  TString indexName= fLocationTimeOutMap[type + ".indexname"];
+  if (indexName.Length()<=0) indexName="run";
+  Int_t entries = tree->Draw(indexName.Data(),"","goff");
+  if (entries<=0){
+    ::Error("AliExternalInfo::GetTree","Friend tree %s not valid or empty",type.Data()); 
+    return 0;
+  }
+
+  TObjArray * arrFriendList= friendList.Tokenize(";");
+  for (Int_t ilist=0; ilist<arrFriendList->GetEntriesFast(); ilist++){
+    TString fname=arrFriendList->At(ilist)->GetName();
+    TTree *ftree= GetTree(fname.Data(), period,pass);
+    if (ftree==NULL) ftree=  GetTree(fname.Data(), period,"");
+    if (ftree==NULL) ftree=  GetTree(fname.Data(), "","");
+    if (ftree==NULL || ftree->GetEntries()<=0){
+      ::Error("AliExternalInfo::GetTree","Friend tree %s not valid or empty",fname.Data()); 
+      continue;
+    }
+    tree->AddFriend(ftree, fname.Data());
+    ftree->AddFriend(tree, type.Data());
+    Int_t fentries = tree->Draw(indexName.Data(),"","goff");
+    ::Info("AliExternalInfo::GetTree","AddFriend %s+%s - entries=%d", type.Data(),  fname.Data(),fentries);
+  }
+  return tree;
+}
+
+
+
+/// \param type Type of the resource as described in the config file, e.g. QA.TPC, MonALISA.RCT
 /// \param period Period, e.g. 'LHC15f'. Here you can use wildcards like in 'ls', e.g. 'LHC15*'
 /// \param pass E.g. 'pass2' or 'passMC'. Here you can use wildcards like in 'ls', e.g. 'pass*'
 /// Returns a chain with the information from the corresponding resources.
