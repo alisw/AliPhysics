@@ -1084,6 +1084,10 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
     {
       fFullyDestroyAnalysisDataContainer = (value.Contains("0"))?kFALSE:kTRUE;
     }
+    else if (option.EqualTo("IgnoreDefaultContainerNames"))
+    {
+      fIgnoreDefaultNamesWhenUnpacking = (value.Contains("0"))?kFALSE:kTRUE;
+    }
     else if (option.EqualTo("statefile"))
     {
       fInitFile = value.Data();
