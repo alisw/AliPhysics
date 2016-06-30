@@ -1273,44 +1273,20 @@ Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t 
   AliTrackContainer *PartCont = NULL;
   if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
   else PartCont = GetTrackContainer(0);
-  TClonesArray *TracksArray = PartCont->GetArray();
- 
+  TClonesArray *TracksArray = PartCont->GetArray(); 
   if(!PartCont || !TracksArray) return -99999;
-  AliVParticle *Particle=0x0;
   AliAODTrack *Track = 0x0;
-  AliEmcalParticle *EmcalParticle = 0x0;
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  while ((Particle=PartCont->GetNextAcceptParticle())){
-    if (fJetShapeSub == kConstSub){
-      EmcalParticle = static_cast<AliEmcalParticle*>(Particle);
-      if (!EmcalParticle) continue;
-      if(TMath::Abs(EmcalParticle->Eta())>0.9) continue;
-      if (EmcalParticle->Pt()<0.15) continue;
-      if ((EmcalParticle->Pt() >= PtMin) && (EmcalParticle->Pt()< PtMax)) {
-	for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){
-	  if (EmcalParticle==static_cast<AliEmcalParticle*>(TracksArray->At(i))){
-	    Trigger_Index[Trigger_Counter] = i;
-	    Trigger_Counter++;
-	    break;
-	  }
-	}
-      }
-    }
-    else{
-      Track = static_cast<AliAODTrack*>(Particle);
+  for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){  
+    if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
       if (!Track) continue;
       if(TMath::Abs(Track->Eta())>0.9) continue;
       if (Track->Pt()<0.15) continue;
       if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){
-	  if (Track==static_cast<AliAODTrack*>(TracksArray->At(i))){
-	    Trigger_Index[Trigger_Counter] = i;
-	    Trigger_Counter++;
-	    break;
-	  }
-	}
+	Trigger_Index[Trigger_Counter] = i;
+	Trigger_Counter++;
       }
     }
   }
@@ -1390,12 +1366,6 @@ AliEmcalJetFinder *AliAnalysisTaskSubJetFraction::Recluster(AliEmcalJet *Jet, In
   return Reclusterer;
   
 }
-
-
-
-
-
-
 
 
 
