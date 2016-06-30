@@ -179,19 +179,20 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[8] = "CoreFraction";
   fShapesVarNames[9] = "Nsubjet1";
   fShapesVarNames[10] = "Nsubjet2";
-  fShapesVarNames[11] = "SubjetFraction";
-  fShapesVarNames[12] = "DeltaR";
-  fShapesVarNames[13] = "OpenAngle";
-  fShapesVarNames[14] = "weightPythia";
+  fShapesVarNames[11] = "DeltaR";
+  fShapesVarNames[12] = "OpenAngle";
+  fShapesVarNames[13] = "weightPythia";
 
-  fShapesVarNames[15] = "NT70";
-  fShapesVarNames[16] = "nConstNT70";
-  fShapesVarNames[17] = "NT80";
-  fShapesVarNames[18] = "nConstNT80";
-  fShapesVarNames[19] = "NT90";
-  fShapesVarNames[20] = "nConstNT90";
-  fShapesVarNames[21] = "NT95";
-  fShapesVarNames[22] = "nConstNT95";
+  fShapesVarNames[14] = "NT70";
+  fShapesVarNames[15] = "nConstNT70";
+  fShapesVarNames[16] = "NT80";
+  fShapesVarNames[17] = "nConstNT80";
+  fShapesVarNames[18] = "NT90";
+  fShapesVarNames[19] = "nConstNT90";
+  fShapesVarNames[20] = "NT95";
+  fShapesVarNames[21] = "nConstNT95";
+  
+  fShapesVarNames[22] = "SubjetFraction";
 
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -247,7 +248,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::Run()
 Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
 {
   // Fill histograms.
-  cout<<"IntoFillHistograms"<<endl;
+  //cout<<"IntoFillHistograms"<<endl;
   AliEmcalJet* jet1 = NULL;
   AliJetContainer *jetCont = GetJetContainer(0);
   
@@ -330,7 +331,7 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
         Double_t detap1=(jet1->Eta())-(partonsInfo->GetPartonEta6());
         kWeight=partonsInfo->GetPythiaEventWeight();
         //Printf("kWeight=%f",  kWeight);
-        fShapesVar[14] = kWeight;
+        fShapesVar[13] = kWeight;
         
         Float_t dRp1 = TMath::Sqrt(jp1 * jp1 + detap1 * detap1);
         fEtaJetCorr6->Fill(jet1->Eta(), partonsInfo->GetPartonEta6());
@@ -373,17 +374,17 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[6] = GetJetCircularity(jet1,0);
       fShapesVar[7] = GetJetLeSub(jet1,0);
       fShapesVar[8] = GetJetCoreFrac(jet1,0);
-      fShapesVar[9] = NSubJettiness(jet1, 0, Reclusterer1, 1, 0, 1);
-      fShapesVar[10]= NSubJettiness(jet1, 0, Reclusterer1, 2, 0, 1);
-      fShapesVar[11]= GetSubjetFraction(jet1,0,fJetRadius,Reclusterer1);
-      fShapesVar[12]= fjNSubJettiness(jet1,0, 2, 0, 1, 2);
-      fShapesVar[13]= fjNSubJettiness(jet1,0, 2, 0, 1, 1);
+      fShapesVar[9] = fjNSubJettiness(jet1,0,1,0,1,0);
+      fShapesVar[10]= fjNSubJettiness(jet1,0,2,0,1,0);
+      fShapesVar[11]= fjNSubJettiness(jet1,0,2,0,1,2);
+      fShapesVar[12]= fjNSubJettiness(jet1,0,2,0,1,1);
       
       Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       NTValues(jet1, 0, nTFractions);
-      //shape 14 is pythia weight!
-      for (Int_t ishape=15; ishape<23; ishape++) fShapesVar[ishape] = nTFractions[ishape-15];
+      //shape 13 is pythia weight!
+      for (Int_t ishape=14; ishape<22; ishape++) fShapesVar[ishape] = nTFractions[ishape-14];
     
+      fShapesVar[22]= GetSubjetFraction(jet1,0,fJetRadius,Reclusterer1);
       
       fTreeObservableTagging->Fill();
 
@@ -654,7 +655,7 @@ AliEmcalJetFinder *AliAnalysisTaskEmcalJetShapesMC::Recluster(AliEmcalJet *Jet, 
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B){
+/*Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B){
   AliJetContainer *JetCont = GetJetContainer(JetContNb);
   AliEmcalJet *SubJet=NULL;
   Double_t DeltaR1=0;
@@ -691,6 +692,7 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::NSubJettiness(AliEmcalJet *Jet, Int_t 
   else return -2;
   
 }
+*/
 
 //----------------------------------------------------------------------
 Double_t AliAnalysisTaskEmcalJetShapesMC::GetSubjetFraction(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer){
@@ -944,14 +946,16 @@ Double_t AliAnalysisTaskEmcalJetShapesMC::fjNSubJettiness(AliEmcalJet *Jet, Int_
   if (Jet->GetNumberOfTracks()>=N){
     AliJetContainer *JetCont = GetJetContainer(JetContNb);
     AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
+    //Printf("jetfinder =%p, JetCont=%p", JetFinder, JetCont);
     JetFinder->SetJetMaxEta(0.9-fJetRadius);
     JetFinder->SetRadius(fJetRadius);
-    JetFinder->SetJetAlgorithm(0); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
+    JetFinder->SetJetAlgorithm(Algorithm); //0 for anti-kt     1 for kt  //this is for the JET!!!!!!!!!! Not the SubJets
     JetFinder->SetRecombSheme(0);
     JetFinder->SetJetMinPt(Jet->Pt());
     const AliVVertex *vert = InputEvent()->GetPrimaryVertex();
     //Double_t dVtx[3]={vert->GetX(),vert->GetY(),vert->GetZ()};
     Double_t dVtx[3]={0,0,0};
+    //Printf("JetFinder->Nsubjettiness =%f", JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option));
     return JetFinder->Nsubjettiness(Jet,JetCont,dVtx,N,Algorithm,fSubjetRadius,Beta,Option);
     
   }
