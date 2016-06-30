@@ -3170,7 +3170,7 @@ Bool_t AliTPCDcalibRes::FitPoly2(const float* x,const float* y, const float* w, 
   double det  = sumW[0]*min00
     -           sumW[1]*min01
     +           sumW[2]*min02;
-  if (TMath::Abs(det)<1e-12) return kFALSE;
+  if (TMath::Abs(det)<1e-64) return kFALSE;
   double detI = 1./det;
   double det0 = sumY[0]*min00
     -           sumW[1]*(sumY[1]*sumW[4]-sumW[3]*sumY[2]) 
@@ -3693,7 +3693,7 @@ Bool_t AliTPCDcalibRes::GetSmooth1D
   }
   double maxD,w2Sum=0.,range = (xmax - xmin)*maxD2Range;
   //
-  const float kEps = 1e-12;
+  const float kEps = 1e-16;
   int npUse=0;
   do {
     maxD = ws*(kType==kGaussianKernel ? kMaxGaussStdDev : 1.0f);
@@ -4030,6 +4030,7 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
   // calculate the gradient of distortion+dispersion vs x, (y/x) and (z/x) at point x,y,z of sector sectID
   // and the corrected value
   //
+  const Bool_t kUsePol2=kFALSE;
   val[kResX] = x;
   val[kResY] = y;
   val[kResZ] = z;
@@ -4092,18 +4093,18 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
   // 
   // calculate 4-points Richardson derivative over X for each dimension
   const double kXStep=0.4;
-  double wKernel=(xPnt[kNTestPnt-1]-xPnt[0])/(kNTestPnt-1);
+  double wKernel = 2.*(xPnt[kNTestPnt-1]-xPnt[0])/(kNTestPnt-1);
   double valerr[2], richVal[4];
   for (int id=kResDim;id--;) {
     // calculate value
-    GetSmooth1D(x,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+    GetSmooth1D(x,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kUsePol2,kTRUE,3.0);
     val[id] += valerr[0]; // correction + "measured value"
     //
     float dx = kXStep;
     for (int ih=0;ih<2;ih++) {
-      GetSmooth1D(x+dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+      GetSmooth1D(x+dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kUsePol2,kTRUE,3.0);
       richVal[2*ih  ] = valerr[0];
-      GetSmooth1D(x-dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kTRUE,kTRUE,3.0);
+      GetSmooth1D(x-dx,valerr,kNTestPnt,xPnt,valTmp[id],0, wKernel,kGaussianKernel,kUsePol2,kTRUE,3.0);
       richVal[2*ih+1] = valerr[0];
       dx *= 0.5;
     }
@@ -4182,9 +4183,13 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
       vecOut[id] += delta[id];    
     }
     //
-    if (it && deltaR2>deltaR2Prev) {
-      AliErrorClassF("Runaway @ iter%d for S%2d {%.3f %.3f %.3f}? deltaR2=%e > deltaR2Prev=%e",it,
+    if (it>1 && deltaR2>deltaR2Prev) {
+      AliErrorClassF("Runaway @ iter%d for S%2d {%.3f %.3f %.3f}? deltaR2=%e > deltaR2Prev=%e | Grad:",it,
 		     sect36, vecIn[0],vecIn[1],vecIn[2],deltaR2,deltaR2Prev);
+      for (int i=0;i<3;i++) {
+	for (int j=0;j<3;j++) printf(" %+e ",grad[i][j] - ((i==j)?1.:0.)); printf("\n");	
+      }
+
       for (int id=3;id--;) { vecOut[id] = vecIn[id] + delta0[id];}
       fun[kResD] = delta0[kResD];
       break;
