@@ -146,8 +146,8 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
 
     // ---| switch on parameter validation |------------------------------------
     procesTPC->SetTimeGainRange(0.5,5.0);
-
-    procesTPC->SetMinTracksVdrift(100000);
+    procesTPC->SetMaxVDriftCorr(0.2); 
+    procesTPC->SetMinTracksVdrift(10000);
     procesTPC->SwitchOnValidation();
 
     // ===| Run calibration |===================================================
