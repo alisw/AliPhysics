@@ -357,7 +357,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       vAOD->GetXYZ(pos);
       vAOD->GetCovarianceMatrix(cov);
       const AliESDVertex vESD(pos,cov,100.,100);
-      if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi)) return 0;
+      if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi,aod)) return 0;
     }
   }
   
