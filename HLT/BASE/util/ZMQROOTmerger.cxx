@@ -832,6 +832,16 @@ Int_t DoSend(void* socket)
     alizmq_msg_close(&messageCopy);
   }
 
+  int sentBytes = 0;
+  //send a copy to the broadcast socket if requested on reset
+  if (reset && fZMQresetBroadcast && fZMQresetBroadcast!=socket) {
+    aliZMQmsg messageCopy;
+    alizmq_msg_copy(&messageCopy, &message);
+    sentBytes += alizmq_msg_send(&messageCopy, fZMQresetBroadcast, 0);
+    if (fVerbose) printf("a copy was broadcasted, %i bytes\n", sentBytes);
+    alizmq_msg_close(&messageCopy);
+  }
+
   //send
   sentBytes += alizmq_msg_send(&message, socket, 0);
   fNumberOfMessagesSent++;
@@ -918,6 +928,7 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
   //process passed options
   Int_t nOptions=0;
   aliStringVec* options = AliOptionParser::TokenizeOptionString(arguments);
+  bool reconfigureZMQ = false;
   for (aliStringVec::iterator i=options->begin(); i!=options->end(); ++i)
   {
     const TString& option = i->first;
@@ -1127,6 +1138,12 @@ Int_t ProcessOptionString(TString arguments, Bool_t verbose)
   else if (fOnResetSendTo.EqualTo("in")) fZMQresetBroadcast = fZMQin;
   else if (fOnResetSendTo.EqualTo("mon")) fZMQresetBroadcast = fZMQmon;
   else if (fOnResetSendTo.EqualTo("out")) fZMQresetBroadcast = fZMQout;
+
+  if (fOnResetSendTo.IsNull()) fZMQresetBroadcast = NULL;
+  else if (fOnResetSendTo.EqualTo("in")) fZMQresetBroadcast = fZMQin;
+  else if (fOnResetSendTo.EqualTo("mon")) fZMQresetBroadcast = fZMQmon;
+  else if (fOnResetSendTo.EqualTo("out")) fZMQresetBroadcast = fZMQout;
+  if (fVerbose) printf("configured to bradcast on %s, socket %p\n", fOnResetSendTo.Data(), fZMQresetBroadcast);
 
   delete options; //tidy up
 
