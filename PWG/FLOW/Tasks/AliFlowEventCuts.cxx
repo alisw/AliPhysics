@@ -418,6 +418,8 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       pass=kFALSE;
   }
+  
+  // Handles ESD event
   if (fCutCentralityPercentile&&esdevent)
   {
    if(!fUseNewCentralityFramework)
@@ -517,11 +519,11 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     }
     else {
       if (fCutCentralityPercentile) {
-    	fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
-    	Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
-    	if(!fMultSelection){
-    	  AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
-    	}
+        fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+        Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+        if(!fMultSelection){
+          AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+        }
         if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
         {
           pass=kFALSE;
