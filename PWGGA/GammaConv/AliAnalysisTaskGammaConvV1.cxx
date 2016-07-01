@@ -134,6 +134,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   hMCEtaWOWeightInAccPt(NULL),
   hMCPi0InAccPt(NULL),
   hMCEtaInAccPt(NULL),
+  hMCPi0WOEvtWeightInAccPt(NULL),
+  hMCEtaWOEvtWeightInAccPt(NULL),
   hMCPi0PtY(NULL),
   hMCEtaPtY(NULL),
   hMCPi0PtAlpha(NULL),
@@ -346,6 +348,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   hMCEtaWOWeightInAccPt(NULL),
   hMCPi0InAccPt(NULL),
   hMCEtaInAccPt(NULL),
+  hMCPi0WOEvtWeightInAccPt(NULL),
+  hMCEtaWOEvtWeightInAccPt(NULL),
   hMCPi0PtY(NULL),
   hMCEtaPtY(NULL),
   hMCPi0PtAlpha(NULL),
@@ -1072,6 +1076,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fIsMC > 1){
         hMCPi0WOEvtWeightPt       = new TH1F*[fnCuts];
         hMCEtaWOEvtWeightPt       = new TH1F*[fnCuts];
+        hMCPi0WOEvtWeightInAccPt  = new TH1F*[fnCuts];
+        hMCEtaWOEvtWeightInAccPt  = new TH1F*[fnCuts];
       }
 
       hESDTrueMotherInvMassPt                   = new TH2F*[fnCuts];
@@ -1226,6 +1232,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
           fMCList[iCut]->Add(hMCPi0WOEvtWeightPt[iCut]);
           hMCEtaWOEvtWeightPt[iCut]   = new TH1F("MC_Eta_WOEventWeights_Pt","MC_Eta_WOEventWeights_Pt",300,0,30);
           fMCList[iCut]->Add(hMCEtaWOEvtWeightPt[iCut]);
+          hMCPi0WOEvtWeightInAccPt[iCut]   = new TH1F("MC_Pi0WOEvtWeightInAcc_Pt","MC_Pi0WOEvtWeightInAcc_Pt",250,0,25);
+          hMCPi0WOEvtWeightInAccPt[iCut]->Sumw2();
+          fMCList[iCut]->Add(hMCPi0WOEvtWeightInAccPt[iCut]);
+          hMCEtaWOEvtWeightInAccPt[iCut]   = new TH1F("MC_EtaWOEvtWeightInAcc_Pt","MC_EtaWOEvtWeightInAcc_Pt",250,0,25);
+          hMCEtaWOEvtWeightInAccPt[iCut]->Sumw2();
+          fMCList[iCut]->Add(hMCEtaWOEvtWeightInAccPt[iCut]);
           
           if (fDoMesonQA > 0 && fIsMC == 2){
             hMCPi0PtJetPt[iCut]       = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",150,0.03,15.,200,0,200);
@@ -2444,9 +2456,11 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
           ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
 
             if(particle->GetPdgCode() == 111){
+              hMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
               hMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
               hMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
             } else if(particle->GetPdgCode() == 221){
+              hMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
               hMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
               hMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
             }
@@ -2641,9 +2655,11 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
             ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(daughter1->Phi(),fEventPlaneAngle,kFALSE)){
 
             if(particle->GetPdgCode() == 111){
+              hMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 with gamma in acc NOT weighted at all
               hMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc NOT weighted
               hMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
             } else if(particle->GetPdgCode() == 221){
+              hMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta with gamma in acc NOT weighted at all
               hMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc NOT weighted
               hMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
             }
