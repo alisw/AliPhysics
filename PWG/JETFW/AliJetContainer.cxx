@@ -195,15 +195,16 @@ void AliJetContainer::SetAcceptanceCuts()
   case kEMCAL:
     AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiEMCAL();
+    break;
   case kEMCALfid:
     AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiEMCAL(fJetRadius);
     break;
-  case kDCALfid:
+  case kDCAL:
     AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiDCAL();
     break;
-  case kDCAL:
+  case kDCALfid:
     AliDebug(2,Form("%s: set EMCAL acceptance cuts",GetName()));
     SetJetEtaPhiDCAL(fJetRadius);
     break;
