@@ -775,7 +775,6 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fHistoMCPi0InAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
         fHistoMCPi0WOEvtWeightInAccPt[iCut]         = new TH1F("MC_Pi0WOEvtWeightInAcc_Pt","MC_Pi0WOEvtWeightInAcc_Pt",ptBins, startPt, endPt);
-        fHistoMCPi0WOEvtWeightInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightInAccPt[iCut]);
         fHistoMCPi0DalitzPt[iCut]                   = new TH1F("MC_Pi0Dalitz_Pt","MC_Pi0Dalitz_Pt",ptBins, startPt, endPt);
         fHistoMCPi0DalitzPt[iCut]->Sumw2();
@@ -798,7 +797,6 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fHistoMCEtaInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaInAccPt[iCut]);
         fHistoMCEtaWOEvtWeightInAccPt[iCut]         = new TH1F("MC_EtaWOEvtWeightInAcc_Pt","MC_EtaWOEvtWeightInAcc_Pt",ptBins, startPt, endPt);
-        fHistoMCEtaWOEvtWeightInAccPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightInAccPt[iCut]);
         fHistoMCEtaDalitzPt[iCut]                   = new TH1F("MC_EtaDalitz_Pt","MC_EtaDalitz_Pt",ptBins, startPt, endPt);
         fHistoMCEtaDalitzPt[iCut]->Sumw2();
