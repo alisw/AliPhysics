@@ -68,6 +68,7 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t fQT1mean[24];  //mean QT1 (start) from DA 
   Float_t fPedestal[24];  //mean old pedestal from DA 
   Bool_t fLHCperiod;        // run period
+  Bool_t fLHCperiod16;        // run period
   
  
   AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
@@ -78,7 +79,7 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 12)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 13)   // class for the T0 reconstruction
 
 };
 
