@@ -148,7 +148,8 @@ public:
   virtual Bool_t CreateQAHistograms(TList *list);
   virtual Bool_t CreateNveQAHistograms(TList *list);
 
-  virtual Bool_t Process(const Float_t *variableContainer);
+  virtual Bool_t ProcessCorrections(const Float_t *variableContainer);
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer);
   /// Clean the correction to accept a new event
   /// Does nothing for the time being
   virtual void ClearCorrectionStep() {}

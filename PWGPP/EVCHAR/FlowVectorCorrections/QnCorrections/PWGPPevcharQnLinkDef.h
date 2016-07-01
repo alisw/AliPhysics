@@ -1,10 +1,10 @@
 #ifdef __CINT__
 
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 
  
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -39,14 +39,16 @@
 #pragma link C++ class AliQnCorrectionsInputGainEqualization+;
 #pragma link C++ class AliQnCorrectionsManager+;
 #pragma link C++ class AliQnCorrectionsProfile+;
+#pragma link C++ class AliQnCorrectionsProfile3DCorrelations+;
 #pragma link C++ class AliQnCorrectionsProfileChannelized+;
 #pragma link C++ class AliQnCorrectionsProfileChannelizedIngress+;
 #pragma link C++ class AliQnCorrectionsProfileComponents+;
 #pragma link C++ class AliQnCorrectionsProfileCorrelationComponents+;
 #pragma link C++ class AliQnCorrectionsProfileCorrelationComponentsHarmonics+;
 #pragma link C++ class AliQnCorrectionsQnVector+;
+#pragma link C++ class AliQnCorrectionsQnVectorAlignment+;
 #pragma link C++ class AliQnCorrectionsQnVectorBuild+;
 #pragma link C++ class AliQnCorrectionsQnVectorRecentering+;
-#pragma link C++ class AliQnCorrectionsQnVectorAlignment+;
+#pragma link C++ class AliQnCorrectionsQnVectorTwistAndRescale+;
 
 #endif

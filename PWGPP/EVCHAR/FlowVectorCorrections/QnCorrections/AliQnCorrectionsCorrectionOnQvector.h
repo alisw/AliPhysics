@@ -44,6 +44,13 @@ public:
   /// \param list list where the inputs should be found
   /// \return kTRUE if everything went OK
   virtual Bool_t AttachInput(TList *list) = 0;
+  /// Perform after calibration histograms attach actions
+  /// It is used to inform the different correction step that
+  /// all conditions for running the network are in place so
+  /// it is time to check if their requirements are satisfied
+  ///
+  /// Pure virtual function
+  virtual void AfterInputsAttachActions() = 0;
   /// Asks for support data structures creation
   ///
   /// Pure virtual function
@@ -58,11 +65,24 @@ public:
   ///
   /// Pure virtual function
   /// \return kTRUE if everything went OK
-  virtual Bool_t Process(const Float_t *variableContainer) = 0;
+  virtual Bool_t ProcessCorrections(const Float_t *variableContainer) = 0;
+  /// Processes the correction step data collection
+  ///
+  /// Pure virtual function
+  /// \return kTRUE if everything went OK
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer) = 0;
+  /// Gets the corrected Qn vector
+  /// \return the corrected Qn vector
+  const AliQnCorrectionsQnVector *GetCorrectedQnVector() const
+  { return fCorrectedQnVector; }
   virtual void IncludeCorrectedQnVector(TList *list);
   /// Clean the correction to accept a new event
   /// Pure virtual function
   virtual void ClearCorrectionStep() = 0;
+  /// Reports if the correction step is being applied
+  /// Pure virutal function
+  /// \return TRUE if the correction step is being applied
+  virtual Bool_t IsBeingApplied() const = 0;
   /// Report on correction usage
   /// Pure virtual function
   /// Correction step should incorporate its name in calibration
@@ -84,8 +104,9 @@ private:
 
 protected:
   AliQnCorrectionsQnVector *fCorrectedQnVector;    //!<! the step corrected Qn vector
+  const AliQnCorrectionsQnVector *fInputQnVector;   //!<! the previous step corrected Qn vector
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsCorrectionOnQvector, 1);
+  ClassDef(AliQnCorrectionsCorrectionOnQvector, 2);
 /// \endcond
 };
 

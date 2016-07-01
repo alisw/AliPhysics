@@ -118,13 +118,22 @@ public:
   /// No action for Qn vector recentering
   virtual void AttachedToFrameworkManager() {}
   virtual Bool_t AttachInput(TList *list);
+  /// Perform after calibration histograms attach actions
+  /// It is used to inform the different correction step that
+  /// all conditions for running the network are in place so
+  /// it is time to check if their requirements are satisfied
+  ///
+  /// Does nothin for the time being
+  virtual void AfterInputsAttachActions() {};
   virtual void CreateSupportDataStructures();
   virtual Bool_t CreateSupportHistograms(TList *list);
   virtual Bool_t CreateQAHistograms(TList *list);
   virtual Bool_t CreateNveQAHistograms(TList *list);
 
-  virtual Bool_t Process(const Float_t *variableContainer);
+  virtual Bool_t ProcessCorrections(const Float_t *variableContainer);
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer);
   virtual void ClearCorrectionStep();
+  virtual Bool_t IsBeingApplied() const;
   virtual Bool_t ReportUsage(TList *calibrationList, TList *applyList);
 
 private:
@@ -134,15 +143,17 @@ private:
   static const char *szSupportHistogramName;         ///< the name and title for support histograms
   static const char *szCorrectedQnVectorName;        ///< the name of the Qn vector after applying the correction
   static const char *szQANotValidatedHistogramName;  ///< the name and title for bin not validated QA histograms
+  static const char *szQAQnAverageHistogramName;     ///< the name and title for Qn components average QA histograms
   AliQnCorrectionsProfileComponents *fInputHistograms; //!<! the histogram with calibration information
   AliQnCorrectionsProfileComponents *fCalibrationHistograms; //!<! the histogram for building calibration information
   AliQnCorrectionsHistogramSparse *fQANotValidatedBin;    //!<! the histogram with non validated bin information
+  AliQnCorrectionsProfileComponents *fQAQnAverageHistogram; //!<! the after correction step average Qn components QA histogram
 
   Bool_t fApplyWidthEqualization;              ///< apply the width equalization step
   Int_t fMinNoOfEntriesToValidate;              ///< number of entries for bin content validation threshold
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsQnVectorRecentering, 2);
+  ClassDef(AliQnCorrectionsQnVectorRecentering, 3);
 /// \endcond
 };
 

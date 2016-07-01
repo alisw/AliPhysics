@@ -60,14 +60,6 @@ AliQnCorrectionsProfileCorrelationComponents::AliQnCorrectionsProfileCorrelation
 /// the own histograms and other members are not own at destruction time
 AliQnCorrectionsProfileCorrelationComponents::~AliQnCorrectionsProfileCorrelationComponents() {
 
-  if (fXXValues != NULL)
-    delete fXXValues;
-  if (fXYValues != NULL)
-    delete fXYValues;
-  if (fYXValues != NULL)
-    delete fYXValues;
-  if (fYYValues != NULL)
-    delete fYYValues;
 }
 
 /// Creates the XX, XY, YX, YY correlation components support histograms
@@ -209,22 +201,11 @@ Bool_t AliQnCorrectionsProfileCorrelationComponents::AttachHistograms(TList *his
 
   /* initialize. Remember we don't own the histograms */
   fEntries = NULL;
-  if (fXXValues != NULL) {
-    delete fXXValues;
-    fXXValues = NULL;
-  }
-  if (fXYValues != NULL) {
-    delete fXYValues;
-    fXYValues = NULL;
-  }
-  if (fYXValues != NULL) {
-    delete fYXValues;
-    fYXValues = NULL;
-  }
-  if (fYYValues != NULL) {
-    delete fYYValues;
-    fYYValues = NULL;
-  }
+  fXXValues = NULL;
+  fXYValues = NULL;
+  fYXValues = NULL;
+  fYYValues = NULL;
+
   fXXXYYXYYFillMask = 0x0000;
   fFullFilled = 0x0000;
 

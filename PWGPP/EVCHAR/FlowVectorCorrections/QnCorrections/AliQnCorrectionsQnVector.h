@@ -23,10 +23,17 @@
 /// \class AliQnCorrectionsQnVector
 /// \brief Class that models and encapsulates a Q vector set
 ///
+/// The class incorporates an harmonic multiplier that basically
+/// makes the Qn vector behave as a Qmxn vector. By default m=1
+/// to give the Qn behavior. If m=2 we get the Q2n behavior.
+/// The harmonics are always addressed by n but the return value
+/// always consider m. For the class this behavior only has impact
+/// in the calculation of the event plane but care should be taken
+/// by its descendant classes.
 /// \author Jaap Onderwaater <jacobus.onderwaater@cern.ch>, GSI
 /// \author Ilya Selyuzhenkov <ilya.selyuzhenkov@gmail.com>, GSI
 /// \author Víctor González <victor.gonzalez@cern.ch>, UCM
-/// \date Jan 27, 2016
+/// \date Jun 21, 2016
 class AliQnCorrectionsQnVector : public TNamed {
 
 public:
@@ -47,7 +54,9 @@ public:
 
   AliQnCorrectionsQnVector();
   AliQnCorrectionsQnVector(const char *name, Int_t nNoOfHarmonics, Int_t *harmonicMap = NULL);
+  AliQnCorrectionsQnVector(const char *name, Int_t nExtractMultipleOf, Int_t nNoOfHarmonics, Int_t *harmonicMap);
   AliQnCorrectionsQnVector(const AliQnCorrectionsQnVector &Q);
+  AliQnCorrectionsQnVector(Int_t nDivisor, const AliQnCorrectionsQnVector &Q);
   virtual ~AliQnCorrectionsQnVector();
 
   void ActivateHarmonic(Int_t harmonic);
@@ -55,6 +64,10 @@ public:
   void GetHarmonicsMap(Int_t *harmonicMap) const;
   Int_t GetFirstHarmonic() const;
   Int_t GetNextHarmonic(Int_t harmonic) const;
+  /// Get the harmonic multiplier
+  /// \return the harmonic multiplier
+  Int_t GetHarmonicMultiplier() const
+  { return fHarmonicMultiplier; }
 
   /// Sets the X component for the considered harmonic
   /// \param harmonic the intended harmonic
@@ -67,7 +80,10 @@ public:
   /// Set the good quality flag
   /// \param good kTRUE  if the quality is good
   virtual void SetGood(Bool_t good) { fGoodQuality = good; }
-
+  /// Set the harmonic multiplier
+  /// With it different from one Qn behaves as Qmxn.
+  /// \param m the hamonic multiplier
+  virtual void SetHarmonicMultiplier(Int_t m) { fHarmonicMultiplier = m; }
 
   void Set(AliQnCorrectionsQnVector* Qn, Bool_t changename);
 
@@ -120,9 +136,10 @@ protected:
   UInt_t  fHarmonicMask;                       ///< the mask for the supported harmonics
   Bool_t  fGoodQuality;                        ///< Qn vector good quality flag
   Int_t fN;                                    ///< number of elements used for Qn vector building
+  Int_t fHarmonicMultiplier;                   ///< the multiplier of the different harmonics
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsQnVector, 2);
+  ClassDef(AliQnCorrectionsQnVector, 3);
 /// \endcond
 };
 

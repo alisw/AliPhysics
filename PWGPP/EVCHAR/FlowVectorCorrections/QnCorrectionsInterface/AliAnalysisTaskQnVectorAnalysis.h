@@ -100,6 +100,7 @@ public:
 
   AliAnalysisTaskQnVectorAnalysis(const AliAnalysisTaskQnVectorAnalysis &c);
   AliAnalysisTaskQnVectorAnalysis& operator= (const AliAnalysisTaskQnVectorAnalysis &c);
+  const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *list, const char *subdetector, const char *expectedstep = "latest", const char *altstep = "latest") const;
 
   TProfile* fVn[nTrackDetectors*nEPDetectors][kNharmonics][kNcorrelationComponents];
 

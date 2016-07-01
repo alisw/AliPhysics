@@ -41,9 +41,12 @@ class AliQnCorrectionsManager;
 /// to it for each processing request.
 ///
 /// As such, it incorporates the set of corrections to carry on the input data
-/// and the set of corrections to perform on the produced Q vector. It always stores
-/// the plain Q vector produced after potential input data corrections and the
-/// Q vector that incorporates the latest Q vector correction step.
+/// and the set of corrections to perform on the produced Qn vector. It always stores
+/// the plain Qn vector produced after potential input data corrections and the
+/// Qn vector that incorporates the latest Qn vector correction step.
+///
+/// It also incorporates the equivalent support for Q2n vectors which could be the
+/// seed for future Q(m,n) support.
 ///
 /// It receives at construction time the set of event classes variables and the
 /// detector reference. The reference of the detector should only be obtained at
@@ -107,6 +110,24 @@ public:
   /// \return pointer to the current Qn vector instance
   AliQnCorrectionsQnVector *GetCurrentQnVector()
   { return &fCorrectedQnVector; }
+  const AliQnCorrectionsQnVector *GetPreviousCorrectedQnVector(AliQnCorrectionsCorrectionOnQvector *correctionOnQn) const;
+  Bool_t IsCorrectionStepBeingApplied(const char *step) const;
+  /// Get the current Q2n vector
+  /// Makes it available for subsequent correction steps.
+  /// It could have already supported previous correction steps
+  /// \return pointer to the current Q2n vector instance
+  AliQnCorrectionsQnVector *GetCurrentQ2nVector()
+  { return &fCorrectedQ2nVector; }
+  /// Get the plain Qn vector
+  /// Makes it available for correction steps which need it.
+  /// \return pointer to the plain Qn vector instance
+  AliQnCorrectionsQnVector *GetPlainQnVector()
+  { return &fPlainQnVector; }
+  /// Get the plain Q2n vector
+  /// Makes it available for correction steps which need it.
+  /// \return pointer to the plain Qn vector instance
+  AliQnCorrectionsQnVector *GetPlainQ2nVector()
+  { return &fPlainQ2nVector; }
   /// Update the current Qn vector
   /// Update towards what is the latest values of the Qn vector after executing a
   /// correction step to make it available to further steps.
@@ -114,6 +135,13 @@ public:
   /// \param changename kTRUE by default to keep track of the subsequent Qn vector corrections
   void UpdateCurrentQnVector(AliQnCorrectionsQnVector *newQnVector, Bool_t changename = kTRUE)
   { fCorrectedQnVector.Set(newQnVector, changename); }
+  /// Update the current Q2n vector
+  /// Update towards what is the latest values of the Q2n vector after executing a
+  /// correction step to make it available to further steps.
+  /// \param newQ2nVector the new values for the Q2n vector
+  /// \param changename kTRUE by default to keep track of the subsequent Q2n vector corrections
+  void UpdateCurrentQ2nVector(AliQnCorrectionsQnVector *newQ2nVector, Bool_t changename = kTRUE)
+  { fCorrectedQ2nVector.Set(newQ2nVector, changename); }
   /// Get the number of harmonics handled by the detector configuration
   /// \return the number of handled harmonics
   Int_t GetNoOfHarmonics() const
@@ -125,6 +153,10 @@ public:
   /// Get the pointer to the framework manager
   /// \return the stored pointer to the corrections framework
   AliQnCorrectionsManager *GetCorrectionsManager() const { return fCorrectionsManager; }
+  /// Get if the detector configuration is own by a tracking detector
+  /// Pure virtual function
+  /// \return TRUE if it is a tracking detector configuration
+  virtual Bool_t GetIsTrackingDetector() const = 0;
 public:
   /// Asks for support data structures creation
   ///
@@ -163,18 +195,26 @@ public:
   /// \param list list where the input information should be found
   /// \return kTRUE if everything went OK
   virtual Bool_t AttachCorrectionInputs(TList *list) = 0;
+  /// Perform after calibration histograms attach actions
+  /// It is used to inform the different correction step that
+  /// all conditions for running the network are in place so
+  /// it is time to check if their requirements are satisfied
+  ///
+  /// Pure virtual function
+  virtual void AfterInputsAttachActions() = 0;
   /// Ask for processing corrections for the involved detector configuration
   ///
   /// Pure virtual function.
   /// The request is transmitted to the correction steps
-  /// and to then to Q vector correction steps
   /// \return kTRUE if everything went OK
   virtual Bool_t ProcessCorrections(const Float_t *variableContainer) = 0;
-
-  /// Activate the processing for the passed harmonic
-  /// \param harmonic the desired harmonic number to activate
-  virtual void ActivateHarmonic(Int_t harmonic)
-  { fPlainQnVector.ActivateHarmonic(harmonic); fCorrectedQnVector.ActivateHarmonic(harmonic); }
+  /// Ask for processing corrections data collection for the involved detector configuration
+  ///
+  /// Pure virtual function.
+  /// The request is transmitted to the correction steps
+  /// \return kTRUE if everything went OK
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer) = 0;
+  virtual void ActivateHarmonic(Int_t harmonic);
   virtual void AddCorrectionOnQnVector(AliQnCorrectionsCorrectionOnQvector *correctionOnQn);
   virtual void AddCorrectionOnInputData(AliQnCorrectionsCorrectionOnInputData *correctionOnInputData);
 
@@ -233,9 +273,12 @@ protected:
 /// The default initial size of data vectors banks
 #define INITIALDATAVECTORBANKSIZE 100000
   TClonesArray *fDataVectorBank;        //!<! input data for the current process / event
-  AliQnCorrectionsQnVector fPlainQnVector;     ///< Q vector from the post processed input data
-  AliQnCorrectionsQnVector fCorrectedQnVector; ///< Q vector after subsequent correction steps
+  AliQnCorrectionsQnVector fPlainQnVector;     ///< Qn vector from the post processed input data
+  AliQnCorrectionsQnVector fPlainQ2nVector;     ///< Q2n vector from the post processed input data
+  AliQnCorrectionsQnVector fCorrectedQnVector; ///< Qn vector after subsequent correction steps
+  AliQnCorrectionsQnVector fCorrectedQ2nVector; ///< Q2n vector after subsequent correction steps
   AliQnCorrectionsQnVectorBuild fTempQnVector; ///< temporary Qn vector for efficient Q vector building
+  AliQnCorrectionsQnVectorBuild fTempQ2nVector; ///< temporary Qn vector for efficient Q vector building
   AliQnCorrectionsQnVector::QnVectorNormalizationMethod fQnNormalizationMethod; ///< the method for Q vector normalization
   AliQnCorrectionsCorrectionsSetOnQvector fQnVectorCorrections; ///< set of corrections to apply on Q vectors
   /// set of variables that define event classes
@@ -250,7 +293,7 @@ private:
   AliQnCorrectionsDetectorConfigurationBase& operator= (const AliQnCorrectionsDetectorConfigurationBase &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsDetectorConfigurationBase, 2);
+  ClassDef(AliQnCorrectionsDetectorConfigurationBase, 3);
 /// \endcond
 };
 

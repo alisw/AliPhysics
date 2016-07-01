@@ -31,7 +31,10 @@ public:
   /// \brief The supported sources for the calibration file
   enum CalibrationFileSource {
     CALIBSRC_local,    ///< the calibration file will be taken locally when the task object is created
-    CALIBSRC_alien,    ///< the calibration file will be taken from alien on each executio node
+    CALIBSRC_aliensingle,    ///< the calibration file, which contains correction parameters for every run, will be taken from alien on each execution node
+    CALIBSRC_alienmultiple,  ///< run calibration file, which contains correction parameters only for the intended run, will be taken from alien on each execution node
+    CALIBSRC_OADBsingle,    ///< the calibration file, which contains correction parameters for every run, will be taken from OADB on each execution node
+    CALIBSRC_OADBmultiple,  ///< run calibration file, which contains correction parameters only for the intended run, will be taken from OADB on each execution node
   };
 
 

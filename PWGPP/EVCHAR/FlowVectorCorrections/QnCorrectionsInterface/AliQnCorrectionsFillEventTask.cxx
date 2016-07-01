@@ -391,11 +391,8 @@ void AliQnCorrectionsFillEventTask::FillVZERO(){
   //
 
   Double_t weight=0.;
-  const Double_t kX[8] = {0.92388, 0.38268, -0.38268, -0.92388, -0.92388, -0.38268, 0.38268, 0.92388};    // cosines of the angles of the VZERO sectors (8 per ring)
-  const Double_t kY[8] = {0.38268, 0.92388, 0.92388, 0.38268, -0.38268, -0.92388, -0.92388, -0.38268};    // sines     -- " --
-  const Double_t phi[8] = {TMath::ATan2(kY[0],kX[0]), TMath::ATan2(kY[1],kX[1]), TMath::ATan2(kY[2],kX[2]),
-      TMath::ATan2(kY[3],kX[3]), TMath::ATan2(kY[4],kX[4]), TMath::ATan2(kY[5],kX[5]),
-      TMath::ATan2(kY[6],kX[6]), TMath::ATan2(kY[7],kX[7]) };
+  static const Double_t phi[8] = {1*TMath::Pi()/8.0, 3*TMath::Pi()/8.0, 5*TMath::Pi()/8.0, 7*TMath::Pi()/8.0,
+      9*TMath::Pi()/8.0, 11*TMath::Pi()/8.0, 13*TMath::Pi()/8.0, 15*TMath::Pi()/8.0};
 
   AliVVZERO* vzero = fEvent->GetVZEROData();
 
@@ -429,13 +426,32 @@ void AliQnCorrectionsFillEventTask::FillTZERO(){
       TMath::ATan2(kY[19],kX[19]), TMath::ATan2(kY[20],kX[20]), TMath::ATan2(kY[21],kX[21]),
       TMath::ATan2(kY[22],kX[22]), TMath::ATan2(kY[23],kX[23]) };
 
-  const AliESDTZERO* tzero= ((AliESDEvent*)fEvent)->GetESDTZERO();
-
-
-  for(Int_t ich=0; ich<24; ich++){
-    weight=tzero->GetT0amplitude()[ich];
-    if(weight > fTZEROSignalThreshold) {
-      fAliQnCorrectionsManager->AddDataVector(kTZERO, phi[ich], weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+  if (fIsESD) {
+    const AliESDTZERO* esdT0 = dynamic_cast<AliESDEvent*>(fEvent)->GetESDTZERO();
+    if (esdT0 != NULL) {
+      for(Int_t ich=0; ich<24; ich++){
+        weight=esdT0->GetT0amplitude()[ich];
+        if(weight > fTZEROSignalThreshold) {
+          fAliQnCorrectionsManager->AddDataVector(kTZERO, phi[ich], weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+        }
+      }
+    }
+    else {
+      AliError("AliESDTZERO not available");
+    }
+  }
+  else {
+    const AliAODTZERO* aodT0 = dynamic_cast<AliAODEvent*>(fEvent)->GetTZEROData();
+    if (aodT0 != NULL) {
+      for(Int_t ich=0; ich<24; ich++){
+        weight=aodT0->GetAmp(ich);
+        if(weight > fTZEROSignalThreshold) {
+          fAliQnCorrectionsManager->AddDataVector(kTZERO, phi[ich], weight, ich);   // 1st ich is position in array, 2nd ich is channel id
+        }
+      }
+    }
+    else {
+      AliError("AliAODTZERO not available");
     }
   }
 }
