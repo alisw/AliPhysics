@@ -34,7 +34,7 @@ AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection() {
  */
 Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kTrgEL0) || (trgcls == kTrgEG1) || (trgcls == kTrgEG2));
+  bool isSingleShower = IsSingleShower(trgcls);
   int nfound = 0;
   AliEMCALTriggerPatchInfo *patch = NULL;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){

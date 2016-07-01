@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include <string>
+#include <TCustomBinning.h>
 
 class TArrayD;
 class THistManager;
@@ -52,9 +53,6 @@ public:
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
 
 protected:
-  void CreateOldPtBinning(TArrayD &binning) const;
-  void CreateNewPtBinning(TArrayD &binning) const;
-
   void FillEventCounterHists(const std::string &triggerclass, double vtxz, bool isSelected);
   void FillTrackHistos(const std::string &eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   void FillPIDHistos(const std::string &eventclass, const AliVTrack &track);
@@ -74,6 +72,18 @@ protected:
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
 
 private:
+
+  class OldPtBinning : public TCustomBinning{
+  public:
+    OldPtBinning();
+    virtual ~OldPtBinning() {}
+  };
+  class NewPtBinning : public TCustomBinning{
+  public:
+    NewPtBinning();
+    virtual ~NewPtBinning() {}
+  };
+
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);
   AliAnalysisTaskChargedParticlesRef &operator=(const AliAnalysisTaskChargedParticlesRef &);
 
