@@ -19762,6 +19762,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     VZM = VZCM+VZAM;
   }
   
+  // pT-integrated
+  
   Int_t NewCenBin = GetCRCCenBin(fNewCentralityEBE);
   
   Double_t FillPtBin = 0.;
@@ -19820,50 +19822,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       }
     }
     
-    for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-      
-      FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(pt+1);
-      Double_t qpRe0=0., qpIm0=0., qpRe2=0., qpIm2=0., qp2Re=0., qp2Im=0., qpM0=0., qpM=0., qpM2=0., qpM3=0.;
-      
-      qpRe0 += fPtDiffQRe[0][hr+1]->GetBinContent(pt+1);
-      qpIm0 += fPtDiffQIm[0][hr+1]->GetBinContent(pt+1);
-      qpRe2 += fPtDiffQRe[2][hr+1]->GetBinContent(pt+1);
-      qpIm2 += fPtDiffQIm[2][hr+1]->GetBinContent(pt+1);
-      qp2Re += fPtDiffQRe[1][2*hr+3]->GetBinContent(pt+1);
-      qp2Im += fPtDiffQIm[1][2*hr+3]->GetBinContent(pt+1);
-      
-      qpM0 += fPtDiffMul[0][0]->GetBinContent(pt+1);
-      qpM  += fPtDiffMul[1][0]->GetBinContent(pt+1);
-      qpM2 += fPtDiffMul[2][0]->GetBinContent(pt+1);
-      qpM3 += fPtDiffMul[3][0]->GetBinContent(pt+1);
-      
-      Double_t dQM2 = qpM0*QM-qpM;
-      if(qpM0>1 && QM0>1) {
-        Double_t dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
-        fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
-      }
-      
-      Double_t dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
-      
-      if(qpM0>1 && QM0>3) {
-        Double_t dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
-                         - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
-                         - 2.*qp2Im*QRe*QIm
-                         - qpRe0*(QRe*Q2Re2+QIm*Q2Im2)
-                         + qpIm0*(QIm*Q2Re2-QRe*Q2Im2)
-                         - 2.*QM2*(qpRe0*QRe+qpIm0*QIm)
-                         - 2.*(pow(QRe,2.)+pow(QIm,2.))*qpM
-                         + 6.*(qpRe2*QRe+qpIm2*QIm)
-                         + 1.*(qp2Re*Q2Re2+qp2Im*Q2Im2)
-                         + 2.*(qpRe0*QRe3+qpIm0*QIm3)
-                         + 2.*qpM*QM2
-                         - 6.*qpM3) / dQM4;
-        fFlowQCCorPro[fCenBin][hr][2]->Fill(FillPtBin,dQC4,dQM4*fCenWeightEbE);
-      }
-      
-    } // end of for(Int_t pt=0; pt<fCRCnPtBin; pt++)
-    
-    // Eta Gap
+    // pT-integrated, Eta Gap
     Double_t QARe=0., QAIm=0., QBRe=0., QBIm=0., QAM0=0., QAM=0., QBM0=0., QBM=0.;
     
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
@@ -19888,6 +19847,56 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         fFlowQCMetric2DProEG[hr][3]->Fill(fNewMetricL2EBE,fNewMetricD2EBE,IQC2EG[hr],IQM2EG);
       }
     }
+    
+    // pT-differential: {2} Eta Gap, {4} all
+    
+    for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
+      
+      FillPtBin = fPtDiffQRe[0][0]->GetBinCenter(pt+1);
+      Double_t qpRe0=0., qpIm0=0., qpRe2=0., qpIm2=0., qp2Re=0., qp2Im=0., qpM0=0., qpM=0., qpM2=0., qpM3=0.;
+      
+      qpRe0 = fPtDiffQRe[0][hr+1]->GetBinContent(pt+1);
+      qpIm0 = fPtDiffQIm[0][hr+1]->GetBinContent(pt+1);
+      qpRe2 = fPtDiffQRe[2][hr+1]->GetBinContent(pt+1);
+      qpIm2 = fPtDiffQIm[2][hr+1]->GetBinContent(pt+1);
+      qp2Re = fPtDiffQRe[1][2*hr+3]->GetBinContent(pt+1);
+      qp2Im = fPtDiffQIm[1][2*hr+3]->GetBinContent(pt+1);
+      
+      qpM0 = fPtDiffMul[0][0]->GetBinContent(pt+1);
+      qpM  = fPtDiffMul[1][0]->GetBinContent(pt+1);
+      qpM2 = fPtDiffMul[2][0]->GetBinContent(pt+1);
+      qpM3 = fPtDiffMul[3][0]->GetBinContent(pt+1);
+      
+      Double_t qARe = fPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
+      Double_t qAIm = fPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
+      Double_t qAM  = fPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
+      Double_t qAM0 = fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
+      
+      Double_t dQM2 = qAM*QBM;
+      if(qAM0>1 && QBM0>1) {
+        Double_t dQC2 = (qARe*QBRe+qAIm*QBIm)/dQM2;
+        fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
+      }
+      
+      Double_t dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
+      
+      if(qpM0>1 && QM0>3) {
+        Double_t dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
+                         - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
+                         - 2.*qp2Im*QRe*QIm
+                         - qpRe0*(QRe*Q2Re2+QIm*Q2Im2)
+                         + qpIm0*(QIm*Q2Re2-QRe*Q2Im2)
+                         - 2.*QM2*(qpRe0*QRe+qpIm0*QIm)
+                         - 2.*(pow(QRe,2.)+pow(QIm,2.))*qpM
+                         + 6.*(qpRe2*QRe+qpIm2*QIm)
+                         + 1.*(qp2Re*Q2Re2+qp2Im*Q2Im2)
+                         + 2.*(qpRe0*QRe3+qpIm0*QIm3)
+                         + 2.*qpM*QM2
+                         - 6.*qpM3) / dQM4;
+        fFlowQCCorPro[fCenBin][hr][2]->Fill(FillPtBin,dQC4,dQM4*fCenWeightEbE);
+      }
+      
+    } // end of for(Int_t pt=0; pt<fCRCnPtBin; pt++)
     
   } // end of for(Int_t hr=0; hr<fFlowNHarm; hr++)
   

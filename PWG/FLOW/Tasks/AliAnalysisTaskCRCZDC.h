@@ -31,6 +31,9 @@ class AliGenPythiaEventHeader;
 class AliGenHijingEventHeader;
 class AliFlowTrack;
 class AliAnalysisUtils;
+class AliMultSelection;
+class AliCentrality;
+class AliStack;
 class TROOT;
 class TSystem;
 class TFile;
@@ -285,7 +288,7 @@ private:
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
- AliStack* fStack; //!
+ TClonesArray* fStack; //!
  TH1F *fPtSpecGen[10];		//! PtSpecGen
  TH1F *fPtSpecFB32[10];		//! PtSpecRec FB32
  TH1F *fPtSpecFB96[10];		//! PtSpecRec FB96
@@ -293,9 +296,10 @@ private:
  TH1F *fPtSpecFB768[10];  //! PtSpecRec FB768
  Bool_t fCutTPC;
  TH1F *fCenDis; //! centrality distribution
- TClonesArray* fMCStack; //! MC stack
+ AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
+ AliCentrality* fCentrality; //!
  
- ClassDef(AliAnalysisTaskCRCZDC,4);
+ ClassDef(AliAnalysisTaskCRCZDC,5);
  
 };
 
