@@ -114,6 +114,17 @@ public:
     Double32_t fPFBGC[21];          //[0,32,5]
   } ;
 
+  struct FMD {
+    FMD()
+      : fA(kFALSE)
+      , fC(kFALSE) {}
+
+    void Fill(const AliESDEvent *, AliTriggerAnalysis &);
+
+    Bool_t fA;
+    Bool_t fC;
+  };
+
   class TreeData : public TObject {
   public:
     TreeData() 
@@ -121,6 +132,7 @@ public:
       , fEventInfo()
       , fV0Info()
       , fADInfo()
+      , fFMDInfo()
       , fIsIncompleteDAQ(kFALSE)
       , fIsSPDClusterVsTrackletBG(kFALSE)
       , fIskMB(kFALSE) {}
@@ -128,10 +140,11 @@ public:
     EventInfo fEventInfo;
     ADV0      fV0Info;
     ADV0      fADInfo;
+    FMD       fFMDInfo;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 3);
+    ClassDef(TreeData, 4);
   } ;
 
   struct TrackData : public TObject {
