@@ -36,13 +36,13 @@ public:
 		return (retVal);
 	}
 
-	void* InitializeAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data)
+	int InitializeAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data, void** pRetVal = NULL)
 	{
 		AliHLTAsyncMemberProcessorContainer* tmp = GetContainer();
-		if (tmp == NULL) return(NULL);
+		if (tmp == NULL) return(1);
 		tmp->Set(obj, function, data);
-		void* retVal = InitializeAsyncTask(&QueueAsyncMemberTaskHelper, tmp);
-		if (retVal == NULL) FreeContainer(tmp);
+		int retVal = InitializeAsyncTask(&QueueAsyncMemberTaskHelper, tmp, pRetVal);
+		if (retVal) FreeContainer(tmp);
 		return (retVal);
 	}
 

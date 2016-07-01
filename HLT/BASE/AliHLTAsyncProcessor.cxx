@@ -277,15 +277,16 @@ int AliHLTAsyncProcessor::GetNumberOfAsyncTasksInQueue()
 	return(retVal);
 }
 
-void* AliHLTAsyncProcessor::InitializeAsyncTask(void* (*initFunction)(void*), void* data)
+int AliHLTAsyncProcessor::InitializeAsyncTask(void* (*initFunction)(void*), void* data, void** pRetVal)
 {
 	HLTInfo("Running Initialization of ASYNC Task");
-	if (GetNumberOfAsyncTasksInQueue()) return(NULL);
+	if (GetNumberOfAsyncTasksInQueue()) return(1);
 	QueueAsyncTask(initFunction, data);
 	WaitForTasks(1);
 	void* retVal = RetrieveQueuedTaskResult();
 	HLTInfo("Initialization of ASYNC Task finished");
-	return(retVal);
+	if (pRetVal) *pRetVal = retVal;
+	return(0);
 }
 
 int AliHLTAsyncProcessor::QueueAsyncTask(void* (*processFunction)(void*), void* data)

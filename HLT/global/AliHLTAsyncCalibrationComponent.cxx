@@ -100,10 +100,14 @@ Int_t AliHLTAsyncCalibrationComponent::DoInit(Int_t argc, const Char_t** argv)
 	if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
 	//We do not need an initializer for the async part yet
-	/*int* initRetVal = (int*) fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAsyncCalibrationComponent::MemberInitializer, NULL);
+	/*
+	int* initRetVal;
+	retVal = fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAsyncCalibrationComponent::MemberInitializer, NULL, (void**) &initRetVal);
+	if (retVal) return(1);
 	if (initRetVal == NULL) return(1);
 	retVal = *initRetVal;
-	delete initRetVal;*/
+	delete initRetVal;
+	*/
 
 	return retVal;
 }

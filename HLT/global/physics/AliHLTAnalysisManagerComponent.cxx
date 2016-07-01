@@ -248,9 +248,14 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   HLTInfo("AliHLTAnalysisManagerComponent::DoInit (with QueueDepth %d)", fQueueDepth);
   if (fAsyncProcessor.Initialize(fQueueDepth, fAsyncProcess > 0, fAsyncProcess)) return(1);
 
-  if (fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL) == NULL)
+  void* initRetVal;
+  if (fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAnalysisManagerComponent::AnalysisManagerInit, NULL, &initRetVal) == 0)
   {
-    fAnalysisInitialized = kTRUE;
+    if (initRetVal == 0) fAnalysisInitialized = kTRUE;
+  }
+  if (!fAnalysisInitialized)
+  {
+    HLTError("Error initializing analysis task");
   }
 
   //Init the CTP data

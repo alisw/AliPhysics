@@ -100,7 +100,9 @@ Int_t AliHLTAsyncTestComponent::DoInit(Int_t argc, const Char_t** argv)
 	HLTImportant("AliHLTAsyncTestComponent::DoInit (with QueueDepth %d)", fAsyncProcessorQueueDepth);
 	if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
-	int* initRetVal = (int*) fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAsyncTestComponent::MemberInitializer, NULL);
+	int* initRetVal;
+	retVal = fAsyncProcessor.InitializeAsyncMemberTask(this, &AliHLTAsyncTestComponent::MemberInitializer, NULL, (void**) &initRetVal);
+	if (retVal) return(1);
 	if (initRetVal == NULL) return(1);
 	retVal = *initRetVal;
 	delete initRetVal;
