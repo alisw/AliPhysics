@@ -908,6 +908,20 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   fDivSigma = poiCuts->GetDivSigma();
  }
 
+ if (sourceRP == AliFlowTrackCuts::kKappaVZERO) {
+  SetKappaVZEROCalibrationForTrackCuts(rpCuts);
+  fDivSigma = rpCuts->GetDivSigma();
+  if(!rpCuts->GetApplyRecentering()) {
+   // if the user does not want to recenter, switch the flag
+   fApplyRecentering = -1;
+  }
+ }
+ if (sourcePOI == AliFlowTrackCuts::kKappaVZERO) {
+  // probably no-one will choose vzero tracks as poi's ...
+  SetKappaVZEROCalibrationForTrackCuts(poiCuts);
+  fDivSigma = poiCuts->GetDivSigma();
+ }
+
  if (sourceRP == AliFlowTrackCuts::kVZERO) {
       SetVZEROCalibrationForTrackCuts(rpCuts);
       if(!rpCuts->GetApplyRecentering()) {
@@ -1301,8 +1315,23 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     Double_t Qxa(vB.X());       // vzeroA has positive pseudorapidity and is taken as subevent B
     Double_t Qya(vB.Y());
     // init some values for the corrections
-    
-    Double_t Cen = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+    Double_t Cen = - 999;
+    //Added by Bernhard Hohlweger - bhohlweg@cern.ch
+    if(fEvent->GetRunNumber() < 209122){
+    	//For Run1 Data the Old Centrality Percentile Method is available whereas for Run2 a new method was implemented
+    	//Cut was done for the first run of the LHC15a period
+    	Cen = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
+    }else{
+    	AliMultSelection *MultSelection = 0x0;
+    	MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
+    	if( !MultSelection) {
+    		//If you get this warning (and EventCentrality -999) please check that the AliMultSelectionTask actually ran (before your task)
+    		AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+    	}else{
+    		Cen = MultSelection->GetMultiplicityPercentile("V0M");
+    	}
+    }
+    //01072016 Bernhard Hohlweger
     // default values for vector a (VZEROA)
     Double_t Qxamean(fQxavsV0[n-1]->GetBinContent(fQxavsV0[n-1]->FindBin(Cen)));
     Double_t Qxarms(fQxavsV0[n-1]->GetBinError(fQxavsV0[n-1]->FindBin(Cen)));
@@ -1315,7 +1344,9 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
     Double_t Qycrms(fQycvsV0[n-1]->GetBinError(fQycvsV0[n-1]->FindBin(Cen)));
    
     // just a precaution ...
-    if(n > 5) {
+    //for n = 4 the calibration does not make sense, the cosine of 4*phi( = pi*(0.5+i) i = 0,1,...7) is always 0
+
+    if(n > 3) {
       Qxamean = 0;
       Qxarms = 1;
       Qyamean = 0;
@@ -1324,6 +1355,7 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
       Qxcrms = 1; 
       Qycmean = 0;    // this effectively disables the calibration
       Qycrms = 1;
+      AliFatal("no calibration available for n>4 for VZEROs \n");
     }
    
    Double_t QxaR = Qxa - Qxamean;
@@ -1874,6 +1906,130 @@ void AliFlowEvent::SetDeltaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) 
  // FIXME as an ugly hack, for now I mark this as 666 to denote the experimental nature
  // of this and use it transparently without disrupting the existing calbiration
  fApplyRecentering = 666;
+}
+//-----------------------------------------------------------------------------
+
+void AliFlowEvent::SetKappaVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
+ // implementation of delta vzero calibration for LHC2015o Low Intensity Runs
+
+ fEvent = cuts->GetEvent();
+ if(!fEvent) return; // coverity. we need to know the event to get the runnumber and centrality
+ // get the vzero centrality percentile (cc dependent calibration)
+
+ // if this event is from the same run as the previous event
+ // we can use the cached calibration values, no need to re-open the
+ // aodb file, else cache the new run
+ Int_t run(fEvent->GetRunNumber());
+ if(fCachedRun == run){
+	 return;
+ }else{
+	 fCachedRun = run;
+ }
+
+ // check if the proper chi weights for merging vzero a and vzero c ep are present
+ // if not, use sane defaults. centrality binning is equal to that given in the fVZEROcentralityBin snippet
+ //
+ // chi values can be calculated using the static helper function
+ // AliAnalysisTaskJetV2::CalculateEventPlaneChi(Double_t res) where res is the event plane
+ // resolution in a given centrality bin
+ //
+ // the resolutions that were used for these defaults are
+ // Double_t R2VZEROA[] = {.35, .40, .48, .50, .48, .45, .38, .26, .16};
+ // Double_t R2VZEROC[] = {.45, .60, .70, .73, .68, .60, .40, .36, .17};
+ //
+ // Double_t R3VZEROA[] = {.22, .23, .22, .19, .15, .12, .08, .00, .00};
+ // Double_t R3VZEROC[] = {.30, .30, .28, .25, .22, .17, .11, .00, .00};
+ Double_t chiC2[] = {0.771423, 1.10236, 1.38116, 1.48077, 1.31964, 1.10236, 0.674622, 0.600403, 0.273865};
+ Double_t chiA2[] = {0.582214, 0.674622, 0.832214, 0.873962, 0.832214, 0.771423, 0.637146, 0.424255, 0.257385};
+ Double_t chiC3[] = {0.493347, 0.493347, 0.458557, 0.407166, 0.356628, 0.273865, 0.176208, 6.10352e-05, 6.10352e-05};
+ Double_t chiA3[] = {0.356628, 0.373474, 0.356628, 0.306702, 0.24115, 0.192322, 0.127869, 6.10352e-05, 6.10352e-05};
+
+ // this may seem redundant but in this way the cuts object is owner of the arrays
+ // even if they're created here (so we won't get into trouble with dtor, assigmnet and copying)
+ if(!cuts->GetChi2A()) cuts->SetChi2A(new TArrayD(9, chiA2));
+ if(!cuts->GetChi2C()) cuts->SetChi2C(new TArrayD(9, chiC2));
+ if(!cuts->GetChi3A()) cuts->SetChi3A(new TArrayD(9, chiA3));
+ if(!cuts->GetChi3C()) cuts->SetChi3C(new TArrayD(9, chiC3));
+
+ if(!fChi2A) fChi2A = cuts->GetChi2A();
+ if(!fChi2C) fChi2C = cuts->GetChi2C();
+ if(!fChi3A) fChi3A = cuts->GetChi3A();
+ if(!fChi3C) fChi3C = cuts->GetChi3C();
+
+ // get the calibration file for the gain equalization
+ TFile *foadb = TFile::Open("alien:///alice/cern.ch/user/b/bhohlweg/gainVZERO.LHC15oLowIR.root");
+ if(!foadb){
+  AliFatal("file alien:///alice/cern.ch/user/b/bhohlweg/gainVZERO.LHC15oLowIR.root cannot be opened, CALIBRATION FAILED !");
+  return;
+ }
+ TH3F* Weights = dynamic_cast<TH3F*>(foadb->FindObjectAny("LHC15oLowIR")->FindObject("gHistVZEROChannelGainEqualizationMapRun2"));
+ if(!Weights){
+  AliFatal("gHistVZEROChannelGainEqualizationMapRun2 is not available in the file\n");
+  return;
+ }
+
+ if(cuts->GetVZEROgainEqualizationPerRing()) {
+  // enable or disable rings through the weights, weight 1. is enabled, 0. is disabled
+  // start with the vzero c rings (segments 0 through 31)
+  (cuts->GetUseVZERORing(0)) ? cuts->SetVZEROCpol(0, 1.) : cuts->SetVZEROCpol(0, 0.);
+  (cuts->GetUseVZERORing(1)) ? cuts->SetVZEROCpol(1, 1.) : cuts->SetVZEROCpol(1, 0.);
+  (cuts->GetUseVZERORing(2)) ? cuts->SetVZEROCpol(2, 1.) : cuts->SetVZEROCpol(2, 0.);
+  (cuts->GetUseVZERORing(3)) ? cuts->SetVZEROCpol(3, 1.) : cuts->SetVZEROCpol(3, 0.);
+  // same for vzero a
+  (cuts->GetUseVZERORing(4)) ? cuts->SetVZEROApol(0, 1.) : cuts->SetVZEROApol(0, 0.);
+  (cuts->GetUseVZERORing(5)) ? cuts->SetVZEROApol(1, 1.) : cuts->SetVZEROApol(1, 0.);
+  (cuts->GetUseVZERORing(6)) ? cuts->SetVZEROApol(2, 1.) : cuts->SetVZEROApol(2, 0.);
+  (cuts->GetUseVZERORing(7)) ? cuts->SetVZEROApol(3, 1.) : cuts->SetVZEROApol(3, 0.);
+ } else {
+  // else enable all rings, which is also default
+  for(Int_t i(0); i < 4; i++) cuts->SetVZEROCpol(i, 1.);
+  for(Int_t i(0); i < 4; i++) cuts->SetVZEROApol(i, 1.);
+ }
+
+ // loop over the 15o runs to see if it's 15o LowIR data
+ // 245061 not included as it has Physics Selection Status 3 and VZERO data is not available
+
+ Int_t runs15oLowIR[11] = {244917 ,244918,244975,244980,244982,244983,245064,245068,246390,246391,246392};
+ Int_t RunBin = -1;
+ for(Int_t r(0); r < 11; r++) {
+  if(run == runs15oLowIR[r]) {
+   RunBin = r+1;
+   break;
+  }
+ }
+ if(RunBin < 0){
+   AliFatal("No calibration file existing for this run Number in SetKappaVZEROCalibrationForTrackCuts \n");
+ }
+
+ // step 0) get the TH2D which contains the correction factor per VZERO channel per centrality bin
+ //         and pass it to the current track cuts obect
+ Weights->GetXaxis()->SetRange(RunBin,RunBin);
+ TH2D* fMultVZEROCen = dynamic_cast<TH2D*>(Weights->Project3D("zy"));
+ cuts->SetVZEROgainEqualisationCen(fMultVZEROCen);       // passed as a TH2
+
+ // get the calibration file for the q-vector recentering
+ TFile *fqvec = TFile::Open("alien:///alice/cern.ch/user/b/bhohlweg/recenteringVZERO.LHC15oLowIR.root");
+ if(!fqvec){
+  AliFatal("file alien:///alice/cern.ch/user/b/bhohlweg/recenteringVZERO.LHC15oLowIR.root cannot be opened, CALIBRATION FAILED !");
+ }
+
+ // first index of the oadb array is the harmonic n, the second index is either qax, qay, qcx, qcy
+ TH2D* h[3][4];
+ for(Int_t i(0); i < 3; i++) {
+   h[i][0] = (TH2D*)(fqvec->FindObjectAny("LHC15oLowIR")->FindObject(Form("gHistVZEROAQ%ixRecenteringMap",i+1)));
+   if(h[i][0]) fQxavsV0[i] = static_cast<TH1D*>(h[i][0]->ProjectionY(Form("fQxavsV0[%i]",i),RunBin,RunBin));
+   h[i][1] = (TH2D*)(fqvec->FindObjectAny("LHC15oLowIR")->FindObject(Form("gHistVZEROAQ%iyRecenteringMap",i+1)));
+   if(h[i][1]) fQyavsV0[i] = static_cast<TH1D*>(h[i][1]->ProjectionY(Form("fQyavsV0[%i]",i),RunBin,RunBin));
+   h[i][2] = (TH2D*)(fqvec->FindObjectAny("LHC15oLowIR")->FindObject(Form("gHistVZEROCQ%ixRecenteringMap",i+1)));
+   if(h[i][2]) fQxcvsV0[i] = static_cast<TH1D*>(h[i][2]->ProjectionY(Form("fQxcvsV0[%i]",i),RunBin,RunBin));
+   h[i][3] = (TH2D*)(fqvec->FindObjectAny("LHC15oLowIR")->FindObject(Form("gHistVZEROCQ%iyRecenteringMap",i+1)));
+   if(h[i][3]) fQycvsV0[i] = static_cast<TH1D*>(h[i][3]->ProjectionY(Form("fQycvsV0[%i]",i),RunBin,RunBin));
+ }
+
+ // set the recentering style (might be switched back to -1 if recentering is disabeled)
+ // FIXME as an ugly hack, for now I mark this as 999 to denote the experimental nature
+ // of this and use it transparently without disrupting the existing calbiration
+ fApplyRecentering = 999;
 }
 
 //-----------------------------------------------------------------------------
