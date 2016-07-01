@@ -131,6 +131,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
+
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager+;
@@ -147,7 +148,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity+;
@@ -173,7 +173,6 @@
 #pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
 #pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
-#pragma link C++ class AliAnalysisTaskLEDCheck+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;
