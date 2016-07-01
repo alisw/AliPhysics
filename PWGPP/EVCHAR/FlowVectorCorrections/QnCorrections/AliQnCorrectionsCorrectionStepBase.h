@@ -49,6 +49,7 @@ public:
     QCORRSTEP_calibration,         ///< the correction step is in calibration mode collecting data
     QCORRSTEP_apply,               ///< the correction step is being applied
     QCORRSTEP_applyCollect,        ///< the correction step is being applied and data are being collected
+    QCORRSTEP_passive,             ///< the correction step is waiting for external conditions fulfillment
   } QnCorrectionStepStatus;
 
   friend class AliQnCorrectionsDetectorConfigurationBase;
@@ -70,6 +71,13 @@ public:
   /// \param list list where the inputs should be found
   /// \return kTRUE if everything went OK
   virtual Bool_t AttachInput(TList *list) = 0;
+  /// Perform after calibration histograms attach actions
+  /// It is used to inform the different correction step that
+  /// all conditions for running the network are in place so
+  /// it is time to check if their requirements are satisfied
+  ///
+  /// Pure virtual function
+  virtual void AfterInputsAttachActions() = 0;
   /// Asks for support data structures creation
   ///
   /// Pure virtual function
@@ -85,6 +93,7 @@ public:
   /// Pure virtual function
   /// \param list list where the histograms should be incorporated for its persistence
   /// \return kTRUE if everything went OK
+
   virtual Bool_t CreateQAHistograms(TList *list) = 0;
   /// Asks for non validated entries QA histograms creation
   ///
@@ -96,7 +105,12 @@ public:
   ///
   /// Pure virtual function
   /// \return kTRUE if everything went OK
-  virtual Bool_t Process(const Float_t *variableContainer) = 0;
+  virtual Bool_t ProcessCorrections(const Float_t *variableContainer) = 0;
+  /// Processes the correction step data collection
+  ///
+  /// Pure virtual function
+  /// \return kTRUE if everything went OK
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer) = 0;
   /// Include the new corrected Qn vector into the passed list
   ///
   /// Pure virtual function
@@ -105,6 +119,10 @@ public:
   /// Clean the correction to accept a new event
   /// Pure virtual function
   virtual void ClearCorrectionStep() = 0;
+  /// Reports if the correction step is being applied
+  /// Pure virutal function
+  /// \return TRUE if the correction step is being applied
+  virtual Bool_t IsBeingApplied() const = 0;
   /// Report on correction usage
   /// Pure virtual function
   /// Correction step should incorporate its name in calibration

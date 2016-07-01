@@ -19,6 +19,8 @@
 #include "AliQnCorrectionsDataVectorChannelized.h"
 #include "AliQnCorrectionsDetectorConfigurationBase.h"
 
+class AliQnCorrectionsProfileComponents;
+
 /// \class AliQnCorrectionsDetectorConfigurationChannels
 /// \brief Channel detector configuration within Q vector correction framework
 ///
@@ -59,6 +61,11 @@ public:
   /// Gets the hard coded group weights
   /// \return the groups hard coded weights
   const Float_t *GetHardCodedGroupWeights() const { return fHardCodedGroupWeights; }
+  /// Get if the detector configuration is own by a tracking detector
+  /// \return FALSE, this is a hit / channel detector configuration
+  virtual Bool_t GetIsTrackingDetector() const
+  { return kFALSE; }
+
 
   void SetChannelsScheme(Bool_t *bUsedChannel, Int_t *nChannelGroup, Float_t *hardCodedGroupWeights = NULL);
 
@@ -86,7 +93,9 @@ public:
   virtual void ActivateHarmonic(Int_t harmonic)
   { AliQnCorrectionsDetectorConfigurationBase::ActivateHarmonic(harmonic); fRawQnVector.ActivateHarmonic(harmonic); }
   virtual Bool_t AttachCorrectionInputs(TList *list);
+  virtual void AfterInputsAttachActions();
   virtual Bool_t ProcessCorrections(const Float_t *variableContainer);
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer);
 
   virtual void AddCorrectionOnInputData(AliQnCorrectionsCorrectionOnInputData *correctionOnInputData);
 
@@ -129,12 +138,14 @@ private:
   /* QA section */
   void FillQAHistograms(const Float_t *variableContainer);
   static const char *szQAMultiplicityHistoName; ///< QA multiplicity histograms name
+  static const char *szQAQnAverageHistogramName; ///< name and title for plain Qn vector components average QA histograms
   Int_t fQACentralityVarId;   ///< the id of the variable used for centrality in QA histograms
   Int_t fQAnBinsMultiplicity; ///< number of bins for multiplicity in QA histograms
   Float_t fQAMultiplicityMin; ///< minimum multiplicity value
   Float_t fQAMultiplicityMax; ///< maximum multiplicity value
   TH3F *fQAMultiplicityBefore3D; //!<! 3D channel multiplicity histogram before input equalization
   TH3F *fQAMultiplicityAfter3D;  //!<! 3D channel multiplicity histogram after input equalization
+  AliQnCorrectionsProfileComponents *fQAQnAverageHistogram; //!<! the plain average Qn components QA histogram
 
 private:
   /// Copy constructor
@@ -145,7 +156,7 @@ private:
   AliQnCorrectionsDetectorConfigurationChannels& operator= (const AliQnCorrectionsDetectorConfigurationChannels &);
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsDetectorConfigurationChannels, 1);
+  ClassDef(AliQnCorrectionsDetectorConfigurationChannels, 2);
 /// \endcond
 };
 
@@ -192,22 +203,28 @@ inline void AliQnCorrectionsDetectorConfigurationChannels::BuildRawQnVector() {
 /// subsequent Q vector corrections.
 inline void AliQnCorrectionsDetectorConfigurationChannels::BuildQnVector() {
   fTempQnVector.Reset();
+  fTempQ2nVector.Reset();
 
   for(Int_t ixData = 0; ixData < fDataVectorBank->GetEntriesFast(); ixData++){
     AliQnCorrectionsDataVectorChannelized *dataVector = static_cast<AliQnCorrectionsDataVectorChannelized *>(fDataVectorBank->At(ixData));
     fTempQnVector.Add(dataVector->Phi(), dataVector->EqualizedWeight());
+    fTempQ2nVector.Add(dataVector->Phi(), dataVector->EqualizedWeight());
   }
   fTempQnVector.CheckQuality();
+  fTempQ2nVector.CheckQuality();
   fTempQnVector.Normalize(fQnNormalizationMethod);
+  fTempQ2nVector.Normalize(fQnNormalizationMethod);
   fPlainQnVector.Set(&fTempQnVector, kFALSE);
+  fPlainQ2nVector.Set(&fTempQ2nVector, kFALSE);
   fCorrectedQnVector.Set(&fTempQnVector, kFALSE);
+  fCorrectedQ2nVector.Set(&fTempQ2nVector, kFALSE);
 }
 
 
 /// Ask for processing corrections for the involved detector configuration
 ///
 /// The request is transmitted to the incoming data correction steps
-/// and to then to Q vector correction steps.
+/// and then to Q vector correction steps.
 /// The first not applied correction step breaks the loop and kFALSE is returned
 /// \return kTRUE if all correction steps were applied
 inline Bool_t AliQnCorrectionsDetectorConfigurationChannels::ProcessCorrections(const Float_t *variableContainer) {
@@ -217,23 +234,48 @@ inline Bool_t AliQnCorrectionsDetectorConfigurationChannels::ProcessCorrections(
 
   /* then we transfer the request to the input data correction steps */
   for (Int_t ixCorrection = 0; ixCorrection < fInputDataCorrections.GetEntries(); ixCorrection++) {
-    if (fInputDataCorrections.At(ixCorrection)->Process(variableContainer))
+    if (fInputDataCorrections.At(ixCorrection)->ProcessCorrections(variableContainer))
       continue;
     else
       return kFALSE;
   }
-
-  /* all input corrections were applied */
-  /* check whether QA histograms must be filled */
-  if (fQAMultiplicityBefore3D != NULL && fQAMultiplicityAfter3D != NULL)
-    FillQAHistograms(variableContainer);
 
   /* input corrections were applied so let's build the Q vector with the chosen calibration */
   BuildQnVector();
 
   /* now let's propagate it to Q vector corrections */
   for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
-    if (fQnVectorCorrections.At(ixCorrection)->Process(variableContainer))
+    if (fQnVectorCorrections.At(ixCorrection)->ProcessCorrections(variableContainer))
+      continue;
+    else
+      return kFALSE;
+  }
+  /* all correction steps were applied */
+  return kTRUE;
+}
+
+/// Ask for processing corrections data collection for the involved detector configuration
+///
+/// The request is transmitted to the incoming data correction steps
+/// and then to Q vector correction steps.
+/// The first not applied correction step should break the loop after collecting the data and kFALSE is returned
+/// \return kTRUE if all correction steps were applied
+inline Bool_t AliQnCorrectionsDetectorConfigurationChannels::ProcessDataCollection(const Float_t *variableContainer) {
+
+  /* we transfer the request to the input data correction steps */
+  for (Int_t ixCorrection = 0; ixCorrection < fInputDataCorrections.GetEntries(); ixCorrection++) {
+    if (fInputDataCorrections.At(ixCorrection)->ProcessDataCollection(variableContainer))
+      continue;
+    else
+      return kFALSE;
+  }
+
+  /* check whether QA histograms must be filled */
+  FillQAHistograms(variableContainer);
+
+  /* now let's propagate it to Q vector corrections */
+  for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
+    if (fQnVectorCorrections.At(ixCorrection)->ProcessDataCollection(variableContainer))
       continue;
     else
       return kFALSE;
@@ -261,7 +303,9 @@ inline void AliQnCorrectionsDetectorConfigurationChannels::ClearConfiguration() 
   fRawQnVector.Reset();
   /* clean the own Q vector */
   fPlainQnVector.Reset();
+  fPlainQ2nVector.Reset();
   fCorrectedQnVector.Reset();
+  fCorrectedQ2nVector.Reset();
   /* and now clear the the input data bank */
   fDataVectorBank->Clear("C");
 }

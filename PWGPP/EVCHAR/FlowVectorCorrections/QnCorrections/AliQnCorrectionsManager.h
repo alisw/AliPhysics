@@ -200,13 +200,17 @@ inline const char *AliQnCorrectionsManager::GetAcceptedDataDetectorConfiguration
 
 /// Process the current event
 ///
-/// The request is transmitted to the different detectors.
+/// The request is transmitted to the different detectors first for applying the different
+/// correction steps and then to collect the correction steps data.
 ///
 /// Must be called only when the whole data vectors for the event
 /// have been incorporated to the framework.
 inline void AliQnCorrectionsManager::ProcessEvent() {
   for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
     ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->ProcessCorrections(fDataContainer);
+  }
+  for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+    ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->ProcessDataCollection(fDataContainer);
   }
 }
 

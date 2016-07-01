@@ -33,6 +33,7 @@
 /// \brief Set of corrections on Qn vector class implementation
 
 #include "AliQnCorrectionsCorrectionsSetOnQvector.h"
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsCorrectionsSetOnQvector);
@@ -64,8 +65,9 @@ void AliQnCorrectionsCorrectionsSetOnQvector::AddCorrection(AliQnCorrectionsCorr
   }
   else {
     for (Int_t ix = 0; ix < GetEntries(); ix++) {
-      if (!correction->Before(At(ix))) {
-        AddAt(correction, ix-1);
+      if (correction->Before(At(ix))) {
+        AddAt(correction, ix);
+        break;
       }
     }
   }
@@ -74,6 +76,7 @@ void AliQnCorrectionsCorrectionsSetOnQvector::AddCorrection(AliQnCorrectionsCorr
 /// Fill the global list of correction steps
 /// \param correctionlist (partial) global list of corrections ordered by correction key
 void AliQnCorrectionsCorrectionsSetOnQvector::FillOverallCorrectionsList(TList *correctionlist) const {
+
   if (!IsEmpty()) {
     if (!correctionlist->IsEmpty()) {
       for (Int_t ix = 0; ix < GetEntries(); ix++) {
@@ -91,8 +94,9 @@ void AliQnCorrectionsCorrectionsSetOnQvector::FillOverallCorrectionsList(TList *
           }
           else {
             for (Int_t jx = 0; jx < correctionlist->GetEntries(); jx++) {
-              if (!At(ix)->Before((AliQnCorrectionsCorrectionStepBase *) correctionlist->At(jx))) {
-                correctionlist->AddAt(At(ix), jx-1);
+              if (At(ix)->Before((AliQnCorrectionsCorrectionStepBase *) correctionlist->At(jx))) {
+                correctionlist->AddAt(At(ix), jx);
+                break;
               }
             }
           }
@@ -105,5 +109,36 @@ void AliQnCorrectionsCorrectionsSetOnQvector::FillOverallCorrectionsList(TList *
         correctionlist->Add(At(ix));
     }
   }
+}
+
+/// Gets the correction on Qn vector previous to the one passed as argument
+/// \param correction the correction to find the previous one
+/// \return the previous correction, NULL if none
+const AliQnCorrectionsCorrectionOnQvector *AliQnCorrectionsCorrectionsSetOnQvector::GetPrevious(const AliQnCorrectionsCorrectionOnQvector *correction) const {
+  if (correction == NULL) return NULL;
+  if (IsEmpty()) return NULL;
+  if (First()->GetName() == correction->GetName()) return NULL;
+  if (GetEntries() == 1) return NULL;
+  for (Int_t ix = 0; ix < GetEntries() - 1; ix++) {
+    if (At(ix+1)->GetName() == correction->GetName())
+      return At(ix);
+  }
+  return NULL;
+}
+
+/// Check if a concrete correction step is bein applied on this detector configuration
+/// It is not enough having the correction step configured or collecting data. To
+/// get an affirmative answer the correction step must be being applied.
+/// Transfer the order to each of the Qn correction steps.
+/// \param step the name of the correction step
+/// \return TRUE if the correction step is being applied
+Bool_t AliQnCorrectionsCorrectionsSetOnQvector::IsCorrectionStepBeingApplied(const char *step) const {
+
+  for (Int_t ix = 0; ix < GetEntries(); ix++) {
+    if (TString(At(ix)->GetName()).Contains(step)) {
+      return At(ix)->IsBeingApplied();
+    }
+  }
+  return kFALSE;
 }
 
