@@ -128,6 +128,10 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnal
   }
 }
 
+void AliAnalysisTaskDG::FMD::Fill(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
+  fA = trigAna.FMDTrigger(esdEvent, AliTriggerAnalysis::kASide);
+  fC = trigAna.FMDTrigger(esdEvent, AliTriggerAnalysis::kCSide);
+}
 
 void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse=NULL) {
   if (NULL == tr || NULL == pidResponse) {
