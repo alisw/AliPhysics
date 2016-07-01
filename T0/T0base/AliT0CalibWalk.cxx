@@ -102,11 +102,21 @@ AliT0CalibWalk::~AliT0CalibWalk()
 Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
-  Float_t sigma,cfdmean, qtmean, ledmean;
-  Bool_t ok=true;
-  Float_t   mips[50];
-  cout<<" @@@@ fCalibByData "<<fCalibByData<<endl;
+  // 2016 1MIP field 0.5T
+  /*Float_t cfd1mip[24] = {9415.1, 9410.65, 9410.9, 9459.59, 9458.37, 9464.44,
+			 9449.28, 9433.68, 9498.78, 9494.35, 9470.42, 9443.67, 
+			 9451.75, 9404.85, 9368.4, 9389.45, 9394.14, 9476.02, 
+			 9409.17, 9411.73, 9428.91, 9434.13, 9455.88, 9495.24};*/
+   Float_t cfd1mip[24] =  {9448.56, 9440.15, 9443.97, 9492.87, //field 0.5T
+			  9489.09, 9494.43, 9482.78, 9470.24, 
+			  9528.77, 9529.98, 9498.3, 9478.93,
+			  9487.18, 9437.12, 9410.01, 9416.12, 
+			  9425.38, 9506.05, 9443.7, 9444.27, 
+			  9459.62, 9471, 9482.63, 9528.97 };
 
+ 
+  Float_t sigma,meancfd, meanqtcold, meanqtc0new, meanqtc1new;
+  Bool_t ok=true;
   gFile = TFile::Open(laserFile);
   if(!gFile) {
     AliError("No input laser data found ");
@@ -114,162 +124,152 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   else
     {
       //      gFile->ls();
-      TH1F* hAmp = (TH1F*) gFile->Get("hAmpLaser");
-      Int_t nmips=0;
-      for (Int_t ibin=0; ibin<2000; ibin++) {
-	Float_t bincont = hAmp->GetBinContent(ibin);
-	if(bincont>0){ 
-	  mips[nmips] = hAmp->GetXaxis()->GetBinCenter(ibin);
-	  cout<<ibin<<" bincont "<<bincont<<" amp "<< mips[nmips]<<endl;
-	  nmips++;
-	}	
-      }    
-      /*     
-      if (nmips<17) {
-	ok=false;
-	return ok;
-      } 
-      */     
-      Float_t x1[50], y1[50]; 
-      Float_t x2[50], xx2[50],y2[50];
-      Float_t xx1[50],yy1[50], xx[50];
-      
-      Float_t cfd0 = 0;
-      
-      for (Int_t ii=0; ii<nmips; ii++)
-	x1[ii] = y1[ii] = x2[ii] = y2[ii] = 0; 
-      
-      for (Int_t i=0; i<24; i++)
-	{
-	  cfd0 = 0;
-	  for (Int_t im=0; im<nmips; im++)
-	    {	      
-	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
-	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
-	      TString led = Form("hLED%i_%i",i+1,im+1);
-	      
-	      TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
-	      TH1F *hLED = (TH1F*) gFile->Get(led.Data());
-	      TH1F *hQTC = (TH1F*) gFile->Get(qtc.Data()) ;
-	      //	      hCFD->SetDirectory(0);
-	      //	      hQTC->SetDirectory(0);
-	      //	      hLED->SetDirectory(0);
-	      if(!hCFD )
- 	      	AliWarning(Form(" no CFD data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
-	      if(!hQTC )
- 	      	AliWarning(Form(" no QTC correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
-	      if(!hLED)	      
-	      	AliWarning(Form(" no LED correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
-	      if( hCFD && hCFD->GetEntries()<500 ) {
-		ok=false;
-		printf("no peak in CFD spectrum for PMT %i amplitude %i\n",i,im);
-		return ok;
-	      }
-	      if(hCFD && hCFD->GetEntries()>500 ) {
-		if( hCFD->GetRMS() >= 1.5) 
-		  GetMeanAndSigma(hCFD, cfdmean, sigma);
-		else
-		  cfdmean = hCFD->GetMean();
-		
-		Int_t   maxBin = hCFD->GetMaximumBin(); 
-		Double_t  meanEstimate = hCFD->GetBinCenter( maxBin); 
-		if(TMath::Abs(meanEstimate - cfdmean) > 20 ) cfdmean = meanEstimate; 
-		if (im == 0) cfd0 = cfdmean;
-		y1[im] =  cfdmean - cfd0;
-	      }	
-	      if(hQTC && hQTC->GetEntries()>500) {
-		GetMeanAndSigma(hQTC, qtmean, sigma);
-		
-		x1[im] = qtmean;
-		if( x1[im] == 0) {
-		  ok=false;
-		  printf("no peak in QTC signal for PMT %i amplitude %i\n",i,im);
-		  return ok;
-		}
-	      }
-		
-	      if( hLED && hLED->GetEntries()>500) {
-		GetMeanAndSigma(hLED, ledmean, sigma);
-	      }				   
-	      else
-		{ 
-		  //	  ok=false;
-		  printf("no peak in LED spectrum for PMT %i amplitude %i\n",i,im);
-		  ledmean=0;
-		  //  return ok;
-		}
-	      x2[im] = ledmean;
-	      xx2[im] = x2[nmips-im-1];
-		
-		xx[im]=mips[im];
-		if (hQTC) delete  hQTC;
-		if (hCFD) delete  hCFD;
-		if (hLED) delete  hLED;
-		
-	    }
+    }    
+  Float_t x1[50], y1[50],  x2[50], x3[50];
+  Float_t cfd0 = 0;
+  
+  for (Int_t ii=0; ii<50; ii++)
+    x1[ii] = y1[ii] = x2[ii] = x3[ii] = 0; 
+  
+  for (Int_t ipmt=0; ipmt<24; ipmt++)
+    {
+      cfd0 = 0;
+      int nmips=30;
+      for (Int_t im=0; im<nmips; im++)
+	{	      
+	  TString cfd = Form("hCFD%i_%i",ipmt+1,im+1);
+	  TString qtc = Form("hQTC%i_%i",ipmt+1,im+1);
+	  TString qtc0new = Form("hQTC0new%i_%i",ipmt+1,im+1);
+	  TString qtc1new = Form("hQTC1new%i_%i",ipmt+1,im+1);
 	  
-	  for (Int_t imi=0; imi<nmips; imi++)
+	  TH1F *hCFD = (TH1F*) gFile->Get(cfd.Data()) ;
+	  TH1F *hQTC = (TH1F*) gFile->Get(qtc.Data());
+	  TH1F *hQTC0new = (TH1F*) gFile->Get(qtc0new.Data()) ;
+	  TH1F *hQTC1new = (TH1F*) gFile->Get(qtc1new.Data()) ;
+	  //	  if( hCFD && hCFD->GetEntries()<2 ) {
+	  //	    ok=false;
+	    //	    printf("no peak in CFD spectrum for PMT %i amplitude %i\n",ipmt,im);
+	  //	    return ok;
+	  //	  }
+	  if (hCFD->GetEntries()>200)
+	    GetMeanAndSigma(hCFD, meancfd,  sigma);
+	  else
 	    {
-	      yy1[imi] = Float_t (mips[nmips-imi-1]);
-	      xx1[imi] = x2[nmips-imi-1]; 
-	      //	      cout<<" LED rev "<<i<<" "<<imi<<" "<<xx1[imi]<<" "<< yy1[imi]<<"nmips-imi-1 = "<< nmips-imi-1<<endl;
+	    meancfd = cfd1mip[ipmt];
+	    cout<<ipmt<<" "<<im<<" !!! no entried "<<meancfd<<endl;
 	    }
+	  if (hQTC->GetEntries()>200)
+	    GetMeanAndSigma(hQTC, meanqtcold,  sigma);
+	  else
+	    meanqtcold=hQTC->GetMean();
+	  if (hQTC0new->GetEntries()>200)
+	    GetMeanAndSigma(hQTC0new, meanqtc0new,  sigma);
+	  else 
+	    meanqtc0new=hQTC0new->GetMean();
+	  if (hQTC1new->GetEntries()>200)
+	    GetMeanAndSigma(hQTC1new, meanqtc1new,  sigma);
+	  else 
+	    meanqtc1new=hQTC1new->GetMean();
+	  	  
+	  //	  cout<<"@@@ "<<im<<" "<<ipmt<<"  "<<meancfd<<" ("<<hCFD->GetEntries()<<") "
+	  //	      <<" "<< meanqtcold<<" ("<< hQTC->GetEntries()<<") "  <<endl;
 	  
-	  if(i==0) cout<<"Making graphs..."<<endl;
+	  Int_t   maxBin = hCFD->GetMaximumBin(); 
+	  Double_t  meanEstimate = hCFD->GetBinCenter( maxBin); 
+	  if(TMath::Abs(meanEstimate - meancfd) > 20 ) {
+	    cout<<" razoshlos' "<<ipmt<<" "<<im<<" meanEstimate "<<meanEstimate<<
+	      " "<<meancfd<<endl;
+	    meancfd = meanEstimate; 
+	  }
+	  y1[im+2] =  meancfd - cfd1mip[ipmt];
+	  x1[im+2] = meanqtcold;
+	  //	  if (ipmt==2 && im==5) x1[im+2]=x1[im+1];
+	  x2[im+2] = meanqtc0new;
+	  x3[im+2] = meanqtc1new;
+	  if(ipmt==22)	  cout<<im<<" "<<ipmt<<"  "<<meancfd<<" ("<<hCFD->GetEntries()<<") "<<y1[im+2]  <<" "<< meanqtcold<<" ("<< hQTC->GetEntries()<<") "<<x1[im+2]  <<endl;
 	  
-      TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
-      grwalkqtc->SetTitle(Form("PMT%i",i));
-      TGraph *grwalkled = new TGraph (nmips,x2,y1);
-      grwalkled->SetTitle(Form("PMT%i",i));
-      if(!fCalibByData)
-	fWalk.AddAtAndExpand(grwalkqtc,i);
-      fAmpLEDRec.AddAtAndExpand(grwalkled,i);
+	  
+	  if (hQTC) delete  hQTC;
+	  if (hCFD) delete  hCFD;
+	  if (hQTC0new) delete  hQTC0new;
+	  if (hQTC1new) delete  hQTC1new;
+	  
+	}
+      
+      if ( ipmt==0) {
+	y1[0]= y1[1]=y1[2]=3;
+	for (int ia=3; ia<6; ia++) y1[ia]=5;
+	for (int ia=5; ia<10; ia++) y1[ia]=3;
+      }
+      if(ipmt==1 ) for (int ia=3; ia<4; ia++) y1[ia]=0;
+      if(ipmt==2 ) y1[0]= y1[1]=y1[2]=-4;
+      if(ipmt==3 ) {
+	y1[0]= 	y1[1]=10;
+	y1[2]=-5;
+	for (int ia=3; ia<10; ia++) y1[ia]=0;
+	y1[22]=0;
+      }
+     if( ipmt==4) {
+        x1[0]=x1[3]-40;
+	x1[1]=x1[3]-20;
+	x1[2]=x1[3]-10;
+	y1[0]=y1[1]=y1[2]=y1[3]=0;
+       }
+      x1[0]=x1[2]-40;
+      x1[1]=x1[2]-20;
+      //  cout<<" vpered "<<x1[2]<<" "<<x1[1]<<" "<<x1[0]<<endl;
+      x2[0]=x2[1]=x2[2];
+      x3[0]=x3[1]=x3[2];
+      y1[0]=y1[1]=y1[2];
+      
+      if(ipmt==5 ) {  y1[0]=y1[1]=y1[2]=y1[3]=5; y1[4]=3;}
+      if(ipmt==6 ) {  y1[0]=y1[1]=5;  y1[2]=0;}
+      if(ipmt==7 )  	for (int iii=0; iii<9; iii++)  y1[iii]=0; 
+      if(ipmt==8 ) {  y1[0]=y1[1]=y1[2]=y1[3]=0; }
+      if(ipmt==9 ) { 
+	for (int ia=0; ia<5; ia++) y1[ia]=-5;
+	for (int ia=20; ia<23; ia++) y1[ia]=-1;
+	for (int ia=23; ia<27; ia++) y1[ia]=-5;
+     }
+      
+     if(ipmt==10 ) {  y1[0]=y1[1]=y1[2]=5; y1[3]=y1[4]=2; }
+     if(ipmt==11 ) {  y1[0]=y1[1]=y1[2]=-1; y1[3]=1;y1[4]=2; }
+     if(ipmt==15 ) {  y1[0]=y1[1]=y1[2]=6;  }
+     if(ipmt==16 ) {  y1[0]=y1[1]=y1[2]=0;  }
+     if(ipmt==17 ) {  y1[0]=y1[1]=y1[2]=0;  }
+     if(ipmt==18 ) {  y1[0]=y1[1]=y1[2]=y1[4]=0;  }
+     if(ipmt==19 ) {  y1[0]=y1[1]=y1[2]=2;  }
+     if(ipmt==20 ) {  y1[0]=y1[1]=y1[2]=4;  }
+     if(ipmt==21 ) {  y1[0]=y1[1]=y1[2]=0;  }
+     if(ipmt==22 ) {  y1[0]=y1[1]=2;y1[2]=1;  }
+     if(ipmt==23 ) {  y1[0]=y1[1]=y1[2]=0;  }
+
+ 
+      if(ipmt==18 ) y1[15]=9443 -  cfd1mip[ipmt];
+      
+       if(ipmt==0) cout<<"Making graphs..."<<endl;
+       cout<<"________________________________"<<ipmt<<"_____________"<<endl;   
+      TGraph *grwalkqtc = new TGraph (nmips+2,x1,y1);
+      grwalkqtc->SetTitle(Form("PMT%i",ipmt));
+      if(ipmt<12) grwalkqtc->Print();
+      fWalk.AddAtAndExpand(grwalkqtc,ipmt);
+       cout<<"________________________________"<<ipmt<<"_____________"<<endl;   
+      TGraph *grwalkled = new TGraph (nmips+2,x2,y1);
+      grwalkled->SetTitle(Form("PMT%i",ipmt));
+      fAmpLEDRec.AddAtAndExpand(grwalkled,ipmt);
+      //   grwalkled->Print();
       //	  cout<<" add walk "<<i<<endl;
       
       //fit amplitude graphs to make comparison wth new one	  
-      TGraph *grampled = new TGraph (nmips,xx1,yy1);
-      TGraph *grqtc = new TGraph (nmips,x1,xx);
-      fQTC.AddAtAndExpand(grqtc,i);	 
-      fAmpLED.AddAtAndExpand(grampled,i);
+      TGraph *grampled = new TGraph (nmips+2,x3,y1);
+      TGraph *grqtc = new TGraph (nmips+2,x1,x1);
+      fQTC.AddAtAndExpand(grqtc,ipmt);	 
+      fAmpLED.AddAtAndExpand(grampled,ipmt);
       //	  cout<<" add amp "<<i<<endl;
       
-      if(i==23)
-	cout<<"Graphs created..."<<endl;   
-	}
-    }
-  Float_t xpoint, ypoint, xdata[250], ydata[250];
-  Int_t ipmt;
-  if(fCalibByData) {
-    cout<<" read ingraph "<<endl;
-    ifstream ingraph ("calibfit.txt");
-    for (Int_t i=0; i<24; i++) 
-      {
-	for (Int_t ip=0; ip<200; ip++) 
-	  {
-	    ingraph>>ipmt>>xpoint>>ypoint; 
-	    // cout<<i<<" "<<ipmt<<" "<<ip<<" "<< xpoint<<" "<<ypoint<<endl;  
-	    xdata[ip]=xpoint;
-	    ydata[ip]=ypoint;
-	  }
-	for (Int_t ip=200; ip<250; ip++) {
-	    xdata[ip] =xdata[ip-1]+10;
-	    ydata[ip]=ydata[199];
-	}
-       
-	TGraph *grwalkqtc = new TGraph (250,xdata,ydata);
-	grwalkqtc->Print();
-	grwalkqtc->SetTitle(Form("PMT%i",i) );
-	fWalk.AddAtAndExpand(grwalkqtc,i);
-	for (Int_t ip=0; ip<250; ip++)
-	  {
-	    xdata[ip]=0;
-	    ydata[ip]=0;
-	  }
-      }
-  }
-
-  
-return ok;
+      if(ipmt==23) cout<<"Graphs created..."<<endl;   
+    }  
+  return ok;
 }
 void AliT0CalibWalk::SetWalk2015(TString filename)
 {
