@@ -259,10 +259,10 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163300000000000"); // no mass cut, no alpha
     cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163300100000000"); // no alpha
   } else if (trainConfig == 17){  // new default + exotics cut at 0.97
-    cuts.AddCut("00003113","1111121053032200000","1111121053022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00003113","1111121053532200000","1111121053522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
-    cuts.AddCut("00051013","1111121053032200000","1111121053022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00051013","1111121053532200000","1111121053522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00003113","1111121053532200000","1111121053522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00051013","1111121053532200000","1111121053522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
   
     
   } else if (trainConfig == 39){     // V1 clusterizer NLM2
@@ -429,15 +429,15 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00083013","1111121063032200000","1111121063022210001","0163300000000000"); // no mass cut, no alpha
     cuts.AddCut("00083013","1111121063032200000","1111121063022210001","0163300100000000"); // no alpha
   } else if (trainConfig == 68){  // new default
-    cuts.AddCut("00010113","1111121063032200000","1111121063022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00052013","1111121063032200000","1111121063022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00085013","1111121063032200000","1111121063022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
-    cuts.AddCut("00083013","1111121063032200000","1111121063022710001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
+    cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300700000000"); // Mass only band at 0, no explicit exotics cut, M02 cut at 0.27  
   } else if (trainConfig == 69){  // new default with exotics 
-    cuts.AddCut("00010113","1111121063532200000","1111121063522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
-    cuts.AddCut("00052013","1111121063532200000","1111121063522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
-    cuts.AddCut("00085013","1111121063532200000","1111121063522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
-    cuts.AddCut("00083013","1111121063532200000","1111121063522710001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00010113","1111121063532200000","1111121063522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00052013","1111121063532200000","1111121063522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00085013","1111121063532200000","1111121063522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
+    cuts.AddCut("00083013","1111121063532200000","1111121063522700001","0163300700000000"); // Mass only band at 0, explicit exotics cut at 0.97, M02 cut at 0.27  
     
     
   } else if (trainConfig == 98){  // new defaults LHC13g NLM2
