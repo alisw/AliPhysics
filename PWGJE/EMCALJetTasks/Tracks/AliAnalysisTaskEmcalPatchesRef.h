@@ -5,6 +5,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliCutValueRange.h"
+#include <TCustomBinning.h>
 
 class AliAnalysisUtils;
 class THistManager;
@@ -40,8 +41,6 @@ protected:
   bool SelectJetPatch(TObject *o) const;
   double GetPatchEnergy(TObject *o) const;
 
-  void CreateEnergyBinning(TArrayD& binning) const;
-  void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
@@ -57,6 +56,13 @@ protected:
   Bool_t                              fRequestCentrality;
 
 private:
+
+  class EnergyBinning : public TCustomBinning {
+  public:
+    EnergyBinning();
+    virtual ~EnergyBinning() {}
+  };
+
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);
   AliAnalysisTaskEmcalPatchesRef &operator=(const AliAnalysisTaskEmcalPatchesRef &);
 

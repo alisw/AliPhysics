@@ -133,9 +133,8 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
 
   if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
 
-  TArrayD oldbinning, newbinning;
-  CreateOldPtBinning(oldbinning);
-  CreateNewPtBinning(newbinning);
+  OldPtBinning oldbinning;
+  NewPtBinning newbinning;
 
   fHistos->CreateTH1("hNtrials", "Number of trials", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSection", "PYTHIA cross section", 1, 0.5, 1.5);
@@ -805,65 +804,7 @@ void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, 
   SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
 }
 
-/**
- * Create old pt binning
- * @param binning
- */
-void AliAnalysisTaskChargedParticlesRefMC::CreateOldPtBinning(TArrayD& binning) const {
-  std::vector<double> mybinning;
-  std::map<double,double> definitions;
-  definitions.insert(std::pair<double,double>(2.5, 0.1));
-  definitions.insert(std::pair<double,double>(7., 0.25));
-  definitions.insert(std::pair<double,double>(15., 0.5));
-  definitions.insert(std::pair<double,double>(25., 1.));
-  definitions.insert(std::pair<double,double>(40., 2.5));
-  definitions.insert(std::pair<double,double>(50., 5.));
-  definitions.insert(std::pair<double,double>(100., 10.));
-  double currentval = 0;
-  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
-    double limit = id->first, binwidth = id->second;
-    while(currentval < limit){
-      currentval += binwidth;
-      mybinning.push_back(currentval);
-     }
-   }
-   binning.Set(mybinning.size());
-   int ib = 0;
-   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-     binning[ib++] = *it;
-}
 
-/**
- * Create new Pt binning
- * @param binning
- */
-void AliAnalysisTaskChargedParticlesRefMC::CreateNewPtBinning(TArrayD& binning) const {
-  std::vector<double> mybinning;
-  std::map<double,double> definitions;
-  definitions.insert(std::pair<double, double>(1, 0.05));
-  definitions.insert(std::pair<double, double>(2, 0.1));
-  definitions.insert(std::pair<double, double>(4, 0.2));
-  definitions.insert(std::pair<double, double>(7, 0.5));
-  definitions.insert(std::pair<double, double>(16, 1));
-  definitions.insert(std::pair<double, double>(36, 2));
-  definitions.insert(std::pair<double, double>(40, 4));
-  definitions.insert(std::pair<double, double>(50, 5));
-  definitions.insert(std::pair<double, double>(100, 10));
-  definitions.insert(std::pair<double, double>(200, 20));
-  double currentval = 0.;
-  mybinning.push_back(currentval);
-  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
-    double limit = id->first, binwidth = id->second;
-    while(currentval < limit){
-      currentval += binwidth;
-      mybinning.push_back(currentval);
-    }
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
-}
 
 /**
  * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
@@ -939,6 +880,41 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOutlier(AliGenPythiaEventHeader *
     }
   }
   return hasOutlier;
+}
+
+/**
+ * Create old pt binning
+ */
+AliAnalysisTaskChargedParticlesRefMC::OldPtBinning::OldPtBinning() :
+    TCustomBinning()
+{
+  this->SetMinimum(0.);
+  this->AddStep(2.5, 0.1);
+  this->AddStep(7., 0.25);
+  this->AddStep(15., 0.5);
+  this->AddStep(25., 1.);
+  this->AddStep(40., 2.5);
+  this->AddStep(50., 5.);
+  this->AddStep(100., 10.);
+}
+
+/**
+ * Create new Pt binning
+ */
+AliAnalysisTaskChargedParticlesRefMC::NewPtBinning::NewPtBinning() :
+    TCustomBinning()
+{
+  this->SetMinimum(0.);
+  this->AddStep(1, 0.05);
+  this->AddStep(2, 0.1);
+  this->AddStep(4, 0.2);
+  this->AddStep(7, 0.5);
+  this->AddStep(16, 1);
+  this->AddStep(36, 2);
+  this->AddStep(40, 4);
+  this->AddStep(50, 5);
+  this->AddStep(100, 10);
+  this->AddStep(200, 20);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

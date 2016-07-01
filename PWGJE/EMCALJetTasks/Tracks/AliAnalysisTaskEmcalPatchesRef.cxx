@@ -18,6 +18,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 #include <THashList.h>
 #include <TString.h>
 
@@ -82,12 +83,11 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
  * + Patch eta-phi map - separated by patch type - for different trigger classes and different min. energies
  */
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
-  AliInfo(Form("Creating histograms for task %s\n", GetName()));
+  AliInfoStream() <<  "Creating histograms for task " << GetName() << std::endl;
   fAnalysisUtil = new AliAnalysisUtils;
 
-  TArrayD energybinning, etabinning;
-  CreateEnergyBinning(energybinning);
-  CreateLinearBinning(etabinning, 100, -0.7, 0.7);
+  EnergyBinning energybinning;
+  TLinearBinning etabinning(100, -0.7, 0.7);
   fHistos = new THistManager("Ref");
   TString triggers[18] = {"MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
@@ -110,7 +110,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
-  AliDebug(1, "Histograms done");
+  AliDebugStream(1) << "Histograms done" << std::endl;
 }
 
 /**
@@ -118,7 +118,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  * @param Not used
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
-  AliDebug(1, Form("%s: Start function\n", GetName()));
+  AliDebugStream(1) << GetName() << ": Start function" << std::endl;
   TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -152,10 +152,10 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
 
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)){
-    AliDebug(1, Form("%s: Reject trigger\n", GetName()));
+    AliDebugStream(1) << GetName() << ": Reject trigger" << std::endl;
     return;
   }
-  AliDebug(1, "Event selected");
+  AliDebugStream(1) << "Event selected" << std::endl;
   AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
   // In case a centrality estimator is used, event selection,
   // otherwise ignore event selection from multiplicity task
@@ -163,12 +163,12 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     if(mult && !mult->IsEventSelected()) return;
   }
   double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
-  AliDebug(1, Form("%s: Centrality %f\n", GetName(), centrality));
+  AliDebugStream(1) << GetName()  << ": Centrality " << centrality << std::endl;
   if(!fCentralityRange.IsInRange(centrality)){
-    AliDebug(1, Form("%s: reject centrality: %f\n", GetName(), centrality));
+    AliDebugStream(1) << GetName() << ": reject centrality: " << centrality << std::endl;
     return;
   } else {
-    AliDebug(1, Form("%s: select centrality %f\n", GetName(), centrality));
+    AliDebugStream(1) << GetName() << ": select centrality " << centrality << std::endl;
   }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
@@ -179,17 +179,17 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   }
   // Fill reference distribution for the primary vertex before any z-cut
   if(fRequestAnalysisUtil){
-    AliDebug(1, Form("%s: Reject analysis util\n", GetName()));
+    AliDebugStream(1) << GetName() << ": Reject analysis util" << std::endl;
     if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
     if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
     if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   }
   // Apply vertex z cut
   if(!fVertexRange.IsInRange(vtx->GetZ())){
-    AliDebug(1, Form("%s: Reject Z\n", GetName()));
+    AliDebugStream(1) <<  GetName() << ": Reject Z(" << vtx->GetZ() << ")" << std::endl;
     return;
   }
-  AliDebug(1, Form("%s: Event Selected\n", GetName()));
+  AliDebugStream(1) << GetName() << ": Event Selected" << std::endl;
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
@@ -278,11 +278,11 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   }
 
   if(!patches){
-    AliError("Trigger patch container not available");
+    AliErrorStream() << GetName() << ": Trigger patch container not available" << std::endl;
     return;
   }
 
-  AliDebug(1, Form("%s: Number of trigger patches %d\n", GetName(), patches->GetEntries()));
+  AliDebugStream(1) << GetName() << ": Number of trigger patches " << patches->GetEntries() << std::endl;
 
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
@@ -426,56 +426,6 @@ void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, T
 }
 
 /**
- * Create new energy binning
- * @param binning
- */
-void AliAnalysisTaskEmcalPatchesRef::CreateEnergyBinning(TArrayD& binning) const {
-  std::vector<double> mybinning;
-  std::map<double,double> definitions;
-  definitions.insert(std::pair<double, double>(1, 0.05));
-  definitions.insert(std::pair<double, double>(2, 0.1));
-  definitions.insert(std::pair<double, double>(4, 0.2));
-  definitions.insert(std::pair<double, double>(7, 0.5));
-  definitions.insert(std::pair<double, double>(16, 1));
-  definitions.insert(std::pair<double, double>(32, 2));
-  definitions.insert(std::pair<double, double>(40, 4));
-  definitions.insert(std::pair<double, double>(50, 5));
-  definitions.insert(std::pair<double, double>(100, 10));
-  definitions.insert(std::pair<double, double>(200, 20));
-  double currentval = 0.;
-  mybinning.push_back(currentval);
-  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
-    double limit = id->first, binwidth = id->second;
-    while(currentval < limit){
-      currentval += binwidth;
-      mybinning.push_back(currentval);
-    }
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
-}
-
-/**
- * Create any kind of linear binning from given ranges and stores it in the binning array.
- * @param binning output array
- * @param nbins Number of bins
- * @param min lower range
- * @param max upper range
- */
-void AliAnalysisTaskEmcalPatchesRef::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
-  double binwidth = (max-min)/static_cast<double>(nbins);
-  binning.Set(nbins+1);
-  binning[0] = min;
-  double currentlimit = min + binwidth;
-  for(int ibin = 0; ibin < nbins; ibin++){
-    binning[ibin+1] = currentlimit;
-    currentlimit += binwidth;
-  }
-}
-
-/**
  * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
  * @param triggerpatches Trigger patches found by the trigger maker
  * @return String with EMCAL trigger decision
@@ -575,6 +525,22 @@ double AliAnalysisTaskEmcalPatchesRef::GetPatchEnergy(TObject *o) const {
   AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(o);
   energy = patch->GetPatchE();
   return energy;
+}
+
+AliAnalysisTaskEmcalPatchesRef::EnergyBinning::EnergyBinning():
+    TCustomBinning()
+{
+  this->SetMinimum(0.);
+  this->AddStep(1., 0.05);
+  this->AddStep(2., 0.1);
+  this->AddStep(4, 0.2);
+  this->AddStep(7, 0.5);
+  this->AddStep(16, 1);
+  this->AddStep(32, 2);
+  this->AddStep(40, 4);
+  this->AddStep(50, 5);
+  this->AddStep(100, 10);
+  this->AddStep(200, 20);
 }
 
 
