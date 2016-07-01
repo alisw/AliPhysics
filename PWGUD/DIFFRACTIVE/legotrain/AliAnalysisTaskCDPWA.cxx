@@ -29,7 +29,6 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TParticle.h>
-
 #include <TMath.h>
 
 #include "AliVEvent.h"
@@ -60,7 +59,7 @@ ClassImp(AliAnalysisTaskCDPWA::TrackInfo);
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::EventInfo::Fill(const AliESDEvent *esdEvent) 
 {
-	const AliESDHeader *esdHeader = esdEvent->GetHeader();
+	const AliESDHeader *esdHeader = (AliESDHeader*)esdEvent->GetHeader();
 	if (NULL == esdHeader) // this is already dealt with in UserExec
 		return;
 
@@ -94,8 +93,8 @@ void AliAnalysisTaskCDPWA::CombInfo::Fill(const AliESDEvent *esdEvent)
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidResponse, AliPIDCombined *pidCombined) 
 {
-	if (NULL == tr || NULL == pidResponse) {
-		AliError(Form("tr=%p pidResponse=%p", tr, pidResponse));
+	if (NULL == tr || NULL == pidResponse || NULL == pidCombined) {
+		//AliError(Form("tr=%p pidResponse=%p pidCombined=%p", tr, pidResponse, pidCombined));
 		return;
 	}
 	fSign = tr->GetSign();
@@ -104,6 +103,9 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 	fPz   = tr->Pz();  
 	fEnergy = tr->E();
 	fIntegratedLength = tr->GetIntegratedLength();
+	fCrossedRows = tr->GetTPCCrossedRows();
+	fTPCnclsS = tr->GetTPCnclsS();
+	fTPCNCluster = tr->GetTPCNcls();
 	fITSSignal = tr->GetITSsignal();
 	fTPCSignal = tr->GetTPCsignal();
 	fTOFSignal = tr->GetTOFsignal();
@@ -138,6 +140,8 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 		       	AliPIDResponse::kDetITS |
 			AliPIDResponse::kDetTRD);
 	fDetMask[4] = pidCombined->ComputeProbabilities(tr,pidResponse,ftotBayesProb);
+
+	return;
 }
 //______________________________________________________________________________
 AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
@@ -146,17 +150,17 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fIsMC(0)
 	, fCombmode(0)
 	, fIsPythia8(0)
-	, fIsSys(0)
 	, fIsPWAMC(0)
 	, fnSys(0)
 	, fIsPythia(0)
 	, fIsPhojet(0)
 	, fIsEPOS(0)
-	, fTree(NULL)
-	, fTree_Comb(NULL)
-	, fList(NULL)
+	, fTree(0x0)
+	, fTree_Comb(0x0)
+	, fList(0x0)
 	, fMCTrack("TLorentzVector",4)
-	, fTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",4*11)
+	, fTwoTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",2*11)
+	, fFourTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",4*11)
 	, fEventInfo()
 	, fCombInfo()
 	, fTriggerAnalysis()
@@ -217,6 +221,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Gen_Process(0x0)
 	, fMult_Rec_DG_Process(0x0)
 	, fMult_Rec_NG_Process(0x0)
+	, fIsDGTrigger(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -224,6 +229,11 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 			fADTime[i] = 0x0;
 		}
 		if (i < 6) fRunFiducial[i] = 0x0;
+		if (i < 7) {
+			fMC_Eta[i] = 0x0;
+			fMC_DiffMass[i] = 0x0;
+			fMC_DiffMass_PDG[i] = 0x0;
+		}
 		fRunVsDG[i] = 0x0;
 	}
 	//
@@ -241,17 +251,17 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fIsMC(0)
 	, fCombmode(0)
 	, fIsPythia8(0)
-	, fIsSys(0)
 	, fIsPWAMC(0)
 	, fnSys(0)
 	, fIsPythia(0)
 	, fIsPhojet(0)
 	, fIsEPOS(0)
-	, fTree(NULL)
-	, fTree_Comb(NULL)
-	, fList(NULL)
+	, fTree(0x0)
+	, fTree_Comb(0x0)
+	, fList(0x0)
 	, fMCTrack("TLorentzVector",4)
-	, fTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",4*11)
+	, fTwoTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",2*11)
+	, fFourTrackInfo("AliAnalysisTaskCDPWA::TrackInfo",4*11)
 	, fEventInfo()
 	, fCombInfo()
 	, fTriggerAnalysis()
@@ -312,6 +322,7 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Gen_Process(0x0)
 	, fMult_Rec_DG_Process(0x0)
 	, fMult_Rec_NG_Process(0x0)
+	, fIsDGTrigger(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -320,6 +331,11 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 		}
 		if (i < 6) fRunFiducial[i] = 0x0;
 		fRunVsDG[i] = 0x0;
+		if (i < 7) {
+			fMC_Eta[i] = 0x0;
+			fMC_DiffMass[i] = 0x0;
+			fMC_DiffMass_PDG[i] = 0x0;
+		}
 	}
 }
 //______________________________________________________________________________
@@ -332,18 +348,64 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fTrackCuts) {delete fTrackCuts; fTrackCuts=0x0;}
 	if (fPIDResponse) {delete fPIDResponse; fPIDResponse=0x0;}
 	if (fPIDCombined) {delete fPIDCombined; fPIDCombined=0x0;}
-}
-//______________________________________________________________________________
-void AliAnalysisTaskCDPWA::SetBranchPWA(TTree *t) {
-	t->Branch("fEventInfo",&fEventInfo);
-	t->Branch("fTrackInfo",&fTrackInfo);
-	if (fIsPWAMC) {
-		t->Branch("fMCTrack",&fMCTrack);
+	if (fMult) {delete fMult; fMult=0x0;}
+	if (fHistEvent) delete fHistEvent;
+	if (fHistTrigger) delete fHistTrigger;
+	if (fHistEventProcesses) delete fHistEventProcesses;
+	if (fHistPrimVtxX) delete fHistPrimVtxX;
+	if (fHistPrimVtxY) delete fHistPrimVtxY;
+	if (fHistPrimVtxZ) delete fHistPrimVtxZ;
+	if (fMultRegionsMC) delete fMultRegionsMC;
+	if (fSPDFiredChipsClvsHd) delete fSPDFiredChipsClvsHd;
+	if (fSPDwc) delete fSPDwc;
+	if (fRunVsMBOR_V0) delete fRunVsMBOR_V0;
+	if (fRunVsMBAND_V0) delete fRunVsMBAND_V0;
+	if (fRunVsMBOR_AD) delete fRunVsMBOR_AD;
+	if (fRunVsMBAND_AD) delete fRunVsMBAND_AD;
+	if (fRunVsMBOR_Global) delete fRunVsMBOR_Global;
+	if (fRunVsMBAND_Global) delete fRunVsMBAND_Global;
+	if (fRunVs2t) delete fRunVs2t;
+	if (fRunVs2t_ITSSA) delete fRunVs2t_ITSSA;
+	if (fRunVs4t) delete fRunVs4t;
+	if (fRunVs4t_ITSSA) delete fRunVs4t_ITSSA;
+	if (fMultNG_ST) delete fMultNG_ST;
+	if (fMultNG_MS) delete fMultNG_MS;
+	if (fMultDG_ST) delete fMultDG_ST;
+	if (fMultDG_MS) delete fMultDG_MS;
+	if (fMassNG_ST_2t) delete fMassNG_ST_2t;
+	if (fMassNG_MS_2t) delete fMassNG_MS_2t;
+	if (fMassDG_ST_2t) delete fMassDG_ST_2t;
+	if (fMassDG_MS_2t) delete fMassDG_MS_2t;
+	if (fMassNG_ST_4t) delete fMassNG_ST_4t;
+	if (fMassNG_MS_4t) delete fMassNG_MS_4t;
+	if (fMassDG_ST_4t) delete fMassDG_ST_4t;
+	if (fMassDG_MS_4t) delete fMassDG_MS_4t;
+	if (fTrackCutsInfo) delete fTrackCutsInfo;
+	if (fTrackCutsInfo_ITSSA) delete fTrackCutsInfo_ITSSA;
+	if (fhClusterVsTracklets_bf) delete fhClusterVsTracklets_bf;
+	if (fhClusterVsTracklets_af) delete fhClusterVsTracklets_af;
+	if (fMult_ITSSA) delete fMult_ITSSA;
+	if (fMult_DG_ITSSA) delete fMult_DG_ITSSA;
+	if (fMult_NG_ITSSA) delete fMult_NG_ITSSA;
+	if (fMult_ITSSA_MS) delete fMult_ITSSA_MS;
+	if (fMult_DG_ITSSA_MS) delete fMult_DG_ITSSA_MS;
+	if (fMult_NG_ITSSA_MS) delete fMult_NG_ITSSA_MS;
+	if (fTPCSignal) delete fTPCSignal;
+	if (fTOFSignal) delete fTOFSignal;
+	if (fITSSignal) delete fITSSignal;
+	if (fTRDSignal) delete fTRDSignal;
+	if (fMult_Gen) delete fMult_Gen;
+	if (fMult_Gen_Process) delete fMult_Gen_Process;
+	if (fMult_Rec_DG_Process) delete fMult_Rec_DG_Process;
+	if (fMult_Rec_NG_Process) delete fMult_Rec_NG_Process;
+	for (Int_t i = 0; i < 10; i++) {
+		if (i<2) {
+			if (fV0Time[i]) delete fV0Time[i];
+			if (fADTime[i]) delete fADTime[i];
+		}
+		if (i<6 && fRunFiducial[i]) delete fRunFiducial[i];
+		if (fRunVsDG[i]) delete fRunVsDG[i];
 	}
-}
-//______________________________________________________________________________
-void AliAnalysisTaskCDPWA::SetBranchComb(TTree *t) {
-	t->Branch("fCombInfo",&fCombInfo);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
@@ -351,11 +413,16 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 	// TTree + TList should be defined-----------------------------------------
 	OpenFile(1);
 	fTree = new TTree("tree1","PWAtree");
-	SetBranchPWA(fTree);
+	fTree->Branch("fEventInfo",&fEventInfo);
+	fTree->Branch("fTwoTrackInfo",&fTwoTrackInfo);
+	fTree->Branch("fFourTrackInfo",&fFourTrackInfo);
+	if (fIsPWAMC) {
+		fTree->Branch("fMCTrack",&fMCTrack);
+	}
 
 	OpenFile(2);
 	fTree_Comb = new TTree("tree_Comb","tree_Comb");
-	if (fCombmode) SetBranchComb(fTree_Comb);
+	if (fCombmode) fTree_Comb->Branch("fCombInfo",&fCombInfo);
 
 	OpenFile(3);
 	fList = new TList();
@@ -525,35 +592,35 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 		fList->Add(fMultDG_MS);
 	}
 	if (!fMassNG_ST_2t) {
-		fMassNG_ST_2t = new TH1D("fMassNG_ST_2t","",200,0,2);
+		fMassNG_ST_2t = new TH1D("fMassNG_ST_2t","",100,0,2);
 		fList->Add(fMassNG_ST_2t);
 	}
 	if (!fMassNG_MS_2t) {
-		fMassNG_MS_2t = new TH1D("fMassNG_MS_2t","",200,0,2);
+		fMassNG_MS_2t = new TH1D("fMassNG_MS_2t","",100,0,2);
 		fList->Add(fMassNG_MS_2t);
 	}
 	if (!fMassDG_ST_2t) {
-		fMassDG_ST_2t = new TH1D("fMassDG_ST_2t","",200,0,2);
+		fMassDG_ST_2t = new TH1D("fMassDG_ST_2t","",100,0,2);
 		fList->Add(fMassDG_ST_2t);
 	}
 	if (!fMassDG_MS_2t) {
-		fMassDG_MS_2t = new TH1D("fMassDG_MS_2t","",200,0,2);
+		fMassDG_MS_2t = new TH1D("fMassDG_MS_2t","",100,0,2);
 		fList->Add(fMassDG_MS_2t);
 	}
 	if (!fMassNG_ST_4t) {
-		fMassNG_ST_4t = new TH1D("fMassNG_ST_4t","",500,0,5);
+		fMassNG_ST_4t = new TH1D("fMassNG_ST_4t","",250,0,5);
 		fList->Add(fMassNG_ST_4t);
 	}
 	if (!fMassNG_MS_4t) {
-		fMassNG_MS_4t = new TH1D("fMassNG_MS_4t","",500,0,5);
+		fMassNG_MS_4t = new TH1D("fMassNG_MS_4t","",250,0,5);
 		fList->Add(fMassNG_MS_4t);
 	}
 	if (!fMassDG_ST_4t) {
-		fMassDG_ST_4t = new TH1D("fMassDG_ST_4t","",500,0,5);
+		fMassDG_ST_4t = new TH1D("fMassDG_ST_4t","",250,0,5);
 		fList->Add(fMassDG_ST_4t);
 	}
 	if (!fMassDG_MS_4t) {
-		fMassDG_MS_4t = new TH1D("fMassDG_MS_4t","",500,0,5);
+		fMassDG_MS_4t = new TH1D("fMassDG_MS_4t","",250,0,5);
 		fList->Add(fMassDG_MS_4t);
 	}
 	if (!fTrackCutsInfo) {
@@ -700,14 +767,16 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 {
 	//Initialize
-	fEventInfo.Clear();
-	fCombInfo.Clear();
-	fTrackInfo.Delete();
-	if (fIsPWAMC) fMCTrack.Delete();
+	fEventInfo = AliAnalysisTaskCDPWA::EventInfo();
+	fCombInfo = AliAnalysisTaskCDPWA::CombInfo();
+	fTwoTrackInfo.Delete();
+	fFourTrackInfo.Delete();
+	fMCTrack.Delete();
 
 	//Check corrupted file, load ESDevent and handler
 	if (!CheckInput()) {
 		AliFatal("Corrupted file");
+		PostOutputs();
 		return;
 	}
 
@@ -874,9 +943,11 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	//Gap analysis
 	//V0+SPD, AD+SPD are basic gap def.
-	Bool_t fDG_Det[10]={kFALSE,};
+	Bool_t fDG_Det[10];
+	for (Int_t i = 0; i < 10; i++) fDG_Det[i] = kFALSE;
 	fDG_Det[0] = (fEventInfo.fV0Gap & fEventInfo.fSPDFired);//V0SPD
 	fDG_Det[1] = (fEventInfo.fADGap & fEventInfo.fSPDFired);//ADSPD
+	if (!fIsRun2) fDG_Det[1] = kTRUE;
 	fDG_Det[2] = (fEventInfo.fADGap & fDG_Det[0]);//V0ADSPD
 	fDG_Det[3] = (fEventInfo.fFMDGap & fDG_Det[2]);//V0ADFMDSPD
 	fDG_Det[4] = (fEventInfo.fZDCGap & fDG_Det[3]);//V0ADFMDZDCSPD
@@ -1005,8 +1076,7 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 
 	fEventInfo.fNtrk_MS = Nsel;
 
-	//Move to the DG Event to reduce memory leak
-	if (!fDG_Det[0] || !fDG_Det[1]) {
+	if (fDG_Det[0] == kFALSE || fDG_Det[1] == kFALSE) {
 		PostOutputs();
 		return;
 	}
@@ -1017,40 +1087,74 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 	if (!fIsMC) {
 		for (Int_t i = 0; i < 11; i++) {
 			Nsel = 0;
-			selec.Clear();
 			indices = 0x0;
+			selec.Clear();
+//			selec.SetInitCuts();
 			if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,i);
 			else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
 			Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices);
 			fEventInfo.fCheckTwoTrack[i] = (Nsel == 2) ? kTRUE : kFALSE;
 			fEventInfo.fCheckFourTrack[i] = (Nsel == 4) ? kTRUE : kFALSE;
 
-			if (Nsel == 2 || Nsel == 4) {
+			if (Nsel == 2) {
 				storeT = kTRUE;
 				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-					new (fTrackInfo[Nsel*i+iSel]) TrackInfo(dynamic_cast<AliESDtrack*>(fESDEvent->GetTrack(indices.At(iSel))), fPIDResponse, fPIDCombined);
+					new (fTwoTrackInfo[2*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
 				}
 			}
+			else {
+				new (fTwoTrackInfo[2*i+0]) TrackInfo(NULL,NULL,NULL);
+				new (fTwoTrackInfo[2*i+1]) TrackInfo(NULL,NULL,NULL);
+			}
+
+			if (Nsel == 4) {
+				storeT = kTRUE;
+				for (Int_t iSel = 0; iSel < Nsel; iSel++) {
+					new (fFourTrackInfo[4*i+iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+				}
+			}
+			else {
+				new (fFourTrackInfo[4*i+0]) TrackInfo(NULL,NULL,NULL);
+				new (fFourTrackInfo[4*i+1]) TrackInfo(NULL,NULL,NULL);
+				new (fFourTrackInfo[4*i+2]) TrackInfo(NULL,NULL,NULL);
+				new (fFourTrackInfo[4*i+3]) TrackInfo(NULL,NULL,NULL);
+			}
+				
 		}
 	}
+
 	else if (fIsMC && fIsPWAMC) {
 		//By default it has to run it over with 'fnSys'
-		selec.Clear();
+		Nsel = 0;
 		indices = 0x0;
+		selec.Clear();
+//		selec.SetInitCuts();
 		if (!fIsRun2) selec.InitDefaultTrackCuts((Int_t)is10bc,0,kFALSE,fnSys);
 		else selec.InitDefaultTrackCuts(0,0,kTRUE,0);
 		Nsel = selec.GetNumberOfITSTPCtracks(fESDEvent,indices);
 		fEventInfo.fCheckTwoTrack[0] = (Nsel == 2) ? kTRUE : kFALSE;
 		fEventInfo.fCheckFourTrack[0] = (Nsel == 4) ? kTRUE : kFALSE;
-		for (Int_t iSel = 0; iSel < Nsel; iSel++) {
-			new (fTrackInfo[iSel]) TrackInfo(dynamic_cast<AliESDtrack*>(fESDEvent->GetTrack(indices.At(iSel))), fPIDResponse, fPIDCombined);
+		for (Int_t i = 1; i < 11; ++i) {
+			fEventInfo.fCheckTwoTrack[i] = kFALSE;
+			fEventInfo.fCheckFourTrack[i] = kFALSE;
+		}
+		if (Nsel == 2) {
+			for (Int_t iSel = 0; iSel < Nsel; iSel++) {
+				new (fTwoTrackInfo[iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+			}
+		}
+		else if (Nsel == 4) {
+			for (Int_t iSel = 0; iSel < Nsel; iSel++) {
+				new (fFourTrackInfo[iSel]) TrackInfo((fESDEvent->GetTrack(indices.At(iSel))),fPIDResponse,fPIDCombined);
+			}
 		}
 
 	}
 
-	if (!fIsMC) {
-		if (storeT) fTree->Fill();
-	}
+	selec.Clear();
+	indices = 0x0;
+
+	if (!fIsMC && storeT) fTree->Fill();
 
 	PostOutputs();
 	return;
@@ -1331,5 +1435,9 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 //______________________________________________________________________________
 void AliAnalysisTaskCDPWA::Terminate(Option_t *)
 {
+	fTree = dynamic_cast<TTree*>(GetOutputData(1));
+	if (NULL == fTree) Error("Terminate","fTree is not available");
+	fList = dynamic_cast<TList*>(GetOutputData(3));
+	if (NULL == fList) Error("Terminate","fList is not available");
 }
 //______________________________________________________________________________

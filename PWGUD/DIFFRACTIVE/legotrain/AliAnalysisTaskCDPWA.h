@@ -34,24 +34,23 @@ class AliESDEvent;
 class AliPIDResponse;
 class AliPIDCombined;
 class AliESDtrackCuts;
-class AliESDAD;
-class AliESDVZERO;
 
 // ROOT class
 class TH1D;
 class TH2D;
 class TList;
 class TTree;
-class TObject;
-class TArrayI;
 
+#include <TObject.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultiplicity.h"
 #include "AliPID.h"
+#ifndef ALIANALYSISTASK_H
 #include "AliAnalysisTaskSE.h"
+#endif
 
 class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 {
@@ -69,7 +68,6 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		void SetIsMC(Bool_t MC) {fIsMC = MC;}//MC mode
 		void SetCombinatoricsMode(Bool_t isComb) {fCombmode = isComb;}//kTRUE = save combinatorics
 		void SetIsPythia8(Bool_t ispythia8) {fIsPythia8 = ispythia8;}//kTRUE = Pythia8 mode
-		void SetRunSystematic(Bool_t isSys) {fIsSys = isSys;}//kTRUE = Run systematics
 		void SetIsPWAMC(Bool_t isPWA) {fIsPWAMC = isPWA;}//kTRUE = for PWA in DRgen/DIME
 		void SetMCSystematic(Int_t nSys) {fnSys = nSys;}
 
@@ -101,25 +99,25 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 
 			void Fill(const AliESDEvent *);
 
-			UInt_t fPeriod;
-			UInt_t fRunNumber;
-			UInt_t fTimeStamp;
-			Bool_t fSPDFired;
-			Bool_t fV0Gap;
-			Bool_t fADGap;
-			Bool_t fFMDGap;
-			Bool_t fZDCGap;
+			UInt_t fPeriod;//
+			UInt_t fRunNumber;//
+			UInt_t fTimeStamp;//
+			Bool_t fSPDFired;//
+			Bool_t fV0Gap;//
+			Bool_t fADGap;//
+			Bool_t fFMDGap;//
+			Bool_t fZDCGap;//
 			Int_t fNtrk_ST;//Number of ITS+TPC Standard cut
 			Int_t fNtrk_MS;//Number of ITS_TPC Martin's selection
 			Bool_t fCheckTwoTrack[11];//Is two-track events? including systematics
 			Bool_t fCheckFourTrack[11];//Is four-track events? including systematics
 			Double_t fVertexSPD[3];//Vertex info
 			Double_t fVertexTPC[3];//
-			Double_t fVertexTracks[3];
-			Double_t fVertexUsed[3];
-			Bool_t fSysVertex[3];
-			Bool_t fSysPileUp[3];
-			Bool_t fSysCluster[5];
+			Double_t fVertexTracks[3];//
+			Double_t fVertexUsed[3];//
+			Bool_t fSysVertex[3];//
+			Bool_t fSysPileUp[3];//
+			Bool_t fSysCluster[5];//
 
 			ClassDef(EventInfo, 1);
 		};
@@ -142,23 +140,23 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 
 			void Fill(const AliESDEvent *);
 
-			Bool_t fComb_IsPassMBOR;//! Need for MC
-			Bool_t fComb_IsPassVertex;//! Need for MC
-			Bool_t fComb_IsPileUp;//!
-			Bool_t fComb_IsPassClusterCut;//!
-			UInt_t fComb_SPDCluster;//!
-			UInt_t fComb_SPDTracklets;//!
-			UInt_t fComb_MC_EventProcess;//!
-			Bool_t fComb_DetHit[10];//!
-			TClonesArray fComb_forwardP;//!
-			TClonesArray fComb_diffSystem;//!
+			Bool_t fComb_IsPassMBOR;// Need for MC
+			Bool_t fComb_IsPassVertex;// Need for MC
+			Bool_t fComb_IsPileUp;//
+			Bool_t fComb_IsPassClusterCut;//
+			UInt_t fComb_SPDCluster;//
+			UInt_t fComb_SPDTracklets;//
+			UInt_t fComb_MC_EventProcess;//
+			Bool_t fComb_DetHit[10];//
+			TClonesArray fComb_forwardP;//
+			TClonesArray fComb_diffSystem;//
 
 			ClassDef(CombInfo, 1);
 
 		};
 
 		struct TrackInfo : public TObject{//Track information for PWA
-			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pidResponse=NULL, AliPIDCombined *pidCombined=NULL)//Constructor
+			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL)//Constructor
 				:TObject()
 				 , fSign(0)
 				 , fPx(0)
@@ -169,19 +167,25 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 , fITSSignal(0)
 				 , fTPCSignal(0)
 				 , fTOFSignal(0)
-				 , fTRDSignal(0) {
-					 for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-						 fITSSigma[i] = fTPCSigma[i] = fTOFSigma[i] = fITSSignalDelta[i] = fTPCBayesProb[i] = fTOFBayesProb[i] =
-							 fITSBayesProb[i] = fTRDBayesProb[i] = fTPCProb[i] = fTOFProb[i] = fITSProb[i] = ftotBayesProb[i] = -999.;
-						 fDetMask[i] = 0;
-					 }
-					 Fill(tr, pidResponse, pidCombined);
-				 }
+				 , fTRDSignal(0) 
+				 , fCrossedRows(0)
+				 , fTPCNCluster(0)
+				 , fTPCnclsS(0)
+			
+			{
+				for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+					fITSSigma[i] = fTPCSigma[i] = fTOFSigma[i] = fITSSignalDelta[i] = fTPCBayesProb[i] = fTOFBayesProb[i] =
+						fITSBayesProb[i] = fTRDBayesProb[i] = fTPCProb[i] = fTOFProb[i] = fITSProb[i] = ftotBayesProb[i] = -999.;
+					fDetMask[i] = 0;
+				}
+				Fill(tr,pid,pidc);
+			}
 
 			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *);
 
 			Double_t fSign;
 			Double_t fPx, fPy, fPz, fEnergy, fIntegratedLength;
+			Double_t fCrossedRows, fTPCNCluster, fTPCnclsS;
 			Double_t fITSSignal, fTPCSignal, fTOFSignal, fTRDSignal;
 			Double_t fITSSigma[AliPID::kSPECIES];
 			Double_t fTPCSigma[AliPID::kSPECIES];
@@ -262,8 +266,6 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		AliAnalysisTaskCDPWA& operator=(const AliAnalysisTaskCDPWA  &p);
 
 		void PostOutputs();
-		void SetBranchPWA(TTree *t);
-		void SetBranchComb(TTree *t);
 		Bool_t CheckInput();
 		Bool_t CheckOnlineTrigger(const AliESDEvent *esd);
 		void DoTimeMeasurements(const AliESDEvent *esd, const Int_t seq);
@@ -276,7 +278,6 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fIsMC;
 		Bool_t fCombmode;
 		Bool_t fIsPythia8;
-		Bool_t fIsSys;
 		Bool_t fIsPWAMC;
 		Bool_t fIsDGTrigger;
 		Bool_t fnSys;
@@ -285,6 +286,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fIsPythia;
 		Bool_t fIsPhojet;
 		Bool_t fIsEPOS;
+		UInt_t fRunNumber;
 
 		// Output objects-----------------------------------------------------
 		TTree *fTree; //! V0 2pion
@@ -292,7 +294,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TList *fList; //! List for histogram
 
 		TClonesArray fMCTrack;//!
-		TClonesArray fTrackInfo;//!
+		TClonesArray fTwoTrackInfo;//!
+		TClonesArray fFourTrackInfo;//!
 		EventInfo fEventInfo;//!
 		CombInfo fCombInfo;//!
 		AliTriggerAnalysis fTriggerAnalysis;//!
@@ -302,9 +305,6 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		AliESDtrackCuts *fTrackCuts;//!
 		AliESDEvent *fESDEvent;//!
 		AliMultiplicity *fMult;//!
-
-		//Used variable
-		UInt_t fRunNumber;
 
 		//Histograms----------------------------------------------------------
 		TH1D *fHistEvent; //!Histogram for number of event

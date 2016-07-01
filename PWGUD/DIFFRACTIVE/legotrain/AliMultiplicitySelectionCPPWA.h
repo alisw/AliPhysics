@@ -7,6 +7,7 @@
 #endif
 
 
+class AliESDEvent;
 class AliESDtrack;
 class AliESDtrackCuts;
 class TArrayI;
@@ -20,9 +21,6 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		Double_t fTrackEtaMin;    // EtaMin, used in second loop
 		Double_t fTrackEtaMax;    // EtaMax, used in second loop
 		Bool_t fkCheckReferenceMultiplicity; // should be kFALSE for LHC10{b,c} pass2
-		Double_t fNClusterTPCSys;//Number of cluster for sys
-		Double_t fMaxDCAzSys;
-		Double_t fMaxChi2Sys;
 
 		TList *fTrackCutListPrim; // TList with primary track selection cuts
 
@@ -38,6 +36,7 @@ class AliMultiplicitySelectionCPPWA :public TObject {
 		AliMultiplicitySelectionCPPWA();
 		~AliMultiplicitySelectionCPPWA();
 
+		void SetInitCuts();
 		void SetCheckReferenceMultiplicity() {fkCheckReferenceMultiplicity = kTRUE;} 
 		void SetTPCnclsS(Int_t n = 3) {fTPCnclsS = n;} 
 		void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 

@@ -41,19 +41,17 @@
 ClassImp(AliMultiplicitySelectionCPPWA)
 
 //Class Constructor
-AliMultiplicitySelectionCPPWA::AliMultiplicitySelectionCPPWA():TObject(),
-	fkCheckReferenceMultiplicity(0)
+AliMultiplicitySelectionCPPWA::AliMultiplicitySelectionCPPWA(): TObject(),
+	fkCheckReferenceMultiplicity(0),
+	fTPCnclsS(3),
+	fTrackDCAz(5),
+	fTrackEtaMin(-0.9),
+	fTrackEtaMax(0.9),
+	fIndicesN(0x0),
+	fIndicesP(0x0),
+	fkIgnoreV0s(0),
+	fTrackCutListPrim(0x0)
 {
-	//TrackCuts
-	fTrackCutListPrim = new TList();
-	fTrackCutListPrim->SetOwner();
-	fTrackCutListPrim->SetName("PrimaryTrackCut");
-
-	//Set basic parameters
-	SetTPCnclsS();
-	SetTrackDCAz();
-	SetTrackEtaRange();
-
 	IgnoreV0s();
 	for(Int_t i = 0; i< fkNtrackMax; i++)
 		fkIsTrackSec[i]= kFALSE;
@@ -69,8 +67,23 @@ AliMultiplicitySelectionCPPWA::~AliMultiplicitySelectionCPPWA()
 	fTrackCutListPrim = 0;
 }
 //Member function
+void AliMultiplicitySelectionCPPWA::SetInitCuts() {
+	if (fTrackCutListPrim) {
+		fTrackCutListPrim->Delete();
+		delete fTrackCutListPrim;
+	}
+	fTrackCutListPrim = new TList();
+	fTrackCutListPrim->SetOwner();
+	fTrackCutListPrim->SetName("PrimaryTrackCut");
+
+}
 void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2, Int_t nSys)
 {
+	//TrackCuts
+	if (fTrackCutListPrim) fTrackCutListPrim = 0x0;
+	fTrackCutListPrim = new TList();
+	fTrackCutListPrim->SetOwner();
+	fTrackCutListPrim->SetName("PrimaryTrackCut");
 	//Important message for 7TeV analysis (LHC10b,c,d,e)
 	/*
 	   Alexander Kalweit 
@@ -152,6 +165,8 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 			if (nSys == 9) SetTrackDCAz(7);
 			else if (nSys == 10) SetTrackDCAz(5);
 			else SetTrackDCAz(6);
+
+			SetTrackEtaRange(-0.9,0.9);
 
 			fcutITSTPC_P->SetName("ITSTPC");
 			AddPrimaryTrackCut(fcutITSTPC_P);
