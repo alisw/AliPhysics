@@ -26,6 +26,7 @@
 #include "TTree.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
+#include "TStopwatch.h"
 #include "TProfile.h"
 #include <TList.h>
 #include <TH1F.h>
@@ -193,7 +194,8 @@ fDataSet("2010"),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
-fMCStack(0x0)
+fMultSelection(0x0),
+fCentrality(0x0)
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -334,7 +336,8 @@ fAnalysisUtil(NULL),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
-fMCStack(0x0)
+fMultSelection(0x0),
+fCentrality(0x0)
 {
  
  for(int i=0; i<5; i++){
@@ -396,7 +399,6 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  if (fAnalysisUtil) delete fAnalysisUtil;
  if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
- if (fStack) delete fStack;
 }
 
 //________________________________________________________________________
@@ -745,36 +747,26 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       AliError("ERROR: Could not retrieve MCEvent");
       return;
     }
-
-    fMCStack = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
-    if(!fMCStack){
+    fStack = (TClonesArray*)aod->FindListObject(AliAODMCParticle::StdBranchName());
+    if(!fStack){
       AliError("ERROR: Could not retrieve MCStack");
       return;
     }
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-    if (!mcHeader) {
-      AliError("Could not find MC Header in AOD");
-      return;
-    }
     
-    // get centrality (from MultSelection)
+    // get centrality (from AliMultSelection or AliCentrality)
     Float_t centr = 300;
     if(fDataSet == "2015") {
-      AliMultSelection *MultSelection = 0x0;
-      MultSelection = (AliMultSelection * ) aod->FindListObject("MultSelection");
-      if( !MultSelection) {
+      fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
+      if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
-      }else{
-        centr = MultSelection->GetMultiplicityPercentile("V0M");
+      } else {
+        centr = fMultSelection->GetMultiplicityPercentile("V0M");
       }
     } else {
-      AliCentrality* alicentr = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
-      centr = alicentr->GetCentralityPercentile("V0M");
+      centr = (((AliVAODHeader*)aod->GetHeader())->GetCentralityP())->GetCentralityPercentile("V0M");
     }
-    
     fCenDis->Fill(centr);
-    
     // centrality bin
     if (centr<fCentrLowLim || centr>=fCentrUpLim ) return;
     Int_t CenBin = -1;
@@ -791,22 +783,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(CenBin==-1) return;
     
     // reconstructed
-    Int_t AODPOIs = 0, AODbads = 0;
     for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
       
-      Bool_t FlagTPC=kFALSE, FlagGlob=kFALSE;
-      
-      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aod->GetTrack(jTracks));
+      AliAODTrack* track = (AliAODTrack*)aod->GetTrack(jTracks);
       if(!track) continue;
       
       // select primaries
       Int_t lp = TMath::Abs(track->GetLabel());
-      if (!((AliAODMCParticle*)fMCStack->At(lp))->IsPhysicalPrimary()) continue;
+      if (!((AliAODMCParticle*)fStack->At(lp))->IsPhysicalPrimary()) continue;
       
       // general kinematic & quality cuts
       if (track->Pt() < .2 || track->Pt() > 8. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
-      
-      AODPOIs++;
       
       // test filter bits
       if (track->TestFilterBit(32)) fPtSpecFB32[CenBin]->Fill(track->Pt());
@@ -815,31 +802,28 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if (track->TestFilterBit(768)) fPtSpecFB768[CenBin]->Fill(track->Pt());
     }
     
-    // generated (physical primaries)
-    Int_t MCPrims = 0, MCSecos = 0, SN=0;
-    for(Int_t jTracks = 0; jTracks<fMCStack->GetEntries(); jTracks++) {
-      AliAODMCParticle *MCpart = (AliAODMCParticle*)fMCStack->At(jTracks);
+    // generated (physical primaries)xw
+    
+    for(Int_t jTracks = 0; jTracks<fStack->GetEntriesFast(); jTracks++) {
+      AliAODMCParticle *MCpart = (AliAODMCParticle*)fStack->At(jTracks);
       if (!MCpart) {
         printf("ERROR: Could not receive MC track %d\n", jTracks);
         continue;
       }
-      
-      // select charged primaries
-      if ( MCpart->Charge() == 0. || !MCpart->IsPhysicalPrimary() ) continue;
       // kinematic cuts
       if ( MCpart->Pt() < 0.2 || MCpart->Pt() > 8. || TMath::Abs(MCpart->Eta()) > .8 ) continue;
-      
-      MCPrims++;
+      // select charged primaries
+      if ( MCpart->Charge() == 0. || !MCpart->IsPhysicalPrimary()) continue;
       
       fPtSpecGen[CenBin]->Fill(MCpart->Pt());
     }
     
-    fGenHeader = McEvent->GenEventHeader();
-    if(fGenHeader) fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
+//    fGenHeader = McEvent->GenEventHeader();
+//    if(fGenHeader) fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
     //  printf("#reconstructed : %d (rejected from cuts %d), #MC primaries : %d (rejected from cuts %d) \n",AODPOIs,AODbads,MCPrims,MCSecos);
     fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
-    fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
-    if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+    fFlowEvent->SetCentrality(centr);
+//    if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
     fFlowEvent->SetRun(aod->GetRunNumber());
     //  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
   }
@@ -1081,198 +1065,199 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  //********************************************************************************************************************************
  
- if(fAnalysisType == "MCkine") return;
- 
- // PHYSICS SELECTION
- AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
- AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
- 
- if(hdr->IsEventSelected() && AliVEvent::kAny) {
-  
-  AliCentrality* centrality = aod->GetCentrality();
-  Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
-  
-  AliAODTracklets *trackl = aod->GetTracklets();
-  Int_t nTracklets = trackl->GetNumberOfTracklets();
-  
-  AliAODVZERO *vzeroAOD = aod->GetVZEROData();
-  Float_t multV0A = vzeroAOD->GetMTotV0A();
-  Float_t multV0C = vzeroAOD->GetMTotV0C();
-  
-  AliAODZDC *aodZDC = aod->GetZDCData();
-  
-  Float_t energyZNC  = (Float_t) (aodZDC->GetZNCEnergy());
-  Float_t energyZPC  = (Float_t) (aodZDC->GetZPCEnergy());
-  Float_t energyZNA  = (Float_t) (aodZDC->GetZNAEnergy());
-  Float_t energyZPA  = (Float_t) (aodZDC->GetZPAEnergy());
-  Float_t energyZEM1 = (Float_t) (aodZDC->GetZEM1Energy());
-  Float_t energyZEM2 = (Float_t) (aodZDC->GetZEM2Energy());
-  
-  const Double_t * towZNC = aodZDC->GetZNCTowerEnergy();
-  const Double_t * towZPC = aodZDC->GetZPCTowerEnergy();
-  const Double_t * towZNA = aodZDC->GetZNATowerEnergy();
-  const Double_t * towZPA = aodZDC->GetZPATowerEnergy();
-  //
-  const Double_t * towZNClg = aodZDC->GetZNCTowerEnergyLR();
-  const Double_t * towZNAlg = aodZDC->GetZNATowerEnergyLR();
-  //
-  Double_t towZPClg[5], towZPAlg[5]={0.};
-  for(Int_t it=0; it<5; it++){
-   towZPClg[it] = 8*towZPC[it];
-   towZPAlg[it] = 8*towZNA[it];
+  if(fAnalysisType == "AOD" || fAnalysisType == "AUTOMATIC") {
+    
+    // PHYSICS SELECTION
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
+    
+    if(hdr->IsEventSelected() && AliVEvent::kAny) {
+      
+      AliCentrality* centrality = aod->GetCentrality();
+      Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+      
+      AliAODTracklets *trackl = aod->GetTracklets();
+      Int_t nTracklets = trackl->GetNumberOfTracklets();
+      
+      AliAODVZERO *vzeroAOD = aod->GetVZEROData();
+      Float_t multV0A = vzeroAOD->GetMTotV0A();
+      Float_t multV0C = vzeroAOD->GetMTotV0C();
+      
+      AliAODZDC *aodZDC = aod->GetZDCData();
+      
+      Float_t energyZNC  = (Float_t) (aodZDC->GetZNCEnergy());
+      Float_t energyZPC  = (Float_t) (aodZDC->GetZPCEnergy());
+      Float_t energyZNA  = (Float_t) (aodZDC->GetZNAEnergy());
+      Float_t energyZPA  = (Float_t) (aodZDC->GetZPAEnergy());
+      Float_t energyZEM1 = (Float_t) (aodZDC->GetZEM1Energy());
+      Float_t energyZEM2 = (Float_t) (aodZDC->GetZEM2Energy());
+      
+      const Double_t * towZNC = aodZDC->GetZNCTowerEnergy();
+      const Double_t * towZPC = aodZDC->GetZPCTowerEnergy();
+      const Double_t * towZNA = aodZDC->GetZNATowerEnergy();
+      const Double_t * towZPA = aodZDC->GetZPATowerEnergy();
+      //
+      const Double_t * towZNClg = aodZDC->GetZNCTowerEnergyLR();
+      const Double_t * towZNAlg = aodZDC->GetZNATowerEnergyLR();
+      //
+      Double_t towZPClg[5], towZPAlg[5]={0.};
+      for(Int_t it=0; it<5; it++){
+        towZPClg[it] = 8*towZPC[it];
+        towZPAlg[it] = 8*towZNA[it];
+      }
+      
+      // Get centroid from ZDCs *******************************************************
+      
+      Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
+      Float_t zncEnergy=0., znaEnergy=0.;
+      for(Int_t i=0; i<5; i++){
+        zncEnergy += towZNC[i];
+        znaEnergy += towZNA[i];
+      }
+      fFlowEvent->SetZNCEnergy(towZNC[0]);
+      fFlowEvent->SetZNAEnergy(towZNA[0]);
+      
+      if (fUseMCCen) {
+        if(aod->GetRunNumber() < 209122) aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+        else                             aodZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
+      } else {
+        const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+        const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+        Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
+        Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
+        for(Int_t i=0; i<4; i++) {
+          if(towZNC[i+1]>0.) {
+            wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
+            numXZNC += x[i]*wZNC;
+            numYZNC += y[i]*wZNC;
+            denZNC += wZNC;
+          }
+          if(towZNA[i+1]>0.) {
+            wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
+            numXZNA += x[i]*wZNA;
+            numYZNA += y[i]*wZNA;
+            denZNA += wZNA;
+          }
+        }
+        if(denZNC!=0) {
+          xyZNC[0] = numXZNC/denZNC;
+          xyZNC[1] = numYZNC/denZNC;
+        }
+        else{
+          xyZNC[0] = xyZNC[1] = 999.;
+          zncEnergy = 0.;
+        }
+        if(denZNA!=0) {
+          xyZNA[0] = numXZNA/denZNA;
+          xyZNA[1] = numYZNA/denZNA;
+        }
+        else{
+          xyZNA[0] = xyZNA[1] = 999.;
+          znaEnergy = 0.;
+        }
+      }
+      
+      Float_t MulA=0., MulC=0.;
+      for(Int_t i=0; i<4; i++) {
+        if(towZNC[i+1]>0.) {
+          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha);
+        }
+        if(towZNA[i+1]>0.) {
+          MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha);
+        }
+      }
+      
+      fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
+      fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
+      fFlowEvent->SetZDC2Qsub(xyZNC,MulC,xyZNA,MulA);
+      
+      Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
+      for(Int_t c=0;c<fCRCnRun;c++) {
+        if(fRunList[c]==RunNum) RunBin=bin;
+        else bin++;
+      }
+      if(fDataSet.EqualTo("MCkine")) RunBin=0;
+      if(RunBin!=-1) {
+        for(Int_t i=0; i<4; i++) {
+          if(towZNC[i+1]>0.) {
+            fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
+          }
+          if(towZNA[i+1]>0.) {
+            fhnTowerGain[RunBin][i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], 0.395));
+          }
+        }
+      }
+      
+      // ******************************************************************************
+      
+      Float_t tdcSum = aodZDC->GetZDCTimeSum();
+      Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
+      fhDebunch->Fill(tdcDiff, tdcSum);
+      
+      for(int i=0; i<5; i++){
+        fhZNCPM[i]->Fill(towZNC[i]);
+        fhZNCPMlg[i]->Fill(towZNClg[i]);
+        if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
+        fhZNCpmcLR->Fill(towZNClg[0]/1000.);
+      }
+      fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
+      for(int i=0; i<5; i++){
+        fhZPCPM[i]->Fill(towZPC[i]);
+        fhZPCPMlg[i]->Fill(towZPClg[i]);
+        if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
+        fhZPCpmcLR->Fill(towZPClg[0]/1000.);
+      }
+      fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
+      for(int i=0; i<5; i++){
+        fhZNAPM[i]->Fill(towZNA[i]);
+        fhZNAPMlg[i]->Fill(towZNAlg[i]);
+        if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
+        fhZNApmcLR->Fill(towZNAlg[0]/1000.);
+      }
+      fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
+      for(int i=0; i<5; i++){
+        fhZPAPM[i]->Fill(towZPA[i]);
+        fhZPAPMlg[i]->Fill(towZPAlg[i]);
+        if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
+        fhZPApmcLR->Fill(towZPAlg[0]/1000.);
+      }
+      fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
+      fhZEM[0]->Fill(energyZEM1);
+      fhZEM[1]->Fill(energyZEM2);
+      
+      fhZNCvsZNA->Fill(energyZNA, energyZNC);
+      fhZPCvsZPA->Fill(energyZPA, energyZPC);
+      fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
+      fhZNCvsZPC->Fill(energyZPC, energyZNC);
+      fhZNAvsZPA->Fill(energyZPA, energyZNA);
+      fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
+      fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
+      fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
+      fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
+      
+      Double_t asymmetry = -999.;
+      if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
+      fhAsymm->Fill(asymmetry);
+      fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
+      fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
+      
+      fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
+      fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
+      fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
+      fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
+      
+      fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1380.);
+      fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1380.);
+      fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1380.);
+      fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1380.);
+      
+    } // PHYSICS SELECTION
+    
   }
-  
-  // Get centroid from ZDCs *******************************************************
-  
-  Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
-  Float_t zncEnergy=0., znaEnergy=0.;
-  for(Int_t i=0; i<5; i++){
-   zncEnergy += towZNC[i];
-   znaEnergy += towZNA[i];
-  }
-   fFlowEvent->SetZNCEnergy(towZNC[0]);
-   fFlowEvent->SetZNAEnergy(towZNA[0]);
-  
-  if (fUseMCCen) {
-    if(aod->GetRunNumber() < 209122) aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
-    else                             aodZDC->GetZNCentroidInPbPb(2510., xyZNC, xyZNA);
-  } else {
-   const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-   const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-   Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
-   Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
-   for(Int_t i=0; i<4; i++) {
-    if(towZNC[i+1]>0.) {
-     wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
-     numXZNC += x[i]*wZNC;
-     numYZNC += y[i]*wZNC;
-     denZNC += wZNC;
-    }
-    if(towZNA[i+1]>0.) {
-     wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
-     numXZNA += x[i]*wZNA;
-     numYZNA += y[i]*wZNA;
-     denZNA += wZNA;
-    }
-   }
-   if(denZNC!=0) {
-    xyZNC[0] = numXZNC/denZNC;
-    xyZNC[1] = numYZNC/denZNC;
-   }
-   else{
-    xyZNC[0] = xyZNC[1] = 999.;
-    zncEnergy = 0.;
-   }
-   if(denZNA!=0) {
-    xyZNA[0] = numXZNA/denZNA;
-    xyZNA[1] = numYZNA/denZNA;
-   }
-   else{
-    xyZNA[0] = xyZNA[1] = 999.;
-    znaEnergy = 0.;
-   }
-  }
-   
-   Float_t MulA=0., MulC=0.;
-   for(Int_t i=0; i<4; i++) {
-     if(towZNC[i+1]>0.) {
-       MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha);
-     }
-     if(towZNA[i+1]>0.) {
-       MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha);
-     }
-   }
-  
-  fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
-  fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-  fFlowEvent->SetZDC2Qsub(xyZNC,MulC,xyZNA,MulA);
-  
-  Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
-  for(Int_t c=0;c<fCRCnRun;c++) {
-   if(fRunList[c]==RunNum) RunBin=bin;
-   else bin++;
-  }
-  if(fDataSet.EqualTo("MCkine")) RunBin=0;
-  if(RunBin!=-1) {
-   for(Int_t i=0; i<4; i++) {
-    if(towZNC[i+1]>0.) {
-     fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
-    }
-    if(towZNA[i+1]>0.) {
-     fhnTowerGain[RunBin][i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], 0.395));
-    }
-   }
-  }
-  
-  // ******************************************************************************
-  
-  Float_t tdcSum = aodZDC->GetZDCTimeSum();
-  Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
-  fhDebunch->Fill(tdcDiff, tdcSum);
-  
-  for(int i=0; i<5; i++){
-   fhZNCPM[i]->Fill(towZNC[i]);
-   fhZNCPMlg[i]->Fill(towZNClg[i]);
-   if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
-   fhZNCpmcLR->Fill(towZNClg[0]/1000.);
-  }
-  fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
-  for(int i=0; i<5; i++){
-   fhZPCPM[i]->Fill(towZPC[i]);
-   fhZPCPMlg[i]->Fill(towZPClg[i]);
-   if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
-   fhZPCpmcLR->Fill(towZPClg[0]/1000.);
-  }
-  fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
-  for(int i=0; i<5; i++){
-   fhZNAPM[i]->Fill(towZNA[i]);
-   fhZNAPMlg[i]->Fill(towZNAlg[i]);
-   if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
-   fhZNApmcLR->Fill(towZNAlg[0]/1000.);
-  }
-  fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
-  for(int i=0; i<5; i++){
-   fhZPAPM[i]->Fill(towZPA[i]);
-   fhZPAPMlg[i]->Fill(towZPAlg[i]);
-   if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
-   fhZPApmcLR->Fill(towZPAlg[0]/1000.);
-  }
-  fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
-  fhZEM[0]->Fill(energyZEM1);
-  fhZEM[1]->Fill(energyZEM2);
-  
-  fhZNCvsZNA->Fill(energyZNA, energyZNC);
-  fhZPCvsZPA->Fill(energyZPA, energyZPC);
-  fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
-  fhZNCvsZPC->Fill(energyZPC, energyZNC);
-  fhZNAvsZPA->Fill(energyZPA, energyZNA);
-  fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
-  fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
-  fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
-  fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
-  
-  Double_t asymmetry = -999.;
-  if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
-  fhAsymm->Fill(asymmetry);
-  fhZNAvsAsymm->Fill(asymmetry, energyZNA/1000.);
-  fhZNCvsAsymm->Fill(asymmetry, energyZNC/1000.);
-  
-  fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
-  fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
-  fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
-  fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
-  
-  fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1380.);
-  fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1380.);
-  fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1380.);
-  fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1380.);
-  
- } // PHYSICS SELECTION
- 
+
  PostData(1, fFlowEvent);
  
  PostData(2, fOutput);
- 
 }
 
 //________________________________________________________________________
