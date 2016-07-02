@@ -81,6 +81,7 @@ private:
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
     AliAODMCParticle 	*fMCparticle;//! MC particle
+    AliAODMCParticle 	*fMCparticleAss;//! MC particle
     TClonesArray 	*fMCarray;//! MC array
  
     AliMultSelection *fMultSelection;
