@@ -85,6 +85,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
+  fMCparticleAss(0),
   fMCarray(0),
   fMultSelection(0),
   fTriggersInfo(0),
@@ -167,6 +168,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fTracks_tender(0),
   fCaloClusters_tender(0),
   fMCparticle(0),
+  fMCparticleAss(0),
   fMCarray(0),
   fMultSelection(0),
   fTriggersInfo(0),
@@ -917,7 +919,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         else
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
-          ElectronAway(iTracks,track); //e+e-
+          if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
@@ -1093,6 +1095,11 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
     if(ptAsso <1.5) continue;
     if(aAssotrack->Eta()<-0.6 || aAssotrack->Eta()>0.6) continue;
     if(nsigma < 0 || nsigma > 3) continue;
+    int ilabelAss = aAssotrack->GetLabel();
+    if(ilabelAss<1)continue;
+    fMCparticleAss = (AliAODMCParticle*) fMCarray->At(ilabelAss);
+    Int_t pdgAss = fMCparticleAss->GetPdgCode();   
+    if(abs(pdgAss)!=11)continue;
     Double_t dphie_tmp = aAssotrack->Phi() - track->Phi();
     Double_t dphie = atan2(sin(dphie_tmp),cos(dphie_tmp));
     if(track->Pt()>2.5)fHistHFEcorr->Fill(dphie);
