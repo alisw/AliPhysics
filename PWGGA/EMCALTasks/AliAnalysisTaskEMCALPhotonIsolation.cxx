@@ -890,7 +890,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       }
     }
       // AliError(Form("EMCAL L1 trigger for MC simulation anchored to LHC13 data"));
-    if(!MCSimTrigger(fVevent,fTriggerLevel1)) return kFALSE;
+    if(!MCSimTrigger(fVevent,fTriggerLevel1) && fAnalysispPb) return kFALSE;
   }
   
     //Fill Vertex Z histogram

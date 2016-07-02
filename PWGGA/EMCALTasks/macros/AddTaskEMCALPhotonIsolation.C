@@ -82,7 +82,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetExtraIsoCuts(iExtraIsoCuts);
   task->SetAnalysispPb(i_pPb);
   task->SetNLMCut(bNLMCut,NLMCut);
-
+  
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   
   TString name(Form("PhotonIsolation_%s_%s", ntracks, nclusters));
@@ -103,10 +103,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     Printf("Error with Hybrids!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
-  if(!bIsMC){
-    tracksForAnalysis->SetTrackCutsPeriod(periodstr);
-    tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
-  }
+  tracksForAnalysis->SetTrackCutsPeriod(periodstr);
+  tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
   
   Printf("Name of Tracks for matching: %s \n Name for Tracks for Isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
   
