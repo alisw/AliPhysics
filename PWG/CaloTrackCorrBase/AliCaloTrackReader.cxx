@@ -694,7 +694,7 @@ TObjString *  AliCaloTrackReader::GetListOfParameters()
     parList+=onePar ;
   }
   
-  if(fComparePtHardAndClusterPt)
+  if(fComparePtHardAndJetPt)
   {
     snprintf(onePar,buffersize,"jet pt / pt hard < %2.1f; ",fPtHardAndJetPtFactor);
     parList+=onePar ;
