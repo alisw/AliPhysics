@@ -3007,7 +3007,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use Triggers selected in SE base class %d; If not what Trigger Mask? %d; MB Trigger Mask for mixed %d \n",
          fEventTriggerAtSE, fEventTriggerMask,fMixEventTriggerMask);
   
-  if(fComparePtHardAndClusterPt)
+  if(fComparePtHardAndJetPt)
     printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
   
   if(fComparePtHardAndClusterPt)
