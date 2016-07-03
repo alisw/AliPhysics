@@ -29,6 +29,7 @@ class AliCDBEntry;
 class TGraph;
 class TGraphErrors;
 class AliSplineFit;
+class TH2;
 
 class AliTPCPreprocessorOffline:public TNamed { 
 public:
@@ -72,6 +73,7 @@ public:
   void SetTimeGainRange(Double_t minGain=2.0, Double_t maxGain = 3.0) 
        {fMinGain = minGain; fMaxGain = maxGain;};
   Bool_t ValidateTimeGain();
+  void SetdEdxRangeDipAngle(Double_t min, Double_t max) { fdEdxMinDipAngle=min; fdEdxMaxDipAngle=max; }
 
   void SetGainCalibrationType(EGainCalibType type) { fGainCalibrationType=type;}
   static EGainCalibType GetGainCalibrationTypeFromString(const TString& type);
@@ -127,6 +129,8 @@ public:
   void SwitchOnValidation(Bool_t val = kTRUE) {fSwitchOnValidation = val;} 
   Bool_t IsSwitchOnValidation() { return fSwitchOnValidation; } 
 
+  static void GetStatType(const TH2* h, Double_t& fraction, Int_t& type, const Int_t minStat=500);
+
   //
   Int_t GetStatus();
   enum ECalibStatusBit { kCalibFailedTimeDrift =0x0001,
@@ -162,6 +166,8 @@ private:
   Bool_t fSwitchOnValidation;  // flag to switch on validation of OCDB parameters
   Float_t fMinGain;   	       // min gain
   Float_t fMaxGain;            // max gain
+  Float_t fdEdxMinDipAngle;    // minimum dE/dx for dip angle extraction, defines fit range
+  Float_t fdEdxMaxDipAngle;    // maximum dE/dx for dip angle extraction, defines fit range
   Float_t fMaxVdriftCorr;      // max v-drift correction
   Int_t fNtracksVdrift;           // n tracks used for v drift determination
   Int_t fMinTracksVdrift;         // minimum numner of tracks for v drift determination
@@ -176,6 +182,7 @@ private:
   Bool_t NormaliseYToMean(TGraphErrors *graph);
   Bool_t NormaliseYToWeightedMeandEdx(TGraphErrors *graph);
   Bool_t NormaliseYToTruncateddEdx(TGraphErrors *graph);
+
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
   AliTPCPreprocessorOffline(const AliTPCPreprocessorOffline&); // not implemented

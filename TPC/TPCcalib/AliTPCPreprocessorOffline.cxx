@@ -126,6 +126,8 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fSwitchOnValidation(kFALSE), // flag to switch on validation of OCDB parameters
   fMinGain(1.5),
   fMaxGain(4.5),
+  fdEdxMinDipAngle(-1),
+  fdEdxMaxDipAngle(-1),
   fMaxVdriftCorr(0.03),
   fNtracksVdrift(0),
   fMinTracksVdrift(0),
@@ -516,6 +518,8 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
       splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
       fGainArrayCombined->AddAt(splineFit ,0);
       fGainArrayCombined->AddAt(grCombined,2);
+      grCombined->SetMarkerColor(kMagenta);
+      grCombined->SetLineColor(kMagenta);
     } else {
       AliError("Gain vs. time for beam cannot be processed");
       error=kTRUE;
@@ -536,6 +540,8 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
       splineFit = AliTPCcalibTimeGain::MakeSplineFit(grCombined);
       fGainArrayCombined->AddAt(splineFit ,1);
       fGainArrayCombined->AddAt(grCombined,3);
+      grCombined->SetMarkerColor(kMagenta);
+      grCombined->SetLineColor(kMagenta);
     } else {
       AliError("Gain vs. time from cosmics cannot be processed");
       error=kTRUE;
@@ -601,6 +607,8 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
     // --- combine graphs
     grCombined = CombineGraphs(grOCDB, grThis);
     fGainArrayCombined->AddLast(grCombined);
+    grCombined->SetMarkerColor(kMagenta);
+    grCombined->SetLineColor(kMagenta);
 
     // --- normalize pad region gain
     if ( TString(graphObj->GetName()).Contains("PADREGIONGAIN") ) {
@@ -616,7 +624,7 @@ Bool_t AliTPCPreprocessorOffline::ProduceCombinedGainCalibration()
     if ( TString(graphObj->GetName()).Contains("DIPANGLE") ) {
       NormaliseYToMean(grCombined);
       TF1 * fun= new TF1("","1++abs(x)++abs(x*x)");
-      grCombined->Fit(fun,"w","rob=0.9",-0.8,0.8);
+      grCombined->Fit(fun,"wQ","rob=0.9",-0.8,0.8);
       TString funName(graphObj->GetName());
       funName.ReplaceAll("TGRAPHERRORS","TF1");
       fun->SetNameTitle(funName,funName);
@@ -1744,8 +1752,17 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 
 //   histQmax->GetXaxis()->SetRange(1,3);
 //   histQtot->GetXaxis()->SetRange(1,3);
-  TGraphErrors *fitPadRegionQmax = AliTPCcalibBase::FitSlices(histQmax,200,1,.15,.85);
-  TGraphErrors *fitPadRegionQtot = AliTPCcalibBase::FitSlices(histQtot,200,1,.15,.85);
+//   TGraphErrors *fitPadRegionQmax = AliTPCcalibBase::FitSlices(histQmax,200,1,.15,.85);
+//   TGraphErrors *fitPadRegionQtot = AliTPCcalibBase::FitSlices(histQtot,200,1,.15,.85);
+
+  // new more robust fitting procedure
+  Double_t fraction=0.9;
+  Int_t    type    =6;
+  GetStatType(histQmax, fraction, type);
+
+  TGraphErrors *fitPadRegionQmax = TStatToolkit::MakeStat1D(histQmax, 0, fraction, type, 20, kBlack);
+  TGraphErrors *fitPadRegionQtot = TStatToolkit::MakeStat1D(histQtot, 0, fraction, type, 20, kBlack);
+
   if (fitPadRegionQmax->GetN()<3) {
     AliError("Pad region calibration for Qmax failed. Using default values.");
     for (Int_t ireg=0; ireg<3; ++ireg) fitPadRegionQmax->SetPoint(ireg, Double_t(ireg), 1.);
@@ -1853,19 +1870,35 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
     histQtot = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
     histQtot->SetName("fGainMult_GetHistPadEqual_00");
   }
-  //  
-  
+  //
   if (histQmax->GetEntries()<=kMinStat || histQtot->GetEntries()<=kMinStat) {
     AliError(Form("hisQtot.GetEntries()=%f",histQtot->GetEntries()));
     AliError(Form("hisQmax.GetEntries()=%f",histQmax->GetEntries()));
     return kFALSE;
   }
 
-//   TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
-//   TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
-  TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
-  TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
+  // ===| set range for fitting purposes if requested |===
+  if (fdEdxMaxDipAngle>0 && fdEdxMinDipAngle>0) {
+    histQmax->GetYaxis()->SetRangeUser(fdEdxMinDipAngle, fdEdxMaxDipAngle);
+    histQtot->GetYaxis()->SetRangeUser(fdEdxMinDipAngle, fdEdxMaxDipAngle);
+  }
 
+  //   TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+  //   TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.8,4,kMarkers[padRegion],kColors[padRegion]);
+  //   TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
+  //   TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0,0.9,6,kMarkers[padRegion],kColors[padRegion]);
+  Double_t fraction=0.9;
+  Int_t    type    =6;
+  GetStatType(histQmax, fraction, type);
+
+  TGraphErrors * graphMax = TStatToolkit::MakeStat1D( histQmax,0, fraction, type, kMarkers[padRegion],kColors[padRegion]);
+  TGraphErrors * graphTot = TStatToolkit::MakeStat1D( histQtot,0, fraction, type, kMarkers[padRegion],kColors[padRegion]);
+
+  // ===| unzoom after fitting |===
+  if (fdEdxMaxDipAngle>0 && fdEdxMinDipAngle>0) {
+    histQmax->GetYaxis()->SetRange(0,-1);
+    histQtot->GetYaxis()->SetRange(0,-1);
+  }
   //
   const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
   //
@@ -1927,8 +1960,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   //
   TF1 * funMax= new TF1("","1++abs(x)++abs(x*x)");
   TF1 * funTot= new TF1("","1++abs(x)++abs(x*x)");
-  graphMax->Fit(funMax,"w","rob=0.9",-0.8,0.8);
-  graphTot->Fit(funTot,"w","rob=0.9",-0.8,0.8);
+  graphMax->Fit(funMax,"wQ","rob=0.9",-0.8,0.8);
+  graphTot->Fit(funTot,"wQ","rob=0.9",-0.8,0.8);
   funMax->SetNameTitle(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
 			Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
   funTot->SetNameTitle(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
@@ -1961,8 +1994,11 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   histMultMax->RebinX(4);
   histMultTot->RebinX(4);
   //
+  /*
+  // Old method. Simple gaus fit.
   TObjArray arrMax;
   TObjArray arrTot;
+
   TF1 fitGaus("fitGaus","gaus(0)",histMultMax->GetYaxis()->GetXmin(),histMultMax->GetYaxis()->GetXmax());
   fitGaus.SetParameters(histMultMax->GetEntries()/10., histMultMax->GetMean(2), TMath::Sqrt(TMath::Abs(histMultMax->GetMean(2))));
   histMultMax->FitSlicesY(&fitGaus,0,-1,1,"QNRB",&arrMax);
@@ -1974,6 +2010,28 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   Float_t meanMult = histMultMax->GetMean();
   const Double_t qMaxCont=meanMax->GetBinContent(meanMax->FindBin(meanMult));
   const Double_t qTotCont=meanTot->GetBinContent(meanTot->FindBin(meanMult));
+  */
+
+  // more robust method, depending on statistics:
+  //   fit around maximum of the distribution or robust bin median
+  Double_t fraction=0.9;
+  Int_t    type    =6;
+  GetStatType(histMultMax, fraction, type);
+  TGraphErrors *fitMultMax = TStatToolkit::MakeStat1D(histMultMax, 0, fraction, type ,20,kBlack);
+  TGraphErrors *fitMultTot = TStatToolkit::MakeStat1D(histMultTot, 0, fraction, type ,20,kBlack);
+//   fitMultMax->Print();
+
+  const Double_t meanMult = fitMultMax->GetMean(1);
+
+  const Int_t npointsMax=fitMultMax->GetN();
+  const Int_t npointsTot=fitMultTot->GetN();
+  const Int_t pointMax = TMath::BinarySearch(npointsMax, fitMultMax->GetX(), meanMult);
+  const Int_t pointTot = TMath::BinarySearch(npointsTot, fitMultTot->GetX(), meanMult);
+
+  const Double_t qMaxCont = (pointMax>=0 && pointMax<npointsMax)? fitMultMax->GetY()[pointMax] : 0.;
+  const Double_t qTotCont = (pointTot>=0 && pointTot<npointsTot)? fitMultTot->GetY()[pointTot] : 0.;
+
+//   printf("%.2f %d %.2f\n", meanMult, pointMax, qMaxCont);
 
   // ---| QA histograms |---
   if (fArrQAhist) {
@@ -2004,17 +2062,27 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
 
   // ---| scale to mean multiplicity |---
   if(qMaxCont) {
-    meanMax->Scale(1./qMaxCont);
+//     meanMax->Scale(1./qMaxCont);
+    for (Int_t ipoint=0; ipoint<npointsMax; ++ipoint) {
+      fitMultMax->GetY() [ipoint]/=qMaxCont;
+      fitMultMax->GetEY()[ipoint]/=qMaxCont;
+    }
   }
   else {
    return kFALSE;
   }
   if(qTotCont) {
-    meanTot->Scale(1./qTotCont);
+//     meanTot->Scale(1./qTotCont);
+    for (Int_t ipoint=0; ipoint<npointsTot; ++ipoint) {
+      fitMultTot->GetY() [ipoint]/=qTotCont;
+      fitMultTot->GetEY()[ipoint]/=qTotCont;
+    }
   }
   else {
    return kFALSE;
   }
+
+  /*
   Float_t xMultMax[50];
   Float_t yMultMax[50];
   Float_t yMultErrMax[50];
@@ -2033,11 +2101,24 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
     yMultErrMax[nCountMax] = meanMax->GetBinError(iBin);
     nCountMax++;
   }
-  //
   if (nCountMax < 10) return kFALSE;
   TGraphErrors * fitMultMax = new TGraphErrors(nCountMax, xMultMax, yMultMax, 0, yMultErrMax);
+  */
+
+  // remove points with bad resolution
+  for (Int_t ipoint=npointsMax; ipoint--;) {
+    const Double_t y =fitMultMax->GetY() [ipoint];
+    const Double_t ey=fitMultMax->GetEY()[ipoint];
+
+    if (y<0.7 || y>1.3 || ey/y >0.01) fitMultMax->RemovePoint(ipoint);
+  }
+
+  //
   fitMultMax->SetName("TGRAPHERRORS_MEANQMAX_MULTIPLICITYDEPENDENCE_BEAM_ALL");
   //
+  if (fitMultMax->GetN()<10) return kFALSE;
+
+  /*
   Int_t nCountTot = 0;
   for(Int_t iBin = 1; iBin < meanTot->GetXaxis()->GetNbins(); iBin++) {
     Float_t yValTot = meanTot->GetBinContent(iBin);
@@ -2049,10 +2130,21 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
     yMultErrTot[nCountTot] = meanTot->GetBinError(iBin);
     nCountTot++;
   }
-  //
   if (nCountTot < 10) return kFALSE;
   TGraphErrors *  fitMultTot = new TGraphErrors(nCountTot, xMultTot, yMultTot, 0, yMultErrTot);
+  */
+
+  for (Int_t ipoint=npointsTot; ipoint--;) {
+    const Double_t y =fitMultTot->GetY() [ipoint];
+    const Double_t ey=fitMultTot->GetEY()[ipoint];
+
+    if (y<0.7 || y>1.3 || ey/y >0.01) fitMultTot->RemovePoint(ipoint);
+  }
+
+  //
   fitMultTot->SetName("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+  //
+  if (fitMultTot->GetN()<10) return kFALSE;
   //
   fGainArray->AddLast(fitMultMax);
   fGainArray->AddLast(fitMultTot);
@@ -2113,11 +2205,45 @@ void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRu
     else {
       AliError("No residual storage set, but calibration type is combined + residual QA");
     }
+    // ===| add residual graph to the full calibration object |=================
+    // ---| first remove unncessary objects to save space     |-----------------
+    TObjArray steeringObjectNames;
+    steeringObjectNames.Add(new TNamed("GainSlopesHV","1"));
+    steeringObjectNames.Add(new TNamed("GainSlopesPT","1"));
+    steeringObjectNames.Add(new TNamed("AliTPCClusterParam","1"));
+    steeringObjectNames.Add(new TNamed("TObjArray","1"));
 
-    // write the combined calibration after the residual calibration to make sure this is the
+    TObjArray arrTemp;
+
+    TArrayI positions(steeringObjectNames.GetEntriesFast());
+
+    for (Int_t iobj=0; iobj<steeringObjectNames.GetEntriesFast(); ++iobj) {
+      TObject *o=fGainArray->FindObject(steeringObjectNames.At(iobj)->GetName());
+      if (!o) continue;
+      const Int_t position=fGainArray->IndexOf(o);
+      arrTemp.AddAt(fGainArray->RemoveAt(position), position);
+    }
+
+    // ---| change name to idendity the object |--------------------------------
+    TString name=fGainArray->GetName();
+    fGainArray->SetName("residual");
+
+    fGainArrayCombined->AddLast(fGainArray);
+
+    // ===| write the combined calibration after the residual calibration to make sure this is the |===
     //   latest object in case fullStorage and residualStorage are identical
     AliInfoF("Writing combined gain calibration object to the full storage: %s", fullStorage->GetURI().Data());
     fullStorage->Put(fGainArrayCombined, id1, metaData);
+
+    // ---| remove the residual array again and add back objects |--------------
+    fGainArray->SetName(name);
+    fGainArrayCombined->RemoveLast();
+
+    for (Int_t iobj=0; iobj<arrTemp.GetEntriesFast(); ++iobj) {
+      TObject *o=arrTemp.At(iobj);
+      if (!o) continue;
+      fGainArray->AddAt(o, iobj);
+    }
   }
   else {
     AliFatalF("Unsupported gain calibration type: %d", Int_t(fGainCalibrationType));
@@ -2660,11 +2786,22 @@ void AliTPCPreprocessorOffline::MakeQAPlotsGain(TString outputDirectory/*=""*/, 
 
     h->Draw("colz");
 
-    // ---| check for derived histogram and draw it on top |---
     histName.ReplaceAll("_QA","");
-    TObject *o = fGainArray->FindObject(histName);
-    if (o) {
-      o->Draw("same");
+
+    // ---| check if we have a combined calibration and draw it on top |---
+    if (fGainArrayCombined) {
+      TObject *o = fGainArrayCombined->FindObject(histName);
+      if (o) {
+        o->Draw("same");
+      }
+    }
+
+    // ---| check for derived histogram and draw it on top |---
+    {
+      TObject *o = fGainArray->FindObject(histName);
+      if (o) {
+        o->Draw("same");
+      }
     }
 
     // ---| save output |---
@@ -2733,6 +2870,27 @@ Bool_t AliTPCPreprocessorOffline::NormaliseYToTruncateddEdx(TGraphErrors *graph)
   }
 
   ScaleY(graph, 1./truncationFactor);
+}
+
+void AliTPCPreprocessorOffline::GetStatType(const TH2* h, Double_t& fraction, Int_t& type, const Int_t minStat)
+{
+
+  const Int_t    nBinsX       =h->GetNbinsX();
+  const Int_t    nBinsY       =h->GetNbinsY();
+
+  // default is robust bin median with 90% of the statistics
+  fraction=0.9;
+  type    =6;
+
+  for (Int_t ibin=0; ibin<nBinsX; ++ibin) {
+    const Double_t stat=h->Integral(ibin+1, ibin+1, 1, nBinsY);
+    if (stat>minStat) {
+      fraction=0.05;
+      type    =7;
+      break;
+    }
+  }
+
 }
 
 /*

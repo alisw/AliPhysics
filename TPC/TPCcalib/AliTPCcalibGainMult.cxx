@@ -69,6 +69,7 @@ Send comments etc. to: A.Kalweit@gsi.de, marian.ivanov@cern.ch
 #include "AliTPCROC.h"
 #include "AliTPCreco.h"
 #include "TStatToolkit.h"
+#include "AliTPCPreprocessorOffline.h"
 
 ClassImp(AliTPCcalibGainMult)
 
@@ -2038,7 +2039,12 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
   //
   TH2D * histGainSec = fHistGainSector->Projection(0,1);
 //   TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,4,markers[padRegion],colors[padRegion]);
-  TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.9,6,markers[padRegion],colors[padRegion]);
+  Double_t fraction=0.9;
+  Int_t    type    =6;
+//   printf("================== %.2f, %d \n", fraction, type);
+//   AliTPCPreprocessorffline::GetStatType(histGainSec, fraction, type);
+
+  TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, fraction, type, markers[padRegion],colors[padRegion]);
   const char* names[3]={"SHORT","MEDIUM","LONG"};
   const Double_t median = TMath::Median(gr->GetN(),gr->GetY());
 
