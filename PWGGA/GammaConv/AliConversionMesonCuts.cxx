@@ -1324,6 +1324,12 @@ Float_t AliConversionMesonCuts::FunctionMaxMassCut(Float_t e){
     case 7: // maximum mass
       return 10000.;
       break;
+    case 8: // maximum mass
+      return 10000.;
+      break;
+    case 9: // maximum mass
+      return 10000.;
+      break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<fSelectionWindowCut<<endl;
       return -1;
@@ -1503,6 +1509,12 @@ Float_t AliConversionMesonCuts::FunctionMinMassCut(Float_t e){
 
     case 7: // just exclude band at 0
       return 0.005+0.004*e;
+      break;
+    case 8: // just exclude band at 0 looser
+      return 0.004+0.004*e;
+      break;
+    case 9: // just exclude band at 0 tighter
+      return 0.006+0.004*e;
       break;
       
     default:
