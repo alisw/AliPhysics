@@ -529,7 +529,7 @@ else {
   for(Int_t i = 1; i <= 6; i++)
   fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
   fList->Add(fHistRefTracks);
-  if(fQACorrection){
+  if(!fRawType && fQACorrection){
      fHistQAPtBeforeCorrection=new TH1D("fHistQAPtBeforeCorrection","PtQA BeforeCorrection",200,0,10); 
      fHistQAPtBeforeCorrectionWithCentrality=new TH2D("fHistQAPtBeforeCorrectionWithCentrality","PtQA BeforeCorrection With Centrality",200,0,10,220,-5,105);
      fHistQAPtBeforeCorrectionPos=new TH1D("fHistQAPtBeforeCorrectionPos","PtQA BeforeCorrection for possitive ",200,0,10);
@@ -576,7 +576,7 @@ else {
    }
  }
   // For QA after and before correction 
-    if(fQACorrection){
+    if(!fRawType && fQACorrection){
      fList->Add(fHistQAPtBeforeCorrection);
      fList->Add(fHistQAPtBeforeCorrectionWithCentrality);
      fList->Add(fHistQAPtBeforeCorrectionPos);
@@ -1805,7 +1805,7 @@ case kPion_:
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
 
      // For QA after and before correction -----------------------------
-    if(fQACorrection){
+    if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -1913,7 +1913,7 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
 
      // For QA after and before correction -----------------------------
-    if(fQACorrection){
+    if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2022,7 +2022,7 @@ case kProton_:
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
 
      // For QA after and before correction -----------------------------
-     if(fQACorrection){
+     if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2131,7 +2131,7 @@ else {
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
 
      // For QA after and before correction -----------------------------
-    if(fQACorrection){
+    if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2358,7 +2358,7 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2421,7 +2421,7 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2484,7 +2484,7 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2550,7 +2550,7 @@ else {
 
         //=======================================correction
         Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -2866,7 +2866,6 @@ case kPion_:
 if(TMath::Abs(pdgCodeReco) == 211) {
 
 if(fRawType){
-
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
       fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
@@ -2887,6 +2886,7 @@ if(fRawType){
 else{
 
 if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fPIDNSigma)){
+
   // fill QA histograms
       fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
       fHistDCA->Fill(dcaZ,dcaXY);
@@ -2904,7 +2904,7 @@ if(( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -3029,7 +3029,7 @@ if((nsigmaKaon<nsigmaPion) && (nsigmaKaon <nsigmaProton) && (nsigmaKaon< fPIDNSi
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -3154,7 +3154,7 @@ if(( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProt
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
@@ -3258,7 +3258,7 @@ else{
 
       //=======================================correction
       Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);
- if(fQACorrection){
+ if(!fRawType && fQACorrection){
 
      fHistQAPtBeforeCorrection->Fill(vPt);
      fHistQAPtBeforeCorrectionWithCentrality->Fill(vPt,gCentrality);
