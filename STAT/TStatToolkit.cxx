@@ -409,6 +409,7 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
   //        4 - Gaus fit mean  - on LTM range
   //        5 - Gaus fit sigma - on LTM  range
   //        6 - Robust bin median
+  //        7 - Gaus fit around maxium of the distribution, fraction is +- relative range of full y scale
   // 
   TAxis * xaxis  = his->GetXaxis();
   Int_t   nbinx  = xaxis->GetNbins();
@@ -458,6 +459,14 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
     }
     else if (returnType==6) {
       stat=RobustBinMedian(projection,fraction);
+    }
+    else if (returnType==7) {
+      const Int_t    maxBin = projection->GetMaximumBin();
+      const Double_t max    = projection->GetXaxis()->GetBinCenter(maxBin);
+      const Double_t range  = fraction*(projection->GetXaxis()->GetXmax()-projection->GetXaxis()->GetXmin());
+      projection->Fit(&f1,"QN","QN", max-range, max+range);
+      stat= f1.GetParameter(1);
+      err=f1.GetParError(1);
     }
 
     vecX[icount]=xcenter;
