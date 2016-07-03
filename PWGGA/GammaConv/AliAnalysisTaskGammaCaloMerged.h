@@ -156,6 +156,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaDalitzInAccPt;                           //! array of histos with weighted eta dalitz in acceptance, pT
     TH2F**                  fHistoMCPi0PtJetPt;                                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                                 //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                  fHistoMCNegPiPt;                                    //! array of histos with weighted neg pions
+    TH1F**                  fHistoMCPosPiPt;                                    //! array of histos with weighted pos pions
+    TH1F**                  fHistoMCK0sPt;                                      //! array of histos with weighted K0s
+    TH1F**                  fHistoMCNegKPt;                                     //! array of histos with weighted neg kaons
+    TH1F**                  fHistoMCPosKPt;                                     //! array of histos with weighted pos kaons
+    TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
+    TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusMergedPtvsM02;                        //!
@@ -250,7 +257,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 13);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 14);
 };
 
 #endif
