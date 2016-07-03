@@ -77,7 +77,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   //task->SetVzRange(-10.,10.);
 
   AliParticleContainer *trackContData=0x0; 
-  AliParticleContainer *trackContDet=0x0;  
+  AliParticleContainer *trackContDet=0x0;
+  AliParticleContainer *trackContTrue=0x0;
 
   if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub){
     trackContData = task->AddParticleContainer(ntracksData);
@@ -87,8 +88,10 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
     trackContData = task->AddTrackContainer(ntracksData);
     trackContDet = task->AddTrackContainer(ntracksDet);
   }
-
-  AliParticleContainer *trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  if ((jetShapeType==AliAnalysisTaskSubJetFraction::kData || jetShapeType==AliAnalysisTaskSubJetFraction::kSim) && (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub)){
+    trackContTrue = task->AddTrackContainer(ntracksTrue); //Unsubtracted tracks branch
+  }
+  else trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   AliParticleContainer *trackContHybridUs = task->AddParticleContainer(ntracksHybridUs);
   AliParticleContainer *trackContHybridS = task->AddParticleContainer(ntracksHybridS);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
