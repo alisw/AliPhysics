@@ -110,7 +110,6 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		AliJHistManager * fHMG;
 	
-
 		AliJBin fBin_Subset;
 		AliJBin fBin_h; 
 		AliJBin fBin_k;
@@ -150,6 +149,9 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		AliJTH2D fh_QvectorQC; // check for Q-vec dist for [ic][ih]
 		AliJTH1D fh_QvectorQCphi;
+
+		AliJTH1D fh_evt_SP_QC_ratio_2p; // check SP QC evt by evt ratio
+		AliJTH1D fh_evt_SP_QC_ratio_4p; // check SP QC evt by evt ratio
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };
