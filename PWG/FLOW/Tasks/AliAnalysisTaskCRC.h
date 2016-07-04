@@ -111,6 +111,8 @@ public:
  Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
  void SetUsePhiEtaWeights(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeights = uPhiEtaW;};
  Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
+  void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
+  Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
  
  // Event weights:
  void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -209,8 +211,10 @@ public:
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
  void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
  TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
-  void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
-  TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
+ void SetZDCESEMultWeightsHist(TH2F* const n, Int_t h) {this->fZDCESEMultWeightsHist[h] = n;};
+ TH2F* GetZDCESEMultWeightsHist(Int_t h) const {return this->fZDCESEMultWeightsHist[h];};
+ void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
+ TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
  void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
  Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
@@ -259,6 +263,7 @@ private:
  Bool_t fUseEtaWeights;              // use eta weights
  Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights;           // use phi,eta weights
+ Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
  TList *fWeightsList;                // list with weights
  // Event weights:
  TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
@@ -310,6 +315,7 @@ private:
  TH1D* fPtWeightsHist[10];
  TH1D* fEtaWeightsHist[10][21][2];
  TH1D* fNvsCenCut[2][2]; //! ZDC mult cuts
+ TH2F* fZDCESEMultWeightsHist[5];
  Bool_t fQAZDCCuts;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;

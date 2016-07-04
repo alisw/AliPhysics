@@ -409,6 +409,32 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
  } // end of if(bUsePtWeights)
   
+  if(MinMulZN==5 && sDataSet=="2011") {
+    taskQC->SetUseZDCESEMulWeights(kTRUE);
+    TString MulWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2011") {
+      if(AODfilterBit==768) MulWeightsFileName += "Calib11hZDCESE_MultCorr_FB768.root";
+      if(AODfilterBit==128) MulWeightsFileName += "Calib11hZDCESE_MultCorr_FB128.root";
+    }
+    TFile* MulWeightsFile = TFile::Open(MulWeightsFileName,"READ");
+    if(!MulWeightsFile) {
+      cout << "ERROR: ZDCESEMulWeightsFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCESEList = dynamic_cast<TList*>(MulWeightsFile->FindObjectAny("ZDCESE"));
+    for(Int_t c=0; c<5; c++) {
+      TH2F* MulWeightsHist = dynamic_cast<TH2F*>(ZDCESEList->FindObject(Form("CenvsMulWeig[%d]",c)));
+      if(MulWeightsHist) {
+        taskQC->SetZDCESEMultWeightsHist(MulWeightsHist,c);
+        cout << "ZDC-ESE Mult. Weights (class #"<<c<<") set (from " <<  MulWeightsFileName.Data() << ")" << endl;
+      }
+      else {
+        cout << "ERROR: ZDC-ESE Mult. Hist not found!" << endl;
+        exit(1);
+      }
+    }
+  }
+  
   if(bUseEtaWeights) {
     taskQC->SetUseEtaWeights(bUseEtaWeights);
     TFile* EtaWeightsFile = TFile::Open(EtaWeightsFileName,"READ");
