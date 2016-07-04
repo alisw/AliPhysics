@@ -511,7 +511,9 @@ void AliEMCALTenderSupply::ProcessEvent()
     Bool_t needTimecalib   = fCalibrateTime   | fReClusterize;
     Bool_t needMisalign    = fRecalClusPos    | fReClusterize;
     Bool_t needClusterizer = fReClusterize;
-    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
+    
+    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+    Bool_t needTimecalibL1Phase = (fCalibrateTime | fReClusterize) & fCalibrateTimeL1Phase;
 
     // init bad channels
     if (needBadChannels) {
