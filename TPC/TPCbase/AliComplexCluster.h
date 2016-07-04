@@ -139,15 +139,17 @@ class AliTPCTrackerPoints  {
     }
     //
     Point &operator=(const AliTPCTrackerPoint& o) {
-      fTX = o.GetX();
-      fTY = o.GetY();
-      fTZ = o.GetZ();
-      fTAngleZ = o.GetAngleZ();
-      fTAngleY = o.GetAngleY();
-      fSigmaZ = o.GetSigmaZ();
-      fSigmaY = o.GetSigmaY();
-      fErrZ   = o.GetErrZ();
-      fErrY   = o.GetErrY();
+      SetX(o.GetX());
+      SetY(o.GetY());
+      SetZ(o.GetZ());
+      SetAngleZ(o.GetAngleZ());
+      SetAngleY(o.GetAngleY());
+      SetSigmaZ(o.GetSigmaZ());
+      SetSigmaY(o.GetSigmaY());
+      //
+      SetErrZ(o.GetErrZ());
+      SetErrY(o.GetErrY()); 
+      //
       return *this;
     }
     Float_t  GetX() const  {return (fTX*0.01);}
@@ -164,13 +166,15 @@ class AliTPCTrackerPoints  {
     //
     Float_t  GetSigmaZ() const {return (fSigmaZ*0.02);}
     Float_t  GetSigmaY() const {return (fSigmaY*0.02);}  
-    //    Float_t  GetErrZ()   const {return (fErrZ*0.005);}
-    //    Float_t  GetErrY()   const {return (fErrY*0.005);}
     Float_t  GetErrYSys2TotSq() const {return fErrY*15./UCHAR_MAX;}
     Float_t  GetErrZSys2TotSq() const {return fErrZ*15./UCHAR_MAX;}
     //
-    //    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
-    //    void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
+    // this is only for back-compatibility with old version, fetched via Point &operator=(const AliTPCTrackerPoint& o)
+    Float_t  GetErrZ()   const {return (fErrZ*0.005);}
+    Float_t  GetErrY()   const {return (fErrY*0.005);}
+    void     SetErrZ(Float_t errz) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(errz*200.),0,UCHAR_MAX));}
+    void     SetErrY(Float_t erry) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(erry*200.),0,UCHAR_MAX));}
+    //
     void     SetErrZSys2TotSq(Float_t r) {fErrZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(r*UCHAR_MAX/15.),0,UCHAR_MAX));}
     void     SetErrYSys2TotSq(Float_t r) {fErrY = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(r*UCHAR_MAX/15.),0,UCHAR_MAX));}
     void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(AliComplexClusterHelper::Clamp(TMath::Nint(sigmaz*50.),0,UCHAR_MAX));}
