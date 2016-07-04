@@ -333,6 +333,18 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin
 		<< "END" ;
 
+	fh_evt_SP_QC_ratio_4p
+		<< TH1D("hSPQCratio4p", "hSPQCratio4p", 1024, -100, 100)
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_evt_SP_QC_ratio_2p
+		<< TH1D("hSPQCratio", "hSPQCratio", 1024, -100, 100)
+		<< fBin_h
+		<< fHistCentBin 
+		<< "END" ;
+
 	//AliJTH1D set done.
 	
 	fHMG->Print();
@@ -560,7 +572,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		}
 
 
-
 		for(int ipt=0; ipt<N_ptbins; ipt++){
 			TComplex nV4V4V2V2_pt = (QnA_pt[4][ipt]*QnB_pt_star[4][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[6][ipt] * QnA_pt[4][ipt] *QnA_pt[2][ipt] )) 
 						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[6][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[2][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[6][ipt]*QnB_pt_star[6][ipt] ); 
@@ -594,12 +605,16 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		//(a)
 		CalculateQvectorsQC(); 
 		//(b)
+		double QC_4p_value[5][5];
+		double QC_2p_value[5]; 
+
 		for(int ih=2; ih<=5; ih++){
 			for(int ihh=2; ihh<ih; ihh++){
 				double event_weight = 1;
 				if( IsEbEWeighted == kTRUE) event_weight = Four(0,0,0,0).Re();
 				TComplex four = Four( ih, ihh, -1*ih, -1*ihh ) / Four(0,0,0,0).Re();
 				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( four.Re(), event_weight );
+				QC_4p_value[ih][ihh] = four.Re();
 			};
 		}; 
 		//(c)
@@ -610,8 +625,9 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			// two(0,0) = Q0 Q0* - Q0 = M^2 - M 
 			double event_weight = 1;
 			if( IsEbEWeighted == kTRUE) event_weight = Two(0,0).Re(); 
-			TComplex two = Two(ih, -1*ih) / Two(0,0).Re() ;
+			TComplex two = Two(ih, -1*ih) / Two(0,0).Re();
 			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re(), event_weight );
+			QC_2p_value[ih] = two.Re();
 		}  	
 		//(d)
 		for(int ih=2; ih<=5; ih++){
@@ -622,7 +638,30 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			
 		}
 
+		//Check evt-by-evt SP/QC ratio. (term-by-term)
+		// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC 
+		// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3 
+		double SP_4p_value[5] = { nV3V3V2V2.Re(), nV4V4V2V2.Re(), nV5V5V2V2.Re(), nV5V5V3V3.Re(), nV4V4V3V3.Re()};
+		int har1[5] = {3, 4, 5, 5, 4 };
+		int har2[5] = {2, 2, 3, 2, 3 };
+		for(int i=0; i<5; i++){
+				double evtSP_QC_ratio = SP_4p_value[i] / QC_4p_value[har1[i]][har2[i]] ; 
+				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -99;
+				fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio );
+		}
+		// 2p , v2, v3, v4, v5
+		for(int i=0; i<4; i++){
+				double SP_2p_value = vn2[2+i][1];
+				double evtSP_QC_ratio = SP_2p_value / QC_2p_value[i+2];
+				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -99;
+				fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio ); 
+		}
+
+
 	} // QC method done.
+
+
+
 
 	//1 evt is done...
 }
