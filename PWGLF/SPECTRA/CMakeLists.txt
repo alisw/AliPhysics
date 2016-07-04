@@ -55,6 +55,9 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
+  ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
+  ChargedHadrons/dNdPt/AlimPtMatrix.cxx
+  ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
