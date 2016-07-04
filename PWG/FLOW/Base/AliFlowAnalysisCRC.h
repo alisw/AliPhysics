@@ -354,6 +354,8 @@ public:
  Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
  void SetUsePhiEtaWeights(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeights = uPhiEtaW;};
  Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
+  void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
+  Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
  void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
  TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
  void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
@@ -864,6 +866,8 @@ public:
  TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
  void SetZNvsCen(TH2F* const n, Int_t const h) {this->fhZNvsCen[h] = n;};
  TH2F* GetZNvsCen(Int_t const h) const {return this->fhZNvsCen[h];};
+  void SetZDCESEMultWeightsHist(TH2F* const n, Int_t h) {this->fZDCESEMultWeightsHist[h] = n;};
+  TH2F* GetZDCESEMultWeightsHist(Int_t h) const {return this->fZDCESEMultWeightsHist[h];};
   void SetZNvsTCen(TH2F* const n, Int_t const h) {this->fhZNvsTCen[h] = n;};
   TH2F* GetZNvsTCen(Int_t const h) const {return this->fhZNvsTCen[h];};
   void SetCenvsMul(TH2F* const n, Int_t const h) {this->fhCenvsMul[h] = n;};
@@ -1073,6 +1077,7 @@ private:
  Bool_t fUseEtaWeights; // use eta weights
  Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
  Bool_t fUsePhiEtaWeights; // use phi,eta weights
+ Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
  TProfile *fUseParticleWeights; //! profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
  // TH1F *fPhiWeightsPOIs[2]; //! histogram holding phi weights
  // TH1D *fPtWeightsPOIs[2]; //! histogram holding pt weights
@@ -1673,6 +1678,7 @@ private:
   Double_t fZNCen; // total energy from ZNC-C
   Double_t fZNAen; // total energy from ZNC-A
   Double_t fEnNucl; // energy per nucleon (GeV)
+ TH2F* fZDCESEMultWeightsHist[5]; //! ZDC-ESE mult weights
   
   const static Int_t fZDCESEnPol=4;
   TF1 *fPolCuts[fZDCESEnPol]; //!

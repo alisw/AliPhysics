@@ -81,6 +81,7 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUseZDCESEMulWeights(kFALSE),
 fWeightsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -176,6 +177,9 @@ fMaxDevZN(5.)
       fNvsCenCut[c][k] = NULL;
     }
   }
+  for(Int_t k=0; k<5; k++) {
+    fZDCESEMultWeightsHist[k] = NULL;
+  }
  
 }
 
@@ -217,6 +221,7 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUseZDCESEMulWeights(kFALSE),
 fWeightsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -300,6 +305,9 @@ fMaxDevZN(5.)
     for(Int_t k=0; k<2; k++) {
       fNvsCenCut[c][k] = NULL;
     }
+  }
+  for(Int_t k=0; k<5; k++) {
+    fZDCESEMultWeightsHist[k] = NULL;
   }
  
 }
@@ -418,6 +426,12 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
       for(Int_t k=0; k<2; k++) {
         if(fNvsCenCut[c][k]) fQC->SetNvsCenCut(fNvsCenCut[c][k],c,k);
       }
+    }
+  }
+  if(fUseZDCESEMulWeights) {
+    fQC->SetUseZDCESEMulWeights(fUseZDCESEMulWeights);
+    for(Int_t k=0; k<5; k++) {
+      if(fZDCESEMultWeightsHist[k]) fQC->SetZDCESEMultWeightsHist(fZDCESEMultWeightsHist[k],k);
     }
   }
   

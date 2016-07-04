@@ -110,6 +110,7 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUseZDCESEMulWeights(kFALSE),
 fUseParticleWeights(NULL),
 // 2b.) event weights:
 fMultiplicityWeight(NULL),
@@ -16887,6 +16888,9 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
     fPolCuts[k] = NULL;
   }
   fCenMetric = NULL;
+  for(Int_t k=0; k<fZDCESEnCl; k++) {
+    fZDCESEMultWeightsHist[k] = NULL;
+  }
   
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForVarious()
 
@@ -17000,7 +17004,7 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
     fVariousList->Add(fhZNvsTCen[c]);
   }
   for (Int_t c=0; c<fZDCESEnCl+1; c++) {
-    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 625, 0., 2500.);
+    fhCenvsMul[c] = new TH2F(Form("fhCenvsMul[%d]",c), Form("fhCenvsMul[%d]",c), 100, 0., 100., 750, 0., 3000.);
     fhCenvsMul[c]->Sumw2();
     fVariousList->Add(fhCenvsMul[c]);
   }
@@ -19188,6 +19192,11 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   if( VZCM<1. || VZAM<1. ) return;
   if(fZDCESEclEbE<0 || fZDCESEclEbE>=fZDCESEnCl) return;
   
+  Double_t MulWeig = 1.;
+  if(fUseZDCESEMulWeights && fZDCESEMultWeightsHist[fZDCESEclEbE]) {
+    MulWeig = 1./fZDCESEMultWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESEMultWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,fNumberOfPOIsEBE));
+  }
+  
   Double_t uPRe=0., uPIm=0., uP2Re=0., uP2Im=0., uP2Re2=0., uP2Im2=0., uPM=0., uP2M=0.;
   Double_t uNRe=0., uNIm=0., uN2Re=0., uN2Im=0., uN2Re2=0., uN2Im2=0., uNM=0., uN2M=0.;
   
@@ -19217,52 +19226,52 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   if (uPM>1. && uNM>1.) {
     
     Double_t TwoQpQn = (uPRe*uNRe+uPIm*uNIm)/(uPM*uNM) ;
-    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPM*uNM);
+    fCMETPCCorPro[fZDCESEclEbE][0]->Fill(fCentralityEBE,TwoQpQn,uPM*uNM*MulWeig);
     
     Double_t TwoQpQp = (uPRe*uPRe+uPIm*uPIm-uP2M)/(uPM*uPM-uP2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,uPM*uPM-uP2M);
+    fCMETPCCorPro[fZDCESEclEbE][1]->Fill(fCentralityEBE,TwoQpQp,(uPM*uPM-uP2M)*MulWeig);
     
     Double_t TwoQnQn = (uNRe*uNRe+uNIm*uNIm-uN2M)/(uNM*uNM-uN2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,uNM*uNM-uN2M);
+    fCMETPCCorPro[fZDCESEclEbE][2]->Fill(fCentralityEBE,TwoQnQn,(uNM*uNM-uN2M)*MulWeig);
     
     //NUA
-    fCMETPCCorPro[fZDCESEclEbE][15]->Fill(fCentralityEBE,uPRe/uPM,uPM);
-    fCMETPCCorPro[fZDCESEclEbE][16]->Fill(fCentralityEBE,uPIm/uPM,uPM);
-    fCMETPCCorPro[fZDCESEclEbE][17]->Fill(fCentralityEBE,uNRe/uNM,uNM);
-    fCMETPCCorPro[fZDCESEclEbE][18]->Fill(fCentralityEBE,uNIm/uNM,uNM);
+    fCMETPCCorPro[fZDCESEclEbE][15]->Fill(fCentralityEBE,uPRe/uPM,uPM*MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][16]->Fill(fCentralityEBE,uPIm/uPM,uPM*MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][17]->Fill(fCentralityEBE,uNRe/uNM,uNM*MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][18]->Fill(fCentralityEBE,uNIm/uNM,uNM*MulWeig);
     
     Double_t TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*cos(2.*EvPlVZC) + (uPRe*uNIm+uPIm*uNRe)*sin(2.*EvPlVZC)) / (uPM*uNM) ;
-    fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
+    fCMETPCCorPro[fZDCESEclEbE][3]->Fill(fCentralityEBE,TwoQpQnV,(uPM*uNM)*MulWeig);
     
     Double_t TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re2)*cos(2.*EvPlVZC) + (2.*uPRe*uPIm-uP2Im2)*sin(2.*EvPlVZC)) / (uPM*uPM-uP2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][4]->Fill(fCentralityEBE,TwoQpQpV,uPM*uPM-uP2M);
+    fCMETPCCorPro[fZDCESEclEbE][4]->Fill(fCentralityEBE,TwoQpQpV,(uPM*uPM-uP2M)*MulWeig);
     
     Double_t TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re2)*cos(2.*EvPlVZC) + (2.*uNRe*uNIm-uN2Im2)*sin(2.*EvPlVZC)) / (uNM*uNM-uN2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][5]->Fill(fCentralityEBE,TwoQnQnV,uNM*uNM-uN2M);
+    fCMETPCCorPro[fZDCESEclEbE][5]->Fill(fCentralityEBE,TwoQnQnV,(uNM*uNM-uN2M)*MulWeig);
     
     TwoQpQnV = ((uPRe*uNRe-uPIm*uNIm)*cos(2.*EvPlVZA) + (uPRe*uNIm+uPIm*uNRe)*sin(2.*EvPlVZA)) / (uPM*uNM) ;
-    fCMETPCCorPro[fZDCESEclEbE][6]->Fill(fCentralityEBE,TwoQpQnV,uPM*uNM);
+    fCMETPCCorPro[fZDCESEclEbE][6]->Fill(fCentralityEBE,TwoQpQnV,(uPM*uNM)*MulWeig);
     
     TwoQpQpV = ((uPRe*uPRe-uPIm*uPIm-uP2Re2)*cos(2.*EvPlVZA) + (2.*uPRe*uPIm-uP2Im2)*sin(2.*EvPlVZA)) / (uPM*uPM-uP2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][7]->Fill(fCentralityEBE,TwoQpQpV,uPM*uPM-uP2M);
+    fCMETPCCorPro[fZDCESEclEbE][7]->Fill(fCentralityEBE,TwoQpQpV,(uPM*uPM-uP2M)*MulWeig);
     
     TwoQnQnV = ((uNRe*uNRe-uNIm*uNIm-uN2Re2)*cos(2.*EvPlVZA) + (2.*uNRe*uNIm-uN2Im2)*sin(2.*EvPlVZA)) / (uNM*uNM-uN2M) ;
-    fCMETPCCorPro[fZDCESEclEbE][8]->Fill(fCentralityEBE,TwoQnQnV,uNM*uNM-uN2M);
+    fCMETPCCorPro[fZDCESEclEbE][8]->Fill(fCentralityEBE,TwoQnQnV,(uNM*uNM-uN2M)*MulWeig);
     
     // Resolution corrections
     
-    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,cos(2.*(EvPlVZC-EvPlVZA)));
-    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZC)));
-    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZA)));
+    fCMETPCCorPro[fZDCESEclEbE][9]->Fill(fCentralityEBE,cos(2.*(EvPlVZC-EvPlVZA)),MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][10]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZC)),MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][11]->Fill(fCentralityEBE,cos(2.*(EvPlTPC-EvPlVZA)),MulWeig);
     
     // ZDC-ESE terms
     
-    fCMETPCCorPro[fZDCESEclEbE][12]->Fill(fCentralityEBE,fZNCen+fZNAen);
-    fCMETPCCorPro[fZDCESEclEbE][13]->Fill(fCentralityEBE,uPM+uNM);
+    fCMETPCCorPro[fZDCESEclEbE][12]->Fill(fCentralityEBE,fZNCen+fZNAen,MulWeig);
+    fCMETPCCorPro[fZDCESEclEbE][13]->Fill(fCentralityEBE,uPM+uNM,MulWeig);
     
-    fCMETPCCorPro2D[0]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQn,uPM*uNM);
-    fCMETPCCorPro2D[1]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQp,uPM*uPM-uP2M);
-    fCMETPCCorPro2D[2]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQnQn,uNM*uNM-uN2M);
+    fCMETPCCorPro2D[0]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQn,(uPM*uNM)*MulWeig);
+    fCMETPCCorPro2D[1]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQpQp,(uPM*uPM-uP2M)*MulWeig);
+    fCMETPCCorPro2D[2]->Fill(VZAM+VZCM,fZNCen+fZNAen,TwoQnQn,(uNM*uNM-uN2M)*MulWeig);
     
   } // end of if (uPM>1. && uNM>1.)
   
@@ -19287,7 +19296,7 @@ void AliFlowAnalysisCRC::CalculateCMETPC()
   if(QAM0+QBM0>1) {
     if(IQM2EG) {
       Double_t IQC2EG = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
-      fCMETPCCorPro[fZDCESEclEbE][14]->Fill(fCentralityEBE,IQC2EG,IQM2EG);
+      fCMETPCCorPro[fZDCESEclEbE][14]->Fill(fCentralityEBE,IQC2EG,IQM2EG*MulWeig);
     }
   }
   
