@@ -334,13 +334,13 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_evt_SP_QC_ratio_4p
-		<< TH1D("hSPQCratio4p", "hSPQCratio4p", 1024, -100, 100)
+		<< TH1D("hSPQCratio4p", "hSPQCratio4p", 1024, -1, 5)
 		<< fBin_h
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_evt_SP_QC_ratio_2p
-		<< TH1D("hSPQCratio", "hSPQCratio", 1024, -100, 100)
+		<< TH1D("hSPQCratio", "hSPQCratio", 1024, -1, 5)
 		<< fBin_h
 		<< fHistCentBin 
 		<< "END" ;
@@ -646,14 +646,15 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		int har2[5] = {2, 2, 3, 2, 3 };
 		for(int i=0; i<5; i++){
 				double evtSP_QC_ratio = SP_4p_value[i] / QC_4p_value[har1[i]][har2[i]] ; 
-				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -99;
+				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -0.5;
+				cout << evtSP_QC_ratio << endl;
 				fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio );
 		}
 		// 2p , v2, v3, v4, v5
 		for(int i=0; i<4; i++){
 				double SP_2p_value = vn2[2+i][1];
 				double evtSP_QC_ratio = SP_2p_value / QC_2p_value[i+2];
-				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -99;
+				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -0.5;
 				fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio ); 
 		}
 
@@ -883,4 +884,10 @@ TComplex AliJFFlucAnalysis::Four( int n1, int n2, int n3, int n4){
                + 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
                + 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
 	 return four;
+}
+//__________________________________________________________________________
+void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi)
+{
+                 // hPhi histo setter
+                 h_phi_module[cent][sub] = hModuledPhi;
 }
