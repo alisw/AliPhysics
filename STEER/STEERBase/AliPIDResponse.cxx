@@ -98,6 +98,7 @@ fUseTPCNewResponse(kTRUE),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fUseTRDEtaCorrection(kFALSE),
+fUseTRDClusterCorrection(kFALSE),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -172,6 +173,7 @@ fUseTPCNewResponse(other.fUseTPCNewResponse),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fUseTRDEtaCorrection(other.fUseTRDEtaCorrection),
+fUseTRDClusterCorrection(other.fUseTRDClusterCorrection),
 fTOFtail(0.9),
 fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
@@ -236,6 +238,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTRDPIDResponseObject=NULL;
     fTRDdEdxParams=NULL;
     fUseTRDEtaCorrection=other.fUseTRDEtaCorrection;
+    fUseTRDClusterCorrection=other.fUseTRDClusterCorrection;
     fEMCALPIDParams=NULL;
     fTOFtail=0.9;
     fTOFPIDParams=NULL;
@@ -671,6 +674,7 @@ void AliPIDResponse::ExecNewRun()
   //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
   SetTRDdEdxParams();
   SetTRDEtaMaps();
+  SetTRDClusterMaps();
   InitializeTRDResponse();
 
   // ===| TOF part |============================================================
@@ -1782,10 +1786,10 @@ void AliPIDResponse::SetTRDEtaMaps()
     etaMap[0] = 0x0;
 
 
-    const TString containerName = "TRDEtaCorrectionMap";
+    const TString containerName = "TRDCorrectionMaps";
     AliOADBContainer cont(containerName.Data());
 
-    const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxEtaCorrectionParams.root", fOADBPath.Data());
+    const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxCorrectionMaps.root", fOADBPath.Data());
 
     const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
     if (statusCont){
@@ -1813,6 +1817,66 @@ void AliPIDResponse::SetTRDEtaMaps()
 	if (!etaMap[0]) {
 	    AliError(Form("TRD Eta Correction Params not found"));
 	    fUseTRDEtaCorrection = kFALSE;
+            return;
+	    //fTRDResponse.SetEtaCorrMap(0,0x0);
+	}
+
+
+    }
+
+
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::SetTRDClusterMaps()
+{
+  //
+  // Load the TRD eta correction map from the OADB
+  //
+
+    if (fIsMC) fUseTRDClusterCorrection = kFALSE;
+    if (fUseTRDClusterCorrection == kFALSE) {
+      //  fTRDResponse.SetEtaCorrMap(0,0x0);
+	AliInfo("Request to disable TRD eta correction -> Eta correction has been disabled");
+        return;
+    }
+    TH2D* clusterMap[3];
+    for(Int_t i=0; i<3;i++) clusterMap[i] = 0x0;
+    Int_t offset =4;
+
+    const TString containerName = "TRDCorrectionMaps";
+    AliOADBContainer cont(containerName.Data());
+
+    const TString filePathNamePackage=Form("%s/COMMON/PID/data/TRDdEdxCorrectionMaps.root", fOADBPath.Data());
+
+    const Int_t statusCont = cont.InitFromFile(filePathNamePackage.Data(), cont.GetName());
+    if (statusCont){
+	AliFatal("Failed initializing TRD Cluster Correction settings from OADB");
+        return;
+    }
+    else{
+	AliInfo(Form("Loading %s from %s\n", cont.GetName(), filePathNamePackage.Data()));
+
+	TObject* clusterarray=(TObject*)cont.GetObject(fRun);
+
+	if(clusterarray){
+	    for(Int_t i=0;i<3;i++){
+		clusterMap[i] = (TH2D *)clusterarray->FindObject(Form("TRDNclsMap_Nch%i",i+offset));
+		fTRDResponse.SetClusterCorrMap(i,clusterMap[i]);
+	    }
+	}
+	else{
+	    AliError(Form("TRD Cluster Correction Params not found"));
+	    fUseTRDClusterCorrection = kFALSE;
+            return;
+	    //fTRDResponse.SetEtaCorrMap(0,0x0);
+	}
+
+
+
+	if (!clusterMap[0]) {
+	    AliError(Form("TRD Cluster Correction Params not found"));
+	    fUseTRDClusterCorrection = kFALSE;
             return;
 	    //fTRDResponse.SetEtaCorrMap(0,0x0);
 	}
@@ -2387,7 +2451,7 @@ Float_t AliPIDResponse::GetNumberOfSigmasTRD(const AliVParticle *vtrack, AliPID:
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return -999.;
 
-  return fTRDResponse.GetNumberOfSigmas(track,type, fUseTRDEtaCorrection);
+  return fTRDResponse.GetNumberOfSigmas(track,type, fUseTRDEtaCorrection, fUseTRDClusterCorrection);
 }
 
 //______________________________________________________________________________
@@ -2488,7 +2552,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetSignalDeltaTRD(const AliVPartic
   // Signal minus expected Signal for TRD
   //
   AliVTrack *track=(AliVTrack*)vtrack;
-  val=fTRDResponse.GetSignalDelta(track,type,ratio,fUseTRDEtaCorrection);
+  val=fTRDResponse.GetSignalDelta(track,type,ratio,fUseTRDEtaCorrection,fUseTRDClusterCorrection);
 
   return GetTRDPIDStatus(track);
 }

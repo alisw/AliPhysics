@@ -179,6 +179,8 @@ public:
   // TRD setting
   void SetUseTRDEtaCorrection(Bool_t useTRDEtaCorrection = kTRUE) { fUseTRDEtaCorrection = useTRDEtaCorrection; };
   Bool_t UseTRDEtaCorrection() const { return fUseTRDEtaCorrection; };
+  void SetUseTRDClusterCorrection(Bool_t useTRDClusterCorrection = kTRUE) { fUseTRDClusterCorrection = useTRDClusterCorrection; };
+  Bool_t UseTRDClusterCorrection() const { return fUseTRDClusterCorrection; };
 
 
 
@@ -264,6 +266,7 @@ private:
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
   AliTRDdEdxParams * fTRDdEdxParams; //! TRD dEdx Response for truncated mean signal
   Bool_t fUseTRDEtaCorrection;          // Use TRD eta correction
+  Bool_t fUseTRDClusterCorrection;          // Use TRD cluster correction
 
   Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
   AliTOFPIDParams *fTOFPIDParams;      //! TOF PID Params - period depending (OADB loaded)
@@ -308,6 +311,7 @@ private:
   void SetTRDSlices(UInt_t TRDslicesForPID[2],AliTRDPIDResponse::ETRDPIDMethod method) const;
   void SetTRDdEdxParams();
   void SetTRDEtaMaps();
+  void SetTRDClusterMaps();
 
   //TOF
   void SetTOFPidResponseMaster();
@@ -365,7 +369,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 16);  //PID response handling
+  ClassDef(AliPIDResponse, 17);  //PID response handling
 };
 
 #endif
