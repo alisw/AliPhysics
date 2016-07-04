@@ -33,6 +33,7 @@
 class AliESDEvent;
 class AliPIDResponse;
 class AliPIDCombined;
+class AliESDtrack;
 class AliESDtrackCuts;
 
 // ROOT class
