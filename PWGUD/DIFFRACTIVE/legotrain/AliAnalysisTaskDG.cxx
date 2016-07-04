@@ -279,8 +279,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
   TDirectory *owd = gDirectory;
   TFile *fSave = OpenFile(1);
-  fTE = new TTree;
-  fTE->SetName(GetTreeName());
+  fTE = new TTree(GetTreeName(), "");
   SetBranches(fTE);
   PostData(2, fTE);
   owd->cd();
