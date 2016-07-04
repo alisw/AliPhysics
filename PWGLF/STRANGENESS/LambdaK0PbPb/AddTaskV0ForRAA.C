@@ -118,7 +118,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    task->SetUseCentralityRange(centRange); // Add centrality bin for increasing original bin range. 
                                            // For cent 60-80%: cent = 60 and centRange = 10
    
-   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral );
+   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kIN7);
    
    mgr->AddTask(task);
  
