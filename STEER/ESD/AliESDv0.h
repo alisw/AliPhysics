@@ -29,6 +29,7 @@ public:
 
   AliESDv0(const AliESDv0& v0);
   virtual ~AliESDv0();
+  Int_t Refit();
   AliESDv0& operator=(const AliESDv0& v0);
   virtual void Copy(TObject &obj) const;
 

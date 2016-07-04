@@ -29,6 +29,7 @@
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 #include <TVector3.h>
+#include <TMatrixD.h>
 
 #include "AliLog.h"
 #include "AliESDv0.h"
@@ -208,6 +209,114 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   fNormDCAPrim[0]=fNormDCAPrim[1]=0;
   for (Int_t i=0;i<3;i++){fAngle[i]=0;}
   for (Int_t i=0;i<4;i++){fCausality[i]=0;}
+}
+
+static Bool_t GetWeight(TMatrixD &w, const AliExternalTrackParam &t) {
+  //
+  // Returns the global weight matrix w = Transpose[G2P]*Inverse[Cpar]*G2P ,
+  // where the matrix Cpar is the transverse part of the t covariance
+  // in "parallel" system (i.e. the system with X axis parallel to momentum).
+  // The matrix G2P performs the transformation global -> "parallel". 
+  //
+  Double_t phi=t.GetAlpha() + TMath::ASin(t.GetSnp());
+  Double_t sp=TMath::Sin(phi);
+  Double_t cp=TMath::Cos(phi);
+
+  Double_t tgl=t.GetTgl();
+  Double_t cl=1/TMath::Sqrt(1.+ tgl*tgl);
+  Double_t sl=tgl*cl;
+
+  TMatrixD g2p(3,3); //global --> parallel
+  g2p(0,0)= cp*cl; g2p(0,1)= sp*cl; g2p(0,2)=sl;
+  g2p(1,0)=-sp;    g2p(1,1)= cp;    g2p(1,2)=0.;
+  g2p(2,0)=-sl*cp; g2p(2,1)=-sl*sp; g2p(2,2)=cl;
+
+  Double_t alpha=t.GetAlpha();
+  Double_t c=TMath::Cos(alpha), s=TMath::Sin(alpha);
+  TMatrixD l2g(3,3); //local --> global
+  l2g(0,0)= c; l2g(0,1)=-s; l2g(0,2)= 0;
+  l2g(1,0)= s; l2g(1,1)= c; l2g(1,2)= 0;
+  l2g(2,0)= 0; l2g(2,1)= 0; l2g(2,2)= 1;
+
+  Double_t sy2=t.GetSigmaY2(), syz=t.GetSigmaZY(), sz2=t.GetSigmaZ2();
+  TMatrixD cvl(3,3); //local covariance
+  cvl(0,0)=0; cvl(0,1)=0;   cvl(0,2)=0;
+  cvl(1,0)=0; cvl(1,1)=sy2; cvl(1,2)=syz;
+  cvl(2,0)=0; cvl(2,1)=syz; cvl(2,2)=sz2;
+
+  TMatrixD l2p(g2p, TMatrixD::kMult, l2g);
+  TMatrixD cvp(3,3); //parallel covariance
+  cvp=l2p*cvl*TMatrixD(TMatrixD::kTransposed,l2p);
+
+  Double_t det=cvp(1,1)*cvp(2,2) - cvp(1,2)*cvp(2,1);
+  if (TMath::Abs(det)<kAlmost0) return kFALSE;
+
+  const Double_t m=100*100; //A large uncertainty in the momentum direction
+  const Double_t eps=1/m;
+  TMatrixD u(3,3);  //Inverse of the transverse part of the parallel covariance 
+  u(0,0)=eps; u(0,1)=0;              u(0,2)=0;
+  u(1,0)=0;   u(1,1)= cvp(2,2)/det;  u(1,2)=-cvp(2,1)/det;
+  u(2,0)=0;   u(2,1)=-cvp(1,2)/det;  u(2,2)= cvp(1,1)/det;
+  
+  w=TMatrixD(TMatrixD::kTransposed,g2p)*u*g2p;
+
+  return kTRUE;
+}
+
+Int_t AliESDv0::Refit() {
+  //--------------------------------------------------------------------
+  // Refit this vertex 
+  //--------------------------------------------------------------------
+  fStatus=0;
+
+  //Save the daughters' momenta
+  fParamN.GetPxPyPz(fNmom);
+  fParamP.GetPxPyPz(fPmom);
+
+  //Trivial estimation of the V0 vertex parameters 
+  Double_t r1[3]; fParamN.GetXYZ(r1);
+  Double_t r2[3]; fParamP.GetXYZ(r2);
+  for (Int_t i=0; i<3; i++) fPos[i]=0.5*(r1[i]+r2[i]);
+  fPosCov[1]=fPosCov[3]=fPosCov[4]=0.;
+  fPosCov[0]=(fPos[0]-r1[0])*(fPos[0]-r1[0])/12.;
+  fPosCov[2]=(fPos[1]-r1[1])*(fPos[1]-r1[1])/12.;
+  fPosCov[5]=(fPos[2]-r1[2])*(fPos[2]-r1[2])/12.;
+  fChi2V0=12.;
+
+
+  //Try to improve the V0 vertex parameters
+  TMatrixD w1(3,3);
+  if (!GetWeight(w1,fParamN)) return fStatus;
+  TMatrixD w2(3,3);
+  if (!GetWeight(w2,fParamP)) return fStatus;
+  TMatrixD cv(w1); cv+=w2;
+  cv.Invert();
+  if (!cv.IsValid()) return fStatus;
+
+  //Covariance of the V0 vertex
+  fPosCov[0]=cv(0,0);
+  fPosCov[1]=cv(1,0); fPosCov[2]=cv(1,1);
+  fPosCov[3]=cv(2,0); fPosCov[4]=cv(2,1); fPosCov[5]=cv(2,2);
+  
+  //Position of the V0 vertex
+  TMatrixD cw1(cv,TMatrixD::kMult,w1);
+  for (Int_t i=0; i<3; i++) {
+      fPos[i]=r2[i];
+      for (Int_t j=0; j<3; j++) fPos[i] += cw1(i,j)*(r1[j] - r2[j]);
+  }
+
+  //Chi2 of the V0 vertex
+  fChi2V0=0.;
+  Double_t res1[3]={r1[0]-fPos[0],r1[1]-fPos[1],r1[2]-fPos[2]};
+  Double_t res2[3]={r2[0]-fPos[0],r2[1]-fPos[1],r2[2]-fPos[2]};
+  for (Int_t i=0; i<3; i++)
+      for (Int_t j=0; j<3; j++) 
+          fChi2V0 += res1[i]*res1[j]*w1(i,j) + res2[i]*res2[j]*w2(i,j);
+
+  //Successful fit
+  fStatus=1;
+
+  return fStatus;
 }
 
 AliESDv0& AliESDv0::operator=(const AliESDv0 &v0)
