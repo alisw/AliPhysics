@@ -48,6 +48,9 @@ class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
   void SetClusterLowerLimit( AliHLTUInt32_t val ){ 
     fClusterLowerLimit = val << AliHLTTPCHWCFDefinitions::kFixedPoint; 
   }
+  void SetClusterQMaxLowerLimit( AliHLTUInt32_t val){
+    fClusterQMaxLowerLimit = val << AliHLTTPCHWCFDefinitions::kFixedPoint;
+  }
   
   /** set tagging of deconvoluted clusters
    **/
@@ -70,7 +73,8 @@ class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
   AliHLTTPCHWCFDivisionUnit& operator=(const AliHLTTPCHWCFDivisionUnit&);  
   
   bool fSinglePadSuppression; // suppress not merged clusters
-  AliHLTUInt64_t fClusterLowerLimit; // lower charge limit for clusters 
+  AliHLTUInt64_t fClusterLowerLimit; // lower total charge limit for clusters 
+  AliHLTUInt64_t fClusterQMaxLowerLimit; // lower maximum charge limit for clusters 
   AliHLTUInt32_t fTagDeconvolutedClusters; // way to tag deconvoluted clusters 
                                            // 0: no tagging 
                                            // 1: tag pad, tag time if one of the time sequences is deconvoluted 

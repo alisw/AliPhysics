@@ -1,4 +1,4 @@
-// $Id$
+// $Id
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -59,6 +59,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fDoSinglePadSuppression(0),
   fBypassMerger(0),
   fClusterLowerLimit(0),
+  fClusterQMaxLowerLimit(0),
   fSingleSeqLimit(0),
   fMergerDistance(0),
   fUseTimeBinWindow(0),
@@ -93,6 +94,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fDoSinglePadSuppression(0),
   fBypassMerger(0),
   fClusterLowerLimit(0),
+  fClusterQMaxLowerLimit(0),
   fSingleSeqLimit(0),
   fMergerDistance(0),
   fUseTimeBinWindow(0),
@@ -227,6 +229,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fDoSinglePadSuppression = 0;
   fBypassMerger = 0;
   fClusterLowerLimit = 10;
+  fClusterQMaxLowerLimit = 0;
   fSingleSeqLimit = 0;
   fMergerDistance = 4;
   fUseTimeBinWindow = 1;
@@ -316,6 +319,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fClusterLowerLimit  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Cluster lower limit is set to: %d", fClusterLowerLimit );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-cluster-qmax-lower-limit" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fClusterQMaxLowerLimit  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Cluster qmax lower limit is set to: %d", fClusterQMaxLowerLimit );
       continue;
     }
 
@@ -603,6 +613,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
       fCFEmulator.SetNoiseSuppressionMinimum( fNoiseSuppressionMinimum );
       fCFEmulator.SetNoiseSuppressionNeighbor( fNoiseSuppressionNeighbor );
+      fCFEmulator.SetClusterQMaxLowerLimit( fClusterQMaxLowerLimit );
 
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

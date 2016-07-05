@@ -69,7 +69,7 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt32_t fPad;  // pad number
   bool fBranch;         // 0  - pad belongs to branch A, 1 - pad belongs to branch B
   bool fBorder;         // is the pad at the border of its branch
-  AliHLTUInt64_t fQmax; // total charge, fixed point integer
+  AliHLTUInt64_t fQmax; // max charge, fixed point integer
   AliHLTUInt64_t fQ;    // total charge, fixed point integer
   AliHLTUInt64_t fT;    // sum of time*charge , fixed point integer
   AliHLTUInt64_t fP;    // sum of pad*charge  , fixed point integer

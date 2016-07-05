@@ -145,7 +145,9 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   Bool_t fDoFlowControl;           // flag to control the data
   Bool_t fDoSinglePadSuppression;  // flag for single pad suppression
   Bool_t fBypassMerger;            // flag to bypass cluster merging between pads
-  AliHLTUInt32_t fClusterLowerLimit; // cut clusters at this charge value
+  AliHLTUInt32_t fClusterLowerLimit; // cut clusters at this total charge value
+  AliHLTUInt32_t fClusterQMaxLowerLimit; // cut clusters at this max charge value
+ 
   AliHLTUInt32_t fSingleSeqLimit;    // cut sequences at this charge value
   AliHLTUInt32_t fMergerDistance; // max. distance in mean time between two pads to be merged
   bool           fUseTimeBinWindow; // use timebin window

@@ -35,7 +35,7 @@
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fClusterQMaxLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
 {
   //constructor 
 }
@@ -53,7 +53,7 @@ AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fClusterQMaxLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
 {
 }
 
@@ -115,6 +115,7 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   if( fkInput->fQ==0 ) return 0;
   if( fSinglePadSuppression && fkInput->fQ==fkInput->fLastQ && !fkInput->fBorder ) return 0;
   if( fkInput->fQ < fClusterLowerLimit ) return 0;
+  if (fClusterQMaxLowerLimit && ((fkInput->fQmax)&0x7FFFFF) < fClusterQMaxLowerLimit) return 0;
 
   AliHLTFloat32_t q = fkInput->fQ;
   
