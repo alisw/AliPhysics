@@ -50,7 +50,7 @@ Double_t
 
 Double_t AliLightCascadeVertexer::fgMaxEta=0.8;        //max |eta|
 Double_t AliLightCascadeVertexer::fgMinClusters=70;   //min clusters (>=)
-  
+Double_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //min clusters (>=)
 
 Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
