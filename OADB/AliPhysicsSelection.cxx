@@ -409,10 +409,10 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
     
     if (fReadOCDB && 
         (fTriggerOADB->GetV0MOnThreshold()<0 ||
-         fTriggerOADB->GetVHMBBAflags()<0 ||
-         fTriggerOADB->GetVHMBBCflags()<0 ||
-         fTriggerOADB->GetVHMBGAflags()<0 ||
-         fTriggerOADB->GetVHMBGCflags()<0)
+         fTriggerOADB->GetVHMBBAflags()<0  ||
+         fTriggerOADB->GetVHMBBCflags()<0  ||
+         fTriggerOADB->GetVHMBGAflags()>32 ||
+         fTriggerOADB->GetVHMBGCflags()>32)
        ) 
     {
       AliInfo("Setting V0 online thresholds from OCDB");
@@ -438,12 +438,12 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
           AliInfo(Form("  VHMBGAflags set to %i",val));
           fTriggerOADB->SetVHMBGAflags(val);
         }
-        if (fTriggerOADB->GetVHMBBCflags()<0) {
+        if (fTriggerOADB->GetVHMBBCflags()>32) {
           Int_t val = trigData->GetMultV0CThrLow();
           AliInfo(Form("  VHMBBCflags set to %i",val));
           fTriggerOADB->SetVHMBBCflags(val);
         }
-        if (fTriggerOADB->GetVHMBGCflags()<0) {
+        if (fTriggerOADB->GetVHMBGCflags()>32) {
           Int_t val = trigData->GetMultV0CThrHigh();
           AliInfo(Form("  VHMBGCflags set to %i",val));
           fTriggerOADB->SetVHMBGCflags(val);
