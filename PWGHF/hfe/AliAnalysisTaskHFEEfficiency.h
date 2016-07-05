@@ -69,7 +69,10 @@ public:
     Double_t GetMCweightEta2040(Double_t mcEtapT);
     Double_t GetMCweightEtatiltUp2040(Double_t mcEtapT);
     Double_t GetMCweightEtatiltDw2040(Double_t mcEtapT);
+
     
+    Double_t GiveHFWeight(Double_t HFpt);
+
     
     Bool_t IsFromBGEventAOD(Int_t Index);
     AliHFEpid *GetPID() const { return fPID; }
@@ -98,6 +101,7 @@ public:
     void                                 SetIDCuts(Double_t minTOFnSigma, Double_t maxTOFnSigma, Double_t minITSnsigmalowpt, Double_t maxITSnsigmalowpt,Double_t minITSnsigmahighpt, Double_t maxITSnsigmahighpt, Double_t minTPCnsigmalowpt, Double_t maxTPCnsigmalowpt,Double_t minTPCnsigmahighpt, Double_t maxTPCnsigmahighpt );
     void SetTPCS(Int_t sig) {fTPCS = sig;};
     
+    void                                 SetWeightsHF(Bool_t Weights){WeightsForHF = Weights;};
     
     
     
@@ -206,6 +210,9 @@ private:
     Bool_t                tiltdw;//tilting for weights
     Bool_t                fcentral;//select weights for 010
     Bool_t                fsemicentral;//select weights for 2040
+    Bool_t                WeightsForHF;//set the weigh
+
+    
     
     AliAnalysisTaskHFEEfficiency(const AliAnalysisTaskHFEEfficiency&); // not implemented
     AliAnalysisTaskHFEEfficiency& operator=(const AliAnalysisTaskHFEEfficiency&); // not implemented

@@ -18,6 +18,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                     TString uniqueID = "",
                                                     Float_t centrMin,
                                                     Float_t centrMax,
+                                                    Bool_t WeightsHF = kTRUE,
                                                     Bool_t Weights = kTRUE,
                                                     Bool_t CentralWeights = kTRUE,
                                                     Bool_t SemicentralWeights = kFALSE,
@@ -85,7 +86,7 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     taskHFE->SetStackLoop(SetSTACK);
     taskHFE->SetMassCut(MassCut);
     taskHFE->SetWeights(Weights);
-    
+    taskHFE->SetWeightsHF(WeightsHF);
     taskHFE->SetCentralWeights(CentralWeights);
     taskHFE->SetSemicentralWeights(SemicentralWeights);
    
