@@ -154,6 +154,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
   AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
+  Bool_t fUseGain; // Use gain correction factor from OCDB
   Int_t fDebug; // debug level
   AliHLTTPCHWCFSupport fCFSupport;     // !transient
   AliHLTTPCHWCFEmulator fCFEmulator;   // !transient

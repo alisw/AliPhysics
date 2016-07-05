@@ -66,6 +66,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fProcessingRCU2Data(0),
+  fUseGain(1),
   fNoiseSuppression(0),
   fDebug(0),
   fCFSupport(),
@@ -97,6 +98,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fProcessingRCU2Data(0),
+  fUseGain(1),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -379,6 +381,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
    
+    if ( argument.CompareTo( "-use-gain" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fUseGain  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Gain Correction flag is set to: %d", fUseGain );
+      continue;
+    }
+
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
@@ -458,6 +467,7 @@ int AliHLTTPCHWCFEmulatorComponent::Configure( const char* cdbEntry, const char*
 
   fCFSupport.UnloadMapping();
   fCFSupport.SetProcessingRCU2Data( fProcessingRCU2Data );
+  fCFSupport.SetUseGain( fUseGain );
 
   return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }
