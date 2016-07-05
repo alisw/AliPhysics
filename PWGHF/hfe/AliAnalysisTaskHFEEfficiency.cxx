@@ -1,4 +1,3 @@
-#include "TTree.h"
 #include "TChain.h"
 #include "TH2F.h"
 #include "TMath.h"
@@ -152,6 +151,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,tiltdw(0)
 ,fcentral(0)
 ,fsemicentral(0)
+,WeightsForHF(0)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -262,6 +262,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,tiltdw(0)
 ,fcentral(0)
 ,fsemicentral(0)
+,WeightsForHF(0)
 {
     
     fPID = new AliHFEpid("hfePid");
@@ -427,7 +428,11 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
                 
                 
             }//end is an electron
-            if(ShouldiFillit){fHFEDenominator->Fill(ForHFEeffGen);}
+            if(ShouldiFillit){
+                Double_t HFweights = 1;
+                if(WeightsForHF){HFweights = GiveHFWeight(AODMCtrack->Pt());}
+                fHFEDenominator->Fill(ForHFEeffGen,HFweights);
+            }
             
         }//end loop stack HFE
     }//end vertex selection
@@ -558,10 +563,13 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             }
         }
         
+        Double_t HFweightsReco = 1;
+        if(WeightsForHF){HFweightsReco = GiveHFWeight(track->Pt());}
+        
         // Fill Here after HFE track cuts
         Double_t ForHFEeffRecoITSTPCRef[4];
         Bool_t canIfilltrkITSTPC = FillNumerator(mcArray,track,ForHFEeffRecoITSTPCRef);
-        if(canIfilltrkITSTPC){fHFENumeratorTRKCUTS_ITSTPC->Fill(ForHFEeffRecoITSTPCRef);}
+        if(canIfilltrkITSTPC){fHFENumeratorTRKCUTS_ITSTPC->Fill(ForHFEeffRecoITSTPCRef,HFweightsReco);}
         
         
         // RecPrim
@@ -582,7 +590,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         // Fill Here after HFE track cuts
         Double_t ForHFEeffRecoTrackCuts[4];
         Bool_t canIfilltrk = FillNumerator(mcArray,track,ForHFEeffRecoTrackCuts);
-        if(canIfilltrk){fHFENumeratorTRKCUTS->Fill(ForHFEeffRecoTrackCuts);}
+        if(canIfilltrk){fHFENumeratorTRKCUTS->Fill(ForHFEeffRecoTrackCuts,HFweightsReco);}
         
         
         fTrackPtAftTrkCuts->Fill(track->Pt());
@@ -632,7 +640,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         // Fill Here after TOF cuts
         Double_t ForHFEeffRecoTOF[4];
         Bool_t canIfillTOF = FillNumerator(mcArray,track,ForHFEeffRecoTOF);
-        if(canIfillTOF){fHFENumeratorTOF->Fill(ForHFEeffRecoTOF);}
+        if(canIfillTOF){fHFENumeratorTOF->Fill(ForHFEeffRecoTOF,HFweightsReco);}
         
         if( pt < 1.5){
             if(fITSnSigma < fminITSnsigmaLowpT || fITSnSigma > fmaxITSnsigmaLowpT)continue;
@@ -645,7 +653,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         // Fill Here after ITS cuts
         Double_t ForHFEeffRecoITS[4];
         Bool_t canIfillITS = FillNumerator(mcArray,track,ForHFEeffRecoITS);
-        if(canIfillITS){fHFENumeratorITS->Fill(ForHFEeffRecoITS);}
+        if(canIfillITS){fHFENumeratorITS->Fill(ForHFEeffRecoITS,HFweightsReco);}
         
         if(pt < 1.5){
             if(fTPCnSigma < fminTPCnsigmaLowpT || fTPCnSigma > fmaxTPCnsigmaLowpT) continue;
@@ -657,7 +665,7 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         // Fill Here after TPC cuts
         Double_t ForHFEeffReco[4];
         Bool_t canIfill = FillNumerator(mcArray,track,ForHFEeffReco);
-        if(canIfill){fHFENumerator->Fill(ForHFEeffReco);}
+        if(canIfill){fHFENumerator->Fill(ForHFEeffReco,HFweightsReco);}
         
         
         
@@ -1544,7 +1552,13 @@ Int_t AliAnalysisTaskHFEEfficiency::GetPrimary(Int_t id, TClonesArray *mcArray){
     }
 }
 //_________________________________________
-
+Double_t AliAnalysisTaskHFEEfficiency::GiveHFWeight(Double_t electronpt)
+{
+    double weight = 1.0;
+    weight =    (5.38354e-01)/pow((exp(-(1.56041e-01)*electronpt-(3.74084e+00)*electronpt*electronpt)+(electronpt/(5.88171e-01))),(2.40354e+00)); //HFeWeights
+    return weight;
+}
+//_________________________________________
 Int_t AliAnalysisTaskHFEEfficiency::GetPi0EtaType(AliAODMCParticle *pi0eta, TClonesArray *mcArray){
     //
     // Return what type of pi0, eta it is
