@@ -44,9 +44,9 @@ public:
   
   AliJAcceptanceCorrection& operator=(const AliJAcceptanceCorrection& a); // Equal sign operator
   TH2D *GetAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptanceCalculation;} // Getter for calculated acceptance
-
-  void SetMinCountsPerBinInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBinInclusive
   
+  void SetCard(AliJCard *card){ fCard = card; } // Setter for fCard
+  void SetMinCountsPerBinInclusive(int minCounts){ fMinCountsPerBinInclusive = minCounts; } // Setter for fMinCountsPerBinInclusive
   void SetLeadingParticle(bool leadingParticle){ fLeadingParticleCorrelation = leadingParticle; } // Setter for fLeadingParticleCorrelation
   void SetTestMode(bool mode){ fTestMode = mode; } // Setter for fTestMode
 
