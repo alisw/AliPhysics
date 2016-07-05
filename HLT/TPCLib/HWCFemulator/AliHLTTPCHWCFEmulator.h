@@ -85,6 +85,7 @@ class AliHLTTPCHWCFEmulator
   
   void SetNoiseSuppression(int ns) {fPeakFinderUnit.SetNoiseSuppression(ns);}
   void SetNoiseSuppressionMinimum(int ns) {fPeakFinderUnit.SetNoiseSuppressionMinimum(ns);}
+  void SetNoiseSuppressionNeighbor(int n) {fPeakFinderUnit.SetNoiseSuppressionNeighbor(n);}
 
  private: 
 

@@ -69,6 +69,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fUseGain(1),
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
+  fNoiseSuppressionNeighbor(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -361,6 +362,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
 
+    if ( argument.CompareTo( "-noise-suppression-neighbor" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fNoiseSuppressionNeighbor  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Noise Suppression neighbor parameter is set to: %d", fNoiseSuppressionNeighbor );
+      continue;
+    }
+
     if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -594,6 +602,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fCFEmulator.SetProcessingRCU2Data( fProcessingRCU2Data );
       fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
       fCFEmulator.SetNoiseSuppressionMinimum( fNoiseSuppressionMinimum );
+      fCFEmulator.SetNoiseSuppressionNeighbor( fNoiseSuppressionNeighbor );
 
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

@@ -40,6 +40,7 @@ class AliHLTTPCHWCFPeakFinderUnit
   
   void SetNoiseSuppression( AliHLTUInt32_t val) {fNoiseSuppression = val;}
   void SetNoiseSuppressionMinimum( AliHLTUInt32_t val) {fNoiseSuppressionMinimum = val;}
+  void SetNoiseSuppressionNeighbor( AliHLTUInt32_t val) {fNoiseSuppressionNeighbor = val;}
 
   /** initialise */
   int Init();
@@ -63,6 +64,7 @@ class AliHLTTPCHWCFPeakFinderUnit
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
   AliHLTUInt32_t fNoiseSuppression; // noise suppression while peak finding
   AliHLTUInt32_t fNoiseSuppressionMinimum; // noise suppression while minimum finding
+  AliHLTUInt32_t fNoiseSuppressionNeighbor; // consider last neighbor for peak/minimum finder with noise suppression
   int fDebug; // debug level
 };
 
