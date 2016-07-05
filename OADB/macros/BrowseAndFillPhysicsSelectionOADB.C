@@ -185,12 +185,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kCentral,"+CVHMV0M-B-[NOPF|SPD1|SPD2]-CENT[|NOTRD]","B",triggerCount);
-  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"VHM & V0M");
+  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"VHM && V0M");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip");
   
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kHighMult,"+CVHMSH2-B-[NOPF|SPD1]-CENT[|NOTRD]","B",triggerCount);
-  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"VHM & SH2");
+  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"VHM && SH2");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip");
   
   triggerCount++;
