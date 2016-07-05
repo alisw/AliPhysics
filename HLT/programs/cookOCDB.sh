@@ -24,6 +24,9 @@ aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT
     \"local://$TARGET\")"
 #ATTENTION: the -rcu2-data flag is NOT set for the HCDB!!!!!! This is set by the chain configuration not by the HCDB!!!!!! Thus, the setting is not applied running aliroot!!!!!!
 
+#Create Global Trigger Configuration
+aliroot -l -q -b $ALICE_SOURCE/HLT/programs/create-globaltrigger-HM-TPC-comp.C"(\"local://$TARGER\")"
+
 #Update TPC CalibDB
 aliroot -b << EOF
   AliCDBManager* man = AliCDBManager::Instance();
