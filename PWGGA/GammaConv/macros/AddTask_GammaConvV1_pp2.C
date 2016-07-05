@@ -200,11 +200,11 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   } else if (trainConfig == 22){
     cuts.AddCut("00000113", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 23){
-    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0AND
+    cuts.AddCut("00010113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0AND
   } else if (trainConfig == 24){
-    cuts.AddCut("00074113", "00200009227302008250404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0 HM
+    cuts.AddCut("00074113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0 HM
   } else if (trainConfig == 25){
-    cuts.AddCut("00075113", "00200009227302008250404000", "0152101500000000"); //standard cut Gamma pp 13TeV, SPD HM
+    cuts.AddCut("00075113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, SPD HM
   } else if (trainConfig == 26){
     cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //old standard cut pp 7 TeV
   } else {
