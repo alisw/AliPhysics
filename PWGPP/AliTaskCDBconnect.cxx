@@ -176,7 +176,7 @@ void AliTaskCDBconnect::ConnectInputData(Option_t* option)
   if (!mgr) AliFatal("No analysis manager");  
   AliAnalysisTask::ConnectInputData(option);
   Int_t run = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
-  if (run<0) {
+  if (run<=0) {
     AliWarning("AliTaskCDBconnect: Could not set run from path");
     return;
   }
