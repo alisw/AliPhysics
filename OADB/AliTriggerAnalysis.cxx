@@ -991,7 +991,6 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
   // background flag read from ESD : check in given time interval OrA and OrC were correct but TVDC not
   // 
   // Based on an algorithm by Alla Maevskaya
-  // TODO: implement online and offline selection in AOD
   // TODO: read vtx thresholds from OCDB
   
   if (event->GetDataLayoutType()==AliVEvent::kAOD) {
@@ -1001,7 +1000,16 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliVEvent* ev
       AliError("AliAODTZERO not available");
       return kT0Invalid;
     }
-    if (fMC) if(tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    if (online) {
+      UInt_t input0TVX = 2; 
+      if (event->GetRunNumber()<229355) input0TVX = 6;
+      if (event->GetRunNumber()<224944) input0TVX = 3;
+      if (event->GetHeader()->GetL0TriggerInputs() & 1<<input0TVX) return kT0BB;
+    } else {
+      if (tzero->GetPileupFlag()) return kT0DecPileup;
+      if (tzero->GetBackgroundFlag()) return kT0DecBG;
+      if (tzero->GetT0zVertex()>-12.3 && tzero->GetT0zVertex() < 10.3) return kT0BB;
+    }
   } 
   else if (event->GetDataLayoutType()==AliVEvent::kESD) {
     // ESD analysis
@@ -1154,9 +1162,9 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
   if (fMC) return kFALSE; // there are no dip events in MC
-  
+  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
   if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliError("IsHVdipTPCEvent method implemented for ESDs only");
+    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
     return kFALSE;
   }
   const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
@@ -1226,6 +1234,10 @@ Bool_t AliTriggerAnalysis::IsV0MOnVsOfPileup(const AliVEvent* event, Int_t fillH
     AliError("AliVVZERO not available");
     return kFALSE;
   }
+  if (!vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
+    return kFALSE;
+  }
   // V0A0 excluded from online V0A charge sum => excluding also from offline sum for consistency
   Float_t on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
   Float_t of = vzero->GetMTotV0A()-vzero->GetMRingV0A(0)+vzero->GetMTotV0C();  
@@ -1261,6 +1273,10 @@ Bool_t AliTriggerAnalysis::IsV0PFPileup(const AliVEvent* event, Int_t fillHists)
   AliVVZERO* vzero = event->GetVZEROData();
   if (!vzero) {
     AliError("AliVVZERO not available");
+    return kFALSE;
+  }
+  if (!vzero->TestBit(AliVVZERO::kPastFutureFlagsFilled)){
+    if (!fillHists) AliWarning("V0 past future info not found");
     return kFALSE;
   }
 
@@ -1387,6 +1403,11 @@ Bool_t AliTriggerAnalysis::V0MTrigger(const AliVEvent* event, Bool_t online, Int
     AliError("AliVVZERO not available");
     return kFALSE;
   }
+  if (online && !vzero->TestBit(AliVVZERO::kTriggerChargeBitsFilled)){
+    if (!fillHists) AliWarning("V0 trigger charge info not found");
+    return kFALSE;
+  }
+
   Int_t   on = vzero->GetTriggerChargeA()+vzero->GetTriggerChargeC();
   Float_t of = vzero->GetMTotV0A()+vzero->GetMTotV0C();
 
