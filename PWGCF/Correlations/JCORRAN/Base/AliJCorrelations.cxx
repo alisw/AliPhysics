@@ -37,7 +37,6 @@ AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
   AliJCorrelationInterface(),
   fcard(cardIn),
   fhistos(histosIn),
-  fAcceptanceCorrection(0x0),
   fnReal(0),
   fnMix(0),
   fsumTriggerAndAssoc(0),
@@ -84,6 +83,7 @@ AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
   fDPhiUERegion[1]    = fcard->Get("DPhiUERegion",1);
   cout << fmaxEtaRange <<" fDPhiUERegion[0]="<< fDPhiUERegion[0] <<" fDPhiUERegion[1]="<< fDPhiUERegion[1] <<endl;
   fIsHeavyIon = AliJRunTable::GetInstance().IsHeavyIon();
+  fAcceptanceCorrection = new AliJAcceptanceCorrection(cardIn);
 
   // -----------------------------------------------------------------------------------------------
   // HARD CODED NUMBERS - VIOLATIONS - BREAKS the code when only on bin used in card.input!!!
