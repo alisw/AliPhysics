@@ -717,8 +717,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
     if(fSemigoodCorrect){
       Double_t HoleDistance=RelativePhi(TriggerHadron->Phi(),fHolePos);
-      if(TMath::Abs(HoleDistance)+fHoleWidth>TMath::Pi()-fRecoilAngularWindow){
-	return 0;}
+      if(TMath::Abs(HoleDistance)+fHoleWidth+fJetRadius>TMath::Pi()-fRecoilAngularWindow) return 0;
     }
     fhPtTriggerHadron->Fill(TriggerHadron->Pt()); //Needed for per trigger Normalisation
   }
@@ -750,10 +749,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	else JetPtThreshold=Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
         if ( (!Jet1) || (JetPtThreshold<fPtThreshold)) continue;
         else {
-	  if(fSemigoodCorrect){
+	  /*  if(fSemigoodCorrect){
 	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
 	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
-	  }
+	    }*/
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
 	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
@@ -859,10 +858,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
+	  /* if(fSemigoodCorrect){
 	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
 	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
-	  }
+	    }*/
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
 	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
@@ -1009,10 +1008,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
+	  /* if(fSemigoodCorrect){
 	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
 	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
-	  }
+	  }*/
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
 	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
@@ -1104,10 +1103,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  continue;
 	}
 	else {
-	  if(fSemigoodCorrect){
+	  /* if(fSemigoodCorrect){
 	    Double_t HoleDistance=RelativePhi(Jet1->Phi(),fHolePos);
 	    if(TMath::Abs(HoleDistance)<fHoleWidth) continue;
-	  }
+	  }*/
 	  Float_t RecoilDeltaPhi = 0.;
 	  if (fJetSelection == kRecoil){
 	    RecoilDeltaPhi = RelativePhi(TriggerHadron->Phi(), Jet1->Phi());
