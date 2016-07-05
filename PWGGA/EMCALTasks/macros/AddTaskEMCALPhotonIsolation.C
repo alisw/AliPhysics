@@ -37,7 +37,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
                                                                  const Bool_t           i_pPb                     = kFALSE,
-                                                                 const Bool_t           isQA                      = kFALSE
+                                                                 const Bool_t           isQA                      = kFALSE,
+								 TString		configBasePath		  = ""
                                                                  )
 {
   
@@ -62,6 +63,24 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
+  if(configBasePath.IsNull()){
+	configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
+  	gSystem->Exec(Form("cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
+  	configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else if(configBasePath.Contains("alien:///")){
+  	gSystem->Exec(Form("alien_cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
+  	configBasePath=Form("%s/",gSystem->pwd());
+  }
+  else{
+  	gSystem->Exec(Form("cp %s/config_PhotonIsolation.C .",configBasePath.Data()));
+  	configBasePath=Form("%s/",gSystem->pwd());
+  }
+
+  TString configFile("/config_PhotonIsolation.C");
+  TString configFilePath(configBasePath+configFile);
+  printf("Path of config file: %s\n",configFilePath.Data());
+  gROOT->LoadMacro(configFilePath.Data());
   
     // #### Task preferences
   task->SetOutputFormat(iOutput);
@@ -82,6 +101,19 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetExtraIsoCuts(iExtraIsoCuts);
   task->SetAnalysispPb(i_pPb);
   task->SetNLMCut(bNLMCut,NLMCut);
+  task->SetPtBinning(ptBin);
+  task->SetM02Binning(M02Bin);
+  task->SetEtisoBinning(EtisoBin);
+  task->SetEtueBinning(EtueBin);
+  task->SetEtaBinning(EtaBin);
+  task->SetPhiBinning(PhiBin);
+  task->SetLabelBinning(LabelBin);
+  task->SetPDGBinning(PDGBin);
+  task->SetMomPDGBinning(MomPDGBin);
+  task->SetClustPDGBinning(ClustPDGBin);
+  task->SetDxBinning(DxBin);
+  task->SetDzBinning(DzBin);
+  task->SetDecayBinning(DecayBin);
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   

@@ -59,6 +59,8 @@ class AliGenPythiaEventHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
+#include <vector>
+using std::vector;
 
 class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
 public:
@@ -91,6 +93,20 @@ public:
   void                     SetWidth4Smear(Float_t width)                                   { fSSsmearwidth = width;}
   void                     SetMean4Smear(Float_t mean)                                     { fSSsmear_mean = mean;}
   void                     SetExtraIsoCuts(Bool_t bExtraIsoCuts)                           { fExtraIsoCuts = bExtraIsoCuts;}
+  void			   SetPtBinning(vector<Double_t> binedges)			   { fBinsPt = binedges; }
+  void			   SetM02Binning(vector<Double_t> binedges)			   { fBinsM02 = binedges; }
+  void			   SetEtisoBinning(vector<Double_t> binedges)			   { fBinsEtiso = binedges; }
+  void			   SetEtueBinning(vector<Double_t> binedges)			   { fBinsEtue = binedges; }
+  void			   SetEtaBinning(vector<Double_t> binedges)			   { fBinsEta = binedges; }
+  void			   SetPhiBinning(vector<Double_t> binedges)			   { fBinsPhi = binedges; }
+  void			   SetLabelBinning(vector<Double_t> binedges)			   { fBinsLabel = binedges; }
+  void			   SetPDGBinning(vector<Double_t> binedges)			   { fBinsPDG = binedges; }
+  void			   SetMomPDGBinning(vector<Double_t> binedges)			   { fBinsMomPDG = binedges; }
+  void			   SetClustPDGBinning(vector<Double_t> binedges)	 	   { fBinsClustPDG = binedges; }
+  void			   SetDxBinning(vector<Double_t> binedges)			   { fBinsDx = binedges; }
+  void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
+  void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
+
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -125,6 +141,7 @@ protected:
   void                     IsolationAndUEinTPC(AliVCluster *coi, Double_t& isolation,Double_t& ue,Double_t eTThreshold, Int_t index);
   void                     AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp,Double_t eta,Double_t phi);
   void                     CalculateUEDensityMC(Double_t& sumUE);
+
 
   using AliAnalysisTaskEmcal::FillGeneralHistograms;
   Bool_t FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
@@ -196,6 +213,23 @@ protected:
   Double_t    fphiT;                           // Phi for considered clusters
   Double_t    fsumEtisoconeT;                  // sum Et  in cone
   Double_t    fsumEtUE;                        // sum UE
+
+    // Initialization of variables for THnSparse
+
+  std::vector<Double_t>    fBinsPt;
+  std::vector<Double_t>    fBinsM02;
+  std::vector<Double_t>    fBinsEtiso;
+  std::vector<Double_t>    fBinsEtue;
+  std::vector<Double_t>    fBinsEta;
+  std::vector<Double_t>    fBinsPhi;
+  std::vector<Double_t>    fBinsLabel;
+  std::vector<Double_t>    fBinsPDG;
+  std::vector<Double_t>    fBinsMomPDG;
+  std::vector<Double_t>    fBinsClustPDG;
+  std::vector<Double_t>    fBinsDx;
+  std::vector<Double_t>    fBinsDz;
+  std::vector<Double_t>    fBinsDecay;
+
   
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
@@ -282,7 +316,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 5);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 6);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif
