@@ -19,8 +19,8 @@ rm -Rf $TARGET/TPC/Calib/CorrectionMaps*
 #Create HLT HCDB configuration objects that differ from OCDB
 aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT/ConfigHLT/OnlineMode\", \"HLT Online Mode\", \"local://$TARGET\")"
 aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT/ConfigTPC/TPCHWClusterDecoder\", \"\", \"local://$TARGET\")"
-aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT/ConfigTPC/TPCHWClusterFinder\",
-    \"-debug-level 0 -do-mc 0 -deconvolute-time 1 -deconvolute-pad 1 -flow-control 0 -single-pad-suppression 0 -bypass-merger 0 -cluster-lower-limit 10 -single-sequence-limit 0 -use-timebin-window 1 -merger-distance 4 -charge-fluctuation 0 -rcu2-data 1\",
+aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT/ConfigTPC/TPCHWClusterFinder\", \
+    \"-debug-level 0 -do-mc 0 -deconvolute-time 1 -deconvolute-pad 1 -flow-control 0 -single-pad-suppression 0 -bypass-merger 0 -cluster-lower-limit 10 -single-sequence-limit 0 -use-timebin-window 1 -merger-distance 4 -charge-fluctuation 0 -rcu2-data 1\", \
     \"local://$TARGET\")"
 #ATTENTION: the -rcu2-data flag is NOT set for the HCDB!!!!!! This is set by the chain configuration not by the HCDB!!!!!! Thus, the setting is not applied running aliroot!!!!!!
 
