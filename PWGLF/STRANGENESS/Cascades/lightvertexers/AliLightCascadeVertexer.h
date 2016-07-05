@@ -55,7 +55,8 @@ private:
   Double_t fgRmin, fgRmax;// max & min radii of the fiducial volume
     static Double_t fgMaxEta;       // maximum eta value for track pre-selection
     static Double_t fgMinClusters;  // minimum single-track clusters value (>=)
-  
+  static Double_t fgSwitchCharges;  // minimum single-track clusters value (>=)
+    
   Double_t fChi2max;    // maximal allowed chi2 
   Double_t fDV0min;     // min. allowed V0 impact parameter
   Double_t fMassWin;    // window around the Lambda mass
@@ -65,6 +66,7 @@ private:
   Double_t fRmin, fRmax;// max & min radii of the fiducial volume
     Double_t fMaxEta;       // maximum eta value for track pre-selection
     Double_t fMinClusters;  // minimum single-track clusters value (>=)
+    Bool_t fSwitchCharges; //switch to change bachelor charge
   
   ClassDef(AliLightCascadeVertexer,3)  // cascade verterxer 
 };
@@ -80,7 +82,8 @@ inline AliLightCascadeVertexer::AliLightCascadeVertexer() :
   fRmin(fgRmin),
 fRmax(fgRmax),
 fMaxEta(fgMaxEta),
-fMinClusters(fgMinClusters)
+fMinClusters(fgMinClusters),
+fSwitchCharges(fgSwitchCharges)
 {
 }
 
