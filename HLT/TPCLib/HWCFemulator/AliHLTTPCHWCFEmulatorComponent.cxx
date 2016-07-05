@@ -68,6 +68,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fProcessingRCU2Data(0),
   fUseGain(1),
   fNoiseSuppression(0),
+  fNoiseSuppressionMinimum(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -353,6 +354,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
 
+    if ( argument.CompareTo( "-noise-suppression-for-minima" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fNoiseSuppressionMinimum  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Noise Suppression for minimum finder is set to: %d", fNoiseSuppressionMinimum );
+      continue;
+    }
+
     if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -585,6 +593,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fCFEmulator.SetTagDeconvolutedClusters( fTagDeconvolutedClusters );
       fCFEmulator.SetProcessingRCU2Data( fProcessingRCU2Data );
       fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
+      fCFEmulator.SetNoiseSuppressionMinimum( fNoiseSuppressionMinimum );
 
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

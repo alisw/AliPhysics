@@ -36,6 +36,7 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit()
   fkBunch(0),
   fChargeFluctuation(0),
   fNoiseSuppression(0),
+  fNoiseSuppressionMinimum(0),
   fDebug(0)
 {
   //constructor 
@@ -117,19 +118,26 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   AliHLTUInt32_t qLast = 0;
   AliHLTUInt32_t n = fOutput.fData.size();
   AliHLTUInt32_t qPeak = 0;
+  AliHLTUInt32_t qMin = 0;
   
   for( AliHLTUInt32_t i=0; i<n; i++ ){
     AliHLTUInt32_t q = fOutput.fData[i].fQ;    
     if( !slope ){
       if(fNoiseSuppression ? (q + fNoiseSuppression < qPeak) : (q + fChargeFluctuation < qLast) ){ // peak
-	slope = 1;
-	if( i>0 ) fOutput.fData[i-1].fPeak = 1;
+        slope = 1;
+        qMin = q;
+        if( i>0 ) fOutput.fData[i-1].fPeak = 1;
       }
       if (q > qPeak) qPeak = q;
-    }else if( q > qLast + fChargeFluctuation ){ // minimum
-      slope = 0;
-      qPeak = 0;
-      if( i>0 ) fOutput.fData[i-1].fPeak = 2;
+    }
+    else
+    {
+       if( fNoiseSuppressionMinimum ? (q > qMin + fNoiseSuppressionMinimum) : (q > qLast + fChargeFluctuation) ){ // minimum
+        slope = 0;
+        qPeak = q;
+        if( i>0 ) fOutput.fData[i-1].fPeak = 2;
+      }
+      if (q < qMin) qMin = q;
     }
     qLast = q;
   }

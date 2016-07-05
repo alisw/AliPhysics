@@ -84,6 +84,7 @@ class AliHLTTPCHWCFEmulator
   void SetProcessingRCU2Data( bool b ){ fChannelExtractor.SetRCU2Flag( b ); }
   
   void SetNoiseSuppression(int ns) {fPeakFinderUnit.SetNoiseSuppression(ns);}
+  void SetNoiseSuppressionMinimum(int ns) {fPeakFinderUnit.SetNoiseSuppressionMinimum(ns);}
 
  private: 
 
