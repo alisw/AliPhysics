@@ -1858,16 +1858,27 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
 
   /* always process FEE data */
   Int_t iresultFEE = ProcessFEEData();
-  if (iresultFEE != 0)
+  if (iresultFEE != 0) {
+    TString failureReason = ReturnCodeToString(iresultFEE);
+    Log(Form("The preprocessor failed. The reason of the failure is: %s", failureReason.Data()));
     return iresultFEE;
+  }
 
   if (runType == "PULSER") {
     Int_t iresultPulser = ProcessPulserData();
+    if (iresultPulser != 0) {
+      TString failureReason = ReturnCodeToString(iresultPulser);
+      Log(Form("The preprocessor failed. The reason of the failure is: %s", failureReason.Data()));
+    }
     return iresultPulser; 
   }
 
   if (runType == "NOISE") { // for the time being associating noise runs with pedestal runs; proper run type to be defined 
     Int_t iresultNoise = ProcessNoiseData();
+    if (iresultNoise != 0) {
+      TString failureReason = ReturnCodeToString(iresultNoise);
+      Log(Form("The preprocessor failed. The reason of the failure is: %s", failureReason.Data()));
+    }
     return iresultNoise; 
   }
  
@@ -1880,6 +1891,24 @@ UInt_t AliTOFPreprocessor::Process(TMap *dcsAliasMap)
     Int_t iResultHVandLVdps = ProcessHVandLVdps(dcsAliasMap);
     Int_t totResult = iresultDAQ + iresultNoiseCalib + iresultDCS + iResultHVandLVdps + iresultReadout; 
     Log(Form("Processing PHYSICS, returning %d (iresultDAQ = %d, iresultNoiseCalib = %d, iresultDCS = %d, iResultHVandLVdps = %d, iresultReadout = %d)", totResult, iresultDAQ, iresultNoiseCalib, iresultDCS, iResultHVandLVdps, iresultReadout));
+    if (totResult != 0){
+      Log(Form("The TOF preprocessor is now failing. The reason(s) of the failure is(are) listed below:"));
+      if (iresultDAQ != 0) {
+	Log(Form("Issue with T0Fill: %s", ReturnCodeToString(iresultDAQ).Data()));
+      }
+      if (iresultNoiseCalib != 0) {
+	Log(Form("Issue with Noise Calib: %s", ReturnCodeToString(iresultNoiseCalib).Data()));
+      }
+      if (iresultDCS != 0) {
+	Log(Form("Issue with DCS Data Points: %s", ReturnCodeToString(iresultDCS).Data()));
+      }
+      if (iResultHVandLVdps != 0) {
+	Log(Form("Issue with HV and LV (from DCS Data Points): %s", ReturnCodeToString(iResultHVandLVdps).Data()));
+      }
+      if (iresultReadout != 0) {
+	Log(Form("Issue with Readout Calib: %s", ReturnCodeToString(iresultReadout).Data()));
+      }
+    }
     return totResult;
   }
 
@@ -1973,4 +2002,40 @@ AliTOFPreprocessor::FillWithCableLengthMap(AliTOFChannelOnlineArray *cal)
   
 }
 
+//_____________________________________________________________________________
+
+TString AliTOFPreprocessor::ReturnCodeToString(Int_t code){
+
+  // This method allows to translate the return code of the preprocessor
+  // to a string, in order to help debugging when reading the preprocessor
+  // log.
+
+  switch (code)
+    {
+    case 0:   return "all ok";
+    case 1:   return "no DCS input data Map";
+    case 2:   return "no DCS input data processing";
+    case 3:   return "no DCS processed data was stored in Ref Data";
+    case 4:   return "no DAQ input for Ref Data";
+    case 5:   return "failed to store DAQ Ref Data";
+    case 6:   return "failed to retrieve DAQ data for calibration"; 
+    case 7:   return "problems in processing histos in the input DAQ file";
+    case 8:   return "failed to store Online Delays";
+    case 9:   return "failed to store Reference Data for Pulser";
+    case 10:  return "failed to retrieve Pulser data";
+    case 11:  return "failed to store Pulser map in OCDB";
+    case 12:  return "failed to store Reference Data for Noise";
+    case 13:  return "failed to retrieve Noise data"; 
+    case 14:  return "failed to store Noise map in OCDB";
+    case 15:  return "failed to retrieve FEE data from FXS";
+    case 16:  return "failed to retrieve FEE data from OCDB";
+    case 17:  return "failed to store FEE data in OCDB";
+    case 18:  return "failed to store FEE reference data in OCDB";
+    case 20:  return "failed in retrieving status variable";
+    case 100: return "no DCS input data Map (HV and LV status)";
+    case 200: return "no DCS input data processing (HV and LV status)";
+    case 300: return "no DCS processed data was stored in Ref Data (HV and LV status)";
+    }
+
+}
 

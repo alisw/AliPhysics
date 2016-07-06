@@ -50,6 +50,8 @@ class AliTOFPreprocessor : public AliPreprocessor
     void FillWithCosmicCalibration(AliTOFChannelOnlineArray *cal); // fill with cosmic calibration
     void FillWithCableLengthMap(AliTOFChannelOnlineArray *cal); // fill with cable-lenght map
 
+    TString ReturnCodeToString(Int_t code); // function that returns the meaning of the return code of the preprocessor
+
     static const Int_t fgkBinRangeAve;       // number of bins where to 
                                              // calculate the mean
     static const Double_t fgkIntegralThr;    // min number of entries per channel 
