@@ -71,6 +71,9 @@ HEREDOC
 
     aliroot -l -q -b ${tmpscript} 
     sleep 60 && rm ${tmpscript} &
+    echo Filtering alien cache part 
+    cat ${outFile} | sed -e s_"alien://?User=?DBFolder="_"alien://"_g -e s_"?SE=default?CacheFolder=?OperateDisconnected=1?CacheSize=1073741824?CleanupInterval=0"__g > ${outFile}.tmp
+    cp  ${outFile}.tmp ${outFile}
     return 1
 }
 
