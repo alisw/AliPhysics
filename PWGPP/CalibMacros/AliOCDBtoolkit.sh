@@ -3,7 +3,7 @@
 # Shell script to compare content of the OCDB entries.
 # Usage:
 # 1) source functios 
-# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh 
+# source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh -h
 
 # ocdbMakeTable() 
 #       Usage: bash $inputFile $flag $outputFile
@@ -31,6 +31,19 @@
 
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
  
+if [ "$1" == "-h" ]; then
+  echo Usage: 
+  echo '(source$ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh <action> <par0> <par1> ... '
+  echo "==============================="
+  echo Example usage ocdbMakeTable
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $esdFile   "esd" OCDBrec.list )'
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $mcGalice  MC $outputDir/OCDBsim.list )'
+  #
+  echo "==============================="
+  echo Example usage ocdbDiffJIRA
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC)'
+  exit 0
+fi
 
 ocdbMakeTable(){
 #
@@ -247,5 +260,25 @@ diffConfig(){
     cat $file1 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g  >${file1}_ocdbstripped
     cat $file2 | sed s_"alien://folder="_"ocdbprefix"_g | sed s_"alien://Folder="_"ocdbprefix"_g | sed s_"local://\${ALICE\_OCDB}"_"ocdbprefix"_g   >${file2}_ocdbstripped
     diff  ${file1}_ocdbstripped  ${file2}_ocdbstripped  > ${file1}_ocdbstrippeddiff
+
+} 
+
+
+ocdbDiffJIRA(){
+    #
+    # Make a diff between the 2 OCDB tables
+    # example usage : (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC)
+
+    a=${@}
+    if [ $a -lt 3] ; then
+	echo "The total length of all arguments is: ${#a}: ";
+        echo example usage  ocdbDiffJIRA file1 file2 mask;
+        return 0;
+    fi;
+    file1=$1
+    file2=$2
+    mask=$3
+    diff  -W 1000 -y  --suppress-common-lines $file1  $file2 | grep $mask  | sed -e s_">"__g  -e s_"^"_"|"_  -e s_"$"_"|"_ -e 's/\t/|/g' -e 's_" "_"|"_g'  -e 's_"{|}"_"|"_' -e "s/\([ |,.]\)\1*/\1/g"
+    (source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh "ocdbDiffJIRA file1=$file1 file2=$file2 mask=$mask" )
 
 }
