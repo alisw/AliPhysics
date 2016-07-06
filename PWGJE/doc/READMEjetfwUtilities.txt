@@ -2,12 +2,13 @@
 
 # Jet Framework Utilities (e.g. FJ contrib)
 
-Additional utilities can be attached to the AliEmcalJetTask object, in a similar fashion as it is done for the AliTender class. The utility classes have to derive from the abstract class AliEmcalJetUtility. An EMCal jet utility class can implement any of the following four methods declared as virtual in AliEmcalJetUtility:
+Additional utilities can be attached to the AliEmcalJetTask object, in a similar fashion as it is done for the AliTender class - for those who are familiar with it. The utility classes have to derive from the abstract class AliEmcalJetUtility. An EMCal jet utility class can implement any of the following four methods declared as virtual in AliEmcalJetUtility:
 
 ~~~{.cxx}
 virtual void Init() = 0;                                                        // Executed only once at the end of AliEmcalJetTask::DoInit()
 virtual void Prepare(AliFJWrapper& fjw) = 0;                                    // Executed for each event at the beginning of AliEmcalJetTask::FillJetBranch()
-virtual void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw) = 0;     // Executed for each jet in the loop in AliEmcalJetTask::FillJetBranch()
+virtual void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw) = 0;     
+// Executed for each jet in the loop in AliEmcalJetTask::FillJetBranch()
 virtual void Terminate(AliFJWrapper& fjw) = 0;                                  // Executed for each event at the end of AliEmcalJetTask::FillJetBranch()
 ~~~
 
