@@ -23,6 +23,7 @@
 #pragma link C++ class AliFemtoModelBPLCMSCorrFctnKK;
 #pragma link C++ class AliFemtoModelGausRinvFreezeOutGenerator;
 #pragma link C++ class AliFemtoModelCorrFctnKStar;
+#pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;

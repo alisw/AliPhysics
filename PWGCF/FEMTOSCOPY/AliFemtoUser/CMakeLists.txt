@@ -40,17 +40,18 @@ set(SRCS
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
   AliFemtoModelAllHiddenInfo.cxx
-  AliFemtoModelCorrFctnSource.cxx
-  AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelBPLCMSCorrFctn.cxx
   AliFemtoModelBPLCMSCorrFctnKK.cxx
   AliFemtoModelGausRinvFreezeOutGenerator.cxx
-  AliFemtoModelCorrFctnKStar.cxx
-  AliFemtoModelCorrFctnTrueQ.cxx
-  AliFemtoModelCorrFctnNonIdDR.cxx
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
+  AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDirectYlm.cxx
+  AliFemtoModelCorrFctnSource.cxx
+  AliFemtoModelCorrFctnKStar.cxx
+  AliFemtoModelCorrFctnNonIdDR.cxx
+  AliFemtoModelCorrFctnQinv.cxx
+  AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoNSigmaFilter.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
