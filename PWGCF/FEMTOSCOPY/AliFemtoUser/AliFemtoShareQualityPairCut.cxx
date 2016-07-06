@@ -52,32 +52,40 @@ AliFemtoShareQualityPairCut& AliFemtoShareQualityPairCut::operator=(const AliFem
     fShareFractionMax = cut.fShareFractionMax;
     fRemoveSameLabel = cut.fRemoveSameLabel;
   }
-  
+
   return *this;
 }
 //__________________
 bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
   bool temp;
-  
+
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
-  
+
   if ((fShareFractionMax >= 1.0) && ( fShareQualityMax >= 1.0)) {
      temp = true;
   }
   else {
-     for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
+    const unsigned int n_bits = pair->Track1()->Track()->TPCclusters().GetNbits();
+
+    const auto tpc_clusters_1 = pair->Track1()->Track()->TPCclusters(),
+               tpc_clusters_2 = pair->Track2()->Track()->TPCclusters();
+
+    const auto tpc_sharing_1 = pair->Track1()->Track()->TPCsharing(),
+               tpc_sharing_2 = pair->Track2()->Track()->TPCsharing();
+
+     for (unsigned int imap = 0; imap < n_bits; imap++) {
+       const bool cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
+                  cluster_bit_2 = tpc_clusters_1.TestBitNumber(imap);
         // If both have clusters in the same row
-        if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
-            pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+        if (cluster_bit_1 && cluster_bit_2) {
            // Do they share it ?
-           if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
-               pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
+           if (tpc_sharing_1.TestBitNumber(imap) && tpc_sharing_2.TestBitNumber(imap))
            {
               //	  cout << "A shared cluster !!!" << endl;
-              //	cout << "imap idx1 idx2 " 
+              //	cout << "imap idx1 idx2 "
               //	     << imap << " "
               //	     << tP1idx[imap] << " " << tP2idx[imap] << endl;
               an++;
@@ -90,8 +98,7 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
               nh+=2;
            }
         }
-        else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-                 pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+        else if (cluster_bit_1 || cluster_bit_2) {
            // One track has a hit, the other does not
            an++;
            nh++;
@@ -105,8 +112,8 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
         hsfval = ns*1.0/nh;
      }
     //  if (hsmval > -0.4) {
-    //   cout << "Pair quality: " << hsmval << " " << an << " " << nh << " " 
-    //        << (pair->Track1()->Track()) << " " 
+    //   cout << "Pair quality: " << hsmval << " " << an << " " << nh << " "
+    //        << (pair->Track1()->Track()) << " "
     //        << (pair->Track2()->Track()) << endl;
     //   cout << "Bits: " << pair->Track1()->Track()->TPCclusters().GetNbits() << endl;
     //  }
@@ -134,7 +141,8 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   return temp;
 }
 //__________________
-AliFemtoString AliFemtoShareQualityPairCut::Report(){
+AliFemtoString AliFemtoShareQualityPairCut::Report()
+{
   // Prepare the report from the execution
   string stemp = "AliFemtoShareQuality Pair Cut - remove shared and split pairs\n";  char ctemp[100];
   snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
