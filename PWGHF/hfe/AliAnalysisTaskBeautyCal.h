@@ -135,10 +135,14 @@ private:
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
+    TH1D        *fHistPhoReco0;//!ele cand SPD or
+    TH1D        *fHistPhoReco1;//!ele cand SPD or
+
     TH2D        *fHistDCAinc;//!ele cand SPD or
     TH2D        *fHistDCApho;//!ele cand SPD or
     TH2D        *fHistDCAcomb;//!ele cand SPD or
     TH2D        *fHistDCAhfe;//!ele cand SPD or
+    TH2D        *fHistDCAhad;//!ele cand SPD or
 
     TH2D        *fHistDCAde;//!ele cand SPD or
     TH2D        *fHistDCAbe;//!ele cand SPD or

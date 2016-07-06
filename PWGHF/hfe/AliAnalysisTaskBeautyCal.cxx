@@ -130,10 +130,13 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0),
+  fHistPhoReco0(0),
+  fHistPhoReco1(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
   fHistDCAhfe(0),
+  fHistDCAhad(0),
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
@@ -213,10 +216,13 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fMCcheckMother(0), 
   fSparseElectron(0),
   fvalueElectron(0),
+  fHistPhoReco0(0),
+  fHistPhoReco1(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
   fHistDCAhfe(0),
+  fHistDCAhad(0),
   fHistDCAde(0),
   fHistDCAbe(0),
   fHistDCApe(0),
@@ -417,6 +423,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
+  fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fOutputList->Add(fHistPhoReco0);
+
+  fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fOutputList->Add(fHistPhoReco1);
+
   fHistDCAinc = new TH2D("fHistDCAinc", "DCA of inclusive e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAinc);
  
@@ -428,6 +440,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAhfe = new TH2D("fHistDCAhfe", "DCA of hfe e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAhfe);
+
+  fHistDCAhad = new TH2D("fHistDCAhad", "DCA of bg hadron; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCAhad);
 
   fHistDCAde = new TH2D("fHistDCAde", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAde);
@@ -753,13 +768,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->P()<2.0)continue;
     }
  
-    /* 
-     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    */
-
     Double_t DCAxy = d0z0[0]*atrack->Charge()*MagSign;
     //cout << "DCAxy = " << DCAxy << endl;
 
@@ -903,13 +911,22 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
-      ////////////////////////////////////////////////
-      //Track properties of EMCAL electron cadidates//
-      ////////////////////////////////////////////////
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m02 > 0.006 && m02 < 0.35){ //rough cuts
+      
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
+        if(pid_eleP)
+          {
+           if(fFlagNonHFE)
+             {
+              fHistPhoReco1->Fill(track->Pt()); // reco pho
+             }
+           else
+             {
+              fHistPhoReco0->Fill(track->Pt()); // org pho
+             }
+          }
 
         fHistDCAinc->Fill(track->Pt(),DCAxy);
         if(fFlagNonHFE)
@@ -926,12 +943,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
-/*
-        if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
-        if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
-        if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
-*/   
-      }
+      } // eID cuts
+
+     if(fTPCnSigma < -4 && eop>0.9 && eop<1.3)fHistDCAhad->Fill(track->Pt(),DCAxy); // hadron contamination
+
+
     }
   } //track loop
 
