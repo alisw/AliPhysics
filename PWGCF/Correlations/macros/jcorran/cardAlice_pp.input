@@ -89,3 +89,4 @@ QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = qu
 HitsPerBinAcceptance   500 # Number of hits per bin required for acceptance correction histograms
 UseZVertexBins 0 # 0 = integrate over z-vertex bins, 1 = Do acceptance correction in z-vertex bins
 AcceptanceTestMode 0 # 0 = always use this in analysis, 1 = test mode, mixed event distribution not properly corrected in 3D near side to see the effect of correction
+EnableDeltaEtaDeltaPhiHistograms 1 # Set 1 to fill 2D deltaEta deltaPhi histograms and 0 not to fill them. Must be 1 if the result file will be used as an input for acceptance correction

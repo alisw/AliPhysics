@@ -285,7 +285,7 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
   
   FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
-  FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
+  if(fcard->Get("EnableDeltaEtaDeltaPhiHistograms")==1) FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
   
 }

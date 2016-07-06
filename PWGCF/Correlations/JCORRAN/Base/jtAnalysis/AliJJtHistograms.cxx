@@ -418,9 +418,14 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       << TH1D( "hBgAssocXlongPhi", "",  nUEBins, uEBinBorders)
       <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
-  fhDphiDetaXlong
-      << TH2D( "hDphiDetaXlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-      <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
+  // Only create deltaEta deltaPhi histograms if they are enabled in the JCard
+  if(fCard->Get("EnableDeltaEtaDeltaPhiHistograms")==1){
+
+    fhDphiDetaXlong
+        << TH2D( "hDphiDetaXlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
+        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
+    
+  }
   
   if(fenable2DHistos){
       
@@ -500,9 +505,14 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       << TH1D( "hBgAssocKlongPhi", "",  nUEBins, uEBinBorders)
       <<  fCentBin << fPhiGapBin << fPTtBin << fKLongBin  << "END";
 
-  fhDphiDetaKlong
-      << TH2D( "hDphiDetaKlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
-      <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fKLongBin  << "END";
+  // Only create deltaEta deltaPhi histograms if they are enabled in the JCard
+  if(fCard->Get("EnableDeltaEtaDeltaPhiHistograms")==1){
+
+    fhDphiDetaKlong
+        << TH2D( "hDphiDetaKlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
+        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fKLongBin  << "END";
+  
+  }
   
   if(fenable2DHistos){
       
@@ -582,10 +592,15 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       << TH1D( "hBgAssocPtaPhi", "",  nUEBins, uEBinBorders)
       <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-  fhDphiDetaPta
-      << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-      <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+  // Only create deltaEta deltaPhi histograms if they are enabled in the JCard
+  if(fCard->Get("EnableDeltaEtaDeltaPhiHistograms")==1){
   
+    fhDphiDetaPta
+        << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+    
+  }
+    
   if(fenable2DHistos){
       
     fhDphiDetaBgPtaEta
