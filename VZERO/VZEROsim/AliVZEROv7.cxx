@@ -144,7 +144,7 @@ AliVZEROv7::AliVZEROv7(const char *name, const char *title):AliVZERO(name,title)
    fV0CLightAttenuation(0.05),
    fV0CnMeters(15.0),
    fV0CFibToPhot(0.3),
-   fV0AR0(4.2),    
+   fV0AR0(4.2),
    fV0AR1(7.6), 
    fV0AR2(13.8), 
    fV0AR3(22.7),
@@ -2030,9 +2030,9 @@ void AliVZEROv7::CreateGeometry()
     v0APts[1+8*i] = -(fV0AR0+fV0AFraWd/2.)*sin45;
     v0APts[2+8*i] = -fV0AR0*cos45;
     v0APts[3+8*i] = -(fV0AR0+fV0AFraWd)*sin45;
-    v0APts[4+8*i] = -(fV0AR4-fV0AFraWd/6.)*cos45;
+    v0APts[4+8*i] = -(fV0AR4-fV0AFraWd)*cos45;
     v0APts[5+8*i] = -fV0AR4*sin45;
-    v0APts[6+8*i] = -(fV0AR4-fV0AFraWd)*cos45;
+    v0APts[6+8*i] = -(fV0AR4-fV0AFraWd/6.)*cos45;
     v0APts[7+8*i] = -(fV0AR4-fV0AFraWd/2.)*sin45;
     }
     TGeoArb8 *sV0AFraB26 = new TGeoArb8("sV0AFraB26", fV0ASciWd/2., v0APts);
