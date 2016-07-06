@@ -59,10 +59,12 @@ public:
       , fL1Inputs(0)
       , fRunNumber(0)
       , fnTrk(0)
-      , fnTrklet(0)
       , fCharge(0)
       , fL2Inputs(0)
-      , fOrbitID(0) {}
+      , fOrbitID(0) {
+      for (Int_t i=0; i<4; ++i)
+	fnTrklet[i] = 0;
+    }
 
     void Fill(const AliESDEvent *);
 
@@ -75,7 +77,7 @@ public:
     UInt_t    fL1Inputs;
     Int_t     fRunNumber;
     UShort_t  fnTrk;
-    UShort_t  fnTrklet;
+    UShort_t  fnTrklet[4]; // all, C,cent,A
     Char_t    fCharge;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;  
@@ -144,7 +146,7 @@ public:
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
     Bool_t    fIskMB;
-    ClassDef(TreeData, 4);
+    ClassDef(TreeData, 5);
   } ;
 
   struct TrackData : public TObject {
@@ -220,7 +222,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 4);
+  ClassDef(AliAnalysisTaskDG, 5);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
