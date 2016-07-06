@@ -202,7 +202,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_model_corrfctn) {
-        AliFemtoModelCorrFctnQval *cf = new AliFemtoModelCorrFctnQinv("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoModelCorrFctnQinv *cf = new AliFemtoModelCorrFctnQinv("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
         analysis->AddCorrFctn(
           cf
