@@ -180,7 +180,7 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoParticleCollection *coll_1
 // Pion Cut Monitor
 //
 
-#define UNSPECIFIED_PARTICLE -999999999
+const static int UNSPECIFIED_PARTICLE = -999999999;
 
 const std::map<Int_t, std::string> code_to_label = {
   {UNSPECIFIED_PARTICLE, "other"},

@@ -18,7 +18,7 @@
 #include "AliFemtoCutMonitorParticleYPt.h"
 
 #include "AliFemtoCorrFctnKStar.h"
-
+#include "AliFemtoModelCorrFctnTrueQ.h"
 #include "AliFemtoMomentumResolver.h"
 
 #include <TROOT.h>
@@ -43,6 +43,7 @@ struct MacroParams {
   bool do_avg_sep_cf;
   bool do_kt_q3d;
   bool do_kt_qinv;
+  bool do_model_corrfctn;
   bool do_ylm_cf; // not implemented yet
 };
 
@@ -80,6 +81,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_ylm_cf = false;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
+  macro_config.do_model_corrfctn = true;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -187,11 +189,24 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(deta_dphi_cf);
       }
 
+      const float QINV_MIN_VAL = 0.0,
+                  QINV_MAX_VAL = macro_config.qinv_max_GeV;
+
+      const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
+
       if (macro_config.do_qinv_cf) {
         TString cf_title = TString("_qinv_") + pair_type_str;
-        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
-        analysis->AddCorrFctn(cf);
+        analysis->AddCorrFctn(
+          new AliFemtoQinvCorrFctn(cf_title.Data(), QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL)
+        );
+      }
+
+      if (macro_config.do_model_corrfctn) {
+        AliFemtoModelCorrFctnQval *cf = new AliFemtoModelCorrFctnQinv("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
+        analysis->AddCorrFctn(
+          cf
+        );
       }
 
       if (macro_config.do_q3d_cf) {
