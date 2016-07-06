@@ -105,7 +105,8 @@ AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2()
 : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
 fkSaveTree ( kTRUE ), 
-fkSaveRawdEdxSignals ( kFALSE ), 
+fkSaveRawdEdxSignals ( kFALSE ),
+fkSwitchCharges( kFALSE ),
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
@@ -176,7 +177,8 @@ AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(con
 : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
 fkSaveTree ( kTRUE ), 
-fkSaveRawdEdxSignals ( kFALSE ), 
+fkSaveRawdEdxSignals ( kFALSE ),
+fkSwitchCharges( kFALSE ),
 fkSelectCentrality (kFALSE),
 fCentSel_Low(0.0),
 fCentSel_High(0.0),
@@ -548,6 +550,9 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         
         AliLightV0vertexer lV0vtxer;
         AliLightCascadeVertexer lCascVtxer;
+        
+        //Do wrong charge combination (experimental!)
+        lCascVtxer.SetSwitchCharges( fkSwitchCharges );
         
         lV0vtxer.SetDefaultCuts(fV0VertexerSels);
         lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
@@ -1028,43 +1033,56 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
                 (fTreeCascVarMassAsOmega<1.672+fCascadeMassWindow&&fTreeCascVarMassAsOmega>1.672-fCascadeMassWindow) ) {
             //This cascade is useless until proven otherwise
             Bool_t lSaveThisCascade = kFALSE;
-
+            
             //Extra selections in case this is supposed to be super-filtered
             //Inspired on tricks used for the V0 analysis in Pb-Pb
             if (TMath::Abs(fTreeCascVarNegEta) < 0.8 &&
-                    TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
-                    TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
-                    fTreeCascVarPt > fLowPtCutoff) { //beware ptMC and ptreco differences
-
+                TMath::Abs(fTreeCascVarPosEta) < 0.8 &&
+                TMath::Abs(fTreeCascVarBachEta) < 0.8 &&
+                fTreeCascVarPt > fLowPtCutoff) { //beware ptMC and ptreco differences
+                
                 //Extra selections applied on a case-by-case basis:
                 // (1) XiMinus
                 if( fTreeCascVarCharge == -1 &&
-                        TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (2) XiPlus
                 if( fTreeCascVarCharge == +1 &&
-                        TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarMassAsXi-1.321)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapXi          ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (3) OmegaMinus
                 if( fTreeCascVarCharge == -1 &&
-                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapOmega       ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
                 // (4) OmegaPlus
                 if( fTreeCascVarCharge == +1 &&
-                        TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
-                        TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ) {
+                   TMath::Abs(fTreeCascVarMassAsOmega-1.672)<fCascadeMassWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion    ) <= 4 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton  ) <= 4 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon   ) <= 4 &&
+                   TMath::Abs(fTreeCascVarRapOmega         ) <= 0.5 ) {
                     lSaveThisCascade = kTRUE;
                 }
             }
             if (lSaveThisCascade && fkSaveTree ) fTreeCascade -> Fill() ;
         }
-
+        
         //------------------------------------------------
         // Fill tree over.
         //------------------------------------------------
