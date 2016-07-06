@@ -92,6 +92,8 @@ public:
     void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ){ fCascadeVertexerSels[6] = lParameter; }
     void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ){ fCascadeVertexerSels[7] = lParameter; }
     //---------------------------------------------------------------------------------------
+    void SetSwitchCharges (Bool_t lOption) { fkSwitchCharges = lOption; }
+    //---------------------------------------------------------------------------------------
     
     //---------------------------------------------------------------------------------------
 private:
@@ -115,6 +117,7 @@ private:
     
     Bool_t fkSaveTree; // if true, saves TTree object
     Bool_t fkSaveRawdEdxSignals; // if true, will save raw dEdx signals for later use
+    Bool_t fkSwitchCharges; //if true, do 'like-sign' combination in cascade vertexers
     
     Bool_t fkSelectCentrality; // if true, perform cut on centrality 
     Double_t fCentSel_Low;

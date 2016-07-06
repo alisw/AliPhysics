@@ -37,7 +37,7 @@ public:
     static void SetDefaultMinClusters(Double_t lMaxEta);
     void SetMaxEta(Double_t lMaxEta);
     void SetMinClusters(Double_t lMaxEta);
-
+    void SetSwitchCharges(Bool_t lOption);
 private:
   static
   Double_t fgChi2max;   // maximal allowed chi2 
@@ -126,6 +126,9 @@ inline void AliLightCascadeVertexer::SetMaxEta(Double_t lMaxEta) {
 }
 inline void AliLightCascadeVertexer::SetMinClusters(Double_t lMinClusters) {
     fMinClusters = lMinClusters;
+}
+inline void AliLightCascadeVertexer::SetSwitchCharges(Bool_t lOption) {
+    fSwitchCharges = lOption;
 }
 
 #endif
