@@ -434,7 +434,15 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fIR1InteractionMap = esdHeader->GetIRInt1InteractionMap();
   fIR2InteractionMap = esdHeader->GetIRInt2InteractionMap();
 
-  fTreeData.fEventInfo.fnTrklet = mult->GetNumberOfTracklets();
+  for (Int_t i=0; i<4; ++i)
+    fTreeData.fEventInfo.fnTrklet[i] = 0;
+  for (Int_t i=0, n=mult->GetNumberOfTracklets(); i<n; ++i) {
+    const Double_t eta = -TMath::Log(TMath::Tan(0.5*mult->GetTheta(i)));
+    fTreeData.fEventInfo.fnTrklet[0] += 1;           // all tracklets
+    fTreeData.fEventInfo.fnTrklet[1] += (eta <  -0.9);
+    fTreeData.fEventInfo.fnTrklet[2] += (eta >= -0.9 && eta <= +0.9);
+    fTreeData.fEventInfo.fnTrklet[3] += (eta >  +0.9);
+  }
 
   std::unique_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
   fTreeData.fEventInfo.fnTrk = oa->GetEntries();
