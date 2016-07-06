@@ -48,6 +48,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
 
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+    void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
 
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
@@ -55,7 +56,6 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
-
   private:
     enum{
       kAODanalysis = BIT(20),
@@ -89,6 +89,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
 
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
+
+    TString fCentralityEstimator;         // Centrality Estimator
 
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events

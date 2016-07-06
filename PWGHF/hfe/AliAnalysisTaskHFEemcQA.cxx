@@ -83,6 +83,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fFlagClsTypeDCAL(kTRUE),
   fcentMim(0),
   fcentMax(0),
+  fCentralityEstimator("V0M"),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -183,6 +184,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fFlagClsTypeEMC(kTRUE),
   fcentMim(0),
   fcentMax(0),
+  fCentralityEstimator("V0M"),
   fFlagClsTypeDCAL(kTRUE),
   fOutputList(0),
   fNevents(0),
@@ -577,10 +579,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
   if( !fMultSelection) {
     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     //AliWarning("AliMultSelection object not found!");
-    centrality = fCentrality->GetCentralityPercentile("V0M");
+    centrality = fCentrality->GetCentralityPercentile(fCentralityEstimator.Data());
   }else{
     //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-    centrality = fMultSelection->GetMultiplicityPercentile("V0M", false); 
+    centrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false); 
   }
   //printf("mim cent selection %d\n",fcentMim);
   //printf("max cent selection %d\n",fcentMax);
