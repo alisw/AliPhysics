@@ -344,7 +344,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // Create ouput histograms and THnSparse and TTree
   
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  Printf("Up here all good");
+    //printf("Up here all good");
   
   if ((fIsoMethod == 0 || fIsoMethod == 1) && fTPC4Iso){
     cout<<"Error: Iso_Methods with CELLS and CLUSTERS work only within EMCAL "<<endl;
@@ -431,7 +431,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         TString sTitle;
         Int_t binPT=70, binM02=200, binETiso=440, binETUE=110, binetacl=100,binphicl=100, binlabel=1500;
         
-        Int_t binMCMotherPDG=100,bindx=200, bindz=200 /*bincells=20,*/;
+        Int_t binMCMotherPDG=200,bindx=200, bindz=200 /*bincells=20,*/;
         
         Int_t bins[] = {binPT, binM02, binETiso, binETUE, binetacl, binphicl};
         
@@ -459,7 +459,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           Double_t xminbis[] = {0., -10., -10., -1000., -1.0,  1.,    0};
           Double_t xmaxbis[] = {70., 100., 100.,  1000.,  1.0, 3.5, 1500};
           
-          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; N_{Tracks}; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",7,binsMC,xminbis,xmaxbis);
+          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",7,binsMC,xminbis,xmaxbis);
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
           
@@ -476,8 +476,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutput->Add(fphietaOthersBis);
           
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
-          Double_t xminbismix[] = {0.,  0., -3000, -4000,  0.,-1., -1., -10,    0.};
-          Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,  10.};
+          Double_t xminbismix[] = {0.,  0., -3000, -400,  0.,-1., -1., -10,    0.};
+          Double_t xmaxbismix[] = {70., 2.,  3000,  400, 70., 1.,  1., 100.,  10.};
           
           fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC->Sumw2();
@@ -2313,7 +2313,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   Int_t npart=fAODMCParticles->GetEntries();
     //cout<<"Number of particles in the event: "<<npart<<endl;
   
-  AliAODMCParticle *particle2Check, *MomP2Check;
+  AliAODMCParticle *particle2Check, *momP2Check;
   
   Int_t clustPDG, p2clabel;
   Double_t enTrue,phiTrue, etaTrue;
@@ -2323,23 +2323,26 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   particle2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(clusterlabel));
   clustPDG=particle2Check->GetPdgCode();
   int mom2checkidx = particle2Check->GetMother();
-  MomP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
+  momP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
   
     //Direct Photon or e+/e- coming from Photon Conversion
-  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && MomP2Check->GetPdgCode() == 22)){
+  if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && momP2Check->GetPdgCode() == 22)){
     phiTrue = particle2Check->Phi(); //
     etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
     enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
     
       //Checking if the Photon is a decay product of pi0 or eta meson. //Maybe include omega?
+      //printf("Cluster Label: %d Asso. with a MCpar w/ PDG %d",clusterlabel,clustPDG);
     if(clustPDG==22){
-      if( MomP2Check->GetPdgCode()!=22){
-        if (MomP2Check->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221) {
-          
+        //printf("\twhose mother is a %d",momP2Check->GetPdgCode());
+      if( momP2Check->GetPdgCode()!=22){
+          //printf("  which is not a photon so the cluster is from a decay ");
+        if (momP2Check->GetPdgCode()==111 || momP2Check->GetPdgCode()==221) {
+            //printf(" of a pi0 or a eta mesons");
           clusterFromPromptPhoton=5;
           
-          Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
-          Int_t idxdaug2 = MomP2Check->GetLastDaughter();
+          Int_t idxdaug1 = momP2Check->GetFirstDaughter();
+          Int_t idxdaug2 = momP2Check->GetLastDaughter();
           if ( idxdaug1 == clusterlabel ){ //Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster Energy
             if ( idxdaug2<npart ){//2nd daughter within List of Particles.
               
@@ -2363,20 +2366,30 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
         }
-        else
+        else{
+            //printf("  of a non considered meson/baryon");
           clusterFromPromptPhoton=8;//Undefined
+        }
       }
-      else
+      else{
         clusterFromPromptPhoton=1;//TruePromptPhoton
+                                  //printf("  so we have a prompt photon\n");
+      }
     }
     else{//Cluster created by e+/e- from Photon Conversion
-      if ( mom2checkidx == 8 )
+         //printf(" whose mother PDG is %d and occupies the stack position at: %d\n",momP2Check->GetPdgCode(),mom2checkidx);
+      Int_t g_momindex = momP2Check->GetMother();
+      AliAODMCParticle *gMomP2Check=static_cast<AliAODMCParticle*>(fAODMCParticles->At(g_momindex));
+      if ( mom2checkidx == 8 || (g_momindex == 8 && gMomP2Check->GetPdgCode()==22 && momP2Check->GetPdgCode()==22)){
         clusterFromPromptPhoton=1; //e+/e- from Converted Prompt Photon
-      else
+                                   //printf(" This means it is a e+/e- cluster from a Converted PromptPhoton.\n");
+      }
+      else{
+          //printf(" This means it is a e+/e- cluster from a Converted DECAYPhoton.\n");
         clusterFromPromptPhoton=5; //cluster created by a Photon but not a prompt one
-      
-      Int_t firstidx=MomP2Check->GetFirstDaughter();
-      Int_t lastidx=MomP2Check->GetLastDaughter();
+      }
+      Int_t firstidx=momP2Check->GetFirstDaughter();
+      Int_t lastidx=momP2Check->GetLastDaughter();
       if(clusterFromPromptPhoton==1){
         if( firstidx == clusterlabel ){//Cluster associated with the 1st electron? Then look if also the 2nd electron contributes to the cluster Energy
           if( lastidx < npart ){//2nd daughter within List of Particles.
@@ -2385,6 +2398,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             if(( last->Phi() - phiTrue ) < fdphicut && ( last->Eta() - etaTrue ) < fdetacut ){ //same Proximity cut as the CPV
               enTrue += last->E()*TMath::Sin(last->Theta());
               clusterFromPromptPhoton=3; //contribution from both daughters
+                                         //printf(" The cluster HAS actually contribution from both daughters but is asso to the second daughter (lower energy)\n");
             }
             else clusterFromPromptPhoton=2; //contribution from one daughter
           }
@@ -2395,6 +2409,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
           if(( first->Phi() - phiTrue ) < fdphicut && ( first->Eta() - etaTrue ) < fdetacut ){//same Proximity cut as the CPV
             enTrue += first->E()*TMath::Sin(first->Theta());
             clusterFromPromptPhoton=3;//contribution from both daughters
+                                      //printf("cluster HAS actually contribution from both daughters but is asso to the first daughter (higher energy)\n");
           }
           else
             clusterFromPromptPhoton=2;//contribution from one daughter
@@ -2402,9 +2417,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
       }
       if(clusterFromPromptPhoton >= 5){//Check on wheter also the 2nd gamma from pi0/eta decay contributes to the Energy of the cluster
                                        //This Further check is implemented to take care of very asymmetric decays.
-        Int_t idxgrandma = MomP2Check->GetMother();
+        Int_t idxgrandma = momP2Check->GetMother();
         AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
-        if( grandma->GetPdgCode() == 111 || MomP2Check->GetPdgCode() == 221 ){ //Add also omega mesons, Lambda barion, neutral Kaons?
+        if( grandma->GetPdgCode() == 111 || momP2Check->GetPdgCode() == 221 ){ //Add also omega mesons, Lambda barion, neutral Kaons?
           
           Int_t idxaunt1 = grandma->GetFirstDaughter();
           Int_t idxaunt2 = grandma->GetLastDaughter();
@@ -2432,28 +2447,29 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
         else
           clusterFromPromptPhoton=8;//Undefined
       }
-      
-      dPhi = phiCLS-phiTrue;
-      dEta = etaCLS-etaTrue;
-      
-      outputvalueMCmix[0] = energyCLS;
-      outputvalueMCmix[1] = ss;
-      outputvalueMCmix[2] = clustPDG;
-      outputvalueMCmix[3] = MomP2Check->GetPdgCode();
-      outputvalueMCmix[4] = enTrue;
-      outputvalueMCmix[5] = dPhi;
-      outputvalueMCmix[6] = dEta;
-      outputvalueMCmix[7] = isolation;
-      outputvalueMCmix[8] = clusterFromPromptPhoton;
-        //clusterFromPP=1 ->clusterlabel = 8TruePromptPhoton;
-        //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
-        //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
-        //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
-        //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
-        //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
-      
-      fOutClustMC->Fill(outputvalueMCmix);
     }
+    
+    dPhi = phiCLS-phiTrue;
+    dEta = etaCLS-etaTrue;
+      //printf("\nCluster %d  PDG: %d  (Mom is a %d) with pT: %f  ",clusterlabel,clustPDG,momP2Check->GetPdgCode(),energyCLS);
+      //printf(" with clusterFromPromptPhoton stored: %d for cluster w/label %d\n",clusterFromPromptPhoton,clusterlabel);
+    outputvalueMCmix[0] = energyCLS;
+    outputvalueMCmix[1] = ss;
+    outputvalueMCmix[2] = clustPDG;
+    outputvalueMCmix[3] = momP2Check->GetPdgCode();
+    outputvalueMCmix[4] = enTrue;
+    outputvalueMCmix[5] = dPhi;
+    outputvalueMCmix[6] = dEta;
+    outputvalueMCmix[7] = isolation;
+    outputvalueMCmix[8] = clusterFromPromptPhoton;
+      //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
+      //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
+      //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
+      //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
+      //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
+      //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
+    
+    fOutClustMC->Fill(outputvalueMCmix);
   }
   return;
 }
@@ -2652,7 +2668,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       if(fWho==2){
         fPtvsM02vsSum->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         
-         isolation=isolation-ue;  // ue subscraction
+        isolation=isolation-ue;  // ue subscraction
         fPtvsM02vsSumUE->Fill(vecCOI.Pt(),coi->GetM02(),isolation);
         
         fPtIsoTrack->Fill(vecCOI.Pt() , isolation);
@@ -3099,6 +3115,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t& sumUE){
 
 void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   
+    //printf("New Event...Analysing Stack!");
   if (!fIsMC)
     return;
     //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
@@ -3166,14 +3183,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       phi = mcpart->Phi();
       
         //check photons in EMCAL //to be redefined with fIsoConeR
-      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi<1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
+      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
         continue;
+        //printf("\nParticle Position %d  and Label: %d  PDG: %d  Pt: %f  Eta: %f  Phi: %f",iTr, mcpart->GetLabel(),pdg,mcpart->Pt(), eta, phi);
       
       photonlabel = iTr;
       int momidx = mcpart->GetMother();
       
       mom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(momidx));
       mompdg= TMath::Abs(mom->GetPdgCode());
+      
+        //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
       
       eT= mcpart->E()*TMath::Sin(mcpart->Theta()); //transform to transverse Energy
       
@@ -3240,14 +3260,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       }
       CalculateUEDensityMC(sumUE);
       
-      outputValuesMC[0] = nFSParticles;
-      outputValuesMC[1] = eT;
-      outputValuesMC[2] = sumEiso;
-      outputValuesMC[3] = sumUE;
-      outputValuesMC[4] = mompdg;
-      outputValuesMC[5] = eta;
-      outputValuesMC[6] = phi;
-      outputValuesMC[7] = mcpart->GetLabel();
+        //printf("Storing Particle: Label %d  PDG: %d  Eta: %f  Phi: %f",mcpart->GetLabel(),pdg,eta,phi);
+        //printf("With Mother at %d with label %d which is a %d",momidx, mom->GetLabel(), mompdg);
+      outputValuesMC[0] = eT;
+      outputValuesMC[1] = sumEiso;
+      outputValuesMC[2] = sumUE;
+      outputValuesMC[3] = mompdg;
+      outputValuesMC[4] = eta;
+      outputValuesMC[5] = phi;
+      outputValuesMC[6] = mcpart->GetLabel();
         // EtaPhiMCPhoton
         // EtMC
         // EtIsoCone
