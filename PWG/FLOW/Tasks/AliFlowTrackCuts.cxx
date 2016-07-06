@@ -5118,42 +5118,64 @@ Bool_t AliFlowTrackCuts::PassesVZEROcuts(Int_t id)
  
   // 29052015 weighting vzero tiles - jacopo.margutti@cern.ch
   if(fVZEROgainEqualizationCen) {
-	//Added by Bernhard Hohlweger - bhohlweg@cern.ch
+    //Added by Bernhard Hohlweger - bhohlweg@cern.ch
 	Double_t EventCentrality = -999;
 	if(fEvent->GetRunNumber() < 209122){
 	  //For Run1 Data the Old Centrality Percentile Method is available whereas for Run2 a new method was implemented
 	  //Cut was done for the first run of the LHC15a period
 	  EventCentrality = fEvent->GetCentrality()->GetCentralityPercentile("V0M");
-	}else{
+	  //09062016 Bernhard Hohlweger
+	  Double_t CorrectionFactor = fVZEROgainEqualizationCen->GetBinContent(fVZEROgainEqualizationCen->FindBin(id,EventCentrality));
+	  // the fVZEROxpol[] weights are used to enable or disable vzero rings
+	  if(id<32) {   // v0c side
+	    fTrackEta = -3.45+0.5*(id/8);
+		  if(id < 8) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[0];
+		  else if (id < 16 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[1];
+		  else if (id < 24 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[2];
+		  else if (id < 32 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[3];
+		} else {       // v0a side
+		  fTrackEta = +4.8-0.6*((id/8)-4);
+		  if( id < 40) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[0];
+		  else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[1];
+		  else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[2];
+		  else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[3];
+		}
+		if(CorrectionFactor) {
+		  fTrackWeight /= CorrectionFactor;
+	    }
+	}else{//for Run2 Data
+	  Double_t CorrectionFactor = -1.;
 	  AliMultSelection *MultSelection = 0x0;
 	  MultSelection = (AliMultSelection * ) fEvent->FindListObject("MultSelection");
 	  if( !MultSelection) {
 	    //If you get this warning (and EventCentrality -999) please check that the AliMultSelectionTask actually ran (before your task)
-	    AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+		AliFatal("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
 	  }else{
-	    EventCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+		EventCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+		if(EventCentrality < 0 && EventCentrality > 100){
+		  AliWarning("No Correction Available for this Centrality \n");
+		}else{
+		  CorrectionFactor = fVZEROgainEqualizationCen->GetBinContent(fVZEROgainEqualizationCen->FindBin(id,EventCentrality));
+		}
+	  }
+	  if(id<32) {    // v0c side
+	    fTrackEta = -3.45+0.5*(id/8);
+		if(id < 8) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROCpol[0];
+		else if (id < 16 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROCpol[1];
+		else if (id < 24 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROCpol[2];
+		else if (id < 32 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROCpol[3];
+	  } else {       // v0a side
+		fTrackEta = +4.8-0.6*((id/8)-4);
+		if( id < 40) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROApol[0];
+		else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROApol[1];
+		else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROApol[2];
+		else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROData()->GetMultiplicity(id)*fVZEROApol[3];
+	  }
+	  if(CorrectionFactor>0) {
+		fTrackWeight /= CorrectionFactor;
 	  }
 	}
-	//09062016 Bernhard Hohlweger
-    Double_t CorrectionFactor = fVZEROgainEqualizationCen->GetBinContent(fVZEROgainEqualizationCen->FindBin(id,EventCentrality));
-    // the fVZEROxpol[] weights are used to enable or disable vzero rings
-    if(id<32) {   // v0c side
-      fTrackEta = -3.45+0.5*(id/8);
-      if(id < 8) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[0];
-      else if (id < 16 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[1];
-      else if (id < 24 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[2];
-      else if (id < 32 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROCpol[3];
-     } else {       // v0a side
-       fTrackEta = +4.8-0.6*((id/8)-4);
-       if( id < 40) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[0];
-       else if ( id < 48 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[1];
-       else if ( id < 56 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[2];
-       else if ( id < 64 ) fTrackWeight = fEvent->GetVZEROEqMultiplicity(id)*fVZEROApol[3];
-      }
-    if(CorrectionFactor) {
-      fTrackWeight /= CorrectionFactor;
-     }
-   }
+  }//end of if(fVZEROgainEqualizationCen)
 
   if (fLinearizeVZEROresponse && id < 64)
   {
