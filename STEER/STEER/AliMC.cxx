@@ -41,6 +41,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliDetector.h"
+#include "AliFileUtilities.h"
 #include "AliGenerator.h"
 #include "AliGeomManager.h"
 #include "AliHeader.h"
@@ -62,6 +63,7 @@ ClassImp(AliMC)
 
 //_______________________________________________________________________
 AliMC::AliMC() :
+  fMC(0),
   fGenerator(0),
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
@@ -93,6 +95,7 @@ AliMC::AliMC() :
 //_______________________________________________________________________
 AliMC::AliMC(const char *name, const char *title) :
   TVirtualMCApplication(name, title),
+  fMC(0),
   fGenerator(0),
   fSaveRndmStatus(kFALSE),
   fSaveRndmEventStatus(kFALSE),
@@ -133,6 +136,25 @@ AliMC::~AliMC()
   delete fHitLists;
   delete fMonitor;
   // Delete track references
+}
+
+
+void AliMC::CacheVMCInstance()
+{
+  // cache the pointer to the VMC instance
+  // this is done in order to avoid penalties coming from the thread_local storage nature of TVirtualMC::GetMC()
+
+  // This instance is available only in functions called during event processing
+  // The global instance, gMC == TVirtualMC::GetMC() should be used in functions called in initialization
+  // (for geometry construction etc.)
+
+  fMC = TVirtualMC::GetMC();
+  TIter next(gAlice->Modules());
+  AliModule *detector;
+  AliInfo("CacheVMCInstance");
+  while((detector = static_cast<AliModule*>(next()))) {
+    detector->CacheVMCInstance(fMC);
+  }
 }
 
 //_______________________________________________________________________
@@ -985,9 +1007,9 @@ void AliMC::PreTrack()
      TObjArray &dets = *gAlice->Modules();
      AliModule *module;
 
-     for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-       if((module = dynamic_cast<AliModule*>(dets[i])))
-	 module->PreTrack();
+     for (Int_t i = 0; i <= gAlice->GetNdets(); i++)
+       if ((module = static_cast<AliModule *>(dets.UncheckedAt(i))))
+         module->PreTrack();
 }
 
 //_______________________________________________________________________
@@ -998,15 +1020,18 @@ void AliMC::Stepping()
   //
   //verbose.Stepping();
 
-  Int_t id = DetFromMate(TVirtualMC::GetMC()->CurrentMedium());
+  // a reference to our mc;
+  auto const mc = fMC;
+
+  Int_t id = DetFromMate(mc->CurrentMedium());
   if (id < 0) return;
 
 
-  if ( TVirtualMC::GetMC()->IsNewTrack()            &&
-       TVirtualMC::GetMC()->TrackTime() == 0.       &&
-       fRDecayMin >= 0.             &&
+  if ( mc->IsNewTrack()            &&
+       mc->TrackTime() == 0.       &&
+       fRDecayMin >= 0.             &&  
        fRDecayMax > fRDecayMin      &&
-       TVirtualMC::GetMC()->TrackPid() == fDecayPdg )
+       mc->TrackPid() == fDecayPdg )
   {
       FixParticleDecaytime();
   }
@@ -1014,19 +1039,19 @@ void AliMC::Stepping()
   // --- If monitoring timing was requested, monitor the step
   if (fUseMonitoring) {
     if (!fMonitor) {
-      fMonitor = new AliTransportMonitor(TVirtualMC::GetMC()->NofVolumes()+1);
+      fMonitor = new AliTransportMonitor(mc->NofVolumes()+1);
       fMonitor->Start();
-    }
-    if (TVirtualMC::GetMC()->IsNewTrack() || TVirtualMC::GetMC()->TrackTime() == 0. || TVirtualMC::GetMC()->TrackStep()<1.1E-10) {
+    }  
+    if (mc->IsNewTrack() || mc->TrackTime() == 0. || mc->TrackStep()<1.1E-10) {
       fMonitor->DummyStep();
     } else {
     // Normal stepping
       Int_t copy;
-      Int_t volId = TVirtualMC::GetMC()->CurrentVolID(copy);
-      Int_t pdg = TVirtualMC::GetMC()->TrackPid();
+      Int_t volId = mc->CurrentVolID(copy);
+      Int_t pdg = mc->TrackPid();
       TLorentzVector xyz, pxpypz;
-      TVirtualMC::GetMC()->TrackPosition(xyz);
-      TVirtualMC::GetMC()->TrackMomentum(pxpypz);
+      mc->TrackPosition(xyz);
+      mc->TrackMomentum(pxpypz);
       fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
     }
   }
@@ -1037,19 +1062,19 @@ void AliMC::Stepping()
   else {
     Int_t copy;
     //Update energy deposition tables
-    AddEnergyDeposit(TVirtualMC::GetMC()->CurrentVolID(copy),TVirtualMC::GetMC()->Edep());
+    AddEnergyDeposit(mc->CurrentVolID(copy),mc->Edep());
     //
     // write tracke reference for track which is dissapearing - MI
 
-    if (TVirtualMC::GetMC()->IsTrackDisappeared() && !(TVirtualMC::GetMC()->IsTrackAlive())) {
-	if (TVirtualMC::GetMC()->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
+    if (mc->IsTrackDisappeared() && !(mc->IsTrackAlive())) {
+    if (mc->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
 						AliTrackReference::kDisappeared);
 
 
     }
 
     //Call the appropriate stepping routine;
-    AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
+    AliModule *det = static_cast<AliModule*>(gAlice->Modules()->UncheckedAt(id));
     if(det && det->StepManagerIsEnabled()) {
       det->StepManager();
     }
@@ -1274,7 +1299,7 @@ void AliMC::PostTrack()
   AliModule *module;
 
   for(Int_t i=0; i<=gAlice->GetNdets(); i++)
-    if((module = dynamic_cast<AliModule*>(dets[i])))
+    if((module = static_cast<AliModule*>(dets.UncheckedAt(i))))
       module->PostTrack();
 }
 
@@ -1445,6 +1470,9 @@ void AliMC::Init()
 
    // Register MC in configuration
    AliConfig::Instance()->Add(TVirtualMC::GetMC());
+
+   // cache the VMC pointer/instance
+   CacheVMCInstance();
 }
 
 //_______________________________________________________________________
@@ -2008,5 +2036,5 @@ void AliMC::ReorderAndExpandTreeTR()
     fTmpFileTR->Close();
     delete fTmpFileTR;
     fTmpTrackReferences.Clear();
-    gSystem->Exec("rm -rf TrackRefsTmp.root");
+    AliFileUtilities::RemoveLocalFile("TrackRefsTmp.root");
 }

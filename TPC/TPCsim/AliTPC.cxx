@@ -88,6 +88,9 @@
 #include "AliTPCTransform.h"
 #include "TTreeStream.h"
 
+// for fast TMatrix operator()
+#include "AliFastContainerAccess.h"
+
 ClassImp(AliTPC) 
 //_____________________________________________________________________________
   AliTPC::AliTPC():AliDetector(),
@@ -865,15 +868,6 @@ void AliTPC::GenerNoise(Int_t tablesize, Bool_t normType)
   }
 }
 
-Float_t AliTPC::GetNoise()
-{
-  // get noise from table
-  //  if ((fCurrentNoise%10)==0) 
-  //  fCurrentNoise= gRandom->Rndm()*fNoiseDepth;
-  if (fCurrentNoise>=fNoiseDepth) fCurrentNoise=0;
-  return fNoiseTable[fCurrentNoise++];
-  //gRandom->Gaus(0, fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac()); 
-}
 
 
 Bool_t  AliTPC::IsSectorActive(Int_t sec) const
@@ -1826,10 +1820,11 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
   AliDigits *dig = fDigitsArray->GetRow(isec,irow);
   Int_t gi=-1;
   Float_t fzerosup = zerosup+0.5;
-  for(Int_t it=0;it<nofTbins;it++){
-    for(Int_t ip=0;ip<nofPads;ip++){
+  for(Int_t ip=0;ip<nofPads;ip++){
+    for(Int_t it=0;it<nofTbins;it++){
       gi++;
-      Float_t q=total(ip,it);      
+      // calling our fast "operator(int,int)" of TMatrix
+      Float_t q=AliFastContainerAccess::TMatrixFastAt<Float_t>(total, ip, it);
       if(fDigitsSwitch == 0){	
 	Float_t gain = gainROC->GetValue(irow,ip);  // get gain for given - pad-row pad	
 	Float_t noisePad = noiseROC->GetValue(irow,ip);	
@@ -1956,25 +1951,34 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
     Int_t *index = fTPCParam->GetResBin(0);  
     Float_t *weight = & (fTPCParam->GetResWeight(0));
 
-    if (n>0) for (Int_t i =0; i<n; i++){       
-      Int_t pad=index[1]+centralPad;  //in digit coordinates central pad has coordinate 0
+    if (n > 0)
+      for (Int_t i = 0; i < n; i++) {
+        Int_t pad = index[1] + centralPad; // in digit coordinates central pad
+                                           // has coordinate 0
 
-      if (pad>=0){
-	Int_t time=index[2];	 
-	Float_t qweight = *(weight)*eltoadcfac;
-	
-	if (m1!=0) signal(pad,time)+=qweight;
-	total(pad,time)+=qweight;
-	if (indexRange[0]>pad) indexRange[0]=pad;
-	if (indexRange[1]<pad) indexRange[1]=pad;
-	if (indexRange[2]>time) indexRange[2]=time;
-	if (indexRange[3]<time) indexRange[3]=time;
-	
-	index+=3;
-	weight++;	
+        if (pad >= 0) {
+          Int_t time = index[2];
+          Float_t qweight = *(weight) * eltoadcfac;
 
-      }	 
-    }
+          if (m1 != 0){
+            //signal(pad, time) += qweight;
+            AliFastContainerAccess::TMatrixFastAtRef<Float_t>(signal, pad, time) += qweight;
+          }
+          //total(pad, time) += qweight;
+          AliFastContainerAccess::TMatrixFastAtRef<Float_t>(total, pad, time) += qweight;
+          if (indexRange[0] > pad)
+            indexRange[0] = pad;
+          if (indexRange[1] < pad)
+            indexRange[1] = pad;
+          if (indexRange[2] > time)
+            indexRange[2] = time;
+          if (indexRange[3] < time)
+            indexRange[3] = time;
+
+          index += 3;
+          weight++;
+        }
+      }
   } // end of loop over electrons
   
   return label; // returns track label when finished
@@ -1990,6 +1994,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
+  // cached access to signal(ip,it)), sandro.wenzel@cern.ch
   //-----------------------------------------------------------------
 
   TMatrixF &signal = *m;
@@ -1999,10 +2004,13 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
   for(Int_t it=indexRange[2];it<indexRange[3]+1;it++){
     for(Int_t ip=indexRange[0];ip<indexRange[1]+1;ip++){
 
+      // fast read from signal matrix and cache result for later queries
+      // TODO: the loop order seems to be wrong for cache-efficient access to this structure
+      Float_t sig = AliFastContainerAccess::TMatrixFastAt<Float_t>(signal,ip,it);
 
       // accept only the contribution larger than 500 electrons (1/2 s_noise)
 
-      if(signal(ip,it)<0.5) continue; 
+      if(sig<0.5) continue;
 
       Int_t globalIndex = it*np+ip; // globalIndex starts from 0!
         
@@ -2024,7 +2032,7 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 	*(pList[globalIndex]+5) = -1.;
 
 	*pList[globalIndex] = label;
-	*(pList[globalIndex]+3) = signal(ip,it);
+    *(pList[globalIndex]+3) = sig;
       }
       else {
 
@@ -2038,28 +2046,28 @@ void AliTPC::GetList(Float_t label,Int_t np,TMatrixF *m,
 	//  compare the new signal with already existing list
 	//
 	
-	if(signal(ip,it)<lowest) continue; // neglect this track
+    if(sig<lowest) continue; // neglect this track
 
 	//
 
-	if (signal(ip,it)>highest){
+    if (sig>highest){
 	  *(pList[globalIndex]+5) = middle;
 	  *(pList[globalIndex]+4) = highest;
-	  *(pList[globalIndex]+3) = signal(ip,it);
+      *(pList[globalIndex]+3) = sig;
 	  
 	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
 	  *(pList[globalIndex]+1) = *pList[globalIndex];
 	  *pList[globalIndex] = label;
 	}
-	else if (signal(ip,it)>middle){
+    else if (sig>middle){
 	  *(pList[globalIndex]+5) = middle;
-	  *(pList[globalIndex]+4) = signal(ip,it);
+      *(pList[globalIndex]+4) = sig;
 	  
 	  *(pList[globalIndex]+2) = *(pList[globalIndex]+1);
 	  *(pList[globalIndex]+1) = label;
 	}
 	else{
-	  *(pList[globalIndex]+5) = signal(ip,it);
+      *(pList[globalIndex]+5) = sig;
 	  *(pList[globalIndex]+2) = label;
 	}
       }

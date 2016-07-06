@@ -411,7 +411,7 @@ void AliMFT::StepManager() {
   AliMFTSegmentation * seg = mftGeo->GetSegmentation();
   if (!seg) AliFatal("No segmentation available");
 
-  TVirtualMC* mc = TVirtualMC::GetMC();
+  TVirtualMC* mc = fMC;
   
   Double_t absQ = TMath::Abs(mc->TrackCharge());
   if (absQ <= 0) return;

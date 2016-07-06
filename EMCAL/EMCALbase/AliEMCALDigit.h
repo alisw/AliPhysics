@@ -136,4 +136,24 @@ class AliEMCALDigit : public AliDigitNew {
   ClassDef(AliEMCALDigit,7)   // Digit in EMCAL 
 } ;
 
+// inline definitions
+
+//____________________________________________________________________________
+inline Int_t AliEMCALDigit::Compare(const TObject * obj) const
+{
+  // Compares two digits with respect to its Id
+  // to sort according increasing Id
+  AliEMCALDigit * digit = (AliEMCALDigit *)obj ;
+
+  Int_t iddiff = fId - digit->GetId() ;
+
+  if ( iddiff > 0 )
+    return 1 ;
+  else if ( iddiff < 0 )
+    return -1 ;
+  else
+    return 0 ;
+}
+
+
 #endif //  ALIEMCALDIGIT_H

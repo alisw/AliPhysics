@@ -1637,16 +1637,16 @@ void AliITSv11::StepManager()
     //   none.
 
     if(!(this->IsActive())) return;
-    if(!(TVirtualMC::GetMC()->TrackCharge())) return;
+    if(!(fMC->TrackCharge())) return;
 
     Int_t copy, lay = 0;
-    Int_t id = TVirtualMC::GetMC()->CurrentVolID(copy);
+    Int_t id = fMC->CurrentVolID(copy);
 
     Bool_t notSens = kFALSE;
     while ((lay<fIdN)  && (notSens = id != fIdSens[lay])) ++lay;
     if (notSens) return;
 
-    if(TVirtualMC::GetMC()->IsTrackExiting()) {
+    if(fMC->IsTrackExiting()) {
 	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
     } // if Outer ITS mother Volume
 
@@ -1657,32 +1657,32 @@ void AliITSv11::StepManager()
     Int_t   cpn0, cpn1, mod, status = 0;
     //
     // Track status
-    if(TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
-    if(TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
-    if(TVirtualMC::GetMC()->IsTrackExiting())     status +=  4;
-    if(TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
-    if(TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
-    if(TVirtualMC::GetMC()->IsTrackStop())        status += 32;
-    if(TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
+    if(fMC->IsTrackInside())      status +=  1;
+    if(fMC->IsTrackEntering())    status +=  2;
+    if(fMC->IsTrackExiting())     status +=  4;
+    if(fMC->IsTrackOut())         status +=  8;
+    if(fMC->IsTrackDisappeared()) status += 16;
+    if(fMC->IsTrackStop())        status += 32;
+    if(fMC->IsTrackAlive())       status += 64;
 
     //
     // retrieve the indices with the volume path
     //
     switch (lay) {
     case 0:case 1: // SPD
-      TVirtualMC::GetMC()->CurrentVolOffID(1,copy); // ladder
-      TVirtualMC::GetMC()->CurrentVolOffID(3,cpn1); // stave
-      TVirtualMC::GetMC()->CurrentVolOffID(5,cpn0); // sector
+      fMC->CurrentVolOffID(1,copy); // ladder
+      fMC->CurrentVolOffID(3,cpn1); // stave
+      fMC->CurrentVolOffID(5,cpn0); // sector
       break;
     case 2:case 3: // SDD
       copy = 1;
-      TVirtualMC::GetMC()->CurrentVolOffID(2,cpn1);
-      TVirtualMC::GetMC()->CurrentVolOffID(3,cpn0);
+      fMC->CurrentVolOffID(2,cpn1);
+      fMC->CurrentVolOffID(3,cpn0);
       break;
     case 4:case 5: // SSD
       copy = 1;
-      TVirtualMC::GetMC()->CurrentVolOffID(1,cpn1);
-      TVirtualMC::GetMC()->CurrentVolOffID(2,cpn0);
+      fMC->CurrentVolOffID(1,cpn1);
+      fMC->CurrentVolOffID(2,cpn0);
       break;
     default:
       AliError(Form("Invalid value: lay= %d . Not an ITS sensitive volume",lay));
@@ -1701,17 +1701,17 @@ void AliITSv11::StepManager()
     //
     hit.SetModule(mod);
     hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
-    TVirtualMC::GetMC()->TrackPosition(position);
-    TVirtualMC::GetMC()->TrackMomentum(momentum);
+    fMC->TrackPosition(position);
+    fMC->TrackMomentum(momentum);
     hit.SetPosition(position);
-    hit.SetTime(TVirtualMC::GetMC()->TrackTime());
+    hit.SetTime(fMC->TrackTime());
     hit.SetMomentum(momentum);
     hit.SetStatus(status);
-    hit.SetEdep(TVirtualMC::GetMC()->Edep());
+    hit.SetEdep(fMC->Edep());
     hit.SetShunt(GetIshunt());
-    if(TVirtualMC::GetMC()->IsTrackEntering()){
+    if(fMC->IsTrackEntering()){
         hit.SetStartPosition(position);
-        hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
+        hit.SetStartTime(fMC->TrackTime());
         hit.SetStartStatus(status);
         return; // don't save entering hit.
     } // end if IsEntering
@@ -1720,7 +1720,7 @@ void AliITSv11::StepManager()
     new(lhits[fNhits++]) AliITShit(hit); // Use Copy Construtor.
     // Save old position... for next hit.
     hit.SetStartPosition(position);
-    hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
+    hit.SetStartTime(fMC->TrackTime());
     hit.SetStartStatus(status);
 
     return;

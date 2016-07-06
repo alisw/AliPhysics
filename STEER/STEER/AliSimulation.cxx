@@ -140,6 +140,7 @@
 #include "AliDAQ.h"
 #include "AliDigitizer.h"
 #include "AliESDEvent.h"
+#include "AliFileUtilities.h"
 #include "AliGRPObject.h"
 #include "AliGenEventHeader.h"
 #include "AliGenerator.h"
@@ -1624,13 +1625,15 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
     }
     AliSysInfo::AddStamp("ConvertRawFilesToDate");
     if (deleteIntermediateFiles) {
-      AliRunLoader* runLoader = LoadRun("READ");
-      if (runLoader) for (Int_t iEvent = 0; 
-			  iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-	char command[256];
-	snprintf(command, 256, "rm -r raw%d", iEvent);
-	gSystem->Exec(command);
-      }
+      AliRunLoader *runLoader = LoadRun("READ");
+      if (runLoader)
+        for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents();
+             iEvent++) {
+          char dir[256];
+          snprintf(dir, 256, "raw%d", iEvent);
+          //gSystem->Exec(command);
+          AliFileUtilities::Remove_All(dir);
+        }
       delete runLoader;
     }
 
@@ -1917,21 +1920,31 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
   if (gSystem->Getenv("ALIMDC_TAGDB")) 
     tagDBFS = gSystem->Getenv("ALIMDC_TAGDB");
 
-  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
-  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
-  gSystem->Exec(Form("rm -rf %s",tagDBFS));
 
-  gSystem->Exec(Form("mkdir %s",rawDBFS[0]));
-  gSystem->Exec(Form("mkdir %s",rawDBFS[1]));
-  gSystem->Exec(Form("mkdir %s",tagDBFS));
+  //gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+  //gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+  //gSystem->Exec(Form("rm -rf %s",tagDBFS));
+  AliFileUtilities::Remove_All(rawDBFS[0]);
+  AliFileUtilities::Remove_All(rawDBFS[1]);
+  AliFileUtilities::Remove_All(tagDBFS);
+
+  //gSystem->Exec(Form("mkdir %s",rawDBFS[0]));
+  //gSystem->Exec(Form("mkdir %s",rawDBFS[1]));
+  //gSystem->Exec(Form("mkdir %s",tagDBFS));
+  gSystem->MakeDirectory(rawDBFS[0]);
+  gSystem->MakeDirectory(rawDBFS[1]);
+  gSystem->MakeDirectory(tagDBFS);
 
   Int_t result = gSystem->Exec(Form("alimdc %d %d %d %d %s", 
 				    kDBSize, kTagDBSize, kFilter, kCompression, dateFileName));
   gSystem->Exec(Form("mv %s/*.root %s", rawDBFS[0], rootFileName));
 
-  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
-  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
-  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+//  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+//  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+//  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+  AliFileUtilities::Remove_All(rawDBFS[0]);
+  AliFileUtilities::Remove_All(rawDBFS[1]);
+  AliFileUtilities::Remove_All(tagDBFS);
 
   return (result == 0);
 }

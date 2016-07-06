@@ -72,6 +72,7 @@
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALSimParam.h"
+#include "AliSort.h"
 
 ClassImp(AliEMCALSDigitizer)
            
@@ -295,7 +296,7 @@ void AliEMCALSDigitizer::Digitize(Option_t *option)
           Int_t nHit = fHits->GetEntriesFast();
           for(iHit = 0; iHit< nHit;iHit++){
             
-            AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(fHits->At(iHit)) ;
+            AliEMCALHit * hit = static_cast<AliEMCALHit*>(fHits->UncheckedAt(iHit)) ;
             AliEMCALDigit * curSDigit = 0 ;
             AliEMCALDigit * sdigit = 0 ;
             Bool_t newsdigit = kTRUE; 
@@ -324,7 +325,7 @@ void AliEMCALSDigitizer::Digitize(Option_t *option)
               
               if(curSDigit != 0){
                 for(Int_t check= 0; check < nSdigits ; check++) {
-                  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
+                  sdigit = static_cast<AliEMCALDigit *>(sdigits->UncheckedAt(check)) ;
                   if(sdigit){
                     if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
                       *sdigit = *sdigit + *curSDigit;
@@ -352,13 +353,14 @@ void AliEMCALSDigitizer::Digitize(Option_t *option)
         }//fHits is not NULL
         else AliFatal("fHit is NULL!");
         
-				sdigits->Sort() ;
-				
+                // sdigits->Sort() ;
+                AliSort::TClonesArraySort<AliEMCALDigit>(sdigits);
+
 				nSdigits = sdigits->GetEntriesFast() ;
 				fSDigitsInRun += nSdigits ;  
 				
 				for (iSDigit = 0 ; iSDigit < sdigits->GetEntriesFast() ; iSDigit++) { 
-					AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(iSDigit)) ;
+                    AliEMCALDigit * sdigit = static_cast<AliEMCALDigit *>(sdigits->UncheckedAt(iSDigit)) ;
 					if(sdigit)sdigit->SetIndexInList(iSDigit) ;
           else AliFatal("sdigit is NULL!");
 				}	

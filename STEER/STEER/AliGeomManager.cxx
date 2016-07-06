@@ -1607,6 +1607,13 @@ Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* alignDetsList)
   // Finally an overlaps check is performed.
   //
  
+  // avoid alignment procedure if geometry already locked
+  if(gGeoManager->IsLocked()){
+    AliWarningClass("Not aligning geometry (again); Geometry is locked");
+    return kFALSE;
+  }
+
+
   TObjArray alignObjArray;
   alignObjArray.Clear();  	
   alignObjArray.SetOwner(0);

@@ -71,6 +71,8 @@ class AliTOFDigitMap : public TObject
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t **fDigitMap;                    // ! [fMaxIndex][kMaxDigitsPerPad]
 
+    mutable bool fMapCellNumberChanged;   //! a transient state flag for the purpose of caching
+
     ClassDef(AliTOFDigitMap,2) // Implements DigitMap as a 1-dim array
 };
 #endif	

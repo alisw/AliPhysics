@@ -2140,11 +2140,11 @@ void AliTOFv6T0::StepManager()
   Int_t index = 0;
 
   if(
-     TVirtualMC::GetMC()->IsTrackEntering()
-     && TVirtualMC::GetMC()->TrackCharge()
-     //&& TVirtualMC::GetMC()->GetMedium()==idtmed[507]
-     && TVirtualMC::GetMC()->CurrentMedium()==idtmed[507]
-     && TVirtualMC::GetMC()->CurrentVolID(copy)==fIdSens
+     fMC->IsTrackEntering()
+     && fMC->TrackCharge()
+     //&& fMC->GetMedium()==idtmed[507]
+     && fMC->CurrentMedium()==idtmed[507]
+     && fMC->CurrentVolID(copy)==fIdSens
      )
   {
 
@@ -2155,20 +2155,20 @@ void AliTOFv6T0::StepManager()
 
     // getting information about hit volumes
     
-    padzid=TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
+    padzid=fMC->CurrentVolOffID(1,copy);
     padz=copy;
     padz--;
 
-    padxid=TVirtualMC::GetMC()->CurrentVolOffID(0,copy);
+    padxid=fMC->CurrentVolOffID(0,copy);
     padx=copy; 
     padx--;
     
-    stripid=TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
+    stripid=fMC->CurrentVolOffID(4,copy);
     strip=copy; 
     strip--;
 
-    TVirtualMC::GetMC()->TrackPosition(pos);
-    TVirtualMC::GetMC()->TrackMomentum(mom);
+    fMC->TrackPosition(pos);
+    fMC->TrackMomentum(mom);
 
     Double_t normMom=1./mom.Rho();
 
@@ -2182,8 +2182,8 @@ void AliTOFv6T0::StepManager()
     pm[1] = (Float_t)mom.Y()*normMom;
     pm[2] = (Float_t)mom.Z()*normMom;
  
-    TVirtualMC::GetMC()->Gmtod(xm,xpad,1); // from MRS to DRS: coordinates convertion
-    TVirtualMC::GetMC()->Gmtod(pm,ppad,2); // from MRS to DRS: direction cosinus convertion
+    fMC->Gmtod(xm,xpad,1); // from MRS to DRS: coordinates convertion
+    fMC->Gmtod(pm,ppad,2); // from MRS to DRS: direction cosinus convertion
 
 
     if (TMath::Abs(ppad[1])>1) {
@@ -2217,7 +2217,7 @@ void AliTOFv6T0::StepManager()
       strip = strip - fTOFGeometry->NStripC() - fTOFGeometry->NStripB() - fTOFGeometry->NStripA() - fTOFGeometry->NStripB();
     }
 
-    volpath=TVirtualMC::GetMC()->CurrentVolOffName(7);
+    volpath=fMC->CurrentVolOffName(7);
     index=atoi(&volpath[4]);
     sector=-1;
     sector=index;
@@ -2241,8 +2241,8 @@ void AliTOFv6T0::StepManager()
     hits[9] = xpad[1];
     hits[10]= xpad[2];
     hits[11]= incidenceAngle;
-    hits[12]= TVirtualMC::GetMC()->Edep();
-    hits[13]= TVirtualMC::GetMC()->TrackLength();
+    hits[12]= fMC->Edep();
+    hits[13]= fMC->TrackLength();
     
     vol[0]= sector;
     vol[1]= plate;

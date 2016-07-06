@@ -528,7 +528,10 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x)
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) if ((TH1*)arr->At(ih)) ((TH1*)arr->At(ih))->Fill(x);
+    for (int ih=count;ih--;){
+      TH1 *histo = (TH1*)arr->UncheckedAt(ih);
+      if (histo) histo->Fill(x);
+    }
   }
   return count;
 }
@@ -541,7 +544,10 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x, double 
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) if ((TH1*)arr->At(ih)) ((TH1*)arr->At(ih))->Fill(x,y);
+    for (int ih=count;ih--;){
+      TH1 *histo=(TH1*)arr->UncheckedAt(ih);
+      if (histo) histo->Fill(x,y);
+    }
   }
   return count;
 }
@@ -680,8 +686,8 @@ TH1* AliQADataMaker::GetData(TObjArray ** list, const Int_t index, int cloneID)
   if (!data) return 0;
   Bool_t orig = cloneID<0 || cloneID==GetNTrigClasses();
   if (data->TestBit(AliQAv1::GetClonedBit())) {
-    if (orig) return data->TestBit(AliQAv1::GetOrigHistoKeptBit()) ? (TH1*)((TObjArray*)data)->At(GetNTrigClasses()) : 0;
-    else      return (TH1*)((TObjArray*)data)->At(cloneID); // there was a cloning
+    if (orig) return data->TestBit(AliQAv1::GetOrigHistoKeptBit()) ? (TH1*)((TObjArray*)data)->UncheckedAt(GetNTrigClasses()) : 0;
+    else      return (TH1*)((TObjArray*)data)->UncheckedAt(cloneID); // there was a cloning
   }
   //
   // not cloned, is the original histo requested?

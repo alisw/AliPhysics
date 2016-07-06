@@ -859,26 +859,26 @@ void AliPMDv0::StepManager()
   Int_t   vol[6];
   //char *namep;
   
-  if(TVirtualMC::GetMC()->CurrentMedium() == fMedSens && (destep = TVirtualMC::GetMC()->Edep())) {
+  if(fMC->CurrentMedium() == fMedSens && (destep = fMC->Edep())) {
   
-    TVirtualMC::GetMC()->CurrentVolID(copy);
+    fMC->CurrentVolID(copy);
     vol[0] = copy;
-    TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
+    fMC->CurrentVolOffID(1,copy);
     vol[1] = copy;
-    TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
+    fMC->CurrentVolOffID(2,copy);
     vol[2] = copy;
-    TVirtualMC::GetMC()->CurrentVolOffID(3,copy);
+    fMC->CurrentVolOffID(3,copy);
     vol[3] = copy;
-    TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
+    fMC->CurrentVolOffID(4,copy);
     vol[4] = copy;
-    TVirtualMC::GetMC()->CurrentVolOffID(5,copy);
+    fMC->CurrentVolOffID(5,copy);
     vol[5] = copy;
 
-    TVirtualMC::GetMC()->Gdtom(center,hits,1);
+    fMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
 
    // this is for pile-up events
-    hits[4] = TVirtualMC::GetMC()->TrackTime();
+    hits[4] = fMC->TrackTime();
 
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
   }

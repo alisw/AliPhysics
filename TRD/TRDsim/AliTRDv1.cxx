@@ -423,16 +423,16 @@ void AliTRDv1::StepManager()
 
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
-  if (!fPrimaryIonisation) TVirtualMC::GetMC()->SetMaxStep(kBig); 
+  if (!fPrimaryIonisation) fMC->SetMaxStep(kBig);
 
   // If not charged track or already stopped or disappeared, just return.
-  if ((!TVirtualMC::GetMC()->TrackCharge()) || 
-        TVirtualMC::GetMC()->IsTrackDisappeared()) {
+  if ((!fMC->TrackCharge()) ||
+        fMC->IsTrackDisappeared()) {
     return;
   }
 
   // Inside a sensitive volume?
-  cIdCurrent = TVirtualMC::GetMC()->CurrentVolName();
+  cIdCurrent = fMC->CurrentVolName();
 
   if (cIdSensDr == cIdCurrent[1]) {
     drRegion = kTRUE;
@@ -447,7 +447,7 @@ void AliTRDv1::StepManager()
   }
 
   // The hit coordinates and charge
-  TVirtualMC::GetMC()->TrackPosition(pos);
+  fMC->TrackPosition(pos);
   hits[0] = pos[0];
   hits[1] = pos[1];
   hits[2] = pos[2];
@@ -473,11 +473,11 @@ void AliTRDv1::StepManager()
 
   // Special hits only in the drift region
   if      ((drRegion) &&
-           (TVirtualMC::GetMC()->IsTrackEntering())) {
+           (fMC->IsTrackEntering())) {
 
     // Create a track reference at the entrance of each
     // chamber that contains the momentum components of the particle
-    TVirtualMC::GetMC()->TrackMomentum(mom);
+    fMC->TrackMomentum(mom);
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
     trkStat = 1;
 
@@ -485,17 +485,17 @@ void AliTRDv1::StepManager()
     // entering the drift volume
     if ((fTR)   &&
         (fTRon) &&
-        (TMath::Abs(TVirtualMC::GetMC()->TrackPid()) == kPdgElectron)) {
+        (TMath::Abs(fMC->TrackPid()) == kPdgElectron)) {
       CreateTRhit(det);
     }
 
   }
   else if ((amRegion) && 
-           (TVirtualMC::GetMC()->IsTrackExiting())) {
+           (fMC->IsTrackExiting())) {
 
     // Create a track reference at the exit of each
     // chamber that contains the momentum components of the particle
-    TVirtualMC::GetMC()->TrackMomentum(mom);
+    fMC->TrackMomentum(mom);
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTRD);
     trkStat = 2;
 
@@ -503,7 +503,7 @@ void AliTRDv1::StepManager()
   
   // Calculate the charge according to GEANT Edep
   // Create a new dEdx hit
-  eDep = TMath::Max(TVirtualMC::GetMC()->Edep(),0.0) * 1.0e+09;
+  eDep = TMath::Max(fMC->Edep(),0.0) * 1.0e+09;
   qTot = (Int_t) (eDep / fWion);
   if ((qTot) ||
       (trkStat)) {
@@ -511,15 +511,15 @@ void AliTRDv1::StepManager()
           ,det
           ,hits
           ,qTot
-          ,TVirtualMC::GetMC()->TrackTime()*1.0e06
+          ,fMC->TrackTime()*1.0e06
           ,drRegion);
   }
 
   // Set Maximum Step Size
   // Produce only one hit if Ekin is below cutoff
-  if ((TVirtualMC::GetMC()->Etot() - TVirtualMC::GetMC()->TrackMass()) < kEkinMinStep) {
+  if ((fMC->Etot() - fMC->TrackMass()) < kEkinMinStep) {
     return;
   }
-  if (!fPrimaryIonisation) TVirtualMC::GetMC()->SetMaxStep(fStepSize);
+  if (!fPrimaryIonisation) fMC->SetMaxStep(fStepSize);
 
 }

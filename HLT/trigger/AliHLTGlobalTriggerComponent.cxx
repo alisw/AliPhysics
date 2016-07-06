@@ -23,6 +23,7 @@
 /// The AliHLTGlobalTriggerComponent class applies the global HLT trigger to all
 /// trigger information produced by components deriving from AliHLTTrigger.
 
+#include "AliFileUtilities.h"
 #include "AliHLTGlobalTriggerComponent.h"
 #include "AliHLTGlobalTriggerDecision.h"
 #include "AliHLTGlobalTrigger.h"
@@ -452,9 +453,11 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
   if (result != 0) return result;
   
   if (fDeleteCodeFile and !fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0 && !fDebugMode) {
-    TString command="rm -f ";
-    command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
-    gSystem->Exec(command);
+    // TString command="rm -f ";
+    // command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
+    // gSystem->Exec(command);
+    AliFileUtilities::RemoveLocalFile(fCodeFileName);
+    AliFileUtilities::RemoveLocalFile(TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d"));
   }
   fCodeFileName="";
   fDeleteCodeFile=false;
@@ -739,9 +742,11 @@ int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* 
     UnloadTriggerClass(codeFileName);
     if (not codeFileName.IsNull() and gSystem->AccessPathName(codeFileName)==0 and not fDebugMode)
     {
-      TString command="rm -f ";
-      command+=codeFileName + " " + TString(codeFileName).ReplaceAll(".cxx", "_cxx.d");
-      gSystem->Exec(command);
+      //TString command="rm -f ";
+      //command+=codeFileName + " " + TString(codeFileName).ReplaceAll(".cxx", "_cxx.d");
+      //gSystem->Exec(command);
+      AliFileUtilities::RemoveLocalFile(codeFileName);
+      AliFileUtilities::RemoveLocalFile(TString(codeFileName).ReplaceAll(".cxx", "_cxx.d"));
     }
     return -EIO;
   }
@@ -764,9 +769,11 @@ int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* 
   UnloadTriggerClass(fCodeFileName);
   if (fDeleteCodeFile and not fCodeFileName.IsNull() and gSystem->AccessPathName(fCodeFileName)==0 and not fDebugMode)
   {
-    TString command="rm -f ";
-    command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
-    gSystem->Exec(command);
+    //TString command="rm -f ";
+    //command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
+    //gSystem->Exec(command);
+    AliFileUtilities::RemoveLocalFile(fCodeFileName);
+    AliFileUtilities::RemoveLocalFile(TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d"));
   }
   fCodeFileName = codeFileName;
   fDeleteCodeFile = true;  // Since we generated a new class.

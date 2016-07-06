@@ -675,32 +675,32 @@ void AliT0v1::StepManager()
   
   //   TClonesArray &lhits = *fHits;
   
-  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
+  if(!fMC->IsTrackAlive()) return; // particle has disappeared
   
-  id=TVirtualMC::GetMC()->CurrentVolID(copy);
+  id=fMC->CurrentVolID(copy);
   
   // Check the sensetive volume
   if(id==fIdSens1 ) { 
-    if(TVirtualMC::GetMC()->IsTrackEntering()) {
-      TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
+    if(fMC->IsTrackEntering()) {
+      fMC->CurrentVolOffID(2,copy);
       vol[1]=copy;
-      TVirtualMC::GetMC()->CurrentVolOffID(3,copy1);
+      fMC->CurrentVolOffID(3,copy1);
       vol[0]=copy1;
-      TVirtualMC::GetMC()->TrackPosition(pos);
+      fMC->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
       if(pos[2]<0) vol[0] = 2;
       if(pos[2]>=0) vol[0] = 1; 
       
-      Float_t etot=TVirtualMC::GetMC()->Etot();
+      Float_t etot=fMC->Etot();
       hits[3]=etot;
-      Int_t iPart= TVirtualMC::GetMC()->TrackPid();
-      Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
+      Int_t iPart= fMC->TrackPid();
+      Int_t partID=fMC->IdFromPDG(iPart);
       hits[4]=partID;
-      Float_t ttime=TVirtualMC::GetMC()->TrackTime();
+      Float_t ttime=fMC->TrackTime();
       hits[5]=ttime*1e12;
-      if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
+      if (fMC->TrackPid() == 50000050)   // If particles is photon then ...
 	{
 	  if(RegisterPhotoE(vol[1]-1,hits[3])) {
 	    AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
@@ -709,20 +709,20 @@ void AliT0v1::StepManager()
 	}
 
       //charge particle 
-      if ( TVirtualMC::GetMC()->TrackCharge() )
+      if ( fMC->TrackCharge() )
 	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kT0);
       
 	/*		
 		printf("track(%i) alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i) \n",
 		       gAlice->GetMCApp()->GetCurrentTrackNumber(),
-	       TVirtualMC::GetMC()->IsTrackAlive(),
-	       TVirtualMC::GetMC()->IsTrackDisappeared(),
-	       TVirtualMC::GetMC()->IsTrackEntering(),
-	       TVirtualMC::GetMC()->IsTrackExiting(),
-	       TVirtualMC::GetMC()->IsTrackInside(),
-	       TVirtualMC::GetMC()->IsTrackOut(),
-	       TVirtualMC::GetMC()->IsTrackStop(),
-	       TVirtualMC::GetMC()->IsNewTrack());
+           fMC->IsTrackAlive(),
+           fMC->IsTrackDisappeared(),
+           fMC->IsTrackEntering(),
+           fMC->IsTrackExiting(),
+           fMC->IsTrackInside(),
+           fMC->IsTrackOut(),
+           fMC->IsTrackStop(),
+           fMC->IsNewTrack());
 	*/
     }// trck entering		
   } //sensitive

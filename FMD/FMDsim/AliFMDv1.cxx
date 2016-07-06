@@ -242,7 +242,7 @@ AliFMDv1::StepManager()
   //   -   Create a hit 
   //   - ENDIF
   //     
-  TVirtualMC* mc = TVirtualMC::GetMC();
+  TVirtualMC* mc = fMC;
   if (!mc->IsTrackAlive()) return;
   Double_t absQ = TMath::Abs(mc->TrackCharge());
   if (absQ <= 0) return;

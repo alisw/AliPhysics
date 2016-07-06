@@ -21,6 +21,7 @@ class TBrowser;
 class TArrayI;
 class TFile;
 class TTree;
+class TVirtualMC;
 class AliLoader;
 class AliTrackReference;
 class AliDigitizer;
@@ -145,11 +146,14 @@ public:
   //  
   static void SetDensityFactor(Float_t density) { fgDensityFactor = density; }
   static Float_t GetDensityFactor() { return fgDensityFactor; }
+
+  void CacheVMCInstance(TVirtualMC *mc) { fMC = mc; }
   
 protected:      
 
   // Data members
-  
+  TVirtualMC   *fMC;          //! cached MC instance (to avoid calls to thread_local gMC=TVirtualMC::GetMC())
+
   TArrayI      *fIdtmed;      //!List of tracking medium numbers
   TArrayI      *fIdmate;      //!List of material numbers
   Int_t         fLoMedium;   //!Minimum tracking medium ID for this Module

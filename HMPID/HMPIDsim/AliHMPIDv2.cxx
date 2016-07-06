@@ -813,15 +813,15 @@ void AliHMPIDv2::StepManager()
   Int_t   copy; //volume copy aka node
   
 //Treat photons    
-  if((TVirtualMC::GetMC()->TrackPid()==50000050||TVirtualMC::GetMC()->TrackPid()==50000051)&&TVirtualMC::GetMC()->CurrentVolID(copy)==fIdPad){   //photon (Ckov or feedback) hit PC (fIdPad)
-    if(TVirtualMC::GetMC()->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
-      if(IsLostByFresnel()){ TVirtualMC::GetMC()->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
-                       TVirtualMC::GetMC()->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
-      Int_t   tid=     TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber();                                 //take TID
-      Int_t   pid=     TVirtualMC::GetMC()->TrackPid();                                                          //take PID
-      Float_t etot=    TVirtualMC::GetMC()->Etot();                                                              //total hpoton energy, [GeV] 
-      Double_t x[3];   TVirtualMC::GetMC()->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
-      Float_t hitTime= (Float_t)TVirtualMC::GetMC()->TrackTime();                                                         //hit formation time 
+  if((fMC->TrackPid()==50000050||fMC->TrackPid()==50000051)&&fMC->CurrentVolID(copy)==fIdPad){   //photon (Ckov or feedback) hit PC (fIdPad)
+    if(fMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
+      if(IsLostByFresnel()){ fMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC
+                       fMC->CurrentVolOffID(5,copy);                                             //current chamber since geomtry tree is Hmp-Hsec-Hgap-Hrow-Hcel-Hpad
+      Int_t   tid=     fMC->GetStack()->GetCurrentTrackNumber();                                 //take TID
+      Int_t   pid=     fMC->TrackPid();                                                          //take PID
+      Float_t etot=    fMC->Etot();                                                              //total hpoton energy, [GeV]
+      Double_t x[3];   fMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
+      Float_t hitTime= (Float_t)fMC->TrackTime();                                                         //hit formation time
       Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(copy,x,xl,yl);                       //take LORS position
       new((*fHits)[fNhits++])AliHMPIDHit(copy,etot,pid,tid,xl,yl,hitTime,x);                             //HIT for photon, position at P, etot will be set to Q
       if(fDoFeed) GenFee(etot);                                                                  //generate feedback photons etot is modified in hit ctor to Q of hit
@@ -831,19 +831,19 @@ void AliHMPIDv2::StepManager()
 //Treat charged particles  
   static Float_t eloss;                                                                           //need to store mip parameters between different steps    
   static Double_t in[3];                                                                          
-  if(TVirtualMC::GetMC()->IsTrackEntering() && TVirtualMC::GetMC()->TrackCharge() && TVirtualMC::GetMC()->CurrentVolID(copy)==fIdPad)             //Trackref stored when entering in the pad volume
-    AddTrackReference(TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber(), AliTrackReference::kHMPID);       //for acceptance calculations
-  if(TVirtualMC::GetMC()->TrackCharge() && TVirtualMC::GetMC()->CurrentVolID(copy)==fIdCell){                                     //charged particle in amplification gap (fIdCell)
-    if(TVirtualMC::GetMC()->IsTrackEntering()||TVirtualMC::GetMC()->IsNewTrack()) {                                               //entering or newly created
+  if(fMC->IsTrackEntering() && fMC->TrackCharge() && fMC->CurrentVolID(copy)==fIdPad)             //Trackref stored when entering in the pad volume
+    AddTrackReference(fMC->GetStack()->GetCurrentTrackNumber(), AliTrackReference::kHMPID);       //for acceptance calculations
+  if(fMC->TrackCharge() && fMC->CurrentVolID(copy)==fIdCell){                                     //charged particle in amplification gap (fIdCell)
+    if(fMC->IsTrackEntering()||fMC->IsNewTrack()) {                                               //entering or newly created
       eloss=0;                                                                                    //reset Eloss collector                         
-      TVirtualMC::GetMC()->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
-    }else if(TVirtualMC::GetMC()->IsTrackExiting()||TVirtualMC::GetMC()->IsTrackStop()||TVirtualMC::GetMC()->IsTrackDisappeared()){               //exiting or disappeared
-      eloss              +=TVirtualMC::GetMC()->Edep();                                                           //take into account last step Eloss
-                          TVirtualMC::GetMC()->CurrentVolOffID(4,copy);                                           //take current chamber since geometry tree is Hmp-Hsec-Hgap-Hrow-Hcel
-      Int_t tid=          TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber();                               //take TID
-      Int_t pid=          TVirtualMC::GetMC()->TrackPid();                                                        //take PID
-      Double_t out[3];    TVirtualMC::GetMC()->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
-      Float_t hitTime= (Float_t)TVirtualMC::GetMC()->TrackTime();                                                         //hit formation time       
+      fMC->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
+    }else if(fMC->IsTrackExiting()||fMC->IsTrackStop()||fMC->IsTrackDisappeared()){               //exiting or disappeared
+      eloss              +=fMC->Edep();                                                           //take into account last step Eloss
+                          fMC->CurrentVolOffID(4,copy);                                           //take current chamber since geometry tree is Hmp-Hsec-Hgap-Hrow-Hcel
+      Int_t tid=          fMC->GetStack()->GetCurrentTrackNumber();                               //take TID
+      Int_t pid=          fMC->TrackPid();                                                        //take PID
+      Double_t out[3];    fMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
+      Float_t hitTime= (Float_t)fMC->TrackTime();                                                         //hit formation time
       out[0]=0.5*(out[0]+in[0]);                                                                  //>
       out[1]=0.5*(out[1]+in[1]);                                                                  //take hit position at the anod plane
       out[2]=0.5*(out[2]+in[2]);                                                                  //>
@@ -851,7 +851,7 @@ void AliHMPIDv2::StepManager()
       new((*fHits)[fNhits++])AliHMPIDHit(copy,eloss,pid,tid,xl,yl,hitTime,out);                   //HIT for MIP, position near anod plane, eloss will be set to Q 
       if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
     }else                                                                                         //just going inside
-      eloss          += TVirtualMC::GetMC()->Edep();                                                              //collect this step eloss 
+      eloss          += fMC->Edep();                                                              //collect this step eloss
   }//MIP in GAP
 }//StepManager()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

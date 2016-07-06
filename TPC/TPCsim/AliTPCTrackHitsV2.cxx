@@ -762,14 +762,14 @@ Bool_t AliTPCTrackHitsV2::Next()
 
   fCurrentHit->SetStackIndex(fCurrentHit->GetStackIndex()+1);
 
-  AliTrackHitsParamV2 *param =  (AliTrackHitsParamV2 *)fArray->At(fCurrentHit->GetParamIndex());
+  AliTrackHitsParamV2 *param =  (AliTrackHitsParamV2 *)fArray->UncheckedAt(fCurrentHit->GetParamIndex());
   if (fCurrentHit->GetStackIndex()>=param->GetNHits()){
     fCurrentHit->SetParamIndex(fCurrentHit->GetParamIndex()+1);
     if (fCurrentHit->GetParamIndex()>=fArray->GetEntriesFast()){
       fCurrentHit->SetStatus(kFALSE);
       return kFALSE;
     }
-    param =  (AliTrackHitsParamV2 *)fArray->At(fCurrentHit->GetParamIndex());
+    param =  (AliTrackHitsParamV2 *)fArray->UncheckedAt(fCurrentHit->GetParamIndex());
     fCurrentHit->SetStackIndex(0); 
     fCurrentHit->SetR(param->GetR());
   }

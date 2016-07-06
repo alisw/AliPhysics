@@ -2936,147 +2936,147 @@ void AliVZEROv7::StepManager()
   numStep += 1; 
 
   //   We keep only charged tracks : 
-  if ( !TVirtualMC::GetMC()->TrackCharge() || !TVirtualMC::GetMC()->IsTrackAlive() ) return;
+  if ( !fMC->TrackCharge() || !fMC->IsTrackAlive() ) return;
 
-  vol[0]    = TVirtualMC::GetMC()->CurrentVolOffID(1, vol[1]);
-  vol[2]    = TVirtualMC::GetMC()->CurrentVolID(copy);
+  vol[0]    = fMC->CurrentVolOffID(1, vol[1]);
+  vol[2]    = fMC->CurrentVolID(copy);
   vol[3]    = copy;
-  static Int_t idV0R1 = TVirtualMC::GetMC()->VolId("V0R1");
+  static Int_t idV0R1 = fMC->VolId("V0R1");
 
-  static Int_t idV0L11 = TVirtualMC::GetMC()->VolId("V0L1Sec1");
-  static Int_t idV0L12 = TVirtualMC::GetMC()->VolId("V0L1Sec2");
-  static Int_t idV0L13 = TVirtualMC::GetMC()->VolId("V0L1Sec3");
-  static Int_t idV0L14 = TVirtualMC::GetMC()->VolId("V0L1Sec4");
-  static Int_t idV0L15 = TVirtualMC::GetMC()->VolId("V0L15");
-  static Int_t idV0L16 = TVirtualMC::GetMC()->VolId("V0L16");
-  static Int_t idV0L17 = TVirtualMC::GetMC()->VolId("V0L17");
-  static Int_t idV0L18 = TVirtualMC::GetMC()->VolId("V0L18");  
-  static Int_t idV0R2 = TVirtualMC::GetMC()->VolId("V0R2");
+  static Int_t idV0L11 = fMC->VolId("V0L1Sec1");
+  static Int_t idV0L12 = fMC->VolId("V0L1Sec2");
+  static Int_t idV0L13 = fMC->VolId("V0L1Sec3");
+  static Int_t idV0L14 = fMC->VolId("V0L1Sec4");
+  static Int_t idV0L15 = fMC->VolId("V0L15");
+  static Int_t idV0L16 = fMC->VolId("V0L16");
+  static Int_t idV0L17 = fMC->VolId("V0L17");
+  static Int_t idV0L18 = fMC->VolId("V0L18");
+  static Int_t idV0R2 = fMC->VolId("V0R2");
 
-  static Int_t idV0L21 = TVirtualMC::GetMC()->VolId("V0L2Sec1");
-  static Int_t idV0L22 = TVirtualMC::GetMC()->VolId("V0L2Sec2");
-  static Int_t idV0L23 = TVirtualMC::GetMC()->VolId("V0L2Sec3");
-  static Int_t idV0L24 = TVirtualMC::GetMC()->VolId("V0L2Sec4");
-  static Int_t idV0L25 = TVirtualMC::GetMC()->VolId("V0L25");
-  static Int_t idV0L26 = TVirtualMC::GetMC()->VolId("V0L26");
-  static Int_t idV0L27 = TVirtualMC::GetMC()->VolId("V0L27");
-  static Int_t idV0L28 = TVirtualMC::GetMC()->VolId("V0L28");
-  static Int_t idV0R3 = TVirtualMC::GetMC()->VolId("V0R3");
+  static Int_t idV0L21 = fMC->VolId("V0L2Sec1");
+  static Int_t idV0L22 = fMC->VolId("V0L2Sec2");
+  static Int_t idV0L23 = fMC->VolId("V0L2Sec3");
+  static Int_t idV0L24 = fMC->VolId("V0L2Sec4");
+  static Int_t idV0L25 = fMC->VolId("V0L25");
+  static Int_t idV0L26 = fMC->VolId("V0L26");
+  static Int_t idV0L27 = fMC->VolId("V0L27");
+  static Int_t idV0L28 = fMC->VolId("V0L28");
+  static Int_t idV0R3 = fMC->VolId("V0R3");
 
-  static Int_t idV0L31 = TVirtualMC::GetMC()->VolId("V0L3Sec1");
-  static Int_t idV0L32 = TVirtualMC::GetMC()->VolId("V0L3Sec2");
-  static Int_t idV0L33 = TVirtualMC::GetMC()->VolId("V0L3Sec3");
-  static Int_t idV0L34 = TVirtualMC::GetMC()->VolId("V0L3Sec4");
-  static Int_t idV0L35 = TVirtualMC::GetMC()->VolId("V0L35");
-  static Int_t idV0L36 = TVirtualMC::GetMC()->VolId("V0L36");
-  static Int_t idV0L37 = TVirtualMC::GetMC()->VolId("V0L37");
-  static Int_t idV0L38 = TVirtualMC::GetMC()->VolId("V0L38");
-  static Int_t idV0R4 = TVirtualMC::GetMC()->VolId("V0R4");
+  static Int_t idV0L31 = fMC->VolId("V0L3Sec1");
+  static Int_t idV0L32 = fMC->VolId("V0L3Sec2");
+  static Int_t idV0L33 = fMC->VolId("V0L3Sec3");
+  static Int_t idV0L34 = fMC->VolId("V0L3Sec4");
+  static Int_t idV0L35 = fMC->VolId("V0L35");
+  static Int_t idV0L36 = fMC->VolId("V0L36");
+  static Int_t idV0L37 = fMC->VolId("V0L37");
+  static Int_t idV0L38 = fMC->VolId("V0L38");
+  static Int_t idV0R4 = fMC->VolId("V0R4");
 
-  static Int_t idV0L41 = TVirtualMC::GetMC()->VolId("V0L4Sec1");
-  static Int_t idV0L42 = TVirtualMC::GetMC()->VolId("V0L4Sec2");
-  static Int_t idV0L43 = TVirtualMC::GetMC()->VolId("V0L4Sec3");
-  static Int_t idV0L44 = TVirtualMC::GetMC()->VolId("V0L4Sec4");
-  static Int_t idV0L45 = TVirtualMC::GetMC()->VolId("V0L45");
-  static Int_t idV0L46 = TVirtualMC::GetMC()->VolId("V0L46");
-  static Int_t idV0L47 = TVirtualMC::GetMC()->VolId("V0L47");
-  static Int_t idV0L48 = TVirtualMC::GetMC()->VolId("V0L48");
-  static Int_t idV0R5 = TVirtualMC::GetMC()->VolId("V0R5");
-  static Int_t idV0R6 = TVirtualMC::GetMC()->VolId("V0R6");
+  static Int_t idV0L41 = fMC->VolId("V0L4Sec1");
+  static Int_t idV0L42 = fMC->VolId("V0L4Sec2");
+  static Int_t idV0L43 = fMC->VolId("V0L4Sec3");
+  static Int_t idV0L44 = fMC->VolId("V0L4Sec4");
+  static Int_t idV0L45 = fMC->VolId("V0L45");
+  static Int_t idV0L46 = fMC->VolId("V0L46");
+  static Int_t idV0L47 = fMC->VolId("V0L47");
+  static Int_t idV0L48 = fMC->VolId("V0L48");
+  static Int_t idV0R5 = fMC->VolId("V0R5");
+  static Int_t idV0R6 = fMC->VolId("V0R6");
   bool   hitOnV0C = true;
   double lightYield;
   double lightAttenuation;
   double nMeters; 
   double fibToPhot;
-  if      ( TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R1   || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L11  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L12  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L13  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L14  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L15  ||  
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L16  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L17  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L18  
+  if      ( fMC->CurrentVolID(copy) == idV0R1   ||
+        fMC->CurrentVolID(copy) == idV0L11  ||
+        fMC->CurrentVolID(copy) == idV0L12  ||
+        fMC->CurrentVolID(copy) == idV0L13  ||
+        fMC->CurrentVolID(copy) == idV0L14  ||
+        fMC->CurrentVolID(copy) == idV0L15  ||
+        fMC->CurrentVolID(copy) == idV0L16  ||
+        fMC->CurrentVolID(copy) == idV0L17  ||
+        fMC->CurrentVolID(copy) == idV0L18
       )
       ringNumber = 1;
   
-  else if ( TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R2  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L21 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L22 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L23 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L24 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L25 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L26 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L27 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L28 
+  else if ( fMC->CurrentVolID(copy) == idV0R2  ||
+        fMC->CurrentVolID(copy) == idV0L21 ||
+        fMC->CurrentVolID(copy) == idV0L22 ||
+        fMC->CurrentVolID(copy) == idV0L23 ||
+        fMC->CurrentVolID(copy) == idV0L24 ||
+        fMC->CurrentVolID(copy) == idV0L25 ||
+        fMC->CurrentVolID(copy) == idV0L26 ||
+        fMC->CurrentVolID(copy) == idV0L27 ||
+        fMC->CurrentVolID(copy) == idV0L28
       )
       ringNumber = 2; 
   
-  else if ( TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R3  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R4  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L31 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L32 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L33 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L34 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L35 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L36 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L37 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L38 
+  else if ( fMC->CurrentVolID(copy) == idV0R3  ||
+        fMC->CurrentVolID(copy) == idV0R4  ||
+        fMC->CurrentVolID(copy) == idV0L31 ||
+        fMC->CurrentVolID(copy) == idV0L32 ||
+        fMC->CurrentVolID(copy) == idV0L33 ||
+        fMC->CurrentVolID(copy) == idV0L34 ||
+        fMC->CurrentVolID(copy) == idV0L35 ||
+        fMC->CurrentVolID(copy) == idV0L36 ||
+        fMC->CurrentVolID(copy) == idV0L37 ||
+        fMC->CurrentVolID(copy) == idV0L38
       ) 
       ringNumber = 3;
-  else if ( TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R5  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0R6  || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L41 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L42 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L43 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L44 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L45 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L46 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L47 || 
-	    TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L48 
+  else if ( fMC->CurrentVolID(copy) == idV0R5  ||
+        fMC->CurrentVolID(copy) == idV0R6  ||
+        fMC->CurrentVolID(copy) == idV0L41 ||
+        fMC->CurrentVolID(copy) == idV0L42 ||
+        fMC->CurrentVolID(copy) == idV0L43 ||
+        fMC->CurrentVolID(copy) == idV0L44 ||
+        fMC->CurrentVolID(copy) == idV0L45 ||
+        fMC->CurrentVolID(copy) == idV0L46 ||
+        fMC->CurrentVolID(copy) == idV0L47 ||
+        fMC->CurrentVolID(copy) == idV0L48
       ) ringNumber = 4;	       
   
   else ringNumber = 0;
   
   if  (ringNumber) {
       if (
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L11 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L12 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L13 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L14 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L15 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L16 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L17 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L18 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L21 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L22 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L23 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L24 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L25 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L26 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L27 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L28 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L31 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L32 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L33 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L34 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L35 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L36 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L37 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L38 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L41 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L42 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L43 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L44 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L45 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L46 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L47 || 
-	  TVirtualMC::GetMC()->CurrentVolID(copy) == idV0L48
+      fMC->CurrentVolID(copy) == idV0L11 ||
+      fMC->CurrentVolID(copy) == idV0L12 ||
+      fMC->CurrentVolID(copy) == idV0L13 ||
+      fMC->CurrentVolID(copy) == idV0L14 ||
+      fMC->CurrentVolID(copy) == idV0L15 ||
+      fMC->CurrentVolID(copy) == idV0L16 ||
+      fMC->CurrentVolID(copy) == idV0L17 ||
+      fMC->CurrentVolID(copy) == idV0L18 ||
+      fMC->CurrentVolID(copy) == idV0L21 ||
+      fMC->CurrentVolID(copy) == idV0L22 ||
+      fMC->CurrentVolID(copy) == idV0L23 ||
+      fMC->CurrentVolID(copy) == idV0L24 ||
+      fMC->CurrentVolID(copy) == idV0L25 ||
+      fMC->CurrentVolID(copy) == idV0L26 ||
+      fMC->CurrentVolID(copy) == idV0L27 ||
+      fMC->CurrentVolID(copy) == idV0L28 ||
+      fMC->CurrentVolID(copy) == idV0L31 ||
+      fMC->CurrentVolID(copy) == idV0L32 ||
+      fMC->CurrentVolID(copy) == idV0L33 ||
+      fMC->CurrentVolID(copy) == idV0L34 ||
+      fMC->CurrentVolID(copy) == idV0L35 ||
+      fMC->CurrentVolID(copy) == idV0L36 ||
+      fMC->CurrentVolID(copy) == idV0L37 ||
+      fMC->CurrentVolID(copy) == idV0L38 ||
+      fMC->CurrentVolID(copy) == idV0L41 ||
+      fMC->CurrentVolID(copy) == idV0L42 ||
+      fMC->CurrentVolID(copy) == idV0L43 ||
+      fMC->CurrentVolID(copy) == idV0L44 ||
+      fMC->CurrentVolID(copy) == idV0L45 ||
+      fMC->CurrentVolID(copy) == idV0L46 ||
+      fMC->CurrentVolID(copy) == idV0L47 ||
+      fMC->CurrentVolID(copy) == idV0L48
 	  )
 	  hitOnV0C = false;
 
-    destep = TVirtualMC::GetMC()->Edep();
-    step   = TVirtualMC::GetMC()->TrackStep();
+    destep = fMC->Edep();
+    step   = fMC->TrackStep();
     if (hitOnV0C) {
       lightYield = fV0CLightYield;
       lightAttenuation = fV0CLightAttenuation;
@@ -3092,19 +3092,19 @@ void AliVZEROv7::StepManager()
     nPhotonsInStep  = gRandom->Poisson(nPhotonsInStep);
     eloss    += destep;
     tlength  += step; 	 
-    if ( TVirtualMC::GetMC()->IsTrackEntering() ) { 
+    if ( fMC->IsTrackEntering() ) {
       nPhotons  =  nPhotonsInStep;
-      TVirtualMC::GetMC()->TrackPosition(fTrackPosition);
-      TVirtualMC::GetMC()->TrackMomentum(fTrackMomentum);
+      fMC->TrackPosition(fTrackPosition);
+      fMC->TrackMomentum(fTrackMomentum);
       Float_t pt  = TMath::Sqrt( fTrackMomentum.Px() * fTrackMomentum.Px()
 				 + fTrackMomentum.Py() * fTrackMomentum.Py() );
       TParticle *par = gAlice->GetMCApp()->Particle(gAlice->GetMCApp()->GetCurrentTrackNumber());
       hits[0]  = fTrackPosition.X();
       hits[1]  = fTrackPosition.Y();
       hits[2]  = fTrackPosition.Z();	 	 
-      hits[3]  = Float_t (TVirtualMC::GetMC()->TrackPid()); 
-      hits[4]  = TVirtualMC::GetMC()->TrackTime();
-      hits[5]  = TVirtualMC::GetMC()->TrackCharge();
+      hits[3]  = Float_t (fMC->TrackPid());
+      hits[4]  = fMC->TrackTime();
+      hits[5]  = fMC->TrackCharge();
       hits[6]  = fTrackMomentum.Theta()*TMath::RadToDeg();
       hits[7]  = fTrackMomentum.Phi()*TMath::RadToDeg();
       hits[8]  = ringNumber;
@@ -3131,7 +3131,7 @@ void AliVZEROv7::StepManager()
       //////////////////////////
     }
     nPhotons  = nPhotons + nPhotonsInStep;
-    if( TVirtualMC::GetMC()->IsTrackExiting() || TVirtualMC::GetMC()->IsTrackStop() || TVirtualMC::GetMC()->IsTrackDisappeared()){
+    if( fMC->IsTrackExiting() || fMC->IsTrackStop() || fMC->IsTrackDisappeared()){
       nPhotons = nPhotons - Int_t((Float_t(nPhotons) * lightAttenuation * nMeters));
       nPhotons = nPhotons - Int_t( Float_t(nPhotons) * fibToPhot);
       hits[17] = eloss;
@@ -3145,7 +3145,7 @@ void AliVZEROv7::StepManager()
       nPhotonsInStep  = 0;
       numStep         = 0;  
     }
-    if( TVirtualMC::GetMC()->IsTrackEntering() || TVirtualMC::GetMC()->IsTrackExiting() ) {
+    if( fMC->IsTrackEntering() || fMC->IsTrackExiting() ) {
       AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kVZERO);
     }
   }

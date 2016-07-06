@@ -396,34 +396,7 @@ void AliTRDarraySignal::Reset()
   memset(fSignal,0,sizeof(Float_t)*fNdim);
 
 }
-//________________________________________________________________________________
-Float_t AliTRDarraySignal::GetData(Int_t nrow, Int_t ncol, Int_t ntime) const
-{
-  //
-  // Get the data using the pad numbering.
-  // To access data using the mcm scheme use instead
-  // the method GetDataByAdcCol
-  //
 
-  Int_t corrcolumn = fgLutPadNumbering[ncol];
-
-  return fSignal[(nrow*fNumberOfChannels+corrcolumn)*fNtime+ntime];
-
-}
-//________________________________________________________________________________
-void AliTRDarraySignal::SetData(Int_t nrow, Int_t ncol, Int_t ntime, Float_t value)
-{
-  //
-  // Set the data using the pad numbering.
-  // To write data using the mcm scheme use instead
-  // the method SetDataByAdcCol
-  //
-
-  Int_t colnumb = fgLutPadNumbering[ncol];
-
-  fSignal[(nrow*fNumberOfChannels+colnumb)*fNtime+ntime]=value;
-
-}
 
 //________________________________________________________________________________
 void AliTRDarraySignal::CreateLut()

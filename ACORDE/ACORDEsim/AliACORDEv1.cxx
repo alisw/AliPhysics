@@ -727,27 +727,27 @@ void AliACORDEv1::StepManager()
   static Float_t eloss;
   static Float_t step;
   // scintillator volume
- static Int_t idScint = TVirtualMC::GetMC()->VolId("ACORDESCINTILLATORMODULE");
+ static Int_t idScint = fMC->VolId("ACORDESCINTILLATORMODULE");
   // local variables
   Int_t copy;
   TLorentzVector pos;
   TLorentzVector mom;
 
   // only charged tracks
-  if ( !TVirtualMC::GetMC()->TrackCharge() || !TVirtualMC::GetMC()->IsTrackAlive() ) return;
+  if ( !fMC->TrackCharge() || !fMC->IsTrackAlive() ) return;
 
   // only in sensitive material
-  if (TVirtualMC::GetMC()->CurrentVolID(copy) == idScint) {
+  if (fMC->CurrentVolID(copy) == idScint) {
 
-    step  += TVirtualMC::GetMC()->TrackStep();
-    eloss += TVirtualMC::GetMC()->Edep();
+    step  += fMC->TrackStep();
+    eloss += fMC->Edep();
     // set all hit variables except eloss which is resetted
     // set volume variables
-    if (TVirtualMC::GetMC()->IsTrackEntering()) {
+    if (fMC->IsTrackEntering()) {
       eloss = 0.0;
       step = 0.0;
-      TVirtualMC::GetMC()->TrackPosition(pos);
-      TVirtualMC::GetMC()->TrackMomentum(mom);
+      fMC->TrackPosition(pos);
+      fMC->TrackMomentum(mom);
       // hit
       // [0] = PID
       // [1-3] = x, y, z 
@@ -755,35 +755,35 @@ void AliACORDEv1::StepManager()
       // [5-7] = px, py, pz
       // [8] = energy 
       // [9] = energy loss
-      hits[0]  = (Float_t ) TVirtualMC::GetMC()->TrackPid(); 
+      hits[0]  = (Float_t ) fMC->TrackPid();
 
 
       hits[1] = pos[0]; 
       hits[2] = pos[1]; 
       hits[3] = pos[2]; 
-      hits[4] = TVirtualMC::GetMC()->TrackTime();
+      hits[4] = fMC->TrackTime();
       hits[5] = mom[0];
       hits[6] = mom[1];
       hits[7] = mom[2];
-      hits[8] = TVirtualMC::GetMC()->Etot();
+      hits[8] = fMC->Etot();
       // volume: 
       //  [0] = module number 1-60 (1==>(0-0), 60 (5-9)
       //  [1] = Plastic number: 0 (down) to 1 (up)
       Int_t copyPlastic; // plastic: down=1, up=2
       Int_t copyModule; // module: 1-60
-      TVirtualMC::GetMC()->CurrentVolID(copyPlastic);
-      TVirtualMC::GetMC()->CurrentVolOffID(1, copyModule);
+      fMC->CurrentVolID(copyPlastic);
+      fMC->CurrentVolOffID(1, copyModule);
       // module
       vol[0] = copyModule;
       // plastic: 0 = down, 1 = up
       vol[1] = copyPlastic - 4 ; // !!!!!!!
     // vol[1] = copyPlastic;
-    } // end if TVirtualMC::GetMC()->IsTrackEntering()
+    } // end if fMC->IsTrackEntering()
 
     // set hit[9] = total energy loss and book hit
-    if( TVirtualMC::GetMC()->IsTrackExiting() || 
-	TVirtualMC::GetMC()->IsTrackStop() || 
-	TVirtualMC::GetMC()->IsTrackDisappeared()){
+    if( fMC->IsTrackExiting() ||
+    fMC->IsTrackStop() ||
+    fMC->IsTrackDisappeared()){
       hits[9] = eloss;
       hits[10] = step;
       eloss = 0.0;

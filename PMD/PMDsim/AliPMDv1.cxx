@@ -2224,35 +2224,35 @@ void AliPMDv1::StepManager()
   Int_t   vol[6];
   //const char *namep;
   //    printf("Current vol  is ********  %s \n",namep);
-  if(TVirtualMC::GetMC()->CurrentMedium() == fMedSens && (destep = TVirtualMC::GetMC()->Edep())) {
+  if(fMC->CurrentMedium() == fMedSens && (destep = fMC->Edep())) {
     
-    TVirtualMC::GetMC()->CurrentVolID(copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolName();
+    fMC->CurrentVolID(copy);
+    //namep=fMC->CurrentVolName();
     //  printf("Current vol  is %s \n",namep);
     vol[0]=copy;
     
-    TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolOffName(1);
+    fMC->CurrentVolOffID(1,copy);
+    //namep=fMC->CurrentVolOffName(1);
     // printf("Current vol 11 is %s \n",namep);
     vol[1]=copy;
     
-    TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolOffName(2);
+    fMC->CurrentVolOffID(2,copy);
+    //namep=fMC->CurrentVolOffName(2);
     // printf("Current vol 22 is %s \n",namep);
     vol[2]=copy;
     
-    TVirtualMC::GetMC()->CurrentVolOffID(3,copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolOffName(3);
+    fMC->CurrentVolOffID(3,copy);
+    //namep=fMC->CurrentVolOffName(3);
     // printf("Current vol 33 is %s \n",namep);
     vol[3]=copy;
     
-    TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolOffName(4);
+    fMC->CurrentVolOffID(4,copy);
+    //namep=fMC->CurrentVolOffName(4);
     // printf("Current vol 44 is %s \n",namep);
     vol[4]=copy;
     
-    TVirtualMC::GetMC()->CurrentVolOffID(5,copy);
-    //namep=TVirtualMC::GetMC()->CurrentVolOffName(5);
+    fMC->CurrentVolOffID(5,copy);
+    //namep=fMC->CurrentVolOffName(5);
     //printf("Current vol 55 is %s \n",namep);
     vol[5]=copy;
 
@@ -2260,11 +2260,11 @@ void AliPMDv1::StepManager()
     // printf("volume number %4d %4d %4d %4d %4d %4d %10.3f \n",vol[0],vol[1],vol[2],vol[3],vol[4],vol[5],destep*1000000);// edep in MeV
     
     
-    TVirtualMC::GetMC()->Gdtom(center,hits,1);
+    fMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
 
     // this is for pile-up events
-    hits[4] = TVirtualMC::GetMC()->TrackTime();
+    hits[4] = fMC->TrackTime();
 
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 

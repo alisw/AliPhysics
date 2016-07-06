@@ -84,7 +84,7 @@ public:
    void SetHitType(Int_t type){fHitType =type;} //set type of hit container
    void SetDigitsSwitch(Int_t sw){fDigitsSwitch = sw;}
    void SetDefSwitch(Int_t def){fDefaults = def;}
-   Float_t GetNoise();  //get Current noise  
+   inline Float_t GetNoise();  //get Current noise
   void    GenerNoise(Int_t tablasize, Bool_t normType=kFALSE);  // make noise table
    Bool_t  IsSectorActive(Int_t sec) const;    // check if the sector is active
    void    SetActiveSectors(Int_t * sectors, Int_t n);  //set active sectors
@@ -142,6 +142,19 @@ protected:
   Int_t fIsGEM;        // flag isGEM readout
   ClassDef(AliTPC,15)  // Time Projection Chamber class
 };
+
+// inline implementations
+inline Float_t AliTPC::GetNoise()
+{
+  // get noise from table
+  //  if ((fCurrentNoise%10)==0)
+  //  fCurrentNoise= gRandom->Rndm()*fNoiseDepth;
+  if (fCurrentNoise>=fNoiseDepth) fCurrentNoise=0;
+  return fNoiseTable[fCurrentNoise++];
+  //gRandom->Gaus(0, fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac());
+}
+
+
 
 
 //_____________________________________________________________________________

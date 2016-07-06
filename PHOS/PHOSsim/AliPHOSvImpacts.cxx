@@ -226,11 +226,11 @@ void AliPHOSvImpacts::StepManager(void)
 
   // Add impact to EMC
 
-  static Int_t idPXTL = TVirtualMC::GetMC()->VolId("PXTL");
-  if( TVirtualMC::GetMC()->CurrentVolID(copy) == idPXTL &&
-      TVirtualMC::GetMC()->IsTrackEntering() ) {
-    TVirtualMC::GetMC()->TrackMomentum(pmom);
-    TVirtualMC::GetMC()->TrackPosition(pos) ;
+  static Int_t idPXTL = fMC->VolId("PXTL");
+  if( fMC->CurrentVolID(copy) == idPXTL &&
+      fMC->IsTrackEntering() ) {
+    fMC->TrackMomentum(pmom);
+    fMC->TrackPosition(pos) ;
 
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
@@ -239,16 +239,16 @@ void AliPHOSvImpacts::StepManager(void)
       xyzm[i] = pos[i] ;
       pm[i]   = pmom[i];
     }
-    TVirtualMC::GetMC() -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
-    TVirtualMC::GetMC() -> Gmtod (pm,   pd,   2);    // transform 3-momentum from master to daughter system
+    fMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+    fMC -> Gmtod (pm,   pd,   2);    // transform 3-momentum from master to daughter system
 
     // Select tracks coming to the crystal from up or down sides
     if ((pd[1]<0 && xyzd[1] >  GetGeometry()->GetCrystalSize(1)/2-0.1) ||
 	(pd[1]>0 && xyzd[1] < -GetGeometry()->GetCrystalSize(1)/2+0.1)) {
     // Select tracks coming to the crystal from up or down sides
-      Int_t pid = TVirtualMC::GetMC()->TrackPid();
+      Int_t pid = fMC->TrackPid();
       Int_t module;
-      TVirtualMC::GetMC()->CurrentVolOffID(10,module);
+      fMC->CurrentVolOffID(10,module);
       module--;
       AddImpact("EMC ",fIshunt, primary,tracknumber, module, pid, pmom, xyzm);
     }
@@ -256,11 +256,11 @@ void AliPHOSvImpacts::StepManager(void)
 
   // Add impact to CPV
 
-  static Int_t idPCPQ = TVirtualMC::GetMC()->VolId("PCPQ");
-  if( TVirtualMC::GetMC()->CurrentVolID(copy) == idPCPQ &&
-      TVirtualMC::GetMC()->IsTrackEntering() ) {
-    TVirtualMC::GetMC()->TrackMomentum(pmom);
-    TVirtualMC::GetMC()->TrackPosition(pos) ;
+  static Int_t idPCPQ = fMC->VolId("PCPQ");
+  if( fMC->CurrentVolID(copy) == idPCPQ &&
+      fMC->IsTrackEntering() ) {
+    fMC->TrackMomentum(pmom);
+    fMC->TrackPosition(pos) ;
 
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
@@ -269,9 +269,9 @@ void AliPHOSvImpacts::StepManager(void)
       xyzm[i] = pos[i] ;
       pm[i]   = pmom[i];
     }
-    Int_t pid = TVirtualMC::GetMC()->TrackPid();
+    Int_t pid = fMC->TrackPid();
     Int_t module;
-    TVirtualMC::GetMC()->CurrentVolOffID(3,module);
+    fMC->CurrentVolOffID(3,module);
     module--;
     AddImpact("CPV ",fIshunt, primary,tracknumber, module, pid, pmom, xyzm);
   }

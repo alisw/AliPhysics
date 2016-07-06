@@ -69,6 +69,7 @@ Float_t AliModule::fgDensityFactor = 1.0;
  
 //_______________________________________________________________________
 AliModule::AliModule():
+  fMC(0),
   fIdtmed(0),
   fIdmate(0),
   fLoMedium(0),
@@ -88,6 +89,7 @@ AliModule::AliModule():
 //_______________________________________________________________________
 AliModule::AliModule(const char* name,const char *title):
   TNamed(name,title),
+  fMC(0),
   fIdtmed(new TArrayI(100)),
   fIdmate(new TArrayI(100)),
   fLoMedium(65536),

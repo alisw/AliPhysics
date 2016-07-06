@@ -37,7 +37,7 @@ Raw data update: to read the TOF raw data defined in UNPACKED mode
 //
 // Author: F. Pierella based on AliTOFHitMap
 //
-// Modified by A. De Caro
+// Modified by A. De Caro, S. Wenzel (2016)
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -55,7 +55,8 @@ AliTOFDigitMap::AliTOFDigitMap():
   fNpx(AliTOFGeometry::NpadX()),
   fNpz(AliTOFGeometry::NpadZ()),
   fMaxIndex(-1),
-  fDigitMap(0x0)
+  fDigitMap(0x0),
+  fMapCellNumberChanged(true)
 {
 //
 // Default ctor
@@ -77,7 +78,8 @@ AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & digitMap):
   fNpx(digitMap.fNpx),
   fNpz(digitMap.fNpz),
   fMaxIndex(-1),
-  fDigitMap(0x0)
+  fDigitMap(0x0),
+  fMapCellNumberChanged(true)
 {
   //
   // Copy constructor
@@ -115,6 +117,8 @@ AliTOFDigitMap & AliTOFDigitMap::operator=(const AliTOFDigitMap & digitMap)
 	fDigitMap[i][j]=digitMap.fDigitMap[i][j];
     }
   }
+
+  fMapCellNumberChanged = true;
   return *this;
 }
 
@@ -145,7 +149,7 @@ void AliTOFDigitMap::Clear(const Option_t*)
       fDigitMap[ii][jj] = 0;
     }
   }
- 
+  fMapCellNumberChanged = true;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -177,8 +181,8 @@ void AliTOFDigitMap::AddDigit(Int_t *vol, Int_t idigit)
   // Assign digit to pad vol
   //
   // 0 means empty pad, we need to shift indeces by 1
-
-  if (fDigitMap[CheckedIndex(vol)][kMaxDigitsPerPad-1]!=0) {
+  auto checkedindex = CheckedIndex(vol);
+  if (fDigitMap[checkedindex][kMaxDigitsPerPad-1]!=0) {
     AliDebug(1,Form("In the volume (Se%i, Pl%i, St%i, PadR%i, Pad%i) there is not more possibility to add other digits.", vol[0], vol[1], vol[2], vol[4], vol[3]));
     AliDebug(1,Form("Then, the digit number %i will be not inserted in the digit map, i.e. it will be lost.", idigit));
     AliDebug(1,Form("Please, check the possibility to increase the digit map size (succently set to %i)", kMaxDigitsPerPad));
@@ -187,14 +191,14 @@ void AliTOFDigitMap::AddDigit(Int_t *vol, Int_t idigit)
 
   for (Int_t slot=0; slot<kMaxDigitsPerPad; slot++) {
 
-    if (fDigitMap[CheckedIndex(vol)][slot]==0) {
-      fDigitMap[CheckedIndex(vol)][slot]=idigit+1;
+    if (fDigitMap[checkedindex][slot]==0) {
+      fDigitMap[checkedindex][slot]=idigit+1;
+      fMapCellNumberChanged = true;
       break;
     }
     //else continue;
 
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -257,25 +261,27 @@ FlagType AliTOFDigitMap::TestDigit(Int_t *vol) const
 ////////////////////////////////////////////////////////////////////////
 Int_t AliTOFDigitMap::GetFilledCellNumber() const
 {
-  //
   // Returns the number of filled cells of the TOF digit map
-  //
+  // SW: if no digits added since last call, we return the cached result
+  static Int_t cachedresult = 0;
+  if (!fMapCellNumberChanged)
+    return cachedresult;
 
   Int_t counter = 0;
 
-  for (Int_t index = 0; index < fMaxIndex; ++index)
-  {
-    for (Int_t label = 0; label < kMaxDigitsPerPad; ++label)
-    {
-      if (fDigitMap[index][label] > 0)
-      {
-	++counter;
-	break;
+  // SW: this is a potentially expensive search; We might make this really fast
+  // by adding some structure keeping track of nonzero entries in the first place
+  for (Int_t index = 0; index < fMaxIndex; ++index) {
+    for (Int_t label = 0; label < kMaxDigitsPerPad; ++label) {
+      if (fDigitMap[index][label] > 0) {
+        ++counter;
+        break;
       }
     }
   }
-
-  return counter;
+  cachedresult = counter;
+  fMapCellNumberChanged = false;
+  return cachedresult;
 }
 
 ////////////////////////////////////////////////////////////////////////

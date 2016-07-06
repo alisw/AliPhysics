@@ -268,16 +268,16 @@ void AliFITv0::StepManager()
   
   //   TClonesArray &lhits = *fHits;
   
-  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
+  if(!fMC->IsTrackAlive()) return; // particle has disappeared
   
-  id=TVirtualMC::GetMC()->CurrentVolID(copy);  
+  id=fMC->CurrentVolID(copy);
   // Check the sensetive volume
   if(id==fIdSens1 ) { 
-    if(TVirtualMC::GetMC()->IsTrackEntering()) {
-      TVirtualMC::GetMC()->CurrentVolOffID(1,copy1);
+    if(fMC->IsTrackEntering()) {
+      fMC->CurrentVolOffID(1,copy1);
       vol[1] = copy1;
       vol[0]=copy;
-      TVirtualMC::GetMC()->TrackPosition(pos);
+      fMC->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
@@ -285,12 +285,12 @@ void AliFITv0::StepManager()
       else vol[2] = 1 ;
       printf(" volumes pmt %i mcp %i side %i x %f y %f z %f\n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2] );
       
-      Float_t etot=TVirtualMC::GetMC()->Etot();
+      Float_t etot=fMC->Etot();
       hits[3]=etot;
-      Int_t iPart= TVirtualMC::GetMC()->TrackPid();
-      Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
+      Int_t iPart= fMC->TrackPid();
+      Int_t partID=fMC->IdFromPDG(iPart);
       hits[4]=partID;
-      Float_t ttime=TVirtualMC::GetMC()->TrackTime();
+      Float_t ttime=fMC->TrackTime();
       hits[5]=ttime*1e12;
       AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol,hits);
       // Create a track reference at the exit of photocatode
