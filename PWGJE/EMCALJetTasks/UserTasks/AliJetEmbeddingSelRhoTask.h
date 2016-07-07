@@ -1,7 +1,7 @@
 /// \class AliJetEmbeddingSelRhoTask
 /// \brief Track embedding into an event with rho in a given range
 ///
-/// \ingroup EMCALJETFW
+/// \ingroup PWGJETASKS
 /// The class inherits from AliJetEmbeddingTask and takes care of the event
 /// selection. Otherwise all is in AliJetEmbeddingTask 
 
