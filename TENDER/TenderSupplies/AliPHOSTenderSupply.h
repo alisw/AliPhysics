@@ -77,6 +77,7 @@ private:
   AliPHOSGeometry   *fPHOSGeo;               // PHOS geometry
   Double_t fNonlinearityParams[10] ;         // Parameters for non-linearity calculation
   TH2I * fPHOSBadMap[6] ;                    // Bad channels map
+  Int_t fL1phase[15] ;                       // L1phases for PHOS DDLs (run2 only)
   Int_t fRecoPass ;                          // Reconstruction pass
   Int_t fRunNumber ;                         // run number
   Bool_t fUsePrivateBadMap ;
@@ -90,7 +91,7 @@ private:
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
  
-  ClassDef(AliPHOSTenderSupply, 3); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 4); // PHOS tender task
 };
 
 
