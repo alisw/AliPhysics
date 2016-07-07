@@ -98,6 +98,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHNTrackletvsZ(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
@@ -133,6 +134,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
+  fUseCentralitySPDTracklet(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -497,6 +499,15 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoCorrelationVariablesvsLambdaPt(0),
 	fHistoCorrelationVariablesvsLambdaPtMix(0),
 	fHistoCorrelationVariablesvsLambdaPtMC(0),
+	fHistoMassVariablesvsEleLambdaPt(0),
+	fHistoMassVariablesvsEleLambdaPtMix(0),
+	fHistoMassVariablesvsEleLambdaPtMC(0),
+	fHistoMassVariablesvsElePt(0),
+	fHistoMassVariablesvsElePtMix(0),
+	fHistoMassVariablesvsElePtMC(0),
+	fHistoMassVariablesvsLambdaPt(0),
+	fHistoMassVariablesvsLambdaPtMix(0),
+	fHistoMassVariablesvsLambdaPtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseElePt1(0),
 	fHistoResponseElePt2(0),
@@ -591,6 +602,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCEvents(0),
   fHTrigger(0),
   fHCentrality(0),
+  fHNTrackletvsZ(0),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
@@ -626,6 +638,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fRunNumber(0),
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
+  fUseCentralitySPDTracklet(kFALSE),
   fEvNumberCounter(0),
   fMCEventType(-9999),
   fMCDoPairAnalysis(kFALSE),
@@ -990,6 +1003,15 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoCorrelationVariablesvsLambdaPt(0),
 	fHistoCorrelationVariablesvsLambdaPtMix(0),
 	fHistoCorrelationVariablesvsLambdaPtMC(0),
+	fHistoMassVariablesvsEleLambdaPt(0),
+	fHistoMassVariablesvsEleLambdaPtMix(0),
+	fHistoMassVariablesvsEleLambdaPtMC(0),
+	fHistoMassVariablesvsElePt(0),
+	fHistoMassVariablesvsElePtMix(0),
+	fHistoMassVariablesvsElePtMC(0),
+	fHistoMassVariablesvsLambdaPt(0),
+	fHistoMassVariablesvsLambdaPtMix(0),
+	fHistoMassVariablesvsLambdaPtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseElePt1(0),
 	fHistoResponseElePt2(0),
@@ -1224,6 +1246,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   }
   fCEvents->Fill(2);
 
+	Int_t countTr=0;
+	AliAODTracklets* tracklets=aodEvent->GetTracklets();
+	Int_t nTr=tracklets->GetNumberOfTracklets();
+	for(Int_t iTr=0; iTr<nTr; iTr++){
+		Double_t theta=tracklets->GetTheta(iTr);
+		Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+		if(eta>-1.0 && eta<1.0) countTr++;
+	}
+
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
 
@@ -1282,6 +1313,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   }
   fCEvents->Fill(4);
 
+	fHNTrackletvsZ->Fill(fVtxZ,countTr);
+
   fIsMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   fIsSemi=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
   fIsCent=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral)==(AliVEvent::kCentral); 
@@ -1302,6 +1335,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 	if(fUseCentralityV0M){
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
+	}else if(fUseCentralitySPDTracklet){
+		if(countTr>=0 && countTr<=8) fCentrality = 5.;
+		else if(countTr>=9 && countTr<=13) fCentrality = 15.;
+		else if(countTr>=14 && countTr<=19) fCentrality = 25.;
+		else if(countTr>=20 && countTr<=30) fCentrality = 35.;
+		else if(countTr>=31 && countTr<=49) fCentrality = 45.;
+		else fCentrality = 55.;
 	}else{
 		fCentrality = 1.;
 	}
@@ -2735,6 +2775,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	for(Int_t iv=0;iv<7;iv++){
 		cont_cor_nd[iv] = -9999.;
 	}
+	Double_t cont_mass_nd[8];
+	for(Int_t iv=0;iv<8;iv++){
+		cont_mass_nd[iv] = -9999.;
+	}
 
   fCorrelationVariables[0] = v0->Pt();
   fCorrelationVariables[1] = trk->Pt();
@@ -2858,6 +2902,31 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			fHistoCorrelationVariablesvsLambdaPt->Fill(cont_cor_nd);
 		}
   }
+
+	cont_mass_nd[0] =  elobj->InvMass(2,pdgdg);
+	cont_mass_nd[1] =  cont_cor_nd[0];
+	cont_mass_nd[4] =  cont_cor_nd[3];
+	cont_mass_nd[5] =  cont_cor_nd[4];
+	cont_mass_nd[6] =  cont_cor_nd[5];
+	cont_mass_nd[7] =  cont_cor_nd[6];
+
+	if(fAnalCuts->IsPeakRegion(v0)) cont_mass_nd[3] = 1;
+	if(fAnalCuts->IsSideBand(v0)) cont_mass_nd[3] = 0;
+	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate)) cont_mass_nd[2]=1;
+	if(melam_flip < 10.&& cosoa < 0.) cont_mass_nd[2]=0;
+	if(fUseMCInfo){
+		fHistoMassVariablesvsEleLambdaPtMC->Fill(cont_mass_nd);
+		cont_mass_nd[1] = trk->Pt();
+		fHistoMassVariablesvsElePtMC->Fill(cont_mass_nd);
+		cont_mass_nd[1] = v0->Pt();
+		fHistoMassVariablesvsLambdaPtMC->Fill(cont_mass_nd);
+	}else{
+		fHistoMassVariablesvsEleLambdaPt->Fill(cont_mass_nd);
+		cont_mass_nd[1] = trk->Pt();
+		fHistoMassVariablesvsElePt->Fill(cont_mass_nd);
+		cont_mass_nd[1] = v0->Pt();
+		fHistoMassVariablesvsLambdaPt->Fill(cont_mass_nd);
+	}
 
   return;
 }
@@ -3139,6 +3208,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   for(Int_t iv=0;iv<7;iv++){
     cont_cor_nd[iv] = -9999.;
   }
+	Double_t cont_mass_nd[8];
+  for(Int_t iv=0;iv<8;iv++){
+    cont_mass_nd[iv] = -9999.;
+  }
 
   fCorrelationVariables[0] = v0->Pt();
   fCorrelationVariables[1] = trke->Pt();
@@ -3189,6 +3262,23 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 		cont_cor_nd[0] = v0->Pt();
 		fHistoCorrelationVariablesvsLambdaPtMix->Fill(cont_cor_nd);
   }
+
+	cont_mass_nd[0] =  mel;
+	cont_mass_nd[1] =  cont_cor_nd[0];
+	cont_mass_nd[4] =  cont_cor_nd[3];
+	cont_mass_nd[5] =  cont_cor_nd[4];
+	cont_mass_nd[6] =  cont_cor_nd[5];
+	cont_mass_nd[7] =  cont_cor_nd[6];
+
+	if(fAnalCuts->IsPeakRegion(v0)) cont_mass_nd[3] = 1;
+	if(fAnalCuts->IsSideBand(v0)) cont_mass_nd[3] = 0;
+	if(fAnalCuts->IsSelected(trke,v0,rdhfcutvars,AliRDHFCuts::kCandidate)) cont_mass_nd[2]=1;
+	if(mel_flip < 10.&& cosoa < 0.) cont_mass_nd[2]=0;
+	fHistoMassVariablesvsEleLambdaPtMix->Fill(cont_mass_nd);
+	cont_mass_nd[0] = trke->Pt();
+	fHistoMassVariablesvsElePtMix->Fill(cont_mass_nd);
+	cont_mass_nd[0] = v0->Pt();
+	fHistoMassVariablesvsLambdaPtMix->Fill(cont_mass_nd);
 
   return;
 }
@@ -4105,11 +4195,13 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
+  fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","conter",30,-15.,15.,120,-0.5,119.5);
 
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
+  fOutput->Add(fHNTrackletvsZ);
 
   return;
 }
@@ -5136,6 +5228,27 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fHistoCorrelationVariablesvsLambdaPtMix = new THnSparseF("fHistoCorrelationVariablesvsLambdaPtMix","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
   fHistoCorrelationVariablesvsLambdaPtMC = new THnSparseF("fHistoCorrelationVariablesvsLambdaPtMC","",7,bins_cor_nd,xmin_cor_nd,xmax_cor_nd);
 
+	//Axis 0: Mass
+	//Axis 1: Pt
+	//Axis 2: Near or Away
+	//Axis 3: peak or Sideband
+	//Axis 4: Sign Type
+	//Axis 5: Conv Type
+	//Axis 6: MC Type
+	//Axis 7: Centrality
+  Int_t bins_mass_nd[8]=	{23,100 , 2, 2, 4, 3, 10, 10};
+  Double_t xmin_mass_nd[8]={1.1,0.,-0.5,-0.5,-0.5,-0.5,-0.5,0.};
+  Double_t xmax_mass_nd[8]={5.7,20.,1.5,1.5,3.5,2.5,9.5,100.};
+  Double_t xmax_mass_nd2[8]={5.7,10.,1.5,1.5,3.5,2.5,9.5,100.};
+  fHistoMassVariablesvsEleLambdaPt = new THnSparseF("fHistoMassVariablesvsEleLambdaPt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsEleLambdaPtMix = new THnSparseF("fHistoMassVariablesvsEleLambdaPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsEleLambdaPtMC = new THnSparseF("fHistoMassVariablesvsEleLambdaPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsElePt = new THnSparseF("fHistoMassVariablesvsElePt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsElePtMix = new THnSparseF("fHistoMassVariablesvsElePtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsElePtMC = new THnSparseF("fHistoMassVariablesvsElePtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd2);
+  fHistoMassVariablesvsLambdaPt = new THnSparseF("fHistoMassVariablesvsLambdaPt","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsLambdaPtMix = new THnSparseF("fHistoMassVariablesvsLambdaPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
+  fHistoMassVariablesvsLambdaPtMC = new THnSparseF("fHistoMassVariablesvsLambdaPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
 
   fOutputAll->Add(fHistoCorrelationVariablesvsEleLambdaPt);
   fOutputAll->Add(fHistoCorrelationVariablesvsEleLambdaPtMix);
@@ -5146,6 +5259,16 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoCorrelationVariablesvsLambdaPt);
   fOutputAll->Add(fHistoCorrelationVariablesvsLambdaPtMix);
   fOutputAll->Add(fHistoCorrelationVariablesvsLambdaPtMC);
+
+  fOutputAll->Add(fHistoMassVariablesvsEleLambdaPt);
+  fOutputAll->Add(fHistoMassVariablesvsEleLambdaPtMix);
+  fOutputAll->Add(fHistoMassVariablesvsEleLambdaPtMC);
+  fOutputAll->Add(fHistoMassVariablesvsElePt);
+  fOutputAll->Add(fHistoMassVariablesvsElePtMix);
+  fOutputAll->Add(fHistoMassVariablesvsElePtMC);
+  fOutputAll->Add(fHistoMassVariablesvsLambdaPt);
+  fOutputAll->Add(fHistoMassVariablesvsLambdaPtMix);
+  fOutputAll->Add(fHistoMassVariablesvsLambdaPtMC);
 
   return;
 }
