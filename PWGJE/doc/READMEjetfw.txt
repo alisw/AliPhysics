@@ -101,10 +101,11 @@ In general, it is extremely helpful to be familiar with the base classes. It can
 
 ## Before looking for jets: Track and Cluster selection
 
-Before running any jet finder a proper track and cluster samples have to be set/prepared for use. 
-To select tracks you can find instructions here: \ref READMEtracks.
+Before running any jet finder a proper track and cluster samples have to be set/prepared for use.
 
-Clusters require a bit more levels of corrections, see \ref READMEclustcorr. The different stages of cluster corrections are accessible via different data members of AliVCluster in your task.
+To select tracks you can find instructions [here] (\ref READMEtracks).
+
+Clusters require a bit more levels of corrections, see [here] (\ref READMEclustcorr). The different stages of cluster corrections are accessible via different data members of AliVCluster in your task.
 
 ## Basic jet finding
 
@@ -131,7 +132,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
 If you use "usedefault" for nTrack and nCluster the AliParticleContainer and AliClusterContainer will be created using the default names, namely "tracks" and "caloClusters" for AOD and "Tracks" and "CaloClusters" for ESD.
 
 ### Charged jets
-For charged jets, take care of your track selection (\ref READMEtracks) and run the AliEmcalJetTask. nClusters is "" and type = AliJetContainer::kChargedJet
+For charged jets, take care of your [track selection] (\ref READMEtracks) and run the jet finder e.g. like this:
+~~~
+AliEmcalJetTask* jetFinderCh = AliEmcalJetTask("usedefault", "",  AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet)
+~~~
 
 ### Full jets
 EMCal/DCal cluster corrections have to be applied beforehand as explained [here](\ref READMEclustcorr).
