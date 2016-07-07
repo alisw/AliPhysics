@@ -2774,6 +2774,12 @@ void AliTPCPreprocessorOffline::MakeQAPlotsGain(TString outputDirectory/*=""*/, 
     dir->cd();
     TH2 *h = static_cast<TH2*>(fArrQAhist->UncheckedAt(ihist));
     if (!h) continue;
+
+    // ---| adjust y-axis range in case of residual calibration |---
+    if (fGainCalibrationType==kResidualGainQA || fGainCalibrationType==kCombinedGainCalib) {
+      h->GetYaxis()->SetRangeUser(0.3,1.7);
+    }
+
     TString histName = h->GetName();
     TString canvName=histName;
     canvName.Prepend("c_");
