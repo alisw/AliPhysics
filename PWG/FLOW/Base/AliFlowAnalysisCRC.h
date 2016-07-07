@@ -898,13 +898,15 @@ public:
   Double_t GetFlowQCDeltaEta() const {return this->fFlowQCDeltaEta;};
  void SetFlowQCCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorPro[c][eg][h] = TP;};
  TProfile* GetFlowQCCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorPro[c][eg][h];};
- void SetFlowQCNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const k) {this->fFlowQCNUAPro[c][eg][k] = TP;};
- TProfile* GetFlowQCNUAPro(Int_t const c, Int_t const eg, Int_t const k) const {return this->fFlowQCNUAPro[c][eg][k];};
  void SetFlowQCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowQCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorHist[c][eg][h];};
-  
+  void SetFlowQCCorNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorNUAPro[c][eg][h] = TP;};
+  TProfile* GetFlowQCCorNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorNUAPro[c][eg][h];};
+
  TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
  void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
+  TProfile* GetFlowQCIntCorNUAPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAPro[eg][h];};
+  void SetFlowQCIntCorNUAPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAPro[eg][k] = TP;};
  TH1D* GetFlowQCIntCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHist[eg][h];};
  void SetFlowQCIntCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHist[eg][k] = TP;};
   TProfile* GetFlowQCNewCenPro(Int_t const eg, Int_t const h) const {return this->fFlowQCNewCenPro[eg][h];};
@@ -917,6 +919,8 @@ public:
   void SetFlowQCMetricCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorHist[eg][k] = TP;};
   TProfile* GetFlowQCIntCorProEG(Int_t const eg) const {return this->fFlowQCIntCorProEG[eg];};
   void SetFlowQCIntCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCIntCorProEG[eg] = TP;};
+  TProfile* GetFlowQCIntCorNUAProEG(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAProEG[eg][h];};
+  void SetFlowQCIntCorNUAProEG(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAProEG[eg][k] = TP;};
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
   TProfile* GetFlowQCNewCenProEG(Int_t const eg) const {return this->fFlowQCNewCenProEG[eg];};
@@ -1592,22 +1596,25 @@ private:
  
  // Flow QC
  TList *fFlowQCList;    //! QC List
-  const static Int_t fFlowQCNPro = 3;
-  const static Int_t fFlowQCNNUA = 1;
+  const static Int_t fFlowQCNPro = 4;
+  const static Int_t fFlowQCNNUA = 4;
   Int_t fFlowQCCenBin; //
   Double_t fFlowQCDeltaEta; //
  TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
- TProfile *fFlowQCNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
+  TProfile *fFlowQCCorNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! correlation profile, [CRCBin][eg]
   
  TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
  TProfile *fFlowQCNewCenPro[fFlowNHarm][3]; //!
  TH1D *fFlowQCNewCenHist[fFlowNHarm][3]; //!
-  TProfile *fFlowQCMetricCorPro[fFlowNHarm][3]; //!
-  TH1D *fFlowQCMetricCorHist[fFlowNHarm][3]; //!
+  TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
+  TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
+  
+  TProfile *fFlowQCMetricCorPro[fFlowNHarm][3]; //!
+  TH1D *fFlowQCMetricCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCNewCenProEG[fFlowNHarm]; //!
   TH1D *fFlowQCNewCenHistEG[fFlowNHarm]; //!
   TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm][4]; //!
