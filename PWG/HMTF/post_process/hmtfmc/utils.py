@@ -2,6 +2,7 @@ import os
 import random
 import string
 import subprocess
+import re
 
 from rootpy import asrootpy
 from rootpy.plotting import Graph
@@ -159,32 +160,9 @@ def percentile_bin_to_binidx_bin(percentile_bin, event_counter):
         raise ValueError("The given percentile interval did not match any bins in the given event_counter histogram")
 
 
-# def create_graph_pided_refest_vs_pidcount(h3d, corr_hist, pids):
-#     """Creates a graph with the count of the given pids (iterable) vs Nch of the REF mult.
-#     The mapping from Nch_est to Nch_ref is done using the correlation hist.
-#     The ref est needs to be on the y axis of the correlation histogram.
-#     pids are given as strings.
-#     """
-#     profx = asrootpy(corr_hist.ProfileX())
-#     graphs = []
-#     for pid in pids:
-#         # set pid
-#         pid_bin = h3d.zaxis.find_bin(pid)
-#         if pid_bin == 0:
-#             raise ValueError("given pid ({}) does not exist in histogram".format(pid))
-
-#         h3d.GetZaxis().SetRange(pid_bin, pid_bin)
-#         h2d = h3d.Project3D("yx", )
-#         count = asrootpy(h2d.ProjectionX())
-#         graphs.append(remap_x_values(count, profx))
-#     sgraphs = sum(graphs)
-#     sgraphs.title = ", ".join(pids)
-#     sgraphs.xaxis.title = "N_{{ch}}^{{{}}}".format(corr_hist.yaxis.title[7:])
-#     return sgraphs
-
 def download_file(alien_path, local_path):
     """
-    Download the file `alien` to `local`
+    Download a file from `alien_path` to `local`
 
     Parameters
     ----------
@@ -211,3 +189,40 @@ def download_file(alien_path, local_path):
             os.remove(local_path)
         except OSError:
             pass
+
+
+def get_generator_name_from_train(alien_path):
+    """
+    Extract the generator name for an `AnalysisResults.root` file on alien_path.
+
+    Parameters
+    ----------
+    alien_path :
+        Alien path to `AnalysisResults.root`
+
+    Returns
+    -------
+    str :
+        Generator name as stated in the train's `env.sh` file
+    """
+    if not alien_path.startswith("alien:"):
+        alien_path = "alien:/" + alien_path
+    path_to_env = os.path.join(os.path.split(alien_path)[0], "..", "env.sh")
+    cp_cmd = ['alien_cp', '-m', '-s', path_to_env, ".env.sh"]
+    subprocess.check_call(cp_cmd)
+    with open(".env.sh") as f:
+        for line in f.readlines():
+            if "PERIOD_NAME" in line:
+                gen_name = re.match(".*'(.+)'", line).groups()[-1]
+                break
+    os.remove(".env.sh")
+    return gen_name
+
+
+def get_generator_name_from_filename(fname):
+    """
+    Deduce the generator name from the file name as asigned when the
+    file was downloaded. Reduce underscores with spaces.
+    """
+    name = re.match(r'.*\d+_\d{8}-\d{4}-(.+)\.root$', fname).groups()[-1]
+    return name.replace("_", " ")

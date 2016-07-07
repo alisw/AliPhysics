@@ -29,15 +29,18 @@ subparsers = parser.add_subparsers()
 def prepare_plots(args):
     """
     This will download AnalysisResults.root from the given alien path
-    into the current directory, prefixing it with the train
-    number. Subsequently, "all" plots are created and saved in to the
+    into the current directory. The file name is composed of the train
+    id and generator name as given in the trains `env.sh`
+    file. Subsequently, "all" plots are created and saved in to the
     AnalysisResults.root file. This step needs to be taken before
     creating summary or comparison PDFs. This operation requrires a
     valid alien-token!
     """
     ROOT.gROOT.SetBatch(True)
-    train_number = re.match(r'.*/(\d*)_', args.input_file).groups()[-1]
-    local_path = os.path.abspath(os.path.join("./", train_number + '_' + os.path.basename(args.input_file)))
+    gen_name = utils.get_generator_name_from_train(args.input_file)
+    train_number = re.match(r'.*/(\d+_\d{8}-\d{4})', args.input_file).groups()[-1]
+    _, fext = os.path.splitext(os.path.basename(args.input_file))
+    local_path = os.path.abspath(os.path.join("./", "{0}-{1}{2}".format(train_number, gen_name, fext)))
     utils.download_file(args.input_file, local_path)
     print "Copied {0} to {1}".format(args.input_file, local_path)
 
@@ -72,8 +75,8 @@ parser_prepare_plots.set_defaults(op=prepare_plots)
 
 parser_summarize = subparsers.add_parser('summarize', description=summarize.__doc__)
 parser_summarize.add_argument('input_file', type=str, help="Path to file containing the input data")
-parser_summarize.add_argument('gen_name', type=str, help="Name of the generator used. Used in the title of the PDF")
-# parser_summarize.add_argument('-c', '--config', type=str, help="Path to json file with custom configuration.")
+parser_summarize.add_argument('--gen_name', type=str,
+                              help="Name of the generator and tune. If not given, deduced from filename")
 parser_summarize.set_defaults(op=summarize)
 
 
@@ -82,11 +85,11 @@ parser_compare = subparsers.add_parser('compare', description=compare.__doc__)
 parser_compare.add_argument("input_file1", type=str, help="Path to the first file to be compared")
 parser_compare.add_argument("trigger1", type=str, help="Trigger of interest in first file",
                             choices=settings.considered_triggers)
-parser_compare.add_argument("generator_name1", type=str, help="Name and tune of first generator")
+parser_compare.add_argument("--generator_name1", type=str, help="Overwrite name and tune of first generator.")
 parser_compare.add_argument("input_file2", type=str, help="Path to the second file to be compared")
 parser_compare.add_argument("trigger2", type=str, help="Trigger of interest in second file",
                             choices=settings.considered_triggers)
-parser_compare.add_argument("generator_name2", type=str, help="Name and tune of second generator")
+parser_compare.add_argument("--generator_name2", type=str, help="Overwrite name and tune of second generator")
 
 parser_compare.set_defaults(op=compare)
 
