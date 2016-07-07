@@ -21,13 +21,14 @@
 #include "AliTrackContainerV0.h"
 
 /// \cond CLASSIMP
-ClassImp(AliTrackContainerV0)
+ClassImp(AliTrackContainerV0);
 /// \endcond
 
 /// This is the default constructor, used for ROOT I/O purposes.
 AliTrackContainerV0::AliTrackContainerV0() :
   AliTrackContainer(),
   fFilterDaughterTracks(0),
+  fEvent(0),
   fV0s(0),
   fDaughterList(10)
 {
@@ -44,6 +45,7 @@ AliTrackContainerV0::AliTrackContainerV0() :
 AliTrackContainerV0::AliTrackContainerV0(const char *name) :
   AliTrackContainer(name),
   fFilterDaughterTracks(0),
+  fEvent(0),
   fV0s(0),
   fDaughterList(10)
 {
@@ -62,11 +64,10 @@ void AliTrackContainerV0::SetArray(const AliVEvent *event)
 {
   AliTrackContainer::SetArray(event);
 
-  if(!fFilterDaughterTracks)
+  if (!fFilterDaughterTracks)
     return;
-  
-  //fEvent = dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(event));  // alternative?
-  fEvent = dynamic_cast<AliAODEvent*>((AliVEvent*)event->Clone()); 
+
+  fEvent = dynamic_cast<const AliAODEvent*>(event);
 }
 
 /// Preparation for next event. 
@@ -75,20 +76,17 @@ void AliTrackContainerV0::NextEvent()
 {
   AliTrackContainer::NextEvent();
   
-  if(fFilterDaughterTracks)
-  {
+  if (fFilterDaughterTracks) {
     // V0s daughter tracks will be removed from track sample
 
-    if(!fEvent)
-    {
-      ::Warning("AliTrackContainerV0::NextEvent","fEvent is not valid!"); 
+    if (!fEvent) {
+      AliWarning("fEvent is not valid!");
       return;
     }
 
     fV0s = dynamic_cast<TClonesArray*>(fEvent->GetV0s());
-    if(!fV0s)
-    {
-      ::Warning("AliTrackContainerV0::NextEvent","fV0s is not valid!"); 
+    if (!fV0s) {
+      AliWarning("fV0s is not valid!");
       return;
     }
 
@@ -105,13 +103,12 @@ void AliTrackContainerV0::NextEvent()
 /// \param cand Pointer to V0 candidate to be set.
 void AliTrackContainerV0::ExtractDaughters(AliAODv0* cand)
 {
-  for(Int_t i = 0; i < 2; i++)
-  {   
+  for (Int_t i = 0; i < 2; i++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack*>(cand->GetDaughter(i));
     
     if(!track)
     {
-      ::Warning("AliTrackContainerV0::ExtractDaughters","Track is not valid! Skipping candidate.");
+      AliWarning("Track is not valid! Skipping candidate.");
       return;
     }
 
@@ -131,13 +128,11 @@ Bool_t AliTrackContainerV0::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectio
 {
   const AliAODTrack* track = dynamic_cast<const AliAODTrack*>(vp);
 
-  if(IsV0Daughter(track))
-  {
+  if (IsV0Daughter(track)) {
     // track is one of the V0 daughter - will be rejected
     return kFALSE;
   } 
-  else
-  {
+  else {
     // track is NOT a V0 daughter - regular cuts will be applied
     return AliTrackContainer::ApplyTrackCuts(vp, rejectionReason);
   }
@@ -150,9 +145,8 @@ Bool_t AliTrackContainerV0::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectio
 /// \return kTRUE if the particle is a daughter of V0 candidate, kFALSE otherwise
 Bool_t AliTrackContainerV0::IsV0Daughter(const AliAODTrack* track) const
 {
-	if(fDaughterList.FindObject(track)) 
+	if (fDaughterList.FindObject(track))
 		return kTRUE;
 
 	return kFALSE;
 }
-

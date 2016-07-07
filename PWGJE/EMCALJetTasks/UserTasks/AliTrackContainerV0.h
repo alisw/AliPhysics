@@ -31,8 +31,6 @@
 class AliAODEvent;
 
 #include "AliAODEvent.h"
-//#include "AliVEvent.h"
-//#include "AliVTrack.h"
 #include "AliTrackContainer.h"
 
 class AliTrackContainerV0 : public AliTrackContainer {
@@ -40,12 +38,12 @@ class AliTrackContainerV0 : public AliTrackContainer {
 		AliTrackContainerV0();
   	AliTrackContainerV0(const char *name);
 
-  	void SetFilterDaughterTracks(Bool_t bFilter) { fFilterDaughterTracks = bFilter; }
-  	Bool_t GetFilterDaughterTracks() const { return fFilterDaughterTracks; }
+  	void   SetFilterDaughterTracks(Bool_t bFilter)       { fFilterDaughterTracks = bFilter; }
+  	Bool_t GetFilterDaughterTracks()               const { return fFilterDaughterTracks   ; }
 
   	// reimplementation of inherited methods
-  	virtual void SetArray(const AliVEvent *event); 
-  	virtual void NextEvent(); 
+  	virtual void    SetArray(const AliVEvent *event);
+  	virtual void    NextEvent();
   	virtual Bool_t	ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const;
 		
 		void ExtractDaughters(AliAODv0* cand);
@@ -53,15 +51,14 @@ class AliTrackContainerV0 : public AliTrackContainer {
 	protected:	
 		Bool_t	IsV0Daughter(const AliAODTrack* track) const;
 
-		Bool_t fFilterDaughterTracks; //< if the daughter tracks of V0s  candidates should be filtered out
-		AliAODEvent* fEvent; //< pointer to current event (pointer stay the same, but the content is changed event-by-event)
-		TObjArray* fV0s; //< list of V0 candidates
-		TObjArray	fDaughterList;	//< list of V0 daughters
+		Bool_t              fFilterDaughterTracks    ; ///< if the daughter tracks of V0s  candidates should be filtered out
+		const AliAODEvent  *fEvent                   ; ///< pointer to current event (pointer stay the same, but the content is changed event-by-event)
+		TObjArray          *fV0s                     ; ///< list of V0 candidates
+		TObjArray	          fDaughterList            ; ///< list of V0 daughters
+
 	private:
-
-
 	/// \cond CLASSIMP
-  ClassDef(AliTrackContainerV0, 0);
+  ClassDef(AliTrackContainerV0, 1);
   /// \endcond
 };
 #endif
