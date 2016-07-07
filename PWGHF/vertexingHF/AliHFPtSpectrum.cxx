@@ -1180,7 +1180,7 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
       Double_t x = fhDirectEffpt->GetBinCenter(ibin);
       Double_t efficiencyUnc = fGlobalEfficiencyUncertainties[1];
       if(fGlobalEfficiencyPtDependent) efficiencyUnc = 0.5*CalculateEfficiencyPtDepedentUncertainty(x,true);
-      cout <<endl<<" mine test: gl-unc="<<fGlobalEfficiencyUncertainties[1]<<" cutvar-unc="<<CalculateEfficiencyPtDepedentUncertainty(x,true)<<" ==> effUnc="<<efficiencyUnc<<endl;
+//      cout <<endl<<" mine test: gl-unc="<<fGlobalEfficiencyUncertainties[1]<<" cutvar-unc="<<CalculateEfficiencyPtDepedentUncertainty(x,true)<<" ==> effUnc="<<efficiencyUnc<<endl;
 
     // fc uncertainty from (eff_b/eff_c) = fc^2 * (N_b/N_c) * delta(eff_b/eff_c)
     //  delta(eff_b/eff_c) is a percentage = effRatio * sqrt( fGlobalEfficiencyUncertainties[1]^2 + unc_eff_c ^2 + unc_eff_b ^2 ) 
@@ -1485,12 +1485,12 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       frac = fLuminosity[0]; 
       errfrac = fLuminosity[1];
     }
-//    printf("Tab=%e  events=%d  frac=%f\n",fTab[0],(Int_t)fNevts,frac);
+    // printf("Tab=%e  events=%d  frac=%f\n",fTab[0],(Int_t)fNevts,frac);
     value = ( fhRECpt->GetBinContent(ibin)>0. && fhRECpt->GetBinContent(ibin)!=0. && 
 	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
       fhRECpt->GetBinContent(ibin) - frac*(deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) * fhRECpt->GetBinWidth(ibin) )
       : 0. ;
-//    printf("%d  raw=%f  after=%f \n",ibin,fhRECpt->GetBinContent(ibin),value);
+    // printf("%d  raw=%f  after=%f \n",ibin,fhRECpt->GetBinContent(ibin),value);
     value /= fhRECpt->GetBinWidth(ibin);
     if (value<0.) value =0.;
 
