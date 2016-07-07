@@ -923,7 +923,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         // - II.Step 4 : around effective masses (ESD)
         // ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
 		
-        if( bachTrackXi->Charge() < 0 )	{
+        if( (!fkSwitchCharges && bachTrackXi->Charge() < 0) || (fkSwitchCharges && bachTrackXi->Charge() > 0) )	{
             lV0quality = 0.;
             xi->ChangeMassHypothesis(lV0quality , 3312);
             // Calculate the effective mass of the Xi- candidate.
@@ -941,7 +941,7 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         }// end if negative bachelor
         
         
-        if( bachTrackXi->Charge() >  0 ){
+        if( (!fkSwitchCharges && bachTrackXi->Charge() >  0) || (fkSwitchCharges && bachTrackXi->Charge() < 0 ) ){
             lV0quality = 0.;
             xi->ChangeMassHypothesis(lV0quality , -3312);
             // Calculate the effective mass of the Xi+ candidate.

@@ -110,8 +110,10 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
-         if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
-	 AliESDtrack *btrk=event->GetTrack(bidx);
+          if (!fSwitchCharges && bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
+          if ( fSwitchCharges && bidx==v0.GetIndex(1)) continue; //Bo:  consistency 0 for neg
+          
+          AliESDtrack *btrk=event->GetTrack(bidx);
           
          if (!fSwitchCharges && btrk->GetSign()>0) continue;  // bachelor's charge
          if ( fSwitchCharges && btrk->GetSign()<0) continue;  // bachelor's charge
@@ -159,8 +161,10 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
       for (Int_t j=0; j<ntr; j++) {//loop on tracks
 	 Int_t bidx=trk[j];
  	 //Bo:   if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
-         if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
-	 AliESDtrack *btrk=event->GetTrack(bidx);
+         if (!fSwitchCharges && bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
+         if ( fSwitchCharges && bidx==v0.GetIndex(0)) continue; //Bo:  consistency 1 for pos
+          
+          AliESDtrack *btrk=event->GetTrack(bidx);
           
          if (!fSwitchCharges && btrk->GetSign()<0) continue;  // bachelor's charge
          if ( fSwitchCharges && btrk->GetSign()>0) continue;  // bachelor's charge
