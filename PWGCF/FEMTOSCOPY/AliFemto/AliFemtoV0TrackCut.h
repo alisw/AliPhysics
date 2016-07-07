@@ -68,16 +68,22 @@ public:
 
   void SetRadiusV0Min(double);
   void SetRadiusV0Max(double);
+
+  void SetRequireTOFPion(bool);
+  void SetRequireTOFProton(bool);
   
   void SetNsigmaPosDaughter(double);
   void SetNsigmaNegDaughter(double);
+  void SetNsigmaPosDaughter(double,double);
+  void SetNsigmaNegDaughter(double,double);
+  
 
   //----n sigma----
   bool IsKaonTPCdEdxNSigma(float mom, float nsigmaK);
   bool IsKaonTOFNSigma(float mom, float nsigmaK);
   bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK);
-  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, double nsigmacut=3.0);
-  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacut=3.0);
+  bool IsPionNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=false);
+  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=true);
 
   //-----The fMinvPurityAidHistoV0 is built immediately before the (final) invariant mass cut, and thus may be used to calculate the purity of the V0 collection
   void SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax);  //set the Minv histogram attributes and automatically sets flag fBuildPurityAidV0=true
@@ -121,11 +127,16 @@ public:
   float fPtMaxNegDaughter;
   double fMinAvgSepDaughters;
 
-  double fNsigmaPosDaughter;
-  double fNsigmaNegDaughter;
+  double fNsigmaPosDaughterTPC;
+  double fNsigmaNegDaughterTPC;
+  double fNsigmaPosDaughterTOF;
+  double fNsigmaNegDaughterTOF;
 
   double fRadiusV0Min;
   double fRadiusV0Max;
+
+  bool fRequireTOFPion;
+  bool fRequireTOFProton;
   
   bool fBuildPurityAidV0;
   TH1D* fMinvPurityAidHistoV0;
