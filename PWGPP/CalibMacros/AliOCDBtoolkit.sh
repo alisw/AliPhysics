@@ -40,8 +40,8 @@ if [ "$1" == "-h" ]; then
   echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMakeTable $mcGalice  MC $outputDir/OCDBsim.list )'
   #
   echo "==============================="
-  echo Example usage ocdbDiffJIRA
-  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC)'
+  echo Example usage ocdbDiffTable
+  echo '(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)'
   exit 0
 fi
 
@@ -264,21 +264,63 @@ diffConfig(){
 } 
 
 
-ocdbDiffJIRA(){
+ocdbDiffTable(){
     #
     # Make a diff between the 2 OCDB tables
-    # example usage : (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC)
-
-    a=${@}
-    if [ $a -lt 3] ; then
-	echo "The total length of all arguments is: ${#a}: ";
-        echo example usage  ocdbDiffJIRA file1 file2 mask;
-        return 0;
-    fi;
+    # example usage : (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable  $outputDirMC/OCDBrec.list $outputDir/OCDBrec.list TPC 2)
+    # 
     file1=$1
     file2=$2
     mask=$3
-    diff  -W 1000 -y  --suppress-common-lines $file1  $file2 | grep $mask  | sed -e s_">"__g  -e s_"^"_"|"_  -e s_"$"_"|"_ -e 's/\t/|/g' -e 's_" "_"|"_g'  -e 's_"{|}"_"|"_' -e "s/\([ |,.]\)\1*/\1/g"
-    (source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh "ocdbDiffJIRA file1=$file1 file2=$file2 mask=$mask" )
-
+    filterType=$4
+    nparam=$#
+    if [ $nparam -lt 4 ] ; then
+	echo "Error - The total length of all arguments is: $nparam: ";
+	echo "Oputput dumped to the stdout"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask $filterType; ) > mydiff.txt"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 1 ) > ocdbDiffObject.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 2 ) > ocdbDiffTable.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 4 ) > ocdbDiffTable.html"
+        return 0;
+    fi;
+    # JIRA diffs for 2 XML OCDB object dumps
+    diff  -W 1000 -y  --suppress-common-lines $file1  $file2 | grep $mask> ocdbDiffTable.tmp
+    if [ $filterType -eq 1 ] ; then
+        #  diff y already properly formatted - add | at the beginning and at the end of the line
+	cat ocdbDiffTable.tmp  | sed   -e "s/\([\t ,.]\)\1*/\ /g" -e "s_^_|_g"  -e 's_$_|_g'
+    fi;
+    # JIRA diffs for the OCDB table dump
+    if [ $filterType -eq 2 ] ; then	
+        # header
+	echo "|Entry|Path0|Path1|Entry0|Entry1|Size0|Size1|Hash0|Hash1|"
+        # different content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -v "<" | grep -v ">" |
+	while read CMD; do echo $CMD | gawk '{print "|"$1"|"$2"|"$7"|"$3"|"$8"|"$4"|"$9"|"$5"|"$10"|" }'; done
+        # mising content print
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  ">" |
+	while read CMD; do echo $CMD | gawk '{print "|"$2"|-|"$3"|-|"$4"|-|"$5"|-|"$6"|" }'; done
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  "<" |
+	while read CMD; do echo $CMD | gawk '{print "|"$1"|-|"$2"|-|"$3"|-|"$4"|-|"$5"|" }'; done
+    fi;
+    # HTML  diffs for 2 XML OCDB object dumps NOT YET 
+    if [ $filterType -eq 3 ] ; then
+        #  diff y already properly formatted - add | at the beginning and at the end of the line
+	cat ocdbDiffTable.tmp  | sed   -e "s/\([\t ,.]\)\1*/\ /g" -e "s_^_|_g"  -e 's_$_|_g'
+    fi;
+    # HTML diffs for the OCDB table dump
+    if [ $filterType -eq 4 ] ; then
+        # header
+	echo '<table style="width:100%">'
+	echo "<tr><th>Entry</th><th>Path0</th><th>Path1</th><th>Entry0</th><th>Entry1</th><th>Size0</th><th>Size1</th><th>Hash0</th><th>Hash1</th><th></tr>"
+        # different content print
+	cat diff.txt | sed 's_|__g'  | grep -v "<" | grep -v ">" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>"$2"</td><td>"$7"</td><td>"$3"</td><td>"$8"</td><td>"$4"</td><td>"$9"</td><td>"$5"</td><td>"$10"</td></tr>" }'; done
+        # mising content print
+	cat diff.txt | sed 's_|__g'  | grep -e  ">" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td><td>-</td><td>"$6"</td></tr>" }'; done
+	cat diff.txt | sed 's_|__g'  | grep -e  "<" |
+	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>-</td><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td></tr>" }'; done
+	echo '</table>'
+   fi;
+   rm ocdbDiffTable.tmp
 }
