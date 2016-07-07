@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <cstdio>
 
 // put a standard header
 // History: 25.4.2016 -- initial version (sandro.wenzel@cern.ch)
