@@ -416,4 +416,7 @@ else()
     cmake/GetGitRevisionDescription.cmake.in
     DESTINATION cmake)
 
+  # Install test directory
+  install(DIRECTORY test/ DESTINATION test USE_SOURCE_PERMISSIONS)
+
 endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
