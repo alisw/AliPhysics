@@ -63,8 +63,6 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
   void SetSmallSystRanges(Bool_t small = kTRUE)                 { fSmallSyst = small; }
   void SetNamesForTree(TString path, TString treename, TString branchnameD, TString branchnameP) { fPathTreeinputFile = path; fTreeinputName = treename; fBranchJDetName = branchnameD; fBranchJParName = branchnameP;}
-  void SetRhoWeights(Int_t nbins, Double_t *binlims, TString pathname, TString histname, Double_t maxrho);
-  
   
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -75,8 +73,6 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   void           SetTree(TTree *tree);
   void           SetTreeFromFile(TString filenameM, TString treename);
   Int_t          MatchEmbeddedConstituentWithParticleLevel();
-  
-  Double_t GetRhoFactor(Double_t ptdet, Double_t rhoCurrent);
   
   Int_t                               fContainerBase;              ///< jets to be analyzed
   Int_t                               fContainerSub;               ///< subtracted jets to be analyzed
@@ -134,18 +130,6 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   Int_t         fMaxTreeEntries;                                   ///< number of entries in the TTree
   TLorentzVector *fVecD;                                           //!<! vector with detector level jet
   TLorentzVector *fVecP;                                           //!<! vector with particle level jet
-  Int_t          fnPtDetBinsForRho;                                ///< Number of data rho (rhom) distributions in input (they are pT bins, 2 is pretty fine). If it is -1 (default) do not use this weighting
-  Int_t          fnBinsLimsForRho;                                 ///< number of limits, namely fnPtDetBinsForRho+1
-  /// limits of the pT bins corresponding to each rho (rhom) distribution from data
-  Double_t       *fPtDetBinsForRho;                            //[fnBinsLimsForRho]                    
-  
-  TString        fPathRhoDistr;                                    ///< path to the file where the rho distibution from data is. Can be an alien path.
-  TString        fNameTHnSparseRhoDistr;                           ///< base name of the histograms to be read (e.g."hRhoDataR_Bin"), the bin number is added
-  TH1D           **fhRhoData;                                     //!<! rho distributions from data for different bins of pTDet leading
-  TH1D           **fhRhoMData;                                     //!<! rho distributions from data for different bins of pTDet leading
-  Double_t       fMaxRhoAvail;                                     ///< above this value our ratio of rho is nor reliable
-  TH1D           *fRhoFactorQA;                                     //!<! actual rho weighting factors used
-  
  
   private:
      

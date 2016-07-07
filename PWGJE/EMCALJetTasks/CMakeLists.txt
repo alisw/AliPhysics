@@ -173,7 +173,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx  
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
-    UserTasks/AliAnalysisTaskEmcalJetTree.cxx)
+    UserTasks/AliAnalysisTaskEmcalJetTree.cxx
+    UserTasks/AliJetEmbeddingSelRhoTask.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
