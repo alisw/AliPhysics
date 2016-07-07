@@ -6,6 +6,8 @@ For users more familiar with the framework, see the [Jet Framework Topics](\ref 
 
 For those who are less familiar, please see the introduction [below](\ref jetFrameworkIntroduction).
 
+An example can be found at <your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C
+
 # Introduction to the Jet Framework              {#jetFrameworkIntroduction}
 
 ## Framework Philosophy
@@ -81,7 +83,7 @@ For more information, see ``AliAnalysisTaskSE`` and the possible selections in `
 
 #### Necessary Tasks
 
-There are a number of tasks which are required to run before running your analysis in the proper order. These tasks include the EMCal corrections (cell corrections, cluster corrections, hadronic corrections - see [here](\ref READMEclustcorr)) and jet finding. For an up to date task, see ``runEMCalJetAnalysisNew.C``.
+There are a number of tasks which are required to run before running your analysis in the proper order. These tasks include the EMCal corrections (cell corrections, cluster corrections, hadronic corrections - see [here](\ref READMEclustcorr)) and jet finding. For an up to date task, see ``<your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C``.
 
 ### Additional notes
 
