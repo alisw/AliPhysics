@@ -99,6 +99,13 @@ In general, it is extremely helpful to be familiar with the base classes. It can
 
 # Jet Framework Topics              {#jetFrameworkTopics}
 
+## Before looking for jets: Track and Cluster selection
+
+Before running any jet finder a proper track and cluster samples have to be set/prepared for use. 
+To select tracks you can find instructions here: \ref READMEtracks.
+
+Clusters require a bit more levels of corrections, see \ref READMEclustcorr. The different stages of cluster corrections are accessible via different data members of AliVCluster in your task.
+
 ## Basic jet finding
 
 Basic jet finding is provided by the AliEmcalJetTask class which is found in the library libPWGJEEMCALJetTasks (source code in PWGJE/EMCALJetTasks). An add task macro is provided in PWGJE/EMCALJetTasks/AddTaskEmcalJet.C:
@@ -121,8 +128,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
 )
 ~~~
 
+If you use "usedefault" for nTrack and nCluster the AliParticleContainer and AliClusterContainer will be created using the default names, namely "tracks" and "caloClusters" for AOD and "Tracks" and "CaloClusters" for ESD.
+
 ### Charged jets
-For charged jets, running the AliEmcalJetTask is sufficient. The track selection is described [here](\ref READMEtracks).
+For charged jets, take care of your track selection (\ref READMEtracks) and run the AliEmcalJetTask. nClusters is "" and type = AliJetContainer::kChargedJet
 
 ### Full jets
 EMCal/DCal cluster corrections have to be applied beforehand as explained [here](\ref READMEclustcorr).
