@@ -1,4 +1,15 @@
-// runEMCalJetAnalysisNew.C
+/// \file runEMCalJetSampleTask.C
+/// \brief Example macro to run a EMCal-Jet-Framework-based analysis
+///
+/// \ingroup EMCALJETFW
+/// This macros illustrates how to run a jet analysis. It can run locally or on
+/// grid (test/full/terminate modes).
+/// The script runEMCalJetSampleTask.sh in the same folder allows to easily set
+/// the input values
+///
+/// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+/// \date Apr 27, 2016
+
 
 class AliESDInputHandler;
 class AliAODInputHandler;
