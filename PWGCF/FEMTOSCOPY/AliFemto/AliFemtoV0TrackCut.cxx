@@ -42,6 +42,9 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fNsigmaPosDaughter(3.0),
   fNsigmaNegDaughter(3.0),
 
+  fRadiusV0Min(0.0),
+  fRadiusV0Max(99999.0),
+  
   fBuildPurityAidV0(false),
   fMinvPurityAidHistoV0(0)
 {
@@ -92,6 +95,9 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
 
   fNsigmaPosDaughter(aCut.fNsigmaPosDaughter),
   fNsigmaNegDaughter(aCut.fNsigmaNegDaughter),
+
+  fRadiusV0Min(aCut.fRadiusV0Min),
+  fRadiusV0Max(aCut.fRadiusV0Max),
 
   fBuildPurityAidV0(aCut.fBuildPurityAidV0)
 {
@@ -144,6 +150,9 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fNsigmaNegDaughter = aCut.fNsigmaNegDaughter;
 
   fBuildPurityAidV0 = aCut.fBuildPurityAidV0;
+
+  fRadiusV0Min = aCut.fRadiusV0Min;
+  fRadiusV0Max = aCut.fRadiusV0Max;
 
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
   else fMinvPurityAidHistoV0 = 0;
@@ -206,6 +215,9 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (!(aV0->StatusNeg() & fStatusDaughters)) return false;
   if (!(aV0->StatusPos() & fStatusDaughters)) return false;
 
+  //fiducial volume radius
+  if(aV0->RadiusV0()<fRadiusV0Min || aV0->RadiusV0()>fRadiusV0Max)
+    return false;
 
   //DCA between daughter particles
   if (TMath::Abs(aV0->DcaV0Daughters()) > fMaxDcaV0Daughters)

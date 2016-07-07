@@ -120,6 +120,9 @@ public:
 
   double fNsigmaPosDaughter;
   double fNsigmaNegDaughter;
+
+  double fRadiusV0Min;
+  double fRadiusV0Max;
   
   bool fBuildPurityAidV0;
   TH1D* fMinvPurityAidHistoV0;
