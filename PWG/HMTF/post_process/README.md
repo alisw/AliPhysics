@@ -14,23 +14,42 @@ The post processing is implemented in python. Unfortunately, the python installa
 
 This makes the executable `hmtfmc` avialable on the command line. It is self documented:
 
-	$ hmtfmc --help
-	usage: hmtfmc [-h] [-v] {compare,prepare_plots,summary} ...
+``` shell
+$ hmtfmc --help
+usage: hmtfmc [-h] [-v] {prepare_plots,summarize,compare} ...
 
-	positional arguments:
-	{compare,prepare_plots,summary}
+positional arguments:
+  {prepare_plots,summarize,compare}
 
-	optional arguments:
-	-h, --help            show this help message and exit
-	-v, --verbose
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose
+```
 
 ## Preparing plot for later steps
 
 This steps produces all plots and saves them in the downloaded AnalysisResults.root file. This step needs to be taken before creating the summary or comparison slides. For example:
 
-	$ mkdir ~/hmtfmc_results
-	$ cd ~/hmtfmc_results
-	$ hmtfmc prepare_plots /alice/cern.ch/user/a/alitrain/PWGZZ/MCGen_pp/393_20160210-1718/merge/AnalysisResults.root
+``` shell
+$ mkdir ~/hmtfmc_results
+$ cd ~/hmtfmc_results
+$ hmtfmc prepare_plots --help
+usage: hmtfmc prepare_plots [-h] input_file
+
+This will download AnalysisResults.root from the given alien path into the
+current directory, prefixing it with the train number. Subsequently, "all"
+plots are created and saved in to the AnalysisResults.root file. This step
+needs to be taken before creating summary or comparison PDFs. This operation
+requrires a valid alien-token!
+
+positional arguments:
+  input_file  Path to file containing the input data
+
+optional arguments:
+  -h, --help  show this help message and exit
+
+$ hmtfmc prepare_plots /alice/cern.ch/user/a/alitrain/PWGZZ/MCGen_pp/393_20160210-1718/merge/AnalysisResults.root
+```
 	
 Now, there is a file called 393_AnalysisResults.root (393 being the train number). The file contains all the plots at this points
 
@@ -40,9 +59,25 @@ Assuming that the previously downloaded file was for "Dipsy 13 TeV Ropes", the f
 
 ``` shell
 $ hmtfmc summary --help
-	usage: hmtfmc summary [-h] input_file gen_name
+usage: hmtfmc prepare_plots [-h] input_file
 
-Create summary slides. Configurations can be made via a custom json file
+This will download AnalysisResults.root from the given alien path into the
+current directory, prefixing it with the train number. Subsequently, "all"
+plots are created and saved in to the AnalysisResults.root file. This step
+needs to be taken before creating summary or comparison PDFs. This operation
+requrires a valid alien-token!
+
+positional arguments:
+  input_file  Path to file containing the input data
+
+optional arguments:
+  -h, --help  show this help message and exit
+(hmtf) christian@christian-x1:~/hmtf_testground$ hmtfmc summarize --help
+usage: hmtfmc summarize [-h] input_file gen_name
+
+Create summary slides for all triggers of a given generator. Remember to use
+quotes if the generator name contains spaces and be careful with special
+characters.
 
 positional arguments:
   input_file  Path to file containing the input data
@@ -61,6 +96,19 @@ Two generators and/or tuning can be compared as follows
 
 ```shell
 $ hmtfmc compare --help
+usage: hmtfmc summarize [-h] input_file gen_name
+
+Create summary slides for all triggers of a given generator. Remember to use
+quotes if the generator name contains spaces and be careful with special
+characters.
+
+positional arguments:
+  input_file  Path to file containing the input data
+  gen_name    Name of the generator used. Used in the title of the PDF
+
+optional arguments:
+  -h, --help  show this help message and exit
+(hmtf) christian@christian-x1:~/hmtf_testground$ hmtfmc compare --help
 usage: hmtfmc compare [-h]
                       input_file1 {Inel,InelGt0,V0AND} generator_name1
                       input_file2 {Inel,InelGt0,V0AND} generator_name2
@@ -79,6 +127,23 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-$ hmtfmc compare 393_AnalysisResults.root Inel "Dipsy INEL" 393_AnalysisResults.root InelGt0 "Dipsy INEL>0"
+
+$ hmtfmc compare 393_AnalysisResults.root Inel "Dipsy INEL" 393_AnalysisResults.root InelGt0 "Dipsy V0AND"
 ```
 
+## Customization
+Customization of the created plots can be achieved as follows:
+
+- Percentile bins, considered triggers (INEL, V0AND, INEL>0) and estimators:
+  This is centralized in the `settings.py` file. If an estimator is not available in a given `AnalysisResults.root` file, it is simply ignored.
+  
+- Plots that are created with `$ hmtfmc prepare_plots`:
+  Customization can be found in `plotting.py` and to a small extend in the `hmtfmc` file itself.
+  
+- Plots that are included in the summary slides:
+  This can be customized the file `summarize.py`
+  
+- Plots that are included in the comparison slides:
+  This can be customized the file `compare.py`
+  
+  
