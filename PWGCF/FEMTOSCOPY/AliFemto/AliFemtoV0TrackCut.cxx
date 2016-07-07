@@ -36,14 +36,20 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fPtMaxPosDaughter(99.0),
   fPtMinNegDaughter(0.0),
   fPtMaxNegDaughter(99.0),
+
+  
   fMinAvgSepDaughters(0),
 
 
-  fNsigmaPosDaughter(3.0),
-  fNsigmaNegDaughter(3.0),
+  fNsigmaPosDaughterTPC(3.0),
+  fNsigmaNegDaughterTPC(3.0),
+  fNsigmaPosDaughterTOF(3.0),
+  fNsigmaNegDaughterTOF(3.0),
 
   fRadiusV0Min(0.0),
   fRadiusV0Max(99999.0),
+  fRequireTOFPion(false),
+  fRequireTOFProton(true),
   
   fBuildPurityAidV0(false),
   fMinvPurityAidHistoV0(0)
@@ -93,11 +99,16 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fPtMaxNegDaughter(aCut.fPtMaxNegDaughter),
   fMinAvgSepDaughters(aCut.fMinAvgSepDaughters),
 
-  fNsigmaPosDaughter(aCut.fNsigmaPosDaughter),
-  fNsigmaNegDaughter(aCut.fNsigmaNegDaughter),
+  fNsigmaPosDaughterTPC(aCut.fNsigmaPosDaughterTPC),
+  fNsigmaNegDaughterTPC(aCut.fNsigmaNegDaughterTPC),
+  fNsigmaPosDaughterTOF(aCut.fNsigmaPosDaughterTOF),
+  fNsigmaNegDaughterTOF(aCut.fNsigmaNegDaughterTOF),
 
   fRadiusV0Min(aCut.fRadiusV0Min),
   fRadiusV0Max(aCut.fRadiusV0Max),
+
+  fRequireTOFPion(aCut.fRequireTOFPion),
+  fRequireTOFProton(aCut.fRequireTOFProton),
 
   fBuildPurityAidV0(aCut.fBuildPurityAidV0)
 {
@@ -146,13 +157,18 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fPtMaxNegDaughter = aCut.fPtMaxNegDaughter;
   fMinAvgSepDaughters = aCut.fMinAvgSepDaughters;
 
-  fNsigmaPosDaughter = aCut.fNsigmaPosDaughter;
-  fNsigmaNegDaughter = aCut.fNsigmaNegDaughter;
+  fNsigmaPosDaughterTPC = aCut.fNsigmaPosDaughterTPC;
+  fNsigmaNegDaughterTPC = aCut.fNsigmaNegDaughterTPC;
+  fNsigmaPosDaughterTOF = aCut.fNsigmaPosDaughterTOF;
+  fNsigmaNegDaughterTOF = aCut.fNsigmaNegDaughterTOF;
 
   fBuildPurityAidV0 = aCut.fBuildPurityAidV0;
 
   fRadiusV0Min = aCut.fRadiusV0Min;
   fRadiusV0Max = aCut.fRadiusV0Max;
+
+  fRequireTOFPion = aCut.fRequireTOFPion;
+  fRequireTOFProton = aCut.fRequireTOFProton;
 
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
   else fMinvPurityAidHistoV0 = 0;
@@ -258,9 +274,10 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
     if(aV0->MassK0Short() > fInvMassRejectK0sMin && aV0->MassK0Short() < fInvMassRejectK0sMax)
       return false;
+
     
-    if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP(),fNsigmaPosDaughter)) //proton
-      if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughter)) { //pion
+    if (IsProtonNSigma(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFProton)) //proton
+      if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFPion)) { //pion
         pid_check = true;
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassLambda());
         //invariant mass lambda
@@ -276,9 +293,10 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 
     if(aV0->MassK0Short() > fInvMassRejectK0sMin && aV0->MassK0Short() < fInvMassRejectK0sMax)
       return false;
+
     
-    if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP(),fNsigmaNegDaughter)) //proton
-      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughter)) { //pion
+    if (IsProtonNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFProton)) //proton
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) { //pion
         pid_check = true;
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassAntiLambda());
         //invariant mass antilambda
@@ -287,8 +305,8 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
       }
   }//Looking for K0s = pip + pim
   else if (fParticleType == kK0s) {
-    if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughter)) //pion-
-      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughter)) { //pion+
+    if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi(),fNsigmaNegDaughterTPC,fNsigmaNegDaughterTOF,fRequireTOFPion)) //pion-
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi(),fNsigmaPosDaughterTPC,fNsigmaPosDaughterTOF,fRequireTOFPion)) { //pion+
         pid_check = true;
         //invariant mass K0s
         if(fBuildPurityAidV0) fMinvPurityAidHistoV0->Fill(aV0->MassK0Short());
@@ -446,12 +464,26 @@ void AliFemtoV0TrackCut::SetMinAvgSeparation(double minSep)
 
 void AliFemtoV0TrackCut::SetNsigmaPosDaughter(double sigma)
 {
-  fNsigmaPosDaughter = sigma;
+  fNsigmaPosDaughterTPC = sigma;
+  fNsigmaPosDaughterTOF = sigma;
 }
 
 void AliFemtoV0TrackCut::SetNsigmaNegDaughter(double sigma)
 {
-  fNsigmaNegDaughter = sigma;  
+  fNsigmaNegDaughterTPC = sigma;
+  fNsigmaNegDaughterTOF = sigma;
+}
+
+void AliFemtoV0TrackCut::SetNsigmaPosDaughter(double sigmaTPC, double sigmaTOF)
+{
+  fNsigmaPosDaughterTPC = sigmaTPC;
+  fNsigmaPosDaughterTOF = sigmaTOF;
+}
+
+void AliFemtoV0TrackCut::SetNsigmaNegDaughter(double sigmaTPC, double sigmaTOF)
+{
+  fNsigmaNegDaughterTPC = sigmaTPC;
+  fNsigmaNegDaughterTOF = sigmaTOF;
 }
 
 void AliFemtoV0TrackCut::SetRadiusV0Min(double radmin)
@@ -462,6 +494,16 @@ void AliFemtoV0TrackCut::SetRadiusV0Min(double radmin)
 void AliFemtoV0TrackCut::SetRadiusV0Max(double radmax)
 {
   fRadiusV0Max = radmax;
+}
+
+void AliFemtoV0TrackCut::SetRequireTOFPion(bool req)
+{
+  fRequireTOFPion = req;
+}
+
+void AliFemtoV0TrackCut::SetRequireTOFProton(bool req)
+{
+  fRequireTOFProton = req;
 }
 
 
@@ -501,84 +543,59 @@ bool AliFemtoV0TrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 
 
 
-bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, double nsigmacut)
+bool AliFemtoV0TrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, double nsigmacutTPC, double nsigmacutTOF, bool requireTOF)
 {
-  if (TMath::Abs(nsigmaTPCPi) < nsigmacut) return true;
+  
+  if (mom < 0.5) {
+    if (TMath::Abs(nsigmaTPCPi) < nsigmacutTPC) return true;
+  } else {
 
-  /*if (nsigmaTOFPi<-999.)
-    {
-      if (TMath::Abs(nsigmaTPCPi)<3.0) return true;
-    }
-  else
-    {
-      if (TMath::Abs(nsigmaTPCPi)<3.0 && TMath::Abs(nsigmaTOFPi)<4.0) return true;
-      }*/
+    if(requireTOF)
+      {
+    
+	if (nsigmaTOFPi < -999.) {
+	  if (TMath::Abs(nsigmaTPCPi) < nsigmacutTPC) return true;
+	} else {
+	  if (TMath::Abs(nsigmaTPCPi) < nsigmacutTPC && TMath::Abs(nsigmaTOFPi) < nsigmacutTOF) return true;
+	}
 
-  /*if (mom<0.65)
-    {
-      if (nsigmaTOFPi<-999.)
-  {
-    if (mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-    else if (mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-    else if (mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
-    else return false;
+      }
+    else
+      {
+	if (TMath::Abs(nsigmaTPCPi) < nsigmacutTPC) return true;
+      }
+    
   }
-  else if (TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-  if (TMath::Abs(nsigmaTPCPi)<3.0) return true;
-      else return false;
-    }
-  else if (nsigmaTOFPi<-999.)
-    {
-      return false;
-    }
-  else if (mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
-  else if (mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;*/
 
   return false;
 }
 
-bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacut)
+bool AliFemtoV0TrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC, double nsigmacutTOF, bool requireTOF)
 {
   if (mom < 0.8) {
-    if (TMath::Abs(nsigmaTPCP) < nsigmacut) return true;
+    if (TMath::Abs(nsigmaTPCP) < nsigmacutTPC) return true;
   } else {
-    if (nsigmaTOFP < -999.) {
-      if (TMath::Abs(nsigmaTPCP) < nsigmacut) return true;
-    } else {
-      if (TMath::Abs(nsigmaTPCP) < nsigmacut && TMath::Abs(nsigmaTOFP) < nsigmacut) return true;
-    }
+
+    if(requireTOF)
+      {
+    
+	if (nsigmaTOFP < -999.) {
+	  if (TMath::Abs(nsigmaTPCP) < nsigmacutTPC) return true;
+	} else {
+	  if (TMath::Abs(nsigmaTPCP) < nsigmacutTPC && TMath::Abs(nsigmaTOFP) < nsigmacutTOF) return true;
+	}
+
+      }
+    else
+      {
+	if (TMath::Abs(nsigmaTPCP) < nsigmacutTPC) return true;
+      }
+    
   }
-
-
-  /*if (nsigmaTOFP<-999.)
-    {
-      if (TMath::Abs(nsigmaTPCP)<3.0) return true;
-    }
-  else
-    {
-      if (TMath::Abs(nsigmaTPCP)<3.0 && TMath::Abs(nsigmaTOFP)<3.0) return true;
-      }*/
-
-
-  /*if (mom<0.8)
-    {
-      if (nsigmaTOFP<-999.)
-  {
-    if (TMath::Abs(nsigmaTPCP)<3.0) return true;
-    else return false;
-  }
-  else if (TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;
-  if (TMath::Abs(nsigmaTPCP)<3.0) return true;
-      else return false;
-    }
-  else if (nsigmaTOFP<-999.)
-    {
-      return false;
-    }
-    else if (TMath::Abs(nsigmaTOFP)<3.0 && TMath::Abs(nsigmaTPCP)<3.0) return true;*/
 
   return false;
 }
+
 
 void AliFemtoV0TrackCut::SetMinvPurityAidHistoV0(const char* name, const char* title, const int& nbins, const float& aInvMassMin, const float& aInvMassMax)
 {
