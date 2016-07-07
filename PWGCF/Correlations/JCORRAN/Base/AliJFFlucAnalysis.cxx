@@ -320,7 +320,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin 
 		<< "END" ; 
 
-
+/*
 	fh_QvectorQC
 		<< TH2D("hQvecQC", "hQvecQC", 1024, -1.1 , 1.1, 1024, -1.1, 1.1 ) 
 		<< fBin_h
@@ -332,7 +332,6 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fBin_h
 		<< fHistCentBin
 		<< "END" ;
-
 	fh_evt_SP_QC_ratio_4p
 		<< TH1D("hSPQCratio4p", "hSPQCratio4p", 1024, -100, 100)
 		<< fBin_h
@@ -344,7 +343,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fBin_h
 		<< fHistCentBin 
 		<< "END" ;
-
+*/
 	//AliJTH1D set done.
 	
 	fHMG->Print();
@@ -638,6 +637,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 			
 		}
 
+		/*
 		//Check evt-by-evt SP/QC ratio. (term-by-term)
 		// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC 
 		// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3 
@@ -656,7 +656,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				if( evtSP_QC_ratio < -1 || evtSP_QC_ratio > 5) evtSP_QC_ratio = -99;
 				fh_evt_SP_QC_ratio_2p[i][fCBin]->Fill(evtSP_QC_ratio ); 
 		}
-
+		*/ // calculating ratio term-by-term is not working now in lego train
+		// maybe memory issue? (too much histo??)
 
 	} // QC method done.
 
@@ -852,12 +853,14 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 
 	// Q-vector[ih][ik] calculated doen. //(need ik??)
 
+/*
 	// Save QA plot
 	for(int ih=2; ih<kNH; ih++){
 		fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
 		fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
 	}
 	// Q-vector calculated
+*/
 }
 //________________________________________________________________________
 TComplex AliJFFlucAnalysis::Q(int n, int p){
