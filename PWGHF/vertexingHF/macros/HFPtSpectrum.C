@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
@@ -394,12 +394,12 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   spectra->SetIsParticlePlusAntiParticleYield(isParticlePlusAntiParticleYield);
 
   // Set the Tab parameter and uncertainties
-  if ( (cc != kpp7) && (cc != kpp276) ) {
+  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276)  ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
   if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     spectra->SetCollisionType(2);
-  } else if ( !( cc==kpp7 || cc==kpp276 ) ) {
+  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 ) ) {
     spectra->SetCollisionType(1);
   }
   
@@ -409,6 +409,9 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
+  }
+  else if (cc==kpp8){
+    systematics->SetRunNumber(12);
   }
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
