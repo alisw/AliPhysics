@@ -66,6 +66,9 @@ public:
   void SetOnFlyStatus(bool);
   void SetMinAvgSeparation(double);
 
+  void SetRadiusV0Min(double);
+  void SetRadiusV0Max(double);
+  
   void SetNsigmaPosDaughter(double);
   void SetNsigmaNegDaughter(double);
 

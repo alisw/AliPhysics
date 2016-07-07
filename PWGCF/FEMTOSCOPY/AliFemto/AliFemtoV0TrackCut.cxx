@@ -454,6 +454,16 @@ void AliFemtoV0TrackCut::SetNsigmaNegDaughter(double sigma)
   fNsigmaNegDaughter = sigma;  
 }
 
+void AliFemtoV0TrackCut::SetRadiusV0Min(double radmin)
+{
+  fRadiusV0Min = radmin;
+}
+
+void AliFemtoV0TrackCut::SetRadiusV0Max(double radmax)
+{
+  fRadiusV0Max = radmax;
+}
+
 
 //---------------------PID n Sigma ---------------------------------//
 bool AliFemtoV0TrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
