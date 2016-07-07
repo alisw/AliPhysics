@@ -44,10 +44,12 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2eleLambdafromAODtracks *task = new AliAnalysisTaskSELc2eleLambdafromAODtracks("AliAnalysisTaskSELc2eleLambdafromAODtracks",RDHFCutsLc2eleLambdaanal,writeVariableTree);
   task->SetMC(theMCon);
-	if(ispp)
+	if(ispp){
 		task->SetUseCentralityV0M(kFALSE);
-	else
+		task->SetUseCentralitySPDTracklet(kFALSE);
+	}else{
 		task->SetUseCentralityV0M(kTRUE);
+	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
   task->SetWriteEachVariableTree(writeEachVariableTree);
@@ -72,7 +74,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 		task->SetNumberOfEventsForMixing(1000);//pp
 	}else{
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-		task->SetNumberOfEventsForMixing(30);//pPb
+		task->SetNumberOfEventsForMixing(100);//pPb
 	}
 
   mgr->AddTask(task);

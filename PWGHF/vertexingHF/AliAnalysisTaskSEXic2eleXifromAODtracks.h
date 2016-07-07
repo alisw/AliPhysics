@@ -72,6 +72,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Bool_t GetMC() const {return fUseMCInfo;}
   void SetUseCentralityV0M(Bool_t centon) {fUseCentralityV0M = centon;}
   Bool_t GetUseCentralityV0M() const {return fUseCentralityV0M;}
+  void SetUseCentralitySPDTracklet(Bool_t centon) {fUseCentralitySPDTracklet = centon;}
+  Bool_t GetUseCentralitySPDTracklet() const {return fUseCentralitySPDTracklet;}
   void SetWriteEachVariableTree(Bool_t a) {fWriteEachVariableTree = a;}
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
@@ -139,6 +141,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;                    //!<! Histogram to check selected events
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
+	TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsXictoeleXifromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          /// flag for event selected
   Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
@@ -174,6 +177,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Int_t  fRunNumber;           /// Run Number
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
+  Bool_t  fUseCentralitySPDTracklet;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
 	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar 
 	Bool_t fMCDoPairAnalysis; /// Flag to do pair analysis
@@ -352,6 +356,16 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoCorrelationVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoCorrelationVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
+  THnSparse* fHistoMassVariablesvsEleXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsEleXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsEleXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoMassVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoMassVariablesvsXiPt;         //!<! THnSparse of Correlation variablesa (FG)
+  THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
+  THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
@@ -413,7 +427,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,28); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,29); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

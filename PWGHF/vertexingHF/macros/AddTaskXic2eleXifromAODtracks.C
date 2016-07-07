@@ -45,10 +45,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   printf("CREATE TASK\n");
   AliAnalysisTaskSEXic2eleXifromAODtracks *task = new AliAnalysisTaskSEXic2eleXifromAODtracks("AliAnalysisTaskSEXic2eleXifromAODtracks",RDHFCutsXic2eleXianal,writeVariableTree);
   task->SetMC(theMCon);
-	if(ispp)
+	if(ispp){
 		task->SetUseCentralityV0M(kFALSE);
-	else
+		task->SetUseCentralitySPDTracklet(kFALSE);
+	}else{
 		task->SetUseCentralityV0M(kTRUE);
+	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
   task->SetWriteEachVariableTree(writeEachVariableTree);
@@ -74,7 +76,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 		task->SetNumberOfEventsForMixing(1000);//pp
 	}else{
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-		task->SetNumberOfEventsForMixing(35);//pPb
+		task->SetNumberOfEventsForMixing(100);//pPb
 	}
 
   mgr->AddTask(task);
