@@ -93,7 +93,7 @@ namespace {
       Int_t nentries = wrapper->GetAbsLastM()+1;
       if (nentries <= 0 || wrapper->TClonesArray::IsSorted()) return;
 
-      auto rawcontainer = wrapper->GetObjectRef();
+      TObject **rawcontainer = wrapper->GetObjectRef();
 
       // this test is a quite expensive runtime test
       // which is essentially useless for TClonesArray since by definition
@@ -108,9 +108,9 @@ namespace {
          }
 #endif
 
-      auto lowerbound = wrapper->GetLowerBound();
+      Int_t lowerbound = wrapper->GetLowerBound();
 
-      auto othercontainer = wrapper->GetKeep()->GetObjectRef();
+      TObject **othercontainer = wrapper->GetKeep()->GetObjectRef();
       QSortT<T>(rawcontainer, othercontainer, 0, std::min(nentries, upto-lowerbound));
 
       wrapper->SetLast(-2);

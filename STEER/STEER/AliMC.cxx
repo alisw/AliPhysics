@@ -1020,18 +1020,15 @@ void AliMC::Stepping()
   //
   //verbose.Stepping();
 
-  // a reference to our mc;
-  auto const mc = fMC;
-
-  Int_t id = DetFromMate(mc->CurrentMedium());
+  Int_t id = DetFromMate(fMC->CurrentMedium());
   if (id < 0) return;
 
 
-  if ( mc->IsNewTrack()            &&
-       mc->TrackTime() == 0.       &&
-       fRDecayMin >= 0.             &&  
+  if ( fMC->IsNewTrack()            &&
+       fMC->TrackTime() == 0.       &&
+       fRDecayMin >= 0.             &&
        fRDecayMax > fRDecayMin      &&
-       mc->TrackPid() == fDecayPdg )
+       fMC->TrackPid() == fDecayPdg )
   {
       FixParticleDecaytime();
   }
@@ -1039,19 +1036,19 @@ void AliMC::Stepping()
   // --- If monitoring timing was requested, monitor the step
   if (fUseMonitoring) {
     if (!fMonitor) {
-      fMonitor = new AliTransportMonitor(mc->NofVolumes()+1);
+      fMonitor = new AliTransportMonitor(fMC->NofVolumes()+1);
       fMonitor->Start();
     }  
-    if (mc->IsNewTrack() || mc->TrackTime() == 0. || mc->TrackStep()<1.1E-10) {
+    if (fMC->IsNewTrack() || fMC->TrackTime() == 0. || fMC->TrackStep()<1.1E-10) {
       fMonitor->DummyStep();
     } else {
     // Normal stepping
       Int_t copy;
-      Int_t volId = mc->CurrentVolID(copy);
-      Int_t pdg = mc->TrackPid();
+      Int_t volId = fMC->CurrentVolID(copy);
+      Int_t pdg = fMC->TrackPid();
       TLorentzVector xyz, pxpypz;
-      mc->TrackPosition(xyz);
-      mc->TrackMomentum(pxpypz);
+      fMC->TrackPosition(xyz);
+      fMC->TrackMomentum(pxpypz);
       fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
     }
   }
@@ -1062,12 +1059,12 @@ void AliMC::Stepping()
   else {
     Int_t copy;
     //Update energy deposition tables
-    AddEnergyDeposit(mc->CurrentVolID(copy),mc->Edep());
+    AddEnergyDeposit(fMC->CurrentVolID(copy),fMC->Edep());
     //
     // write tracke reference for track which is dissapearing - MI
 
-    if (mc->IsTrackDisappeared() && !(mc->IsTrackAlive())) {
-    if (mc->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
+    if (fMC->IsTrackDisappeared() && !(fMC->IsTrackAlive())) {
+    if (fMC->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(),
 						AliTrackReference::kDisappeared);
 
 

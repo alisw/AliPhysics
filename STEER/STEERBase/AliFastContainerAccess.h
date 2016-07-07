@@ -17,7 +17,7 @@ T TMatrixFastAt(TMatrixT<T> const &m, int rown, int coln){
 #ifndef NDEBUG
 // put boundary checks here
 #endif
- auto entries = m.TMatrixT<T>::GetMatrixArray();
+ T const *entries = m.TMatrixT<T>::GetMatrixArray();
 
  // verify correctness w.r.t to original implementation
  assert(entries[arown*m.GetNcols() + acoln] == m(rown,coln));

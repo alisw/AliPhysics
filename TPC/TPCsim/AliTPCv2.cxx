@@ -2266,7 +2266,7 @@ void AliTPCv2::Init()
   
   AliTPC::Init();
 
-  auto const mc = TVirtualMC::GetMC();
+  TVirtualMC *mc = TVirtualMC::GetMC();
  
   fIdSens=mc->VolId("TPC_Strip");  // one strip is always selected...
 
@@ -2324,7 +2324,7 @@ void AliTPCv2::StepManager()
   //
 
   // cache reference to MC
-  auto const mc = TVirtualMC::GetMC();
+  TVirtualMC *mc = TVirtualMC::GetMC();
 
   if (!fPrimaryIonisation) mc->SetMaxStep(kbig);
   

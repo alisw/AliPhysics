@@ -37,8 +37,8 @@ size_t RemoveLocalFiles(const char *pattern) {
   }
 
   size_t counter = 0;
-  for (auto v : matchingfiles) {
-    if(RemoveLocalFile(v.c_str()))
+  for (size_t i=0;i<matchingfiles.size();++i){
+    if(RemoveLocalFile(matchingfiles[i].c_str()))
       counter++;
   }
   return counter;
