@@ -1417,7 +1417,6 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   //
   // fill QA MC histograms for pairs and legs of all added mc signals
   //
-
   if (!fSignalsMC) return;
   TString className,className2,className3;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};

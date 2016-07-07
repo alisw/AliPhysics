@@ -833,6 +833,32 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
  			         (particlePDG>=-4999 && particlePDG<=-4000);
     }
     break;
+  case 404:     // charged open charmed mesons NO s quark
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=410 && TMath::Abs(particlePDG)<=419);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=410 && particlePDG<=419);
+      if(requiredPDG<0) result = (particlePDG>=-419 && particlePDG<=-410);
+    }
+    break;
+  case 405:     // neutral open charmed mesons
+    if(checkBothCharges)
+      result =TMath::Abs(particlePDG)>=420 && TMath::Abs(particlePDG)<=429;
+    else {
+      if(requiredPDG>0) result = particlePDG>=420 && particlePDG<=429 ;
+      if(requiredPDG<0) result = particlePDG>=-429 && particlePDG<=-420;
+    }
+    break;
+
+    case 406:     // charged open charmed mesons with s quark
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=430 && TMath::Abs(particlePDG)<=439);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=430 && particlePDG<=439);
+      if(requiredPDG<0) result = (particlePDG>=-439 && particlePDG<=-430);
+    }
+    break;
+
   case 4000:     // all charmed baryons
     if(checkBothCharges)
       result = TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4999;
@@ -887,6 +913,33 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
                                  (particlePDG>=-5999 && particlePDG<=-5000);
     }
     break;
+
+  case 504:     // neutral open beauty mesons NO s quark
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=510 && TMath::Abs(particlePDG)<=519);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=510 && particlePDG<=519);
+      if(requiredPDG<0) result = (particlePDG>=-519 && particlePDG<=-510);
+    }
+    break;
+  case 505:     // charged open beauty mesons
+    if(checkBothCharges)
+      result =TMath::Abs(particlePDG)>=520 && TMath::Abs(particlePDG)<=529;
+    else {
+      if(requiredPDG>0) result = particlePDG>=520 && particlePDG<=529 ;
+      if(requiredPDG<0) result = particlePDG>=-529 && particlePDG<=-520;
+    }
+    break;
+
+  case 506:     // charged open beauty mesons with s quark
+    if(checkBothCharges)
+      result = (TMath::Abs(particlePDG)>=530 && TMath::Abs(particlePDG)<=539);
+    else {
+      if(requiredPDG>0) result = (particlePDG>=530 && particlePDG<=539);
+      if(requiredPDG<0) result = (particlePDG>=-539 && particlePDG<=-530);
+    }
+    break;
+
   case 5000:      // all beauty baryons
     if(checkBothCharges)
       result = TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5999;
@@ -1298,7 +1351,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   //
   // Check if the pair corresponds to the MC truth in signalMC 
   //
- 
+
   // legs (daughters)
   const AliVParticle * mcD1 = pair->GetFirstDaughterP();
   const AliVParticle * mcD2 = pair->GetSecondDaughterP();
@@ -1426,7 +1479,6 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   if(signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
     motherRelation = motherRelation && !HaveSameMother(pair);
   }
-
   // check geant process if set
   Bool_t processGEANT = kTRUE;
   if(signalMC->GetCheckGEANTProcess()) {
@@ -1434,10 +1486,77 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
        !CheckGEANTProcess(labelD2,signalMC->GetGEANTProcess())   ) processGEANT= kFALSE;
   }
 
-  return ((directTerm || crossTerm) && motherRelation && processGEANT);
+  // check particle stack for pdg code
+  Bool_t pdgInStack = kTRUE;
+  if (signalMC->GetCheckStackForPDG()) {
+    pdgInStack = CheckStackParticle(labelM1,signalMC->GetStackPDG()) && CheckStackParticle(labelM2,signalMC->GetStackPDG());
+  }
+  // check if a mother is also a grandmother
+  Bool_t motherIsGrandmother = kTRUE;
+  if (signalMC->GetCheckMotherGrandmotherRelation()) {
+    motherIsGrandmother = kFALSE;
+    motherIsGrandmother = MotherIsGrandmother(labelM1,labelM2,labelG1,labelG2, signalMC->GetMotherIsGrandmother()); 
+  }
+  printf("motherRelation: %d\t motherGrannyRel: %d\t pdgInStack: %d\n", motherRelation, motherIsGrandmother, pdgInStack);
+  return ((directTerm || crossTerm) && motherRelation && processGEANT && motherIsGrandmother && pdgInStack);
+
 }
 
+//___________________________________________________________
+Bool_t AliDielectronMC::MotherIsGrandmother(int labelM1, int labelM2, int labelG1, int labelG2, bool motherIsGrandmother) const
+{
+  //
+  // Check if the mother of one particle is the grandmother of the other
+  //
+  Bool_t result = ((labelM1 == labelG2) || (labelM2 == labelG1));
+  if (motherIsGrandmother) return result;
+  else return !result;
 
+}
+
+//____________________________________________________________
+Bool_t AliDielectronMC::CheckStackParticle(Int_t labelPart, Int_t requiredPDG) const
+{
+  //
+  // Check the stack of a particle and exclude if there is a certain pdg code found
+  //
+  Bool_t result = kTRUE;
+  Int_t labelMother = GetMothersLabel(labelPart);
+  Int_t motherPDG = GetPdgFromLabel(labelMother);
+  Int_t i = 0;
+  while(TMath::Abs(motherPDG) > 10 && labelMother > -1 && result && i<10){
+    if (motherPDG == 0) return kFALSE;
+    result = ComparePDG(motherPDG, requiredPDG, kTRUE, kTRUE);
+    labelMother = GetMothersLabel(labelMother);
+    motherPDG = GetPdgFromLabel(labelMother);
+    i++;
+  }
+  return result;
+}
+
+//___________________________________________________________
+Bool_t AliDielectronMC::CompareDaughterPDG(Int_t labelM, Int_t reqPDG, Bool_t PDGexclusion, Bool_t CheckBothChargesDaughter) const
+{
+  //
+  // Check if one of the daughters has reqPDG
+  //
+  Bool_t result = kFALSE;
+  //Get Mother from label
+  AliMCParticle *mother=static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(labelM));
+  //Get number auf daughters, so you can go through them
+  const Int_t nd=(mother->GetLastDaughter()-mother->GetFirstDaughter()+1);
+  //Loop over daughters and get stop loop if PDG is found.
+  for (Int_t i=0; i<nd; ++i) {
+    //Go through the daughters, set result true and break if PDG code fits
+    if (ComparePDG((GetMCTrackFromMCEvent(mother->GetFirstDaughter()+i)->PdgCode()),reqPDG,kFALSE,CheckBothChargesDaughter)) {
+      result = kTRUE;
+      break;
+    }
+  }
+  //if exclusion is needed do so
+  if (PDGexclusion) return !result;
+  return result;
+}
 
 //____________________________________________________________
 Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair) const
