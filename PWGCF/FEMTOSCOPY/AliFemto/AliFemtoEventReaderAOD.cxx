@@ -957,6 +957,7 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetmomNegZ(tAODv0->MomNegZ());
   AliFemtoThreeVector momneg(tAODv0->MomNegX(), tAODv0->MomNegY(), tAODv0->MomNegZ());
   tFemtoV0->SetmomNeg(momneg);
+  tFemtoV0->SetradiusV0(tAODv0->RadiusV0());
 
   //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
   //void SettpcHitsPos(const int& i);
