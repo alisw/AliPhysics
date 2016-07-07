@@ -54,7 +54,7 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
 
   void           FillHistograms();
   Float_t        GetDownscalinigFactor();
-  void           Terminate();
+  void           Terminate(Option_t *option = "");
  private:
   Bool_t         fMassless;               ///< make particles massless
   

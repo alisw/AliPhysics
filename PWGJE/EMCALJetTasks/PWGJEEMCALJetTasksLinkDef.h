@@ -173,6 +173,7 @@
 #pragma link C++ class HighPtTracks::AliReducedJetConstituent+;
 #pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
+#pragma link C++ class AliJetEmbeddingSelRhoTask+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;

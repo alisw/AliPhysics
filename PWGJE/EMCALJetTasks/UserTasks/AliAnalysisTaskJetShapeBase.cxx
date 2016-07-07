@@ -87,15 +87,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase() :
   fThisEntry(0),
   fMaxTreeEntries(0),
   fVecD(0x0),
-  fVecP(0x0),
-  fnPtDetBinsForRho(-1),
-  fnBinsLimsForRho(0),
-  fPtDetBinsForRho(),
-  fPathRhoDistr(""),
-  fNameTHnSparseRhoDistr(""),
-  fhRhoData(),
-  fhRhoMData(),
-  fMaxRhoAvail()
+  fVecP(0x0)
 {
   // Default constructor.
 
@@ -180,15 +172,7 @@ AliAnalysisTaskJetShapeBase::AliAnalysisTaskJetShapeBase(const char *name) :
   fThisEntry(0),
   fMaxTreeEntries(0),
   fVecD(0x0),
-  fVecP(0x0), 
-  fnPtDetBinsForRho(-1),
-  fnBinsLimsForRho(0),
-  fPtDetBinsForRho(),
-  fPathRhoDistr(""),
-  fNameTHnSparseRhoDistr(""),
-  fhRhoData(),
-  fhRhoMData(),
-  fMaxRhoAvail()
+  fVecP(0x0)
 {
   // Standard constructor.
 
@@ -250,30 +234,6 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
      fTreeEmb->Show();
      
      
-  }
-  
-  //prepare rho from data to be used as weighting factor
-  if(!fPathRhoDistr.IsNull() && !fNameTHnSparseRhoDistr.IsNull()){
-  	  fhRhoData = new TH1D*[fnPtDetBinsForRho];
-  	  fhRhoMData = new TH1D*[fnPtDetBinsForRho];
-  	  if(fPathRhoDistr.Contains("alien")) {
-  	  	  TGrid::Connect("alien://");
-  	  }
-  	  TFile *f = TFile::Open(fPathRhoDistr);
-  	  if(f->IsOpen()){
-  	  	  
-  	  	  //get the ratios per pt bin
-  	  	  for(Int_t ib = 0; ib < fnPtDetBinsForRho; ib++){
-  	  	  	  
-  	  	  	  fhRhoData[ib] = (TH1D*)f->Get(Form("%s%d", fNameTHnSparseRhoDistr.Data(), ib)); 
-  	  	  	  if(!fhRhoData[ib]) {
-  	  	  	  	  AliFatal(Form("Error, %s%d not found in %s", fNameTHnSparseRhoDistr.Data(), ib, fPathRhoDistr.Data()));
-  	  	  	  	  f->ls();
-  	  	  	  }
-  	  	  }
-  	  	  Printf("Created %d rho distributions from data", fnPtDetBinsForRho);
-  	  	  
-  	  } else Printf("File %s not found, cannot read the rho distribution", fPathRhoDistr.Data());
   }
   
   const Int_t nBinsPt  = 200;
@@ -432,12 +392,6 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
   
-  if(fnPtDetBinsForRho>0){
-  	  for(Int_t ib = 0; ib < fnPtDetBinsForRho; ib++) 
-  	  	  fOutput->Add(fhRhoData[ib]);
-  	  fRhoFactorQA = new TH1D("fRhoFactorQA", "Rho factors used", 200, 0, 10.);
-  	  fOutput->Add(fRhoFactorQA);
-  }
 
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -559,55 +513,7 @@ void AliAnalysisTaskJetShapeBase::SetTreeFromFile(TString filename, TString tree
    return;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskJetShapeBase::SetRhoWeights(Int_t nbins, Double_t *binlims, TString pathname, TString histname, Double_t maxrho){
-	
-	Printf("AliAnalysisTaskJetShapeBase Info: Setting up rho weights. They'll be read in the UserCreateOutputObject");
-	
-	fnPtDetBinsForRho = nbins;
-	fnBinsLimsForRho = nbins+1;
-	fPtDetBinsForRho = new Double_t[fnBinsLimsForRho];
-	for(Int_t i = 0; i<fnBinsLimsForRho; i++){
-		fPtDetBinsForRho[i] = binlims[i];
-	}
-	fPathRhoDistr = pathname;
-	fNameTHnSparseRhoDistr = histname;
-	
-	fMaxRhoAvail = maxrho;
 
-	Printf("Set Rho Weights done");
-	return;
-}
-
-//________________________________________________________________________
-
-Double_t AliAnalysisTaskJetShapeBase::GetRhoFactor(Double_t ptdet, Double_t rhoCurrent){
-	
-	if(fnPtDetBinsForRho < 0) {
-		return 1;
-	}
-	if(rhoCurrent > fMaxRhoAvail) {
-		Printf("Cannot assess rho correction factor above %f", fMaxRhoAvail);
-		return 1.;
-	}
-	
-	Int_t binpt = 0, binrho = 0;
-	for(Int_t ib = 0; ib<fnPtDetBinsForRho; ib++){
-		if(ptdet >= fPtDetBinsForRho[ib] && ptdet < fPtDetBinsForRho[ib+1]) {
-			binpt = ib;
-			break;
-		}
-	}
-	if(!fhRhoData[binpt]){
-		Printf("Error! rho data not set!");
-		return 1;
-	}
-	
-	binrho = fhRhoData[binpt]->FindBin(rhoCurrent);
-	//if(rhoCurrent > 4 && binpt == 1) Printf("Bin rho is %d (%f) -> %f", binrho, rhoCurrent,  fhRhoData[binpt]->GetBinContent(binrho));
-	
-	return fhRhoData[binpt]->GetBinContent(binrho);
-}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetShapeBase::RetrieveEventObjects() {
   //
