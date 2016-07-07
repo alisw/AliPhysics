@@ -54,6 +54,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
+  ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
@@ -69,6 +70,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+
 }
 
 //_____________________________________________________
@@ -77,8 +80,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
-  ,fRecoPass(-1)  //to be defined
   ,fRunNumber(-1) //to be defined
+  ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
@@ -93,6 +96,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
+   for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
 }
 
 //_____________________________________________________
@@ -273,9 +277,22 @@ void AliPHOSTenderSupply::InitTender()
           AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
         }
       }
+      //L1phase for Run2
+      if(fRunNumber>209122){ //Run2
+        AliOADBContainer L1Container("phosL1Calibration");
+        L1Container.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSL1Calibrations.root","phosL1Calibration");
+        TNamed* a= (TNamed*)L1Container.GetObject(fRunNumber);
+	if(!a){
+	  AliError(Form("L1phase for run %d was not found, time calibration will be wrong!\n",fRunNumber)) ; 
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+	}
+	else{
+          const char*c=a->GetName();
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-1;
+	}
+      }
     }
   }
-  
 }
 
 //_____________________________________________________
@@ -757,8 +774,10 @@ void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
   for(Int_t mod=1;mod<6; mod++){
     snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
     TH2I * h = (TH2I*)fbm->Get(key) ;
-    if(h)
+    if(h){
        fPHOSBadMap[mod] = new TH2I(*h) ;
+       AliInfo(Form("Force using bad map: Added bad map %s, nch=%f \n",h->GetName(),h->Integral())) ;
+    }
   }
   fbm->Close() ;
   fUsePrivateBadMap=kTRUE ;
@@ -997,7 +1016,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   }
   else{
    t=tMax ; 
-  }  
+  }    
   
   return t ;
      
@@ -1017,6 +1036,13 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
   else{
     tof-=fPHOSCalibData->GetLGTimeShiftEmc(module, column, row);
   }
+  //Apply L1phase
+  //First eval DDL
+  const Int_t nmod=5; 
+  Int_t ddl = (nmod-module) * 4 + (row-1)/16 - 6; //convert offline module numbering to online.
+  //L1phase is 0 for Run1
+  tof-=fL1phase[ddl]*25.e-9 ;
+  
   return tof ;
   
 }
