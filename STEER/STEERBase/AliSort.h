@@ -12,10 +12,7 @@ namespace AliSort {
 namespace {
   // An *internal* class to gain access to fLast and fKeep of a TClonesArray via inheritance
   class AliClonesArrayWrapper : public TClonesArray {
-  protected:
-      using TClonesArray::GetAbsLast;
-  public:
-      using TClonesArray::TClonesArray;
+    public:
       TObjArray *GetKeep() const {return fKeep;}
       void SetLast(Int_t l) {fLast = l;}
       void SetSorted(bool b) {fSorted = b;}
