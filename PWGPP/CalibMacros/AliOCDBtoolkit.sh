@@ -277,10 +277,10 @@ ocdbDiffTable(){
     if [ $nparam -lt 4 ] ; then
 	echo "Error - The total length of all arguments is: $nparam: ";
 	echo "Oputput dumped to the stdout"
-        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask $filterType; ) > mydiff.txt"
-        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 1 ) > ocdbDiffObject.JIRA"
-        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 2 ) > ocdbDiffTable.JIRA"
-        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffJIRA $file1 $file2 $mask 4 ) > ocdbDiffTable.html"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask $filterType; ) > mydiff.txt"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 1 ) > ocdbDiffObject.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 2 ) > ocdbDiffTable.JIRA"
+        echo example usage:   "(source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbDiffTable $file1 $file2 $mask 4 ) > ocdbDiffTable.html"
         return 0;
     fi;
     # JIRA diffs for 2 XML OCDB object dumps
@@ -313,12 +313,12 @@ ocdbDiffTable(){
 	echo '<table style="width:100%">'
 	echo "<tr><th>Entry</th><th>Path0</th><th>Path1</th><th>Entry0</th><th>Entry1</th><th>Size0</th><th>Size1</th><th>Hash0</th><th>Hash1</th><th></tr>"
         # different content print
-	cat diff.txt | sed 's_|__g'  | grep -v "<" | grep -v ">" |
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -v "<" | grep -v ">" |
 	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>"$2"</td><td>"$7"</td><td>"$3"</td><td>"$8"</td><td>"$4"</td><td>"$9"</td><td>"$5"</td><td>"$10"</td></tr>" }'; done
         # mising content print
-	cat diff.txt | sed 's_|__g'  | grep -e  ">" |
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  ">" |
 	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td><td>-</td><td>"$6"</td></tr>" }'; done
-	cat diff.txt | sed 's_|__g'  | grep -e  "<" |
+	cat ocdbDiffTable.tmp | sed 's_|__g'  | grep -e  "<" |
 	while read CMD; do echo $CMD | gawk '{print "<tr><td>"$1"</td><td>-</td><td>"$2"</td><td>-</td><td>"$3"</td><td>-</td><td>"$4"</td><td>-</td><td>"$5"</td></tr>" }'; done
 	echo '</table>'
    fi;
