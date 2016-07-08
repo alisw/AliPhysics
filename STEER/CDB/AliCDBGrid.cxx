@@ -1376,7 +1376,8 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
   AliDebug(2, Form("local cache cleanup interval: %ld", cleanupInterval));
 
   if(dbFolder == ""){
-    AliError("Base folder must be specified!");
+    AliError("The CDB base folder must be specified by preceding it with the \"folder=\" key!");
+    AliError("Example: \"alien://folder=/alice/data/2015/OCDB\"");
     return NULL;
   }
 
