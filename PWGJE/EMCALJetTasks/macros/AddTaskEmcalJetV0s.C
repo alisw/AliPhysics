@@ -93,7 +93,6 @@ AliEmcalJetTask* AddTaskEmcalJetV0s(
   AliParticleContainer* partCont = 0;
   if (trackName == "mcparticles") {
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
     partCont = mcpartCont;
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
@@ -101,13 +100,13 @@ AliEmcalJetTask* AddTaskEmcalJetV0s(
       // V0 daughter tracks removed from tracks sample implemented in AliTrackContainerV0
       AliTrackContainerV0* trackCont = new AliTrackContainerV0(trackName);
       trackCont->SetFilterDaughterTracks(kTRUE); 
+      partCont = trackCont;
       ::Info("AddTaskEmcalJetV0s","FilterDaughterTracks selected: V0 daughter tracks will be removed from track sample!");
     } 
     else {
       AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+      partCont = trackCont;
     }
-    trackCont->SetFilterHybridTracks(kTRUE);
-    partCont = trackCont;
   } 
   else if (!trackName.IsNull()) {
     partCont = new AliParticleContainer(trackName);

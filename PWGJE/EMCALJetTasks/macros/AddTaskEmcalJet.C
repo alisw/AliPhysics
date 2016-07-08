@@ -81,12 +81,10 @@ AliEmcalJetTask* AddTaskEmcalJet(
   AliParticleContainer* partCont = 0;
   if (trackName == "mcparticles") {
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
-    mcpartCont->SelectPhysicalPrimaries(kTRUE);
     partCont = mcpartCont;
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
     AliTrackContainer* trackCont = new AliTrackContainer(trackName);
-    trackCont->SetFilterHybridTracks(kTRUE);
     partCont = trackCont;
   }
   else if (!trackName.IsNull()) {
