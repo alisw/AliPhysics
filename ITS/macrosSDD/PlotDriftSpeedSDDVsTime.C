@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2015, Int_t firstRun=225900, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2016, Int_t firstRun=225900, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -153,7 +153,8 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2015, Int_t firstRun=225900,
   else if(year==2012) timeZero=1325372400;
   else if(year==2013) timeZero=1356994800;
   else if(year==2014) timeZero=1388530800;
-  else timeZero=1420128000;
+  else if(year==2015) timeZero=1420128000;
+  else timeZero=1451606400;
 
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
