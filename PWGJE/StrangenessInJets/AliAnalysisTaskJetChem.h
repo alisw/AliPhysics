@@ -162,7 +162,11 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   virtual void SetUseStandardV0s(Bool_t bo) { fUseStandard = bo;}
     
-
+  virtual void SetUsePosV0Eta(Bool_t ps) { fusePosV0Eta = ps;}
+  virtual void SetUseNegV0Eta(Bool_t ng) { fuseNegV0Eta = ng;}
+  virtual void SetUsePosMCV0Eta(Bool_t pmc) { fusePosV0Eta = pmc;}
+  virtual void SetUseNegMCV0Eta(Bool_t nmc) { fuseNegV0Eta = nmc;}
+    
   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
   Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, Int_t particletype); //don't use this method for MC Analysis
@@ -216,6 +220,10 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutPostrackEta;
   Double_t fCutNegtrackEta;
   Double_t fCutEta;
+  Bool_t fusePosV0Eta;
+  Bool_t fuseNegV0Eta;
+  Bool_t fusePosMCV0Eta;
+  Bool_t fuseNegMCV0Eta;
   Double_t fCutK0cosPointAngle;
   Double_t fCutLacosPointAngle;
   Bool_t   fKinkDaughters;

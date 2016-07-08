@@ -104,6 +104,10 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fCutPostrackEta(0)
    ,fCutNegtrackEta(0)
    ,fCutEta(0)
+   ,fusePosV0Eta(0)
+   ,fuseNegV0Eta(0)
+   ,fusePosMCV0Eta(0)
+   ,fuseNegMCV0Eta(0)
    ,fCutK0cosPointAngle(0)
    ,fCutLacosPointAngle(0)
    ,fKinkDaughters(0)
@@ -443,6 +447,10 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fCutPostrackEta(0)
   ,fCutNegtrackEta(0)
   ,fCutEta(0)
+  ,fusePosV0Eta(0)
+  ,fuseNegV0Eta(0)
+  ,fusePosMCV0Eta(0)
+  ,fuseNegMCV0Eta(0)
   ,fCutK0cosPointAngle(0)
   ,fCutLacosPointAngle(0)
   ,fKinkDaughters(0)
@@ -785,6 +793,10 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fCutPostrackEta(copy.fCutPostrackEta)
   ,fCutNegtrackEta(copy.fCutNegtrackEta)
   ,fCutEta(copy.fCutEta)
+  ,fusePosV0Eta(copy.fusePosV0Eta)
+  ,fuseNegV0Eta(copy.fuseNegV0Eta)
+  ,fusePosMCV0Eta(copy.fusePosMCV0Eta)
+  ,fuseNegMCV0Eta(copy.fuseNegMCV0Eta)
   ,fCutK0cosPointAngle(copy.fCutK0cosPointAngle)
   ,fCutLacosPointAngle(copy.fCutLacosPointAngle)
   ,fKinkDaughters(copy.fKinkDaughters)
@@ -1132,6 +1144,10 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fCutPostrackEta                 = o.fCutPostrackEta;
     fCutNegtrackEta                 = o.fCutNegtrackEta;  
     fCutEta                         = o.fCutEta;
+    fusePosV0Eta                    = o.fusePosV0Eta;
+    fuseNegV0Eta                    = o.fuseNegV0Eta;
+    fusePosMCV0Eta                  = o.fusePosMCV0Eta;
+    fuseNegMCV0Eta                  = o.fuseNegMCV0Eta;
     fCutK0cosPointAngle             = o.fCutK0cosPointAngle;
     fCutLacosPointAngle             = o.fCutLacosPointAngle;
     fKinkDaughters                  = o.fKinkDaughters;
@@ -6058,6 +6074,8 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
        if(particletype == kK0)fh1V0PtCandidate->Fill(trackPt);//only used for x-checks
 
+       if((fusePosV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(v0->Eta() < 0) continue;}
+       if((fuseNegV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(v0->Eta() > 0) continue;}
 
        /////////////////////////////////////////////////////////////
        //V0 and track Cuts:
@@ -6107,7 +6125,9 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
       Double_t fEta = part->Eta();      
 
       if(TMath::Abs(fEta) > fCutEta) continue;
-    
+      if((fusePosMCV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(part->Eta() < 0) continue;}
+      if((fuseNegMCV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(part->Eta() > 0) continue;}
+
 
       list->Add(part);
       iCount++;
@@ -6392,7 +6412,12 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        if ((fCutRap > 0) && (TMath::Abs(fV0Rap) > fCutRap))continue;      //V0 Rapidity Cut
 
        if ((fCutEta > 0) && (TMath::Abs(fEta) > fCutEta))continue;     //V0 Eta Cut
-                                                    
+
+       //switching between A side and C side:             
+       if((fusePosV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(v0->Eta() < 0) continue;}
+       if((fuseNegV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(v0->Eta() > 0) continue;}
+
+                           
        if (fDcaV0Daughters > fCutDcaV0Daughters)continue;
        if ((fDcaPosToPrimVertex < fCutDcaPosToPrimVertex) || (fDcaNegToPrimVertex < fCutDcaNegToPrimVertex))continue;
        if ((fV0Radius < fCutV0RadiusMin) || (fV0Radius > fCutV0RadiusMax))continue;
@@ -6803,7 +6828,11 @@ Int_t AliAnalysisTaskJetChem::GetListOfMCParticles(TList *outputlist, const Int_
 
 
       if ((fCutEta > 0) && (TMath::Abs(fEtaCurrentPart) >= fCutEta))continue;
-      	
+ 
+      if((fusePosMCV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(p0->Eta() < 0) continue;}
+      if((fuseNegMCV0Eta)&&((particletype == kLambda)||(particletype == kAntiLambda))){if(p0->Eta() > 0) continue;}
+
+     	
 	if(particletype == kK0){                                      //MC gen. K0s  
 	  if (fPdgcodeCurrentPart==310){                       
 	    outputlist->Add(p0);
