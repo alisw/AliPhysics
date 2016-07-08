@@ -98,7 +98,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 // Histograms
 		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics // do we need vn up to v8? .. yes we need..
-		enum{kK0, kK1, kK2, kK3, nKL}; // order // do we really need vn^8? .. 
+		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order // do we really need vn^8 
 		double fEta_min;
 		double fEta_max;
 		double NSubTracks[2];
@@ -145,14 +145,10 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_SC_with_QC_4corr;//! // for <vn^2 vm^2>
 		AliJTH1D fh_SC_with_QC_2corr;//! // for <vn^2>
 		AliJTH1D fh_SC_with_QC_2corr_eta10;//! 
-
-/*
-		AliJTH2D fh_QvectorQC; // check for Q-vec dist for [ic][ih]
-		AliJTH1D fh_QvectorQCphi;
-
-		AliJTH1D fh_evt_SP_QC_ratio_2p; // check SP QC evt by evt ratio
-		AliJTH1D fh_evt_SP_QC_ratio_4p; // check SP QC evt by evt ratio
-*/
+		AliJTH2D fh_QvectorQC;//! // check for Q-vec dist for [ic][ih]
+		AliJTH1D fh_QvectorQCphi;//!
+		AliJTH1D fh_evt_SP_QC_ratio_2p;//! // check SP QC evt by evt ratio
+		AliJTH1D fh_evt_SP_QC_ratio_4p;//! // check SP QC evt by evt ratio
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };
 
