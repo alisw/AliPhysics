@@ -371,7 +371,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
   } // end of if(bSetQAZDC)
  
- if(bCenFlattening && sDataSet=="2011") {
+ if(bCenFlattening) {
   TFile* CenWeightsFile = TFile::Open(CenWeightsFileName,"READ");
   if(!CenWeightsFile) {
    cout << "ERROR: CenWeightsFile not found!" << endl;
