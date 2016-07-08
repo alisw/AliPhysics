@@ -259,7 +259,7 @@ goCPass()
   # full path.
   echo "Making $infile visible in the current directory, $PWD"
   [[ $copyInputData == 0 ]] && ln -s ${infile} ${runpath}/${chunkName} \
-                            || { maxCopyTries=1 copyFileFromRemote ${infile} ${runpath}/ || exit 1; }
+                            || { maxCopyTries=1 remoteCpTimeout=1800 copyFileFromRemote ${infile} ${runpath}/ || exit 1; }
 
   ##### MC -- TODO: does this still work? is it really needed during CPass0 only?
   if [[ $cpass == 0 && -n $generateMC ]]; then
