@@ -390,7 +390,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
         if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
         else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
       } else {
-        if(multTPC < (-15.5+1.16*multGlobal) || multTPC > (15.8+1.28*multGlobal)) pass = kFALSE;
+        if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (94.45+1.28*multGlobal)) pass = kFALSE;
       }
     }
   }
