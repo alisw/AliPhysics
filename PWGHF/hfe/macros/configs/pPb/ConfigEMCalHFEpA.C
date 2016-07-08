@@ -136,9 +136,12 @@ Bool_t isCentralitySys 		= kFALSE
 	}
 	
 	if(period == "e" || period == "f"){
-		task->SetTPCCalibration_eta();
+		task->SetTPCCalibration_eta(kTRUE);
 	}
 	
+	if(configIndex==300){
+		task->SetTPCCalibration_eta(kFALSE);
+	}
 	
 	
 			

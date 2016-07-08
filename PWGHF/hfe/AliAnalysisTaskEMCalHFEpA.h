@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June18th, 2016.      							      //
+	//		version: July 7th, 2016.      							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -128,7 +128,7 @@ public:
 	void SetTPCcal_cut_max(Double_t TPCmax ) {fTPCcal_CutMax = TPCmax; };
 	
 	//TPC calibration for eta dependence
-	void SetTPCCalibration_eta() {fCalibrateTPC_eta=kTRUE;};
+	void SetTPCCalibration_eta(Bool_t CalibrateTPC_eta = kFALSE) {fCalibrateTPC_eta=CalibrateTPC_eta;};
 
 
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
@@ -216,11 +216,13 @@ private:
 	
 		//For Centrality Selection
 	AliCentrality			*fCentrality;
+	AliCentrality			*fCentrality2;
 	Double_t				fCentralityMin;
 	Double_t				fCentralityMax;
 	Bool_t					fHasCentralitySelection;
 	TH1F					*fCentralityHist;
 	TH1F					*fMultiplicityHist;
+	TH1F					*fMultiplicityHistPass;
 	TH1F					*fCentralityHistPass;
 	Float_t					fZvtx;	
 	Int_t					fEstimator;
@@ -365,6 +367,8 @@ private:
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
 	
+
+	
 	TH2F				*fTPC_momentum;
 	TH2F				*fTPC_eta;
 	TH2F				*fTPC_momentum1;
@@ -417,6 +421,12 @@ private:
 	TH2F				*fTPCnsigma_phi;
 	TH1F				**fECluster;
 	TH1F				*fECluster_pure;
+	
+		//centrality
+	TH1F				*fECluster_pure_0;
+	TH1F				*fECluster_pure_1;
+	TH1F				*fECluster_pure_2;
+	TH1F				*fECluster_pure_3;
 	
 	TH1F				*fECluster_highpT0;
 	TH1F				*fECluster_highpT1;
