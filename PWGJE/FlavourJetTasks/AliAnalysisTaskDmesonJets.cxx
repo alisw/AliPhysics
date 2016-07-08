@@ -718,7 +718,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[0] = 211;  // pi
     fPDGdaughters[1] = 321;  // K
     fBranchName = "D0toKpi";
-    fAcceptedDecay = kD0toKpi;
+    fAcceptedDecay = kDecayD0toKpi;
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
@@ -736,7 +736,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[1] = 211; // pi fromD0
     fPDGdaughters[2] = 321; // K from D0
     fBranchName = "Dstar";
-    fAcceptedDecay = kDstartoKpipi;
+    fAcceptedDecay = kDecayDStartoKpipi;
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsDStartoKpipi();
       fRDHFCuts->SetStandardCutsPP2010();
