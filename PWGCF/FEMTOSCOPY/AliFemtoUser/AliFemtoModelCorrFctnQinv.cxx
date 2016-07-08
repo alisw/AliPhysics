@@ -216,16 +216,20 @@ void AliFemtoModelCorrFctnQinv::AddPair(const AliFemtoPair *pair,
 
   // const Float_t q = CalcTrueQinv(pair);
 
-// }
-
   const Float_t mass1 = info1->GetMass(),
                 mass2 = info2->GetMass();
+
+  // block all zero-mass particles from the correlation function
+  if (mass1 == 0.0 || mass2 == 0.0) {
+    return;
+  }
 
   const AliFemtoThreeVector *momentum1 = info1->GetTrueMomentum(),
                             *momentum2 = info2->GetTrueMomentum();
 
   const Float_t e1 = sqrt(mass1 * mass1 + momentum1->Mag2()),
                 e2 = sqrt(mass2 * mass2 + momentum2->Mag2());
+
   const AliFemtoLorentzVector p1 = AliFemtoLorentzVector(e1, *momentum1),
                               p2 = AliFemtoLorentzVector(e2, *momentum2);
 
