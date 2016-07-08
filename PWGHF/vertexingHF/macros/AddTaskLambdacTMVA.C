@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t keepLcNoQuark,Bool_t isHijing,
-Int_t syst=0, Int_t bit=0, TString postname="")
+Int_t syst=0, Int_t bit=0, TString postname="",Int_t useNtrkWeight = 0)
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -49,6 +49,27 @@ Int_t syst=0, Int_t bit=0, TString postname="")
 
   lambdacTask->SetDebugLevel(0);
   mgr->AddTask(lambdacTask);
+
+	if(useNtrkWeight>0){
+		TH1F *hNchPrimaries;
+		if(useNtrkWeight==1) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithD");
+		else if(useNtrkWeight==2) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithCand");
+		else if(useNtrkWeight==3) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvSel");
+		else if(useNtrkWeight==4) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrPSSel");
+		else {
+			AliFatal("useNtrkWeight value not a valid option - choice from 1-4");
+			return 0x0;
+		}
+		if(hNchPrimaries){ 
+			lambdacTask->SetUseNchWeight(kTRUE);
+			lambdacTask->SetMCNchHisto(hNchPrimaries);
+		}
+		else {
+			AliFatal("Histogram for multiplicity weights not found");
+			return 0x0;
+		}
+	}
+
 
   //
   // Create containers for input/output
