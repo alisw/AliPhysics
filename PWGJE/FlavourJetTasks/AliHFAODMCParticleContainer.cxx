@@ -66,51 +66,85 @@ void AliHFAODMCParticleContainer::SelectCharmtoDStartoKpipi()
   SetKeepOnlyDfromB(kFALSE);
 }
 
-/// First check whether the particle is a "special" PDG particle (in which case the particle is accepted)
-/// or a daughter of a "special" PDG particle (in which case the particle is rejected);
-/// then calls the base class AcceptParticle(Int_t i) method.
+/// First check whether the particle is a daughter of a "special" PDG particle (in which case the particle is rejected);
+/// if the particle itself is "special" PDG particle, skips the regular MC particle cuts and apply only the general particle and
+/// kinematic cuts.
 ///
 /// \param i Index of the particle to be checked.
 ///
 /// \return kTRUE if the particle is accepted, kFALSE otherwise.
-Bool_t AliHFAODMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* part, UInt_t &rejectionReason) const
+Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const
 {
-  Int_t partPdgCode = TMath::Abs(part->PdgCode());
+  // Return true if vp is accepted.
 
-  Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG && part->IsPrimary());
-
-  if (isSpecialPdg) {
-    AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
-
-    if ((origin & fRejectedOrigin) != 0) isSpecialPdg = kFALSE;
-
-    AliAnalysisTaskDmesonJets::EMesonDecayChannel_t decayChannel = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(part, fClArray);
-
-    if ((decayChannel & fAcceptedDecay) == 0) isSpecialPdg = kFALSE;
-
-    AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
-                     part->Label(), partPdgCode, part->Pt(), part->Eta(), part->Phi()));
-
-    // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
-    return ApplyParticleCuts(part, rejectionReason);
-  }
-
-  if (IsSpecialPDGDaughter(part)) {
+  if (IsSpecialPDGDaughter(vp)) {
     rejectionReason = kHFCut;
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
-  // Not a special PDG particle, and not a daughter of a special PDG particle. Apply regular MC particle cuts.
-  return AliMCParticleContainer::ApplyMCParticleCuts(part, rejectionReason);
+  AliTLorentzVector mom;
+  GetMomentumFromParticle(mom, vp);
+
+  Bool_t r = kFALSE;
+
+  if (IsSpecialPDG(vp)) {
+    // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
+    r = ApplyParticleCuts(vp, rejectionReason);
+    if (!r) return kFALSE;
+    // For the future, may want to implement special kinematic cuts for D mesons
+    return ApplyKinematicCuts(mom, rejectionReason);
+  }
+  else {
+    r = ApplyMCParticleCuts(vp, rejectionReason);
+    if (!r) return kFALSE;
+    return ApplyKinematicCuts(mom, rejectionReason);
+  }
 }
 
-/// Check if particle it's a daughter of a "special" PDG particle: AOD mode
+/// First check whether the particle is a daughter of a "special" PDG particle (in which case the particle is rejected);
+/// if the particle itself is "special" PDG particle, skips the regular MC particle cuts and apply only the general particle and
+/// kinematic cuts.
+///
+/// \param i Index of the particle to be checked.
+///
+/// \return kTRUE if the particle is accepted, kFALSE otherwise.
+Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const
+{
+  // Return true if vp is accepted.
+
+  AliAODMCParticle* vp = GetMCParticle(i);
+
+  if (IsSpecialPDGDaughter(vp)) {
+    rejectionReason = kHFCut;
+    return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
+  }
+
+  AliTLorentzVector mom;
+  GetMomentum(mom, i);
+
+  Bool_t r = kFALSE;
+
+  if (IsSpecialPDG(vp)) {
+    // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
+    r = ApplyParticleCuts(vp, rejectionReason);
+    if (!r) return kFALSE;
+    // For the future, may want to implement special kinematic cuts for D mesons
+    return ApplyKinematicCuts(mom, rejectionReason);
+  }
+  else {
+    r = ApplyMCParticleCuts(vp, rejectionReason);
+    if (!r) return kFALSE;
+    return ApplyKinematicCuts(mom, rejectionReason);
+  }
+}
+
+/// Check if particle it's a "special" PDG particle: AOD mode
 /// \param part Pointer to a valid AliAODMCParticle object
 ///
-/// \result kTRUE if it is a daughter of the "special" PDG particle, kFALSE otherwise
+/// \result kTRUE if it is a "special" PDG particle, kFALSE otherwise
 Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle* part) const
 {
-  if (fSpecialPDG == 0) return kTRUE;
+  if (fSpecialPDG == 0) return kFALSE;
   
   const AliAODMCParticle* pm = part;
   Int_t imo = -1;
@@ -118,7 +152,7 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle*
     imo = pm->GetMother();
     if (imo < 0) break;
     pm = static_cast<const AliAODMCParticle*>(fClArray->At(imo));
-    if (TMath::Abs(pm->GetPdgCode()) == fSpecialPDG && pm->IsPrimary()) {
+    if (IsSpecialPDG(pm)) {
       AliDebug(2, Form("Rejecting particle (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f) daughter of %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
                        part->PdgCode(), part->Pt(), part->Eta(), part->Phi(), imo, pm->PdgCode(), pm->Pt(), pm->Eta(), pm->Phi()));
       return kTRUE;
@@ -127,13 +161,42 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle*
   return kFALSE;
 }
 
+/// Check if particle it's a daughter of a "special" PDG particle: AOD mode
+/// \param part Pointer to a valid AliAODMCParticle object
+///
+/// \result kTRUE if it is a daughter of the "special" PDG particle, kFALSE otherwise
+Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part) const
+{
+  if (fSpecialPDG == 0) return kFALSE;
+
+  Int_t partPdgCode = TMath::Abs(part->PdgCode());
+
+  if (partPdgCode != fSpecialPDG) return kFALSE;
+
+  if (!part->IsPrimary()) return kFALSE;
+
+  AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+
+  if ((origin & fRejectedOrigin) != 0) return kFALSE;
+
+  AliAnalysisTaskDmesonJets::EMesonDecayChannel_t decayChannel = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(part, fClArray);
+
+  if ((decayChannel & fAcceptedDecay) == 0) return kFALSE;
+
+  AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
+      part->Label(), partPdgCode, part->Pt(), part->Eta(), part->Phi()));
+
+  // Special PDG particle
+  return kTRUE;
+}
+
 /// Checks whether the special PDG particle is found in the container
 ///
 /// \result kTRUE if the special PDG particle is found
 Bool_t AliHFAODMCParticleContainer::IsSpecialPDGFound() const
 {
   for (auto part : accepted()) {
-    if (TMath::Abs(part->GetPdgCode()) == fSpecialPDG) return kTRUE;
+    if (IsSpecialPDG(part)) return kTRUE;
   }
   return kFALSE;
 }
