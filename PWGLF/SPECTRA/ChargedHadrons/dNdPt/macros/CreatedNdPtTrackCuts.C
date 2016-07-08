@@ -2180,6 +2180,61 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t isMC = kFALSE, Dou
   
   }
 
+if (cutMode == 7000) // TPC cuts, secondaries studies with DCA fits,
+{
+    //
+    // TPC 
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default 
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+
+    TString tag = "TPC RAA cuts without DCArphi, global chi2 and ITS requirement";
+}
+
+if (cutMode == 8000)// TPC+ITS, secondaries studies with DCA fits
+{
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default 
+	
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetMaxChi2PerClusterITS(36.);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
+    // 7*(0.0026+0.0050/pt^1.01)
+    //esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
+	
+    TString tag = "TPC RAA cuts without DCArphi, global chi2";
+	
+}
+
+
+  
 
   Printf("Created track cuts for: %s", tag.Data());
 
