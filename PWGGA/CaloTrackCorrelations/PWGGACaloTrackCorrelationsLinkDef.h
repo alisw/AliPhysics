@@ -16,6 +16,7 @@
 #pragma link C++ class AliAnaParticleJetFinderCorrelation+;
 #pragma link C++ class AliAnaParticleJetLeadingConeCorrelation+;
 #pragma link C++ class AliAnaCalorimeterQA+;
+#pragma link C++ class AliAnaCaloChannelAnalysis+;
 #pragma link C++ class AliAnaOmegaToPi0Gamma+;
 #pragma link C++ class AliAnaPhotonConvInCalo+;
 #pragma link C++ class AliAnaInsideClusterInvariantMass+;
