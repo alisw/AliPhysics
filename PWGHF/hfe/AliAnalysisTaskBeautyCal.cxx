@@ -889,7 +889,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
