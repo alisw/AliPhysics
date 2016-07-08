@@ -195,7 +195,7 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
  * was rejected.
  * @return
  */
-UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason) const
+UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason)
 { 
   UInt_t rs = rejectionReason;
   UShort_t p = 0;
