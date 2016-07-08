@@ -56,12 +56,14 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
   void   SelectCharmtoD0toKpi();
   void   SelectCharmtoDStartoKpipi();
   
-  virtual Bool_t ApplyMCParticleCuts(const AliAODMCParticle* vp, UInt_t &rejectionReason) const;
+  virtual Bool_t AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const;
+  virtual Bool_t AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const;
 
   Bool_t IsSpecialPDGFound() const;
 
  protected:
   Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
+  Bool_t          IsSpecialPDG(const AliAODMCParticle* part) const;
  
   Int_t           fSpecialPDG;             ///<  include particles with this PDG code even if they are not primary particles (and exclude their daughters)
   UInt_t          fRejectedOrigin;         ///<  Bit mask with D meson origins that are rejected
