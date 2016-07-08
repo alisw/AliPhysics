@@ -104,7 +104,8 @@ ClassImp(AliAnalysisTaskExtractCascadePbPbRun2)
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2()
 : AliAnalysisTaskSE(), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
-fkSaveTree ( kTRUE ), 
+fkSaveTree ( kTRUE ),
+fkSaveAllMomenta ( kFALSE ),
 fkSaveRawdEdxSignals ( kFALSE ),
 fkSwitchCharges( kFALSE ),
 fkSelectCentrality (kFALSE),
@@ -159,6 +160,17 @@ fTreeCascVarNegdEdx(0),
 fTreeCascVarPosdEdx(0),
 fTreeCascVarBachdEdx(0),
 
+//All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -176,7 +188,8 @@ fHistdEdxPionsFromK0s(0)
 AliAnalysisTaskExtractCascadePbPbRun2::AliAnalysisTaskExtractCascadePbPbRun2(const char *name, TString lExtraOptions)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0),
 fkRunVertexers ( kFALSE ),
-fkSaveTree ( kTRUE ), 
+fkSaveTree ( kTRUE ),
+fkSaveAllMomenta ( kFALSE ),
 fkSaveRawdEdxSignals ( kFALSE ),
 fkSwitchCharges( kFALSE ),
 fkSelectCentrality (kFALSE),
@@ -231,6 +244,17 @@ fTreeCascVarNegdEdx(0),
 fTreeCascVarPosdEdx(0),
 fTreeCascVarBachdEdx(0),
 
+//All momenta
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -248,7 +272,8 @@ fHistdEdxPionsFromK0s(0)
     //Set Variables for re-running the cascade vertexers (as done for MS paper)
     if ( lExtraOptions.Contains("dEdx") )   fkSaveRawdEdxSignals = kTRUE;  
     if ( lExtraOptions.Contains("NoTree") ) fkSaveTree = kFALSE;  
-  
+    if ( lExtraOptions.Contains("AllMomenta") ) fkSaveAllMomenta = kTRUE;
+    
     // New Loose : 1st step for the 7 TeV pp analysis
     
     fV0VertexerSels[0] =  33.  ;  // max allowed chi2
@@ -361,6 +386,19 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarPosInDistortedRegion",&fTreeCascVarPosInDistortedRegion,"fTreeCascVarPosInDistortedRegion/O");   
     fTreeCascade->Branch("fTreeCascVarBachInDistortedRegion",&fTreeCascVarBachInDistortedRegion,"fTreeCascVarBachInDistortedRegion/O");   
     
+        if ( fkSaveAllMomenta ){
+            //--------All Momenta of all Daughters-----------
+            fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+            fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+            fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+            fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+            fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+            fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+            fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+            fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+            fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+        }
+        
     //-----------TPC-DEDX-INFO------------------------
     if ( fkSaveRawdEdxSignals ){ 
       fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");  
@@ -849,6 +887,17 @@ void AliAnalysisTaskExtractCascadePbPbRun2::UserExec(Option_t *)
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
         xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
         
+        //Save all momentum information
+        fTreeCascVarNegPx = lNMom[0];
+        fTreeCascVarNegPy = lNMom[1];
+        fTreeCascVarNegPz = lNMom[2];
+        fTreeCascVarPosPx = lPMom[0];
+        fTreeCascVarPosPy = lPMom[1];
+        fTreeCascVarPosPz = lPMom[2];
+        fTreeCascVarBachPx = lBMom[0];
+        fTreeCascVarBachPy = lBMom[1];
+        fTreeCascVarBachPz = lBMom[2];
+
         //------------------------------------------------
         // TPC dEdx information
         //------------------------------------------------

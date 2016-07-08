@@ -116,6 +116,7 @@ private:
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
     
     Bool_t fkSaveTree; // if true, saves TTree object
+    Bool_t fkSaveAllMomenta; // save momentum info 
     Bool_t fkSaveRawdEdxSignals; // if true, will save raw dEdx signals for later use
     Bool_t fkSwitchCharges; //if true, do 'like-sign' combination in cascade vertexers
     
@@ -175,6 +176,17 @@ private:
 	Float_t fTreeCascVarNegdEdx; //!
 	Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
+    
+    //All momenta
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
     
     //Debugging information, if requested
     //Part A: EbyE info, Run number
