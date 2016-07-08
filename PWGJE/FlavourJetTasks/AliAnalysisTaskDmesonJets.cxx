@@ -888,19 +888,6 @@ bool operator==(const AliAnalysisTaskDmesonJets::AnalysisEngine& lhs, const AliA
   return true;
 }
 
-/// Extract attributes of the D meson (particle level).
-///
-/// \param part Pointer to a AliAODMCParticle representing the D meson
-/// \param DmesonJet Reference to an AliDmesonJetInfo object where the D meson information will be copied
-/// \param i Either 0 or 1, for the two possible mass hypothesis assignment (since it is particle level it will return kFALSE for i > 0)
-///
-/// \return Always kTRUE on success
-Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractParticleLevelHFAttributes(const AliAODMCParticle* part, AliDmesonJetInfo& DmesonJet)
-{
-  DmesonJet.fD.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), part->M());
-  return kTRUE;
-}
-
 /// Extract attributes of the D meson candidate.
 ///
 /// \param Dcand Pointer to a AliAODRecoDecayHF2Prong representing the D meson candidate
@@ -934,14 +921,19 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   Double_t invMassD = 0;
 
+  // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
+  // Checks also the origin, and if it matches the rejected origin mask, return false
   if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
+
+    // Retrieve the generated particle (if exists) and its PDG code
     if (mcLab >= 0) {
       AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
-        if (fRejectedOrigin && fMCMode == kSignalOnly) {
+        // Check origin and return false if it matches the rejected origin mask
+        if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
 
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
@@ -1049,7 +1041,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
       AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
-        if (fRejectedOrigin && fMCMode == kSignalOnly) {
+        if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
 
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
@@ -1343,7 +1335,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
-      rejectHist->Fill(cont->GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
+      rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
