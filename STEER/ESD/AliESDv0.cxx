@@ -897,7 +897,7 @@ Double_t AliESDv0::GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const{
   const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
   const AliExternalTrackParam *paramP = GetParamP();
   const AliExternalTrackParam *paramN = GetParamN();
-  if (paramP->GetSign()<0){
+  if (paramP->GetParameter()[4]<0){
     paramP=GetParamN();
     paramN=GetParamP();
   }
@@ -909,42 +909,67 @@ Double_t AliESDv0::GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const{
   if (type==0) return v0KF->GetMass();
   if (type==1) return v0KF->GetErrMass();
   if (type==2) return v0KF->GetChi2();
+  if (type==3) return v0KF->GetPt(); 
+
   return 0;
 }
 
 
 Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const{
-  //
+  // Used for fast numerical studies  of impact of residula miscalibration
+  // Input:
+  // p1,p2 - particle type (0-el,1-mu, 2-pi, 3-K, 4-Proton)
   // type
   //   0 - return mass
   //   1 - return err mass
   //   2 - return chi2
+  //   3 - return Pt of the V0 ()
+  //  distrotion 
   //   d1pt - 1/pt shift
   //   s1pt - scaling of 1/pt
   // Important function to benchmark the pt resolution, and to find out systematic distortion
-  //
+  // Used for fast numerical emulation of impact of the resifual misscalibration
+  //    
+  /*
+    Example analysis using filtered trees:
+    // ratio of pt:  0.0015 1/GeV shift -> 0 mean shift for the K0 but ~ 1.1 % shift at 10 GeV  for the Lambda  
+    treeLambda->Draw("v0.GetKFInfoScale(4,2,3,0.0015,0.0)/v0.GetKFInfoScale(4,2,3,0.0,0)-1:v0.Pt()>>ptratioLambda(50,0,20)","v0.Pt()<20","prof",100000);
+    treeALambda->Draw("v0.GetKFInfoScale(2,4,3,0.0015,0.0)/v0.GetKFInfoScale(2,4,3,0.0,0)-1:v0.Pt()>>ptratioALambda(50,0,20)","v0.Pt()<20","profsame",100000);
+    treeK0->Draw("v0.GetKFInfoScale(2,2,3,0.0015,0.0)/v0.GetKFInfoScale(2,2,3,0.0,0)-1:v0.Pt()>>ptratioK0(50,0,20)","v0.Pt()<20","profsame",100000);
+    // pt spectra ratios:
+    // ratio of spectra  - e.g q/pt shift ~ 0.0015 1/GeV -> Lambda - 10 % difference in pt yeald at 10 GeV  - K0 - unaffected
+    treeLambda->Draw("v0.GetKFInfoScale(4,2,3,0.0015,0.0)>>hisLambdaShifted0015(50,0,20)","","",1000000);
+    treeLambda->Draw("v0.GetKFInfoScale(4,2,3,0.00,0.0)>>hisLambdaShifted0(50,0,20)","","",1000000);
+    TH1F ratioLambdaShifted0015 = *hisLambdaShifted0015;
+    ratioLambdaShifted0015.Sumw2();
+    ratioLambdaShifted0015.Divide(hisLambdaShifted0);
+   */
   const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
-  const AliExternalTrackParam *paramP = GetParamP();
-  const AliExternalTrackParam *paramN = GetParamN();
-  if (paramP->GetSign()<0){
-    paramP=GetParamP();
-    paramN=GetParamN();
+  AliExternalTrackParam paramP;
+  AliExternalTrackParam paramN;
+  if (paramP.GetParameter()[4]<0){
+    paramP=*(GetParamN());
+    paramN=*(GetParamP());
+  }else{
+    paramP=*(GetParamP());
+    paramN=*(GetParamN());
   }
-  Double_t *pparam1 = (Double_t*)paramP->GetParameter();
-  Double_t *pparam2 = (Double_t*)paramN->GetParameter();
+  Double_t *pparam1 = (Double_t*)paramP.GetParameter();
+  Double_t *pparam2 = (Double_t*)paramN.GetParameter();
   pparam1[4]+=d1pt;
   pparam2[4]+=d1pt;
   pparam1[4]*=(1+s1pt);
   pparam2[4]*=(1+s1pt);
   //
-  AliKFParticle kfp1( *paramP, spdg[p1] *TMath::Sign(1,p1) );
-  AliKFParticle kfp2( *paramN, spdg[p2] *TMath::Sign(1,p2) );
+  AliKFParticle kfp1( paramP, spdg[p1] *TMath::Sign(1,p1) );
+  AliKFParticle kfp2( paramN, spdg[p2] *TMath::Sign(1,p2) );
   AliKFParticle *v0KF = new AliKFParticle;
   *(v0KF)+=kfp1;
   *(v0KF)+=kfp2;
   if (type==0) return v0KF->GetMass();
   if (type==1) return v0KF->GetErrMass();
   if (type==2) return v0KF->GetChi2();
+  if (type==3) return v0KF->GetPt(); 
   return 0;
 }
 
