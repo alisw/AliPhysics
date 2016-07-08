@@ -197,9 +197,9 @@ AliITSUCATracker::~AliITSUCATracker()
 //  }
 //  for (int i = 0; i < 5; ++i)
 //  {
-//    delete fGDCAZ[i]; 
+//    delete fGDCAZ[i];
 //    delete fGDCAXY[i];
-//    delete fFDCAZ[i]; 
+//    delete fFDCAZ[i];
 //    delete fFDCAXY[i];
 //  }
 //  for(int i = 0; i < 4; ++i)
@@ -211,9 +211,9 @@ AliITSUCATracker::~AliITSUCATracker()
 //  }
 //  delete fGoodCombChi2[4];
 //  delete fFakeCombChi2[4];
-//  delete fTan; 
+//  delete fTan;
 //  delete fTanF;
-//  delete fPhi; 
+//  delete fPhi;
 //  delete fPhiF;
 //  delete fNEntries;
 //#endif
@@ -227,7 +227,7 @@ bool AliITSUCATracker::CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t
   // The hit are mapped on a paraboloid space: there a circle is described as plane.
   // The parameter n of the cells is the normal vector to the plane describing the circle in the
   // paraboloid.
-  
+
   // Mapping the hits
   const float mHit0[3] = {c1->x, c1->y, c1->r * c1->r};
   const float mHit1[3] = {c2->x, c2->y, c2->r * c2->r};
@@ -267,7 +267,7 @@ bool AliITSUCATracker::CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t
     fFDCAXY[l]->Fill(dca);
   }
 #endif
-  
+
   curv = 1.f / curv;
   return true;
 }
@@ -276,25 +276,24 @@ bool AliITSUCATracker::CellParams(int l, ClsInfo_t* c1, ClsInfo_t* c2, ClsInfo_t
 void AliITSUCATracker::CellsTreeTraversal(vector<AliITSUCARoad> &roads,
                                           const int &iD, const int &doubl)
 {
-  
+
   // Each cells contains a list of neighbours. Each neighbour has presumably other neighbours.
   // This chain of neighbours is, as a matter of fact, a tree and this function goes recursively
   // through it. This function implements a depth first tree browsing.
-  
-  // End of the road
+// End of the road
   if (doubl < 0) return;
-  
+
   // [1] add current cell to current cell
   roads.back().AddElement(doubl,iD);
   // We want the right number of elements in the roads also in the case of multiple neighbours
   const int currentN = roads.back().N;
-  
+
   // [2] loop on the neighbours of the current cell
   for (size_t iN = 0; iN < fCells[doubl][iD].NumberOfNeighbours(); ++iN)
   {
     const int currD = doubl - 1;
     const int neigh = fCells[doubl][iD](iN);
-    
+
     // [3] for each neighbour one road
     if (iN > 0)
     {
@@ -304,7 +303,7 @@ void AliITSUCATracker::CellsTreeTraversal(vector<AliITSUCARoad> &roads,
     // [4] play this game again until the end of the road
     CellsTreeTraversal(roads,neigh,currD);
   }
-  
+
   fCells[doubl][iD].SetLevel(0u); // Level = -1
 }
 
@@ -313,7 +312,7 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
 {
   // This is the main tracking function
   // The clusters must already be loaded
-  
+
   if (!fSAonly) {
     AliITSUTrackerGlo::Clusters2Tracks(event);
     for (int iL = 0; iL < 7; ++iL) {
@@ -326,21 +325,21 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
   int ntrk = 0, ngood = 0;
   for (int iteration = 0; iteration < fgkNumberOfIterations; ++iteration)
   {
-    
+
     fCandidates[0]->Clear();
     fCandidates[1]->Clear();
     fCandidates[2]->Clear();
     fCandidates[3]->Clear();
-    
+
     MakeCells(iteration);
     FindTracksCA(iteration);
-    
+
     for (int iL = 3; iL >= 0; --iL)
     {
       const int nCand = fCandidates[iL]->GetEntries();
       int index[nCand];
       float chi2[nCand];
-      
+
       for (int iC = 0; iC < nCand; ++iC)
       {
         AliITSUTrackCooked *tr = (AliITSUTrackCooked*)fCandidates[iL]->At(iC);
@@ -348,9 +347,9 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
         index[iC] = iC;
         CookLabel(tr,0.f);
       }
-      
+
       TMath::Sort(nCand,chi2,index,false);
-      
+
       for (int iUC = 0; iUC < nCand; ++iUC)
       {
         const int iC = index[iUC];
@@ -358,9 +357,9 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
         {
           continue;
         }
-        
+
         AliITSUTrackCooked *tr = (AliITSUTrackCooked*)fCandidates[iL]->At(iC);
-        
+
         bool sharingCluster = false;
         for (int k = 0; k < tr->GetNumberOfClusters(); ++k)
         {
@@ -372,17 +371,17 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
             break;
           }
         }
-        
+
         if (sharingCluster)
           continue;
-        
+
         for (int k = 0; k < tr->GetNumberOfClusters(); ++k)
         {
           const int layer = (tr->GetClusterIndex(k) & 0xf0000000) >> 28;
           const int idx = (tr->GetClusterIndex(k) & 0x0fffffff);
           fUsedClusters[layer][idx] = true;
         }
-        
+
         AliESDtrack outTrack;
         CookLabel(tr,0.f);
         ntrk++;
@@ -397,7 +396,7 @@ Int_t AliITSUCATracker::Clusters2Tracks(AliESDEvent *event)
           fFakeCombChi2[4]->Fill(chi2[iC] / (4 + iL));
 #endif
         }
-        
+
         outTrack.UpdateTrackParams(tr,AliESDtrack::kITSin);
         outTrack.SetLabel(tr->GetLabel());
         if (fSAonly) outTrack.SetStatus(AliESDtrack::kITSpureSA);
@@ -420,11 +419,11 @@ void AliITSUCATracker::FindTracksCA(int iteration)
   // 2. Tracklet association, cells building
   // 3. Handshake between neighbour cells
   // 4. Candidates ("roads") finding and fitting
-  
+
   // Road finding and fitting. The routine starts from cells with level 5 since they are the head
   // of a full road (candidate with 7 points). Minimum level is 2, so candidates at the end have
   // at least 4 points.
-  const int itLevelLimit[3] = {2, 2, 2};
+  const int itLevelLimit[3] = {4, 2, 2};
   for (int level = 5; level > itLevelLimit[iteration]; --level) {
     vector<AliITSUCARoad> roads;
     // Road finding. For each cell at level $(level) a loop on their neighbours to start building
@@ -452,7 +451,7 @@ void AliITSUCATracker::FindTracksCA(int iteration)
         fCells[iCL][iCell].SetLevel(0u); // Level = -1
       }
     }
-    
+
     // Roads fitting
     for (size_t iR = 0; iR < roads.size(); ++iR)
     {
@@ -465,7 +464,7 @@ void AliITSUCATracker::FindTracksCA(int iteration)
       {
         if (roads[iR][i] < 0)
           continue;
-        
+
         if (first < 0)
         {
           cl0 = fLayer[i][fCells[i][roads[iR][i]].x()];
@@ -483,7 +482,7 @@ void AliITSUCATracker::FindTracksCA(int iteration)
       // Init track parameters
       double cv = Curvature(cl0->x,cl0->y,cl1->x,cl1->y,cl2->x,cl2->y);
       double tgl = TanLambda(cl0->x,cl0->y,cl2->x,cl2->y,cl0->z,cl2->z);
-      
+
       AliITSUCATrackingStation::ITSDetInfo_t det = fLayer[last + 2].GetDetInfo(cl2->detid);
       double x = det.xTF + c->GetX(); // I'd like to avoit using AliITSUClusterPix...
       double alp = det.phiTF;
@@ -536,7 +535,7 @@ Int_t AliITSUCATracker::LoadClusters(TTree *cluTree)
 {
   // This function reads the ITSU clusters from the tree,
   // sort them, distribute over the internal tracker arrays, etc
-  
+
   AliITSUTrackerGlo::LoadClusters(cluTree); // === fITS->LoadClusters(cluTree);
   if (fSAonly) fITS->ProcessClusters();
 
@@ -560,7 +559,7 @@ void AliITSUCATracker::MakeCells(int iteration)
   unsigned int numberOfGoodCells = 0, totalNumberOfCells = 0;
   unsigned int cellsCombiningSuccesses = 0, cellsWrongCombinations = 0;
 #endif
-  
+
   SetCuts(iteration);
   if (iteration >= 1) {
 #ifdef _TUNING_
@@ -571,7 +570,7 @@ void AliITSUCATracker::MakeCells(int iteration)
     for (int i = 0; i < 6; ++i)
       vector<Doublets>().swap(fDoublets[i]);
   }
-  
+
   // Trick to speed up the navigation of the doublets array. The lookup table is build like:
   // dLUT[l][i] = n;
   // where n is the index inside fDoublets[l+1] of the first doublets that uses the point
@@ -593,7 +592,7 @@ void AliITSUCATracker::MakeCells(int iteration)
       const int nClust = fLayer[iL + 1].SelectClusters(extz - 2 * fCZ, extz + 2 * fCZ,
                                                        cls->phi - fCPhi, cls->phi + fCPhi);
       bool first = true;
-      
+
       for (int iC2 = 0; iC2 < nClust; ++iC2) {
         const int iD2 = fLayer[iL + 1].GetNextClusterInfoID();
         ClsInfo_t* cls2 = fLayer[iL + 1].GetClusterInfo(iD2);
@@ -627,7 +626,7 @@ void AliITSUCATracker::MakeCells(int iteration)
       fLayer[iL + 1].ResetFoundIterator();
     }
   }
-  
+
   // Trick to speed up the navigation of the cells array. The lookup table is build like:
   // tLUT[l][i] = n;
   // where n is the index inside fCells[l+1] of the first cells that uses the doublet
@@ -750,37 +749,37 @@ void AliITSUCATracker::MakeCells(int iteration)
 //__________________________________________________________________________________________________
 Int_t AliITSUCATracker::PropagateBack(AliESDEvent * event)
 {
-  
+
   Int_t n=event->GetNumberOfTracks();
   Int_t ntrk=0;
   Int_t ngood=0;
   for (Int_t i=0; i<n; i++) {
     AliESDtrack *esdTrack=event->GetTrack(i);
-    
+
     if ((esdTrack->GetStatus()&AliESDtrack::kITSin)==0) continue;
     if (esdTrack->IsOn(AliESDtrack::kTPCin)) continue; //skip a TPC+ITS track
 
     AliITSUTrackCooked track(*esdTrack);
     AliITSUTrackCooked temp(*esdTrack);
-    
+
     temp.ResetCovariance(10.);
     temp.ResetClusters();
-    
+
     if (RefitAt(40., &temp, &track)) {
-      
+
       CookLabel(&temp, 0.); //For comparison only
       Int_t label = temp.GetLabel();
       if (label > 0) ngood++;
-      
+
       esdTrack->UpdateTrackParams(&temp,AliESDtrack::kITSout);
       ntrk++;
     }
   }
-  
+
   Info("PropagateBack","Back propagated tracks: %d",ntrk);
   if (ntrk)
     Info("PropagateBack","Good tracks/back propagated: %f",Float_t(ngood)/ntrk);
-  
+
   if (!fSAonly) return AliITSUTrackerGlo::PropagateBack(event);
   return 0;
 }
@@ -790,7 +789,7 @@ Bool_t AliITSUCATracker::RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliIT
 {
   // This function refits the track "t" at the position "x" using
   // the clusters from "c"
-  
+
   const int nLayers = 7;
   Int_t index[nLayers];
   Int_t k;
@@ -800,7 +799,7 @@ Bool_t AliITSUCATracker::RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliIT
     Int_t idx = c->GetClusterIndex(k), nl = (idx&0xf0000000)>>28;
     index[nl] = idx;
   }
-  
+
   Int_t from, to, step;
   if (xx > t->GetX()) {
     from = 0;
@@ -811,7 +810,7 @@ Bool_t AliITSUCATracker::RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliIT
     to = -1;
     step = -1;
   }
-  
+
   for (Int_t i = from; i != to; i += step) {
     Int_t idx = index[i];
     if (idx >= 0) {
@@ -840,7 +839,7 @@ Bool_t AliITSUCATracker::RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliIT
     Double_t mass = t->GetMass();
     t->CorrectForMeanMaterial(xx0, - step * xx0 * x0 * rho, mass, kTRUE);
   }
-  
+
   if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
   return kTRUE;
 }
@@ -850,37 +849,37 @@ Int_t AliITSUCATracker::RefitInward(AliESDEvent * event)
 {
   // Some final refit, after the outliers get removed by the smoother ?
   // The clusters must be loaded
-  
+
   Int_t n = event->GetNumberOfTracks();
   Int_t ntrk = 0;
   Int_t ngood = 0;
   for (Int_t i = 0; i < n; i++) {
     AliESDtrack *esdTrack = event->GetTrack(i);
-    
+
     if ((esdTrack->GetStatus() & AliESDtrack::kITSout) == 0) continue;
     if (esdTrack->IsOn(AliESDtrack::kTPCin)) continue; //skip a TPC+ITS track
     AliITSUTrackCooked track(*esdTrack);
     AliITSUTrackCooked temp(*esdTrack);
-    
+
     temp.ResetCovariance(10.);
     temp.ResetClusters();
-  
+
     if (!RefitAt(2.1, &temp, &track)) continue;
     //Cross the beam pipe
     if (!temp.PropagateTo(1.8, 2.27e-3, 35.28 * 1.848)) continue;
-    
+
     CookLabel(&temp, 0.); //For comparison only
     Int_t label = temp.GetLabel();
     if (label > 0) ngood++;
-    
+
     esdTrack->UpdateTrackParams(&temp,AliESDtrack::kITSrefit);
     ntrk++;
   }
-  
+
   Info("RefitInward","Refitted tracks: %d",ntrk);
   if (ntrk)
     Info("RefitInward","Good tracks/refitted: %f",Float_t(ngood)/ntrk);
-  
+
   if (!fSAonly) return AliITSUTrackerGlo::RefitInward(event);
   return 0;
 }
@@ -906,7 +905,7 @@ void AliITSUCATracker::SetCuts(int it)
         fCDZ[i] = kmaxDZ[i];
       }
       break;
-    
+
     default:
       fCPhi = 3.f * fPhiCut;
       fCDTanL = kDoublTanL1;
