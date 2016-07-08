@@ -3,13 +3,14 @@
 ///
 /// Modification of commonly used AddTaskEmcalJet.C macro used for analysis of V0s in jets analysis.
 ///
-/// Need to set nTracks parameter to "tracksNoV0s" value to turn it on otherwise it behaves exactly as AddTaskEmcalJet.C do.
+/// To turn V0 daughter tracks filtering, bFilterDaughters has to be set to kTRUE.
 /// When turn on, the V0 daughter tracks are removed from the hybrid tracks sample prior to jet finding. 
 ///
 /// \author Vojtech Pacik <vojtech.pacik@cern.ch>, NPI Czech Academy of Sciences
 /// \date Jul 7, 2016
 
 AliEmcalJetTask* AddTaskEmcalJetV0s(
+  const Bool_t bFilterDaughters              = kFALSE,
   const char *nTracks                        = "usedefault",
   const char *nClusters                      = "usedefault",
   const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
@@ -30,7 +31,7 @@ AliEmcalJetTask* AddTaskEmcalJetV0s(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
   {
-    ::Error("AddTaskEmcalJetV0", "No analysis manager to connect to.");
+    ::Error("AddTaskEmcalJetV0s", "No analysis manager to connect to.");
     return 0;
   }  
   
@@ -39,7 +40,7 @@ AliEmcalJetTask* AddTaskEmcalJetV0s(
   AliVEventHandler* handler = mgr->GetInputEventHandler();
   if (!handler)
   {
-    ::Error("AddTaskEmcalJetV0", "This task requires an input event handler");
+    ::Error("AddTaskEmcalJetV0s", "This task requires an input event handler");
     return 0;
   }
   
@@ -96,15 +97,16 @@ AliEmcalJetTask* AddTaskEmcalJetV0s(
     partCont = mcpartCont;
   }
   else if (trackName == "tracks" || trackName == "Tracks") {
-    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    if (bFilterDaughters) {
+      // V0 daughter tracks removed from tracks sample implemented in AliTrackContainerV0
+      AliTrackContainerV0* trackCont = new AliTrackContainerV0(trackName);
+      trackCont->SetFilterDaughterTracks(kTRUE); 
+      ::Info("AddTaskEmcalJetV0s","FilterDaughterTracks selected: V0 daughter tracks will be removed from track sample!");
+    } 
+    else {
+      AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    }
     trackCont->SetFilterHybridTracks(kTRUE);
-    partCont = trackCont;
-  }
-  else if (trackName == "tracksNoV0s") {
-    // V0 daughter tracks removed from tracks sample implemented in AliTrackContainerV0
-    AliTrackContainerV0* trackCont = new AliTrackContainerV0(trackName);
-    trackCont->SetFilterHybridTracks(kTRUE);
-    trackCont->SetFilterDaughterTracks(kTRUE);
     partCont = trackCont;
   } 
   else if (!trackName.IsNull()) {
