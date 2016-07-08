@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: June 18th, 2016.							          //
+	//		version: July 7th, 2016.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -159,12 +159,14 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fCentrality(0)
+,fCentrality2(0)
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
 ,fMultiplicityHist(0)
+,fMultiplicityHistPass(0)
 ,fZvtx(0)
 ,fEstimator(0)
 ,fClus(0)
@@ -341,6 +343,13 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+
+	//centrality
+,fECluster_pure_0(0)
+,fECluster_pure_1(0)
+,fECluster_pure_2(0)
+,fECluster_pure_3(0)
+
 ,fECluster_highpT0(0)
 ,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
@@ -676,12 +685,14 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fCentrality(0)
+,fCentrality2(0)
 ,fCentralityMin(0)
 ,fCentralityMax(100)
 ,fHasCentralitySelection(kFALSE)
 ,fCentralityHist(0)
 ,fCentralityHistPass(0)
 ,fMultiplicityHist(0)
+,fMultiplicityHistPass(0)
 ,fZvtx(0)
 ,fEstimator(0)
 ,fClus(0)
@@ -859,6 +870,14 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+
+//centrality
+,fECluster_pure_0(0)
+,fECluster_pure_1(0)
+,fECluster_pure_2(0)
+,fECluster_pure_3(0)
+
+
 ,fECluster_highpT0(0)
 ,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
@@ -1377,6 +1396,16 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fCharge_p = new TH1F("fCharge_p","Inclusive Positrons (Positive Charge); p_{t} (GeV/c); Count",200,0,30);
 	
 	fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
+	
+	if(fIsCentralitySys){
+		//centrality
+		fECluster_pure_0= new TH1F("fECluster_pure_0", ";ECluster pure",2000,0,100);
+		fECluster_pure_1= new TH1F("fECluster_pure_1", ";ECluster pure",2000,0,100);
+		fECluster_pure_2= new TH1F("fECluster_pure_2", ";ECluster pure",2000,0,100);
+		fECluster_pure_3= new TH1F("fECluster_pure_3", ";ECluster pure",2000,0,100);
+	}
+	
+	
 	fECluster_not_exotic= new TH1F("fECluster_not_exotic", ";ECluster not exotic - function ",2000,0,100);
 	
 	fECluster_not_exotic1= new TH1F("fECluster_not_exotic1", ";ECluster not exotic Ncells > E/3+1",2000,0,100);
@@ -1520,6 +1549,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fCharge_p);
 	
 	fOutputList->Add(fECluster_pure);
+	
+	if(fIsCentralitySys){		
+		fOutputList->Add(fECluster_pure_0);
+		fOutputList->Add(fECluster_pure_1);
+		fOutputList->Add(fECluster_pure_2);
+		fOutputList->Add(fECluster_pure_3);
+	}
+	
 	fOutputList->Add(fECluster_not_exotic);
 	fOutputList->Add(fECluster_not_exotic1);
 	fOutputList->Add(fECluster_not_exotic2);
@@ -1603,7 +1640,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fECluster= new TH1F *[3];
 	fEtaPhi= new TH2F *[3];
 	fVtxZ= new  TH1F *[3];
-	fEtad= new  TH1F *[3];
+	fEtad= new  TH1F *[8];
 	fNTracks= new  TH1F *[3];
 	
 	fNTracks_pt= new  TH2F *[3];
@@ -1719,10 +1756,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	{
 		
 		fEoverP_pt[i] = new TH2F(Form("fEoverP_pt%d",i),";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
-		
-		
-		
-		
+	
 		fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
 		fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
 		
@@ -1735,7 +1769,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
 		fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",500,0.,5,200,-1.,1.);
 		fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
-		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		
 		fNTracks[i]= new  TH1F(Form("fNTracks%d",i),"NTracks",1000, 0,5000);
 		
 		fNTracks_pt[i]= new  TH2F(Form("fNTracks_pt%d",i),"NTracks vs. pt",1000, 0,5000, 1000, 0, 100);
@@ -1764,7 +1798,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fECluster[i]);
 		fOutputList->Add(fEtaPhi[i]);
 		fOutputList->Add(fVtxZ[i]);
-		fOutputList->Add(fEtad[i]);
+		
 		fOutputList->Add(fNTracks[i]);
 		
 		fOutputList->Add(fNTracks_pt[i]);
@@ -1773,6 +1807,13 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 		fOutputList->Add(fNClusters[i]);
 		fOutputList->Add(fTPCNcls_EoverP[i]);
+	}
+	
+	for(Int_t i = 0; i < 8; i++)
+	{
+		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
+		fOutputList->Add(fEtad[i]);
+		
 	}
 	
     //histo for centrality to run just once
@@ -2346,12 +2387,15 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	}
 	
 	if(!fIspp){
-		fCentralityHist = new TH1F("fCentralityHist",";Centrality (%); Count",100,0,100);
+		fCentralityHist = new TH1F("fCentralityHist",";Centrality (%); Count",1000,0,100);
 		fCentralityHistPass = new TH1F("fCentralityHistPass",";Centrality (%); Count",100,0,100);
-		fMultiplicityHist = new TH1F("fMultiplicityHist",";Multiplicity; Count",2000,0,2000);
+		fMultiplicityHist = new TH1F("fMultiplicityHist",";Multiplicity; Count",10000,0,10000);
+		fMultiplicityHistPass = new TH1F("fMultiplicityHistPass",";Multiplicity; Count",10000,0,10000);
 		fOutputList->Add(fCentralityHist);
 		fOutputList->Add(fCentralityHistPass);
 		fOutputList->Add(fMultiplicityHist);
+		fOutputList->Add(fMultiplicityHistPass);
+
 	
 			//______________________________________________________________________
 			//Mixed event analysis
@@ -2757,11 +2801,13 @@ if(!fIspp){
 	if(fHasCentralitySelection)
 	{
 		Float_t centrality = -1;
+		Float_t centrality2 = -1;
 		
 		if(fIsAOD) 
 		{
 				//fCentrality = fAOD->GetHeader()->GetCentralityP();
 			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+			fCentrality2 = fAOD->GetCentrality();
 		}
 		else
 		{
@@ -2770,9 +2816,11 @@ if(!fIspp){
 		
 		if(fEstimator==1){
 			centrality = fCentrality->GetCentralityPercentile("ZNA");
+			centrality2 = fCentrality2->GetCentralityPercentile("ZNA");
 		}
 		else{
 			centrality = fCentrality->GetCentralityPercentile("V0A");
+			centrality2 = fCentrality2->GetCentralityPercentile("V0A");
 		}
 		
 			
@@ -2786,9 +2834,12 @@ if(!fIspp){
 		
 		fCentralityHist->Fill(centrality);
 		
+			//printf("Estimator %d, Multiplicity %f, Centrality %f, Centrality2 %f \n", fEstimator, multiplicity, centrality, centrality2);
+		
 		if(centrality<fCentralityMin || centrality>fCentralityMax) return;
 		
 		fCentralityHistPass->Fill(centrality);
+		fMultiplicityHistPass->Fill(multiplicity);
 	}
 }
 	//______________________________________________________________________
@@ -3348,6 +3399,36 @@ if(!fIspp){
 				if(clust && clust->IsEMCAL())
 				{
 					fECluster_pure->Fill(clust->E());
+					
+					if(fIsCentralitySys){
+						
+						Float_t centrality = -1;
+						
+						if(fIsAOD) 
+						{
+								//fCentrality = fAOD->GetHeader()->GetCentralityP();
+							fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+						}
+						else
+						{
+							fCentrality = fESD->GetCentrality();
+						}
+						
+						if(fEstimator==1){
+							centrality = fCentrality->GetCentralityPercentile("ZNA");
+						}
+						else{
+							centrality = fCentrality->GetCentralityPercentile("V0A");
+						}
+
+						
+						if(centrality>0 && centrality<20)fECluster_pure_0->Fill(clust->E());
+						if(centrality>20 && centrality<40)fECluster_pure_1->Fill(clust->E());
+						if(centrality>40 && centrality<60)fECluster_pure_2->Fill(clust->E());
+						if(centrality>60 && centrality<100)fECluster_pure_3->Fill(clust->E());
+					}
+
+					
 				}
 			}
 		}
@@ -3375,6 +3456,37 @@ if(!fIspp){
 			if(clust && clust->IsEMCAL())
 			{
 				fECluster_pure->Fill(clust->E());
+				
+				
+				if(fIsCentralitySys){
+					
+					Float_t centrality = -1;
+					
+					if(fIsAOD) 
+					{
+							//fCentrality = fAOD->GetHeader()->GetCentralityP();
+						fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+					}
+					else
+					{
+						fCentrality = fESD->GetCentrality();
+					}
+					
+					if(fEstimator==1){
+						centrality = fCentrality->GetCentralityPercentile("ZNA");
+					}
+					else{
+						centrality = fCentrality->GetCentralityPercentile("V0A");
+					}
+
+					
+				
+					if(centrality>0 && centrality<20)fECluster_pure_0->Fill(clust->E());
+					if(centrality>20 && centrality<40)fECluster_pure_1->Fill(clust->E());
+					if(centrality>40 && centrality<60)fECluster_pure_2->Fill(clust->E());
+					if(centrality>60 && centrality<100)fECluster_pure_3->Fill(clust->E());
+				}
+				
 			}
 			
 		}
@@ -3513,8 +3625,7 @@ if(!fIspp){
 		//Etacut test on the begging
 		fEtad[0]->Fill(track->Eta());
 		//if(track->Eta()<fEtaCutMin || track->Eta()>fEtaCutMax) continue;
-		
-			
+	
 		///_____________________________________________________________________________
 		///Fill QA plots without track selection
 		fPt = track->Pt();
@@ -4472,12 +4583,16 @@ if(!fIspp){
 			fTPCnsigma_pt_2D4->Fill(fPt,fTPCnSigma);
 		}
 		
+		fEtad[3]->Fill(track->Eta());
+		
 		//Should be done only for 13d, which has shifted TPCnsigma
 		if(fCalibrateTPC==kTRUE){
 			
 			if(fTPCnSigma < fTPCcal_CutMin || fTPCnSigma > fTPCcal_CutMax) continue;
 					
 		} 
+		
+		
 		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax){
 			fTPCnsigma_pt_2D5->Fill(fPt,fTPCnSigma);
@@ -4661,6 +4776,9 @@ if(!fIspp){
 		
 		if(track->GetEMCALcluster()>0)
 		{
+			
+			fEtad[4]->Fill(track->Eta());
+
 			fClus = fVevent->GetCaloCluster(track->GetEMCALcluster());
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//to use tender
@@ -4683,6 +4801,8 @@ if(!fIspp){
 				
 		//________________________________________________________________________		
 				
+				fEtad[5]->Fill(track->Eta());
+
 				
 				//Cluster timing distribution -- for ESD 
 				if(fUseEMCal && !fIsAOD){
@@ -4785,6 +4905,10 @@ if(!fIspp){
 				
 				if(TMath::Abs(fClus->GetTrackDx())<=fdPhiCut && TMath::Abs(fClus->GetTrackDz())<=fdEtaCut)
 				{
+					
+					fEtad[6]->Fill(track->Eta());
+
+					
 					Float_t Energy	= fClus->E();
 					Float_t EoverP	= Energy/track->P();
 					Float_t M02	= fClus->GetM02();
@@ -4823,6 +4947,10 @@ if(!fIspp){
 					if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 						
 						if(fUseShowerShapeCut){
+							
+							fEtad[7]->Fill(track->Eta());
+
+							
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 								
@@ -5707,12 +5835,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 		fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
 	
 		//Electron Information
-	Double_t fPhiE = -999;
-	Double_t fEtaE = -999;
-	Double_t fPtE = -999;
-	fPhiE = track->Phi();
-	fEtaE = track->Eta();
-	fPtE = track->Pt();
+	     Double_t fPhiE = -999;
+		 Double_t fEtaE = -999;
+	     Double_t fPtE = -999;
+	     fPhiE = track->Phi();
+	     fEtaE = track->Eta();
+	     fPtE = track->Pt();
 	
 	
 	
