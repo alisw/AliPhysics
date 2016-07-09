@@ -23,7 +23,7 @@ ClassImp(AliTPCChebDist)
 
 Float_t AliTPCChebDist::fgRMinTPC = 83.65; //RS Make sure these are correct radii to use
 Float_t AliTPCChebDist::fgRMaxTPC = 247.7;
-Int_t   AliTPCChebDist::fgNSlices = AliTPCChebCorr::kNRows+10; // check
+Int_t   AliTPCChebDist::fgNSlices = AliTPCChebCorr::kNRows*2+2; // check
 
 //____________________________________________________________________
 AliTPCChebDist::AliTPCChebDist()
