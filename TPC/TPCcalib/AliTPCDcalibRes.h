@@ -216,20 +216,22 @@ class AliTPCDcalibRes: public TNamed
   static Bool_t  GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
 			      float val[AliTPCDcalibRes::kResDim],
 			      float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim]);
-  static Bool_t  DistortCheb(const AliTPCChebCorr* cheb, int sect36, const float vecIn[AliTPCDcalibRes::kResDimG], 
-			     float vecOut[AliTPCDcalibRes::kResDim], int maxIt=15, float minDelta=50e-4);
-  static AliTPCChebDist* CreateDistortionObject(AliTPCChebCorr* correction, int npy=17, int npz=7, const float prec[AliTPCDcalibRes::kResDim]=0);
   //------------------------------------
   
 
   Int_t   Smooth0(int isect);
+  void    BringToActiveBoundary(int sect36, float xyz[3]) const;
   Bool_t  GetSmoothEstimate(int isect, float x, float p, float z, int which, float *res, float *deriv=0);
-  void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7, 
-			float scX=1.f,float scP=1.f,float scZ=1.f);
+  Bool_t  GradValSmooth(int sect36, float x, float y, float z,float val[AliTPCDcalibRes::kResDim],
+			float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim], Bool_t bringToBoundary=kTRUE);
+  Bool_t  InvertCorrection(int sect36,const float vecIn[AliTPCDcalibRes::kResDimG],float vecOut[AliTPCDcalibRes::kResDim],
+			   int maxIt=15,float minDelta=50e-4);
+  void    SetKernelType(int tp=kEpanechnikovKernel, float bwX=2.1, float bwP=2.1, float bwZ=1.7,float scX=1.f,float scP=1.f,float scZ=1.f);
   Bool_t  GetSmoothPol2(int i)                              const {return fSmoothPol2[i];}
   void    SetSmoothPol2(int i,Bool_t v=kTRUE)                     {fSmoothPol2[i] = v;}
   //  
   void    CreateCorrectionObject();
+  void    CreateDistortionObject();
   void    InitBinning();
   Int_t   GetXBin(float x);
   static  Int_t  GetRowID(float x);
@@ -388,6 +390,7 @@ class AliTPCDcalibRes: public TNamed
   const TString& GetReisdualList()          const {return fResidualList;}
 
   const AliTPCChebCorr* GetChebCorrObject() const {return fChebCorr;}
+  const AliTPCChebDist* GetChebDistObject() const {return fChebDist;}
 
   static AliTPCDcalibRes* Load(const char* fname="alitpcdcalibres.root");
   static TTree*           LoadTree(const char* fname="voxelResTree.root",Int_t mStyle=7,Int_t mCol=kBlack);
@@ -409,7 +412,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fNPCheb[kResDim][2];                     // cheb. nodes per slice
 
   Float_t  fChebPrecD[kResDim];                     // nominal precision per output dimension
-  AliTPCChebCorr* fChebCorr;                        // final Chebyshev object
+  AliTPCChebCorr* fChebCorr;                        // final Chebyshev correction object
+  AliTPCChebDist* fChebDist;                        // final Chebyshev distortion object
   // -------------------------------Task defintion
   Int_t    fRun;     // run number 
   Int_t    fExtDet;  // external detectors to use
@@ -583,7 +587,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,15);
+  ClassDef(AliTPCDcalibRes,16);
 };
 
 //________________________________________________________________

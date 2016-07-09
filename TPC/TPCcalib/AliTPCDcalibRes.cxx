@@ -16,6 +16,7 @@ using std::swap;
 
 // this must be standalone f-n, since the signature is important for Chebyshev training
 void trainCorr(int row, float* tzLoc, float* corrLoc);
+void trainDist(int row, float* tzLoc, float* distLoc);
 
 // make sure these branches are always connected in InitDeltaFile
 const char* AliTPCDcalibRes::kModeName[kNCollectModes] = {"VDrift calibration","Distortions extraction","Closure test"};
@@ -88,6 +89,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fChebZSlicePerSide(1)
   ,fChebPhiSlicePerSector(1)
   ,fChebCorr(0)
+  ,fChebDist(0)
 
   ,fRun(run)
   ,fExtDet(kUseTRDonly)
@@ -223,6 +225,7 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
 {
   // d-tor
   delete fChebCorr;
+  delete fChebDist;
   delete[] fMaxY2X;
   delete[] fDY2X;
   delete[] fDY2XI;
@@ -561,7 +564,8 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
   if (!LoadDataFromResTree(resTreeFile)) return;
   ReProcessResiduals();
   //
-  if (fChebCorr) delete fChebCorr; fChebCorr = 0;
+  delete fChebCorr; fChebCorr = 0;
+  delete fChebDist; fChebDist = 0;
   //
   CreateCorrectionObject();
   //
@@ -3862,6 +3866,8 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   AliSysInfo::AddStamp("CreateCorrectionObject",1,0,0,0);
 }
 
+
+
 //________________________________________________________________
 TH1F* AliTPCDcalibRes::ExtractTrackRate() const
 {
@@ -4022,12 +4028,37 @@ Bool_t AliTPCDcalibRes::FindVoxelBin(int sectID, float x, float y, float z, UCha
   return kTRUE;
 }
 
+
+
+//_____________________________________________________
+Bool_t AliTPCDcalibRes::GradValSmooth(int sect36, float x, float y, float z, 
+				      float val[AliTPCDcalibRes::kResDim],
+				      float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim], Bool_t bringToBoundary)
+{
+  // calculate the gradient of distortion+dispersion vs x,y,z at point x,y,z of sector sectID
+  // and the correction value
+  //
+  float xyz[3] = {x,y,z};
+  if (bringToBoundary) BringToActiveBoundary(sect36,xyz);
+  float der[12]={0};
+  if (!GetSmoothEstimate(sect36,xyz[0],xyz[1]/xyz[0],xyz[2]/xyz[0],(0x1<<4)-1,val,der)) return kFALSE;
+  // 
+  for (int id=0;id<4;id++) {
+    for (int idd=0;idd<3;idd++) {
+      grad[idd][id] = der[id*3+idd];
+      if (idd>0) grad[idd][id] /= xyz[0]; // d/d(y/x) and  d/d(z/x) -> d/dy and d/dz
+    }
+  }
+  //
+  return kTRUE;
+}
+
 //_____________________________________________________
 Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, float x, float y, float z, 
 				     float val[AliTPCDcalibRes::kResDim],
 				     float grad[AliTPCDcalibRes::kResDimG][AliTPCDcalibRes::kResDim])
 {
-  // calculate the gradient of distortion+dispersion vs x, (y/x) and (z/x) at point x,y,z of sector sectID
+  // calculate the gradient of distortion+dispersion vs x,y,z at point x,y,z of sector sectID
   // and the corrected value
   //
   const Bool_t kUsePol2=kFALSE;
@@ -4117,10 +4148,9 @@ Bool_t AliTPCDcalibRes::GradCorrCheb(const AliTPCChebCorr* cheb, int sect36, flo
 }
 
 //_____________________________________________________
-Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36, 
-				    const float vecIn[AliTPCDcalibRes::kResDimG], 
-				    float vecOut[AliTPCDcalibRes::kResDim],
-				    int maxIt, float minDelta)
+Bool_t AliTPCDcalibRes::InvertCorrection(int sect36,const float vecIn[AliTPCDcalibRes::kResDimG], 
+					 float vecOut[AliTPCDcalibRes::kResDim],
+					 int maxIt, float minDelta)
 {
   // apply distortion (inverse of the correction map cheb) to point vecIn, producing vecOut
   //
@@ -4136,24 +4166,31 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
   // 
   // Abandon iterations above maxIt or with total change < minDelta
   //
-  float grad[kResDimG][kResDim], fun[kResDim]={0.}, delta0[kResDim];
-  const float kEps = 1e-12;
-  for (int id=kResDim;id--;) vecOut[id] = vecIn[id]; 
+  float grad[kResDimG][kResDim], fun[kResDim]={0.}, delta0[kResDim] = {0.}, delta0R2 = 0;
+  const float kEps = 1e-16;
+  //
+  for (int id=kResDimG;id--;) vecOut[id] = vecIn[id]; // initial approximation
   vecOut[kResD] = 0.f; // dispersion
   //
-  float minDelta2 = minDelta*minDelta, deltaR2, deltaR2Prev=0;
+  float minDelta2 = minDelta*minDelta, deltaR2Tot=0, deltaR2=0, deltaR2Prev=0;
+  float deltaCorr0 = 0;
   int it = 0;
 
   do {
     //
     // calculate corrected value and gradient of correction
-    GradCorrCheb(cheb, sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad); 
+    GradValSmooth(sect36, vecOut[kResX],vecOut[kResY],vecOut[kResZ], fun, grad); 
+    if (it==0) {
+      for (int id=3;id--;) {
+	deltaCorr0 += fun[id]*fun[id];
+	delta0[id] = fun[id];
+      }
+      delta0[kResD] = fun[kResD];
+    }
     for (int id=3;id--;) {
-      fun[id] -= vecIn[id];  // value of F = vec_meas + vec_corrections - vec_correct
+      fun[id] -= vecIn[id] - vecOut[id];  // value of F = vec_meas + vec_corrections - vec_correct
       grad[id][id] += 1.0f; // convert gradient of correction to gradient of F vs current estimate of vec_meas
     }
-    if (it==0) memcpy(delta0,fun,sizeof(float)*kResDim); // save for emergency exit
-
     // solve linear system grad . delta = -F
     
     double det =  grad[0][0]*(grad[1][1]*grad[2][2] - grad[1][2]*grad[2][1])
@@ -4178,19 +4215,22 @@ Bool_t AliTPCDcalibRes::DistortCheb(const AliTPCChebCorr* cheb, int sect36,
        fun[0]    *(grad[1][0]*grad[2][1] - grad[1][1]*grad[2][0]));
     //
     deltaR2 = 0.f;
+    deltaR2Tot = 0.f;
     for (int id=3;id--;) {
       deltaR2 += delta[id]*delta[id];
       vecOut[id] += delta[id];    
+      float dtot = vecOut[id]-vecIn[id];
+      deltaR2Tot += dtot*dtot;
     }
     //
-    if (it>1 && deltaR2>deltaR2Prev) {
-      AliErrorClassF("Runaway @ iter%d for S%2d {%.3f %.3f %.3f}? deltaR2=%e > deltaR2Prev=%e | Grad:",it,
-		     sect36, vecIn[0],vecIn[1],vecIn[2],deltaR2,deltaR2Prev);
+    if (it>1 && deltaR2Tot>deltaCorr0*2 && deltaR2>deltaR2Prev+3*deltaCorr0) {
+      AliErrorF("Runaway @ iter%d for S%2d {%.3f %.3f %.3f}? deltaR2Tot=%e deltaR2=%e > deltaR2Prev=%e + deltaCorr0=%e | Grad:",it,
+		sect36, vecIn[0],vecIn[1],vecIn[2],deltaR2Tot,deltaR2,deltaR2Prev,deltaCorr0);
       for (int i=0;i<3;i++) {
 	for (int j=0;j<3;j++) printf(" %+e ",grad[i][j] - ((i==j)?1.:0.)); printf("\n");	
       }
-
-      for (int id=3;id--;) { vecOut[id] = vecIn[id] + delta0[id];}
+      
+      for (int id=3;id--;) { vecOut[id] = vecIn[id] - delta0[id];}
       fun[kResD] = delta0[kResD];
       break;
     }
@@ -4267,10 +4307,6 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
   // distLoc: x, y, z distortion + dispersion, in sector frame
   // when called with distLoc or tzLoc pointer at 0, xslice sets the sector ID in 0-36 format
 
-  if (!fgCorrForInv) {
-    printf("The correction to invert must be set using SetCorrForInv(chebCorr)\n");
-    exit(1);
-  }
   if (!fgDistDest) {
     printf("The target distortion object must be set using SetDistDest(chebDist)\n");
     exit(1);
@@ -4282,52 +4318,93 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
     return;
   }
   //
-  float xyzPrim[AliTPCDcalibRes::kResDimG];
+  float xyzPrim[AliTPCDcalibRes::kResDimG], xyzCl[AliTPCDcalibRes::kResDim];
   xyzPrim[AliTPCDcalibRes::kResX] = fgDistDest->Slice2X(xslice);
   xyzPrim[AliTPCDcalibRes::kResY] = tzLoc[0]*xyzPrim[AliTPCDcalibRes::kResX];
   xyzPrim[AliTPCDcalibRes::kResZ] = tzLoc[1]*xyzPrim[AliTPCDcalibRes::kResX];
   //
-  float xyzCl[AliTPCDcalibRes::kResDim];
-  AliTPCDcalibRes::DistortCheb(fgCorrForInv,sector, xyzPrim, xyzCl);
-  //
+  AliTPCDcalibRes *calib = AliTPCDcalibRes::GetUsedInstance();
+  calib->InvertCorrection(sector, xyzPrim, xyzCl); // calculate inverse distortion
   for (int j=AliTPCDcalibRes::kResDimG;j--;) distLoc[j] = xyzCl[j]-xyzPrim[j];
   distLoc[AliTPCDcalibRes::kResD] = xyzCl[AliTPCDcalibRes::kResD];
   //
 }
 //======================================================================================
 
-//_____________________________________________________________________
-AliTPCChebDist* AliTPCDcalibRes::CreateDistortionObject(AliTPCChebCorr* correction, int npY2X, int npZ2X, 
-							const float prec[AliTPCDcalibRes::kResDim])
+//_____________________________________________________
+void AliTPCDcalibRes::CreateDistortionObject()
 {
-  // create distortion object by inverting correction object
-  if (!correction) return 0;
-  correction->Init();
-  SetCorrForInv(correction);
-  AliTPCChebDist* dist = new AliTPCChebDist(Form("%s_InvDist",correction->GetName()),
-					    Form("%s Inverted",correction->GetTitle()),
-					    correction->GetNStacksSector(),
-					    correction->GetNStacksZ(),
-					    correction->GetZMax());
-  //  
-  SetDistDest(dist);
-  dist->SetUseFloatPrec(kFALSE);
-  dist->SetRun(correction->GetRun());
-  dist->SetTimeStampStart( correction->GetTimeStampStart() );
-  dist->SetTimeStampEnd( correction->GetTimeStampEnd() );
-  dist->SetTimeDependent( correction->GetTimeDependent() );
-  dist->SetUseZ2R( correction->GetUseZ2R() );
-  dist->SetFieldType( correction->GetFieldType() );
-  //
-  int npCheb[kResDim][2];
-  for (int i=0;i<kResDim;i++) {
-    npCheb[i][0] = TMath::Min(5,npY2X);
-    npCheb[i][1] = TMath::Min(5,npZ2X);
+  // create distortion object for given time slice
+  AliSysInfo::AddStamp("CreateDistortionObject",0,0,0,0);
+  // check if there are failures
+  Bool_t create = kTRUE;
+  for (int i=0;i<kNSect2;i++) {
+    if (fNSmoothingFailedBins[i]>0) {
+      AliErrorF("%d failed voxels in sector %d",fNSmoothingFailedBins[i],i); 
+      create = kFALSE;
+    }
   }
-  const float defPrec[AliTPCDcalibRes::kResDim] = {100e-4,100e-4,100e-4,100e-4};
-  const float* precUse = prec ? prec : defPrec;
-  dist->Parameterize(trainDist,kResDim,npCheb,precUse);
   //
-  return dist;
+  if (!create) {
+    AliError("ATTENTION: MAP WILL NOT BE CREATED");
+    return;
+  }
+  TString name = Form("run%d_%lld_%lld_InvDist",fRun,fTMin,fTMax);
+  fChebDist = new AliTPCChebDist(name.Data(),name.Data(),fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
+  fChebDist->SetUseFloatPrec(kFALSE);
+  fChebDist->SetRun(fRun);
+  fChebDist->SetTimeStampStart(fTMin);
+  fChebDist->SetTimeStampEnd(fTMax);
+  fChebDist->SetTimeDependent(kFALSE);
+  fChebDist->SetUseZ2R(kTRUE);
+  SetDistDest(fChebDist);
+  //
+  if      (fBz> 0.01) fChebDist->SetFieldType(AliTPCChebCorr::kFieldPos);
+  else if (fBz<-0.01) fChebDist->SetFieldType(AliTPCChebCorr::kFieldNeg);
+  else                fChebDist->SetFieldType(AliTPCChebCorr::kFieldZero);
+  // Note: to create universal map, set manually SetFieldType(AliTPCChebCorr::kFieldAny)
+
+  SetUsedInstance(this);
+  int npCheb[kResDim][2];
+  for (int i=0;i<kResDim;i++) { // do we need to determine N nodes automatically?
+    int nbFauto = TMath::Max(int(fNY2XBins*1.2),fNY2XBins+3);
+    int nbZauto = TMath::Max(int(fNZ2XBins*1.2),fNZ2XBins+3);
+    npCheb[i][0] = fNPCheb[i][0];
+    npCheb[i][1] = fNPCheb[i][1];
+    if (npCheb[i][0]<1) {
+      npCheb[i][0] = nbFauto; // 1st dimension: sector coordinate y/x
+      AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxF],nbFauto);
+    }
+    if (npCheb[i][1]<1) {
+      npCheb[i][1] = nbZauto; // 2nd dimension: z/x
+      AliInfoF("Nnodes for Cheb.%4s segmentation in %4s is set to %2d",kResName[i],kVoxName[kVoxZ],nbZauto);
+    }
+  }
+  fChebDist->Parameterize(trainDist,kResDim,npCheb,fChebPrecD);
+  //
+  // register tracks rate for lumi weighting
+  fChebDist->SetTracksRate(ExtractTrackRate());
+  //
+  AliSysInfo::AddStamp("CreateDistortionObject",1,0,0,0);
 }
 
+
+//__________________________________________________________
+void AliTPCDcalibRes::BringToActiveBoundary(int sect36, float xyz[3]) const
+{
+  // bring the point in sector frame to its active zone boundary (if outside)
+  const float kMaxY2X = TMath::Tan(0.5f*kSecDPhi);
+  //
+  if      (xyz[kResX]<kMinX) xyz[kResX] = kMinX;
+  else if (xyz[kResX]>kMaxX) xyz[kResX] = kMaxX;
+  //
+  float maxY = kMaxY2X*xyz[kResX] - kDeadZone;
+  if      (xyz[kResY]> maxY) xyz[kResY] = maxY;
+  else if (xyz[kResY]<-maxY) xyz[kResY] =-maxY;
+  //
+  float maxZ = kMaxZ2X*xyz[kResX];
+  int side = sect36<kNSect ? 1:-1;
+  if (xyz[kResZ]*side>maxZ) xyz[kResZ] = maxZ*side;
+  if (xyz[kResZ]*side<0)    xyz[kResZ] = 0;
+  //
+}
