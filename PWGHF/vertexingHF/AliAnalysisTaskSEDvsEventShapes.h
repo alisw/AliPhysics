@@ -48,6 +48,7 @@ public:
     Int_t GetNMassBins() const{return fNMassBins;}
     Bool_t GetSubtractTrackletsFromDaughters() const {return fSubtractTrackletsFromDau;}
     Bool_t GetRecomputeSpherocityWithoutDau() const {return fRecomputeSpherocity;}
+    Bool_t GetRemoveD0fromDstar() const {return fRemoveD0fromDstar;}
     
     void SetImpactParameterBinning(Int_t nbins, Double_t dmin, Double_t dmax){
         fNImpParBins=nbins;
@@ -110,6 +111,7 @@ public:
     
     void SetCalculationsForSphericity(Bool_t CalSpheri){fCalculateSphericity=CalSpheri;}
     void SetRecomputeSpherocityWithoutDau(Bool_t RecomputeSphero){fRecomputeSpherocity=RecomputeSphero;}
+    void SetRemoveD0fromDstar(Bool_t RemoveD0fromDstar){fRemoveD0fromDstar=RemoveD0fromDstar;}
     
     Int_t GetUseVZEROParameterizedVertexCorr() { return fDoVZER0ParamVertexCorr; }
     
@@ -140,7 +142,7 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity);
+    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity);
     void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel);
     
     TList  *fOutput; //! list send on output slot 1
@@ -197,6 +199,7 @@ private:
     Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
     Bool_t fCalculateSphericity; // flag for computing Sphericity
     Bool_t fRecomputeSpherocity; // flag for subtracting D meson daughter contribution to Spherocity calculation
+    Bool_t fRemoveD0fromDstar; // flag for removal of D0 from D* meson
     Int_t fUseNchWeight; // weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
     TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
     TH1F* fHistoMeasNch;  // weight histogram on the true measured multiplicity
@@ -225,7 +228,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,4); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,5); // D vs. mult task
 };
 
 #endif
