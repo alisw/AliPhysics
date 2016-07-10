@@ -1189,7 +1189,7 @@ Bool_t TrackIsAccepted(AliVTrack* track)
     if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
 	!( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
 	//         !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) || //removes light nuclei. So it is out for the moment
-	!( (status & AliVTrack::kTRDout  ) == AliVTrack::kTRDout  )) kFALSE;
+	!( (status & AliVTrack::kTRDout  ) == AliVTrack::kTRDout  )) return kFALSE;
 
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
@@ -1197,10 +1197,10 @@ Bool_t TrackIsAccepted(AliVTrack* track)
 	ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
     }
 
-    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) kFALSE;
+    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) return kFALSE;
 
     Float_t eta=track->Eta();
-    if ( TMath::Abs(eta)>0.9 ) kFALSE;
+    if ( TMath::Abs(eta)>0.9 ) return kFALSE;
 
     return kTRUE;
 }
