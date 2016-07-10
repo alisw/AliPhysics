@@ -103,9 +103,10 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     Printf("Error with Hybrids!!");
   tracksForAnalysis->SetName("filterTracksAna");
   tracksForAnalysis->SetFilterHybridTracks(kTRUE);
-  tracksForAnalysis->SetTrackCutsPeriod(periodstr);
+  if(!bIsMC){
+    tracksForAnalysis->SetTrackCutsPeriod(periodstr);
   tracksForAnalysis->SetDefTrackCutsPeriod(periodstr);
-  
+  }
   Printf("Name of Tracks for matching: %s \n Name for Tracks for Isolation: %s",trackCont->GetName(),tracksForAnalysis->GetName());
   
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
