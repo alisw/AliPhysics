@@ -1317,7 +1317,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
     
     Int_t nTrkToSkip = nProng;
     Int_t idToSkip[nTrkToSkip];
-    for(Int_t i=0; i<nPart; i++) trkToSkip[i]=-1;
+    for(Int_t i=0; i<nTrkToSkip; i++) idToSkip[i]=-1;
     
     Double_t zMCVertex = mcHeader->GetVtxZ(); //vertex MC
     
