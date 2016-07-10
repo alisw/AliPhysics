@@ -144,7 +144,7 @@ public:
   void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
   void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
-  void UseTimeStampFromCDB(Double_t decayTimeHours=10.);
+  void UseTimeStampFromCDB(Double_t decayTimeHours=-1);
   time_t GenerateTimeStamp() const;
   //
   Bool_t          GetUseDetectorsFromGRP()               const {return fUseDetectorsFromGRP;}

@@ -164,6 +164,8 @@
 #include "AliSimulation.h"
 #include "AliSysInfo.h"
 #include "AliVertexGenFile.h"
+#include "AliLumiTools.h"
+#include <TGraph.h>
 #include <fstream>
 
 using std::ofstream;
@@ -220,10 +222,10 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseMagFieldFromGRP(0),
   fGRPWriteLocation(Form("local://%s", gSystem->pwd())),
   fUseDetectorsFromGRP(kTRUE),
-  fUseTimeStampFromCDB(0),
+  fUseTimeStampFromCDB(kFALSE),
   fTimeStart(0),
   fTimeEnd(0),
-  fLumiDecayH(10.),
+  fLumiDecayH(-1.), // by default, use lumi from CTP
   fOrderedTimeStamps(),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
@@ -1159,17 +1161,30 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     time_t deltaT = fTimeEnd - fTimeStart;
     if (deltaT>0) {
       fOrderedTimeStamps.resize(fNEvents);
-      double tau = fLumiDecayH*3600.;
-      double wt = 1.-TMath::Exp(-double(deltaT)/tau);
-      for (int i=0;i<fNEvents;i++) {
-	double w = wt*gRandom->Rndm();
-	time_t t =  fTimeStart - tau*TMath::Log(1-w);
-	fOrderedTimeStamps[i] = t;
+      if (fLumiDecayH>0) {
+	double tau = fLumiDecayH*3600.;
+	double wt = 1.-TMath::Exp(-double(deltaT)/tau);
+	for (int i=0;i<fNEvents;i++) {
+	  double w = wt*gRandom->Rndm();
+	  time_t t =  fTimeStart - tau*TMath::Log(1-w);
+	  fOrderedTimeStamps[i] = t;
+	}
+	AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld with decay tau=%.2f h",
+		 fNEvents,fTimeStart,fTimeEnd,fLumiDecayH);
+      }
+      else { // generate according to real lumi
+	TGraph* lumi = AliLumiTools::GetLumiFromCTP();
+	if (!lumi) AliFatal("Failed to get lumi graph");
+	int nb = 1+deltaT/60.;
+	TH1F hlumi("hlumi","",nb,fTimeStart,fTimeEnd);
+	for (int ib=1;ib<=nb;ib++) hlumi.SetBinContent(ib,lumi->Eval(hlumi.GetBinCenter(ib)));
+	delete lumi;
+	for (int i=0;i<fNEvents;i++) fOrderedTimeStamps[i] = time_t(hlumi.GetRandom());
+	AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld according to CTP Lumi profile",
+		 fNEvents,fTimeStart,fTimeEnd);
       }
       std::sort(fOrderedTimeStamps.begin(), fOrderedTimeStamps.end());
       //
-      AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld with decay tau=%.2f h",
-	       fNEvents,fTimeStart,fTimeEnd,fLumiDecayH);
     }
     else AliInfoF("Random TimeStamps will be generated between %ld:%ld",fTimeStart,fTimeEnd);
   }
@@ -2794,7 +2809,7 @@ void AliSimulation::DeactivateDetectorsAbsentInGRP(TObjArray* detArr)
 void AliSimulation::UseTimeStampFromCDB(Double_t decayTimeHours)
 {
   // Request event time stamp generated within GRP start/end
-  // If nOrdered>0, requested number of ordered timestamps will be generated
+  // If decayTimeHours>0, then exponential decay is generated, otherwhise, generated according to lumi from CTP
   fUseTimeStampFromCDB = kTRUE;
-  if (decayTimeHours>0.1) fLumiDecayH = decayTimeHours;
+  fLumiDecayH = decayTimeHours;
 }
