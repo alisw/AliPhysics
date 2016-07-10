@@ -1239,7 +1239,7 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
     fStatisticMean += entriesCurrent;     
 
     // Check the fit
-    if((-(param[1])) <= 0.000001) {
+    if((-(param[1])) <= 0.01) {
       NotEnoughStatisticLinearFitter();
       continue;
     }
@@ -1255,6 +1255,7 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
     fCurrentCoef[0]  = -param[1];
     // here the database must be the one of the reconstruction for the lorentz angle....
     fCurrentCoef2[0] = (param[0]+fCurrentCoef[1]*fCurrentCoef2[1])/fCurrentCoef[0];
+    //printf("fCurrentCoef2[0] %f, param[0] %f, fCurrentCoef[1]*fCurrentCoef2[1] %f,fCurrentCoef[0] %f\n",fCurrentCoef2[0],param[0],fCurrentCoef[1]*fCurrentCoef2[1],fCurrentCoef[0]);
     fCurrentCoefE    = error[1];
     fCurrentCoefE2   = error[0];
     if((TMath::Abs(fCurrentCoef2[0]) > 0.0000001) && (TMath::Abs(param[0]) > 0.0000001)){

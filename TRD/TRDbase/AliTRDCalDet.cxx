@@ -207,6 +207,42 @@ Double_t AliTRDCalDet::GetRMSRobust(Double_t robust) const
   delete [] index;
   return mean;
 }
+//____________________________________________________________________________________________
+Double_t AliTRDCalDet::GetMeanRobust(Double_t robust) const
+{
+  //
+  // Calculate the robust mean
+  //
+
+  // sorted
+  Int_t *index = new Int_t[kNdet];
+  TMath::Sort((Int_t)kNdet,fData,index);
+ 
+  // reject
+  Double_t reject = (Int_t) (kNdet*(1-robust)/2.0);
+  if(reject <= 0.0) reject = 0.0;
+  if(reject >= kNdet) reject = 0.0;
+  //printf("Rejecter %f\n",reject);
+
+  Double_t *ddata = new Double_t[kNdet];
+  Int_t nPoints = 0;
+  for (Int_t i=0;i<kNdet;i++) {
+    Bool_t rej = kFALSE;
+    for(Int_t k = 0; k < reject; k++){
+      if(i==index[k]) rej = kTRUE;
+      if(i==index[kNdet-(k+1)]) rej  = kTRUE;
+    }
+    if(!rej){
+      ddata[nPoints]= fData[i];
+      nPoints++;
+    }
+  }
+  //printf("Number of points %d\n",nPoints);
+  Double_t mean = TMath::Mean(nPoints,ddata);
+  delete [] ddata;
+  delete [] index;
+  return mean;
+}
 
 //______________________________________________________________________________________________
 Double_t AliTRDCalDet::GetLTM(Double_t *sigma
