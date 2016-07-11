@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKEMCALTRIGGERPOSITION_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliInputEventHandler.h"
 
 class THistManager;
 
