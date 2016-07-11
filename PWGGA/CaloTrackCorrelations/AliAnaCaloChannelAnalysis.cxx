@@ -55,7 +55,7 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis():
 		TObject(),
     fCurrentRunNumber(-1),fPeriod(),fPass(),fTrigger(),fNoOfCells(),
     fMergeOutput(),fAnalysisOutput(),fAnalysisInput(),fRunList(),
-    fQADirect(), fMergedFileName(),fFilteredFileName(), fAnalysisVector(),
+    fQADirect(), fMergedFileName(), fAnalysisVector(),
     fRunListFileName(),fWorkdir(),fTrial(),fExternalFileName(),
     fCaloUtils()
 {
@@ -75,7 +75,7 @@ AliAnaCaloChannelAnalysis::AliAnaCaloChannelAnalysis(TString period, TString pas
 		TObject(),
     fCurrentRunNumber(-1),fPeriod(),fPass(),fTrigger(),fNoOfCells(),
     fMergeOutput(),fAnalysisOutput(),fAnalysisInput(),fRunList(),
-    fQADirect(), fMergedFileName(),fFilteredFileName(), fAnalysisVector(),
+    fQADirect(), fMergedFileName(), fAnalysisVector(),
     fRunListFileName(),fWorkdir(),fTrial(),fExternalFileName(),
     fCaloUtils()
 {
@@ -110,7 +110,6 @@ void AliAnaCaloChannelAnalysis::Init()
 	fQADirect      = Form("CaloQA_%s",fTrigger.Data());
 	fRunList       = Form("%s/%s/%s/%s", fAnalysisInput.Data(), fPeriod.Data(), fPass.Data(), fRunListFileName.Data());
 
-	fFilteredFileName = Form("%s/%s_%s_Filtered.root", fMergeOutput.Data(), fPeriod.Data(),fPass.Data());
 	//.. make sure the vector is empty
 	fAnalysisVector.clear();
 
@@ -127,6 +126,7 @@ void AliAnaCaloChannelAnalysis::Init()
 
     fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
     Int_t NModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
+    fGoodCellID   =2377;  //..This is the ID of a good cell ELI where does this nuber come from ->write a setter function
 
     //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -339,8 +339,7 @@ TString AliAnaCaloChannelAnalysis::Convert()
 
 /// Configure a complete analysis with different criteria, it provides bad+dead cells lists
 /// You can manage criteria used and their order, the first criteria will use the original
-/// output file from AliAnalysisTaskCaloCellsQA task, then after each criteria it will use a
-/// filtered file without the badchannel previously identified
+/// output file from AliAnalysisTaskCaloCellsQA task,
 //..Run over the list of stored period analysed settings (in fAnalysisVector) and
 //..pass them to the function PeriodAnalysis()
 //..The last PeriodAnalysis() is always executed with criteria 7
@@ -352,9 +351,7 @@ void AliAnaCaloChannelAnalysis::BCAnalysis()
     TArrayD PeriodArray;
     for(Int_t i=0;i<fAnalysisVector.size();i++)
     {
-		if(i==0)TFile::Open(fMergedFileName);
-		//else    TFile::Open(fFilteredFileName);
-		else    TFile::Open(fMergedFileName);
+		TFile::Open(fMergedFileName);
 		PeriodArray=fAnalysisVector.at(i);
     		PeriodAnalysis(PeriodArray.At(0),PeriodArray.At(1),PeriodArray.At(2),PeriodArray.At(3));
     }
@@ -405,8 +402,6 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	cout<<"o o o o o o o o o o o o o o o o o o o o o o  o o o"<<endl;
 	cout<<"o o o PeriodAnalysis for flag "<<criterum<<" o o o"<<endl;
 	cout<<"o o o Done in the energy range E "<<emin<<"-"<<emax<<endl;
-	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
-
 	//..This function does perform different checks depending on the given criterium variable
 	//..diffrent possibilities for criterium are:
 	// 1 : average E for E>Emin and E<Emax
@@ -418,31 +413,15 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	// 6 :
 	// 7 : give bad + dead list
 
-	static const Int_t NrCells=17664;//19968; //17665;//23040;  //ELI this is in fact a very important number!!
-	//ELI a comment about the array positions
-	//..In the histogram: bin 1= cellID 0, bin 2= cellID 1 etc
-	//..In the arrays: array[cellID]= some information
-	Int_t newBC[NrCells];       // starts at newBC[0] stores cellIDs  (cellID = bin-1)
-	Int_t newDC[NrCells];       // starts at newDC[0] stores cellIDs  (cellID = bin-1)
-	//..set all fields to -1
-	memset(newBC,-1, NrCells *sizeof(int));
-	memset(newDC,-1, NrCells *sizeof(int));
-
-/*	fnewBC  = new Int_t[fNoOfCells];
-	fnewDC  = new Int_t[fNoOfCells];
-*/
-
 	Int_t CellID, nb1=0, nb2=0;
-	//INIT
-	TString output, bilan, DeadPdfName, BadPdfName;
+	TString output, CellSummaryFile, DeadPdfName, BadPdfName;
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//.. CELLS EXCLUDED
-	//.. exclude cells from analysis (will not appear in results)
+	//.. Flage Dead cells with fFlag=1
+	//.. this excludes cells from analysis (will not appear in results)
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	cout<<"o o o Exclude Cells o o o"<<endl;
-	ExcludeCells();
-
+	cout<<"o o o Flag Dead Cells o o o"<<endl;
+	FlagAsDead();
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. ANALYSIS
@@ -457,12 +436,18 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	//..For case 3, 4 or 5
 	else if (criterum < 6) TestCellShapes(criterum, emin, emax, nsigma);
 
-
+	/*
+	if(crit==1)              Process(crit,hCellEtoNtotal,nsigma,dnbins,-1);
+	if(crit==2 && emin==0.5) Process(crit,hCellNtotal,   nsigma,dnbins*9000,-1);//ELI I did massivley increase the binning now but it helps a lot
+	if(crit==2 && emin>0.5)  Process(crit,hCellNtotal,   nsigma,dnbins*17,-1);
+	if(crit==3)              Process(crit, hFitChi2Ndf, nsigma, dnbins, maxval3);
+	if(crit==4)              Process(crit, hFitA, nsigma, dnbins,  maxval1);
+	if(crit==5)              Process(crit, hFitB, nsigma, dnbins, maxval2);
+*/
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. RESULTS
 	//.. 1) Print the bad cells
 	//..    and write the results to a file
-	//.. 2) Kill cells function...
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	if(criterum < 6)
 	{
@@ -479,11 +464,10 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 		cout<<"    o bad cells by lower value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
 		cout<<"      ";
 		nb1=0;
-		for(CellID=0;CellID<NrCells;CellID++)
+		for(CellID=0;CellID<fNoOfCells;CellID++)
 		{
 			if(fFlag[CellID]==2)
 			{
-				newBC[nb1]=CellID;
 				nb1++;
 				file<<CellID<<", ";
 				cout<<CellID<<",";
@@ -495,11 +479,10 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 		cout<<"    o bad cells by higher value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
 		cout<<"      ";
 		nb2=0;
-		for(CellID=0;CellID<NrCells;CellID++)
+		for(CellID=0;CellID<fNoOfCells;CellID++)
 		{
 			if(fFlag[CellID]==3)
 			{
-				newBC[nb1+nb2]=CellID;
 				nb2++;
 				file<<CellID<<", ";
 				cout<<CellID<<",";
@@ -513,9 +496,6 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 		file.close();
 		cout<<"    o Total number of bad cells "<<endl;
 		cout<<"      ("<<nb1+nb2<<")"<<endl;
-
-		//..create a filtered file
-		//KillCells(newBC,nb1+nb2) ;
 	}
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -525,23 +505,22 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	if(criterum ==7)
 	{
-		DeadPdfName = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-		BadPdfName  = Form("%s/%s%sBC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-		bilan       = Form("%s/%s%sBC_SummaryResults_V%i.txt", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
+		DeadPdfName     = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+		BadPdfName      = Form("%s/%s%sBC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+		CellSummaryFile = Form("%s/%s%sBC_SummaryResults_V%i.txt", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
 		cout<<"    o Final results o "<<endl;
-		cout<<"    o write results into .txt file: "<<bilan<<endl;
+		cout<<"    o write results into .txt file: "<<CellSummaryFile<<endl;
 		cout<<"    o write results into .pdf file: "<<BadPdfName<<endl;
-		ofstream file(bilan, ios::out | ios::trunc);
+		ofstream file(CellSummaryFile, ios::out | ios::trunc);
 		if(file)
 		{
 			file<<"Dead cells : "<<endl;
 			cout<<"    o Dead cells : "<<endl;
 			nb1 =0;
-			for(CellID=0; CellID<NrCells; CellID++)
+			for(CellID=0; CellID<fNoOfCells; CellID++)
 			{
 				if(fFlag[CellID]==1)
 				{
-					newDC[nb1]=CellID;
 					file<<CellID<<"\n" ;
 					cout<<CellID<<"," ;
 					nb1++;
@@ -550,18 +529,13 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 			file<<"("<<nb1<<")"<<endl;
 			cout<<"("<<nb1<<")"<<endl;
 
-			//TFile::Open(fFilteredFileName.Data());
-			TFile::Open(fMergedFileName.Data());
-
-			ExcludeCells();
 			file<<"Bad cells (excluded): "<<endl;
 			cout<<"    o Total number of bad cells (excluded): "<<endl;
 			nb2=0;
-			for(CellID=0;CellID<NrCells;CellID++)
+			for(CellID=0;CellID<fNoOfCells;CellID++)
 			{
 				if(fFlag[CellID]>1)
 				{
-					newBC[nb2]=CellID;
 					file<<CellID<<"\n" ;
 					cout<<CellID<<"," ;
 					nb2++;
@@ -572,35 +546,16 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 		}
 		file.close();
 
-		cout<<"    o Open original file: "<<fMergedFileName<<endl;
 		TFile::Open(fMergedFileName);
-		Int_t c;
-		//..loop over the bad cells in packages of 9
-		cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
-		for(Int_t w=0; (w*9)<nb1; w++)
-			//nb1=100;
-			//for(Int_t w=0; (w*9)<nb1; w++)
-		{
-			if(9<=(nb1-w*9)) c = 9 ;
-			else c = nb1-9*w ;
-			SaveBadCellsToPDF(newDC, w*9, c,DeadPdfName);
-		}
+		//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
+		//SaveBadCellsToPDF(0,DeadPdfName);
+		cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
+		SaveBadCellsToPDF(1,BadPdfName) ;
 
-		TFile::Open(fMergedFileName);
-		nb2--;//ELI, bad hack for the moment -REMOVE for permanent use!
-		cout<<"    o Save the bad channel spectra to a .pdf file,nbch: "<< nb2<<endl;
-		for(Int_t w=0; (w*9)<nb2; w++)
-			//for(Int_t w=0; (w*9)<1; w++)
-			//for(Int_t w=0; (w*9)<10; w++)
-		{
-			if(9<=(nb2-w*9)) c = 9 ;
-			else c = nb2-9*w ;
-			SaveBadCellsToPDF(newBC, w*9, c,BadPdfName) ;
-		}
 	}
 }
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Draw2(Int_t cell, Int_t cellref)
+void AliAnaCaloChannelAnalysis::Draw2(Int_t cell)
 {
 	gROOT->SetStyle("Plain");
 	gStyle->SetOptStat(0);
@@ -612,7 +567,7 @@ void AliAnaCaloChannelAnalysis::Draw2(Int_t cell, Int_t cellref)
 
 	sprintf(out,"%d.gif",cell);
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
-	TH1 *hCellref = hCellAmplitude->ProjectionX("badcells",cellref+1,cellref+1);
+	TH1 *hCellref = hCellAmplitude->ProjectionX("badcells",fGoodCellID+1,fGoodCellID+1);
 
 	TCanvas *c1 = new TCanvas("badcells","badcells",600,600) ;
 	c1->SetLogy();
@@ -650,90 +605,97 @@ void AliAnaCaloChannelAnalysis::Draw2(Int_t cell, Int_t cellref)
 /// Allow to produce a pdf file with badcells candidates (red) compared to a refence cell (black).
 ///
 //________________________________________________________________________
-void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t nBC, TString pdfName, const Int_t cellref)
+void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName)
 {
+	//..version=0 ->Print dead cells
+	//..version=1 ->print bad cells
+	//..ELI can be refined!
 	gROOT->SetStyle("Plain");
 	gStyle->SetOptStat(0);
 	gStyle->SetFillColor(kWhite);
 	gStyle->SetTitleFillColor(kWhite);
 	gStyle->SetPalette(1);
-	//char out[120];
+
 	char title[100];
 	char name[100];
-	if(cell[iBC]==-1)cout<<"### strange shouldn't happen 1, cell id: "<<iBC<<endl;
-	if(cell[iBC+nBC-1]==-1)cout<<"### strange shouldn't happen 2"<<endl;
-
-	TString slide     = Form("Cells %d-%d",cell[iBC],cell[iBC+nBC-1]);
-	TString reflegend = Form("reference Cell %i",cellref);
-	//sprintf(out,"%d-%d.gif",cell[iBC],cell[iBC+nBC-1]);
 
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
-	TH1 *hCellref = hCellAmplitude->ProjectionX("badcells",cellref+1,cellref+1);
-
-	TCanvas *c1 = new TCanvas("badcells","badcells",1000,750);
-	if(nBC > 6) c1->Divide(3,3);
-	else if (nBC > 3)  c1->Divide(3,2);
-	else  c1->Divide(3,1);
-
-	TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
-	for(Int_t i=0; i<nBC ; i++)
+	TH1 *hCellref = hCellAmplitude->ProjectionX("badcells",fGoodCellID+1,fGoodCellID+1);
+    Int_t FirstCanvas=0;
+	//..collect cells in an internal vector.
+	//..when the vector is of size=9 or at the end of being filled
+	//..plot the channels into a canvas
+	std::vector<Int_t> ChannelVector;
+	ChannelVector.clear();
+	for(Int_t cell=0;cell<fNoOfCells;cell++)
 	{
-		sprintf(name, "Cell %d",cell[iBC+i]) ;
-		TH1 *hCell = hCellAmplitude->ProjectionX(name,cell[iBC+i]+1,cell[iBC+i]+1);
-		sprintf(title,"Cell %d      Entries : %d  Ref : %d",cell[iBC+i], (Int_t)hCell->GetEntries(), (Int_t)hCellref->GetEntries() ) ;
+		if(fFlag[cell]==1 && version==0)ChannelVector.push_back(cell);
+		if(fFlag[cell]>1  && version==1)ChannelVector.push_back(cell);
 
-		c1->cd(i%9 + 1);
-		c1->cd(i%9 + 1)->SetLogy();
-		hCell->SetLineColor(2);
-		hCell->SetMaximum(1e6);
-		hCell->SetAxisRange(0.,10.);
-		hCell->GetXaxis()->SetTitle("E (GeV)");
-		hCell->GetYaxis()->SetTitle("N Entries");
-		hCell->SetLineWidth(1) ;
-		hCell->SetTitle(title);
-		hCellref->SetAxisRange(0.,8.);
-		hCellref->SetLineWidth(1);
-		hCellref->SetLineColor(1);
-
-		if(i==0)
+		//..when 9 bad cells are collected or we are at the end of the list, fill the canvas
+		if(ChannelVector.size()==9 || cell == fNoOfCells-1)
 		{
-			leg->AddEntry(hCellref,reflegend,"l");
-			leg->AddEntry(hCell,"current","l");
+			TString Internal_pdfName=pdfName;
+			TCanvas *c1 = new TCanvas("badcells","badcells",1000,750);
+			if(ChannelVector.size() > 6)        c1->Divide(3,3);
+			else if (ChannelVector.size() > 3)  c1->Divide(3,2);
+			else                                c1->Divide(3,1);
+
+			TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
+			for(Int_t i=0; i<ChannelVector.size() ; i++)
+			{
+				sprintf(name, "Cell %d",ChannelVector.at(i)) ;
+				TH1 *hCell = hCellAmplitude->ProjectionX(name,ChannelVector.at(i)+1,ChannelVector.at(i)+1);
+				sprintf(title,"Cell %d      Entries : %d  Ref : %d",ChannelVector.at(i), (Int_t)hCell->GetEntries(), (Int_t)hCellref->GetEntries() ) ;
+				TString reflegend = Form("reference Cell %i",fGoodCellID);
+
+				c1->cd(i%9 + 1);
+				c1->cd(i%9 + 1)->SetLogy();
+				hCell->SetLineColor(2);
+				hCell->SetMaximum(1e6);
+				hCell->SetAxisRange(0.,10.);
+				hCell->GetXaxis()->SetTitle("E (GeV)");
+				hCell->GetYaxis()->SetTitle("N Entries");
+				hCell->SetLineWidth(1) ;
+				hCell->SetTitle(title);
+				hCellref->SetAxisRange(0.,8.);
+				hCellref->SetLineWidth(1);
+				hCellref->SetLineColor(1);
+
+				if(i==0)
+				{
+					leg->AddEntry(hCellref,reflegend,"l");
+					leg->AddEntry(hCell,"current","l");
+				}
+				hCell->Draw() ;
+				hCellref->Draw("same") ;
+				leg->Draw();
+			}
+
+			if(ChannelVector.size()<9 || cell == fNoOfCells-1)
+			{
+				Internal_pdfName +=")";
+				//cout<<"Print canvas to file: "<<Internal_pdfName.Data()<<endl;
+				c1->Print(Internal_pdfName.Data());
+			}
+			else if(FirstCanvas==0)
+			{
+				Internal_pdfName +="(";
+				//cout<<"Print canvas to file: "<<Internal_pdfName.Data()<<endl;
+				c1->Print(Internal_pdfName.Data());
+				FirstCanvas=1;
+			}
+			else
+			{
+				//cout<<"Print canvas to file: "<<Internal_pdfName.Data()<<endl;
+				c1->Print(Internal_pdfName.Data());
+			}
+			delete c1;
+			delete leg;
+			ChannelVector.clear();
 		}
-		hCell->Draw() ;
-		hCellref->Draw("same") ;
-		leg->Draw();
 	}
-
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//..Store the created canvas in a .pdf file
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	if(nBC<9)
-	{
-		cout<<"Teeeeest1"<<endl;
-		pdfName +=")";  //ELI this is strange
-		cout<<"Print canvas to file: "<<pdfName.Data()<<endl;
-		c1->Print(pdfName.Data());
-	}
-	else if(iBC==0)
-	{
-		cout<<"Teeeeest2"<<endl;
-		pdfName +="("; //ELI this is strange
-		cout<<"Print canvas to file: "<<pdfName.Data()<<endl;
-		c1->Print(pdfName.Data());
-	}
-	else
-	{
-		cout<<"Print canvas to file: "<<pdfName.Data()<<endl;
-		c1->Print(pdfName.Data());
-	}
-
-	//c1->Update();
-	//c1->WaitPrimitive();
-
 	delete hCellref;
-	delete c1;
-	delete leg;
 }
 
 ///
@@ -1131,7 +1093,7 @@ void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitemin, Dou
 /// to exclude them from the analysis
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::ExcludeCells()
+void AliAnaCaloChannelAnalysis::FlagAsDead()
 {
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
 	Int_t SumOfExcl=0;
@@ -1162,40 +1124,6 @@ void AliAnaCaloChannelAnalysis::ExcludeCells()
 		}
 	}
 	delete hCellAmplitude;
-	cout<<"    o Number of excluded cells: "<<SumOfExcl<<endl;
+	cout<<"    o Number of dead cells: "<<SumOfExcl<<endl;
 	cout<<"     ("<<SumOfExcl<<")"<<endl;
-}
-///
-/// Kill cells (add more description)
-///
-//_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::KillCells(Int_t filter[], Int_t nbc)
-{
-	cout<<"    o Kill cells -> set bin content of "<<nbc<<" bad cells to 0 "<<endl;
-	// kill a cell : put its entry to 0
-	TH2 *hCellAmplitude          = (TH2*) gFile->Get("hCellAmplitude");
-	TH1* hNEventsProcessedPerRun = (TH1*) gFile->Get("hNEventsProcessedPerRun");
-
-	//..loop over number of identified bad cells. ID is stored in filer[] array
-	for(Int_t i =0; i<nbc; i++)
-	{
-		if(filter[i]==-1)cout<<"#### That is strange - shouln't happen"<<endl;
-		//..set all amplitudes for a given cell to 0
-		for(Int_t amp=0; amp<= hCellAmplitude->GetNbinsX() ;amp++)
-		{
-			//(amplitiude,cellID,new value)
-			//..CellID=0 is stored in bin1 so we need to shift+1
-			hCellAmplitude->SetBinContent(amp,filter[i]+1,0);
-		}
-	}
-	gSystem->mkdir(fAnalysisOutput);
-//	TFile *tf = new TFile(Form("%s/filter.root", fAnalysisOutput.Data()),"recreate");
-	TFile *tf = new TFile(fFilteredFileName.Data(),"recreate");
-
-	hCellAmplitude->Write();
-	hNEventsProcessedPerRun->Write();
-	tf->Write();
-	tf->Close();
-	delete hCellAmplitude;
-	delete hNEventsProcessedPerRun;
 }

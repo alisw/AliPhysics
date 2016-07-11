@@ -64,14 +64,13 @@ protected:
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
-	  void Draw2(Int_t cell, Int_t cellref=400);
+	  void Draw2(Int_t cell);
 
-	  void SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t nBC, TString pdfName, const Int_t cellref=2377);
+	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
 	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
 	  void TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
 	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
-	  void ExcludeCells();
-	  void KillCells(Int_t filter[], Int_t nbc);
+	  void FlagAsDead();
 
 
 	  //Settings for analysed period
@@ -80,6 +79,7 @@ protected:
 	  TString fPass;                        ///< Pass of the analyzed data
 	  TString fTrigger;                     ///< Selected trigger for the analysis
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
+	  Int_t   fGoodCellID;                  ///< ID of a good cell to compare the spectra to
 
 	  //Genergal paths
 	  TString fMergeOutput;                 ///< Here the merged files of a period are saved for a later analysis
@@ -90,7 +90,6 @@ protected:
 	  //
 	  TString fQADirect;                    ///< Dierctory in the QA.root files where the input histograms are stored
 	  TString fMergedFileName;              ///< Filename of the .root file containing the merged runs
-	  TString fFilteredFileName;            ///< Filename of the .root file containing histograms with removed cells
 	  std::vector<TArrayD> fAnalysisVector; ///< Vector of analysis information. Each place is filled with 4 doubles: version, sigma, lower, and upper energy range
 
 	  //Things to be individualized by setters
