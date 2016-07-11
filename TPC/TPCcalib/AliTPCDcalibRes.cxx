@@ -564,8 +564,8 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
   if (!LoadDataFromResTree(resTreeFile)) return;
   ReProcessResiduals();
   //
-  delete fChebCorr; fChebCorr = 0;
-  delete fChebDist; fChebDist = 0;
+  //  delete fChebCorr; fChebCorr = 0;
+  //  delete fChebDist; fChebDist = 0;
   //
   CreateCorrectionObject();
   //
@@ -3823,6 +3823,7 @@ void AliTPCDcalibRes::CreateCorrectionObject()
     return;
   }
   //
+  delete fChebCorr; fChebCorr = 0;
   TString name = Form("run%d_%lld_%lld",fRun,fTMin,fTMax);
   fChebCorr = new AliTPCChebCorr(name.Data(),name.Data(),
 				 fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
@@ -4350,6 +4351,7 @@ void AliTPCDcalibRes::CreateDistortionObject()
     return;
   }
   TString name = Form("run%d_%lld_%lld_InvDist",fRun,fTMin,fTMax);
+  delete fChebDist; fChebDist = 0;
   fChebDist = new AliTPCChebDist(name.Data(),name.Data(),fChebPhiSlicePerSector,fChebZSlicePerSide,1.0f);
   fChebDist->SetUseFloatPrec(kFALSE);
   fChebDist->SetRun(fRun);
@@ -4407,4 +4409,66 @@ void AliTPCDcalibRes::BringToActiveBoundary(int sect36, float xyz[3]) const
   if (xyz[kResZ]*side>maxZ) xyz[kResZ] = maxZ*side;
   if (xyz[kResZ]*side<0)    xyz[kResZ] = 0;
   //
+}
+
+//____________________________________________
+void AliTPCDcalibRes::WriteDistCorTestTree(int nx, int nphi2sect,int nzside)
+{
+  // write test tree with distortions and corrections
+  const float kMaxY2X = TMath::Tan(0.5f*kSecDPhi);
+  //
+  dcTst_t dc, *dcp=&dc;
+  //
+  if (!fChebDist) {
+    AliError("Cheb distortion is not ready yet");
+    return;
+  }
+  fChebDist->Init();
+  //
+  TFile* flOut = new TFile("DistCorrTest.root","recreate");
+  TTree* resTree = new TTree("dc","DistCorr test");
+  resTree->Branch("dc", &dcp);
+  //
+  float dz2x = 1./nzside;
+  float dy2x = 2.*kMaxY2X/nphi2sect;
+  float dx = (kMaxX-kMinX)/nx;
+  float dist[4],corr[4];
+  for (int is=0;is<kNSect2;is++) { 
+    dc.bsec = is;
+    for (int ix=0;ix<nx;ix++) {
+      float x = kMinX + dx*(ix+0.5);
+      dc.bvox[kVoxX] = ix;
+      dc.xyz[kResX] = x;
+      //
+      for (int ip=0;ip<nphi2sect;ip++) {
+	float y2x = -kMaxY2X + dy2x*(0.5+ip);
+	dc.bvox[kVoxF] = ip;
+	dc.xyz[kResY] = y2x*x;
+	//
+	for (int iz=0;iz<nzside;iz++) {
+	  float z2x = dz2x*(0.5+iz);
+	  dc.bvox[kVoxZ] = iz;
+	  if (is>=kNSect) z2x = -z2x;
+	  dc.xyz[kResZ] = z2x*x;
+	  //
+	  fChebDist->Eval(is,x,y2x,z2x,dist);
+	  float xd = x + dist[kResX];
+	  float yd = y2x*x+dist[kResY];
+	  float zd = z2x*x+dist[kResZ];
+	  GetSmoothEstimate(is,xd,yd/xd,zd/xd,(0x1<<4)-1,corr); 
+	  for (int v=kResDim;v--;) {
+	    dc.dxyz[v] = dist[v];
+	    dc.cxyz[v] = corr[v];
+	  }
+	  //
+	  resTree->Fill();
+	}
+	//
+      }
+    }
+  }
+  resTree->Write("", TObject::kOverwrite);
+  delete resTree;
+  flOut->Close();
+  delete flOut;
 }

@@ -56,6 +56,7 @@
 #pragma link C++ class AliTPCDcalibRes::dts_t+;
 #pragma link C++ class AliTPCDcalibRes::dtc_t+;
 #pragma link C++ class AliTPCDcalibRes::dtv_t+;
+#pragma link C++ class AliTPCDcalibRes::dcTst_t+;
 #pragma link C++ class AliTPCDcalibRes::bres_t+;
 #pragma link C++ class AliTPCDcalibRes::delta_t+;
 

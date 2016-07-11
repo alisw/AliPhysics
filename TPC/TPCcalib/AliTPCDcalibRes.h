@@ -113,7 +113,7 @@ class AliTPCDcalibRes: public TNamed
     bres_t() {memset(this,0,sizeof(bres_t));}
   };
  
-  struct delta_t { // structure to organized the input from delta trees
+  struct delta_t { // structure to organize the input from delta trees
     TVectorF *vecDYTRD,*vecDZTRD,*vecDYITS,*vecDZITS,*vecDYTOF,*vecDZTOF,*vecZ,*vecR,*vecSec,*vecPhi;
     AliExternalTrackParam* param;
     Double_t tofBC;
@@ -123,6 +123,16 @@ class AliTPCDcalibRes: public TNamed
     Char_t trdOK,tofOK,itsOK;
     //
     delta_t() {memset(this,0,sizeof(delta_t));}
+  };
+  
+  struct dcTst_t {  // struct for distortion/correction check
+    Double32_t xyz[3];
+    Double32_t dxyz[4]; // [-20.,20.,15]
+    Double32_t cxyz[4]; // [-20.,20.,15]
+    UChar_t bsec;          // sector
+    UChar_t bvox[kVoxDim]; // voxel bin info: VoxF,kVoxX,kVoxZ
+    //
+    dcTst_t() {memset(this,0,sizeof(dcTst_t));}
   };
 
  public:
@@ -182,6 +192,7 @@ class AliTPCDcalibRes: public TNamed
   void WriteStatHistos();
   void LoadStatHistos();
   void WriteResTree();
+  void WriteDistCorTestTree(int nx=250, int nphi2sect=30,int nzside=10);
   Bool_t LoadDataFromResTree(const char* resTreeFile);
 
   void  FixAlignmentBug(int sect, float q2pt, float bz, float& alp, float& x, float &z, float &deltaY, float &deltaZ);
