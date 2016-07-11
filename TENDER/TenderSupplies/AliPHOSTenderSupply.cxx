@@ -1041,8 +1041,14 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
   const Int_t nmod=5; 
   Int_t ddl = (nmod-module) * 4 + (row-1)/16 - 6; //convert offline module numbering to online.
   //L1phase is 0 for Run1
-  tof-=fL1phase[ddl]*25.e-9 ;
-  
+  if(fRunNumber>209122){ //Run2
+    AliVEvent * event = fTask->InputEvent(); 
+    if(event){
+      UShort_t BC = event->GetBunchCrossNumber();
+      Int_t timeshift = BC%4 - fL1phase[ddl];
+      tof -= timeshift*25e-9;
+    }
+  }
   return tof ;
   
 }
