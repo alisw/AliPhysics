@@ -81,7 +81,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               TString fileNameInputForMultWeighing    = "Multiplicity.root",    //
                               TString periodNameAnchor                = "",
                               Bool_t  runLightOutput                  = kFALSE,                // switch to run light output (only essential histograms for afterburner)
-                              Bool_t  enableChargedPrimary            = kFALSE
+                              Bool_t  enableChargedPrimary            = kFALSE,
+                              Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
+                              Double_t  bremSmear                     = 1.,
+                              Double_t  smearPar                      = 0.,                     // conv photon smearing params
+                              Double_t  smearParConst                 = 0.                      // conv photon smearing params
                             ) {
 
   // ================= Load Librariers =================================
@@ -938,7 +942,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");		
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
+    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   
   }
 
