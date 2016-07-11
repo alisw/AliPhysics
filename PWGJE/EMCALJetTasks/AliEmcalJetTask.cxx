@@ -293,6 +293,7 @@ void AliEmcalJetTask::FillJetBranch()
     jet->SetAreaEta(area.eta());
     jet->SetAreaPhi(area.phi());
     jet->SetAreaE(area.E());
+    jet->SetJetAcceptanceType(FindJetAcceptanceType(jet->Eta(), jet->Phi_0_2pi(), fRadius));
 
     // Fill constituent info
     std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper.GetJetConstituents(ij));
@@ -775,5 +776,106 @@ fastjet::RecombinationScheme AliEmcalJetTask::ConvertToFJRecoScheme(ERecoScheme_
   default:
     ::Error("AliEmcalJetTask::ConvertToFJRecoScheme", "Recombination scheme %d not recognized!!!", reco);
     return fastjet::external_scheme;
+  }
+}
+
+/**
+ * Finds which geometrical acceptance types the jet satisfies.
+ * @return bitwise jet acceptance type
+ */
+UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r) {
+  
+  //This method has to be called after the run number is known because it needs the EMCal geometry object.
+  
+  UInt_t jetAcceptanceType = AliEmcalJet::kUser; // all jets satify the "no acceptance cut" condition
+  
+  // Check if TPC
+  if( eta < 0.9 && eta > -0.9 ) {
+    jetAcceptanceType |= AliEmcalJet::kTPC;
+    // Check if TPCfid
+    if (eta < 0.9 - r && eta > -0.9 + r)
+      jetAcceptanceType |= AliEmcalJet::kTPCfid;
+  }
+    
+  // Check if EMCAL
+  if( IsJetInEmcal(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kEMCAL;
+    // Check if EMCALfid
+    if( IsJetInEmcal(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kEMCALfid;
+  }
+  
+  // Check if DCAL
+  if( IsJetInDcal(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kDCAL;
+    // Check if DCALfid
+    if( IsJetInDcal(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kDCALfid;
+  }
+ 
+  return jetAcceptanceType;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in EMCal.
+ */
+Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) SetEMCALGeometry();
+  if (fGeom) {
+    if ( eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+      if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
+        if ( phi < 3.135 - r && phi > 1.405 + r )
+          return kTRUE;
+      }
+      else {
+        if ( phi < fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetArm1PhiMin() * TMath::DegToRad() + r)
+          return kTRUE;
+      }
+    }
+  }
+  else {
+    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
+    if (eta < 0.7 - r && eta > -0.7 + r ){
+      if (phi < 3.135 - r && phi > 1.405 + r )
+        return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in DCal.
+ */
+Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) SetEMCALGeometry();
+  if (fGeom) {
+    if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+      if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r)
+        return kTRUE;
+    }
+  }
+  else {
+    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
+    if (eta < 0.7 - r && eta > -0.7 + r) {
+      if ( phi < 5.727 - r && phi > 4.538 + r )
+        return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+/**
+ * Set a pointer to the EMCal geometry object.
+ * It assumes that an instance of the object has been already
+ * configured.
+ */
+void AliEmcalJetTask::SetEMCALGeometry()
+{
+  fGeom = AliEMCALGeometry::GetInstance();
+  if (!fGeom) {
+    AliError(Form("%s: Can not create geometry", GetName()));
+    return;
   }
 }

@@ -44,6 +44,22 @@
 class AliEmcalJet : public AliVParticle
 {
  public:
+  
+  /**
+   * @enum JetAcceptanceType
+   * @brief Bit definition for jet geometry acceptance. Cut implemented in AliJetContainer
+   * by comparing jet's bits (set in jet finder) to container's bits (set by user).
+   */
+  enum JetAcceptanceType {
+    kTPC              = 1<<0,     ///< TPC acceptance
+    kTPCfid           = 1<<1,     ///< TPC fiducial acceptance (each eta edge narrowed by jet R)
+    kEMCAL            = 1<<2,     ///< EMCal acceptance
+    kEMCALfid         = 1<<3,     ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kDCAL             = 1<<4,     ///< DCal acceptance
+    kDCALfid          = 1<<5,     ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kUser             = 1<<6      ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+  };
+  
   /**
    * @enum EFlavourTag
    * @brief Bit definition for the flavor tagging
@@ -227,6 +243,10 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJetShapeProperties* GetShapeProperties() const{ return fJetShapeProperties; }
   AliEmcalJetShapeProperties* GetShapeProperties() { if (!fJetShapeProperties) CreateShapeProperties(); return fJetShapeProperties; }
   void CreateShapeProperties() { if (fJetShapeProperties) delete fJetShapeProperties; fJetShapeProperties = new AliEmcalJetShapeProperties(); }
+  
+  // Jet geometrical acceptance
+  void     SetJetAcceptanceType(UInt_t type)         { fJetAcceptanceType = type;}
+  UInt_t   GetJetAcceptanceType()              const { return fJetAcceptanceType; }
 
  protected:
   /// Jet transverse momentum
@@ -279,6 +299,7 @@ class AliEmcalJet : public AliVParticle
   std::vector<TLorentzVector> fGhosts;    //!<! Vector containing the ghost particles
 
   AliEmcalJetShapeProperties *fJetShapeProperties; //!<! Pointer to the jet shape properties
+  UInt_t fJetAcceptanceType;    //!<!  Jet acceptance type (stored bitwise)
 
  private:
   /**
@@ -291,7 +312,7 @@ class AliEmcalJet : public AliVParticle
   };
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJet,17);
+  ClassDef(AliEmcalJet,18);
   /// \endcond
 };
 

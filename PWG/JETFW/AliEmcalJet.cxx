@@ -161,7 +161,8 @@ AliEmcalJet::AliEmcalJet(Double_t pt, Double_t eta, Double_t phi, Double_t m) :
   fLabel(-1),
   fHasGhost(kFALSE),
   fGhosts(),
-  fJetShapeProperties(0)
+  fJetShapeProperties(0),
+  fJetAcceptanceType(0)
 {
   fPhi = TVector2::Phi_0_2pi(fPhi);
 
@@ -209,7 +210,8 @@ AliEmcalJet::AliEmcalJet(const AliEmcalJet& jet) :
   fLabel(jet.fLabel),
   fHasGhost(jet.fHasGhost),
   fGhosts(jet.fGhosts),
-  fJetShapeProperties(0)
+  fJetShapeProperties(0),
+  fJetAcceptanceType(0)
 {
   // Copy constructor.
   fClosestJets[0]     = jet.fClosestJets[0];
@@ -277,6 +279,7 @@ AliEmcalJet& AliEmcalJet::operator=(const AliEmcalJet& jet)
     if (jet.fJetShapeProperties) {
       fJetShapeProperties = new AliEmcalJetShapeProperties(*(jet.fJetShapeProperties));
     }
+    fJetAcceptanceType  = jet.fJetAcceptanceType;
   }
 
   return *this;
