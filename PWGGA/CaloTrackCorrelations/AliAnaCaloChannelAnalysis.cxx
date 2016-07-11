@@ -397,14 +397,14 @@ void AliAnaCaloChannelAnalysis::AddPeriodAnalysis(Int_t criteria, Double_t nsigm
   fAnalysisVector.push_back(periodArray);
 }
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t Nsigma, Double_t Emin, Double_t Emax)
+void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, Double_t emin, Double_t emax)
 {
 	cout<<""<<endl;
 	cout<<""<<endl;
 	cout<<""<<endl;
 	cout<<"o o o o o o o o o o o o o o o o o o o o o o  o o o"<<endl;
 	cout<<"o o o PeriodAnalysis for flag "<<criterum<<" o o o"<<endl;
-	cout<<"o o o Done in the energy range E "<<Emin<<"-"<<Emax<<endl;
+	cout<<"o o o Done in the energy range E "<<emin<<"-"<<emax<<endl;
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
 
 	//..This function does perform different checks depending on the given criterium variable
@@ -453,9 +453,9 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t Nsigma, 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	if(criterum < 6)cout<<"o o o Analyze average cell distributions o o o"<<endl;
 	//..For case 1 or 2
-	if (criterum < 3)      TestCellEandN(criterum, Emin, Emax,Nsigma);
+	if (criterum < 3)      TestCellEandN(criterum, emin, emax,nsigma);
 	//..For case 3, 4 or 5
-	else if (criterum < 6) TestCellShapes(criterum, Emin, Emax, Nsigma);
+	else if (criterum < 6) TestCellShapes(criterum, emin, emax, nsigma);
 
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -468,15 +468,15 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t Nsigma, 
 	{
 		//..Print the results on the screen and
 		//..write the results in a file
-		output.Form("%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt", fAnalysisOutput.Data(), criterum,Emin,Emax);
+		output.Form("%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt", fAnalysisOutput.Data(), criterum,emin,emax);
 		ofstream file(output, ios::out | ios::trunc);
 		if(!file)
 		{
 			cout<<"#### Major Error. Check the textfile!"<<endl;
 		}
-		file<<"Criterion : "<<criterum<<", Emin = "<<Emin<<" GeV"<<", Emax = "<<Emax<<" GeV"<<endl;
+		file<<"Criterion : "<<criterum<<", emin = "<<emin<<" GeV"<<", emax = "<<emax<<" GeV"<<endl;
 		file<<"Bad by lower value : "<<endl;
-		cout<<"    o bad cells by lower value (for cell E between "<<Emin<<"-"<<Emax<<")"<<endl;
+		cout<<"    o bad cells by lower value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
 		cout<<"      ";
 		nb1=0;
 		for(CellID=0;CellID<NrCells;CellID++)
@@ -492,7 +492,7 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t Nsigma, 
 		file<<"("<<nb1<<")"<<endl;
 		cout<<"("<<nb1<<")"<<endl;
 		file<<"Bad by higher value : "<<endl;
-		cout<<"    o bad cells by higher value (for cell E between "<<Emin<<"-"<<Emax<<")"<<endl;
+		cout<<"    o bad cells by higher value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
 		cout<<"      ";
 		nb2=0;
 		for(CellID=0;CellID<NrCells;CellID++)
@@ -746,7 +746,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t
 /// \param dnbins  -- number of bins in distribution;
 /// \param dmaxval -- maximum value on distribution histogram.
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t Nsigma, Int_t dnbins, Double_t dmaxval)
+void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t nsigma, Int_t dnbins, Double_t dmaxval)
 {  
 	gStyle->SetOptStat(1); // MG modif
 	gStyle->SetOptFit(1);  // MG modif
@@ -948,7 +948,7 @@ void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t Nsigm
 /// Average hit per event and the average energy per hit is caluclated for each cell.
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t Emin, Double_t Emax, Double_t Nsigma)
+void AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma)
 {
 	Int_t dnbins = 200;
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
@@ -1002,7 +1002,7 @@ void AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t Emin, Double_
 /// Test cells shape using fit function f(x)=A*exp(-B*x)/x^2.
 /// Produce values per cell + distributions for A,B and chi2/ndf parameters.
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitEmin, Double_t fitEmax, Double_t nsigma)
+void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma)
 {
 	TString hname= "hCellAmplitude";
 	Int_t dnbins = 1000;

@@ -54,7 +54,7 @@ public:
 	  void SetWorkDir(TString inputName)                {fWorkdir          = inputName;}
 	  void SetNTrial(Int_t inputNr)                     {fTrial            = inputNr  ;}
   
-	  void AddPeriodAnalysis(Int_t criteria, Double_t Nsigma, Double_t Emin, Double_t Emax);
+	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 
 protected:
@@ -69,7 +69,7 @@ protected:
 	  void SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t nBC, TString pdfName, const Int_t cellref=2377);
 	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
 	  void TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
-	  void TestCellShapes(Int_t crit, Double_t fitEmin, Double_t fitEmax, Double_t nsigma =4.);
+	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 	  void ExcludeCells();
 	  void KillCells(Int_t filter[], Int_t nbc);
 
