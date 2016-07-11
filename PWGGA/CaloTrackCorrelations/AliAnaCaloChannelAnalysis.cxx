@@ -134,18 +134,10 @@ void AliAnaCaloChannelAnalysis::Init()
 	//cout<<"Number of supermod utils: "<<fCaloUtils->GetNumberOfSuperModulesUsed()<<endl; //..will always be 22 unless set by hand
 
 	//......................................................
-	//..Initialize arrays that store cell information
+	//..Initialize flag array to store how the cell is categorized
 	//..In the histogram: bin 1= cellID 0, bin 2= cellID 1 etc
-	//..In the arrays: array[cellID]= some information
-	fnewBC  = new Int_t[fNoOfCells];
-	fnewDC  = new Int_t[fNoOfCells];
+	//..In the array: fFlag[cellID]= some information
 	fFlag   = new Int_t[fNoOfCells];
-
-
-	//..set all fields to -1
-	memset(fnewBC,-1, fNoOfCells *sizeof(int));
-	memset(fnewDC,-1, fNoOfCells *sizeof(int));
-
 	fFlag[fNoOfCells]={0};  //..flagged as good by default
 
 	//......................................................
@@ -430,19 +422,21 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	//.. 1) Average energy per hit;
 	//.. 2) Average hit per event;
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	TH1F* hisogram;
 	if(criterum < 6)cout<<"o o o Analyze average cell distributions o o o"<<endl;
 	//..For case 1 or 2
-	if (criterum < 3)      TestCellEandN(criterum, emin, emax,nsigma);
+	if (criterum < 3)   hisogram = TestCellEandN(criterum, emin, emax,nsigma);
 	//..For case 3, 4 or 5
 	else if (criterum < 6) TestCellShapes(criterum, emin, emax, nsigma);
 
-	/*
-	if(crit==1)              Process(crit,hCellEtoNtotal,nsigma,dnbins,-1);
-	if(crit==2 && emin==0.5) Process(crit,hCellNtotal,   nsigma,dnbins*9000,-1);//ELI I did massivley increase the binning now but it helps a lot
-	if(crit==2 && emin>0.5)  Process(crit,hCellNtotal,   nsigma,dnbins*17,-1);
-	if(crit==3)              Process(crit, hFitChi2Ndf, nsigma, dnbins, maxval3);
-	if(crit==4)              Process(crit, hFitA, nsigma, dnbins,  maxval1);
-	if(crit==5)              Process(crit, hFitB, nsigma, dnbins, maxval2);
+	Int_t dnbins = 200;
+	if(criterum==1)              Process(criterum, hisogram, nsigma, dnbins,-1);
+	if(criterum==2 && emin==0.5) Process(criterum, hisogram, nsigma, dnbins*9000,-1); //ELI I did massivley increase the binning now but it helps a lot
+	if(criterum==2 && emin>0.5)  Process(criterum, hisogram, nsigma, dnbins*17,-1);
+
+/*	if(criterum==3)              Process(criterum, hisogram, nsigma, dnbins, maxval3);
+	if(criterum==4)              Process(criterum, hisogram, nsigma, dnbins, maxval1);
+	if(criterum==5)              Process(criterum, hisogram, nsigma, dnbins, maxval2);
 */
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. RESULTS
@@ -609,7 +603,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 {
 	//..version=0 ->Print dead cells
 	//..version=1 ->print bad cells
-	//..ELI can be refined!
+	//..ELI can be refined with more versions!
 	gROOT->SetStyle("Plain");
 	gStyle->SetOptStat(0);
 	gStyle->SetFillColor(kWhite);
@@ -910,26 +904,21 @@ void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t nsigm
 /// Average hit per event and the average energy per hit is caluclated for each cell.
 ///
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma)
+TH1F* AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma)
 {
-	Int_t dnbins = 200;
 	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
 
+	cout<<"    o Calculate average cell hit per event and average cell energy per hit "<<endl;
 	//..binning parameters
 	Int_t ncells  = hCellAmplitude->GetNbinsY();
 	Double_t amin = hCellAmplitude->GetYaxis()->GetXmin();
 	Double_t amax = hCellAmplitude->GetYaxis()->GetXmax();
-	cout<<"    o Calculate average cell hit per event and average cell energy per hit "<<endl;
-
-	TH1F *hCellNtotal = new TH1F(Form("hCellNtotal_E%.2f-%.2f",emin,emax),Form("Number of hits per events, %.2f < E < %.2f GeV",emin,emax), ncells,amin,amax);
-	hCellNtotal->SetXTitle("AbsId");
-	hCellNtotal->SetYTitle("Av. hits per events");
-	hCellNtotal->GetXaxis()->SetNdivisions(505);
-
-	TH1F *hCellEtoNtotal = new TH1F(Form("hCellEtoNtotal_E%.2f-%.2f",emin,emax),Form("Average energy per hit, %.2f < E < %.2f GeV",emin,emax), ncells,amin,amax);
-	hCellEtoNtotal->SetXTitle("AbsId");
-	hCellEtoNtotal->SetYTitle("Av. energy per hit, GeV");
-	hCellEtoNtotal->GetXaxis()->SetNdivisions(505);
+	TH1F *Histogram;
+	if(crit==1)Histogram = new TH1F(Form("hCellEtoNtotal_E%.2f-%.2f",emin,emax),Form("Average energy per hit, %.2f < E < %.2f GeV",emin,emax), ncells,amin,amax);
+	if(crit==2)Histogram = new TH1F(Form("hCellNtotal_E%.2f-%.2f",emin,emax),Form("Number of hits per events, %.2f < E < %.2f GeV",emin,emax), ncells,amin,amax);
+	Histogram->SetXTitle("AbsId");
+	Histogram->SetYTitle("Av. hits per events");
+	Histogram->GetXaxis()->SetNdivisions(505);
 
 	TH1* hNEventsProcessedPerRun = (TH1*) gFile->Get("hNEventsProcessedPerRun");
 	Double_t totalevents = hNEventsProcessedPerRun->Integral(1, hNEventsProcessedPerRun->GetNbinsX());
@@ -949,15 +938,12 @@ void AliAnaCaloChannelAnalysis::TestCellEandN(Int_t crit, Double_t emin, Double_
 			Esum += E*N;
 			Nsum += N;
 		}
-		if(totalevents> 0.)hCellNtotal   ->SetBinContent(cell+1, Nsum/totalevents);  //..number of hits per event
-		if(Nsum > 0.)      hCellEtoNtotal->SetBinContent(cell+1, Esum/Nsum);         //..average energy per hit
-		//ELI maybe plot 2-dimensional hit/event eta vs. phi??
+		if(totalevents> 0. && crit==2)Histogram->SetBinContent(cell+1, Nsum/totalevents);  //..number of hits per event
+		if(Nsum > 0.       && crit==1)Histogram->SetBinContent(cell+1, Esum/Nsum);         //..average energy per hit
 	}
 	delete hCellAmplitude;
 
-	if(crit==1) Process(crit,hCellEtoNtotal,nsigma,dnbins,-1);
-	if(crit==2 && emin==0.5) Process(crit,hCellNtotal,   nsigma,dnbins*9000,-1);//ELI I did massivley increase the binning now but it helps a lot
-	if(crit==2 && emin>0.5)  Process(crit,hCellNtotal,   nsigma,dnbins*17,-1);
+	return Histogram;
 }
 
 /// ELI this method is currently not used
@@ -1088,9 +1074,9 @@ void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitemin, Dou
 }
 
 
-///
+/// --
 /// This function finds cells with zero entries
-/// to exclude them from the analysis
+/// It flags them by setting the fFlag content of the cell to 1.
 ///
 //_________________________________________________________________________
 void AliAnaCaloChannelAnalysis::FlagAsDead()

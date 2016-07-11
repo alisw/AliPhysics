@@ -64,13 +64,13 @@ protected:
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
-	  void Draw2(Int_t cell);
-
-	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
-	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
-	  void TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
-	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 	  void FlagAsDead();
+	  TH1F* TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
+	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
+	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
+
+	  void Draw2(Int_t cell);
+	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
 
 
 	  //Settings for analysed period
@@ -100,8 +100,6 @@ protected:
 
 	  //arrays to store information
 	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 (bad by lower),3 (bad by upper)     start at 0 (cellID 0 = histobin 1)
-	  Int_t *fnewBC;                        //!<! starts at newBC[0] stores cellIDs  (cellID = bin-1)
-	  Int_t *fnewDC;                        //!<! starts at newDC[0] stores cellIDs  (cellID = bin-1)
 
 	  //histogram settings
 	  Int_t fNMaxCols;                      ///< Maximum No of colums in module (eta direction)
