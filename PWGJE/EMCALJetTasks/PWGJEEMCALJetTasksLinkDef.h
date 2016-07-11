@@ -108,6 +108,7 @@
 #pragma link C++ class AliNtupHetInfo+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
+#pragma link C++ class AliAnalysisTaskEmcalTriggerPosition+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
