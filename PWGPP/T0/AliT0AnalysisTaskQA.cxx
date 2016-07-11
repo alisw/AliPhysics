@@ -99,7 +99,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fResolution      = new TH1F("fResolution","fResolution",100,-500,500);// or A minus or C spectrum
   fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",100,-2000,2000);// or A spectrum
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",100,-2000,2000);// or C spectrum
-  fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,500,2000,1000);  // 
+  fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,1000,2000,11000);  // 
   fSPDVertexVST0Vertex = new TH2F("fSPDVertexVST0Vertex","fSPDVertexVST0Vertex",30,-30,30,30,-30,30);
   fOrAvsNtracks = new TH2F("fAvstracks", "A vs tracks",100, 0, 100, 200, -1000, 1000);
   fOrCvsNtracks = new TH2F("fCvstracks", "C vs tracks",100, 0, 100, 200, -1000, 1000);
