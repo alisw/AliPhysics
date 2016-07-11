@@ -42,7 +42,7 @@ class AliAnaCaloChannelAnalysis : public TObject {
 
 public:
 
-    AliAnaCaloChannelAnalysis() ;                // default ctor
+      AliAnaCaloChannelAnalysis() ;                // default ctor
 	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
 	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber);
 
@@ -60,21 +60,23 @@ public:
 protected:
 
 	  void Init();
-	  void Draw2(Int_t cell, Int_t cellref=400);
-	  void SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t nBC, TString pdfName, Int_t cellref=2377);
-	  void Process(Int_t *pflag[23040][7], TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
-	  void TestCellEandN(Int_t *pflag[23040][7], Double_t Emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
-	  void TestCellShapes(Int_t *pflag[23040][7], Double_t fitEmin, Double_t fitEmax, Double_t nsigma =4.);
-	  void ExcludeCells(Int_t *pexclu[23040], Int_t nrCells);
-	  void KillCells(Int_t filter[], Int_t nbc);
-	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
-	  void BCAnalysis();
 	  TString Convert();
+	  void BCAnalysis();
+	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
+
+	  void Draw2(Int_t cell, Int_t cellref=400);
+
+	  void SaveBadCellsToPDF(Int_t cell[], Int_t iBC, Int_t nBC, TString pdfName, const Int_t cellref=2377);
+	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
+	  void TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
+	  void TestCellShapes(Int_t crit, Double_t fitEmin, Double_t fitEmax, Double_t nsigma =4.);
+	  void ExcludeCells();
+	  void KillCells(Int_t filter[], Int_t nbc);
 
 
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
-    TString fPeriod;                      ///< The name of the analyzed period
+      TString fPeriod;                      ///< The name of the analyzed period
 	  TString fPass;                        ///< Pass of the analyzed data
 	  TString fTrigger;                     ///< Selected trigger for the analysis
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
@@ -91,7 +93,6 @@ protected:
 	  TString fFilteredFileName;            ///< Filename of the .root file containing histograms with removed cells
 	  std::vector<TArrayD> fAnalysisVector; ///< Vector of analysis information. Each place is filled with 4 doubles: version, sigma, lower, and upper energy range
 
-
 	  //Things to be individualized by setters
 	  TString fRunListFileName;             ///< This is the name of the file with the run numbers to be merged, by default it's 'runList.txt'
 	  TString fWorkdir;                     ///< Directory which contains the folders fMergeOutput, fAnalysisInput and fAnalysisOutput. By default it is './'
@@ -99,15 +100,19 @@ protected:
 	  TString fExternalFileName;            ///< If you have already a file that contains many runs merged together you can place it in fMergeOutput and set it with SetExternalMergedFile(FileName)
 
 	  //arrays to store information
+	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 (bad by lower),3 (bad by upper)     start at 0 (cellID 0 = histobin 1)
 	  Int_t *fnewBC;                        //!<! starts at newBC[0] stores cellIDs  (cellID = bin-1)
 	  Int_t *fnewDC;                        //!<! starts at newDC[0] stores cellIDs  (cellID = bin-1)
-	  Int_t *fpexclu;                       //!<! starts at 0 pexclu[CellID] stores 0 not excluded, 1 excluded
-	  Int_t *fexclu;                        //!<! is the same as above
-	  Int_t **fpflag[7];                    //!<! pflag[cellID][crit] = 1(ok),2(bad),0(bad)     start at 0 (cellID 0 = histobin 1)
-	  Int_t **fflag[7];                     //!<! is the same as above
 
+	  //histogram settings
+	  Int_t fNMaxCols;                      ///< Maximum No of colums in module (eta direction)
+	  Int_t fNMaxRows;                      ///< Maximum No of rows in module   (phi direction)
+	  Int_t fNMaxColsAbs;                   ///< Maximum No of colums in Calorimeter
+	  Int_t fNMaxRowsAbs;                   ///< Maximum No of rows in Calorimeter
+
+	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
-  
+
 private:
 	  AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
 	  AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
