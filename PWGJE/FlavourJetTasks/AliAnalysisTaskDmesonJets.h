@@ -63,7 +63,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   typedef AliJetContainer::EJetType_t EJetType_t;
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
-  typedef AliJetContainer::JetAcceptanceType EJetAcceptanceType_t;
 
   enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi };
@@ -270,7 +269,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     void SetJetPtRange(Double_t min, Double_t max)        { fMinJetPt     = min; fMaxJetPt     = max; }
     void SetChargedPtRange(Double_t min, Double_t max)    { fMinChargedPt = min; fMaxChargedPt = max; }
     void SetNeutralPtRange(Double_t min, Double_t max)    { fMinNeutralPt = min; fMaxNeutralPt = max; }
-    void SetAcceptanceType(EJetAcceptanceType_t a)        { fAcceptance   = a  ;                      }
+    void SetAcceptanceType(UInt_t a)        { fAcceptance   = a  ;                      }
 
     Bool_t IsJetInAcceptance(const AliJetInfo& jet) const;
     Bool_t IsJetInAcceptance(const AliDmesonJetInfo& dMesonJet, std::string n) const;
@@ -293,7 +292,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
     ERecoScheme_t             fRecoScheme    ; ///<  Jet recombination scheme (pt scheme, E scheme, ...)
-    EJetAcceptanceType_t      fAcceptance    ; ///<  Jet acceptance
+    UInt_t                    fAcceptance    ; ///<  Jet acceptance
     Double_t                  fMinJetPt      ; ///<  Minimum jet pT
     Double_t                  fMaxJetPt      ; ///<  Maximum jet pT
     Double_t                  fMinJetPhi     ; ///<  Minimum jet phi
