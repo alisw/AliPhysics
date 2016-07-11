@@ -93,6 +93,17 @@ hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hKappaTPC(NULL),
 hKappaTPC_after(NULL),
+hKappaTPC_Temp0(NULL),
+hKappaTPC_Temp1(NULL),
+hKappaTPC_Temp2(NULL),
+hKappaTPC_Temp3(NULL),
+hKappaTPC_Temp4(NULL),
+hKappaTPC_Temp5(NULL),
+hKappaTPC_Temp6(NULL),
+hKappaTPC_Temp7(NULL),
+hKappaTPC_Temp8(NULL),
+hKappaTPC_Temp9(NULL),
+hKappaTPC_Temp10(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -157,7 +168,7 @@ fMaxFilter(0.2),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
-fFlowEvent(0),
+fFlowEvent(NULL),
 fIsMC(0),
 fMCEvent(NULL),
 fMCStack(NULL)
@@ -196,6 +207,17 @@ hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hKappaTPC(NULL),
 hKappaTPC_after(NULL),
+hKappaTPC_Temp0(NULL),
+hKappaTPC_Temp1(NULL),
+hKappaTPC_Temp2(NULL),
+hKappaTPC_Temp3(NULL),
+hKappaTPC_Temp4(NULL),
+hKappaTPC_Temp5(NULL),
+hKappaTPC_Temp6(NULL),
+hKappaTPC_Temp7(NULL),
+hKappaTPC_Temp8(NULL),
+hKappaTPC_Temp9(NULL),
+hKappaTPC_Temp10(NULL),
 hESDConvGammaR(NULL),
 hESDConvGammaEta(NULL),
 //tESDConvGammaPtDcazCat(NULL),
@@ -259,7 +281,7 @@ fMaxFilter(0.2),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
-fFlowEvent(0),
+fFlowEvent(NULL),
 fIsMC(0),
 fMCEvent(NULL),
 fMCStack(NULL)
@@ -268,6 +290,129 @@ fMCStack(NULL)
     // Define output slots here
     DefineOutput(1, TList::Class());
     DefineOutput(2, AliFlowEventSimple::Class());
+    DefineOutput(3, AliFlowEventSimple::Class());
+    DefineOutput(4, AliFlowEventSimple::Class());
+    DefineOutput(5, AliFlowEventSimple::Class());
+    DefineOutput(6, AliFlowEventSimple::Class());
+
+}
+
+
+//________________________________________________________________________
+AliAnalysisTaskGammaConvFlow::AliAnalysisTaskGammaConvFlow(const char *name, Int_t nCuts):
+AliAnalysisTaskSE(name),
+fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
+fBGHandler(NULL),
+fBGHandlerRP(NULL),
+fInputEvent(NULL),
+fCutFolder(NULL),
+fESDList(NULL),
+fBackList(NULL),
+fMotherList(NULL),
+fPhotonDCAList(NULL),
+fMesonDCAList(NULL),
+//fTrueList(NULL),
+//fMCList(NULL),
+fHeaderNameList(NULL),
+fOutputContainer(0),
+fReaderGammas(NULL),
+fGammaCandidates(NULL),
+fEventCutArray(NULL),
+fEventCuts(NULL),
+fCutArray(NULL),
+fConversionCuts(NULL),
+fMesonCutArray(NULL),
+fMesonCuts(NULL),
+hESDConvGammaPt(NULL),
+hInvMassPair(NULL),
+hKappaTPC(NULL),
+hKappaTPC_after(NULL),
+hKappaTPC_Temp0(NULL),
+hKappaTPC_Temp1(NULL),
+hKappaTPC_Temp2(NULL),
+hKappaTPC_Temp3(NULL),
+hKappaTPC_Temp4(NULL),
+hKappaTPC_Temp5(NULL),
+hKappaTPC_Temp6(NULL),
+hKappaTPC_Temp7(NULL),
+hKappaTPC_Temp8(NULL),
+hKappaTPC_Temp9(NULL),
+hKappaTPC_Temp10(NULL),
+hESDConvGammaR(NULL),
+hESDConvGammaEta(NULL),
+//tESDConvGammaPtDcazCat(NULL),
+fPtGamma(0),
+fDCAzPhoton(0),
+fRConvPhoton(0),
+fEtaPhoton(0),
+iCatPhoton(0),
+iPhotonMCInfo(0),
+hESDMotherInvMassPt(NULL),
+//sESDMotherInvMassPtZM(NULL),
+hESDMotherBackInvMassPt(NULL),
+//sESDMotherBackInvMassPtZM(NULL),
+hESDMotherInvMassEalpha(NULL),
+hESDMotherPi0PtY(NULL),
+hESDMotherEtaPtY(NULL),
+hESDMotherPi0PtAlpha(NULL),
+hESDMotherEtaPtAlpha(NULL),
+hESDMotherPi0PtOpenAngle(NULL),
+hESDMotherEtaPtOpenAngle(NULL),
+hNEvents(NULL),
+hNGoodESDTracks(NULL),
+hNGammaCandidates(NULL),
+hNGoodESDTracksVsNGammaCanditates(NULL),
+hNV0Tracks(NULL),
+hEtaShift(NULL),
+tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
+fInvMass(0),
+fPt(0),
+fDCAzGammaMin(0),
+fDCAzGammaMax(0),
+iFlag(0),
+iMesonMCInfo(0),
+fEventPlaneAngle(-100),
+fRandom(0),
+fnGammaCandidates(0),
+fUnsmearedPx(NULL),
+fUnsmearedPy(NULL),
+fUnsmearedPz(NULL),
+fUnsmearedE(NULL),
+fMCStackPos(NULL),
+fMCStackNeg(NULL),
+fESDArrayPos(NULL),
+fESDArrayNeg(NULL),
+fnCuts(nCuts),
+fiCut(0),
+fMoveParticleAccordingToVertex(kTRUE),
+fIsHeavyIon(0),
+fDoMesonAnalysis(kTRUE),
+fDoMesonQA(0),
+fDoPhotonQA(0),
+fIsFromMBHeader(kTRUE),
+fhistoEPVZ(NULL),
+fMinMass(-1),
+fMaxMass(10),
+fMinKappa(-1),
+fMaxKappa(100),
+fFilterVariable(1),
+fMinFilter(0),
+fMaxFilter(0.2),
+fDebug(0),
+fCutsRP(0), 
+fNullCuts(0), 
+fFlowEvent(NULL),
+fIsMC(0),
+fMCEvent(NULL),
+fMCStack(NULL)
+
+{
+    // Define output slots here
+    DefineOutput(1, TList::Class());
+    for (Int_t i = 0; i<nCuts; i++){
+      DefineOutput(2+i, AliFlowEventSimple::Class());
+    }
 
 }
 //___________________________________________________________
@@ -286,7 +431,9 @@ AliAnalysisTaskGammaConvFlow::~AliAnalysisTaskGammaConvFlow()
 		fBGHandlerRP = 0x0;
 	}
 	
-	if (fFlowEvent) delete fFlowEvent;
+	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (fFlowEvent[iCut]) delete fFlowEvent[iCut];
+  }
 
 }
 
@@ -350,6 +497,17 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	hInvMassPair = new TH2F*[fnCuts];
 	hKappaTPC = new TH2F*[fnCuts];
   hKappaTPC_after = new TH2F*[fnCuts];
+  hKappaTPC_Temp0 = new TH2F*[fnCuts];
+  hKappaTPC_Temp1 = new TH2F*[fnCuts];
+  hKappaTPC_Temp2 = new TH2F*[fnCuts];
+  hKappaTPC_Temp3 = new TH2F*[fnCuts];
+  hKappaTPC_Temp4 = new TH2F*[fnCuts];
+  hKappaTPC_Temp5 = new TH2F*[fnCuts];
+  hKappaTPC_Temp6 = new TH2F*[fnCuts];
+  hKappaTPC_Temp7 = new TH2F*[fnCuts];
+  hKappaTPC_Temp8 = new TH2F*[fnCuts];
+  hKappaTPC_Temp9 = new TH2F*[fnCuts];
+  hKappaTPC_Temp10 = new TH2F*[fnCuts];
 	
 	if (fDoPhotonQA == 2){
 		fPhotonDCAList = new TList*[fnCuts];
@@ -386,11 +544,11 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 		if(fDoMesonAnalysis)cutstringMeson = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 		
 		fCutFolder[iCut] = new TList();
-		fCutFolder[iCut]->SetName(Form("Cut Number %s_%s_%s",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+		fCutFolder[iCut]->SetName(Form("Cut Number %s_%s",cutstringEvent.Data() ,cutstringPhoton.Data()));
 		fCutFolder[iCut]->SetOwner(kTRUE);
 		fOutputContainer->Add(fCutFolder[iCut]);
 		fESDList[iCut] = new TList();
-		fESDList[iCut]->SetName(Form("%s_%s_%s ESD histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
+		fESDList[iCut]->SetName(Form("%s_%s ESD histograms",cutstringEvent.Data() ,cutstringPhoton.Data()));
 		fESDList[iCut]->SetOwner(kTRUE);
 		fCutFolder[iCut]->Add(fESDList[iCut]);
 		
@@ -445,6 +603,39 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     
     hKappaTPC_after[iCut]= new TH2F("KappaTPC_Pt_after","Gamma KappaTPC vs Pt after cuts",200,-20,20,250,0,25);
     fESDList[iCut]->Add(hKappaTPC_after[iCut]);
+    
+    hKappaTPC_Temp0[iCut]= new TH2F("hKappaTPC_Temp0_ee","Gamma KappaTPC vs Pt Template 0",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp0[iCut]);
+    
+    hKappaTPC_Temp1[iCut]= new TH2F("hKappaTPC_Temp1_pipi","Gamma KappaTPC vs Pt Template 1",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp1[iCut]);
+    
+    hKappaTPC_Temp2[iCut]= new TH2F("hKappaTPC_Temp2_pie","Gamma KappaTPC vs Pt Template 2",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp2[iCut]);
+    
+    hKappaTPC_Temp3[iCut]= new TH2F("hKappaTPC_Temp3_piK","Gamma KappaTPC vs Pt Template 3",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp3[iCut]);
+    
+    hKappaTPC_Temp4[iCut]= new TH2F("hKappaTPC_Temp4_pip","Gamma KappaTPC vs Pt Template 4",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp4[iCut]);
+    
+    hKappaTPC_Temp5[iCut]= new TH2F("hKappaTPC_Temp5_eK","Gamma KappaTPC vs Pt Template 5",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp5[iCut]);
+    
+    hKappaTPC_Temp6[iCut]= new TH2F("hKappaTPC_Temp6_ep","Gamma KappaTPC vs Pt Template 6",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp6[iCut]);
+    
+    hKappaTPC_Temp7[iCut]= new TH2F("hKappaTPC_Temp7_KK","Gamma KappaTPC vs Pt Template 7",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp7[iCut]);
+    
+    hKappaTPC_Temp8[iCut]= new TH2F("hKappaTPC_Temp8_had","Gamma KappaTPC vs Pt Template 8",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp8[iCut]);
+    
+    hKappaTPC_Temp9[iCut]= new TH2F("hKappaTPC_Temp9_rem4","Gamma KappaTPC vs Pt Template 9",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp9[iCut]);
+    
+    hKappaTPC_Temp10[iCut]= new TH2F("hKappaTPC_Temp10_rem10","Gamma KappaTPC vs Pt Template 10",200,-20,20,250,0,25);
+    fESDList[iCut]->Add(hKappaTPC_Temp10[iCut]);    
     
     //2d histogram filling the cut and value - control check for selections
 		
@@ -562,9 +753,13 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 
 	
 	PostData(1, fOutputContainer);
-
-	fFlowEvent = new AliFlowEvent(10000);
-	PostData(2, fFlowEvent);
+  
+  fFlowEvent = new AliFlowEvent*[fnCuts];
+  
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    fFlowEvent[iCut] = new AliFlowEvent(10000);
+    PostData(2+iCut, fFlowEvent[iCut]);
+  }
 	
 }
 
@@ -624,13 +819,11 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 	else fEventPlaneAngle=0.0;
 	
 	SetNullCuts(fInputEvent);
-	PrepareFlowEvent(fInputEvent->GetNumberOfTracks(),fFlowEvent);    //Calculate event plane Qvector and EP resolution for inclusive
-
 	
-
-	
-// 	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-		Int_t iCut = 0;
+	for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+//     cout << "event cut array =  " << fEventCutArray->At(iCut) << endl;
+    PrepareFlowEvent(fInputEvent->GetNumberOfTracks(),fFlowEvent[iCut]);    //Calculate event plane Qvector and EP resolution for inclusive
+// 		Int_t iCut = 0;
 		fiCut = iCut;
 		Int_t eventNotAccepted =
 		((AliConvEventCuts*)fEventCutArray->At(iCut))
@@ -638,13 +831,13 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 		if(eventNotAccepted){
 			// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
-			return;
+			continue;
 		}
 		
 		if(eventQuality != 0){// Event Not Accepted
 			// cout << "event rejected due to: " <<eventQuality << endl;
 			hNEvents[iCut]->Fill(eventQuality);
-			return;
+			continue;
 		}
 				
 		hNEvents[iCut]->Fill(eventQuality); // Should be 0 here
@@ -657,14 +850,14 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 
 		hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries());
 		hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
-
+    PostData(2+iCut, fFlowEvent[iCut]);
 		fGammaCandidates->Clear(); // delete this cuts good gammas
-// 	}
+	}
 	
 	fhistoEPVZ->Fill(fEventPlaneAngle);
 
 	PostData(1, fOutputContainer);
-	PostData(2, fFlowEvent);
+	
 
 }
 //________________________________________________________________________
@@ -673,6 +866,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
     Int_t nV0 = 0;
     TList *GammaCandidatesStepOne = new TList();
     TList *GammaCandidatesStepTwo = new TList();
+    Int_t PhotonTemplateID;
     // Loop over Photon Candidates allocated by ReaderV1
     for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
         AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
@@ -687,6 +881,23 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
            !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
             fGammaCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
+//             cout << "IS IT MC? " << fIsMC << endl;
+            if(fIsMC){
+              PhotonTemplateID = GetTemplateID(PhotonCandidate);
+              if(PhotonTemplateID == 0) hKappaTPC_Temp0[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 1) hKappaTPC_Temp1[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 2) hKappaTPC_Temp2[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 3) hKappaTPC_Temp3[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 4) hKappaTPC_Temp4[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 5) hKappaTPC_Temp5[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 6) hKappaTPC_Temp6[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 7) hKappaTPC_Temp7[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID == 8) hKappaTPC_Temp8[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID != 0 && PhotonTemplateID != 1 && PhotonTemplateID != 2) hKappaTPC_Temp9[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+              if(PhotonTemplateID != 0 && PhotonTemplateID != 1 && PhotonTemplateID != 2 &&
+                 PhotonTemplateID != 3 && PhotonTemplateID != 4 && PhotonTemplateID != 5 &&
+                 PhotonTemplateID != 6 && PhotonTemplateID != 7 && PhotonTemplateID != 8) hKappaTPC_Temp10[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+            }
             
             if(fIsFromMBHeader){
                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
@@ -852,6 +1063,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 {
 
 	// Loop over Photon Candidates allocated by ReaderV1	
+//   cout << "number of gamma's: " << fGammaCandidates->GetEntries() << endl;
 	for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
 		
 		AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -897,8 +1109,9 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 				// fFlowEvent->SetNumberOfRPs(fFlowEvent->GetNumberOfRPs() - 1);
 			}
 		} //end of for loop on RPs*/
-		fFlowEvent->InsertTrack(((AliFlowTrack*) sTrack));
-		fFlowEvent->SetNumberOfPOIs(fFlowEvent->GetNumberOfPOIs()+1);
+		fFlowEvent[fiCut]->InsertTrack(((AliFlowTrack*) sTrack));
+		fFlowEvent[fiCut]->SetNumberOfPOIs(fFlowEvent[fiCut]->GetNumberOfPOIs()+1);
+//     cout << "cutnumber: " << fiCut << " nPoi " << fFlowEvent[fiCut]->GetNumberOfPOIs() << " ntracks " << fFlowEvent[fiCut]->NumberOfTracks() << endl;
 	}
 }
 
@@ -944,6 +1157,35 @@ Bool_t AliAnalysisTaskGammaConvFlow::MCElectronElectron( AliAODConversionPhoton 
   }
   
   return IsItElectronElectron;
+    
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskGammaConvFlow::GetTemplateID( AliAODConversionPhoton *MCPhoton ){
+  
+  
+  TParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCStack);
+  TParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCStack);
+  if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
+  
+  Int_t pdgCodePos = 0; 
+  Int_t pdgCodeNeg = 0;
+  Int_t TemplateID = -1;
+  
+  pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
+  pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+  
+  if(pdgCodePos==11 && pdgCodeNeg==11)                                              TemplateID = 0; //signal -> e+ e-
+  if(pdgCodePos==211 && pdgCodeNeg==211)                                            TemplateID = 1; //pi pi 211 211
+  if(pdgCodePos==211 && pdgCodeNeg==11 || pdgCodePos==11 && pdgCodeNeg==211)        TemplateID = 2; //pi e 211 11
+  if(pdgCodePos==211 && pdgCodeNeg==321 || pdgCodePos==321 && pdgCodeNeg==211)      TemplateID = 3; //pi K 211 321
+  if(pdgCodePos==211 && pdgCodeNeg==2212 || pdgCodePos==2212 && pdgCodeNeg==211)    TemplateID = 4; //pi p 211 2212
+  if(pdgCodePos==11 && pdgCodeNeg==321 || pdgCodePos==321 && pdgCodeNeg==11)        TemplateID = 5; //e K 11 321
+  if(pdgCodePos==11 && pdgCodeNeg==2212 || pdgCodePos==2212 && pdgCodeNeg==11)      TemplateID = 6; //e p 11 2212
+  if(pdgCodePos==321 && pdgCodeNeg==321)                                            TemplateID = 7; //K K 321 321
+  if(pdgCodePos!=11 && pdgCodeNeg!=11 && TemplateID == -1)                          TemplateID = 8; //hadronic not 11 11
+  
+//   cout << "TEMPLATE ID IS: " << TemplateID << endl;
+  return TemplateID;
     
 }
 

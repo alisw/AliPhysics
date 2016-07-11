@@ -11,6 +11,32 @@ class AliFlowTrackSimpleCuts;
 class AliFlowEventCuts;
 class AliFlowEventSimpleCuts;
 
+class CutHandlerConvFlow{
+  public:
+    CutHandlerConvFlow(Int_t nMax=10){
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = "";}
+    }
+
+    void AddCut(TString eventCut, TString photonCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvFlow: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26) {cout << "ERROR in CutHandlerConvFlow: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut;
+      nCuts++;
+      return;
+    }
+    Bool_t AreValid(){return validCuts;}
+    Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvFlow: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvFlow: GetPhotonCut wrong index i" << endl;return "";}}
+  private:
+    Bool_t validCuts;
+    Int_t nCuts; Int_t nMaxCuts;
+    TString* eventCutArray;
+    TString* photonCutArray;
+};
+
 void AddTask_GammaConvFlow_PbPb2(
                                TString uniqueID = "",
                                Int_t harmonic=2,
@@ -123,11 +149,192 @@ void AddTask_GammaConvFlow_PbPb2(
       mgr->ConnectInput(fV0ReaderV1,0,cinput);        
   }
   
-  //================================================
+
+  CutHandlerConvFlow cuts;
+  
+  if (trainConfig == 1){
+    cuts.AddCut("60100013", "04200009297002003220000000");
+  } else if (trainConfig == 2) {
+    cuts.AddCut("61200013", "04200009297002003220000000");
+  } else if (trainConfig == 3) {
+    cuts.AddCut("50100013", "04200009297002003220000000");
+  } else if (trainConfig == 4) {
+    cuts.AddCut("50200013", "04200009297002003220000000");
+  } else if (trainConfig == 5) {
+    cuts.AddCut("51200013", "04200009297002003220000000");
+  } else if (trainConfig == 6) {
+    cuts.AddCut("52400013", "04200009297002003220000000");
+  } else if (trainConfig == 7) {
+    cuts.AddCut("54600013", "04200009297002003220000000");
+  } else if (trainConfig == 8) {
+    cuts.AddCut("54800013", "04200009297002003220000000");
+  } else if (trainConfig == 9) {
+    cuts.AddCut("54500013", "04200009297002003220000000");
+  } else if (trainConfig == 10) {
+    cuts.AddCut("55600013", "04200009297002003220000000");
+  } else if (trainConfig == 11) {
+    cuts.AddCut("56800013", "04200009297002003220000000");
+  } else if (trainConfig == 12) {
+    cuts.AddCut("56700013", "04200009297002003220000000");
+  } else if (trainConfig == 13) {
+    cuts.AddCut("57800013", "04200009297002003220000000");
+  } else if (trainConfig == 14) {
+    cuts.AddCut("46900013", "04200009297002003220000000");
+  } else if (trainConfig == 15) {
+    cuts.AddCut("58900013", "04200009297002003220000000");
+  } else  if (trainConfig == 16){
+    cuts.AddCut("60100013", "00200009297002008250400000");
+  } else if (trainConfig == 17) {
+    cuts.AddCut("61200013", "00200009297002008250400000");
+  } else if (trainConfig == 18) {
+    cuts.AddCut("50100013", "00200009297002008250400000");
+  } else if (trainConfig == 19) {
+    cuts.AddCut("50200013", "00200009297002008250400000");
+  } else if (trainConfig == 20) {
+    cuts.AddCut("51200013", "00200009297002008250400000");
+  } else if (trainConfig == 21) {
+    cuts.AddCut("52400013", "00200009297002008250400000");
+  } else if (trainConfig == 22) {
+    cuts.AddCut("54600013", "00200009297002008250400000");
+  } else if (trainConfig == 23) {
+    cuts.AddCut("54800013", "00200009297002008250400000");
+  } else if (trainConfig == 24) {
+    cuts.AddCut("54500013", "00200009297002008250400000");
+  } else if (trainConfig == 25) {
+    cuts.AddCut("55600013", "00200009297002008250400000");
+  } else if (trainConfig == 26) {
+    cuts.AddCut("56800013", "00200009297002008250400000");
+  } else if (trainConfig == 27) {
+    cuts.AddCut("56700013", "00200009297002008250400000");
+  } else if (trainConfig == 28) {
+    cuts.AddCut("57800013", "00200009297002008250400000");
+  } else if (trainConfig == 29) {
+    cuts.AddCut("46900013", "00200009297002008250400000");
+  } else if (trainConfig == 30) {
+    cuts.AddCut("58900013", "00200009297002008250400000");
+  } else if (trainConfig == 31) {
+    cuts.AddCut("50800013", "00200009297002008250400000");
+  } else if (trainConfig == 32) {
+    cuts.AddCut("52500013", "00200009297002008250400000");
+  } else if (trainConfig == 33) {
+    cuts.AddCut("53500013", "00200009297002008250400000");
+  } else if (trainConfig == 34) {
+    cuts.AddCut("54500013", "00200009297002008250400000");
+  } else if (trainConfig == 35) {
+    cuts.AddCut("53400013", "00200009297002008250400000");
+  } else if (trainConfig == 36) {
+    cuts.AddCut("52300013", "00200009297002008250400000");
+  } else if (trainConfig == 37){
+    cuts.AddCut("60100013", "00200009297002208250400000");
+  } else if (trainConfig == 38) {
+    cuts.AddCut("61200013", "00200009297002208250400000");
+  } else if (trainConfig == 39) {
+    cuts.AddCut("51200013", "00200009297002208250400000");
+  } else if (trainConfig == 40) {
+    cuts.AddCut("54600013", "00200009297002208250400000");
+  } else if (trainConfig == 41) {
+    cuts.AddCut("56800013", "00200009297002208250400000");
+  } else if (trainConfig == 42) {
+    cuts.AddCut("53400013", "00200009297002208250400000");
+  } else if (trainConfig == 43) {
+    cuts.AddCut("52300013", "00200009297002208250400000");
+  } else if (trainConfig == 44) {
+    cuts.AddCut("50200013", "00200009297002008250400000");
+  } else if (trainConfig == 45) {
+    cuts.AddCut("50400013", "00200009297002008250400000");
+  } else if (trainConfig == 46) {
+    cuts.AddCut("61200013", "00200009697004000500000000");
+  } else if (trainConfig == 47) {
+    cuts.AddCut("61200013", "00200009697005000500000000");
+  } else if (trainConfig == 48) {
+    cuts.AddCut("61200013", "00200009797004000500000000");
+  } else if (trainConfig == 49) {
+    cuts.AddCut("61200013", "00200009797005000500000000");
+  } else if (trainConfig == 50) {
+    cuts.AddCut("52400013", "00200009007000008250400000");
+  } else if (trainConfig == 51) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+  } else if (trainConfig == 52) {
+    cuts.AddCut("52400013", "00200009007000008250400000");
+  } else if (trainConfig == 53) {
+    cuts.AddCut("54800013", "00200009007000008250400000");
+  //Full standard cut output closed TPC cuts
+  } else if (trainConfig == 54) {
+    cuts.AddCut("50200013", "00200009297002008250400000");
+    cuts.AddCut("52400013", "00200009297002008250400000");
+    cuts.AddCut("54800013", "00200009297002008250400000");
+  //Full standard cut output open TPC cuts
+  } else if (trainConfig == 55) {
+    cuts.AddCut("50200013", "00200009007000008250400000");
+    cuts.AddCut("52400013", "00200009007000008250400000");
+    cuts.AddCut("54800013", "00200009007000008250400000");
+  //systematics 0-20%
+  } else if (trainConfig == 60) {
+    cuts.AddCut("50200013", "04200009007000008250400000"); //eta cut: |eta| <0.75
+    cuts.AddCut("50200013", "00500009007000008250400000"); //minR= 10 maxR = 180
+    cuts.AddCut("50200013", "00200049007000008250400000"); //singleptcut = 75MeV
+    cuts.AddCut("50200013", "00200019007000008250400000"); //singleptcut = 100MeV
+  } else if (trainConfig == 61) {
+    cuts.AddCut("50200013", "00200009007000009250400000"); // Qtmax = 0.03
+    cuts.AddCut("50200013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("50200013", "00200009007000008750400000"); //chi2cut = 10
+    cuts.AddCut("50200013", "00200009007000008150400000"); //chi2cut = 50
+  } else if (trainConfig == 62) {
+    cuts.AddCut("50200013", "00200009007000008260400000"); //psipaircut = 0.05
+    cuts.AddCut("50200013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("50200013", "00200009007000008250600000"); //cos p angle cut = 0.9
+    cuts.AddCut("50200013", "00200009007000008250300000"); //cos p angle cut = 0.75
+  //systematics 20-40%
+  } else if (trainConfig == 63) {
+    cuts.AddCut("52400013", "04200009007000008250400000"); //eta cut: |eta| <0.75
+    cuts.AddCut("52400013", "00500009007000008250400000"); //minR= 10 maxR = 180
+    cuts.AddCut("52400013", "00200049007000008250400000"); //singleptcut = 75MeV
+    cuts.AddCut("52400013", "00200019007000008250400000"); //singleptcut = 100MeV
+  } else if (trainConfig == 64) {
+    cuts.AddCut("52400013", "00200009007000009250400000"); // Qtmax = 0.03
+    cuts.AddCut("52400013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("52400013", "00200009007000008750400000"); //chi2cut = 10
+    cuts.AddCut("52400013", "00200009007000008150400000"); //chi2cut = 50
+  } else if (trainConfig == 65) {
+    cuts.AddCut("52400013", "00200009007000008260400000"); //psipaircut = 0.05
+    cuts.AddCut("52400013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("52400013", "00200009007000008250600000"); //cos p angle cut = 0.9
+    cuts.AddCut("52400013", "00200009007000008250300000"); //cos p angle cut = 0.75
+  //systematics 40-80%
+  } else if (trainConfig == 66) {
+    cuts.AddCut("54800013", "04200009007000008250400000"); //eta cut: |eta| <0.75
+    cuts.AddCut("54800013", "00500009007000008250400000"); //minR= 10 maxR = 180
+    cuts.AddCut("54800013", "00200049007000008250400000"); //singleptcut = 75MeV
+    cuts.AddCut("54800013", "00200019007000008250400000"); //singleptcut = 100MeV
+  } else if (trainConfig == 67) {
+    cuts.AddCut("54800013", "00200009007000009250400000"); // Qtmax = 0.03
+    cuts.AddCut("54800013", "00200009007000001250400000"); // Qtmax = 0.1
+    cuts.AddCut("54800013", "00200009007000008750400000"); //chi2cut = 10
+    cuts.AddCut("54800013", "00200009007000008150400000"); //chi2cut = 50
+  } else if (trainConfig == 68) {
+    cuts.AddCut("54800013", "00200009007000008260400000"); //psipaircut = 0.05
+    cuts.AddCut("54800013", "00200009007000008280400000"); //psipaircut = 0.2
+    cuts.AddCut("54800013", "00200009007000008250600000"); //cos p angle cut = 0.9
+    cuts.AddCut("54800013", "00200009007000008250300000"); //cos p angle cut = 0.75
+  } else {
+      Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+      return;
+  }
+  
+  if(!cuts.AreValid()){
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
+  
+  const int numberOfCuts = cuts.GetNCuts();
+  
+    //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskGammaConvFlow *task=NULL;
-  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic));
+  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic),numberOfCuts);
   task->SetIsHeavyIon(isHeavyIon);
   task->AliAnalysisTaskGammaConvFlow::SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -145,157 +352,60 @@ void AddTask_GammaConvFlow_PbPb2(
   
   if(UseMassSel==kTRUE)  task->SetMassWindow(MinMass,MaxMass);
   if(UseKappaSel==kTRUE) task->SetKappaWindow(MinKappa,MaxKappa);
-  
-  if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
-  AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
-  mgr->ConnectOutput(task, 2, flowEvent);
-  
-  task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
-  Double_t NFilterBinValues[NFilterBins+1];
-  if(NFilterBins > 1){
-    for(Int_t i=0;i<NFilterBins+1;i++){
-      NFilterBinValues[i] = MinFilter + i*(MaxFilter-MinFilter)/NFilterBins;
-    }
-  }else{
-    NFilterBinValues[0] = MinFilter;
-    NFilterBinValues[1] = MaxFilter;
-  }
-  
-  for(Int_t i=0;i<NFilterBins;i++){
-    AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
-    POIfilterVZERO->SetMassMin(NFilterBinValues[i]); POIfilterVZERO->SetMassMax(NFilterBinValues[i+1]);
-    
-    if(debug) cout << "    --> Created IO containers " << flowEvent << endl;
-    AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), i), "Qa", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
-    if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-    AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), i), "Qb", harmonic, flowEvent, debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP);
-    if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
-  }
-  
-  // Cut Numbers to use in Analysis
-  Int_t numberOfCuts = 1;
-//     if(trainConfig == 37){
-// 		numberOfCuts = 6;
-// 		cout << "number of cuts: " << numberOfCuts << endl;
-// 	}
-  TString *eventCutArray = new TString[numberOfCuts];
-  TString *photonCutArray = new TString[numberOfCuts];
-  TString *mesonCutArray = new TString[numberOfCuts];
 
-  if (trainConfig == 1){
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 2) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 3) {
-    eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 4) {
-    eventCutArray[ 0] = "50200013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 5) {
-    eventCutArray[ 0] = "51200013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 6) {
-    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152204500900000";
-  } else if (trainConfig == 7) {
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 8) {
-    eventCutArray[ 0] = "54800013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 9) {
-    eventCutArray[ 0] = "54500013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 10) {
-    eventCutArray[ 0] = "55600013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 11) {
-    eventCutArray[ 0] = "56800013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 12) {
-    eventCutArray[ 0] = "56700013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 13) {
-    eventCutArray[ 0] = "57800013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 14) {
-    eventCutArray[ 0] = "46900013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else if (trainConfig == 15) {
-    eventCutArray[ 0] = "58900013"; photonCutArray[ 0] = "04200009297002003220000000"; mesonCutArray[ 0] = "0152206500900000";
-  } else  if (trainConfig == 16){
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 17) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 18) {
-    eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 19) {
-    eventCutArray[ 0] = "50200013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 20) {
-    eventCutArray[ 0] = "51200013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 21) {
-    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 22) {
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 23) {
-    eventCutArray[ 0] = "54800013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 24) {
-    eventCutArray[ 0] = "54500013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 25) {
-    eventCutArray[ 0] = "55600013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 26) {
-    eventCutArray[ 0] = "56800013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 27) {
-    eventCutArray[ 0] = "56700013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 28) {
-    eventCutArray[ 0] = "57800013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 29) {
-    eventCutArray[ 0] = "46900013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 30) {
-    eventCutArray[ 0] = "58900013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 31) {
-    eventCutArray[ 0] = "50800013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 32) {
-    eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 33) {
-    eventCutArray[ 0] = "53500013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 34) {
-    eventCutArray[ 0] = "54500013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 35) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 36) {
-    eventCutArray[ 0] = "52300013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 37){
-    eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 38) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 39) {
-    eventCutArray[ 0] = "51200013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 40) {
-    eventCutArray[ 0] = "54600013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 41) {
-    eventCutArray[ 0] = "56800013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 42) {
-    eventCutArray[ 0] = "53400013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 43) {
-    eventCutArray[ 0] = "52300013"; photonCutArray[ 0] = "00200009297002208250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 44) {
-    eventCutArray[ 0] = "50200013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 45) {
-    eventCutArray[ 0] = "50400013"; photonCutArray[ 0] = "00200009297002008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 46) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009697004000500000000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 47) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009697005000500000000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 48) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009797004000500000000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 49) {
-    eventCutArray[ 0] = "61200013"; photonCutArray[ 0] = "00200009797005000500000000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 50) {
-    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 51) {
-    eventCutArray[ 0] = "50200013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 52) {
-    eventCutArray[ 0] = "52400013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else if (trainConfig == 53) {
-    eventCutArray[ 0] = "54800013"; photonCutArray[ 0] = "00200009007000008250400000"; mesonCutArray[ 0] = "0152506500000000";
-  } else {
-      Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
-      return;
-  }
+  
+  
+  AliAnalysisDataContainer *flowEvent[numberOfCuts];
+  //======================================================================
+  for(Int_t i = 0; i<numberOfCuts; i++){
+    if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
+    TString totalCutString = Form("%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data());
+    flowEvent[i] = mgr->CreateContainer(Form("FlowContainer_%s_%s",uniqueID.Data(),totalCutString.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
+    mgr->ConnectOutput(task, 2+i, flowEvent[i]);
+    
+    if(FilterVariable==7 && NFilterBins == 4){
+      task->SetFilterVariable(2,MinFilter,MaxFilter);
+      Double_t NFilterBinValues[8];
+      NFilterBinValues[0] = -20;
+      NFilterBinValues[1] = -13;
+      NFilterBinValues[2] = -11;
+      NFilterBinValues[3] = -6;
+      NFilterBinValues[4] = -3;
+      NFilterBinValues[5] = 5;
+      NFilterBinValues[6] = 11;
+      NFilterBinValues[7] = 20;
+    }else{
+      task->SetFilterVariable(FilterVariable,MinFilter,MaxFilter);
+      Double_t NFilterBinValues[NFilterBins+1];
+      if(NFilterBins > 1){
+        for(Int_t k=0;k<NFilterBins+1;k++){
+          NFilterBinValues[k] = MinFilter + k*(MaxFilter-MinFilter)/NFilterBins;
+        }
+      }else{
+        NFilterBinValues[0] = MinFilter;
+        NFilterBinValues[1] = MaxFilter;
+      }
+    }
+    
+    for(Int_t j=0;j<NFilterBins;j++){
+      AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
+      if(FilterVariable==7){
+        POIfilterVZERO->SetMassMin(NFilterBinValues[2*j]); POIfilterVZERO->SetMassMax(NFilterBinValues[2*j+1]);
+      }else{
+        POIfilterVZERO->SetMassMin(NFilterBinValues[j]); POIfilterVZERO->SetMassMax(NFilterBinValues[j+1]);
+      }
       
+      if(debug) cout << "    --> Created IO containers " << flowEvent[i] << endl;
+      AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), j), "Qa", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+      if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
+      AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), j), "Qb", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+      if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
+    }
+  }
+  
+  //====================================================================== 
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
-  TList *MesonCutList = new TList();
   
   TList *HeaderList = new TList();
   TObjString *Header1 = new TObjString("BOX");
@@ -307,26 +417,19 @@ void AddTask_GammaConvFlow_PbPb2(
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
-  MesonCutList->SetOwner(kTRUE);
-  AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
   
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();
-    analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
+    analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
-    analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+    analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-    
-    analysisMesonCuts[i] = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
-    MesonCutList->Add(analysisMesonCuts[i]);
-    analysisMesonCuts[i]->SetFillCutHistograms("");
     
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
@@ -353,16 +456,16 @@ void AddTask_GammaConvFlow_PbPb2(
 }
 
 //_____________________________________________________________________________
-void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE)
+void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString)
 {
   // add sp task and invm filter tasks
   if(debug)  cout << " ******* Switching to SP task ******* " << endl;
-  TString fileName = Form("GammaConvFlow_%i.root:SP_V0",trainConfig);
+  TString fileName = Form("GammaConvFlow_%i.root:SP_V0_%s",trainConfig, CutNumberString.Data());
   if(debug) cout << "    --> fileName " << fileName << endl;
   TString myFolder = fileName;
   if(debug) cout << "    --> myFolder " << myFolder << endl;
   TString myNameSP;
-  myNameSP = Form("%sSPv%d%s", name, harmonic, Qvector);
+  myNameSP = Form("%sSPv%d%s_%s", name, harmonic, Qvector,CutNumberString.Data());
   if(debug) cout << " myNameSP " << myNameSP << endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisDataContainer *flowEventOut = mgr->CreateContainer(Form("Filter_%s",myNameSP.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
