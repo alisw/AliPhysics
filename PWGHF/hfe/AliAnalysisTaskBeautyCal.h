@@ -137,6 +137,7 @@ private:
     
     TH1D        *fHistPhoReco0;//!ele cand SPD or
     TH1D        *fHistPhoReco1;//!ele cand SPD or
+    TH1D        *fHistPhoReco2;//!ele cand SPD or
 
     TH2D        *fHistDCAinc;//!ele cand SPD or
     TH2D        *fHistDCApho;//!ele cand SPD or
