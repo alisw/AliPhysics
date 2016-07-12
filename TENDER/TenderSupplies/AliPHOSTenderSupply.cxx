@@ -1046,6 +1046,7 @@ Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isH
     if(event){
       UShort_t BC = event->GetBunchCrossNumber();
       Int_t timeshift = BC%4 - fL1phase[ddl];
+      if(timeshift<0) timeshift += 4; 
       tof -= timeshift*25e-9;
     }
   }
