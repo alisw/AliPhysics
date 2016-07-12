@@ -481,16 +481,28 @@ void AliTPCDcalibRes::FitDrift()
   delete fVDriftGraph;
   fVDriftGraph = new TGraphErrors(ntbins);
   double resve[2];
-  int ngAcc = 0;
-  for (int i=0;i<ntbins;i++) {
-    double tQuery = hEnt->GetBinCenter(i);
-    if (!GetSmooth1D(tQuery,resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,kFALSE,kTRUE)) {
-      AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tQuery));
-      continue;
+  const Bool_t usePol2 = kFALSE;
+  int ngAcc = 0, npMin = 3+usePol2;
+  if (nAcc<npMin) { // not enough points for smoothing
+    AliWarningF("Cannot do smoothing with %d points only, min %d needed",nAcc,npMin);
+    int nAccP = ntbins<nAcc ? ntbins : nAcc;
+    for (int i=0;i<nAccP;i++) {
+      fVDriftGraph->SetPoint(ngAcc,tArr[i],dArr[i]);
+      fVDriftGraph->SetPointError(ngAcc,0.5,deArr[i]);      
+      ngAcc++;
     }
-    fVDriftGraph->SetPoint(ngAcc,tQuery,resve[0]);
-    fVDriftGraph->SetPointError(ngAcc,0.5,resve[1]);
-    ngAcc++;
+  }
+  else {
+    for (int i=0;i<ntbins;i++) {
+      double tQuery = hEnt->GetBinCenter(i);
+      if (!GetSmooth1D(tQuery,resve,nAcc,tArr,dArr,deArr,fSigmaTVD,kGaussianKernel,usePol2,kTRUE)) {
+	AliWarningF("Failed to smooth at point %d out of %d (T=%d)",i,ntbins,int(tQuery));
+	continue;
+      }
+      fVDriftGraph->SetPoint(ngAcc,tQuery,resve[0]);
+      fVDriftGraph->SetPointError(ngAcc,0.5,resve[1]);
+      ngAcc++;
+    }
   }
   for (int i=ntbins-1;i>=ngAcc; i--) fVDriftGraph->RemovePoint(i); // eliminate empty points
   //
