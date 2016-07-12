@@ -70,7 +70,6 @@ protected:
 	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 	  void Process(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
 
-	  void Draw2(Int_t cell);
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
 
 

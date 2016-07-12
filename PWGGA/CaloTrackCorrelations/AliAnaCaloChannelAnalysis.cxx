@@ -557,53 +557,6 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	SaveBadCellsToPDF(1,BadPdfName) ;
 }
 
-//________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Draw2(Int_t cell)
-{
-	gROOT->SetStyle("Plain");
-	gStyle->SetOptStat(0);
-	gStyle->SetFillColor(kWhite);
-	gStyle->SetTitleFillColor(kWhite);
-	gStyle->SetPalette(1);
-	char out[120]; char title[100]; char name[100];char name2[100];
-	TString slide(Form("Cells %d-%d",cell,cell));
-
-	sprintf(out,"%d.gif",cell);
-	TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
-	TH1 *hCellref = hCellAmplitude->ProjectionX("badcells",fGoodCellID+1,fGoodCellID+1);
-
-	TCanvas *c1 = new TCanvas("badcells","badcells",600,600) ;
-	c1->SetLogy();
-
-	// hCellref->Rebin(3);
-	TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
-
-	sprintf(name,"Cell %d",cell) ;
-	TH1 *hCell = hCellAmplitude->ProjectionX(name,cell+1,cell+1);
-
-	sprintf(title,"Cell %d      Entries : %d Enties ref: %d",cell, (Int_t)hCell->GetEntries(),(Int_t)hCellref->GetEntries()) ;
-	hCell->SetLineColor(2)  ;
-	// cout<<title<<endl ;
-	hCell->SetMaximum(1e5);
-	// hCell->Rebin(3);
-	hCell->SetAxisRange(0.,10.);
-	hCell->GetXaxis()->SetTitle("E (GeV)");
-	hCell->GetYaxis()->SetTitle("N Entries");
-	hCellref->SetAxisRange(0.,10.);
-	hCell->SetLineWidth(1) ;
-	hCellref->SetLineWidth(1) ;
-	hCell->SetTitle(title);
-	hCellref->SetLineColor(1)  ;
-	leg->AddEntry(hCellref,"reference","l");
-	leg->AddEntry(hCell,"current","l");
-	hCell->Draw() ;
-	hCellref->Draw("same") ;
-	leg->Draw();
-	sprintf(name2,"Cell%dLHC13MB.gif",cell) ;
-	c1->SaveAs(name2);
-
-}
-
 ///
 /// Allow to produce a pdf file with badcells candidates (red) compared to a refence cell (black).
 ///
