@@ -144,6 +144,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAdeSemi(0),
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
+  fHistDCAhaSemi(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -231,6 +232,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAdeSemi(0),
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
+  fHistDCAhaSemi(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -466,6 +468,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCApeSemi = new TH2D("fHistDCApeSemi", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCApeSemi);
+
+  fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
+  fOutputList->Add(fHistDCAhaSemi);
 
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
@@ -949,6 +954,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
+          if(fabs(pdg)!=11)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
