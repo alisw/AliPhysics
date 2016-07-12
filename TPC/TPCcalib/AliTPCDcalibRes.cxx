@@ -324,8 +324,8 @@ void AliTPCDcalibRes::CalibrateVDrift()
     tbinDuration = duration/nTimeBins;
   }
   AliInfoF("Suggest %d time bins of %d s durations",nTimeBins,int(tbinDuration));
-  ntr2BinBCon  = fNominalTimeBin/duration*statEstBCon;
-  ntr2BinBCoff = fNominalTimeBin/duration*statEstBCoff;
+  ntr2BinBCon  = tbinDuration/duration*statEstBCon;
+  ntr2BinBCoff = tbinDuration/duration*statEstBCoff;
   AliInfoF("Estimated Ntracks per time bin: with(w/o) TOF BC: %d(%d)",ntr2BinBCon,ntr2BinBCoff);
   //  if ( ntr2BinBCon<(nWantedTracks+fMinTracksToUse)/2 ) useTOFBC = kFALSE; // try to keep stat. high
   if ( ntr2BinBCon<nWantedTracks ) useTOFBC = kFALSE; // try to keep stat. high
