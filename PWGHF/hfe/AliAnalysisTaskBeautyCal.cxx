@@ -132,6 +132,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fvalueElectron(0),
   fHistPhoReco0(0),
   fHistPhoReco1(0),
+  fHistPhoReco2(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
@@ -218,6 +219,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fvalueElectron(0),
   fHistPhoReco0(0),
   fHistPhoReco1(0),
+  fHistPhoReco2(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
@@ -428,6 +430,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 30,0,30);
   fOutputList->Add(fHistPhoReco1);
+
+  fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fOutputList->Add(fHistPhoReco2);
 
   fHistDCAinc = new TH2D("fHistDCAinc", "DCA of inclusive e; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAinc);
@@ -920,13 +925,15 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
         if(pid_eleP)
           {
+           fHistPhoReco0->Fill(track->Pt()); // reco pho
+
            if(fFlagNonHFE)
              {
               fHistPhoReco1->Fill(track->Pt()); // reco pho
              }
            else
              {
-              fHistPhoReco0->Fill(track->Pt()); // org pho
+              fHistPhoReco2->Fill(track->Pt()); // org pho
              }
           }
 
