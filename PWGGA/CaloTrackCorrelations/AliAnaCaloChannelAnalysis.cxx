@@ -129,8 +129,10 @@ void AliAnaCaloChannelAnalysis::Init()
     fCellStartDCal=12288; //..ELI this should be automatized from the geometry information!!
 
     //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
-	cout<<"Number of cells: "<<fNoOfCells<<endl;
+	cout<<"Called geometry for run number: "<<fCurrentRunNumber<<endl;
 	cout<<"Number of supermod: "<<NModules<<endl;
+	cout<<"Number of cells: "<<fNoOfCells<<endl;
+	cout<<"Cell ID of first DCal cell: "<<fCellStartDCal<<endl;
 	//cout<<"Number of supermod utils: "<<fCaloUtils->GetNumberOfSuperModulesUsed()<<endl; //..will always be 22 unless set by hand
 
 	//......................................................
@@ -145,7 +147,7 @@ void AliAnaCaloChannelAnalysis::Init()
 	fNMaxCols    = 48;  //eta direction
 	fNMaxRows    = 24;  //phi direction
 	fNMaxColsAbs = 2*fNMaxCols;
-	fNMaxRowsAbs = Int_t (NModules/2)*fNMaxRows; //multiply by number of supermodules (20)
+	fNMaxRowsAbs = Int_t (NModules/2)*fNMaxRows; //multiply by number of supermodules
 }
 
 ///
@@ -437,13 +439,14 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	else if (criterum < 6) TestCellShapes(criterum, emin, emax, nsigma);
 
 	Int_t dnbins = 200;
-	if(criterum==1)              Process(criterum, hisogram, nsigma, dnbins,-1);
-	if(criterum==2 && emin==0.5) Process(criterum, hisogram, nsigma, dnbins*9000,-1); //ELI I did massivley increase the binning now but it helps a lot
-	if(criterum==2 && emin>0.5)  Process(criterum, hisogram, nsigma, dnbins*17,-1);
+	if(criterum==1)              FlagAsBad(criterum, hisogram, nsigma, dnbins,-1);
+	if(criterum==2 && emin==0.5) FlagAsBad(criterum, hisogram, nsigma, dnbins*9000,-1); //ELI I did massivley increase the binning now but it helps a lot
+	if(criterum==2 && emin>0.5)  FlagAsBad(criterum, hisogram, nsigma, dnbins*17,-1);
 
-	/*	if(criterum==3)              Process(criterum, hisogram, nsigma, dnbins, maxval3);
-	if(criterum==4)              Process(criterum, hisogram, nsigma, dnbins, maxval1);
-	if(criterum==5)              Process(criterum, hisogram, nsigma, dnbins, maxval2);
+	/*
+	if(criterum==3)              FlagAsBad(criterum, hisogram, nsigma, dnbins, maxval3);
+	if(criterum==4)              FlagAsBad(criterum, hisogram, nsigma, dnbins, maxval1);
+	if(criterum==5)              FlagAsBad(criterum, hisogram, nsigma, dnbins, maxval2);
 	 */
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -664,7 +667,7 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 /// \param dnbins  -- number of bins in distribution;
 /// \param dmaxval -- maximum value on distribution histogram.
 //_________________________________________________________________________
-void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t nsigma, Int_t dnbins, Double_t dmaxval)
+void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsigma, Int_t dnbins, Double_t dmaxval)
 {  
 	gStyle->SetOptStat(1); // MG modif
 	gStyle->SetOptFit(1);  // MG modif
