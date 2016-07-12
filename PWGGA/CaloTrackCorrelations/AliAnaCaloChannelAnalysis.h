@@ -63,6 +63,7 @@ protected:
 	  TString Convert();
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
+	  void SummarizeResults();
 
 	  void FlagAsDead();
 	  TH1F* TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
@@ -80,6 +81,7 @@ protected:
 	  TString fTrigger;                     ///< Selected trigger for the analysis
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
 	  Int_t   fGoodCellID;                  ///< ID of a good cell to compare the spectra to
+	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
 
 	  //Genergal paths
 	  TString fMergeOutput;                 ///< Here the merged files of a period are saved for a later analysis
