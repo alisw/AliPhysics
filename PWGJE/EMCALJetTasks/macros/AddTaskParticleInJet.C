@@ -20,7 +20,7 @@ AliAnalysisTaskParticleInJet *AddTaskParticleInJet(
   recpcont->SetParticlePhiLimits(1.4, 3.1);
   jettask->SetParticleContainerNameRec(recparticleContainer.Data());
 
-  AliJetContainer *recjcont = jettask->AddJetContainer(recjetcontainer.Data(), AliJetContainer::kEMCAL, 0.4);
+  AliJetContainer *recjcont = jettask->AddJetContainer(recjetcontainer.Data(), AliEmcalJet::kEMCAL, 0.4);
   jettask->SetJetContainerNameRec(recjetcontainer.Data());
 
   if(isMC){
@@ -29,7 +29,7 @@ AliAnalysisTaskParticleInJet *AddTaskParticleInJet(
     mcpcont->SetParticlePhiLimits(1.4, 3.1);
     jettask->SetParticleContainerNameMC(mcparticleContainer.Data());
 
-    AliJetContainer *mcjcont = jettask->AddJetContainer(mcjetcontainer.Data(), AliJetContainer::kEMCAL, 0.4);
+    AliJetContainer *mcjcont = jettask->AddJetContainer(mcjetcontainer.Data(), AliEmcalJet::kEMCAL, 0.4);
     jettask->SetJetContainerNameMC(mcjetcontainer.Data());
   }
 

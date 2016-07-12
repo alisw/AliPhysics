@@ -255,8 +255,8 @@ AliAnalysisManager* runEMCalJetSampleTask(
   sampleTask->SelectCollisionCandidates(kPhysSel);
 
   if (bDoFullJets) {
-    AliJetContainer* jetCont02 = sampleTask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.2, AliJetContainer::kEMCALfid, "Jet");
-    AliJetContainer* jetCont04 = sampleTask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.4, AliJetContainer::kEMCALfid, "Jet");
+    AliJetContainer* jetCont02 = sampleTask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.2, AliEmcalJet::kEMCALfid, "Jet");
+    AliJetContainer* jetCont04 = sampleTask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.4, AliEmcalJet::kEMCALfid, "Jet");
 
     if (iBeamType != AliAnalysisTaskEmcal::kpp) {
       jetCont02->SetRhoName(sRhoFuName);
@@ -267,8 +267,8 @@ AliAnalysisManager* runEMCalJetSampleTask(
   }
 
   if (bDoChargedJets) {
-    AliJetContainer* jetCont02 = sampleTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.2, AliJetContainer::kTPCfid, "Jet");
-    AliJetContainer* jetCont04 = sampleTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.4, AliJetContainer::kTPCfid, "Jet");
+    AliJetContainer* jetCont02 = sampleTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.2, AliEmcalJet::kTPCfid, "Jet");
+    AliJetContainer* jetCont04 = sampleTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 0.4, AliEmcalJet::kTPCfid, "Jet");
     if (iBeamType != AliAnalysisTaskEmcal::kpp) {
       jetCont02->SetRhoName(sRhoChName);
       jetCont02->SetPercAreaCut(0.6);

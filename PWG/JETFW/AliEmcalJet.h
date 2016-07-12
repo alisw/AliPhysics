@@ -49,6 +49,7 @@ class AliEmcalJet : public AliVParticle
    * @enum JetAcceptanceType
    * @brief Bit definition for jet geometry acceptance. Cut implemented in AliJetContainer
    * by comparing jet's bits (set in jet finder) to container's bits (set by user).
+   * If user doesn't set jet acceptance cut value, no cut is performed (equivalent to kUser).
    */
   enum JetAcceptanceType {
     kTPC              = 1<<0,     ///< TPC acceptance
