@@ -61,6 +61,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void SetMesonCutList(TList *CutArray){ fMesonCutArray = CutArray; }
 		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
 		void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
+        void SetTolerance(Double_t tol){fTolerance=tol;}
 
 	private:
 
@@ -104,7 +105,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 
         Bool_t KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega);
-        void SetTolerance(Double_t tol){fTolerance=tol;}
 
 
 		AliV0ReaderV1 					*fV0Reader;									// V0Reader for basic conversion photon selection
