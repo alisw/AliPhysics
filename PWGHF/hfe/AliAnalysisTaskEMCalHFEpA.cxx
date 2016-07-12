@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 7th, 2016.							          //
+	//		version: July 12th, 2016.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -2801,13 +2801,13 @@ if(!fIspp){
 	if(fHasCentralitySelection)
 	{
 		Float_t centrality = -1;
-		Float_t centrality2 = -1;
+			//Float_t centrality2 = -1;
 		
 		if(fIsAOD) 
 		{
 				//fCentrality = fAOD->GetHeader()->GetCentralityP();
 			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-			fCentrality2 = fAOD->GetCentrality();
+				//fCentrality2 = fAOD->GetCentrality();
 		}
 		else
 		{
@@ -2816,11 +2816,12 @@ if(!fIspp){
 		
 		if(fEstimator==1){
 			centrality = fCentrality->GetCentralityPercentile("ZNA");
-			centrality2 = fCentrality2->GetCentralityPercentile("ZNA");
+				//centrality2 = fCentrality2->GetCentralityPercentile("ZNA");
 		}
-		else{
+		if(fEstimator==0){
+
 			centrality = fCentrality->GetCentralityPercentile("V0A");
-			centrality2 = fCentrality2->GetCentralityPercentile("V0A");
+				//centrality2 = fCentrality2->GetCentralityPercentile("V0A");
 		}
 		
 			
@@ -3030,11 +3031,13 @@ if(!fIspp){
 										if(fEstimator==1){
 											centrality = fCentrality->GetCentralityPercentile("ZNA");
 										}
-										else{
+										if(fEstimator==0){
+
 											centrality = fCentrality->GetCentralityPercentile("V0A");
 										}
 											
-																						
+											//printf("fPtMCparticleAllHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
+										
 										if(centrality>0 && centrality<20)fPtMCparticleAllHfe1_0->Fill(fMCparticle->Pt());
 										if(centrality>20 && centrality<40)fPtMCparticleAllHfe1_1->Fill(fMCparticle->Pt());
 										if(centrality>40 && centrality<60)fPtMCparticleAllHfe1_2->Fill(fMCparticle->Pt());
@@ -3183,36 +3186,7 @@ if(!fIspp){
 								if(fIsHFE1){
 									fPtMCparticleAllHfe1->Fill(fMCtrack->Pt());//denominator for total efficiency and tracking
 									
-										//centrality
-									if(fIsCentralitySys){
 										
-										Float_t centrality = -1;
-										
-										if(fIsAOD) 
-										{
-												//fCentrality = fAOD->GetHeader()->GetCentralityP();
-											fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-										}
-										else
-										{
-											fCentrality = fESD->GetCentrality();
-										}
-										
-										if(fEstimator==1){
-											centrality = fCentrality->GetCentralityPercentile("ZNA");
-										}
-										else{
-											centrality = fCentrality->GetCentralityPercentile("V0A");
-										}
-
-										
-										
-										if(centrality>0 && centrality<20) fPtMCparticleAllHfe1_0->Fill(fMCparticle->Pt());
-										if(centrality>20 && centrality<40)fPtMCparticleAllHfe1_1->Fill(fMCparticle->Pt());
-										if(centrality>40 && centrality<60)fPtMCparticleAllHfe1_2->Fill(fMCparticle->Pt());
-										if(centrality>60 && centrality<100)fPtMCparticleAllHfe1_3->Fill(fMCparticle->Pt());
-											//if(centrality>80 && centrality<100) fPtMCparticleAllHfe1_4->Fill(fMCparticle->Pt());
-									}
 									
 									
 									fEtaPhi_den->Fill(fMCtrack->Phi(),fMCtrack->Eta());
@@ -3241,7 +3215,7 @@ if(!fIspp){
 		
 		if(fIsAOD) 
 		{
-				//fCentrality = fAOD->GetHeader()->GetCentralityP();
+			//fCentrality = fAOD->GetHeader()->GetCentralityP();
 			fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
 		}
 		else
@@ -3252,7 +3226,8 @@ if(!fIspp){
 		if(fEstimator==1){
 			centrality = fCentrality->GetCentralityPercentile("ZNA");
 		}
-		else{
+		if(fEstimator==0){
+
 			centrality = fCentrality->GetCentralityPercentile("V0A");
 		}
 
@@ -3417,7 +3392,7 @@ if(!fIspp){
 						if(fEstimator==1){
 							centrality = fCentrality->GetCentralityPercentile("ZNA");
 						}
-						else{
+						if(fEstimator==0){
 							centrality = fCentrality->GetCentralityPercentile("V0A");
 						}
 
@@ -3428,6 +3403,7 @@ if(!fIspp){
 						if(centrality>60 && centrality<100)fECluster_pure_3->Fill(clust->E());
 					}
 
+					
 					
 				}
 			}
@@ -3475,7 +3451,8 @@ if(!fIspp){
 					if(fEstimator==1){
 						centrality = fCentrality->GetCentralityPercentile("ZNA");
 					}
-					else{
+					if(fEstimator==0){
+
 						centrality = fCentrality->GetCentralityPercentile("V0A");
 					}
 
@@ -3550,31 +3527,7 @@ if(!fIspp){
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
-		//==============================================================================
-		//centrality
-		if(fIsCentralitySys){
-			Float_t centrality = -1;
-		
-			if(fIsAOD) 
-			{
-				//fCentrality = fAOD->GetHeader()->GetCentralityP();
-				fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
-			}
-			else
-			{
-				fCentrality = fESD->GetCentrality();
-			}
-		
-			
-			if(fEstimator==1){
-				centrality = fCentrality->GetCentralityPercentile("ZNA");
-			}
-			else{
-				centrality = fCentrality->GetCentralityPercentile("V0A");
-			}
-			
-		}
-		//==============================================================================
+	
 
 		
 		
@@ -3999,10 +3952,12 @@ if(!fIspp){
 									//unfolding
 									fpt_reco_pt_MC_den->Fill(track->Pt(),fMCparticle->Pt());
 										//numerator tracking for centrality
+									
 									if(fIsCentralitySys){
                                     //===================================================================================
 										Float_t centrality = -1;
 										
+																					
 										if(fIsAOD) 
 										{
 												//fCentrality = fAOD->GetHeader()->GetCentralityP();
@@ -4016,18 +3971,22 @@ if(!fIspp){
 										if(fEstimator==1){
 											centrality = fCentrality->GetCentralityPercentile("ZNA");
 										}
-										else{
+										if(fEstimator==0){
 											centrality = fCentrality->GetCentralityPercentile("V0A");
 										}
 									//===================================================================================	
 
+											//printf("fPtMCparticleRecoHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
 										
+										if(centrality>0 && centrality<20)fPtMCparticleRecoHfe1_0->Fill(fMCparticle->Pt());
+										if(centrality>20 && centrality<40)fPtMCparticleRecoHfe1_1->Fill(fMCparticle->Pt());
+										if(centrality>40 && centrality<60)fPtMCparticleRecoHfe1_2->Fill(fMCparticle->Pt());
+										if(centrality>60 && centrality<100)fPtMCparticleRecoHfe1_3->Fill(fMCparticle->Pt());
+									
 										
-										if(centrality>0 && centrality<20)fPtMCparticleRecoHfe1_0->Fill(fMCtrack->Pt());
-										if(centrality>20 && centrality<40)fPtMCparticleRecoHfe1_1->Fill(fMCtrack->Pt());
-										if(centrality>40 && centrality<60)fPtMCparticleRecoHfe1_2->Fill(fMCtrack->Pt());
-										if(centrality>60 && centrality<100)fPtMCparticleRecoHfe1_3->Fill(fMCtrack->Pt());
 									}
+									
+									
 
 								}
 								if(fIsHFE2){ 
@@ -4104,16 +4063,20 @@ if(!fIspp){
 				if(fEstimator==1){
 					centrality = fCentrality->GetCentralityPercentile("ZNA");
 				}
-				else{
+				if(fEstimator==0){
+
 					centrality = fCentrality->GetCentralityPercentile("V0A");
 				}
               //===================================================================================	
+				
+					//printf("fTPCnsigma_pt_2D3   Estimator %d, Centrality %f \n", fEstimator, centrality);
 				
 				if(centrality>0 && centrality<20)  fTPCnsigma_pt_2D3_0->Fill(fPt,fTPCnSigma);
 				if(centrality>20 && centrality<40) fTPCnsigma_pt_2D3_1->Fill(fPt,fTPCnSigma);
 				if(centrality>40 && centrality<60) fTPCnsigma_pt_2D3_2->Fill(fPt,fTPCnSigma);
 				if(centrality>60 && centrality<100)fTPCnsigma_pt_2D3_3->Fill(fPt,fTPCnSigma);
 			}
+			
 			
 			
 		}
@@ -4272,6 +4235,7 @@ if(!fIspp){
 						
 						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
+							
 							if(fIsCentralitySys){
 								
 								
@@ -4290,10 +4254,12 @@ if(!fIspp){
 								if(fEstimator==1){
 									centrality = fCentrality->GetCentralityPercentile("ZNA");
 								}
-								else{
+								if(fEstimator==0){
+
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
 										
+									//printf("fEoverP_pt_pions2   Estimator %d, Centrality %f \n", fEstimator, centrality);
 								
 								
 								if(centrality>0 && centrality<20) fEoverP_pt_pions2_0->Fill(fPt, EoverP);
@@ -4302,6 +4268,8 @@ if(!fIspp){
 								if(centrality>60 && centrality<100) fEoverP_pt_pions2_3->Fill(fPt, EoverP);
 								//if(centrality>80 && centrality<100) fEoverP_pt_pions2_4->Fill(fPt, EoverP);
 							}
+							 
+							
 							
 							if(fClus->E()>8.0)fEoverP_pt_pions2_highE1->Fill(fPt, EoverP);
 							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
@@ -4520,7 +4488,7 @@ if(!fIspp){
 								if(fEstimator==1){
 									centrality = fCentrality->GetCentralityPercentile("ZNA");
 								}
-								else{
+								if(fEstimator==0){
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
 								//===================================================================================
@@ -4531,6 +4499,8 @@ if(!fIspp){
 								if(centrality>60 && centrality<100) fPtMC_TPC_All_3->Fill(fMCparticle->Pt());
 							
 							}
+							 
+							
 				        }
 					}
 				}
@@ -4615,7 +4585,8 @@ if(!fIspp){
 				if(fEstimator==1){
 					centrality = fCentrality->GetCentralityPercentile("ZNA");
 				}
-				else{
+				if(fEstimator==0){
+
 					centrality = fCentrality->GetCentralityPercentile("V0A");
 				}
 					//===================================================================================	
@@ -4626,6 +4597,7 @@ if(!fIspp){
 				if(centrality>40 && centrality<60) fTPCnsigma_pt_2D5_2->Fill(fPt,fTPCnSigma);
 				if(centrality>60 && centrality<100)fTPCnsigma_pt_2D5_3->Fill(fPt,fTPCnSigma);
 			}
+			 
 			
 			
 		}
@@ -4683,7 +4655,8 @@ if(!fIspp){
 								if(fEstimator==1){
 									centrality = fCentrality->GetCentralityPercentile("ZNA");
 								}
-								else{
+								if(fEstimator==0){
+
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
 								//===================================================================================
@@ -4693,6 +4666,8 @@ if(!fIspp){
 								if(centrality>40 && centrality<60)  fPtMC_TPC_Selected_2->Fill(fMCparticle->Pt());
 								if(centrality>60 && centrality<100)  fPtMC_TPC_Selected_3->Fill(fMCparticle->Pt());
 							}
+							 
+							
 				        }
 					}
 				}
@@ -4972,7 +4947,8 @@ if(!fIspp){
 									if(fEstimator==1){
 										centrality = fCentrality->GetCentralityPercentile("ZNA");
 									}
-									else{
+									if(fEstimator==0){
+
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
 									
@@ -5428,7 +5404,8 @@ if(!fIspp){
 														if(fEstimator==1){
 															centrality = fCentrality->GetCentralityPercentile("ZNA");
 														}
-														else{
+														if(fEstimator==0){
+
 															centrality = fCentrality->GetCentralityPercentile("V0A");
 														}
 														
@@ -5680,7 +5657,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fEstimator==1){
 								centrality = fCentrality->GetCentralityPercentile("ZNA");
 							}
-							else{
+							if(fEstimator==0){
+
 								centrality = fCentrality->GetCentralityPercentile("V0A");
 							}
 
@@ -5712,7 +5690,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fEstimator==1){
 								centrality = fCentrality->GetCentralityPercentile("ZNA");
 							}
-							else{
+							if(fEstimator==0){
+
 								centrality = fCentrality->GetCentralityPercentile("V0A");
 							}
 							
@@ -6271,7 +6250,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					if(fEstimator==1){
 						centrality = fCentrality->GetCentralityPercentile("ZNA");
 					}
-					else{
+					if(fEstimator==0){
+
 						centrality = fCentrality->GetCentralityPercentile("V0A");
 					}
 					
@@ -6331,7 +6311,8 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					if(fEstimator==1){
 						centrality = fCentrality->GetCentralityPercentile("ZNA");
 					}
-					else{
+					if(fEstimator==0){
+
 						centrality = fCentrality->GetCentralityPercentile("V0A");
 					}					
 					
