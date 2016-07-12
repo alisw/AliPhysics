@@ -41,6 +41,7 @@
 #pragma link C++ class AliAnaConvCorrPion+;
 #pragma link C++ class AliAnaConvCorrPhoton+;
 #pragma link C++ class AliAnalysisTaskdPhi+;
+#pragma link C++ class AliAnalysisTaskOmegaToPiZeroGamma+;
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
