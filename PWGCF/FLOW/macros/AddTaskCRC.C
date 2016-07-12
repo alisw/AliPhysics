@@ -78,9 +78,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Float_t MaxDevZN=10.;
  Bool_t bUsePhiEtaWeights=kFALSE;
  TString PhiEtaWeightsFileName="";
-  Double_t dDCAxy=1000.;
-  Double_t dDCAz=1000.;
- 
+ Double_t dDCAxy=1000.;
+ Double_t dDCAz=1000.;
+ if(AODfilterBit==128) {
+  dDCAxy=2.4;
+  dDCAz=3.2;
+ }
+  
  // define CRC suffix
  TString CRCsuffix = ":CRC";
  
@@ -178,8 +182,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   RefMultCuts->SetMaxDCAToVertexXY(dDCAxy);
   RefMultCuts->SetMaxDCAToVertexZ(dDCAz);
   RefMultCuts->SetMinNClustersTPC(dMinClusTPC);
+  RefMultCuts->SetMinChi2PerClusterTPC(0.1);
+  RefMultCuts->SetMaxChi2PerClusterTPC(4.);
   RefMultCuts->SetPtRange(ptMin,ptMax);
   RefMultCuts->SetEtaRange(etaMin,etaMax);
+  RefMultCuts->SetAcceptKinkDaughters(kFALSE);
   cutsEvent->SetRefMultCuts(RefMultCuts);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
@@ -238,6 +245,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    cutsRP->SetParamType(AliFlowTrackCuts::kAODFilterBit);
    cutsRP->SetAODfilterBit(AODfilterBit);
    cutsRP->SetMinimalTPCdedx(-999999999);
+   cutsRP->SetMaxDCAToVertexXY(dDCAxy);
+   cutsRP->SetMaxDCAToVertexZ(dDCAz);
+   cutsRP->SetMinNClustersTPC(dMinClusTPC);
+   cutsRP->SetMinChi2PerClusterTPC(0.1);
+   cutsRP->SetMaxChi2PerClusterTPC(4.);
    cutsRP->SetPtRange(ptMin,ptMax);
    cutsRP->SetEtaRange(etaMin,etaMax);
    cutsRP->SetAcceptKinkDaughters(kFALSE);
@@ -250,6 +262,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetMaxDCAToVertexXY(dDCAxy);
   cutsPOI->SetMaxDCAToVertexZ(dDCAz);
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
+  cutsPOI->SetMinChi2PerClusterTPC(0.1);
+  cutsPOI->SetMaxChi2PerClusterTPC(4.);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);

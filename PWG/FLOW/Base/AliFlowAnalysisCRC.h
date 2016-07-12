@@ -1566,7 +1566,7 @@ private:
  
  // Flow all
  const static Int_t fFlowNHarm = 3;
- const static Int_t fFlowNHarmMax = 9; // WARNING: MIN 5
+ const static Int_t fFlowNHarmMax = 9; // WARNING: MIN 8
   const static Int_t fQVecPower = 5;
   Int_t fPtDiffNBins; //
   Int_t fEtaDiffNBins; //
