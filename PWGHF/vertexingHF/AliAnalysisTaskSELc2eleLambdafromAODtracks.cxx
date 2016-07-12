@@ -575,7 +575,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fV0dcaArray2(0x0),
   fElectronCutVarsArray(0x0),
   fV0CutVarsArray1(0x0),
-  fV0CutVarsArray2(0x0)
+  fV0CutVarsArray2(0x0),
+  fHistoPoolNumberOfDumps(0),
+  fHistoPoolSufficientEvents(0)
 {
   //
   /// Default Constructor.
@@ -588,6 +590,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
+  for(Int_t i=0;i<1000;i++){
+    fPoolStatus[i]=kFALSE;
+  }
 }
 
 //___________________________________________________________________________
@@ -1079,7 +1084,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fV0dcaArray2(0x0),
   fElectronCutVarsArray(0x0),
   fV0CutVarsArray1(0x0),
-  fV0CutVarsArray2(0x0)
+  fV0CutVarsArray2(0x0),
+  fHistoPoolNumberOfDumps(0),
+  fHistoPoolSufficientEvents(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -1094,6 +1101,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
+  for(Int_t i=0;i<1000;i++){
+    fPoolStatus[i]=kFALSE;
+  }
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());
@@ -1404,7 +1414,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::Terminate(Option_t*)
   /// the results graphically or save the results to file.
   
   //AliInfo("Terminate","");
+
+  for(Int_t i=0;i<fNOfPools;i++){
+    if(fPoolStatus[i]){
+      fHistoPoolSufficientEvents->Fill(1);
+    }else{
+      fHistoPoolSufficientEvents->Fill(0);
+    }
+  }
+
   AliAnalysisTaskSE::Terminate();
+
   
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
@@ -1636,6 +1656,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
 				if(fEventBuffer[ind]->GetEntries() >= 20*fNumberOfEventsForMixing){
 					ResetPool(ind);
 				}
+        fPoolStatus[ind] = kTRUE;
+        fHistoPoolNumberOfDumps->Fill(ind);
       }
       fEventBuffer[ind]->Fill();
     }
@@ -4197,11 +4219,17 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
   fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","conter",30,-15.,15.,120,-0.5,119.5);
 
+  fHistoPoolNumberOfDumps = new TH1F("fHistoPoolNumberOfDumps","Number of dumps",1000,-0.5,999.5);
+  fHistoPoolNumberOfDumps->SetBinContent(999,fNumberOfEventsForMixing);
+
+  fHistoPoolSufficientEvents = new TH1F("fHistoPoolSufficientEvents","OK Flag",2,-0.5,1.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
   fOutput->Add(fHNTrackletvsZ);
+  fOutput->Add(fHistoPoolNumberOfDumps);
+  fOutput->Add(fHistoPoolSufficientEvents);
 
   return;
 }

@@ -76,7 +76,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 		task->SetNumberOfEventsForMixing(1000);//pp
 	}else{
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-		task->SetNumberOfEventsForMixing(100);//pPb
+		task->SetNumberOfEventsForMixing(5);//pPb
 	}
 
   mgr->AddTask(task);

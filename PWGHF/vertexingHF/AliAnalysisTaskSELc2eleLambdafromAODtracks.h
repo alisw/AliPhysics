@@ -655,9 +655,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
   TObjArray* fV0CutVarsArray1; /// array of RDHF cut information
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
+  Bool_t fPoolStatus[1000]; /// array of pool status
+  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
+  TH1F* fHistoPoolSufficientEvents; //!<! 1: once the pool becomes full
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,30); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,31); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
