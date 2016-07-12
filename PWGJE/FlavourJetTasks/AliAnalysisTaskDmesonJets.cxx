@@ -334,7 +334,7 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition() :
   fRadius(0),
   fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecoScheme(AliJetContainer::pt_scheme),
-  fAcceptance(AliJetContainer::kUser),
+  fAcceptance(AliEmcalJet::kUser),
   fMinJetPt(0.),
   fMaxJetPt(500.),
   fMinJetPhi(0.),
@@ -360,7 +360,7 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(EJetType_t typ
   fRadius(r),
   fJetAlgo(algo),
   fRecoScheme(reco),
-  fAcceptance(AliJetContainer::kUser),
+  fAcceptance(AliEmcalJet::kUser),
   fMinJetPt(0.),
   fMaxJetPt(500.),
   fMinJetPhi(0.),
@@ -376,10 +376,10 @@ AliAnalysisTaskDmesonJets::AliHFJetDefinition::AliHFJetDefinition(EJetType_t typ
   switch (type) {
   case AliJetContainer::kFullJet:
   case AliJetContainer::kNeutralJet:
-    fAcceptance = AliJetContainer::kEMCALfid;
+    fAcceptance = AliEmcalJet::kEMCALfid;
     break;
   case AliJetContainer::kChargedJet:
-    fAcceptance = AliJetContainer::kTPCfid;
+    fAcceptance = AliEmcalJet::kTPCfid;
     break;
   }
 }
@@ -460,20 +460,20 @@ void AliAnalysisTaskDmesonJets::AliHFJetDefinition::SetDetectorJetEtaPhiRange(co
 {
   Double_t r = 0;
   switch (fAcceptance) {
-  case AliJetContainer::kTPCfid:
+  case AliEmcalJet::kTPCfid:
     r = fRadius;
     // enforce fiducial acceptance
     /* no break */
-  case AliJetContainer::kTPC:
+  case AliEmcalJet::kTPC:
     SetJetEtaRange(-0.9 + r, 0.9 - r);
     SetJetPhiRange(0, 0);  // No cut on phi
     break;
 
-  case AliJetContainer::kEMCALfid:
+  case AliEmcalJet::kEMCALfid:
     r = fRadius;
     // enforce fiducial acceptance
     /* no break */
-  case AliJetContainer::kEMCAL:
+  case AliEmcalJet::kEMCAL:
     if (geom) {
       SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
 
@@ -491,11 +491,11 @@ void AliAnalysisTaskDmesonJets::AliHFJetDefinition::SetDetectorJetEtaPhiRange(co
     }
     break;
 
-  case AliJetContainer::kDCALfid:
+  case AliEmcalJet::kDCALfid:
     r = fRadius;
     // enforce fiducial acceptance
     /* no break */
-  case AliJetContainer::kDCAL:
+  case AliEmcalJet::kDCAL:
     if (geom) {
       SetJetEtaRange(geom->GetArm1EtaMin() + r, geom->GetArm1EtaMax() - r);
       SetJetPhiRange(geom->GetDCALPhiMin() * TMath::DegToRad() + r, geom->GetDCALPhiMax() * TMath::DegToRad() - r);
@@ -507,7 +507,7 @@ void AliAnalysisTaskDmesonJets::AliHFJetDefinition::SetDetectorJetEtaPhiRange(co
     }
     break;
 
-  case AliJetContainer::kUser:
+  case AliEmcalJet::kUser:
     // Nothing to be done
     break;
   }

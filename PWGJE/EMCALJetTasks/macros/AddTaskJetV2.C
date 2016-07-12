@@ -85,7 +85,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
       if(minEta > -.7 || maxEta < 0.7) {
-          jetCont->SetJetAcceptanceType(AliJetContainer::kUser);
+          jetCont->SetJetAcceptanceType(AliEmcalJet::kUser);
           jetCont->SetJetEtaLimits(minEta, maxEta);
       }
       if(partCont)      jetCont->ConnectParticleContainer(partCont);

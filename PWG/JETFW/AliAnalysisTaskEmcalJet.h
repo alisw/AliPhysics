@@ -63,7 +63,7 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   virtual void                SetLocalRhoName(const char *n)               { fLocalRhoName   = n; }
   const TString&              GetRhoName(Int_t c = 0) const;
   AliJetContainer            *AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius = 0.4);
-  AliJetContainer            *AddJetContainer(const char *n, UInt_t accType = AliJetContainer::kUser, Float_t jetRadius = 0.4);
+  AliJetContainer            *AddJetContainer(const char *n, UInt_t accType = AliEmcalJet::kUser, Float_t jetRadius = 0.4);
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
       UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
   AliJetContainer            *AddJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
