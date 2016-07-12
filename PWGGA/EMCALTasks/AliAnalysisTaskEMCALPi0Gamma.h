@@ -360,7 +360,7 @@ protected:
   TH2                   *fHPrimPionInvMassesAsym;       //!histos for invariant mass plots
   
   // conversion info
-  TH1                   * fHConversionPoint;   //!histo for conversion position in XY
+  //TH1                   * fHConversionPoint;   //!histo for conversion position in XY
   
   // histograms for MC
   TH1                   *fHWgt;         //!histo for weight of particles
