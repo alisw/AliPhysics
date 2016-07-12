@@ -509,7 +509,7 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 //________________________________________________________________________
 void AliAnaCaloChannelAnalysis::SummarizeResults()
 {
-	Int_t CellID, nb1=0, nb2=0;
+	Int_t CellID, DCalCells=0, EMCalCells=0;
 	TString CellSummaryFile, DeadPdfName, BadPdfName;
 
 	DeadPdfName     = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
@@ -523,33 +523,61 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	{
 		file<<"Dead cells : "<<endl;
 		cout<<"    o Dead cells : "<<endl;
-		nb1 =0;
+		EMCalCells =0;
+		DCalCells  =0;
 		for(CellID=0; CellID<fNoOfCells; CellID++)
 		{
+			if(CellID==0)
+			{
+				file<<"In EMCal : "<<endl;
+				cout<<"    o In EMCal : "<<endl;
+			}
+			if(CellID==fCellStartDCal)
+			{
+				file<<"In DCal : "<<endl;
+				cout<<endl;
+				cout<<"    o In DCal : "<<endl;
+			}
 			if(fFlag[CellID]==1)
 			{
 				file<<CellID<<"\n" ;
 				cout<<CellID<<"," ;
-				//if(CellID<number)nb1++;
+				if(CellID<fCellStartDCal)EMCalCells++;
+				else                     DCalCells++;
 			}
 		}
-		file<<"("<<nb1<<")"<<endl;
-		cout<<"("<<nb1<<")"<<endl;
+		cout<<endl;
+		file<<"EMCal ("<<EMCalCells<<" ="<<100*EMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<DCalCells<<" ="<<100*DCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		cout<<"    o EMCal ("<<EMCalCells<<" ="<<100*EMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<DCalCells<<" ="<<100*DCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 
-		file<<"Bad cells (excluded): "<<endl;
-		cout<<"    o Total number of bad cells (excluded): "<<endl;
-		nb2=0;
+		file<<"Bad cells: "<<endl;
+		cout<<"    o Bad cells: "<<endl;
+		EMCalCells =0;
+		DCalCells  =0;
 		for(CellID=0;CellID<fNoOfCells;CellID++)
 		{
+			if(CellID==0)
+			{
+				file<<"In EMCal : "<<endl;
+				cout<<"    o In EMCal : "<<endl;
+			}
+			if(CellID==fCellStartDCal)
+			{
+				file<<"In DCal : "<<endl;
+				cout<<endl;
+				cout<<"    o In DCal : "<<endl;
+			}
 			if(fFlag[CellID]>1)
 			{
 				file<<CellID<<"\n" ;
 				cout<<CellID<<"," ;
-				//if(CellID<number)nb2++;
+				if(CellID<fCellStartDCal)EMCalCells++;
+				else                     DCalCells++;
 			}
 		}
-		file<<"("<<nb2<<")"<<endl;
-		cout<<"("<<nb2<<")"<<endl;
+		cout<<endl;
+		file<<"EMCal ("<<EMCalCells<<" ="<<100*EMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<DCalCells<<" ="<<100*DCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
+		cout<<"    o EMCal ("<<EMCalCells<<" ="<<100*EMCalCells/(1.0*fCellStartDCal)<<"%), DCal ("<<DCalCells<<" ="<<100*DCalCells/(1.0*fNoOfCells-fCellStartDCal)<<"%)"<<endl;
 	}
 	file.close();
 
@@ -1029,12 +1057,16 @@ void AliAnaCaloChannelAnalysis::TestCellShapes(Int_t crit, Double_t fitemin, Dou
 	//  maxval1 =
 	//  maxval2 =
 	//  maxval3 =
+	/*
 	if(crit==3)
 		Process(crit, hFitChi2Ndf, nsigma, dnbins, maxval3);
 	if(crit==4)
 		Process(crit, hFitA, nsigma, dnbins,  maxval1);
 	if(crit==5)
 		Process(crit, hFitB, nsigma, dnbins, maxval2);
+	*/
+
+	//ELI something like thie in the future: return histogram;
 }
 
 
