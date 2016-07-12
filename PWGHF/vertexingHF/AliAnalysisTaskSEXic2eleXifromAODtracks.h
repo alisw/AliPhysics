@@ -425,9 +425,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray1; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
+  Bool_t fPoolStatus[1000]; /// array of pool status
+  TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
+  TH1F* fHistoPoolSufficientEvents; //!<! 1: once the pool becomes full
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,29); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,30); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
