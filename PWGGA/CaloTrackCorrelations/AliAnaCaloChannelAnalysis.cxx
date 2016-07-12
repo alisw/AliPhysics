@@ -123,10 +123,10 @@ void AliAnaCaloChannelAnalysis::Init()
 	//..Set the AODB calibration, bad channels etc. parameters at least once
 	//fCaloUtils->AccessOADB(aod);
 
-
     fNoOfCells    =fCaloUtils->GetEMCALGeometry()->GetNCells(); //..Very important number, never change after that point!
     Int_t NModules=fCaloUtils->GetEMCALGeometry()->GetNumberOfSuperModules();
-    fGoodCellID   =2377;  //..This is the ID of a good cell ELI where does this nuber come from ->write a setter function
+    fGoodCellID   =2377;  //..This is the ID of a good cell ELI where does this number come from ->write a setter function
+    fCellStartDCal=12288; //..ELI this should be automatized from the geometry information!!
 
     //..This is how the calorimeter looks like in the current period (defined by example run ID fCurrentRunNumber)
 	cout<<"Number of cells: "<<fNoOfCells<<endl;
@@ -171,6 +171,8 @@ void AliAnaCaloChannelAnalysis::Run()
 	}
 	else
 	{
+		cout<<". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."<<endl;
+		cout<<". . .Start process by loading external file. . . . . . . . . . ."<<endl;
 		fMergedFileName = Form("%s/%s", fMergeOutput.Data(), fExternalFileName.Data());
 	}
 
@@ -348,10 +350,9 @@ void AliAnaCaloChannelAnalysis::BCAnalysis()
     		PeriodAnalysis(PeriodArray.At(0),PeriodArray.At(1),PeriodArray.At(2),PeriodArray.At(3));
     }
 
-    //..Version 7 ...ELI contiue comment
-	TFile::Open(fMergedFileName);
-	PeriodAnalysis(7,0.,0.,0.);
-
+    //..In the end summarize results
+    //..in a .pdf and a .txt file
+	SummarizeResults();
 	cout<<"o o o End of bad channel analysis o o o"<<endl;
 }
 
@@ -385,30 +386,34 @@ void AliAnaCaloChannelAnalysis::AddPeriodAnalysis(Int_t criteria, Double_t nsigm
   periodArray.AddAt(emax,3);
   fAnalysisVector.push_back(periodArray);
 }
+
+//..This function does perform different checks depending on the given criterium variable
+//..diffrent possibilities for criterium are:
+// 1 : average E for E>Emin and E<Emax
+// 2 : entries for E>Emin and E<Emax
+
+// 3 : ki²/ndf  (from fit of each cell Amplitude between Emin and Emax)
+// 4 : A parameter (from fit of each cell Amplitude between Emin and Emax)
+// 5 : B parameter (from fit of each cell Amplitude between Emin and Emax)
+// 6 :
+// 7 : give bad + dead list
 //_________________________________________________________________________
 void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, Double_t emin, Double_t emax)
 {
+	//ELI criterum should be between 1-4
+
 	cout<<""<<endl;
 	cout<<""<<endl;
 	cout<<""<<endl;
 	cout<<"o o o o o o o o o o o o o o o o o o o o o o  o o o"<<endl;
 	cout<<"o o o PeriodAnalysis for flag "<<criterum<<" o o o"<<endl;
 	cout<<"o o o Done in the energy range E "<<emin<<"-"<<emax<<endl;
-	//..This function does perform different checks depending on the given criterium variable
-	//..diffrent possibilities for criterium are:
-	// 1 : average E for E>Emin and E<Emax
-	// 2 : entries for E>Emin and E<Emax
-
-	// 3 : ki²/ndf  (from fit of each cell Amplitude between Emin and Emax)
-	// 4 : A parameter (from fit of each cell Amplitude between Emin and Emax)
-	// 5 : B parameter (from fit of each cell Amplitude between Emin and Emax)
-	// 6 :
-	// 7 : give bad + dead list
 
 	Int_t CellID, nb1=0, nb2=0;
-	TString output, CellSummaryFile, DeadPdfName, BadPdfName;
+	TString output;
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//.. DEAD CELLS
 	//.. Flage Dead cells with fFlag=1
 	//.. this excludes cells from analysis (will not appear in results)
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -416,16 +421,18 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	FlagAsDead();
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//.. ANALYSIS
+	//.. ANALYSIS OF CELLS WITH ENTRIES
 	//.. Build average distributions and fit them
 	//.. Three tests for bad cells:
-	//.. 1) Average energy per hit;
-	//.. 2) Average hit per event;
+	//.. 1) Average energy per hit
+	//.. 2) Average hit per event
+	//.. 3) ...
+	//.. 4) ...
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	TH1F* hisogram;
 	if(criterum < 6)cout<<"o o o Analyze average cell distributions o o o"<<endl;
 	//..For case 1 or 2
-	if (criterum < 3)   hisogram = TestCellEandN(criterum, emin, emax,nsigma);
+	if(criterum < 3)   hisogram = TestCellEandN(criterum, emin, emax,nsigma);
 	//..For case 3, 4 or 5
 	else if (criterum < 6) TestCellShapes(criterum, emin, emax, nsigma);
 
@@ -434,120 +441,122 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterum, Double_t nsigma, 
 	if(criterum==2 && emin==0.5) Process(criterum, hisogram, nsigma, dnbins*9000,-1); //ELI I did massivley increase the binning now but it helps a lot
 	if(criterum==2 && emin>0.5)  Process(criterum, hisogram, nsigma, dnbins*17,-1);
 
-/*	if(criterum==3)              Process(criterum, hisogram, nsigma, dnbins, maxval3);
+	/*	if(criterum==3)              Process(criterum, hisogram, nsigma, dnbins, maxval3);
 	if(criterum==4)              Process(criterum, hisogram, nsigma, dnbins, maxval1);
 	if(criterum==5)              Process(criterum, hisogram, nsigma, dnbins, maxval2);
-*/
+	 */
+
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//.. RESULTS
 	//.. 1) Print the bad cells
 	//..    and write the results to a file
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	if(criterum < 6)
+
+	//..Print the results on the screen and
+	//..write the results in a file
+	output.Form("%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt", fAnalysisOutput.Data(), criterum,emin,emax);
+	ofstream file(output, ios::out | ios::trunc);
+	if(!file)
 	{
-		//..Print the results on the screen and
-		//..write the results in a file
-		output.Form("%s/Criterion%d_Emin-%.2f_Emax-%.2f.txt", fAnalysisOutput.Data(), criterum,emin,emax);
-		ofstream file(output, ios::out | ios::trunc);
-		if(!file)
+		cout<<"#### Major Error. Check the textfile!"<<endl;
+	}
+	file<<"Criterion : "<<criterum<<", emin = "<<emin<<" GeV"<<", emax = "<<emax<<" GeV"<<endl;
+	file<<"Bad by lower value : "<<endl;
+	cout<<"    o bad cells by lower value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
+	cout<<"      ";
+	nb1=0;
+	for(CellID=0;CellID<fNoOfCells;CellID++)
+	{
+		if(fFlag[CellID]==2)
 		{
-			cout<<"#### Major Error. Check the textfile!"<<endl;
+			nb1++;
+			file<<CellID<<", ";
+			cout<<CellID<<",";
 		}
-		file<<"Criterion : "<<criterum<<", emin = "<<emin<<" GeV"<<", emax = "<<emax<<" GeV"<<endl;
-		file<<"Bad by lower value : "<<endl;
-		cout<<"    o bad cells by lower value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
-		cout<<"      ";
-		nb1=0;
-		for(CellID=0;CellID<fNoOfCells;CellID++)
+	}
+	file<<"("<<nb1<<")"<<endl;
+	cout<<"("<<nb1<<")"<<endl;
+	file<<"Bad by higher value : "<<endl;
+	cout<<"    o bad cells by higher value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
+	cout<<"      ";
+	nb2=0;
+	for(CellID=0;CellID<fNoOfCells;CellID++)
+	{
+		if(fFlag[CellID]==3)
 		{
-			if(fFlag[CellID]==2)
+			nb2++;
+			file<<CellID<<", ";
+			cout<<CellID<<",";
+		}
+	}
+	file<<"("<<nb2<<")"<<endl;
+	cout<<"("<<nb2<<")"<<endl;
+
+	file<<"Total number of bad cells"<<endl;
+	file<<"("<<nb1+nb2<<")"<<endl;
+	file.close();
+	cout<<"    o Total number of bad cells "<<endl;
+	cout<<"      ("<<nb1+nb2<<")"<<endl;
+
+}
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+//.. 1) summarize all dead and bad cells in a text file
+//.. 2) plot all bad cell E distributions in a .pdf file
+//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+//________________________________________________________________________
+void AliAnaCaloChannelAnalysis::SummarizeResults()
+{
+	Int_t CellID, nb1=0, nb2=0;
+	TString CellSummaryFile, DeadPdfName, BadPdfName;
+
+	DeadPdfName     = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	BadPdfName      = Form("%s/%s%sBC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
+	CellSummaryFile = Form("%s/%s%sBC_SummaryResults_V%i.txt", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
+	cout<<"    o Final results o "<<endl;
+	cout<<"    o write results into .txt file: "<<CellSummaryFile<<endl;
+	cout<<"    o write results into .pdf file: "<<BadPdfName<<endl;
+	ofstream file(CellSummaryFile, ios::out | ios::trunc);
+	if(file)
+	{
+		file<<"Dead cells : "<<endl;
+		cout<<"    o Dead cells : "<<endl;
+		nb1 =0;
+		for(CellID=0; CellID<fNoOfCells; CellID++)
+		{
+			if(fFlag[CellID]==1)
 			{
-				nb1++;
-				file<<CellID<<", ";
-				cout<<CellID<<",";
+				file<<CellID<<"\n" ;
+				cout<<CellID<<"," ;
+				//if(CellID<number)nb1++;
 			}
 		}
 		file<<"("<<nb1<<")"<<endl;
 		cout<<"("<<nb1<<")"<<endl;
-		file<<"Bad by higher value : "<<endl;
-		cout<<"    o bad cells by higher value (for cell E between "<<emin<<"-"<<emax<<")"<<endl;
-		cout<<"      ";
+
+		file<<"Bad cells (excluded): "<<endl;
+		cout<<"    o Total number of bad cells (excluded): "<<endl;
 		nb2=0;
 		for(CellID=0;CellID<fNoOfCells;CellID++)
 		{
-			if(fFlag[CellID]==3)
+			if(fFlag[CellID]>1)
 			{
-				nb2++;
-				file<<CellID<<", ";
-				cout<<CellID<<",";
+				file<<CellID<<"\n" ;
+				cout<<CellID<<"," ;
+				//if(CellID<number)nb2++;
 			}
 		}
 		file<<"("<<nb2<<")"<<endl;
 		cout<<"("<<nb2<<")"<<endl;
-
-		file<<"Total number of bad cells"<<endl;
-		file<<"("<<nb1+nb2<<")"<<endl;
-		file.close();
-		cout<<"    o Total number of bad cells "<<endl;
-		cout<<"      ("<<nb1+nb2<<")"<<endl;
 	}
+	file.close();
 
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//.. CRITERUM 7 : FINAL RESULT
-	//.. 1) summarize all dead and bad cells in a text file
-	//.. 2) plot all bad cell E distributions in a .pdf file
-	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	if(criterum ==7)
-	{
-		DeadPdfName     = Form("%s/%s%sDC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-		BadPdfName      = Form("%s/%s%sBC_SummaryResults_V%i.pdf", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial);
-		CellSummaryFile = Form("%s/%s%sBC_SummaryResults_V%i.txt", fAnalysisOutput.Data(), fPeriod.Data(), fPass.Data(), fTrial); ;
-		cout<<"    o Final results o "<<endl;
-		cout<<"    o write results into .txt file: "<<CellSummaryFile<<endl;
-		cout<<"    o write results into .pdf file: "<<BadPdfName<<endl;
-		ofstream file(CellSummaryFile, ios::out | ios::trunc);
-		if(file)
-		{
-			file<<"Dead cells : "<<endl;
-			cout<<"    o Dead cells : "<<endl;
-			nb1 =0;
-			for(CellID=0; CellID<fNoOfCells; CellID++)
-			{
-				if(fFlag[CellID]==1)
-				{
-					file<<CellID<<"\n" ;
-					cout<<CellID<<"," ;
-					nb1++;
-				}
-			}
-			file<<"("<<nb1<<")"<<endl;
-			cout<<"("<<nb1<<")"<<endl;
-
-			file<<"Bad cells (excluded): "<<endl;
-			cout<<"    o Total number of bad cells (excluded): "<<endl;
-			nb2=0;
-			for(CellID=0;CellID<fNoOfCells;CellID++)
-			{
-				if(fFlag[CellID]>1)
-				{
-					file<<CellID<<"\n" ;
-					cout<<CellID<<"," ;
-					nb2++;
-				}
-			}
-			file<<"("<<nb2<<")"<<endl;
-			cout<<"("<<nb2<<")"<<endl;
-		}
-		file.close();
-
-		TFile::Open(fMergedFileName);
-		//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
-		//SaveBadCellsToPDF(0,DeadPdfName);
-		cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
-		SaveBadCellsToPDF(1,BadPdfName) ;
-
-	}
+	TFile::Open(fMergedFileName);
+	//cout<<"    o Save the Dead channel spectra to a .pdf file"<<endl;
+	//SaveBadCellsToPDF(0,DeadPdfName);
+	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
+	SaveBadCellsToPDF(1,BadPdfName) ;
 }
+
 //________________________________________________________________________
 void AliAnaCaloChannelAnalysis::Draw2(Int_t cell)
 {
@@ -739,7 +748,6 @@ void AliAnaCaloChannelAnalysis::Process(Int_t crit, TH1* inhisto, Double_t nsigm
 	{
 		//..Do that only for cell ids also accepted by the code
 		if(!fCaloUtils->GetEMCALGeometry()->CheckAbsCellId(cell))continue;
-
 		//ELI throw away the zeros if(inhisto->GetBinContent(c+1)!=0)
 		//..fill the distribution of avarge cell values
 		distrib->Fill(inhisto->GetBinContent(cell+1));
