@@ -103,10 +103,8 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
   // 2016 1MIP field 0.5T
-  /*Float_t cfd1mip[24] = {9415.1, 9410.65, 9410.9, 9459.59, 9458.37, 9464.44,
-			 9449.28, 9433.68, 9498.78, 9494.35, 9470.42, 9443.67, 
-			 9451.75, 9404.85, 9368.4, 9389.45, 9394.14, 9476.02, 
-			 9409.17, 9411.73, 9428.91, 9434.13, 9455.88, 9495.24};*/
+ 
+			 
    Float_t cfd1mip[24] =  {9448.56, 9440.15, 9443.97, 9492.87, //field 0.5T
 			  9489.09, 9494.43, 9482.78, 9470.24, 
 			  9528.77, 9529.98, 9498.3, 9478.93,
@@ -156,7 +154,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  else
 	    {
 	    meancfd = cfd1mip[ipmt];
-	    cout<<ipmt<<" "<<im<<" !!! no entried "<<meancfd<<endl;
+	 //   cout<<ipmt<<" "<<im<<" !!! no entried "<<meancfd<<endl;
 	    }
 	  if (hQTC->GetEntries()>200)
 	    GetMeanAndSigma(hQTC, meanqtcold,  sigma);
@@ -177,8 +175,8 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  Int_t   maxBin = hCFD->GetMaximumBin(); 
 	  Double_t  meanEstimate = hCFD->GetBinCenter( maxBin); 
 	  if(TMath::Abs(meanEstimate - meancfd) > 20 ) {
-	    cout<<" razoshlos' "<<ipmt<<" "<<im<<" meanEstimate "<<meanEstimate<<
-	      " "<<meancfd<<endl;
+	  //  cout<<" razoshlos' "<<ipmt<<" "<<im<<" meanEstimate "<<meanEstimate<<
+	 //     " "<<meancfd<<endl;
 	    meancfd = meanEstimate; 
 	  }
 	  y1[im+2] =  meancfd - cfd1mip[ipmt];
@@ -186,8 +184,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  //	  if (ipmt==2 && im==5) x1[im+2]=x1[im+1];
 	  x2[im+2] = meanqtc0new;
 	  x3[im+2] = meanqtc1new;
-	  if(ipmt==22)	  cout<<im<<" "<<ipmt<<"  "<<meancfd<<" ("<<hCFD->GetEntries()<<") "<<y1[im+2]  <<" "<< meanqtcold<<" ("<< hQTC->GetEntries()<<") "<<x1[im+2]  <<endl;
-	  
+	//  if(ipmt==22)	  cout<<im<<" "<<ipmt<<"  "<<meancfd<<" ("<<hCFD->GetEntries()<<") "<<y1[im+2]  <<" "<< meanqtcold<<" ("<< hQTC->GetEntries()<<") "<<x1[im+2]  <<endl;
 	  
 	  if (hQTC) delete  hQTC;
 	  if (hCFD) delete  hCFD;
@@ -251,7 +248,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
        cout<<"________________________________"<<ipmt<<"_____________"<<endl;   
       TGraph *grwalkqtc = new TGraph (nmips+2,x1,y1);
       grwalkqtc->SetTitle(Form("PMT%i",ipmt));
-      if(ipmt<12) grwalkqtc->Print();
+    //  if(ipmt<12) grwalkqtc->Print();
       fWalk.AddAtAndExpand(grwalkqtc,ipmt);
        cout<<"________________________________"<<ipmt<<"_____________"<<endl;   
       TGraph *grwalkled = new TGraph (nmips+2,x2,y1);
