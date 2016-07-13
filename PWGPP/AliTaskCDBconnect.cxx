@@ -147,7 +147,7 @@ void AliTaskCDBconnect::InitGRP()
   if (!gGeoManager) {
     AliInfo("AliCDBconnect: #### Loading geometry...");
     AliGeomManager::LoadGeometry("geometry.root");
-    if(!AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD EMCAL PHOS MUON")) AliWarning("Problem with align objects");
+    if(!AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF EMCAL PHOS MUON")) AliWarning("Problem with align objects");
   }  
 }
 
