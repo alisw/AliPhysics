@@ -29,6 +29,7 @@
 #pragma link C++ class AliAnalysisTaskEMCALMesonGGSDMpPb+;
 #pragma link C++ class AliAnalysisTaskSDMGammaMC+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0Gamma+;
+#pragma link C++ class AliAnalysisTaskEMCALDirGamma+;
 #pragma link C++ class EmcEvent+;
 #pragma link C++ class EmcHit+;
 #pragma link C++ class AliAnalysisTaskNeutralMesons+;
