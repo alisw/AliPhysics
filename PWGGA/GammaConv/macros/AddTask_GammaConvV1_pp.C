@@ -85,7 +85,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
                               Double_t  bremSmear                     = 1.,
                               Double_t  smearPar                      = 0.,                     // conv photon smearing params
-                              Double_t  smearParConst                 = 0.                      // conv photon smearing params
+                              Double_t  smearParConst                 = 0.,                      // conv photon smearing params
+                              Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
+                              TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
                             ) {
 
   // ================= Load Librariers =================================
@@ -799,6 +801,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("15010113", "00200009227302008254404000", "0152101500000000"); // mult.: 50-100%
     cuts.AddCut("10110113", "00200009227302008254404000", "0152101500000000"); // mult.: 0-10%
     cuts.AddCut("11010113", "00200009227302008254404000", "0152101500000000"); // mult.: 10-100%
+    } else if (trainConfig == 120) { // like last last two in 70 and dalitz standard 7TeV
+	cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+	cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -866,7 +872,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   ClusterCutList->SetOwner(kTRUE);
   AliCaloPhotonCuts **analysisClusterCuts     = new AliCaloPhotonCuts*[numberOfCuts];
   Bool_t enableClustersForTrigger             = kFALSE;
-    
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i]          = new AliConvEventCuts();
@@ -933,6 +939,14 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     if (trainConfig == 76 ){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
+    if (enableMatBudWeightsPi0 > 0){
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;}
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -965,6 +979,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
     task->SetClusterCutList(numberOfCuts,ClusterCutList);
   }  
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =

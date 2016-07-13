@@ -15,8 +15,10 @@
 #include "AliAnalysisCuts.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
+
 
 class AliESDEvent;
 class AliAODEvent;
@@ -26,11 +28,13 @@ class AliKFVertex;
 class TH1F;
 class TH2F;
 class TF1;
+class TProfile;
 class AliAnalysisCuts;
 class iostream;
 class TList;
 class AliAnalysisManager;
 class AliAODMCParticle;
+
 
 using namespace std;
 
@@ -204,6 +208,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t GetEtaCut(){return fEtaCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
+    
+    Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
+    Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
       
   protected:
     TList*            fHistograms;                          //
@@ -302,6 +310,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       // switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         // maximum Kappa cut
     Float_t           fKappaMaxCut;                         // maximum Kappa cut
+    Bool_t            fMaterialBudgetWeightsInitialized;    // weights for conversions photons due due deviating material budget in MC compared to data
     
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     // eta-distribution of all V0s after Finder selection
@@ -329,6 +338,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
     TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
+    TProfile*         fProfileContainingMaterialBudgetWeights;      
 
   private:
   
