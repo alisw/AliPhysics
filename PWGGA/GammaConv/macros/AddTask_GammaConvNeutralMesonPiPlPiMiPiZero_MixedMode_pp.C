@@ -33,10 +33,10 @@ class CutHandlerNeutralMixed{
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; clusterCutArray[i] = ""; conversionCutArray[i] = ""; pionCutArray[i] = ""; neutralPionCutArray[i] = ""; mesonCutArray[i] = "";}
     }
 
-    void AddCut(TString eventCut, TString clusterCut, TString conversionCut, TString pionCut, TString neutralPionCut, TString mesonCut){
+    void AddCut(TString eventCut, TString conversionCut, TString clusterCut, TString pionCut, TString neutralPionCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerNeutralMixed: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || clusterCut.Length()!=19 || conversionCut.Length()!=26 || pionCut.Length()!=9 || neutralPionCut.Length()!=16 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerNeutralMixed: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; clusterCutArray[nCuts]=clusterCut; conversionCutArray[nCuts]=conversionCut; pionCutArray[nCuts]=pionCut; neutralPionCutArray[nCuts]=neutralPionCut; mesonCutArray[nCuts]=mesonCut;
+      if( eventCut.Length()!=8 || conversionCut.Length()!=26 || clusterCut.Length()!=19 || pionCut.Length()!=9 || neutralPionCut.Length()!=16 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerNeutralMixed: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; conversionCutArray[nCuts]=conversionCut; clusterCutArray[nCuts]=clusterCut; pionCutArray[nCuts]=pionCut; neutralPionCutArray[nCuts]=neutralPionCut; mesonCutArray[nCuts]=mesonCut;
       nCuts++;
       return;
     }
