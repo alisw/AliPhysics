@@ -99,7 +99,6 @@ public:
   Long64_t GetMaxCacheSize() const        { return fMaxCacheSize; }
 
   static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
-
 private:
   Bool_t AddTree(TTree* tree, TString type);
   Bool_t AddChain(TString type, TString period, TString pass);

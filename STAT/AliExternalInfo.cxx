@@ -155,6 +155,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
   TString treeName = "";
   TString pathStructure = "";
   TString indexName=""; 
+  TString oldIndexName= fLocationTimeOutMap[type + ".oldindexname"];  // rename index branch to avoid incositencies (bug in ROOT - the same index branch name requeired) 
 
   // initialization of external variables
   externalLocation = fLocationTimeOutMap[type + ".location"];
@@ -204,8 +205,11 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
       std::cout << command << std::endl;
       gSystem->Exec(command.Data());
-      gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
-
+      if (oldIndexName.Length()==0){
+	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+      }else{
+	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
+      }
       // Store it in a tree inside a root file
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
@@ -304,9 +308,9 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
   //  
   /*
     Example usage:
-     treerawTPC = info.GetTree("QA.rawTPC","LHC16f","cpass1_pass1","Logbook;Logbook.detector;QA.TPC;QA.TRD;QA.TOF;MonALISA.RCT");
+     treerawTPC = info.GetTree("QA.rawTPC","LHC16f","cpass1_pass1","Logbook;Logbook.detector;QA.TPC;QA.TRD;QA.TOF;QA.ITS;MonALISA.RCT");
      treerawTPC->Draw("QA.TPC.meanMIP:gainMIP","abs(QA.TPC.meanMIP-50)<2&&gainMIP>1","")
-
+     treerawTPC->Draw("QA.TPC.run!=run","QA.TPC.run==QA.TRD.run","");  //consistency check
    */
   TTree * tree = GetTree(type, period,pass);  
   if (tree==NULL) tree=  GetTree(type, period,"");
@@ -316,6 +320,10 @@ TTree*  AliExternalInfo::GetTree(TString type, TString period, TString pass, TSt
     return 0;
   }
   TString indexName= fLocationTimeOutMap[type + ".indexname"];
+  TString oldIndexName= fLocationTimeOutMap[type + ".oldindexname"];
+  if (oldIndexName.Length()>0 && tree->FindBranch(oldIndexName.Data())){
+    tree->FindBranch(oldIndexName.Data())->SetName(indexName.Data());
+  }
   if (indexName.Length()<=0) indexName="run";
   Int_t entries = tree->Draw(indexName.Data(),"","goff");
   if (entries<=0){
@@ -414,27 +422,21 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
   //
   //
   TString indexName= fLocationTimeOutMap[type + ".indexname"];
-  if (indexName.Length()>0){
-    if (tree->GetBranch(indexName)) {
-      tree->GetBranch(indexName)->SetName("run");
-      tree->BuildIndex("run");
-      indexName="run";
-    }
-    if (tree->BuildIndex(indexName)<0){
-      ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
-    }
-  }else{
-    if ( tree->GetListOfBranches()->FindObject("run") || ( tree->GetListOfAliases() && tree->GetListOfAliases()->FindObject("run"))) {
-      tree->BuildIndex("run");
-      indexName="run";
-    }
-    else{
-      if ( tree->GetListOfBranches()->FindObject("raw_run")) {
-	tree->BuildIndex("raw_run");
-	indexName="raw_run";
-      }
+  TString oldIndexName= fLocationTimeOutMap[type + ".oldindexname"];
+  //
+  if (oldIndexName.Length()>0){  // rename branch  with index if specified in configuration file
+    if (tree->GetBranch(oldIndexName.Data())) {
+      tree->GetBranch(oldIndexName.Data())->SetName(indexName.Data());
     }
   }
+  if (indexName.Length()<=0) { // set default index name
+    if (tree->GetListOfBranches()->FindObject("run"))  indexName="run";    
+  }
+  if (indexName.Length()<=0) {
+    ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
+  }  
+  tree->BuildIndex(indexName.Data());
+
   TStatToolkit::AddMetadata(tree,"TTree.indexName",indexName.Data());
 
   TString name = "";
