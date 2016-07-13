@@ -22,7 +22,6 @@
 #pragma link C++ class  AliGenPairFlat+;
 #pragma link C++ class  AliGenMUONCocktail+;
 #pragma link C++ class  AliGenMUONCocktailpp+;
-#pragma link C++ class  AliGenEMCocktail+;
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
@@ -37,7 +36,6 @@
 #pragma link C++ class  AliDimuCombinator+;
 #pragma link C++ class  AliGenPHOSlib+;
 #pragma link C++ class  AliGenGSIlib+;
-#pragma link C++ class  AliGenEMlib+;
 #pragma link C++ class  AliGenPMDlib+;
 #pragma link C++ class  AliGenSTRANGElib+;
 #pragma link C++ class  AliGenMC+;

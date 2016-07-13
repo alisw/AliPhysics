@@ -47,8 +47,6 @@ set(SRCS
     AliGenCosmicsParam.cxx
     AliGenDeuteron.cxx
     AliGenDoubleScan.cxx
-    AliGenEMCocktail.cxx
-    AliGenEMlib.cxx
     AliGenEposReader.cxx
     AliGenExtFile.cxx
     AliGenExtExec.cxx
