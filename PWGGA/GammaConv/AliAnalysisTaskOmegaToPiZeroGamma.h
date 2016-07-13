@@ -308,6 +308,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
     TH1F**                  fHistoNGammaCandidates;                             //! array of histos with number of gamma candidates per event
+    TH1F**                  fHistoNClusterCandidates;                           //! array of histos with number of cluster candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNGammaCandidates;             //! array of histos with number of good tracks vs gamma candidates
     TH2F**                  fHistoSPDClusterTrackletBackground;                 //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                  fHistoNV0Tracks;                                    //! array of histos with V0 counts
@@ -347,7 +348,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 1);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 2);
 };
 
 #endif
