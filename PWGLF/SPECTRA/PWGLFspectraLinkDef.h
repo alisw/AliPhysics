@@ -62,6 +62,7 @@
 #pragma link C++ class AliXtAnalysis+;
 #pragma link C++ class AliJXtHistos+;
 #pragma link C++ class AliAnalysisTaskHighPtDeDx+; 
+#pragma link C++ class AliAnaTaskV0EffDecomposition+; 
 
 #pragma link C++ class DeDxTrack+; 
 #pragma link C++ class VZEROCell+; 

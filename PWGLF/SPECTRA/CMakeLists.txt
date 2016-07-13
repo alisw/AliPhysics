@@ -92,6 +92,7 @@ set(SRCS
   XtAnalysis/AliJXtHistos.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
+  IdentifiedHighPt/train/AliAnaTaskV0EffDecomposition.cxx
   MultEvShape/AliMESeventInfo.cxx
   MultEvShape/AliMEStrackInfo.cxx
   MultEvShape/AliMESbaseTask.cxx
