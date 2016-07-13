@@ -35,6 +35,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
+#include "TProfile.h"
 #include "AliStack.h"
 #include "AliAODConversionMother.h"
 #include "TObjString.h"
@@ -211,7 +212,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
-  fPreSelCut(kFALSE)
+  fPreSelCut(kFALSE),
+  fProfileContainingMaterialBudgetWeights(NULL),
+  fMaterialBudgetWeightsInitialized(kFALSE)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -340,7 +343,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
-  fPreSelCut(ref.fPreSelCut)
+  fPreSelCut(ref.fPreSelCut),
+  fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
+  fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -370,7 +375,10 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     delete fFAsymmetryCut;
     fFAsymmetryCut = NULL;
   }
-  
+  if(fProfileContainingMaterialBudgetWeights){
+      delete fProfileContainingMaterialBudgetWeights;
+      fProfileContainingMaterialBudgetWeights = 0x0;
+  }  
 }
 
 //________________________________________________________________________
@@ -433,6 +441,11 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(12,"Photon Quality");
   fHistoPhotonCuts->GetXaxis()->SetBinLabel(13,"out");
   fHistograms->Add(fHistoPhotonCuts);
+  
+  if (fProfileContainingMaterialBudgetWeights){
+      fProfileContainingMaterialBudgetWeights->SetName("InputMaterialBudgetWeightsPerGamma");
+      fHistograms->Add(fProfileContainingMaterialBudgetWeights);
+  }
 
   if(!fDoLightOutput){
     if(preCut){
@@ -3361,3 +3374,46 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
   }
   return 0;
 }
+
+///__________________________________________________________________________________________
+Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename){
+    
+    TString nameProfile;
+    if      (flag==1){    
+                nameProfile = "profileContainingMaterialBudgetWeights_fewRadialBins";}
+    else if (flag==2){
+                nameProfile = "profileContainingMaterialBudgetWeights_manyRadialBins";}
+    else {
+        AliError(Form("%d not a valid flag for InitMaterialBudgetWeightingOfPi0Candidates()",flag));
+        return kFALSE;
+    }
+    TFile* file = TFile::Open(filename.Data());
+    if (!file) {
+        AliError(Form("File %s for materialbudgetweights not found",filename.Data()));
+        return kFALSE;
+    }
+    fProfileContainingMaterialBudgetWeights = (TProfile*)file->Get(nameProfile.Data());
+    if (!fProfileContainingMaterialBudgetWeights){
+        AliError(Form("Histogram %s not found in file",nameProfile.Data()));
+        return kFALSE;
+    }
+    fProfileContainingMaterialBudgetWeights->SetDirectory(0);
+    file->Close();
+    delete file;
+    
+    fMaterialBudgetWeightsInitialized = kTRUE;
+    AliInfo(Form("MaterialBudgetWeightingOfPi0Candidates initialized with flag %d. This means %d radial bins will be used for the weighting. File used: %s.",flag, fProfileContainingMaterialBudgetWeights->GetNbinsX(), filename.Data()));
+    return kTRUE;
+}
+
+///___________________________________________________________________________________________________
+Float_t AliConversionPhotonCuts::GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma){
+    
+    Float_t weight = 1.0;
+    Float_t gammaConversionRadius = gamma->GetConversionRadius();
+    Int_t bin = fProfileContainingMaterialBudgetWeights->FindBin(gammaConversionRadius);
+    if (bin > 0 && bin <= fProfileContainingMaterialBudgetWeights->GetNbinsX()){
+        weight = fProfileContainingMaterialBudgetWeights->GetBinContent(bin);
+    }
+    return weight;
+} 

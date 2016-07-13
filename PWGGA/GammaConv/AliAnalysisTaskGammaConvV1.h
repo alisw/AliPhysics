@@ -66,7 +66,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
                                                                   fMesonCutArray                = CutArray  ;}
     void SetClusterCutList(Int_t nCuts, TList *CutArray)        { fnCuts                        = nCuts     ;
                                                                   fClusterCutArray              = CutArray  ;}
-
+                                                                  
+    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
     void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[]);
@@ -301,6 +303,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;                //enables ClusterCuts for Trigger
+    Bool_t                            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
     
   private:
 

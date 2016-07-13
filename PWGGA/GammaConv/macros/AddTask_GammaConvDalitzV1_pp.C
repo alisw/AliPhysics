@@ -1,6 +1,8 @@
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                                     Bool_t isMC   = kFALSE, //run MC 
-                                    TString fileNameInputForWeighting = "MCSpectraInput.root" // path to file for weigting input
+                                    TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+                                    Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
+                                    TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
          ) {
 
   // ================= Load Librariers =================================
@@ -42,8 +44,8 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   
   //=========  Set Cutnumber for V0Reader ================================
   //TString cutnumber = "00000000000840010015000000"; 
-  TString cutnumberPhoton = "00200008400000002200000000";
-  TString cutnumberEvent  = "00000003"; 
+  TString cutnumberPhoton = "06000008400100007500000000";
+  TString cutnumberEvent  = "00000103"; 
       
   
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -106,7 +108,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     //ConfigV0ReaderV1(fV0ReaderV1,ConvCutnumber,IsHeavyIon);
     // Set AnalysisCut Number
     AliDalitzElectronCuts *fElecCuts=0;
-    TString ElecCuts = "90005400000002000000";
+    TString ElecCuts = "30105400000003300000";
 
     if( ElecCuts!=""){
       fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
@@ -154,6 +156,9 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     //TOF PID
     eventCutArray[0]="00000113"; photonCutArray[0] = "00200009366302007800000000"; MesonCutarray[0] = "0163103100900000";ElecCutarray[0] = "90478403253102621000";  //TOF[-3,5] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0
     eventCutArray[1]="00000113"; photonCutArray[1] = "00200009366302007800000000"; MesonCutarray[1] = "0163103100900000";ElecCutarray[1] = "90478404253102621000";  //TOF[-2,3] 0.0 sigmas at low Pt for pion rejection, Pt 0.125 cut,  DCAxy Pt Dep, No Mass(e+,e-)  FindCluster > 0.0     
+  } else if (trainConfig == 4) {
+    //working electron cutnumber
+    eventCutArray[0]="00000113"; photonCutArray[0] = "00200009360300007800004000"; MesonCutarray[0] = "0263103100900000";ElecCutarray[0] = "20475400253202221710";  //New Standard Only MB, standard pp7Tev cut dalitz
   } else {
     Error(Form("GammaConvDalitzV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -176,6 +181,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
   ElecCutList->SetOwner(kTRUE);
   AliDalitzElectronCuts **analysisElecCuts   = new AliDalitzElectronCuts*[numberOfCuts];
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   for(Int_t i = 0; i<numberOfCuts; i++){
     TString cutName( Form("%s_%s_%s_%s",eventCutArray[i].Data(),photonCutArray[i].Data(),ElecCutarray[i].Data(),MesonCutarray[i].Data() ) );
@@ -187,6 +193,14 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
+    if (enableMatBudWeightsPi0 > 0){
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;}
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
     ConvCutList->Add(analysisCuts[i]);
@@ -211,6 +225,9 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   task->SetMesonCutList(MesonCutList);
   task->SetElectronCutList(ElecCutList);
   task->SetMoveParticleAccordingToVertex(kTRUE);
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
   //task->SetDoMesonAnalysis(kTRUE);
   //if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
   //if (enableQAMesonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
