@@ -8,6 +8,7 @@
 #include <THistManager.h>
 #include <TString.h>
 
+#include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
@@ -49,7 +50,9 @@ void AliAnalysisTaskEmcalTriggerPosition::UserExec(Option_t *opt){
   if(!firedtriggers.Contains("EG1")) return;
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)) return;
 
-  TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("emcalTriggers"));
+  TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject("EmcalTriggers"));
+  if(!triggerpatches)
+    AliErrorStream() << "Trigger patch container EmcalTriggers not found in task " << GetName() << std::endl;
 
   AliEMCALTriggerPatchInfo *currentpatch(nullptr);
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
