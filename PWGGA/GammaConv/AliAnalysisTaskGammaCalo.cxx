@@ -321,6 +321,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoMCEtaWOEvtWeightPt(NULL),
   fHistoMCPi0InAccPt(NULL),
   fHistoMCEtaInAccPt(NULL),
+  fHistoMCPi0WOEvtWeightInAccPt(NULL),
+  fHistoMCEtaWOEvtWeightInAccPt(NULL),
   fHistoMCPi0PtY(NULL),
   fHistoMCEtaPtY(NULL),
   fHistoMCPi0PtAlpha(NULL),
