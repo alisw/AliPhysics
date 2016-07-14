@@ -4,10 +4,10 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
-// Analysis task for high pt particle correlations 
+// Analysis task for high pt particle correlations
 // author: R.Diaz, J. Rak,  D.J. Kim
-// ALICE Group University of Jyvaskyla 
-// Finland 
+// ALICE Group University of Jyvaskyla
+// Finland
 //
 // Fill the analysis containers for ESD or AOD
 // Note: Adapted for AliAnalysisTaskSE
@@ -29,7 +29,7 @@
 #include "AliPIDCombined.h"
 #include "AliJFFlucAnalysis.h"
 #include "AliAnalysisUtils.h"
-#include "AliVVertex.h" 
+#include "AliVVertex.h"
 
 //==============================================================
 
@@ -39,9 +39,9 @@ class TH1D;
 class TH2D;
 class TList;
 class TTree;
-class AliMCEvent; 
-class AliAODEvent; 
-class AliAODTrack; 
+class AliMCEvent;
+class AliAODEvent;
+class AliAODTrack;
 class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
@@ -52,13 +52,13 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
  public:
   AliJFFlucTask();
   AliJFFlucTask(const char *name, Bool_t IsMC, Bool_t IsExcludeWeakDecay);
-  AliJFFlucTask(const AliJFFlucTask& ap);   
+  AliJFFlucTask(const AliJFFlucTask& ap);
   AliJFFlucTask& operator = (const AliJFFlucTask& ap);
   virtual ~AliJFFlucTask();
 
   // methods to fill from AliAnalysisTaskSE
-  virtual void UserCreateOutputObjects(); 
-  virtual void Init();   
+  virtual void UserCreateOutputObjects();
+  virtual void Init();
   virtual void LocalInit() { Init(); }
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t* opt=""  );
@@ -68,7 +68,9 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   void ReadAODTracks( AliAODEvent* aod, TClonesArray *fInputList);
   void ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList);
   void SetDebugLevel(int debuglevel){fDebugLevel = debuglevel; cout <<"setting Debug Level = " << fDebugLevel << endl;};
-  float ReadAODCentrality( AliAODEvent* aod, TString Trig );
+  //float ReadAODCentrality( AliAODEvent* aod, TString Trig );
+  //float ReadMultSelectionCentrality( AliAODEvent* aod, TString Trig );
+  float ReadCentrality(AliAODEvent *aod, TString Trig);
   Bool_t IsGoodEvent( AliAODEvent* aod);
   void SetIsMC( Bool_t ismc){ IsMC = ismc; cout << "Setting IsMC = " << ismc << endl; };
   void SetIsKineOnly( Bool_t iskine){ IsKineOnly = iskine; cout << "Setting IsKineOnly = " << iskine << endl; };
@@ -85,10 +87,10 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
   void SetIsCentFlat( Bool_t isCentFlat);
   void SetEffConfig( int effMode, int FilterBit );
-  void SetInFileName( TString inName); 
-  void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ; 
+  void SetInFileName( TString inName);
+  void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					cout << "setting phi modulation = " << isphi << endl; };
-  void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut; 
+  void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
 					cout << "setting z vertex cut = " << fzvtxCut << endl;};
   void SetSCptdep( Bool_t isSCptdep){ IsSCptdep = isSCptdep;
 					cout << "setting : SCpt dep = " << isSCptdep << endl;};
@@ -98,15 +100,15 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 					cout << "setting : SC with QC = " << isSCwithQC << endl;}
   void SetEbEWeight( Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted;
 					cout << "setting : EbE weight = " << isEbEWeighted << endl;}
-  void SetCutOnOutliers( Bool_t CutOutliers ){ fCutOutliers = CutOutliers; 
+  void SetCutOnOutliers( Bool_t CutOutliers ){ fCutOutliers = CutOutliers;
 					cout << "setting : Cut on Outliers = " << fCutOutliers << endl;}
   void SetForceToUseALICEIPinfo( Bool_t ALICEIPinfo ){ fALICEIPinfo = ALICEIPinfo; }
-/*  void SetSCwithFineCentbin( Bool_t isSCwithFineCentbin){ IsSCwithFineCentBin = isSCwithFineCentbin; 
+/*  void SetSCwithFineCentbin( Bool_t isSCwithFineCentbin){ IsSCwithFineCentBin = isSCwithFineCentbin;
 					cout << "setting : SC Centbin results = " << IsSCwithFineCentBin << endl;};
 */
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
-  void SetCentDetName( TString CentName ){ fCentDetName = CentName; 
+  void SetCentDetName( TString CentName ){ fCentDetName = CentName;
 					cout << "setting : Cenetrality determination =" << fCentDetName.Data() << endl; };
 
 
@@ -114,7 +116,7 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   TString fTaskName;
   int fDebugLevel;
   int fEvtNum;
-  int fFilterBit; 
+  int fFilterBit;
   int fEffMode;
   int fEffFilterBit;
   int fPcharge;
@@ -138,13 +140,13 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t fCutOutliers;
   Bool_t fALICEIPinfo;
 //  Bool_t IsSCwithFineCentBin;
-  TClonesArray * fInputList;  // tracklist 
-  TH1D *h_ratio; 
+  TClonesArray * fInputList;  // tracklist
+  TH1D *h_ratio;
   AliJFFlucAnalysis *fFFlucAna; // analysis code
   TDirectory *fOutput;     // output
   ClassDef(AliJFFlucTask, 1);
 
   TH1D *h_ModuledPhi[7][2]; // cent7, sub2
- 
+
 };
 #endif // AliJFFlucTask_H

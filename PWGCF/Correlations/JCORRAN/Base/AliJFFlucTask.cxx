@@ -14,12 +14,12 @@
  **************************************************************************/
 
 //______________________________________________________________________________
-// Analysis task for high pt particle correlations 
+// Analysis task for high pt particle correlations
 // author: R.Diaz, J. Rak,  D.J. Kim
-// ALICE Group University of Jyvaskyla 
-// Finland 
+// ALICE Group University of Jyvaskyla
+// Finland
 // Fill the analysis containers for ESD or AOD
-// Adapted for AliAnalysisTaskSE and AOD objects  
+// Adapted for AliAnalysisTaskSE and AOD objects
 //////////////////////////////////////////////////////////////////////////////
 
 #include "TChain.h"
@@ -32,10 +32,10 @@
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliGenHijingEventHeader.h"
-#include "AliJFFlucTask.h" 
+#include "AliJFFlucTask.h"
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
-#include "AliAODEvent.h" 
+#include "AliAODEvent.h"
 #include "AliJTrack.h"
 #include "AliJMCTrack.h"
 //#include "AliJPhoton.h"
@@ -43,11 +43,12 @@
 #include "AliJHistManager.h"
 #include "AliInputEventHandler.h"
 #include "AliJEfficiency.h"
+#include "AliMultSelection.h"
 
 //______________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask():
 	fInputList(0),
-	AliAnalysisTaskSE(), 
+	AliAnalysisTaskSE(),
 	fFFlucAna(0x0),
 	fOutput(),
 	h_ratio(0)
@@ -58,7 +59,7 @@ AliJFFlucTask::AliJFFlucTask():
 	fEta_max = 0;
 	fDebugLevel = 0;
 	fEffMode =0;
-	fEffFilterBit=0;	
+	fEffFilterBit=0;
 	fPt_min=0;
 	fPt_max=0;
 	fCentDetName="V0M";
@@ -70,20 +71,20 @@ AliJFFlucTask::AliJFFlucTask():
 	IsPhiModule = kFALSE;
 	IsSCptdep = kFALSE;
 	IsSCwithQC= kFALSE;
-	IsEbEWeighted = kFALSE; 
+	IsEbEWeighted = kFALSE;
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
-			h_ModuledPhi[icent][isub]=NULL;		
+			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}
-	fzvtxCut = 10;  // defualt z vertex cut
+	fzvtxCut = 10;  // default z vertex cut
 	//  DefineOutput(1, TDirectory::Class());
 }
 
 //______________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWeakDecay):
 	fInputList(0),
-	AliAnalysisTaskSE(name), 
+	AliAnalysisTaskSE(name),
 	fFFlucAna(0x0),
 	fOutput(),
 	h_ratio(0)
@@ -97,7 +98,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	fEta_max = 0;
 	fDebugLevel = 0;
 	fEffMode =0;
-	fEffFilterBit=0;	
+	fEffFilterBit=0;
 	fPt_min=0;
 	fPt_max=0;
 	fInFileName="";
@@ -112,7 +113,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	IsEbEWeighted = kFALSE;
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
-			h_ModuledPhi[icent][isub]=NULL;		
+			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}
 	fzvtxCut = 10;
@@ -121,10 +122,10 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 //____________________________________________________________________________
 AliJFFlucTask::AliJFFlucTask(const AliJFFlucTask& ap) :
 	fInputList(ap.fInputList),
-	AliAnalysisTaskSE(ap.GetName()), 
+	AliAnalysisTaskSE(ap.GetName()),
 	fFFlucAna(ap.fFFlucAna),
 	fOutput(ap.fOutput)
-{ 
+{
 	AliInfo("----DEBUG AliJFFlucTask COPY ----");
 }
 
@@ -141,7 +142,7 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	// destructor 
+	// destructor
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
@@ -150,13 +151,13 @@ AliJFFlucTask::~AliJFFlucTask()
 
 //________________________________________________________________________
 void AliJFFlucTask::UserCreateOutputObjects()
-{ 
+{
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
-	fFFlucAna->SetDebugLevel(fDebugLevel); 
-	fFFlucAna->SetIsPhiModule( IsPhiModule); 
+	fFFlucAna->SetDebugLevel(fDebugLevel);
+	fFFlucAna->SetIsPhiModule( IsPhiModule);
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	fFFlucAna->SetSCwithQC( IsSCwithQC );
-	fFFlucAna->SetEbEWeight( IsEbEWeighted ); 
+	fFFlucAna->SetEbEWeight( IsEbEWeighted );
 //	fFFlucAna->SetSCwithFineCentbin( IsSCwithFineCentBin );
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
@@ -184,29 +185,26 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fOutput->cd();
 	fFFlucAna->SetEffConfig( fEffMode, fEffFilterBit );
 	fFFlucAna->UserCreateOutputObjects();
-	
-	//test
-	// 
-	
+
 	PostData(1, fOutput);
 }
 
 //______________________________________________________________________________
-void AliJFFlucTask::UserExec(Option_t* /*option*/) 
+void AliJFFlucTask::UserExec(Option_t* /*option*/)
 {
 	// Processing of one event
 	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry()));
-	// initiaizing variables from last event 
+	// initializing variables from last event
 	fInputList->Clear();
 
 	float fCent = -1;
 	float fImpactParameter = -1;
-	double fvertex[3] = {-999,-999,-999};	
+	double fvertex[3] = {-999,-999,-999};
 
 	fEvtNum++;
 	if(fEvtNum % 100 == 0){ cout << "evt : " << fEvtNum <<endl ;}
 
-	// load current event and save track, event info 
+	// load current event and save track, event info
 	if(IsKineOnly) {
 		AliMCEvent*  mcEvent = MCEvent();
 		if (!mcEvent) {
@@ -218,7 +216,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if (headerH) {
 			gReactionPlane = headerH->ReactionPlaneAngle();
 			gImpactParameter = headerH->ImpactParameter();
-			fImpactParameter = headerH->ImpactParameter(); 
+			fImpactParameter = headerH->ImpactParameter();
 			fCent = GetCentralityFromImpactPar(gImpactParameter);
 			if( fALICEIPinfo == kTRUE){
 				//force to use ALICE impact parameter setting
@@ -242,15 +240,17 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		header->PrimaryVertex(gVertexArray);
 		for(int i=0;i<3;i++) fvertex[i]=gVertexArray.At(i);
 		fFFlucAna->Init();
-		fFFlucAna->SetInputList( fInputList ); 
+		fFFlucAna->SetInputList( fInputList );
 		fFFlucAna->SetEventCentrality( fCent );
 		fFFlucAna->SetEventImpactParameter( fImpactParameter );
 		fFFlucAna->SetEventVertex( fvertex );
 		fFFlucAna->SetEtaRange( fEta_min, fEta_max ) ;
-		fFFlucAna->UserExec(""); // doing some analysis here. 
+		fFFlucAna->UserExec(""); // doing some analysis here.
 	} else { // Kine
 		AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-		fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ; 
+		fCent = ReadCentrality(currentEvent,fCentDetName);
+		//fCent = ReadAODCentrality( currentEvent, fCentDetName  ) ;
+		//fCent = ReadMultSelectionCentrality(currentEvent,fCentDetName);
 		if( fEvtNum == 1 ){
 			int runN = currentEvent->GetRunNumber();
 			fFFlucAna->GetAliJEfficiency()->SetRunNumber ( runN );
@@ -261,16 +261,16 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 			ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 			ReadVertexInfo( currentEvent, fvertex); // read vertex info
 			Int_t Ntracks = fInputList->GetEntriesFast();
-			// Analysis Part 
+			// Analysis Part
 			fFFlucAna->Init();
-			fFFlucAna->SetInputList( fInputList ); 
+			fFFlucAna->SetInputList( fInputList );
 			fFFlucAna->SetEventCentrality( fCent );
 			fFFlucAna->SetEventImpactParameter( fImpactParameter); // need this??
 			fFFlucAna->SetEventVertex( fvertex );
 			fFFlucAna->SetEtaRange( fEta_min, fEta_max );
 			fFFlucAna->SetEventTracksQA( TPCTracks, GlobTracks);
-			fFFlucAna->UserExec(""); // doing some analysis here. 
-			// 
+			fFFlucAna->UserExec(""); // doing some analysis here.
+			//
 		}
 	} // AOD
 }
@@ -283,26 +283,34 @@ void AliJFFlucTask::ReadVertexInfo ( AliAODEvent *aod, double*  fvtx )
 	fvtx[2] = aod->GetPrimaryVertex()->GetZ();
 }
 //______________________________________________________________________________
-float AliJFFlucTask::ReadAODCentrality( AliAODEvent *aod, TString Trig )
+/*float AliJFFlucTask::ReadAODCentrality( AliAODEvent *aod, TString Trig )
 {
 	AliCentrality *cent = aod->GetCentrality();
-	if(!cent){ Printf("No Cent event"); return -999; };
-	return cent->GetCentralityPercentile(Trig.Data()); 
+	if(!cent){ Printf("No Cent event"); return -999; }
+	return cent->GetCentralityPercentile(Trig.Data());
+}
+//______________________________________________________________________________
+float AliJFFlucTask::ReadMultSelectionCentrality( AliAODEvent *aod, TString Trig )
+{
+	AliMultSelection *pms = (AliMultSelection*)aod->FindListObject("MultSelection");
+	if(!pms){ Printf("No MultSelection task"); return -999.0f; } //NaN?
+	return pms->GetMultiplicityPercentile(Trig.Data());
+}*/
+//______________________________________________________________________________
+float AliJFFlucTask::ReadCentrality( AliAODEvent *aod, TString Trig ){
+	AliMultSelection *pms = (AliMultSelection*)aod->FindListObject("MultSelection");
+	return pms?pms->GetMultiplicityPercentile(Trig.Data()):aod->GetCentrality()->GetCentralityPercentile(Trig.Data());
 }
 //______________________________________________________________________________
 void AliJFFlucTask::Init()
 {
-	// initiationg all parameters and variables
-
-	// Intialisation of parameters
-	AliInfo("Doing initialization") ; 
-	//
+	AliInfo("Doing initialization") ;
 }
 //______________________________________________________________________________
 void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 {
 		//aod->Print();
-		if( IsMC == kTRUE ){  // how to get a flag to check  MC or not ! 
+		if( IsMC == kTRUE ){  // how to get a flag to check  MC or not !
 
 				TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
 				if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
@@ -333,13 +341,13 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 										if(kExcludeParticle) continue;
 								} // weak decay particles are excluded
 								double track_abs_eta = TMath::Abs( track->Eta() );
-								double Pt = track->Pt(); 
+								double Pt = track->Pt();
 								if( fPt_min > 0){
 										if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
 								}
 								Int_t pdg = track->GetPdgCode();
 								Char_t ch = (Char_t) track->Charge();
-								// partile charge selection	
+								// partile charge selection
 								if( fPcharge != 0){ // fPcharge : 0 all particle
 									if( fPcharge==1 && ch<0 ) continue; // 1 for + charge
 									if( fPcharge==-1 && ch>0) continue; // -1 for - charge
@@ -362,13 +370,13 @@ else if( IsMC == kFALSE){
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
 				if(track->TestFilterBit( fFilterBit )){ //
 						double Pt = track->Pt();
-						Char_t ch = (Char_t)track->Charge(); 
+						Char_t ch = (Char_t)track->Charge();
 						if( fPt_min > 0){
 								if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
 						}
 						if( fPcharge !=0){ // fPcharge 0 : all particle
 							if( fPcharge==1 && ch<0) continue; // 1 for + particle
-							if( fPcharge==-1 && ch>0) continue; // -1 for - particle 
+							if( fPcharge==-1 && ch>0) continue; // -1 for - particle
 						}
 						//						double track_abs_eta = TMath::Abs( track->Eta() );
 						//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
@@ -389,7 +397,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 
 	//event selection here!
 	Bool_t Event_status = kFALSE;
-	// check vertex 
+	// check vertex
 	AliVVertex *vtx = event->GetPrimaryVertex();
 	if(vtx){
 		if( vtx->GetNContributors() > 0 ){
@@ -399,7 +407,8 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	}
 	// event cent flatting  --- do it only when IsCentFlat is true
 	if( Event_status== kTRUE && IsCentFlat == kTRUE ){
-		float centrality = ReadAODCentrality( event, "V0M");
+		//float centrality = ReadAODCentrality( event, fCentDetName); //"V0M"
+		float centrality = ReadCentrality(event,fCentDetName);
 		double cent_flat_ratio = h_ratio->GetBinContent( (h_ratio->GetXaxis()->FindBin(centrality))) ;
 		if (gRandom->Uniform(0, cent_flat_ratio) > 1 ){
 			//	cout << "this event is excluded with random pro" << endl;
@@ -408,9 +417,9 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	}
 	// cut on outliers //-- 2010aod data only
 	if( IsKineOnly == kFALSE){
-			Float_t multTPC(0.); 
-			Float_t multGlob(0.);	
-			Int_t nTracks = event->GetNumberOfTracks(); 
+			Float_t multTPC(0.);
+			Float_t multGlob(0.);
+			Int_t nTracks = event->GetNumberOfTracks();
 			for(int it =0; it < nTracks; it++){
 				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
 				//AliAODTrack* trackAOD = event->GetTrack(itracks);
@@ -429,7 +438,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 				if (!(trackAOD->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) )) continue;
 				//cout << b[0] << b[1] << endl;
 				if ( (TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3) ) continue;
-				multGlob++; 	
+				multGlob++;
 			}
 			TPCTracks = multTPC;
 			GlobTracks = multGlob;
@@ -453,14 +462,14 @@ void AliJFFlucTask::Terminate(Option_t *)
 {
 	//    fFFlucAna->Terminate("");
 	// Processing when the event loop is ended
-	cout<<"AliJFFlucTask Analysis DONE !!"<<endl; 
+	cout<<"AliJFFlucTask Analysis DONE !!"<<endl;
 }
 
 
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliMCParticle *thisGuy)
 {
-	// In order to prevent analyzing daughters from weak decays 
+	// In order to prevent analyzing daughters from weak decays
 	// - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
 	Int_t pdgcode = TMath::Abs( thisGuy->PdgCode() );
 	Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
@@ -478,7 +487,7 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliMCParticle *thisGuy)
 //===============================================================================
 Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 {
-	// In order to prevent analyzing daughters from weak decays 
+	// In order to prevent analyzing daughters from weak decays
 	// - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
 	Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
 	Int_t myWeakParticles[7] = { 3322, 3312, 3222, // Xi0 Xi+- Sigma-+
@@ -497,7 +506,7 @@ Bool_t AliJFFlucTask::IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy)
 void AliJFFlucTask::SetEffConfig( int effMode, int FilterBit)
 {
 	fEffMode = effMode;
-	fEffFilterBit = 0; // as defualt
+	fEffFilterBit = 0; // as default
 	if( FilterBit == 128 ) fEffFilterBit = 0;
 	if( FilterBit == 768 ) fEffFilterBit = 5;
 	cout << "setting to EffCorr Mode : " << effMode << endl;
@@ -512,7 +521,7 @@ void AliJFFlucTask::SetIsCentFlat( Bool_t isCentFlat ){
 
 	if(IsCentFlat == kTRUE){
 		if( IsMC == kTRUE ) Printf("this is not LHC11h data!!!!");
-		// ratio from ExtractCentRatio.C // do not change this manually	
+		// ratio from ExtractCentRatio.C // do not change this manually
 			h_ratio = new TH1D("h_ratio","",240,0,60);
 			h_ratio->SetBinContent(1,1.04895);
 			h_ratio->SetBinContent(2,1);
@@ -768,16 +777,16 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 		AliMCParticle* track = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(it));
 		if(mcEvent->IsPhysicalPrimary(it)) {
 			double track_abs_eta = TMath::Abs( track->Eta() );
-			double Pt = track->Pt(); 
+			double Pt = track->Pt();
 			if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
 			TParticle *particle = track->Particle();
 			if(!particle) continue;
 
-			if( IsExcludeWeakDecay == kTRUE){	
+			if( IsExcludeWeakDecay == kTRUE){
 				Bool_t kExcludeParticle = kFALSE;
 				Int_t gMotherIndex = particle->GetFirstMother(); //
-				if(gMotherIndex != -1){ // -1 means don't have mother. 
-					DEBUG( 4,  "this particle has monther " ); 
+				if(gMotherIndex != -1){ // -1 means don't have mother.
+					DEBUG( 4,  "this particle has a mother " );
 					AliMCParticle* motherParticle= dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
 					if(motherParticle){
 						if(IsThisAWeakDecayingParticle( motherParticle)){
@@ -820,7 +829,7 @@ b(fm) ALICE   &0.00-3.50&3.50-4.94&4.94-6.98&6.98-    &    -9.88 &9.81-      &  
 	double centmean[10]={2.5,7.5,15,25,35,45,55,65,75,90};
 	int iC = -1;
 	for(int i=0;i<9;i++){
-		if(bmin[i]<ip&&ip<=bmin[i+1]) {iC=i;  break;} 
+		if(bmin[i]<ip&&ip<=bmin[i+1]) {iC=i;  break;}
 	}
 	return centmean[iC];
 }
