@@ -94,11 +94,7 @@ AliVParticle* AliParticleContainer::GetLeadingParticle(const char* opt)
  */
 AliVParticle* AliParticleContainer::GetParticle(Int_t i) const 
 {
-  //
-  if (i == -1) i = fCurrentID;
-  if (i < 0 || i >= this->fClArray->GetEntriesFast()) return 0;
-  AliVParticle *vp = static_cast<AliVParticle*>(fClArray->At(i));
-  return vp;
+  return static_cast<AliVParticle*>((*this)[i]);
 }
 
 /**
@@ -413,12 +409,7 @@ Bool_t AliParticleContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UI
  */
 Int_t AliParticleContainer::GetNAcceptedParticles() const
 {
-  Int_t nPart = 0;
-  for(int ipart = 0; ipart < this->GetNParticles(); ipart++){
-    UInt_t rejectionReason = 0;
-    if(this->AcceptParticle(ipart, rejectionReason)) nPart++;
-  }
-  return nPart;
+  return accepted().GetEntries();
 }
 
 /**

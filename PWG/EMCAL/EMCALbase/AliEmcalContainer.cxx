@@ -102,8 +102,12 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
  * @return Object at the given index (NULL if out of range)
  */
 TObject *AliEmcalContainer::operator[](int index) const {
-  if(index >= 0 && index < GetNEntries()) return fClArray->At(index);
-  return NULL;
+  if (index >= 0 && index < GetNEntries()) {
+    return fClArray->At(index);
+  }
+  else {
+    return NULL;
+  }
 }
 
 /**
@@ -159,13 +163,9 @@ void AliEmcalContainer::SetArray(const AliVEvent *event)
  * Count accepted entries in the container
  * @return Number of accepted events in the container
  */
-Int_t AliEmcalContainer::GetNAcceptEntries() const{
-  Int_t result = 0;
-  for(int index = 0; index < GetNEntries(); index++){
-    UInt_t rejectionReason = 0;
-    if(AcceptObject(index, rejectionReason)) result++;
-  }
-  return result;
+Int_t AliEmcalContainer::GetNAcceptEntries() const
+{
+  return accepted().GetEntries();
 }
 
 /**
