@@ -791,7 +791,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     if(ilabel>0 && fMCarray)
     {
       fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
-      Int_t pdg = fMCparticle->GetPdgCode();
+      pdg = fMCparticle->GetPdgCode();
       if(TMath::Abs(pdg)==11)pid_ele = 1.0;
       Int_t ilabelM = -1;
       if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
@@ -954,7 +954,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
-          if(fabs(pdg)!=11)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
+          //cout << "pid_ele = "<< pid_ele << " ; pdg = " << pdg << endl;
+          if(pid_ele!=1.0)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS

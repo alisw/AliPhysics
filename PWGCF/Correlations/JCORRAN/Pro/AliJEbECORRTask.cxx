@@ -194,9 +194,11 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 
 	fHistos = new AliJHistos(fCard);
 	fHistos->CreateEventTrackHistos();
-	fHistos->CreateAzimuthCorrHistos();
-	//fHistos->CreateIAAMoons();
-	//fHistos->CreateXEHistos();
+	if(fenableCORR) {
+		fHistos->CreateAzimuthCorrHistos();
+		//fHistos->CreateIAAMoons();
+		//fHistos->CreateXEHistos();
+	}
 	fHistos->CreateXtHistos();
 	//fHistos->CreatePairPtCosThetaStar();
 
@@ -258,8 +260,8 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	if(!aodEvent) return;
 
 	if( fFirstEvent ) {
-        fRunTable = & AliJRunTable::GetSpecialInstance();
-        fRunTable->SetRunNumber( aodEvent->GetRunNumber() );
+		fRunTable = & AliJRunTable::GetSpecialInstance();
+		fRunTable->SetRunNumber( aodEvent->GetRunNumber() );
 		fEfficiency->SetRunNumber( aodEvent->GetRunNumber() );
 		fEfficiency->Load();
 		fFirstEvent = kFALSE;
@@ -298,31 +300,31 @@ void AliJEbECORRTask::UserExec(Option_t *) {
 	int counter = 0;
 
 	// Making the inputlist from AOD
-    if( IsMC == kTRUE ){  // how to get a flag to check  MC or not !
-        TClonesArray *mcArray = (TClonesArray*) aodEvent->FindListObject(AliAODMCParticle::StdBranchName());
+	if( IsMC == kTRUE ){  // how to get a flag to check  MC or not !
+		TClonesArray *mcArray = (TClonesArray*) aodEvent->FindListObject(AliAODMCParticle::StdBranchName());
 		if(!mcArray){ Printf("Error not a proper MC event"); return;};  // check mc array
 
-        Int_t nt = mcArray->GetEntriesFast();
-        Int_t ntrack =0;
-        for( int it=0; it< nt ; it++){
-                AliAODMCParticle *mctrack = (AliAODMCParticle*)mcArray->At(it);
-				if( !mctrack ) continue;
-				if( mctrack->IsPhysicalPrimary() ){
-					if(!fCard->IsInEtaRange(mctrack->Eta())) continue;
-					AliJBaseTrack* track = new( (*fInputList)[fInputList->GetEntriesFast()] ) AliJBaseTrack;
-					track->SetPxPyPzE(mctrack->Px(), mctrack->Py(), mctrack->Pz(), mctrack->E());
-					Int_t pdg = mctrack->GetPdgCode();
-					Char_t ch = (Char_t) mctrack->Charge();
-					Int_t label = mctrack->GetLabel();
-					track->SetID(fInputList->GetEntriesFast());
-					track->SetParticleType(kJHadron);
-					track->SetCharge(ch);
-					track->SetLabel( label );
-					double ptt = mctrack->Pt();
-					double effCorr = 1.;  // here you generate warning if ptt>30
-					fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
-					track->SetTrackEff( 1./effCorr );
-				} // PhysicalPrimary
+		Int_t nt = mcArray->GetEntriesFast();
+		Int_t ntrack =0;
+		for( int it=0; it< nt ; it++){
+			AliAODMCParticle *mctrack = (AliAODMCParticle*)mcArray->At(it);
+			if( !mctrack ) continue;
+			if( mctrack->IsPhysicalPrimary() ){
+				if(!fCard->IsInEtaRange(mctrack->Eta())) continue;
+				AliJBaseTrack* track = new( (*fInputList)[fInputList->GetEntriesFast()] ) AliJBaseTrack;
+				track->SetPxPyPzE(mctrack->Px(), mctrack->Py(), mctrack->Pz(), mctrack->E());
+				Int_t pdg = mctrack->GetPdgCode();
+				Char_t ch = (Char_t) mctrack->Charge();
+				Int_t label = mctrack->GetLabel();
+				track->SetID(fInputList->GetEntriesFast());
+				track->SetParticleType(kJHadron);
+				track->SetCharge(ch);
+				track->SetLabel( label );
+				double ptt = mctrack->Pt();
+				double effCorr = 1.;  // here you generate warning if ptt>30
+				fHistos->fhTrackingEfficiency[cBin]->Fill( ptt, 1./effCorr );
+				track->SetTrackEff( 1./effCorr );
+			} // PhysicalPrimary
 		} // mcArray
 	} // read mc track done.
 	if( IsMC == kFALSE ){  
@@ -413,7 +415,7 @@ void AliJEbECORRTask::Terminate(Option_t *)
 
 	   fcorrelations->PrintOut();
 	//fassocPool->PrintOut();
-	*/
+	 */
 	cout<<"Sucessfully Finished"<<endl;
 
 }
