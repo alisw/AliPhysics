@@ -6,6 +6,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 									 Bool_t reconstructPrimVert=kFALSE,
 								   Bool_t writeEachVariableTree=kFALSE,
 								   Bool_t writeMCVariableTree=kFALSE,
+                   TString estimatorFilename="",
 								   Int_t nTour=0
 								   )
 
@@ -73,11 +74,39 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 	task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 	if(ispp){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
-		task->SetNumberOfEventsForMixing(1000);//pp
+		task->SetNumberOfEventsForMixing(10);//pp
 	}else{
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-		task->SetNumberOfEventsForMixing(5);//pPb
+		task->SetNumberOfEventsForMixing(10);//pPb
 	}
+
+  //multiplicity study
+  if(ispp){
+    if(estimatorFilename.EqualTo("") ) {
+      printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+    } else{
+      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+      if(!fileEstimator)  {
+        AliFatal("File with multiplicity estimator not found\n");
+        return;
+      }
+      task->SetReferenceMultiplcity(9.26);
+      const Char_t* profilebasename="SPDmult10";
+      const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+      TProfile* multEstimatorAvg[4];                       
+      for(Int_t ip=0; ip<4; ip++) {
+        multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+        if (!multEstimatorAvg[ip]) {
+          AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+          return;
+        }
+      }
+      task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+      task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+      task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+      task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+    }
+  }
 
   mgr->AddTask(task);
 
