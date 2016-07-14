@@ -63,15 +63,22 @@ protected:
 	  TString Convert();
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
-	  void SummarizeResults();
+
+	  TH1F* BuildHitAndEnergyMean(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
+	  TH1F* BuildTimeMean(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma);
+	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
 
 	  void FlagAsDead();
 	  void FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1.);
 
-	  TH1F* TestCellEandN(Int_t crit, Double_t emin = 0.1, Double_t emax=2., Double_t nsigma = 4.);
-	  void TestCellShapes(Int_t crit, Double_t fitemin, Double_t fitemax, Double_t nsigma =4.);
-
+	  void SummarizeResults();
+	  TH1 *BuildMeanFromGood();
+	  Bool_t CheckDistribution(TH1* ratio, TH1* reference);
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
+	  void PlotFlaggedCells2D(Int_t flag1,Int_t flag2=-1,Int_t flag3=-1);
+
+
+
 
 
 	  //Settings for analysed period
@@ -80,7 +87,6 @@ protected:
 	  TString fPass;                        ///< Pass of the analyzed data
 	  TString fTrigger;                     ///< Selected trigger for the analysis
 	  Int_t   fNoOfCells;                   ///< Number of cells in EMCal and DCal
-	  Int_t   fGoodCellID;                  ///< ID of a good cell to compare the spectra to
 	  Int_t   fCellStartDCal;               ///< ID of the first cell in the DCal
 
 	  //Genergal paths
