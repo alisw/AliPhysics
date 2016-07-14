@@ -294,7 +294,7 @@ void AliAnalysisTaskZDCpp::UserExec(Option_t */*option*/)
       fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i));
       if(esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i) != 0.){
         tdcA = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
-        fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
+        fhTDCZNA->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }

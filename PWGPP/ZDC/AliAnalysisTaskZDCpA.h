@@ -35,15 +35,15 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
 
   virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
   void SetMCInput() {fIsMCInput = kTRUE;}
- 
+
  private:
 
   Int_t    fDebug;		//  Debug flag
   Bool_t   fIsMCInput;  	// true when input is MC
   //
   TList   *fOutput;		//! list send on output slot 0
-  TH1F    *fhTDCZNC;  		//! TDC ZNC sum
-  TH1F    *fhTDCZNA; 		//! TDC DIFF sum
+  TH1F    *fhTDCZNC;  		//! TDC ZNC
+  TH1F    *fhTDCZNA; 		//! TDC ZNA 
   TH1F    *fhTDCZNSum;  	//! TDC ZNC sum
   TH1F    *fhTDCZNDiff; 	//! TDC DIFF sum
   TH1F    *fhZNCSumQ;	 	//! ZNC sum 4Q
@@ -63,11 +63,10 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   TH2F    *fDebunch;            //! TDC sum vs. diff
   TH1F    *fhTDCZNAcorr;      	//! ZNA corrected TDC
   TH1F    *fhTDCZNCcorr;      	//! ZNC corrected TDC
- 
- 
-  ClassDef(AliAnalysisTaskZDCpA,2); 
+
+
+  ClassDef(AliAnalysisTaskZDCpA,2);
 
 };
 
 #endif
-
