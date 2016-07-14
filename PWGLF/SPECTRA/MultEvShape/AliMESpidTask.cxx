@@ -84,8 +84,22 @@ void AliMESpidTask::UserExec(Option_t *opt)
   // event shape for data (from ESD)
   Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
   Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
-  // Double_t directivity =  (directivity_plus + directivity_minus) / 2.0;
-  Double_t directivity = directivity_plus;
+
+  // select events with both dirs in the same interval
+  const Int_t lenght = 4;
+  Double_t intervals[lenght] = {0., 0.3, 0.6, 0.9};
+  // NOTE: the intervals are considered half-closed: (a,b]
+  if( (directivity_plus < intervals[0]) || (directivity_plus > intervals[lenght-1]) ) return;
+  Int_t first = -1;
+  for(Int_t i=1; i<lenght; i++){
+      if(directivity_plus <= intervals[i]){
+	    first = i;
+		break;
+      }
+  }
+  if( (directivity_minus <= intervals[first-1]) || (directivity_minus > intervals[first]) ) return;
+
+  Double_t directivity =  (directivity_plus + directivity_minus) / 2.0;
   // if( mult_comb08 == 1 && directivity > 0.0001 ){
   //     printf("dir plus = %f\t dir minus = %f \t dir = %f\n\n", directivity_plus, directivity_minus, directivity);
   //     exit(1);
@@ -97,8 +111,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   if( HasMCdata() ){ // run only on MC
       MC_directivity_plus = fMCevInfo->GetEventShape()->GetDirectivity(1);
       MC_directivity_minus = fMCevInfo->GetEventShape()->GetDirectivity(0);
-    //   MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
-      MC_directivity = MC_directivity_plus;
+      MC_directivity =  (MC_directivity_plus + MC_directivity_minus) / 2.0;
   }
 
 /*
