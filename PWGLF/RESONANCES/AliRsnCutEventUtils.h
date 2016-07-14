@@ -25,6 +25,8 @@ class AliRsnCutEventUtils : public AliRsnCut {
   void           SetRemovePileUppA2013(Bool_t doit = kTRUE) {fCheckPileUppA2013 = doit;}
   void           SetRemoveFirstEvtInChunk(Bool_t doit = kTRUE) {fIsRmFirstEvInChunck = doit;}
   void           SetUseMVPlpSelection(Bool_t useMVPlpSelection = kFALSE) { fUseMVPlpSelection = useMVPlpSelection;}
+  void           SetRemovePileUpMultBins(Bool_t doit = kTRUE) {fCheckPileUpMultBins = doit;}
+  Bool_t         IsPileUpMultBins();
   void           SetUseVertexSelection2013pA(Bool_t vtxpA2013 = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pA = vtxpA2013; fMaxVtxZ = maxVtxZ;}
   void           SetUseVertexSelection2013pAIDspectra(Bool_t enable = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pAspectra = enable; fUseVertexSelection2013pA = kFALSE; fMaxVtxZ = maxVtxZ;}
   Bool_t         IsSelected(TObject *object);
@@ -53,12 +55,19 @@ class AliRsnCutEventUtils : public AliRsnCut {
   void           SetBSPDCvsTCut(Float_t b){fBSPDCvsTCut=b;}
   Bool_t         IsSPDClusterVsTrackletBG(AliVEvent* vevt=0);
 
+  Bool_t         GetCheckInelGt0SPDtracklets(){return fCheckInelGt0SPDtracklets;}
+  void           SetCheckInelGt0SPDtracklets(Bool_t doit=kTRUE){fCheckInelGt0SPDtracklets=doit;}
+  Bool_t         IsInelGt0SPDtracklets();
+  Bool_t         IsInelGt0SPDtracklets(AliAODEvent* evt);
+  Bool_t         IsInelGt0SPDtracklets(AliESDEvent* evt);
+
  private:
   
   Bool_t              fIsRmFirstEvInChunck; // if kTRUE, remove the first event in the chunk (pA2013)
   Bool_t              fCheckPileUppA2013; // check and reject pileupped events (pA2013)
-  Bool_t              fUseMVPlpSelection; // check for pile-up from multiple vtx 
+  Bool_t              fUseMVPlpSelection; // check for pile-up from multiple vtx
   Int_t               fMinPlpContribMV; // min. n. of MV pile-up contributors
+  Bool_t              fCheckPileUpMultBins; // check pileup using AliESDEvent::IsPileupFromSPDInMultBins()
   Int_t               fMinPlpContribSPD; // min. n. of pile-up contributors from SPD
   Bool_t              fUseVertexSelection2013pA;// check and reject vertex of events for pA2013
   Bool_t              fUseVertexSelection2013pAspectra;// check and reject vertex of events for pA2013
@@ -71,6 +80,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Bool_t              fCheckSPDClusterVsTrackletBG;//check correlation between number of clusters and number of tracklets
   Float_t             fASPDCvsTCut;//constant for the linear cut in SPD clusters vs tracklets
   Float_t             fBSPDCvsTCut;//slope for the linear cut in SPD  clusters vs tracklets
+  Bool_t              fCheckInelGt0SPDtracklets;//select INEL>0 based on SPD tracklets
 
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 
