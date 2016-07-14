@@ -155,7 +155,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
   TString treeName = "";
   TString pathStructure = "";
   TString indexName=""; 
-  TString oldIndexName= fLocationTimeOutMap[type + ".oldindexname"];  // rename index branch to avoid incositencies (bug in ROOT - the same index branch name requeired) 
+  TString oldIndexName= fLocationTimeOutMap[type + ".indexname"];  // rename index branch to avoid incositencies (bug in ROOT - the same index branch name requeired) 
 
   // initialization of external variables
   externalLocation = fLocationTimeOutMap[type + ".location"];
@@ -435,8 +435,11 @@ Bool_t AliExternalInfo::AddTree(TTree* tree, TString type){
   if (indexName.Length()<=0) {
     ::Error("AliExternalInfo::AddTree","Index %s not avaible for type %s", indexName.Data(), type.Data());
   }  
-  tree->BuildIndex(indexName.Data());
-
+  if (TString(tree->GetBranch(indexName.Data())->GetTitle()).Contains("/C")){
+    BuildHashIndex(tree,indexName.Data(),"hashIndex");
+  }else{
+    tree->BuildIndex(indexName.Data());
+  }
   TStatToolkit::AddMetadata(tree,"TTree.indexName",indexName.Data());
 
   TString name = "";
@@ -615,4 +618,38 @@ TTree * AliExternalInfo::GetCPassTree(const char * period, const  char *pass){
   }
   return treeProd;
 }
+
+/// Add branch index branch with name chindexName calculated from input string branch chbranchName
+/// and make thi branch as a primary index 
+/// used in order to qury FreindTrees with string keyname (impossible with standard ROOT)
+/// 
+/// \param tree            - input tree
+/// \param chbranchName    - branch name with index
+/// \param chindexName     - name if the index branch
+void AliExternalInfo::BuildHashIndex(TTree* tree, const char *chbranchName,  const char *chindexName){
+  //
+  //
+  Int_t indexName=0;
+  char  pbranchName[100];
+  TBranch *brIndexMC = tree->Branch(chindexName,&indexName,TString::Format("%s/I",chindexName).Data()); // branch to fill
+  TBranch *branch=tree->GetBranch(chbranchName); // branhc to get string
+  if (branch!=NULL){
+    branch->SetAddress(&pbranchName);
+  }else{
+    //;
+  }
+  Int_t entries= tree->GetEntries();
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    branch->GetEntry(ientry);
+    indexName=TMath::Hash(pbranchName);
+    brIndexMC->Fill();
+  }
+  tree->BuildIndex(chindexName);
+  brIndexMC->SetAddress(0);  // reset pointers to the branches to 0
+  branch->SetAddress(0);     // reset pointers to the branches to 0
+}
+
+
+
+
 
