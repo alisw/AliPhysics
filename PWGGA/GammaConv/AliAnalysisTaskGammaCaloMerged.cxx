@@ -809,7 +809,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCDecayGammaPt[iCut]                  = new TH1F("MC_DecayGamma_Pt","MC_DecayGamma_Pt",ptBins, startPt, endPt);
       fHistoMCDecayGammaPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCDecayGammaPt[iCut]);
-      fHistoMCAllGammaPt[iCut]                 = new TH1F("MC_DirectGamma_Pt","MC_DirectGamma_Pt",ptBins, startPt, endPt);
+      fHistoMCAllGammaPt[iCut]                    = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",ptBins, startPt, endPt);
       fHistoMCAllGammaPt[iCut]->Sumw2();
       fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
 
@@ -1470,17 +1470,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }
     // Flag Photon as CaloPhoton
     PhotonCandidate1->SetIsCaloPhoton();
-    // get MC label
-//     if(fIsMC> 0){
-//       Int_t* mclabelsCluster = clusSub1->GetLabels();
-//       PhotonCandidate1->SetNCaloPhotonMCLabels(clusSub1->GetNLabels());
-// 
-//       if (clusSub1->GetNLabels()>0){
-//         for (Int_t k =0; k< (Int_t)clusSub1->GetNLabels(); k++){
-//           if (k< 50)PhotonCandidate1->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-//         }
-//       }
-//     }
     
     // TLorentzvector with sub cluster 2
     TLorentzVector clusterVector2;
@@ -1497,18 +1486,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }
     // Flag Photon as CaloPhoton
     PhotonCandidate2->SetIsCaloPhoton();
-    // get MC label
-//     if(fIsMC> 0){
-//       Int_t* mclabelsCluster = clusSub2->GetLabels();
-//       PhotonCandidate2->SetNCaloPhotonMCLabels(clusSub2->GetNLabels());
-// 
-//       if (clusSub2->GetNLabels()>0){
-//         for (Int_t k =0; k< (Int_t)clusSub2->GetNLabels(); k++){
-//           if (k< 50)PhotonCandidate2->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-//         }
-//       }
-//     }
-    
+
+    // create pi0 candidate
     AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
             
     if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
@@ -1853,33 +1832,44 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
       
-      if ( abs(particle->GetPdgCode()) == 310 ){  // K0s
-        fHistoMCK0sPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K0s
-      } else if ( particle->GetPdgCode() == 321 ){  // positve kaons
-        fHistoMCNegKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K+
-      } else if ( particle->GetPdgCode() == -321 ){  // negative kaons
-        fHistoMCPosKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K-
-      } else if ( particle->GetPdgCode() == 211 ){  // positve pions
-        fHistoMCNegPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi+
-      } else if ( particle->GetPdgCode() == -211 ){  // negative pions
-        fHistoMCPosPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi-
-      } else if ( particle->GetPdgCode() == 22 ){  // photons
-        fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // direct photons
-        
-        if(particle->GetMother(0) > -1){
-          if (  abs(particle->GetPdgCode()) == 111  || 
-                abs(particle->GetPdgCode()) == 113  ||
-                abs(particle->GetPdgCode()) == 221  ||
-                abs(particle->GetPdgCode()) == 223  ||
-                abs(particle->GetPdgCode()) == 331  ||
-                abs(particle->GetPdgCode()) == 333  ||
-                abs(particle->GetPdgCode()) == 3212 ||
-                abs(particle->GetPdgCode()) == 213
-             ){
-            fHistoMCDecayGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // decay photons          
-          } 
-        }
+      Double_t mesonY   = 0;
+      if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+          mesonY  = 10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+      }else{
+          mesonY  = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
       }
+
+      
+      if (fabs(mesonY) < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValue()){
+        if ( abs(particle->GetPdgCode()) == 310 ){  // K0s
+          fHistoMCK0sPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K0s
+        } else if ( particle->GetPdgCode() == 321 ){  // positve kaons
+          fHistoMCNegKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K+
+        } else if ( particle->GetPdgCode() == -321 ){  // negative kaons
+          fHistoMCPosKPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC K-
+        } else if ( particle->GetPdgCode() == 211 ){  // positve pions
+          fHistoMCNegPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi+
+        } else if ( particle->GetPdgCode() == -211 ){  // negative pions
+          fHistoMCPosPiPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC pi-
+        } else if ( particle->GetPdgCode() == 22 ){  // photons
+          fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // direct photons
+          
+          if(particle->GetMother(0) > -1){
+            TParticle* mother = (TParticle*)fMCStack->Particle(particle->GetMother(0));
+            if (  abs(mother->GetPdgCode()) == 111  || 
+                  abs(mother->GetPdgCode()) == 113  ||
+                  abs(mother->GetPdgCode()) == 221  ||
+                  abs(mother->GetPdgCode()) == 223  ||
+                  abs(mother->GetPdgCode()) == 331  ||
+                  abs(mother->GetPdgCode()) == 333  ||
+                  abs(mother->GetPdgCode()) == 3212 ||
+                  abs(mother->GetPdgCode()) == 213
+              ){
+              fHistoMCDecayGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // decay photons          
+            } 
+          }
+        }
+      }  
       // check if particle is pi0/eta from di-photon decay
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
         ->MesonIsSelectedMC(particle,fMCStack,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
