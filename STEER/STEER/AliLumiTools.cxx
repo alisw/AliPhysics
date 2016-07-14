@@ -139,7 +139,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
   double refSigmaAuto=-1;
   double refEff = 1.;
   if ((refClassName.IsNull() || refSigma<0)) {
-    if (!GetLumiCTPRefClass(run,refClassAuto,refSigmaAuto, refEff)) exit(1);
+    if (!GetLumiCTPRefClass(run,refClassAuto,refSigmaAuto, refEff)) return 0;
     if (refClassName.IsNull()) refClassName = refClassAuto;
     if (refSigma<0) refSigma = refSigmaAuto;
   }
