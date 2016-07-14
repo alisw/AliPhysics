@@ -77,6 +77,8 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA():
     fhZPApmc(0x0),
     fhZNCCentroid(0x0),
     fhZNACentroid(0x0),
+    fhPMCZNCemdUncalib(0x0),
+    fhPMCZNAemdUncalib(0x0),
     fhPMCZNCemd(0x0),
     fhPMCZNAemd(0x0),
     fDebunch(0x0),
@@ -108,6 +110,8 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA(const char *name):
     fhZPApmc(0x0),
     fhZNCCentroid(0x0),
     fhZNACentroid(0x0),
+    fhPMCZNCemdUncalib(0x0),
+    fhPMCZNAemdUncalib(0x0),
     fhPMCZNCemd(0x0),
     fhPMCZNAemd(0x0),
     fDebunch(0x0),
@@ -154,6 +158,8 @@ AliAnalysisTaskZDCpA::AliAnalysisTaskZDCpA(const AliAnalysisTaskZDCpA& ana):
   fhZPApmc(ana.fhZPApmc),
   fhZNCCentroid(ana.fhZNCCentroid),
   fhZNACentroid(ana.fhZNACentroid),
+  fhPMCZNCemdUncalib(ana.fhPMCZNCemdUncalib),
+  fhPMCZNAemdUncalib(ana.fhPMCZNAemdUncalib),
   fhPMCZNCemd(ana.fhPMCZNCemd),
   fhPMCZNAemd(ana.fhPMCZNAemd),
   fDebunch(ana.fDebunch),
@@ -185,11 +191,11 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   fOutput->SetOwner();
   //fOutput->SetName("output");
 
-  fhTDCZNC = new TH1F("fhTDCZNC","TDC_{ZNC}",120, -60., -20.);
+  fhTDCZNC = new TH1F("fhTDCZNC","TDC_{ZNC}",200, -100., 0.);
   fhTDCZNC->GetXaxis()->SetTitle("TDC_{ZNC} (ns)");
   fOutput->Add(fhTDCZNC);
 
-  fhTDCZNA = new TH1F("fhTDCZNA","TDC_{ZNA}",120, -60., -20.);
+  fhTDCZNA = new TH1F("fhTDCZNA","TDC_{ZNA}",200, -100., 0.);
   fhTDCZNA->GetXaxis()->SetTitle("TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNA);
 
@@ -228,9 +234,14 @@ void AliAnalysisTaskZDCpA::UserCreateOutputObjects()
   fhZNACentroid = new TH2F("fhZNACentroid","Centroid over ZNA",70,-3.5,3.5,70,-3.5,3.5);
   fOutput->Add(fhZNACentroid);
 
-  fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",200, 0., 600.);
+  fhPMCZNCemdUncalib = new TH1F("fhPMCZNCemdUncalib","ZNC PMC lg",200, 0., 10.);
+  fOutput->Add(fhPMCZNCemdUncalib);
+  fhPMCZNAemdUncalib = new TH1F("fhPMCZNAemdUncalib","ZNA PMC lg",200, 0., 10.);
+  fOutput->Add(fhPMCZNAemdUncalib);
+
+  fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",200, 0., 1000.);
   fOutput->Add(fhPMCZNCemd);
-  fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 0., 600.);
+  fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 0., 1000.);
   fOutput->Add(fhPMCZNAemd);
 
   fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
@@ -321,8 +332,11 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
 
     const Double_t * towZNCLG = esdZDC->GetZN1TowerEnergyLR();
     const Double_t * towZNALG = esdZDC->GetZN2TowerEnergyLR();
-    fhPMCZNCemd->Fill(towZNCLG[0]);
-    fhPMCZNAemd->Fill(towZNALG[0]);
+    fhPMCZNCemdUncalib->Fill(towZNCLG[0]);
+    fhPMCZNAemdUncalib->Fill(towZNALG[0]);
+
+    fhPMCZNCemd->Fill(towZNCLG[0]/1000.);
+    fhPMCZNAemd->Fill(towZNALG[0]/1000.);
 
 //  }
 
@@ -331,10 +345,10 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
   for(int i=0; i<4; i++){
     if(esdZDC->GetZDCTDCData(esdZDC->GetZNCTDCChannel(),i) != 0.){
       tdcC = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i);
-      fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i));
+      fhTDCZNC->Fill(tdcC);
       if(esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i) != 0.){
         tdcA = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
-        fhTDCZNA->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
+        fhTDCZNA->Fill(tdcA);
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }
