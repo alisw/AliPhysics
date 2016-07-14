@@ -164,8 +164,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     
   virtual void SetUsePosV0Eta(Bool_t ps) { fusePosV0Eta = ps;}
   virtual void SetUseNegV0Eta(Bool_t ng) { fuseNegV0Eta = ng;}
-  virtual void SetUsePosMCV0Eta(Bool_t pmc) { fusePosV0Eta = pmc;}
-  virtual void SetUseNegMCV0Eta(Bool_t nmc) { fuseNegV0Eta = nmc;}
+  virtual void SetUsePosMCV0Eta(Bool_t pmc) { fusePosMCV0Eta = pmc;}
+  virtual void SetUseNegMCV0Eta(Bool_t nmc) { fuseNegMCV0Eta = nmc;}
     
   void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
