@@ -1147,13 +1147,30 @@ Bool_t AliAnalysisTaskGammaCaloMerged::Notify()
       fProfileEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
       ((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
       continue;
-    }
-    else{
+    } else {
       printf(" Gamma Conversion Task %s :: Eta Shift Manually Set to %f \n\n",
           (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber()).Data(),((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift());
       fProfileEtaShift[iCut]->Fill(0.,(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetEtaShift()));
       ((AliConvEventCuts*)fEventCutArray->At(iCut))->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
     }
+    
+    // Check whether non linearity correction has been applied already
+    Bool_t doNonLinCorr   = kTRUE;
+    if (((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetNonLinearity() == ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetNonLinearity()){
+      doNonLinCorr   = kFALSE;
+    } else if (((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetNonLinearity() == 0 && ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetNonLinearity() > 0){
+      doNonLinCorr   = kTRUE;
+    } else if (((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetNonLinearity() > 0 && ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(iCut))->GetNonLinearity() == 0){
+      doNonLinCorr   = kTRUE;
+    } else {
+      doNonLinCorr   = kFALSE;
+      cout << "ERROR: something went wrong in the configuration, different non linearity corrections have been chosen in the standard and merged cluster, which are incompatible" << endl;
+      cout << "INFO: switching off the non lin corr for merged cluster" << endl;
+    }
+    // check whether photon fullfill merged cluster cuts as well
+    if (doNonLinCorr) ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->SetUseNonLinearitySwitch(doNonLinCorr);
+    
+    
   }
   return kTRUE;
 }
@@ -1418,7 +1435,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
       continue;
     }
     
-    // check whether photon fullfill merged cluster cuts as well
     if(!((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){
       delete clus;
       delete tmpvec;
