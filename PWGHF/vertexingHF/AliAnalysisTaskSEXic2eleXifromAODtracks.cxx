@@ -76,6 +76,7 @@
 #include "AliVertexerTracks.h"
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
 
 using std::cout;
 using std::endl;
@@ -95,6 +96,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHTrigger(0),
   fHCentrality(0),
   fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
@@ -324,6 +326,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fHistodPhiSdEtaSElectronProtonR125RS(0),
   fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -352,7 +355,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fCascadeCutVarsArray1(0x0),
   fCascadeCutVarsArray2(0x0),
   fHistoPoolNumberOfDumps(0),
-  fHistoPoolSufficientEvents(0)
+  fHistoPoolNumberOfResets(0)
 {
   //
   // Default Constructor. 
@@ -365,9 +368,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
-  for(Int_t i=0;i<1000;i++){
-    fPoolStatus[i]=kFALSE;
-  }
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
 
 //___________________________________________________________________________
@@ -383,6 +384,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHTrigger(0),
   fHCentrality(0),
   fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
@@ -612,6 +614,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMCXic0Decays(0),
 	fHistoMCDeltaPhiccbar(0),
 	fHistoMCNccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fHistodPhiSdEtaSElectronProtonR125RS(0),
   fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -640,7 +643,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fCascadeCutVarsArray1(0x0),
   fCascadeCutVarsArray2(0x0),
   fHistoPoolNumberOfDumps(0),
-  fHistoPoolSufficientEvents(0)
+  fHistoPoolNumberOfResets(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -655,9 +658,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
-  for(Int_t i=0;i<1000;i++){
-    fPoolStatus[i]=kFALSE;
-  }
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());
@@ -812,15 +813,39 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(2);
 
 	Int_t countTr=0;
-	AliAODTracklets* tracklets=aodEvent->GetTracklets();
-	Int_t nTr=tracklets->GetNumberOfTracklets();
-	for(Int_t iTr=0; iTr<nTr; iTr++){
-		Double_t theta=tracklets->GetTheta(iTr);
-		Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-		if(eta>-1.0 && eta<1.0) countTr++;
-	}
+	Double_t countCorr=0;
+  if(fUseCentralitySPDTracklet)
+  {
+    AliAODTracklets* tracklets=aodEvent->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=tracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) countTr++;
+    }
+    AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+    Bool_t isVtxOk=kFALSE;
+    if(vtx1){
+      if(vtx1->GetNContributors()>0){
+        fCEvents->Fill(8);
+        isVtxOk=kTRUE;
+      }
+    }
 
-  fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+    countCorr=countTr;
+    if(isVtxOk){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+      countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTr,vtx1->GetZ(),fRefMult));
+    }
+  }
+
+
+  if(fUseCentralitySPDTracklet){
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo,countCorr);
+  }else{
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+  }
+
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent);
 
   //------------------------------------------------
@@ -881,6 +906,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(4);
 
 	fHNTrackletvsZ->Fill(fVtxZ,countTr);
+	fHNTrackletCorrvsZ->Fill(fVtxZ,countCorr);
 
   fIsMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   fIsSemi=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
@@ -903,11 +929,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
 	}else if(fUseCentralitySPDTracklet){
-		if(countTr>=0 && countTr<=8) fCentrality = 5.;
-		else if(countTr>=9 && countTr<=13) fCentrality = 15.;
-		else if(countTr>=14 && countTr<=19) fCentrality = 25.;
-		else if(countTr>=20 && countTr<=30) fCentrality = 35.;
-		else if(countTr>=31 && countTr<=49) fCentrality = 45.;
+		if(countCorr>=1 && countCorr<=8) fCentrality = 5.;
+		else if(countCorr>=9 && countCorr<=13) fCentrality = 15.;
+		else if(countCorr>=14 && countCorr<=19) fCentrality = 25.;
+		else if(countCorr>=20 && countCorr<=30) fCentrality = 35.;
+		else if(countCorr>=31 && countCorr<=49) fCentrality = 45.;
 		else fCentrality = 55.;
 	}else{
 		fCentrality = 1.;
@@ -971,15 +997,6 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::Terminate(Option_t*)
   // the results graphically or save the results to file.
   
   //AliInfo("Terminate","");
-
-  for(Int_t i=0;i<fNOfPools;i++){
-    if(fPoolStatus[i]){
-      fHistoPoolSufficientEvents->Fill(1);
-    }else{
-      fHistoPoolSufficientEvents->Fill(0);
-    }
-  }
-
   AliAnalysisTaskSE::Terminate();
   
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
@@ -1201,10 +1218,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
     if(ind>=0 && ind<fNOfPools){
       if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
 				DoEventMixingWithPools(ind);
-				if(fEventBuffer[ind]->GetEntries() >= 20*fNumberOfEventsForMixing){
+				if(fEventBuffer[ind]->GetEntries() >= 100*fNumberOfEventsForMixing){
 					ResetPool(ind);
+          fHistoPoolNumberOfResets->Fill(ind);
 				}
-        fPoolStatus[ind] = kTRUE;
         fHistoPoolNumberOfDumps->Fill(ind);
       }
       fEventBuffer[ind]->Fill();
@@ -2789,6 +2806,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   trackCasc->PropagateToDCA(fVtx1,fBzkG,kVeryBig);
   Double_t momcasc_new[3]={-9999,-9999,-9999.};
   trackCasc->GetPxPyPz(momcasc_new);
+  delete trackCasc;
 
 	if(fDoEventMixing){
 		TLorentzVector *lv = new TLorentzVector();
@@ -3226,20 +3244,20 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
-	fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","conter",30,-15.,15.,120,-0.5,119.5);
+	fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
+	fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 
   fHistoPoolNumberOfDumps = new TH1F("fHistoPoolNumberOfDumps","Number of dumps",1000,-0.5,999.5);
   fHistoPoolNumberOfDumps->SetBinContent(999,fNumberOfEventsForMixing);
-
-  fHistoPoolSufficientEvents = new TH1F("fHistoPoolSufficientEvents","OK Flag",2,-0.5,1.5);
-
+  fHistoPoolNumberOfResets = new TH1F("fHistoPoolNumberOfResets","Number of resets",1000,-0.5,999.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
 	fOutput->Add(fHNTrackletvsZ);
+	fOutput->Add(fHNTrackletCorrvsZ);
   fOutput->Add(fHistoPoolNumberOfDumps);
-  fOutput->Add(fHistoPoolSufficientEvents);
+  fOutput->Add(fHistoPoolNumberOfResets);
 
   return;
 }
@@ -4616,6 +4634,24 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 			//delete c2array1;
 		}//event loop
 	}//track loop
+
+  delete eventInfo;
+  if(c1array) c1array->Delete();
+  delete c1array;
+  if(c2array) c2array->Delete();
+  delete c2array;
+  if(c1varsarray) c1varsarray->Delete();
+  delete c1varsarray;
+  if(c2varsarray) c2varsarray->Delete();
+  delete c2varsarray;
+
+  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &fVtxZ);
+  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &fCentrality);
+  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&fEventInfo);
+  fEventBuffer[poolIndex]->SetBranchAddress("c1array", &fCascadeTracks1);
+  fEventBuffer[poolIndex]->SetBranchAddress("c2array", &fCascadeTracks2);
+  fEventBuffer[poolIndex]->SetBranchAddress("c1varsarray", &fCascadeCutVarsArray1);
+  fEventBuffer[poolIndex]->SetBranchAddress("c2varsarray", &fCascadeCutVarsArray2);
 }
 //_________________________________________________________________
 Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
@@ -5173,4 +5209,23 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::HaveBottomInHistory(Int_t *histo
     if(abs(history[ih])==5332) return kTRUE;
   }
   return kFALSE;
+}
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskSEXic2eleXifromAODtracks::GetEstimatorHistogram(const AliVEvent* event){
+	/// Get Estimator Histogram from period event->GetRunNumber();
+	///
+	/// If you select SPD tracklets in |eta|<1 you should use type == 1
+	///
+
+	Int_t runNo  = event->GetRunNumber();
+	Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+
+	if(runNo>114930 && runNo<117223) period = 0;
+	if(runNo>119158 && runNo<120830) period = 1;
+	if(runNo>122373 && runNo<126438) period = 2;
+	if(runNo>127711 && runNo<130851) period = 3;
+	if(period<0 || period>3) return 0;
+
+
+	return fMultEstimatorAvg[period];
 }

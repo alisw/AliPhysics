@@ -21,6 +21,7 @@
 #include "TROOT.h"
 #include "TVector.h"
 #include "TSystem.h"
+#include "TProfile.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -53,7 +54,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
-  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, TVector *tinfo, TVector *v0info2, Int_t charge);
+  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *v0info2, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, Int_t convtype, Int_t mcetype, AliAODEvent *event, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
@@ -91,6 +92,26 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void StoreGlobalTrackReference(AliAODTrack *track, Int_t);
   void ResetGlobalTrackReference();
+
+	// multiplicity dep analysis
+	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+		fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+		if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+		fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+		fMultEstimatorAvg[2]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+		fMultEstimatorAvg[3]=new TProfile(*hprof);
+	}
+
+	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -131,6 +152,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   AliAODVertex *CallPrimaryVertex(AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
+	TProfile* GetEstimatorHistogram(const AliVEvent *event);
 
   Bool_t fUseMCInfo;                 /// Use MC info
   TList *fOutput;                    //!<! User output slot 1 // general histos
@@ -140,6 +162,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
   TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
+  TH2F *fHNTrackletCorrvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsLctoeleLambdafromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          /// flag for event selected
   Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
@@ -621,6 +644,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistoMCEventType;//!<! MC even type
 	TH1F *fHistoMCDeltaPhiccbar;//!<! MC dphi ccbar
 
+	//Multiplicity dep analysis
+  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+  Double_t fRefMult;   /// refrence multiplcity (period b)
+
   // Store pointers to global tracks for pid and dca
   AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
   Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
@@ -648,19 +675,14 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; /// array of electron-compatible tracks
   TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
   TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
-  std::vector<Double_t> fV0dlArray1; /// array of lambda-compatible tracks' information
-  std::vector<Double_t> fV0dlArray2; /// array of antilambda-compatible tracks' information
-  std::vector<Double_t> fV0dcaArray1; /// array of lambda-compatible tracks' information
-  std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
   TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
   TObjArray* fV0CutVarsArray1; /// array of RDHF cut information
   TObjArray* fV0CutVarsArray2; /// array of RDHF cut information
-  Bool_t fPoolStatus[1000]; /// array of pool status
   TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
-  TH1F* fHistoPoolSufficientEvents; //!<! 1: once the pool becomes full
+  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,31); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,32); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

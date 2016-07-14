@@ -21,6 +21,7 @@
 #include "TROOT.h"
 #include "TVector.h"
 #include "TSystem.h"
+#include "TProfile.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -94,6 +95,26 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void StoreGlobalTrackReference(AliAODTrack *track, Int_t id);
   void ResetGlobalTrackReference();
 
+	// multiplicity dep analysis
+	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+		fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+		if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+		fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+		fMultEstimatorAvg[2]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+		fMultEstimatorAvg[3]=new TProfile(*hprof);
+	}
+
+	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
@@ -133,6 +154,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
+	TProfile* GetEstimatorHistogram(const AliVEvent *event);
 
   Bool_t fUseMCInfo;                 /// Use MC info
   TList *fOutput;                    //!<! User output slot 1 // general histos
@@ -142,6 +164,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH1F *fHTrigger;                   //!<! Histogram to check Trigger
   TH1F *fHCentrality;                //!<! Histogram to check Centrality
 	TH2F *fHNTrackletvsZ;                //!<! Histogram to check N tracklet vs Z
+	TH2F *fHNTrackletCorrvsZ;                //!<! Histogram to check N tracklet vs Z
   AliRDHFCutsXictoeleXifromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;          /// flag for event selected
   Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
@@ -391,6 +414,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistoMCDeltaPhiccbar;//!<!  MC Event Type
 	TH1F *fHistoMCNccbar;//!<!  MC Event Type
 
+	//Multiplicity dep analysis
+	TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+	Double_t fRefMult;   /// refrence multiplcity (period b)
+
   // Store pointers to global tracks for pid and dca
   AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
   Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
@@ -425,12 +452,11 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronCutVarsArray; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray1; /// array of RDHF cut information
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
-  Bool_t fPoolStatus[1000]; /// array of pool status
   TH1F* fHistoPoolNumberOfDumps; //!<! Number of dumps
-  TH1F* fHistoPoolSufficientEvents; //!<! 1: once the pool becomes full
+  TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,30); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,31); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

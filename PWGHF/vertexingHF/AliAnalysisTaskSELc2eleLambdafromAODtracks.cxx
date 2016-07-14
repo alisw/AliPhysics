@@ -80,6 +80,7 @@
 #include "AliVertexerTracks.h"
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
+#include "AliVertexingHFUtils.h"
 
 using std::cout;
 using std::endl;
@@ -99,6 +100,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHTrigger(0),
   fHCentrality(0),
   fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(0),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(kFALSE),
@@ -549,6 +551,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistonLambdavsRunNumber(0),
   fHistoMCEventType(0),
   fHistoMCDeltaPhiccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
   fHistodPhiSdEtaSElectronProtonR125RS(0),
   fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -569,15 +572,11 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fElectronTracks(0x0),
   fV0Tracks1(0x0),
   fV0Tracks2(0x0),
-  fV0dlArray1(0x0),
-  fV0dlArray2(0x0),
-  fV0dcaArray1(0x0),
-  fV0dcaArray2(0x0),
   fElectronCutVarsArray(0x0),
   fV0CutVarsArray1(0x0),
   fV0CutVarsArray2(0x0),
   fHistoPoolNumberOfDumps(0),
-  fHistoPoolSufficientEvents(0)
+  fHistoPoolNumberOfResets(0)
 {
   //
   /// Default Constructor.
@@ -590,9 +589,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
-  for(Int_t i=0;i<1000;i++){
-    fPoolStatus[i]=kFALSE;
-  }
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
 
 //___________________________________________________________________________
@@ -608,6 +605,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHTrigger(0),
   fHCentrality(0),
   fHNTrackletvsZ(0),
+  fHNTrackletCorrvsZ(0),
   fAnalCuts(analCuts),
   fIsEventSelected(kFALSE),
   fWriteVariableTree(writeVariableTree),
@@ -1058,6 +1056,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistonLambdavsRunNumber(0),
 	fHistoMCEventType(0),
 	fHistoMCDeltaPhiccbar(0),
+	fRefMult(9.26),
   fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
 	fHistodPhiSdEtaSElectronProtonR125RS(0),
 	fHistodPhiSdEtaSElectronProtonR125WS(0),
@@ -1078,15 +1077,11 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fElectronTracks(0x0),
 	fV0Tracks1(0x0),
 	fV0Tracks2(0x0),
-	fV0dlArray1(0x0),
-	fV0dlArray2(0x0),
-	fV0dcaArray1(0x0),
-  fV0dcaArray2(0x0),
   fElectronCutVarsArray(0x0),
   fV0CutVarsArray1(0x0),
   fV0CutVarsArray2(0x0),
   fHistoPoolNumberOfDumps(0),
-  fHistoPoolSufficientEvents(0)
+  fHistoPoolNumberOfResets(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -1101,9 +1096,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	for(Int_t i=0;i<8;i++){
 		fHistoElectronTPCPIDSelTOFEtaDep[i] = 0;
 	}
-  for(Int_t i=0;i<1000;i++){
-    fPoolStatus[i]=kFALSE;
-  }
+	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());
@@ -1257,15 +1250,38 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(2);
 
 	Int_t countTr=0;
-	AliAODTracklets* tracklets=aodEvent->GetTracklets();
-	Int_t nTr=tracklets->GetNumberOfTracklets();
-	for(Int_t iTr=0; iTr<nTr; iTr++){
-		Double_t theta=tracklets->GetTheta(iTr);
-		Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-		if(eta>-1.0 && eta<1.0) countTr++;
-	}
+	Double_t countCorr=0;
+  if(fUseCentralitySPDTracklet)
+  {
+    AliAODTracklets* tracklets=aodEvent->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=tracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-1.0 && eta<1.0) countTr++;
+    }
+    AliAODVertex *vtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
+    Bool_t isVtxOk=kFALSE;
+    if(vtx1){
+      if(vtx1->GetNContributors()>0){
+        fCEvents->Fill(8);
+        isVtxOk=kTRUE;
+      }
+    }
 
-  fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+    countCorr=countTr;
+    if(isVtxOk){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aodEvent);
+      countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTr,vtx1->GetZ(),fRefMult));
+    }
+  }
+
+
+  if(fUseCentralitySPDTracklet){
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo,countCorr);
+  }else{
+    fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+  }
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
 
   //------------------------------------------------
@@ -1324,6 +1340,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(4);
 
 	fHNTrackletvsZ->Fill(fVtxZ,countTr);
+	fHNTrackletCorrvsZ->Fill(fVtxZ,countCorr);
 
   fIsMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   fIsSemi=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
@@ -1346,11 +1363,11 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
 	}else if(fUseCentralitySPDTracklet){
-		if(countTr>=0 && countTr<=8) fCentrality = 5.;
-		else if(countTr>=9 && countTr<=13) fCentrality = 15.;
-		else if(countTr>=14 && countTr<=19) fCentrality = 25.;
-		else if(countTr>=20 && countTr<=30) fCentrality = 35.;
-		else if(countTr>=31 && countTr<=49) fCentrality = 45.;
+		if(countCorr>=0 && countCorr<=8) fCentrality = 5.;
+		else if(countCorr>= 9 && countCorr<=13) fCentrality = 15.;
+		else if(countCorr>=14 && countCorr<=19) fCentrality = 25.;
+		else if(countCorr>=20 && countCorr<=30) fCentrality = 35.;
+		else if(countCorr>=31 && countCorr<=49) fCentrality = 45.;
 		else fCentrality = 55.;
 	}else{
 		fCentrality = 1.;
@@ -1414,15 +1431,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::Terminate(Option_t*)
   /// the results graphically or save the results to file.
   
   //AliInfo("Terminate","");
-
-  for(Int_t i=0;i<fNOfPools;i++){
-    if(fPoolStatus[i]){
-      fHistoPoolSufficientEvents->Fill(1);
-    }else{
-      fHistoPoolSufficientEvents->Fill(0);
-    }
-  }
-
   AliAnalysisTaskSE::Terminate();
 
   
@@ -1519,10 +1527,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserCreateOutputObjects()
 			fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
 			fEventBuffer[i]->Branch("v1array", "TObjArray", &fV0Tracks1);
 			fEventBuffer[i]->Branch("v2array", "TObjArray", &fV0Tracks2);
-			fEventBuffer[i]->Branch("vdl1array", &fV0dlArray1);
-			fEventBuffer[i]->Branch("vdl2array", &fV0dlArray2);
-			fEventBuffer[i]->Branch("vdca1array", &fV0dcaArray1);
-			fEventBuffer[i]->Branch("vdca2array", &fV0dcaArray2);
 			fEventBuffer[i]->Branch("v1varsarray", "TObjArray", &fV0CutVarsArray1);
 			fEventBuffer[i]->Branch("v2varsarray", "TObjArray", &fV0CutVarsArray2);
 		}
@@ -1550,10 +1554,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
 		if(fElectronCutVarsArray) fElectronCutVarsArray->Delete();
 		if(fV0CutVarsArray1) fV0CutVarsArray1->Delete();
 		if(fV0CutVarsArray2) fV0CutVarsArray2->Delete();
-		fV0dlArray1.clear();
-		fV0dlArray2.clear();
-		fV0dcaArray1.clear();
-		fV0dcaArray2.clear();
 	}
 
   ResetGlobalTrackReference();
@@ -1653,10 +1653,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
     if(ind>=0 && ind<fNOfPools){
       if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
 				DoEventMixingWithPools(ind);
-				if(fEventBuffer[ind]->GetEntries() >= 20*fNumberOfEventsForMixing){
+				if(fEventBuffer[ind]->GetEntries() >= 100*fNumberOfEventsForMixing){
 					ResetPool(ind);
+          fHistoPoolNumberOfResets->Fill(ind);
 				}
-        fPoolStatus[ind] = kTRUE;
         fHistoPoolNumberOfDumps->Fill(ind);
       }
       fEventBuffer[ind]->Fill();
@@ -2954,7 +2954,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVector *trke, TLorentzVector *v0, Double_t *v0info, TVector *elevars, TVector *v0vars, Int_t chargepr) 
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVector *trke, TLorentzVector *v0, TVector *elevars, TVector *v0vars, Int_t chargepr) 
 {
   ///
   /// Fill histograms or tree depending on fWriteVariableTree
@@ -3043,15 +3043,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCandidateVariables[57] = (*v0vars)[6];
   fCandidateVariables[58] = (*v0vars)[7];
   fCandidateVariables[59] = (*v0vars)[8];
-  fCandidateVariables[64] = v0info[0];
+  fCandidateVariables[64] = (*v0vars)[15];
 
   fCandidateVariables[91] = fBzkG;
   fCandidateVariables[92] = fEvNumberCounter;
   fCandidateVariables[93] = fRunNumber;
 
 
-  if(fWriteVariableTree)
-    fVariablesTree->Fill();
+//  if(fWriteVariableTree)
+//    fVariablesTree->Fill();
 
 	Double_t cont[3];
 	cont[0] = mel;
@@ -3085,23 +3085,23 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 
 	Double_t cont_eleptvsv0dl[3];
 	cont_eleptvsv0dl[0] = trke->Pt();
-	cont_eleptvsv0dl[1] = v0info[0];
+	cont_eleptvsv0dl[1] = (*v0vars)[15];
 	cont_eleptvsv0dl[2] = fCentrality;
 
 	Double_t cont_eleptvsv0dca[3];
 	cont_eleptvsv0dca[0] = trke->Pt();
-	cont_eleptvsv0dca[1] = v0info[1];
+	cont_eleptvsv0dca[1] = (*v0vars)[16];
 	cont_eleptvsv0dca[2] = fCentrality;
 
 	Double_t cont_elelamptvsv0dl[4];
 	cont_elelamptvsv0dl[0] = sqrt(pxsum*pxsum+pysum*pysum);
-	cont_elelamptvsv0dl[1] = v0info[0];
+	cont_elelamptvsv0dl[1] = (*v0vars)[15];
 	cont_elelamptvsv0dl[2] = 0.0;
 	cont_elelamptvsv0dl[3] = fCentrality;
 
 	Double_t cont_elelamptvsv0dl_flip[4];
 	cont_elelamptvsv0dl_flip[0] = ptel_flip;
-	cont_elelamptvsv0dl_flip[1] = v0info[0];
+	cont_elelamptvsv0dl_flip[1] = (*v0vars)[15];
 	cont_elelamptvsv0dl_flip[2] = 0.0;
 	cont_elelamptvsv0dl_flip[3] = fCentrality;
 
@@ -3239,7 +3239,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCorrelationVariables[1] = trke->Pt();
   fCorrelationVariables[2] = TVector2::Phi_mpi_pi(v0->Phi()-trke->Phi());
   fCorrelationVariables[3] = v0->Eta()-trke->Eta();
-  fCorrelationVariables[4] = v0info[0];
+  fCorrelationVariables[4] = (*v0vars)[15];
   fCorrelationVariables[5] = (*elevars)[5];
   fCorrelationVariables[6] = 2;
   if(trke->T()>0){
@@ -3257,7 +3257,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 
 	cont_cor_nd[0] =  sqrt(pxsum*pxsum+pysum*pysum);
 	cont_cor_nd[1] =  TVector2::Phi_mpi_pi(v0->Phi()-trke->Phi());
-	cont_cor_nd[2] = v0info[0];
+	cont_cor_nd[2] = (*v0vars)[15];
   if(trke->T()>0){
     if(chargepr>0) cont_cor_nd[3] = 0;
     else cont_cor_nd[3] = 2;
@@ -3667,11 +3667,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
     if(TMath::Abs(v0->MassLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambdaRough()){
       lv->SetXYZM(v0->Px(),v0->Py(),v0->Pz(),v0->MassLambda());
       fV0Tracks1->AddLast(lv);
-      fV0dlArray1.push_back(v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam);
-      fV0dcaArray1.push_back(v0->DcaV0ToPrimVertex());
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pr);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pi);
-      TVector *varvec = new TVector(15);
+      TVector *varvec = new TVector(17);
       (*varvec)[0] = xyzR125pr[0];
       (*varvec)[1] = xyzR125pr[1];
       (*varvec)[2] = xyzR125pr[2];
@@ -3687,15 +3685,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
       (*varvec)[12] = v0->MomNegX();
       (*varvec)[13] = v0->MomNegY();
       (*varvec)[14] = v0->MomNegZ();
+      (*varvec)[15] = v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam;
+      (*varvec)[16] = v0->DcaV0ToPrimVertex();
       fV0CutVarsArray1->AddLast(varvec);
     }else{
       lv->SetXYZM(v0->Px(),v0->Py(),v0->Pz(),v0->MassAntiLambda());
       fV0Tracks2->AddLast(lv);
-      fV0dlArray2.push_back(v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam);
-      fV0dcaArray2.push_back(v0->DcaV0ToPrimVertex());
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cntrack,fBzkG,posVtx,xyzR125pr);
       if(fAnalCuts->GetCuts()[2]>0. || fAnalCuts->GetCuts()[3]>0.) fAnalCuts->SetSftPosR125(cptrack,fBzkG,posVtx,xyzR125pi);
-      TVector *varvec = new TVector(15);
+      TVector *varvec = new TVector(17);
       (*varvec)[0] = xyzR125pr[0];
       (*varvec)[1] = xyzR125pr[1];
       (*varvec)[2] = xyzR125pr[2];
@@ -3711,6 +3709,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
       (*varvec)[12] = v0->MomPosX();
       (*varvec)[13] = v0->MomPosY();
       (*varvec)[14] = v0->MomPosZ();
+      (*varvec)[15] = v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam;
+      (*varvec)[16] = v0->DcaV0ToPrimVertex();
       fV0CutVarsArray2->AddLast(varvec);
     }
   }
@@ -4217,19 +4217,20 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   fHTrigger->GetXaxis()->SetBinLabel(13,"kINT7&kEMC7");
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
-  fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","conter",30,-15.,15.,120,-0.5,119.5);
+  fHNTrackletvsZ = new TH2F("fHNTrackletvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
+  fHNTrackletCorrvsZ = new TH2F("fHNTrackletCorrvsZ","N_{tracklet} vs z",30,-15.,15.,120,-0.5,119.5);
 
   fHistoPoolNumberOfDumps = new TH1F("fHistoPoolNumberOfDumps","Number of dumps",1000,-0.5,999.5);
   fHistoPoolNumberOfDumps->SetBinContent(999,fNumberOfEventsForMixing);
-
-  fHistoPoolSufficientEvents = new TH1F("fHistoPoolSufficientEvents","OK Flag",2,-0.5,1.5);
+  fHistoPoolNumberOfResets = new TH1F("fHistoPoolNumberOfResets","Number of dumps",1000,-0.5,999.5);
 
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
   fOutput->Add(fHNTrackletvsZ);
+  fOutput->Add(fHNTrackletCorrvsZ);
   fOutput->Add(fHistoPoolNumberOfDumps);
-  fOutput->Add(fHistoPoolSufficientEvents);
+  fOutput->Add(fHistoPoolNumberOfResets);
 
   return;
 }
@@ -5930,10 +5931,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::ResetPool(Int_t poolIndex){
 	fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
 	fEventBuffer[poolIndex]->Branch("v1array", "TObjArray", &fV0Tracks1);
 	fEventBuffer[poolIndex]->Branch("v2array", "TObjArray", &fV0Tracks2);
-	fEventBuffer[poolIndex]->Branch("vdl1array", &fV0dlArray1);
-	fEventBuffer[poolIndex]->Branch("vdl2array", &fV0dlArray2);
-	fEventBuffer[poolIndex]->Branch("vdca1array", &fV0dcaArray1);
-	fEventBuffer[poolIndex]->Branch("vdca2array", &fV0dcaArray2);
 	fEventBuffer[poolIndex]->Branch("v1varsarray", "TObjArray", &fV0CutVarsArray1);
 	fEventBuffer[poolIndex]->Branch("v2varsarray", "TObjArray", &fV0CutVarsArray2);
 
@@ -5956,10 +5953,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
   TObjArray* v2array=0x0;
   TObjArray* v1varsarray=0x0;
   TObjArray* v2varsarray=0x0;
-	std::vector<Double_t>* vdl1array=0x0;
-  std::vector<Double_t>* vdl2array=0x0;
-	std::vector<Double_t>* vdca1array=0x0;
-  std::vector<Double_t>* vdca2array=0x0;
   Float_t zVertex,cent;
   TObjString* eventInfo=0x0;
   fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
@@ -5967,10 +5960,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
   fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
   fEventBuffer[poolIndex]->SetBranchAddress("v1array", &v1array);
   fEventBuffer[poolIndex]->SetBranchAddress("v2array", &v2array);
-  fEventBuffer[poolIndex]->SetBranchAddress("vdl1array", &vdl1array);
-  fEventBuffer[poolIndex]->SetBranchAddress("vdl2array", &vdl2array);
-  fEventBuffer[poolIndex]->SetBranchAddress("vdca1array", &vdca1array);
-  fEventBuffer[poolIndex]->SetBranchAddress("vdca2array", &vdca2array);
   fEventBuffer[poolIndex]->SetBranchAddress("v1varsarray", &v1varsarray);
   fEventBuffer[poolIndex]->SetBranchAddress("v2varsarray", &v2varsarray);
   for (Int_t i=0; i<nEle; i++)
@@ -5984,36 +5973,20 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 
 			//TObjArray* v1array1=(TObjArray*)v1array->Clone();
 			Int_t nV01=v1array->GetEntries();
-			Int_t nV01_test=vdl1array->size();
-			if(nV01 != nV01_test){
-				cout<<"Something is wrong"<<endl;
-				exit(1);
-			}
       for(Int_t iTr1=0; iTr1<nV01; iTr1++){
 				TLorentzVector* v01=(TLorentzVector*)v1array->At(iTr1);
 				if(!v01 ) continue;
-				Double_t v0info1[2];
-				v0info1[0] = vdl1array->at(iTr1);
-				v0info1[1] = vdca1array->at(iTr1);
         TVector *v0varsarray = (TVector*) v1varsarray->At(iTr1);
-        FillMixROOTObjects(trke,v01,v0info1,elevarsarray,v0varsarray,1);
+        FillMixROOTObjects(trke,v01,elevarsarray,v0varsarray,1);
 			}//v0 loop
 
 			//TObjArray* v2array1=(TObjArray*)v2array->Clone();
 			Int_t nV02=v2array->GetEntries();
-			Int_t nV02_test=vdl2array->size();
-			if(nV02 != nV02_test){
-				cout<<"Something is wrong"<<endl;
-				exit(1);
-			}
       for(Int_t iTr2=0; iTr2<nV02; iTr2++){
 				TLorentzVector* v02=(TLorentzVector*)v2array->At(iTr2);
 				if(!v02 ) continue;
-				Double_t v0info2[2];
-				v0info2[0] = vdl2array->at(iTr2);
-				v0info2[1] = vdca2array->at(iTr2);
         TVector *v0varsarray = (TVector*) v2varsarray->At(iTr2);
-        FillMixROOTObjects(trke,v02,v0info2,elevarsarray,v0varsarray,-1);
+        FillMixROOTObjects(trke,v02,elevarsarray,v0varsarray,-1);
 			}//v0 loop
 
 			//delete v1array1;
@@ -6021,6 +5994,24 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 		}//event loop
 		
 	}//track loop
+
+  delete eventInfo;
+  if(v1array) v1array->Delete();
+  delete v1array;
+  if(v2array) v2array->Delete();
+  delete v2array;
+  if(v1varsarray) v1varsarray->Delete();
+  delete v1varsarray;
+  if(v2varsarray) v2varsarray->Delete();
+  delete v2varsarray;
+
+  fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &fVtxZ);
+  fEventBuffer[poolIndex]->SetBranchAddress("centrality", &fCentrality);
+  fEventBuffer[poolIndex]->SetBranchAddress("eventInfo", &fEventInfo);
+  fEventBuffer[poolIndex]->SetBranchAddress("v1array",  &fV0Tracks1);
+  fEventBuffer[poolIndex]->SetBranchAddress("v2array",  &fV0Tracks2);
+  fEventBuffer[poolIndex]->SetBranchAddress("v1varsarray", &fV0CutVarsArray1);
+  fEventBuffer[poolIndex]->SetBranchAddress("v2varsarray", &fV0CutVarsArray2);
 }
 //_________________________________________________________________
 Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
@@ -6697,4 +6688,24 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::HaveBottomInHistory(Int_t *hi
     if(abs(history[ih])==5332) return kTRUE;
   }
   return kFALSE;
+}
+
+//____________________________________________________________________________
+TProfile* AliAnalysisTaskSELc2eleLambdafromAODtracks::GetEstimatorHistogram(const AliVEvent* event){
+	/// Get Estimator Histogram from period event->GetRunNumber();
+	///
+	/// If you select SPD tracklets in |eta|<1 you should use type == 1
+	///
+
+	Int_t runNo  = event->GetRunNumber();
+	Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+
+	if(runNo>114930 && runNo<117223) period = 0;
+	if(runNo>119158 && runNo<120830) period = 1;
+	if(runNo>122373 && runNo<126438) period = 2;
+	if(runNo>127711 && runNo<130851) period = 3;
+	if(period<0 || period>3) return 0;
+
+
+	return fMultEstimatorAvg[period];
 }
