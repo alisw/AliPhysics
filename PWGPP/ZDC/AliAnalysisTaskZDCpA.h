@@ -43,7 +43,7 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   //
   TList   *fOutput;		//! list send on output slot 0
   TH1F    *fhTDCZNC;  		//! TDC ZNC
-  TH1F    *fhTDCZNA; 		//! TDC ZNA 
+  TH1F    *fhTDCZNA; 		//! TDC ZNA
   TH1F    *fhTDCZNSum;  	//! TDC ZNC sum
   TH1F    *fhTDCZNDiff; 	//! TDC DIFF sum
   TH1F    *fhZNCSumQ;	 	//! ZNC sum 4Q
@@ -58,6 +58,8 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   TH1F    *fhZPApmc;		//! ZPA PMCs
   TH2F    *fhZNCCentroid;       //! ZNC centroid
   TH2F    *fhZNACentroid;       //! ZNA centroid
+  TH1F    *fhPMCZNCemdUncalib;  //! ZNC PMC low gain chain
+  TH1F    *fhPMCZNAemdUncalib;  //! ZNA PMC low gain chain
   TH1F    *fhPMCZNCemd;      	//! ZNC PMC low gain chain
   TH1F    *fhPMCZNAemd;      	//! ZNA PMC low gain chain
   TH2F    *fDebunch;            //! TDC sum vs. diff
@@ -65,7 +67,7 @@ class AliAnalysisTaskZDCpA : public AliAnalysisTaskSE {
   TH1F    *fhTDCZNCcorr;      	//! ZNC corrected TDC
 
 
-  ClassDef(AliAnalysisTaskZDCpA,2);
+  ClassDef(AliAnalysisTaskZDCpA,3);
 
 };
 
