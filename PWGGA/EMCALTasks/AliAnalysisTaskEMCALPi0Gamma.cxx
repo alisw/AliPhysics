@@ -1460,15 +1460,22 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
   //    return;
   
   // run 2 centrality
-  Double_t cent = 300;
-  AliMultSelection *MultSelection = 0x0;
-  MultSelection = (AliMultSelection * ) InputEvent()->FindListObject("MultSelection");
-  if( !MultSelection) {
-    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-    AliWarning("AliMultSelection object not found!");
-  }else{
-    cent = MultSelection->GetMultiplicityPercentile(fCentVar.Data());
-    //    cent = MultSelection->GetMultiplicityPercentile("CL1");
+  Double_t cent = 1;
+  if(fDataPeriod == 202){
+    cent = 300;
+    AliMultSelection *MultSelection = 0x0;
+    MultSelection = (AliMultSelection * ) InputEvent()->FindListObject("MultSelection");
+    if( !MultSelection) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+    }else{
+      cent = MultSelection->GetMultiplicityPercentile(fCentVar.Data());
+      //    cent = MultSelection->GetMultiplicityPercentile("CL1");
+    }
+  }
+  else{
+    const AliCentrality *centP = InputEvent()->GetCentrality();
+    cent = centP->GetCentralityPercentileUnchecked(fCentVar.Data());
   }
   fHCent->Fill(cent);
   
