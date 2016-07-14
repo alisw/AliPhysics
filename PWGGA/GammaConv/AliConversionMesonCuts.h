@@ -124,9 +124,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
     Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
     void   SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
-    void   SetIsMergedClusterCut(Int_t merged)               {fIsMergedClusterCut = merged; return;}
-    Int_t  GetIsMergedClusterCut()                           {return fIsMergedClusterCut;}
-
+    void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
+    Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
+    Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
+    
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
     
