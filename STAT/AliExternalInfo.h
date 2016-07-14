@@ -99,6 +99,7 @@ public:
   Long64_t GetMaxCacheSize() const        { return fMaxCacheSize; }
 
   static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
+  static void BuildHashIndex(TTree* tree, const char *chbranchName,  const char *chindexName);
 private:
   Bool_t AddTree(TTree* tree, TString type);
   Bool_t AddChain(TString type, TString period, TString pass);
