@@ -139,7 +139,7 @@ class AliEmcalContainer : public TObject {
   Int_t                       GetCurrentID()                  const { return fCurrentID                 ; }
   Bool_t                      GetIsParticleLevel()            const { return fIsParticleLevel           ; }
   Int_t                       GetIndexFromLabel(Int_t lab)    const;
-  Int_t                       GetNEntries()                   const { return fClArray->GetEntriesFast() ; }
+  Int_t                       GetNEntries()                   const { return fClArray != 0 ? fClArray->GetEntriesFast() : 0; }
   virtual Bool_t              GetMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetAcceptMomentum(TLorentzVector &mom, Int_t i) const = 0;
   virtual Bool_t              GetNextMomentum(TLorentzVector &mom) = 0;
@@ -155,7 +155,7 @@ class AliEmcalContainer : public TObject {
   void                        SortArray()                           { fClArray->Sort()                  ; }
 
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
-  virtual void                NextEvent() {;}
+  virtual void                NextEvent();
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
   void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
   void                        SetMCLabelRange(Int_t min, Int_t max)             { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
