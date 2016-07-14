@@ -227,6 +227,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetNonLinearity2(Int_t);
     
     
+    Int_t       GetNonLinearity()                                {return fSwitchNonLinearity;}
+    void        SetUseNonLinearitySwitch( Bool_t useNonLin)      { fUseNonLinearity = useNonLin;}
+    
     Float_t     FunctionM02 (Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
     Float_t     CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
     Float_t     CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
