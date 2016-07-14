@@ -10,6 +10,7 @@
 
 #include "AliRsnCutEventUtils.h"
 #include "AliAnalysisUtils.h"
+#include "AliESDtrackCuts.h"
 #include <AliHeader.h>
 #include <AliAODMCHeader.h>
 #include <AliGenDPMjetEventHeader.h>
@@ -24,6 +25,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fUseMVPlpSelection(kFALSE),
   fMinPlpContribMV(5),
   fMinPlpContribSPD(5),
+  fCheckPileUpMultBins(kFALSE),
   fUseVertexSelection2013pA(kFALSE),
   fUseVertexSelection2013pAspectra(kFALSE),
   fMaxVtxZ(10.0),
@@ -35,6 +37,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fCheckSPDClusterVsTrackletBG(kFALSE),
   fASPDCvsTCut(-9999.0),
   fBSPDCvsTCut(-9999.0),
+  fCheckInelGt0SPDtracklets(kFALSE),
   fUtils(0x0)
 {
   //
@@ -55,6 +58,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fUseMVPlpSelection(copy.fUseMVPlpSelection),
   fMinPlpContribMV(copy.fMinPlpContribMV),
   fMinPlpContribSPD(copy.fMinPlpContribSPD),
+  fCheckPileUpMultBins(copy.fCheckPileUpMultBins),
   fUseVertexSelection2013pA(copy.fUseVertexSelection2013pA),
   fUseVertexSelection2013pAspectra(copy.fUseVertexSelection2013pAspectra),
   fMaxVtxZ(copy.fMaxVtxZ),
@@ -66,6 +70,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fCheckSPDClusterVsTrackletBG(copy.fCheckSPDClusterVsTrackletBG),
   fASPDCvsTCut(copy.fASPDCvsTCut),
   fBSPDCvsTCut(copy.fBSPDCvsTCut),
+  fCheckInelGt0SPDtracklets(copy.fCheckInelGt0SPDtracklets),
   fUtils(copy.fUtils)
 {
   //
@@ -89,6 +94,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fUseMVPlpSelection=copy.fUseMVPlpSelection;
   fMinPlpContribMV=copy.fMinPlpContribMV;
   fMinPlpContribSPD=copy.fMinPlpContribSPD;
+  fCheckPileUpMultBins=copy.fCheckPileUpMultBins;
   fUseVertexSelection2013pA=copy.fUseVertexSelection2013pA;
   fUseVertexSelection2013pAspectra=copy.fUseVertexSelection2013pAspectra;
   fMaxVtxZ=copy.fMaxVtxZ;
@@ -100,6 +106,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fCheckSPDClusterVsTrackletBG=copy.fCheckSPDClusterVsTrackletBG;
   fASPDCvsTCut=copy.fASPDCvsTCut;
   fBSPDCvsTCut=copy.fBSPDCvsTCut;
+  fCheckInelGt0SPDtracklets=copy.fCheckInelGt0SPDtracklets;
   fUtils=copy.fUtils;
 	
   return (*this);
@@ -137,6 +144,7 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
      
    // pile-up check
    if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt))) accept = kFALSE;
+   if (fCheckPileUpMultBins && IsPileUpMultBins()) accept = kFALSE;
 
    //check if DAQ is incomplete
    if(fCheckIncompleteDAQ && IsIncompleteDAQ()) return kFALSE;
@@ -146,6 +154,9 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
 
    //check correlation between number of SPD clusters and number of tracklets
    if(fCheckSPDClusterVsTrackletBG && IsSPDClusterVsTrackletBG(vevt)) return kFALSE;
+
+   //select INEL>0 based on SPD tracklets
+   if(fCheckInelGt0SPDtracklets && !IsInelGt0SPDtracklets()) return kFALSE;
    
    //apply filter for NSD events in DPMJET MC for pA
    if (fFilterNSDeventsDPMJETpA2013){
@@ -240,6 +251,21 @@ Bool_t AliRsnCutEventUtils::IsVertexSelected2013pAIDspectra(AliVEvent *event)
 }
 
 
+Bool_t AliRsnCutEventUtils::IsPileUpMultBins(){
+  if(!fEvent) return kFALSE;
+  AliAODEvent* aodEvt=0;
+  Bool_t isAOD=fEvent->IsAOD();
+  if(isAOD) return kFALSE;//not yet available for AODs
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+
+  else if(isESD && esdEvt && esdEvt->IsPileupFromSPDInMultBins()) return kTRUE;
+  return kFALSE;
+}
+
+
 Bool_t AliRsnCutEventUtils::IsIncompleteDAQ(){
   if(!fEvent) return kFALSE;
   AliAODEvent* aodEvt=0;
@@ -276,4 +302,38 @@ Bool_t AliRsnCutEventUtils::IsSPDClusterVsTrackletBG(AliVEvent* vevt){
   if(!vevt) vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());
   if(!vevt) return kFALSE;
   return fUtils->IsSPDClusterVsTrackletBG(vevt);
+}
+
+
+Bool_t AliRsnCutEventUtils::IsInelGt0SPDtracklets(){
+  if(!fEvent) return kFALSE;
+  AliAODEvent* aodEvt=0;
+  Bool_t isAOD=fEvent->IsAOD();
+  if(isAOD) aodEvt=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+
+  if(isAOD){
+    if(aodEvt && IsInelGt0SPDtracklets(aodEvt)) return kTRUE;
+    else return kFALSE;
+  }else if(isESD){
+    if(esdEvt && IsInelGt0SPDtracklets(esdEvt)) return kTRUE;
+    else return kFALSE;
+  }
+  return kFALSE;
+}
+
+
+Bool_t AliRsnCutEventUtils::IsInelGt0SPDtracklets(AliAODEvent* aodEvt){
+  return kTRUE;//not yet implemented for AODs
+}
+
+
+Bool_t AliRsnCutEventUtils::IsInelGt0SPDtracklets(AliESDEvent* esdEvt){
+  if(!esdEvt) return kTRUE;
+  Int_t n=AliESDtrackCuts::GetReferenceMultiplicity(esdEvt,AliESDtrackCuts::kTracklets,1.,0.);
+  if(n<1) return kFALSE;
+  return kTRUE;
 }
