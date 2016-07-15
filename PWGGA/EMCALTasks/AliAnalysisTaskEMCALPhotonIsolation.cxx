@@ -429,9 +429,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           //Initialization by Davide;
       {
         TString sTitle;
-        Int_t binPT=70, binM02=200, binETiso=440, binETUE=110, binetacl=100,binphicl=100, binlabel=1500;
+        Int_t binPT=70, binM02=200, binETiso=110, binETUE=110, binetacl=100,binphicl=100, binlabel=150;
         
-        Int_t binMCMotherPDG=200,bindx=200, bindz=200 /*bincells=20,*/;
+        Int_t binMCMotherPDG=200,bindx=100, bindz=100 /*bincells=20,*/;
         
         Int_t bins[] = {binPT, binM02, binETiso, binETUE, binetacl, binphicl};
         
@@ -449,37 +449,26 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         
         fOutput->Add(fOutputTHnS);
         
-        Int_t binsMC[] = {binPT, binETiso, binETUE, binMCMotherPDG ,binetacl,binphicl,binlabel};
-        Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, bindx, bindz, binETiso,10};
+        Int_t binsMC[] = {binPT, binETiso, binETUE, binMCMotherPDG , binlabel};
+        
+        Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, 10};
         
         if(fIsMC){
           
           fMCDimensions = sizeof(binsMC)/sizeof(Int_t);
           
-          Double_t xminbis[] = {0., -10., -10., -1000., -1.0,  1.,    0};
-          Double_t xmaxbis[] = {70., 100., 100.,  1000.,  1.0, 3.5, 1500};
+          Double_t xminbis[] = { 0., -10., -10.,    0.,    0};
+          Double_t xmaxbis[] = {70., 100., 100., 1000., 1500};
           
-          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",7,binsMC,xminbis,xmaxbis);
+          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",5,binsMC,xminbis,xmaxbis);
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
           
-          fphietaPhotons = new TH3D ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
-          fphietaPhotons->Sumw2();
-          fOutput->Add(fphietaPhotons);
-          
-          fphietaOthers = new TH3D ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthers->Sumw2();
-          fOutput->Add(fphietaOthers);
-          
-          fphietaOthersBis = new TH3D ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
-          fphietaOthersBis->Sumw2();
-          fOutput->Add(fphietaOthersBis);
-          
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
-          Double_t xminbismix[] = {0.,  0., -3000, -400,  0.,-1., -1., -10,    0.};
-          Double_t xmaxbismix[] = {70., 2.,  3000,  400, 70., 1.,  1., 100.,  10.};
+          Double_t xminbismix[] = { 0., 0., -300, -500,  0.,  0.};
+          Double_t xmaxbismix[] = {70., 2.,  300,  500, 70., 10.};
           
-          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
+          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); Label",6,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC->Sumw2();
           fOutput->Add(fOutClustMC);
         }
@@ -767,7 +756,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fOutput->Add(fphietaOthers);
   
   if(fIsMC){
-      //CREATE THE TH2 specific for the MC Analysis Maybe to be added in the THNSparse, or cloning two or three axes and add the specific MC Truth info
+    fphietaPhotons = new TH3D ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
+    fphietaPhotons->Sumw2();
+    fOutput->Add(fphietaPhotons);
+    
+    fphietaOthers = new TH3D ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+    fphietaOthers->Sumw2();
+    fOutput->Add(fphietaOthers);
+    
+    fphietaOthersBis = new TH3D ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+    fphietaOthersBis->Sumw2();
+    fOutput->Add(fphietaOthersBis);
   }
   
   PostData(1, fOutput);
