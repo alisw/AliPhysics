@@ -383,6 +383,10 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   PostData(1, fList);
 
   AliInfo(Form("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50));
+
+  Bool_t cutNotV0    = kFALSE;
+  Bool_t useOnly2Trk = kFALSE;
+
   if (fUseTriggerMask) {
     if (fCDBStorage != "NONE") { // OCDB used
       if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
@@ -393,12 +397,29 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
       }
     } else { // no OCDB used
+      // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS2&Only2Trk"
       std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+
       Bool_t selected = kFALSE;
-      for (Int_t i=0, n=split->GetEntries(); i<n && !selected; ++i)
-	selected = esdEvent->GetFiredTriggerClasses().Contains(split->At(i)->GetName());
+      Int_t sumCutNotV0(0);
+      Int_t sumUseOnly2Trk(0);
       
-      AliInfo(Form("selected: %d %s", selected, esdEvent->GetFiredTriggerClasses().Data()));
+      Int_t counter=0;
+      for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
+	TString tcName(split->At(i)->GetName());
+	std::unique_ptr<const TObjArray> s(tcName.Tokenize("&"));
+	if (esdEvent->GetFiredTriggerClasses().Contains(s->At(0)->GetName())) {
+	  sumCutNotV0    += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "NotV0");
+	  sumUseOnly2Trk += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "Only2Trk");
+	  ++counter;
+	}
+      }
+      
+      selected    = (counter != 0);
+      cutNotV0    = (counter == sumCutNotV0);
+      useOnly2Trk = (counter == sumUseOnly2Trk);
+
+      AliInfo(Form("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data()));
       if (!selected)
 	return;
     }
@@ -412,6 +433,11 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   AliInfo(Form("inputHandler->IsEventSelected() = %d", inputHandler->IsEventSelected()));
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
+
+  if (cutNotV0 &&
+      (fTreeData.fV0Info.fDecisionOnline[0] != 0 ||
+       fTreeData.fV0Info.fDecisionOnline[1] != 0))
+    return;
 
   fVertexSPD    = *(esdEvent->GetPrimaryVertexSPD());
   fVertexTPC    = *(esdEvent->GetPrimaryVertexTPC());
@@ -447,6 +473,10 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   std::unique_ptr<const TObjArray> oa(fTrackCuts->GetAcceptedTracks(esdEvent));
   fTreeData.fEventInfo.fnTrk = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
+
+  if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
+    return;
+
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
     fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliESDtrack*>(oa->At(i))->GetSign());
 
