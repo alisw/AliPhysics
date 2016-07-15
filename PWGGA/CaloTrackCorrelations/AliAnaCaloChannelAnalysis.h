@@ -11,10 +11,11 @@
 /// A .pdf file with their spectra is created. This should be
 /// cross checked by hand.
 ///
-/// \author Eliane Epple <eliane.epple@yale.edu>, Yale Univeristy
-/// \author Chiara Bianchin <chiara.bianchin@cern.ch>, Wein University
+/// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
+/// \author Chiara Bianchin <chiara.bianchin@cern.ch>, Wayne State University
 /// based on the work from
-/// \author Alexis Mas <aleximas@if.usp.br> & M. Germain <Marie.Germain@subatech.in2p3.fr>, SUBATECH
+/// \author Alexis Mas <aleximas@if.usp.br> and
+/// \author Marie Germain <Marie.Germain@subatech.in2p3.fr>, SUBATECH
 /// which is in turn based on getCellsRunQA.C from
 /// \author Olga Driga, SUBATECH
 /// \date Jun 24, 2016
@@ -44,23 +45,22 @@ public:
 
       AliAnaCaloChannelAnalysis() ;                // default ctor
 	  virtual ~AliAnaCaloChannelAnalysis()  { ; }  // virtual dtor
-	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber);
+	  AliAnaCaloChannelAnalysis(TString period, TString pass, TString trigger, Int_t runNumber, TString workDir, TString listName);
 
 	  void Run();
 
-    //Setters
+      //Setters
 	  void SetExternalMergedFile(TString inputName)     {fExternalFileName = inputName;}
-	  void SetInputFileList(TString inputName)          {fRunListFileName  = inputName;}
-	  void SetWorkDir(TString inputName)                {fWorkdir          = inputName;}
 	  void SetNTrial(Int_t inputNr)                     {fTrial            = inputNr  ;}
-  
+      void SetQAChecks(Bool_t inputBool)                {fTestRoutine      = inputBool;}
+
 	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 
 protected:
 
 	  void Init();
-	  TString Convert();
+	  TString MergeRuns();
 	  void BCAnalysis();
 	  void PeriodAnalysis(Int_t criterum=7, Double_t nsigma = 4.0, Double_t emin=0.1, Double_t emax=2.0);
 
@@ -78,9 +78,6 @@ protected:
 	  void PlotFlaggedCells2D(Int_t flag1,Int_t flag2=-1,Int_t flag3=-1);
 
 
-
-
-
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
       TString fPeriod;                      ///< The name of the analyzed period
@@ -94,6 +91,8 @@ protected:
 	  TString fAnalysisOutput;              ///< The list with bad channels and histograms are saved in this folder
 	  TString fAnalysisInput;               ///< Here the .root files of each run of the period are saved
 	  TString fRunList;                     ///< Thats the full path and name of the file which contains a list of all runs to be merged together
+	  TString fRunListFileName;             ///< This is the name of the file with the run numbers to be merged, by default it's 'runList.txt'
+	  TString fWorkdir;                     ///< Directory which contains the folders fMergeOutput, fAnalysisInput and fAnalysisOutput. By default it is './'
 
 	  //
 	  TString fQADirect;                    ///< Dierctory in the QA.root files where the input histograms are stored
@@ -101,13 +100,9 @@ protected:
 	  std::vector<TArrayD> fAnalysisVector; ///< Vector of analysis information. Each place is filled with 4 doubles: version, sigma, lower, and upper energy range
 
 	  //Things to be individualized by setters
-	  TString fRunListFileName;             ///< This is the name of the file with the run numbers to be merged, by default it's 'runList.txt'
-	  TString fWorkdir;                     ///< Directory which contains the folders fMergeOutput, fAnalysisInput and fAnalysisOutput. By default it is './'
-	  Int_t   fTrial;                       ///< Number of trial that this specific analyis is. By default '0'
+	  Int_t   fTrial;                       ///< Number of trial that this specific analyis is. By default '0' so one can try different settings without overwriting the outputs
 	  TString fExternalFileName;            ///< If you have already a file that contains many runs merged together you can place it in fMergeOutput and set it with SetExternalMergedFile(FileName)
-
-	  //arrays to store information
-	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 (bad by lower),3 (bad by upper)     start at 0 (cellID 0 = histobin 1)
+      Bool_t  fTestRoutine;                 ///< This is a flag, if set true will produce some extra quality check histograms
 
 	  //histogram settings
 	  Int_t fNMaxCols;                      ///< Maximum No of colums in module (eta direction)
@@ -115,9 +110,22 @@ protected:
 	  Int_t fNMaxColsAbs;                   ///< Maximum No of colums in Calorimeter
 	  Int_t fNMaxRowsAbs;                   ///< Maximum No of rows in Calorimeter
 
+	  //arrays to store information
+	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 (bad by lower),3 (bad by upper)     start at 0 (cellID 0 = histobin 1)
+
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
 
+	  TH2F* fCellAmplitude;                 //!<! main histogram for the analysis. Cell ID vs. amplitude, read from the input merged file
+	  TH2F* fCellTime;                      //!<! possible histogram for the analysis. Cell ID vs. time, read from the input merged file
+	  TH1F* fProcessedEvents;               //!<! Stores the number of events in the run
+
+	  TH2F* fBadChannelMap;                 //!<! output visual summary of bad cell map
+	  TH2F* fDeadChannelMap;                //!<! output visual summary of dead cell map
+
+	  TH1F* fAvgNHitPerEvVsCellId;          //!<! being discussed
+	  TH1F* fAvgEngPerHitVsCellId;          //!<! being discussed
+	  
 private:
 	  AliAnaCaloChannelAnalysis           (const AliAnaCaloChannelAnalysis&); // not implemented
 	  AliAnaCaloChannelAnalysis &operator=(const AliAnaCaloChannelAnalysis&); // not implemented
