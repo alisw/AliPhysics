@@ -163,6 +163,7 @@ public:
       for (Int_t i=0; i<AliPID::kSPECIES; ++i) {
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
       }
+      fChipKey[0] = fChipKey[1] = -1;
       Fill(tr, pidResponse);
     }
 
@@ -175,7 +176,8 @@ public:
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
-    ClassDef(TrackData, 2);
+    Short_t    fChipKey[2];                    //
+    ClassDef(TrackData, 3);
   } ;
 
 
@@ -222,7 +224,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 6);
+  ClassDef(AliAnalysisTaskDG, 7);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
