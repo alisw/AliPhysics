@@ -943,10 +943,10 @@ void AliAnaCaloChannelAnalysis::FlagAsBad(Int_t crit, TH1* inhisto, Double_t nsi
 
 }
 
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-//.. 1) summarize all dead and bad cells in a text file
-//.. 2) plot all bad cell E distributions in a .pdf file
-//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+///. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+///.. 1) summarize all dead and bad cells in a text file
+///.. 2) plot all bad cell E distributions in a .pdf file
+///. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 //________________________________________________________________________
 void AliAnaCaloChannelAnalysis::SummarizeResults()
 {
@@ -1167,9 +1167,9 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 	}
 	delete hRefDistr;
 }
-///
-/// Build the mean cell amplitude distribution of all good cells
-///
+////
+//// Build the mean cell amplitude distribution of all good cells
+////
 //_________________________________________________________________________
 TH1* AliAnaCaloChannelAnalysis::BuildMeanFromGood()
 {
@@ -1232,6 +1232,7 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 
 	return suspicious;
 }
+///Plots a 2D map of flagged cells, Dead, Bad, Good
 //_________________________________________________________________________
 void AliAnaCaloChannelAnalysis::PlotFlaggedCells2D(Int_t flag1,Int_t flag2,Int_t flag3)
 {
