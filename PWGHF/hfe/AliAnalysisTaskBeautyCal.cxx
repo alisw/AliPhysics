@@ -804,6 +804,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     }
 
     //if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+    if(pidM==443)continue; // remove enhanced J/psi in MC !
 
     Bool_t pid_eleD = IsDdecay(pidM);
     Bool_t pid_eleB = IsBdecay(pidM);
@@ -947,7 +948,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           { 
            fHistDCApho->Fill(track->Pt(),DCAxy); // ULS
           }
-        else
+        else // semi-inclusive
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
           if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
@@ -956,6 +957,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
           //cout << "pid_ele = "<< pid_ele << " ; pdg = " << pdg << endl;
           if(pid_ele!=1.0)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
+          Bool_t iknown = kFALSE;
+          if(pid_eleD || pid_eleB || pid_eleP)iknown = kTRUE;
+          //if(!iknown && pid_ele==1.0)cout << "X->e : " << pidM << endl;
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
