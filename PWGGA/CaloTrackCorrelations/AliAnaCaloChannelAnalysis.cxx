@@ -550,8 +550,9 @@ TH1F* AliAnaCaloChannelAnalysis::BuildHitAndEnergyMean(Int_t crit, Double_t emin
 TH1F* AliAnaCaloChannelAnalysis::BuildTimeMean(Int_t crit, Double_t emin, Double_t emax, Double_t nsigma)
 {
 	TH2 *hCellTime = (TH2*) gFile->Get("hCellTime");
+	TH1F *Histogram = new TH1F(Form("hSomethingWithTime_E%.2f-%.2f",emin,emax),Form("I don't know, %.2f < E < %.2f GeV",emin,emax), 2,0,2);
 
-	//return XXX;
+	return Histogram;
 }
 /// ELI this method is currently not used
 /// Test cells shape using fit function f(x)=A*exp(-B*x)/x^2.
@@ -1029,7 +1030,7 @@ void AliAnaCaloChannelAnalysis::SummarizeResults()
 	cout<<"    o Save the bad channel spectra to a .pdf file"<<endl;
 	SaveBadCellsToPDF(1,BadPdfName) ;
 	SaveBadCellsToPDF(10,RatioOfBad) ; //..Special case
-	//SaveBadCellsToPDF(2,GoodCells) ;   //..Special case
+	//SaveBadCellsToPDF(2,GoodCells) ;   //..Special case all good cells to check
 
 
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1117,29 +1118,30 @@ void AliAnaCaloChannelAnalysis::SaveBadCellsToPDF(Int_t version, TString pdfName
 
 				c1->cd(i%9 + 1);
 				c1->cd(i%9 + 1)->SetLogy();
-				hCell->SetLineColor(2);
-				hCell->SetMaximum(1e6);
-				hCell->SetAxisRange(0.,10.);
-				hCell->GetXaxis()->SetTitle("E (GeV)");
-				hCell->GetYaxis()->SetTitle("N Entries");
-				hCell->SetLineWidth(1) ;
-				hCell->SetTitle(title);
-				hRefDistr->SetAxisRange(0.,8.);
-				hRefDistr->SetLineWidth(1);
-
 				if(i==0)
 				{
 					leg->AddEntry(hRefDistr,"mean of good","l");
 					leg->AddEntry(hCell,"current","l");
 				}
-				if(version==10)
+				if(version>1)
 				{
+					//cout<<"bin nr: "<<ChannelVector.at(i)<<endl;
 					hCell->Divide(hRefDistr);
 					suspicious = CheckDistribution(hCell,hRefDistr);
 				}
+
+				hCell->SetLineColor(2);
+				hCell->GetXaxis()->SetTitle("E (GeV)");
+				hCell->GetYaxis()->SetTitle("N Entries");
+				//hCell->GetYaxis()->SetRangeUser(0,1e6);
+				hCell->GetXaxis()->SetRangeUser(0.,10.);
+				hCell->SetLineWidth(1) ;
+				hCell->SetTitle(title);
+				hRefDistr->SetLineWidth(1);
+
 				hCell->Draw();
-				if(version!=10)hRefDistr->Draw("same") ;
-				if(version==10 && suspicious==0)text->Draw(); //..Draw a marker in the histogram that could be miscalibrated and labelled as warm
+				if(version<2)hRefDistr->Draw("same") ;
+				if(version>1 && suspicious==0)text->Draw(); //..Draw a marker in the histogram that could be miscalibrated and labelled as warm
 				leg->Draw();
 			}
 
@@ -1198,21 +1200,34 @@ Bool_t AliAnaCaloChannelAnalysis::CheckDistribution(TH1* ratio, TH1* reference)
 	//histo
     Bool_t suspicious=0;
     //..Find bin where reference has value 1, and the corresponding x-value
-    Int_t BinOne        = reference->FindLastBinAbove(1);
-    Double_t X_of_BinOne= reference->GetBinCenter(BinOne);
-    //cout<<"specrta is one at: "<<BinOne<<", this is at: "<<reference->GetBinCenter(BinOne)<<endl;
+    Int_t BinHeihgtOne            = reference->FindLastBinAbove(1);
+    Double_t X_of_BinHeightOne    = reference->GetBinCenter(BinHeihgtOne);
+    Double_t X_of_SecondBin       = reference->GetBinCenter(2);
+   //cout<<"specrta is one at: "<<BinOne<<", this is at: "<<reference->GetBinCenter(BinOne)<<endl;
 	//..Check the histogram
     //..Different checks to see whether the
     //..cell is really bad. Set suspicious to 1.
 
-    //..First check end of spectrum, should be bigger than 60% of the mean histogram
-	if(ratio->FindLastBinAbove(0)<ratio->FindBin(X_of_BinOne*0.60))
+    //..check end of spectrum, should be bigger than 60% of the mean histogram
+	if(ratio->FindLastBinAbove(0)<ratio->FindBin(X_of_BinHeightOne*0.60))
 	{
 		suspicious=1;
 	}
-
-
-
+    //..check whether there are large spikes in the histogram
+	//..compare bin values to mean. If there is a bin value with
+	//..content 5 times lareger than mean it's suspicious
+    Double_t mean=0;
+	for(Int_t i=1;i<BinHeihgtOne;i++)
+    {
+    	   if(ratio->GetBinContent(i)>0)mean+=ratio->GetBinContent(i);
+    }
+	mean*=1.0/(BinHeihgtOne-1);//..divide by number of bins
+	ratio->GetXaxis()->SetRangeUser(X_of_SecondBin,X_of_BinHeightOne);//..zoom in to find the  maximum between 0-BinOne
+	//cout<<"mean: "<<mean<<", max: "<<ratio->GetMaximum()<<endl;
+	if(ratio->GetMaximum()>mean*5)
+	{
+     	suspicious=1;
+    }
 
 
 	return suspicious;
