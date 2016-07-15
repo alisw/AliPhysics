@@ -1875,6 +1875,22 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vY      = aodTrack->Y();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
+
+      //analyze one set of particles
+      if(fUseMCPdgCode) {
+
+	Int_t label = TMath::Abs(aodTrack->GetLabel());
+	AliAODMCParticle *AODmcTrackForPID = (AliAODMCParticle*) fArrayMC->At(label);
+
+	if(!AODmcTrackForPID){
+	  AliError(Form("No AliAODMCParticle for aodTrack with label %d ... skip",label));
+	  continue;
+	}
+
+	Int_t gPdgCode = AODmcTrackForPID->PdgCode();
+	if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	  continue;
+      }
       
       //===========================use MC information for Kinematics===============================//		    
       if(fUseMCforKinematics){
