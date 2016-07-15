@@ -222,7 +222,7 @@ private:
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
   
-  ClassDef(AliAnalysisTaskDG, 5);
+  ClassDef(AliAnalysisTaskDG, 6);
 } ;
 
 #endif // ALIANALYSISTASKDG_H
