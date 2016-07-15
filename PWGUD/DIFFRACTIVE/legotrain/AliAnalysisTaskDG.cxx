@@ -25,6 +25,8 @@
 #include "AliESDAD.h"
 #include "AliESDtrackCuts.h"
 
+#include "AliITSsegmentationSPD.h"
+
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTriggerConfiguration.h"
@@ -156,6 +158,24 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
     fNumSigmaTPC[i] = pidResponse->NumberOfSigmasTPC(tr, particleType);
     fNumSigmaTOF[i] = pidResponse->NumberOfSigmasTOF(tr, particleType);
     AliInfo(Form("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]));
+  }
+
+  Int_t   idet=0, status=0;
+  Float_t xloc=0,   zloc=0;
+  const AliITSsegmentationSPD seg;
+  for (Int_t layer=0; layer<2; ++layer) {
+    fChipKey[layer] = -1;
+    const Int_t module = tr->GetITSModuleIndex(layer);
+    if (module < 0)
+      continue;
+
+    tr->GetITSModuleIndexInfo(layer, idet, status, xloc, zloc);
+    if (status == 0)
+      continue;
+
+    Int_t off = seg.GetChipFromLocal(xloc, zloc);
+    off = (layer==0 ? 4-off : off);
+    fChipKey[layer] = 5*module + off;
   }
 }
 
