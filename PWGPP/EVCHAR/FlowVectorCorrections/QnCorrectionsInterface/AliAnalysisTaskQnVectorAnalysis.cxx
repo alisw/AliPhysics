@@ -28,6 +28,7 @@ Instructions in AddTask_EPcorrectionsExample.C
 #include "AliQnCorrectionsHistos.h"
 #include "AliAnalysisTaskQnVectorAnalysis.h"
 #include "AliQnCorrectionsQnVector.h"
+#include "AliAnalysisTaskFlowVectorCorrections.h"
 
 // make a change
 
@@ -284,18 +285,35 @@ void AliAnalysisTaskQnVectorAnalysis::UserExec(Option_t *){
   // Main loop. Called for every event
   //
 
-#define MAXNOOFDATAVARIABLES 2048
-
   fEvent = InputEvent();
 
+  /* this is an option that requiers the Qn vector from an input container */
   /* Get the Qn vectors list */
-  TList* qnlist = dynamic_cast<TList*>(GetInputData(1));
-  if(!qnlist) return;
+  /* TList* qnlist = dynamic_cast<TList*>(GetInputData(1));
+     if(!qnlist) return;
 
-  Float_t values[MAXNOOFDATAVARIABLES] = {-999.};
+#define MAXNOOFDATAVARIABLES 2048
+
+     Float_t values[MAXNOOFDATAVARIABLES] = {-999.};
+     fDataBank = values;
+
+     FillEventData();
+     */
+
+  /* this is another option more convenient and which provides support for future functionality */
+  AliQnCorrectionsManager *flowQnVectorMgr;
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+      dynamic_cast<AliAnalysisTaskFlowVectorCorrections *>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+  if (flowQnVectorTask != NULL) {
+    flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+  }
+  else {
+    AliFatal("This task needs the Flow Qn vector corrections framework and it is not present. Aborting!!!");
+  }
+
+  TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+  Float_t *values = flowQnVectorMgr->GetDataContainer();
   fDataBank = values;
-
-  FillEventData();
 
   fEventPlaneHistos->FillHistClass("Event_NoCuts", values);
   if(!IsEventSelected(values)) return;
@@ -303,44 +321,33 @@ void AliAnalysisTaskQnVectorAnalysis::UserExec(Option_t *){
 
   TList* newTrkQvecList[nTrackDetectors] = {NULL};
   TList* newEPQvecList[nEPDetectors] = {NULL};
-  AliQnCorrectionsQnVector* newTrk_qvec[nTrackDetectors] = {NULL};
-  AliQnCorrectionsQnVector* newEP_qvec[nEPDetectors] = {NULL};
+  const AliQnCorrectionsQnVector* newTrk_qvec[nTrackDetectors] = {NULL};
+  const AliQnCorrectionsQnVector* newEP_qvec[nEPDetectors] = {NULL};
 
 
-  /* get data structures for the different track detectors */
+  /* get Qn vectors for the different track detectors */
   for (Int_t iTrk = 0; iTrk < nTrackDetectors; iTrk++) {
-    newTrkQvecList[iTrk] = dynamic_cast<TList*> (qnlist->FindObject(Form("%s", fTrackDetectorNameInFile[iTrk].Data())));
-    if (newTrkQvecList[iTrk] == NULL) continue; /* the detector was not there */
-    newTrk_qvec[iTrk] = (AliQnCorrectionsQnVector*) newTrkQvecList[iTrk]->FindObject(fExpectedCorrectionPass.Data());
-    if (newTrk_qvec[iTrk] == NULL) {
-      newTrk_qvec[iTrk] = (AliQnCorrectionsQnVector*) newTrkQvecList[iTrk]->FindObject(fAlternativeCorrectionPass.Data());
-      if (newTrk_qvec[iTrk] == NULL) continue; /* neither the expected nor the alternative were there */
-    }
+    newTrk_qvec[iTrk] = GetQnVectorFromList(qnlist,
+        fTrackDetectorNameInFile[iTrk].Data(),
+        fExpectedCorrectionPass.Data(),
+        fAlternativeCorrectionPass.Data());
   }
 
   /* and now for the EP detectors */
   for (Int_t iEP = 0; iEP < nEPDetectors; iEP++) {
-    newEPQvecList[iEP] = dynamic_cast<TList*> (qnlist->FindObject(Form("%s",fEPDetectorNameInFile[iEP].Data())));
-    if (newEPQvecList[iEP] == NULL) continue; /* the detector was not there */
-    newEP_qvec[iEP] = (AliQnCorrectionsQnVector*) newEPQvecList[iEP]->FindObject(fExpectedCorrectionPass.Data());
-    if (newEP_qvec[iEP] == NULL) {
-      newEP_qvec[iEP] = (AliQnCorrectionsQnVector*) newEPQvecList[iEP]->FindObject(fAlternativeCorrectionPass.Data());
-      if (newEP_qvec[iEP] == NULL) continue; /* neither the expected nor the alternative were there */
-    }
+    newEP_qvec[iEP] = GetQnVectorFromList(qnlist,
+        fEPDetectorNameInFile[iEP].Data(),
+        fExpectedCorrectionPass.Data(),
+        fAlternativeCorrectionPass.Data());
   }
 
   /* now fill the Vn profiles with the proper data */
-  /* TODO: correct for the normalization */
   for(Int_t iTrkDetector=0; iTrkDetector < nTrackDetectors; iTrkDetector++) {
     /* sanity check */
-    if ((newTrkQvecList[iTrkDetector] != NULL) &&
-        (newTrk_qvec[iTrkDetector] != NULL) &&
-        (newTrk_qvec[iTrkDetector]->IsGoodQuality())) {
+    if (newTrk_qvec[iTrkDetector] != NULL) {
       for (Int_t iEPDetector=0; iEPDetector < nEPDetectors; iEPDetector++) {
         /*sanity check */
-        if ((newEPQvecList[iEPDetector] != NULL) &&
-            (newEP_qvec[iEPDetector] != NULL) &&
-            (newEP_qvec[iEPDetector]->IsGoodQuality())) {
+        if (newEP_qvec[iEPDetector] != NULL) {
           for(Int_t h=0; h < kNharmonics; h++) {
             fVn[iTrkDetector*nEPDetectors+iEPDetector][h][0]->Fill(values[fCentralityVariable],
                     newTrk_qvec[iTrkDetector]->Qx(h+1) * newEP_qvec[iEPDetector]->QxNorm(h+1));
@@ -362,15 +369,9 @@ void AliAnalysisTaskQnVectorAnalysis::UserExec(Option_t *){
     if(fDetectorResolutionContributors[ix][0] == -1) continue;
 
     /* sanity checks */
-    if((newTrkQvecList[fDetectorResolutionContributors[ix][0]] != NULL) &&
-        (newTrk_qvec[fDetectorResolutionContributors[ix][0]] != NULL) &&
-        (newEPQvecList[fDetectorResolutionContributors[ix][1]] != NULL) &&
+    if((newTrk_qvec[fDetectorResolutionContributors[ix][0]] != NULL) &&
         (newEP_qvec[fDetectorResolutionContributors[ix][1]] != NULL) &&
-        (newEPQvecList[fDetectorResolutionContributors[ix][2]] != NULL) &&
-        (newEP_qvec[fDetectorResolutionContributors[ix][2]] != NULL) &&
-        (newTrk_qvec[fDetectorResolutionContributors[ix][0]]->GetN() != 0) &&
-        (newEP_qvec[fDetectorResolutionContributors[ix][1]]->GetN() != 0) &&
-        (newEP_qvec[fDetectorResolutionContributors[ix][2]]->GetN() != 0)) {
+        (newEP_qvec[fDetectorResolutionContributors[ix][2]] != NULL)) {
 
       for(Int_t h=0; h < kNharmonics; h++) {
         for (Int_t iCorr = 0; iCorr < nCorrelationPerDetector; iCorr++) {
@@ -462,4 +463,36 @@ Bool_t AliAnalysisTaskQnVectorAnalysis::IsEventSelected(Float_t* values) {
   return fEventCuts->IsSelected(values);
 }
 
+const AliQnCorrectionsQnVector *AliAnalysisTaskQnVectorAnalysis::GetQnVectorFromList(
+    const TList *list,
+    const char *subdetector,
+    const char *expectedstep,
+    const char *altstep) const {
+
+  AliQnCorrectionsQnVector *theQnVector = NULL;
+
+  TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
+  if (pQvecList != NULL) {
+    /* the detector is present */
+    if (TString(expectedstep).EqualTo("latest"))
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+    else
+      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
+
+    if (theQnVector == NULL) {
+      /* the Qn vector for the expected step was not there */
+      if (TString(altstep).EqualTo("latest"))
+        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+      else
+        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
+    }
+  }
+  if (theQnVector != NULL) {
+    /* check the Qn vector quality */
+    if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
+      /* not good quality, discarded */
+      theQnVector = NULL;
+  }
+  return theQnVector;
+}
 

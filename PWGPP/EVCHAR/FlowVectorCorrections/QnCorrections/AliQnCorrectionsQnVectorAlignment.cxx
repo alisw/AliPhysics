@@ -33,6 +33,7 @@
 /// \brief Implementation of procedures for Qn vector alignment correction.
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileCorrelationComponents.h"
+#include "AliQnCorrectionsProfileComponents.h"
 #include "AliQnCorrectionsHistogramSparse.h"
 #include "AliQnCorrectionsDetector.h"
 #include "AliQnCorrectionsManager.h"
@@ -45,6 +46,7 @@ const char *AliQnCorrectionsQnVectorAlignment::szKey = "EEEE";
 const char *AliQnCorrectionsQnVectorAlignment::szSupportHistogramName = "QnQn";
 const char *AliQnCorrectionsQnVectorAlignment::szCorrectedQnVectorName = "align";
 const char *AliQnCorrectionsQnVectorAlignment::szQANotValidatedHistogramName = "Align NvE";
+const char *AliQnCorrectionsQnVectorAlignment::szQAQnAverageHistogramName = "Align Qn avg ";
 
 
 /// \cond CLASSIMP
@@ -59,6 +61,7 @@ AliQnCorrectionsQnVectorAlignment::AliQnCorrectionsQnVectorAlignment() :
   fInputHistograms = NULL;
   fCalibrationHistograms = NULL;
   fQANotValidatedBin = NULL;
+  fQAQnAverageHistogram = NULL;
   fHarmonicForAlignment = -1;
   fDetectorConfigurationForAlignment = NULL;
   fMinNoOfEntriesToValidate = fDefaultMinNoOfEntries;
@@ -73,11 +76,12 @@ AliQnCorrectionsQnVectorAlignment::~AliQnCorrectionsQnVectorAlignment() {
     delete fCalibrationHistograms;
   if (fQANotValidatedBin != NULL)
     delete fQANotValidatedBin;
+  if (fQAQnAverageHistogram != NULL)
+    delete fQAQnAverageHistogram;
 }
 
 /// Set the detector configuration used as reference for alignment
 /// The detector configuration name is stored for further use.
-/// If the step is already attached to the framework the reference detector configuration is located and stored
 /// \param name the name of the reference detector configuration
 void AliQnCorrectionsQnVectorAlignment::SetReferenceConfigurationForAlignment(const char *name) {
   AliInfo(Form("Reference name: %s, attached to detector configuration: %s",
@@ -87,27 +91,23 @@ void AliQnCorrectionsQnVectorAlignment::SetReferenceConfigurationForAlignment(co
   fDetectorConfigurationForAlignmentName = name;
 
   /* we could be in different situations of framework attachment */
-  if (fDetectorConfiguration != NULL) {
-    if (fDetectorConfiguration->GetCorrectionsManager() != NULL) {
-      /* the correction step is already attached to the framework */
-      if (fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data()) != NULL) {
-        fDetectorConfigurationForAlignment = fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data());
-      }
-      else {
-        AliFatal(Form("Wrong reference detector configuration %s for %s alignment correction step",
-            fDetectorConfigurationForAlignmentName.Data(),
-            fDetectorConfiguration->GetName()));
-      }
-    }
-  }
+  /* so, we do nothing for the time being */
 }
 
 /// Informs when the detector configuration has been attached to the framework manager
 /// Basically this allows interaction between the different framework sections at configuration time
-/// Locates the reference detector configuration for alignment if its name has been previously stored
 void AliQnCorrectionsQnVectorAlignment::AttachedToFrameworkManager() {
   AliInfo(Form("Attached! reference for alignment: %s", fDetectorConfigurationForAlignmentName.Data()));
 
+}
+
+/// Asks for support data structures creation
+///
+/// Locates the reference detector configuration for alignment if its name has been previously stored
+/// Creates the recentered Qn vector
+void AliQnCorrectionsQnVectorAlignment::CreateSupportDataStructures() {
+
+  /* now, definitely, we should have the reference detector configurations */
   if (fDetectorConfigurationForAlignmentName.Length() != 0) {
     if (fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data()) != NULL) {
       fDetectorConfigurationForAlignment = fDetectorConfiguration->GetCorrectionsManager()->FindDetectorConfiguration(fDetectorConfigurationForAlignmentName.Data());
@@ -118,12 +118,10 @@ void AliQnCorrectionsQnVectorAlignment::AttachedToFrameworkManager() {
           fDetectorConfiguration->GetName()));
     }
   }
-}
-
-/// Asks for support data structures creation
-///
-/// Creates the recentered Qn vector
-void AliQnCorrectionsQnVectorAlignment::CreateSupportDataStructures() {
+  else {
+    AliFatal(Form("Missing reference detector configuration for %s alignment correction step",
+        fDetectorConfiguration->GetName()));
+  }
 
   Int_t nNoOfHarmonics = fDetectorConfiguration->GetNoOfHarmonics();
   Int_t *harmonicsMap = new Int_t[nNoOfHarmonics];
@@ -134,6 +132,7 @@ void AliQnCorrectionsQnVectorAlignment::CreateSupportDataStructures() {
   /* and now create the corrected Qn vector */
   fDetectorConfiguration->GetHarmonicMap(harmonicsMap);
   fCorrectedQnVector = new AliQnCorrectionsQnVector(szCorrectedQnVectorName, nNoOfHarmonics, harmonicsMap);
+  fInputQnVector = fDetectorConfiguration->GetPreviousCorrectedQnVector(this);
   delete [] harmonicsMap;
 }
 
@@ -183,6 +182,17 @@ Bool_t AliQnCorrectionsQnVectorAlignment::AttachInput(TList *list) {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsQnVectorAlignment::CreateQAHistograms(TList *list) {
 
+  fQAQnAverageHistogram = new AliQnCorrectionsProfileComponents(
+      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
+      Form("%s %s", szQAQnAverageHistogramName, fDetectorConfiguration->GetName()),
+      fDetectorConfiguration->GetEventClassVariablesSet());
+
+  /* get information about the configured harmonics to pass it for histogram creation */
+  Int_t nNoOfHarmonics = fDetectorConfiguration->GetNoOfHarmonics();
+  Int_t *harmonicsMap = new Int_t[nNoOfHarmonics];
+  fDetectorConfiguration->GetHarmonicMap(harmonicsMap);
+  fQAQnAverageHistogram->CreateComponentsProfileHistograms(list,nNoOfHarmonics, harmonicsMap);
+  delete [] harmonicsMap;
   return kTRUE;
 }
 
@@ -203,55 +213,17 @@ Bool_t AliQnCorrectionsQnVectorAlignment::CreateNveQAHistograms(TList *list) {
 
 /// Processes the correction step
 ///
-/// Collect data for the correction step and / or apply it.
+/// Apply the correction step
 /// \return kTRUE if the correction step was applied
-Bool_t AliQnCorrectionsQnVectorAlignment::Process(const Float_t *variableContainer) {
+Bool_t AliQnCorrectionsQnVectorAlignment::ProcessCorrections(const Float_t *variableContainer) {
   switch (fState) {
   case QCORRSTEP_calibration:
-    /* logging */
-    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
-        fDetectorConfiguration->GetName(),
-        fDetectorConfigurationForAlignment->GetName()));
     /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
-    if ((fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) &&
-        (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {
-      fCalibrationHistograms->FillXX(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qx(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
-      fCalibrationHistograms->FillXY(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qx(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
-      fCalibrationHistograms->FillYX(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qy(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
-      fCalibrationHistograms->FillYY(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qy(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
-    }
     /* we have not perform any correction yet */
     return kFALSE;
     break;
   case QCORRSTEP_applyCollect:
-    /* logging */
-    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
-        fDetectorConfiguration->GetName(),
-        fDetectorConfigurationForAlignment->GetName()));
     /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
-    if ((fDetectorConfiguration->GetCurrentQnVector()->IsGoodQuality()) &&
-        (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {
-      fCalibrationHistograms->FillXX(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qx(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
-      fCalibrationHistograms->FillXY(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qx(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
-      fCalibrationHistograms->FillYX(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qy(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
-      fCalibrationHistograms->FillYY(variableContainer,
-          fDetectorConfiguration->GetCurrentQnVector()->Qy(fHarmonicForAlignment)
-          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
-    }
     /* and proceed to ... */
   case QCORRSTEP_apply: /* apply the correction if the current Qn vector is good enough */
     /* logging */
@@ -300,6 +272,80 @@ Bool_t AliQnCorrectionsQnVectorAlignment::Process(const Float_t *variableContain
     /* and update the current Qn vector */
     fDetectorConfiguration->UpdateCurrentQnVector(fCorrectedQnVector);
     break;
+  default:
+    /* we are in passive state waiting for proper conditions, no corrections applied */
+    return kFALSE;
+  }
+  /* if we reached here is because we applied the correction */
+  return kTRUE;
+}
+
+/// Processes the correction step data collection
+///
+/// Collect data for the correction step.
+/// \return kTRUE if the correction step was applied
+Bool_t AliQnCorrectionsQnVectorAlignment::ProcessDataCollection(const Float_t *variableContainer) {
+  switch (fState) {
+  case QCORRSTEP_calibration:
+    /* logging */
+    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
+        fDetectorConfiguration->GetName(),
+        fDetectorConfigurationForAlignment->GetName()));
+    /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
+    if ((fInputQnVector->IsGoodQuality()) &&
+        (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {
+      fCalibrationHistograms->FillXX(variableContainer,
+          fInputQnVector->Qx(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
+      fCalibrationHistograms->FillXY(variableContainer,
+          fInputQnVector->Qx(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
+      fCalibrationHistograms->FillYX(variableContainer,
+          fInputQnVector->Qy(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
+      fCalibrationHistograms->FillYY(variableContainer,
+          fInputQnVector->Qy(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
+    }
+    /* we have not perform any correction yet */
+    return kFALSE;
+    break;
+  case QCORRSTEP_applyCollect:
+    /* logging */
+    AliInfo(Form("Alignment process in detector %s with reference %s: collecting data.",
+        fDetectorConfiguration->GetName(),
+        fDetectorConfigurationForAlignment->GetName()));
+    /* collect the data needed to further produce correction parameters if both current Qn vectors are good enough */
+    if ((fInputQnVector->IsGoodQuality()) &&
+        (fDetectorConfigurationForAlignment->GetCurrentQnVector()->IsGoodQuality())) {
+      fCalibrationHistograms->FillXX(variableContainer,
+          fInputQnVector->Qx(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
+      fCalibrationHistograms->FillXY(variableContainer,
+          fInputQnVector->Qx(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
+      fCalibrationHistograms->FillYX(variableContainer,
+          fInputQnVector->Qy(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qx(fHarmonicForAlignment) );
+      fCalibrationHistograms->FillYY(variableContainer,
+          fInputQnVector->Qy(fHarmonicForAlignment)
+          * fDetectorConfigurationForAlignment->GetCurrentQnVector()->Qy(fHarmonicForAlignment));
+    }
+    /* and proceed to ... */
+  case QCORRSTEP_apply: /* apply the correction if the current Qn vector is good enough */
+    /* provide QA info if required */
+    if (fQAQnAverageHistogram != NULL) {
+      Int_t harmonic = fCorrectedQnVector->GetFirstHarmonic();
+      while (harmonic != -1) {
+        fQAQnAverageHistogram->FillX(harmonic, variableContainer, fCorrectedQnVector->Qx(harmonic));
+        fQAQnAverageHistogram->FillY(harmonic, variableContainer, fCorrectedQnVector->Qy(harmonic));
+        harmonic = fCorrectedQnVector->GetNextHarmonic(harmonic);
+     }
+    }
+    break;
+  default:
+    /* we are in passive state waiting for proper conditions, no corrections applied */
+    return kFALSE;
   }
   /* if we reached here is because we applied the correction */
   return kTRUE;
@@ -309,6 +355,28 @@ Bool_t AliQnCorrectionsQnVectorAlignment::Process(const Float_t *variableContain
 void AliQnCorrectionsQnVectorAlignment::ClearCorrectionStep() {
 
   fCorrectedQnVector->Reset();
+}
+
+/// Reports if the correction step is being applied
+/// Returns TRUE if in the proper state for applying the correction step
+/// \return TRUE if the correction step is being applied
+Bool_t AliQnCorrectionsQnVectorAlignment::IsBeingApplied() const {
+  switch (fState) {
+  case QCORRSTEP_calibration:
+    /* we are collecting */
+    /* but not applying */
+    return kFALSE;
+    break;
+  case QCORRSTEP_applyCollect:
+    /* we are collecting */
+  case QCORRSTEP_apply:
+    /* and applying */
+    return kTRUE;
+    break;
+  default:
+    break;
+  }
+  return kFALSE;
 }
 
 /// Report on correction usage
@@ -333,6 +401,9 @@ Bool_t AliQnCorrectionsQnVectorAlignment::ReportUsage(TList *calibrationList, TL
   case QCORRSTEP_apply:
     /* and applying */
     applyList->Add(new TObjString(szCorrectionName));
+    break;
+  default:
+    return kFALSE;
     break;
   }
   return kTRUE;

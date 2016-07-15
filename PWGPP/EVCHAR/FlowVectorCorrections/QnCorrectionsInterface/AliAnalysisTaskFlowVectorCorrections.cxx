@@ -68,8 +68,8 @@ fQAhistograms(""),
 fFillEventQA(kFALSE),
 fProvideQnVectorsList(kFALSE),
 fOutputSlotEventQA(-1),
-fOutputSlotHistNveQA(-1),
 fOutputSlotHistQA(-1),
+fOutputSlotHistNveQA(-1),
 fOutputSlotHistQn(-1),
 fOutputSlotQnVectorsList(-1),
 fOutputSlotTree(-1)
@@ -128,6 +128,9 @@ void AliAnalysisTaskFlowVectorCorrections::DefineInOutput(){
 }
 
 void AliAnalysisTaskFlowVectorCorrections::SetCalibrationHistogramsFile(CalibrationFileSource source, const char *filename) {
+
+  AliInfo(Form("Source: %d, filename: %s", source, filename));
+
   TFile *calibfile = NULL;
 
   fCalibrationFile = filename;
@@ -145,11 +148,19 @@ void AliAnalysisTaskFlowVectorCorrections::SetCalibrationHistogramsFile(Calibrat
       fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
       calibfile->Close();
     }
+    else {
+      AliWarning("CALIBRATION FILE NOT FOUND. RUNNING FRAMEWORK WITHOUT CALIBRATION PARAMETERS!!!");
+    }
     break;
-  case CALIBSRC_alien:
+  case CALIBSRC_aliensingle:
+  case CALIBSRC_alienmultiple:
     /* sanity check before we go to the grid */
     if (!fCalibrationFile.Contains("alien"))
       AliFatal(Form("\t alien was selected as source but %s filename does not contain \"alien\". Aborting!!!", fCalibrationFile.Data()));
+    break;
+  case CALIBSRC_OADBsingle:
+  case CALIBSRC_OADBmultiple:
+    /* nothing to do for the time being */
     break;
   default:
     AliFatal("Calibration file source not supported. Aborting!!!");
@@ -162,6 +173,8 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
   //
   // Add all histogram manager histogram lists to the output TList
   //
+  AliInfo("");
+
   this->SetDefaultVarNames();
   this->SetDetectors();
 
@@ -171,7 +184,7 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
   switch (fCalibrationFileSource) {
   case CALIBSRC_local:
     break;
-  case CALIBSRC_alien:
+  case CALIBSRC_aliensingle:
     if (fCalibrationFile.Length() != 0) {
       TGrid::Connect("alien://");
       calibfile = TFile::Open(fCalibrationFile);
@@ -181,6 +194,28 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
       fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
       calibfile->Close();
     }
+    else {
+      AliWarning("CALIBRATION FILE NOT FOUND. RUNNING FRAMEWORK WITHOUT CALIBRATION PARAMETERS!!!");
+    }
+    break;
+  case CALIBSRC_alienmultiple:
+    /* we still don't know the run neither the calibration file */
+    break;
+  case CALIBSRC_OADBsingle:
+    if (fCalibrationFile.Length() != 0) {
+      calibfile = TFile::Open(Form("%s/COMMON/EVENTPLANE/framework_v2_data/%s", AliAnalysisManager::GetOADBPath(),fCalibrationFile.Data()));
+    }
+    if (calibfile != NULL && calibfile->IsOpen()) {
+      AliInfo(Form("\t Calibration file %s open", fCalibrationFile.Data()));
+      fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
+      calibfile->Close();
+    }
+    else {
+      AliWarning("CALIBRATION FILE NOT FOUND AT OADB. RUNNING FRAMEWORK WITHOUT CALIBRATION PARAMETERS!!!");
+    }
+    break;
+  case CALIBSRC_OADBmultiple:
+    /* we still don't know the run neither the calibration file */
     break;
   default:
     break;
@@ -205,7 +240,57 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
 /// Notify the framework manager that the current label has changed.
 void AliAnalysisTaskFlowVectorCorrections::NotifyRun() {
 
-  if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+  AliInfo(Form("New run number: %d", this->fCurrentRunNumber));
+
+  TFile *calibfile = NULL;
+
+  switch (fCalibrationFileSource) {
+  case CALIBSRC_local:
+  case CALIBSRC_aliensingle:
+    /* we should have everyhting in place so just inform the framework in case it has to switch to the new one */
+    if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+    break;
+  case CALIBSRC_alienmultiple:
+    if (fCalibrationFile.Length() != 0) {
+      TString runCalibrationFile = fCalibrationFile;
+      runCalibrationFile.Insert(runCalibrationFile.Index(".root"), Form("_%d", this->fCurrentRunNumber));
+      TGrid::Connect("alien://");
+      calibfile = TFile::Open(runCalibrationFile);
+    }
+    if (calibfile != NULL && calibfile->IsOpen()) {
+      AliInfo(Form("\t Calibration file %s open", fCalibrationFile.Data()));
+      fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
+      calibfile->Close();
+      if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+    }
+    else {
+      AliWarning(Form("CALIBRATION FILE FOR RUN NO: %d NOT FOUND. RUNNING FRAMEWORK WITHOUT CALIBRATION PARAMETERS!!!",this->fCurrentRunNumber));
+    }
+    break;
+  case CALIBSRC_OADBsingle:
+    /* we should have everyhting in place so just inform the framework in case it has to switch to the new one */
+    if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+    break;
+  case CALIBSRC_OADBmultiple: {
+      TString runCalibrationFile = fCalibrationFile;
+      if (fCalibrationFile.Length() != 0) {
+        runCalibrationFile.Insert(runCalibrationFile.Index(".root"), Form("_%d", this->fCurrentRunNumber));
+        calibfile = TFile::Open(Form("%s/%s", AliAnalysisManager::GetOADBPath(),runCalibrationFile.Data()));
+      }
+      if (calibfile != NULL && calibfile->IsOpen()) {
+        AliInfo(Form("\t Calibration file %s open", Form("OADB/%s", runCalibrationFile.Data())));
+        fAliQnCorrectionsManager->SetCalibrationHistogramsList(calibfile);
+        calibfile->Close();
+        if (fCalibrateByRun) fAliQnCorrectionsManager->SetCurrentProcessListName(Form("%d", this->fCurrentRunNumber));
+      }
+      else {
+        AliWarning(Form("CALIBRATION FILE FOR RUN NO: %d NOT FOUND AT OADB. RUNNING FRAMEWORK WITHOUT CALIBRATION PARAMETERS!!!",this->fCurrentRunNumber));
+      }
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 void AliAnalysisTaskFlowVectorCorrections::UserExec(Option_t *){

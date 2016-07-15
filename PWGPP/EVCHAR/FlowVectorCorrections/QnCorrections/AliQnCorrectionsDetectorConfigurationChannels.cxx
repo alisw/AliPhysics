@@ -32,6 +32,7 @@
 /// \file AliQnCorrectionsDetectorConfigurationChannels.cxx
 /// \brief Implementation of the channel detector configuration class 
 
+#include "AliQnCorrectionsProfileComponents.h"
 #include "AliQnCorrectionsDetectorConfigurationChannels.h"
 #include "AliLog.h"
 
@@ -41,6 +42,7 @@ ClassImp(AliQnCorrectionsDetectorConfigurationChannels);
 
 const char *AliQnCorrectionsDetectorConfigurationChannels::szRawQnVectorName = "raw";
 const char *AliQnCorrectionsDetectorConfigurationChannels::szQAMultiplicityHistoName = "Multiplicity";
+const char *AliQnCorrectionsDetectorConfigurationChannels::szQAQnAverageHistogramName = "Plain Qn avg ";
 
 /// Default constructor
 AliQnCorrectionsDetectorConfigurationChannels::AliQnCorrectionsDetectorConfigurationChannels() :
@@ -58,6 +60,7 @@ AliQnCorrectionsDetectorConfigurationChannels::AliQnCorrectionsDetectorConfigura
   fQAMultiplicityMax = 1000.0;
   fQAMultiplicityBefore3D = NULL;
   fQAMultiplicityAfter3D = NULL;
+  fQAQnAverageHistogram = NULL;
 }
 
 /// Normal constructor
@@ -87,6 +90,7 @@ AliQnCorrectionsDetectorConfigurationChannels::AliQnCorrectionsDetectorConfigura
   fQAMultiplicityMax = 1000.0;
   fQAMultiplicityBefore3D = NULL;
   fQAMultiplicityAfter3D = NULL;
+  fQAQnAverageHistogram = NULL;
 }
 
 /// Default destructor
@@ -97,6 +101,7 @@ AliQnCorrectionsDetectorConfigurationChannels::~AliQnCorrectionsDetectorConfigur
   if (fChannelMap != NULL) delete [] fChannelMap;
   if (fChannelGroup != NULL) delete [] fChannelGroup;
   if (fHardCodedGroupWeights != NULL) delete [] fHardCodedGroupWeights;
+  if (fQAQnAverageHistogram != NULL) delete fQAQnAverageHistogram;
 }
 
 /// Incorporates the channels scheme to the detector configuration
@@ -327,6 +332,19 @@ Bool_t AliQnCorrectionsDetectorConfigurationChannels::CreateQAHistograms(TList *
     retValue = retValue && (fInputDataCorrections.At(ixCorrection)->CreateQAHistograms(detectorConfigurationList));
   }
 
+  /* the own QA average Qn vector components histogram */
+  fQAQnAverageHistogram = new AliQnCorrectionsProfileComponents(
+      Form("%s %s", szQAQnAverageHistogramName, this->GetName()),
+      Form("%s %s", szQAQnAverageHistogramName, this->GetName()),
+      this->GetEventClassVariablesSet());
+
+  /* get information about the configured harmonics to pass it for histogram creation */
+  Int_t nNoOfHarmonics = this->GetNoOfHarmonics();
+  Int_t *harmonicsMap = new Int_t[nNoOfHarmonics];
+  this->GetHarmonicMap(harmonicsMap);
+  fQAQnAverageHistogram->CreateComponentsProfileHistograms(detectorConfigurationList,nNoOfHarmonics, harmonicsMap);
+  delete [] harmonicsMap;
+
   /* if everything right propagate it to Q vector corrections */
   if (retValue) {
     for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
@@ -399,6 +417,24 @@ Bool_t AliQnCorrectionsDetectorConfigurationChannels::AttachCorrectionInputs(TLi
   return kFALSE;
 }
 
+/// Perform after calibration histograms attach actions
+/// It is used to inform the different correction step that
+/// all conditions for running the network are in place so
+/// it is time to check if their requirements are satisfied
+///
+/// The request is transmitted to the input data corrections
+/// and then propagated to the Q vector corrections
+void AliQnCorrectionsDetectorConfigurationChannels::AfterInputsAttachActions() {
+  for (Int_t ixCorrection = 0; ixCorrection < fInputDataCorrections.GetEntries(); ixCorrection++) {
+    fInputDataCorrections.At(ixCorrection)->AfterInputsAttachActions();
+  }
+
+  /* now propagate it to Q vector corrections */
+  for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
+    fQnVectorCorrections.At(ixCorrection)->AfterInputsAttachActions();
+  }
+}
+
 /// Incorporates the passed correction to the set of input data corrections
 /// \param correctionOnInputData the correction to add
 void AliQnCorrectionsDetectorConfigurationChannels::AddCorrectionOnInputData(AliQnCorrectionsCorrectionOnInputData *correctionOnInputData) {
@@ -406,14 +442,25 @@ void AliQnCorrectionsDetectorConfigurationChannels::AddCorrectionOnInputData(Ali
   fInputDataCorrections.AddCorrection(correctionOnInputData);
 }
 
-/// Fills the multiplicity histograms before and after input equalization
+/// Fills the QA multiplicity histograms before and after input equalization
+/// and the plain Qn vector average components histogram
 /// \param variableContainer pointer to the variable content bank
 void AliQnCorrectionsDetectorConfigurationChannels::FillQAHistograms(const Float_t *variableContainer) {
-  for(Int_t ixData = 0; ixData < fDataVectorBank->GetEntriesFast(); ixData++){
-    AliQnCorrectionsDataVectorChannelized *dataVector =
-        static_cast<AliQnCorrectionsDataVectorChannelized *>(fDataVectorBank->At(ixData));
-    fQAMultiplicityBefore3D->Fill(variableContainer[fQACentralityVarId], fChannelMap[dataVector->GetId()], dataVector->Weight());
-    fQAMultiplicityAfter3D->Fill(variableContainer[fQACentralityVarId], fChannelMap[dataVector->GetId()], dataVector->EqualizedWeight());
+  if (fQAMultiplicityBefore3D != NULL && fQAMultiplicityAfter3D != NULL) {
+    for(Int_t ixData = 0; ixData < fDataVectorBank->GetEntriesFast(); ixData++){
+      AliQnCorrectionsDataVectorChannelized *dataVector =
+          static_cast<AliQnCorrectionsDataVectorChannelized *>(fDataVectorBank->At(ixData));
+      fQAMultiplicityBefore3D->Fill(variableContainer[fQACentralityVarId], fChannelMap[dataVector->GetId()], dataVector->Weight());
+      fQAMultiplicityAfter3D->Fill(variableContainer[fQACentralityVarId], fChannelMap[dataVector->GetId()], dataVector->EqualizedWeight());
+    }
+  }
+  if (fQAQnAverageHistogram != NULL) {
+    Int_t harmonic = fPlainQnVector.GetFirstHarmonic();
+    while (harmonic != -1) {
+      fQAQnAverageHistogram->FillX(harmonic, variableContainer, fPlainQnVector.Qx(harmonic));
+      fQAQnAverageHistogram->FillY(harmonic, variableContainer, fPlainQnVector.Qy(harmonic));
+      harmonic = fPlainQnVector.GetNextHarmonic(harmonic);
+    }
   }
 }
 

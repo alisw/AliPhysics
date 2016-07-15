@@ -93,6 +93,13 @@ AliQnCorrectionsManager::~AliQnCorrectionsManager() {
 void AliQnCorrectionsManager::SetCalibrationHistogramsList(TFile *calibrationFile) {
   if (calibrationFile) {
     if (calibrationFile->GetListOfKeys()->GetEntries() > 0) {
+      /* let's see if we already had a previous calibration histograms list */
+      if (fCalibrationHistogramsList != NULL){
+        AliInfo("Changed the calibration file. Deleting the current calibration histograms list");
+        /* we delete it. WARNING: at this point the whole framework got orphan of input histograms this MUST be a transient situation */
+        delete fCalibrationHistogramsList;
+        fCalibrationHistogramsList = NULL;
+      }
       fCalibrationHistogramsList = (TList*)((TKey*)calibrationFile->GetListOfKeys()->FindObject(szCalibrationHistogramsKeyName))->ReadObj()->Clone();
       if (fCalibrationHistogramsList != NULL) {
         AliInfo(Form("Stored calibration list %s from file %s",
@@ -173,6 +180,9 @@ AliQnCorrectionsDetectorConfigurationBase *AliQnCorrectionsManager::FindDetector
 }
 
 /// Initializes the correction framework
+/// Basically the different list containing framework objects are built.
+/// Calibration histograms are on a per process basis while QA histograms
+/// don't.
 void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
 
   /* the data bank */
@@ -197,18 +207,8 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
   fSupportHistogramsList->SetName(szCalibrationHistogramsKeyName);
   fSupportHistogramsList->SetOwner(kTRUE);
 
-  /* and the QA histograms list if needed */
-  if (GetShouldFillQAHistograms()) {
-    fQAHistogramsList = new TList();
-    fQAHistogramsList->SetName(szCalibrationQAHistogramsKeyName);
-    fQAHistogramsList->SetOwner(kTRUE);
-    fNveQAHistogramsList = new TList();
-    fNveQAHistogramsList->SetName(szCalibrationNveQAHistogramsKeyName);
-    fNveQAHistogramsList->SetOwner(kTRUE);
-  }
-
-
-  /* build the support and QA histograms lists for the list of concurrent processes */
+  /* build the support histograms lists for the list of concurrent processes */
+  /* the QA histograms are no longer rooted on a per process basis */
   if (fProcessesNames != NULL && fProcessesNames->GetEntries() != 0) {
     for (Int_t i = 0; i < fProcessesNames->GetEntries(); i++) {
       /* the support histgrams list */
@@ -217,65 +217,23 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
       newList->SetOwner(kTRUE);
       fSupportHistogramsList->Add(newList);
 
-      /* the QA histograms list if needed */
-      TList *newQAList = NULL;
-      if (GetShouldFillQAHistograms()) {
-        newQAList = new TList();
-        newQAList->SetName(((TObjString *) fProcessesNames->At(i))->GetName());
-        newQAList->SetOwner(kTRUE);
-        fQAHistogramsList->Add(newQAList);
-      }
-
-      /* the non validated entries QA histograms list if needed */
-      TList *newNveQAList = NULL;
-      if (GetShouldFillNveQAHistograms()) {
-        newNveQAList = new TList();
-        newNveQAList->SetName(((TObjString *) fProcessesNames->At(i))->GetName());
-        newNveQAList->SetOwner(kTRUE);
-        fNveQAHistogramsList->Add(newNveQAList);
-      }
-
       /* leave the selected process list name for a latter time */
       if (!fProcessListName.EqualTo(fProcessesNames->At(i)->GetName())) {
         /* build the support histograms list associated to the process */
         for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
           ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateSupportHistograms(newList);
         }
-        /* the QA histograms list if needed */
-        if (GetShouldFillQAHistograms()) {
-          /* and pass it to the detectors for QA histograms creation */
-          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
-            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateQAHistograms(newQAList);
-          }
-        }
-        /* the non validated entries QA histograms list if needed */
-        if (GetShouldFillNveQAHistograms()) {
-          /* and pass it to the detectors for non validated entries QA histograms creation */
-          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
-            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateNveQAHistograms(newNveQAList);
-          }
-        }
       }
     }
   }
 
-  /* build the support and QA histograms lists associated to this process */
+  /* build the support histograms list associated to this process */
   /* and pass it to the detectors for support histograms creation */
   if (fProcessListName.Length() != 0) {
     /* let's see first whether we have the current process name within the processes names list */
     TList *processList;
-    TList *processQAList;
-    TList *processNveQAList;
     if (fProcessesNames != NULL && fProcessesNames->GetEntries() != 0 && fSupportHistogramsList->FindObject(fProcessListName) != NULL) {
       processList = (TList *) fSupportHistogramsList->FindObject(fProcessListName);
-      /* the QA histograms list if needed */
-      if (GetShouldFillQAHistograms()) {
-        processQAList = (TList *) fQAHistogramsList->FindObject(fProcessListName);
-      }
-      /* the non validated entries QA histograms list if needed */
-      if (GetShouldFillNveQAHistograms()) {
-        processNveQAList = (TList *) fNveQAHistogramsList->FindObject(fProcessListName);
-      }
     }
     else {
       processList = new TList();
@@ -283,25 +241,9 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
       processList->SetOwner(kTRUE);
       /* we add it but probably temporarily */
       fSupportHistogramsList->Add(processList);
-      /* the QA histograms list if needed */
-      if (GetShouldFillQAHistograms()) {
-        processQAList = new TList();
-        processQAList->SetName((const char *) fProcessListName);
-        processQAList->SetOwner(kTRUE);
-        /* we add it but probably temporarily */
-        fQAHistogramsList->Add(processQAList);
-      }
-      /* the non validated QA histograms list if needed */
-      if (GetShouldFillNveQAHistograms()) {
-        processNveQAList = new TList();
-        processNveQAList->SetName((const char *) fProcessListName);
-        processNveQAList->SetOwner(kTRUE);
-        /* we add it but probably temporarily */
-        fNveQAHistogramsList->Add(processNveQAList);
-      }
     }
     /* now transfer the order to the defined detectors */
-    /* so, we always create the histograms to use the latest ones */
+    /* so, we always create the histograms to use the last ones */
     Bool_t retvalue = kTRUE;
     for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
       retvalue = retvalue && ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateSupportHistograms(processList);
@@ -311,20 +253,6 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
     if (!retvalue) {
       AliFatal("Failed to build the necessary support histograms.");
     }
-    /* the QA histograms list if needed */
-    if (GetShouldFillQAHistograms()) {
-      /* pass it to the detectors for QA histograms creation */
-      for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
-        ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateQAHistograms(processQAList);
-      }
-    }
-    /* the non validated QA histograms list if needed */
-    if (GetShouldFillNveQAHistograms()) {
-      /* pass it to the detectors for non validated entries QA histograms creation */
-      for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
-        ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateNveQAHistograms(processNveQAList);
-      }
-    }
   }
   else {
     AliFatal("The process label is missing.");
@@ -332,8 +260,6 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
 
   /* now get the process list on the calibration histograms list if any */
   /* and pass it to the detectors for input calibration histograms attachment, */
-  /* we accept no calibration histograms list and no process list in case we */
-  /* are in calibrating phase. We should TODO this. */
   if (fCalibrationHistogramsList != NULL) {
     TList *processList = (TList *)fCalibrationHistogramsList->FindObject((const char *)fProcessListName);
     if (processList != NULL) {
@@ -343,6 +269,39 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
       for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
         ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AttachCorrectionInputs(processList);
       }
+      /* now inform to the defined detectors the framework conditions are complete */
+      for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+        ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AfterInputsAttachActions();
+      }
+    }
+  }
+
+  /* now build the QA histograms list if needed */
+  /* QA histograms are no longer stored on a per run basis */
+  if (GetShouldFillQAHistograms()) {
+    fQAHistogramsList = new TList();
+    fQAHistogramsList->SetName(szCalibrationQAHistogramsKeyName);
+    fQAHistogramsList->SetOwner(kTRUE);
+    if (GetShouldFillNveQAHistograms()) {
+      fNveQAHistogramsList = new TList();
+      fNveQAHistogramsList->SetName(szCalibrationNveQAHistogramsKeyName);
+      fNveQAHistogramsList->SetOwner(kTRUE);
+    }
+  }
+
+  /* pass the list to the detectors for QA histograms creation */
+  /* the QA histograms list if needed */
+  if (GetShouldFillQAHistograms()) {
+    /* pass it to the detectors for QA histograms creation */
+    for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+      ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateQAHistograms(fQAHistogramsList);
+    }
+  }
+  /* the non validated QA histograms list if needed */
+  if (GetShouldFillNveQAHistograms()) {
+    /* pass it to the detectors for non validated entries QA histograms creation */
+    for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+      ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateNveQAHistograms(fNveQAHistogramsList);
     }
   }
 
@@ -366,6 +325,8 @@ void AliQnCorrectionsManager::InitializeQnCorrectionsFramework() {
 /// in the list. If not a run time error is raised.
 /// \param name the name of the list
 void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
+  AliInfo(Form("New process list name: %s", name));
+
   if (fProcessListName.EqualTo(szDummyProcessListName)) {
     if (fSupportHistogramsList != NULL) {
       /* check the list of concurrent processes */
@@ -386,64 +347,14 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
           /* nop! we raise an execution error */
           AliFatal(Form("The name of the process you want to run: %s, is not in the list of concurrent processes", name));
         }
-        /* the QA histograms list if needed */
-        if (GetShouldFillQAHistograms()) {
-          /* the new process name should be in the list of processes names */
-          if (fQAHistogramsList->FindObject(name) != NULL) {
-            /* now we have to substitute the provisional process name list with the temporal one but renamed */
-            TList *previousempty = (TList*) fQAHistogramsList->FindObject(name);
-            Int_t finalindex = fQAHistogramsList->IndexOf(previousempty);
-            fQAHistogramsList->RemoveAt(finalindex);
-            delete previousempty;
-            TList *previoustemp = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
-            fQAHistogramsList->Remove(previoustemp);
-            previoustemp->SetName(name);
-            fQAHistogramsList->AddAt(previoustemp, finalindex);
-          }
-          else {
-            /* nop! we raise an execution error */
-            AliFatal(Form("The name of the process you want to run: %s, is not in the QA list of concurrent processes", name));
-          }
-        }
-        /* the non validated entries QA histograms list if needed */
-        if (GetShouldFillNveQAHistograms()) {
-          /* the new process name should be in the list of processes names */
-          if (fNveQAHistogramsList->FindObject(name) != NULL) {
-            /* now we have to substitute the provisional process name list with the temporal one but renamed */
-            TList *previousempty = (TList*) fNveQAHistogramsList->FindObject(name);
-            Int_t finalindex = fNveQAHistogramsList->IndexOf(previousempty);
-            fNveQAHistogramsList->RemoveAt(finalindex);
-            delete previousempty;
-            TList *previoustemp = (TList *) fNveQAHistogramsList->FindObject((const char *)fProcessListName);
-            fNveQAHistogramsList->Remove(previoustemp);
-            previoustemp->SetName(name);
-            fNveQAHistogramsList->AddAt(previoustemp, finalindex);
-          }
-          else {
-            /* nop! we raise an execution error */
-            AliFatal(Form("The name of the process you want to run: %s, is not in the non validated entries QA list of concurrent processes", name));
-          }
-        }
       }
       else {
         TList *processList = (TList *) fSupportHistogramsList->FindObject((const char *)fProcessListName);
         processList->SetName(name);
-        /* the QA histograms list if needed */
-        if (GetShouldFillQAHistograms()) {
-          TList *processQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
-          processQAList->SetName(name);
-        }
-        /* the non validated entries QA histograms list if needed */
-        if (GetShouldFillNveQAHistograms()) {
-          TList *processNveQAList = (TList *) fNveQAHistogramsList->FindObject((const char *)fProcessListName);
-          processNveQAList->SetName(name);
-        }
       }
 
       /* now get the process list on the calibration histograms list if any */
       /* and pass it to the detectors for input calibration histograms attachment, */
-      /* we accept no calibration histograms list and no process list in case we */
-      /* are in calibrating phase. We should TODO this. */
       fProcessListName = name;
       if (fCalibrationHistogramsList != NULL) {
         TList *processList = (TList *)fCalibrationHistogramsList->FindObject((const char *)fProcessListName);
@@ -454,6 +365,10 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
           for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
             ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AttachCorrectionInputs(processList);
           }
+          /* now inform to the defined detectors the framework conditions are complete */
+          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AfterInputsAttachActions();
+          }
         }
       }
       /* build the Qn vectors list  now that all histograms are loaded */
@@ -463,6 +378,7 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
         /* the list does not own the Qn vectors */
         fQnVectorList->SetOwner(kFALSE);
       }
+
       /* pass it to the detectors for Qn vector creation and attachment */
       for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
         ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->IncludeQnVectors(fQnVectorList);
@@ -474,8 +390,73 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
     }
   }
   else {
-    AliFatal(Form("Changing process list name on the fly is not supported." \
-        " Current name: %s, new name: %s", (const char *)fProcessListName, name));
+    AliInfo(Form("Changing process on the fly from %s to %s", fProcessListName.Data(), name));
+
+    if (fSupportHistogramsList != NULL) {
+      /* check the list of concurrent processes */
+      if (fProcessesNames != NULL && fProcessesNames->GetEntries() != 0) {
+        /* the new process name should be in the list of processes names */
+        if (fSupportHistogramsList->FindObject(name) != NULL) {
+          /* now we have to destroy the previous list associated to the new process */
+          TList *previous = (TList*) fSupportHistogramsList->FindObject(name);
+          Int_t finalindex = fSupportHistogramsList->IndexOf(previous);
+          fSupportHistogramsList->RemoveAt(finalindex);
+          delete previous;
+          /* and build a new one in its place */
+          TList *newList = new TList();
+          newList->SetName(name);
+          newList->SetOwner(kTRUE);
+          /* build the support histograms list associated to the new process passing the new list to the detectors */
+          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->CreateSupportHistograms(newList);
+          }
+          fSupportHistogramsList->AddAt(newList,finalindex);
+        }
+        else {
+          /* nop! we raise an execution error */
+          AliFatal(Form("The name of the process you want to run: %s, is not in the list of concurrent processes", name));
+        }
+      }
+      else {
+        TList *processList = (TList *) fSupportHistogramsList->FindObject((const char *)fProcessListName);
+        processList->SetName(name);
+      }
+
+      /* now get the process list on the calibration histograms list if any */
+      /* and pass it to the detectors for input calibration histograms attachment, */
+      fProcessListName = name;
+      if (fCalibrationHistogramsList != NULL) {
+        TList *processList = (TList *)fCalibrationHistogramsList->FindObject((const char *)fProcessListName);
+        if (processList != NULL) {
+          AliInfo(Form("Assigned process list %s as the calibration histograms list",
+              processList->GetName()));
+          /* now transfer the order to the defined detectors */
+          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AttachCorrectionInputs(processList);
+          }
+          /* now inform to the defined detectors the framework conditions are complete */
+          for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+            ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->AfterInputsAttachActions();
+          }
+        }
+      }
+      /* build the Qn vectors list  now that all histograms are loaded */
+      if (fQnVectorList == NULL) {
+        /* first we build it if it isn't already there */
+        fQnVectorList = new TList();
+        /* the list does not own the Qn vectors */
+        fQnVectorList->SetOwner(kFALSE);
+      }
+
+      /* pass it to the detectors for Qn vector creation and attachment */
+      for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
+        ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->IncludeQnVectors(fQnVectorList);
+      }
+    }
+    else {
+      /* histograms list not yet created so, we just change the name */
+      fProcessListName = name;
+    }
   }
 
   /* now that we have everything let's print the configuration before we start */
@@ -484,6 +465,8 @@ void AliQnCorrectionsManager::SetCurrentProcessListName(const char *name) {
 
 /// Produce an understandable picture of current correction configuration
 void AliQnCorrectionsManager::PrintFrameworkConfiguration() const {
+  AliInfo("");
+
   /* first get the list of detector configurations */
   TList *detectorList = new TList();
   detectorList->SetOwner(kTRUE);
@@ -519,6 +502,7 @@ void AliQnCorrectionsManager::PrintFrameworkConfiguration() const {
   for (Int_t ixDetector = 0; ixDetector < fDetectorsSet.GetEntries(); ixDetector++) {
     ((AliQnCorrectionsDetector *) fDetectorsSet.At(ixDetector))->FillOverallQnVectorCorrectionStepList(vectorCorrections);
   }
+
   /* and now we build the correction step names list */
   TList *vectorStepList = new TList();
   /* this one we own its items */
@@ -654,7 +638,7 @@ void AliQnCorrectionsManager::PrintFrameworkConfiguration() const {
   }
 
   /* now the calibration histograms */
-  cout << setw(correctionFieldSize) << "FILL HISTS" << setw(margin) << "-" << detectorsFieldLine << endl;
+  cout << setw(correctionFieldSize) << "FILL HISTOS" << setw(margin) << "-" << detectorsFieldLine << endl;
   /* first the input correction steps */
   for (Int_t ixInCorr = 0; ixInCorr < inputStepList->GetEntries(); ixInCorr++) {
     cout << setw(correctionFieldSize) << inputStepList->At(ixInCorr)->GetName() << setw(margin) << "|";
@@ -718,16 +702,6 @@ void AliQnCorrectionsManager::FinalizeQnCorrectionsFramework() {
 
   TList *processList = (TList *) fSupportHistogramsList->FindObject((const char *)fProcessListName);
   fSupportHistogramsList->Add(processList->Clone(szAllProcessesListName));
-  /* the QA histograms list if needed */
-  if (GetShouldFillQAHistograms()) {
-    TList *processQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
-    fQAHistogramsList->Add(processQAList->Clone(szAllProcessesListName));
-  }
-  /* the non validated entries QA histograms list if needed */
-  if (GetShouldFillNveQAHistograms()) {
-    TList *processNveQAList = (TList *) fQAHistogramsList->FindObject((const char *)fProcessListName);
-    fNveQAHistogramsList->Add(processNveQAList->Clone(szAllProcessesListName));
-  }
 }
 
 

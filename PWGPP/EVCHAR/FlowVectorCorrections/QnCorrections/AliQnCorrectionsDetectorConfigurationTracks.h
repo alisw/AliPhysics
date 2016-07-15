@@ -18,6 +18,8 @@
 #include "AliQnCorrectionsDataVector.h"
 #include "AliQnCorrectionsDetectorConfigurationBase.h"
 
+class AliQnCorrectionsProfileComponents;
+
 /// \class AliQnCorrectionsDetectorConfigurationTracks
 /// \brief Track detector configuration within Q vector correction framework
 ///
@@ -43,6 +45,11 @@ public:
       Int_t *harmonicMap = NULL);
   virtual ~AliQnCorrectionsDetectorConfigurationTracks();
 
+  /// Get if the detector configuration is own by a tracking detector
+  /// \return TRUE, this is tracking detector configuration
+  virtual Bool_t GetIsTrackingDetector() const
+  { return kTRUE; }
+
   virtual void AttachCorrectionsManager(AliQnCorrectionsManager *manager);
 
   virtual void CreateSupportDataStructures();
@@ -50,12 +57,10 @@ public:
   virtual Bool_t CreateQAHistograms(TList *list);
   virtual Bool_t CreateNveQAHistograms(TList *list);
   virtual Bool_t AttachCorrectionInputs(TList *list);
+  virtual void AfterInputsAttachActions();
 
-  /// Ask for processing corrections for the involved detector configuration
-  ///
-  /// The request is transmitted to the Q vector correction steps
-  /// \return kTRUE if everything went OK
   virtual Bool_t ProcessCorrections(const Float_t *variableContainer);
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer);
   virtual Bool_t AddDataVector(const Float_t *variableContainer, Double_t phi, Double_t weight = 1.0, Int_t channelId = -1);
 
   virtual void BuildQnVector();
@@ -76,8 +81,14 @@ public:
 
   virtual void ClearConfiguration();
 
+private:
+  /* QA section */
+  void FillQAHistograms(const Float_t *variableContainer);
+  static const char *szQAQnAverageHistogramName; ///< name and title for plain Qn vector components average QA histograms
+  AliQnCorrectionsProfileComponents *fQAQnAverageHistogram; //!<! the plain average Qn components QA histogram
+
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsDetectorConfigurationTracks, 1);
+  ClassDef(AliQnCorrectionsDetectorConfigurationTracks, 2);
 /// \endcond
 };
 
@@ -112,7 +123,9 @@ inline void AliQnCorrectionsDetectorConfigurationTracks::ClearConfiguration() {
   }
   /* clean the own Q vectors */
   fPlainQnVector.Reset();
+  fPlainQ2nVector.Reset();
   fCorrectedQnVector.Reset();
+  fCorrectedQ2nVector.Reset();
   /* and now clear the the input data bank */
   fDataVectorBank->Clear("C");
 }
@@ -124,16 +137,22 @@ inline void AliQnCorrectionsDetectorConfigurationTracks::ClearConfiguration() {
 /// subsequent corrections.
 inline void AliQnCorrectionsDetectorConfigurationTracks::BuildQnVector() {
   fTempQnVector.Reset();
+  fTempQ2nVector.Reset();
 
   for(Int_t ixData = 0; ixData < fDataVectorBank->GetEntriesFast(); ixData++){
     AliQnCorrectionsDataVector *dataVector = static_cast<AliQnCorrectionsDataVector *>(fDataVectorBank->At(ixData));
     fTempQnVector.Add(dataVector->Phi(), dataVector->Weight());
+    fTempQ2nVector.Add(dataVector->Phi(), dataVector->Weight());
   }
   /* check the quality of the Qn vector */
   fTempQnVector.CheckQuality();
+  fTempQ2nVector.CheckQuality();
   fTempQnVector.Normalize(fQnNormalizationMethod);
+  fTempQ2nVector.Normalize(fQnNormalizationMethod);
   fPlainQnVector.Set(&fTempQnVector, kFALSE);
+  fPlainQ2nVector.Set(&fTempQ2nVector, kFALSE);
   fCorrectedQnVector.Set(&fTempQnVector, kFALSE);
+  fCorrectedQ2nVector.Set(&fTempQ2nVector, kFALSE);
 }
 
 
@@ -149,7 +168,29 @@ inline Bool_t AliQnCorrectionsDetectorConfigurationTracks::ProcessCorrections(co
   /* then we transfer the request to the Q vector correction steps */
   /* the loop is broken when a correction step has not been applied */
   for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
-    if (fQnVectorCorrections.At(ixCorrection)->Process(variableContainer))
+    if (fQnVectorCorrections.At(ixCorrection)->ProcessCorrections(variableContainer))
+      continue;
+    else
+      return kFALSE;
+  }
+  /* all correction steps were applied */
+  return kTRUE;
+}
+
+/// Ask for processing corrections data collection for the involved detector configuration
+/// Fill own QA histogram information and then
+/// the request is transmitted to the Q vector correction steps.
+/// The first not applied correction step breaks the loop and kFALSE is returned
+/// \return kTRUE if all correction steps were applied
+inline Bool_t AliQnCorrectionsDetectorConfigurationTracks::ProcessDataCollection(const Float_t *variableContainer) {
+
+  /* fill QA information */
+  FillQAHistograms(variableContainer);
+
+  /* we transfer the request to the Q vector correction steps */
+  /* the loop is broken when a correction step has not been applied */
+  for (Int_t ixCorrection = 0; ixCorrection < fQnVectorCorrections.GetEntries(); ixCorrection++) {
+    if (fQnVectorCorrections.At(ixCorrection)->ProcessDataCollection(variableContainer))
       continue;
     else
       return kFALSE;

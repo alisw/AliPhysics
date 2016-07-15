@@ -48,6 +48,8 @@ public:
 
   void AddCorrection(AliQnCorrectionsCorrectionOnQvector *correction);
   void FillOverallCorrectionsList(TList *correctionlist) const;
+  const AliQnCorrectionsCorrectionOnQvector *GetPrevious(const AliQnCorrectionsCorrectionOnQvector *correction) const;
+  Bool_t IsCorrectionStepBeingApplied(const char *name) const;
 /// \cond CLASSIMP
   ClassDef(AliQnCorrectionsCorrectionsSetOnQvector, 1);
 /// \endcond
