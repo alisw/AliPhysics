@@ -238,6 +238,7 @@ protected:
   TH1                   *fHClustAccEvt;            //!histo for number of clusters after cuts in event
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2                   *fHClustEtaPhi;           //!histo for cluster eta vs. phi  
+  TH2                   *fHClustEtaPhiIsEMCal;           //!histo for cluster eta vs. phi  
   TH2                   *fHEMCalModule0;           //!histo for cluster in module 0
   
   TH2                   *fHClustEtaPhiRaw;           //!histo for cluster eta vs. phi    
@@ -255,7 +256,8 @@ protected:
   TH1                   *fHv0TrackPtEMCal;		//!histo for track pT of electrons
   TH1                   *fHv0TrackPt;		//!histo for track pT of electrons  
   TH1                   *fHClustETrackP; //!histo for ratio of cluster energy and track p
-  
+  TH1                   *fHClustEnergyRatioPhoton;   //!histo for ratio max cell enerhy and cluster energy
+  TH1                   *fHClustEnergyRatioPion; 	//!histo for ratio max cell enerhy and cluster energy 
   
   TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
   TH2					*fHClustEnergyNCell;      //!histo for cluster energy vs. cluster n cells
@@ -359,6 +361,7 @@ protected:
   TH2                   *fHClustEnergyM02Gamma;        //!histo for cluster energy vs. M02 for direct photons
   TH2                   *fHClustEnergyM02Pi0;        //!histo for cluster energy vs. M02 for pi0 photons
   TH2                   *fHClustEnergyM02Pion;        //!histo for cluster energy vs. M02 for charged pions 
+  TH2                   *fHClustEnergyM02Elektron;  //!histo for cluster energy vs. M02 for electrons
   TH2                   *fHClustEnergyM02PionTM;	//!histo for cluster energy vs. M02 for charged pions 
   TH2                   *fHClustEnergyM02AllTM;		//!histo for cluster energy vs. M02 for charged pions 
   TH2                   *fHClustEnergyM02GammaAll;        //!histo for cluster energy vs. M02 for all gammas
@@ -382,110 +385,105 @@ protected:
   TH1                   *fHClustM02Pion6TM;	//!histo for m02 1d histogram  
   TH1                   *fHClustM02Pion7TM;	//!histo for m02 1d histogram   
       
- TH2                   *fHClustEnergyM02GammaRaw;        //!histo for cluster energy vs. M02 for direct photons
- TH2                   *fHClustEnergyM02Pi0Raw;        //!histo for cluster energy vs. M02 for pi0 photons
- TH2                   *fHClustEnergyM02PionRaw;        //!histo for cluster energy vs. M02 for charged pions 
- TH2                   *fHClustEnergyM02GammaAllRaw;        //!histo for cluster energy vs. M02 for all gammas
- TH2                   *fHClustM02M20NoGammaRaw;        //!histo for cluster energy vs. M02 for charged pions 
- TH2                   *fHClustM02M20GammaAllRaw;        //!histo for cluster energy vs. M02 for all gammas 
- TH2                   *fHClustEnergyM02AllRaw;		//!histo for cluster energy vs. M02 for all cluster
- TH2                   *fHClustEnergyM02GammaSmallCut; //!histo for cluster energy vs. M02 for Gammas after some cuts
- TH2                   *fHClustEnergyM02PionSmallCut; //!histo for cluster energy vs. M02 for Pions after some cuts
+ TH2                    *fHClustEnergyM02GammaRaw;        //!histo for cluster energy vs. M02 for direct photons
+ TH2                    *fHClustEnergyM02Pi0Raw;        //!histo for cluster energy vs. M02 for pi0 photons
+ TH2                    *fHClustEnergyM02PionRaw;        //!histo for cluster energy vs. M02 for charged pions 
+ TH2                    *fHClustEnergyM02ElektronRaw; 	//!histo for cluster energy vs. M02 for electrons 
+ TH2                    *fHClustEnergyM02GammaAllRaw;        //!histo for cluster energy vs. M02 for all gammas
+ TH2                    *fHClustM02M20NoGammaRaw;        //!histo for cluster energy vs. M02 for charged pions 
+ TH2                    *fHClustM02M20GammaAllRaw;        //!histo for cluster energy vs. M02 for all gammas 
+ TH2                    *fHClustEnergyM02AllRaw;		//!histo for cluster energy vs. M02 for all cluster
+ TH2                    *fHClustEnergyM02GammaSmallCut; //!histo for cluster energy vs. M02 for Gammas after some cuts
+ TH2                    *fHClustEnergyM02PionSmallCut; //!histo for cluster energy vs. M02 for Pions after some cuts
+ TH2                    *fHClustEnergyM02GammaCell1; //!histo for cluster energy vs. M02 for Gammas after some cuts
+ TH2                    *fHClustEnergyM02PionCell1; //!histo for cluster energy vs. M02 for Pions after some cuts  
+  
   
  
- TH1		      *fHv0electrons;		//! histo to show v0 tagged electrons
- TH1		      *fHPtSpecAll;        //! histo to show Pt Spectrum for all cluster
- TH1 			  *fHPtSpecGamma;  //! histo to show Pt Spectrum for all photons
- TH1		      *fHPtSpecPion;        //! histo to show Pt Spectrum for charged pions  
- TH1		      *fHPtSpecElectron;		//! histo to show Pt Spectrum for electrons
- TH1		      *fHPtSpecMyon;		//! histo to show Pt Spectrum for myons  
- TH1		      *fHPtSpecProton;		//! histo to show Pt Spectrum for protons  
- TH1		      *fHPtSpecNeutron;		//! histo to show Pt Spectrum for neutrons  
- TH1		      *fHPtSpecKaon;		//! histo to show Pt Spectrum for charged kaons
- TH1		      *fHPtSpecKaon0;		//! histo to show Pt Spectrum for neutral kaons
- TH1		      *fHPtSpecNoGamma;		//! histo to show Pt Spectrum for particles that are not gammas
- TH1		      *fHPtSpecCharged; 		//! histo to show Pt Spectrum for charged particles
- TH1		      *fHPtSpecElectronTM;		//! histo to show Pt Spectrum after Trackamtching
- TH1		      *fHPtSpecPionTM;		//! histo to show Pt Spectrum after Trackamtching
- TH1		      *fHPtSpecElectronNoTM;		//! histo to show Pt Spectrum after Trackamtching
- TH1		      *fHPtSpecPionNoTM;		//! histo to show Pt Spectrum after Trackamtching 
- TH1		      *fHPtSpecGammaNoM02; 	//! histo to show Pt Spectrum after Trackamtching
- TH1		      *fHPtSpecPionNoM02; 	//! histo to show Pt Spectrum after Trackamtching
- TH1		      *fHPtSpecGammaM02; 	//! histo to show Pt Spectrum after M02Cut
- TH1		      *fHPtSpecPionM02; 	//! histo to show Pt Spectrum after M02Cut
-
- TH1          *fHPtSpecM02Cut0Pion; //! histo to study cut
- TH1          *fHPtSpecM02Cut1Pion; //! histo to study cut
- TH1          *fHPtSpecM02Cut0Photon; //! histo to study cut
- TH1          *fHPtSpecM02Cut1Photon; //! histo to study cut
+ TH1		      	    *fHv0electrons;		//! histo to show v0 tagged electrons
+ TH1		      	    *fHPtSpecAll;        //! histo to show Pt Spectrum for all cluster
+ TH1 			  	    *fHPtSpecGamma;  //! histo to show Pt Spectrum for all photons
+ TH1		      	    *fHPtSpecPion;        //! histo to show Pt Spectrum for charged pions  
+ TH1		      	    *fHPtSpecElectron;		//! histo to show Pt Spectrum for electrons
+ TH1		      	    *fHPtSpecMyon;		//! histo to show Pt Spectrum for myons  
+ TH1		      	    *fHPtSpecProton;		//! histo to show Pt Spectrum for protons  
+ TH1		      	    *fHPtSpecNeutron;		//! histo to show Pt Spectrum for neutrons  
+ TH1		      	    *fHPtSpecKaon;		//! histo to show Pt Spectrum for charged kaons
+ TH1		      	    *fHPtSpecKaon0;		//! histo to show Pt Spectrum for neutral kaons
+ TH1		      	    *fHPtSpecNoGamma;		//! histo to show Pt Spectrum for particles that are not gammas
+ TH1		      	    *fHPtSpecCharged; 		//! histo to show Pt Spectrum for charged particles
+ TH1		      	    *fHPtSpecElectronTM;		//! histo to show Pt Spectrum after Trackamtching
+ TH1		      	    *fHPtSpecPionTM;		//! histo to show Pt Spectrum after Trackamtching
+ TH1		      	    *fHPtSpecElectronNoTM;		//! histo to show Pt Spectrum after Trackamtching
+ TH1		      	    *fHPtSpecPionNoTM;		//! histo to show Pt Spectrum after Trackamtching 
+ TH1		      	    *fHPtSpecGammaNoM02; 	//! histo to show Pt Spectrum after Trackamtching
+ TH1		      	    *fHPtSpecPionNoM02; 	//! histo to show Pt Spectrum after Trackamtching
+ TH1		      	    *fHPtSpecGammaM02; 	//! histo to show Pt Spectrum after M02Cut
+ TH1		      	    *fHPtSpecPionM02; 	//! histo to show Pt Spectrum after M02Cut
+                  	    
+ TH1		      	    *fHPtSpecAllRaw;        //! histo to show Pt Spectrum for all cluster
+ TH1 			  	    *fHPtSpecGammaRaw;  //! histo to show Pt Spectrum for all photons
+ TH1		      	    *fHPtSpecPionRaw;        //! histo to show Pt Spectrum for charged pions  
+ TH1		      	    *fHPtSpecElectronRaw;		//! histo to show Pt Spectrum for electrons
+ TH1		      	    *fHPtSpecMyonRaw;		//! histo to show Pt Spectrum for myons  
+ TH1		      	    *fHPtSpecProtonRaw;		//! histo to show Pt Spectrum for protons  
+ TH1		      	    *fHPtSpecNeutronRaw;		//! histo to show Pt Spectrum for neutrons  
+ TH1		      	    *fHPtSpecKaonRaw;		//! histo to show Pt Spectrum for kaons
+ TH1		      	    *fHPtSpecKaon0Raw;		//! histo to show Pt Spectrum for kaons
+ TH1		      	    *fHPtSpecNoGammaRaw; //! histo to show Pt Spectrum for kaons
+ TH1		      	    *fHPtSpecChargedRaw; 		//! histo to show Pt Spectrum for charged particles
+ TH1		      	    *fHPtSpecChargedTM; 		//! histo to show Pt Spectrum for charged particles for trackamtching
+ TH1		      	    *fHPtSpecGammaTM; 	//! histo to show Pt Spectrum for gammas for trackamtching
+ TH1		      	    *fHPtSpecEffTM1; 		//! histo to show Pt Spectrum for trackamtching efficiency 
+ TH1		      	    *fHPtSpecEffTM2; 		//! histo to show Pt Spectrum for trackamtching efficiency  
   
-  TH1          *fHPtSpecTrackCut0Pion; //! histo to study cut
-  TH1          *fHPtSpecTrackCut1Pion; //! histo to study cut
-  TH1          *fHPtSpecTrackCut0Photon; //! histo to study cut
-  TH1          *fHPtSpecTrackCut1Photon; //! histo to study cut
-
-  TH1		      *fHPtSpecAllRaw;        //! histo to show Pt Spectrum for all cluster
- TH1 			  *fHPtSpecGammaRaw;  //! histo to show Pt Spectrum for all photons
- TH1		      *fHPtSpecPionRaw;        //! histo to show Pt Spectrum for charged pions  
- TH1		      *fHPtSpecElectronRaw;		//! histo to show Pt Spectrum for electrons
- TH1		      *fHPtSpecMyonRaw;		//! histo to show Pt Spectrum for myons  
- TH1		      *fHPtSpecProtonRaw;		//! histo to show Pt Spectrum for protons  
- TH1		      *fHPtSpecNeutronRaw;		//! histo to show Pt Spectrum for neutrons  
- TH1		      *fHPtSpecKaonRaw;		//! histo to show Pt Spectrum for kaons
- TH1		      *fHPtSpecKaon0Raw;		//! histo to show Pt Spectrum for kaons
- TH1		      *fHPtSpecNoGammaRaw; //! histo to show Pt Spectrum for kaons
- TH1		      *fHPtSpecChargedRaw; 		//! histo to show Pt Spectrum for charged particles
+ TH1 					*fHPtSpecSysEnergy1;  //! effieciency 
+ TH1 					*fHPtSpecSysEnergy2;  //! effieciency   
+ TH1 					*fHPtSpecSysEnergy3;  //! effieciency 
+ TH1 					*fHPtSpecSysEnergy4;  //! effieciency 
+ TH1 					*fHPtSpecSysEnergy5;  //! effieciency     
+ TH1 					*fHPtSpecSysNcell1;  //! effieciency 
+ TH1 					*fHPtSpecSysNcell2;  //! effieciency   
+ TH1 					*fHPtSpecSysNcell3;  //! effieciency 
+ TH1 					*fHPtSpecSysBorder1;  //! effieciency 
+ TH1 					*fHPtSpecSysBorder2;  //! effieciency   
+ TH1 					*fHPtSpecSysBorder3;  //! effieciency  
  
-  
-  TH1 				*fHPtSpecSysEnergy1;  //! effieciency 
-  TH1 				*fHPtSpecSysEnergy2;  //! effieciency   
-  TH1 				*fHPtSpecSysEnergy3;  //! effieciency 
-  TH1 				*fHPtSpecSysEnergy4;  //! effieciency 
-  TH1 				*fHPtSpecSysEnergy5;  //! effieciency     
-  TH1 				*fHPtSpecSysNcell1;  //! effieciency 
-  TH1 				*fHPtSpecSysNcell2;  //! effieciency   
-  TH1 				*fHPtSpecSysNcell3;  //! effieciency 
-  TH1 				*fHPtSpecSysBorder1;  //! effieciency 
-  TH1 				*fHPtSpecSysBorder2;  //! effieciency   
-  TH1 				*fHPtSpecSysBorder3;  //! effieciency  
- 
-  
-    
-  TH1 			  *fHPtSpecGammaCompare;  //! histo to show Pt Spectrum for all photons
-  TH1		      *fHPtSpecPionCompare;        //! histo to show Pt Spectrum for charged pions   
-  TH1		      *fHPtSpecCompare;        //! histo to show Pt Spectrum all particles
-  
-  
-  TH1		      *fHPtSpecEffParticle;  //! histo to show Pt Spectrum for all particles in EmCal Eta/Phi
-  TH1		      *fHPtSpecEffPhoton;  //! histo to show Pt Spectrum for photons in EmCal Eta/Phi  
-  TH1		      *fHPtSpecAccPhoton;		//! histo to show Pt Spectrum for photons overall  
-  TH1		      *fHPtSpecEtaPhoton;		//! histo to show Pt Spectrum for photons overall 
-  TH1		      *fHPtSpecPhiPhoton;		//! histo to show Pt Spectrum for photons overall 
-  TH2 			  *fHGenEtaPhi;				//! histo to show Pt Spectrum for photons overall 
-  TH1		      *fHPtSpecEffCluster;  	//! histo to show Pt Spectrum for cluster photons in EmCal Eta/Phi 
-  TH1		      *fHPtSpecEffNeutron; 	//!histo for neutron/antineutron efficiency correction
-  TH1		      *fHPtSpecConversion;  //!histo for conversion correction
-  TH1		      *fHPtSpecConversionNot; //!histo for conversion correction
-  TH1		      *fHPtSpecEffPhotonEta5;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.5)/Phi  
-  TH1		      *fHPtSpecEffPhotonEta4;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.4)/Phi  
-  TH1		      *fHPtSpecEffPhotonEta3;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.3)/Phi  
-  TH1		      *fHPtSpecEffPhotonEta2;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.2)/Phi  
-  TH1		      *fHPtSpecEffPhotonEta1;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.1)/Phi  
-		  
-  TH1		      *fHPtSpecDecayPi0;	//! histo to show Pt Spectrum for photons from pi0 decay
-  TH1		      *fHPtSpecDecayEta;	//! histo to show Pt Spectrum for photons from eta decay
-  TH1		      *fHPtSpecDecayOmega;	//! histo to show Pt Spectrum for photons from omega decay 
-  TH1		      *fHPtSpecDecayEtap;	//! histo to show Pt Spectrum for photons from eta prime decay     
-  
-  
-  
-  TH1		      *fHCutVariationM02Photon; //!cutvariations
-  TH1		      *fHCutVariationM02Pion; //!cutvariations
-  TH1		      *fHCutVariationM02PhotonTest; //!cutvariations
-  TH1		      *fHCutVariationM02PionTest; //!cutvariations  
-  
-  TH1		      *fHM02Photon;//!cutvariations
-  TH1		      *fHM02Pion; //!cutvariations
+ TH1 			  		*fHPtSpecGammaCompare;  //! histo to show Pt Spectrum for all photons
+ TH1		      		*fHPtSpecPionCompare;        //! histo to show Pt Spectrum for charged pions   
+ TH1		      		*fHPtSpecCompare;        //! histo to show Pt Spectrum all particles
+                  		
+                  		
+ TH1		      		*fHPtSpecEffParticle;  //! histo to show Pt Spectrum for all particles in EmCal Eta/Phi
+ TH1		      		*fHPtSpecEffPhoton;  //! histo to show Pt Spectrum for photons in EmCal Eta/Phi  
+ TH1		      		*fHPtSpecAccPhoton;		//! histo to show Pt Spectrum for photons overall  
+ TH1		      		*fHPtSpecEtaPhoton;		//! histo to show Pt Spectrum for photons overall 
+ TH1		      		*fHPtSpecPhiPhoton;		//! histo to show Pt Spectrum for photons overall 
+ TH2 			  		*fHGenEtaPhi;				//! histo to show Pt Spectrum for photons overall 
+ TH1		      		*fHPtSpecEffCluster;  	//! histo to show Pt Spectrum for cluster photons in EmCal Eta/Phi 
+ TH1		      		*fHPtSpecEffNeutron; 	//!histo for neutron/antineutron efficiency correction
+ TH1		      		*fHPtSpecConversion;  //!histo for conversion correction
+ TH1		      		*fHPtSpecConversionNot; //!histo for conversion correction
+ TH1		      		*fHPtSpecEffPhotonEta5;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.5)/Phi  
+ TH1		      		*fHPtSpecEffPhotonEta4;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.4)/Phi  
+ TH1		      		*fHPtSpecEffPhotonEta3;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.3)/Phi  
+ TH1		      		*fHPtSpecEffPhotonEta2;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.2)/Phi  
+ TH1		      		*fHPtSpecEffPhotonEta1;  //! histo to show Pt Spectrum for photons in EmCal Eta (+- 0.1)/Phi  
+		          		
+ TH1		      		*fHPtSpecDecayPi0;	//! histo to show Pt Spectrum for photons from pi0 decay
+ TH1		      		*fHPtSpecDecayEta;	//! histo to show Pt Spectrum for photons from eta decay
+ TH1		      		*fHPtSpecDecayOmega;	//! histo to show Pt Spectrum for photons from omega decay 
+ TH1		      		*fHPtSpecDecayEtap;	//! histo to show Pt Spectrum for photons from eta prime decay     
+                  		
+                  		
+                  		
+ TH1		      		*fHCutVariationM02Photon; //!cutvariations
+ TH1		      		*fHCutVariationM02Pion; //!cutvariations
+ TH1		      		*fHCutVariationM02PhotonTest; //!cutvariations
+ TH1		      		*fHCutVariationM02PionTest; //!cutvariations  
+                  		
+ TH1		      		*fHM02Photon;//!cutvariations
+ TH1		      		*fHM02Pion; //!cutvariations
  
   
   TH1		      *fHCutVariationPion; 			//!cutvariations
@@ -562,12 +560,14 @@ protected:
   TH1		      *fHMotherR;  //! histo to show range from electron vertices  
   TH1		      *fHMotherR2;  //! histo to show range from electron vertices 
   TH1		      *fHClustNcell;  //! histo with the number of cells per cluster
+  TH1		      *fHClustNcell1;  //! histo with the number of cells per cluster 
   TH1		      *fHClustNcellPhoton;  //! histo with the number of cells per cluster  
   TH1		      *fHClustNcellNoPhoton;  //! histo with the number of cells per cluster 
   TH1		      *fHClustNcellPhotonCut;  //! histo with the number of cells per cluster after cut
   TH1		      *fHClustNcellNoPhotonCut;  //! histo with the number of cells per cluster after cut  
   TH1		      *fHGammaMIP; //! histo with the number gammas with low Ec
   TH1		      *fHHadronMIP; //! histo with the number hadrons with low Ec
+  TH1		      *fHClustEP; //! histo with trackmatched particles E/p 
     
   TH1		      *fHPtSpecElectronMerge; //! asdfasdaf
   TH2			  *fHClustElectronZR;		//! asdfasdaf

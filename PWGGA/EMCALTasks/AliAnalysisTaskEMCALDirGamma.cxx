@@ -142,12 +142,29 @@ fHClustNoEvt(0),
 fHClustAccEvt(0),
 fHClustEccentricity(0),
 fHClustEtaPhi(0x0),
+fHClustEtaPhiIsEMCal(0x0),         
+fHEMCalModule0(0x0),   
+fHClustEtaPhiRaw(0x0),  
 fHClustEnergyPt(0x0),
 fHClustEnergySM(0x0),
 fHClustEnergySigma(0x0),
 fHClustSigmaSigma(0x0),
+fHClustEtaM02(0x0),				
+fHClustPhiM02(0x0),			
+fHClustETrackP(0x0),
+fHClustEnergyRatioPhoton(0x0), 
+fHClustEnergyRatioPion(0x0), 	
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
+fHClustEnergyNCellPion(0x0),  
+fHClustEnergyNCellPhoton(0x0),
+fHClustNCellM02Photon(0x0),
+fHClustNCellM02Pion(0x0),
+fHClustEnergyNCellRaw(0x0),
+fHClustEnergyNCellPionRaw(0x0),
+fHClustEnergyNCellPhotonRaw(0x0),
+fHClustNCellM02PhotonRaw(0x0),
+fHClustNCellM02PionRaw(0x0),
 fHConvEnergyPt(0x0),
 fHPrimTrackPt(0x0),
 fHPrimTrackEta(0x0),
@@ -186,6 +203,154 @@ fHEtaTruthPtAccAdd(),
 fHEtaTruthPtConvAccAdd(),
 fHNMothers(0x0),
 //fHMixRotation(),
+fHClustEnergyM02Gamma(0x0),
+fHClustEnergyM02Pi0(0x0),
+fHClustEnergyM02Pion(0x0),
+fHClustEnergyM02Elektron(0x0),
+fHClustEnergyM02PionTM(0x0),
+fHClustEnergyM02AllTM(0x0),
+fHClustEnergyM02GammaAll(0x0),  
+fHClustEnergyM02All(0x0),
+fHClustEnergyM02v0(0x0),
+fHClustEnergyEPv0(0x0),
+fHClustM02Gamma0TM(0x0),
+fHClustM02Gamma1TM(0x0),
+fHClustM02Gamma2TM(0x0),
+fHClustM02Gamma3TM(0x0),
+fHClustM02Gamma4TM(0x0),
+fHClustM02Gamma5TM(0x0),
+fHClustM02Gamma6TM(0x0),
+fHClustM02Gamma7TM(0x0),
+fHClustM02Pion0TM(0x0),
+fHClustM02Pion1TM(0x0),
+fHClustM02Pion2TM(0x0),
+fHClustM02Pion3TM(0x0),
+fHClustM02Pion4TM(0x0),
+fHClustM02Pion5TM(0x0),
+fHClustM02Pion6TM(0x0),
+fHClustM02Pion7TM(0x0),
+fHClustEnergyM02GammaRaw(0x0),    
+fHClustEnergyM02Pi0Raw(0x0),      
+fHClustEnergyM02PionRaw(0x0),      
+fHClustEnergyM02ElektronRaw(0x0),
+fHClustEnergyM02GammaAllRaw(0x0), 
+fHClustM02M20NoGammaRaw(0x0),      
+fHClustM02M20GammaAllRaw(0x0),     
+fHClustEnergyM02AllRaw(0x0),	
+fHClustEnergyM02GammaSmallCut(0x0),
+fHClustEnergyM02PionSmallCut(0x0), 
+fHClustEnergyM02GammaCell1(0x0),
+fHClustEnergyM02PionCell1(0x0),
+fHv0electrons(0x0),
+fHPtSpecAll(0x0),
+fHPtSpecGamma(0x0),
+fHPtSpecPion(0x0),
+fHPtSpecElectron(0x0),
+fHPtSpecMyon(0x0),
+fHPtSpecProton(0x0),
+fHPtSpecNeutron(0x0),
+fHPtSpecKaon(0x0),
+fHPtSpecKaon0(0x0),
+fHPtSpecNoGamma(0x0),
+fHPtSpecCharged(0x0),
+fHPtSpecElectronTM(0x0),
+fHPtSpecPionTM(0x0),
+fHPtSpecElectronNoTM(0x0),
+fHPtSpecPionNoTM(0x0),
+fHPtSpecGammaNoM02(0x0),
+fHPtSpecPionNoM02(0x0),
+fHPtSpecGammaM02(0x0),
+fHPtSpecPionM02(0x0),
+
+fHPtSpecAllRaw(0x0),
+fHPtSpecGammaRaw(0x0),
+fHPtSpecPionRaw(0x0),
+fHPtSpecElectronRaw(0x0),
+fHPtSpecMyonRaw(0x0),
+fHPtSpecProtonRaw(0x0),
+fHPtSpecNeutronRaw(0x0),
+fHPtSpecKaonRaw(0x0),
+fHPtSpecKaon0Raw(0x0),
+fHPtSpecNoGammaRaw(0x0),
+fHPtSpecChargedRaw(0x0),
+fHPtSpecChargedTM(0x0),
+fHPtSpecGammaTM(0x0),
+fHPtSpecEffTM1(0x0),
+fHPtSpecEffTM2(0x0),
+fHPtSpecSysEnergy1(0x0),
+fHPtSpecSysEnergy2(0x0),
+fHPtSpecSysEnergy3(0x0),
+fHPtSpecSysEnergy4(0x0),
+fHPtSpecSysEnergy5(0x0),
+fHPtSpecSysNcell1(0x0),
+fHPtSpecSysNcell2(0x0),
+fHPtSpecSysNcell3(0x0),
+fHPtSpecSysBorder1(0x0),
+fHPtSpecSysBorder2(0x0),
+fHPtSpecSysBorder3(0x0),
+fHPtSpecGammaCompare(0x0),
+fHPtSpecPionCompare(0x0),
+fHPtSpecCompare(0x0),
+fHPtSpecEffParticle(0x0),
+fHPtSpecEffPhoton(0x0),
+fHPtSpecAccPhoton(0x0),
+fHPtSpecEtaPhoton(0x0),
+fHPtSpecPhiPhoton(0x0),
+fHGenEtaPhi(0x0),
+fHPtSpecEffCluster(0x0),
+fHPtSpecEffNeutron(0x0),
+fHPtSpecConversion(0x0),
+fHPtSpecConversionNot(0x0),
+fHPtSpecEffPhotonEta5(0x0),
+fHPtSpecEffPhotonEta4(0x0),
+fHPtSpecEffPhotonEta3(0x0),
+fHPtSpecEffPhotonEta2(0x0),
+fHPtSpecEffPhotonEta1(0x0),
+fHPtSpecDecayPi0(0x0),
+fHPtSpecDecayEta(0x0),
+fHPtSpecDecayOmega(0x0),
+fHPtSpecDecayEtap(0x0),
+
+fHCutVariationM02Photon(0x0),
+fHCutVariationM02Pion(0x0),
+fHCutVariationM02PhotonTest(0x0),
+fHCutVariationM02PionTest(0x0),
+fHM02Photon(0x0),
+fHM02Pion(0x0),
+fHMixRotation(0x0),
+fHCorrection(0x0),
+fHPionSm(0x0),
+fHParticles(0x0),
+fHParticlesTM(0x0),
+fHParticlesNoTM(0x0),
+fHParticlesRaw(0x0),
+fHParticlesEff(0x0),
+fHParticlesCompare(0x0),
+fHParticlesCompare2(0x0),
+fHParticlesCompare3(0x0),
+fHParticleR(0x0),
+fHParticleRcut(0x0),
+fHParticleRcutcut(0x0),
+fHParticleRcutcutcut(0x0),
+fHMotherR(0x0),
+fHMotherR2(0x0),
+fHClustNcell(0x0),
+fHClustNcell1(0x0),
+fHClustNcellPhoton(0x0),
+fHClustNcellNoPhoton(0x0),
+fHClustNcellPhotonCut(0x0),
+fHClustNcellNoPhotonCut(0x0),
+fHGammaMIP(0x0),
+fHHadronMIP(0x0),
+fHClustEP(0x0),
+fHPtSpecElectronMerge(0x0),
+fHClustElectronZR(0x0),
+fHclusterTOFdistance(0x0),
+fHistTOF(0x0),
+
+
+
+
 ipymin(0),
 ipymax(0),
 ipi0min(0),
@@ -297,12 +462,29 @@ fHClustNoEvt(0),
 fHClustAccEvt(0),
 fHClustEccentricity(0),
 fHClustEtaPhi(0x0),
+fHClustEtaPhiIsEMCal(0x0),         
+fHEMCalModule0(0x0),   
+fHClustEtaPhiRaw(0x0),  
 fHClustEnergyPt(0x0),
 fHClustEnergySM(0x0),
 fHClustEnergySigma(0x0),
 fHClustSigmaSigma(0x0),
+fHClustEtaM02(0x0),				
+fHClustPhiM02(0x0),			
+fHClustETrackP(0x0),
+fHClustEnergyRatioPhoton(0x0), 
+fHClustEnergyRatioPion(0x0), 	
 fHClustNCellEnergyRatio(0x0),
 fHClustEnergyNCell(0x0),
+fHClustEnergyNCellPion(0x0),  
+fHClustEnergyNCellPhoton(0x0),
+fHClustNCellM02Photon(0x0),
+fHClustNCellM02Pion(0x0),
+fHClustEnergyNCellRaw(0x0),
+fHClustEnergyNCellPionRaw(0x0),
+fHClustEnergyNCellPhotonRaw(0x0),
+fHClustNCellM02PhotonRaw(0x0),
+fHClustNCellM02PionRaw(0x0),
 fHConvEnergyPt(0x0),
 fHPrimTrackPt(0x0),
 fHPrimTrackEta(0x0),
@@ -347,25 +529,25 @@ ipi0min(0),
 ipi0max(0),
 ietamin(0),
 ietamax(0),
-  fReaderGammas(0),
-  eventHeader(0),
-  pythiaHeader(0),
-  addedPi0Header(0),
-  addedEtaHeader(0),
-  fHMCpartfrac(0),
-  fHECluEMC(0x0),
-  fHECluEMCAddPi0(0x0),
-  fHECluEMCAddEta(0x0),
-//  fHRecTrue(),
-//  fHRecTrueAddPi0(),
-//  fHRecTrueAddEta(),
-  fHECluEMCnofull(),
-  fHECluEMCnofullAdd(),
-  fHECluEMCelectron(),
-  fHECluEMCpion(),
-  fHECluEMCkaon(),
-  fHECluEMCother(),
-  fHECluEMCpi0single(),
+fReaderGammas(0),
+eventHeader(0),
+pythiaHeader(0),
+addedPi0Header(0),
+addedEtaHeader(0),
+fHMCpartfrac(0),
+fHECluEMC(0x0),
+fHECluEMCAddPi0(0x0),
+fHECluEMCAddEta(0x0),
+//fHRecTrue(),
+//fHRecTrueAddPi0(),
+//fHRecTrueAddEta(),
+fHECluEMCnofull(),
+fHECluEMCnofullAdd(),
+fHECluEMCelectron(),
+fHECluEMCpion(),
+fHECluEMCkaon(),
+fHECluEMCother(),
+fHECluEMCpi0single(),
 //  fHCorrection(),
 //  fHPionSm(),
   fHWgt(0)
@@ -505,8 +687,10 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
   TH1::SetDefaultSumw2(kTRUE);
   Bool_t th2 =   TH2::GetDefaultSumw2();
   TH2::SetDefaultSumw2(kTRUE);
-  fHCuts = new TH1F("hEventCuts","",5,0.5,5.5);
+  fHCuts = new TH1F("hEventCuts","",7,0.5,7.5);
   fHCuts->GetXaxis()->SetBinLabel(1,"All");
+  fHCuts->GetXaxis()->SetBinLabel(2,"tracks > 1");   
+  fHCuts->GetXaxis()->SetBinLabel(3,"AllDetectos");
   fHCuts->GetXaxis()->SetBinLabel(2,"PS");
   fHCuts->GetXaxis()->SetBinLabel(3,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
   fHCuts->GetXaxis()->SetBinLabel(4,"QFlag");
@@ -554,6 +738,10 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
     fHClustEtaPhi->SetXTitle("#eta");
     fHClustEtaPhi->SetYTitle("#varphi");
     fOutput->Add(fHClustEtaPhi);	
+    fHClustEtaPhiIsEMCal = new TH2F("hClustEtaPhiIsEMCal","",320,-0.8,0.8,500,1.1,3.4);
+    fHClustEtaPhiIsEMCal->SetXTitle("#eta");
+    fHClustEtaPhiIsEMCal->SetYTitle("#varphi");
+    fOutput->Add(fHClustEtaPhiIsEMCal);		
     fHEMCalModule0 = new TH2F("hEMCalModule0","",400,-2,2,400,0,6);
     fHEMCalModule0->SetXTitle("X");
     fHEMCalModule0->SetYTitle("Y");
@@ -604,8 +792,20 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
     fHGenEtaPhi->SetYTitle("#varphi");
     fOutput->Add(fHGenEtaPhi);	
 	
-	
-	
+    fHClustEnergyRatioPhoton = new TH1F("hClustEnergyRatioPhoton","",101,-0.05,1.05);
+    fHClustEnergyRatioPhoton->SetXTitle("E^{max}_{cell}/E_{clus}");
+    fOutput->Add(fHClustEnergyRatioPhoton);
+    fHClustEnergyRatioPion = new TH1F("hClustEnergyRatioPion","",101,-0.05,1.05);
+    fHClustEnergyRatioPion->SetXTitle("E^{max}_{cell}/E_{clus}");
+    fOutput->Add(fHClustEnergyRatioPion);	
+  }
+  
+  if(fDoConvAna){
+    // histogram for conversion photons
+    fHConvEnergyPt = new TH2F("hConvEnergyPt","",250,0,50,250,0,50);
+    fHConvEnergyPt->SetXTitle("E (GeV)");
+    fHConvEnergyPt->SetYTitle("p_{T} [GeV/c]");
+    fOutput->Add(fHConvEnergyPt);
   }
   
   // histograms for primary tracks
@@ -656,6 +856,10 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
       	fHClustEnergyM02Pion->SetXTitle("E_{C} (GeV)");
       	fHClustEnergyM02Pion->SetYTitle("M_{02}");
       	fOutput->Add(fHClustEnergyM02Pion);	
+      	fHClustEnergyM02Elektron = new TH2F("hClustEnergyM02Elektron","M02 vs cluster energy",ebins,0,emax,200,0,3);
+      	fHClustEnergyM02Elektron->SetXTitle("E_{C} (GeV)");
+      	fHClustEnergyM02Elektron->SetYTitle("M_{02}");
+      	fOutput->Add(fHClustEnergyM02Elektron);			
       	fHClustEnergyM02GammaAll = new TH2F("hClustEnergyM02GammaAll","M02 vs cluster energy",ebins,0,emax,200,0,3);
       	fHClustEnergyM02GammaAll->SetXTitle("E_{C} (GeV)");
       	fHClustEnergyM02GammaAll->SetYTitle("M_{02}");
@@ -777,6 +981,10 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
       	fHClustEnergyM02PionRaw->SetXTitle("E_{C} (GeV)");
       	fHClustEnergyM02PionRaw->SetYTitle("M_{02}");
       	fOutput->Add(fHClustEnergyM02PionRaw);	
+      	fHClustEnergyM02ElektronRaw = new TH2F("hClustEnergyM02ElektronRaw","M02 vs cluster energy",ebins,0,emax,200,0,3);
+      	fHClustEnergyM02ElektronRaw->SetXTitle("E_{C} (GeV)");
+      	fHClustEnergyM02ElektronRaw->SetYTitle("M_{02}");
+      	fOutput->Add(fHClustEnergyM02ElektronRaw);		
       	fHClustM02M20NoGammaRaw = new TH2F("hClustM02M20NoGammaRaw","M02 vs M20",200,0,3,200,0,3);
       	fHClustM02M20NoGammaRaw->SetXTitle("M_{20}");
       	fHClustM02M20NoGammaRaw->SetYTitle("M_{02}");
@@ -809,7 +1017,18 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
       	fHClustEnergyM02PionSmallCut = new TH2F("hClustEnergyM02PionSmallCut","M02 vs cluster energy",ebins,0,emax,200,0,3);
       	fHClustEnergyM02PionSmallCut->SetXTitle("E_{C} (GeV)");
       	fHClustEnergyM02PionSmallCut->SetYTitle("M_{02}");
-      	fOutput->Add(fHClustEnergyM02PionSmallCut);			
+      	fOutput->Add(fHClustEnergyM02PionSmallCut);		
+		
+      	fHClustEnergyM02GammaCell1 = new TH2F("hClustEnergyM02GammaCell1","M02 vs cluster energy",ebins,0,emax,200,0,3);
+      	fHClustEnergyM02GammaCell1->SetXTitle("E_{C} (GeV)");
+      	fHClustEnergyM02GammaCell1->SetYTitle("M_{02}");
+      	fOutput->Add(fHClustEnergyM02GammaCell1);			
+      	fHClustEnergyM02PionCell1 = new TH2F("hClustEnergyM02PionCell1","M02 vs cluster energy",ebins,0,emax,200,0,3);
+      	fHClustEnergyM02PionCell1->SetXTitle("E_{C} (GeV)");
+      	fHClustEnergyM02PionCell1->SetYTitle("M_{02}");
+      	fOutput->Add(fHClustEnergyM02PionCell1);				
+		
+			
 
 				
 						
@@ -1012,7 +1231,12 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
    		fHPtSpecChargedRaw->SetXTitle("p_{T} (GeV/c)");
    		fHPtSpecChargedRaw->SetYTitle("counts");
 		fHPtSpecChargedRaw->Sumw2();	
-   		fOutput->Add(fHPtSpecChargedRaw); 			
+   		fOutput->Add(fHPtSpecChargedRaw); 	
+   		fHPtSpecChargedTM = new TH1F("hPtSpecChargedTM","", 50, 0.01, 14.9);
+   		fHPtSpecChargedTM->SetXTitle("p_{T} (GeV/c)");
+   		fHPtSpecChargedTM->SetYTitle("counts");
+		fHPtSpecChargedTM->Sumw2();	
+   		fOutput->Add(fHPtSpecChargedTM); 					
 		
    		fHPtSpecElectronTM = new TH1F("hPtSpecElectronTM","", 50, 0.01, 14.9);
    		fHPtSpecElectronTM->SetXTitle("p_{T} (GeV/c)");
@@ -1054,7 +1278,12 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
    		fHPtSpecGammaM02->SetYTitle("counts");
 		fHPtSpecGammaM02->Sumw2();	
    		fOutput->Add(fHPtSpecGammaM02); 		
-		
+   		fHPtSpecGammaTM = new TH1F("hPtSpecGammaTM","", 50, 0.01, 14.9);
+   		fHPtSpecGammaTM->SetXTitle("p_{T} (GeV/c)");
+   		fHPtSpecGammaTM->SetYTitle("counts");
+		fHPtSpecGammaTM->Sumw2();	
+   		fOutput->Add(fHPtSpecGammaTM); 
+				
 		
    		fHPtSpecGammaCompare = new TH1F("hPtSpecGammaCompare","", 50, 0.01, 14.9);
    		fHPtSpecGammaCompare->SetXTitle("p_{T} (GeV/c)");
@@ -1156,27 +1385,21 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
 		fHPtSpecDecayEtap->Sumw2();	
    		fOutput->Add(fHPtSpecDecayEtap);	
 
-		
-   		fHPtSpecM02Cut0Pion = new TH1F("hPtSpecM02Cut0Pion","", 50, 0.01, 14.9);
-   		fHPtSpecM02Cut0Pion->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecM02Cut0Pion->SetYTitle("counts");	
-		fHPtSpecM02Cut0Pion->Sumw2();			
-   		fOutput->Add(fHPtSpecM02Cut0Pion);
-   		fHPtSpecM02Cut0Photon = new TH1F("hPtSpecM02Cut0Photon","", 50, 0.01, 14.9);
-   		fHPtSpecM02Cut0Photon->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecM02Cut0Photon->SetYTitle("counts");	
-		fHPtSpecM02Cut0Photon->Sumw2();			
-   		fOutput->Add(fHPtSpecM02Cut0Photon);	
-   		fHPtSpecM02Cut1Pion = new TH1F("hPtSpecM02Cut1Pion","", 50, 0.01, 14.9);
-   		fHPtSpecM02Cut1Pion->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecM02Cut1Pion->SetYTitle("counts");	
-		fHPtSpecM02Cut1Pion->Sumw2();			
-   		fOutput->Add(fHPtSpecM02Cut1Pion);
-   		fHPtSpecM02Cut1Photon = new TH1F("hPtSpecM02Cut1Photon","", 50, 0.01, 14.9);
-   		fHPtSpecM02Cut1Photon->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecM02Cut1Photon->SetYTitle("counts");	
-		fHPtSpecM02Cut1Photon->Sumw2();			
-   		fOutput->Add(fHPtSpecM02Cut1Photon);	
+//   		fHPtSpecM02Cut0Photon = new TH1F("hPtSpecM02Cut0Photon","", 50, 0.01, 14.9);
+//   		fHPtSpecM02Cut0Photon->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecM02Cut0Photon->SetYTitle("counts");	
+//		fHPtSpecM02Cut0Photon->Sumw2();			
+//   		fOutput->Add(fHPtSpecM02Cut0Photon);	
+//   		fHPtSpecM02Cut1Pion = new TH1F("hPtSpecM02Cut1Pion","", 50, 0.01, 14.9);
+//   		fHPtSpecM02Cut1Pion->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecM02Cut1Pion->SetYTitle("counts");	
+//		fHPtSpecM02Cut1Pion->Sumw2();			
+//   		fOutput->Add(fHPtSpecM02Cut1Pion);
+//   		fHPtSpecM02Cut1Photon = new TH1F("hPtSpecM02Cut1Photon","", 50, 0.01, 14.9);
+//   		fHPtSpecM02Cut1Photon->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecM02Cut1Photon->SetYTitle("counts");	
+//		fHPtSpecM02Cut1Photon->Sumw2();			
+//   		fOutput->Add(fHPtSpecM02Cut1Photon);	
    		//fHPtSpecM02Cut2Pion = new TH1F("hPtSpecM02Cut2Pion","", 50, 0.01, 14.9);
    		//fHPtSpecM02Cut2Pion->SetXTitle("p_{T} (GeV/c)");
    		//fHPtSpecM02Cut2Pion->SetYTitle("counts");	
@@ -1188,26 +1411,26 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
 		//fHPtSpecM02Cut2Photon->Sumw2();			
    		//fOutput->Add(fHPtSpecM02Cut2Photon);					
 		
-   		fHPtSpecTrackCut0Pion = new TH1F("hPtSpecTrackCut0Pion","", 50, 0.01, 14.9);
-   		fHPtSpecTrackCut0Pion->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecTrackCut0Pion->SetYTitle("counts");	
-		fHPtSpecTrackCut0Pion->Sumw2();			
-   		fOutput->Add(fHPtSpecTrackCut0Pion);
-   		fHPtSpecTrackCut0Photon = new TH1F("hPtSpecTrackCut0Photon","", 50, 0.01, 14.9);
-   		fHPtSpecTrackCut0Photon->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecTrackCut0Photon->SetYTitle("counts");	
-		fHPtSpecTrackCut0Photon->Sumw2();			
-   		fOutput->Add(fHPtSpecTrackCut0Photon);	
-   		fHPtSpecTrackCut1Pion = new TH1F("hPtSpecTrackCut1Pion","", 50, 0.01, 14.9);
-   		fHPtSpecTrackCut1Pion->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecTrackCut1Pion->SetYTitle("counts");	
-		fHPtSpecTrackCut1Pion->Sumw2();			
-   		fOutput->Add(fHPtSpecTrackCut1Pion);
-   		fHPtSpecTrackCut1Photon = new TH1F("hPtSpecTrackCut1Photon","", 50, 0.01, 14.9);
-   		fHPtSpecTrackCut1Photon->SetXTitle("p_{T} (GeV/c)");
-   		fHPtSpecTrackCut1Photon->SetYTitle("counts");	
-		fHPtSpecTrackCut1Photon->Sumw2();			
-   		fOutput->Add(fHPtSpecTrackCut1Photon);	
+//   		fHPtSpecTrackCut0Pion = new TH1F("hPtSpecTrackCut0Pion","", 50, 0.01, 14.9);
+//   		fHPtSpecTrackCut0Pion->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecTrackCut0Pion->SetYTitle("counts");	
+//		fHPtSpecTrackCut0Pion->Sumw2();			
+//   		fOutput->Add(fHPtSpecTrackCut0Pion);
+//   		fHPtSpecTrackCut0Photon = new TH1F("hPtSpecTrackCut0Photon","", 50, 0.01, 14.9);
+//   		fHPtSpecTrackCut0Photon->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecTrackCut0Photon->SetYTitle("counts");	
+//		fHPtSpecTrackCut0Photon->Sumw2();			
+//   		fOutput->Add(fHPtSpecTrackCut0Photon);	
+//   		fHPtSpecTrackCut1Pion = new TH1F("hPtSpecTrackCut1Pion","", 50, 0.01, 14.9);
+//   		fHPtSpecTrackCut1Pion->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecTrackCut1Pion->SetYTitle("counts");	
+//		fHPtSpecTrackCut1Pion->Sumw2();			
+//   		fOutput->Add(fHPtSpecTrackCut1Pion);
+//   		fHPtSpecTrackCut1Photon = new TH1F("hPtSpecTrackCut1Photon","", 50, 0.01, 14.9);
+//   		fHPtSpecTrackCut1Photon->SetXTitle("p_{T} (GeV/c)");
+//   		fHPtSpecTrackCut1Photon->SetYTitle("counts");	
+//		fHPtSpecTrackCut1Photon->Sumw2();			
+//   		fOutput->Add(fHPtSpecTrackCut1Photon);	
    		//fHPtSpecTrackCut2Pion = new TH1F("hPtSpecTrackCut2Pion","", 50, 0.01, 14.9);
    		//fHPtSpecTrackCut2Pion->SetXTitle("p_{T} (GeV/c)");
    		//fHPtSpecTrackCut2Pion->SetYTitle("counts");	
@@ -1430,6 +1653,11 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
     fHClustNcell->SetXTitle("number of cells in a cluster");
     fHClustNcell->SetYTitle("counts");
     fOutput->Add(fHClustNcell);	
+    fHClustNcell1 = new TH1F("hClustNcell1"," ",50,0,5);
+    fHClustNcell1->SetXTitle("number of cells in a cluster");
+    fHClustNcell1->SetYTitle("counts");
+    fOutput->Add(fHClustNcell1);		
+	
 
     fHClustNcellPhoton = new TH1F("hClustNcellPhoton"," ",21,-0.5,20.5);
     fHClustNcellPhoton->SetXTitle("number of cells in a cluster");
@@ -1440,6 +1668,19 @@ void AliAnalysisTaskEMCALDirGamma::UserCreateOutputObjects()
     fHClustNcellNoPhoton->SetXTitle("number of cells in a cluster");
     fHClustNcellNoPhoton->SetYTitle("counts");
     fOutput->Add(fHClustNcellNoPhoton);		
+    fHClustNcellPhotonCut = new TH1F("hClustNcellPhotonCut"," ",21,-0.5,20.5);
+    fHClustNcellPhotonCut->SetXTitle("number of cells in a cluster");
+    fHClustNcellPhotonCut->SetYTitle("counts");
+    fOutput->Add(fHClustNcellPhotonCut);	
+    fHClustNcellNoPhotonCut = new TH1F("hClustNcellNoPhotonCut"," ",21,-0.5,20.5);
+    fHClustNcellNoPhotonCut->SetXTitle("number of cells in a cluster");
+    fHClustNcellNoPhotonCut->SetYTitle("counts");
+    fOutput->Add(fHClustNcellNoPhotonCut);		
+	
+	fHClustEP = new TH1F("hClustEP", "", 100,0, 3);	
+  	fHClustEP->SetXTitle("E/p");
+  	fHClustEP->SetYTitle("counts");	
+  	fOutput->Add(fHClustEP);	
 	
     fHGammaMIP = new TH1F("hGammaMIP"," ",100,0,1);
     fHGammaMIP->SetXTitle("E_{C} (GeV)");
@@ -1734,6 +1975,8 @@ void AliAnalysisTaskEMCALDirGamma::UserExec(Option_t *)
       {
         return;
       }
+	fHCuts->Fill(cut++);
+	  
     TString trigClasses = fEsdEv->GetFiredTriggerClasses();
     // remove "fast cluster events": 
     if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL"))
@@ -1747,6 +1990,7 @@ void AliAnalysisTaskEMCALDirGamma::UserExec(Option_t *)
     if (trigClasses.Contains("FAST")  && !trigClasses.Contains("ALL"))
       return;
   }
+  fHCuts->Fill(cut++);
 
   // in lhc11a, cut on even more events
   Int_t runnumber = InputEvent()->GetRunNumber();
@@ -2140,7 +2384,8 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
     if (!clus){continue;}
     // emcal cluster?
-    if (!clus->IsEMCAL()){continue;}
+	//if (!clus->IsEMCAL()){continue;}
+	
 	
 	Double_t maxAxis    = clus->GetTOF(); //sigma
 	Double_t clusterEcc = clus->Chi2();   //eccentricity
@@ -2171,7 +2416,8 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
       
     //}
 	
-
+	fHClustEtaPhiIsEMCal->Fill(clusterVec.Eta(),clusterVec.Phi());
+    if(!clus->IsEMCAL()){continue;}
 
 
 
@@ -2191,16 +2437,6 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 	fHClustPhiM02->Fill(clusterVec.Phi(),clus->GetM02());	
     nclusters++;
 
-
-	
-	
- 
-
-
-
-
-
-	
     if(!fMcMode){
 
       Double_t En = clus->E();
@@ -2219,7 +2455,66 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
       }
       
       TLorentzVector clusterVecCorr1(clusterVec.Px(),clusterVec.Py(),clusterVec.Pz(),En);
+	  
+  	//BEFORE CUT
+  	fHClustEnergyM02AllRaw->Fill(clus->E(),clus->GetM02());	
+  	fHPtSpecAllRaw->Fill(clusterVec.Pt());
 
+
+
+
+      // apply cluster cuts first
+      if(clus->E()<fMinE){continue;}
+      if(clus->GetNCells()<fNminCells){continue;}
+      //if(GetMaxCellEnergy(clus)/clus->E()<fMinErat){continue;}
+      //if(clus->Chi2()<fMinEcc){continue;}// eccentricity cut
+
+  	//M02 CUT
+      if(clus->GetM02()<fM02min){continue;}
+    	if(clus->GetM02()<fM02min){continue;}	
+  	if(clus->E() > 6 && clus->GetM02() > 0.40){continue;}		
+  	if(clus->E() > 4 && clus->E() < 6 && clus->GetM02() > 0.365){continue;}		
+  	if(clus->E() > 3 && clus->E() < 4 && clus->GetM02() > 0.365){continue;}	
+  	if(clus->E() > 2 && clus->E() < 3 && clus->GetM02() > 0.385){continue;}	
+  	if(clus->E() > 1.5 && clus->E() < 2 && clus->GetM02() > 0.32){continue;}	
+  	if(clus->E() > 1 && clus->E() < 1.5 && clus->GetM02() > 0.32){continue;}		
+  	if(clus->E() > 0.7 && clus->E() < 1 && clus->GetM02() > 0.35){continue;}		
+  	if(clus->E() < 0.7 && clus->GetM02() > 0.35){continue;}		
+ 
+
+  	//cut on 1 border bins of the EMCal
+  	if(clusterVec.Phi() < 1.4215 || clusterVec.Phi() > 3.1145){continue;}	
+  	if(clusterVec.Phi() > 1.7185 && clusterVec.Phi() < 1.7715){continue;}
+  	if(clusterVec.Phi() > 2.0685 && clusterVec.Phi() < 2.1215){continue;}
+  	if(clusterVec.Phi() > 2.4185 && clusterVec.Phi() < 2.4695){continue;}
+  	if(clusterVec.Phi() > 2.7665 && clusterVec.Phi() < 2.8175){continue;}
+  	if(clusterVec.Eta() < -0.653 || clusterVec.Eta() > 0.63691){continue;}
+  	//if(clusterVec.Eta() > -0.01498 && clusterVec.Eta() < 0.01276){continue;}
+
+  	//cut on 2 border bins of the EMCal
+  	//if(clusterVec.Phi() < 1.435 || clusterVec.Phi() > 3.101){continue;}	
+  	//if(clusterVec.Phi() > 1.705 && clusterVec.Phi() < 1.785){continue;}
+  	//if(clusterVec.Phi() > 2.055 && clusterVec.Phi() < 2.135){continue;}
+  	//if(clusterVec.Phi() > 2.405 && clusterVec.Phi() < 2.483){continue;}
+  	//if(clusterVec.Phi() > 2.753 && clusterVec.Phi() < 2.831){continue;}
+  	//if(clusterVec.Eta() < -0.63913 || clusterVec.Eta() > 0.63691){continue;}
+  	//if(clusterVec.Eta() > -0.02885 && clusterVec.Eta() < 0.02663){continue;}
+
+  	//TrackMatching
+    if(clus->GetNTracksMatched() > 0){continue;}
+
+
+
+  	//AFTER CUT
+  	fHClustEnergyM02All->Fill(clus->E(),clus->GetM02());	
+  	fHPtSpecAll->Fill(clusterVec.Pt());
+  	fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
+	  
+	  
+	  
+	  
+	  
+	  
     }
     // go through MC information of clusters
     else{
@@ -2277,7 +2572,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 	    if (!cells){continue;}
 		
 		Int_t testPhoton;
-		if(mcP->PdgCode() == 22 && clus->GetM02() < 0.28 && clus->GetM02() > 0.26 && clus->E() > 1){
+		if(mcP->PdgCode() == 22 && clus->GetM02() < 0.7 && clus->GetM02() > 0.5 && clus->E() > 0.7 && clus->E() < 1){
 			if(testPhoton == 1){continue;}
 			
 			for (Int_t ic = 0; ic<clus->GetNCells(); ++ic) {
@@ -2295,7 +2590,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		}
 		
 		Int_t testPion;
-		if(mcP->PdgCode() == 211 && clus->GetM02() > 2.0 && clus->E() > 1 ){
+		if(mcP->PdgCode() == 211 && clus->GetM02() < 0.3 && clus->E() > 1 && clus->E() < 1.5){
 			if(testPion == 1){continue;}
 			
 			for (Int_t ic = 0; ic<clus->GetNCells(); ++ic) {
@@ -2317,6 +2612,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		
 		
 		
+		fHClustEP->Fill(clus->E()/clusterVec.Pt());
 		
 		
 		//Histogramme mit clustern vor CUT
@@ -2326,16 +2622,20 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		fHPtSpecAllRaw->Fill(clusterVec.Pt());
 		fHParticlesRaw->Fill(mcP->PdgCode());
 		fHClustNcell->Fill(clus->GetNCells());
+		if(clus->GetNCells() == 1){fHClustNcell1->Fill(clusterVec.Pt());}
+		
 			
 
 		//Photons
 		if(mcP->PdgCode() == 22){
 			fHPtSpecGammaRaw->Fill(clusterVec.Pt());
 	        fHClustEnergyM02GammaAllRaw->Fill(clus->E(),clus->GetM02());
+			if(clus->GetNCells() == 1){fHClustEnergyM02GammaCell1->Fill(clus->E(),clus->GetM02());}
 			fHClustM02M20GammaAllRaw->Fill(clus->GetM20(),clus->GetM02());	
 			fHClustEnergyNCellPhotonRaw->Fill(clus->E(),clus->GetNCells());
 			fHClustNCellM02PhotonRaw->Fill(clus->GetNCells(),clus->GetM02());
 			fHClustNcellPhoton->Fill(clus->GetNCells());
+			fHClustEnergyRatioPhoton->Fill(GetMaxCellEnergy(clus)/clus->E());
 			if(clus->E() < 1){fHGammaMIP->Fill(clus->E());}
 		}	
 		//All except photons
@@ -2347,15 +2647,22 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		//charged Hadrons (Pions, (Anti-) Protons,)
 		if(mcP->PdgCode() == 211 || mcP->PdgCode() == -211 || mcP->PdgCode() == 2212 || mcP->PdgCode() == -2212){
 			fHPtSpecPionRaw->Fill(clusterVec.Pt());
-	        fHClustEnergyM02PionRaw->Fill(clus->E(),clus->GetM02());				
+	        fHClustEnergyM02PionRaw->Fill(clus->E(),clus->GetM02());
+			if(clus->GetNCells() == 1){fHClustEnergyM02PionCell1->Fill(clus->E(),clus->GetM02());}				
 			fHClustEnergyNCellPionRaw->Fill(clus->E(),clus->GetNCells());
 			fHClustNCellM02PionRaw->Fill(clus->GetNCells(),clus->GetM02());
+			fHClustEnergyRatioPion->Fill(GetMaxCellEnergy(clus)/clus->E());
 			if(clus->E() < 1){fHHadronMIP->Fill(clus->E());}
 		}
 		//Electrons + Positrons
 		if(mcP->PdgCode() == 11 || mcP->PdgCode() == -11){				
 			fHPtSpecElectronRaw->Fill(clusterVec.Pt());
+			fHClustEnergyM02ElektronRaw->Fill(clus->E(),clus->GetM02());
 		}	
+		//charged particles
+		if(mcP->Charge() > 0 || mcP->Charge() < 0){
+			fHPtSpecChargedRaw->Fill(clusterVec.Pt());	
+		}			
 		//Myons
 		if(mcP->PdgCode() == 13 || mcP->PdgCode() == -13){				
 			fHPtSpecMyonRaw->Fill(clusterVec.Pt());
@@ -2479,12 +2786,14 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
     	
 		//M02 CUT
     	if(clus->GetM02()<fM02min){m02cut = 1;}	
-		if(clus->E() > 6 && clus->GetM02() > 0.38){m02cut = 1;}		
-		if(clus->E() > 4 && clus->E() < 6 && clus->GetM02() > 0.42){m02cut = 1;}		
-		if(clus->E() > 2 && clus->E() < 4 && clus->GetM02() > 0.38){m02cut = 1;}	
-		if(clus->E() > 1 && clus->E() < 2 && clus->GetM02() > 0.32){m02cut = 1;}		
-		if(clus->E() > 0.7 && clus->E() < 1 && clus->GetM02() > 0.29){m02cut = 1;}		
-		if(clus->E() < 0.7 && clus->GetM02() > 0.29){m02cut = 1;}		
+		if(clus->E() > 6 && clus->GetM02() > 0.40){m02cut = 1;}		
+		if(clus->E() > 4 && clus->E() < 6 && clus->GetM02() > 0.365){m02cut = 1;}		
+		if(clus->E() > 3 && clus->E() < 4 && clus->GetM02() > 0.365){m02cut = 1;}	
+		if(clus->E() > 2 && clus->E() < 3 && clus->GetM02() > 0.385){m02cut = 1;}	
+		if(clus->E() > 1.5 && clus->E() < 2 && clus->GetM02() > 0.32){m02cut = 1;}	
+		if(clus->E() > 1 && clus->E() < 1.5 && clus->GetM02() > 0.32){m02cut = 1;}		
+		if(clus->E() > 0.7 && clus->E() < 1 && clus->GetM02() > 0.35){m02cut = 1;}		
+		if(clus->E() < 0.7 && clus->GetM02() > 0.35){m02cut = 1;}		
 			
 		//cut on 1 border bins of the EMCal
 		if(clusterVec.Phi() < 1.4215 || clusterVec.Phi() > 3.1145){bordercut = 1;}	
@@ -2493,7 +2802,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		if(clusterVec.Phi() > 2.4185 && clusterVec.Phi() < 2.4695){bordercut = 1;}
 		if(clusterVec.Phi() > 2.7665 && clusterVec.Phi() < 2.8175){bordercut = 1;}
 		if(clusterVec.Eta() < -0.653 || clusterVec.Eta() > 0.63691){bordercut = 1;}
-		if(clusterVec.Eta() > -0.01498 && clusterVec.Eta() < 0.01276){bordercut = 1;}
+		//if(clusterVec.Eta() > -0.01498 && clusterVec.Eta() < 0.01276){bordercut = 1;} //Zwischen benachbarter Supermodule keine Lücke 
     	
 		//cut on 2 border bins of the EMCal
 		//if(clusterVec.Phi() < 1.435 || clusterVec.Phi() > 3.101){bordercut = 1;}	
@@ -2505,10 +2814,17 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		//if(clusterVec.Eta() > -0.02885 && clusterVec.Eta() < 0.02663){bordercut = 1;}
 		
     	//TrackMatching
+		if(cellcut == 0 && bordercut == 0 && m02cut == 0 && energycut == 0){
+			if(mcP->Charge() < 1 && mcP->Charge() > -1){fHPtSpecChargedTM->Fill(clusterVec.Pt());}
+			if(mcP->PdgCode() == 22){fHPtSpecGammaTM->Fill(clusterVec.Pt());}	
+		}
 		fHMotherR->Fill(clus->GetNTracksMatched());
 		tracksmatched = clus->GetNTracksMatched();
 		if(tracksmatched > 0){
 			trackcut = 1;
+			fHPtSpecEffTM1->Fill(clusterVec.Pt());
+			if(mcP->Charge() < 1 && mcP->Charge() > -1){fHPtSpecEffTM2->Fill(clusterVec.Pt());}
+			//fHClustEP->Fill(clus->E()/clusterVec.Pt());
 			fHParticlesTM->Fill(mcP->PdgCode());	
 			if(mcP->PdgCode() == 11 || mcP->PdgCode() == -11){fHPtSpecElectronTM->Fill(clusterVec.Pt());}
 			if(mcP->PdgCode() == 211 || mcP->PdgCode() == -211 || mcP->PdgCode() == 2212 || mcP->PdgCode() == -2212){fHPtSpecPionTM->Fill(clusterVec.Pt());}
@@ -2595,7 +2911,12 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 		
 		
 		
-		//Histogramme mit clustern nach ALLEN CUTs	
+		
+		
+		
+		
+		
+		//Histogramme mit clustern nach ALLEN CUTS	
 		if(cellcut == 0 && bordercut == 0 && m02cut == 0 && trackcut == 0 && energycut == 0){
 	
 			dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX()) * (mcP->Xv()-evtVtx->GetX()) + (mcP->Yv()-evtVtx->GetY()) * (mcP->Yv()-evtVtx->GetY()));
@@ -2620,7 +2941,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 				fHPtSpecNoGamma->Fill(clusterVec.Pt());
 				fHClustNcellNoPhotonCut->Fill(clus->GetNCells());	
 			}
-			if(mcP->Charge() != 0){
+			if(mcP->Charge() > 0 || mcP->Charge() < 0){
 				fHPtSpecCharged->Fill(clusterVec.Pt());	
 			}			
 			
@@ -2634,6 +2955,7 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 			//Electrons + Positrons
 			if(mcP->PdgCode() == 11 || mcP->PdgCode() == -11){				
 				fHPtSpecElectron->Fill(clusterVec.Pt());
+				fHClustEnergyM02ElektronRaw->Fill(clus->E(),clus->GetNCells());
 				dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX()) * (mcP->Xv()-evtVtx->GetX()) + (mcP->Yv()-evtVtx->GetY()) * (mcP->Yv()-evtVtx->GetY()));
 				fHParticleRcutcutcut->Fill(dR);
 			}	
@@ -2662,6 +2984,12 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 			   mcP->PdgCode() == 313 || mcP->PdgCode() == -313){
 				fHPtSpecKaon0->Fill(clusterVec.Pt());
 			}
+			
+			//check Ncell-Cut 
+			if(mcP->PdgCode() == 22){fHClustNcellPhotonCut->Fill(clus->GetNCells());}
+			if(mcP->PdgCode() == 211 || mcP->PdgCode() == -211 || mcP->PdgCode() == 2212 || mcP->PdgCode() == -2212){fHClustNcellNoPhotonCut->Fill(clus->GetNCells());}
+	
+			
 		}
     
 		
