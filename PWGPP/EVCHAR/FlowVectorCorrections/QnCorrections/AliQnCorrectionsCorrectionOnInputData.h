@@ -45,6 +45,13 @@ public:
   /// \param list list where the inputs should be found
   /// \return kTRUE if everything went OK
   virtual Bool_t AttachInput(TList *list) = 0;
+  /// Perform after calibration histograms attach actions
+  /// It is used to inform the different correction step that
+  /// all conditions for running the network are in place so
+  /// it is time to check if their requirements are satisfied
+  ///
+  /// Does nothing for the time being
+  virtual void AfterInputsAttachActions() {}
   /// Asks for support data structures creation
   ///
   /// Pure virtual function
@@ -59,7 +66,12 @@ public:
   ///
   /// Pure virtual function
   /// \return kTRUE if everything went OK
-  virtual Bool_t Process(const Float_t *variableContainer) = 0;
+  virtual Bool_t ProcessCorrections(const Float_t *variableContainer) = 0;
+  /// Processes the correction step data collection
+  ///
+  /// Pure virtual function
+  /// \return kTRUE if everything went OK
+  virtual Bool_t ProcessDataCollection(const Float_t *variableContainer) = 0;
   /// Include the new corrected Qn vector into the passed list
   ///
   /// Does nothing. Not applicable for corrections on input data
@@ -68,6 +80,10 @@ public:
   /// Clean the correction to accept a new event
   /// Pure virtual function
   virtual void ClearCorrectionStep() = 0;
+  /// Reports if the correction step is being applied
+  /// \return FALSE, input data correction step dont make use of this service, yet
+  virtual Bool_t IsBeingApplied() const
+  { return kFALSE; }
   /// Report on correction usage
   /// Pure virtual function
   /// Correction step should incorporate its name in calibration

@@ -80,6 +80,7 @@ protected:
 
 /// Adds a contribution to the build Q vector
 /// A check for weight significant value is made. Not passing it ignores the contribution.
+/// The process of incorporating contributions takes into account the harmonic multiplier
 /// \param phi azimuthal angle contribution
 /// \param weight the weight of the contribution
 inline void AliQnCorrectionsQnVectorBuild::Add(Double_t phi, Double_t weight) {
@@ -87,8 +88,8 @@ inline void AliQnCorrectionsQnVectorBuild::Add(Double_t phi, Double_t weight) {
   if (weight < fMinimumSignificantValue) return;
   for(Int_t h = 1; h < fHighestHarmonic + 1; h++){
     if ((fHarmonicMask & harmonicNumberMask[h]) == harmonicNumberMask[h]) {
-      fQnX[h] += (weight * TMath::Cos(h*phi));
-      fQnY[h] += (weight * TMath::Sin(h*phi));
+      fQnX[h] += (weight * TMath::Cos(h*fHarmonicMultiplier*phi));
+      fQnY[h] += (weight * TMath::Sin(h*fHarmonicMultiplier*phi));
     }
   }
   fSumW += weight;

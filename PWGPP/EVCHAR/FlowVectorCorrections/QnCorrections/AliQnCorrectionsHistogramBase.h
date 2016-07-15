@@ -4,9 +4,8 @@
 /// \file AliQnCorrectionsHistogramBase.h
 /// \brief Multidimensional profile histograms base class for the Q vector correction framework
 
-#include "THn.h"
-
-class AliQnCorrectionsEventClassVariablesSet;
+#include <THn.h>
+#include "AliQnCorrectionsEventClassVariablesSet.h"
 
 /// \class AliQnCorrectionsHistogramBase
 /// \brief Base class for the Q vector correction histograms

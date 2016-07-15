@@ -258,12 +258,14 @@ Bool_t loadRunOptions(Bool_t verb,const char *filename) {
     currline.Remove(0,strlen("source: "));
     if (currline.Contains("local"))
       szCorrectionsSource = "local";
-    else if (currline.Contains("alien"))
-      szCorrectionsSource = "alien";
-    else if (currline.Contains("OADB"))
-      szCorrectionsSource = "OADB";
-    else if (currline.Contains("OCDB"))
-      szCorrectionsSource = "OCDB";
+    else if (currline.Contains("aliensingle"))
+      szCorrectionsSource = "aliensingle";
+    else if (currline.Contains("alienmultiple"))
+      szCorrectionsSource = "alienmultiple";
+    else if (currline.Contains("OADBsingle"))
+      szCorrectionsSource = "OADBsingle";
+    else if (currline.Contains("OADBmultiple"))
+      szCorrectionsSource = "OADBmultiple";
     else
       { printf("ERROR: wrong corrections file source in options file %s\n", filename); return kFALSE; }
   }
@@ -312,7 +314,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *filename) {
     else if (currline.EqualTo("align")) szCorrectionPass = "align";
     else if (currline.EqualTo("twist")) szCorrectionPass = "twist";
     else if (currline.EqualTo("scale")) szCorrectionPass = "scale";
-    else if (currline.EqualTo("last")) szCorrectionPass = "last";
+    else if (currline.EqualTo("latest")) szCorrectionPass = "latest";
     else
       { printf("ERROR: wrong Expected correction step %s in options file %s\n", currline.Data(), filename); return kFALSE; }
   }
@@ -331,7 +333,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *filename) {
     else if (currline.EqualTo("align")) szAltCorrectionPass = "align";
     else if (currline.EqualTo("twist")) szAltCorrectionPass = "twist";
     else if (currline.EqualTo("scale")) szAltCorrectionPass = "scale";
-    else if (currline.EqualTo("last")) szAltCorrectionPass = "last";
+    else if (currline.EqualTo("latest")) szAltCorrectionPass = "latest";
     else
       { printf("ERROR: wrong Alternative correction step %s in options file %s\n", currline.Data(), filename); return kFALSE; }
   }

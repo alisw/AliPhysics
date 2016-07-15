@@ -124,13 +124,25 @@ Bool_t AliQnCorrectionsDetector::CreateNveQAHistograms(TList *list) {
 /// \param list list where the input information should be found
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsDetector::AttachCorrectionInputs(TList *list) {
-  /* TODO: do we need to fine tune the list passed according to the detector? */
   Bool_t retValue = kTRUE;
   for (Int_t ixConfiguration = 0; ixConfiguration < fConfigurations.GetEntriesFast(); ixConfiguration++) {
     Bool_t ret = fConfigurations.At(ixConfiguration)->AttachCorrectionInputs(list);
     retValue = retValue && ret;
   }
   return retValue;
+}
+
+/// Perform after calibration histograms attach actions
+/// It is used to inform the different correction step that
+/// all conditions for running the network are in place so
+/// it is time to check if their requirements are satisfied
+///
+/// The request is transmitted to the attached detector configurations
+void AliQnCorrectionsDetector::AfterInputsAttachActions() {
+
+  for (Int_t ixConfiguration = 0; ixConfiguration < fConfigurations.GetEntriesFast(); ixConfiguration++) {
+    fConfigurations.At(ixConfiguration)->AfterInputsAttachActions();
+  }
 }
 
 /// Stores the framework manager pointer and transmits it to the incorporated detector configurations if any

@@ -45,6 +45,7 @@ AliQnCorrectionsCorrectionOnQvector::AliQnCorrectionsCorrectionOnQvector() :
     AliQnCorrectionsCorrectionStepBase() {
 
   fCorrectedQnVector = NULL;
+  fInputQnVector = NULL;
 }
 
 /// Normal constructor
@@ -54,6 +55,7 @@ AliQnCorrectionsCorrectionOnQvector::AliQnCorrectionsCorrectionOnQvector(const c
     AliQnCorrectionsCorrectionStepBase(name, key) {
 
   fCorrectedQnVector = NULL;
+  fInputQnVector = NULL;
 }
 
 /// Default destructor

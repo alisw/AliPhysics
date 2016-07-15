@@ -139,7 +139,6 @@ Float_t AliQnCorrectionsHistogramSparse::GetBinError(Long64_t bin) {
 /// increased by the given weight.
 ///
 /// \param variableContainer the current variables content addressed by var Id
-/// \param nChannel the interested external channel number
 /// \param weight the increment in the bin content
 void AliQnCorrectionsHistogramSparse::Fill(const Float_t *variableContainer, Float_t weight) {
   /* keep the total entries in fValues updated */

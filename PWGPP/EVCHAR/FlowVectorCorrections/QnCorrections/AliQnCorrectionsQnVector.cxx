@@ -57,6 +57,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() : TNamed() {
   fHarmonicMask = 0x0000;
   fGoodQuality = kFALSE;
   fN = 0;
+  fHarmonicMultiplier = 1;
 }
 
 /// Normal constructor
@@ -104,6 +105,50 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const char *name, Int_t nNoOf
   }
   fGoodQuality = kFALSE;
   fN = 0;
+  fHarmonicMultiplier = 1;
+}
+
+/// Normal constructor for supporting a subset of the harmonics passed
+///
+/// For each integer harmonic number after dividing by the divisor the Q vector is initialized
+/// The Q vectors are organized to support external harmonic number.
+/// Only support for the desired harmonic multiples is build.
+/// If harmonicMap = [1, 2, 3, 4, 6, 8] is passed and the divisor
+/// is two then the created Qn vector has support for
+/// the harmonics numbers 1, 2, 3 and 4.
+///
+/// A check on the asked number of harmonics is made for having it within
+/// current implementation limits.
+///
+/// \param name the name of the Qn vector. Identifies its origin
+/// \param nDivisor the divisor of the harmonic number for getting the harmonic we want to create support for
+/// \param nNoOfHarmonics the number of harmonics passed within the map
+/// \param harmonicMap ordered array with the external number of the harmonics
+AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const char *name, Int_t nDivisor, Int_t nNoOfHarmonics, Int_t *harmonicMap) :
+  TNamed(name,name) {
+
+  memset(fQnX, 0, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
+  memset(fQnY, 0, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
+
+  /* check whether within the supported harmonic range */
+  fHighestHarmonic = Int_t (harmonicMap[nNoOfHarmonics - 1] / nDivisor);
+
+  if (MAXHARMONICNUMBERSUPPORTED < fHighestHarmonic) {
+    AliFatal(Form("You requested support for harmonic %d but the highest harmonic supported by the framework is currently %d",
+        fHighestHarmonic, MAXHARMONICNUMBERSUPPORTED));
+  }
+
+  fHarmonicMask = 0x0000;
+  Int_t nCurrentHarmonic;
+  for (Int_t h = 0; h < nNoOfHarmonics; h++) {
+    nCurrentHarmonic = harmonicMap[h];
+
+    if ((nCurrentHarmonic % nDivisor) != 0) continue;
+    fHarmonicMask |= harmonicNumberMask[nCurrentHarmonic / nDivisor];
+  }
+  fGoodQuality = kFALSE;
+  fN = 0;
+  fHarmonicMultiplier = 1;
 }
 
 /// Copy constructor
@@ -117,6 +162,40 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const AliQnCorrectionsQnVecto
   fHarmonicMask = Qn.fHarmonicMask;
   fGoodQuality = Qn.fGoodQuality;
   fN = Qn.fN;
+  fHarmonicMultiplier = Qn.fHarmonicMultiplier;
+}
+
+/// Copy constructor for supporting a subset of the harmonics passed
+///
+/// For each integer harmonic number after dividing by the divisor the Q vector is copied
+///
+/// \param nDivisor the divisor of the harmonic number for getting the harmonic we want to create support for
+/// \param Q the Q vector object to copy after construction
+AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(Int_t nDivisor, const AliQnCorrectionsQnVector &Q)  :
+    TNamed(Q) {
+
+  memset(fQnX, 0, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
+  memset(fQnY, 0, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
+  fHighestHarmonic = Int_t (Q.fHighestHarmonic / nDivisor);
+
+  fHarmonicMask = 0x0000;
+  Int_t nCurrentHarmonic;
+  for (Int_t h = 0; h < Q.fHighestHarmonic; h++) {
+    nCurrentHarmonic = h+1;
+
+    /* check if integer divisor */
+    if ((nCurrentHarmonic % nDivisor) != 0) continue;
+
+    /* check if active */
+    if ((Q.fHarmonicMask & harmonicNumberMask[nCurrentHarmonic]) != harmonicNumberMask[nCurrentHarmonic]) continue;
+
+    /* activate harmonic */
+    fHarmonicMask |= harmonicNumberMask[nCurrentHarmonic / nDivisor];
+  }
+
+  fGoodQuality = Q.fGoodQuality;
+  fN = Q.fN;
+  fHarmonicMultiplier = Q.fHarmonicMultiplier;
 }
 
 /// Default destructor
@@ -196,7 +275,8 @@ void AliQnCorrectionsQnVector::GetHarmonicsMap(Int_t *harmonicMapStore) const {
 /// \param changename kTRUE if the name of the Qn vector must also be changed
 void AliQnCorrectionsQnVector::Set(AliQnCorrectionsQnVector* Qn, Bool_t changename) {
   if ((fHighestHarmonic != Qn->fHighestHarmonic) ||
-      (fHarmonicMask != Qn->fHarmonicMask)) {
+      (fHarmonicMask != Qn->fHarmonicMask) ||
+      (fHarmonicMultiplier != Qn->fHarmonicMultiplier)) {
     AliFatal("You requested set a Q vector with the values of other Q " \
         "vector but the harmonic structures do not match");
     return;
@@ -240,7 +320,7 @@ Double_t AliQnCorrectionsQnVector::EventPlane(Int_t harmonic) const {
   if(TMath::Abs(Qx(harmonic)) < fMinimumSignificantValue && TMath::Abs(Qy(harmonic)) < fMinimumSignificantValue) {
     return 0.0;
   }
-  return TMath::ATan2(Qy(harmonic), Qx(harmonic))/Double_t(harmonic);
+  return TMath::ATan2(Qy(harmonic), Qx(harmonic))/Double_t(harmonic*fHarmonicMultiplier);
 }
 
 /// Print the Qn vector in a readable shape
@@ -249,7 +329,8 @@ void AliQnCorrectionsQnVector::Print(Option_t *) const {
   cout <<"OBJ: Qn vector step: " << GetName() << "\t" << "quality: " << ((fGoodQuality) ? "good" : "bad") << endl;
   Int_t harmonic = GetFirstHarmonic();
   while (harmonic != -1) {
-    cout << "\t" << "\t" << "harmonic " << harmonic << "\t" << "QX: " << Qx(harmonic) << "\t" << "QY: " << Qy(harmonic) << endl;
+    cout << "\t" << "\t" << "harmonic " << harmonic * fHarmonicMultiplier << "\t" << "QX: " << Qx(harmonic) << "\t" << "QY: " << Qy(harmonic)
+        << "\t" << "EP:" << EventPlane(harmonic) << endl;
     harmonic = GetNextHarmonic(harmonic);
   }
 }

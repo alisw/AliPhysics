@@ -57,6 +57,7 @@ set(SRCS
   AliQnCorrectionsInputGainEqualization.cxx
   AliQnCorrectionsManager.cxx
   AliQnCorrectionsProfile.cxx
+  AliQnCorrectionsProfile3DCorrelations.cxx
   AliQnCorrectionsProfileChannelized.cxx
   AliQnCorrectionsProfileChannelizedIngress.cxx
   AliQnCorrectionsProfileComponents.cxx
@@ -66,6 +67,7 @@ set(SRCS
   AliQnCorrectionsQnVectorBuild.cxx
   AliQnCorrectionsQnVectorAlignment.cxx
   AliQnCorrectionsQnVectorRecentering.cxx
+  AliQnCorrectionsQnVectorTwistAndRescale.cxx
   )
 
 # Headers from sources

@@ -44,13 +44,19 @@ const char *AliQnCorrectionsDetectorConfigurationBase::szPlainQnVectorName = "pl
 
 /// Default constructor
 AliQnCorrectionsDetectorConfigurationBase::AliQnCorrectionsDetectorConfigurationBase() : TNamed(),
-    fPlainQnVector(), fCorrectedQnVector(), fTempQnVector(), fQnVectorCorrections() {
+    fPlainQnVector(), fPlainQ2nVector(),
+    fCorrectedQnVector(), fCorrectedQ2nVector(),
+    fTempQnVector(), fTempQ2nVector(),
+    fQnVectorCorrections() {
   fDetector = NULL;
   fCorrectionsManager = NULL;
   fCuts = NULL;
   fDataVectorBank = NULL;
   fQnNormalizationMethod = AliQnCorrectionsQnVector::QVNORM_noCalibration;
   fEventClassVariables = NULL;
+  fPlainQ2nVector.SetHarmonicMultiplier(2);
+  fCorrectedQ2nVector.SetHarmonicMultiplier(2);
+  fTempQ2nVector.SetHarmonicMultiplier(2);
 }
 
 /// Normal constructor
@@ -64,8 +70,11 @@ AliQnCorrectionsDetectorConfigurationBase::AliQnCorrectionsDetectorConfiguration
       Int_t *harmonicMap) :
           TNamed(name,name),
           fPlainQnVector(szPlainQnVectorName,nNoOfHarmonics, harmonicMap),
+          fPlainQ2nVector(Form("%s2n",szPlainQnVectorName),nNoOfHarmonics, harmonicMap),
           fCorrectedQnVector(szPlainQnVectorName,nNoOfHarmonics, harmonicMap),
+          fCorrectedQ2nVector(Form("%s2n",szPlainQnVectorName),nNoOfHarmonics, harmonicMap),
           fTempQnVector("temp",nNoOfHarmonics, harmonicMap),
+          fTempQ2nVector("temp2n",nNoOfHarmonics, harmonicMap),
           fQnVectorCorrections() {
 
   fDetector = NULL;
@@ -74,6 +83,9 @@ AliQnCorrectionsDetectorConfigurationBase::AliQnCorrectionsDetectorConfiguration
   fDataVectorBank = NULL;
   fQnNormalizationMethod = AliQnCorrectionsQnVector::QVNORM_noCalibration;
   fEventClassVariables = eventClassesVariables;
+  fPlainQ2nVector.SetHarmonicMultiplier(2);
+  fCorrectedQ2nVector.SetHarmonicMultiplier(2);
+  fTempQ2nVector.SetHarmonicMultiplier(2);
 }
 
 /// Default destructor
@@ -105,6 +117,41 @@ void AliQnCorrectionsDetectorConfigurationBase::AddCorrectionOnInputData(AliQnCo
   AliFatal(Form("You have reached base member %s. This means you have instantiated a base class or\n" \
       "you are using a non channelized detector configuration to calibrate input data. FIX IT, PLEASE.",
       "AliQnCorrectionsDetectorConfigurationBase::AddCorrectionOnInputData()"));
+}
+
+/// Get the corrected Qn vector from the step previous to the one given
+/// If not previous step the plain Qn vector is returned.
+/// The user is not able to modify it.
+/// \param correctionOnQn the correction to find its predecessor corrected Qn vector
+/// \return the corrected Qn vector from the correction step predecessor or the plain Qn vector
+const AliQnCorrectionsQnVector *AliQnCorrectionsDetectorConfigurationBase::GetPreviousCorrectedQnVector(AliQnCorrectionsCorrectionOnQvector *correctionOnQn) const {
+  if (fQnVectorCorrections.GetPrevious(correctionOnQn) != NULL)
+    return fQnVectorCorrections.GetPrevious(correctionOnQn)->GetCorrectedQnVector();
+  else
+    return &fPlainQnVector;
+}
+
+/// Check if a concrete correction step is bein applied on this detector configuration
+/// It is not enough having the correction step configured or collecting data. To
+/// get an affirmative answer the correction step must be being applied.
+/// Transfers the request to the set of Qn vector corrections.
+/// \param step the name of the correction step
+/// \return TRUE if the correction step is being applied
+Bool_t AliQnCorrectionsDetectorConfigurationBase::IsCorrectionStepBeingApplied(const char *step) const {
+
+  return fQnVectorCorrections.IsCorrectionStepBeingApplied(step);
+}
+
+
+/// Activate the processing for the passed harmonic
+/// \param harmonic the desired harmonic number to activate
+void AliQnCorrectionsDetectorConfigurationBase::ActivateHarmonic(Int_t harmonic) {
+  fPlainQnVector.ActivateHarmonic(harmonic);
+  fCorrectedQnVector.ActivateHarmonic(harmonic);
+  fPlainQ2nVector.ActivateHarmonic(harmonic);
+  fCorrectedQ2nVector.ActivateHarmonic(harmonic);
+  fTempQnVector.ActivateHarmonic(harmonic);
+  fTempQ2nVector.ActivateHarmonic(harmonic);
 }
 
 /// Checks if the current content of the variable bank applies to
