@@ -145,6 +145,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -233,6 +234,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCAbeSemi(0),
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
+  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -471,6 +473,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 30,0,30,4000,-0.2,0.2);
   fOutputList->Add(fHistDCAhaSemi);
+
+  fHistOtherEle = new TH1D("fHistOtherEle", "remaining X->e", 10000,-0.5,9999.5);
+  fOutputList->Add(fHistOtherEle);
 
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
@@ -805,6 +810,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     //if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
     if(pidM==443)continue; // remove enhanced J/psi in MC !
+    if(pidM==-99)continue; // remove e from no mother !
 
     Bool_t pid_eleD = IsDdecay(pidM);
     Bool_t pid_eleB = IsBdecay(pidM);
@@ -951,6 +957,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         else // semi-inclusive
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
+          //----- MC
           if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
@@ -959,7 +966,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_ele!=1.0)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
           Bool_t iknown = kFALSE;
           if(pid_eleD || pid_eleB || pid_eleP)iknown = kTRUE;
-          //if(!iknown && pid_ele==1.0)cout << "X->e : " << pidM << endl;
+          if(!iknown && pid_ele==1.0)fHistOtherEle->Fill(pidM);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
@@ -1152,6 +1159,10 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
     pid = partM->GetPdgCode();
    }
+ else
+   {
+    pid = -99;
+   } 
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
@@ -1171,7 +1182,7 @@ Bool_t AliAnalysisTaskBeautyCal::IsDdecay(int mpid)
 Bool_t AliAnalysisTaskBeautyCal::IsBdecay(int mpid)
 {
  int abmpid = fabs(mpid);
- if(abmpid==511 || abmpid==521 || abmpid==513 || abmpid==523 || abmpid==431 || abmpid==533)
+ if(abmpid==511 || abmpid==521 || abmpid==513 || abmpid==523 || abmpid==531 || abmpid==533)
    {
     return kTRUE;
    }
