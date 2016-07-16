@@ -152,6 +152,7 @@ private:
     TH2D        *fHistDCAbeSemi;//!ele cand SPD or
     TH2D        *fHistDCApeSemi;//!ele cand SPD or
     TH2D        *fHistDCAhaSemi;//!ele cand SPD or
+    TH1D        *fHistOtherEle;//!ele cand SPD or
 
     TH1D        *fHistHFEcorr;//!ele cand SPD or
 
