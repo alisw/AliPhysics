@@ -450,7 +450,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fOutput->Add(fOutputTHnS);
         
         Int_t binsMC[] = {binPT, binETiso, binETUE, binMCMotherPDG , binlabel};
-        
         Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, 10};
         
         if(fIsMC){
@@ -460,7 +459,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           Double_t xminbis[] = { 0., -10., -10.,    0.,    0};
           Double_t xmaxbis[] = {70., 100., 100., 1000., 1500};
           
-          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",5,binsMC,xminbis,xmaxbis);
+          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; Label",5,binsMC,xminbis,xmaxbis);
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
           
