@@ -1124,8 +1124,8 @@ void AliTPCDcalibRes::CollectData(const int mode)
 	}
 	if (fArrPhi[fNCl]<0) fArrPhi[fNCl] += 2.*TMath::Pi();
 	//
-	// correct for drift velocity calibration if needed
-	if (correctVDrift) fArrDZ[fNCl] += GetDriftCorrection(fArrZTr[fNCl],fArrR[fNCl],fArrPhi[fNCl],rocID);
+	// correct for drift velocity calibration if needed, using Zcluster for correction evaluation (as in raw data)
+	if (correctVDrift) fArrDZ[fNCl] += GetDriftCorrection(fArrZTr[fNCl]-fArrDZ[fNCl],fArrR[fNCl],fArrPhi[fNCl],rocID);
 	//
 	fArrSectID[fNCl] = rocID%kNSect2; // 0-36 for sectors from A0 to C17
 	//
