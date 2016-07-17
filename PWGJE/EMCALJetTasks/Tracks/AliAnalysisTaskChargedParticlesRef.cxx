@@ -18,9 +18,11 @@
 
 #include <TArrayD.h>
 #include <TMath.h>
+#include <TGrid.h>
 #include <THashList.h>
 #include <THistManager.h>
-#include <TString.h>
+#include <TObjArray.h>
+#include <TParameter.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliAODInputHandler.h"
@@ -34,6 +36,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
+#include "AliOADBContainer.h"
 #include "AliPIDResponse.h"
 #include "AliTOFPIDResponse.h"
 #include "AliVVertex.h"
@@ -52,14 +55,20 @@ namespace EMCalTriggerPtAnalysis {
  */
 AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     AliAnalysisTaskSE(),
-    fTrackCuts(NULL),
-    fAnalysisUtil(NULL),
-    fTriggerSelection(NULL),
-    fHistos(NULL),
-    fGeometry(NULL),
+    fTrackCuts(nullptr),
+    fAnalysisUtil(nullptr),
+    fTriggerSelection(nullptr),
+    fHistos(nullptr),
+    fGeometry(nullptr),
+    fTriggerPatches(nullptr),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1)
+    fEtaSign(1),
+    fNameDownscaleOADB(""),
+    fDownscaleOADB(nullptr),
+    fDownscaleFactors(nullptr),
+    fCurrentRun(-1),
+    fInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -74,14 +83,20 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
  */
 AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const char *name) :
     AliAnalysisTaskSE(name),
-    fTrackCuts(NULL),
-    fAnalysisUtil(NULL),
-    fTriggerSelection(NULL),
-    fHistos(NULL),
-    fGeometry(NULL),
+    fTrackCuts(nullptr),
+    fAnalysisUtil(nullptr),
+    fTriggerSelection(nullptr),
+    fHistos(nullptr),
+    fGeometry(nullptr),
+    fTriggerPatches(nullptr),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
-    fEtaSign(1)
+    fEtaSign(1),
+    fNameDownscaleOADB(""),
+    fDownscaleOADB(nullptr),
+    fDownscaleFactors(nullptr),
+    fCurrentRun(-1),
+    fInitialized(false)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -99,6 +114,7 @@ AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
   if(fAnalysisUtil) delete fAnalysisUtil;
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
+  if(fDownscaleOADB) delete fDownscaleOADB;
 }
 
 /**
@@ -113,18 +129,12 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   NewPtBinning newbinning;
 
   fHistos = new THistManager("Ref");
-  // Exclusive means classes without higher trigger classes:
-  // EG2excl means EG2 && !EG1
-  // EJ2excl means EJ2 && !EJ1
+  // Exclusive means classes without lower trigger classes (which are downscaled) - in order to make samples statistically independent:
   // MBExcl means MinBias && !EMCAL trigger
-  // Combined means: gamma and ANY jet class, jet and ANY gamma class
-  // Jonly means: No gamma class fired at the same time
-  // Gonly means: No jet class fired at the same time
-  TString triggers[17] = {
+  TString triggers[11] = {
       "MB", "EMC7",
       "EJ1", "EJ2", "EG1", "EG2",
-      "EMC7excl", "EG1excl", "EG2excl", "EJ1excl", "EJ2excl",
-      "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
+      "EMC7excl", "EG1excl", "EG2excl", "EJ1excl", "EJ2excl"
   };
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   // Binning for the PID histogram
@@ -234,16 +244,18 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  * @param option Not used
  */
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
-  if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstance();
-    if(!fGeometry)
-      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  if(!fInitialized){
+    ExecOnce();
+    fInitialized = true;
+  }
+  if(InputEvent()->GetRunNumber() != fCurrentRun){
+    RunChanged(InputEvent()->GetRunNumber());
+    fCurrentRun = InputEvent()->GetRunNumber();
   }
   // Select event
-  TClonesArray *triggerpatches = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
-    triggerstring = GetFiredTriggerClassesFromPatches(triggerpatches);
+    triggerstring = GetFiredTriggerClassesFromPatches(fTriggerPatches);
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
@@ -254,12 +266,12 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
       isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
       isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
-  if(triggerpatches && fTriggerSelection){
-      isEJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, triggerpatches);
-      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, triggerpatches);
-      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, triggerpatches);
-      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, triggerpatches);
-      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, triggerpatches);
+  if(fTriggerPatches && fTriggerSelection){
+      isEJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches);
+      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches);
+      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches);
+      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches);
+      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches);
   }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
@@ -285,45 +297,29 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   if(isEJ2){
     FillEventCounterHists("EJ2", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!isMinBias){
+    if(!(isMinBias || isEMC7)){
       FillEventCounterHists("EJ2excl", vtx->GetZ(), isSelected);
-    }
-    if(isEG1 || isEG2){
-      FillEventCounterHists("E2combined", vtx->GetZ(), isSelected);
-    } else {
-      FillEventCounterHists("E2Jonly", vtx->GetZ(), isSelected);
     }
   }
   if(isEJ1){
     FillEventCounterHists("EJ1", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!(isMinBias || isEJ2)){
+    if(!(isMinBias || isEMC7 || isEJ2)){
       FillEventCounterHists("EJ1excl", vtx->GetZ(), isSelected);
-    }
-    if(isEG1 || isEG2){
-      FillEventCounterHists("E1combined", vtx->GetZ(), isSelected);
-    } else {
-      FillEventCounterHists("E1Jonly", vtx->GetZ(), isSelected);
     }
   }
   if(isEG2){
     FillEventCounterHists("EG2", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!isMinBias){
+    if(!(isMinBias || isEMC7)){
       FillEventCounterHists("EG2excl", vtx->GetZ(), isSelected);
-    }
-    if(!(isEJ1 || isEJ2)){
-      FillEventCounterHists("E2Gonly", vtx->GetZ(), isSelected);
     }
   }
   if(isEG1){
     FillEventCounterHists("EG1", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!(isMinBias || isEG2 )){
+    if(!(isMinBias || isEMC7 || isEG2)){
       FillEventCounterHists("EG1excl", vtx->GetZ(), isSelected);
-    }
-    if(!(isEJ1 || isEJ2)){
-      FillEventCounterHists("E1Gonly", vtx->GetZ(), isSelected);
     }
   }
 
@@ -338,7 +334,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   // - Central eta_{cms} (-0.8, -0.2), old binning,
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
-  AliVTrack *checktrack(NULL);
+  AliVTrack *checktrack(nullptr);
   int ptmin[5] = {1,2,5,10,20}; // for eta distributions
   Bool_t isEMCAL(kFALSE), hasTRD(kFALSE);
   Double_t etaEMCAL(0.), phiEMCAL(0.);
@@ -391,57 +387,35 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       FillTrackHistos("EJ2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       if(isEMCAL) FillPIDHistos("EJ2", *checktrack);
       // check for exclusive classes
-      if(!isMinBias){
+      if(!(isMinBias || isEMC7)){
         FillTrackHistos("EJ2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
         if(isEMCAL) FillPIDHistos("EJ2excl", *checktrack);
-      }
-      if(isEG1 || isEG2){
-        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E2combined", *checktrack);
-      } else {
-        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E2Jonly", *checktrack);
       }
     }
     if(isEJ1){
       FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       if(isEMCAL) FillPIDHistos("EJ1", *checktrack);
       // check for exclusive classes
-      if(!(isMinBias || isEJ2)){
+      if(!(isMinBias ||isEMC7 || isEJ2)){
         FillTrackHistos("EJ1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
         if(isEMCAL) FillPIDHistos("EJ1excl", *checktrack);
-      }
-      if(isEG1 || isEG2) {
-        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E1combined", *checktrack);
-      } else {
-        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E1Jonly", *checktrack);
       }
     }
     if(isEG2){
       FillTrackHistos("EG2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       if(isEMCAL) FillPIDHistos("EG2", *checktrack);
       // check for exclusive classes
-      if(!isMinBias){
+      if(!(isMinBias || isEMC7)){
         FillTrackHistos("EG2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
         if(isEMCAL) FillPIDHistos("EG2excl", *checktrack);
-      }
-      if(!(isEJ2 || isEJ1)){
-        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E2Gonly", *checktrack);
       }
     }
     if(isEG1){
       FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       if(isEMCAL) FillPIDHistos("EG1", *checktrack);
-      if(!(isMinBias || isEG2)){
+      if(!(isMinBias || isEMC7 || isEG2)){
         FillTrackHistos("EG1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
         if(isEMCAL) FillPIDHistos("EG1excl", *checktrack);
-      }
-      if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
-        if(isEMCAL) FillPIDHistos("E1Gonly", *checktrack);
       }
     }
   }
@@ -460,12 +434,48 @@ void AliAnalysisTaskChargedParticlesRef::FillEventCounterHists(
     bool isSelected
 )
 {
+  Double_t weight = GetTriggerWeight(triggerclass);
   // Fill reference distribution for the primary vertex before any z-cut
-  fHistos->FillTH1(Form("hVertexBefore%s", triggerclass.c_str()), vtxz);
+  fHistos->FillTH1(Form("hVertexBefore%s", triggerclass.c_str()), vtxz, weight);
   if(isSelected){
     // Fill Event counter and reference vertex distributions after event selection
-    fHistos->FillTH1(Form("hEventCount%s", triggerclass.c_str()), 1);
-    fHistos->FillTH1(Form("hVertexAfter%s", triggerclass.c_str()), vtxz);
+    fHistos->FillTH1(Form("hEventCount%s", triggerclass.c_str()), 1, weight);
+    fHistos->FillTH1(Form("hVertexAfter%s", triggerclass.c_str()), vtxz, weight);
+  }
+}
+
+/**
+ * Perform gloabl initializations
+ * Used for the moment for
+ * - Connect EMCAL geometry
+ * - Initialize OADB container with downscaling factors
+ */
+void AliAnalysisTaskChargedParticlesRef::ExecOnce(){
+  // Handle geometry
+  if(!fGeometry){
+    fGeometry = AliEMCALGeometry::GetInstance();
+    if(!fGeometry)
+      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  }
+  fTriggerPatches = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+  // Handle OADB container with downscaling factors
+  if(fNameDownscaleOADB.Length()){
+    if(fNameDownscaleOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+    fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
+    fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
+  }
+}
+
+/**
+ * Run change method. Called when the run number of the new event
+ * is different compared to the run number of the previous event.
+ * Used for loading of the downscale factor for a given
+ * run from the downscale OADB.
+ * @param[in] runnumber Number of the new run.
+ */
+void AliAnalysisTaskChargedParticlesRef::RunChanged(Int_t runnumber){
+ if(fDownscaleOADB){
+    fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
 }
 
@@ -490,54 +500,55 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
     Bool_t hasTRD
     )
 {
-  fHistos->FillTH1(Form("hPtEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-  fHistos->FillTH1(Form("hPtEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+  Double_t weight = GetTriggerWeight(eventclass);
+  fHistos->FillTH1(Form("hPtEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+  fHistos->FillTH1(Form("hPtEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
   if(inEmcal){
-    fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-    fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+    fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
     if(hasTRD){
-      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
     } else {
-      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
     }
   }
 
   int ptmin[5] = {1,2,5,10,20}; // for eta distributions
   for(int icut = 0; icut < 5; icut++){
     if(TMath::Abs(pt) > static_cast<double>(ptmin[icut])){
-      fHistos->FillTH1(Form("hPhiDistAllPt%d%s", ptmin[icut], eventclass.c_str()), phi);
-      fHistos->FillTH1(Form("hEtaLabDistAllPt%d%s", ptmin[icut], eventclass.c_str()), etalab);
-      fHistos->FillTH1(Form("hEtaCentDistAllPt%d%s", ptmin[icut], eventclass.c_str()), etacent);
+      fHistos->FillTH1(Form("hPhiDistAllPt%d%s", ptmin[icut], eventclass.c_str()), phi, weight);
+      fHistos->FillTH1(Form("hEtaLabDistAllPt%d%s", ptmin[icut], eventclass.c_str()), etalab, weight);
+      fHistos->FillTH1(Form("hEtaCentDistAllPt%d%s", ptmin[icut], eventclass.c_str()), etacent, weight);
       if(inEmcal){
-        fHistos->FillTH1(Form("hEtaLabDistAllEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etalab);
-        fHistos->FillTH1(Form("hEtaCentDistAllEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etacent);
+        fHistos->FillTH1(Form("hEtaLabDistAllEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etalab, weight);
+        fHistos->FillTH1(Form("hEtaCentDistAllEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etacent, weight);
       }
     }
   }
 
   if(etacut){
-    fHistos->FillTH1(Form("hPtEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-    fHistos->FillTH1(Form("hPtEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+    fHistos->FillTH1(Form("hPtEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
     if(inEmcal){
-      fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-      fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+      fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
       if(hasTRD){
-        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
       } else {
-        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt));
-        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
       }
     }
     for(int icut = 0; icut < 5; icut++){
       if(TMath::Abs(pt) > static_cast<double>(ptmin[icut])){
-        fHistos->FillTH1(Form("hEtaLabDistCutPt%d%s", ptmin[icut], eventclass.c_str()), etalab);
-        fHistos->FillTH1(Form("hEtaCentDistCutPt%d%s", ptmin[icut], eventclass.c_str()), etacent);
+        fHistos->FillTH1(Form("hEtaLabDistCutPt%d%s", ptmin[icut], eventclass.c_str()), etalab, weight);
+        fHistos->FillTH1(Form("hEtaCentDistCutPt%d%s", ptmin[icut], eventclass.c_str()), etacent, weight);
         if(inEmcal){
-          fHistos->FillTH1(Form("hEtaLabDistCutEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etalab);
-          fHistos->FillTH1(Form("hEtaCentDistCutEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etacent);
+          fHistos->FillTH1(Form("hEtaLabDistCutEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etalab, weight);
+          fHistos->FillTH1(Form("hEtaCentDistCutEMCALPt%d%s", ptmin[icut], eventclass.c_str()), etacent, weight);
         }
       }
     }
@@ -548,19 +559,41 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
     const std::string &eventclass,
     const AliVTrack &trk
 ) {
+  Double_t weight = GetTriggerWeight(eventclass);
   AliPIDResponse *pid = fInputHandler->GetPIDResponse();
   if(TMath::Abs(trk.Eta()) > 0.5) return;
   if(!((trk.GetStatus() & AliVTrack::kTOFout) && (trk.GetStatus() & AliVTrack::kTIME))) return;
 
   double poverz = TMath::Abs(trk.P())/static_cast<double>(trk.Charge());
-  fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), poverz, trk.GetTPCsignal());
+  fHistos->FillTH2(Form("hTPCdEdxEMCAL%s", eventclass.c_str()), poverz, trk.GetTPCsignal(), weight);
   // correct for units - TOF in ps, track length in cm
   Double_t trtime = (trk.GetTOFsignal() - pid->GetTOFResponse().GetTimeZero()) * 1e-12;
   Double_t v = trk.GetIntegratedLength()/(100. * trtime);
   Double_t beta =  v / TMath::C();
-  fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta);
+  fHistos->FillTH2(Form("hTOFBetaEMCAL%s", eventclass.c_str()), poverz, beta, weight);
   double datapoint[3] = {poverz, trk.GetTPCsignal(), beta};
-  fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.c_str()), datapoint);
+  fHistos->FillTHnSparse(Form("hPIDcorrEMCAL%s", eventclass.c_str()), datapoint, weight);
+}
+
+/**
+ * Get a trigger class dependent event weight. The weight
+ * is defined as 1/downscalefactor. The downscale factor
+ * is taken from the OADB. For triggers which are not downscaled
+ * the weight is always 1.
+ * @param[in] triggerclass Class for which to obtain the trigger.
+ * @return Downscale facror for the trigger class (1 if trigger is not downscaled or no OADB container is available)
+ */
+Double_t AliAnalysisTaskChargedParticlesRef::GetTriggerWeight(const std::string &triggerclass) const {
+  if(fDownscaleFactors){
+    TParameter<double> *result(nullptr);
+    // Downscaling only done on MB, L0 and the low threshold triggers
+    if(triggerclass.find("MB") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("MB"));
+    else if(triggerclass.find("EMC7") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
+    else if(triggerclass.find("EJ2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
+    else if(triggerclass.find("EG2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
+    if(result) return 1./result->GetVal();
+  }
+  return 1.;
 }
 
 /**

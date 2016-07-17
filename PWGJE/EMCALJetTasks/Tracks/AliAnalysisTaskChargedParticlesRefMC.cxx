@@ -146,7 +146,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 1000, 0., 20.);
   fHistos->CreateTH1("hTriggerJetPtWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
   fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
-  TString triggers[16] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
+  TString triggers[7] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   TString species[6] = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
@@ -311,11 +311,6 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1, weight);
     fHistos->FillTH1("hVertexAfterMB", vtx->GetZ(), weight);
-    // check for exclusive classes
-    if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountMBexcl", 1, weight);
-      fHistos->FillTH1("hVertexAfterMBexcl", vtx->GetZ(), weight);
-    }
   }
   if(isEMC7){
     fHistos->FillTH1("hEventCountEMC7", 1, weight);
@@ -324,50 +319,18 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1, weight);
     fHistos->FillTH1("hVertexAfterEJ1", vtx->GetZ(), weight);
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE1combined", 1, weight);
-      fHistos->FillTH1("hVertexAfterE1combined", vtx->GetZ(), weight);
-    } else {
-      fHistos->FillTH1("hEventCountE1Jonly", 1, weight);
-      fHistos->FillTH1("hVertexAfterE1Jonly", vtx->GetZ(), weight);
-    }
   }
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1, weight);
     fHistos->FillTH1("hVertexAfterEJ2", vtx->GetZ(), weight);
-    // Check for exclusive classes
-    if(!isEJ1){
-      fHistos->FillTH1("hEventCountEJ2excl", 1, weight);
-      fHistos->FillTH1("hVertexAfterEJ2excl", vtx->GetZ(), weight);
-    }
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE2combined", 1, weight);
-      fHistos->FillTH1("hVertexAfterE2combined", vtx->GetZ(), weight);
-    } else {
-      fHistos->FillTH1("hEventCountE2Jonly", 1, weight);
-      fHistos->FillTH1("hVertexAfterE2Jonly", vtx->GetZ(), weight);
-    }
   }
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1, weight);
     fHistos->FillTH1("hVertexAfterEG1", vtx->GetZ(), weight);
-    if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE1Gonly", 1, weight);
-      fHistos->FillTH1("hVertexAfterE1Gonly", vtx->GetZ(), weight);
-    }
   }
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1, weight);
     fHistos->FillTH1("hVertexAfterEG2", vtx->GetZ(), weight);
-    // check for exclusive trigger classes
-    if(!isEG1){
-      fHistos->FillTH1("hEventCountEG2excl", 1, weight);
-      fHistos->FillTH1("hVertexAfterEG2excl", vtx->GetZ(), weight);
-    }
-    if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE2Gonly", 1, weight);
-      fHistos->FillTH1("hVertexAfterE2Gonly", vtx->GetZ(), weight);
-    }
   }
 
   // Fill PYTHIA histograms from event header
@@ -490,49 +453,21 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Go through the trigger classes and fill histograms
     if(isMinBias){
       FillTrackHistos("MB", weight,  ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      // Check for exclusive classes
-      if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
     }
     if(isEMC7){
       FillTrackHistos("EMC7", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
     }
     if(isEJ1){
       FillTrackHistos("EJ1", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      if(isEG1 || isEG2) {
-        FillTrackHistos("E1combined", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      } else {
-        FillTrackHistos("E1Jonly", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
     }
     if(isEJ2){
       FillTrackHistos("EJ2", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      // check for exclusive classes
-      if(!isEJ1){
-        FillTrackHistos("EJ2excl", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
-      if(isEG1 || isEG2) {
-        FillTrackHistos("E2combined", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      } else {
-        FillTrackHistos("E2Jonly", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
     }
     if(isEG1){
       FillTrackHistos("EG1", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E1Gonly", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
     }
     if(isEG2){
       FillTrackHistos("EG2", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      // check for exclusive classes
-      if(!isEG1){
-        FillTrackHistos("EG2excl", weight, ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
-      if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E2Gonly", weight, checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
-      }
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
