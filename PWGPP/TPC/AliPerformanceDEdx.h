@@ -80,7 +80,8 @@ public :
   //
   THnSparse* GetDeDxHisto() const {return fDeDxHisto;}
   TObjArray* GetHistos() const { return fFolderObj; }
-
+  TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
+    
 private:
 
   static Bool_t fgMergeTHnSparse;
