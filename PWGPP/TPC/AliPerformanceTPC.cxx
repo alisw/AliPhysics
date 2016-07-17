@@ -210,7 +210,8 @@ AliPerformanceTPC::~AliPerformanceTPC()
 //_____________________________________________________________________________
 void AliPerformanceTPC::Init()
 {
-  //
+    
+    //
   // histogram bining
   //
     fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
@@ -416,7 +417,8 @@ void AliPerformanceTPC::Init()
 //_____________________________________________________________________________
 void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent *const vEvent, Bool_t vertStatus)
 {
-//
+    
+    //
 // fill TPC QA info
 //
   if(!vEvent) return;
@@ -488,19 +490,47 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliVTrack *const vTrac
   //nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
     
     if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
-    else FillTrackHistogram(vTPCTrackHisto);
+    else {
+        if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
+        if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+            
+        double q = vTPCTrackHisto[8];
+            
+        if (h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if (h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+            
+        if(h_tpc_track_all_recvertex_3_5_7) h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_3_5_7) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if(h_tpc_track_neg_recvertex_3_5_7) h_tpc_track_neg_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        if(h_tpc_track_all_recvertex_4_5_7) h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_4_5_7) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if(h_tpc_track_neg_recvertex_4_5_7) h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        if(q > 0 && h_tpc_track_pos_recvertex_3_5_6) h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_3_5_6) h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+            
+        if(q > 0 && h_tpc_track_pos_recvertex_4_5_6) h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_4_5_6) h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+            
+        if(q > 0 && h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        
+    }
     //
   // Fill rec vs MC information
   //
-  if(!stack) return;
-
+    if(!stack) return;
 }
 
 
 //_____________________________________________________________________________
 void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent, Bool_t vertStatus)
 {
-  // Fill comparison information (TPC+ITS) 
+ 
+    // Fill comparison information (TPC+ITS)
   if(!vTrack) return;
   if(!vEvent) return;
 
@@ -554,7 +584,35 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliVTrack *const vT
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
     
     if(fUseSparse) fTPCTrackHisto->Fill(vTPCTrackHisto);
-    else FillTrackHistogram(vTPCTrackHisto);
+    else {
+        if(h_tpc_track_all_recvertex_5_8) h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
+        if(h_tpc_track_all_recvertex_1_5_7) h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(h_tpc_track_all_recvertex_2_5_7) h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        double q = vTPCTrackHisto[8];
+        
+        if (h_tpc_track_all_recvertex_0_5_7) h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_0_5_7) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if (h_tpc_track_neg_recvertex_0_5_7) h_tpc_track_neg_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        if(h_tpc_track_all_recvertex_3_5_7) h_tpc_track_all_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_3_5_7) h_tpc_track_pos_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if(h_tpc_track_neg_recvertex_3_5_7) h_tpc_track_neg_recvertex_3_5_7->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        if(h_tpc_track_all_recvertex_4_5_7) h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        if(q > 0 && h_tpc_track_pos_recvertex_4_5_7) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        else if(h_tpc_track_neg_recvertex_4_5_7) h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
+        
+        if(q > 0 && h_tpc_track_pos_recvertex_3_5_6) h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_3_5_6) h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        
+        if(q > 0 && h_tpc_track_pos_recvertex_4_5_6) h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_4_5_6) h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        
+        if(q > 0 && h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+        else if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    
+    }
   //
   // Fill rec vs MC information
   //
@@ -581,17 +639,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     Error("Exec","vEvent not available");
     return;
   }
-<<<<<<< fd68ec09a01a192fc1345a17883bfea34d06fede
 
-    TStopwatch Watch;
-    Watch.Start();
-
-<<<<<<< 78b6a213d3cdaea9af86d895edd1f71d8c99ff7a
-=======
-=======
->>>>>>> Removed test couts and made sure AliPerformanceTask uses AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetEvent()
-    
->>>>>>> More pointer protection
   AliHeader* header = 0;
   AliGenEventHeader* genHeader = 0;
   AliStack* stack = 0;
@@ -657,59 +705,58 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
 
     // if not fUseKinkDaughters don't use tracks with kink index > 0
     if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
-    
-    if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE && iTrack<vfriendEvent->GetNumberOfTracks()) 
-    {
-      const AliVfriendTrack *friendTrack=vfriendEvent->GetTrack(iTrack);
-      if(friendTrack) 
-      {
-        //
-        TObject *calibObject=0;
-        AliTPCseed *seed=0;
-        for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
-	    if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) {
-	    break;
-	  }
-        }
 
-        // 
-	for (Int_t irow=0;irow<159;irow++) {
-	if(!seed) continue;
-	  
-	  AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
-	  if (!cluster) continue;
+    if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE && iTrack<vfriendEvent->GetNumberOfTracks())
+        {
+          const AliVfriendTrack *friendTrack=vfriendEvent->GetTrack(iTrack);
+          if(friendTrack) 
+              {
+                //
+                TObject *calibObject=0;
+                AliTPCseed *seed=0;
+                for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
+                if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) {
+                break;
+              }
+                }
+                for (Int_t irow=0;irow<159;irow++) {
+                if(!seed) continue;
+                  
+                  AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
+                  if (!cluster) continue;
 
-	     Float_t gclf[3];
-	     cluster->GetGlobalXYZ(gclf);
+                     Float_t gclf[3];
+                     cluster->GetGlobalXYZ(gclf);
 
-	     //Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
-	     //Int_t i[1]={cluster->GetDetector()};
-             //transform->Transform(x,i,0,1);
-	     //printf("gx %f gy  %f  gz %f \n", cluster->GetX(), cluster->GetY(),cluster->GetZ());
-	     //printf("gclf[0] %f gclf[1]  %f  gclf[2] %f \n", gclf[0], gclf[1],  gclf[2]);
-     
-             Int_t TPCside; 
-	     if(gclf[2]>0.) TPCside=0; // A side 
-	     else TPCside=1;
+                     //Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+                     //Int_t i[1]={cluster->GetDetector()};
+                         //transform->Transform(x,i,0,1);
+                     //printf("gx %f gy  %f  gz %f \n", cluster->GetX(), cluster->GetY(),cluster->GetZ());
+                     //printf("gclf[0] %f gclf[1]  %f  gclf[2] %f \n", gclf[0], gclf[1],  gclf[2]);
+                 
+                         Int_t TPCside; 
+                     if(gclf[2]>0.) TPCside=0; // A side 
+                     else TPCside=1;
 
-	     //
-             //Double_t vTPCClust1[3] = { gclf[0], gclf[1],  TPCside };
-             //fTPCClustHisto1->Fill(vTPCClust1);
+                     //
+                         //Double_t vTPCClust1[3] = { gclf[0], gclf[1],  TPCside };
+                         //fTPCClustHisto1->Fill(vTPCClust1);
 
-             //  
-	     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
-	     if(phi < 0) phi += 2.*TMath::Pi();
-	    
-	  //Float_t pad = cluster->GetPad();
-	  //Int_t detector = cluster->GetDetector();
-	  //Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
-	  Double_t vTPCClust[3] = { static_cast<Double_t>(irow), phi, static_cast<Double_t>(TPCside) };
-        if(fUseSparse) fTPCClustHisto->Fill(vTPCClust);
-        else{
-            h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
-        }
-    } //end if(bUseVfriend && vfriendEvent && ...)
-      }}
+                         //  
+                     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
+                     if(phi < 0) phi += 2.*TMath::Pi();
+                    
+                  //Float_t pad = cluster->GetPad();
+                  //Int_t detector = cluster->GetDetector();
+                  //Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
+                  Double_t vTPCClust[3] = { static_cast<Double_t>(irow), phi, static_cast<Double_t>(TPCside) };
+                    if(fUseSparse) fTPCClustHisto->Fill(vTPCClust);
+                    else{
+                        h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
+                    }
+                } //end if(bUseVfriend && vfriendEvent && ...)
+            }
+    }
     if(GetAnalysisMode() == 0) ProcessTPC(stack,vTrack,vEvent,vertStatus);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,vTrack,vEvent,vertStatus);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,vTrack,vEvent);
@@ -719,17 +766,16 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     }
     // TPC only
     AliFlatESDTrack *flatTrack = dynamic_cast<AliFlatESDTrack*>(vTrack);
-    if(!fUseHLT && (GetAnalysisMode() == 0) && !flatTrack){
-      AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent,iTrack);
-      if(!tpcTrack) continue;
+    if(!fUseHLT && (GetAnalysisMode() == 0)){
+       AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent,iTrack);
+        if(!tpcTrack) continue;
       // track selection
-      if( fCutsRC->AcceptVTrack(tpcTrack) ) { 
-	mult++;
-	if(tpcTrack->Charge()>0.) multP++;
-	if(tpcTrack->Charge()<0.) multN++;
+       if(fCutsRC->AcceptVTrack(vTrack) ) {
+          mult++;
+          if(tpcTrack->Charge()>0.) multP++;
+          if(tpcTrack->Charge()<0.) multN++;
       }
-      if(tpcTrack) delete tpcTrack;
-    } //end if(!fUseHLT)
+    }
     else if (!flatTrack) {
         if(fCutsRC->AcceptVTrack(vTrack) ) {
           mult++;
@@ -740,19 +786,36 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     else{//Implementing FlatESD cuts
         if(fCutsRC->AcceptFTrack(vTrack,vEvent) ){
             mult++;
-            if(vTrack->Charge()>0.) multP++;
-            if(vTrack->Charge()<0.) multN++;
+            AliExternalTrackParam trackParams;
+            vTrack->GetTrackParam(trackParams);
+            AliExternalTrackParam *etpTrack = &trackParams;
+            if(!etpTrack) continue;
+            if(etpTrack->Charge()>0.) multP++;
+            if(etpTrack->Charge()<0.) multN++;
         }
     }
-      
+
+
   } //end iTrack iteration
 
     Double_t vtxPosition[3]= {0.,0.,0.};
   vertex.GetXYZ(vtxPosition);
   Double_t vTPCEvent[7] = {vtxPosition[0],vtxPosition[1],vtxPosition[2],static_cast<Double_t>(mult),static_cast<Double_t>(multP),static_cast<Double_t>(multN),static_cast<Double_t>(vertStatus)};
-  if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
-  else FillEventHistogram(vTPCEvent);
+    
+    if(fUseSparse) fTPCEventHisto->Fill(vTPCEvent);
+    else {
+        if(h_tpc_event_6) h_tpc_event_6->Fill(vTPCEvent[6]);
+        if(vTPCEvent[6]>0.001){
+            if (h_tpc_event_recvertex_0) h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
+            if (h_tpc_event_recvertex_1) h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
+            if (h_tpc_event_recvertex_2) h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
+            if (h_tpc_event_recvertex_3) h_tpc_event_recvertex_3->Fill(vTPCEvent[3]);
+            if (h_tpc_event_recvertex_4) h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
+            if (h_tpc_event_recvertex_5) h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
+        }
+    }
 }
+
 
 
 //_____________________________________________________________________________
@@ -762,11 +825,11 @@ void AliPerformanceTPC::Analyse()
     // Analyse comparison information and store output histograms
     // in the folder "folderTPC"
     //
-    TH1::AddDirectory(kFALSE);
-    TH1::SetDefaultSumw2(kFALSE);
-    TObjArray *aFolderObj = new TObjArray;
+//    TH1::AddDirectory(kFALSE);
+//    TH1::SetDefaultSumw2(kFALSE);
 
     if(fUseSparse){
+        TObjArray *aFolderObj = new TObjArray;
         TString selString;
         selString = "all";
         for(Int_t i=0; i <= 2; i++) {
@@ -969,7 +1032,7 @@ TTree* AliPerformanceTPC::CreateSummary()
     // implementaion removed, switched back to use AliPerformanceSummary (now called in AliPerformanceTask)
     return 0;
 }
-
+/*
 void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
 
     if(!vTPCEvent) return;
@@ -1016,5 +1079,5 @@ void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
     if(q > 0 && h_tpc_track_pos_recvertex_2_5_6) h_tpc_track_pos_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     else if(h_tpc_track_neg_recvertex_2_5_6) h_tpc_track_neg_recvertex_2_5_6->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[6]);
 
-}
+}*/
 

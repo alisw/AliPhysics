@@ -94,6 +94,8 @@ public :
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }  
 
+  TObjArray* GetListOfDrawableObjects() {return fFolderObj;}
+    
 private:
 
   static Bool_t fgMergeTHnSparse;

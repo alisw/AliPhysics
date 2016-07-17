@@ -379,14 +379,15 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliVEve
     if(!(vTrack->GetStatus()&AliVTrack::kITSrefit)) return;
     if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
 
-    AliExternalTrackParam trackParams;
+    AliExternalTrackParam trackParams, trackParamsTPCInner;
     vTrack->GetTrackParam(trackParams);
     AliExternalTrackParam *etpTrack = &trackParams;
     Double_t x[3]; etpTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
     Bool_t isOK = kFALSE;
 
-    AliExternalTrackParam * TPCinner = (AliExternalTrackParam *)vTrack->GetTPCInnerParam();
+    vTrack->GetTrackParamTPCInner(trackParamsTPCInner);
+    AliExternalTrackParam * TPCinner = &trackParamsTPCInner;
     if(!TPCinner) return;
   
     AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
