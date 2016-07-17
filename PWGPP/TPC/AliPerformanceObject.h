@@ -60,6 +60,7 @@ public :
   // is called from Terminate() in AliPerformanceTask
   // final spectra calculation
   virtual void AnalyseFinal() { ; }
+  virtual TCollection* GetListOfDrawableObjects(){ return 0; }
 
   // 
   virtual void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) = 0;
