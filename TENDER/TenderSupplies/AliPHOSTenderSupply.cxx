@@ -421,11 +421,25 @@ void AliPHOSTenderSupply::ProcessEvent()
 
       Double_t pttrack=0.;
       Int_t charge=0;
-      FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
       Double_t r=TestCPV(dx, dz, pttrack,charge) ;
-      clu->SetTrackDistance(dx,dz); 
-     
       clu->SetEmcCpvDistance(r);    
+      clu->SetTrackDistance(dx,dz); 
+      if(itr>=0){ //there is a track
+        const TArrayI * arrT=clu->GetTracksMatched() ;
+        if(arrT->GetSize()>0){
+          if(arrT->At(0)!=itr){ //update track index
+            TArrayI arrayTrackMatched(*arrT);
+	    arrayTrackMatched.AddAt(itr,0) ;
+            clu->AddTracksMatched(arrayTrackMatched);
+	  }
+	}
+	else{ //create new array
+            TArrayI arrayTrackMatched(1);
+	    arrayTrackMatched.AddAt(itr,0) ;
+            clu->AddTracksMatched(arrayTrackMatched);
+	}
+      }  
       
       Double_t tof=EvalTOF(&cluPHOS,cells); 
 //      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
@@ -539,7 +553,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
 }
 //___________________________________________________________________________________________________
-void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
+Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &dx, Double_t &dz,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
@@ -552,7 +566,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   
   if(!esd){
     AliError("ESD is not found") ;
-    return ;
+    return -1;
   }
   Double_t  magF = esd->GetMagneticField();
  
@@ -585,7 +599,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
 
   Double_t b[3]; 
-
+  Int_t itr=-1 ;
     for (Int_t i=0; i<nt; i++) {
       AliESDtrack *esdTrack=esd->GetTrack(i);
 
@@ -628,10 +642,12 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 	  minDistance=d2 ;
 	  pt=esdTrack->Pt() ;
 	  charge=esdTrack->Charge() ;
+	  itr=i ;
         }
       }
     }//Scanned all tracks
  
+   return itr ;
 }
 //____________________________________________________________
 Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
