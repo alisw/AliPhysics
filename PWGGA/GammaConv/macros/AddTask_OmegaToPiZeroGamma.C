@@ -29,14 +29,14 @@ class CutHandlerPiZeroGamma{
   public:
     CutHandlerPiZeroGamma(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; neutralPionCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; clusterCutArray[i] = ""; neutralPionCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts]; neutralPionCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; clusterCutArray[i] = ""; neutralPionCutArray[i] = ""; mesonCutArray[i] = "";}
     }
 
-    void AddCut(TString eventCut, TString photonCut, TString clusterCut, TString neutralPionCut){
+    void AddCut(TString eventCut, TString photonCut, TString clusterCut, TString neutralPionCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerPiZeroGamma: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || clusterCut.Length()!=19 || neutralPionCut.Length()!=16 ) {cout << "ERROR in CutHandlerPiZeroGamma: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; clusterCutArray[nCuts]=clusterCut; neutralPionCutArray[nCuts]=neutralPionCut;
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || clusterCut.Length()!=19 || neutralPionCut.Length()!=16 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerPiZeroGamma: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; clusterCutArray[nCuts]=clusterCut; neutralPionCutArray[nCuts]=neutralPionCut; mesonCutArray[nCuts]=mesonCut;
       nCuts++;
       return;
     }
@@ -45,7 +45,8 @@ class CutHandlerPiZeroGamma{
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerPiZeroGamma: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerPiZeroGamma: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerPiZeroGamma: GetClusterCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return neutralPionCutArray[i]; else {cout << "ERROR in CutHandlerPiZeroGamma: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetNeutralPionCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return neutralPionCutArray[i]; else {cout << "ERROR in CutHandlerPiZeroGamma: GetNeutralPionCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerPiZeroGamma: GetMesonCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
@@ -53,6 +54,7 @@ class CutHandlerPiZeroGamma{
     TString* photonCutArray;
     TString* clusterCutArray;
     TString* neutralPionCutArray;
+    TString* mesonCutArray;
 };
 
 //***************************************************************************************
@@ -62,18 +64,13 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
                                 Int_t     isMC                          = 0,                      // run MC
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
-                                TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
                                 Int_t     enableExtMatchAndQA           = 0,                      // enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
-                                TString   periodname                    = "LHC12f1x",             // period name
-                                Bool_t    doParticleWeighting           = kFALSE,                 // enables weighting
                                 Bool_t    enableV0findingEffi           = kFALSE,                 // enables V0finding efficiency histograms
-                                Bool_t    isUsingTHnSparse              = kTRUE,                  // enable or disable usage of THnSparses for background estimation
                                 Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader            = "",                     // period Name for V0 Reader 
-                                Bool_t    doTreeConvGammaShape          = kFALSE,                 // enable additional tree for conversion properties for clusters
                                 Bool_t    doMultiplicityWeighting       = kFALSE,                 // enable multiplicity weights
                                 TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
                                 TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
@@ -193,27 +190,57 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   // 7 TeV
   // cuts for ReconMethod==0
   if(trainConfig == 1){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145), last string is not used as of now
+
+  } else if(trainConfig == 2){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==1
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
+
+  } else if(trainConfig == 102){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==2
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032220000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
+
+  } else if(trainConfig == 202){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==3
   } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
+
+  } else if(trainConfig == 302){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==4
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
+
+  } else if(trainConfig == 402){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==5
   } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
-    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010"); // pion mass (0.08,0.145)
+    cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
+
+  } else if(trainConfig == 502){ // std 8TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, ReconMethod), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -233,6 +260,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   TList *ConvCutList = new TList();
   TList *ClusterCutList = new TList();
   TList *neutralPionCutList = new TList();
+  TList *MesonCutList = new TList();
 
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
@@ -242,6 +270,8 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
   neutralPionCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisNeutralPionCuts = new AliConversionMesonCuts*[numberOfCuts];
+  MesonCutList->SetOwner(kTRUE);
+  AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();
@@ -292,16 +322,25 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
     analysisNeutralPionCuts[i]->SetRunningMode(2);
-    analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
+    analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);
     analysisNeutralPionCuts[i]->SetFillCutHistograms("");
     if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
+
+    analysisMesonCuts[i] = new AliConversionMesonCuts();
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
+    analysisMesonCuts[i]->SetRunningMode(2);
+    analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
+    MesonCutList->Add(analysisMesonCuts[i]);
+    analysisMesonCuts[i]->SetFillCutHistograms("");
+    if(doSmear) analysisMesonCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
   }
 
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetNeutralPionCutList(numberOfCuts,neutralPionCutList);
+  task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA

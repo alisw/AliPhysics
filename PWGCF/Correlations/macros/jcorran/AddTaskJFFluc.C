@@ -1,18 +1,14 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, Bool_t IsWeakExclude=kFALSE ,
-		Bool_t IsCentFlat=kFALSE, Int_t FilterBit = 768 , double eta_min, double eta_max, 
-		double pt_min, double pt_max, int effMode, Bool_t IsPhiModule ,TString InFileNameNUE ,int debuglevel, char* suffix=""){
-    // Load Custom Configuration and parameters
-    // override values with parameters
-    // surfix in last arguments are added for subwagons.
-    TString combinedName = Form("%s%s", taskName.Data(), suffix);
+AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", Bool_t IsMC = kFALSE, Bool_t IsWeakExclude = kFALSE ,
+		Bool_t IsCentFlat = kFALSE, Int_t FilterBit = 768 , double eta_min = 0.4, double eta_max = 0.8, 
+		double pt_min = 0.2, double pt_max = 5.0, int effMode = 0, Bool_t IsPhiModule = kFALSE, TString InFileNameNUE  = "", int debuglevel = 0, TString suffix = ""){
+    TString combinedName = taskName+suffix;
     //
 	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
 	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
 	cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
 	cout <<"AddTaskJFFluc:: Efficiency Corr Mod? (0:no, 1:period, 2:run#, 3:auto) = " << effMode << endl;
-
-	//==== Get the pointer to the Analyis mgr
+	
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	/*
     //=== AOD handler
@@ -24,10 +20,10 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 		::Error("AddTaskFFluc", "This task requires an input event handler" );
 		return NULL;
 	}
-
+	
     //==== JCORRAN TASK
-    AliJFFlucTask *FFtask = new AliJFFlucTask( combinedName.Data() ,  IsMC, IsWeakExclude );
-
+    AliJFFlucTask *FFtask = new AliJFFlucTask(combinedName.Data(),IsMC,IsWeakExclude);
+    
 	FFtask->SetFFlucTaskName( combinedName.Data() ) ;
 	FFtask->SetIsMC( IsMC );
 	FFtask->SetIsWeakDeacyExclude( IsWeakExclude ) ;
@@ -55,6 +51,7 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	//==== Connect input/output
 	mgr->ConnectInput(FFtask, 0, cinput);
 	mgr->ConnectOutput(FFtask, 1, FFhist);
+	
 	return FFtask;
 }
 

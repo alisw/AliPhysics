@@ -91,11 +91,18 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
                                                                                               fClusterCutArray = CutArray                 ;
                                                                                             }
     
-    // Setting the cut lists for the meson
-    void SetNeutralPionCutList                ( Int_t nCuts,
+    // Setting cut lists for the neutral pion
+    void SetNeutralPionCutList          ( Int_t nCuts,
                                           TList *CutArray)                                  {
                                                                                               fnCuts = nCuts                              ;
-                                                                                              fNeutralPionCutArray = CutArray                   ;
+                                                                                              fNeutralPionCutArray = CutArray             ;
+                                                                                            }
+
+    // Setting cut lists for the (omega) meson
+    void SetMesonCutList                ( Int_t nCuts,
+                                          TList *CutArray)                                  {
+                                                                                              fnCuts = nCuts                              ;
+                                                                                              fMesonCutArray = CutArray                   ;
                                                                                             }
 
     // BG HandlerSettings
@@ -153,8 +160,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliConversionPhotonCuts*            fConversionCuts;        // ConversionCutObject
     TList*                              fClusterCutArray;       // List with Cluster Cuts
     AliCaloPhotonCuts*                  fCaloPhotonCuts;        // CaloPhotonCutObject
-    TList*                              fNeutralPionCutArray;         // List with neutral pion Cuts
-    AliConversionMesonCuts*             fMesonCuts;             // MesonCutObject
+    TList*                              fNeutralPionCutArray;   // List with neutral pion cuts
+    TList*                              fMesonCutArray;          // List with meson cuts
     
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -304,6 +311,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
+    TH1F**                  fHistoNEventsMinGamma;                              //! array of histos with no. of events containing the minimum number of EMCal/PCM photons for each reconstruction method
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
@@ -348,7 +356,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 2);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 3);
 };
 
 #endif
