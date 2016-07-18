@@ -41,7 +41,7 @@ AliAnalysisTask* AddTask(const Char_t* taskname)
   
 
   Char_t outFileName[256]={0};
-  sprintf(outFileName, "%s_Hist.root", taskname);
+  sprintf(outFileName, "AnalysisResults.root");
 
   
   AliAnalysisDataContainer* cout_taskV0EffDecomposition = 
