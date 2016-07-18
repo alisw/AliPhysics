@@ -450,7 +450,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fOutput->Add(fOutputTHnS);
         
         Int_t binsMC[] = {binPT, binETiso, binETUE, binMCMotherPDG , binlabel};
-        Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, 10};
+        Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, binETiso/2, 10};
         
         if(fIsMC){
           
@@ -464,10 +464,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           fOutput->Add(fOutMCTruth);
           
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
-          Double_t xminbismix[] = { 0., 0., -300, -500,  0.,  0.};
-          Double_t xmaxbismix[] = {70., 2.,  300,  500, 70., 10.};
+          Double_t xminbismix[] = { 0., 0., -300, -500,  0., -10., 0.};
+          Double_t xmaxbismix[] = {70., 2.,  300,  500, 70., 100.,10.};
           
-          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); Label",6,binsSMC,xminbismix,xmaxbismix);
+          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, E_{T}^{iso}, Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); E_{T}^{iso} (GeV/c); Label",7,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC->Sumw2();
           fOutput->Add(fOutClustMC);
         }
@@ -2456,10 +2456,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     outputvalueMCmix[2] = clustPDG;
     outputvalueMCmix[3] = momP2Check->GetPdgCode();
     outputvalueMCmix[4] = enTrue;
-    outputvalueMCmix[5] = dPhi;
-    outputvalueMCmix[6] = dEta;
-    outputvalueMCmix[7] = isolation;
-    outputvalueMCmix[8] = clusterFromPromptPhoton;
+    outputvalueMCmix[5] = isolation;
+    outputvalueMCmix[6] = clusterFromPromptPhoton;
       //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
       //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
       //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
