@@ -301,7 +301,6 @@ void AliPHOSTenderSupply::ProcessEvent()
   //Choose PHOS clusters and recalibrate them
   //that it recalculate energy, position and distance 
   //to closest track extrapolation	
-
   AliESDEvent *esd = 0x0 ; 
   AliAODEvent *aod = 0x0 ;
   if(fTender){
@@ -349,6 +348,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
   if(esd){ //To avoid multiple if in loops we made 
            //almost identical pecies of code. Please apply changes to both!!!
+    
     Int_t multClust=esd->GetNumberOfCaloClusters();
     AliESDCaloCells * cells = esd->GetPHOSCells() ;
     
@@ -414,7 +414,7 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetM20(m20) ;               //second moment M2z
       
       //correct distance to track      
-      Double_t dx=0.,dz=0. ;
+      Double_t dx=999.,dz=999. ;
       fPHOSGeo->GlobalPos2RelId(global,relId) ;
       TVector3 locPos;
       fPHOSGeo->Global2Local(locPos,global,mod) ;
@@ -422,9 +422,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t pttrack=0.;
       Int_t charge=0;
       Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      clu->SetTrackDistance(dx,dz); 
       Double_t r=TestCPV(dx, dz, pttrack,charge) ;
       clu->SetEmcCpvDistance(r);    
-      clu->SetTrackDistance(dx,dz); 
       if(itr>=0){ //there is a track
         const TArrayI * arrT=clu->GetTracksMatched() ;
         if(arrT->GetSize()>0){
@@ -580,8 +580,7 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   }
 
   // *** Start the matching
-  Int_t nt=0;
-  nt = esd->GetNumberOfTracks();
+  Int_t nt = esd->GetNumberOfTracks();
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -605,28 +604,30 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 
       // Skip the tracks having "wrong" status (has to be checked/tuned)
       ULong_t status = esdTrack->GetStatus();
-      if ((status & AliESDtrack::kTPCout)   == 0) continue;
-     
+      if((status & AliESDtrack::kTPCout) == 0) continue;
+
       //Continue extrapolation from TPC outer surface
       const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
       if (!outerParam) continue;
+      
+      Double_t z; 
+      if(!outerParam->GetZAt(rPHOS,bz,z))
+        continue ;
+
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+
       AliExternalTrackParam t(*outerParam);
      
-      t.GetBxByBz(b) ;
       //Direction to the current PHOS module
       Double_t phiMod=kAlpha0-kAlpha*mod ;
-      if(!t.Rotate(phiMod))
-        continue ;
+      if(!t.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
     
       Double_t y;                       // Some tracks do not reach the PHOS
       if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
       
-      Double_t z; 
-      if(!t.GetZAt(rPHOS,bz,z))
-        continue ;
-      if (TMath::Abs(z) > kZmax) 
-        continue; // Some tracks miss the PHOS in Z
       if(TMath::Abs(y) < kYmax){
+        t.GetBxByBz(b) ;
         t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
         //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
         t.GetXYZ(gposTrack) ;
