@@ -6,13 +6,16 @@
 #include "AliAnalysisTaskSE.h"
 #include <string>
 #include <TCustomBinning.h>
+#include <TString.h>
 
 class TArrayD;
 class THistManager;
-class TString;
+class TObjArray;
+
 class AliAnalysisUtils;
 class AliEmcalTrackSelection;
 class AliEMCALGeometry;
+class AliOADBContainer;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -51,8 +54,13 @@ public:
   void SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
   void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
+  void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
 
 protected:
+  virtual void ExecOnce();
+  virtual void RunChanged(Int_t runnuber);
+
+  Double_t GetTriggerWeight(const std::string &triggerclass) const;
   void FillEventCounterHists(const std::string &triggerclass, double vtxz, bool isSelected);
   void FillTrackHistos(const std::string &eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   void FillPIDHistos(const std::string &eventclass, const AliVTrack &track);
@@ -61,8 +69,9 @@ protected:
   AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
-  THistManager                    *fHistos;                   ///< Histogram manager
+  THistManager                    *fHistos;                   //!<! Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
+  TClonesArray                    *fTriggerPatches;           //!<! Container with trigger patches
 
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   Double_t                        fYshift;                    ///< Rapidity shift
@@ -70,6 +79,13 @@ protected:
 
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
+
+  TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
+  AliOADBContainer                *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
+  TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
+
+  Int_t                           fCurrentRun;                ///< Current run number (for RunChange method)
+  Bool_t                          fInitialized;               ///< Check for initialized
 
 private:
 
