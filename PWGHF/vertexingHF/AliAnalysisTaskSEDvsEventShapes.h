@@ -166,8 +166,11 @@ private:
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
     TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
     
-    THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity studies
-    THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for Spherocity studies
+    THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
+    THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapeFeeddown;//! THnSparse histograms for feeddown D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapePromptFD;//! THnSparse histograms for Both Prompt and feeddown D0 vs. Spherocity
     THnSparseD *fMCAccGenPrompt; //! histo for StepMCGenAcc for D meson prompt
     THnSparseD *fMCAccGenFeeddown; //! histo for StepMCGenAcc for D meson feeddown
     THnSparseD *fMCRecoPrompt; //! histo for StepMCReco for D meson feeddown
@@ -228,7 +231,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,5); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,6); // D vs. mult task
 };
 
 #endif
