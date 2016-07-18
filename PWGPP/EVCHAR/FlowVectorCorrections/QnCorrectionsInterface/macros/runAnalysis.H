@@ -43,6 +43,8 @@ Double_t centralityMin;
 Double_t centralityMax;
 Double_t zvertexMin;
 Double_t zvertexMax;
+Double_t bUseOnlyCentCalibEvents;
+
 
 /* Running conditions */
 TString szAliPhysicsVersion;

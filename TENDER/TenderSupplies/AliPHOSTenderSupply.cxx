@@ -476,7 +476,10 @@ void AliPHOSTenderSupply::ProcessEvent()
 //      if ( !clu->IsPHOS()) continue;
       if (clu->GetType()!=phosCluSelection) continue;
       
-    
+      Float_t  positionOld[3];
+      clu->GetPosition(positionOld);
+      TVector3 globalOld(positionOld) ;
+
       //Apply re-Calibreation
       AliPHOSAodCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
@@ -497,7 +500,7 @@ void AliPHOSTenderSupply::ProcessEvent()
         continue ;
       }  
       TVector3 locPosOld; //Use it to re-calculate distance to track
-      fPHOSGeo->Global2Local(locPosOld,global,mod) ;
+      fPHOSGeo->Global2Local(locPosOld,globalOld,mod) ;
       
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
       ecore=CorrectNonlinearity(ecore) ;
