@@ -143,6 +143,24 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
+  
+  if(sDataSet=="2010" && !bZDCMCCen) {
+    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTower.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    if(!ZDCTowerEqFile) {
+      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      exit(1);
+    }
+  } // end of if(bSetQAZDC)
+  
   // add the task to the manager
  mgr->AddTask(taskFE);
  
@@ -423,12 +441,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
  } // end of if(bUsePtWeights)
   
-  if(MinMulZN==5 && sDataSet=="2011") {
+  if(MinMulZN==5 && ptMin==0.2 && ptMax==20.2) {
     taskQC->SetUseZDCESEMulWeights(kTRUE);
     TString MulWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2011") {
       if(AODfilterBit==768) MulWeightsFileName += "Calib11hZDCESE_MultCorr_FB768.root";
       if(AODfilterBit==128) MulWeightsFileName += "Calib11hZDCESE_MultCorr_FB128.root";
+    }
+    if(sDataSet=="2010") {
+      if(AODfilterBit==768) MulWeightsFileName += "Calib10hZDCESE_MultCorr_FB768.root";
+      if(AODfilterBit==128) MulWeightsFileName += "Calib10hZDCESE_MultCorr_FB128.root";
     }
     TFile* MulWeightsFile = TFile::Open(MulWeightsFileName,"READ");
     if(!MulWeightsFile) {
