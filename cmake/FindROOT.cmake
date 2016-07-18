@@ -322,30 +322,53 @@ if(ROOTSYS)
     if(ALIROOT_STATIC)
         message(WARNING "AliRoot static build enabled! libRootExtra.a will be created.\nPlease remove when ROOT https://sft.its.cern.ch/jira/browse/ROOT-6904 issue is fixed")
 
-        # ROOT needs xml2 but it is not built with the static version so we have to add it
+        # The following extra dependencies will be packed into libRootExtra.a
+        find_library(ZLIB_STATIC_LIB      NAMES "libz.a")
+        find_library(XML2_STATIC_LIB      NAMES "libxml2.a")
+        find_library(SSL_STATIC_LIB       NAMES "libssl.a")
+        find_library(SSLCRYPTO_STATIC_LIB NAMES "libcrypto.a")
+
+        message(STATUS "Static zlib: ${ZLIB_STATIC_LIB}")
+        message(STATUS "Static libxml: ${XML2_STATIC_LIB}")
+        message(STATUS "Static SSL: ${SSL_STATIC_LIB}")
+        message(STATUS "Static libcrypto: ${SSLCRYPTO_STATIC_LIB}")
+
         find_package(LibXml2)
+        find_package(OpenSSL)
+        find_package(ZLIB)
 
-        if(LIBXML2_FOUND)
+        message(STATUS "zlib include path: ${ZLIB_INCLUDE_DIR}")
+        message(STATUS "SSL include path: ${OPENSSL_INCLUDE_DIR}")
+        message(STATUS "libxml2 include path: ${LIBXML2_INCLUDE_DIR}")
 
-            # adding SSL
-            find_package(OpenSSL)
-
-            if(OPENSSL_FOUND)
-                file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o" "${ROOTSYS}/tree/treeplayer/src/*.o" "${ROOTSYS}/io/xmlparser/src/*.o" "${ROOTSYS}/math/minuit2/src/*.o")
-                add_library(RootExtra STATIC ${_extraroot})
-                set_target_properties(RootExtra PROPERTIES COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
-                set_target_properties(RootExtra PROPERTIES LINKER_LANGUAGE CXX)
-                target_link_libraries(RootExtra ${ROOT_LIBDIR}/libfreetype.a ${ROOT_LIBDIR}/libpcre.a ${ROOT_LIBDIR}/liblzma.a ${LIBXML2_LIBRARIES} ${OPENSSL_LIBRARIES})
-                install(TARGETS RootExtra
-                    ARCHIVE DESTINATION lib
-                    LIBRARY DESTINATION lib)
-            else()
-                message(FATAL_ERROR "OpenSSL not found. Coould not generate the static RootExtra. Please install Openssl")
-            endif()
-        else()
-            message(FATAL_ERROR "libxml2 not found. Can not generate the static RootExtra. Please install libxml2")
+        if(NOT ZLIB_STATIC_LIB OR NOT XML2_STATIC_LIB OR
+           NOT SSL_STATIC_LIB  OR NOT SSLCRYPTO_STATIC_LIB OR
+           NOT LIBXML2_FOUND   OR NOT OPENSSL_FOUND OR
+           NOT ZLIB_FOUND)
+            message(FATAL_ERROR "One or more static libraries required to build static AliRoot was not found")
         endif()
+
+        file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o"
+                             "${ROOTSYS}/tree/treeplayer/src/*.o"
+                             "${ROOTSYS}/io/xmlparser/src/*.o"
+                             "${ROOTSYS}/math/minuit2/src/*.o")
+        add_library(RootExtra STATIC ${_extraroot})
+        set_target_properties(RootExtra PROPERTIES
+                                        COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
+        set_target_properties(RootExtra PROPERTIES
+                                        LINKER_LANGUAGE CXX)
+        target_link_libraries(RootExtra
+                              ${ROOT_LIBDIR}/libfreetype.a
+                              ${ROOT_LIBDIR}/libpcre.a
+                              ${ROOT_LIBDIR}/liblzma.a
+                              ${XML2_STATIC_LIB}
+                              ${ZLIB_STATIC_LIB}
+                              ${SSL_STATIC_LIB})
+        install(TARGETS RootExtra
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib)
     endif(ALIROOT_STATIC)
+
 else()
     message(FATAL_ERROR "ROOT installation not found! Please point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR.")
 endif(ROOTSYS)

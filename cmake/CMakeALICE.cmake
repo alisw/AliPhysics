@@ -194,12 +194,14 @@ macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
                           ${DATE_MONLIBRARIES} ${DATE_RCPROXYLIBRARIES}
                           Root RootExtra)
 
-    # different flags
+    # Link AMORE and DATE libraries statically
     set(MODULE_COMPILE_FLAGS "-Wl,--no-as-needed  ${DATE_CFLAGS} ${AMORE_CFLAGS}")
-    set(MODULE_LINK_FLAGS "${DATE_LDFLAGS} ${AMORE_STATICLIBS}")
+    set(MODULE_LINK_FLAGS "-Wl,-Bstatic ${DATE_LDFLAGS} ${AMORE_STATICLIBS} -Wl,-Bdynamic")
 
-    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
-    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
+    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES
+                          COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
+    set_target_properties(${DETECTOR}${ALGORITHM}da.exe PROPERTIES
+                          LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
     # Installation
     install(TARGETS ${DETECTOR}${ALGORITHM}da.exe RUNTIME DESTINATION bin)

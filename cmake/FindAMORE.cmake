@@ -37,8 +37,15 @@ if(AMORE_CONFIG)
         if(_ERR)
             message(FATAL_ERROR "Error executing ${DATE_CONFIG} ${_OPTS}")
         endif()
-        string(STRIP "${_OUTVAR_RAW}" _OUTVAR_STRIPPED)
-        string(REPLACE "\n" " " ${_OUTVAR} "${_OUTVAR_STRIPPED}")
+        string(STRIP "${_OUTVAR_RAW}" _OUTVAR_RAW)
+        string(REPLACE "\n" " " _OUTVAR_RAW "${_OUTVAR_RAW}")
+        string(REPLACE "-lpthread" "-pthread" ${_OUTVAR} "${_OUTVAR_RAW}")
+    endmacro()
+
+    # Helper to find the exact static version of a library.
+    macro(amore_find_static_library _LIB _LIBPATHS _OUTVAR)
+        find_library(${_OUTVAR} NAMES "lib${_LIB}.a"
+                                PATHS ${_LIBPATHS})
     endmacro()
 
     # Checking AMORE version
@@ -47,7 +54,30 @@ if(AMORE_CONFIG)
 
     # Checking AMORE static libraries
     amore_config(--ldflags-da-static AMORE_STATICLIBS)
-    message(STATUS "AMORE static libraries: ${AMORE_STATICLIBS}")
+    message(STATUS "AMORE static libraries (unchanged): ${AMORE_STATICLIBS}")
+
+    # Make sure we are using the correct static versions of the libraries.
+    string(REGEX MATCHALL "[-]l[^- ]+" _AMORE_LIBS ${AMORE_STATICLIBS})
+    string(REGEX REPLACE "[-]l" ";" _AMORE_LIBS ${_AMORE_LIBS})
+    string(REGEX MATCHALL "[-]L[^- ]+" _AMORE_LIBPATHS ${AMORE_STATICLIBS})
+    string(REGEX REPLACE "[-]L" ";" _AMORE_LIBPATHS ${_AMORE_LIBPATHS})
+    foreach(_AMORE_LIB ${_AMORE_LIBS})
+      if(NOT ${_AMORE_LIB} STREQUAL "dl")
+        # libdl must be linked dynamically (as required by libmysqlclient.a)
+        amore_find_static_library(${_AMORE_LIB} "${_AMORE_LIBPATHS}" _AMORE_LIB_${_AMORE_LIB})
+        if (NOT ${_AMORE_LIB_${_AMORE_LIB}} MATCHES "\\.a$")
+          message(FATAL_ERROR "AMORE: could not find full static library path for ${_AMORE_LIB} (search paths: ${_AMORE_LIBPATHS})")
+        endif()
+        message(STATUS "AMORE library ${_AMORE_LIB} was found under ${_AMORE_LIB_${_AMORE_LIB}}")
+        string(REGEX REPLACE "-l${_AMORE_LIB}"
+                             ${_AMORE_LIB_${_AMORE_LIB}}
+                             AMORE_STATICLIBS ${AMORE_STATICLIBS})
+      endif()
+    endforeach()
+    string(REGEX REPLACE "-ldl"
+                         "-Wl,-Bdynamic -ldl -Wl,-Bstatic"
+                         AMORE_STATICLIBS ${AMORE_STATICLIBS})
+    message(STATUS "AMORE static libraries (adjusted): ${AMORE_STATICLIBS}")
 
     # Checking AMORE auxiliary libraries
     amore_config(--auxlibs-list AMORE_AUXLIBS)

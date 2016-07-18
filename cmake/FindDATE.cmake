@@ -71,6 +71,7 @@ if(DATE_CONFIG)
         if(_ERR)
             message(FATAL_ERROR "Error executing ${DATE_CONFIG} ${_OPTS}")
         endif()
+        string(REPLACE "-lpthread" "-pthread" _OUTVAR_RAW "${_OUTVAR_RAW}")
         string(STRIP "${_OUTVAR_RAW}" ${_OUTVAR})
     endmacro()
 
@@ -100,6 +101,9 @@ if(DATE_CONFIG)
     date_config(--libs DATE_LIBS)
     message(STATUS "DATE libraries: ${DATE_LIBS}")
 
+    # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
+    set(DATE_LIBS "${DATE_LIBS} -L/usr/lib64/mysql/")
+
     # DATE_LIBRARIES
     # Extracting the list of dynamic and static libraries from the --libs
     # The list is needed during the generation of the DAs
@@ -110,9 +114,6 @@ if(DATE_CONFIG)
     string(REGEX MATCHALL "[-]L[^- ]+" DATE_LIBRARIES_PATH_TMP ${DATE_LIBS})
     string(REGEX REPLACE "[-]L" ";" DATE_LIBRARIES_PATH_TMP ${DATE_LIBRARIES_PATH_TMP})
     find_date_libraries(DATE_LIBRARIES "${DATE_LIBRARIES_TMP}" "${DATE_LIBRARIES_PATH_TMP}")
-
-    # Fix for mysql bug https://bugs.launchpad.net/percona-server/+bug/1287374
-    set(DATE_LIBS "${DATE_LIBS} -L/usr/lib64/mysql/")
 
     # setting the monlibs
     date_config(--monitorlibs=noshift DATE_MONLIBS)
