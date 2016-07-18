@@ -1068,6 +1068,9 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(8)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  if(fUseCentralitySPDTracklet){
+    fCounter->SetStudyMultiplicity(kTRUE,1.);
+  }
   fCounter->Init();
   PostData(8,fCounter);
 
