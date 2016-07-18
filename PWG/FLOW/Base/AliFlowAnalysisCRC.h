@@ -1455,7 +1455,7 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
- TProfile *fCRCZDCQVecVtxPos[fCRCMaxnCen][3][4]; //! Vtx positions re-centered Qvec
+ TH3D *fCRCZDCQVecVtxPos[4]; //! Vtx positions re-centered Qvec
  TH3D *fCRCZDCEP[6]; //! EPs
  TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
