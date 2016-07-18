@@ -883,10 +883,6 @@ public:
  TH2F* GetZNResvsCen(Int_t const eg, Int_t const h) const {return this->fhZNResvsCen[eg][h];};
  void SetZNQVecCov(TProfile* const n, Int_t const h) {this->fhZNQVecCov[h] = n;};
  TProfile* GetZNQVecCov(Int_t const h) const {return this->fhZNQVecCov[h];};
-  void SetZDCESEHistEP(TH2D* const n, Int_t const h) {this->fZDCESEHistEP[h] = n;};
-  TH2D* GetZDCESEHistEP(Int_t const h) const {return this->fZDCESEHistEP[h];};
-  void SetZDCESEHistQV(TH2D* const n, Int_t const h) {this->fZDCESEHistQV[h] = n;};
-  TH2D* GetZDCESEHistQV(Int_t const h) const {return this->fZDCESEHistQV[h];};
   
  void SetPtDiffNBins(Int_t nbins) {this->fPtDiffNBins=nbins;}
  
@@ -1459,6 +1455,7 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+ TProfile *fCRCZDCQVecVtxPos[fCRCMaxnCen][3][4]; //! Vtx positions re-centered Qvec
  TH3D *fCRCZDCEP[6]; //! EPs
  TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1692,8 +1689,6 @@ private:
   TH1D *fZDCESECutsHist[fZDCESEnPol]; //!
   
  TProfile* fhZNQVecCov[4]; //! Q-vec cov.
- TH2D *fZDCESEHistEP[fCRCMaxnCen]; //! Test ZDC ESE
- TH2D *fZDCESEHistQV[fCRCMaxnCen]; //! Test ZDC ESE
  Bool_t fQAZDCCuts;
  Bool_t fQAZDCCutsFlag;
  Int_t fMinMulZN;
