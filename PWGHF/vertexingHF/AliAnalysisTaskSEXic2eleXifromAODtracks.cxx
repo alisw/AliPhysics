@@ -929,12 +929,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
 	}else if(fUseCentralitySPDTracklet){
-		if(countCorr>=1 && countCorr<=8) fCentrality = 5.;
-		else if(countCorr>=9 && countCorr<=13) fCentrality = 15.;
-		else if(countCorr>=14 && countCorr<=19) fCentrality = 25.;
-		else if(countCorr>=20 && countCorr<=30) fCentrality = 35.;
-		else if(countCorr>=31 && countCorr<=49) fCentrality = 45.;
-		else fCentrality = 55.;
+		if(countCorr>=0 && countCorr<=0) fCentrality = 5.;
+    else if(countCorr>=1 && countCorr<=8) fCentrality = 15.;
+		else if(countCorr>=9 && countCorr<=13) fCentrality = 25.;
+		else if(countCorr>=14 && countCorr<=19) fCentrality = 35.;
+		else if(countCorr>=20 && countCorr<=30) fCentrality = 45.;
+		else if(countCorr>=31 && countCorr<=49) fCentrality = 55.;
+		else fCentrality = 65.;
 	}else{
 		fCentrality = 1.;
 	}
