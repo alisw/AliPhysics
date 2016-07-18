@@ -51,6 +51,7 @@ AliJPartLifetime::AliJPartLifetime():
     , fcard(NULL)
     , fTrackCuts(NULL)
     , fEsd(NULL)
+    , fPIDResponse(NULL)
     , fEventNumbers(NULL)
 {
 	//DefineOutput (1, TList::Class());
@@ -63,6 +64,7 @@ AliJPartLifetime::AliJPartLifetime(const char *name, TString inputformat):
     fcard(NULL),
     fTrackCuts(NULL),
     fEsd(NULL),
+    fPIDResponse(NULL),
     fEventNumbers(NULL)
 {
 	// Constructor
@@ -78,6 +80,7 @@ AliJPartLifetime::AliJPartLifetime(const AliJPartLifetime& ap) :
 	fcard( ap.fcard ),
 	fTrackCuts(ap.fTrackCuts),
 	fEsd(ap.fEsd),
+    fPIDResponse(ap.fPIDResponse),
 	fEventNumbers(ap.fEventNumbers)
 {
 
@@ -102,14 +105,18 @@ AliJPartLifetime::~AliJPartLifetime()
 	//delete[] fTriggerList;
 	delete fTrackCuts;
 	delete fEventNumbers;
+    //delete fPIDResponse;
 	for (uint i = 0; i < kAll; i++){
 		uint triggc = fcard->GetNoOfBins(kTriggType);
 		for(uint j = 0; j < triggc; ++j){
 			delete fV0Mass[i][j];
 			delete fhTriggPtBin[i][j];
 			delete fDecayLength[i][j];
-			delete fDCA[i][j];
+			//delete fDCA[i][j];
 			delete fProperTime[i][j];
+
+            delete fV0MassPID[i][j];
+            delete fProperTimePID[i][j];
 		}
 
 		delete fpTspectra[i];
@@ -176,11 +183,17 @@ void AliJPartLifetime::UserCreateOutputObjects()
 			fDecayLength[i][hit] = new TH1D(Form("DL_%s_%u",tname[i],hit),"DecayLength",1000,0,100); //cm
 			fOutput->Add(fDecayLength[i][hit]);
 
-			fDCA[i][hit] = new TH1D(Form("DCA_%s_%u",tname[i],hit),"DCA",1000,0,100); //cm
-			fOutput->Add(fDCA[i][hit]);
+			/*fDCA[i][hit] = new TH1D(Form("DCA_%s_%u",tname[i],hit),"DCA",1000,0,100); //cm
+			fOutput->Add(fDCA[i][hit]);*/
 
 			fProperTime[i][hit] = new TH1D(Form("Tau_%s_%u",tname[i],hit),"Tau",300,0,30);
 			fOutput->Add(fProperTime[i][hit]);
+
+            fV0MassPID[i][hit] = new TH1D(Form("mass_PID_%s_%u",tname[i],hit),tname[i],180*5,0.2,2); //0.2 to 1.5 GeV
+			fOutput->Add(fV0MassPID[i][hit]);
+
+            fProperTimePID[i][hit] = new TH1D(Form("Tau_PID_%s_%u",tname[i],hit),"Tau PID",300,0,30);
+			fOutput->Add(fProperTimePID[i][hit]);
 
 			fhTriggPtBin[i][hit] = new TH1D(Form("hTriggPtBin%02d",hit),Form("pTt: %3.1f-%3.1f",pTt1,pTt2),bc,pTt1,pTt2);
 			fhTriggPtBin[i][hit]->Sumw2();
@@ -197,7 +210,7 @@ void AliJPartLifetime::UserCreateOutputObjects()
 	TDirectory *dircard = gDirectory;
 	fcard->WriteCard(dircard);
 
-	PostData(1, fOutput);
+	PostData(1,fOutput);
 }
 
 //___________________________________________________________________
@@ -228,7 +241,7 @@ void AliJPartLifetime::UserExec(Option_t* )
 		mcEvent->GenEventHeader()->PrimaryVertex(vtxMC3d);
 	}
 
-	AliGenPythiaEventHeader* pythiaGenHeader = NULL;
+	/*AliGenPythiaEventHeader* pythiaGenHeader = NULL;
 	AliGenDPMjetEventHeader* dpmHeader = NULL;
 
 	if(IsMC) { // get access to event generator headers
@@ -243,7 +256,7 @@ void AliJPartLifetime::UserExec(Option_t* )
 			eta = part->Eta();
 		} // end of the particle loop
 
-	} // end of MC loop
+	}*/
 	// -----------------------------------------------------------------------
 
 	// Load InputHandler for each event---------------------------------------
@@ -251,6 +264,9 @@ void AliJPartLifetime::UserExec(Option_t* )
 		AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 	// -----------------------------------------------------------------------
 
+    fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
+    if(!fPIDResponse)
+        printf("!fPIDResponse\n");
 
 	// Decide TRIGGER information---------------------------------------------
 	fEventNumbers->Fill("AllEvents",1);
@@ -290,13 +306,12 @@ void AliJPartLifetime::UserExec(Option_t* )
 	Bool_t IsGoodTPCVertex = kFALSE;
 	Bool_t IsGoodTPCVertexCut = kFALSE;
 
-	const AliESDVertex* vertex_TPC
-		= AliPWG0Helper::GetVertex(fEsd, AliPWG0Helper::kTPCITS);
+	const AliESDVertex* vertex_TPC = AliPWG0Helper::GetVertex(fEsd, AliPWG0Helper::kTPCITS);
 	Double_t tpczvtx = -50.;
 	Double_t tpcposition[3];
 	if(vertex_TPC) {
 		tpczvtx = vertex_TPC->GetZ();
-		if (AliPWG0Helper::TestVertex(vertex_TPC, AliPWG0Helper::kTPCITS)){
+		if (AliPWG0Helper::TestVertex(vertex_TPC,AliPWG0Helper::kTPCITS)){
 			IsGoodTPCVertex = kTRUE;
 			vertex_TPC->GetXYZ(tpcposition);
 			if(TMath::Abs(tpczvtx) < 10.)
@@ -329,7 +344,6 @@ void AliJPartLifetime::Terminate(Option_t*)
 
 }
 
-
 void AliJPartLifetime::StrangenessMeasure(){
 	Double_t tPrimaryVtxPosition[3];
 	Int_t nv0s = 0;
@@ -346,7 +360,7 @@ void AliJPartLifetime::StrangenessMeasure(){
 	Double_t lAlphaV0  = 0, lPtArmV0 = 0;
 	Double_t tV0Position[3];
 	Double_t lMagneticField      = 999;
-	Double_t lP        =0;
+	Double_t lP        = 0;
 
 	const AliESDVertex *primaryVtx = ((AliESDEvent*)fEsd)->GetPrimaryVertex();
 	tPrimaryVtxPosition[0] = primaryVtx->GetX();
@@ -355,18 +369,16 @@ void AliJPartLifetime::StrangenessMeasure(){
 	if (TMath::Abs(tPrimaryVtxPosition[2]) > 10)
 		return;
 
-
 	for(Int_t iV0 = 0; iV0 < nv0s; iV0++){
 		AliESDv0 *v0 = fEsd->GetV0(iV0);
 		UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
 		UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
 		lMagneticField = ((AliESDEvent*)fEsd)->GetMagneticField();
 
-
 		AliESDtrack *pTrack = fEsd->GetTrack(lKeyPos);
 		AliESDtrack *nTrack = fEsd->GetTrack(lKeyNeg);
 		if (!pTrack || !nTrack) {
-			Printf("ERROR: Could not retrieve one of the daughter track");
+			Printf("ERROR: Could not retrieve one of the daughter tracks");
 			continue;
 		}
 
@@ -399,19 +411,15 @@ void AliJPartLifetime::StrangenessMeasure(){
 		lOnFlyStatus             = v0->GetOnFlyStatus();
 		lChi2V0                  = v0->GetChi2V0();
 		lDcaV0Daughters          = v0->GetDcaV0Daughters();
-		lDcaV0ToPrimVertex       = v0->GetD(
-				tPrimaryVtxPosition[0]
-				, tPrimaryVtxPosition[1]
-				, tPrimaryVtxPosition[2]);
+		lDcaV0ToPrimVertex       = v0->GetD(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1],tPrimaryVtxPosition[2]);
 
 		lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(
 				tPrimaryVtxPosition[0]
 				, tPrimaryVtxPosition[1]
 				, tPrimaryVtxPosition[2]);
 		v0->GetXYZ(tV0Position[0], tV0Position[1], tV0Position[2]);
-		lV0Radius      = TMath::Sqrt(
-				tV0Position[0]*tV0Position[0]
-				+ tV0Position[1]*tV0Position[1]);
+
+		lV0Radius = TMath::Sqrt(tV0Position[0]*tV0Position[0]+tV0Position[1]*tV0Position[1]);
 		lV0DecayLength = TMath::Sqrt(
 				TMath::Power(tV0Position[0] - tPrimaryVtxPosition[0],2) +
 				TMath::Power(tV0Position[1] - tPrimaryVtxPosition[1],2) +
@@ -437,25 +445,31 @@ void AliJPartLifetime::StrangenessMeasure(){
 		if(pttbin < 0)
 			continue;
 
-		//fV0Mass[kK0s][bin] -> Fill (v0->GetEffMass());
 		fV0Mass[kK0s][pttbin]->Fill(v0->GetEffMass());
+        int pidn = kUnknown, pidp = kUnknown;
+        pidp = GetPID(fPIDResponse,pTrack);
+        pidn = GetPID(fPIDResponse,nTrack);
 
 		if (v0->GetEffMass() > 0.482 && v0->GetEffMass() < 0.509) {
-			//fV0pT[kK0s] -> Fill(lPt);
 			fhTriggPtBin[kK0s][pttbin]->Fill(lPt);
-			//fV0p[kK0s] -> Fill(lP);
 			fpTspectra[kK0s]->Fill(pttbin);
 			fDecayLength[kK0s][pttbin]->Fill(lV0DecayLength);
-			fDCA[kK0s][pttbin]->Fill(lV0DecayLength);
-			//proper time = M_K0s * decay length / P
-			fProperTime[kK0s][pttbin]->Fill(lV0DecayLength*0.497614/lP);
-			if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
+			//fDCA[kK0s][pttbin]->Fill(lV0DecayLength);
 
-			}
-			if (fTrackCuts->AcceptTrack(nTrack)) { // good ITSTPC track
-			}
+            double tau = lV0DecayLength*0.497614/lP; //proper time = M_K0s * decay length / P
+			fProperTime[kK0s][pttbin]->Fill(tau);
 
+            //int pidp = fTrackCuts->AcceptTrack(pTrack)?GetPID(fPIDResponse,pTrack):kUnknown;
+			//if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
+			//}
+			//if (fTrackCuts->AcceptTrack(nTrack)) { // good ITSTPC track
+			//}
+
+            if(pidp == kPion && pidn == kPion)
+                fProperTimePID[kK0s][pttbin]->Fill(tau);
 		}
+        if(pidp == kPion && pidn == kPion)
+            fV0MassPID[kK0s][pttbin]->Fill(v0->GetEffMass()); //move this up?
 
 		v0->ChangeMassHypothesis(3122);
 		fV0Mass[kLamb][pttbin]->Fill(v0->GetEffMass());
@@ -463,10 +477,17 @@ void AliJPartLifetime::StrangenessMeasure(){
 		if (v0->GetEffMass() > 1.11 && v0->GetEffMass() < 1.12) {
 			fhTriggPtBin[kLamb][pttbin]->Fill(lPt);
 			fpTspectra[kLamb]->Fill(pttbin);
-			if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
+
+            /*int pidp = fTrackCuts->AcceptTrack(pTrack)?GetPID(fPIDResponse,pTrack):kUnknown;
+            int pidn = fTrackCuts->AcceptTrack(pTrack)?GetPID(fPIDResponse,pTrack):kUnknown;
+            if(pidp == kProton && pidn == kPion){ //p+ + pi-
+
+                //fProperTimePID[kLamb][pttbin]->Fill(tau);
+            }*/
+            /*if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
 			}
 			if (fTrackCuts->AcceptTrack(nTrack)) { // good ITSTPC track
-			}
+			}*/
 		}
 
 		v0->ChangeMassHypothesis(-3122);
@@ -475,10 +496,45 @@ void AliJPartLifetime::StrangenessMeasure(){
 		if (v0->GetEffMass() > 1.11 && v0->GetEffMass() < 1.12) {
 			fhTriggPtBin[kALamb][pttbin]->Fill(lPt);
 			fpTspectra[kALamb]->Fill(pttbin);
-			if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
+
+            /*int pidp = fTrackCuts->AcceptTrack(pTrack)?GetPID(fPIDResponse,pTrack):kUnknown;
+            int pidn = fTrackCuts->AcceptTrack(pTrack)?GetPID(fPIDResponse,pTrack):kUnknown;
+            if(pidn == kProton && pidp == kPion) //p- + pi+
+                fProperTimePID[kALamb][pttbin]->Fill(tau);*/
+			/*if (fTrackCuts->AcceptTrack(pTrack)) { // good ITSTPC track
 			}
 			if (fTrackCuts->AcceptTrack(nTrack)) { // good ITSTPC track
-			}
+			}*/
 		}
 	}
+}
+
+
+Int_t AliJPartLifetime::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
+    if(!pid)
+        return kUnknown; // no pid available
+
+    Double_t sigmas[] = {-999,-999,-999,-999};
+
+    uint ipid = kUnknown;
+    Double_t lsigma = 3.0;
+    sigmas[kPion] = pid -> NumberOfSigmasTPC(trk,AliPID::kPion);
+    sigmas[kKaon] = pid -> NumberOfSigmasTPC(trk,AliPID::kKaon);
+    sigmas[kProton] = pid -> NumberOfSigmasTPC(trk,AliPID::kProton);
+    sigmas[kElectron] = pid -> NumberOfSigmasTPC(trk,AliPID::kElectron);
+    for (uint i = 0; i < kUnknown; i++){
+        if (fabs(sigmas[i]) < lsigma) {
+            lsigma = fabs(sigmas[i]);
+            ipid = i;
+        }
+    }
+
+    // derive information, whether tof pid is available
+    /*if (0){
+        const Bool_t ka = !(trk->GetStatus() & AliESDtrack::kTOFmismatch);
+        const Bool_t kb =  (trk->GetStatus() & AliESDtrack::kTOFpid);
+        const Bool_t ktof = ka && kb;
+    }*/
+
+    return ipid;//(lsigma > 3.0 || ipid == kElectron)?kPion:ipid;
 }
