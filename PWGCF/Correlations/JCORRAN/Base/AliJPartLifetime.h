@@ -14,12 +14,14 @@
 #include "AliESDtrackCuts.h"
 #include "AliJConst.h"
 #include "AliJCard.h"
+#include "AliPIDResponse.h"
 
 typedef unsigned int uint;
 
 class AliJPartLifetime : public AliAnalysisTaskSE {
     public:
 	    enum {kK0s, kLamb, kALamb, kAll};
+        enum {kPion, kKaon, kProton, kElectron, kUnknown};
 
 	    AliJPartLifetime();
 	    AliJPartLifetime(const char *name,  TString inputformat);
@@ -33,6 +35,7 @@ class AliJPartLifetime : public AliAnalysisTaskSE {
 	    virtual void    FinishTaskOutput();
 	    virtual void    Terminate(Option_t *);
 	    void            StrangenessMeasure();
+        Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk);
 
 	    void SetCard(AliJCard *pcard) {fcard = pcard;}
 	    void SetOption(char * option) {fOption = option;}
@@ -45,12 +48,16 @@ class AliJPartLifetime : public AliAnalysisTaskSE {
 
 	    AliESDtrackCuts*                fTrackCuts; //!
 	    AliESDEvent*                    fEsd; //!
+        AliPIDResponse                 *fPIDResponse; //!
 	    TH1D*                           fEventNumbers; //!
 	    TH1D*                           fV0Mass[kAll][kPtDim]; //!
 	    TH1D*                           fhTriggPtBin[kAll][kPtDim]; //!
 	    TH1D*                           fDecayLength[kAll][kPtDim]; //!
-	    TH1D*                           fDCA[kAll][kPtDim]; //!
 	    TH1D*                           fProperTime[kAll][kPtDim]; //!
+        //Particle-identified histograms
+        TH1D*                           fV0MassPID[kAll][kPtDim]; //!
+        TH1D*                           fProperTimePID[kAll][kPtDim]; //!
+
 	    TH1D*                           fpTspectra[kAll]; //!
 
 	    ClassDef(AliJPartLifetime, 1);
