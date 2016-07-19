@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <array>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -106,25 +107,25 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   EnergyBinning energybinning;
   TLinearBinning etabinning(100, -0.7, 0.7);
   fHistos = new THistManager("Ref");
-  TString triggers[21] = {"MB", "EMC7", "DMC7",
+  std::array<TString, 21> triggers = {"MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
       "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl",
       "EG1excl", "EJ1excl", "DG1excl", "DJ1excl"
   };
-  TString patchtype[10] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
+  std::array<TString, 10> patchtypes = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
-  for(TString *trg = triggers; trg < triggers+18; trg++){
-    fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
-    fHistos->CreateTH1(Form("hEventCentrality%s", trg->Data()), Form("Event centrality for trigger class %s", trg->Data()), 103, -2., 101.);
-    fHistos->CreateTH1(Form("hVertexZ%s", trg->Data()), Form("z-position of the primary vertex for trigger class %s", trg->Data()), 200, -40., 40.);
-    for(int ipatch = 0; ipatch < 10; ipatch++){
-      fHistos->CreateTH1(Form("h%sPatchEnergy%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
-      fHistos->CreateTH1(Form("h%sPatchET%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch transverse energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
-      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning, etabinning);
-      fHistos->CreateTH2(Form("h%sPatchETEta%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch transverse energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning, etabinning);
+  for(auto trg : triggers){
+    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5);
+    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101.);
+    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40.);
+    for(auto patch : patchtypes){
+      fHistos->CreateTH1(Form("h%sPatchEnergy%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning);
+      fHistos->CreateTH1(Form("h%sPatchET%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning);
+      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning);
+      fHistos->CreateTH2(Form("h%sPatchETEta%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning);
       for(int ien = 0; ien < 5; ien++){
-        fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patchtype[ipatch].Data(), static_cast<int>(encuts[ien]), trg->Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patchtype[ipatch].Data(), encuts[ien], trg->Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi());
-        fHistos->CreateTH2(Form("h%sColRow%dG%s", patchtype[ipatch].Data(), static_cast<int>(encuts[ien]), trg->Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patchtype[ipatch].Data(), encuts[ien], trg->Data()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+        fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi());
+        fHistos->CreateTH2(Form("h%sColRow%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 48, -0.5, 47.5, 104, -0.5, 103.5);
       }
     }
   }
@@ -138,11 +139,13 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   AliDebugStream(1) << GetName() << ": Start function" << std::endl;
-  if(fInitialized){
+  if(!fInitialized){
+    AliInfoStream() << GetName() << ": Initializing ..." << std::endl;
     ExecOnce();
     fInitialized = kTRUE;
   }
   if(fCurrentRun != InputEvent()->GetRunNumber()){
+    AliDebugStream(1) << GetName() << ": Changing run from " <<  fCurrentRun << " to " << InputEvent()->GetRunNumber() << std::endl;
     RunChanged(InputEvent()->GetRunNumber());
     fCurrentRun = InputEvent()->GetRunNumber();
   }
@@ -181,20 +184,27 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     AliDebugStream(1) << GetName() << ": Reject trigger" << std::endl;
     return;
   }
-  AliDebugStream(1) << "Event selected" << std::endl;
-  AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+  AliDebugStream(1) << "Trigger selected" << std::endl;
   // In case a centrality estimator is used, event selection,
   // otherwise ignore event selection from multiplicity task
+  double centrality = -1;
   if(fRequestCentrality){
-    if(mult && !mult->IsEventSelected()) return;
-  }
-  double centrality =  mult ? mult->GetEstimator("V0M")->GetPercentile() : -1;
-  AliDebugStream(1) << GetName()  << ": Centrality " << centrality << std::endl;
-  if(!fCentralityRange.IsInRange(centrality)){
-    AliDebugStream(1) << GetName() << ": reject centrality: " << centrality << std::endl;
-    return;
+    AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
+    if(!mult){
+      AliErrorStream() << GetName() << ": Centrality selection enabled but no centrality estimator available" << std::endl;
+      return;
+    }
+    if(!mult->IsEventSelected()) return;
+    centrality =  mult->GetEstimator("V0M")->GetPercentile();
+    AliDebugStream(1) << GetName()  << ": Centrality " << centrality << std::endl;
+    if(!fCentralityRange.IsInRange(centrality)){
+      AliDebugStream(1) << GetName() << ": reject centrality: " << centrality << std::endl;
+      return;
+    } else {
+      AliDebugStream(1) << GetName() << ": select centrality " << centrality << std::endl;
+    }
   } else {
-    AliDebugStream(1) << GetName() << ": select centrality " << centrality << std::endl;
+    AliDebugStream(1) << GetName() << ": No centrality selection required" << std::endl;
   }
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   if(!vtx) vtx = fInputEvent->GetPrimaryVertexSPD();
