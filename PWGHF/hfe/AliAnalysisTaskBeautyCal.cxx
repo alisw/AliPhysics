@@ -1143,9 +1143,15 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
     fMCparticleAss = (AliAODMCParticle*) fMCarray->At(ilabelAss);
     Int_t pdgAss = fMCparticleAss->GetPdgCode();   
     if(abs(pdgAss)!=11)continue;
-    Double_t dphie_tmp = aAssotrack->Phi() - track->Phi();
+          int ilabelMass = 0;
+          int pidMass = 0;
+          FindMother(fMCparticleAss, ilabelMass, pidMass);
+          Bool_t pid_eleDass = IsDdecay(pidMass);
+          Bool_t pid_eleBass = IsBdecay(pidMass);
+
+    Double_t dphie_tmp = track->Phi() - aAssotrack->Phi();
     Double_t dphie = atan2(sin(dphie_tmp),cos(dphie_tmp));
-    if(track->Pt()>2.5)fHistHFEcorr->Fill(dphie);
+    if(track->Pt()>2.5 && (pid_eleDass || pid_eleBass))fHistHFEcorr->Fill(dphie);
   }
 }
 
