@@ -5,7 +5,7 @@
  *
  * \class AliAnalysisMuMuNch
  * \brief Invariant mass dimuon analysis
- * \author L. Aphecetche and J. Martin Blanco (Subatech)
+ * \author L. Aphecetche, J. Martin Blanco and B. Audurier (Subatech)
  */
 
 #include "AliAnalysisMuMuBase.h"
@@ -20,27 +20,43 @@ class AliAnalysisMuMuMinv : public AliAnalysisMuMuBase
 {
 public:
 
-  AliAnalysisMuMuMinv(TH2* AccEffHisto=0x0, Bool_t computeMeanPt=kFALSE, Int_t systLevel=0);
+  AliAnalysisMuMuMinv(TH2* AccEffHisto=0x0, Int_t systLevel=0);
   virtual ~AliAnalysisMuMuMinv();
-  
+
   Bool_t IsPtInRange(const AliVParticle& t1, const AliVParticle& t2,
                            Double_t& ptmin, Double_t& ptmax) const;
-  
+
   void NameOfIsPtInRange(TString& name, Double_t& ymin, Double_t& ymax) const;
-  
+
   Bool_t IsRapidityInRange(const AliVParticle& t1, const AliVParticle& t2) const;
   void NameOfIsRapidityInRange(TString& name) const { name = "PAIRY"; }
-  
+
   Bool_t ShouldCorrectDimuonForAccEff() { return (fAccEffHisto != 0x0); }
-  
+
+  void FillMeanPtHisto() { fcomputeMeanPt=kTRUE; }
+
+  void SetMCptCut(Double_t mcptmin, Double_t mcptmax) { fmcptcutmin=mcptmin;fmcptcutmax=mcptmax; }
+
+  void SetMuonWeight() { fWeightMuon=kTRUE; }
+
   void SetLegacyBinNaming() { fMinvBinSeparator = ""; }
-  
+
   void SetBinsToFill(const char* particle, const char* bins);
 
+  // create the original function with the parameters used in simulation to generate the pT distribution
+  void SetOriginPtFunc(TString formula, const Double_t *param, Double_t xMin, Double_t xMax);
+  // create the new function with its initial parameters to fit the generated/weighted pT distribution
+  void SetNewPtFunc(TString formula, const Double_t *param, Double_t xMin, Double_t xMax);
+
+  // create the original function with the parameters used in simulation to generate the y distribution
+  void SetOriginYFunc(TString formula, const Double_t *param, Double_t xMin, Double_t xMax);
+  // create the new function with its initial parameters to fit the generated/weighted y distribution
+  void SetNewYFunc(TString formula, const Double_t *param, Double_t xMin, Double_t xMax);
+
   void DefineMinvRange(Double_t minvMin, Double_t minvMax, Double_t minvBinSize);
-  
+
 protected:
-  
+
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
                                  const char* centrality);
 
@@ -49,34 +65,48 @@ protected:
                                  const char* pairCutName,
                                  const AliVParticle& part,
                                  const AliVParticle& part2);
-  
+
   void FillHistosForMCEvent(const char* eventSelection,const char* triggerClassName,const char* centrality);
-  
+
 private:
-  
+
   void CreateMinvHistograms(const char* eventSelection, const char* triggerClassName, const char* centrality);
-  
+
+  // normalize the function to its integral in the given range
+  void NormFunc(TF1 *f, Double_t min, Double_t max);
+
   TString GetMinvHistoName(const AliAnalysisMuMuBinning::Range& r, Bool_t accEffCorrected) const;
-  
+
   Double_t GetAccxEff(Double_t pt,Double_t rapidity);
-  
-  Double_t WeightDistribution(Double_t pt,Double_t rapidity);
-  
-  Double_t powerLaw3Par(Double_t *x, Double_t *par);
-  
-  Double_t normPol12Par(Double_t *x, Double_t *par);
+
+  Double_t WeightMuonDistribution(Double_t pt);
+
+  Double_t WeightPairDistribution(Double_t pt,Double_t rapidity);
+
+  // Double_t powerLaw3Par(Double_t *x, Double_t *par);
+
+  // Double_t normPol12Par(Double_t *x, Double_t *par);
+
+  Double_t TriggerLptApt(Double_t *x, Double_t *par);
 
 private:
   Bool_t fcomputeMeanPt;
-  TH2F* fAccEffHisto;
+  Bool_t fWeightMuon;
+  TH2F     * fAccEffHisto;
   TString fMinvBinSeparator;
   Int_t fsystLevel;
+  TF1      *fPtFuncOld;              ///< original generated pT function with original parameters
+  TF1      *fPtFuncNew;              ///< new generated pT fit function with new parameters
+  TF1      *fYFuncOld;               ///< original generated y function with original parameters
+  TF1      *fYFuncNew;               ///< new generated y fit function with new parameters
   TObjArray* fBinsToFill;
   Double_t fMinvBinSize;
   Double_t fMinvMin;
   Double_t fMinvMax;
-  
-  ClassDef(AliAnalysisMuMuMinv,5) // implementation of AliAnalysisMuMuBase for muon pairs
+  Double_t fmcptcutmin;
+  Double_t fmcptcutmax;
+
+  ClassDef(AliAnalysisMuMuMinv,8) // implementation of AliAnalysisMuMuBase for muon pairs
 };
 
 #endif

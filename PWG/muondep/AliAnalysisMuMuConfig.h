@@ -25,14 +25,14 @@ class AliAnalysisMuMuConfig : public TObject
 {
 
 public:
-  
+
   enum EColor
   {
     kBlue=1500,
     kOrange=1501,
     kGreen=1502
   };
-  
+
   enum ETriggerType
   {
     kMB=1,
@@ -40,7 +40,7 @@ public:
     kMSL=3,
     kMSH=4
   };
-  
+
   enum EPerRunInfo
   {
     kMBTriggerClassName=0,
@@ -59,7 +59,7 @@ public:
   void Add(const char* key, const TString& line);
 
   void ReadFromFile(const char* inputfile);
-  
+
   /** @name Per Run Information
    *  Methods to retrieve some run-dependent information
    */
@@ -81,7 +81,7 @@ public:
   /** Set Run info */
   void SetRunInfo(const TString& runranges, const TString& runinfo);
   ///@}
-  
+
   ///  Convenience method to retrieve the first element of lists
   TString First(const char* key, Bool_t simulation=kFALSE) const;
 
@@ -89,21 +89,21 @@ public:
   Bool_t Has(const char* key, const char* value, Bool_t simulation=kFALSE) const;
 
   void Clear(Option_t* = "");
-  
+
   static TString GetTriggerTypeName(ETriggerType tt);
 
   void SetColorScheme();
-  
+
   void SetOCDBPath(const char* ocdbPath) { fOCDBPath = ocdbPath; }
 
   TString OCDBPath() const { return fOCDBPath; }
-  
+
   void SetCompactGraphs(Bool_t value=kTRUE) { fIsCompactGraphs = value; }
-  
+
   Bool_t CompactGraphs() { return fIsCompactGraphs; }
-  
+
   void Print(Option_t* opt="") const;
-  
+
   /** @name Configuration keys
    *  Valid keys to be used in the configuration file or in the query methods
    */
@@ -127,18 +127,20 @@ public:
   /// Used to specify OCDB path
   const char* OCDBPathKey() const;
   ///@}
-  
+
   TObjArray* GetListElements(const char* type, Bool_t simulation) const;
 
+  void DefineDefaultsFromFile(const char* configfile);
+
 private:
-  
+
   enum EDataType { kSim = 1<<0, kReal = 1<<1 };
-  
+
   void ShowList(const char* key, Bool_t isSimulation) const;
- 
+
 public:
   TMap* Map() const;
-  
+
 private:
 
   mutable TMap* fMap; ///< internal map of configuration values
