@@ -97,7 +97,7 @@ TString AliAnalysisMuMuBase::BuildMCPath(const char* eventSelection, const char*
   
   TString mcPath;
   
-  mcPath.Form("/%s/%s",MCInputPrefix(),path.Data());
+  mcPath.Form("/%s%s",MCInputPrefix(),path.Data());
   
   return mcPath;
 }
