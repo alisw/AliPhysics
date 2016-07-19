@@ -115,6 +115,8 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
     ResponseEngine& operator=(const ResponseEngine& source);
     virtual ~ResponseEngine() {;}
 
+    void SetMaxJetDmesonDistance(Double_t d) { fMaxJetDmesonDistance = d; }
+
     void SetReconstructedAnalysisEngine(AnalysisEngine* reco) { fRecontructed = reco; }
     void SetGeneratedAnalysisEngine(AnalysisEngine* truth) { fGenerated = truth; }
 
@@ -139,6 +141,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
 
     ECandidateType_t              fCandidateType       ; ///<  D meson candidate type
     Bool_t                        fInhibit             ; ///<  Inhibit the task
+    Double_t                      fMaxJetDmesonDistance; ///<  Maximum distance between a generated D meson and a reconstructed jet, used for geometrical matching (in units of R)
 
     TString                       fName                ; //!<! D meson candidate name
     TTree                        *fTree                ; //!<! Output tree
@@ -155,7 +158,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
   private:
 
     /// \cond CLASSIMP
-    ClassDef(ResponseEngine, 1);
+    ClassDef(ResponseEngine, 2);
     /// \endcond
   };
 

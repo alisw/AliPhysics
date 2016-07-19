@@ -90,6 +90,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine() :
   TObject(),
   fCandidateType(kD0toKpi),
   fInhibit(kFALSE),
+  fMaxJetDmesonDistance(0),
   fName(),
   fTree(0),
   fCurrentDmeson(0),
@@ -109,6 +110,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine(ECandi
   TObject(),
   fCandidateType(type),
   fInhibit(kFALSE),
+  fMaxJetDmesonDistance(1),
   fName(),
   fTree(0),
   fCurrentDmeson(0),
@@ -128,6 +130,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::ResponseEngine(const 
   TObject(source),
   fCandidateType(source.fCandidateType),
   fInhibit(source.fInhibit),
+  fMaxJetDmesonDistance(1),
   fName(source.fName),
   fTree(0),
   fCurrentDmeson(0),
@@ -214,7 +217,9 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
   std::map<int, AliDmesonJetInfo>& recoDmesons = fRecontructed->GetDmesons();
   std::map<int, AliDmesonJetInfo>& truthDmesons = fGenerated->GetDmesons();
 
+  // Loop over reconstructed D meson and look for their generated counterparts
   for (auto& dmeson_reco : recoDmesons) {
+    // Reset D meson and jet tree branches
     fCurrentDmeson->Reset();
     for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
       fCurrentJetInfoReco[ij]->Reset();
@@ -223,24 +228,27 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       fCurrentJetInfoTruth[ij]->Reset();
     }
 
+    // Copy the reconstructed D meson information in the tree branch
     fCurrentDmeson->SetReconstructed(dmeson_reco.second);
-    Int_t accJets = 0;
+
+    // Copy the reconstructed jet information in the tree branch
     for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
       AliJetInfo* jet = dmeson_reco.second.GetJet(fRecontructed->GetJetDefinitions()[ij].GetName());
       if (!jet) continue;
       if (applyKinCuts && !fRecontructed->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) continue;
       fCurrentJetInfoReco[ij]->Set(dmeson_reco.second, fRecontructed->GetJetDefinitions()[ij].GetName());
-      accJets++;
     }
-    // always fill D meson tree, even if no jet was accepted
-    //if (accJets == 0) continue;
 
+    // Look for the generated D meson counterpart
     if (dmeson_reco.second.fMCLabel >= 0) {
       std::map<int, AliDmesonJetInfo>::iterator it = truthDmesons.find(dmeson_reco.second.fMCLabel);
       if (it != truthDmesons.end()) {
         std::pair<const int, AliDmesonJetInfo>& dmeson_truth = (*it);
+        // Flag the generated D meson as reconstructed
         dmeson_truth.second.fReconstructed = kTRUE;
+        // Copy the generated D meson information in the tree branch
         fCurrentDmeson->SetGenerated((*it).second);
+        // Copy the reconstructed jet information in the tree branch
         for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
           AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
           if (!jet) continue;
@@ -249,28 +257,40 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       }
     }
 
+    // Fill the tree with the current D meson
     fTree->Fill();
   }
 
-  for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
-    fCurrentJetInfoReco[ij]->Reset();
-  }
-
+  // Loop over generated D meson that were not reconstructed
   for (auto& dmeson_truth : truthDmesons) {
+    // Reset D meson tree branch
     fCurrentDmeson->Reset();
+    // Skip if the generated D meson was reconstructed
     if (dmeson_truth.second.fReconstructed) continue;
+    // Copy the generated D meson information in the tree branch
     fCurrentDmeson->SetGenerated(dmeson_truth.second);
-    Int_t accJets = 0;
+    // Copy the reconstructed jet information in the tree branch
     for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
       fCurrentJetInfoTruth[ij]->Reset();
       AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
       if (!jet) continue;
       if (applyKinCuts && !fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) continue;
       fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
-      accJets++;
     }
-    if (accJets == 0) continue;
 
+    // Check if a matched reconstructed jet can be found and copy the reconstructed jet information in the tree branch
+    for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
+      // Reset reconstructed jet tree branch
+      fCurrentJetInfoReco[ij]->Reset();
+      // Look for a matched reconstructed jet
+      AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair jet = fRecontructed->FindJetMacthedToGeneratedDMeson(dmeson_truth.second, fRecontructed->GetJetDefinitions()[ij], fRecontructed->GetJetDefinitions()[ij].GetRadius() * fMaxJetDmesonDistance, applyKinCuts);
+      if (!jet.first) continue;
+      // Copy reconstructed jet information in the tree branch
+      fCurrentJetInfoReco[ij]->Set(*(jet.first));
+      fCurrentJetInfoReco[ij]->fR = jet.second;
+    }
+
+    // Fill the tree with the current D meson
     fTree->Fill();
   }
 
