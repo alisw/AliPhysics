@@ -341,6 +341,19 @@ void AliAnalysisTaskDG::NotifyRun()
   }
 }
 
+class TClonesArrayGuard {
+public:
+  TClonesArrayGuard(TClonesArray &a)
+    : fA(a) {}
+  ~TClonesArrayGuard() {
+    fA.Delete();
+  }
+private:
+  TClonesArrayGuard(const TClonesArrayGuard&);
+  TClonesArrayGuard& operator=(const TClonesArrayGuard&);
+  TClonesArray& fA;
+} ;
+
 void AliAnalysisTaskDG::UserExec(Option_t *)
 {
   AliVEvent *event = InputEvent();
@@ -465,8 +478,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   fTOFHeader    = *(esdEvent->GetTOFHeader());
 
+  TClonesArrayGuard guardTriggerIR(fTriggerIRs);
   // store trigger IR for up to +-1 orbits around the event
-  fTriggerIRs.Delete();
   for (Int_t i=0,j=0,n=esdHeader->GetTriggerIREntries(); i<n; ++i) {
     const AliTriggerIR *ir = esdHeader->GetTriggerIR(i);
     if (!ir || TMath::Abs(Int_t(ir->GetOrbit()&0xFFFF) - Int_t(fTreeData.fEventInfo.fOrbitID)) > 1)
@@ -500,29 +513,24 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
     fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliESDtrack*>(oa->At(i))->GetSign());
 
-  fTrackData.Delete();
+  TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTrackSave)  {
     for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTrackSave); i<n; ++i)
       new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
 
+  TClonesArrayGuard guardMCTracks(fMCTracks);
   if (fIsMC) {
     AliMCEvent *mcEvent = MCEvent();
     if (NULL == mcEvent)
       AliFatal("NULL ==mcEvent");
 
-    fMCTracks.Delete();
     Int_t counter = 0;
     for(Int_t i=0, n=mcEvent->GetNumberOfTracks(); i<n && counter<2; ++i) {
       AliMCParticle *p = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(i));
       if (NULL == p) continue;
-      p->Print();
-      Printf("A");
-      p->Particle()->Print();
-      Printf("B");
       new(fMCTracks[counter]) TLorentzVector;
       TLorentzVector *v = dynamic_cast<TLorentzVector*>(fMCTracks.At(counter));
-      Printf("B %p", v);
       p->Particle()->Momentum(*v);
       ++counter;
     }
