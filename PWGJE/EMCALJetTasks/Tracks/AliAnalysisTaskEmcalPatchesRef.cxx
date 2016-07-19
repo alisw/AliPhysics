@@ -436,7 +436,7 @@ Double_t AliAnalysisTaskEmcalPatchesRef::GetTriggerWeight(const TString &trigger
   if(fDownscaleFactors){
     TParameter<double> *result(nullptr);
     // Downscaling only done on MB, L0 and the low threshold triggers
-    if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("MB"));
+    if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
     else if(triggerclass.Contains("EMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
     else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
     else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
@@ -457,6 +457,7 @@ Double_t AliAnalysisTaskEmcalPatchesRef::GetTriggerWeight(const TString &trigger
  */
 void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row){
   Double_t weight = GetTriggerWeight(triggerclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in patch histograms." << std::endl;
   fHistos->FillTH1(Form("h%sPatchEnergy%s", patchname.Data(), triggerclass.Data()), energy, weight);
   fHistos->FillTH1(Form("h%sPatchET%s", patchname.Data(), triggerclass.Data()), transverseenergy, weight);
   fHistos->FillTH2(Form("h%sPatchEnergyEta%s", patchname.Data(), triggerclass.Data()), energy, eta, weight);
@@ -483,6 +484,7 @@ void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, T
  */
 void AliAnalysisTaskEmcalPatchesRef::FillEventHistograms(const TString &triggerclass, double centrality, double vertexz){
   Double_t weight = GetTriggerWeight(triggerclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in event histograms." << std::endl;
   fHistos->FillTH1(Form("hEventCount%s", triggerclass.Data()), 1, weight);
   fHistos->FillTH1(Form("hEventCentrality%s", triggerclass.Data()), centrality, weight);
   fHistos->FillTH1(Form("hVertexZ%s", triggerclass.Data()), vertexz, weight);

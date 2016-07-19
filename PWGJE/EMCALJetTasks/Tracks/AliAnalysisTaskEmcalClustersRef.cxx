@@ -487,7 +487,7 @@ Double_t AliAnalysisTaskEmcalClustersRef::GetTriggerWeight(const TString &trigge
   if(fDownscaleFactors){
     TParameter<double> *result(nullptr);
     // Downscaling only done on MB, L0 and the low threshold triggers
-    if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("MB"));
+    if(triggerclass.Contains("MB")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
     else if(triggerclass.Contains("EMC7")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
     else if(triggerclass.Contains("EJ2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
     else if(triggerclass.Contains("EG2")) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
@@ -500,6 +500,8 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   Bool_t hasTriggerPatch = fTriggerPatches  ? CorrelateToTrigger(eta, phi, fTriggerPatches) : kFALSE;
   Int_t supermoduleID = -1, sector = -1;
   Double_t weight = GetTriggerWeight(triggerclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
+
   fGeometry->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
   fHistos->FillTH1(Form("hClusterEnergy%s", triggerclass.Data()), energy, weight);
   fHistos->FillTH1(Form("hClusterET%s", triggerclass.Data()), transverseenergy, weight);
