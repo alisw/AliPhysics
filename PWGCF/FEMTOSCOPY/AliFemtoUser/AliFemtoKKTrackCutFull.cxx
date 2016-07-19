@@ -44,11 +44,11 @@
 *
 **************************************************************************/
 
-#include "AliFemtoKKTrackCut.h"
+#include "AliFemtoKKTrackCutFull.h"
 #include <cstdio>
 
 #ifdef __ROOT__ 
-ClassImp(AliFemtoKKTrackCut)
+ClassImp(AliFemtoKKTrackCutFull)
 #endif
 
 
@@ -83,7 +83,7 @@ ClassImp(AliFemtoKKTrackCut)
 // 3       -4.608098e-02   8.336400e-03
 
 
-  AliFemtoKKTrackCut::AliFemtoKKTrackCut() :
+  AliFemtoKKTrackCutFull::AliFemtoKKTrackCutFull() :
     fCharge(0),
     fLabel(0),
     fStatus(0),
@@ -94,6 +94,8 @@ ClassImp(AliFemtoKKTrackCut)
   fNsigmaTPC400_450(3.),
   fNsigmaTPC450_500(3.),
   fNsigmaTPCge500(3.),
+  fNsigmaTOF450_500(3.),
+  fUseNsigmaTOF450_500(false),
   fNsigmaTOF500_800(3.),
   fNsigmaTOF800_1000(3.),
   fNsigmaTOFge1000(3.),
@@ -144,7 +146,9 @@ ClassImp(AliFemtoKKTrackCut)
   fNsigmaTPC400_450=3.0;
   fNsigmaTPC450_500=3.0;
   fNsigmaTPCge500=3.0;
-  
+
+  fNsigmaTOF450_500=3.0;
+  fUseNsigmaTOF450_500=false;
   fNsigmaTOF500_800=3.0;
   fNsigmaTOF800_1000=3.0;
   fNsigmaTOFge1000=3.0;
@@ -153,11 +157,11 @@ ClassImp(AliFemtoKKTrackCut)
 
 }
 //------------------------------
-AliFemtoKKTrackCut::~AliFemtoKKTrackCut(){
+AliFemtoKKTrackCutFull::~AliFemtoKKTrackCutFull(){
   /* noop */
 }
 //------------------------------
-bool AliFemtoKKTrackCut::Pass(const AliFemtoTrack* track)
+bool AliFemtoKKTrackCutFull::Pass(const AliFemtoTrack* track)
 {
   //cout<<"AliFemtoKKTrackCut::Pass"<<endl;
 
@@ -518,7 +522,7 @@ bool AliFemtoKKTrackCut::Pass(const AliFemtoTrack* track)
     
 }
 //------------------------------
-AliFemtoString AliFemtoKKTrackCut::Report()
+AliFemtoString AliFemtoKKTrackCutFull::Report()
 {
   // Prepare report from the execution
   string tStemp;
@@ -538,77 +542,77 @@ AliFemtoString AliFemtoKKTrackCut::Report()
   AliFemtoString returnThis = tStemp;
   return returnThis;
 }
-TList *AliFemtoKKTrackCut::ListSettings()
+TList *AliFemtoKKTrackCutFull::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoKKTrackCut.mass=%f", this->Mass());
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.mass=%f", this->Mass());
   tListSetttings->AddLast(new TObjString(buf));
 
-  snprintf(buf, 200, "AliFemtoKKTrackCut.charge=%i", fCharge);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.charge=%i", fCharge);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobpion.minimum=%f", fPidProbPion[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobpion.minimum=%f", fPidProbPion[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobpion.maximum=%f", fPidProbPion[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobpion.maximum=%f", fPidProbPion[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobkaon.minimum=%f", fPidProbKaon[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobkaon.maximum=%f", fPidProbKaon[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobproton.minimum=%f", fPidProbProton[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobproton.minimum=%f", fPidProbProton[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobproton.maximum=%f", fPidProbProton[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobproton.maximum=%f", fPidProbProton[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobelectron.minimum=%f", fPidProbElectron[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobelectron.maximum=%f", fPidProbElectron[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobMuon.minimum=%f", fPidProbMuon[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pidprobMuon.maximum=%f", fPidProbMuon[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.minimumtpcclusters=%i", fminTPCclsF);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.minimumtpcclusters=%i", fminTPCclsF);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.minimumitsclusters=%i", fminTPCclsF);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.minimumitsclusters=%i", fminTPCclsF);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pt.minimum=%f", fPt[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pt.minimum=%f", fPt[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.pt.maximum=%f", fPt[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.pt.maximum=%f", fPt[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.rapidity.minimum=%f", fRapidity[0]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.rapidity.minimum=%f", fRapidity[0]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.rapidity.maximum=%f", fRapidity[1]);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.rapidity.maximum=%f", fRapidity[1]);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.removekinks=%i", fRemoveKinks);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.removekinks=%i", fRemoveKinks);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.maxitschindof=%f", fMaxITSchiNdof);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.maxitschindof=%f", fMaxITSchiNdof);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.maxtpcchindof=%f", fMaxTPCchiNdof);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.maxtpcchindof=%f", fMaxTPCchiNdof);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.maxsigmatovertex=%f", fMaxSigmaToVertex);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.maximpactxy=%f", fMaxImpactXY);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.maximpactxy=%f", fMaxImpactXY);
   tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKKTrackCut.maximpactz=%f", fMaxImpactZ);
+  snprintf(buf, 200, "AliFemtoKKTrackCutFull.maximpactz=%f", fMaxImpactZ);
   tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
     if (fMostProbable == 2)
-      snprintf(buf, 200, "AliFemtoKKTrackCut.mostprobable=%s", "Pion");
+      snprintf(buf, 200, "AliFemtoKKTrackCutFull.mostprobable=%s", "Pion");
     if (fMostProbable == 3)
-      snprintf(buf, 200, "AliFemtoKKTrackCut.mostprobable=%s", "Kaon");
+      snprintf(buf, 200, "AliFemtoKKTrackCutFull.mostprobable=%s", "Kaon");
     if (fMostProbable == 4)
-      snprintf(buf, 200, "AliFemtoKKTrackCut.mostprobable=%s", "Proton");
+      snprintf(buf, 200, "AliFemtoKKTrackCutFull.mostprobable=%s", "Proton");
     tListSetttings->AddLast(new TObjString(buf));
   }
   return tListSetttings;
 }
-void AliFemtoKKTrackCut::SetRemoveKinks(const bool& flag)
+void AliFemtoKKTrackCutFull::SetRemoveKinks(const bool& flag)
 {
   fRemoveKinks = flag;
 }
 			    
-void AliFemtoKKTrackCut::SetRemoveITSFake(const bool& flag)
+void AliFemtoKKTrackCutFull::SetRemoveITSFake(const bool& flag)
 {
   fRemoveITSFake = flag;
 }
@@ -622,7 +626,7 @@ void AliFemtoKKTrackCut::SetRemoveITSFake(const bool& flag)
 // 4       2.503553e+00    5.736207e-01
 // 5       -1.125965e+00   2.821170e-01
 // 6       2.009036e-01    5.438876e-02
-float AliFemtoKKTrackCut::PidFractionElectron(float mom) const
+float AliFemtoKKTrackCutFull::PidFractionElectron(float mom) const
 {
   // Provide a parameterized fraction of electrons dependent on momentum
   if (mom<0.13) 
@@ -656,7 +660,7 @@ float AliFemtoKKTrackCut::PidFractionElectron(float mom) const
 // 0       1.063457e+00    8.872043e-03
 // 1       -4.222208e-01   2.534402e-02
 // 2       1.042004e-01    1.503945e-02
-float AliFemtoKKTrackCut::PidFractionPion(float mom) const
+float AliFemtoKKTrackCutFull::PidFractionPion(float mom) const
 {
   // Provide a parameterized fraction of pions dependent on momentum
   if (mom<0.13) 
@@ -678,7 +682,7 @@ float AliFemtoKKTrackCut::PidFractionPion(float mom) const
 // 1       4.415666e-01    1.143939e-02
 // 2       -2.996790e-01   1.840964e-02
 // 3       6.704652e-02    7.783990e-03
-float AliFemtoKKTrackCut::PidFractionKaon(float mom) const
+float AliFemtoKKTrackCutFull::PidFractionKaon(float mom) const
 {
   // Provide a parameterized fraction of kaons dependent on momentum
   if (mom<0.18) 
@@ -703,7 +707,7 @@ float AliFemtoKKTrackCut::PidFractionKaon(float mom) const
 // 1       1.163684e-01    1.319316e-02
 // 2       8.354116e-02    1.997948e-02
 // 3       -4.608098e-02   8.336400e-03
-float AliFemtoKKTrackCut::PidFractionProton(float mom) const
+float AliFemtoKKTrackCutFull::PidFractionProton(float mom) const
 {
   // Provide a parameterized fraction of protons dependent on momentum
   if (mom<0.26) return  0.0;
@@ -718,25 +722,25 @@ float AliFemtoKKTrackCut::PidFractionProton(float mom) const
 	  -4.608098e-02*mom*mom*mom);  
 }
 
-void AliFemtoKKTrackCut::SetMomRangeTOFpidIs(const float& minp, const float& maxp)
+void AliFemtoKKTrackCutFull::SetMomRangeTOFpidIs(const float& minp, const float& maxp)
 {
   fMinPforTOFpid = minp;
   fMaxPforTOFpid = maxp;
 }
 
-void AliFemtoKKTrackCut::SetMomRangeTPCpidIs(const float& minp, const float& maxp)
+void AliFemtoKKTrackCutFull::SetMomRangeTPCpidIs(const float& minp, const float& maxp)
 {
   fMinPforTPCpid = minp;
   fMaxPforTPCpid = maxp;
 }
 
-void AliFemtoKKTrackCut::SetMomRangeITSpidIs(const float& minp, const float& maxp)
+void AliFemtoKKTrackCutFull::SetMomRangeITSpidIs(const float& minp, const float& maxp)
 {
   fMinPforITSpid = minp;
   fMaxPforITSpid = maxp;
 }
 
-bool AliFemtoKKTrackCut::IsPionTPCdEdx(float mom, float dEdx)
+bool AliFemtoKKTrackCutFull::IsPionTPCdEdx(float mom, float dEdx)
 {
   //   double a1 = -95.4545, b1 = 86.5455;
   //   double a2 = 0.0,      b2 = 56.0;
@@ -751,7 +755,7 @@ bool AliFemtoKKTrackCut::IsPionTPCdEdx(float mom, float dEdx)
   return false;
 }
 
-bool AliFemtoKKTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
+bool AliFemtoKKTrackCutFull::IsKaonTPCdEdx(float mom, float dEdx)
 {
 
 //   double a1 = -547.0; double b1 =  297.0;
@@ -798,7 +802,7 @@ bool AliFemtoKKTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 
 }
 
-bool AliFemtoKKTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
+bool AliFemtoKKTrackCutFull::IsProtonTPCdEdx(float mom, float dEdx)
 {
   double a1 = -1800.0; double b1 =  940.0;
   double a2 = -500.0;  double b2 =  420.0;
@@ -820,7 +824,7 @@ bool AliFemtoKKTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
    
 }
 
-bool AliFemtoKKTrackCut::IsPionTOFTime(float mom, float ttof)
+bool AliFemtoKKTrackCutFull::IsPionTOFTime(float mom, float ttof)
 {
   double a1 = -427.0; double b1 =  916.0;
   double a2 =  327.0; double b2 = -888.0;
@@ -832,7 +836,7 @@ bool AliFemtoKKTrackCut::IsPionTOFTime(float mom, float ttof)
   return kTRUE;
 }
 
-bool AliFemtoKKTrackCut::IsKaonTOFTime(float mom, float ttof)
+bool AliFemtoKKTrackCutFull::IsKaonTOFTime(float mom, float ttof)
 {
   double a1 =   000.0; double b1 =  -500.0;
   double a2 =   000.0; double b2 =   500.0;
@@ -856,7 +860,7 @@ bool AliFemtoKKTrackCut::IsKaonTOFTime(float mom, float ttof)
   return kTRUE;
 }
 
-bool AliFemtoKKTrackCut::IsProtonTOFTime(float mom, float ttof)
+bool AliFemtoKKTrackCutFull::IsProtonTOFTime(float mom, float ttof)
 {
   double a1 =   000.0; double b1 =  -915.0;
   double a2 =   000.0; double b2 =   600.0;
@@ -878,7 +882,7 @@ bool AliFemtoKKTrackCut::IsProtonTOFTime(float mom, float ttof)
 
 
 
-bool AliFemtoKKTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
+bool AliFemtoKKTrackCutFull::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 {
 //  cout<<" AliFemtoKKTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
 
@@ -890,7 +894,7 @@ bool AliFemtoKKTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
   return false;
 }
 
-bool AliFemtoKKTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
+bool AliFemtoKKTrackCutFull::IsKaonTOFNSigma(float mom, float nsigmaK)
 {
 //  cout<<" AliFemtoKKTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
   //fan
@@ -900,7 +904,7 @@ bool AliFemtoKKTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 }
 
 
-bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
+bool AliFemtoKKTrackCutFull::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
 
   if(mom<0.25)
@@ -953,6 +957,20 @@ bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 
 /////////////  
   
+ if(fUseNsigmaTOF450_500)
+   {
+     if(mom>=0.45 && mom<0.5)
+       {
+	 if(TMath::Abs(nsigmaTOFK)<fNsigmaTOF450_500 && TMath::Abs(nsigmaTPCK)<fNsigmaTPC450_500) 
+	   {
+	     return true;
+	   }
+	 else
+	   {
+	     return false;
+	   }
+       }
+   }
   
   if(mom>=0.5 && mom<0.8)
     {
@@ -1033,7 +1051,7 @@ bool AliFemtoKKTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
 */
 
 
-bool AliFemtoKKTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool AliFemtoKKTrackCutFull::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
   if(mom<0.65)
     {
@@ -1057,7 +1075,7 @@ bool AliFemtoKKTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigma
 }
 
 
-bool AliFemtoKKTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool AliFemtoKKTrackCutFull::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
     if (mom > 0.8) {
         if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
@@ -1072,18 +1090,18 @@ bool AliFemtoKKTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
 }
 
 
-void AliFemtoKKTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
+void AliFemtoKKTrackCutFull::SetPIDMethod(ReadPIDMethodType newMethod)
 {
   fPIDMethod = newMethod;
 }
 
 
-void AliFemtoKKTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req) 
+void AliFemtoKKTrackCutFull::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req) 
 { 
   fCutClusterRequirementITS[det] = req; 
 }
 
-Bool_t AliFemtoKKTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
+Bool_t AliFemtoKKTrackCutFull::CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
 {
   // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
   
@@ -1103,43 +1121,53 @@ Bool_t AliFemtoKKTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSCluste
 }
 
 
-void AliFemtoKKTrackCut::SetNsigmaTPCle250(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTPCle250(Double_t nsigma)
 {
   fNsigmaTPCle250 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTPC250_400(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTPC250_400(Double_t nsigma)
 {
   fNsigmaTPC250_400 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTPC400_450(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTPC400_450(Double_t nsigma)
 {
   fNsigmaTPC400_450 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTPC450_500(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTPC450_500(Double_t nsigma)
 {
   fNsigmaTPC450_500 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTPCge500(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTPCge500(Double_t nsigma)
 {
   fNsigmaTPCge500 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTOF500_800(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTOF450_500(Double_t nsigma)
+{
+  fNsigmaTOF450_500 = nsigma;
+}
+
+void AliFemtoKKTrackCutFull::SetNsigmaTOF500_800(Double_t nsigma)
 {
   fNsigmaTOF500_800 = nsigma;
 }
 
 
-void AliFemtoKKTrackCut::SetNsigmaTOF800_1000(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTOF800_1000(Double_t nsigma)
 {
   fNsigmaTOF800_1000 = nsigma;
 }
 
-void AliFemtoKKTrackCut::SetNsigmaTOFge1000(Double_t nsigma)
+void AliFemtoKKTrackCutFull::SetNsigmaTOFge1000(Double_t nsigma)
 {
   fNsigmaTOFge1000 = nsigma;
+}
+
+void AliFemtoKKTrackCutFull::UseNsigmaTOF450_500(bool usensigma)
+{
+  fUseNsigmaTOF450_500 = usensigma;
 }

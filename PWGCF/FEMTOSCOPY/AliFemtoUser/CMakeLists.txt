@@ -34,6 +34,7 @@ set(SRCS
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
+  AliFemtoKKTrackCutFull.cxx
   AliFemtoKpmTrackCut.cxx
   AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
