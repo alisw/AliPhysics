@@ -39,7 +39,7 @@ fPDGCodeOfInterest()
   
   for ( std::vector<std::string>::size_type i = 0; i < fParticlesOfInterest.size(); ++i )
   {
-    TString part = fParticlesOfInterest[i];
+    TString part = fParticlesOfInterest[i].c_str();
     
     TParticlePDG* p = TDatabasePDG::Instance()->GetParticle(part.Data());
     
