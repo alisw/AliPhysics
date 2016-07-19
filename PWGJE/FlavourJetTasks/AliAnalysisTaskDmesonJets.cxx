@@ -120,27 +120,51 @@ Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetZ(std::string n) const
 
 /// Calculates the distance between the D meson and the jet axis
 ///
-/// \param dR reference where the distance will be returned
+/// \param n Name of the jet definition
 /// \param deta reference where the eta distance will be returned
 /// \param dphi reference where the phi distance will be returned
+/// \return The distance between the D meson and the jet axis
 Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n, Double_t& deta, Double_t& dphi) const
 {
   std::map<std::string, AliJetInfo>::const_iterator it = fJets.find(n);
   if (it == fJets.end()) return 0;
 
-  dphi = TVector2::Phi_mpi_pi(fD.Phi() - (*it).second.Phi());;
-  deta = fD.Eta() - (*it).second.Eta();
-  return TMath::Sqrt(dphi*dphi + deta*deta);
+  return GetDistance((*it).second, deta, dphi);
 }
 
 /// Calculates the distance between the D meson and the jet axis
 ///
-/// \param dR reference where the distance will be returned
+/// \param n Name of the jet definition
+/// \return The distance between the D meson and the jet axis
 Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(std::string n) const
 {
   Double_t deta = 0;
   Double_t dphi = 0;
   return GetDistance(n, deta, dphi);
+}
+
+/// Calculates the distance between the D meson and the jet axis
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \param deta reference where the eta distance will be returned
+/// \param dphi reference where the phi distance will be returned
+/// \return The distance between the D meson and the jet axis
+Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const
+{
+  dphi = TVector2::Phi_mpi_pi(fD.Phi() - jet.Phi());;
+  deta = fD.Eta() - jet.Eta();
+  return TMath::Sqrt(dphi*dphi + deta*deta);
+}
+
+/// Calculates the distance between the D meson and the jet axis
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \return The distance between the D meson and the jet axis
+Double_t AliAnalysisTaskDmesonJets::AliDmesonJetInfo::GetDistance(const AliJetInfo& jet) const
+{
+  Double_t deta = 0;
+  Double_t dphi = 0;
+  return GetDistance(jet, deta, dphi);
 }
 
 /// Find jet info object corresponding a jet definition provided as a string
@@ -217,6 +241,18 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliDmesonJetInfo& s
   fPhi = (*it).second.Phi_0_2pi();
   fR = source.GetDistance(n);
   fZ = source.GetZ(n);
+}
+
+/// Set the current object using an instance of AliJetInfo as its source
+///
+/// \param source A const reference to a valid AliJetInfo object
+void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliJetInfo& source)
+{
+  fPt = source.Pt();
+  fEta = source.Eta();
+  fPhi = source.Phi_0_2pi();
+  fR = 0;
+  fZ = 0;
 }
 
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary
@@ -1182,12 +1218,102 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunAnalysis()
 {
   fDmesonJets.clear();
 
+  for (auto& jetDef : fJetDefinitions) {
+    jetDef.fJets.clear();
+  }
+
   if (fMCMode == kMCTruth) {
     RunParticleLevelAnalysis();
   }
   else {
     RunDetectorLevelAnalysis();
   }
+}
+
+/// Finds all inclusive jets according to a certain jet definition.
+/// The jets are stored inside the jet definition object.
+///
+/// \param jetDef Reference to a AliHFJetDefinition object
+void AliAnalysisTaskDmesonJets::AnalysisEngine::FindJets(AliHFJetDefinition& jetDef)
+{
+  fFastJetWrapper->Clear();
+  fFastJetWrapper->SetR(jetDef.fRadius);
+  fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+  fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+
+  if (fTrackContainer && jetDef.fJetType != AliJetContainer::kNeutralJet) {
+    fTrackContainer->SetDMesonCandidate(0);
+    AddInputVectors(fTrackContainer, 100);
+  }
+
+  if (fClusterContainer && jetDef.fJetType != AliJetContainer::kChargedJet) {
+    AddInputVectors(fClusterContainer, -100);
+  }
+
+  // run jet finder
+  fFastJetWrapper->Run();
+
+  std::vector<fastjet::PseudoJet> jets_incl = fFastJetWrapper->GetInclusiveJets();
+
+  for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet) {
+    std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
+
+    Double_t maxChPt = 0;
+    Double_t maxNePt = 0;
+    Double_t totalNeutralPt = 0;
+
+    for (UInt_t ic = 0; ic < constituents.size(); ++ic) {
+      if (constituents[ic].user_index() >= 100) {
+        if (constituents[ic].pt() > maxChPt) maxChPt = constituents[ic].pt();
+      }
+      else if (constituents[ic].user_index() <= -100) {
+        totalNeutralPt += constituents[ic].pt();
+        if (constituents[ic].pt() > maxNePt) maxChPt = constituents[ic].pt();
+      }
+    }
+
+    jetDef.fJets.push_back(
+        AliJetInfo(jets_incl[ijet].px(), jets_incl[ijet].py(), jets_incl[ijet].pz(), jets_incl[ijet].E(),
+            constituents.size(), totalNeutralPt / jets_incl[ijet].pt(), maxChPt, maxNePt)
+    );
+  }
+}
+
+/// Finds a jet that geometrically matches to a D meson
+///
+/// \param jetDef Reference to a AliHFJetDefinition object
+/// \param dmeson Const reference to a AliDmesonJetInfo object
+/// \param dMax Maximum distance between the D meson and the jet axis
+/// \param applyKinCuts Whether or not kinematic cuts should be applied to the jet
+/// \return Pointer to a matched jet (if found) or a null pointer
+AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair AliAnalysisTaskDmesonJets::AnalysisEngine::FindJetMacthedToGeneratedDMeson(const AliDmesonJetInfo& dmeson, AliHFJetDefinition& jetDef, Double_t dMax, Bool_t applyKinCuts)
+{
+  if (jetDef.fJets.size() == 0) FindJets(jetDef);
+
+  Double_t d_closest = 999;
+  AliJetInfo* jet_closest = 0;
+
+  for (auto& jet : jetDef.fJets) {
+    Double_t d = dmeson.GetDistance(jet);
+    if (d > dMax) continue;
+    if (d < d_closest) {
+      d_closest = d;
+      jet_closest = &jet;
+    }
+  }
+
+  if (jet_closest && applyKinCuts) {
+    if (!jetDef.IsJetInAcceptance(*jet_closest)) jet_closest = 0;
+  }
+
+  if (jet_closest) {
+    AliDebug(2, Form("Found closest jet (pt=%.3f, eta=%.3f, phi=%.3f) to d meson (pt=%.3f, eta=%.3f, phi=%.3f) with d = %.3f",
+        jet_closest->Pt(), jet_closest->Eta(), jet_closest->Phi_0_2pi(),
+        dmeson.fD.Pt(), dmeson.fD.Eta(), dmeson.fD.Phi_0_2pi(),
+        d_closest));
+  }
+
+  return jet_distance_pair(jet_closest, d_closest);
 }
 
 /// Run a detector level analysis
@@ -1335,7 +1461,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
-      rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
+      if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
