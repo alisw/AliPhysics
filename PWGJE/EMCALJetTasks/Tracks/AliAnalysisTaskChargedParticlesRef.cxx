@@ -438,6 +438,7 @@ void AliAnalysisTaskChargedParticlesRef::FillEventCounterHists(
 )
 {
   Double_t weight = GetTriggerWeight(triggerclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in event histograms." << std::endl;
   // Fill reference distribution for the primary vertex before any z-cut
   fHistos->FillTH1(Form("hVertexBefore%s", triggerclass.c_str()), vtxz, weight);
   if(isSelected){
@@ -504,6 +505,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
     )
 {
   Double_t weight = GetTriggerWeight(eventclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
   fHistos->FillTH1(Form("hPtEtaAllNewBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
   fHistos->FillTH1(Form("hPtEtaAllOldBinning%s", eventclass.c_str()), TMath::Abs(pt), weight);
   if(inEmcal){
@@ -563,6 +565,7 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
     const AliVTrack &trk
 ) {
   Double_t weight = GetTriggerWeight(eventclass);
+  AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in PID histograms." << std::endl;
   AliPIDResponse *pid = fInputHandler->GetPIDResponse();
   if(TMath::Abs(trk.Eta()) > 0.5) return;
   if(!((trk.GetStatus() & AliVTrack::kTOFout) && (trk.GetStatus() & AliVTrack::kTIME))) return;
@@ -590,7 +593,7 @@ Double_t AliAnalysisTaskChargedParticlesRef::GetTriggerWeight(const std::string 
   if(fDownscaleFactors){
     TParameter<double> *result(nullptr);
     // Downscaling only done on MB, L0 and the low threshold triggers
-    if(triggerclass.find("MB") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("MB"));
+    if(triggerclass.find("MB") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("INT7"));
     else if(triggerclass.find("EMC7") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EMC7"));
     else if(triggerclass.find("EJ2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EJ2"));
     else if(triggerclass.find("EG2") != std::string::npos) result = static_cast<TParameter<double> *>(fDownscaleFactors->FindObject("EG2"));
