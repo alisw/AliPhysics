@@ -9,8 +9,8 @@
 ///////////////////////////////////////////////////////////////////////////
 #include "AliESDtrackCuts.h"
 
-#ifndef ALIFEMTOKKTRACKCUT_H
-#define ALIFEMTOKKTRACKCUT_H
+#ifndef ALIFEMTOKKTRACKCUTFULL_H
+#define ALIFEMTOKKTRACKCUTFULL_H
 
 //#ifndef StMaker_H
 //#include "StMaker.h"
@@ -20,15 +20,15 @@
 #include "AliFemtoTrackCut.h"
 
 
-class AliFemtoKKTrackCut : public AliFemtoTrackCut 
+class AliFemtoKKTrackCutFull : public AliFemtoTrackCut 
 {
   public:
 
   enum PIDMethodType {knSigma=0, kContour=1};
   typedef enum PIDMethodType ReadPIDMethodType; 
 
-  AliFemtoKKTrackCut();
-  virtual ~AliFemtoKKTrackCut();
+  AliFemtoKKTrackCutFull();
+  virtual ~AliFemtoKKTrackCutFull();
 
   virtual bool Pass(const AliFemtoTrack* aTrack);
 
@@ -75,7 +75,9 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
  void SetNsigmaTPC400_450(Double_t);
  void SetNsigmaTPC450_500(Double_t);
  void SetNsigmaTPCge500(Double_t);
- 
+
+ void SetNsigmaTOF450_500(Double_t);
+ void UseNsigmaTOF450_500(bool);
  void SetNsigmaTOF500_800(Double_t);
  void SetNsigmaTOF800_1000(Double_t);
  void SetNsigmaTOFge1000(Double_t);
@@ -105,7 +107,9 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
  Double_t fNsigmaTPC400_450;
  Double_t fNsigmaTPC450_500;
  Double_t fNsigmaTPCge500;
- 
+
+ Double_t fNsigmaTOF450_500;
+ bool fUseNsigmaTOF450_500;
  Double_t fNsigmaTOF500_800;
  Double_t fNsigmaTOF800_1000;
  Double_t fNsigmaTOFge1000;
@@ -161,35 +165,35 @@ class AliFemtoKKTrackCut : public AliFemtoTrackCut
 
 
 #ifdef __ROOT__ 
-  ClassDef(AliFemtoKKTrackCut, 1)
+  ClassDef(AliFemtoKKTrackCutFull, 1)
 #endif
     };
 
 
-inline void AliFemtoKKTrackCut::SetPt(const float& lo, const float& hi){fPt[0]=lo; fPt[1]=hi;}
-inline void AliFemtoKKTrackCut::SetRapidity(const float& lo,const float& hi){fRapidity[0]=lo; fRapidity[1]=hi;}
-inline void AliFemtoKKTrackCut::SetEta(const float& lo,const float& hi){fEta[0]=lo; fEta[1]=hi;}
-inline void AliFemtoKKTrackCut::SetCharge(const int& ch){fCharge = ch;}
-inline void AliFemtoKKTrackCut::SetPidProbElectron(const float& lo,const float& hi){fPidProbElectron[0]=lo; fPidProbElectron[1]=hi;}
-inline void AliFemtoKKTrackCut::SetPidProbPion(const float& lo,const float& hi){fPidProbPion[0]=lo; fPidProbPion[1]=hi;}
-inline void AliFemtoKKTrackCut::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
-inline void AliFemtoKKTrackCut::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
-inline void AliFemtoKKTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
-inline void AliFemtoKKTrackCut::SetLabel(const bool& flag){fLabel=flag;}
-inline void AliFemtoKKTrackCut::SetStatus(const long& status){fStatus=status;}
-inline void AliFemtoKKTrackCut::SetminTPCclsF(const short& minTPCclsF){fminTPCclsF=minTPCclsF;}
-inline void AliFemtoKKTrackCut::SetminTPCncls(const short& s){fminTPCncls=s;}
-inline void AliFemtoKKTrackCut::SetminITScls(const int& minITScls){fminITScls=minITScls;}
-inline void AliFemtoKKTrackCut::SetMostProbablePion() { fMostProbable = 2; }
-inline void AliFemtoKKTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
-inline void AliFemtoKKTrackCut::SetMostProbableProton() { fMostProbable = 4; }
-inline void AliFemtoKKTrackCut::SetNoMostProbable() { fMostProbable = 0; }
-inline void AliFemtoKKTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
-inline void AliFemtoKKTrackCut::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
-inline void AliFemtoKKTrackCut::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
-inline void AliFemtoKKTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
-inline void AliFemtoKKTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
-inline void AliFemtoKKTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
+inline void AliFemtoKKTrackCutFull::SetPt(const float& lo, const float& hi){fPt[0]=lo; fPt[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetRapidity(const float& lo,const float& hi){fRapidity[0]=lo; fRapidity[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetEta(const float& lo,const float& hi){fEta[0]=lo; fEta[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetCharge(const int& ch){fCharge = ch;}
+inline void AliFemtoKKTrackCutFull::SetPidProbElectron(const float& lo,const float& hi){fPidProbElectron[0]=lo; fPidProbElectron[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetPidProbPion(const float& lo,const float& hi){fPidProbPion[0]=lo; fPidProbPion[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
+inline void AliFemtoKKTrackCutFull::SetLabel(const bool& flag){fLabel=flag;}
+inline void AliFemtoKKTrackCutFull::SetStatus(const long& status){fStatus=status;}
+inline void AliFemtoKKTrackCutFull::SetminTPCclsF(const short& minTPCclsF){fminTPCclsF=minTPCclsF;}
+inline void AliFemtoKKTrackCutFull::SetminTPCncls(const short& s){fminTPCncls=s;}
+inline void AliFemtoKKTrackCutFull::SetminITScls(const int& minITScls){fminITScls=minITScls;}
+inline void AliFemtoKKTrackCutFull::SetMostProbablePion() { fMostProbable = 2; }
+inline void AliFemtoKKTrackCutFull::SetMostProbableKaon() { fMostProbable = 3; }
+inline void AliFemtoKKTrackCutFull::SetMostProbableProton() { fMostProbable = 4; }
+inline void AliFemtoKKTrackCutFull::SetNoMostProbable() { fMostProbable = 0; }
+inline void AliFemtoKKTrackCutFull::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
+inline void AliFemtoKKTrackCutFull::SetMaxTPCChiNdof(const float& maxchi) { fMaxTPCchiNdof = maxchi; }
+inline void AliFemtoKKTrackCutFull::SetMaxSigmaToVertex(const float& maxsig) { fMaxSigmaToVertex = maxsig; }
+inline void AliFemtoKKTrackCutFull::SetMaxImpactXY(const float& maximpxy) { fMaxImpactXY = maximpxy; }
+inline void AliFemtoKKTrackCutFull::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
+inline void AliFemtoKKTrackCutFull::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
 
 
 

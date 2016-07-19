@@ -51,6 +51,7 @@
 #include "AliFemtoCorrFctnDPhiStarDEta.h"
 #include "AliFemtoPairCutRadialDistanceAsymmetric.h"
 #include "AliFemtoKKTrackCut.h"
+#include "AliFemtoKKTrackCutFull.h"
 #include "AliFemtoPairCutMergedFraction.h"
 #include "AliFemtoCorrFctnDPhiStarKStarMergedFraction.h"
 #include "AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h"
@@ -59,7 +60,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, double fraction2, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int turnOnMonitors, int runbetatdep, int runbetatylm, int runbetatnonid) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int turnOnMonitors, int runbetatdep, int runbetatylm, int runbetatnonid) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -108,7 +109,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoCutMonitorCollections   *cutFailColletaphitpc[size];
   AliFemtoESDTrackCut           *dtc1etaphitpc[size];
   //AliFemtoESDTrackCut           *dtc2etaphitpc[size];
-  AliFemtoKKTrackCut            *dtc2etaphitpc[size];
+  AliFemtoKKTrackCutFull            *dtc2etaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[size];
   AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[size];
@@ -201,7 +202,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc1etaphitpc[aniter]->SetNsigma(3.0);
 	  
 	  //Basic track cut for kaons:
-	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCut();
+	  dtc2etaphitpc[aniter] = new AliFemtoKKTrackCutFull();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	  dtc2etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);
