@@ -206,6 +206,10 @@ macro(generateDA DETECTOR ALGORITHM STATIC_DEPENDENCIES)
     # Installation
     install(TARGETS ${DETECTOR}${ALGORITHM}da.exe RUNTIME DESTINATION bin)
 
+    # Append to the list of DA RPMs to generate in one go
+    list(APPEND ALIDARPMS "${DETECTOR}${ALGORITHM}da.rpm")
+    set(ALIDARPMS ${ALIDARPMS} CACHE INTERNAL "ALIDARPMS")
+
     if(DARPM)
         createDArpm("${DETECTOR}" "${ALGORITHM}")
     endif(DARPM)
@@ -232,13 +236,25 @@ macro(createDArpm DETECTOR ALGORITHM)
 
     configure_file("${AliRoot_SOURCE_DIR}/cmake/da.spec.in" "${DETECTOR}${_ALGORITHM}-da.spec" @ONLY)
 
-    add_custom_command(TARGET ${DETECTOR}${ALGORITHM}da.exe POST_BUILD
-                       COMMAND mkdir ARGS -p da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/ ${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp
-                       COMMAND cp ARGS ${DETECTOR}${ALGORITHM}da.exe da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
-                       COMMAND env ARGS TMPDIR=${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp rpmbuild --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/root" -bb ${DETECTOR}${_ALGORITHM}-da.spec
-                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
-                       COMMENT "RPM creation for ${DETECTOR}-${_ALGORITHM}"
+    add_custom_target("${DETECTOR}${ALGORITHM}da.rpm"
+
+        COMMAND mkdir -p
+          da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+          ${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp
+
+        COMMAND cp ${DETECTOR}${ALGORITHM}da.exe
+                da-${DETECTOR}${_ALGORITHM}-rpm/root/${DA_PREFIX}/
+        COMMAND env
+          TMPDIR=${CMAKE_CURRENT_BINARY_DIR}/rpmbuild.tmp
+          rpmbuild --verbose
+            --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm"
+            --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/root"
+            -bb ${DETECTOR}${_ALGORITHM}-da.spec
+
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Creating RPM for DA ${DETECTOR}${ALGORITHM}da.exe"
     )
+    add_dependencies("${DETECTOR}${ALGORITHM}da.rpm" "${DETECTOR}${ALGORITHM}da.exe")
 
     # make clean will remove also the rpm folder
     # Retrive the current list of file to be deleted - set_directory_property is overwriting, not adding to the list
@@ -247,7 +263,10 @@ macro(createDArpm DETECTOR ALGORITHM)
     set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${_clean_files}")
 
     # install RPM into $CMAKE_INSTALL_PREFIX/darpms
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/RPMS/ DESTINATION darpms PATTERN "\\.rpm")
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/da-${DETECTOR}${_ALGORITHM}-rpm/RPMS/
+            DESTINATION darpms
+            OPTIONAL
+            PATTERN "\\.rpm")
 endmacro()
 
 

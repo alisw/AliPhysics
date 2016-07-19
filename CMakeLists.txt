@@ -313,8 +313,9 @@ else()
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
   set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
 
-  # List of modules for which PARfiles are enabled -- use the cache as global scope and clean it
+  # Use CMake cache as pseudo-"global" scope for those variables (list of PARfiles, list of DA RPMs)
   set(ALIPARFILES "" CACHE INTERNAL "ALIPARFILES" FORCE)
+  set(ALIDARPMS "" CACHE INTERNAL "ALIDARPMS" FORCE)
 
   # AliRoot base modules
   add_subdirectory(STEER)
@@ -405,6 +406,14 @@ else()
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
   message(STATUS "PARfile target enabled for the following modules: ${ALIPARFILES_FLAT}")
+
+  # List enabled DAs
+  if (NOT "${ALIDARPMS}" STREQUAL "" AND DARPM)
+    string(REPLACE ";" " " ALIDARPMS_FLAT "${ALIDARPMS}")
+    message(STATUS "The following DA RPMs can be created individually with 'make <name>da.rpm' or altogether with 'make daqDA-all-rpm': ${ALIDARPMS_FLAT}")
+    add_custom_target("daqDA-all-rpm" COMMENT "Creating all RPMs")
+    add_dependencies("daqDA-all-rpm" ${ALIDARPMS})
+  endif()
 
   # Install Find macros for common packages to be further used by AliPhysics
   install(FILES
