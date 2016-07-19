@@ -607,7 +607,6 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
   if(triggerclass == "DG2") myclass = AliEmcalTriggerOfflineSelection::kTrgDG2;
   if(triggerclass == "DJ1") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ1;
   if(triggerclass == "DJ2") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ2;
-  AliEMCALTriggerPatchInfo *mypatch = nullptr;
   for(TIter patchiter = TIter(fTriggerPatches).Begin(); patchiter != TIter::End(); ++patchiter){
     if(!IsOfflineSimplePatch(*patchiter)) continue;
     if(AliEmcalTriggerOfflineSelection::IsDCAL(myclass)){
@@ -621,7 +620,7 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
       if(!SelectJetPatch(*patchiter)) continue;
     }
     double threshold = fTriggerSelection ? fTriggerSelection->GetThresholdForTrigger(myclass) : -1;
-    if(GetPatchEnergy(*patchiter) > threshold) foundtriggers.Add(mypatch);
+    if(GetPatchEnergy(*patchiter) > threshold) foundtriggers.Add(*patchiter);
   }
 }
 
