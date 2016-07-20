@@ -204,6 +204,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00003113","1111121053032200000","1111121053022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00003113","1111121053032200000","1111121053022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 11){  // variation track matching to cluster & mass variations 
+    cuts.AddCut("00003113","1111121050032200000","1111121050022210001","0163301100000000"); // no TM
     cuts.AddCut("00003113","1111121051032200000","1111121051022210001","0163301100000000"); // looser TM
     cuts.AddCut("00003113","1111121056032200000","1111121056022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00003113","1111121053032200000","1111121053022210001","0163301300000000"); // tighter mass cut
@@ -238,6 +239,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00003113","1111121053032200000","1111121053022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 17){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00003113","1111121050032200000","1111121050022700001","0163300700000000"); // no TM
     cuts.AddCut("00003113","1111121051032200000","1111121051022700001","0163300700000000"); // looser TM
     cuts.AddCut("00003113","1111121056032200000","1111121056022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00003113","1111121053032200000","1111121053022700001","0163300800000000"); // looser mass cut
@@ -256,6 +258,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111121053032200000","1111121053022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00051013","1111121053032200000","1111121053022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 21){ // variation track matching to cluster & mass variations 
+    cuts.AddCut("00051013","1111121050032200000","1111121050022210001","0163301100000000"); // no TM
     cuts.AddCut("00051013","1111121051032200000","1111121051022210001","0163301100000000"); // looser TM
     cuts.AddCut("00051013","1111121056032200000","1111121056022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00051013","1111121053032200000","1111121053022210001","0163301300000000"); // tighter mass cut
@@ -290,6 +293,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00051013","1111121053032200000","1111121053022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 27){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00051013","1111121050032200000","1111121050022700001","0163300700000000"); // looser TM
     cuts.AddCut("00051013","1111121051032200000","1111121051022700001","0163300700000000"); // looser TM
     cuts.AddCut("00051013","1111121056032200000","1111121056022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00051013","1111121053032200000","1111121053022700001","0163300800000000"); // looser mass cut
@@ -347,6 +351,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111121063032200000","1111121063022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00010113","1111121063032200000","1111121063022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 51){  // EMCAL clusters, variation track matching to cluster & Mass INT7 NLM 1
+    cuts.AddCut("00010113","1111121060032200000","1111121060022210001","0163301100000000"); // no TM
     cuts.AddCut("00010113","1111121061032200000","1111121061022210001","0163301100000000"); // looser TM
     cuts.AddCut("00010113","1111121066032200000","1111121066022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00010113","1111121063032200000","1111121063022210001","0163301300000000"); // tighter mass cut
@@ -381,6 +386,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00010113","1111121063032200000","1111121063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 57){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00010113","1111121060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00010113","1111121061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00010113","1111121066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00010113","1111121063032200000","1111121063022700001","0163300800000000"); // looser mass cut
@@ -399,6 +405,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121063032200000","1111121063022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00052013","1111121063032200000","1111121063022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 61){  // EMCAL clusters, variation track matching to cluster & Mass EMC7 NLM 1
+    cuts.AddCut("00052013","1111121060032200000","1111121060022210001","0163301100000000"); // no TM
     cuts.AddCut("00052013","1111121061032200000","1111121061022210001","0163301100000000"); // looser TM
     cuts.AddCut("00052013","1111121066032200000","1111121066022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00052013","1111121063032200000","1111121063022210001","0163301300000000"); // tighter mass cut
@@ -433,6 +440,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00052013","1111121063032200000","1111121063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 67){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00052013","1111121060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00052013","1111121061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00052013","1111121066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00052013","1111121063032200000","1111121063022700001","0163300800000000"); // looser mass cut
@@ -451,6 +459,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00085013","1111121063032200000","1111121063022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00085013","1111121063032200000","1111121063022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 71){  // EMCAL clusters, variation track matching to cluster & Mass EG2 NLM 1
+    cuts.AddCut("00085013","1111121060032200000","1111121060022210001","0163301100000000"); // no TM
     cuts.AddCut("00085013","1111121061032200000","1111121061022210001","0163301100000000"); // looser TM
     cuts.AddCut("00085013","1111121066032200000","1111121066022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00085013","1111121063032200000","1111121063022210001","0163301300000000"); // tighter mass cut
@@ -485,6 +494,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00085013","1111121063032200000","1111121063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 77){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00085013","1111121060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00085013","1111121061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00085013","1111121066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00085013","1111121063032200000","1111121063022700001","0163300800000000"); // looser mass cut
@@ -503,6 +513,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00083013","1111121063032200000","1111121063022520001","0163301100000000"); // min 0.27, looser func up and low
     cuts.AddCut("00083013","1111121063032200000","1111121063022430001","0163301100000000"); // min 0.27, tighter func up and low
   } else if (trainConfig == 81){  // EMCAL clusters, variation track matching to cluster & Mass EG1 NLM 1
+    cuts.AddCut("00083013","1111121060032200000","1111121060022210001","0163301100000000"); // no TM
     cuts.AddCut("00083013","1111121061032200000","1111121061022210001","0163301100000000"); // looser TM
     cuts.AddCut("00083013","1111121066032200000","1111121066022210001","0163301100000000"); // tighter TM
     cuts.AddCut("00083013","1111121063032200000","1111121063022210001","0163301300000000"); // tighter mass cut
@@ -537,6 +548,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00083013","1111121063032200000","1111121063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 87){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00083013","1111121060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00083013","1111121061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00083013","1111121066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00083013","1111121063032200000","1111121063022700001","0163300800000000"); // looser mass cut
@@ -611,6 +623,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111111063032200000","1111111063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00010113","1111111063032200000","1111111063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 124){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00010113","1111111060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00010113","1111111061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00010113","1111111066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00010113","1111111063032200000","1111111063022700001","0163300800000000"); // looser mass cut
@@ -644,6 +657,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052113","1111111063032200000","1111111063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00052113","1111111063032200000","1111111063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 134){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00052113","1111111060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00052113","1111111061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00052113","1111111066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00052113","1111111063032200000","1111111063022700001","0163300800000000"); // looser mass cut
@@ -677,6 +691,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111063032200000","1111111063022700001","0163300000000000"); // no mass, min M02 = 0.27
     cuts.AddCut("00081113","1111111063032200000","1111111063022800001","0163300000000000"); // no mass, min M02 = 0.25
   } else if (trainConfig == 144){  // variation track matching to cluster & mass variations new defaults
+    cuts.AddCut("00081113","1111111060032200000","1111121060022700001","0163300700000000"); // no TM
     cuts.AddCut("00081113","1111111061032200000","1111121061022700001","0163300700000000"); // looser TM
     cuts.AddCut("00081113","1111111066032200000","1111121066022700001","0163300700000000"); // tighter TM
     cuts.AddCut("00081113","1111111063032200000","1111111063022700001","0163300800000000"); // looser mass cut
