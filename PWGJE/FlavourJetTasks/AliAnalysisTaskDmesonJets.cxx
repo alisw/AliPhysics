@@ -52,6 +52,30 @@
 ClassImp(AliAnalysisTaskDmesonJets::AliJetInfo);
 /// \endcond
 
+/// Calculates the distance between this jet and another jet
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \param deta reference where the eta distance will be returned
+/// \param dphi reference where the phi distance will be returned
+/// \return The distance between this jet and the jet reference provided
+Double_t AliAnalysisTaskDmesonJets::AliJetInfo::GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const
+{
+  dphi = TVector2::Phi_mpi_pi(fMomentum.Phi() - jet.Phi());;
+  deta = fMomentum.Eta() - jet.Eta();
+  return TMath::Sqrt(dphi*dphi + deta*deta);
+}
+
+/// Calculates the distance between this jet and another jet
+///
+/// \param jet Const reference to a AliJetInfo object
+/// \return The distance between this jet and the jet reference provided
+Double_t AliAnalysisTaskDmesonJets::AliJetInfo::GetDistance(const AliJetInfo& jet) const
+{
+  Double_t deta = 0;
+  Double_t dphi = 0;
+  return GetDistance(jet, deta, dphi);
+}
+
 // Definitions of class AliAnalysisTaskDmesonJets::AliDmesonJetInfo
 
 /// \cond CLASSIMP
@@ -1294,7 +1318,11 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair AliAnalysisTaskDmes
   AliJetInfo* jet_closest = 0;
 
   for (auto& jet : jetDef.fJets) {
-    Double_t d = dmeson.GetDistance(jet);
+    Double_t d = 999;
+    try {
+      d = dmeson.fJets.at(jetDef.GetName()).GetDistance(jet);
+    }
+    catch(...) { }
     if (d > dMax) continue;
     if (d < d_closest) {
       d_closest = d;
