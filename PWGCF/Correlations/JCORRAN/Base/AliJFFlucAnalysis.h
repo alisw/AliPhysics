@@ -56,9 +56,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		double Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
 		double Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
- 
 		double Get_QC_Vn( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
-
 		void Fill_QA_plot(double eta1, double eta2 );
 
 		double Get_ScaledMoments( int k, int harmonics);
@@ -70,8 +68,14 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		TComplex Two( int n1, int n2);
 		TComplex Four( int n1, int n2, int n3, int n4);
 
+		// Getter for single vn
+		Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
+
 
 	private:
+		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics // do we need vn up to v8? .. yes we need..
+		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order // do we really need vn^8 
+
 //		TDirectory           *fOutput;     // Output
 		Long64_t AnaEntry; 
 		TClonesArray * fInputList;
@@ -94,16 +98,14 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		Bool_t IsSCwithQC; // flag to check SC with QC method
 		Bool_t IsSCptdep;  // flag to check SC pt dep or not
 		Bool_t IsEbEWeighted; // flag for ebe weight for QC method 
-
+		Double_t fSingleVn[kNH][3]; // 3 method 
 
 // Histograms
-		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics // do we need vn up to v8? .. yes we need..
-		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order // do we really need vn^8 
 		double fEta_min;
 		double fEta_max;
 		double NSubTracks[2];
 		TComplex QvectorQC[kNH][nKL]; 
-		TComplex QvectorQCeta10[kNH][nKL]; 
+		TComplex QvectorQCeta10[kNH][nKL][2]; // ksub  
 
 		TH1D *h_phi_module[7][2]; // cent, isub 
 		TFile *inclusFile; // pointer for root file  
