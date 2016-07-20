@@ -109,6 +109,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t Eta()       const { return fMomentum.Eta()      ; }
     Double_t Phi()       const { return fMomentum.Phi()      ; }
     Double_t Phi_0_2pi() const { return fMomentum.Phi_0_2pi(); }
+    Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
+    Double_t GetDistance(const AliJetInfo& jet) const;
 
     AliTLorentzVector fMomentum             ; ///< 4-momentum of the jet
     Int_t             fNConstituents        ; ///< Number of constituents of the jet
