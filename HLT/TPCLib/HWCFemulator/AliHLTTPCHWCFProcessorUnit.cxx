@@ -37,6 +37,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fBunchIndex(0),
   fWasDeconvoluted(0),
   fDeconvolute(0),
+  fImprovedDeconvolution(0),
   fSingleSeqLimit(0),
   fUseTimeBinWindow(0),
   fDebug(0)
@@ -58,6 +59,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fBunchIndex(0),
   fWasDeconvoluted(0),
   fDeconvolute(0),
+  fImprovedDeconvolution(0),
   fSingleSeqLimit(0),
   fUseTimeBinWindow(0),
   fDebug(0)
@@ -182,18 +184,40 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
       }
     }
     if( fBunchIndex<fkBunch->fData.size() ) isDeconvoluted = 1;    
-  } else{ 
+  } else { 
     if( !fDeconvolute ){
       fBunchIndex = fkBunch->fData.size();
+    } else if ( fImprovedDeconvolution) {
+      fWasDeconvoluted = 0;
+      for ( int i = std::max((int) iStart, (int) (iPeak - kHalfTimeBinWindow)); i < iPeak; i++) {
+        if ( fkBunch->fData[i].fPeak == 2 )
+        {
+          iStart = i + 1;
+          fWasDeconvoluted = 1;
+        }
+      }
+      //Do not mark as deconvoluted when iPeak + 2 is a minimum (because we use that sample), do not consider minima add end of bunch!
+      for ( ; fBunchIndex < fkBunch->fData.size(); fBunchIndex++ ) {
+        if (fBunchIndex == iPeak + kHalfTimeBinWindow)
+        {
+          fBunchIndex++;
+          break;
+        }
+        if (fkBunch->fData[fBunchIndex].fPeak == 2) {
+          if (fBunchIndex + 1 != fkBunch->fData.size()) isDeconvoluted = 1;
+          fBunchIndex++;
+          break;
+        }
+      }
     } else {
       // find next peak
       if( fBunchIndex+1<fkBunch->fData.size() && fkBunch->fData[fBunchIndex+1].fPeak==1 ){
 	fBunchIndex = fBunchIndex+1;
 	isDeconvoluted = 1; 
-      } else 	if( fBunchIndex+2<fkBunch->fData.size() && fkBunch->fData[fBunchIndex+2].fPeak==1 ){
+      } else   if( fBunchIndex+2<fkBunch->fData.size() && fkBunch->fData[fBunchIndex+2].fPeak==1 ){
 	fBunchIndex = fBunchIndex+1;
 	isDeconvoluted = 1; 
-      } else  if( fBunchIndex+3<fkBunch->fData.size() && fkBunch->fData[fBunchIndex+3].fPeak==1 ){
+      } else   if( fBunchIndex+3<fkBunch->fData.size() && fkBunch->fData[fBunchIndex+3].fPeak==1 ){
 	fBunchIndex = fBunchIndex+2;
 	isDeconvoluted = 1; 
       } else   if( fBunchIndex+1<fkBunch->fData.size() ){
@@ -219,7 +243,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fP2 = 0;
   fOutput.fTMean = fkBunch->fData[iPeak].fTime;
   fOutput.fNPads = 1;
-  fOutput.fNDeconvolutedTime = ( fWasDeconvoluted || isDeconvoluted ) ?1 :0;
+  fOutput.fNDeconvolutedTime = ( fWasDeconvoluted || isDeconvoluted ) ? 1 :0;
   fOutput.fConsecutiveTimeDeconvolution = fOutput.fNDeconvolutedTime;
   fOutput.fMC.clear();
 

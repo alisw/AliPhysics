@@ -88,6 +88,7 @@ class AliHLTTPCHWCFEmulator
   void SetNoiseSuppressionNeighbor(int n) {fPeakFinderUnit.SetNoiseSuppressionNeighbor(n);}
   void SetSmoothing(int s) {fPeakFinderUnit.SetSmoothing(s);}
   void SetClusterQMaxLowerLimit(int l) {fDivisionUnit.SetClusterQMaxLowerLimit(l);}
+  void SetImprovedDeconvolution(int d) {fChannelProcessor.SetImprovedDeconvolution(d);}
 
  private: 
 

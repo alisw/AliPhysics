@@ -141,6 +141,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
 
   Bool_t fDoDeconvTime;            // flag to deconvolute in time direction
   Bool_t fDoDeconvPad;             // flag to deconvolute in pad direction
+  Bool_t fImprovedDeconvolution;   // flat to perform improved deconvolution in time direction
   Bool_t fDoMC;                    // flag to provide MC labels
   Bool_t fDoFlowControl;           // flag to control the data
   Bool_t fDoSinglePadSuppression;  // flag for single pad suppression

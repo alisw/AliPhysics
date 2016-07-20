@@ -54,6 +54,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   AliHLTProcessor(),
   fDoDeconvTime(0),
   fDoDeconvPad(0),
+  fImprovedDeconvolution(0),
   fDoMC(0),
   fDoFlowControl(0),
   fDoSinglePadSuppression(0),
@@ -90,6 +91,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   AliHLTProcessor(),
   fDoDeconvTime(0),
   fDoDeconvPad(0),
+  fImprovedDeconvolution(0),
   fDoMC(0),
   fDoFlowControl(0),
   fDoSinglePadSuppression(0),
@@ -280,6 +282,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDoDeconvPad  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Pad deconvolution is set to: %d", fDoDeconvPad );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-improved-deconvolution" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fImprovedDeconvolution  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Improved deconvolution is set to: %d", fImprovedDeconvolution );
       continue;
     }
 
@@ -627,6 +636,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fCFEmulator.SetNoiseSuppressionNeighbor( fNoiseSuppressionNeighbor );
       fCFEmulator.SetSmoothing( fSmoothing );
       fCFEmulator.SetClusterQMaxLowerLimit( fClusterQMaxLowerLimit );
+      fCFEmulator.SetImprovedDeconvolution( fImprovedDeconvolution );
 
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

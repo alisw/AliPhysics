@@ -34,6 +34,7 @@ class AliHLTTPCHWCFProcessorUnit
 
   /** do cluster deconvolution in time direction */
   void SetDeconvolutionTime( bool val ){ fDeconvolute = val; }
+  void SetImprovedDeconvolution( bool val) { fImprovedDeconvolution = val; }
 
   /** lower charge limit for isolated signals
    */
@@ -69,6 +70,7 @@ class AliHLTTPCHWCFProcessorUnit
   AliHLTUInt32_t fBunchIndex; // index in bunch
   bool fWasDeconvoluted; // tag shows if the current bunch has been split in several clusters
   bool fDeconvolute;    // do deconvolution in time direction
+  bool fImprovedDeconvolution;    // Improved deconvolution taking into account the minimum flag
   AliHLTUInt64_t fSingleSeqLimit; // lower charge limit for isolated signals
   bool fUseTimeBinWindow; // set max. size of the cluster to 5 time bins   
   int fDebug; // debug level
