@@ -114,6 +114,19 @@ fetaT(0),
 fphiT(0),
 fsumEtisoconeT(0),
 fsumEtUE(0),
+fBinsPt(),
+fBinsM02(),
+fBinsEtiso(),
+fBinsEtue(),
+fBinsEta(),
+fBinsPhi(),
+fBinsLabel(),
+fBinsPDG(),
+fBinsMomPDG(),
+fBinsClustPDG(),
+fBinsDx(),
+fBinsDz(),
+fBinsDecay(),
 fTrackMult(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
@@ -182,8 +195,8 @@ fphietaOthers(0),
 fphietaOthersBis(0)
   //tracks(0),
   //clusters(0)
-
 {
+
     // Default constructor.
   
     //fParticleCollArray.SetOwner(kTRUE);
@@ -255,6 +268,19 @@ fetaT(0),
 fphiT(0),
 fsumEtisoconeT(0),
 fsumEtUE(0),
+fBinsPt(),
+fBinsM02(),
+fBinsEtiso(),
+fBinsEtue(),
+fBinsEta(),
+fBinsPhi(),
+fBinsLabel(),
+fBinsPDG(),
+fBinsMomPDG(),
+fBinsClustPDG(),
+fBinsDx(),
+fBinsDz(),
+fBinsDecay(),
 fTrackMult(0),
 fEtaPhiClus(0),
 fClusEvsClusT(0),
@@ -323,8 +349,8 @@ fphietaOthers(0),
 fphietaOthersBis(0)
   //tracks(0),
   //clusters(0)
-
 {
+
     // Standard constructor.
   
     //fParticleCollArray.SetOwner(kTRUE);
@@ -385,7 +411,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   else
     sBoundaries = "EMCAL Acceptance";
   
-  if(fWho>1 || fWho==-1){
+  if(fWho>2 || fWho==-1){
     cout<<"Error!!! OutputMode Can Only Be 0: TTree; 1: THnSparse"<<endl;
     return;
   }
@@ -429,46 +455,88 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           //Initialization by Davide;
       {
         TString sTitle;
-        Int_t binPT=70, binM02=200, binETiso=110, binETUE=110, binetacl=100,binphicl=100, binlabel=150;
+	Int_t binPT = fBinsPt.size()-1;
+	Int_t binM02 = fBinsM02.size()-1;
+	Int_t binETiso = fBinsEtiso.size()-1;
+	Int_t binETUE = fBinsEtue.size()-1;
+	Int_t binetacl = fBinsEta.size()-1;
+	Int_t binphicl = fBinsPhi.size()-1;
+	Int_t binlabel = fBinsLabel.size()-1;
         
-        Int_t binMCMotherPDG=200,bindx=100, bindz=100 /*bincells=20,*/;
+        Int_t binMCPDG = fBinsPDG.size()-1;
+        Int_t binMCMotherPDG = fBinsMomPDG.size()-1;
+        Int_t binMCClustPDG = fBinsClustPDG.size()-1;
+	Int_t bindx = fBinsDx.size()-1;
+	Int_t bindz = fBinsDz.size()-1 ;
+	Int_t binDecayType = fBinsDecay.size()-1;
+	//bincells=20;
         
         Int_t bins[] = {binPT, binM02, binETiso, binETUE, binetacl, binphicl};
-        
-        fNDimensions = sizeof(bins)/sizeof(Int_t);
+
+
+	        fNDimensions = sizeof(bins)/sizeof(Int_t);
         const Int_t ndims =   fNDimensions;
-        
-        Double_t xmin[]= {0., 0., -10., -10., -1.0, 1.};
-        
-        Double_t xmax[]= {70., 2., 100., 100., 1.0, 3.5};
         
         sTitle = Form("Direct Photons: p_{T} , M02 , E_{T} Iso%s in %s, E_{T} UE %s in %s, #eta_{clus} distr,#phi_{clus} distr; p_{T} (GeV/c); M02; E_{T}^{iso%s} (GeV/c) ; E_{T}^{UE%s} (GeV/c); #eta_{cl}; #phi_{cl}", sIsoMethod.Data(), sBoundaries.Data(), sUEMethod.Data(), sBoundaries.Data(), sIsoMethod.Data(), sUEMethod.Data());
         
-        fOutputTHnS =  new THnSparseF("fHnOutput",sTitle.Data(), ndims, bins, xmin, xmax);
+        fOutputTHnS =  new THnSparseF("fHnOutput",sTitle.Data(), ndims, bins);
+        fOutputTHnS->SetBinEdges(0,fBinsPt.data());
+        fOutputTHnS->SetBinEdges(1,fBinsM02.data());
+        fOutputTHnS->SetBinEdges(2,fBinsEtiso.data());
+        fOutputTHnS->SetBinEdges(3,fBinsEtue.data());
+        fOutputTHnS->SetBinEdges(4,fBinsEta.data());
+        fOutputTHnS->SetBinEdges(5,fBinsPhi.data());
         fOutputTHnS->Sumw2();
         
         fOutput->Add(fOutputTHnS);
         
-        Int_t binsMC[] = {binPT, binETiso, binETUE, binMCMotherPDG , binlabel};
-        Int_t binsSMC[] = {binPT, binM02, binMCMotherPDG, binMCMotherPDG, binPT, binETiso/2, 10};
         
         if(fIsMC){
+          Int_t binsMC[] = {binPT, binETiso, binETUE, binMCPDG ,binetacl,binphicl,binlabel};
+          Int_t binsSMC[] = {binPT, binM02, binMCClustPDG, binMCMotherPDG, binPT, bindx, bindz, binETiso,binDecayType};
           
           fMCDimensions = sizeof(binsMC)/sizeof(Int_t);
+	  const Int_t ndimsMC = fMCDimensions;
           
-          Double_t xminbis[] = { 0., -10., -10.,    0.,    0};
-          Double_t xmaxbis[] = {70., 100., 100., 1000., 1500};
           
-          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; Label",5,binsMC,xminbis,xmaxbis);
+          fOutMCTruth = new THnSparseF ("fOutMCTruth","E_{#gamma}, E_{T}^{iso cone}, E_{T}^{UE}, MomPDG, Eta, Phi, Label; E_{T}^{#gamma} (GeV/c); p_{T}^{Iso}(GeV/c);E_{T} ^{UE} (GeV/c); PDG; #eta; #phi; Label",ndimsMC,binsMC);
+	  fOutMCTruth->SetBinEdges(0,fBinsPt.data());
+          fOutMCTruth->SetBinEdges(1,fBinsEtiso.data());
+          fOutMCTruth->SetBinEdges(2,fBinsEtue.data());
+          fOutMCTruth->SetBinEdges(3,fBinsPDG.data());
+          fOutMCTruth->SetBinEdges(4,fBinsEta.data());
+          fOutMCTruth->SetBinEdges(5,fBinsPhi.data());
+          fOutMCTruth->SetBinEdges(6,fBinsLabel.data());
           fOutMCTruth->Sumw2();
           fOutput->Add(fOutMCTruth);
           
-          fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
-          Double_t xminbismix[] = { 0., 0., -300, -500,  0., -10., 0.};
-          Double_t xmaxbismix[] = {70., 2.,  300,  500, 70., 100.,10.};
+	  
+	  fphietaPhotons = new TH3D ("fDphiDeta_Photons","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 100, -0.5, 0.5, 200, 1.5, 3.5,60,0.,60.);
+          fphietaPhotons->Sumw2();
+          fOutput->Add(fphietaPhotons);
           
-          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, E_{T}^{iso}, Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); E_{T}^{iso} (GeV/c); Label",7,binsSMC,xminbismix,xmaxbismix);
-          fOutClustMC->Sumw2();
+          fphietaOthers = new TH3D ("fDphiDeta_Others","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+          fphietaOthers->Sumw2();
+          fOutput->Add(fphietaOthers);
+          
+          fphietaOthersBis = new TH3D ("fDphiDeta_OthersBis","#Delta#phi vs #Delta#eta Clust-MCpart to check why zero M02 clusters; #eta; #phi", 140, -0.7, 0.7, 220, 0.8, 3.5,60,0.,60.);
+          fphietaOthersBis->Sumw2();
+          fOutput->Add(fphietaOthersBis);
+          
+          fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
+	  const Int_t ndimsMCQA = fMCQAdim;
+
+          fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; Mothers' PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",ndimsMCQA,binsSMC);
+       	  fOutClustMC->SetBinEdges(0,fBinsPt.data());
+          fOutClustMC->SetBinEdges(1,fBinsM02.data());
+          fOutClustMC->SetBinEdges(2,fBinsClustPDG.data());
+          fOutClustMC->SetBinEdges(3,fBinsMomPDG.data());
+          fOutClustMC->SetBinEdges(4,fBinsPt.data());
+          fOutClustMC->SetBinEdges(5,fBinsDx.data());
+          fOutClustMC->SetBinEdges(6,fBinsDz.data());
+          fOutClustMC->SetBinEdges(7,fBinsEtiso.data());
+          fOutClustMC->SetBinEdges(8,fBinsDecay.data());
+	  fOutClustMC->Sumw2();
           fOutput->Add(fOutClustMC);
         }
       }
@@ -767,7 +835,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fphietaOthersBis->Sumw2();
     fOutput->Add(fphietaOthersBis);
   }
-  
+
   PostData(1, fOutput);
     //     //   return;
 }
@@ -2456,8 +2524,10 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     outputvalueMCmix[2] = clustPDG;
     outputvalueMCmix[3] = momP2Check->GetPdgCode();
     outputvalueMCmix[4] = enTrue;
-    outputvalueMCmix[5] = isolation;
-    outputvalueMCmix[6] = clusterFromPromptPhoton;
+    outputvalueMCmix[5] = dPhi;
+    outputvalueMCmix[6] = dEta;
+    outputvalueMCmix[7] = isolation;
+    outputvalueMCmix[8] = clusterFromPromptPhoton;
       //clusterFromPP=1 ->clusterlabel = 8 TruePromptPhoton;
       //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
       //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
