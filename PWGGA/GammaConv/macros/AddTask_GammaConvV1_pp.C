@@ -601,6 +601,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000","1111111063032230000"); // standard cut 8tev + double counting
     cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEMC7
     cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEGA7
+  } else if (trainConfig == 79) { //pp 7 and 8TeV direct photon test cut (with asymmetry cut)
+    cuts.AddCut("00010113", "00200009227302008254404000", "0152101500000000"); //8TeV with asymmetry and pT dep alpha cut
+	cuts.AddCut("00010113", "00200009227302008254404000", "0152103500000000"); //8TeV with asymmetry
+	cuts.AddCut("00000113", "00200009227302008254404000", "0152101500000000"); //7TeV with asymmetry and pT dep alpha cut
+	cuts.AddCut("00000113", "00200009227302008254404000", "0152103500000000"); //7TeV with asymmetry
     //---------systematic studies July 2015--------------------------//
   } else if (trainConfig == 80) {
     cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
