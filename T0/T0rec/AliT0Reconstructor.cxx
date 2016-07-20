@@ -147,9 +147,8 @@ ClassImp(AliT0Reconstructor)
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry6->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
-  if(LHCperiod.Contains("LHC15")) fLHCperiod=kTRUE;
-  if(LHCperiod.Contains("LHC16")) fLHCperiod16=kTRUE;
- 
+  if(LHCperiod.Contains("LHC15")|| LHCperiod.Contains("LHC16")) fLHCperiod=kTRUE;
+  printf(" LHCperiod %i\n",fLHCperiod);
 }
 
 //_____________________________________________________________________________
@@ -218,10 +217,14 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   AliT0RecPoint frecpoints;
   AliT0RecPoint * pfrecpoints = &frecpoints;
   clustersTree->Branch( "T0", "AliT0RecPoint" ,&pfrecpoints);
+  Int_t timecenterA = 511;
+  Int_t timecenterC = 511;
+  if(fLHCperiod) { timecenterC=514;timecenterC=518;}
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(timeCFD->At(ipmt)>511-corridor &&timeCFD->At(ipmt)<511+corridor  ) {
+      if( (timeCFD->At(ipmt)+ timeDelayCFD[ipmt])>511-corridor &&
+	  (timeCFD->At(ipmt)+ timeDelayCFD[ipmt])<511+corridor  ) {
       Float_t timefull = 0.001*( timeCFD->At(ipmt) - 511 - timeDelayCFD[ipmt])  * channelWidth;
       frecpoints.SetTimeFull(ipmt, 0 ,timefull) ;
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
@@ -229,20 +232,22 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       else
 	adc[ipmt] = 0; 
       // no walk correction for 2015 data
-      if(fLHCperiod || fLHCperiod16) {
-	if (ipmt<12) time[ipmt] =   time[ipmt] - 514;
-	if (ipmt>=12) time[ipmt] =   time[ipmt] - 517;
-	time[ipmt] = timeCFD->At(ipmt) -  timeDelayCFD[ipmt];
+      time[ipmt] = timeCFD->At(ipmt) -  timeDelayCFD[ipmt];
+      if(fLHCperiod ) {
+	if (ipmt<12) time[ipmt] =   time[ipmt] - timecenterC;
+	if (ipmt>=12) time[ipmt] =   time[ipmt] -timecenterA ;
       }
       else
 	{
 	  time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
-	  time[ipmt] =   time[ipmt] - 511;
+	  time[ipmt] =   time[ipmt] - timecenterC;
 	}
       Double_t sl = Double_t(timeLED->At (ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
-    AliDebug(5,Form(" ipmt %i QTC  %i , time in chann %i (led-cfd) %i ",
-		    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
+      //   AliDebug(5,Form(" ipmt %i QTC  %i , time in chann %i (led-cfd) %i ",
+      //	    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
+    printf(" ipmt %i QTC  %i , time in chann %i \n ",
+		    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]));
       
     Double_t ampMip = 0;
       TGraph* ampGraph = (TGraph*)fAmpLED.At(ipmt);
