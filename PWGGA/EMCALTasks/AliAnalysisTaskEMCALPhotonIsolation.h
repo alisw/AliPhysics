@@ -59,6 +59,8 @@ class AliGenPythiaEventHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
+#include <vector>
+using std::vector;
 
 class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
 public:
