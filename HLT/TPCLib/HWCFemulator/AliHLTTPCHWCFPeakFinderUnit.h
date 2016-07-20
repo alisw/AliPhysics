@@ -42,6 +42,7 @@ class AliHLTTPCHWCFPeakFinderUnit
   void SetNoiseSuppressionMinimum( AliHLTUInt32_t val ) {fNoiseSuppressionMinimum = val;}
   void SetNoiseSuppressionNeighbor( AliHLTUInt32_t val ) {fNoiseSuppressionNeighbor = val;}
   void SetSmoothing( AliHLTUInt32_t val) {fSmoothing = val;}
+  void SetSmoothingThreshold( AliHLTUInt32_t val) {fSmoothingThreshold = val;}
 
   /** initialise */
   int Init();
@@ -66,6 +67,7 @@ class AliHLTTPCHWCFPeakFinderUnit
   AliHLTUInt32_t fNoiseSuppressionMinimum; // noise suppression while minimum finding
   AliHLTUInt32_t fNoiseSuppressionNeighbor; // consider last neighbor for peak/minimum finder with noise suppression
   AliHLTUInt32_t fSmoothing; // smoothing setting: 0: no smoothing, 1: average of 3 samples, 2: 0.5 weight for outer samples
+  AliHLTUInt32_t fSmoothingThreshold; // threshold when to detect peak / min without smoothing
   int fDebug; // debug level
 };
 

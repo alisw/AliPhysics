@@ -39,6 +39,7 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit()
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fSmoothing(0),
+  fSmoothingThreshold(0),
   fDebug(0)
 {
   //constructor 
@@ -60,6 +61,7 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit(const AliHLTTPCHWCFPeak
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fSmoothing(0),
+  fSmoothingThreshold(0),
   fDebug(0)
 {
   // dummy
@@ -125,12 +127,14 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   AliHLTUInt32_t qLast2 = 0;
   AliHLTUInt32_t qLast3 = 0;
   AliHLTUInt32_t qLast4 = 0;
+  AliHLTUInt32_t qUnsmoothedLast = 0;
   AliHLTUInt32_t n = fOutput.fData.size();
   AliHLTUInt32_t qPeak = 0;
   AliHLTUInt32_t qMin = 0;
 
   for( AliHLTUInt32_t i=0; i<n; i++ ){
     AliHLTUInt32_t q;
+    AliHLTUInt32_t qUnsmoothed = fOutput.fData[i].fQ;
     if (fSmoothing >= 2)
     {
       if (n == 1) q = fOutput.fData[i].fQ * 2;
@@ -150,7 +154,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
       q = fOutput.fData[i].fQ;
     }
     if( !slope ){
-      if(fNoiseSuppression ? (q + fNoiseSuppression < qPeak) : (q + fChargeFluctuation < qLast) ){ // peak
+      if( (fSmoothingThreshold && qUnsmoothed + fSmoothingThreshold <= qUnsmoothedLast) || (fNoiseSuppression ? (q + fNoiseSuppression < qPeak) : (q + fChargeFluctuation < qLast)) ){ // peak
         slope = 1;
         qMin = q;
         if( fNoiseSuppressionNeighbor >= 3 && i>3 && qLast4 > qLast3 && qLast4 > qLast2 && qLast4 > qLast) fOutput.fData[i-4].fPeak = 1;
@@ -164,7 +168,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
     }
     else
     {
-       if( fNoiseSuppressionMinimum ? (q > qMin + fNoiseSuppressionMinimum) : (q > qLast + fChargeFluctuation) ){ // minimum
+       if( (fSmoothingThreshold && qUnsmoothed >= qUnsmoothedLast + fSmoothingThreshold) || (fNoiseSuppressionMinimum ? (q > qMin + fNoiseSuppressionMinimum) : (q > qLast + fChargeFluctuation)) ){ // minimum
         slope = 0;
         qPeak = q;
         if( fNoiseSuppressionNeighbor >= 3 && i>3 && qLast4 < qLast3 && qLast4 < qLast2 && qLast4 < qLast) fOutput.fData[i-4].fPeak = 2;
@@ -180,6 +184,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
     qLast3 = qLast2;
     qLast2 = qLast;
     qLast = q;
+    qUnsmoothedLast = qUnsmoothed;
   }
 
   if( n>0 ){

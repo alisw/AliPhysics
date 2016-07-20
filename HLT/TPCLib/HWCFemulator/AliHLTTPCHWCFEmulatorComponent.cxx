@@ -73,6 +73,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fSmoothing(0),
+  fSmoothingThreshold(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -110,6 +111,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
   fSmoothing(0),
+  fSmoothingThreshold(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -400,6 +402,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
 
+    if ( argument.CompareTo( "-smoothing-threshold" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fSmoothingThreshold  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Smoothing Threshold parameter is set to: %d", fSmoothingThreshold );
+      continue;
+    }
+
     if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -635,6 +644,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       fCFEmulator.SetNoiseSuppressionMinimum( fNoiseSuppressionMinimum );
       fCFEmulator.SetNoiseSuppressionNeighbor( fNoiseSuppressionNeighbor );
       fCFEmulator.SetSmoothing( fSmoothing );
+      fCFEmulator.SetSmoothingThreshold( fSmoothingThreshold );
       fCFEmulator.SetClusterQMaxLowerLimit( fClusterQMaxLowerLimit );
       fCFEmulator.SetImprovedDeconvolution( fImprovedDeconvolution );
 

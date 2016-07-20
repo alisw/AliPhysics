@@ -157,6 +157,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   int            fNoiseSuppressionMinimum; // Slightly modified algorithm for minimum finding aimed to suppress noise
   int            fNoiseSuppressionNeighbor; // Consider next neighbor as peak/neighbor during peak finder with noise suppression
   int            fSmoothing; //Smoothing parameter for peak finder
+  int            fSmoothingThreshold; //Threshold when to flag peaks / minima without smoothing
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
   AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
