@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
+AliAnalysisTaskEMCalHFEpA2* ConfigEMCalHFEpA(
 											
 										
 
@@ -53,11 +53,26 @@ Bool_t isCentralitySys 		= kFALSE
 	//hfecuts->SetCutITSdrift(AliHFEextraCuts::kAny); 			                    //Require at least one cluster on SDD
 	hfecuts->SetCheckITSLayerStatus(kFALSE); 
 	
+	
+	
+	
 	if(configIndex==14) hfecuts->SetMinNClustersITS(2);								//Minimum number of clusters on ITS
 	else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
 	else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
 	else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
-	else hfecuts->SetMinNClustersITS(3);								            //Minimum number of clusters on ITS
+	else hfecuts->SetMinNClustersITS(3);	
+		
+	if(!isEMCal){
+		if(configIndex==13) hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);			//Require at least one cluster on SPD
+		else if(configIndex==82) hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
+		else hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);	
+		
+		if(configIndex==14) hfecuts->SetMinNClustersITS(3);								//Minimum number of clusters on ITS
+		else if(configIndex==15) hfecuts->SetMinNClustersITS(4);	
+		else if(configIndex==16) hfecuts->SetMinNClustersITS(1);
+		else if(configIndex==17) hfecuts->SetMinNClustersITS(5);
+		else hfecuts->SetMinNClustersITS(4);
+	}//Minimum number of clusters on ITS
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
@@ -83,7 +98,7 @@ Bool_t isCentralitySys 		= kFALSE
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
-	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
+	AliAnalysisTaskEMCalHFEpA2 *task = new AliAnalysisTaskEMCalHFEpA2(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
@@ -346,6 +361,8 @@ Bool_t isCentralitySys 		= kFALSE
 				task->SetTPCcal_cut_min(-1);
 			
 		}
+		
+		if(!isEMCal)params[0] = 0;
 	
 	}
 
