@@ -38,6 +38,7 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit()
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
+  fSmoothing(0),
   fDebug(0)
 {
   //constructor 
@@ -55,6 +56,10 @@ AliHLTTPCHWCFPeakFinderUnit::AliHLTTPCHWCFPeakFinderUnit(const AliHLTTPCHWCFPeak
   fOutput(),
   fkBunch(0),
   fChargeFluctuation(0),
+  fNoiseSuppression(0),
+  fNoiseSuppressionMinimum(0),
+  fNoiseSuppressionNeighbor(0),
+  fSmoothing(0),
   fDebug(0)
 {
   // dummy
@@ -118,18 +123,42 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   bool slope = 0;
   AliHLTUInt32_t qLast = 0;
   AliHLTUInt32_t qLast2 = 0;
+  AliHLTUInt32_t qLast3 = 0;
+  AliHLTUInt32_t qLast4 = 0;
   AliHLTUInt32_t n = fOutput.fData.size();
   AliHLTUInt32_t qPeak = 0;
   AliHLTUInt32_t qMin = 0;
-  
+
   for( AliHLTUInt32_t i=0; i<n; i++ ){
-    AliHLTUInt32_t q = fOutput.fData[i].fQ;    
+    AliHLTUInt32_t q;
+    if (fSmoothing >= 2)
+    {
+      if (n == 1) q = fOutput.fData[i].fQ * 2;
+      else if (i == 0) q = fOutput.fData[0].fQ + fOutput.fData[1].fQ;
+      else if (i == n - 1) q = fOutput.fData[n - 1].fQ + fOutput.fData[n - 2].fQ;
+      else q = (fOutput.fData[i - 1].fQ + fOutput.fData[i + 1].fQ) / 2 + fOutput.fData[i].fQ;
+    }
+    else if (fSmoothing)
+    {
+      if (n == 1) q = fOutput.fData[i].fQ * 3;
+      else if (i == 0) q = (fOutput.fData[0].fQ + fOutput.fData[1].fQ) * 3 / 2;
+      else if (i == n - 1) q = (fOutput.fData[n - 1].fQ + fOutput.fData[n - 2].fQ) * 3 / 2;
+      else q = fOutput.fData[i - 1].fQ + fOutput.fData[i].fQ + fOutput.fData[i + 1].fQ;
+    }
+    else
+    {
+      q = fOutput.fData[i].fQ;
+    }
     if( !slope ){
       if(fNoiseSuppression ? (q + fNoiseSuppression < qPeak) : (q + fChargeFluctuation < qLast) ){ // peak
         slope = 1;
         qMin = q;
-        if( fNoiseSuppressionNeighbor && i>1 && qLast2 > qLast) fOutput.fData[i-2].fPeak = 1;
+        if( fNoiseSuppressionNeighbor >= 3 && i>3 && qLast4 > qLast3 && qLast4 > qLast2 && qLast4 > qLast) fOutput.fData[i-4].fPeak = 1;
+        else if (fNoiseSuppressionNeighbor >= 2 && i>2 && qLast3 > qLast2 && qLast3 > qLast) fOutput.fData[i-3].fPeak = 1;
+        else if( fNoiseSuppressionNeighbor && i>1 && qLast2 > qLast) fOutput.fData[i-2].fPeak = 1;
         else if( i>0 ) fOutput.fData[i-1].fPeak = 1;
+
+        qLast = qLast2 = qLast3 = qLast4 = qPeak;
       }
       if (q > qPeak) qPeak = q;
     }
@@ -138,19 +167,35 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
        if( fNoiseSuppressionMinimum ? (q > qMin + fNoiseSuppressionMinimum) : (q > qLast + fChargeFluctuation) ){ // minimum
         slope = 0;
         qPeak = q;
-        if( fNoiseSuppressionNeighbor && i>1 && qLast2 < qLast) fOutput.fData[i-2].fPeak = 2;
+        if( fNoiseSuppressionNeighbor >= 3 && i>3 && qLast4 < qLast3 && qLast4 < qLast2 && qLast4 < qLast) fOutput.fData[i-4].fPeak = 2;
+        else if( fNoiseSuppressionNeighbor >= 2 && i>2 && qLast3 < qLast2 && qLast3 < qLast) fOutput.fData[i-3].fPeak = 2;
+        else if( fNoiseSuppressionNeighbor && i>1 && qLast2 < qLast) fOutput.fData[i-2].fPeak = 2;
         else if( i>0 ) fOutput.fData[i-1].fPeak = 2;
+
+        qLast = qLast2 = qLast3 = qLast4 = qMin;
       }
       if (q < qMin) qMin = q;
     }
+    qLast4 = qLast3;
+    qLast3 = qLast2;
     qLast2 = qLast;
     qLast = q;
   }
-  
+
   if( n>0 ){
-    if( !slope ) fOutput.fData[n-1].fPeak = 1;
-    else fOutput.fData[n-1].fPeak = 2;
+    if( !slope )
+    {
+      if( fNoiseSuppressionNeighbor >= 3 && n>3 && qLast4 > qLast4 && qLast4 > qLast2 && qLast4 > qLast) {fOutput.fData[n-4].fPeak = 1;fOutput.fData[n-1].fPeak = 2;}
+      else if( fNoiseSuppressionNeighbor >= 2 && n>2 && qLast3 > qLast2 && qLast3 > qLast) {fOutput.fData[n-3].fPeak = 1;fOutput.fData[n-1].fPeak = 2;}
+      else if( fNoiseSuppressionNeighbor && n>1 && qLast2 > qLast) {fOutput.fData[n-2].fPeak = 1;fOutput.fData[n-1].fPeak = 2;}
+      else fOutput.fData[n-1].fPeak = 1;
+    }
+    else
+    {
+      fOutput.fData[n-1].fPeak = 2; //This is assymetric: if we were searching for a peak, we flag the best peak and terminate with a minimum.
+                                    //But when we are searching for a minimum, we do not want to flag yet another peak.
+    }
   }
-  
+
   return &fOutput;
 }
