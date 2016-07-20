@@ -768,10 +768,12 @@ else {
   if(fUsePID) {
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
+    if(gAnalysisLevel == "AOD" || gAnalysisLevel == "MCAODrec"){
     fHistdEdxTPC = new TH2F("fHistdEdxTPC", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,fPtMax,500, 0., 500.);
     fHistListPIDQA->Add(fHistdEdxTPC);
     fHistBetaTOF = new TH2F(Form("fHistBetaTOF"), ";p_{T} (GeV/c);v/c",200, 0.0, fPtMax, 500, 0.1, 1.1);
     fHistListPIDQA->Add(fHistBetaTOF);
+    }
 
     fHistdEdxVsPTPCbeforePID = new TH2D ("dEdxVsPTPCbefore","dEdxVsPTPCbefore", 1000, -10.0, 10.0, 1000, 0, 1000); 
     fHistListPIDQA->Add(fHistdEdxVsPTPCbeforePID);
@@ -1706,8 +1708,15 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
     // End of Filtering  --------------------------------------------------------->
 
       //===========================PID===============================//		   
-
-
+if(fUsePID){
+ Double_t dEdx   = aodTrack-> GetTPCsignal();  //dEdX for TPC
+ fHistdEdxTPC->Fill(aodTrack->Pt(),dEdx);
+ IsTOF(aodTrack);
+ if(fHasTOFPID){
+ Double_t beta = Beta(aodTrack); // Beta for TOF 
+ fHistBetaTOF->Fill(aodTrack->Pt(), beta);
+}
+}
  
     Double_t nsigmaPion=999., nsigmaKaon=999., nsigmaProton=999.;
 
