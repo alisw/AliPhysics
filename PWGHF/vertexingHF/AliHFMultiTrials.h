@@ -22,6 +22,10 @@ class AliHFMultiTrials : public TNamed {
     for(Int_t ib=0; ib<fNumOfRebinSteps; ib++) fRebinSteps[ib]=values[ib];
   }
 
+  void SetNumOfFirstBinSteps(Int_t nfst){
+    fNumOfFirstBinSteps=nfst;
+  }
+
   void ConfigureLowLimFitSteps(Int_t nSteps, Double_t*  values){
     if(fLowLimFitSteps) delete [] fLowLimFitSteps;
     fNumOfLowLimFitSteps=nSteps;
@@ -64,6 +68,13 @@ class AliHFMultiTrials : public TNamed {
   void SetUsePol4Background(Bool_t opt=kTRUE){fUsePol4Bkg=opt;}
   void SetUsePol5Background(Bool_t opt=kTRUE){fUsePol5Bkg=opt;}
 
+  void SetUseFixSigUpFreeMean(Bool_t opt=kTRUE) {fUseFixSigUpFreeMean=opt;}
+  void SetUseFixSigDownFreeMean(Bool_t opt=kTRUE) {fUseFixSigDownFreeMean=opt;}
+  void SetUseFreeS(Bool_t opt=kTRUE) {fUseFreeS=opt;}
+  void SetUseFixedMeanFreeS(Bool_t opt=kTRUE) {fUseFixedMeanFreeS=opt;}
+  void SetUseFixSigFreeMean(Bool_t opt=kTRUE) {fUseFixSigFreeMean=opt;}
+  void SetUseFixSigFixMean(Bool_t opt=kTRUE) {fUseFixSigFixMean=opt;}
+
   void SetDrawIndividualFits(Bool_t opt=kTRUE){fDrawIndividualFits=opt;}
 
   Bool_t DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad=0x0);
@@ -86,6 +97,7 @@ class AliHFMultiTrials : public TNamed {
 
   Int_t fNumOfRebinSteps; /// number of rebin steps
   Int_t* fRebinSteps;     //[fNumOfRebinSteps] values of rebin
+  Int_t fNumOfFirstBinSteps; /// number of steps in the first bin for rebin
   Int_t fNumOfLowLimFitSteps; /// number of steps on the min. mass for fit
   Double_t* fLowLimFitSteps; //[fNumOfLowLimFitSteps] values of low limits for fit
   Int_t fNumOfUpLimFitSteps; /// number of steps on the max. mass for fit
@@ -104,6 +116,12 @@ class AliHFMultiTrials : public TNamed {
   Bool_t fUsePol3Bkg;    /// switch for pol3 background
   Bool_t fUsePol4Bkg;    /// switch for pol4 background
   Bool_t fUsePol5Bkg;    /// switch for pol5 background
+  Bool_t fUseFixSigUpFreeMean;   /// switch for FixSigUpFreeMean
+  Bool_t fUseFixSigDownFreeMean; /// switch for FixSigDownFreeMean
+  Bool_t fUseFreeS;              /// switch for FreeSigma
+  Bool_t fUseFixedMeanFreeS;     ///  switch for FixedMeanFreeS
+  Bool_t fUseFixSigFreeMean;     ///  switch for FixSigFreeMean
+  Bool_t fUseFixSigFixMean;      ///  switch for FixSigFixMean
 
   Bool_t fDrawIndividualFits; /// flag for drawing fits
  
@@ -112,6 +130,7 @@ class AliHFMultiTrials : public TNamed {
   TH1F* fHistoSigmaTrialAll;    /// histo with gauss sigma from all trials
   TH1F* fHistoMeanTrialAll;     /// histo with gauss mean from all trials
   TH1F* fHistoChi2TrialAll;     /// histo with chi2 from all trials
+  TH1F* fHistoSignifTrialAll;     /// histo with chi2 from all trials
 
   TH1F* fHistoRawYieldDistBinCAll; /// histo with bin counts from all trials
   TH2F* fHistoRawYieldTrialBinCAll; /// histo with bin counts from all trials
@@ -121,6 +140,7 @@ class AliHFMultiTrials : public TNamed {
   TH1F** fHistoSigmaTrial;    /// histo with gauss sigma from subsamples of trials
   TH1F** fHistoMeanTrial;     /// histo with gauss mean from subsamples of trials
   TH1F** fHistoChi2Trial;     /// histo with chi2 from subsamples of trials
+  TH1F** fHistoSignifTrial;     /// histo with chi2 from subsamples of trials
 
   TH1F** fHistoRawYieldDistBinC;  /// histo with bin counts from subsamples of trials
   TH2F** fHistoRawYieldTrialBinC; /// histo with bin counts from subsamples of trials
@@ -131,7 +151,7 @@ class AliHFMultiTrials : public TNamed {
   Double_t fMaxYieldGlob;   /// maximum yield
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFMultiTrials,1); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFMultiTrials,2); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
