@@ -39,7 +39,6 @@ class AliParticleContainer : public AliEmcalContainer {
    * @param[in] index Index of the particle in the array
    * @return Particle at the given index
    */
-  virtual TObject *operator[](int index) const { return GetParticle(index); }
 
   virtual Bool_t              ApplyParticleCuts(const AliVParticle* vp, UInt_t &rejectionReason) const;
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
