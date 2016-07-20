@@ -22,7 +22,7 @@ class AliESDVertex;
 class AliESDRun: public TObject {
 public:
 
-  enum StatusBits {kBInfoStored = BIT(14), kUniformBMap = BIT(15), kConvSqrtSHalfGeV = BIT(16)};
+  enum StatusBits {kBInfoStored = BIT(14), kUniformBMap = BIT(15), kConvSqrtSHalfGeV = BIT(16), kESDDownscaledOnline = BIT(17)};
 
 
   AliESDRun();

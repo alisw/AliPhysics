@@ -174,6 +174,7 @@ public:
   void        SetBeamParticle(Int_t az, Int_t ibeam)      {if(fESDRun) fESDRun->SetBeamParticle(az,ibeam);}
   void        SetUniformBMap(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kUniformBMap,val);}
   void        SetBInfoStored(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kBInfoStored,val);}
+  int         SetESDDownscaledOnline(Bool_t val)  const  {if(fESDRun) {fESDRun->SetBit(AliESDRun::kESDDownscaledOnline, val); return(0);} else {return(1);}}
   //
   Float_t     GetCurrentL3()                      const  {return fESDRun?fESDRun->GetCurrentL3():0;}
   Float_t     GetCurrentDip()                     const  {return fESDRun?fESDRun->GetCurrentDip():0;}

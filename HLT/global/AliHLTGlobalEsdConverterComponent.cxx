@@ -374,6 +374,10 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& e
   pESD->SetOrbitNumber(GetOrbitNumber());
   pESD->SetBunchCrossNumber(GetBunchCrossNumber());
   pESD->SetTimeStamp(GetTimeStamp());
+  if (pESD->SetESDDownscaledOnline(fScaleDownTracks > 0))
+  {
+    HLTError("AliESDRun missing");
+  }
 
   const AliHLTCTPData* pCTPData=CTPData();
   if (pCTPData) {
