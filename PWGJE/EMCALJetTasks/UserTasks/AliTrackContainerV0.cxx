@@ -13,6 +13,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+#include <iostream>
+#include <vector>
 #include <TClonesArray.h>
 #include <AliLog.h>
 #include <AliAODTrack.h>
@@ -30,13 +32,12 @@ AliTrackContainerV0::AliTrackContainerV0() :
   fFilterDaughterTracks(0),
   fEvent(0),
   fV0s(0),
-  fDaughterList(10)
+  fDaughterVec()
 {
   // Constructor.
 
   fBaseClassName = "AliAODTrack";
   SetClassName("AliAODTrack");
-  fDaughterList.SetOwner(kFALSE);
 }
 
 /// This is the standard named constructor.
@@ -47,13 +48,12 @@ AliTrackContainerV0::AliTrackContainerV0(const char *name) :
   fFilterDaughterTracks(0),
   fEvent(0),
   fV0s(0),
-  fDaughterList(10)
+  fDaughterVec()
 {
   // Constructor.
 
   fBaseClassName = "AliAODTrack";
   SetClassName("AliAODTrack");
-  fDaughterList.SetOwner(kFALSE);
 }
 
 /// Get list of V0 candidates from AOD event.
@@ -90,9 +90,10 @@ void AliTrackContainerV0::NextEvent()
       return;
     }
 
-    fDaughterList.Clear();
+    fDaughterVec.clear();
+
     Int_t iNumV0s = fV0s->GetEntriesFast();
-    
+
     for(Int_t iV0 = 0; iV0 < iNumV0s; iV0++)
       ExtractDaughters(dynamic_cast<AliAODv0*>(fV0s->At(iV0)));
   }
@@ -103,6 +104,9 @@ void AliTrackContainerV0::NextEvent()
 /// \param cand Pointer to V0 candidate to be set.
 void AliTrackContainerV0::ExtractDaughters(AliAODv0* cand)
 {
+  if (!cand)
+    return;
+
   for (Int_t i = 0; i < 2; i++) {
     AliAODTrack* track = dynamic_cast<AliAODTrack*>(cand->GetDaughter(i));
     
@@ -112,7 +116,7 @@ void AliTrackContainerV0::ExtractDaughters(AliAODv0* cand)
       return;
     }
 
-    fDaughterList.AddLast(track);
+    fDaughterVec.push_back(track->GetID());
   }
 }
 
@@ -128,13 +132,18 @@ Bool_t AliTrackContainerV0::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectio
 {
   const AliAODTrack* track = dynamic_cast<const AliAODTrack*>(vp);
 
-  if (IsV0Daughter(track)) {
-    // track is one of the V0 daughter - will be rejected
+  if (!track)
     return kFALSE;
-  } 
-  else {
-    // track is NOT a V0 daughter - regular cuts will be applied
-    return AliTrackContainer::ApplyTrackCuts(vp, rejectionReason);
+  
+  if (AliTrackContainer::ApplyTrackCuts(vp, rejectionReason)) {
+    if (IsV0Daughter(track)) {
+      // track is one of the V0 daughter - will be rejected
+      return kFALSE;
+    } else {
+      return kTRUE;
+    }
+  } else {
+    return kFALSE;
   }
 }
 
@@ -145,8 +154,17 @@ Bool_t AliTrackContainerV0::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectio
 /// \return kTRUE if the particle is a daughter of V0 candidate, kFALSE otherwise
 Bool_t AliTrackContainerV0::IsV0Daughter(const AliAODTrack* track) const
 {
-	if (fDaughterList.FindObject(track))
-		return kTRUE;
+  Int_t trackID = track->GetID();
+  
+  if(track->IsGlobalConstrained()){ // constrained tracks have a changed ID
+    trackID = -1-trackID;
+  }
 
+  for(Int_t i = 0; i < fDaughterVec.size(); i++) {
+    if(trackID == fDaughterVec[i]) 
+    {
+      return kTRUE;
+    }
+  }
 	return kFALSE;
 }
