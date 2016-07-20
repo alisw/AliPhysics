@@ -155,7 +155,7 @@ class AliEmcalContainer : public TObject {
   void                        SortArray()                           { fClArray->Sort()                  ; }
 
   TClass*                     GetLoadedClass()                      { return fLoadedClass               ; }
-  virtual void                NextEvent();
+  virtual void                NextEvent(){;}
   void                        SetMinMCLabel(Int_t s)                            { fMinMCLabel      = s   ; }
   void                        SetMaxMCLabel(Int_t s)                            { fMaxMCLabel      = s   ; }
   void                        SetMCLabelRange(Int_t min, Int_t max)             { SetMinMCLabel(min)     ; SetMaxMCLabel(max)    ; }
