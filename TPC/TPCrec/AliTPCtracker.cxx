@@ -9872,7 +9872,14 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
     a42 = C20*cg40 + C21*cg41 + C22*cg42 + C32*cg43 + C42*cg44, 
     a43 = C30*cg40 + C31*cg41 + C32*cg42 + C33*cg43 + C43*cg44, 
     a44 = C40*cg40 + C41*cg41 + C42*cg42 + C43*cg43 + C44*cg44;
-    
+  //
+  // make sure diagonal elements are positive
+  if (a00<0) a00 = 0;
+  if (a11<0) a11 = 0;
+  if (a22<0) a22 = 0;
+  if (a33<0) a33 = 0;
+  if (a44<0) a44 = 0;
+  //    
   C00 += a00;
   C10 += a10;  C11 += a11;
   C20 += a20;  C21 += a21;  C22 += a22;
