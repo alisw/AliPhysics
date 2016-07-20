@@ -148,6 +148,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
       fEventCuts->SetV0ReaderName(V0ReaderName);
+      if (periodNameV0Reader.CompareTo("") != 0) fEventCuts->SetPeriodEnum(periodNameV0Reader);
       fEventCuts->SetLightOutput(runLightOutput);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fEventCuts->DoEtaShift(doEtaShift);
@@ -387,6 +388,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);

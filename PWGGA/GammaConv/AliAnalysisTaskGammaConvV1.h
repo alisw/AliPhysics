@@ -169,11 +169,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            hMCPi0PtAlpha;                              //!
     TH2F**                            hMCEtaPtAlpha;                              //!
     TH1F**                            hMCK0sPt;                                   //!
-    TH1F**                            hMCK0sWOWeightPt;                           //!
-    TH2F**                            hMCK0sPtY;                                  //!
     TH2F**                            hMCSecPi0PtvsSource;                        //!
     TH2F**                            hMCSecPi0RvsSource;                         //!
     TH1F**                            hMCSecPi0Source;                            //!
+    TH2F**                            hMCSecPi0InAccPtvsSource;                   //!
     TH1F**                            hMCSecEtaPt;                                //!
     TH1F**                            hMCSecEtaSource;                            //!
     TH2F**                            hMCPi0PtJetPt;                              //! array of histos with weighted pi0, pT, hardest jet pt
@@ -307,7 +306,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 32);
+    ClassDef(AliAnalysisTaskGammaConvV1, 33);
 };
 
 #endif

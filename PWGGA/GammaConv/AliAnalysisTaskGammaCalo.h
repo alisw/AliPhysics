@@ -166,10 +166,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoMCPi0PtAlpha;                                   //! array of histos with weighted pi0, pT, alpha
     TH2F**                fHistoMCEtaPtAlpha;                                   //! array of histos with weighted eta, pT, alpha
     TH1F**                fHistoMCK0sPt;                                        //! array of histos with weighted K0s, pT
-    TH1F**                fHistoMCK0sWOWeightPt;                                //! array of histos with unweighted K0s, pT
-    TH2F**                fHistoMCK0sPtY;                                       //! array of histos with weighted K0s, pT, Y
+    TH1F**                fHistoMCNegKPt;                                       //! array of histos with weighted K-, pT
+    TH1F**                fHistoMCPosKPt;                                       //! array of histos with weighted K+, pT
+    TH1F**                fHistoMCNegPiPt;                                      //! array of histos with weighted pi-, pT
+    TH1F**                fHistoMCPosPiPt;                                      //! array of histos with weighted pi+, pT
     TH2F**                fHistoMCSecPi0PtvsSource;                             //! array of histos with secondary pi0, pT, source
     TH1F**                fHistoMCSecPi0Source;                                 //! array of histos with secondary pi0, source
+    TH2F**                fHistoMCSecPi0InAccPtvsSource;                        //! array of histos with secondary pi0 in acceptance, pT, source
     TH1F**                fHistoMCSecEtaPt;                                     //! array of histos with secondary eta, pT
     TH1F**                fHistoMCSecEtaSource;                                 //! array of histos with secondary eta, source
     TH2F**                fHistoMCPi0PtJetPt;                                   //! array of histos with weighted pi0, pT, hardest jet pt
@@ -323,7 +326,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 21);
+    ClassDef(AliAnalysisTaskGammaCalo, 22);
 };
 
 #endif
