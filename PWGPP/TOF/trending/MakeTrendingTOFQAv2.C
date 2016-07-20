@@ -717,7 +717,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH2F * hSigmaKa=(TH2F*)pidList->FindObject("hTOFpidSigmaKa_all"); 
   hSigmaKa->GetYaxis()->SetRangeUser(-5.,5.);
   hSigmaKa->GetXaxis()->SetRangeUser(0.2,10.);
-  hSigmaKa->FitSlicesY();
+  hSigmaKa->FitSlicesY(f);
   TH1D * hSigmaKa_1 = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_1");
   TH1D * hSigmaKa_2 = (TH1D*)gDirectory->Get("hTOFpidSigmaKa_all_2");
   //hSigmaKaT0->SetName("hSigmaKaT0");
@@ -729,7 +729,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   TH2F * hSigmaPro=(TH2F*)pidList->FindObject("hTOFpidSigmaPro_all"); 
   hSigmaPro->GetYaxis()->SetRangeUser(-5.,5.);
   hSigmaPro->GetXaxis()->SetRangeUser(0.2,10.);
-  hSigmaPro->FitSlicesY();
+  hSigmaPro->FitSlicesY(f);
   TH1D * hSigmaPro_1 = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_1");
   TH1D * hSigmaPro_2 = (TH1D*)gDirectory->Get("hTOFpidSigmaPro_all_2");
   //hSigmaProT0->SetName("hSigmaProT0");
@@ -792,7 +792,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaPiT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_pion");
     hSigmaPiT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaPiT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaPiT0->FitSlicesY();
+    hSigmaPiT0->FitSlicesY(f);
     
     TH1D * hSigmaPiT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_1");
     TH1D * hSigmaPiT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_pion_2");
@@ -806,7 +806,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaKaT0=(TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_kaon");
     hSigmaKaT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaKaT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaKaT0->FitSlicesY();
+    hSigmaKaT0->FitSlicesY(f);
     TH1D * hSigmaKaT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_1");
     TH1D * hSigmaKaT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_kaon_2");
     hSigmaKaT0_1->SetLineColor(1);
@@ -818,7 +818,7 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
     hSigmaProT0 = (TH2F*)tofPidListT0->FindObject("hNsigmaP_TOF_proton");
     hSigmaProT0->GetYaxis()->SetRangeUser(-5.,5.);
     hSigmaProT0->GetXaxis()->SetRangeUser(0.2, 5.);
-    hSigmaProT0->FitSlicesY();
+    hSigmaProT0->FitSlicesY(f);
     TH1D * hSigmaProT0_1 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_1");
     TH1D * hSigmaProT0_2 = (TH1D*)gDirectory->Get("hNsigmaP_TOF_proton_2");
     hSigmaProT0_1->SetLineColor(1);
