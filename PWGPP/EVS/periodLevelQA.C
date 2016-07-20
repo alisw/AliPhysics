@@ -104,6 +104,15 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Double_t meanErrV0MOf = 0;
   Double_t meanErrOFO = 0;
   Double_t meanErrTKL = 0;
+  Double_t meanV0MOnHM = 0;
+  Double_t meanV0MOfHM = 0;
+  Double_t meanOFOHM = 0;
+  Double_t meanTKLHM = 0;
+  Double_t meanErrV0MOnHM = 0;
+  Double_t meanErrV0MOfHM = 0;
+  Double_t meanErrOFOHM = 0;
+  Double_t meanErrTKLHM = 0;
+  Double_t thresholdV0M = 0;
   TH2F* hHistStat = new TH2F();
   
   t->SetBranchAddress("run",&run);
@@ -153,6 +162,15 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("meanErrV0MOf",&meanErrV0MOf);
   t->SetBranchAddress("meanErrOFO",&meanErrOFO);
   t->SetBranchAddress("meanErrTKL",&meanErrTKL);
+  t->SetBranchAddress("meanV0MOnHM",&meanV0MOnHM);
+  t->SetBranchAddress("meanV0MOfHM",&meanV0MOfHM);
+  t->SetBranchAddress("meanOFOHM",&meanOFOHM);
+  t->SetBranchAddress("meanTKLHM",&meanTKLHM);
+  t->SetBranchAddress("meanErrV0MOnHM",&meanErrV0MOnHM);
+  t->SetBranchAddress("meanErrV0MOfHM",&meanErrV0MOfHM);
+  t->SetBranchAddress("meanErrOFOHM",&meanErrOFOHM);
+  t->SetBranchAddress("meanErrTKLHM",&meanErrTKLHM);
+  t->SetBranchAddress("thresholdV0M",&thresholdV0M);
   t->SetBranchAddress("hHistStat",&hHistStat);
 
   Int_t nRuns = t->GetEntries();
@@ -184,6 +202,12 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TH1D* hMeanV0MOf          = new TH1D("hMeanV0MOf","Mean V0M offline in kINT7",nRuns,0,nRuns);
   TH1D* hMeanOFO            = new TH1D("hMeanOFO","Mean fired outer FO chips in kINT7",nRuns,0,nRuns);
   TH1D* hMeanTKL            = new TH1D("hMeanTKL","Mean number of tracklets in kINT7",nRuns,0,nRuns);
+  TH1D* hMeanV0MOnHM        = new TH1D("hMeanV0MOnHM","Mean V0M online in kHighMultV0",nRuns,0,nRuns);
+  TH1D* hMeanV0MOfHM        = new TH1D("hMeanV0MOfHM","Mean V0M offline in kHighMultV0",nRuns,0,nRuns);
+  TH1D* hMeanOFOHM          = new TH1D("hMeanOFOHM","Mean fired outer FO chips in kHighMultV0",nRuns,0,nRuns);
+  TH1D* hMeanTKLHM          = new TH1D("hMeanTKLHM","Mean number of tracklets in kHighMultV0",nRuns,0,nRuns);
+  TH1D* hThresholdV0M       = new TH1D("hThresholdV0M","V0M threshold",nRuns,0,nRuns);
+  TH1D* hThresholdV0Mnorm   = new TH1D("hThresholdV0Mnorm","V0M threshold / <V0M>",nRuns,0,nRuns);
   
   map<Int_t,Int_t> fills;
   map<Int_t,TString> periods;
@@ -220,7 +244,18 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hMeanV0MOf->SetBinError(hMeanV0MOf->GetXaxis()->FindBin(srun),meanErrV0MOf);
     hMeanOFO  ->SetBinError(hMeanOFO->GetXaxis()->FindBin(srun)  ,meanErrOFO);
     hMeanTKL  ->SetBinError(hMeanTKL->GetXaxis()->FindBin(srun)  ,meanErrTKL);
-    
+    hMeanV0MOnHM   ->Fill(srun,meanV0MOnHM);
+    hMeanV0MOfHM   ->Fill(srun,meanV0MOfHM);
+    hMeanOFOHM     ->Fill(srun,meanOFOHM);
+    hMeanTKLHM     ->Fill(srun,meanTKLHM);
+    hMeanV0MOnHM->SetBinError(hMeanV0MOnHM->GetXaxis()->FindBin(srun),meanErrV0MOnHM);
+    hMeanV0MOfHM->SetBinError(hMeanV0MOfHM->GetXaxis()->FindBin(srun),meanErrV0MOfHM);
+    hMeanOFOHM  ->SetBinError(hMeanOFOHM->GetXaxis()->FindBin(srun)  ,meanErrOFOHM);
+    hMeanTKLHM  ->SetBinError(hMeanTKLHM->GetXaxis()->FindBin(srun)  ,meanErrTKLHM);
+    hThresholdV0M->Fill(srun,thresholdV0M);
+    hThresholdV0Mnorm->Fill(srun,meanV0MOnHM>1e-4 ? thresholdV0M/meanV0MOn : 0);
+    hThresholdV0Mnorm->SetBinError(hThresholdV0Mnorm->GetXaxis()->FindBin(srun),0);
+    printf("%f\n",thresholdV0M);
     fills[run]=fill;
     periods[run]=lhcPeriod->String();
 
@@ -271,6 +306,12 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hMeanV0MOf         ->LabelsDeflate("X");
   hMeanOFO           ->LabelsDeflate("X");
   hMeanTKL           ->LabelsDeflate("X");
+  hMeanV0MOnHM       ->LabelsDeflate("X");
+  hMeanV0MOfHM       ->LabelsDeflate("X");
+  hMeanOFOHM         ->LabelsDeflate("X");
+  hMeanTKLHM         ->LabelsDeflate("X");
+  hThresholdV0M      ->LabelsDeflate("X");
+  hThresholdV0Mnorm  ->LabelsDeflate("X");
   hClassL0BvsRun     ->LabelsDeflate("XY");
   hClassL2AvsRun     ->LabelsDeflate("XY");
   hClassLifetimeVsRun->LabelsDeflate("XY");
@@ -299,6 +340,12 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   SetHisto(hMeanV0MOf);
   SetHisto(hMeanOFO);
   SetHisto(hMeanTKL);
+  SetHisto(hMeanV0MOnHM);
+  SetHisto(hMeanV0MOfHM);
+  SetHisto(hMeanOFOHM);
+  SetHisto(hMeanTKLHM);
+  SetHisto(hThresholdV0M);
+  SetHisto(hThresholdV0Mnorm);
   SetHisto(hClassL0BvsRun);
   SetHisto(hClassL2AvsRun);
   SetHisto(hClassLifetimeVsRun);
@@ -402,6 +449,55 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   AddFillSeparationLines(hMeanTKL,fills);
   AddPeriodSeparationLines(hMeanTKL,periods);
   gPad->Print("meanTKL.png");
+  gPad->Print("global_properties.pdf");
+  
+  TCanvas* cMeanV0MOnHM = new TCanvas("meanV0MOnHM","meanV0MOnHM",1800,500);
+  cMeanV0MOnHM->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanV0MOnHM->SetFillColor(0);
+  hMeanV0MOnHM->Draw("");
+  AddFillSeparationLines(hMeanV0MOnHM,fills);
+  AddPeriodSeparationLines(hMeanV0MOnHM,periods);
+  gPad->Print("meanV0MOnHM.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanV0MOfHM = new TCanvas("meanV0MOfHM","meanV0MOfHM",1800,500);
+  cMeanV0MOfHM->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanV0MOfHM->Draw("");
+  AddFillSeparationLines(hMeanV0MOfHM,fills);
+  AddPeriodSeparationLines(hMeanV0MOfHM,periods);
+  gPad->Print("meanV0MOfHM.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanOFOHM = new TCanvas("meanOFOHM","meanOFOHM",1800,500);
+  cMeanOFOHM->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanOFOHM->Draw("");
+  AddFillSeparationLines(hMeanOFOHM,fills);
+  AddPeriodSeparationLines(hMeanOFOHM,periods);
+  gPad->Print("meanOFOHM.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cMeanTKLHM = new TCanvas("meanTKLHM","meanTKLHM",1800,500);
+  cMeanTKLHM->SetMargin(0.05,0.01,0.18,0.06);
+  hMeanTKLHM->Draw("");
+  AddFillSeparationLines(hMeanTKLHM,fills);
+  AddPeriodSeparationLines(hMeanTKLHM,periods);
+  gPad->Print("meanTKLHM.png");
+  gPad->Print("global_properties.pdf");
+  
+  TCanvas* cThresholdV0M = new TCanvas("thresholdV0M","thresholdV0M",1800,500);
+  cThresholdV0M->SetMargin(0.05,0.01,0.18,0.06);
+  hThresholdV0M->Draw("");
+  AddFillSeparationLines(hThresholdV0M,fills);
+  AddPeriodSeparationLines(hThresholdV0M,periods);
+  gPad->Print("thresholdV0M.png");
+  gPad->Print("global_properties.pdf");
+
+  TCanvas* cThresholdV0Mnorm = new TCanvas("thresholdV0Mnorm","thresholdV0Mnorm",1800,500);
+  cThresholdV0Mnorm->SetMargin(0.05,0.01,0.18,0.06);
+  hThresholdV0Mnorm->Draw("e");
+  AddFillSeparationLines(hThresholdV0Mnorm,fills);
+  AddPeriodSeparationLines(hThresholdV0Mnorm,periods);
+  gPad->Print("thresholdV0Mnorm.png");
   
   gPad->Print("global_properties.pdf)");
   
@@ -626,8 +722,9 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-    hAcceptedFraction->Draw();
-    hAccStep1Fraction->Draw("same");
+//    hAcceptedFraction->Draw();
+    hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
+    hAccStep1Fraction->Draw();
     hAccStep2Fraction->Draw("same");
     hAccStep3Fraction->Draw("same");
     hAccStep4Fraction->Draw("same");
@@ -639,7 +736,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     AddPeriodSeparationLines(hAcceptedFraction,periods);
 
     TLegend* legAcc = new TLegend(0.08,0.22,0.25,0.6);
-    legAcc->AddEntry(hAcceptedFraction,"accepted");
+//    legAcc->AddEntry(hAcceptedFraction,"accepted");
     legAcc->AddEntry(hAccStep1Fraction,"V0A & V0C");
     legAcc->AddEntry(hAccStep2Fraction,"+ no ClsVsTklBG");
     legAcc->AddEntry(hAccStep3Fraction,"+ no V0C012vsTklBG");
