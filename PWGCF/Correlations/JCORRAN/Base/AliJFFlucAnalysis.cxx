@@ -358,6 +358,12 @@ AliJFFlucAnalysis::~AliJFFlucAnalysis() {
 //________________________________________________________________________
 void AliJFFlucAnalysis::UserExec(Option_t *) {
 		// Main loop
+		// init 
+		for(int ih=0; ih<kNH; ih++){
+			for(int im=0; im<3; im++){ //method 
+				fSingleVn[ih][im] = -9999;
+			}
+		}
 		// find Centrality
 		Double_t inputCent = fCent;
 		fCBin = -1;
@@ -425,7 +431,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		// calculate vn^2k	
 		for( int ih=2; ih<kNH; ih++){
 				for(int ik=0; ik<nKL; ik++){ // 2k(0) =1, 2k(1) =2, 2k(2)=4....
-						if(ik==0) vn2[ih][ik] = TMath::Sqrt( ( ( QnA[ih] * QnB_star[ih] ).Re() ) );
+						if(ik==0){ 
+							vn2[ih][ik] = TMath::Sqrt( ( ( QnA[ih] * QnB_star[ih] ).Re() ) );
+							fSingleVn[ih][0] = vn2[ih][ik]; // fill single vn with SP as method 0 	
+						}
 						if(ik!=0){
 								TComplex QnAk;
 								TComplex QnBstark;
@@ -627,15 +636,24 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 						two = Two(ih, -1*ih) / Two(0,0).Re();
 						fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re(), event_weight );
 						QC_2p_value[ih] = two.Re();
+						// fill single vn  with QC without EtaGap as mehtod 2
+						fSingleVn[ih][2] = TMath::Sqrt(two.Re() );
 				}  	
 				//(d)
 				for(int ih=2; ih<=5; ih++){
 						Double_t event_weight = 1;
-						if( IsEbEWeighted == kTRUE) event_weight = (QvectorQCeta10[0][1] * QvectorQCeta10[0][1] - QvectorQCeta10[0][2]).Re(); // M*M - M
-						TComplex two = ( QvectorQCeta10[ih][1] * TComplex::Conjugate( QvectorQCeta10[ih][1] ) - QvectorQCeta10[0][2] ) /  (QvectorQCeta10[0][1] * QvectorQCeta10[0][1] - QvectorQCeta10[0][2]).Re();
+						if( IsEbEWeighted == kTRUE)event_weight = (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB] ).Re();
+									 // of course Qvec[0] * Qvec[0].. -> real (all sin term =0) //
+						TComplex two = (QvectorQCeta10[ih][1][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][1][kSubB])) / (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re(); 
+										// is same as divided by event_weight.(number of comniations) 
 						fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( two.Re(), event_weight ); 
+						// fill single vn with QC method with Eta Gap as method 1
+						fSingleVn[ih][1] = TMath::Sqrt(two.Re() );
 
 				}
+
+
+
 				//Check evt-by-evt SP/QC ratio. (term-by-term)
 				// calculate  (vn^2 vm^2)_SP /  (vn^2 vm^2)_QC 
 				// 4p ( v3v3v2v2, v4v4v2v2, v5v5v2v2, v5v5v3v3, v4v4v3v3 
@@ -647,7 +665,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 				for(int i=0; i<5; i++){ // i array index (for m, n)
 						evtSP_QC_ratio_4p = SP_4p_value[i] / QC_4p_value[har1[i]][har2[i]] ;  
 						if( evtSP_QC_ratio_4p < -1 || evtSP_QC_ratio_4p > 5.) evtSP_QC_ratio_4p = -99;
-						fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio_4p );  // fh_evt_SP_QC_ratio_4p[ ih ][fCBin] : ih is not harmonics in this histo. ( SC(m,n) case) 
+						fh_evt_SP_QC_ratio_4p[i][fCBin]->Fill( evtSP_QC_ratio_4p ); 
+						// fh_evt_SP_QC_ratio_4p[ ih ][fCBin] : ih is not harmonics in this histo. ( SC(m,n) case) 
 				}
 				// 2p , v2, v3, v4, v5
 				for(int i=0; i<4; i++){
@@ -828,8 +847,10 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 		//init
 		for(int ih=0; ih<kNH; ih++){
 				for(int ik=0; ik<nKL; ik++){
-						QvectorQC[ih][ik] = TComplex(0, 0);	
-						QvectorQCeta10[ih][ik] = TComplex(0, 0);	
+						QvectorQC[ih][ik] = TComplex(0, 0);
+						for(int isub=0; isub<2; isub++){	
+							QvectorQCeta10[ih][ik][isub] = TComplex(0, 0);	
+						}
 				} // for max power
 		} // for max harmonics
 		//Calculate Q-vector with particle loop
@@ -839,11 +860,20 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 				Double_t phi = itrack->Phi();
 				Double_t eta = itrack->Eta(); 
 				// track Eta cut Note! pt cuts already applied in AliJFFlucTask.cxx 
-				if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue;
+				// Do we need arbitary Eta cut for QC method?
+				// fixed eta ranged -0.8 < eta < 0.8 for QC
+//				if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue;
+				if( TMath::Abs(eta) > 0.8 ) continue;
 				for(int ih=0; ih<kNH; ih++){
 						for(int ik=0; ik<nKL; ik++){
 								QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
-								if( TMath::Abs(eta) > 0.5 ) QvectorQCeta10[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+								// this is not working (there are no eta gap for +0.6, +0.61 in this way..
+								// fix this as like SP -> 2 sub event // 
+								if( TMath::Abs(eta) > 0.5 ){
+									int isub = 0;
+									if( eta > 0 ) isub = 1; // what about eta=0 ?
+									 QvectorQCeta10[ih][ik][isub] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+								}
 						}
 				}
 		} // track loop done.
