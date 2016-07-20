@@ -1113,13 +1113,21 @@ void AliNDLocalRegression::DumpToTree(Int_t nDiv,  TTreeStream & stream){
   }
 }
 
+///   Interpolate graph using local regression with kernel width
+///   \param gr          - input graph  in procedure it is assumed graph is sorted 
+///   \param evalTime    - X(time) to evaluat graph
+///   \param kernelWidth - gaussian kernel width - see ( http://en.wikipedia.org/w/index.php?title=Kernel_smoother&oldid=627785784)
+///   \param sigmaCut    - sigma cut to reduce CPU consuption only points in +-sigmaCut*kernelWidth used
+///   \param evalLog     - in case kTRUE polynomial fit of the log(yi) values used (e.g for spectra measurement (exponential  or power law)  
+///   \param pol - degree of polynom used, in case number of points too small (e.g on edges) smaller polynomial used 
+///       - 2 deggress of freedom requested  (1 point -> pol0  , 2 points -> pol0,  3 points ->pol1)
+///   \param param and covar - if specified full parameters and covaraince matrix filled
 
-Double_t AliNDLocalRegression::EvalGraphKernel(TGraph * gr, Double_t evalTime, Double_t kernelWidth, Int_t sigmaCut, Bool_t evalLog, Int_t pol, TVectorD *param, TMatrixD *covar){
-  ///
-  ///
-  ///   Interpolate graph using local regression with kernel width  
-  ///    
-  Int_t kMinEntries=4;
+
+Double_t AliNDLocalRegression::EvalGraphKernel(TGraph * gr, Double_t evalTime, Double_t kernelWidth, Double_t sigmaCut, Bool_t evalLog, Int_t pol, TVectorD *param, TMatrixD *covar){
+     
+  const Int_t    kMinEntries=4;
+  const Double_t kMaxExp=100; 
   Int_t npoints=gr->GetN();
   Int_t index0= TMath::BinarySearch(npoints, gr->GetX(), evalTime-sigmaCut*kernelWidth);
   Int_t index1= TMath::BinarySearch(npoints, gr->GetX(), evalTime+sigmaCut*kernelWidth);
@@ -1128,17 +1136,21 @@ Double_t AliNDLocalRegression::EvalGraphKernel(TGraph * gr, Double_t evalTime, D
     index0=index-kMinEntries/2;
     index1=index+kMinEntries/2;
   }
+  if (index0<0) { index1-=index0; index0=0;}
+  if (index1>=npoints) {index0-=index1-npoints;   index1=npoints-1;}
   if (index0<0) index0=0;
-  if (index1>=npoints) index1=npoints-1;
-  TLinearFitter fitter(pol+1, TString::Format("pol%d",pol));
+
+  Int_t lpol=TMath::Min(pol, TMath::Max(index1-index0-2,0));
+  TLinearFitter fitter(lpol+1, TString::Format("pol%d",lpol));
   Double_t mkernel2=1./(kernelWidth*kernelWidth);
   for (Int_t ipoint=index0; ipoint<=index1; ipoint++){
     Double_t x=gr->GetX()[ipoint]-evalTime;
     Double_t y=gr->GetY()[ipoint];
+    Double_t errorW=TMath::Exp(TMath::Min(x*x*mkernel2,kMaxExp));
     if (evalLog==kFALSE){
-      fitter.AddPoint(&x, gr->GetY()[ipoint], TMath::Exp(x*x*mkernel2));
+      fitter.AddPoint(&x, gr->GetY()[ipoint], errorW);
     }else{
-      if (y>0) fitter.AddPoint(&x, TMath::Log(y) , TMath::Exp(x*x*mkernel2));
+      if (y>0) fitter.AddPoint(&x, TMath::Log(y) , errorW);
     }
   }
   Int_t hasFailed=(fitter.GetNpoints()>kMinEntries)? fitter.Eval():1;

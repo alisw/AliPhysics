@@ -69,7 +69,7 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
   static void SetVerboseLevel(Int_t verbose){ fgVerboseLevel=TMath::Max(verbose,1);}
   //
-  static Double_t EvalGraphKernel(TGraph * gr, Double_t evalTime, Double_t kernelWidth, Int_t sigmaCut=3, Bool_t evalLog=kFALSE, Int_t pol=1, TVectorD *param=0, TMatrixD *covar=0); 
+  static Double_t EvalGraphKernel(TGraph * gr, Double_t evalTime, Double_t kernelWidth, Double_t sigmaCut=3, Bool_t evalLog=kFALSE, Int_t pol=1, TVectorD *param=0, TMatrixD *covar=0); 
  public:
   Bool_t MakeRobustStatistic(TVectorD &values,TVectorD &errors,  TObjArray &pointArray,  TObjArray &kernelArrayI2, Double_t weightCut, Double_t robustFraction);
 
