@@ -2,6 +2,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TPad.h"
 #endif
 #include "triggerInfo.C"
 
@@ -49,7 +50,7 @@ void writeTree(TFile* fout, TTree* t){
 
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
 //Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "raw://"){
+Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=255042, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -107,6 +108,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   Double_t meanErrV0MOf = 0;
   Double_t meanErrOFO = 0;
   Double_t meanErrTKL = 0;
+  Double_t meanV0MOnHM = 0;
+  Double_t meanV0MOfHM = 0;
+  Double_t meanOFOHM = 0;
+  Double_t meanTKLHM = 0;
+  Double_t meanErrV0MOnHM = 0;
+  Double_t meanErrV0MOfHM = 0;
+  Double_t meanErrOFOHM = 0;
+  Double_t meanErrTKLHM = 0;
+  Double_t thresholdV0M = 0;
   TH2F* hHistStat = new TH2F();
 
   TFile* fout = new TFile("trending.root","recreate");
@@ -161,6 +171,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   t->Branch("meanErrV0MOf",&meanErrV0MOf);
   t->Branch("meanErrOFO",&meanErrOFO);
   t->Branch("meanErrTKL",&meanErrTKL);
+  t->Branch("meanV0MOnHM",&meanV0MOnHM);
+  t->Branch("meanV0MOfHM",&meanV0MOfHM);
+  t->Branch("meanOFOHM",&meanOFOHM);
+  t->Branch("meanTKLHM",&meanTKLHM);
+  t->Branch("meanErrV0MOnHM",&meanErrV0MOnHM);
+  t->Branch("meanErrV0MOfHM",&meanErrV0MOfHM);
+  t->Branch("meanErrOFOHM",&meanErrOFOHM);
+  t->Branch("meanErrTKLHM",&meanErrTKLHM);
+  t->Branch("thresholdV0M",&thresholdV0M);
   t->Branch("hHistStat",&hHistStat);
   
   TString refClass="";
@@ -320,7 +339,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
       class_lifetime[iCUP13] =class_lifetime[iCEMC7];
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_SPD1];
       class_lifetime[iCUP13]*=class_l2a[iCTRUE_NOPF]>0 ? 1./class_l2a[iCTRUE_NOPF] : 0;
-      class_lifetime[iCUP13]*=class_ds[iCUP13];
+      class_lifetime[iCUP13]*=1-TMath::Power(1-class_ds[iCUP13],4.);
       class_lumi[iCUP13] = lumi_seen*class_lifetime[iCUP13];
       printf("lumi=%f\n",class_lumi[iCUP13]);
     }
@@ -359,10 +378,18 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   meanErrV0MOf = 0;
   meanErrOFO   = 0;
   meanErrTKL   = 0;
+  meanV0MOnHM = 0;
+  meanV0MOfHM = 0;
+  meanOFOHM   = 0;
+  meanTKLHM   = 0;
+  meanErrV0MOnHM = 0;
+  meanErrV0MOfHM = 0;
+  meanErrOFOHM   = 0;
+  meanErrTKLHM   = 0;
+  thresholdV0M   = 0;
   for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
     TString label = hHistStat->GetYaxis()->GetBinLabel(j);
     // kINT7
-    if (!label.Contains(" &2 ")) continue;
     TList* list = NULL;
     if (qafilename.Contains("event_stat")) {
       list = (TList*) fin->Get(Form("trigger_histograms_%s/histos",label.Data()));
@@ -375,14 +402,27 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH1F* hV0MOfAcc = (TH1F*) list->FindObject("fHistV0MOfAcc");
     TH1F* hOFOAcc   = (TH1F*) list->FindObject("fHistOFOAcc");
     TH1F* hTKLAcc   = (TH1F*) list->FindObject("fHistTKLAcc");
-    meanV0MOn    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
-    meanV0MOf    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
-    meanOFO      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
-    meanTKL      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
-    meanErrV0MOn = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
-    meanErrV0MOf = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
-    meanErrOFO   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
-    meanErrTKL   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+    if (label.Contains(" &2 ")) {
+      meanV0MOn    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
+      meanV0MOf    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
+      meanOFO      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
+      meanTKL      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
+      meanErrV0MOn = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
+      meanErrV0MOf = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
+      meanErrOFO   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
+      meanErrTKL   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+    } else if (label.Contains(" &65536 ")) {
+      meanV0MOnHM    = hV0MOnAcc ? hV0MOnAcc->GetMean()      : 0;
+      meanV0MOfHM    = hV0MOfAcc ? hV0MOfAcc->GetMean()      : 0;
+      meanOFOHM      = hOFOAcc   ? hOFOAcc->GetMean()        : 0;
+      meanTKLHM      = hTKLAcc   ? hTKLAcc->GetMean()        : 0;
+      meanErrV0MOnHM = hV0MOnAcc ? hV0MOnAcc->GetMeanError() : 0;
+      meanErrV0MOfHM = hV0MOfAcc ? hV0MOfAcc->GetMeanError() : 0;
+      meanErrOFOHM   = hOFOAcc   ? hOFOAcc->GetMeanError()   : 0;
+      meanErrTKLHM   = hTKLAcc   ? hTKLAcc->GetMeanError()   : 0;
+      thresholdV0M   = hV0MOnAcc->GetBinLowEdge(hV0MOnAcc->FindFirstBinAbove(9));
+      printf("thresholdV0M=%f\n",thresholdV0M);
+    }
   }
 
   for (Int_t j=1;j<=hHistStat->GetNbinsY();j++){
@@ -528,7 +568,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     TH2F* hTimeCorrZDC     = (TH2F*) list->FindObject("fHistTimeCorrZDC");
     TH2F* hOFOvsTKLAcc     = (TH2F*) list->FindObject("fHistOFOvsTKLAcc");
     TH2F* hV0MOnVsOfAcc    = (TH2F*) list->FindObject("fHistV0MOnVsOfAcc");
-
+        
     DrawV0MOnVsOf(hV0MOnVsOfAll,hV0MOnVsOfCln,bitName);
     DrawSPDOnVsOf(hSPDOnVsOfAll,hSPDOnVsOfCln,bitName);
     DrawSPDClsVsTkl(hSPDClsVsTklAll,hSPDClsVsTklCln,bitName);
@@ -582,9 +622,7 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     gSystem->cd("..");
   }
   
-  t->Fill();
-  t->Write();
-  fout->Close();
+  writeTree(fout,t);
   return 0;
 }
 
@@ -840,7 +878,12 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   hOfNorm->DrawCopy();
 
   cNorm->Print(Form("%s_norm.png",multOn.Data()));
-  
+
+  TFile* fout = new TFile(Form("fout_%s.root",multOn.Data()),"recreate");
+  hOfNorm->Write();
+  hOnNorm->Write();
+  fout->Close();
+
   TH1F* hOnAllCum  = (TH1F*) hOnAll->GetCumulative(kFALSE);
   TH1F* hOnAccCum  = (TH1F*) hOnAcc->GetCumulative(kFALSE);
   TH1F* hOfAllCum  = (TH1F*) hOfAll->GetCumulative(kFALSE);
@@ -890,9 +933,6 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
   
   ccum->Print(Form("%s_cum.png",multOn.Data()));
   
-//  TFile* fout = new TFile(Form("fout_%s.root",multOn.Data()),"recreate");
-//  hOfAcc->Write();
-//  fout->Close();
 }
 
 
