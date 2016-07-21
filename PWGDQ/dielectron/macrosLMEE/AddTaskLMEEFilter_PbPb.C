@@ -1,9 +1,9 @@
-AliAnalysisTask *AddTaskLMEEFilter_pp(TString cfg="ConfigLMEE_nano_pp.C",
+AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
 				      Bool_t gridconf=kFALSE,
-				      ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
+				      ULong64_t triggers=AliVEvent::kINT7,
 				      TString period="",
-				      Bool_t useTrackCuts = kFALSE,
-				      Bool_t storeLS = kFALSE,
+				      Bool_t useTrackCuts = kTRUE,
+				      Bool_t storeLS = kTRUE,
 				      Bool_t hasMC_aod = kFALSE){
 
   // This AddTask macro is a copy of the JPsi Nano Filteringtask:
@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskLMEEFilter_pp(TString cfg="ConfigLMEE_nano_pp.C",
   TString configFile("");
   printf("%s \n",gSystem->pwd());
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
-  if(cfg.IsNull()) cfg="ConfigLMEE_nano_pp.C";
+  if(cfg.IsNull()) cfg="ConfigLMEE_nano_PbPb.C";
 
   // the different paths
   TString alienPath("alien:///alice/cern.ch/user/m/miweber/PWGDQ/dielectron/macrosLMEE");
