@@ -16,6 +16,9 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+#include <map>
+#include "AliEMCALRecParam.h"
+
 class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
  public:
   enum InputCellType {
@@ -27,7 +30,16 @@ class AliEmcalCorrectionClusterizer : public AliEmcalCorrectionComponent {
     kL0FastORsTC,
     kL1FastORs
   };
-  
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> clusterizerTypeMap = {
+    {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
+    {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
+    {"kClusterizerv2", AliEMCALRecParam::kClusterizerv2 },
+    {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
+  };
+#endif
+
   AliEmcalCorrectionClusterizer();
   virtual ~AliEmcalCorrectionClusterizer();
 
@@ -78,6 +90,9 @@ protected:
   
   Bool_t                 fSetCellMCLabelFromEdepFrac;     // For MC generated with aliroot > v5-07-21, check the EDep information
   // stored in ESDs/AODs to set the cell MC labels
+  
+  Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel
+  Bool_t                 fRecalShowerShape;               // switch for recalculation of the shower shape
   
   TClonesArray          *fCaloClusters;                   //!calo clusters array
   AliESDEvent           *fEsd;                            //!esd event

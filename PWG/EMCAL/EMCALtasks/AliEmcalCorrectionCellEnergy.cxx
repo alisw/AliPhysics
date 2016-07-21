@@ -67,6 +67,8 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
     fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_cell",1000,0,10);
     fOutput->Add(fCellEnergyDistAfter);
   }
+
+  if(fFilepass.Contains("LHC14a1a")) fUseAutomaticRecalib = kTRUE;
   
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;

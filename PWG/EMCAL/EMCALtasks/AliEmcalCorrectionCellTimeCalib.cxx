@@ -118,7 +118,8 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Run()
     // define what recalib parameters are needed for various switches
     // this is based on implementation in AliEMCALRecoUtils
     Bool_t needTimecalib   = fCalibrateTime;
-    Bool_t needTimecalibL1Phase = fCalibrateTimeL1Phase;
+    if(fRun>209121) fCalibrateTimeL1Phase = kTRUE;
+    Bool_t needTimecalibL1Phase = fCalibrateTime & fCalibrateTimeL1Phase;
     
     // init time calibration
     if (needTimecalib && fUseAutomaticTimeCalib) {

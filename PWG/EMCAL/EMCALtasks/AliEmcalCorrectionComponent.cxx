@@ -19,6 +19,8 @@ AliEmcalCorrectionComponentFactory::map_type * AliEmcalCorrectionComponentFactor
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
+  fUserConfiguration(),
+  fDefaultConfiguration(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(0),
@@ -56,6 +58,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
+  fUserConfiguration(),
+  fDefaultConfiguration(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(0),
@@ -98,31 +102,39 @@ AliEmcalCorrectionComponent::~AliEmcalCorrectionComponent()
 /**
  * Given a container type, it returns the proper branch name based on the "usedefault" pattern.
  */
-std::string AliEmcalCorrectionComponent::DetermineUseDefaultName(containerType contType, Bool_t esdMode)
+std::string AliEmcalCorrectionComponent::DetermineUseDefaultName(inputObjectType objType, Bool_t esdMode)
 {
-  std::string containerBranch = "";
-  if (contType == kCluster) {
+  std::string inputObjectBranch = "";
+  if (objType == kCluster) {
     if (esdMode == true) {
-      containerBranch = "CaloClusters";
+      inputObjectBranch = "CaloClusters";
     }
     else {
-      containerBranch = "caloClusters";
+      inputObjectBranch = "caloClusters";
     }
   }
-  else if (contType == kTrack) {
+  else if (objType == kTrack) {
     if (esdMode == true) {
-      containerBranch = "Tracks";
+      inputObjectBranch = "Tracks";
     }
     else {
-      containerBranch = "tracks";
+      inputObjectBranch = "tracks";
+    }
+  }
+  else if (objType == kCaloCells) {
+    if (esdMode == true) {
+      inputObjectBranch = "EMCALCells";
+    }
+    else {
+      inputObjectBranch = "emcalCells";
     }
   }
   else {
     // Default to empty if we are given an unrecognized type with "usedefault"
-    containerBranch = "";
+    inputObjectBranch = "";
   }
 
-  return containerBranch;
+  return inputObjectBranch;
 }
 
 /**
@@ -137,7 +149,7 @@ std::string AliEmcalCorrectionComponent::DetermineUseDefaultName(containerType c
  * @param[in] contType Type of container to be created
  *
  */
-void AliEmcalCorrectionComponent::AddContainer(containerType contType)
+void AliEmcalCorrectionComponent::AddContainer(inputObjectType contType)
 {
   // Determine the type of branch to request
   std::string containerBranch = "";
@@ -298,16 +310,20 @@ Bool_t AliEmcalCorrectionComponent::RunChanged()
 
 /**
  * Check if value is a shared parameter, meaning we should look
- * at another node
+ * at another node. Also edits the input string to remove "sharedParameters:"
+ * if it exists, making it ready for use.
  *
  * @param[in] value String containing the string value return by the parameter.
  *
  * @return True if the value is shared.
  */
-bool AliEmcalCorrectionComponent::IsSharedValue(std::string value)
+bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
 {
-  if (value == "kIsShared")
+  std::size_t sharedParameterLocation = value.find("sharedParameters:");
+  if (sharedParameterLocation != std::string::npos)
   {
+    // "sharedParameters:" is 17 characters long
+    value.erase(sharedParameterLocation, sharedParameterLocation + 17);
     return true;
   }
   // Return false otherwise
@@ -349,7 +365,11 @@ void AliEmcalCorrectionComponent::GetPass()
     //printf("AliEMCALTenderSupply::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
     fFilepass = TString("pass1");
   }
-  else if (fname.Contains("LHC14a1a")) fFilepass = TString("LHC14a1a");
+  else if (fname.Contains("LHC14a1a"))
+  {
+    AliInfo("Energy calibration activated for this MC production!");
+    fFilepass = TString("LHC14a1a");
+  }
   else
   {
     AliError(Form("Pass number string not found: %s", fname.Data()));

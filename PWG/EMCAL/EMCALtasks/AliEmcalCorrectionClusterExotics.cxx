@@ -42,9 +42,9 @@ Bool_t AliEmcalCorrectionClusterExotics::Initialize()
 
   AddContainer(kCluster);
   Double_t minE = 0.;
-  GetProperty("emin", minE);
+  GetProperty("clusterEMin", minE);
   Double_t minPt = 0.;
-  GetProperty("pTmin", minPt);
+  GetProperty("clusterPtMin", minPt);
   
   // Settings from sample run macro
   fClusCont->SetClusECut(minE);

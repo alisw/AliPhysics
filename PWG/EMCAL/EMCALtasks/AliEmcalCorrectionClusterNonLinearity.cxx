@@ -43,14 +43,15 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   
   GetProperty("createHistos", fCreateHisto);
 
-  UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
-  GetProperty("nonLinFunct", nonLinFunct);
+  std::string nonLinFunctStr = "";
+  GetProperty("nonLinFunct", nonLinFunctStr);
+  UInt_t nonLinFunct = nonlinearityFunctionMap[nonLinFunctStr];
 
   AddContainer(kCluster);
   Double_t minE = 0.;
-  GetProperty("emin", minE);
+  GetProperty("clusterEMin", minE);
   Double_t minPt = 0.;
-  GetProperty("pTmin", minPt);
+  GetProperty("clusterPtMin", minPt);
   
   // Settings from sample run macro
   fClusCont->SetClusECut(minE);

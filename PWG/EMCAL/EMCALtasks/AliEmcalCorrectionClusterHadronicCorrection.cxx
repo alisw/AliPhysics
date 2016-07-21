@@ -82,18 +82,20 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("etaMatch", fEtaMatch);
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
-  GetProperty("trackClus", fDoTrackClus);
-  Double_t minPt = 0.15;
-  GetProperty("minPt", minPt);
+  GetProperty("doTrackClus", fDoTrackClus);
+  Double_t trackPtMin = 0.15;
+  GetProperty("trackPtMin", trackPtMin);
+  Double_t clusterNonLinCorrEnergyMin = 0.15;
+  GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyMin);
   Double_t clusterECut = 0.0;
-  GetProperty("clusterECut", clusterECut);
+  GetProperty("clusterEMin", clusterECut);
   Double_t clusterPtCut = 0.0;
-  GetProperty("clusterPtCut", clusterPtCut);
+  GetProperty("clusterPtMin", clusterPtCut);
   
   AddContainer(kTrack);
-  fPartCont->SetParticlePtCut(minPt);
+  fPartCont->SetParticlePtCut(trackPtMin);
   AddContainer(kCluster);
-  fClusCont->SetClusNonLinCorrEnergyCut(minPt);
+  fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyMin);
   fClusCont->SetClusECut(clusterECut);
   fClusCont->SetClusPtCut(clusterPtCut);
   

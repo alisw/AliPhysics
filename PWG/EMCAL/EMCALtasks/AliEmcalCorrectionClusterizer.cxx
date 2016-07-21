@@ -75,7 +75,9 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fSetCellMCLabelFromEdepFrac(0),
   fCaloClusters(0),
   fEsd(0),
-  fAod(0)
+  fAod(0),
+  fRecalDistToBadChannels(kFALSE),
+  fRecalShowerShape(kFALSE)
 {
   // Default constructor
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
@@ -105,20 +107,23 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   //AliAnalysisTaskEmcal::ExecOnce();
   //if (!fInitialized) return;
   
-  UInt_t clusterizerType = AliEMCALRecParam::kClusterizerv2;
-  GetProperty("clusterizer", clusterizerType);
+  std::string clusterizerTypeStr = "";
+  GetProperty("clusterizer", clusterizerTypeStr);
+  UInt_t clusterizerType = clusterizerTypeMap.at(clusterizerTypeStr);
   Double_t cellE  = 0.05;
   GetProperty("cellE", cellE);
   Double_t seedE  = 0.1;
   GetProperty("seedE", seedE);
   Float_t timeMin = -1;             //minimum time of physical signal in a cell/digit (s) (in run macro, -50e-6)
-  GetProperty("timeMin", timeMin);
+  GetProperty("cellTimeMin", timeMin);
   Float_t timeMax = +1;             //maximum time of physical signal in a cell/digit (s) (in run macro, 50e-6)
-  GetProperty("timeMax", timeMax);
-  Float_t timeCut =  1;             //maximum time difference between the digits inside EMC cluster (s) (in run macro, 1e6)
-  GetProperty("timeCut", timeCut);
+  GetProperty("cellTimeMax", timeMax);
+  Float_t timeCut =  1;             //maximum time difference between the digits inside EMC cluster (s) (in run macro, 1e-6)
+  GetProperty("clusterTimeLength", timeCut);
   Float_t w0 = 4.5;
   GetProperty("w0", w0);
+  GetProperty("recalDistToBadChannels", fRecalDistToBadChannels);
+  GetProperty("recalShowerShape", fRecalShowerShape);
 
   AddContainer(kCluster);
   
@@ -190,6 +195,8 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   Clusterize();
   
   UpdateClusters();
+  
+  CalibrateClusters();
   
   return kTRUE;
 }
@@ -501,7 +508,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncellsTrue] = digit->GetId();
-      ratios[ncellsTrue] = elist[c]/recpoint->GetEnergy();
+      ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
       
       if (digit->GetIparent(1) > 0)
         mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
@@ -631,6 +638,29 @@ void AliEmcalCorrectionClusterizer::UpdateClusters()
 }
 
 //________________________________________________________________________________________
+void AliEmcalCorrectionClusterizer::CalibrateClusters()
+{
+  // Go through clusters one by one and process separate correction
+  
+  Int_t nclusters = fCaloClusters->GetEntriesFast();
+  for (Int_t icluster=0; icluster < nclusters; ++icluster) {
+    AliVCluster *clust = static_cast<AliVCluster*>(fCaloClusters->At(icluster));
+    if (!clust)
+      continue;
+    
+    // SHOWER SHAPE -----------------------------------------------
+    if (fRecalShowerShape)
+      fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom, fCaloCells, clust);
+    
+    // DISTANCE TO BAD CHANNELS -----------------------------------
+    if (fRecalDistToBadChannels)
+      fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fCaloCells, clust);
+  }
+  
+  fCaloClusters->Compress();
+}
+
+//________________________________________________________________________________________
 void AliEmcalCorrectionClusterizer::Init()
 {
   // Select clusterization/unfolding algorithm and set all the needed parameters.
@@ -649,7 +679,7 @@ void AliEmcalCorrectionClusterizer::Init()
   if (fGeomName.Length()>0)
     fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   else
-    fGeom = AliEMCALGeometry::GetInstance();
+    fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(fRun);
   if (!fGeom) {
     AliFatal("Geometry not available!!!");
     return;

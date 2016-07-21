@@ -31,9 +31,10 @@
 
 class AliEmcalCorrectionComponent : public TNamed {
  public:
-  enum containerType {
-    kCluster = 0, //!< Cluster container
-    kTrack = 1    //!< Track container
+  enum inputObjectType {
+    kCaloCells = 0,    //!< Calo cells
+    kCluster = 1,  //!< Cluster container
+    kTrack = 2,    //!< Track container
   };
 
   AliEmcalCorrectionComponent();
@@ -81,14 +82,14 @@ class AliEmcalCorrectionComponent : public TNamed {
   /// Retrieve property driver function. It is static so that it can be used by other classes
   template<typename T> static void GetProperty(std::string propertyName, T & property, const YAML::Node & userConfiguration, const YAML::Node & defaultConfiguration, bool requiredProperty = true, std::string correctionName = "");
 #endif
-  static bool IsSharedValue(std::string value);
+  static bool IsSharedValue(std::string & value);
 
   // Determine branch name using the "usedefault" pattern
-  static std::string DetermineUseDefaultName(containerType contType, Bool_t esdMode);
+  static std::string DetermineUseDefaultName(inputObjectType contType, Bool_t esdMode);
 
  protected:
 
-  void AddContainer(containerType type);
+  void AddContainer(inputObjectType type);
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   template<typename T> static bool GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep = 0);
@@ -115,11 +116,11 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEMCALGeometry       *fGeom;                          //!<!geometry object
   Bool_t                  fIsEmbedded;                    ///< trigger, embedded signal
   Int_t                   fMinMCLabel;                    ///< minimum MC label value for the tracks/clusters being considered MC particles
-  AliClusterContainer    *fClusCont;                      // pointer to the cluster container
-  AliParticleContainer   *fPartCont;                      // pointer to the track/particle container
-  AliVCaloCells          *fCaloCells;                     // pointer to calo cells
-  AliEMCALRecoUtils      *fRecoUtils;                     // pointer to reco utils
-  TList                  *fOutput;                        // list of output histograms
+  AliClusterContainer    *fClusCont;                      //!<! pointer to the cluster container
+  AliParticleContainer   *fPartCont;                      //!<! pointer to the track/particle container
+  AliVCaloCells          *fCaloCells;                     //!<! pointer to calo cells
+  AliEMCALRecoUtils      *fRecoUtils;                     //!<! pointer to reco utils
+  TList                  *fOutput;                        //!<! list of output histograms
   
   TString                fBasePath;                       // base folder path to get root files
 
@@ -167,8 +168,7 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
   // In this case, the user configuration node is always created. If it IsNull, then we ignore it.
   if (userConfiguration.IsNull() != true)
   {
-    // AliInfo
-    std::cout << "INFO: Looking for parameter in user configuration" << std::endl;
+    AliDebugClass(2, "Looking for parameter in user configuration");
     YAML::Node sharedParameters = userConfiguration["sharedParameters"];
     //std::cout << std::endl << "User Node: " << fUserConfiguration << std::endl;
     setProperty = AliEmcalCorrectionComponent::GetPropertyFromNodes(userConfiguration, sharedParameters, propertyName, property, correctionName, "user");
@@ -176,22 +176,20 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
 
   if (setProperty != true)
   {
-    // AliInfo
-    std::cout << "INFO: Looking for parameter in default configuration" << std::endl;
+    AliDebugClass(2, "Looking for parameter in defulat configuration");
     YAML::Node sharedParameters = defaultConfiguration["sharedParameters"];
     //std::cout << std::endl << "Default Node: " << fDefaultConfiguration << std::endl;
     setProperty = AliEmcalCorrectionComponent::GetPropertyFromNodes(defaultConfiguration, sharedParameters, propertyName, property, correctionName, "default");
   }
 
-  if (setProperty != true)
+  if (setProperty != true && requiredProperty == true)
   {
     std::stringstream message;
     message << "Failed to retrieve property \""
         << (correctionName != "" ? correctionName + ":" : "")
         << propertyName << "\" from default config!" << std::endl;
-    ::Fatal(correctionName.c_str(), "%s", message.str().c_str());
+    AliFatalClass(message.str().c_str());
   }
-
 }
 
 /**
@@ -201,23 +199,27 @@ void AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
 template<typename T>
 bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep)
 {
+  // Used as a buffer for printing complicated messages
+  std::stringstream tempMessage;
+
   bool returnValue = false;
   if (nodesDeep > 2)
   {
     // Ensure that we do not go past two levels
-    // AliFatal
-    std::cout << "FATAL: Went too many levels of recursion. Bailing out on \"" << correctionName << ":" << propertyName << "\" from " << configurationType << " config at level " << nodesDeep << std::endl;
-    //AliFatal(Form("%s: Went too many levels of recursion. Bailing out on \"%s:%s\" from %s config at lavel %i", GetName(), correctionName, propertyName, configurationType, nodesDeep)); 
+    tempMessage.str("");
+    tempMessage << "Went too many levels of recursion. Bailing out on \"" << correctionName << ":" << propertyName << "\" from " << configurationType << " config at level " << nodesDeep;
+    AliDebugClass(2, TString::Format("%s", tempMessage.str().c_str()));
     return false;
   }
 
   // Only want to print once to ensure the user is not overwhelmed!
   if (nodesDeep == 0)
   {
-    // AliInfo
-    std::cout << "INFO: Retreiving property \""
-         << (correctionName != "" ? correctionName + ":" : "")
-         << propertyName << "\" from " << configurationType << " config at level " << nodesDeep << std::endl;
+    tempMessage.str("");
+    tempMessage << "Retreiving property \""
+          << (correctionName != "" ? correctionName + ":" : "")
+          << propertyName << "\" from " << configurationType << " config at level " << nodesDeep;
+    AliDebugClass(1, TString::Format("%s", tempMessage.str().c_str()));
   }
 
   if (node.IsDefined() == true)
@@ -226,32 +228,32 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
     if (node[propertyName])
     {
       bool isShared = false;
+      // Will contain the name of the property in the sharedParameters section that should be retrieved
+      // if it is requested through the user configuration.
+      std::string sharedValueName = "";
       // Necessary because it fails on vectors and other complex objects that are YAML sequences.
       if (std::is_arithmetic<T>::value || std::is_same<T, std::string>::value)
       {
         // Retrieve value as string to check for shared value
-        std::string testIfShared = node[propertyName].as<std::string>();
+        sharedValueName = node[propertyName].as<std::string>();
         // Check for a shared value
-        //std::cout << "testIfShared: " << testIfShared << std::endl;
-        isShared = AliEmcalCorrectionComponent::IsSharedValue(testIfShared);
-        //std::cout << "Value shared? " << isShared << std::endl;
+        isShared = AliEmcalCorrectionComponent::IsSharedValue(sharedValueName);
       }
 
-      std::stringstream tempMessage;
+      tempMessage.str("");
       tempMessage << "property \"" 
             << (nodesDeep > 0 ? correctionName + ":" : "")
             << propertyName
-            << "\" using " << ( isShared ? "shared " : "" )
+            << "\" using " << ( isShared ? "\"sharedParameters:" + sharedValueName + "\" in " : "" )
             << "values from the " << configurationType
             << " configuration at level " << nodesDeep;
 
-      // AliInfo
-      std::cout << "INFO: Retrieveing " << tempMessage.str() << std::endl;
+      AliDebugClass(2, TString::Format("Retrieveing %s", tempMessage.str().c_str()));
 
       bool retrievalResult = false;
       if (isShared == true)
       {
-        retrievalResult = GetPropertyFromNode(sharedParametersNode, propertyName, property);
+        retrievalResult = GetPropertyFromNode(sharedParametersNode, sharedValueName, property);
       }
       else
       {
@@ -261,8 +263,7 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
       // Inform about the result
       if (retrievalResult == true)
       {
-        // AliInfo
-        std::cout << "INFO: Succeeded in retrieving " << tempMessage.str() << std::endl;
+        AliDebugClass(2, TString::Format("Succeeded in retrieveing %s", tempMessage.str().c_str()));
         returnValue = true;
       }
       else
@@ -270,13 +271,11 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
         // Only fatal if we have exhausted our last option, the default
         if (configurationType == "default")
         {
-          // AliFatal
-          std::cout << "FATAL: Failed to retrieve " << tempMessage.str() << std::endl;
+          AliFatalClass(TString::Format("Failed to retrieve %s", tempMessage.str().c_str()));
         }
         else
         {
-          // AliInfo
-          std::cout << "INFO: Failed to retrieve " << tempMessage.str() << std::endl;
+          AliDebugClass(2, TString::Format("Failed to retrieve %s", tempMessage.str().c_str()));
         }
         returnValue = false;
       }
@@ -285,10 +284,9 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
     {
       // Go one node deeper using recursion
       // Must create a new node, since we took the original node by reference
-      // AliInfo
       YAML::Node deeperNode = node[correctionName];
       nodesDeep++;
-      std::cout << "INFO: Going a node deeper with " << correctionName << " to level " << nodesDeep << std::endl;
+      AliDebugClass(2, TString::Format("Going a node deeper with \"%s\" to level %i", correctionName.c_str(), nodesDeep));
       returnValue = GetPropertyFromNodes(deeperNode, sharedParametersNode, propertyName, property, correctionName, configurationType, nodesDeep);
 
       // If we didn't find it, next try a substring
@@ -302,8 +300,7 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
         {
           // Split from start to underscore
           std::string subCorrectionName = correctionName.substr(0, splitLocation);
-          // AliInfo
-          std::cout << "INFO: Attempting to retrieve property \"" << propertyName << "\" from base correction \"" << subCorrectionName << "\" at level " << nodesDeep << std::endl;
+          AliDebugClass(2, TString::Format("Attempting to retrieve property \"%s\" from base correction \"%s\" at level %i", propertyName.c_str(), subCorrectionName.c_str(), nodesDeep));
           // Retrieve the base correction node
           // Need to create new node! Otherwise it will assign the correctionName node to subCorrectionName node!
           YAML::Node subCorrectionNode = node[subCorrectionName];
@@ -314,10 +311,11 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
   }
   else
   {
-    // AliInfo
-    std::cout << "INFO: Node is undefined for \""
-         << (correctionName != "" ? correctionName + ":" : "")
-         << propertyName << "\" from " << configurationType << " config at level " << nodesDeep << std::endl;
+    tempMessage.str("");
+    tempMessage << "Node is undefined for \""
+          << (correctionName != "" ? correctionName + ":" : "")
+          << propertyName << "\" from " << configurationType << " config at level " << nodesDeep;
+    AliDebugClass(2, TString::Format("%s", tempMessage.str().c_str()));
 
     returnValue = false;
   }
@@ -351,6 +349,8 @@ template<typename T> AliEmcalCorrectionComponent * createT() { return new T; }
 class AliEmcalCorrectionComponentFactory
 {
  public:
+  virtual ~AliEmcalCorrectionComponentFactory() {}
+
   typedef std::map<std::string, AliEmcalCorrectionComponent*(*)()> map_type;
 
   // Creates an instance of an object based on the name if the name is registered in the map.
