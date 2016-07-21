@@ -40,6 +40,7 @@ class TFile;
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile3D;
 
 class AliAnalysisTaskCRCZDC : public AliAnalysisTaskSE {
  
@@ -140,6 +141,7 @@ public:
  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = kList;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
+ virtual Int_t GetCenBin(Double_t Centrality);
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -284,11 +286,13 @@ private:
  
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
+ const static Int_t fnCen = 10;
  Int_t fCRCnRun;
  Float_t fZDCGainAlpha;
  TString fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
- TH2D *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
+ TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
+ TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
  TClonesArray* fStack; //!
  TH1F *fPtSpecGen[10];		//! PtSpecGen

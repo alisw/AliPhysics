@@ -35,6 +35,7 @@
 #include <TString.h>
 #include <TCanvas.h>
 #include <TParticle.h>
+#include "TProfile3D.h"
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -416,10 +417,16 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
  for(Int_t r=0;r<fCRCMaxnRun;r++) {
   fCRCQVecListRun[r] = NULL;
-  for(Int_t i=0;i<fCRCnTow;i++) {
-   fhnTowerGain[r][i] = NULL;
-  }
+//  for(Int_t i=0;i<fCRCnTow;i++) {
+//   fhnTowerGain[r][i] = NULL;
+//  }
  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fhnTowerGain[k] = NULL;
+    for(Int_t i=0;i<fnCen;i++) {
+      fhnTowerGainVtx[i][k] = NULL;
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -682,18 +689,27 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("MCkine")) fRunList[d] = 1;
   d++;
  }
+  
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    fhnTowerGain[k] = new TProfile(Form("fhnTowerGain[%d]",k),
+                                   Form("fhnTowerGain[%d]",k),100,0.,100.,"s");
+    fhnTowerGain[k]->Sumw2();
+    fOutput->Add(fhnTowerGain[k]);
+  }
+  for(Int_t k=0;k<fCRCnTow;k++) {
+    for(Int_t i=0;i<fnCen;i++) {
+      fhnTowerGainVtx[i][k] = new TProfile3D(Form("fhnTowerGainVtx[%d][%d]",i,k),
+                                             Form("fhnTowerGainVtx[%d][%d]",i,k),20,-0.035,0.015,20,0.145,0.220,10,-10.,10.,"s");
+      fhnTowerGainVtx[i][k]->Sumw2();
+      fOutput->Add(fhnTowerGainVtx[i][k]);
+    }
+  }
 
  for(Int_t r=0;r<fCRCnRun;r++) {
   fCRCQVecListRun[r] = new TList();
   fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
   fCRCQVecListRun[r]->SetOwner(kTRUE);
   fOutput->Add(fCRCQVecListRun[r]);
-  for(Int_t i=0;i<fCRCnTow;i++) {
-   fhnTowerGain[r][i] = new TH2D(Form("fhnTowerGain[%d][%d]",fRunList[r],i),
-                                 Form("fhnTowerGain[%d][%d]",fRunList[r],i),20,0.,100.,100,0.,100);
-   fhnTowerGain[r][i]->Sumw2();
-   fCRCQVecListRun[r]->Add(fhnTowerGain[r][i]);
-  }
  }
  
  PostData(2, fOutput);
@@ -1132,6 +1148,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetZNCEnergy(towZNC[0]);
       fFlowEvent->SetZNAEnergy(towZNA[0]);
       
+      Int_t CenBin = GetCenBin(centrperc);
+      Double_t zvtxpos[3]={0.,0.,0.};
+      fFlowEvent->GetVertexPosition(zvtxpos);
       Int_t RunNum=fFlowEvent->GetRun();
       if(fTowerEqList) {
         if(RunNum!=fCachedRunNum) {
@@ -1209,13 +1228,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       }
       if(fDataSet.EqualTo("MCkine")) RunBin=0;
       
-      if(RunBin!=-1) {
+      if(CenBin!=-1) {
         for(Int_t i=0; i<4; i++) {
           if(towZNC[i+1]>0.) {
-            fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
+            fhnTowerGainVtx[CenBin][i]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
+            fhnTowerGain[i]->Fill(centrperc,TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
           }
           if(towZNA[i+1]>0.) {
-            fhnTowerGain[RunBin][i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
+            fhnTowerGainVtx[CenBin][i+4]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
+            fhnTowerGain[i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
           }
         }
       }
@@ -1294,6 +1315,25 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  PostData(2, fOutput);
 }
+//________________________________________________________________________
+
+Int_t AliAnalysisTaskCRCZDC::GetCenBin(Double_t Centrality)
+{
+  Int_t CenBin=-1;
+  if (Centrality>0. && Centrality<5.) CenBin=0;
+  if (Centrality>5. && Centrality<10.) CenBin=1;
+  if (Centrality>10. && Centrality<20.) CenBin=2;
+  if (Centrality>20. && Centrality<30.) CenBin=3;
+  if (Centrality>30. && Centrality<40.) CenBin=4;
+  if (Centrality>40. && Centrality<50.) CenBin=5;
+  if (Centrality>50. && Centrality<60.) CenBin=6;
+  if (Centrality>60. && Centrality<70.) CenBin=7;
+  if (Centrality>70. && Centrality<80.) CenBin=8;
+  if (Centrality>80. && Centrality<90.) CenBin=9;
+  if (CenBin>=fnCen) CenBin=-1;
+  if (fnCen==1) CenBin=0;
+  return CenBin;
+} // end of AliFlowAnalysisCRC::GetCRCCenBin(Double_t Centrality)
 
 //________________________________________________________________________
 void AliAnalysisTaskCRCZDC::SetCutsRP(AliFlowTrackCuts* cutsRP) {
