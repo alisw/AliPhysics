@@ -491,9 +491,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 //             if (AliDebugLevel()) printf("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
             
             Int_t vx, vy, lphi;
-            
+            iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
             if (fGeometry->GetTriggerMappingVersion() == 1) {
-              iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, detectorID);
+             
               vx = 23 - x; 
               vy = y + 4 * int(iTRU / 2); // Position in EMCal frame
               if (iTRU % 2) vx += 24; // C side
@@ -503,8 +503,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
               lphi = 63;
             }
             else {
-              fGeometry->GetTRUFromSTU(iTRU, x, y, jTRU, vx, vy, detectorID);
-              fGeometry->GetAbsFastORIndexFromPositionInTRU(jTRU, vx, vy, idx);
+//               fGeometry->GetTRUFromSTU(iTRU, x, y, jTRU, vx, vy, detectorID);
+              fGeometry->GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, idx);
               lphi = 103;
             }
             
