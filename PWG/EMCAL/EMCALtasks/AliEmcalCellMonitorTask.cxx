@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <TArrayD.h>
+#include <TClonesArray.h>
 #include <TGrid.h>
 #include <THashList.h>
 #include <THistManager.h>
@@ -23,6 +25,7 @@ ClassImp(AliEmcalCellMonitorTask)
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
    AliAnalysisTaskSE(),
+   fInitialized(kTRUE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
@@ -38,6 +41,7 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorTask() :
 
 AliEmcalCellMonitorTask::AliEmcalCellMonitorTask(const char *name) :
    AliAnalysisTaskSE(name),
+   fInitialized(kTRUE),
    fHistManager(nullptr),
    fGeometry(nullptr),
    fMinCellAmplitude(0),
@@ -58,34 +62,31 @@ AliEmcalCellMonitorTask::~AliEmcalCellMonitorTask() {
 void AliEmcalCellMonitorTask::UserCreateOutputObjects(){
   fHistManager = new THistManager("EMCALCellMonitor");
 
-  fHistManager->CreateTH1("events", "Number of events", 1, 0.5, 1.5);
-  fHistManager->CreateTH1("cellMasking", "Monitoring for masked cells", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
-  fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
-  fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
-  fHistManager->CreateTH2("cellAmplitudeCut", "Energy distribution per cell (after energy cut)", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5), AliEmcalCellMonitorAmplitudeBinning());
-  fHistManager->CreateTH2("cellTime", "Time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 200, -1e-6, 1e-6);
-  fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 100, 1e-6, 5e-5);
-  fHistManager->CreateTH2("cellTimeMain", "Time distribution per cell for the main bunch", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 150, -50e-9, 100e-9);
-  for(int ism = 0; ism < 20; ++ism){
-    fHistManager->CreateTH2(Form("cellAmpSM%d", ism), Form("Integrated cell amplitudes for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
-    fHistManager->CreateTH2(Form("cellCountSM%d", ism), Form("Count rate per cell for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
-  }
-
-  for(int ism = 0; ism < 20; ++ism){
-    fHistManager->CreateTH2(Form("cellAmpTimeCorrSM%d", ism), Form("Correlation between cell amplitude and time in Supermodule %d", ism), 1000, -5e-7, 5e-7, 1000, 0., 100.);
-  }
 
   PostData(1, fHistManager->GetListOfHistograms());
 }
 
+void AliEmcalCellMonitorTask::ExecOnce(){
+  if(!fGeometry)
+    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(fInputEvent->GetRunNumber());
+  fNumberOfCells = fGeometry->GetNCells();
+  CreateHistograms();
+}
+
+void AliEmcalCellMonitorTask::RunChanged(){
+  if(fBadChannelContainer.Length()) LoadCellMasking();
+  for(auto cellID : fMaskedCells) fHistManager->FillTH1("cellMasking", cellID);
+}
+
 void AliEmcalCellMonitorTask::UserExec(Option_t *){
-  if(!fGeometry) fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(fInputEvent->GetRunNumber());
+  if(!fInitialized) {
+    ExecOnce();
+    fInitialized = kTRUE;
+  }
 
   // Run change
   if(InputEvent()->GetRunNumber() != fOldRun){
-    if(fBadChannelContainer.Length()) LoadCellMasking();
-
-    for(auto cellID : fMaskedCells) fHistManager->FillTH1("cellMasking", cellID);
+    RunChanged();
     fOldRun = InputEvent()->GetRunNumber();
   }
 
@@ -108,13 +109,13 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
   for(int icell = 0; icell < emcalcells->GetNumberOfCells(); icell++){
     emcalcells->GetCell(icell, cellNumber, amplitude, celltime, mclabel, efrac);
     if(IsCellMasked(cellNumber)) continue;
-    fHistManager->FillTH2("cellAmplitude", cellNumber, amplitude);
+    fHistManager->FillTH2("cellAmplitude", amplitude, cellNumber);
     if(amplitude < fMinCellAmplitude) continue;
-    fHistManager->FillTH1("cellAmplitudeCut", cellNumber, amplitude);
+    fHistManager->FillTH1("cellAmplitudeCut", amplitude, cellNumber);
     fHistManager->FillTH1("cellFrequency", cellNumber);
-    fHistManager->FillTH2("cellTime", cellNumber, celltime);
-    if(celltime >= 1e-6) fHistManager->FillTH2("cellTimeOutlier", cellNumber, celltime);
-    if(celltime > -5e-8 && celltime < 1e-7) fHistManager->FillTH2("cellTimeMain", cellNumber, celltime);
+    fHistManager->FillTH2("cellTime", celltime, cellNumber);
+    if(celltime >= 1e-6) fHistManager->FillTH2("cellTimeOutlier", celltime, cellNumber);
+    if(celltime > -5e-8 && celltime < 1e-7) fHistManager->FillTH2("cellTimeMain", celltime, cellNumber);
 
     // Get Cell index in eta-phi of sm
     fGeometry->GetCellIndex(cellNumber, sm, mod, mphi, meta);
@@ -124,12 +125,51 @@ void AliEmcalCellMonitorTask::UserExec(Option_t *){
     fHistManager->FillTH2(Form("cellAmpSM%d", sm), ieta, iphi, amplitude);
     fHistManager->FillTH2(Form("cellAmpTimeCorrSM%d", sm), celltime, amplitude);
   }
+
+  // Cluster loop
+  if(fNameClusters.Length()){
+    TClonesArray *clustercont = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fNameClusters.Data()));
+    if(clustercont){
+      const AliVCluster *myclust = nullptr;
+      for(TIter clusteriter = TIter(clustercont).Begin(); clusteriter != TIter::End(); ++clusteriter){
+        myclust = dynamic_cast<const AliVCluster *>(*clusteriter);
+        if(!myclust) continue;
+        for(int icell = 0; icell < myclust->GetNCells(); icell++){
+          fHistManager->FillTH1("cellClusterOccurrency", myclust->GetCellAbsId(icell));
+          fHistManager->FillTH2("cellAmplitudeFractionCluster", myclust->GetCellAbsId(icell), myclust->GetCellAmplitudeFraction(icell));
+        }
+      }
+    } else {
+      AliErrorStream() << GetName() << ": cluster container " << fNameClusters << " not found in the input event" << std::endl;
+    }
+  }
   PostData(1, fHistManager->GetListOfHistograms());
+}
+
+void AliEmcalCellMonitorTask::CreateHistograms(){
+  fHistManager->CreateTH1("events", "Number of events", 1, 0.5, 1.5);
+  fHistManager->CreateTH1("cellMasking", "Monitoring for masked cells", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
+  fHistManager->CreateTH1("cellFrequency", "Frequency of cell firing", TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
+  fHistManager->CreateTH2("cellAmplitude", "Energy distribution per cell", AliEmcalCellMonitorAmplitudeBinning(), TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
+  fHistManager->CreateTH2("cellAmplitudeCut", "Energy distribution per cell (after energy cut)", AliEmcalCellMonitorAmplitudeBinning(), TLinearBinning(fNumberOfCells, -0.5, fNumberOfCells - 0.5));
+  fHistManager->CreateTH2("cellTime", "Time distribution per cell", 300, -3e-7, 1e-6, fNumberOfCells, -0.5, fNumberOfCells - 0.5);
+  fHistManager->CreateTH2("cellTimeOutlier", "Outlier time distribution per cell", 100, 1e-6, 5e-5, fNumberOfCells, -0.5, fNumberOfCells - 0.5);
+  fHistManager->CreateTH2("cellTimeMain", "Time distribution per cell for the main bunch", 150, -50e-9, 100e-9, fNumberOfCells, -0.5, fNumberOfCells - 0.5);
+  fHistManager->CreateTH1("cellClusterOccurrency", "Occurrency of a cell in clusters", fNumberOfCells, -0.5, fNumberOfCells - 0.5);
+  fHistManager->CreateTH2("cellAmplitudeFractionCluster", "Summed cell amplitude fraction in a cluster", fNumberOfCells, -0.5, fNumberOfCells - 0.5, 200, 0., 200.);
+  for(int ism = 0; ism < 20; ++ism){
+    fHistManager->CreateTH2(Form("cellAmpSM%d", ism), Form("Integrated cell amplitudes for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
+    fHistManager->CreateTH2(Form("cellCountSM%d", ism), Form("Count rate per cell for SM %d; col; row", ism), 48, -0.5, 47.5, 24, -0.5, 23.5);
+  }
+
+  for(int ism = 0; ism < 20; ++ism){
+    fHistManager->CreateTH2(Form("cellAmpTimeCorrSM%d", ism), Form("Correlation between cell amplitude and time in Supermodule %d", ism), 1000, -5e-7, 5e-7, 1000, 0., 100.);
+  }
 }
 
 void AliEmcalCellMonitorTask::LoadCellMasking(){
   if(!fBadChannelContainer.Length()) return;
-  AliInfo(Form("Loading bad channel map from %s", fBadChannelContainer.Data()));
+  AliInfoStream() << GetName() << ": Loading bad channel map from " <<fBadChannelContainer << std::endl;
   fMaskedCells.clear();
   if(fBadChannelContainer.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");    // Make sure alien connection is available as the AliOADBContainer doesn't handle it
   AliOADBContainer contreader("EmcalBadChannelsAdditional");
@@ -155,7 +195,8 @@ AliEmcalCellMonitorTask::AliEmcalCellMonitorAmplitudeBinning::AliEmcalCellMonito
     TCustomBinning()
 {
   SetMinimum(0);
-  AddStep(1., 0.1);
+  AddStep(2., 0.1);
+  AddStep(5., 0.2);
   AddStep(10., 0.5);
   AddStep(20., 1.);
   AddStep(50., 2.);
