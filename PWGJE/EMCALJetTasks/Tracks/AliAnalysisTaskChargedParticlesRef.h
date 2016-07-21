@@ -48,7 +48,9 @@ public:
   void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
   void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
-  void SetTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
+  void SetKineCorrelation(Bool_t useKineCorrelation) { fKineCorrelation = useKineCorrelation; }
+  void SetPlotPID(Bool_t plotPID) { fStudyPID = plotPID; }
+  void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
   void InitializeTrackCuts(TString cutname, bool isAOD);
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
@@ -80,6 +82,9 @@ protected:
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
 
+  Bool_t                          fKineCorrelation;           ///< Use kinematics correlation histograms
+  Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms
+
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
@@ -89,11 +94,6 @@ protected:
 
 private:
 
-  class OldPtBinning : public TCustomBinning{
-  public:
-    OldPtBinning();
-    virtual ~OldPtBinning() {}
-  };
   class NewPtBinning : public TCustomBinning{
   public:
     NewPtBinning();
