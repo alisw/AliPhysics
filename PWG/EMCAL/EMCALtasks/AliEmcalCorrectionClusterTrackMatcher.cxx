@@ -67,11 +67,11 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   
   AddContainer(kCluster);
   Float_t clusterNonLinCorrEnergyCut = 0.15;
-  GetProperty("clusterNonLinCorrEnergyCut", clusterNonLinCorrEnergyCut);
+  GetProperty("clusterNonLinCorrEnergyMin", clusterNonLinCorrEnergyCut);
   Float_t clusterECut = 0.0;
-  GetProperty("clusterECut", clusterECut);
+  GetProperty("clusterEMin", clusterECut);
   Float_t clusterPtCut = 0.0;
-  GetProperty("clusterPtCut", clusterPtCut);
+  GetProperty("clusterPtMin", clusterPtCut);
   fClusCont->SetClusNonLinCorrEnergyCut(clusterNonLinCorrEnergyCut);
   fClusCont->SetClusECut(clusterECut);
   fClusCont->SetClusPtCut(clusterPtCut);
@@ -350,12 +350,12 @@ void AliEmcalCorrectionClusterTrackMatcher::UpdateTracks()
   
   for (Int_t itrack = 0; itrack < fNEmcalTracks; itrack++) {
     AliEmcalParticle* emcalTrack = static_cast<AliEmcalParticle*>(fEmcalTracks->At(itrack));
-    AliVTrack* track = emcalTrack->GetTrack();
-    
-    track->ResetStatus(AliVTrack::kEMCALmatch);
+
     if (emcalTrack->GetNumberOfMatchedObj() <= 0) continue;
     
     AliEmcalParticle* emcalCluster = static_cast<AliEmcalParticle*>(fEmcalClusters->At(emcalTrack->GetMatchedObjId()));
+    
+    AliVTrack* track = emcalTrack->GetTrack();
     track->SetEMCALcluster(emcalCluster->IdInCollection());
     track->SetStatus(AliVTrack::kEMCALmatch);
   }

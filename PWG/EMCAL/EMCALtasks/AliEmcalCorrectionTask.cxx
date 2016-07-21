@@ -14,6 +14,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include <TChain.h>
+#include <TSystem.h>
+#include <TGrid.h>
 
 #include "AliVEventHandler.h"
 #include "AliEMCALGeometry.h"
@@ -39,12 +41,21 @@ ClassImp(AliEmcalCorrectionTask);
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   AliAnalysisTaskSE("AliEmcalCorrectionTask"),
+  fUserConfiguration(),
   fUserConfigurationFilename(""),
-  fDefaultConfigurationFilename("AliEmcalCorrection.yaml"),
+  fUserConfigurationString(""),
+  fDefaultConfiguration(),
+  fDefaultConfigurationFilename(""),
+  fDefaultConfigurationString(""),
+  fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
+  fRunPeriod(""),
+  fConfigurationInitialized(false),
 
   fCreateNewObjectBranches(false),
+  fCreatedClusterBranchName(""),
+  fCreatedTrackBranchName(""),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -81,12 +92,21 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   AliAnalysisTaskSE(name),
+  fUserConfiguration(),
   fUserConfigurationFilename(""),
-  fDefaultConfigurationFilename("AliEmcalCorrection.yaml"),
+  fUserConfigurationString(""),
+  fDefaultConfiguration(),
+  fDefaultConfigurationFilename(""),
+  fDefaultConfigurationString(""),
+  fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
+  fRunPeriod(""),
+  fConfigurationInitialized(false),
 
   fCreateNewObjectBranches(false),
+  fCreatedClusterBranchName(""),
+  fCreatedTrackBranchName(""),
   fEventInitialized(false),
   fCent(0),
   fCentBin(-1),
@@ -134,81 +154,179 @@ inline bool AliEmcalCorrectionTask::doesFileExist(const std::string & filename)
 }
 
 /**
+ * Handles expanding ALICE_PHYSICS and copying the file from the grid if necessary.
+ *
+ */
+void AliEmcalCorrectionTask::SetupConfigurationFilePath(std::string & filename, bool userFile)
+{
+  if (filename != "")
+  {
+    // Handle if in AliPhysics
+    // Check for and replace $ALICE_PHYSICS with the actual path if needed
+    std::size_t alicePhysicsPathLocation = filename.find("$ALICE_PHYSICS");
+    if (alicePhysicsPathLocation != std::string::npos)
+    {
+      TString alicePhysicsPath = gSystem->Getenv("ALICE_PHYSICS");
+      // "$ALICE_PHYSICS "is 14 characters
+      filename.replace(alicePhysicsPathLocation, alicePhysicsPathLocation + 14, alicePhysicsPath.Data());
+    }
+
+    // Handle grid
+    if(filename.find("alien://") != std::string::npos)
+    {
+      AliDebug(2, TString::Format("Opening file \"%s\" on the grid!", filename.c_str()));
+      // Init alien connection if needed
+      if (!gGrid) {
+        TGrid::Connect("alien://");
+      }
+
+      // Determine the loca filename and copy file to local directory
+      std::string localFilename = gSystem->BaseName(filename.c_str());
+      // Ensures that the default and user files do not conflict if both are taken from the grid and have the same filename
+      if (userFile == true) {
+        localFilename = "user" + localFilename;
+      }
+      TFile::Cp(filename.c_str(), localFilename.c_str());
+
+      // yaml-cpp should only open the local file
+      filename = localFilename;
+    }
+  }
+}
+
+
+/**
  *
  *
  */
 void AliEmcalCorrectionTask::InitializeConfiguration()
 {
+  // Determine file path
+  if (fDefaultConfigurationFilename == "")
+  {
+    // Use the default if nothing is set
+    fDefaultConfigurationFilename = "$ALICE_PHYSICS/PWG/EMCAL/config/AliEmcalCorrectionConfiguration.yaml";
+  }
+
   // Setup the YAML files
   // Default
-  std::cout << "Default" << std::endl;
+  SetupConfigurationFilePath(fDefaultConfigurationFilename);
+
   if (doesFileExist(fDefaultConfigurationFilename) == true)
   {
+    AliInfo(TString::Format("Using default EMCal corrections configuration located at %s", fDefaultConfigurationFilename.c_str()));
+
     fDefaultConfiguration = YAML::LoadFile(fDefaultConfigurationFilename);
     // Check for valid file
     if (fDefaultConfiguration.IsNull() == true)
     {
-      // AliFatal
-      std::cout << "FATAL: Could not open the default configuration file \"" << fDefaultConfigurationFilename << "\"!" << std::endl;
+      AliFatal(TString::Format("Could not open the default configuration file \"%s\"!", fDefaultConfigurationFilename.c_str()));
     }
   }
   else
   {
-    // AliFatal
-    std::cout << "FATAL: Default file at " << fDefaultConfigurationFilename << " does not exist!";
+    AliFatal(TString::Format("Default file located at \"%s\" does not exist!", fDefaultConfigurationFilename.c_str()));
   }
+
   // User
-  std::cout << "User" << std::endl;
+  SetupConfigurationFilePath(fUserConfigurationFilename, true);
+
   if (doesFileExist(fUserConfigurationFilename) == true)
   {
+    AliInfo(TString::Format("Using user EMCal corrections configuration located at %s", fUserConfigurationFilename.c_str()));
+
     fUserConfiguration = YAML::LoadFile(fUserConfigurationFilename);
   }
   else
   {
-    // AliInfo
-    std::cout << "INFO: User file at \"" << fUserConfigurationFilename << "\" does not exist! Using default settings from file " << fDefaultConfigurationFilename << std::endl;
+    AliInfo(TString::Format("User file at \"%s\" does not exist! All settings will be from the default file!", fUserConfigurationFilename.c_str()));
   }
 
-  std::string defaultPeriod = fDefaultConfiguration["period"].as<std::string>();
-  std::string userPeriod = "kNoUserFile";
+  // Ensure that there is a run period
+  if (fRunPeriod == "")
+  {
+    AliFatal("Must pass a run period to the correction task!");
+  }
+  // Check the user provided run period
+  TString userRunPeriod = "kNoUserFile";
   // Test if the period exists in the user file
-  /*std::cout << "UserConfiguration" << fUserConfiguration << std::endl;
-  std::cout << "UserConfiguration IsNull()" << fUserConfiguration.IsNull() << std::endl;
-  std::cout << "UserConfiguration IsDefined()" << fUserConfiguration.IsDefined() << std::endl;*/
   if (fUserConfiguration.IsNull() != true)
   {
     if (fUserConfiguration["period"])
     {
-      userPeriod = fUserConfiguration["period"].as<std::string>();
+      userRunPeriod = fUserConfiguration["period"].as<std::string>();
     }
     else
     {
-      // AliFatal
-      AliFatal(TString::Format("%s: User must specify a period. Leave the period as an empty string to apply to all periods.", GetName()));
+      AliFatal("User must specify a period. Leave the period as an empty string to apply to all periods.");
     }
   }
   
-  std::cout << "defaultPeriod: " << defaultPeriod << std::endl;
-  std::cout << "   userPeriod: " << userPeriod << std::endl;
-
+  AliDebug(3, TString::Format("userRunPeriod: %s", userRunPeriod.Data()));
+  // Normalize the user run period to lower case to ensure that we don't miss any matches
+  userRunPeriod.ToLower();
   // "" means the user wants their settings to apply to all periods
-  if (userPeriod != "" && userPeriod != "kNoUserFile" && defaultPeriod != userPeriod)
+  if (userRunPeriod != "" && userRunPeriod != "knouserfile" && userRunPeriod != fRunPeriod)
   {
-    // AliFatal
-    std::cout << "FATAL: User period does not match period of " << defaultPeriod << std::endl;
+    AliFatal(TString::Format("User run period \"%s\" does not match the run period of \"%s\" passed to the correction task!", userRunPeriod.Data(), fRunPeriod.Data()));
+  }
+
+  // Ensure that the user is aware
+  if (userRunPeriod == "")
+  {
+    AliWarning("User run period is an empty string. Settings apply to all run periods!");
   }
 
   // Save configuration into strings so that they can be streamed
-  std::stringstream temp;
-  temp << fUserConfiguration;
-  fUserConfigurationString = temp.str();
-  // Clear stringstream
-  temp.str("");
-  temp << fDefaultConfiguration;
-  fDefaultConfigurationString = temp.str();
+  // Need the stringstream because yaml implements streamers
+  std::stringstream tempConfiguration;
+  tempConfiguration << fUserConfiguration;
+  fUserConfigurationString = tempConfiguration.str();
+  tempConfiguration.str("");
+  tempConfiguration << fDefaultConfiguration;
+  fDefaultConfigurationString = tempConfiguration.str();
 
+  // Note that it is initialized properly so that the analysis can proceed
   fConfigurationInitialized = true;
 }
+
+/**
+ * Writes the desired yaml configuration to a file.
+ * 
+ * \param filename The name of the file to write.
+ * \param userCofig True to write the user configuration.
+ * \return Whether writing the configuration to the file was successful.
+ */
+bool AliEmcalCorrectionTask::WriteConfigurationFile(std::string filename, bool userConfig)
+{
+  bool returnValue = false;
+  if (filename != "")
+  {
+    if (fConfigurationInitialized == true)
+    {
+      std::ofstream outFile(filename);
+      std::string stringToWrite = userConfig ? fUserConfigurationString : fDefaultConfigurationString;
+      if (stringToWrite == "") {
+        AliWarning(TString::Format("%s configuration is empty!", userConfig ? "User" : "Default"));
+      }
+      outFile << stringToWrite;
+      outFile.close();
+
+      returnValue = true;
+    }
+    else
+    {
+      AliWarning(TString::Format("Configuration not properly initialized! Cnanot print %s configuration!", userConfig ? "user" : "default"));
+    }
+
+  }
+  else
+  {
+    AliWarning("Please pass a valid filename instead of empty qutoes!");
+  }
+  return returnValue;
+}
+
 
 /**
  *
@@ -282,6 +400,9 @@ void AliEmcalCorrectionTask::InitializeComponents()
     component->SetUserConfiguration(fUserConfiguration);
     component->SetDefaultConfiguration(fDefaultConfiguration);
     
+    // configure needed fields for components to properly initialize
+    component->SetNcentralityBins(fNcentBins);
+    
     // Initialize each component
     component->Initialize();
 
@@ -319,7 +440,7 @@ void AliEmcalCorrectionTask::InitializeComponents()
         t->Add(obj);
       }
       
-      AliDebug(1, TString::Format("DEBUG: Added output list from task %s to output.", componentName.c_str()));
+      AliDebug(1, TString::Format("Added output list from task %s to output.", componentName.c_str()));
     }
   }
 
@@ -380,6 +501,14 @@ void AliEmcalCorrectionTask::UserCreateOutputObjects()
     AliFatal(TString::Format("%s: YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!", GetName()));
   }
 
+  // Retrieve cells name from configruation
+  std::string cellsName = "";
+  AliEmcalCorrectionComponent::GetProperty("cellBranchName", cellsName, fUserConfiguration, fDefaultConfiguration, true, "");
+  if (cellsName == "usedefault") {
+    cellsName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCaloCells, fIsEsd);
+  }
+  fCaloCellsName = cellsName;
+
   if (fForceBeamType == kpp)
     fNcentBins = 1;
 
@@ -411,9 +540,9 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
   AliEmcalCorrectionComponent::GetProperty("clusterBranchName", fCreatedClusterBranchName, fUserConfiguration, fDefaultConfiguration, true, "Clusterizer");
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  std::string currentClustersName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kCluster, fIsEsd);
-  if (currentClustersName == fCreatedClusterBranchName) {
-    AliFatal(TString::Format("%s: Attempted to create a new branch with the same name as the old branch, %s", GetName(), currentClustersName.c_str()));
+  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedClusterBranchName.c_str()));
+  if (existingArray) {
+    AliFatal(TString::Format("%s: Attempted to create a new cluster branch, \"%s\", with the same name as an existing branch!", GetName(), fCreatedClusterBranchName.c_str()));
   }
 
   // Create new branch and add it to the event
@@ -432,9 +561,9 @@ void AliEmcalCorrectionTask::CreateNewObjectBranches()
   AliEmcalCorrectionComponent::GetProperty("trackBranchName", fCreatedTrackBranchName, fUserConfiguration, fDefaultConfiguration, true, "ClusterTrackMatcher");
 
   // Check to ensure that we are not trying to create a new branch on top of the old branch
-  std::string currentTracksName = AliEmcalCorrectionComponent::DetermineUseDefaultName(AliEmcalCorrectionComponent::kTrack, fIsEsd);
-  if (currentTracksName == fCreatedTrackBranchName) {
-    AliFatal(TString::Format("%s: Attempted to create a new branch with the same name as the old branch, %s", GetName(), currentTracksName.c_str()));
+  existingArray = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCreatedTrackBranchName.c_str()));
+  if (existingArray) {
+    AliFatal(TString::Format("%s: Attempted to create a new track branch, \"%s\", with the same name as existing branch!", GetName(), fCreatedTrackBranchName.c_str()));
   }
 
   // Create new branch and add it to the event

@@ -100,18 +100,25 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   AliTrackContainer          *GetTrackContainer(const char* name)             const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                        RemoveParticleContainer(Int_t i=0)                    { fParticleCollArray.RemoveAt(i)                      ; } 
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
-  void                        SetCaloCellsName(const char* name)                     { fCaloCellsName = name; }
+  void                        SetCaloCellsName(const char* name)                    { fCaloCellsName = name; }
+
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
+  void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
+  const TString &             GetRunPeriod()                                  const { return fRunPeriod; }
 
   void                        SetCreateNewObjectBranches(bool flag)                 { fCreateNewObjectBranches = flag; }
+  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
 
   const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
+
+  bool WriteConfigurationFile(std::string filename, bool userConfig = false);
 
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
   AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
 
   static inline bool doesFileExist(const std::string & filename);
+  void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
 
   void RetrieveExecutionOrder(std::vector <std::string> & componentsToAdd);
   void InitializeComponents();
@@ -144,6 +151,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool                        fCreateNewObjectBranches;    ///< Create new branches for cells and clusters
   std::string                 fCreatedClusterBranchName;   ///< Name of created cluster branch
   std::string                 fCreatedTrackBranchName;     ///< Name of created track branch
+  TString                     fRunPeriod;                  ///< Run period (passed by user)
   bool                        fEventInitialized;           ///< If the event is initialized properly
   Double_t                    fCent;                       //!<! Event centrality
   Int_t                       fCentBin;                    //!<! Event centrality bin
