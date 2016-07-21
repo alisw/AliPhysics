@@ -6,7 +6,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString EvTrigger="MB",
                              Bool_t bCalculateEbEFlow=kFALSE,
                              Bool_t bUseCRCRecenter,
-                             TString QVecWeightsFileName,
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bUseVZERO=kFALSE,
                              Bool_t bCalculateCRCVZ=kFALSE,
@@ -145,20 +144,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
   
   if(sDataSet=="2010" && !bZDCMCCen) {
-    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTower.root";
-    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
-    if(!ZDCTowerEqFile) {
-      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
-      exit(1);
-    }
-    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
-    if(ZDCTowerEqList) {
-      taskFE->SetTowerEqList(ZDCTowerEqList);
-      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
-    } else {
-      cout << "ERROR: ZDCTowerEqList not found!" << endl;
-      exit(1);
-    }
+//    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTower.root";
+//    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+//    if(!ZDCTowerEqFile) {
+//      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
+//      exit(1);
+//    }
+//    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
+//    if(ZDCTowerEqList) {
+//      taskFE->SetTowerEqList(ZDCTowerEqList);
+//      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+//    } else {
+//      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+//      exit(1);
+//    }
   } // end of if(bSetQAZDC)
   
   // add the task to the manager
@@ -469,6 +468,33 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
         exit(1);
       }
     }
+    taskQC->SetUseZDCESESpecWeights(kTRUE);
+    TString SpecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2011") {
+      if(AODfilterBit==768) SpecWeightsFileName += "Calib11hZDCESE_SpecCorr_FB768.root";
+      if(AODfilterBit==128) SpecWeightsFileName += "Calib11hZDCESE_SpecCorr_FB128.root";
+    }
+    if(sDataSet=="2010") {
+      if(AODfilterBit==768) SpecWeightsFileName += "Calib10hZDCESE_SpecCorr_FB768.root";
+      if(AODfilterBit==128) SpecWeightsFileName += "Calib10hZDCESE_SpecCorr_FB128.root";
+    }
+    TFile* SpecWeightsFile = TFile::Open(SpecWeightsFileName,"READ");
+    if(!SpecWeightsFile) {
+      cout << "ERROR: ZDCESESpecWeightsFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCESEList = dynamic_cast<TList*>(SpecWeightsFile->FindObjectAny("ZDCESE"));
+    for(Int_t c=0; c<5; c++) {
+      TH2F* SpecWeightsHist = dynamic_cast<TH2F*>(ZDCESEList->FindObject(Form("CenvsSpecWeig[%d]",c)));
+      if(SpecWeightsHist) {
+        taskQC->SetZDCESESpecWeightsHist(SpecWeightsHist,c);
+        cout << "ZDC-ESE Spec. Weights (class #"<<c<<") set (from " <<  SpecWeightsFileName.Data() << ")" << endl;
+      }
+      else {
+        cout << "ERROR: ZDC-ESE Spec. Hist not found!" << endl;
+        exit(1);
+      }
+    }
   }
   
   if(bUseEtaWeights) {
@@ -496,6 +522,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   } // end of if(bUseEtaWeights)
  
   if(bUseCRCRecenter) {
+    TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2010") {
+      if(AODfilterBit==768) QVecWeightsFileName += "Calib10hTPCQ_FB768.root";
+      if(AODfilterBit==128) QVecWeightsFileName += "Calib10hTPCQ_FB128.root";
+    }
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
