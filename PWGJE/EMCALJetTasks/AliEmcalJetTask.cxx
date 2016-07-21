@@ -346,8 +346,6 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
-  SetNeedEmcalGeom(kFALSE);
-
   if (fTrackEfficiency < 1.) {
     if (gRandom) delete gRandom;
     gRandom = new TRandom3(0);
@@ -821,26 +819,19 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
  */
 Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
 {
-  if (!fGeom) SetEMCALGeometry();
-  if (fGeom) {
-    if ( eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
-      if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
-        if ( phi < 3.135 - r && phi > 1.405 + r )
-          return kTRUE;
-      }
-      else {
-        if ( phi < fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetArm1PhiMin() * TMath::DegToRad() + r)
-          return kTRUE;
-      }
+  if (!fGeom) return kFALSE;
+
+  if ( eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+    if(fRunNumber >= 177295 && fRunNumber <= 197470) {//small SM masked in 2012 and 2013
+      if ( phi < 3.135 - r && phi > 1.405 + r )
+        return kTRUE;
     }
-  }
-  else {
-    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-    if (eta < 0.7 - r && eta > -0.7 + r ){
-      if (phi < 3.135 - r && phi > 1.405 + r )
+    else {
+      if ( phi < fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetArm1PhiMin() * TMath::DegToRad() + r)
         return kTRUE;
     }
   }
+
   return kFALSE;
 }
 
@@ -849,33 +840,10 @@ Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
  */
 Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
 {
-  if (!fGeom) SetEMCALGeometry();
-  if (fGeom) {
-    if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
-      if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r)
-        return kTRUE;
-    }
-  }
-  else {
-    AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
-    if (eta < 0.7 - r && eta > -0.7 + r) {
-      if ( phi < 5.727 - r && phi > 4.538 + r )
-        return kTRUE;
-    }
+  if (!fGeom) return kFALSE;
+  if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
+    if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r)
+      return kTRUE;
   }
   return kFALSE;
-}
-
-/**
- * Set a pointer to the EMCal geometry object.
- * It assumes that an instance of the object has been already
- * configured.
- */
-void AliEmcalJetTask::SetEMCALGeometry()
-{
-  fGeom = AliEMCALGeometry::GetInstance();
-  if (!fGeom) {
-    AliError(Form("%s: Can not create geometry", GetName()));
-    return;
-  }
 }

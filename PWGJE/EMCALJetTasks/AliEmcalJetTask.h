@@ -129,7 +129,6 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInEmcal(Double_t eta, Double_t phi, Double_t r);
   Bool_t                 IsJetInDcal(Double_t eta, Double_t phi, Double_t r);
-  void                   SetEMCALGeometry();
 
   TString                fJetsTag;                // tag of jet collection (usually = "Jets")
 
