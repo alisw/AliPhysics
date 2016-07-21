@@ -1316,13 +1316,17 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair AliAnalysisTaskDmes
 
   Double_t d_closest = 999;
   AliJetInfo* jet_closest = 0;
+  const AliJetInfo* truth_jet = 0;
+  try {
+    truth_jet = &(dmeson.fJets.at(jetDef.GetName()));
+  }
+  catch(...) {
+    return jet_distance_pair(0, 999);
+  }
 
   for (auto& jet : jetDef.fJets) {
-    Double_t d = 999;
-    try {
-      d = dmeson.fJets.at(jetDef.GetName()).GetDistance(jet);
-    }
-    catch(...) { }
+    Double_t d = truth_jet->GetDistance(jet);
+
     if (d > dMax) continue;
     if (d < d_closest) {
       d_closest = d;
