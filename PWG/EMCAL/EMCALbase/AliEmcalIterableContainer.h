@@ -326,12 +326,13 @@ T *AliEmcalIterableContainerT<T, STAR>::operator[](int index) const {
  */
 template <typename T, typename STAR>
 void AliEmcalIterableContainerT<T, STAR>::BuildAcceptIndices(){
-  fAcceptIndices.Set(fkContainer->GetNAcceptEntries());
+  fAcceptIndices.Set(fkContainer->GetNEntries());
   int acceptCounter = 0;
   for(int index = 0; index < fkContainer->GetNEntries(); index++){
     UInt_t rejectionReason = 0;
     if(fkContainer->AcceptObject(index, rejectionReason)) fAcceptIndices[acceptCounter++] = index;
   }
+  fAcceptIndices.Set(acceptCounter);
 }
 
 ///////////////////////////////////////////////////////////////////////
