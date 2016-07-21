@@ -219,7 +219,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   clustersTree->Branch( "T0", "AliT0RecPoint" ,&pfrecpoints);
   Int_t timecenterA = 511;
   Int_t timecenterC = 511;
-  if(fLHCperiod) { timecenterC=514;timecenterC=518;}
+  if(fLHCperiod) { timecenterC=514;timecenterA=518;}
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
@@ -246,8 +246,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
       //   AliDebug(5,Form(" ipmt %i QTC  %i , time in chann %i (led-cfd) %i ",
       //	    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
-    printf(" ipmt %i QTC  %i , time in chann %i \n ",
-		    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]));
+      //  printf(" ipmt %i QTC  %i , time in chann %i \n ",
+      //		    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]));
       
     Double_t ampMip = 0;
       TGraph* ampGraph = (TGraph*)fAmpLED.At(ipmt);
@@ -300,19 +300,23 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if( besttimeA < 999999 && besttimeA!=0) {
     frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
     frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - shiftA) );
-    if(fLHCperiod || fLHCperiod16) 
+    if(fLHCperiod ) 
       frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c - fTimeMeanShift[1]) );
     tr[1]=true;
   }
+ printf(" 1stimeA %f besttimeA %f fdZonCA%f  shiftA %f \n",
+	besttimeA * channelWidth,besttimeA_best * channelWidth, fdZonC/c, fTimeMeanShift[1]);
   
   if( besttimeC < 999999 && besttimeC!=0) {
     frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c) );
     frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - shiftC) );
-    if(fLHCperiod || fLHCperiod16) 
+    if(fLHCperiod ) 
       frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c - fTimeMeanShift[2]) );
    tr[2]=true;
   }
-  
+  //  printf(" 1stimeC %f besttimeC %f fdZonC %f  shiftC %f \n",
+  //	 besttimeC * channelWidth,besttimeC_best * channelWidth, fdZonC/c, fTimeMeanShift[2]);
+
   AliDebug(5,Form("1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f ",
 		  besttimeA, besttimeA_best,
 		  besttimeC, besttimeC_best) );
@@ -322,7 +326,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     timeDiff = (besttimeA - besttimeC)*channelWidth;
     meanTime = channelWidth * (besttimeA_best + besttimeC_best)/2. ; 
     timeclock = channelWidth * (besttimeA + besttimeC)/2. - shiftAC ;
-    if(fLHCperiod || fLHCperiod16) 
+    if(fLHCperiod) 
       timeclock = channelWidth * (besttimeA + besttimeC)/2. - fTimeMeanShift[0] ;
    vertex = meanVertex - 0.001* c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
