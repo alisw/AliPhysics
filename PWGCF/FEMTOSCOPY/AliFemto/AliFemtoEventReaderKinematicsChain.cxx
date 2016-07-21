@@ -56,7 +56,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadOnlyPrimariesV0(true)
+  fReadOnlyPrimariesV0(true),
+  fReadPrimariesSecWeakMaterial(false),
+  fReadPrimariesSecWeakMaterialV0(false)
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -74,7 +76,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadOnlyPrimariesV0(true)
+  fReadOnlyPrimariesV0(true),
+  fReadPrimariesSecWeakMaterial(false),
+  fReadPrimariesSecWeakMaterialV0(false)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -86,6 +90,8 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
+  fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
 }
 //__________________
 AliFemtoEventReaderKinematicsChain::~AliFemtoEventReaderKinematicsChain()
@@ -111,6 +117,8 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
+  fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
+  fReadPrimariesSecWeakMaterialV0 = aReader.fReadPrimariesSecWeakMaterialV0;
   return *this;
 }
 //__________________
@@ -142,6 +150,16 @@ void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimaries(bool primaries)
 void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimariesV0(bool primaries)
 {
   fReadOnlyPrimariesV0 = primaries;
+}
+
+void AliFemtoEventReaderKinematicsChain::ReadPrimariesSecWeakMaterial(bool primaries)
+{
+  fReadPrimariesSecWeakMaterial = primaries;
+}
+
+void AliFemtoEventReaderKinematicsChain::ReadPrimariesSecWeakMaterialV0(bool primaries)
+{
+  fReadPrimariesSecWeakMaterialV0 = primaries;
 }
 
 
@@ -217,6 +235,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	{
 	  //take only primaries
 	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
+      else if(fReadPrimariesSecWeakMaterial)
+	{
+	  //take only primaries
+	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {continue;}
 	}
 
       AliFemtoTrack* trackCopy = new AliFemtoTrack();
@@ -356,6 +379,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	{
 	  //take only primaries
 	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
+      else if(fReadPrimariesSecWeakMaterialV0)
+	{
+	  //take only primaries
+	  if(!(fStack->IsPhysicalPrimary(i) || fStack->IsSecondaryFromWeakDecay(i) || fStack->IsSecondaryFromMaterial(i))) {continue;}
 	}
 
       //getting next track

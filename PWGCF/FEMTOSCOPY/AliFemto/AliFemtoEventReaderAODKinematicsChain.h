@@ -51,7 +51,8 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   void SetAODheader(AliAODHeader *aAODheader);
 
   void ReadOnlyPrimaries(bool primaries);
-
+  void ReadPrimariesSecWeakMaterial(bool primaries);
+ 
  protected:
   AliAODHeader *fAODheader;
  private:
@@ -66,6 +67,7 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
 
   bool           fReadOnlyPrimaries; // read only primaries
+  bool           fReadPrimariesSecWeakMaterial; //read only primaries, secondaries from weak decays and secondaries from material
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
