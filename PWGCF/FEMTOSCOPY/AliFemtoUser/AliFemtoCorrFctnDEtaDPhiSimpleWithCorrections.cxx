@@ -174,10 +174,13 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::Report(){
   snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
   stemp += ctemp;
 
-  snprintf(ctemp , 100, "Number of entries in hidden numerator:\t%E\n",fDPhiDEtaHiddenNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in hidden denominator:\t%E\n",fDPhiDEtaHiddenDenominator->GetEntries());
-  stemp += ctemp;
+  if(fReadHiddenInfo)
+    {
+      snprintf(ctemp , 100, "Number of entries in hidden numerator:\t%E\n",fDPhiDEtaHiddenNumerator->GetEntries());
+      stemp += ctemp;
+      snprintf(ctemp , 100, "Number of entries in hidden denominator:\t%E\n",fDPhiDEtaHiddenDenominator->GetEntries());
+      stemp += ctemp;
+    }
   
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;
@@ -309,9 +312,6 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
   }
 
 
-
-
-
   fDPhiDEtaDenominator->Fill(dphi, deta, weight);
 
 
@@ -343,8 +343,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 
 
       AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
-      AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum(); 
-      
+      AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum();   
       
       double hphi1 = v1->Phi();
       double hphi2 = v2->Phi();
