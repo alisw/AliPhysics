@@ -51,6 +51,8 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
 
   void ReadOnlyPrimaries(bool primaries);
   void ReadOnlyPrimariesV0(bool primaries);
+  void ReadPrimariesSecWeakMaterial(bool primaries);
+  void ReadPrimariesSecWeakMaterialV0(bool primaries);
 
  protected:
 
@@ -67,6 +69,8 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
 
   bool           fReadOnlyPrimaries; // read only primaries
   bool           fReadOnlyPrimariesV0; // read only primaries, V0 analysis
+  bool           fReadPrimariesSecWeakMaterial; //read only primaries, secondaries from weak decays and secondaries from material
+  bool           fReadPrimariesSecWeakMaterialV0; //read only primaries, secondaries from weak decays and secondaries from material, V0 analysis
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
