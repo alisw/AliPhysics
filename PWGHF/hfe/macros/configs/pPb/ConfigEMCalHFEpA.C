@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskEMCalHFEpA2* ConfigEMCalHFEpA(
+AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
 										
 
@@ -98,7 +98,7 @@ Bool_t isCentralitySys 		= kFALSE
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
-	AliAnalysisTaskEMCalHFEpA2 *task = new AliAnalysisTaskEMCalHFEpA2(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
+	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
