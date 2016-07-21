@@ -23,7 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemtoUser)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
-  )
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -108,10 +108,17 @@ set(SRCS
   AliFemtoV0TrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
   Faddeeva.cxx
-)
+  )
+
+
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+# Additional headers
+set(HDRS ${HDRS}
+  AliFemtoPairCutDetaDphi.h
+  )
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
