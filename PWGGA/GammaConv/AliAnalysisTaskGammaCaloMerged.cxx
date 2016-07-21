@@ -1989,10 +1989,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCStack) ) ){                    
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc
-            fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
+            if (fIsMC == 2)fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Eta with gamma in acc
-            fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta w/o event weights with gamma in acc
+            if (fIsMC == 2)fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta w/o event weights with gamma in acc
           }
         }
       }
@@ -2040,8 +2040,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
           ){                    
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0DalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc
+            if (fIsMC == 2) fHistoMCPi0DalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaDalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Eta with gamma in acc
+            if (fIsMC == 2) fHistoMCEtaDalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc
           }
         }
       }
