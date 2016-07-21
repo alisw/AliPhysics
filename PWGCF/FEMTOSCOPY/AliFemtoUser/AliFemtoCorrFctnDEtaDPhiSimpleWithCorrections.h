@@ -35,18 +35,24 @@ public:
   void SetParticle1Type(ParticleType partType);
   void SetParticle2Type(ParticleType partType);
 
+  void SetReadHiddenInfo(bool read);
+
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
   
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
+  TH2D *fDPhiDEtaHiddenNumerator;          // Numerator of dEta dPhi function
+  TH2D *fDPhiDEtaHiddenDenominator;        // Denominator of dEta dPhi function
 
   double fphiL;
   double fphiT;
   
   ParticleType part1;
   ParticleType part2;
+
+  bool fReadHiddenInfo;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections, 1)

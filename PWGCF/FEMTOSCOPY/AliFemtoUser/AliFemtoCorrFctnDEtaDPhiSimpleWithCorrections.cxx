@@ -24,8 +24,11 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
+  fDPhiDEtaHiddenNumerator(0),
+  fDPhiDEtaHiddenDenominator(0),
   fphiL(0),
-  fphiT(0)
+  fphiT(0),
+  fReadHiddenInfo(false)
 {
 
   fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
@@ -41,10 +44,27 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
 
 
+  if(fReadHiddenInfo)
+    { 
+      // set up numerator
+      char tTitHNumD[101] = "NumDPhiDEtaHidden";
+      strncat(tTitHNumD,title, 100);
+      fDPhiDEtaHiddenNumerator = new TH2D(tTitHNumD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+      // set up denominator
+      char tTitHDenD[101] = "DenDPhiDEtaHidden";
+      strncat(tTitHDenD,title, 100);
+      fDPhiDEtaHiddenDenominator = new TH2D(tTitHDenD,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+    }
+
+
   // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
-
+  if(fReadHiddenInfo)
+    {
+      fDPhiDEtaHiddenNumerator->Sumw2();
+      fDPhiDEtaHiddenDenominator->Sumw2();
+    }
 
 
 }
@@ -54,8 +74,11 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
+  fDPhiDEtaHiddenNumerator(0),
+  fDPhiDEtaHiddenDenominator(0),
   fphiL(0),
-  fphiT(0)
+  fphiT(0),
+  fReadHiddenInfo(false)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)
@@ -67,6 +90,20 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AliFemtoCorrFctnDEtaDPhiSimpleWit
   else
     fDPhiDEtaDenominator = 0;
 
+  fReadHiddenInfo = aCorrFctn.fReadHiddenInfo;
+  
+  if(fReadHiddenInfo)
+    {
+      if (aCorrFctn.fDPhiDEtaHiddenNumerator)
+	fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
+      else
+	fDPhiDEtaHiddenNumerator = 0;
+      if (aCorrFctn.fDPhiDEtaHiddenDenominator)
+	fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
+      else
+	fDPhiDEtaHiddenDenominator = 0;
+    }
+  
 
 
 }
@@ -76,7 +113,12 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::~AliFemtoCorrFctnDEtaDPhiSimpleWi
 
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-
+  if(fReadHiddenInfo)
+    {
+      delete fDPhiDEtaHiddenNumerator;
+      delete fDPhiDEtaHiddenDenominator;
+    }
+  
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::operator=(const AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& aCorrFctn)
@@ -94,6 +136,19 @@ AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& AliFemtoCorrFctnDEtaDPhiSimpleWit
   else
     fDPhiDEtaDenominator = 0;
 
+  fReadHiddenInfo = aCorrFctn.fReadHiddenInfo;
+  
+  if(fReadHiddenInfo)
+    {
+      if (aCorrFctn.fDPhiDEtaHiddenNumerator)
+	fDPhiDEtaHiddenNumerator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenNumerator);
+      else
+	fDPhiDEtaHiddenNumerator = 0;
+      if (aCorrFctn.fDPhiDEtaHiddenDenominator)
+	fDPhiDEtaHiddenDenominator = new TH2D(*aCorrFctn.fDPhiDEtaHiddenDenominator);
+      else
+	fDPhiDEtaHiddenDenominator = 0;
+    }
 
   return *this;
 }
@@ -118,6 +173,12 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::Report(){
   stemp += ctemp;
   snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
   stemp += ctemp;
+
+  snprintf(ctemp , 100, "Number of entries in hidden numerator:\t%E\n",fDPhiDEtaHiddenNumerator->GetEntries());
+  stemp += ctemp;
+  snprintf(ctemp , 100, "Number of entries in hidden denominator:\t%E\n",fDPhiDEtaHiddenDenominator->GetEntries());
+  stemp += ctemp;
+  
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;
   return returnThis;
@@ -166,6 +227,46 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 
  
 
+  if(fReadHiddenInfo)
+    {
+      AliFemtoModelHiddenInfo* hInfo1;
+      AliFemtoModelHiddenInfo* hInfo2;
+      if(pair->Track1()->Track())
+	{
+	  if(part1==kPion || part1==kKaon || part1==kProton || part2==kAll)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
+	}
+      if(pair->Track1()->V0())
+	{
+	  if(part1==kLambda)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
+	}
+
+      if(pair->Track2()->Track())
+	{
+	  if(part1==kPion || part1==kKaon || part1==kProton || part2==kAll)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
+	}
+      if(pair->Track2()->V0())
+	{
+	  if(part1==kLambda)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
+	}
+
+
+      AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
+      AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum(); 
+      
+      
+      double hphi1 = v1->Phi();
+      double hphi2 = v2->Phi();
+      double heta1 = v1->PseudoRapidity();
+      double heta2 = v2->PseudoRapidity();
+
+
+      fDPhiDEtaHiddenNumerator->Fill(dphi, deta);
+    }
+  
 
 }
 //____________________________
@@ -212,6 +313,47 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 
 
   fDPhiDEtaDenominator->Fill(dphi, deta, weight);
+
+
+  if(fReadHiddenInfo)
+    {
+      AliFemtoModelHiddenInfo* hInfo1;
+      AliFemtoModelHiddenInfo* hInfo2;
+      if(pair->Track1()->Track())
+	{
+	  if(part1==kPion || part1==kKaon || part1==kProton || part2==kAll)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
+	}
+      if(pair->Track1()->V0())
+	{
+	  if(part1==kLambda)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
+	}
+
+      if(pair->Track2()->Track())
+	{
+	  if(part1==kPion || part1==kKaon || part1==kProton || part2==kAll)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track1()->Track()->GetHiddenInfo();
+	}
+      if(pair->Track2()->V0())
+	{
+	  if(part1==kLambda)
+	    hInfo1 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
+	}
+
+
+      AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
+      AliFemtoThreeVector *v2 = hInfo2->GetTrueMomentum(); 
+      
+      
+      double hphi1 = v1->Phi();
+      double hphi2 = v2->Phi();
+      double heta1 = v1->PseudoRapidity();
+      double heta2 = v2->PseudoRapidity();
+
+
+      fDPhiDEtaHiddenDenominator->Fill(dphi, deta);
+    }
   
 
 }
@@ -222,6 +364,11 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
+  if(fReadHiddenInfo)
+    {
+      fDPhiDEtaHiddenNumerator->Write();
+      fDPhiDEtaHiddenDenominator->Write();
+    }
 
 }
 
@@ -232,7 +379,11 @@ TList* AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-
+  if(fReadHiddenInfo)
+    {
+      tOutputList->Add(fDPhiDEtaHiddenNumerator);
+      tOutputList->Add(fDPhiDEtaHiddenDenominator);
+    }
   return tOutputList;
 
 }
@@ -253,4 +404,9 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::SetParticle1Type(ParticleTyp
 void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::SetParticle2Type(ParticleType partType)
 {
   part2=partType;
+}
+
+void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::SetReadHiddenInfo(bool read)
+{
+  fReadHiddenInfo = read;
 }
