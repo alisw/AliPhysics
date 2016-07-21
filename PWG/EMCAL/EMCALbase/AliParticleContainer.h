@@ -55,8 +55,8 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { SetEtaLimits(min, max); }
   void                        SetParticlePhiLimits(Double_t min, Double_t max)  { SetPhiLimits(min, max); }
   virtual AliVParticle       *GetLeadingParticle(const char* opt="")         ;
-  virtual AliVParticle       *GetParticle(Int_t i=-1)                   const;
-  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)             const;
+  virtual AliVParticle       *GetParticle(Int_t i)                      const;
+  virtual AliVParticle       *GetAcceptParticle(Int_t i)                const;
   virtual AliVParticle       *GetNextAcceptParticle()                        ;
   virtual AliVParticle       *GetNextParticle()                              ;
   virtual Bool_t              GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;
