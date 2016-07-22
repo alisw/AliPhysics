@@ -70,7 +70,7 @@ private:
   int fEtaBins;
   int fPhiBins;
 
-  char*ftitle;
+  char *ftitle;
   
   ParticleType part1;
   ParticleType part2;
