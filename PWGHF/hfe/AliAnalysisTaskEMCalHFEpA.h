@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 7th, 2016.      							      //
+	//		version: July 21th, 2016.      							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -135,7 +135,7 @@ public:
 	void SetEoverPnsigma(Bool_t EoverPnsigma=kFALSE) { fEoverPnsigma=EoverPnsigma;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
 	void SetEMCalTriggerEG2() { fEMCEG2=kTRUE; };
-	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
+	void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = ZNA
 	void SetAdditionalCuts(Double_t PtMinAsso, Int_t TpcNclsAsso) {fPtMinAsso = PtMinAsso; fTpcNclsAsso = TpcNclsAsso;};
 	void SetSPDCutForHadrons() {fAssocWithSPD = kTRUE;};
 	
@@ -221,9 +221,16 @@ private:
 	Double_t				fCentralityMax;
 	Bool_t					fHasCentralitySelection;
 	TH1F					*fCentralityHist;
+	TH1F					*fCentralityHistPass;
+	
+	TH1F					*fCentralityHist2;
+	TH2F					*fCentralityHist_correlation;
+
+	TH1F					*fCentralityHistPass2;
+	
 	TH1F					*fMultiplicityHist;
 	TH1F					*fMultiplicityHistPass;
-	TH1F					*fCentralityHistPass;
+
 	Float_t					fZvtx;	
 	Int_t					fEstimator;
 	
@@ -308,6 +315,31 @@ private:
 	TH1F				*fPtElec_LS_weight;
 	TH1F				*fPtElec_ULS2_weight;
 	TH1F				*fPtElec_LS2_weight;
+	
+		//0
+	TH1F				*fPtElec_ULS_weight_0;
+	TH1F				*fPtElec_LS_weight_0;
+	TH1F				*fPtElec_ULS2_weight_0;
+	TH1F				*fPtElec_LS2_weight_0;  
+	
+		//1
+	TH1F				*fPtElec_ULS_weight_1;
+	TH1F				*fPtElec_LS_weight_1;
+	TH1F				*fPtElec_ULS2_weight_1;
+	TH1F				*fPtElec_LS2_weight_1;
+	
+		//2
+	TH1F				*fPtElec_ULS_weight_2;
+	TH1F				*fPtElec_LS_weight_2;
+	TH1F				*fPtElec_ULS2_weight_2;
+	TH1F				*fPtElec_LS2_weight_2;
+	
+		//3
+	TH1F				*fPtElec_ULS_weight_3;
+	TH1F				*fPtElec_LS_weight_3;
+	TH1F				*fPtElec_ULS2_weight_3;
+	TH1F				*fPtElec_LS2_weight_3;
+	
 	
 	//PID Histograms
 	
@@ -592,6 +624,18 @@ private:
 		// 
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
+	
+
+	TH1F				*fPtBackgroundBeforeReco_weight_0;
+	TH1F				*fPtBackgroundBeforeReco2_weight_0;
+	TH1F				*fPtBackgroundBeforeReco_weight_1;
+	TH1F				*fPtBackgroundBeforeReco2_weight_1;
+	TH1F				*fPtBackgroundBeforeReco_weight_2;
+	TH1F				*fPtBackgroundBeforeReco2_weight_2;
+	TH1F				*fPtBackgroundBeforeReco_weight_3;
+	TH1F				*fPtBackgroundBeforeReco2_weight_3;
+	
+	
 	TH2F				*fpT_m_electron;
 	TH2F				*fpT_gm_electron;
 	TH1F				*fPtBackgroundAfterReco;
