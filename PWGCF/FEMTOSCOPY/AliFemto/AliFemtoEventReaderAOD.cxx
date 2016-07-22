@@ -706,14 +706,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         daughterTrackPos->SetAODEvent(fEvent);
         daughterTrackNeg->SetAODEvent(fEvent);
         if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
-
           // get the MC data for the two daughter particles
           const AliAODMCParticle *mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackPos->GetLabel())),
                                  *mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackNeg->GetLabel()));
 
           // They daughter info MUST exist for both
           if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
-
             // Get the mother ID of the two daughters
             const int motherOfPosID = mcParticlePos->GetMother(),
                       motherOfNegID = mcParticleNeg->GetMother();
@@ -742,6 +740,15 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
                 tInfo->SetTrueMomentum(v0->Px(), v0->Py(), v0->Pz());
                 tInfo->SetEmissionPoint(v0->Xv(), v0->Yv(), v0->Zv(), v0->T());
 
+		if(v0->IsPhysicalPrimary())
+		  tInfo->SetOrigin(0);
+		else if(v0->IsSecondaryFromWeakDecay())
+		  tInfo->SetOrigin(1);
+		else if(v0->IsSecondaryFromMaterial())
+		  tInfo->SetOrigin(2);
+		else
+		  tInfo->SetOrigin(-1);
+		
                 //-----Positive daughter of v0-----
                 tInfo->SetPDGPidPos(mcParticlePos->GetPdgCode());
                 tInfo->SetMassPos(mcParticlePos->GetCalcMass());

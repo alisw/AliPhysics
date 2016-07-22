@@ -18,7 +18,8 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo():
   fTrueMomentumNeg(NULL),
   fEmissionPointNeg(NULL),
   fPDGPidNeg(0),
-  fMassNeg(0.0)
+  fMassNeg(0.0),
+  fOrigin(0)
 {
   // Default constructor
 }
@@ -37,7 +38,8 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
   fTrueMomentumNeg(NULL),
   fEmissionPointNeg(NULL),
   fPDGPidNeg(aInfo.fPDGPidNeg),
-  fMassNeg(aInfo.fMassNeg)
+  fMassNeg(aInfo.fMassNeg),
+  fOrigin(0)
 {
   // Copy constructor
   SetTrueMomentum(aInfo.GetTrueMomentum());
@@ -82,6 +84,8 @@ AliFemtoModelHiddenInfo& AliFemtoModelHiddenInfo::operator=(const AliFemtoModelH
   fPDGPidNeg = aInfo.GetPDGPidNeg();
   fMassNeg = aInfo.GetMassNeg();
 
+  fOrigin = aInfo.GetOrigin();
+
   return *this;
 }
 //_____________________________________________
@@ -108,6 +112,12 @@ Double_t                  AliFemtoModelHiddenInfo::GetMass() const
 {
   return fMass;
 }
+
+Int_t AliFemtoModelHiddenInfo::GetOrigin() const
+{
+  return fOrigin;
+}
+
 //_____________________________________________
 void                   AliFemtoModelHiddenInfo::SetTrueMomentum(AliFemtoThreeVector *aMom)
 {
@@ -440,4 +450,10 @@ void                   AliFemtoModelHiddenInfo::SetEmissionPointNeg(Double_t aRx
   // return copy of this hidden info
   AliFemtoModelHiddenInfo* tBuf = new AliFemtoModelHiddenInfo(*this);
   return tBuf;
+}
+
+
+void AliFemtoModelHiddenInfo::SetOrigin(Int_t origin)
+{
+  fOrigin = origin;
 }
