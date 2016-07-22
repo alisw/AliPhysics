@@ -39,6 +39,7 @@ class AliParticleContainer : public AliEmcalContainer {
    * @param[in] index Index of the particle in the array
    * @return Particle at the given index
    */
+  virtual TObject *operator[](int index) const { return GetParticle(index); }
 
   virtual Bool_t              ApplyParticleCuts(const AliVParticle* vp, UInt_t &rejectionReason) const;
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
@@ -55,8 +56,8 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetParticleEtaLimits(Double_t min, Double_t max)  { SetEtaLimits(min, max); }
   void                        SetParticlePhiLimits(Double_t min, Double_t max)  { SetPhiLimits(min, max); }
   virtual AliVParticle       *GetLeadingParticle(const char* opt="")         ;
-  virtual AliVParticle       *GetParticle(Int_t i)                      const;
-  virtual AliVParticle       *GetAcceptParticle(Int_t i)                const;
+  virtual AliVParticle       *GetParticle(Int_t i=-1)                   const;
+  virtual AliVParticle       *GetAcceptParticle(Int_t i=-1)             const;
   virtual AliVParticle       *GetNextAcceptParticle()                        ;
   virtual AliVParticle       *GetNextParticle()                              ;
   virtual Bool_t              GetMomentumFromParticle(TLorentzVector &mom, const AliVParticle* part, Double_t mass) const;

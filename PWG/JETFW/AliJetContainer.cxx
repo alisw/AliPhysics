@@ -269,7 +269,10 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
  */
 AliEmcalJet* AliJetContainer::GetJet(Int_t i) const
 {
-  return static_cast<AliEmcalJet*>((*this)[i]);
+  if (i < 0 || i > fClArray->GetEntriesFast()) return 0;
+  AliEmcalJet *jet = static_cast<AliEmcalJet*>(fClArray->At(i));
+  return jet;
+
 }
 
 /**

@@ -34,6 +34,8 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer(const char *name); 
   virtual ~AliClusterContainer(){;}
 
+  virtual TObject *operator[] (int index) const { return GetCluster(index); }
+
   virtual Bool_t              AcceptObject(Int_t i, UInt_t &rejectionReason) const              { return AcceptCluster(i, rejectionReason);}
   virtual Bool_t              AcceptObject(const TObject* obj, UInt_t &rejectionReason) const   { return AcceptCluster(dynamic_cast<const AliVCluster*>(obj), rejectionReason);}
   virtual Bool_t              AcceptCluster(Int_t i, UInt_t &rejectionReason)                 const;

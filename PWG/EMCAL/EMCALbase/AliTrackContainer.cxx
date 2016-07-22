@@ -191,7 +191,11 @@ void AliTrackContainer::NextEvent()
  */
 AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
 {
-  return static_cast<AliVTrack*>((*this)[i]);
+  //Get i^th jet in array
+
+  if (i < 0 || i >= fFilteredTracks->GetEntriesFast()) return 0;
+  AliVTrack *vp = static_cast<AliVTrack*>(fFilteredTracks->At(i));
+  return vp;
 }
 
 /**
