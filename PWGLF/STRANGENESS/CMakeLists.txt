@@ -47,6 +47,7 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractV0.cxx
   LambdaK0/AliAnalysisTaskExtractV0pPb.cxx
   LambdaK0/AliAnalysisTaskExtractV0AOD.cxx
+  LambdaK0/AliAnalysisTaskExtractV0AODRun2.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
