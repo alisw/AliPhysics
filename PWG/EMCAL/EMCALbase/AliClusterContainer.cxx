@@ -101,7 +101,10 @@ AliVCluster* AliClusterContainer::GetLeadingCluster(const char* opt)
  */
 AliVCluster* AliClusterContainer::GetCluster(Int_t i) const 
 {
-  return static_cast<AliVCluster*>((*this)[i]);
+  if(i<0 || i>fClArray->GetEntriesFast()) return 0;
+  AliVCluster *vp = static_cast<AliVCluster*>(fClArray->At(i));
+  return vp;
+
 }
 
 /**
@@ -115,9 +118,8 @@ AliVCluster* AliClusterContainer::GetAcceptCluster(Int_t i) const
   if (!vc) return 0;
 
   UInt_t rejectionReason = 0;
-  if (AcceptCluster(vc, rejectionReason)) {
+  if (AcceptCluster(vc, rejectionReason))
     return vc;
-  }
   else {
     AliDebug(2,"Cluster not accepted.");
     return 0;
@@ -355,12 +357,18 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
 }
 
 /**
- * Get number of accepted clusters
+ * Get number of accepted particles
  * @return
  */
 Int_t AliClusterContainer::GetNAcceptedClusters() const
 {
-  return accepted().GetEntries();
+  UInt_t rejectionReason = 0;
+  Int_t nClus = 0;
+  for(int iclust = 0; iclust < this->fClArray->GetEntries(); ++iclust){
+    AliVCluster *clust = this->GetCluster(iclust);
+    if(this->AcceptCluster(clust, rejectionReason)) nClus++;
+  }
+  return nClus;
 }
 
 /**

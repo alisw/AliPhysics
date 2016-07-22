@@ -67,7 +67,10 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab
  */
 AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
 {
-  return static_cast<AliAODMCParticle*>((*this)[i]);
+  if (i == -1) i = fCurrentID;
+  if (i < 0 || i >= fClArray->GetEntriesFast()) return 0;
+  AliAODMCParticle *vp = static_cast<AliAODMCParticle*>(fClArray->At(i));
+  return vp;
 }
 
 /**
