@@ -91,8 +91,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
   AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   // specific cuts
-  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 1e30);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -1.0, 1.0);
+  //varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 1e30);
+  //varCuts->AddCut(AliDielectronVarManager::kEta,         -1.0, 1.0);
+  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 5.0);
+  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8, 0.8);
  
   // standard cuts
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -107,7 +109,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
 
   // TPC inclusion
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-5,5);
+  //pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-5,5);
+  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3,3);
  
   if(!isESD) cuts->AddCut(trkFilter);
   cuts->AddCut(varCuts);
