@@ -176,7 +176,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskPi0Hadron.cxx
     UserTasks/AliAnalysisTaskEmcalJetTree.cxx
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
-    UserTasks/AliTrackContainerV0.cxx)
+    UserTasks/AliTrackContainerV0.cxx
+    UserTasks/AliTrackContainerToyModel.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
