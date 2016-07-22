@@ -223,8 +223,11 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-      if( (timeCFD->At(ipmt)+ timeDelayCFD[ipmt])>511-corridor &&
-	  (timeCFD->At(ipmt)+ timeDelayCFD[ipmt])<511+corridor  ) {
+  if(timeCFD->At(ipmt)>0) printf(" pmt %i time %i low %i up %i\n",
+  ipmt, timeCFD->At(ipmt)- timeDelayCFD[ipmt],511-corridor, 511+corridor);
+      if( (timeCFD->At(ipmt) - timeDelayCFD[ipmt])>511-corridor &&
+	  (timeCFD->At(ipmt) - timeDelayCFD[ipmt])<511+corridor  ) {
+	 
       Float_t timefull = 0.001*( timeCFD->At(ipmt) - 511 - timeDelayCFD[ipmt])  * channelWidth;
       frecpoints.SetTimeFull(ipmt, 0 ,timefull) ;
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
