@@ -19,7 +19,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo():
   fEmissionPointNeg(NULL),
   fPDGPidNeg(0),
   fMassNeg(0.0),
-  fOrigin(0)
+  fOrigin(-900)
 {
   // Default constructor
 }
@@ -39,7 +39,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
   fEmissionPointNeg(NULL),
   fPDGPidNeg(aInfo.fPDGPidNeg),
   fMassNeg(aInfo.fMassNeg),
-  fOrigin(0)
+  fOrigin(-900)
 {
   // Copy constructor
   SetTrueMomentum(aInfo.GetTrueMomentum());
@@ -48,6 +48,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
   SetEmissionPointPos(aInfo.GetEmissionPointPos());
   SetTrueMomentumNeg(aInfo.GetTrueMomentumNeg());
   SetEmissionPointNeg(aInfo.GetEmissionPointNeg());
+  SetOrigin(aInfo.GetOrigin());
 }
 //_____________________________________________
 AliFemtoModelHiddenInfo::~AliFemtoModelHiddenInfo()
