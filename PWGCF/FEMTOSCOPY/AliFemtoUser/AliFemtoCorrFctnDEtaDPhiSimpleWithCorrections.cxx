@@ -457,7 +457,6 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
 	}
 
-
       if(hInfo1 && hInfo2)
 	{
 	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
@@ -474,7 +473,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 	  while (dhphi>fphiT) dhphi-=PIT;
 
 	  double dheta = heta1 - heta2;
-      
+
 	  fDPhiDEtaHiddenNumerator->Fill(dhphi, dheta);
 	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
 	    {
@@ -539,8 +538,6 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 
   fDPhiDEtaDenominator->Fill(dphi, deta, weight);
 
-
-
   if(fReadHiddenInfo)
     {
       AliFemtoModelHiddenInfo* hInfo1 = 0;
@@ -563,6 +560,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	    hInfo2 = (AliFemtoModelHiddenInfo*)pair->Track2()->V0()->GetHiddenInfo();
 	}
 
+ 
       if(hInfo1 && hInfo2)
 	{
 	  AliFemtoThreeVector *v1 = hInfo1->GetTrueMomentum();
@@ -580,7 +578,8 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	  while (dhphi>fphiT) dhphi-=PIT;
 
 	  double dheta = heta1 - heta2;      
-      
+
+	  
 	  fDPhiDEtaHiddenDenominator->Fill(dhphi, dheta);
 	  if(hInfo1->GetOrigin()==0 && hInfo2->GetOrigin()==0)
 	    {
