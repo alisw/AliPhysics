@@ -481,12 +481,12 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 	      fDPhiDEtaHiddenPrimaryNumerator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenPrimaryNumeratorData->Fill(dphi,deta,weight);
 	    }
-	  if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
+	  else if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
 	    {
 	      fDPhiDEtaHiddenSecWeakNumerator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenSecWeakNumeratorData->Fill(dphi,deta,weight);
 	    }
-	  if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
+	  else if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
 	    {
 	      fDPhiDEtaHiddenSecMatNumerator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenSecMatNumeratorData->Fill(dphi,deta,weight);
@@ -587,12 +587,12 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 	      fDPhiDEtaHiddenPrimaryDenominator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenPrimaryDenominatorData->Fill(dphi,deta,weight);
 	    }
-	  if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
+	  else if(hInfo1->GetOrigin()==1 || hInfo2->GetOrigin()==1)
 	    {
 	      fDPhiDEtaHiddenSecWeakDenominator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenSecWeakDenominatorData->Fill(dphi,deta,weight);
 	    }
-	  if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
+	  else if(hInfo1->GetOrigin()==2 || hInfo2->GetOrigin()==2)
 	    {
 	      fDPhiDEtaHiddenSecMatDenominator->Fill(dhphi,dheta);
 	      fDPhiDEtaHiddenSecMatDenominator->Fill(dphi,deta,weight);
