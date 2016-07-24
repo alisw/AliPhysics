@@ -24,7 +24,6 @@
 #include "AliESDEvent.h"
 #include "AliVEvent.h"
 #include "AliESDtrackCuts.h"
-#include "AliAnalysisFilter.h"
 #include "AliAODTrack.h"
 #include "AliAODPid.h"
 #include "AliCentrality.h"
@@ -43,26 +42,23 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult():
   fAOD(NULL), 
   fESD(NULL),
   fEvent(NULL),
-  fTrackFilter(0x0),
-  fPPVsMultUtils(0),
+  fESDtrackCuts(NULL),
+  fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
-  iMultEstimator(0),
-  multiplicityMin(-999.),
-  multiplicityMax(999.),
+  multMin(0.),
+  multMax(100.),
   htriggerMask(NULL),
   htriggerMask_noMB(NULL),
-  hNspdVertex(NULL),
   hzvertex(NULL),
-  hpileUp(NULL),
-  fNtrVsMult(NULL),
-  prNtrVsMult(NULL),
-  hmult_tot(NULL),
-  hmult(NULL),
-  hNtrack(NULL),
-  hpdg(NULL)
+  hNevent(NULL),
+  hV0mult(NULL),
+  hTrackMult(NULL),
+  hpdg(NULL),
+  htemp(NULL),
+  hCheckTrackSel(NULL)
 {
-  for(Int_t i=0;i<9;i++) stdPdg[i] = 0;
+  for(Int_t i=0;i<18;i++) stdPdg[i] = 0;
   fList->SetName("results");
   //fList->SetOwner();
 }
@@ -72,26 +68,23 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult(const char *name):
   fAOD(NULL), 
   fESD(NULL),
   fEvent(NULL),
-  fTrackFilter(0x0),
-  fPPVsMultUtils(0),
+  fESDtrackCuts(NULL),
+  fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
-  iMultEstimator(0),
-  multiplicityMin(-999.),
-  multiplicityMax(999.),
+  multMin(0.),
+  multMax(100.),
   htriggerMask(NULL),
   htriggerMask_noMB(NULL),
-  hNspdVertex(NULL),
   hzvertex(NULL),
-  hpileUp(NULL),
-  fNtrVsMult(NULL),
-  prNtrVsMult(NULL),
-  hmult_tot(NULL),
-  hmult(NULL),
-  hNtrack(NULL),
-  hpdg(NULL)
+  hNevent(NULL),
+  hV0mult(NULL),
+  hTrackMult(NULL),
+  hpdg(NULL),
+  htemp(NULL),
+  hCheckTrackSel(NULL)
 {
-  for(Int_t i=0;i<9;i++) stdPdg[i] = 0;
+  for(Int_t i=0;i<18;i++) stdPdg[i] = 0;
   DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
@@ -106,189 +99,70 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
 
   //e,mu,pi,K,p,d,t,He3,He4
   stdPdg[0] = 11; stdPdg[1] = 13; stdPdg[2] = 211; stdPdg[3] = 321; stdPdg[4] = 2212; stdPdg[5] = 10020; stdPdg[6] = 10030; stdPdg[7] = 20030; stdPdg[8] = 20040;
-  
+  stdPdg[0+9] = -11; stdPdg[1+9] = -13; stdPdg[2+9] = -211; stdPdg[3+9] = -321; stdPdg[4+9] = -2212; stdPdg[5+9] = -10020; stdPdg[6+9] = -10030; stdPdg[7+9] = -20030; stdPdg[8+9] = -20040;
+
   Char_t nameSpec[18][30];
   snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
   snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");
   
-  //-----Event characterization---------
-  
-  htriggerMask = new TH1I("htriggerMask","Trigger mask. Attention: before to cut on multiplicity",34,0,34);
-  const Char_t *xaxisTitle[34]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined","kAny","kAnyINT"};
-  for(Int_t i=0;i<34;i++) {
+  htriggerMask = new TH1I("htriggerMask","Trigger mask. Attention: before to cut on multiplicity",32,0,32);
+  const Char_t *xaxisTitle[32]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined"};
+  for(Int_t i=0;i<32;i++) {
     htriggerMask->Fill(xaxisTitle[i],0);
   }
   
-  htriggerMask_noMB = new TH1I("htriggerMask_noMB","Trigger mask excluding MB events. Attention: before to cut on multiplicity",34,0,34);
-  for(Int_t i=0;i<34;i++) {
+  htriggerMask_noMB = new TH1I("htriggerMask_noMB","Trigger mask excluding MB events. Attention: before to cut on multiplicity",32,0,32);
+  for(Int_t i=0;i<32;i++) {
     htriggerMask_noMB->Fill(xaxisTitle[i],0);
   }
-  
-  hNspdVertex = new TH1I("hNspdVertex","Number of vertices determined in the SPD. Attention: before to cut on multiplicity;N_{vtx}^{SPD}",220,-20,200);
 
-  hzvertex = new TH1F("hzvertex","z-vertex distribution. Attention: before to cut on multiplicity;z_{vtx}",1000,-50,50);
-
-  hpileUp = new TH1I("hpileUp","If the event is tagged as pileup in the SPD. Attention: before to cut on multiplicity",2,0,2);
-  const Char_t *xaxisTitle2[2]={"kFALSE","kTRUE"};
-  for(Int_t i=0;i<2;i++) {
-    hpileUp->Fill(xaxisTitle2[i],0);
+  hzvertex = new TH1F("hzvertex","z-vertex distribution. After (only) the trigger selection and the selection of INEL. collisions. Therefore it's filled before the other event cuts;z_{vtx}",1000,-50,50);
+ 
+  hNevent = new TH1I("hNevent","Event counter. To check the event selection compare the last bin with the number of hV0mult entries",7,0,7);
+  const Char_t *xaxisTitle2[7]={"kMB || kHighMult","IsINELgtZERO","IsAcceptedVertexPosition","IsNotPileupSPDInMultBins","HasNoInconsistentSPDandTrackVertices","IsEventSelected","InsideMultiplicityBin"};
+for(Int_t i=0;i<7;i++) {
+    hNevent->Fill(xaxisTitle2[i],0);
   }
   
-  fNtrVsMult = new TH2I("fNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,1000,-100,900);
-  prNtrVsMult = new TProfile("prNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,-100,900,"");
+  hV0mult = new TH1I("hV0mult","Multiplicity distribution (after cuts on event);V0M Multiplicity Percentile",1000,0,100);
 
-  hmult_tot = new TH1I("hmult_tot","Multiplicity distribution (after cuts on event)",30000,-100,200);
-  if(iMultEstimator==0) hmult_tot->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
-  else if(iMultEstimator==1) hmult_tot->GetXaxis()->SetTitle("kTrackletsITSTPC");
-
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
-  if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
-  else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
-
-  hNtrack = new TH1I("hNtrack","Number of tracks per event (after cuts on event);N_{tracks}",2100,-100,2000);
-
-  hpdg = new TH1I("hpdg","Pdg label of generated particles;Pdg label",50082,-25041,25041);
-
-  Char_t name_hpt[200];
-  Char_t title_hpt[200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_gen_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of generated %s (|y|<0.5). Attention: before to cut on multiplicity;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[0][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_trigger_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of %s after the trigger selection. Attention: before to cut on multiplicity;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[1][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_vtx_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of %s for events within |z_{vtx}|<10cm. Attention: before to cut on multiplicity;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[2][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_mult_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of %s for events after multiplicity selection;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[3][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_acc_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of %s for events after |#eta|<0.8 cut;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[4][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[4][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_reco_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of reconstructed %s;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[5][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[5][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_hpt,200,"hp_recoTof_%s",nameSpec[iS]);
-    snprintf(title_hpt,200,"p_{T} distribution of reconstructed %s and matched to the TOF;p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[6][iS] = new TH1F(name_hpt,title_hpt,100,0,5);
-    else hpt[6][iS] = new TH1F(name_hpt,title_hpt,1,0,5);
-  }
-
-  Char_t name_fptRecoVsTrue[200];
-  Char_t title_fptRecoVsTrue[200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_%s",nameSpec[iS]);
-    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
-    else fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_prim_%s",nameSpec[iS]);
-    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (primaries);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
-    else fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_sec_%s",nameSpec[iS]);
-    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (secondaries);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[2][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
-    else fptRecoVsTrue[2][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_done_%s",nameSpec[iS]);
-    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (correction already applied);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fptRecoVsTrue[3][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
-    else fptRecoVsTrue[3][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
-  }
-
-  Char_t name_prptRecoVsTrue[200];
-  Char_t title_prptRecoVsTrue[200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_%s",nameSpec[iS]);
-    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[0][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
-    else prptRecoVsTrue[0][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_prim_%s",nameSpec[iS]);
-    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (primaries);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[1][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
-    else prptRecoVsTrue[1][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_sec_%s",nameSpec[iS]);
-    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (secondaries);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[2][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
-    else prptRecoVsTrue[2][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_done_%s",nameSpec[iS]);
-    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (correction already applied);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) prptRecoVsTrue[3][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
-    else prptRecoVsTrue[3][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
-  }
+  hTrackMult = new TH1I("hTrackMult","Mid-pseudo-rapidity estimator of multiplicity;kTrackletsITSTPC (|#eta|<0.8)",1000,0,1000);
   
-  Char_t name_fDca[18][200];
-  Char_t title_fDca[18][200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_prim_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of primary %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[0][0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[0][0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_secMat_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of secondary (from material) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[0][1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[0][1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_secWeak_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of secondary (from weak decay) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[0][2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[0][2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-  }
+  hpdg = new TH2I("hpdg","Pdg label of generated particles (after the event selection);Pdg label;isPrimary           isSecMat           isSecWeak   ",50082,-25041,25041,3,0,3);
+  hpdg->GetYaxis()->SetNdivisions(105);
   
-  //TOF matching required:
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_prim_tof_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of primary %s (matched to the TOF);DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[1][0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[1][0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
+  htemp = new TH1I("htemp","Number of tracks per event (after cuts on event);N_{tracks}",2100,-100,2000);
+    
+  hCheckTrackSel = new TH1I("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
+  const Char_t *xaxisTitle3[12]={"Ntracks","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<1","|DCAz|<2","|eta|<0.8"};
+  for(Int_t i=0;i<12;i++) {
+    hCheckTrackSel->Fill(xaxisTitle3[i],0);
   }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_secMat_tof_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of secondary (from material) %s (matched to the TOF);DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[1][1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[1][1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_secWeak_tof_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of secondary (from weak decay) %s (matched to the TOF);DCA_{xy} (cm);DCA_{z} (cm);p_{T}/|z| (GeV/c)",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fDca[1][2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],250,-1.0,1.0,68,-3.4,3.4,30,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-    else fDca[1][2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-3.4,3.4,1,0,3);//2000,-3.4,3.4,64,-3.4,3.4,30,0,3);
-  }
+
+  hnTPCclusters[0] = new TH1I("hnTPCclusters_0","Number of TPC clusters (before track cuts)",200,0,200);
+  hchi2TPC[0] = new TH1D("hchi2TPC_0","#chi^{2} per TPC cluster (before track cuts)",1000,0,100);
+  hisTPCrefit[0] = new TH1I("hisTPCrefit_0","kTPCrefit (before track cuts)",2,0,2);
+  hisITSrefit[0] = new TH1I("hisITSrefit_0","kITSrefit (before track cuts)",2,0,2);
+  hnSPD[0] = new TH1I("hnSPD_0","Number of SPD rec. points (before track cuts)",3,0,3);
+  hnKinkDaughters[0] = new TH1I("hnKinkDaughters_0","Number of Kink Daughters (before track cuts)",40,0,40);
+  hsigmaToVtx[0] = new TH1D("hsigmaToVtx_0","Number of sigma to the vertex (before track cuts)",400,0,40);
+  hchi2ITS[0] = new TH1D("hchi2ITS_0","#chi^{2} per ITS cluster (before track cuts)",1000,0,100);
   
+  heta[0] = new TH1D("heta_0","#eta (before track cuts);#eta",200,-1,1);
+  hisPropagatedToDca[0] = new TH1I("hisPropagatedToDca_0","kPropagatedToDca (before track cuts)",2,0,2);
+  
+  hnTPCclusters[1] = new TH1I("hnTPCclusters_1","Number of TPC clusters (after track cuts, DCAz cut not yet applied)",200,0,200);
+  hchi2TPC[1] = new TH1D("hchi2TPC_1","#chi^{2} per TPC cluster (after track cuts, DCAz cut not yet applied)",1000,0,100);
+  hisTPCrefit[1] = new TH1I("hisTPCrefit_1","kTPCrefit (after track cuts, DCAz cut not yet applied)",2,0,2);
+  hisITSrefit[1] = new TH1I("hisITSrefit_1","kITSrefit (after track cuts, DCAz cut not yet applied)",2,0,2);
+  hnSPD[1] = new TH1I("hnSPD_1","Number of SPD rec. points (after track cuts, DCAz cut not yet applied)",3,0,3);
+  hnKinkDaughters[1] = new TH1I("hnKinkDaughters_1","Number of Kink Daughters (after track cuts, DCAz cut not yet applied)",40,0,40);
+  hsigmaToVtx[1] = new TH1D("hsigmaToVtx_1","Number of sigma to the vertex (after track cuts, DCAz cut not yet applied)",400,0,40);
+  hchi2ITS[1] = new TH1D("hchi2ITS_1","#chi^{2} per ITS cluster (after track cuts, DCAz cut not yet applied)",1000,0,100);
+    
+  heta[1] = new TH1D("heta_1","#eta (after track cuts, DCAz cut not yet applied);#eta",200,-1,1);
+  hisPropagatedToDca[1] = new TH1I("hisPropagatedToDca_1","kPropagatedToDca (after track cuts, DCAz cut not yet applied)",2,0,2);
+
   fdEdxVSp[0] = new TH2F("fdEdxVSp_pos","TPC dE/dx (positive charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);//100,500//500,2000
   fdEdxVSp[1] = new TH2F("fdEdxVSp_neg","TPC dE/dx (negative charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
 
@@ -300,156 +174,188 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
     hDeDxExp[iS] = new TProfile(name_hDeDxExp[iS],title_hDeDxExp[iS],200,0,10,0,1000,"");//,500,0,5,0,1000,"");
   }
 
-  Char_t name_fNsigmaTPC[18][200];
-  Char_t title_fNsigmaTPC[18][200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_%s",nameSpec[iS]);
-    snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s) filled with all particles;p_{T}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
-    if(iS==5 || iS==5+9) fNsigmaTPC[0][iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],200,0,10,200,-10,10);
-    else fNsigmaTPC[0][iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,0,10,1,-10,10);
-  }
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_id_%s",nameSpec[iS]);
-    snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s) filled only with %s (primaries and secondaries);p_{T}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS],nameSpec[iS]);
-    if(iS==5 || iS==5+9) fNsigmaTPC[1][iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],200,0,10,200,-10,10);
-    else fNsigmaTPC[1][iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,0,10,1,-10,10);
-  }
-  
-  fBetaTOFvspt[0] = new TH2F("fBetaTOFvspt_pos","#beta_{TOF} (positive charge);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);//500,520//200,260
-  fBetaTOFvspt[1] = new TH2F("fBetaTOFvspt_neg","#beta_{TOF} (negative charge);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);
+  //temporary plot:
+  fBetaTOFvspt[0] = new TH2F("fBetaTOFvspt_pos","#beta_{TOF} (positive charge);p_{T}^{reco.}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);//500,520//200,260
+  fBetaTOFvspt[1] = new TH2F("fBetaTOFvspt_neg","#beta_{TOF} (negative charge);p_{T}^{reco.}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);
 
   Char_t name_hBetaExp[9][200];
   Char_t title_hBetaExp[9][200];
   for(Int_t iS=0;iS<9;iS++) {
     snprintf(name_hBetaExp[iS],200,"hBetaTOFVSpt_Exp_%s",nameSpec[iS]);
-    snprintf(title_hBetaExp[iS],200,"Expected #beta_{TOF} (%s);p_{T}/|z| (GeV/c); #beta_{TOF}",nameSpec[iS]);
+    snprintf(title_hBetaExp[iS],200,"Expected #beta_{TOF} (%s);p_{T}^{reco.}/|z| (GeV/c); #beta_{TOF}",nameSpec[iS]);
     hBetaExp[iS] = new TProfile(name_hBetaExp[iS],title_hBetaExp[iS],200,0,10,0.4,1.05,"");
+  } 
+  //-------------
+
+  Char_t name_hpt[200];
+  Char_t title_hpt[200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_gen_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of generated primary %s for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[0][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_gen_secMat_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from mat. for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[0][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_gen_secWeak_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from w.d. for |y|<0.5.;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[0][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
 
-  fM2tof[0] = new TH2F("fM2tof_pos","m^{2}_{TOF} (positive charge);p_{T}/|z| (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",120,0,6,300,0,6);
-  fM2tof[1] = new TH2F("fM2tof_neg","m^{2}_{TOF} (negative charge);p_{T}/|z| (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",120,0,6,300,0,6);
-  
-  Char_t name_fM2vspt[18][200];
-  Char_t title_fM2vspt[18][200];
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fM2vspt[iS],200,"fM2vspt_%s",nameSpec[iS]);
-    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T}/|z| (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fM2vspt[0][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],120,0,6,300,0,6);
-    else fM2vspt[0][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,6,1,0,6);
+    snprintf(name_hpt,200,"hp_reco_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[1][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fM2vspt[iS],200,"fM2vspt_id_%s",nameSpec[iS]);
-    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} of %s (3#sigma TPC dE/dx cut on %s);p_{T}/|z| (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS],nameSpec[iS]);
-    if(iS==5 || iS==5+9) fM2vspt[1][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],120,0,6,300,0,6);
-    else fM2vspt[1][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,6,1,0,6);
+    snprintf(name_hpt,200,"hp_reco_secMat_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat.;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[1][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fM2vspt[iS],200,"fM2vspt_id_noTPC_%s",nameSpec[iS]);
-    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} of %s;p_{T}/|z| (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
-    if(iS==5 || iS==5+9) fM2vspt[2][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],120,0,6,300,0,6);
-    else fM2vspt[2][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,6,1,0,6);
+    snprintf(name_hpt,200,"hp_reco_secWeak_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d.;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[1][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
   }
-  
-  Char_t name_fpTcorr[200];
-  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5]);
-  fpTcorr[0] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
-  fpTcorr[0]->FixParameter(0,-3.39633e-03);
-  fpTcorr[0]->FixParameter(1,4.38176e-01);
-  fpTcorr[0]->FixParameter(2,3.04490e+00);
-  fpTcorr[0]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
-  fpTcorr[0]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
 
-  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5+9]);
-  fpTcorr[1] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
-  fpTcorr[1]->FixParameter(0,-2.73165e-03);
-  fpTcorr[1]->FixParameter(1,4.66999e-01);
-  fpTcorr[1]->FixParameter(2,3.09068e+00);
-  fpTcorr[1]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
-  fpTcorr[1]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_matchedTof_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[2][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_matchedTof_secMat_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[2][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_matchedTof_secWeak_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[2][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_goodmatchTof_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][0][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[3][0][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_goodmatchTof_secMat_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][1][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[3][1][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_hpt,200,"hp_goodmatchTof_secWeak_%s",nameSpec[iS]);
+    snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched correctly at TOF;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][2][iS] = new TH1F(name_hpt,title_hpt,200,0,10);
+    else hpt[3][2][iS] = new TH1F(name_hpt,title_hpt,1,0,10);
+  }
+    
+  Char_t name_fptRecoVsTrue[200];
+  Char_t title_fptRecoVsTrue[200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_%s",nameSpec[iS]);
+    snprintf(title_fptRecoVsTrue,200,"%s;p_{T}^{reco.}/z (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);
+    else fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+  }
   
-  //event characterization:
-  fList->Add(htriggerMask);
-  fList->Add(htriggerMask_noMB);
+  Char_t name_fDca[18][200];
+  Char_t title_fDca[18][200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fDca[iS],200,"fDca_prim_%s",nameSpec[iS]);
+    snprintf(title_fDca[iS],200,"DCA of primary %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    else fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
+  }
+  
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fDca[iS],200,"fDca_secMat_%s",nameSpec[iS]);
+    snprintf(title_fDca[iS],200,"DCA of secondary (from material) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
+  }
+  
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fDca[iS],200,"fDca_secWeak_%s",nameSpec[iS]);
+    snprintf(title_fDca[iS],200,"DCA of secondary (from weak decay) %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,200,-2.0,2.0,100,0,5);
+    else fDca[2][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
+  }
+  
+  if(multMin<1e-12 && multMax>99) {//plots added only for integrated multiplicity
+    fList->Add(htriggerMask);
+    fList->Add(htriggerMask_noMB);
+    fList->Add(hzvertex);
+    fList->Add(hNevent);
+  }
+
+  fList->Add(hV0mult);
+  fList->Add(hTrackMult);
+  
   fList->Add(hpdg);
-  fList->Add(hNspdVertex);
-  fList->Add(hpileUp);
-  fList->Add(hzvertex);
-  fList->Add(fNtrVsMult);
-  fList->Add(prNtrVsMult);
-  fList->Add(hmult_tot);
-  fList->Add(hmult);
-  fList->Add(hNtrack);
-
-  //generated particles:
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[0][5+9*i]);
-  //for triggered events:
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[1][5+9*i]);
-  //after v-vertex cut (10cm):
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[2][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[2][5+9*i]);
-  //after multiplicity cut:
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[3][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[3][5+9*i]);
-  //after eta cut (0.8):
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[4][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[4][5+9*i]);
-  //reconstructed tracks:
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[5][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[5][5+9*i]);
-
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][2][4+9*i]);
+  fList->Add(htemp);
   
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][1][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][2][5+9*i]);
+  fList->Add(hCheckTrackSel);
   
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[1][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[1][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[2][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[2][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[2][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[2][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[3][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[3][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hnTPCclusters[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hchi2TPC[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hisTPCrefit[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hisITSrefit[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hnSPD[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hnKinkDaughters[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hsigmaToVtx[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hchi2ITS[i]);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(heta[i]);
+  for(Int_t i=0;i<2;i++) fList->Add(hisPropagatedToDca[i]);
   
   for(Int_t i=0;i<2;i++) fList->Add(fdEdxVSp[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hDeDxExp[i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[1][5+9*i]);
-   
-  //TOF matched:
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[6][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(hpt[6][5+9*i]);
-
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][2][4+9*i]);
-  
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][1][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][2][5+9*i]);
-  
   for(Int_t i=0;i<2;i++) fList->Add(fBetaTOFvspt[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hBetaExp[i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2tof[i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[0][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[1][5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[2][5+9*i]);
-   
+  
+  for(Int_t j=0;j<3;j++) {
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[0][j][5+9*i]);
+    
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[1][j][5+9*i]);
+    
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[2][j][5+9*i]);
+    
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][4+9*i]);
+    for(Int_t i=0;i<2;i++) fList->Add(hpt[3][j][5+9*i]);
+  }
+  
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][5+9*i]);
+
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[2][4+9*i]);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[2][5+9*i]);
+  
   // Post output data.
   PostData(1, fList);
-
-  fPPVsMultUtils = new AliPPVsMultUtils();
 
 }
 //______________________________________________________________________________
@@ -476,592 +382,419 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   AliStack* fStack = mcEvent->Stack();
   
-  //---------------------- EVENT analysis
-  Bool_t isPhysSelected = kFALSE;
-  /*for(Int_t i=0;i<32;i++) {
-    Int_t bit=(1<<i);
-    if(inputHandler->IsEventSelected() & bit) htriggerMask->Fill(i);
-    }*/
-  
-  if(multiplicityMin!=-999) isPhysSelected = ((inputHandler->IsEventSelected() & AliVEvent::kMB) || (inputHandler->IsEventSelected() & AliVEvent::kHighMult));
-  else isPhysSelected = (inputHandler->IsEventSelected() & AliVEvent::kMB);
-  //if(!isPhysSelected) return;
-
-  const AliVVertex* vtxEVENT = fEvent->GetPrimaryVertex();
-  //event must have at least an SPD-determined primary vertex
-  Int_t NevSpd=-1;
-  NevSpd=vtxEVENT->GetNContributors();
-  //hNspdVertex->Fill(NevSpd);
-  //if(NevSpd<1) return;
-
-  //event must not be tagged as pileup
-  Bool_t isPileUpSpd=kFALSE;
-  isPileUpSpd=((AliESDEvent *)fEvent)->IsPileupFromSPD();
-  //hpileUp->Fill(isPileUpSpd);
-  //if(isPileUpSpd) return;
-
-  //event must have a primary vertex located within |z| < 10 cm
-  Float_t zvtx=999.9;
-  zvtx = vtxEVENT->GetZ();
-  //hzvertex->Fill(zvtx);
-  //if(TMath::Abs(zvtx)>10) return;
-  
-  /*//--------------------Multiplicity determination (Mid-pseudo-rapidity estimator):
-  Int_t mult=AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD,AliESDtrackCuts::kTrackletsITSTPC,0.8);
-  if(multiplicityMin!=-999) {
-    if(mult<multiplicityMin || mult>multiplicityMax) return;
-  }
-  hmult->Fill(mult);*/
-
-  Int_t nMCpart = mcEvent->GetNumberOfTracks();
-  //Int_t nMCprimary =  mcEvent->GetNumberOfPrimaries();
-  
-  //Int_t stdPdg[9] = {11,13,211,321,2212,10020,10030,20030,20040};//e,mu,pi,K,p,d,t,He3,He4
-  
-  //------------------------------- Loop on MC particles (I)
-
-  for(Int_t iM=0;iM<nMCpart;iM++){
-    
-    Int_t Pdg=-999999;
-    Short_t charge=0;
-    Int_t label;
-    Bool_t isPrimary = kFALSE;
-    Int_t kSpec=-1;
-    Double_t rapidity;
-    Double_t eta;
-    Double_t pt;
-    
-    AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(iM);
-    Pdg = mcpart->PdgCode();
-    //for nuclei: e.g deuteron: 1000010020-1000000000=10020
-    if(Pdg>1000000000)Pdg -= 1000000000;
-    else if (Pdg<-1000000000) Pdg += 1000000000;
-    
-    for(Int_t iS=0;iS<9;iS++) {
-      if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
-      kSpec=iS;
-    }
-    if(kSpec<0) continue;
-    
-    charge = mcpart->Charge();
-    label = mcpart->GetLabel();
-
-    isPrimary = fStack->IsPhysicalPrimary(label);
-    //isPrimary = (iM < nMCprimary);
-    //cut on secondary particles:
-    if(!isPrimary) continue;
-    rapidity = mcpart->Y();
-    eta = mcpart->Eta();
-    //rapidity cut:
-    if(TMath::Abs(rapidity)>0.5) continue;
-    pt=mcpart->Pt();
-
-    hpdg->Fill(Pdg);
-
-    if(charge>0) {
-      hpt[0][kSpec]->Fill(pt);
-    }
-    else if(charge<0) {
-      hpt[0][kSpec+9]->Fill(pt);
-    }
-      
-    //----------Trigger condition:
-    if(!isPhysSelected) continue;
-    if(NevSpd<1) continue;
-    if(isPileUpSpd) continue;
-
-    if(charge>0) {
-      hpt[1][kSpec]->Fill(pt);
-    }
-    else if(charge<0) {
-      hpt[1][kSpec+9]->Fill(pt);
-    }
-    
-    //----------beam-induced background cut:
-    if(TMath::Abs(zvtx)>10) continue;
-
-    if(charge>0) {
-      hpt[2][kSpec]->Fill(pt);
-    }
-    else if(charge<0) {
-      hpt[2][kSpec+9]->Fill(pt);
-    }
-  
-  }//-------------------------------------- Loop on MC particles (I) (end)
-  
-  //---------------------------- Cut on events -----------
-
   //Trigger mask filled:
   for(Int_t i=0;i<32;i++) {
-    unsigned bit=(1<<i);
+    unsigned bit=(1<<i);//shift of 1 of i positions
     if(inputHandler->IsEventSelected() & bit) htriggerMask->Fill(i);
   }
-  if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask->Fill(33-1);
-  if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask->Fill(34-1);
-  
+  //for no MB events:
   if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)) {
     for(Int_t i=0;i<32;i++) {
       unsigned bit=(1<<i);
       if(inputHandler->IsEventSelected() & bit) htriggerMask_noMB->Fill(i);
     }
-    if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask_noMB->Fill(33-1);
-    if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask_noMB->Fill(34-1);
   }
   
-  if(!isPhysSelected) return;
+  //------------------------- Event selection:
+  this->EventSelectionMonitor();
   
-  hNspdVertex->Fill(NevSpd);
-  if(NevSpd<1) return;
-
-  hpileUp->Fill(isPileUpSpd);
-  if(isPileUpSpd) return;
-
-  hzvertex->Fill(zvtx);
-  if(TMath::Abs(zvtx)>10) return;
-
-  //---------------------------- Cut on events (end) -----------
+  if(!fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB) && !fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kHighMult)) return;
   
-  //--------------------Multiplicity determination (Mid-pseudo-rapidity estimator):
- 
-  Float_t mult=-99;
-  if(iMultEstimator==0) {
-    //fPPVsMultUtils = new AliPPVsMultUtils();
-    mult=fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M");
-  }
-  else if(iMultEstimator==1) mult=(Float_t)AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD,AliESDtrackCuts::kTrackletsITSTPC,0.8);
+  Float_t mult = fPPVsMultUtils->GetMultiplicityPercentile(fEvent, "V0M", kFALSE);//kFALSE because I made the event selection before
   
-  Int_t nTracks = fEvent->GetNumberOfTracks();
-  fNtrVsMult->Fill(mult,nTracks);
-  prNtrVsMult->Fill(mult,nTracks);
+  if(!this->IsInsideMultiplicityBin(mult)) return;
+  hV0mult->Fill(mult);
+  //------------------------- Event selection (end)
+
+  Int_t Ntracklets=fESDtrackCuts->GetReferenceMultiplicity((AliESDEvent*)fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+  hTrackMult->Fill(Ntracklets);
   
-  hmult_tot->Fill(mult);  
-  if(multiplicityMin!=-999) {
-    if(mult<multiplicityMin || mult>multiplicityMax) return;
-  }
-  hmult->Fill(mult);
-
-  //------------------------------- Loop on MC particles (II)
-
+  Int_t nMCpart = mcEvent->GetNumberOfTracks();
+  //------------------------------- Loop on MC particles
   for(Int_t iM=0;iM<nMCpart;iM++){
     
-    Int_t Pdg=-999999;
-    Short_t charge=0;
-    Int_t label;
-    Bool_t isPrimary = kFALSE;
-    Int_t kSpec=-1;
-    Double_t rapidity;
-    Double_t eta;
-    Double_t pt;
-    
     AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(iM);
-    Pdg = mcpart->PdgCode();
-    //for nuclei: e.g deuteron: 1000010020-1000000000=10020
-    if(Pdg>1000000000)Pdg -= 1000000000;
-    else if (Pdg<-1000000000) Pdg += 1000000000;
     
-    for(Int_t iS=0;iS<9;iS++) {
-      if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
+    Int_t Pdg = mcpart->PdgCode();
+    //for nuclei: e.g. deuteron: 1000010020-1000000000=10020
+    if(Pdg>1e+9) Pdg -= 1e+9;
+    else if (Pdg<-1e+9) Pdg += 1e+9;
+    Int_t kSpec=-1;
+    for(Int_t iS=0;iS<18;iS++) {
+      if(Pdg!=stdPdg[iS]) continue;
       kSpec=iS;
     }
+    
+    Int_t label = mcpart->GetLabel();
+    Bool_t isPrimary = fStack->IsPhysicalPrimary(label);
+    Bool_t isSecMat = fStack->IsSecondaryFromMaterial(label);
+    Bool_t isSecWeak = fStack->IsSecondaryFromWeakDecay(label);
+    Double_t rapidity = mcpart->Y();
+    Double_t pt = mcpart->Pt();
+    
+    if(isPrimary) hpdg->Fill(Pdg,0);
+    else if(isSecMat) hpdg->Fill(Pdg,1);
+    else if(isSecWeak) hpdg->Fill(Pdg,2);
+    
+    if(TMath::Abs(rapidity)>0.5) continue;
+    
     if(kSpec<0) continue;
     
-    charge = mcpart->Charge();
-    label = mcpart->GetLabel();
-
-    isPrimary = fStack->IsPhysicalPrimary(label);
-    //isPrimary = (iM < nMCprimary);
-    //cut on secondary particles:
-    if(!isPrimary) continue;
-    rapidity = mcpart->Y();
-    eta = mcpart->Eta();
-    //rapidity cut:
-    if(TMath::Abs(rapidity)>0.5) continue;
-    pt=mcpart->Pt();
-
-    //----------multiplicity cut:
-    if(charge>0) {
-      hpt[3][kSpec]->Fill(pt);
+    if(isPrimary) {
+      hpt[0][0][kSpec]->Fill(pt);
     }
-    else if(charge<0) {
-      hpt[3][kSpec+9]->Fill(pt);
+    else if(isSecMat) {
+      hpt[0][1][kSpec]->Fill(pt); 
     }
-    //----------pseudorapidity cut (acceptance):
-    if(TMath::Abs(eta)>0.8) continue;
-
-    if(charge>0) {
-      hpt[4][kSpec]->Fill(pt);
+    else if(isSecWeak) {
+      hpt[0][2][kSpec]->Fill(pt); 
     }
-    else if(charge<0) {
-      hpt[4][kSpec+9]->Fill(pt);
-    }
-      
-  }//-------------------------------------- Loop on MC particles (II) (end)
-  
-  //Int_t nTracks = fEvent->GetNumberOfTracks();
-  hNtrack->Fill(nTracks);
-  
-  //----------------------loop on reconstructed TRACKS-----------------------------
-  for(Int_t iT = 0; iT < nTracks; iT++) { 
     
+  }//------------------------------- Loop on MC particles (end)
+   
+  Int_t nTracks = fEvent->GetNumberOfTracks();
+  htemp->Fill(nTracks);
+  //-------------------------------- Loop on reconstructed TRACKS
+  for(Int_t iT=0;iT<nTracks;iT++) { 
+
     AliVTrack* track = (AliVTrack *) fEvent->GetTrack(iT);
-    
     if (!track){
       continue;
     }
     
-    //---------- info on MC true:
     Int_t label = track->GetLabel();
-    //Int_t labelT=label;
     label=TMath::Abs(label);
-    AliVParticle* mcpart = (AliVParticle *) mcEvent->GetTrack(label);
     
-    Int_t Pdg=-999999;
-    Short_t t_charge;
-    Int_t t_label;
-    Bool_t isPrimary = kFALSE;
-    Bool_t isSecMat = kFALSE;
-    Bool_t isSecWeak = kFALSE;
+    //---------- info on MC true:
+    AliVParticle *mcpart = (AliVParticle *) mcEvent->GetTrack(label);
+    
+    Int_t Pdg = mcpart->PdgCode();
+    //for nuclei: e.g. deuteron: 1000010020-1000000000=10020
+    if(Pdg>1e+9) Pdg -= 1e+9;
+    else if (Pdg<-1e+9) Pdg += 1e+9;
     Int_t kSpec=-1;
-    Double_t t_rapidity=-9999.; 
-    Double_t t_eta=-9999.;
-    Double_t t_pt=-9999.;
-    Pdg = mcpart->PdgCode();
-    //for nuclei: e.g deuteron: 01000010020-1000000000=10020
-    if(Pdg>1000000000)Pdg -= 1000000000;
-    else if (Pdg<-1000000000) Pdg += 1000000000;
-    for(Int_t iS=0;iS<9;iS++) {
-      if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
+    for(Int_t iS=0;iS<18;iS++) {
+      if(Pdg!=stdPdg[iS]) continue;
       kSpec=iS;
     }
-    if(kSpec<0) continue;
+
+    Int_t t_label = mcpart->GetLabel();
+    Bool_t isPrimary = fStack->IsPhysicalPrimary(label);
+    Bool_t isSecMat = fStack->IsSecondaryFromMaterial(t_label);
+    Bool_t isSecWeak = fStack->IsSecondaryFromWeakDecay(t_label);
+    Double_t t_rapidity = mcpart->Y();
+    Double_t t_pt = mcpart->Pt();
     
-    t_charge = mcpart->Charge();
-    t_label = mcpart->GetLabel();
-    isPrimary = fStack->IsPhysicalPrimary(t_label);
-    isSecMat = fStack->IsSecondaryFromMaterial(t_label);
-    isSecWeak = fStack->IsSecondaryFromWeakDecay(t_label);
-    //isPrimary = (label < nMCprimary);
-    t_rapidity = mcpart->Y();
-    t_eta = mcpart->Eta();
-    t_pt=mcpart->Pt();
     //---------- info on MC true (end)
-    
-    //rapidity cut:
+
+     //rapidity cut:
     if(TMath::Abs(t_rapidity)>0.5) continue;
     
-    //----------pseudorapidity cut (acceptance):
-    if(TMath::Abs(t_eta)>0.8) continue;
+    //------------------------- Track cuts:
+    Double_t DCAxy, DCAz;
+    if(!this->AcceptTrack(track, DCAxy, DCAz)) continue;
     
-    //------------------------- Track cuts ----------------------------
-    if(!fTrackFilter->IsSelected(track)) continue;
-   
-    //track extrapolation to the primary vertex
-    Double_t b[2] = {-99., -99.};
-    Double_t bCov[3] = {-99., -99., -99.};
-    if (!track->PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov))
-      continue;
-    Double_t DCAxy = b[0];
-    Double_t DCAz = b[1];
-   
-    //---------- Track info:
-    Double_t rapidity = track->Y();
-    Double_t eta = track->Eta();
-    Double_t phi= track->Phi();
-    Short_t charge = track->Charge();
-    Double_t p = track->P();
-    Double_t pt = track->Pt();
-    //tpc:
-    Double_t dedx = fPIDResponse->GetTPCsignalTunedOnData(track);//track->GetTPCsignal();
-    Double_t pTPC = track->GetTPCmomentum();
-    //tof:
-    Bool_t kTOF=kFALSE;
-    kTOF = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
-    Double_t tof  = track->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
-    Double_t beta = 0.0;
-    Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
+    this->FillDca(DCAxy, DCAz, t_pt, kSpec, isPrimary, isSecMat, isSecWeak);
 
-    //Cut on the DCAxy
-    if(TMath::Abs(DCAxy)>1.0) continue;
-
-    this->FillDca(DCAxy, DCAz, Pdg, t_charge, isPrimary, isSecMat, isSecWeak, t_pt, kTOF);
-
-    //Cut on the DCAz
     if(TMath::Abs(DCAz)>1.0) continue;
+    //------------------------- Track cuts (end)
 
-    //------------------------- Track cuts (end) -------------------------
-    
-    this->ForPtCorr(pt, t_pt, Pdg, t_charge, isPrimary);
-    this->PtCorrection(pt, Pdg, t_charge);
-    this->CheckPtCorr(pt, t_pt, Pdg, t_charge);
-    
-    //-------------------------- TPC info ---------------------------------
-    
-    //reconstructed PRIMARY particles:
-    if(isPrimary) {
+    Double_t pt = track->Pt(); //use only on ForPtCorr !
+    this->ForPtCorr(pt, t_pt, kSpec);
 
-      if(t_charge>0) {
-	hpt[5][kSpec]->Fill(t_pt);
+    this->CheckTPCsignal(track);
+    
+    //reconstructed particles:
+    if(kSpec>-1){
+      if(isPrimary) {
+	hpt[1][0][kSpec]->Fill(t_pt);
       }
-      else if(t_charge<0) {
-	hpt[5][kSpec+9]->Fill(t_pt);
+      else if(isSecMat) {
+	hpt[1][1][kSpec]->Fill(t_pt); 
       }
-            
-    }// reconstructed PRIMARY particles (end)
-
-    if(t_charge>0) fdEdxVSp[0]->Fill(pTPC,dedx);
-    else if(t_charge<0) fdEdxVSp[1]->Fill(pTPC,dedx);
-    
-    Double_t nsigmaTPC[9];
-    Double_t expdedx[9];
-    
-    Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
-    Int_t FlagPid = 0;
-    
-    for(Int_t iS=0;iS<9;iS++){
-      expdedx[iS] = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, (AliPID::EParticleType) iS, AliTPCPIDResponse::kdEdxDefault, kTRUE);
-      hDeDxExp[iS]->Fill(pTPC,expdedx[iS]);
-      nsigmaTPC[iS] = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType) iS);
-      
-      if(t_charge>0) fNsigmaTPC[0][iS]->Fill(t_pt,nsigmaTPC[iS]);
-      else if(t_charge<0) fNsigmaTPC[0][iS+9]->Fill(t_pt,nsigmaTPC[iS]);
-
-      if(TMath::Abs(nsigmaTPC[iS])<3) {
-	FlagPid += ((Int_t)TMath::Power(2,iS));
+      else if(isSecWeak) {
+	hpt[1][2][kSpec]->Fill(t_pt); 
       }
-      
-    }
+    }// reconstructed particles (end)
 
-    //using Pdg label:
-    if(t_charge>0) fNsigmaTPC[1][kSpec]->Fill(t_pt,nsigmaTPC[kSpec]);
-    else if(t_charge<0) fNsigmaTPC[1][kSpec+9]->Fill(t_pt,nsigmaTPC[kSpec]);
-
+    Bool_t kTOF = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
     //-------------------------- TOF matching required---------------------
     if(!kTOF) continue;
+    
+    Int_t *toflabel = new Int_t[3];
+    ((AliESDtrack *)track)->GetTOFLabel(toflabel);
+    Bool_t isTOFgoodMatch = kFALSE;
+    if(toflabel[0]==label) isTOFgoodMatch = kTRUE;
+    
+    this->CheckTOFsignal(track);
+    
+    if(kSpec>-1) {
       
-    //reconstructed PRIMARY particles-II:
-    if(isPrimary) {
-      if(t_charge>0) {
-	hpt[6][kSpec]->Fill(t_pt);
-      }
-      else if(t_charge<0) {
-	hpt[6][kSpec+9]->Fill(t_pt);
-      }
-    }// reconstructed PRIMARY particles-II(end)
-
-    Double_t exptimes[9];
-    track->GetIntegratedTimes(exptimes);
-    //Integrated times of nuclei:
-    for(Int_t iN=5;iN<9;iN++) {
-      exptimes[iN] = exptimes[4]*exptimes[4]*(massOverZ[iN]*massOverZ[iN]/p/p+1)/(massOverZ[4]*massOverZ[4]/p/p+1);
-      exptimes[iN] = TMath::Sqrt(exptimes[iN]);
-    }  
-    
-    for(Int_t iS=0;iS<9;iS++){
-      if(exptimes[iS]<1e-12) continue;
-      hBetaExp[iS]->Fill(t_pt,exptimes[0]/exptimes[iS]);
-    }
-    
-    beta=exptimes[0];
-    if(tof<1e-12) continue;
-    beta=beta/tof;//beta = L/tof/c = t_e/tof
-    
-    if(charge>0) fBetaTOFvspt[0]->Fill(t_pt,beta);
-    else fBetaTOFvspt[1]->Fill(t_pt,beta);
-    
-    Double_t gamma2=1.-(beta*beta);
-    if(gamma2<1e-12) continue;
-    gamma2=1./gamma2;
-    
-    Double_t mass2=0.;
-    mass2=beta*beta*gamma2;
-    if(mass2<1e-12) continue;
-    mass2=(p*p)/mass2;
-    
-    if(charge>0) fM2tof[0]->Fill(t_pt,mass2);
-    else fM2tof[1]->Fill(t_pt,mass2);
-    
-    for(Int_t iS=0;iS<9;iS++){
-      if(FlagPid & stdFlagPid[iS]) {
-	if(t_charge>0) {
-	  fM2vspt[0][iS]->Fill(t_pt,mass2);
-	}	  
-	else if(t_charge<0) {
-	  fM2vspt[0][iS+9]->Fill(t_pt,mass2);
+      if(isPrimary) {
+	hpt[2][0][kSpec]->Fill(t_pt);
+	//good match at TOF
+	if(isTOFgoodMatch) {
+	  hpt[3][0][kSpec]->Fill(t_pt);
 	}
       }
-    }
-    
-    //TPC info and Pdg label used:
-    if(FlagPid & stdFlagPid[kSpec]) {
-      if(t_charge>0) {
-	fM2vspt[1][kSpec]->Fill(t_pt,mass2);
-      }	  
-      else if(t_charge<0) {
-	fM2vspt[1][kSpec+9]->Fill(t_pt,mass2);
+      else if(isSecMat) {
+	hpt[2][1][kSpec]->Fill(t_pt);
+	//good match at TOF
+	if(isTOFgoodMatch) {
+	  hpt[3][1][kSpec]->Fill(t_pt);
+	}
       }
-    }
+      else if(isSecWeak) {
+	hpt[2][2][kSpec]->Fill(t_pt);
+	//good match at TOF
+	if(isTOFgoodMatch) {
+	  hpt[3][2][kSpec]->Fill(t_pt);
+	}
+      }
     
-    //using Pdg label:
-    if(t_charge>0) {
-      fM2vspt[2][kSpec]->Fill(t_pt,mass2);
-    }	  
-    else if(t_charge<0) {
-      fM2vspt[2][kSpec+9]->Fill(t_pt,mass2);
     }
-    
-  }//loop on reconstructed TRACKS (end)
+        
+  }//----------------------loop on reconstructed TRACKS (end)
+  
 }//end loop on the events
-//_____________________________________________________________________________
-void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge, Bool_t isPrimary) { 
-
-  Int_t kSpec=-1;
-  for(Int_t iS=0;iS<9;iS++) {
-    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
-    kSpec=iS;
-  }
-  if(kSpec<0) return;
-
-  if(kSpec>6) {//He3, He4
-    pt*=2;
-    t_pt*=2;
-  }
-  
-  if(t_charge>0) {
-    fptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
-    prptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
-    if(isPrimary) {
-      fptRecoVsTrue[1][kSpec]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[1][kSpec]->Fill(pt,pt-t_pt);
-    }
-    else {
-      fptRecoVsTrue[2][kSpec]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[2][kSpec]->Fill(pt,pt-t_pt);
-    }
-  }
-  else if(t_charge<0) {
-    fptRecoVsTrue[0][kSpec+9]->Fill(pt,pt-t_pt);
-    prptRecoVsTrue[0][kSpec+9]->Fill(pt,pt-t_pt);
-    if(isPrimary) {
-      fptRecoVsTrue[1][kSpec+9]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[1][kSpec+9]->Fill(pt,pt-t_pt);
-    }
-    else {
-      fptRecoVsTrue[2][kSpec+9]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[2][kSpec+9]->Fill(pt,pt-t_pt);
-    }
-  }
-  
-  return;
-}
-//_____________________________________________________________________________
-void AliAnalysisMCNuclMult::PtCorrection(Double_t &pt, Int_t Pdg, Short_t t_charge) {
-
-  Int_t kSpec=-1;
-  for(Int_t iS=0;iS<9;iS++) {
-    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
-    kSpec=iS;
-  }
-  if(kSpec<0) return;
-
-  if(kSpec==5) {
-    if(t_charge>0) {
-      pt=pt-fpTcorr[0]->Eval(pt);
-    }
-    else if(t_charge<0) {
-      pt=pt-fpTcorr[1]->Eval(pt);
-    }
-  }
-  
-  return;
-}
-//_____________________________________________________________________________
-void AliAnalysisMCNuclMult::CheckPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge) {
-
-  Int_t kSpec=-1;
-  for(Int_t iS=0;iS<9;iS++) {
-    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
-    kSpec=iS;
-  }
-  if(kSpec<0) return;
-  
-  if(kSpec==5) {
-    if(t_charge>0) {
-      fptRecoVsTrue[3][kSpec]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[3][kSpec]->Fill(pt,pt-t_pt);
-    }
-    else if(t_charge<0) {
-      fptRecoVsTrue[3][kSpec+9]->Fill(pt,pt-t_pt);
-      prptRecoVsTrue[3][kSpec+9]->Fill(pt,pt-t_pt);
-    }
-  }
-  
-  return;
-}
-//_____________________________________________________________________________
-void AliAnalysisMCNuclMult::FillDca(Double_t DCAxy, Double_t DCAz, Int_t Pdg, Short_t t_charge, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak, Double_t t_pt, Bool_t kTOF) {
-  
-  //Int_t stdPdg[9] = {11,13,211,321,2212,10020,10030,20030,20040};//e,mu,pi,K,p,d,t,He3,He4
-  Int_t kSpec=-1;
-  for(Int_t iS=0;iS<9;iS++) {
-    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
-    kSpec=iS;
-  }
-  if(kSpec<0) return;
-  
-  if(isPrimary) {
-    if(t_charge>0) {
-      fDca[0][0][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[0][0][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-  else if(isSecMat){
-    if(t_charge>0) {
-      fDca[0][1][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[0][1][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-  else if(isSecWeak){
-    if(t_charge>0) {
-      fDca[0][2][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[0][2][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-
-  if(!kTOF) return; //TOF matching required
-  if(isPrimary) {
-    if(t_charge>0) {
-      fDca[1][0][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[1][0][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-  else if(isSecMat){
-    if(t_charge>0) {
-      fDca[1][1][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[1][1][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-  else if(isSecWeak){
-    if(t_charge>0) {
-      fDca[1][2][kSpec]->Fill(DCAxy,DCAz,t_pt);
-    }     
-    else if(t_charge<0) {
-      fDca[1][2][kSpec+9]->Fill(DCAxy,DCAz,t_pt);
-    }    
-  }
-  
-  return;
-}
 //_____________________________________________________________________________
 void AliAnalysisMCNuclMult::Terminate(Option_t *) { 
   printf("Terminate()\n");
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::EventSelectionMonitor() {
+  
+  if(fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB) || fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kHighMult)) {
+    hNevent->Fill(5);
+  }
+  
+  if(fPPVsMultUtils->IsSelectedTrigger(fEvent, AliVEvent::kMB) || fPPVsMultUtils->IsSelectedTrigger(fEvent, AliVEvent::kHighMult)) {
+    hNevent->Fill(0);
+    
+    if(fPPVsMultUtils->IsINELgtZERO(fEvent)) {
+      hNevent->Fill(1);
+      
+      hzvertex->Fill(fEvent->GetPrimaryVertex()->GetZ());
+      if(fPPVsMultUtils->IsAcceptedVertexPosition(fEvent)) {
+	hNevent->Fill(2);
+
+	if(fPPVsMultUtils->IsNotPileupSPDInMultBins(fEvent)) {
+	  hNevent->Fill(3);
+
+	  if(fPPVsMultUtils->HasNoInconsistentSPDandTrackVertices(fEvent)) {
+	    hNevent->Fill(4);
+	  }
+	
+	  if(this->IsInsideMultiplicityBin(fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M"))) {
+	    hNevent->Fill(6);
+	  }
+	  
+	}
+      }
+    }
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisMCNuclMult::IsInsideMultiplicityBin(Float_t multiplicity) {
+
+  if(multiplicity < multMin || multiplicity > multMax+1e-12) return kFALSE;
+
+  return kTRUE;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisMCNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz) {
+ 
+  //for the moment it checks for std. tracks only
+
+  //-----------------where the std. cuts act:
+  Int_t nTPCclusters=((AliESDtrack *)track)->GetTPCclusters(0);
+  Double_t chi2TPC=-1;
+  if(nTPCclusters!=0) chi2TPC=track->GetTPCchi2()/Double_t(nTPCclusters);
+  Bool_t isTPCrefit=(track->GetStatus() & AliVTrack::kTPCrefit);
+  Bool_t isITSrefit=(track->GetStatus() & AliVTrack::kITSrefit);
+  Int_t nSPD=0;
+  for(int i=0;i<2;i++) {
+    if(track->HasPointOnITSLayer(i)) nSPD++;
+  }
+  Int_t nKinkDaughters=track->GetKinkIndex(0);
+  Double_t sigmaToVtx=fESDtrackCuts->GetSigmaToVertex((AliESDtrack *)track);//we don't cut on this variable
+  Int_t nITSclusters=track->GetITSclusters(0);
+  Double_t chi2ITS=-1;
+  if(nITSclusters!=0) chi2ITS=track->GetITSchi2()/Double_t(nITSclusters);
+  
+  //----------------- other cuts:
+  Double_t eta = track->Eta();
+  Double_t dca[2], cov[3];
+  Bool_t isPropagatedToDca=track->PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., dca, cov);
+  DCAxy = dca[0], DCAz = dca[1];
+
+  //before to cut:
+  hnTPCclusters[0]->Fill(nTPCclusters);
+  hchi2TPC[0]->Fill(chi2TPC);
+  hisTPCrefit[0]->Fill(isTPCrefit);
+  hisITSrefit[0]->Fill(isITSrefit);
+  hnSPD[0]->Fill(nSPD);
+  hnKinkDaughters[0]->Fill(nKinkDaughters);
+  hsigmaToVtx[0]->Fill(sigmaToVtx);
+  hchi2ITS[0]->Fill(chi2ITS);
+  heta[0]->Fill(eta);
+  hisPropagatedToDca[0]->Fill(isPropagatedToDca);
+
+  this->TrackSelectionMonitor(nTPCclusters, chi2TPC, isTPCrefit, isITSrefit, nSPD, nKinkDaughters, chi2ITS, isPropagatedToDca, DCAxy, DCAz, eta);
+  
+  if(!fESDtrackCuts->AcceptTrack((AliESDtrack *)track)) return kFALSE;
+  
+  if(!isPropagatedToDca) return kFALSE;
+
+  if(TMath::Abs(DCAxy)>1.0) return kFALSE;
+
+  if(TMath::Abs(DCAz)>2.0) return kFALSE;    // temporarily 1cm cut moved in exec !
+
+  if(TMath::Abs(eta)>0.8) return kFALSE;
+
+  //after the cuts:
+  hnTPCclusters[1]->Fill(nTPCclusters);
+  hchi2TPC[1]->Fill(chi2TPC);
+  hisTPCrefit[1]->Fill(isTPCrefit);
+  hisITSrefit[1]->Fill(isITSrefit);
+  hnSPD[1]->Fill(nSPD);
+  hnKinkDaughters[1]->Fill(nKinkDaughters);
+  hsigmaToVtx[1]->Fill(sigmaToVtx);
+  hchi2ITS[1]->Fill(chi2ITS);
+  heta[1]->Fill(eta);
+  hisPropagatedToDca[1]->Fill(isPropagatedToDca);
+  
+  return kTRUE; 
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::TrackSelectionMonitor(Int_t nTPCclusters, Double_t chi2TPC, Bool_t isTPCrefit, Bool_t isITSrefit, Int_t nSPD, Int_t nKinkDaughters, Double_t chi2ITS, Bool_t isPropagatedToDca, Double_t DCAxy, Double_t DCAz, Double_t eta) {
+
+  hCheckTrackSel->Fill(0);
+  if(nTPCclusters>=70) {
+    hCheckTrackSel->Fill(1);
+    
+    if(chi2TPC<=4) {
+      hCheckTrackSel->Fill(2);
+      
+      if(isTPCrefit) {
+	hCheckTrackSel->Fill(3);
+        
+	if(isITSrefit) {
+	  hCheckTrackSel->Fill(4);
+	  
+	  if(nSPD>0) {
+	    hCheckTrackSel->Fill(5);
+	    
+	    if(nKinkDaughters<1) {
+	      hCheckTrackSel->Fill(6);
+	      
+	      if(chi2ITS<=36) {
+		hCheckTrackSel->Fill(7);
+		
+		if(isPropagatedToDca) {
+		  hCheckTrackSel->Fill(8);
+		  
+		  if(TMath::Abs(DCAxy)<1.0) {
+		    hCheckTrackSel->Fill(9);
+		 
+		    if(TMath::Abs(DCAz)<2.0) {//temporary set to 2.0
+		      hCheckTrackSel->Fill(10);
+		      
+		      if(TMath::Abs(eta)<0.8) {
+			hCheckTrackSel->Fill(11);
+			
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::FillDca(Double_t DCAxy, Double_t DCAz, Double_t t_pt, Int_t kSpec, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak) {
+  
+  if(kSpec<0) return;
+  
+  if(isPrimary) {
+    fDca[0][kSpec]->Fill(DCAxy,DCAz,t_pt);
+  }     
+  else if(isSecMat){
+    fDca[1][kSpec]->Fill(DCAxy,DCAz,t_pt);
+  }
+  else if(isSecWeak){
+    fDca[2][kSpec]->Fill(DCAxy,DCAz,t_pt);
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec) { 
+  
+  if(kSpec<0) return;
+  
+  if(kSpec==7 || kSpec==8 || kSpec==7+9 || kSpec==8+9) t_pt=t_pt/2;
+  
+  fptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::CheckTPCsignal(AliVTrack *track) {
+
+  Short_t charge = track->Charge();
+  Double_t pTPC = track->GetTPCmomentum();
+  Double_t dedx = fPIDResponse->GetTPCsignalTunedOnData(track);//track->GetTPCsignal();
+  
+  if(charge>0) fdEdxVSp[0]->Fill(pTPC,dedx);
+  else if(charge<0) fdEdxVSp[1]->Fill(pTPC,dedx);
+  Double_t expdedx[9];
+  for(Int_t iS=0;iS<9;iS++){
+    expdedx[iS] = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, (AliPID::EParticleType) iS, AliTPCPIDResponse::kdEdxDefault, kTRUE);
+    hDeDxExp[iS]->Fill(pTPC,expdedx[iS]);
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::CheckTOFsignal(AliVTrack *track) {
+  //-------------------------- TOF plots:
+  //To do: p->t_p pt->t_pt, remember that the true variables are not divided by the charge Z!
+  //For the moment I use only the reconstructed variables (are only "QA" plots)!
+    
+  Double_t pt = track->Pt();
+  Double_t p = track->P();
+  Short_t charge = track->Charge();
+
+  Double_t tof  = track->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
+  Double_t beta = 0.;
+  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
+  Double_t exptimes[9];
+  track->GetIntegratedTimes(exptimes);
+  //Integrated times of nuclei:
+  for(Int_t iN=5;iN<9;iN++) {
+    if(p<1e-12) continue;
+    exptimes[iN] = exptimes[4]*exptimes[4]*(massOverZ[iN]*massOverZ[iN]/p/p+1)/(massOverZ[4]*massOverZ[4]/p/p+1);
+    exptimes[iN] = TMath::Sqrt(exptimes[iN]);
+  } 
+  for(Int_t iS=0;iS<9;iS++){
+    if(exptimes[iS]<1e-12) continue;
+    hBetaExp[iS]->Fill(pt,exptimes[0]/exptimes[iS]);
+  }
+  if(tof>1e-12) {
+    beta=exptimes[0];
+    beta=beta/tof;//beta = L/tof/c = t_e/tof
+  }
+  if(charge>0) fBetaTOFvspt[0]->Fill(pt,beta);
+  else if(charge<0) fBetaTOFvspt[1]->Fill(pt,beta);
+  
+  return;
 }
