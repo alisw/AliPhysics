@@ -149,6 +149,8 @@ AliHLTGlobalPromptRecoQAComponent::AliHLTGlobalPromptRecoQAComponent()
   , fnHLTInSize(0.)
   , fnHLTOutSize(0.)
   , fhltRatio(0.)
+  , fTotalClusters(0)
+  , fTotalCompressedBytes(0)
   , fHistClusterChargeTot(NULL)
   , fHistTPCTrackPt(NULL)
   , fHistTPCAattachedClustersRowPhi(NULL)
@@ -1410,6 +1412,10 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   fnFlatESDFriendSize = nFlatESDFriendSize;
   fnHLTInSize = nHLTInSize;
   fnHLTOutSize = nHLTOutSize;
+  
+  fTotalClusters += nClustersTPC;
+  fTotalCompressedBytes += compressedSizeTPC;
+  double totalEntropy = (double) fTotalCompressedBytes * 8. / (double) (fTotalClusters ? fTotalClusters : 1);
 
   //Fill the histograms
   int pushed_something = FillHistograms();
@@ -1418,9 +1424,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
   static int nPrinted = 0;
   if (fPrintStats && (fPrintStats == 2 || (pushed_something && nPrinted++ % fPrintDownscale == 0))) //Don't print this for every event if we use a pushback period
   {
-    HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx (%'d)"
+    HLTImportant("Events %d Blocks %4d: HLT Reco QA Stats: HLTInOut %'d / %'d / %4.1f%%, SPD-Cl %d (%d), SDD-Cl %d (%d), SSD-Cl %d (%d) TPC-Cl %'d (%'d / %'d / %'d / %'d), TPC-Comp %5.3fx / %5.3fx / %.1f (%'d)"
       ", ITSSAP-Tr %d, TPC-Tr %'d / %'d, ITS-Tr %d / %d, SPD-Ver %d, V0 %6.2f (%d), EMCAL %d (%d / %d / %d), ZDC %d (%d), ESD %'d / %'d (%'d / %'d)   -   (TRD %'d, FMD %'d, T0 %'d, ACO %'d, CTP %'d, AD %'d, TOF %'d, PHO %'d, CPV %'d, HMP %'d, PMD %'d, MTK %'d, MTG %'d)",
-      nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, compressedSizeTPC,
+      nEvents, nBlocks, nHLTInSize, nHLTOutSize, hltRatio * 100, nClustersSPD, rawSizeSPD, nClustersSDD, rawSizeSDD, nClustersSSD, rawSizeSSD, nClustersTPC, rawSizeTPC, hwcfSizeTPC, clusterSizeTPC, clusterSizeTPCtransformed, compressionRatio, compressionRatioFull, totalEntropy, compressedSizeTPC,
       nITSSAPtracks, nTPCtracklets, nTPCtracks, nITSTracks, nITSOutTracks, (int) bITSSPDVertex, vZEROMultiplicity, rawSizeVZERO, emcalRecoSize, emcalTRU, emcalSTU, rawSizeEMCAL, zdcRecoSize, rawSizeZDC, nESDSize, nFlatESDSize, nESDFriendSize, nFlatESDFriendSize,
       rawSizeTRD, rawSizeFMD, rawSizeTZERO, rawSizeACORDE, rawSizeCTP, rawSizeAD, rawSizeTOF, rawSizePHOS, rawSizeCPV, rawSizeHMPID, rawSizePMD, rawSizeMUTK, rawSizeMUTG);
   }

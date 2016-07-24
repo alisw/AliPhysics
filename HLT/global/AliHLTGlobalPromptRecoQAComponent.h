@@ -198,6 +198,9 @@ protected:
   double fnHLTInSize;
   double fnHLTOutSize;
   double fhltRatio;
+  
+  long long int fTotalClusters;
+  long long int fTotalCompressedBytes;
 
   //Fixed histograms with track / cluster properties.
   //These are not created dynamically because that would require quite some CPU resources.
