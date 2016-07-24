@@ -105,6 +105,7 @@
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
 #pragma link C++ class AliTrackContainerV0+;
 #pragma link C++ class AliTrackContainerToyModel+;
+#pragma link C++ class AliMCParticleContainerToyModel+;
 #pragma link C++ class AliEmcalPicoTrackFromJetMaker+;
 #pragma link C++ class AliNtupHetInfo+;
 #pragma link C++ class AliNtupCumInfo+;

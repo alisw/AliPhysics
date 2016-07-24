@@ -21,7 +21,8 @@ AliEmcalJetTask* AddTaskEmcalJetToyModel(
   const Double_t minJetPt                    = 0.,
   const Bool_t lockTask                      = kTRUE,
   const Bool_t bFillGhosts                   = kFALSE,
-  const Double_t ptScale                     = 1.
+  const Double_t ptScale                     = 1.,
+  const Bool_t kOnTheFly                     =kTRUE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -88,9 +89,18 @@ AliEmcalJetTask* AddTaskEmcalJetToyModel(
     }
   }
 
-  AliTrackContainerToyModel* trackCont = new AliTrackContainerToyModel(trackName);
+    if(kOnTheFly==kFALSE){
+   AliTrackContainerToyModel* trackCont = new AliTrackContainerToyModel(trackName);
+  trackCont->SetTrackScalePt(ptScale);
+  trackCont->SetParticlePtCut(minTrPt);}
+
+ if(kOnTheFly==kTRUE){
+  AliMCParticleContainerToyModel* trackCont = new AliMCParticleContainerToyModel(trackName);
   trackCont->SetTrackScalePt(ptScale);
   trackCont->SetParticlePtCut(minTrPt);
+  }
+
+
 
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
