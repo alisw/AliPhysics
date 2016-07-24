@@ -297,11 +297,11 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   const Double_t xmin1[nBinsSparse1]  = { minDM, minDpT, minM, minM, minPt, minPt, minPt};
   const Double_t xmax1[nBinsSparse1]  = { maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxPt};
 
-  const Int_t nBinsSparse2 = 8;
-  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
-  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
-  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
-  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
+  const Int_t nBinsSparse2 = 10;
+  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
+  const Int_t nBins2[nBinsSparse2] = {nBinsDM, nBinsDpT, nBinsDM, nBinsDpT, nBinsM, nBinsM, nBinsPt, nBinsPt, nBinsRho, nBinsRhom};
+  const Double_t xmin2[nBinsSparse2]  = {minDM, minDpT, minDM, minDpT, minM, minM, minPt, minPt, minRho, minRhom};
+  const Double_t xmax2[nBinsSparse2]  = {maxDM, maxDpT, maxDM, maxDpT, maxM, maxM, maxPt, maxPt, maxRho, maxRhom};
 
   TString histName = "";
   TString histTitle = "";
@@ -365,7 +365,7 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
 
   //Chiara's histograms: rho and rhom correlation with pT and mass at reco level with no subtraction
   histName = "fhnDeltaMassAndBkgInfo";
-  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
+  histTitle = Form("%s; #it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}",histName.Data()); // #it{M}_{unsub} is also deltaM unsub when M_part is zero
   
   fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   fOutput->Add(fhnDeltaMassAndBkgInfo);
