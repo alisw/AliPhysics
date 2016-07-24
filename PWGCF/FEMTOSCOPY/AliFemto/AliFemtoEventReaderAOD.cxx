@@ -564,6 +564,16 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
         tInfo->SetEmissionPoint(fpx, fpy, fpz, fpt);
 
+	if(tPart->IsPhysicalPrimary())
+	  tInfo->SetOrigin(0);
+	else if(tPart->IsSecondaryFromWeakDecay())
+	  tInfo->SetOrigin(1);
+	else if(tPart->IsSecondaryFromMaterial())
+	  tInfo->SetOrigin(2);
+	else
+	  tInfo->SetOrigin(-1);
+		
+
         // // fillDCA
         // //if (TMath::Abs(impact[0]) > 0.001) {
         // if (tPart->IsPhysicalPrimary()){
