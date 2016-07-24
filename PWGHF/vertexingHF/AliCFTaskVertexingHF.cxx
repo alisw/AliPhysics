@@ -970,24 +970,24 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     switch (fDecayChannel){
     case 2:{
       charmCandidate = (AliAODRecoDecayHF2Prong*)arrayBranch->At(iCandid);
-      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate);
+      if(!vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF2Prong*)charmCandidate))continue;
       break;
     }
     case 21:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE);//DStar
+      if(!vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kTRUE))continue;//DStar
       break;
     }
     case 22:{
       charmCandidate = (AliAODRecoCascadeHF*)arrayBranch->At(iCandid);
-      vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE);//Cascade
+      if(vHF->FillRecoCasc(aodEvent,((AliAODRecoCascadeHF*)charmCandidate),kFALSE))continue;//Cascade
       break;
     }
     case 31:
     case 32:
     case 33:{
       charmCandidate = (AliAODRecoDecayHF3Prong*)arrayBranch->At(iCandid);
-      vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate);
+      if(vHF->FillRecoCand(aodEvent,(AliAODRecoDecayHF3Prong*)charmCandidate))continue;
       break;
     }
     case 4:{
