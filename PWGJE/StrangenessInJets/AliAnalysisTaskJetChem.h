@@ -412,12 +412,12 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Float_t fFFIMLaZMin;          // FF histos limits
   Float_t fFFIMLaZMax;          // FF histos limits
   
-
- 
   // Histograms
   
   TH1F* fh1EvtAllCent; 
-  TH1F* fh1Evt;                      
+  TH1F* fh1Evt; 
+  TH1F* fh1EP2;
+  TH1F* fh1EP3;          
   TH1F* fh1K0Mult;                   
   TH1F* fh1dPhiJetK0;                
   TH1F* fh1LaMult;                   
@@ -433,6 +433,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1nGenJets;
   TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
   TH1F* fh1IndexEmbeddedMC;            //! index embedded jet matching to leading rec and gen jet 
+  TH1F* fh1EmbeddedJetPhiDelta;        //! delta phi between jet and 2nd order harmonic event plane of data event
 
   TH1F* fh1PtEmbBeforeMatch;           // pt spectrum of embedded jets from extra particles before JetMatching
   TH1F* fh1PtEmbExtraOnly;             // pt spectrum of embedded jets from extraonly particles (embedded truth)
