@@ -84,20 +84,15 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
-  AliTLorentzVector mom;
-  GetMomentumFromParticle(mom, vp);
-
-  Bool_t r = kFALSE;
-
   if (IsSpecialPDG(vp)) {
     // Special PDG particle, skip regular MC particle cuts and apply kinematic cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
+    AliTLorentzVector mom;
+    GetMomentumFromParticle(mom, vp);
     return ApplyKinematicCuts(mom, rejectionReason);
   }
   else {
-    r = ApplyMCParticleCuts(vp, rejectionReason);
-    if (!r) return kFALSE;
-    return ApplyKinematicCuts(mom, rejectionReason);
+    return AliMCParticleContainer::AcceptMCParticle(vp, rejectionReason);
   }
 }
 
@@ -119,20 +114,15 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionR
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
-  AliTLorentzVector mom;
-  GetMomentum(mom, i);
-
-  Bool_t r = kFALSE;
-
-  if (IsSpecialPDG(vp)) {
+  if (IsSpecialPDG(vp, fHistOrigin)) {
     // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
+    AliTLorentzVector mom;
+    GetMomentum(mom, i);
     return ApplyKinematicCuts(mom, rejectionReason);
   }
   else {
-    r = ApplyMCParticleCuts(vp, rejectionReason);
-    if (!r) return kFALSE;
-    return ApplyKinematicCuts(mom, rejectionReason);
+    return AliMCParticleContainer::AcceptMCParticle(i, rejectionReason);
   }
 }
 
@@ -163,7 +153,7 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDGDaughter(const AliAODMCParticle*
 /// \param part Pointer to a valid AliAODMCParticle object
 ///
 /// \result kTRUE if it is a daughter of the "special" PDG particle, kFALSE otherwise
-Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part) const
+Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, TH1* histOrigin) const
 {
   if (fSpecialPDG == 0) return kFALSE;
 
@@ -175,11 +165,11 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part) c
 
   AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
 
-  if (fHistOrigin) {
+  if (histOrigin) {
     UInt_t rs = origin;
     UShort_t p = 0;
     while (rs >>= 1) { p++; }
-    fHistOrigin->Fill(p);
+    histOrigin->Fill(p);
   }
 
   if ((origin & fRejectedOrigin) != 0) return kFALSE;
