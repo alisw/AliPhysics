@@ -61,14 +61,17 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
 
   Bool_t IsSpecialPDGFound() const;
 
+  void SetHistOrigin(TH1* h) { fHistOrigin = h; }
+
  protected:
   Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
   Bool_t          IsSpecialPDG(const AliAODMCParticle* part) const;
- 
+
   Int_t           fSpecialPDG;             ///<  include particles with this PDG code even if they are not primary particles (and exclude their daughters)
   UInt_t          fRejectedOrigin;         ///<  Bit mask with D meson origins that are rejected
   UInt_t          fAcceptedDecay;          ///<  Bit mask with D meson decays that are accepted
-  
+  TH1*            fHistOrigin;             //!<! Book-keeping histogram with origin of special PDG particles
+
  private:
   AliHFAODMCParticleContainer(const AliHFAODMCParticleContainer&);            // not implemented
   AliHFAODMCParticleContainer &operator=(const AliHFAODMCParticleContainer&); // not implemented

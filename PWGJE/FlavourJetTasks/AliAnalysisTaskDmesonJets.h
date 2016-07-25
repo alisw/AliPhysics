@@ -69,8 +69,13 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
   enum EMesonOrigin_t {
     kUnknownQuark = BIT(0),
-    kFromBottom   = BIT(1),
-    kFromCharm    = BIT(2)
+    kFromDown     = BIT(1),
+    kFromUp       = BIT(2),
+    kFromStrange  = BIT(3),
+    kFromCharm    = BIT(4),
+    kFromBottom   = BIT(5),
+    kFromTop      = BIT(6),
+    kFromGluon    = BIT(7)
   };
 
   enum EMesonDecayChannel_t {
