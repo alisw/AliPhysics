@@ -90,9 +90,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
   Bool_t r = kFALSE;
 
   if (IsSpecialPDG(vp)) {
-    // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
-    r = ApplyParticleCuts(vp, rejectionReason);
-    if (!r) return kFALSE;
+    // Special PDG particle, skip regular MC particle cuts and apply kinematic cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
     return ApplyKinematicCuts(mom, rejectionReason);
   }
@@ -128,8 +126,6 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionR
 
   if (IsSpecialPDG(vp)) {
     // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
-    r = ApplyParticleCuts(vp, rejectionReason);
-    if (!r) return kFALSE;
     // For the future, may want to implement special kinematic cuts for D mesons
     return ApplyKinematicCuts(mom, rejectionReason);
   }
