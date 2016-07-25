@@ -1208,7 +1208,6 @@ AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEng
   if (!mcArray) return kUnknownQuark;
 
   Int_t mother = part->GetMother();
-
   while (mother >= 0) {
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
     if (mcGranma) {

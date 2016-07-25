@@ -65,7 +65,7 @@ class AliHFAODMCParticleContainer : public AliMCParticleContainer {
 
  protected:
   Bool_t          IsSpecialPDGDaughter(const AliAODMCParticle* part) const;
-  Bool_t          IsSpecialPDG(const AliAODMCParticle* part) const;
+  Bool_t          IsSpecialPDG(const AliAODMCParticle* part, TH1* histOrigin = 0) const;
 
   Int_t           fSpecialPDG;             ///<  include particles with this PDG code even if they are not primary particles (and exclude their daughters)
   UInt_t          fRejectedOrigin;         ///<  Bit mask with D meson origins that are rejected
