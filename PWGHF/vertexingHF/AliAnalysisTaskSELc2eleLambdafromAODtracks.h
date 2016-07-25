@@ -113,6 +113,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
 	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
+  void SetSingleElectronAnalysis(Bool_t a){fDoSingleElectronAnalysis=a;}
+
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
@@ -599,6 +601,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsLambdaPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsLambdaPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
+  THnSparse* fHistoSingleElectronVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
   TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
   TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
@@ -660,6 +666,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronPionR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronPionR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronPionR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  Bool_t fDoSingleElectronAnalysis; /// flag for event mixing
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -682,7 +689,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,32); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,33); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

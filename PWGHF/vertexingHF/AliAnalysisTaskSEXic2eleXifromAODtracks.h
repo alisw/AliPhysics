@@ -115,6 +115,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
 	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
+  void SetSingleElectronAnalysis(Bool_t a){fDoSingleElectronAnalysis=a;}
+
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
@@ -389,6 +391,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
+  THnSparse* fHistoSingleElectronVariablesvsElePt;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMix;         //!<! THnSparse of Correlation variablesa (MC)
+  THnSparse* fHistoSingleElectronVariablesvsElePtMC;         //!<! THnSparse of Correlation variablesa (MC)
+
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
@@ -434,6 +440,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+  Bool_t fDoSingleElectronAnalysis; /// flag for event mixing
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -456,7 +463,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoPoolNumberOfResets; //!<! Number of resets
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,31); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,32); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

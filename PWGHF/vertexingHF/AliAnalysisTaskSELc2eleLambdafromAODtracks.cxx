@@ -510,6 +510,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoMassVariablesvsLambdaPt(0),
 	fHistoMassVariablesvsLambdaPtMix(0),
 	fHistoMassVariablesvsLambdaPtMC(0),
+	fHistoSingleElectronVariablesvsElePt(0),
+	fHistoSingleElectronVariablesvsElePtMix(0),
+	fHistoSingleElectronVariablesvsElePtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseElePt1(0),
 	fHistoResponseElePt2(0),
@@ -561,6 +564,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistodPhiSdEtaSElectronPionR125WS(0),
   fHistodPhiSdEtaSElectronPionR125RSMix(0),
   fHistodPhiSdEtaSElectronPionR125WSMix(0),
+  fDoSingleElectronAnalysis(kTRUE),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
   fNumberOfEventsForMixing		(5),
@@ -1015,6 +1019,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoMassVariablesvsLambdaPt(0),
 	fHistoMassVariablesvsLambdaPtMix(0),
 	fHistoMassVariablesvsLambdaPtMC(0),
+	fHistoSingleElectronVariablesvsElePt(0),
+	fHistoSingleElectronVariablesvsElePtMix(0),
+	fHistoSingleElectronVariablesvsElePtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseElePt1(0),
 	fHistoResponseElePt2(0),
@@ -1066,6 +1073,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistodPhiSdEtaSElectronPionR125WS(0),
 	fHistodPhiSdEtaSElectronPionR125RSMix(0),
 	fHistodPhiSdEtaSElectronPionR125WSMix(0),
+  fDoSingleElectronAnalysis(kTRUE),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
 	fNumberOfEventsForMixing		(5),
@@ -1648,6 +1656,120 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
       elobj->UnsetOwnPrimaryVtx();
       delete elobj;elobj=NULL;
       delete secVert;
+    }
+  }
+
+  if(fDoSingleElectronAnalysis){
+    //------------------------------------------------
+    // track loop 
+    //------------------------------------------------
+    for (Int_t itrk = 0; itrk<nTracks; itrk++) {
+      if(!seleTrkFlags[itrk]) continue;
+      AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
+
+      //TPC only track (BIT 7) does not have PID information 
+      //In addition to that, TPC only tracks does not have good DCA resolution
+      //(according to femtoscopy code)
+      AliAODTrack *trkpid = 0;
+      if(fAnalCuts->GetProdAODFilterBit()==7){
+        trkpid = fGTI[-trk->GetID()-1];
+      }else{
+        trkpid = trk;
+      }
+
+      Int_t nlam_near = 0;
+      Int_t nantilam_near = 0;
+      for (Int_t iv0 = 0; iv0<nV0s; iv0++) {
+        if(!seleV0Flags[iv0]) continue;
+        AliAODv0 *v0 = aodEvent->GetV0(iv0);
+        if(!v0) continue;
+        if(!fAnalCuts->IsPeakRegion(v0)) continue;
+
+        AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
+        AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));
+
+        Int_t cpid = cptrack->GetID();
+        Int_t cnid = cntrack->GetID();
+        Int_t lpid = trkpid->GetID();
+        if((cpid==lpid)||(cnid==lpid)) continue;
+
+        Bool_t anti_lambda_flag = kFALSE;
+        if(fabs(v0->MassAntiLambda()-1.115683)<fAnalCuts->GetProdV0MassTolLambdaRough()) anti_lambda_flag = kTRUE;
+
+        Double_t v0px = v0->Px();
+        Double_t v0py = v0->Py();
+        Double_t v0pt = v0->Pt();
+        Double_t epx = trk->Px();
+        Double_t epy = trk->Py();
+        Double_t ept = trk->Pt();
+        Double_t cosdphi =  (v0px*epx+v0py*epy)/v0pt/ept;
+        Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+        if(cosdphi>cosdphimin){
+          if(anti_lambda_flag){
+            nantilam_near++;
+          }else{
+            nlam_near++;
+          }
+        }
+      }
+
+      Double_t cont_se_nd[8];
+      for(Int_t iv=0;iv<8;iv++){
+        cont_se_nd[iv] = -9999.;
+      }
+
+      Double_t d0z0bach[2],covd0z0bach[3];
+      Double_t d0[3],d0err[3];
+      trk->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0bach,covd0z0bach);
+
+      d0[0]= d0z0bach[0];
+      d0err[0] = TMath::Sqrt(covd0z0bach[0]);
+      cont_se_nd[0] = trk->Pt();
+      if(fBzkG>0.)
+        cont_se_nd[1] = d0[0]*trk->Charge();
+      else
+        cont_se_nd[1] = -1.*d0[0]*trk->Charge();
+      cont_se_nd[2] = nlam_near;
+      cont_se_nd[3] = nantilam_near;
+      cont_se_nd[4] = trk->Charge();
+      Double_t minmass_ee = 9999.;
+      Bool_t isconv = fAnalCuts->TagConversions(trk,fGTIndex,aodEvent,aodEvent->GetNumberOfTracks(),minmass_ee);
+      Double_t minmasslike_ee = 9999.;
+      Bool_t isconv_like = fAnalCuts->TagConversionsSameSign(trk,fGTIndex,aodEvent,aodEvent->GetNumberOfTracks(),minmasslike_ee);
+      cont_se_nd[5] = isconv + 2*isconv_like;
+      cont_se_nd[6] = 0;
+      cont_se_nd[7] = fCentrality;
+
+      fHistoSingleElectronVariablesvsElePt->Fill(cont_se_nd);
+
+      if(fUseMCInfo){
+        Int_t pdgarray_ele[100];
+        Int_t labelarray_ele[100];
+        for(Int_t i=0;i<100;i++){
+          pdgarray_ele[i] = -9999;
+          labelarray_ele[i] = -9999;
+        }
+        Int_t ngen_ele = 0;
+
+        Int_t labEle = trk->GetLabel();
+
+        AliAODMCParticle *mcetrk = 0;
+        if(labEle>-1) mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
+
+        if(mcetrk){
+          GetMCDecayHistory(mcetrk,mcArray,pdgarray_ele,labelarray_ele,ngen_ele);
+          if(abs(pdgarray_ele[0])==4122) cont_se_nd[6] = 1;
+          if(abs(pdgarray_ele[0])==4132) cont_se_nd[6] = 2;
+          if(abs(pdgarray_ele[0])==4232) cont_se_nd[6] = 3;
+          if(abs(pdgarray_ele[0])==5122) cont_se_nd[6] = 4;
+          if(abs(pdgarray_ele[0])==5132) cont_se_nd[6] = 5;
+          if(abs(pdgarray_ele[0])==5232) cont_se_nd[6] = 6;
+        }
+
+        fHistoSingleElectronVariablesvsElePtMC->Fill(cont_se_nd);
+      }
+
     }
   }
 
@@ -5283,6 +5405,21 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fHistoMassVariablesvsLambdaPtMix = new THnSparseF("fHistoMassVariablesvsLambdaPtMix","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
   fHistoMassVariablesvsLambdaPtMC = new THnSparseF("fHistoMassVariablesvsLambdaPtMC","",8,bins_mass_nd,xmin_mass_nd,xmax_mass_nd);
 
+	//Axis 0: Pt
+	//Axis 1: DCA
+  //Axis 2: N Lambda
+  //Axis 3: N anti-Lambda
+	//Axis 4: Sign type
+	//Axis 5: Conv Type
+	//Axis 6: MC type
+	//Axis 7: Centrality 
+  Int_t bins_sev_nd[8]=	{100  ,50   ,10  ,10  ,3,3,10,10};
+  Double_t xmin_sev_nd[8]={0. ,-0.1,-0.5 ,-0.5 ,-1.5,-0.5,-0.5,0.};
+  Double_t xmax_sev_nd[8]={10.,0.1  ,9.5  ,9.5,1.5,2.5,9.5,100.};
+  fHistoSingleElectronVariablesvsElePt = new THnSparseF("fHistoSingleElectronVariablesvsElePt","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+  fHistoSingleElectronVariablesvsElePtMix = new THnSparseF("fHistoSingleElectronVariablesvsElePtMix","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+  fHistoSingleElectronVariablesvsElePtMC = new THnSparseF("fHistoSingleElectronVariablesvsElePtMC","",8,bins_sev_nd,xmin_sev_nd,xmax_sev_nd);
+
   fOutputAll->Add(fHistoCorrelationVariablesvsEleLambdaPt);
   fOutputAll->Add(fHistoCorrelationVariablesvsEleLambdaPtMix);
   fOutputAll->Add(fHistoCorrelationVariablesvsEleLambdaPtMC);
@@ -5302,6 +5439,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoMassVariablesvsLambdaPt);
   fOutputAll->Add(fHistoMassVariablesvsLambdaPtMix);
   fOutputAll->Add(fHistoMassVariablesvsLambdaPtMC);
+
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePt);
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePtMix);
+  fOutputAll->Add(fHistoSingleElectronVariablesvsElePtMC);
 
   return;
 }
@@ -5998,6 +6139,76 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 		}//event loop
 		
 	}//track loop
+
+  if(fDoSingleElectronAnalysis){
+    for (Int_t i=0; i<nEle; i++)
+    {
+      TLorentzVector* trke=(TLorentzVector*) fElectronTracks->At(i);
+      if(!trke)continue;
+      TVector *elevarsarray = (TVector*)fElectronCutVarsArray->At(i);
+
+      Double_t epx = trke->Px();
+      Double_t epy = trke->Py();
+      Double_t ept = trke->Pt();
+
+      for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
+        Int_t nV01=v1array->GetEntries();
+        Int_t nV02=v2array->GetEntries();
+
+        Int_t nlam_near = 0;
+        Int_t nantilam_near = 0;
+
+        fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
+        for(Int_t iTr1=0; iTr1<nV01; iTr1++){
+          TLorentzVector* v01=(TLorentzVector*)v1array->At(iTr1);
+          if(!v01 ) continue;
+          if(!fAnalCuts->IsPeakRegion(v01)) continue;
+
+          Double_t v0px = v01->Px();
+          Double_t v0py = v01->Py();
+          Double_t v0pt = v01->Pt();
+          Double_t cosdphi =  (v0px*epx+v0py*epy)/v0pt/ept;
+          Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+          if(cosdphi>cosdphimin) nlam_near++;
+        }//v0 loop
+
+        for(Int_t iTr2=0; iTr2<nV02; iTr2++){
+          TLorentzVector* v02=(TLorentzVector*)v2array->At(iTr2);
+          if(!v02 ) continue;
+          if(!fAnalCuts->IsPeakRegion(v02)) continue;
+          TVector *v0varsarray = (TVector*) v2varsarray->At(iTr2);
+
+          Double_t v0px = v02->Px();
+          Double_t v0py = v02->Py();
+          Double_t v0pt = v02->Pt();
+          Double_t cosdphi =  (v0px*epx+v0py*epy)/v0pt/ept;
+          Double_t cosdphimin = cos(2.*(0.0690941+0.521911/ept));
+
+          if(cosdphi>cosdphimin) nantilam_near++;
+        }//v0 loop
+        Double_t cont_se_nd[8];
+        for(Int_t iv=0;iv<8;iv++){
+          cont_se_nd[iv] = -9999.;
+        }
+
+        cont_se_nd[0] = trke->Pt();
+        if(fBzkG>0.)
+          cont_se_nd[1] = (*elevarsarray)[5]*trke->T();
+        else
+          cont_se_nd[1] = -1.*(*elevarsarray)[5]*trke->T();
+        cont_se_nd[2] = nlam_near;
+        cont_se_nd[3] = nantilam_near;
+        cont_se_nd[4] = trke->T();
+        cont_se_nd[5] = (*elevarsarray)[6];
+        cont_se_nd[6] = 0;
+        cont_se_nd[7] = fCentrality;
+
+        fHistoSingleElectronVariablesvsElePtMix->Fill(cont_se_nd);
+
+      }//event loop
+    }//track loop
+  }
 
   delete eventInfo;
   if(v1array) v1array->Delete();
