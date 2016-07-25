@@ -88,7 +88,8 @@ private:
   Short_t   fMax;      ///< maximal amplitude in cluster
   Char_t    fType;     ///< different meaning depending on whether hlt of offline cluster finder was used:
                        //   offline: type of the cluster 0 means golden
-                       //   hlt: 0 = Not Split, 1 = Split in Pad Direction, 2 = Split in Time Direction, 3 = Split in both directions
+                       //   hlt: 0 = Not Split, 1 (bit 1) = Split in Pad Direction, 2 (bit 2) = Split in Time Direction, 3 = Split in both directions
+                       //        bit 3 and 8: Edge clusters. Bit 8 is set to make the value of fType negative, to match the offline behavior
   Char_t    fUsed;     ///< counter of usage
   UChar_t   fDisp;     ///< dispersion of applied correction
   UChar_t   fDetector; ///< detector  number
