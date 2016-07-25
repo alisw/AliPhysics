@@ -1508,6 +1508,17 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
   if (!fMCContainer->IsSpecialPDGFound()) return;
 
   for (auto &jetDef : fJetDefinitions) {
+    switch (jetDef.fJetType) {
+    case AliJetContainer::kFullJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kNoChargeCut);
+      break;
+    case AliJetContainer::kChargedJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
+      break;
+    case AliJetContainer::kNeutralJet:
+      fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kNeutral);
+      break;
+    }
 
     fFastJetWrapper->Clear();
     fFastJetWrapper->SetR(jetDef.fRadius);
