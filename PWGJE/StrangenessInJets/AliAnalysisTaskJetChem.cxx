@@ -2899,14 +2899,29 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   Double_t qx2(0), qy2(0), qx3(0), qy3(0);
   
+  Double_t event_plane_2 = -999.;
+  Double_t event_plane_3 = -999.;
+
   // get the q-vectors from AliEventPlane
-  Double_t event_plane_2 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
-  Double_t event_plane_3 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
+
+  if(fAOD){//for AOD Input event
+    event_plane_2 = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
+    event_plane_3 = fAOD->GetEventplane()->CalculateVZEROEventPlane(fAOD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
+    
+    if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
+    if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
+    if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
+  }
   
-  if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
-  if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
-  if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
-  
+  if(fESD){//for ESD Input event
+    event_plane_2 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
+    event_plane_3 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
+    
+    if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
+    if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
+    if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
+  }
+
   //std::cout<<"PbPb vertex z coordinate: "<<primVertex->GetZ()<<std::endl;
   
   fh1EP2->Fill(event_plane_2);
