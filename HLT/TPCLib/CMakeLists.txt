@@ -169,6 +169,7 @@ set(HDRS ${HDRS}
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
     tracking-ca/AliHLTTPCCADef.h
     tracking-ca/AliHLTTPCCAMath.h
+    transform/AliHLTTPCReverseTransformInfoV1.h
 )
 
 # Generate the dictionary
