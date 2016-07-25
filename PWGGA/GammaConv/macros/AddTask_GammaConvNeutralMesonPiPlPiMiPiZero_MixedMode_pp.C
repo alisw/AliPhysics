@@ -101,10 +101,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
-    if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
-        AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    
+  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
+    AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -118,7 +117,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
       fEventCuts->SetPreSelectionCutFlag(kTRUE);
-            fEventCuts->SetV0ReaderName(V0ReaderName);
+      fEventCuts->SetV0ReaderName(V0ReaderName);
       if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
         fV0ReaderV1->SetEventCuts(fEventCuts);
         fEventCuts->SetFillCutHistograms("",kTRUE);
@@ -131,7 +130,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
       fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
       fCuts->SetPreSelectionCutFlag(kTRUE);
       fCuts->SetIsHeavyIon(isHeavyIon);
-            fCuts->SetV0ReaderName(V0ReaderName);
+      fCuts->SetV0ReaderName(V0ReaderName);
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
@@ -152,21 +151,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
   }
 
   //================================================
-  //========= Add Electron Selector ================
-
-
+  //========= Add Pion Selector ====================
   if( !(AliPrimaryPionSelector*)mgr->GetTask("PionSelector") ){
-
     AliPrimaryPionSelector *fPionSelector = new AliPrimaryPionSelector("PionSelector");
-    // Set AnalysisCut Number
-
     AliPrimaryPionCuts *fPionCuts=0;
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
-
       }
     }
 
@@ -174,18 +167,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     mgr->AddTask(fPionSelector);
     
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-
-    //connect input V0Reader
     mgr->ConnectInput (fPionSelector,0,cinput1);
-
   }
-
-  
   
   AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero *task=NULL;
-
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero(Form("GammaConvNeutralMesonPiPlPiMiPiZero_%i_%i",neutralPionMode, trainConfig));
-
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -261,13 +247,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp(
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
     cuts.AddCut("00000113","00200009327000008250400000","1111111013032230000","002010706","0103503400000000","0103503000000000");
 
-  } else {
-    Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
-    return;
-  }
 
-  // PHOS mode
-  if( trainConfig == 31 ) {
+    // PHOS mode
+  } else if( trainConfig == 31 ) {
     // everything open
     cuts.AddCut("00000113","00200009327000008250400000","2444400030022000000","000010400","0103503000000000","0103503000000000");
   } else if( trainConfig == 32 ) {
