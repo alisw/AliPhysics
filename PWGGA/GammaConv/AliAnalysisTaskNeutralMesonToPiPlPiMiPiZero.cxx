@@ -65,6 +65,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
     fHistoAnglePiPlPiMi(NULL),
     fHistoAnglePiZeroPiMi(NULL),
     fHistoAnglePiPlPiZero(NULL),
+    fHistoAngleSum(NULL),
 	fV0Reader(NULL),
     fV0ReaderName("V0ReaderV1"),
 	fPionSelector(NULL),
@@ -117,6 +118,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoPionPionInvMassPt(NULL),
 	fHistoGammaGammaInvMassPt(NULL),
 	fHistoMotherInvMassPt(NULL),
+    fHistoMotherInvMassPtRejectedKinematic(NULL),
 //	fTHnSparseMotherInvMassPtZM(NULL),
 	fHistoMotherSameDiff1Diff2BackInvMassPt(NULL),
 	fHistoMotherSameDiff1Diff1BackInvMassPt(NULL),
@@ -188,6 +190,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
     fHistoAnglePiPlPiMi(NULL),
     fHistoAnglePiZeroPiMi(NULL),
     fHistoAnglePiPlPiZero(NULL),
+    fHistoAngleSum(NULL),
 	AliAnalysisTaskSE(name),
 	fV0Reader(NULL),
     fV0ReaderName("V0ReaderV1"),
@@ -241,6 +244,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoPionPionInvMassPt(NULL),
 	fHistoGammaGammaInvMassPt(NULL),
 	fHistoMotherInvMassPt(NULL),
+    fHistoMotherInvMassPtRejectedKinematic(NULL),
 //	fTHnSparseMotherInvMassPtZM(NULL),
 	fHistoMotherSameDiff1Diff2BackInvMassPt(NULL),
 	fHistoMotherSameDiff1Diff1BackInvMassPt(NULL),
@@ -505,16 +509,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fHistoPionTPCdEdxNSigma	= new TH2F*[fnCuts];
 		fHistoPionTPCdEdx		= new TH2F*[fnCuts];
 	}
-    fHistoAngleOmegaPiPlPiMi     = new TH2F*[fnCuts];
-    fHistoAngleOmegaPiZero        = new TH2F*[fnCuts];
+    fHistoAngleOmegaPiPlPiMi    = new TH2F*[fnCuts];
+    fHistoAngleOmegaPiZero      = new TH2F*[fnCuts];
     fHistoAngleOmegaPiPl        = new TH2F*[fnCuts];
     fHistoAngleOmegaPiMi        = new TH2F*[fnCuts];
-    fHistoAnglePiZeroPiMi          = new TH2F*[fnCuts];
-    fHistoAnglePiPlPiMi          = new TH2F*[fnCuts];
-    fHistoAnglePiPlPiZero          = new TH2F*[fnCuts];
+    fHistoAnglePiZeroPiMi       = new TH2F*[fnCuts];
+    fHistoAnglePiPlPiMi         = new TH2F*[fnCuts];
+    fHistoAnglePiPlPiZero       = new TH2F*[fnCuts];
+    fHistoAngleSum              = new TH2F*[fnCuts];
 
 	fHistoGammaGammaInvMassPt	= new TH2F*[fnCuts];
 	fHistoMotherInvMassPt		= new TH2F*[fnCuts];
+    fHistoMotherInvMassPtRejectedKinematic = new TH2F*[fnCuts];
 	fHistoMotherSameDiff1Diff2BackInvMassPt	= new TH2F*[fnCuts];
 	fHistoMotherSameDiff1Diff1BackInvMassPt	= new TH2F*[fnCuts];
 	fHistoMotherSameSameDiff2BackInvMassPt	= new TH2F*[fnCuts];
@@ -557,7 +563,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 		fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
-    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+        fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
 		fESDList[iCut]->Add(fHistoNEvents[iCut]);
 
 		if(fIsHeavyIon>0) fHistoNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
@@ -613,8 +619,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
 		fHistoMotherInvMassPt[iCut] = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",500,0.4,0.9,250,0,25);
 		fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
+        fHistoMotherInvMassPtRejectedKinematic[iCut] = new TH2F("ESD_Mother_InvMass_Pt_KinematicRejected","ESD_Mother_InvMass_Pt_KinematicRejected",500,0.4,0.9,250,0,25);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtRejectedKinematic[iCut]);
 		fHistoMotherSameDiff1Diff2BackInvMassPt[iCut] = new TH2F("ESD_Background_1_InvMass_Pt","ESD_Background_1_InvMass_Pt",500,0.4,0.9,250,0,25);
-		fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassPt[iCut]);
+        fESDList[iCut]->Add(fHistoMotherSameDiff1Diff2BackInvMassPt[iCut]);
 		fHistoMotherSameDiff1Diff1BackInvMassPt[iCut] = new TH2F("ESD_Background_2_InvMass_Pt","ESD_Background_2_InvMass_Pt",500,0.4,0.9,250,0,25);
 		fESDList[iCut]->Add(fHistoMotherSameDiff1Diff1BackInvMassPt[iCut]);
 		fHistoMotherSameSameDiff2BackInvMassPt[iCut] = new TH2F("ESD_Background_3_InvMass_Pt","ESD_Background_3_InvMass_Pt",500,0.4,0.9,250,0,25);
@@ -622,7 +630,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		fHistoMotherSameDiff1SameBackInvMassPt[iCut] = new TH2F("ESD_Background_4_InvMass_Pt","ESD_Background_4_InvMass_Pt",500,0.4,0.9,250,0,25);
 		fESDList[iCut]->Add(fHistoMotherSameDiff1SameBackInvMassPt[iCut]);
 
-        fHistoAngleOmegaPiPlPiMi[iCut] = new TH2F("ESD_Mother_AngleOmegaNegPionsPosPions_Pt","ESD_Mother_AngleOmegaNegPionsPosPions_Pt",250,0,25,360,0,6);
+        fHistoAngleOmegaPiPlPiMi[iCut] = new TH2F("ESD_Mother_AngleOmegaNegPionsPosPions_Pt","ESD_Mother_AngleOmegaNegPionsPosPions_Pt",250,0,25,360,0,TMath::Pi());
         fESDList[iCut]->Add(fHistoAngleOmegaPiPlPiMi[iCut]);
         fHistoAngleOmegaPiMi[iCut] = new TH2F("ESD_Mother_AngleOmegaNegPions_Pt","ESD_Mother_AngleOmegaNegPions_Pt",250,0,25,360,0,TMath::Pi());
         fESDList[iCut]->Add(fHistoAngleOmegaPiMi[iCut]);
@@ -636,6 +644,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
         fESDList[iCut]->Add(fHistoAnglePiPlPiMi[iCut]);
         fHistoAnglePiZeroPiMi[iCut] = new TH2F("ESD_Mother_AngleNeutralPionNegPions_Pt","ESD_Mother_AngleNeutralPionNegPions_Pt",250,0,25,360,0,TMath::Pi());
         fESDList[iCut]->Add(fHistoAnglePiZeroPiMi[iCut]);
+        fHistoAngleSum[iCut] = new TH2F("ESD_Mother_AngleSum_Pt","ESD_Mother_AngleSum_Pt",250,0,25,720,0,2*TMath::Pi());
+        fESDList[iCut]->Add(fHistoAngleSum[iCut]);
 
 		if ( fDoMesonQA ) {
 			TAxis *AxisAfter = fHistoPionTPCdEdxNSigma[iCut]->GetXaxis(); 
@@ -1014,7 +1024,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 
 	PostData( 1, fOutputContainer );
 }
-
+//________________________________________________________________________
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::Notify(){
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){        
@@ -2227,6 +2237,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
                         fHistoAnglePiPlPiMi[fiCut]->Fill(mesoncand->Pt(),NegPiontmp->Angle(PosPiontmp->Vect()));
                         fHistoAnglePiPlPiZero[fiCut]->Fill(mesoncand->Pt(),PosPiontmp->Angle(neutralPion->Vect()));
                         fHistoAngleOmegaPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()));
+                        fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp->Angle(mesoncand->Vect()))+(NegPiontmp->Angle(PosPiontmp->Vect()))+(PosPiontmp->Angle(neutralPion->Vect()))));
 
                         fHistoMotherInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
                         //Double_t sparesFill[4] = {mesoncand->M(),mesoncand->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -2235,8 +2246,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
                         if(fMCEvent){
                           ProcessTrueMesonCandidates(mesoncand,neutralPion,vParticle);
                         }
+                    }else{
+                        fHistoMotherInvMassPtRejectedKinematic[fiCut]->Fill(mesoncand->M(),mesoncand->Pt());
                     }
-
                     delete NegPiontmp;
                     delete PosPiontmp;
 				}
@@ -2493,11 +2505,33 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateBackground(){
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega){
 
     if(fTolerance == -1) return kTRUE;
-
-    if(((omega->Angle(pospion->Vect()))<(2.4017*TMath::Exp(-0.9930*(omega->Pt()))+0.0515+fTolerance)) ){
-        if(((omega->Angle(negpion->Vect()))<(2.4411*TMath::Exp(-0.9930*(omega->Pt()))+0.0343+fTolerance)) ){
-            if(((omega->Angle(neutpion->Vect()))<(2.4472*TMath::Exp(-1.1442*(omega->Pt()))+0.0834+fTolerance)) ){
-                return kTRUE;
+    if((omega->Pt())<=5.){
+        if(((omega->Angle(pospion->Vect()))<((2.78715*TMath::Exp(-0.589934*(omega->Pt()))+0.0519574)*fTolerance)) ){
+            if(((omega->Angle(negpion->Vect()))<((5.94216*TMath::Exp(-0.444428*(omega->Pt()))+0.0574076)*fTolerance)) ){
+                if(((omega->Angle(neutpion->Vect()))<((2.79529*TMath::Exp(-0.565999*(omega->Pt()))+0.0413576)*fTolerance)) ){
+                    if(((pospion->Angle(negpion->Vect()))<((3.14446*TMath::Exp(-0.666433*(omega->Pt()))+0.0964309)*fTolerance)) ){
+                        if(((pospion->Angle(neutpion->Vect()))<((3.08241*TMath::Exp(-0.650657*(omega->Pt()))+0.0997539)*fTolerance)) ){
+                            if(((negpion->Angle(neutpion->Vect()))<((3.18536*TMath::Exp(-0.752847*(omega->Pt()))+0.126278)*fTolerance)) ){
+                                return kTRUE;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else{
+        if(((omega->Angle(pospion->Vect()))<((0.45927*TMath::Exp(-0.126007*(omega->Pt()))+0.100475)*fTolerance)) ){
+            if(((omega->Angle(negpion->Vect()))<((0.52125*TMath::Exp(-0.152532*(omega->Pt()))+0.114617)*fTolerance)) ){
+                if(((omega->Angle(neutpion->Vect()))<((0.409766*TMath::Exp(-0.108566*(omega->Pt()))+0.103594)*fTolerance)) ){
+                    if(((pospion->Angle(negpion->Vect()))<((0.709206*TMath::Exp(-0.149072*(omega->Pt()))+0.111345)*fTolerance)) ){
+                        if(((pospion->Angle(neutpion->Vect()))<((0.662184*TMath::Exp(-0.123397*(omega->Pt()))+0.104675)*fTolerance)) ){
+                            if(((negpion->Angle(neutpion->Vect()))<((0.730228*TMath::Exp(0.120859*(omega->Pt()))+0.105522)*fTolerance)) ){
+                                return kTRUE;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
