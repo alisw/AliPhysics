@@ -560,11 +560,28 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
 
 
 
-void AliOCDBtoolkit::DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml){
-  //
-  //  
-  //  DumpOCDBFile("$ALICE_ROOT/OCDB/ITS/Align/Data/Run0_999999999_v0_s0.root", "ITS_Align_Data_Run0_999999999_v0_s0.dump")
-  //
+void AliOCDBtoolkit::DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, TString  printOption ){
+  ///
+  ///  Function used in the AliOCDBtoolkit.sh interface ( source $ALICE_PHYSICS/PWGPP/CalibMacro/AliOCDBtoolkit.sh dumpObject <parameters>) 
+  ///  DumpOCDB file in the human readable format.
+  ///  
+  ///  Supported options (not case sensitive)
+  ///    "pocdb<x>" - TObjPrint  is used with printOption lovelX - assumed user implmenet approprate print
+  ///    "docdb"  - TObject::Dump 
+  ///    "XML"     - use standard root OCDB dump (not 100 % relyable sometimes failed e.g in floating poit exception)
+  ///    "MI"      - custom recursive dump using the dictionary ()
+  ///  Example usage:
+  /*
+    AliOCDBtoolkit::DumpOCDBFile("$ALICE_ROOT/OCDB/TPC/Calib/PadGainFactor/Run0_999999999_v0_s3.root", "TPC_Calib_PadGainFactor_Run0_999999999_v0_s3.print",1,"pocdb");
+    AliOCDBtoolkit::DumpOCDBFile("$ALICE_ROOT/OCDB/TPC/Calib/PadGainFactor/Run0_999999999_v0_s3.root", "TPC_Calib_PadGainFactor_Run0_999999999_v0_s3.dump",1,"docdb")
+    AliOCDBtoolkit::DumpOCDBFile("$ALICE_ROOT/OCDB/TPC/Calib/PadGainFactor/Run0_999999999_v0_s3.root", "TPC_Calib_PadGainFactor_Run0_999999999_v0_s3.mi",1,"mi")
+    AliOCDBtoolkit::DumpOCDBFile("$ALICE_ROOT/OCDB/TPC/Calib/PadGainFactor/Run0_999999999_v0_s3.root", "TPC_Calib_PadGainFactor_Run0_999999999_v0_s3.print",1,"XML")
+  */
+
+
+  TString optionString = printOption;
+  optionString.ToLower();
+    
   if (finput==0) return ;
   if (TString(finput).Contains("alien://") && gGrid==0){
     TGrid *myGrid = TGrid::Connect("alien://");            //Oddly this will return also a pointer if connection fails
@@ -577,19 +594,35 @@ void AliOCDBtoolkit::DumpOCDBFile(const char *finput , const char *foutput, Bool
   AliCDBEntry *entry  = (AliCDBEntry*)falignITS->Get("AliCDBEntry");
   if (!entry) return; 
   TObject *obj = ((AliCDBEntry*)falignITS->Get("AliCDBEntry"))->GetObject();  
-
   //
-  if (!xml){
+  // print option indicated ()
+  if (optionString.Contains("pocdb")){
+    if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
+    if (!obj) return;
+    gROOT->ProcessLine(TString::Format("((TObject*)%p)->Print(\"%s\"); >>%s",obj, printOption.Data(), foutput).Data());
+    return;
+  }
+  if (optionString.Contains("docdb")){
+    if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
+    if (!obj) return;
+    gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >>%s",obj, foutput).Data());
+    return;
+  }
+  //
+  if (optionString.Contains("mi")){
     if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
     if (!obj) return;
     gROOT->ProcessLine(TString::Format("AliOCDBtoolkit::DumpObjectRecursive((TObject*)%p); >>%s",obj, foutput).Data());
+    return;
   }
-  if (xml){
-    TFile * f = TFile::Open(TString::Format("%s.xml",foutput).Data(),"recreate");
+  if (optionString.Contains("xml")){
+    TFile * f = TFile::Open(TString::Format("%s",foutput).Data(),"recreate");
     if (dumpMetaData) entry->Write("AliCDBEntry");
     else obj->Write("AliCDBEntry");
     f->Close();
+    return;
   }
+  ::Error("AliOCDBtoolkit::DumpOCDBFile","Not recognized option %s", optionString.Data());
 }
 
 

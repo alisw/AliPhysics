@@ -35,7 +35,7 @@ public:
   static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const TString outfile);
   static void DumpObjectRecursive(TObject *obj);
   static void DumpObjectRecursive(TObject *obj, TString prefix, Int_t &counterRec);
-  static void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml);
+  static void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, TString  printOption);
   static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
   //
   // addopt OCDB entry

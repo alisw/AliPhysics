@@ -47,7 +47,7 @@
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibViewer.h"
 #include "TVectorD.h"
-
+#include "TPRegexp.h"
 /// \cond CLASSIMP
 ClassImp(AliTPCCalPad)
 /// \endcond
@@ -140,14 +140,16 @@ void AliTPCCalPad::Copy(TObject &c) const
 
 
 void AliTPCCalPad::Print(Option_t* option) const{
-  //
-  // Print summary content
-  //
+  ///
+  /// Print summary content
+  /// \param   option  - differnt level supported - used in the OCDB print
+  /// 
   printf("TPC %s\t%s\n",GetName(),GetTitle());
   //
   printf("|\t|%s|\t%s|\t%s|\n", "Mean","Median","RMS");
   printf("|ALL\t|%f|\t%f|\t%f|\n", GetMean(),GetMedian(),GetRMS());
-  if (TString(option).Contains("list")){
+  TPRegexp reg1("(ocdb1|print1|all)");
+  if (TString(option).Contains(reg1)){
     for (Int_t isec=0; isec<72; isec++){
       if (fROC[isec]) fROC[isec]->Print(option);
     }
