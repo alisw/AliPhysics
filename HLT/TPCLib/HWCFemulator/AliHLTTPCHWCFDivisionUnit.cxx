@@ -144,6 +144,18 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
       if( fkInput->fNDeconvolutedTime>0 ) fOutput.fQ += (0x1 << 30 ); 
     }
     break;
+  case 3:
+    if( fkInput->fIsDeconvolutedPad ) fOutput.fQ += (0x1 << 31 );
+
+    {//Generate final deconvolute time flag
+      int deconTimeFlag = 0;
+      if (fkInput->fNPads <= 2 && fkInput->fNDeconvolutedTime > 0) deconTimeFlag = 1;
+      else if (fkInput->fConsecutiveTimeDeconvolution >= 2) deconTimeFlag = 1;
+      else if (fkInput->fNDeconvolutedTime > fkInput->fNPads / 2) deconTimeFlag = 1;
+      fOutput.fQ += (deconTimeFlag << 30 ); 
+    }
+    break;
+
   default:
     HLTError("Unknown HW cluster tagging option %d",fTagDeconvolutedClusters);
   }
