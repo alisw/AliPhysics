@@ -22,11 +22,12 @@
 #     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable AliESDs_Barrel.root "esd" OCDBrec.list )
 #     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable galice.root MC OCDBsim.list)
 #
-# 3.) Dump the content of the OCDB entry in human readable format as an XML:
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0 ); 
+# 3.a) Dump the content of the OCDB entry in human readable format as an XML:
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.xml ); 
 #
-# 4.) Dump a summary of the OCDB entry in human readable format as provided by object Print: 
-#     TO BE IMPLEMENTED   
+# 3b.) Dump a summary of the OCDB entry in human readable format as provided by object obj->Print resp. ob->Dump(): 
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "pocdb0"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.print ); 
+#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "docdb"  TPC_Calib_PadNoise_Run0_999999999_v1_s0.dump ); 
 
 
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
@@ -97,12 +98,13 @@ dumpObject(){
 #  Input:
 #    $1 path
 #    $2 obj name 
-#    $3 type of the dump (XML or MI recursive dump )
+#    $3 type of the dump (Print, Dump, XML or MI recursive dump )
 #  Output:
 #    $4 output file name   
     export ALIROOT_FORCE_COREDUMP=1
+    declare -a dumpOptions=("docdb" "xml" "pocdb" "mi")  # supported options. options are converted into lower case
     if [ $# -lt 4 ] ; then
-        echo "Usage: $0 \$inputFile \$object_name \$dump_type [XML/MI] \$outfile"
+        echo "Usage: $0 \$inputFile \$object_name \$dump_type [POCDB/DOCDB/XML/MI] \$outfile"
         return 1
     fi
     local inFile=${1}
@@ -110,25 +112,28 @@ dumpObject(){
     local ftype=${3}
     local outFile=${4}
     shift 4
-#    if [ ! -f ${inFile} ] ; then 
-#        echo ${inFile} not found!
-#        return 1
-#    fi
-    if [ -f ${outFile} ] ; then 
-        >${outFile}
-    fi
-    if [ ${ftype} = "XML" ] ; then
-        isXML=kTRUE
-    elif [ ${ftype} = "MI" ] ; then
-        isXML=kFALSE
-    else
-        echo "option ${ftype} not recognized! Use \"XML\" or \"MI\"!"
-        return 1
-    fi
+    # check if type is in list supported dump options
+    ftypeLower=`echo $ftype | tr '[:upper:]' '[:lower:]'`
+    arraylength=${#dumpOptions[@]};
+    isOK=0;    
+    for (( i=1; i<${arraylength}+1; i++ )); 
+      do if [[ $ftypeLower == *"${dumpOptions[$i-1]}"* ]];  then 
+	  isOK=1; 
+	  echo match ${dumpOptions[$i-1]};  
+      fi;       
+    done;
+    # exit if not supported option
+    if [ $isOK == 0 ]; then
+	echo Not supported format $ftype;
+	echo Please Use;
+	for (( i=1; i<${arraylength}+1; i++ )); do echo $i " / " ${arraylength} " : " ${dumpOptions[$i-1]}; done;
+        return 1;
+    fi;
+
     tmpscript=$(mktemp)
     cat > ${tmpscript} <<HEREDOC
         {
-            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,${isXML});
+            AliOCDBtoolkit::DumpOCDBFile("${inFile}","${outFile}",1,"${ftype}");
         }
 HEREDOC
 
