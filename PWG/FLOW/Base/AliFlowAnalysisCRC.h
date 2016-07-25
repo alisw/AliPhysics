@@ -1444,7 +1444,7 @@ private:
  TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
  TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
  TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
-  TH3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
+  TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!

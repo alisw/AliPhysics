@@ -31,6 +31,7 @@
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3D.h>
 #include <TFile.h>
 #include <TString.h>
 #include <TCanvas.h>
@@ -225,8 +226,10 @@ fCachedRunNum(0)
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
-  for(Int_t k=0; k<8; k++) {
-    fTowerGainEq[k] =  NULL;
+  for(Int_t c=0; c<fnCen; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fTowerGainEq[c][k] =  NULL;
+    }
   }
  this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
@@ -373,8 +376,10 @@ fCachedRunNum(0)
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
-  for(Int_t k=0; k<8; k++) {
-    fTowerGainEq[k] =  NULL;
+  for(Int_t c=0; c<fnCen; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fTowerGainEq[c][k] =  NULL;
+    }
   }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
@@ -483,10 +488,11 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
-  
-  for(Int_t k=0; k<8; k++) {
-    fTowerGainEq[k] =  new TH1D(Form("fTowerGainEq[%d]",k),Form("fTowerGainEq[%d]",k),20,0.,100.);
-    fOutput->Add(fTowerGainEq[k]);
+  for(Int_t c=0; c<fnCen; c++) {
+    for(Int_t k=0; k<8; k++) {
+      fTowerGainEq[c][k] =  new TH3D(Form("fTowerGainEq[%d][%d]",c,k),Form("fTowerGainEq[%d][%d]",c,k),20,-0.035,0.015,20,0.145,0.220,10,-10.,10.);
+      fOutput->Add(fTowerGainEq[c][k]);
+    }
   }
  
  Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
@@ -1154,8 +1160,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Int_t RunNum=fFlowEvent->GetRun();
       if(fTowerEqList) {
         if(RunNum!=fCachedRunNum) {
-          for(Int_t i=0; i<8; i++) {
-            fTowerGainEq[i] = (TH1D*)(fTowerEqList->FindObject(Form("Run %d",RunNum))->FindObject(Form("fhnTowerGainEqFactor[%d][%d]",RunNum,i)));
+          for(Int_t c=0; c<fnCen; c++) {
+            for(Int_t i=0; i<8; i++) {
+              fTowerGainEq[c][i] = (TH3D*)(fTowerEqList->FindObject(Form("fhnTowerGainEqFactor[%d][%d]",c,i)));
+            }
           }
         }
       }
@@ -1168,7 +1176,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         // set tower gain equalization, if available
         if(fTowerEqList) {
           for(Int_t i=0; i<8; i++) {
-            if(fTowerGainEq[i]) AvTowerGain[i] = fTowerGainEq[i]->GetBinContent(fTowerGainEq[i]->FindBin(centrperc));
+            if(fTowerGainEq[CenBin][i]) AvTowerGain[i] = fTowerGainEq[CenBin][i]->GetBinContent(fTowerGainEq[CenBin][i]->FindBin(zvtxpos[0],zvtxpos[1],zvtxpos[2]));
           }
         }
         const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
