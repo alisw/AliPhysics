@@ -462,7 +462,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
       }
     }
 
-    trigConfig->SetSTUObj(stuConfig, isEMCAL);
+    trigConfig->SetSTUObj(stuConfig, !isEMCAL);
   }
 
   AliInfo(Form("STU info retrieved."));
