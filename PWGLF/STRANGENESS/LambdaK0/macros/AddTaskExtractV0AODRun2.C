@@ -1,4 +1,4 @@
-AliAnalysisTaskExtractV0AODRun2* AddTask2ExtractV0AODRun2( Bool_t lSwitchLowE     = kFALSE,
+AliAnalysisTaskExtractV0AODRun2* AddTaskExtractV0AODRun2( Bool_t lSwitchLowE     = kFALSE,
                                                    Bool_t lSwitchSaveAllInvMasses = kFALSE)
 {
 // Creates, configures and attaches to the train a cascades check task.
