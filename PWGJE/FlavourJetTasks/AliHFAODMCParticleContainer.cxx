@@ -28,7 +28,8 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer() :
   AliMCParticleContainer(),
   fSpecialPDG(0),
   fRejectedOrigin(0),
-  fAcceptedDecay(0)
+  fAcceptedDecay(0),
+  fHistOrigin(0)
 {
   // Constructor.
 }
@@ -40,7 +41,8 @@ AliHFAODMCParticleContainer::AliHFAODMCParticleContainer(const char *name) :
   AliMCParticleContainer(name),
   fSpecialPDG(0),
   fRejectedOrigin(AliAnalysisTaskDmesonJets::kUnknownQuark | AliAnalysisTaskDmesonJets::kFromBottom),
-  fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay)
+  fAcceptedDecay(AliAnalysisTaskDmesonJets::kAnyDecay),
+  fHistOrigin(0)
 {
   // Constructor.
 }
@@ -176,6 +178,13 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part) c
   if (!part->IsPrimary()) return kFALSE;
 
   AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+
+  if (fHistOrigin) {
+    UInt_t rs = origin;
+    UShort_t p = 0;
+    while (rs >>= 1) { p++; }
+    fHistOrigin->Fill(p);
+  }
 
   if ((origin & fRejectedOrigin) != 0) return kFALSE;
 

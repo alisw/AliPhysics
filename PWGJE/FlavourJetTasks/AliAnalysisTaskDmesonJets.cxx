@@ -670,7 +670,7 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fMinMass(0),
   fMaxMass(0),
   fRDHFCuts(cuts),
-  fRejectedOrigin(kUnknownQuark | kFromBottom),
+  fRejectedOrigin(kUnknownQuark | kFromDown | kFromUp | kFromStrange | kFromBottom | kFromTop | kFromGluon),
   fAcceptedDecay(kAnyDecay),
   fInhibit(kFALSE),
   fJetDefinitions(),
@@ -996,6 +996,12 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
         if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
 
+          UInt_t rs = origin;
+          UShort_t p = 0;
+          while (rs >>= 1) { p++; }
+          TString hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+          fHistManager->FillTH1(hname, p);
+
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
         }
         MCtruthPdgCode = aodMcPart->PdgCode();
@@ -1104,6 +1110,12 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractDstarAttributes(const A
         if (fRejectedOrigin) {
           EMesonOrigin_t origin = CheckOrigin(aodMcPart, fMCContainer->GetArray());
 
+          UInt_t rs = origin;
+          UShort_t p = 0;
+          while (rs >>= 1) { p++; }
+          TString hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+          fHistManager->FillTH1(hname, p);
+
           if ((origin & fRejectedOrigin) == origin) return kFALSE;
         }
 
@@ -1157,7 +1169,6 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
     Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
 
     if (absPdgPart == 421) { // D0 -> K pi
-
       if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
           (absPdg1 == 321 && absPdg2 == 211)) { // K pi
         decay = kDecayD0toKpi;
@@ -1165,15 +1176,13 @@ AliAnalysisTaskDmesonJets::EMesonDecayChannel_t AliAnalysisTaskDmesonJets::Analy
     }
 
     if (absPdgPart == 413) { // D* -> D0 pi
-
       if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
         Int_t D0decay = CheckDecayChannel(d1, mcArray);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
         }
       }
-
-      if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
+      else if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
         Int_t D0decay = CheckDecayChannel(d2, mcArray);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
@@ -1198,24 +1207,20 @@ AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEng
   if (!part) return kUnknownQuark;
   if (!mcArray) return kUnknownQuark;
 
-  Int_t pdgGranma = 0;
   Int_t mother = part->GetMother();
-  Int_t istep = 0;
-  Int_t abspdgGranma = 0;
-  Bool_t isFromB = kFALSE;
-  Bool_t isQuarkFound = kFALSE;
 
   while (mother >= 0) {
-    istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-    if (mcGranma >= 0) {
-      pdgGranma = mcGranma->GetPdgCode();
-      abspdgGranma = TMath::Abs(pdgGranma);
-      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-        isFromB = kTRUE;
-      }
+    if (mcGranma) {
+      Int_t abspdgGranma = TMath::Abs(mcGranma->GetPdgCode());
 
-      if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
+      if (abspdgGranma == 1) return kFromDown;
+      if (abspdgGranma == 2) return kFromUp;
+      if (abspdgGranma == 3) return kFromStrange;
+      if (abspdgGranma == 4) return kFromCharm;
+      if (abspdgGranma == 5) return kFromBottom;
+      if (abspdgGranma == 6) return kFromTop;
+
       mother = mcGranma->GetMother();
     }
     else {
@@ -1224,17 +1229,7 @@ AliAnalysisTaskDmesonJets::EMesonOrigin_t AliAnalysisTaskDmesonJets::AnalysisEng
     }
   }
 
-  if (isQuarkFound) {
-    if (isFromB) {
-      return kFromBottom;
-    }
-    else {
-      return kFromCharm;
-    }
-  }
-  else {
-    return kUnknownQuark;
-  }
+  return kUnknownQuark;
 }
 
 /// Run the analysis
@@ -1519,8 +1514,11 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::RunParticleLevelAnalysis()
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
     fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
 
+    hname = TString::Format("%s/fHistDmesonOrigin", GetName());
+    fMCContainer->SetHistOrigin(static_cast<TH1*>(fHistManager->FindObject(hname)));
     hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
+    fMCContainer->SetHistOrigin(0);
 
     fFastJetWrapper->Run();
 
@@ -2138,6 +2136,12 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       htitle = hname + ";#it{M}_{K#pi#pi} - #it{M}_{K#pi} (GeV/#it{c}^{2});counts";
       CalculateMassLimits(0.20, 413, param.fNMassBins*6, min, max);
       fHistManager.CreateTH1(hname, htitle, param.fNMassBins*6, min-D0mass, max-D0mass);
+    }
+
+    if (param.fMCMode == kBackgroundOnly || param.fMCMode == kSignalOnly || param.fMCMode == kMCTruth) {
+      hname = TString::Format("%s/fHistDmesonOrigin", param.GetName());
+      htitle = hname + ";origin;counts";
+      fHistManager.CreateTH1(hname, htitle, 10, 0, 10);
     }
 
     for (std::vector<AliHFJetDefinition>::iterator itdef = param.fJetDefinitions.begin(); itdef != param.fJetDefinitions.end(); itdef++) {
