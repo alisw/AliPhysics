@@ -198,6 +198,8 @@ Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t caloFlag)
   return hwAddress;
 }
 
+static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+
 //_____________________________________________________________________________
 Int_t AliCaloAltroMapping::GetPadRow(Int_t hwAddress) const
 {
@@ -212,8 +214,13 @@ Int_t AliCaloAltroMapping::GetPadRow(Int_t hwAddress) const
     return -1;
   }
   Int_t row = fMapping[3*hwAddress];
-  if (row == -1)
-    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+  if (row == -1) {
+    static int count = 0;
+    if (showInfo || count++ < 10)
+    {
+      AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+    }
+  }
 
   return row;
 }
@@ -232,8 +239,13 @@ Int_t AliCaloAltroMapping::GetPad(Int_t hwAddress) const
     return -1;
   }
   Int_t col = fMapping[3*hwAddress+1];
-  if (col == -1)
-    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+  if (col == -1) {
+    static int count = 0;
+    if (showInfo || count++ < 10)
+    {
+      AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+    }
+  }
 
   return col;
 }
@@ -252,8 +264,13 @@ Int_t AliCaloAltroMapping::GetSector(Int_t hwAddress) const
     return -1;
   }
   Int_t caloFlag = fMapping[3*hwAddress+2];
-  if (caloFlag == -1)
-    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+  if (caloFlag == -1) {
+    static int count = 0;
+    if (showInfo || count++ < 10)
+    {
+      AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
+    }
+  }
 
   return caloFlag;
 }
