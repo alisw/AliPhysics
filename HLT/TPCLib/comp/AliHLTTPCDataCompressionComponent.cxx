@@ -41,6 +41,8 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
+#include "AliHLTTPCClusterStatComponent.h"
+#include "AliHLTTPCReverseTransformInfoV1.h"
 #include "TH1F.h"
 #include "TFile.h"
 #include <memory>
@@ -1203,15 +1205,17 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   return 0;
 }
 
-int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform,
+template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
 									int slice, int padrow,
-									float& m, float& n) const
+									float& m, float& n,
+									AliHLTTPCReverseTransformInfoV1* rev)
 {
   /// calculate correction factor and offset for a linear approximation of the
   /// drift time transformation by just probing the range of timebins with
   /// AliHLTTPCClusterTransformation
   const int nofSteps=100;
   vector<float> zvalues;
+  vector<float> tvalues;
 
   int nofTimebins=AliHLTTPCGeometry::GetNTimeBins();
   int stepWidth=nofTimebins/nofSteps;
@@ -1219,11 +1223,21 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
   int count=0;
   float meanT=0.;
   float meanZ=0.;
-  for (time=0; time<nofTimebins; time+=stepWidth, count++) {
+  for (time=0; time<nofTimebins; time+=stepWidth) {
     Float_t xyz[3];
     transform.Transform(slice, padrow, 0, time, xyz);
+    float mytime = time;
+    if (rev)
+    {
+	Float_t padtimeref[2];
+	AliHLTTPCClusterStatComponent::TransformReverse(slice, padrow, xyz[1], xyz[2], padtimeref, rev);
+	mytime -= padtimeref[1];
+    }
+    if ((slice < 18) ^ (xyz[2] > 0)) continue;
+    count++;
     zvalues.push_back(xyz[2]);
-    meanT+=time;
+    tvalues.push_back(mytime);
+    meanT+=mytime;
     meanZ+=xyz[2];
   }
   if (count==0) count=1;
@@ -1231,14 +1245,25 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
   meanZ/=count;
   float sumTZ=.0;
   float sumT2=.0;
-  time=0;
-  for (vector<float>::const_iterator z=zvalues.begin();
-       z!=zvalues.end(); z++, time+=stepWidth) {
-    sumTZ+=(time-meanT)*((*z)-meanZ);
-    sumT2+=(time-meanT)*(time-meanT);
+  vector<float>::const_iterator t=tvalues.begin();
+  for (vector<float>::const_iterator z=zvalues.begin(); z!=zvalues.end(); z++, t++) {
+    sumTZ+=(*t-meanT)*(*z-meanZ);
+    sumT2+=(*t-meanT)*(*t-meanT);
   }
   m=sumTZ/sumT2;
   n=meanZ-m*meanT;
 
+  for (float z = 0;fabs(z) < 250;z += slice < 18 ? 10 : -10)
+  {
+	float test = (z - n) / m;
+  }
+
   return 0;
+}
+
+int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
+    return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
+}
+int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
+    return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
 }

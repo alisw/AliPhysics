@@ -136,6 +136,8 @@ public:
   //Initialized Fast transform data object
   static const AliHLTComponentDataType fgkTPCFastTransformDataObjectDataType;	//see above
   static const AliHLTComponentDataType &TPCFastTransformDataObjectDataType(){ return fgkTPCFastTransformDataObjectDataType; }	//see above
+  static const AliHLTComponentDataType fgkTPCReverseTransformInfoDataType; //
+  static const AliHLTComponentDataType &TPCReverseTransformInfoDataType(){ return fgkTPCReverseTransformInfoDataType; }	//see above
 
   // Cluster & Tracks model data
   /** data compression descriptor*/

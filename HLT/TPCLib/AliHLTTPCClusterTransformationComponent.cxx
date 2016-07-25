@@ -21,6 +21,7 @@
     @brief 
 */
 
+#include "AliHLTTPCReverseTransformInfoV1.h"
 #include "AliHLTTPCClusterTransformationComponent.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCDefinitions.h"
@@ -385,6 +386,23 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
     outputPtr += mysize; 
  
   } // end of loop over data blocks  
+  
+  if (size + sizeof(AliHLTTPCReverseTransformInfoV1) > maxOutSize)
+  {
+    HLTError("Cannot store reverse transform object to output");
+    return(-ENOSPC);
+  }
+  * (AliHLTTPCReverseTransformInfoV1*) outputPtr = *fgTransform.GetReverseTransformInfo();
+  AliHLTComponentBlockData bd;
+  FillBlockData( bd );
+  bd.fOffset = size;
+  bd.fSize = sizeof(AliHLTTPCReverseTransformInfoV1);
+  bd.fDataType = AliHLTTPCDefinitions::TPCReverseTransformInfoDataType();
+  outputBlocks.push_back( bd );
+
+  size += sizeof(AliHLTTPCReverseTransformInfoV1);
+  outputPtr += sizeof(AliHLTTPCReverseTransformInfoV1);
+  
   
   fBenchmark.Stop(0);
   HLTInfo(fBenchmark.GetStatistics());

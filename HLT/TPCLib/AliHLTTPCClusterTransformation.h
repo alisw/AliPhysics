@@ -27,6 +27,7 @@
 
 class AliTPCParam;
 class AliRecoParam;
+class AliHLTTPCReverseTransformInfoV1;
 
 /**
  * @class AliHLTTPCClusterTransformation
@@ -84,6 +85,8 @@ class AliHLTTPCClusterTransformation{
   AliHLTTPCFastTransform& GetFastTransformNonConst(){ return fFastTransform; }
   
   void SetInitSec(Int_t min, Int_t max) {fFastTransform.SetInitSec(min, max);}
+  
+  const AliHLTTPCReverseTransformInfoV1* GetReverseTransformInfo() {return fFastTransform.GetReverseTransformInfo();}
 
  private:
 
