@@ -90,7 +90,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_OmegaToPiZeroGamma_%i_%i", trainConfig, ReconMethod), "No analysis manager found.");
+    Error(Form("AddTask_OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "No analysis manager found.");
     return ;
   }
 
@@ -172,7 +172,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskOmegaToPiZeroGamma *task=NULL;
-  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, ReconMethod));
+  task= new AliAnalysisTaskOmegaToPiZeroGamma(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -243,7 +243,7 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
     cuts.AddCut("00081113","00200009327000008250400000","1111111063032230000","0163103100000010","0163103000000010");
 
   } else {
-    Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, ReconMethod), "wrong trainConfig variable no cuts have been specified for the configuration");
+    Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
 
@@ -344,14 +344,13 @@ void AddTask_OmegaToPiZeroGamma(  Int_t     trainConfig                   = 1,  
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
-  task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, ReconMethod), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root", trainConfig, ReconMethod));
+    mgr->CreateContainer(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("OmegaToPiZeroGamma_%i_%i.root", trainConfig, isMC));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

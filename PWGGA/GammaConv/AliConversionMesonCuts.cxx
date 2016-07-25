@@ -601,6 +601,49 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
+  // returns true for omegas decaying into pi0 + gamma within the rapidity window
+
+  if(!fMCStack) return kFALSE;
+
+  if(fMCMother->GetPdgCode()!=223) return kFALSE; // we only want omegas
+
+  Double_t rapidity = 10.;
+
+  if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if(fabs(rapidity) > fRapidityCutMeson)return kFALSE;
+
+  if(fMCMother->GetNDaughters()!=2) return kFALSE;
+
+  TParticle *gamma = 0x0;
+  TParticle *pi0 = 0x0;
+
+  for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
+    TParticle *temp = (TParticle*)fMCStack->Particle(index);
+    switch(temp->GetPdgCode()){
+    case 22:
+      gamma = temp;
+      labelGamma = index;
+      break;
+    case 111:
+      pi0   = temp;
+      labelNeutPion = index;
+      break;
+    }
+  }
+
+  if(gamma && pi0) return kTRUE;
+  return kFALSE;
+
+}
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){

@@ -84,6 +84,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
     void   PrintCuts();
     void   PrintCutsWithValues();
@@ -127,7 +128,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
     Double_t GetRapidityCutValue()                            { return fRapidityCutMeson; }
-    
+
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
     
