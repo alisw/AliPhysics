@@ -47,12 +47,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void ProcessMCParticles             ();
     void ProcessAODMCParticles          ();
     void RelabelAODPhotonCandidates     ( Bool_t mode);
-    void ProcessTruePhotonCandidates    ( AliAODConversionPhoton* TruePhotonCandidate);
-    void ProcessTrueClusterCandidates   ( AliAODConversionPhoton* TruePhotonCandidate, 
-                                          Float_t clusM02);
-    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, 
-                                          Float_t clusM02);
-    void ProcessTruePhotonCandidatesAOD ( AliAODConversionPhoton* TruePhotonCandidate);
     void ProcessTrueMesonCandidates     ( AliAODConversionMother *OmegaCandidate,
                                           AliAODConversionPhoton *TrueGammaCandidate0, 
                                           AliAODConversionPhoton *TrueGammaCandidate1, 
@@ -67,7 +61,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // switches for additional analysis streams or outputs
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
-    void SetDoClusterQA                 ( Int_t flag )                                      { fDoClusterQA = flag                         ;}
     void SetPlotHistsExtQA              ( Bool_t flag )                                     { fSetPlotHistsExtQA = flag                   ;}
 
     // Setting the cut lists for the conversion photons
@@ -108,8 +101,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     // BG HandlerSettings
     void CalculateBackground            ();
     void SetMoveParticleAccordingToVertex       ( Bool_t flag )                             { fMoveParticleAccordingToVertex = flag       ;}
-    void FillPhotonCombinatorialBackgroundHist  ( AliAODConversionPhoton *TruePhotonCandidate, 
-                                                  Int_t pdgCode[] );
     void MoveParticleAccordingToVertex          ( AliAODConversionPhoton* particle, 
                                                   const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData         ();
@@ -128,7 +119,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     void FillMultipleCountHistoAndClear ( map<Int_t,
                                           Int_t> &ma,
                                           TH1F* hist );
-  
+
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
 
@@ -187,11 +178,21 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH2F**                  fHistoPhotonPairMatchedInvMassPt;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoMotherMatchedInvMassPt;           //! array of histograms with invariant mass and Pt of rejected omega candidates due to
                                                                     //! matching between a pcm track and cluster which do not belong to the pair forming pi0
-    TH2F**                  fHistoPhotonPairPi0PtY;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
-    TH2F**                  fHistoPhotonPairPi0PtAlpha;             //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
-    TH2F**                  fHistoPhotonPairPi0PtOpenAngle;         //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
-    TH2F**                  fHistoPi0ConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
-    TH2F**                  fHistoMotherInvMassPt;               //! array of histograms for invariant mass of reconstructed Omegas
+    TH2F**                  fHistoPhotonPairYPt;                //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
+    TH2F**                  fHistoPhotonPairAlphaPt;            //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
+    TH2F**                  fHistoPhotonPairOpenAnglePt;        //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
+    TH2F**                  fHistoPhotonPairEtaPhi;             //! array of histograms with Eta, Phi of pi0 candidates
+    TH2F**                  fHistoMotherConvPhotonEtaPhi;       //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
+    TH2F**                  fHistoMotherInvMassPt;              //! array of histograms for invariant mass of omega candidates
+    TH2F**                  fHistoMotherYPt;                    //! array of histograms for Y of omega candidates
+    TH2F**                  fHistoMotherAlphaPt;                //! array of histograms with pT, Alpha of omega candidates
+    TH2F**                  fHistoMotherEtaPhi;                 //! array of histograms with Eta and Phi of omega candidates
+    TH2F**                  fHistoMotherPi0AnglePt;             //! array of histograms with angle between omega candidates and pi0 candidates
+    TH2F**                  fHistoMotherGammaAnglePt;           //! array of histograms with angle between omega candidates and combined gammas
+    TH2F**                  fHistoPi0GammaAnglePt;              //! array of histograms with angle between pi0 candidates and combined gammas
+    TH1F**                  fHistoGammaFromMotherPt;            //! array of histograms with pT of gammas from omega candidates
+
+    // BG histograms
     TH2F**                  fHistoDiff1Diff2SameBackInvMassPt;  //! array of histograms for generating the background in the specific case where the photons forming the pi0
                                                                 //! come from different events while the third photon comes from the current event
     TH2F**                  fHistoDiffSameSameBackInvMassPt;    //! analogous to previous, but with a different combination
@@ -203,14 +204,8 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
                     
     //histograms for pure MC quantities
-    TH1I**                  fHistoMCHeaders;                    //! array of histos for header names
     TH1F**                  fHistoMCAllGammaPt;                 //! array of histos with all gamma, pT
     TH1F**                  fHistoMCAllGammaEMCALAccPt;         //! array of histos with all gamma in EMCAL acceptance, pT
-    TH1F**                  fHistoMCDecayGammaPi0Pt;            //! array of histos with decay gamma from pi0, pT
-    TH1F**                  fHistoMCDecayGammaRhoPt;            //! array of histos with decay gamma from rho, pT
-    TH1F**                  fHistoMCDecayGammaOmegaPt;          //! array of histos with decay gamma from omega, pT
-    TH1F**                  fHistoMCDecayGammaPhiPt;            //! array of histos with decay gamma from phi, pT
-    TH1F**                  fHistoMCDecayGammaSigmaPt;          //! array of histos with decay gamma from Sigma0, pT
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
     TH1F**                  fHistoMCConvGammaR;                 //! array of histos with converted gamma, R
     TH1F**                  fHistoMCConvGammaEta;               //! array of histos with converted gamma, Eta
@@ -221,97 +216,62 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCPi0WOWeightInAccPt;         //! array of histos without weight pi0 in acceptance, pT
     TH2F**                  fHistoMCPi0PtY;                     //! array of histos with weighted pi0, pT, Y
     TH2F**                  fHistoMCPi0PtAlpha;                 //! array of histos with weighted pi0, pT, alpha
-    TH1F**                  fHistoMCK0sPt;                      //! array of histos with weighted K0s, pT
-    TH1F**                  fHistoMCK0sWOWeightPt;              //! array of histos with unweighted K0s, pT
-    TH2F**                  fHistoMCK0sPtY;                     //! array of histos with weighted K0s, pT, Y
-    TH2F**                  fHistoMCSecPi0PtvsSource;           //! array of histos with secondary pi0, pT, source
-    TH1F**                  fHistoMCSecPi0Source;               //! array of histos with secondary pi0, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
+    TH1F**                  fHistoMCGammaFromAllOmegaPt;        //! array of histos with pT of photons which are decay products of omegas
+    TH1F**                  fHistoMCGammaFromOmegaInAccPt;      //! array of histos with pT of photons from omegas in acceptance
+    TH2F**                  fHistoMCPi0FromAllOmegaInvMassPt;   //! array of histos with pT & Inv Mass of pi0s which are daughters of omegas
+    TH2F**                  fHistoMCOmegaInAccInvMassPt;        //! array of histos with true omegas in acceptance, Inv Mass, pT
+    TH2F**                  fHistoMCOmegaInvMassPt;             //! array of histos with pT of true omegas within rapidity window, for acceptance correction
+    TH2F**                  fHistoMCAllOmegaYPt;                //! array of histos with pT, Y of all true omegas
+    TH2F**                  fHistoMCOmegaInAccYPt;              //! array of histos with pT, Y of true omegas in acceptance
+    TH2F**                  fHistoMCAllOmegaAlphaPt;            //! array of histos with pT, alpha of omegas which decayed into pi0+gamma
+    TH2F**                  fHistoMCOmegaInAccAlphaPt;          //! array of histos with pT, alpha of omegas in acceptance which decayed into pi0+gamma
+    TH2F**                  fHistoMCPi0FromAllOmegaAlphaPt;     //! array of histos with pT, alpha of pi0s which are daughters of omegas
+    TH2F**                  fHistoMCPi0FromOmegaInAccAlphaPt;   //! array of histos with pT, alpha of pi0s which are daughters of omegas in acceptance
+    TH2F**                  fHistoMCPi0FromAllOmegaYPt;         //! array of histos with pT, Y of pi0s from all true omegas
+    TH2F**                  fHistoMCPi0FromOmegaInAccYPt;       //! array of histos with pT, Y of pi0s from omegas in acceptance
+    TH2F**                  fHistoMCPi0FromOmegaInAccInvMassPt; //! array of histos with Inv Mass, pT of pi0s from omegas in acceptance
+    TH2F**                  fHistoMCPi0FromAllOmegaEtaPhi;      //! array of histos with eta and phi of pi0s from all true omegas
+    TH2F**                  fHistoMCPi0FromOmegaInAccEtaPhi;    //! array of histos with eta and phi of pi0s from omegas in acceptance
+    TH2F**                  fHistoMCAllOmegaEtaPhi;             //! array of histos with eta and phi of all true omegas
+    TH2F**                  fHistoMCOmegaInAccEtaPhi;           //! array of histos with eta and phi of all true omegas in acceptance
+    TH2F**                  fHistoMCAllOmegaPiZeroAnglePt;      //! array of histos with angle between true omega and pi0 daughter and pT of omega
+    TH2F**                  fHistoMCAllPiZeroGammaAnglePt;      //! array of histos with angle between pi0 and gamma daughters of true omega and pT of omega
+    TH2F**                  fHistoMCAllOmegaGammaAnglePt;       //! array of histos with angle between true omega and gamma daughter and pT of omega
+    TH2F**                  fHistoMCInAccOmegaPiZeroAnglePt;    //! array of histos with angle between true omega in acc. and pi0 daughter
+    TH2F**                  fHistoMCInAccPiZeroGammaAnglePt;    //! array of histos with angle between pi0 and gamma daughters of true omega in acc.
+    TH2F**                  fHistoMCInAccOmegaGammaAnglePt;     //! array of histos with angle between true omega in acc. and gamma daughter
+    TH2F**                  fHistoMCAllOmegaInvMassPt;          //! array of histos with all true omegas, invMass, pT
+    TH2F**                  fHistoMCAllOmegaPtPi0Pt;            //! array of histos with pT of all omegas and that of their pi0 daughters
+    TH2F**                  fHistoMCInAccOmegaPtPi0Pt;          //! array of histos with pT of omegas in acceptance and that of their pi0 daughters
+    TH2F**                  fHistoMCAllOmegaPtGammaPt;          //! array of histos with pT of all omegas and those of their gamma daughters
+    TH2F**                  fHistoMCInAccOmegaPtGammaPt;        //! array of histos with pT of omegas in acceptance and those of their gamma daughters
+
     // MC validated reconstructed quantities mesons
-    TH2F**                  fHistoTruePi0InvMassPt;                             //! array of histos with validated pi0, invMass, pt
-    TH2F**                  fHistoTrueOmegaInvMassPt;                           //! array of histos with validated omegas, invMass, pt
-    TH2F**                  fHistoTruePi0MatchedInvMassPt;                      //! array of histos with rejected pi0, invMass, pt
-    TH2F**                  fHistoTruePi0CaloPhotonInvMassPt;                   //! array of histos with validated pi0, photon leading, invMass, pt
-    TH2F**                  fHistoTruePi0CaloConvertedPhotonInvMassPt;          //! array of histos with validated pi0, converted photon leading, invMass, pt
-    TH2F**                  fHistoTruePi0CaloConvertedPhotonMatchedInvMassPt;   //! array of histos with validated pi0 matched with conv photon, converted photon leading, invMass, pt
-    TH2F**                  fHistoTruePi0CaloConvPhotonConvRPt;                 //!
-    TH2F**                  fHistoTruePi0CaloConvPhotonConvRAlpha;              //!
-    TH2F**                  fHistoTruePi0CaloConvPhotonPtAlpha;                 //!
-    TH2F**                  fHistoTruePi0CaloElectronInvMassPt;                 //! array of histos with validated mothers, electron leading, invMass, pt
-    TH2F**                  fHistoTruePi0CaloMergedClusterInvMassPt;            //! array of histos with validated mothers, merged cluster invMass, pt
-    TH2F**                  fHistoTrueMotherCaloEMNonLeadingInvMassPt;          //! array of histos with validated mothers, EM non leading, invMass, pt
-    TH2F**                  fHistoTruePi0CaloMergedClusterPartConvInvMassPt;    //! array of histos with validated mothers, merged cluster part conv, invMass, pt
-    TH2F**                  fHistoTruePrimaryPi0InvMassPt;                      //! array of histos with validated weighted primary mothers, invMass, pt
-    TH2F**                  fHistoTruePrimaryPi0W0WeightingInvMassPt;           //! array of histos with validated unweighted primary mothers, invMass, pt
-    TProfile2D**            fProfileTruePrimaryPi0WeightsInvMassPt;             //! array of profiles with weights for validated primary mothers, invMass, pt  
-    TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;                    //! array of histos with validated weighted primary pi0, MCpt, resol pt
-    TH2F**                  fHistoTrueMotherPi0ConvPhotonEtaPhi;                //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17 ,eta/phi of conversion photon
-    TH2F**                  fHistoTrueSecondaryPi0InvMassPt;                    //! array of histos with validated secondary mothers, invMass, pt
-    TH2F**                  fHistoTrueSecondaryPi0FromK0sInvMassPt;             //! array of histos with validated secondary mothers from K0s, invMass, pt
-    TH1F**                  fHistoTrueK0sWithPi0DaughterMCPt;                   //! array of histos with K0s with reconstructed pi0 as daughter, pt
-    TH2F**                  fHistoTrueSecondaryPi0FromLambdaInvMassPt;          //! array of histos with validated secondary mothers from Lambda, invMass, pt
-    TH1F**                  fHistoTrueLambdaWithPi0DaughterMCPt;                //! array of histos with lambda with reconstructed pi0 as daughter, pt
-    TH2F**                  fHistoTrueBckGGInvMassPt;                           //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
-    TH2F**                  fHistoTrueBckContInvMassPt;                         //! array of histos with contamination BG, invMass, pt
-    TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
-    TH2F**                  fHistoTruePi0PtAlpha;                               //! array of histos with validated pi0, pt, alpha
-    TH2F**                  fHistoTruePi0PtOpenAngle;                           //! array of histos with validated pi0, pt, openAngle
-    // MC validated reconstructed quantities photons
-    TH1F**                  fHistoTrueConvGammaPt;                              //! array of histos with validated conversion photon, pt
-    TH1F**                  fHistoTrueConvGammaEta;                             //! array of histos with validated conversion photon, eta
-    TH2F**                  fHistoCombinatorialPt;                              //! array of histos with combinatorial BG, pt, source
-    TH1F**                  fHistoTruePrimaryConvGammaPt;                       //! array of histos with validated primary conversion photon, pt  
-    TH2F**                  fHistoTruePrimaryConvGammaESDPtMCPt;                //! array of histos with validated primary conversion photon, rec pt, mc pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaPt;                     //! array of histos with validated secondary conversion photon, pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaFromXFromK0sPt;         //! array of histos with validated secondary conversion photon from K0s, pt  
-    TH1F**                  fHistoTrueSecondaryConvGammaFromXFromLambdaPt;      //! array of histos with validated secondary conversion photon from Lambda, pt  
-    TH1F**                  fHistoTrueClusGammaPt;                              //! array of histos with validated cluster (electron or photon), pt
-    TH1F**                  fHistoTrueClusElectronPt;                           //! array of histos with validated electron, pt
-    TH1F**                  fHistoTrueClusConvGammaPt;                          //! array of histos with validated converted photon, pt
-    TH1F**                  fHistoTrueClusConvGammaFullyPt;                     //! array of histos with validated converted photon, fully contained, pt
-    TH1F**                  fHistoTrueClusMergedGammaPt;                        //! array of histos with validated merged photons, electrons, dalitz, pt
-    TH1F**                  fHistoTrueClusMergedPartConvGammaPt;                //! array of histos with validated merged partially converted photons, pt
-    TH1F**                  fHistoTrueClusDalitzPt;                             //! array of histos with validated Dalitz decay, pt
-    TH1F**                  fHistoTrueClusDalitzMergedPt;                       //! array of histos with validated Dalitz decay, more than one decay product in cluster, pt
-    TH1F**                  fHistoTrueClusPhotonFromElecMotherPt;               //! array of histos with validated photon from electron, pt
-    TH1F**                  fHistoTrueClusShowerPt;                             //! array of histos with validated shower, pt
-    TH1F**                  fHistoTrueClusSubLeadingPt;                         //! array of histos with pi0/eta/eta_prime in subleading contribution
-    TH1F**                  fHistoTrueClusNMothers;                             //! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
-    TH1F**                  fHistoTrueClusEMNonLeadingPt;                       //! array of histos with cluster with largest energy by hadron
-    TH2F**                  fHistoTrueNLabelsInClusPt;                          //! array of histos with number of labels in cluster 
-    TH1F**                  fHistoTruePrimaryClusGammaPt;                       //! array of histos with validated primary cluster, photons, pt
-    TH2F**                  fHistoTruePrimaryClusGammaESDPtMCPt;                //! array of histos with validated primary cluster, photons, rec Pt, MC pt
-    TH1F**                  fHistoTruePrimaryClusConvGammaPt;                   //! array of histos with validated primary cluster, converted photons, pt
-    TH2F**                  fHistoTruePrimaryClusConvGammaESDPtMCPt;            //! array of histos with validated primary cluster, converted photons, rec Pt, MC pt
-    TH1F**                  fHistoTrueSecondaryClusGammaPt;                     //! array of histos with validated secondary cluster, photons, pt
-    TH1F**                  fHistoTrueSecondaryClusGammaFromK0sPt;              //! array of histos with validated secondary cluster from K0s, photons, pt
-    TH1F**                  fHistoTrueSecondaryClusGammaFromLambdaPt;           //! array of histos with validated secondary cluster from Lambda, photons, pt
-    TH2F**                  fHistoTruePrimaryPi0PhotonPairPtconv;               //! array of histos with validated primary pi0's vs conversion photon pT
-    TH1F**                  fHistoTruePrimaryPi0DCPtconv;                       //! array of histos with validated primary pi0's vs conversion photon pT, double counting
-    TH1F**                  fHistoTruePrimaryPi0MissingPtconv;                  //! array of histos with validated primary pi0's vs conversion photon pT, missing
-    TH2F**                  fHistoTrueSecondaryPi0PhotonPairPtconv;             //! array of histos with validated secondary pi0's vs conversion photon pT
-    TH1F**                  fHistoTrueSecondaryPi0DCPtconv;                     //! array of histos with validated secondary pi0's vs conversion photon pT, double counting
-    TH1F**                  fHistoTrueSecondaryPi0MissingPtconv;                //! array of histos with validated secondary pi0's vs conversion photon pT, missing
+    TH2F**                  fHistoTrueOmegaInvMassPt;                           //! array of histos with reconstructed true omegas, invMass, pT
+    TH2F**                  fHistoTrueOmegaYPt;                                 //! array of histos with pT, Y of reconstructed true omegas
+    TH2F**                  fHistoTrueOmegaAlphaPt;                             //! array of histos with pT, Alpha of reconstructed true omegas
+    TH2F**                  fHistoTruePi0FromOmegaYPt;                          //! array of histos with pT, Y of pi0s from reconstructed true omegas
+    TH2F**                  fHistoTruePi0FromOmegaInvMassPt;                    //! array of histos with reconstructed true pi0s which are decay products of true omegas, invMass, pT
+    TH2F**                  fHistoTruePi0FromOmegaAlphaPt;                      //! array of histos with pT, alpha of pi0s from reconstructed true omegas
+    TH2F**                  fHistoTruePi0FromOmegaEtaPhi;                       //! array of histos with eta, phi of pi0s from reconstructed true omegas
+    TH2F**                  fHistoTruePi0FromOmegaOpenAnglePt;                  //! array of histos with pT, opening angle of pi0s fro reconstructed true omegas
+    TH2F**                  fHistoTrueOmegaPi0AnglePt;                          //! array of histos with pT, angle between reconstructed true omegas and pi0 daughters
+    TH2F**                  fHistoTrueOmegaGammaAnglePt;                        //! array of histos with pT, angle between reconstructed true omegas and gamma daughters
+    TH2F**                  fHistoTruePi0GammaAnglePt;                          //! array of histos with pT, angle between pi0 and gamma from reconstructed true omegas
+    TH2F**                  fHistoTrueOmegaEtaPhi;                              //! array of histos with eta, phi of reconstructed true omegas
+    TH2F**                  fHistoTrueOmegaPtPi0Pt;                             //! array of histos with pT of validated omegas against pT of pi0s from validated omegas
+    TH2F**                  fHistoTrueOmegaPtGammaPt;                           //! array of histos with pT of validated omegas against pT of gammas from validated omegas
+    TH1F**                  fHistoTrueGammaFromOmegaPt;                         //! array of histos with pT of photons from validated omegas
+
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
-    TH2F**                  fHistoDoubleCountTruePi0InvMassPt;                  //! array of histos with double counted pi0s, invMass, pT
-    TH2F**                  fHistoDoubleCountTrueConvGammaRPt;                  //! array of histos with double counted photons, R, pT
-    TH2F**                  fHistoDoubleCountTrueClusterGammaPt;                //! array of histos with double counted cluster photons
     vector<Int_t>           fVectorDoubleCountTruePi0s;                         //! vector containing labels of validated pi0
-    vector<Int_t>           fVectorDoubleCountTrueConvGammas;                   //! vector containing labels of validated photons
-    vector<Int_t>           fVectorDoubleCountTrueClusterGammas;                //! vector containing labels of validated cluster photons
     TH1F**                  fHistoMultipleCountTruePi0;                         //! array of histos how often TruePi0s are counted
-    TH1F**                  fHistoMultipleCountTrueConvGamma;                   //! array of histos how often TrueConvGammas are counted
-    TH1F**                  fHistoMultipleCountTrueClusterGamma;                //! array of histos how often TrueClusterGammas are counted
     map<Int_t,Int_t>        fMapMultipleCountTruePi0s;                          //! map containing pi0 labels that are counted at least twice
-    map<Int_t,Int_t>        fMapMultipleCountTrueConvGammas;                    //! map containing photon labels that are counted at least twice
-    map<Int_t,Int_t>        fMapMultipleCountTrueClusterGammas;                 //! map containing cluster photon labels that are counted at least twice
-    TH2F**                  fHistoTrueClusGammaEM02;                            //! array of histos with TruePhotons: cluster E vs M02
-    TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
-    TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
-    TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
     TH1F**                  fHistoNEventsMinGamma;                              //! array of histos with no. of events containing the minimum number of EMCal/PCM photons for each reconstruction method
+    TH1F**                  fHistoMCOmegaDecayChannels;                         //! array of histos with no. of true omegas in each decay channel
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
@@ -342,7 +302,6 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
-    Int_t                   fDoClusterQA;                                       // flag for cluster QA
     Bool_t                  fIsFromMBHeader;                                    // flag for MC headers
     Bool_t                  fIsOverlappingWithOtherHeader;                      // flag for particles in MC overlapping between headers
     Int_t                   fIsMC;                                              // flag for MC information
@@ -356,7 +315,7 @@ class AliAnalysisTaskOmegaToPiZeroGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskOmegaToPiZeroGamma(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent copy-construction
     AliAnalysisTaskOmegaToPiZeroGamma &operator=(const AliAnalysisTaskOmegaToPiZeroGamma&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 3);
+    ClassDef(AliAnalysisTaskOmegaToPiZeroGamma, 4);
 };
 
 #endif
