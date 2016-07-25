@@ -16,7 +16,7 @@ include_directories(
 
 
 
-set(STATIC_DEPENDENCIES ITSbase ITSrec RAWDatarec)
+set(STATIC_DEPENDENCIES ITSbase-static ITSrec-static RAWDatarec-static)
 generateDA("SDD" "BAS" "${STATIC_DEPENDENCIES}")
 
 set(STATIC_DEPENDENCIES ITSrec-static ITSbase-static RAWDatarec-static)
