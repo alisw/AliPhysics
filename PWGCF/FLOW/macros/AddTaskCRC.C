@@ -144,20 +144,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
   
   if(sDataSet=="2010" && !bZDCMCCen) {
-//    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTower.root";
-//    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
-//    if(!ZDCTowerEqFile) {
-//      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
-//      exit(1);
-//    }
-//    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
-//    if(ZDCTowerEqList) {
-//      taskFE->SetTowerEqList(ZDCTowerEqList);
-//      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
-//    } else {
-//      cout << "ERROR: ZDCTowerEqList not found!" << endl;
-//      exit(1);
-//    }
+    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/Calib10hZDCEqTowerVtx.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    if(!ZDCTowerEqFile) {
+      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
+      exit(1);
+    }
+    TList* ZDCTowerEqList = dynamic_cast<TList*>(ZDCTowerEqFile->FindObjectAny("ZDC"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
+      cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      exit(1);
+    }
   } // end of if(bSetQAZDC)
   
   // add the task to the manager

@@ -41,6 +41,7 @@ class TH1F;
 class TH2F;
 class TProfile;
 class TProfile3D;
+class TH3D;
 
 class AliAnalysisTaskCRCZDC : public AliAnalysisTaskSE {
  
@@ -305,7 +306,7 @@ private:
  AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
  AliCentrality* fCentrality; //!
   TList *fTowerEqList;   // list with weights
-  TH1D *fTowerGainEq[8]; //!
+  TH3D *fTowerGainEq[fnCen][8]; //!
   Int_t fCachedRunNum;   //
  
  ClassDef(AliAnalysisTaskCRCZDC,5);
