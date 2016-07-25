@@ -16,6 +16,7 @@ class AliTPCRecoParam;
 class TTreeSRedirector;
 class TGraph;
 class AliTPCclusterMI;
+class AliHLTTPCReverseTransformInfoV1;
 #include "AliTPCChebCorr.h"
 #include "AliTransform.h"
 #include <time.h>
@@ -88,6 +89,8 @@ public:
 
   void SetDebugStreamer(TTreeSRedirector * pcstream){fDebugStreamer=pcstream;}
   TTreeSRedirector *GetDebugStreemer() const { return fDebugStreamer;}     //!debug streamer
+  
+  AliHLTTPCReverseTransformInfoV1* GetReverseTransformInfo();
 
   //
 private:
@@ -136,6 +139,8 @@ private:
   static const Double_t fgkMaxY2X;      // tg(10)
   static       Float_t fgDistDispThresh; // threshold of Dist.dispersion wrt reference to consider as fluctuation
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
+  
+  AliHLTTPCReverseTransformInfoV1* fTmpReverseTransformInfo; //!
   //
   ClassDef(AliTPCTransform,5)
   /// \endcond

@@ -75,6 +75,7 @@
 #include "TTreeStream.h"
 #include "AliLumiTools.h"
 #include "AliTPCclusterMI.h"
+#include "../HLT/TPCLib/transform/AliHLTTPCReverseTransformInfoV1.h"
 #include <TGraph.h>
 
 /// \cond CLASSIMP
@@ -115,7 +116,8 @@ AliTPCTransform::AliTPCTransform():
   fLastTimeStampVDCorrPT(-1),
   fLastTimeStampVDCorrVaria(-1),
   //
-  fDebugStreamer(0)
+  fDebugStreamer(0),
+  fTmpReverseTransformInfo(NULL)
 {
   //
   // Speed it up a bit!
@@ -143,7 +145,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
   fTimeDependentUpdated(transform.fTimeDependentUpdated),
   fCorrMapMode(transform.fCorrMapMode),
-  fDebugStreamer(0)
+  fDebugStreamer(0),
+  fTmpReverseTransformInfo(NULL)
 {
   /// Speed it up a bit!
 
@@ -330,16 +333,45 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 
   if (!fCurrentRecoParam) return;
 
-
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   AliTPCParam  * param    = calib->GetParameters();
-  if (!param) AliFatal("Parameters missing");
+
+  if (!param) {
+    AliFatal("Parameters missing");
+    return; // make coverity happy
+  }
+
+  Bool_t sideC = (sector/18)&0x1;
+  if (fTmpReverseTransformInfo) {
+    fTmpReverseTransformInfo->fNTBinsL1 = param->GetNTBinsL1();
+    fTmpReverseTransformInfo->fZWidth = param->GetZWidth();
+    fTmpReverseTransformInfo->fZSigma = param->GetZSigma();
+    fTmpReverseTransformInfo->fDriftCorr = fDriftCorrPT;
+    if (sideC == 0) {
+      fTmpReverseTransformInfo->fTime0corrTimeA = fTime0CorrTime;
+      fTmpReverseTransformInfo->fDeltaZcorrTimeA = fDeltaZCorrTime;
+      fTmpReverseTransformInfo->fVdcorrectionTimeA = fVDCorrectionTime;
+      fTmpReverseTransformInfo->fVdcorrectionTimeGYA = fVDCorrectionTimeGY;
+      fTmpReverseTransformInfo->fZLengthA = param->GetZLength(sector);
+    } else {
+      fTmpReverseTransformInfo->fTime0corrTimeC = fTime0CorrTime;
+      fTmpReverseTransformInfo->fDeltaZcorrTimeC = fDeltaZCorrTime;
+      fTmpReverseTransformInfo->fVdcorrectionTimeC = fVDCorrectionTime;
+      fTmpReverseTransformInfo->fVdcorrectionTimeGYC = fVDCorrectionTimeGY;
+      fTmpReverseTransformInfo->fZLengthC = param->GetZLength(sector);
+    }
+    if (!AliTPCRecoParam::GetUseTimeCalibration()) {
+      fTmpReverseTransformInfo->fVdcorrectionTimeA = fTmpReverseTransformInfo->fVdcorrectionTimeC = 1.f;
+      fTmpReverseTransformInfo->fVdcorrectionTimeGYA = fTmpReverseTransformInfo->fVdcorrectionTimeGYC = 0.f;
+    }
+    return;
+  }
+
   Int_t row=TMath::Nint(x[0]);
   //
   const Int_t kNIS=param->GetNInnerSector();
   Float_t xyzPad[3];
   Bool_t iroc = sector < 36;
-  Bool_t sideC = (sector/18)&0x1;
   Double_t padWidth = param->GetPadPitchWidth(sector);
   Double_t padLength = param->GetPadPitchLength(sector,row);
   Double_t maxPad = iroc ? param->GetNPadsLow(row) : param->GetNPadsUp(row);
@@ -1195,4 +1227,14 @@ void AliTPCTransform::SetCorrectionMapMode(Bool_t v)
   }
   fCorrMapMode = v;
   fTimeDependentUpdated = kFALSE;
+}
+
+AliHLTTPCReverseTransformInfoV1* AliTPCTransform::GetReverseTransformInfo()
+{
+    AliHLTTPCReverseTransformInfoV1* info = new AliHLTTPCReverseTransformInfoV1;
+    fTmpReverseTransformInfo = info;
+    Local2RotatedGlobal(0, NULL);
+    Local2RotatedGlobal(18, NULL);
+    fTmpReverseTransformInfo = NULL;
+    return(info);
 }
