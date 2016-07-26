@@ -1,8 +1,8 @@
 #!/bin/bash
 SOURCE=/cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB
-TARGET=/home/drohr/HLT/HCDB_new3
+TARGET=/opt/HLT/data/HCDB_new_2016-07-26
 FUTURE_RUN=500000
-SOURCE_RUN=255283
+SOURCE_RUN=258307
 
 #Download default CDB entries for future run
 aliroot -l -b -q $ALICE_SOURCE/HLT/programs/downloadCDB.C"($FUTURE_RUN,\"local://$SOURCE\",\"local://$TARGET/tmp\",\"*/*/*\")"
@@ -25,7 +25,7 @@ aliroot -l -q -b $ALICE_SOURCE/HLT/exa/makeComponentConfigurationObject.C"(\"HLT
 #ATTENTION: the -rcu2-data flag is NOT set for the HCDB!!!!!! This is set by the chain configuration not by the HCDB!!!!!! Thus, the setting is not applied running aliroot!!!!!!
 
 #Create Global Trigger Configuration
-aliroot -l -q -b $ALICE_SOURCE/HLT/programs/create-globaltrigger-HM-TPC-comp.C"(\"local://$TARGER\")"
+aliroot -l -q -b $ALICE_SOURCE/HLT/programs/create-globaltrigger-HM-TPC-comp.C"(\"local://$TARGET\")"
 
 #Update TPC CalibDB
 aliroot -b << EOF
@@ -71,3 +71,8 @@ aliroot -l -q -b $ALICE_SOURCE/HLT/TPCLib/macros/makeTPCFastTransformOCDBObject.
 SRCFILE=`ls $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform | tail -n 1`
 aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/$SRCFILE\", \"local://$TARGET\", 0)"
 rm -f $ALICE_SOURCE/OCDB/HLT/ConfigTPC/TPCFastTransform/*
+
+rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressor/*
+rm -f $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables/*
+cp $SOURCE//HLT/ConfigTPC/TPCDataCompressor/* $TARGET/HLT/ConfigTPC/TPCDataCompressor
+cp $SOURCE//HLT/ConfigTPC/TPCDataCompressorHuffmanTables/* $TARGET/HLT/ConfigTPC/TPCDataCompressorHuffmanTables
