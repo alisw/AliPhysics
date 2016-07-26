@@ -3022,7 +3022,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	AliAODJet *jet = dynamic_cast<AliAODJet*>(fJetsEmbedded->At(ij));
 	if(!jet) continue;
 	Double_t jetPhi = jet->Phi();
-	Double_t jetPhiDelta = TMath::Abs(jetPhi-event_plane_2);//absolute difference of event plane and PYTHIA jet phi
+	Double_t phiEP = TMath::Pi()*0.5 - event_plane_2;//change phi EP angle to (0,pi) range, instead of (-pi/2, pi/2)
+
+	Double_t jetPhiDelta = TMath::Abs(jetPhi-phiEP);//absolute difference of event plane and PYTHIA jet phi
 	if(fDebug>3)std::cout<<"JetPhiDelta: "<<jetPhiDelta<<std::endl;
 	
 	fh1EmbeddedJetPhiDelta->Fill(jetPhiDelta);
