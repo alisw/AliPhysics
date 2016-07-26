@@ -4112,27 +4112,35 @@ void AliAnalysisTaskGammaConvCalo::RelabelAODPhotonCandidates(Bool_t mode){
     Bool_t AODLabelNeg = kFALSE;
     
     for(Int_t i = 0; i<fInputEvent->GetNumberOfTracks();i++){
-    AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
-    if(!AODLabelPos){
-      if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
-      PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
-      PhotonCandidate->SetLabelPositive(i);
-      AODLabelPos = kTRUE;
+      AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
+      if(!AODLabelPos){
+        if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
+        PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetLabelPositive(i);
+        AODLabelPos = kTRUE;
+        }
       }
-    }
-    if(!AODLabelNeg){
-      if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
-      PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
-      PhotonCandidate->SetLabelNegative(i);
-      AODLabelNeg = kTRUE;
+      if(!AODLabelNeg){
+        if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
+        PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetLabelNegative(i);
+        AODLabelNeg = kTRUE;
+        }
       }
-    }
-    if(AODLabelNeg && AODLabelPos){
-      break;
-    }
+      if(AODLabelNeg && AODLabelPos){
+        break;
+      }
     }
     if(!AODLabelPos || !AODLabelNeg){
-    cout<<"WARNING!!! AOD TRACKS NOT FOUND FOR"<<endl;
+      cout<<"WARNING!!! AOD TRACKS NOT FOUND FOR"<<endl;
+      if(!AODLabelNeg){
+        PhotonCandidate->SetMCLabelNegative(-999999);
+        PhotonCandidate->SetLabelNegative(-999999);
+      }
+      if(!AODLabelPos){
+        PhotonCandidate->SetMCLabelPositive(-999999);
+        PhotonCandidate->SetLabelPositive(-999999);
+      }
     }
   }
   

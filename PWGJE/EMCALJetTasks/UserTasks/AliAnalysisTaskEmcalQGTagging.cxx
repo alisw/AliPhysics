@@ -590,8 +590,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetMass(AliEmcalJet *jet,Int_t jetContNb=0){
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtracted();
-      else return jet->GetSecondOrderSubtracted();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtracted();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtracted();
   else 
     return jet->M();
 }
@@ -626,8 +626,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet, Int_t jetCon
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0){
 
   if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedAngularity();
-      else return jet->GetSecondOrderSubtractedAngularity();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedAngularity();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
  
@@ -661,8 +661,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0){
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedpTD();
-      else return jet->GetSecondOrderSubtractedpTD();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedpTD();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedpTD();
   else
     return PTD(jet, jetContNb);
  
@@ -756,8 +756,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetCircularity(AliEmcalJet *jet, Int_t
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedCircularity();
-      else return jet->GetSecondOrderSubtractedCircularity();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedCircularity();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedCircularity();
   else
     return Circularity(jet, jetContNb);
  
@@ -805,8 +805,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetCo
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedLeSub();
-      else return jet->GetSecondOrderSubtractedLeSub();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedLeSub();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedLeSub();
   else
     return LeSub(jet, jetContNb);
  
@@ -817,8 +817,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetCo
   //calc subtracted jet mass
   
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedConstituent();
-      else return jet->GetSecondOrderSubtractedConstituent();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedConstituent();
+      else return jet->GetShapeProperties()->GetSecondOrderSubtractedConstituent();
   else
     return jet->GetNumberOfTracks();
  
@@ -891,8 +891,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetCont
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedSigma2();
-    else return jet->GetSecondOrderSubtractedSigma2();
+    if (fDerivSubtrOrder == 1) return jet->GetShapeProperties()->GetFirstOrderSubtractedSigma2();
+    else return jet->GetShapeProperties()->GetSecondOrderSubtractedSigma2();
   else
     return Sigma2(jet, jetContNb);
  

@@ -3,6 +3,7 @@
  * 
  * @param dir   Parent directory 
  * @param name  Name of collection
+ * @param verbose Be verbose
  * 
  * @return collection or null
  */
@@ -31,6 +32,7 @@ TCollection* GetCollection(TDirectory* dir, const TString& name,
  * @param name   Name of object 
  * @param cls If specified, check that the found object (if any) is of
  * this class.
+ * @param verbose Whether to be verbose 
  * 
  * @return Found object (possibly type-checked) or null
  */
@@ -76,6 +78,7 @@ void RemoveObject(TCollection* parent, const TString& name)
  * 
  * @param parent Parent collection
  * @param name   Name of collection to find 
+ * @param verbose Be verbose
  * 
  * @return Found collection or null
  */

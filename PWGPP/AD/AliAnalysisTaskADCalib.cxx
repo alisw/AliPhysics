@@ -258,7 +258,7 @@ void AliAnalysisTaskADCalib::ProcessOutput(const Char_t  *fileName,
   md->SetBeamPeriod(0);
   md->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md->SetComment("AD Saturation");
-  AliCDBId idSat ("AD/Calib/Saturation", runNumber, AliCDBRunRange::Infinity());
+  AliCDBId idSat ("AD/Calib/Saturation", runNumber, runNumber);
   AliCDBId idGain("AD/Calib/PMGains",    runNumber, runNumber);
 
   // (7c) put the objects into the OCDB storage
@@ -276,7 +276,7 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     return kFALSE;
   }
 
-  // (1) set up the TF1 depending on BC
+  // (1a) set up the TF1 depending on BC
   switch (bc) {
   case 10:
     f->SetParameters(0, 8);
@@ -295,6 +295,10 @@ Bool_t AliAnalysisTaskADCalib::MakeExtrapolationFit(TH2 *h, TF1 *f, Int_t ch, In
     return kFALSE;
   }
   f->SetLineStyle(2);
+
+  // (1b) do not fit on (nearly) empty histograms
+  if (h->GetEntries() < 10)
+    return kFALSE;
 
   // (2) fit to the profile
   TProfile *h_pfx = h->ProfileX();
@@ -383,12 +387,15 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
   // (1) compute charge quantiles on the tail charge
   Double_t chargeQuantiles[16];
   for (Int_t ch=0; ch<16; ++ch) { // offline channel number
-    TH2 *h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, 10, 0)));
-    Double_t qx = 0.99; // 99% quantile
-    TH1* h1 = h0->ProjectionX();
-    h1->SetDirectory(NULL);
+    TH2 *h0Int0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, 10, 0)));
+    TH2 *h0Int1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, 10, 1)));
+    TH2* hSum   = dynamic_cast<TH2*>(h0Int0->Clone("hSum"));
+    hSum->Add(h0Int1);
+    const Double_t qx = 0.95; // 95% quantile
+    TH1* h1 = hSum->ProjectionX();
     h1->GetQuantiles(1, chargeQuantiles+ch, &qx);
     delete h1;
+    delete hSum;
   }
   const Double_t meanQuantiles[2] = { 
     (Float_t)TMath::Mean(8, chargeQuantiles),
@@ -410,35 +417,44 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     chargeEqualizationFactor = meanQuantiles[ch/8]/chargeQuantiles[ch];
     AliInfo(Form("quantile[%2d] = %f f=%f", ch, chargeQuantiles[ch], chargeEqualizationFactor));
 
+    const Double_t largeThr = 1e5;
     for (Int_t bc=0; bc<21; ++bc) {
-      TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0)));
-      TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1)));
+      TH2* h0 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 0))); // integrator0
+      TH2* h1 = dynamic_cast<TH2*>(fList->FindObject(GetHistName(ch, bc, 1))); // integrator1
       switch (bc) {
 	if (NULL != h0 && NULL != h1) {
 	case 10: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x");
-	  Bool_t fitOk = kTRUE;
-	  Double_t thr[2] = { 0, 0 };
-	  fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	  fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	  doExtrapolation[bc] = fitOk;
-	  extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
+	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
+	  Double_t thr[2] = { largeThr, largeThr };
+	  fitOk[0] &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
+	  fitOk[1] &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
+	  doExtrapolation[bc] = (fitOk[0] || fitOk[1]);
+	  extrapolationThresholds[bc] = ((fitOk[0] && fitOk[1])
+					 ? TMath::Min(thr[0], thr[1])
+					 : fitOk[0]*thr[0] + fitOk[1]*thr[1]);
+	  if (!doExtrapolation[bc])
+	    extrapolationThresholds[bc] = -999.9f;
 	  break;
 	}
 	case 11:
 	case 12: {
 	  new (f_Int0[bc]) TF1(GetFcnName(ch, bc, 0), "[0] + [1]*x + [2]*abs(x)**[3]");
 	  new (f_Int1[bc]) TF1(GetFcnName(ch, bc, 1), "[0] + [1]*x + [2]*abs(x)**[3]");
-	  Bool_t fitOk = kTRUE;
-	  Double_t thr[2] = { 0, 0 };
-	  fitOk &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
-	  fitOk &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
-	  doExtrapolation[bc] = fitOk;
-	  extrapolationThresholds[bc] = TMath::Min(thr[0], thr[1]);
+	  Bool_t fitOk[2] = { kTRUE,    kTRUE    };
+	  Double_t thr[2] = { largeThr, largeThr };
+	  fitOk[0] &= MakeExtrapolationFit(h0, static_cast<TF1*>(f_Int0[bc]), ch, bc, thr[0]);
+	  fitOk[1] &= MakeExtrapolationFit(h1, static_cast<TF1*>(f_Int1[bc]), ch, bc, thr[1]);
+	  doExtrapolation[bc] = (fitOk[0] || fitOk[1]);
+	  extrapolationThresholds[bc] = ((fitOk[0] && fitOk[1])
+					 ? TMath::Min(thr[0], thr[1])
+					 : fitOk[0]*thr[0] + fitOk[1]*thr[1]);
+	  if (!doExtrapolation[bc])
+	    extrapolationThresholds[bc] = -999.9f;
 	  break;
 	}
-	}
+	} // (NULL != h0 && NULL != h1)
       default:
 	doExtrapolation[bc]         = kFALSE;
 	extrapolationThresholds[bc] = -999.9f;
@@ -448,6 +464,8 @@ TTree* AliAnalysisTaskADCalib::MakeSaturationCalibObject() {
     }
     t->Fill();
   } // next channel
+
+  t->ResetBranchAddresses();
 
   return t;
 }

@@ -56,6 +56,7 @@ alilog_info "BEGIN Processing for time bin $mapStartTime : $mapStopTime in run $
 time aliroot -b -q  $inclMacro ${locMacro}\($run,$mapStartTime,$mapStopTime,\"$residualFileList\"\) >& out_${mapStartTime}_${mapStopTime}.log
 alilog_info "END: Processing"
 if [[ -f syswatch.log ]] ; then mv syswatch.log syswatch_${mapStartTime}_${mapStopTime}.log ; fi
+rm tmpDeltaSect*.root
 
 
 

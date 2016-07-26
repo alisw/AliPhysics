@@ -20,6 +20,7 @@
 
 #include  <AliJConst.h>
 #include "AliJHistos.h"
+#include "AliJAcceptanceCorrection.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ public:
   double GetGeoAccCorrIncl(double deltaEta, int assocBin, int assocType);
   
   void SetSampligInclusive(){fsamplingMethod = 1;}
-  
+  void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;}
   
   double DeltaPhi(double phi1, double phi2);
   
@@ -62,6 +63,7 @@ protected:
   
   AliJCard*   fcard; // card
   AliJHistos* fhistos;  // histos
+  AliJAcceptanceCorrection *fAcceptanceCorrection;  // acceptance correction container
   int fnReal; // comment me
   int fnMix; // comment me
   int fsumTriggerAndAssoc; // comment me
@@ -113,6 +115,7 @@ private:
   void FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJBaseTrack *ftk2, bool fill2DBackground);
   void FillDeltaEtaHistograms(fillType fTyp, int zBin);
   void FillDeltaPhiHistograms(fillType fTyp);
+  void FillDeltaEtaDeltaPhiHistograms(fillType fTyp);
   void FillPtaHistograms(fillType fTyp);
   void FillIAAAndMoonHistograms(fillType fTyp, int zBin);
   void FillJtDistributionHistograms(fillType fTyp, int assocType, TLorentzVector *vTrigger, TLorentzVector *vAssoc, AliJTH1D &hDistribution, AliJTH1D &hDistributionLikeSign, AliJTH1D &hDistributionUnlikeSign, AliJTH1D &hInvariantMass, AliJTH1D &hInvariantMassLikeSign, AliJTH1D &hInvariantMassUnlikeSign);

@@ -41,11 +41,11 @@ ClassImp(AliQnCorrectionsQnVector)
 AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() :
   fQvectorX(0x0),
   fQvectorY(0x0),
+  fQnVectorStatus(),
   fBin(-1),
   fQvectorNormalization(3),
   fSumW(0.0),
-  fN(0),
-  fQnVectorStatus()
+  fN(0)
 {
   //
   // Constructor
@@ -64,11 +64,11 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() :
 AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(Int_t nHarmonics1) :
   fQvectorX(0x0),
   fQvectorY(0x0),
+  fQnVectorStatus(),
   fBin(-1),
   fQvectorNormalization(3),
   fSumW(0.0),
-  fN(0),
-  fQnVectorStatus()
+  fN(0)
 {
   //
   // Constructor

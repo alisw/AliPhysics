@@ -126,7 +126,7 @@ void AliEmcalContainer::SetClassName(const char *clname)
  * The object name in the event must match the name given in the constructor
  * @param event Input event containing the array with content.
  */
-void AliEmcalContainer::SetArray(AliVEvent *event) 
+void AliEmcalContainer::SetArray(const AliVEvent *event)
 {
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);
@@ -277,4 +277,20 @@ const AliEmcalIterableContainer AliEmcalContainer::all() const {
  */
 const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
+}
+
+
+/**
+ * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
+ * @param mphi First angle value
+ * @param vphi Second angle value
+ * @return Difference between mphi and vphi
+ */
+Double_t AliEmcalContainer::RelativePhi(Double_t mphi, Double_t vphi)
+{
+  vphi = TVector2::Phi_0_2pi(vphi);
+  mphi = TVector2::Phi_0_2pi(mphi);
+
+  Double_t dphi = TVector2::Phi_mpi_pi(mphi - vphi);
+  return dphi;
 }

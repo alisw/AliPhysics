@@ -23,6 +23,8 @@
  * @param onlyMB    Only collect statistics for MB (INEL) events
  * @param config    Configuration script 
  * @param corrs     Corrections
+ * @param lowCut    (Optional) lower cut 
+ * @param extraDead File with extra dead channels 
  *
  * @return Newly created task 
  *

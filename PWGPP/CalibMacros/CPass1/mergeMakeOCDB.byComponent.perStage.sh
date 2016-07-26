@@ -83,7 +83,7 @@ main()
   # setup components to be merged
   #components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
   #TPCCluster and TPCAlign removed (see Computing Board on 01/12/2014, https://docs.google.com/document/d/14i0G6bxZpnB3MFdWgqsweI3vCcUaeCwaq99tYoqmfxk/edit, https://indico.cern.ch/event/291343/)
-  components="TOF MeanVertex T0 SDD TRD TPCCalib"   
+  components="TOF MeanVertex T0 SDD TRD TPCCalib AD"   
   #components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
   # take Data Quality Flags from JDL
@@ -91,8 +91,8 @@ main()
 
   # ===| TPC JDL overwrites |===================================================
   #
-  export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPass0_GainCalibType-$TPC_CPass0_GainCalibType}
-  export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPass1_GainCalibType-$TPC_CPass1_GainCalibType}
+  export TPC_CPass0_GainCalibType=${ALIEN_JDL_TPC_CPASS0_GAINCALIBTYPE-$TPC_CPass0_GainCalibType}
+  export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPASS1_GAINCALIBTYPE-$TPC_CPass1_GainCalibType}
 
   # take the path to the reference storage (used by TPC) from the JDL
   export targetStorageResidual=${ALIEN_JDL_TARGETSTORAGERESIDUAL}

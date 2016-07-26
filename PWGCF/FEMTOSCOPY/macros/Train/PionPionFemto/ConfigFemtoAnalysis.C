@@ -36,6 +36,7 @@ struct MacroParams {
   bool do_avg_sep_cf;
   bool do_kt_q3d;
   bool do_kt_qinv;
+  bool do_ylm_cf; // not implemented yet
 };
 
 void
@@ -48,7 +49,7 @@ BuildConfiguration(
 
 
 AliFemtoManager*
-ConfigFemtoAnalysis(const TString& param_str = "")
+ConfigFemtoAnalysis(const TString& param_str="")
 {
   std::cout << "[ConfigFemtoAnalysis (PionPion)]\n";
 
@@ -65,6 +66,7 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
+  macro_config.do_ylm_cf = false;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -157,13 +159,13 @@ ConfigFemtoAnalysis(const TString& param_str = "")
       }
 
       if (macro_config.do_deltaeta_deltaphi_cf) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_d", 1.6,
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,
               // 200, 0.0, 0.5
-              50, -0.1, 0.1,
-              50, -0.1, 0.1
+              75, -0.1, 0.1,
+              75, -0.1, 0.1
         );
         deta_dphi_cf->SetMagneticFieldSign(1);
 
@@ -197,20 +199,22 @@ ConfigFemtoAnalysis(const TString& param_str = "")
         analysis->AddCorrFctn(kt_q3d);
       }
 
-      // analysis->AddCorrFctn(
-      //   new AliFemtoCorrFctnDirectYlm(
-      //     Form("cylm%stpcM%i", chrgs[ichg], imult),
-      //     3,
-      //     nbinssh,
-      //     0.0,
-      //     shqmax,
-      //     runshlcms
-      //   )
-      // );
-      //
+      if (macro_config.do_ylm_cf) {
+        /*
+        analysis->AddCorrFctn(
+          new AliFemtoCorrFctnDirectYlm(
+            TString::Format("cylm%stpcM%i", chrgs[ichg], imult),
+            3,
+            nbinssh,
+            0.0,
+            shqmax,
+            runshlcms
+          )
+        );
+        */
+      }
 
       manager->AddAnalysis(analysis);
-
     }
   }
 

@@ -38,7 +38,7 @@ class AliJEventPool {
     public:
         void Mix( TClonesArray *triggList, 
                 corrFillType cFTyp, 
-                float cent, float Z, float thisMult, int iev);
+                float cent, float Z, float thisMult, int iev, bool leadingParticle = false);
 
        //void MixRNDM( AliJEventPool *cross, void (AliJCorrelations::*fillHisto)(fillType, int, AliJBaseTrack*, AliJBaseTrack*) );
 

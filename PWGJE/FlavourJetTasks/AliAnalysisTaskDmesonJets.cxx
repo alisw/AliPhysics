@@ -516,6 +516,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fAcceptedDecay(0),
   fInhibit(kFALSE),
   fJetDefinitions(),
+  fPtBinWidth(0.5),
+  fMaxPt(100),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -552,6 +554,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fAcceptedDecay(kAnyDecay),
   fInhibit(kFALSE),
   fJetDefinitions(),
+  fPtBinWidth(0.5),
+  fMaxPt(100),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -585,6 +589,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fAcceptedDecay(source.fAcceptedDecay),
   fInhibit(source.fInhibit),
   fJetDefinitions(source.fJetDefinitions),
+  fPtBinWidth(source.fPtBinWidth),
+  fMaxPt(source.fMaxPt),
   fTree(0),
   fCurrentDmesonJetInfo(0),
   fCurrentJetInfo(0),
@@ -1374,9 +1380,11 @@ TTree* AliAnalysisTaskDmesonJets::AnalysisEngine::BuildTree()
 /// Allocate a THnSparse histogram
 ///
 /// \param param Analysis parameters used to properly set some of the axis
-void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis, Int_t nBins, Double_t minBinPt, Double_t maxBinPt)
+void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis)
 {
   TString hname;
+
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
   for (std::vector<AliHFJetDefinition>::const_iterator it = fJetDefinitions.begin(); it != fJetDefinitions.end(); it++) {
     const AliHFJetDefinition* jetDef = &(*it);
@@ -1392,9 +1400,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
     Int_t    dim       = 0   ;
 
     title[dim] = "#it{p}_{T,D} (GeV/#it{c})";
-    nbins[dim] = nBins;
+    nbins[dim] = nPtBins;
     min[dim] = 0;
-    max[dim] = 100;
+    max[dim] = fMaxPt;
     dim++;
 
     if ((enabledAxis & kPositionD) != 0) {
@@ -1486,9 +1494,9 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
     }
 
     title[dim] = "#it{p}_{T,jet} (GeV/#it{c})";
-    nbins[dim] = nBins;
-    min[dim] = minBinPt;
-    max[dim] = maxBinPt;
+    nbins[dim] = nPtBins;
+    min[dim] = 0;
+    max[dim] = fMaxPt;
     dim++;
 
     if ((enabledAxis & kPositionJet) != 0) {
@@ -1669,7 +1677,7 @@ ClassImp(AliAnalysisTaskDmesonJets);
 
 /// This is the default constructor, used for ROOT I/O purposes.
 AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
-  AliAnalysisTaskEmcal(),
+  AliAnalysisTaskEmcalLight(),
   fAnalysisEngines(),
   fEnabledAxis(0),
   fTreeOutput(kFALSE),
@@ -1685,7 +1693,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
 ///
 /// \param name Name of the task
 AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name) :
-  AliAnalysisTaskEmcal(name, kTRUE),
+  AliAnalysisTaskEmcalLight(name, kTRUE),
   fAnalysisEngines(),
   fEnabledAxis(k2ProngInvMass),
   fTreeOutput(kFALSE),
@@ -1806,10 +1814,10 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 {
   ::Info("UserCreateOutputObjects", "CreateOutputObjects of task %s", GetName());
 
-  AliAnalysisTaskEmcal::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalLight::UserCreateOutputObjects();
 
   // Define histograms
-  // the TList fOutput is already defined in  AliAnalysisTaskEmcal::UserCreateOutputObjects()
+  // the TList fOutput is already defined in  AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 
   TString hname;
   TString htitle;
@@ -1917,7 +1925,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       fOutput->Add(tree);
     }
     else {
-      param->BuildHnSparse(fEnabledAxis, fNbins, fMinBinPt, fMaxBinPt);
+      param->BuildHnSparse(fEnabledAxis);
     }
   }
 
@@ -1930,7 +1938,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
 /// then calls the base class ExecOnce() method.
 void AliAnalysisTaskDmesonJets::ExecOnce()
 {
-  AliAnalysisTaskEmcal::ExecOnce();
+  AliAnalysisTaskEmcalLight::ExecOnce();
 
   // Load the event
   fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);

@@ -52,12 +52,13 @@ class AliEMCALGeometry;
 #include "AliTLorentzVector.h"
 #include "THistManager.h"
 
-#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcalLight.h"
+#include "AliJetContainer.h"
 
 using std::vector;
 using std::list;
 
-class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
+class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 {
  public:
 
@@ -329,7 +330,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     TTree* GetTree() { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
 
-    void BuildHnSparse(UInt_t enabledAxis, Int_t nBins, Double_t minBinPt, Double_t maxBinPt);
+    void BuildHnSparse(UInt_t enabledAxis);
     Bool_t FillHnSparse(Bool_t applyKinCuts);
     Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
 
@@ -359,6 +360,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
     UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
     Bool_t                             fInhibit               ; ///<  Inhibit the task
     vector<AliHFJetDefinition>         fJetDefinitions        ; ///<  Jet definitions
+    Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
+    Float_t                            fMaxPt                 ; ///<  Histogram pt limit
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
@@ -439,7 +442,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 3);
+  ClassDef(AliAnalysisTaskDmesonJets, 4);
   /// \endcond
 };
 

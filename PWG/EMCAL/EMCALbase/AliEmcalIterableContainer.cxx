@@ -16,17 +16,18 @@
 #include "AliEmcalIterableContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalIterableContainer)
+templateClassImp(AliEmcalIterableContainerT);
 /// \endcond
 
 /**
  * Default (I/O) constructor
  */
-AliEmcalIterableContainer::AliEmcalIterableContainer():
-TObject(),
-fkContainer(NULL),
-fAcceptIndices(),
-fUseAccepted(kFALSE)
+template <class T>
+AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT():
+  TObject(),
+  fkContainer(NULL),
+  fAcceptIndices(),
+  fUseAccepted(kFALSE)
 {
 
 }
@@ -37,13 +38,14 @@ fUseAccepted(kFALSE)
  * @param[in] cont EMCAL container to iterate over
  * @param[in] useAccept If true accepted objects are used in the iteration, otherwise all objects
  */
-AliEmcalIterableContainer::AliEmcalIterableContainer(const AliEmcalContainer *cont, bool useAccept):
-TObject(),
-fkContainer(cont),
-fAcceptIndices(),
-fUseAccepted(useAccept)
+template <class T>
+AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalContainer *cont, bool useAccept):
+  TObject(),
+  fkContainer(cont),
+  fAcceptIndices(),
+  fUseAccepted(useAccept)
 {
-  if(fUseAccepted) BuildAcceptIndices();
+  if (fUseAccepted) BuildAcceptIndices();
 }
 
 /**
@@ -51,11 +53,12 @@ fUseAccepted(useAccept)
  * container is not owner over its input container only pointers are copied.
  * @param[in] ref Reference for the copy
  */
-AliEmcalIterableContainer::AliEmcalIterableContainer(const AliEmcalIterableContainer &ref):
-TObject(ref),
-fkContainer(ref.fkContainer),
-fAcceptIndices(ref.fAcceptIndices),
-fUseAccepted(ref.fUseAccepted)
+template <class T>
+AliEmcalIterableContainerT<T>::AliEmcalIterableContainerT(const AliEmcalIterableContainerT<T> &ref):
+  TObject(ref),
+  fkContainer(ref.fkContainer),
+  fAcceptIndices(ref.fAcceptIndices),
+  fUseAccepted(ref.fUseAccepted)
 {
 
 }
@@ -66,7 +69,8 @@ fUseAccepted(ref.fUseAccepted)
  * @param[in] ref Reference for assignment
  * @return Object after assignment
  */
-AliEmcalIterableContainer &AliEmcalIterableContainer::operator=(const AliEmcalIterableContainer &ref){
+template <class T>
+AliEmcalIterableContainerT<T> &AliEmcalIterableContainerT<T>::operator=(const AliEmcalIterableContainerT<T>& ref) {
   TObject::operator=(ref);
   if(this != &ref){
     fkContainer = ref.fkContainer;
@@ -81,7 +85,8 @@ AliEmcalIterableContainer &AliEmcalIterableContainer::operator=(const AliEmcalIt
  * iterator loops over all or only accepted objects)
  * @return Number of iterable objects in container
  */
-int AliEmcalIterableContainer::GetEntries() const {
+template <class T>
+int AliEmcalIterableContainerT<T>::GetEntries() const {
   return fUseAccepted ? fAcceptIndices.GetSize() : fkContainer->GetNEntries();
 }
 
@@ -100,10 +105,11 @@ int AliEmcalIterableContainer::GetEntries() const {
  * @param[in] index Index of the object inside the container to access
  * @return The object at the given index (NULL if the index is out of range)
  */
-TObject *AliEmcalIterableContainer::operator[](int index) const {
+template <class T>
+T *AliEmcalIterableContainerT<T>::operator[](int index) const {
   if(index < 0 || index >= GetEntries()) return NULL;
   const AliEmcalContainer &contref = *fkContainer;
-  return fUseAccepted ? contref[fAcceptIndices[index]] : contref[index];
+  return static_cast<T*>(fUseAccepted ? contref[fAcceptIndices[index]] : contref[index]);
 }
 
 /**
@@ -111,7 +117,8 @@ TObject *AliEmcalIterableContainer::operator[](int index) const {
  * For this all objects inside the container are checked
  * for being accepted or not.
  */
-void AliEmcalIterableContainer::BuildAcceptIndices(){
+template <class T>
+void AliEmcalIterableContainerT<T>::BuildAcceptIndices(){
   fAcceptIndices.Set(fkContainer->GetNAcceptEntries());
   int acceptCounter = 0;
   for(int index = 0; index < fkContainer->GetNEntries(); index++){
@@ -121,7 +128,7 @@ void AliEmcalIterableContainer::BuildAcceptIndices(){
 }
 
 ///////////////////////////////////////////////////////////////////////
-/// Content of class AliEmcalIterableContainer::Iterator            ///
+/// Content of class AliEmcalIterableContainerT<T>::Iterator            ///
 ///////////////////////////////////////////////////////////////////////
 
 /**
@@ -136,7 +143,8 @@ void AliEmcalIterableContainer::BuildAcceptIndices(){
  * @param[in] forward Direction of the iteration. If true, the iteration is
  * performed in forward direction, otherwise in backward direction.
  */
-AliEmcalIterableContainer::iterator::iterator(const AliEmcalIterableContainer *cont, int currentpos, bool forward):
+template <class T>
+AliEmcalIterableContainerT<T>::iterator::iterator(const AliEmcalIterableContainerT<T> *cont, int currentpos, bool forward):
 fkData(cont),
 fCurrent(currentpos),
 fForward(forward)
@@ -149,7 +157,8 @@ fForward(forward)
  * iterator does not own its container.
  * @param[in] ref Reference for the copy
  */
-AliEmcalIterableContainer::iterator::iterator(const AliEmcalIterableContainer::iterator &ref):
+template <class T>
+AliEmcalIterableContainerT<T>::iterator::iterator(const AliEmcalIterableContainerT<T>::iterator &ref):
      fkData(ref.fkData),
      fCurrent(ref.fCurrent),
      fForward(ref.fForward)
@@ -163,7 +172,8 @@ AliEmcalIterableContainer::iterator::iterator(const AliEmcalIterableContainer::i
  * @param[in] ref Reference for the assignment
  * @return This iterator after assignment
  */
-AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operator=(const AliEmcalIterableContainer::iterator &ref){
+template <class T>
+typename AliEmcalIterableContainerT<T>::iterator &AliEmcalIterableContainerT<T>::iterator::operator=(const AliEmcalIterableContainerT<T>::iterator &ref){
   if(this != &ref){
     fkData = ref.fkData;
     fCurrent = ref.fCurrent;
@@ -177,7 +187,8 @@ AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operat
  * @param[in] ref Reference for comparison
  * @return True if the position does not match, false otherwise
  */
-bool AliEmcalIterableContainer::iterator::operator!=(const AliEmcalIterableContainer::iterator &ref) const{
+template <class T>
+bool AliEmcalIterableContainerT<T>::iterator::operator!=(const AliEmcalIterableContainerT<T>::iterator &ref) const{
   return fCurrent != ref.fCurrent;
 }
 
@@ -186,7 +197,8 @@ bool AliEmcalIterableContainer::iterator::operator!=(const AliEmcalIterableConta
  * iterator based on the direction.
  * @return Status of the operator before incrementation.
  */
-AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operator++(){
+template <class T>
+typename AliEmcalIterableContainerT<T>::iterator &AliEmcalIterableContainerT<T>::iterator::operator++(){
   if(fForward) fCurrent++;
   else fCurrent--;
   return *this;
@@ -197,7 +209,8 @@ AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operat
  * iterator based on the direction.
  * @return Status of the iterator before decrementation.
  */
-AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operator--(){
+template <class T>
+typename AliEmcalIterableContainerT<T>::iterator &AliEmcalIterableContainerT<T>::iterator::operator--(){
   if(fForward) fCurrent--;
   else fCurrent++;
   return *this;
@@ -210,8 +223,9 @@ AliEmcalIterableContainer::iterator &AliEmcalIterableContainer::iterator::operat
  * @param[in] index Not used
  * @return State of the iterator before incrementation
  */
-AliEmcalIterableContainer::iterator AliEmcalIterableContainer::iterator::operator++(int index){
-  AliEmcalIterableContainer::iterator tmp(*this);
+template <class T>
+typename AliEmcalIterableContainerT<T>::iterator AliEmcalIterableContainerT<T>::iterator::operator++(int index){
+  AliEmcalIterableContainerT<T>::iterator tmp(*this);
   operator++();
   return tmp;
 }
@@ -223,8 +237,9 @@ AliEmcalIterableContainer::iterator AliEmcalIterableContainer::iterator::operato
  * @param[in] index Not used
  * @return State of the iterator before decrementation.
  */
-AliEmcalIterableContainer::iterator AliEmcalIterableContainer::iterator::operator--(int index){
-  AliEmcalIterableContainer::iterator tmp(*this);
+template <class T>
+typename AliEmcalIterableContainerT<T>::iterator AliEmcalIterableContainerT<T>::iterator::operator--(int index){
+  AliEmcalIterableContainerT<T>::iterator tmp(*this);
   operator--();
   return tmp;
 }
@@ -234,6 +249,7 @@ AliEmcalIterableContainer::iterator AliEmcalIterableContainer::iterator::operato
  * object at the position of the iterator.
  * @return Object at the position of the iterator (NULL if the iterator is out of range)
  */
-TObject *AliEmcalIterableContainer::iterator::operator*() const {
+template <class T>
+T *AliEmcalIterableContainerT<T>::iterator::operator*() const {
   return (*fkData)[fCurrent];
 }

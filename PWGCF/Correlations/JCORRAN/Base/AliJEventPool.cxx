@@ -95,7 +95,7 @@ AliJEventPool& AliJEventPool::operator=(const AliJEventPool& obj){
 //______________________________________________________________________________
 void AliJEventPool::Mix( TClonesArray *triggList, 
         corrFillType cFTyp, 
-        float cent, float Z, float thisMult, int iev){
+        float cent, float Z, float thisMult, int iev, bool leadingParticle){
   // mixer
     int cBin = fcard->GetBin(kCentrType, cent);
     int zBin = fcard->GetBin(kZVertType, Z);
@@ -131,6 +131,7 @@ void AliJEventPool::Mix( TClonesArray *triggList,
                 //fhistos->fhTriggPtBin[kMixed][cBin][iptt]->Fill(ptt); //who needs that?
                 for(int jj=0;jj<noAssoc ;jj++){
                     AliJBaseTrack *ftk2 = (AliJBaseTrack*)fpoolList->At(jj);
+                    if(leadingParticle && ftk1->Pt() < ftk2->Pt()) continue; // In leading particle correlations, accept only those associated particles whose pT is lower than that of the trigger
                     fcorrelations->FillHisto(cFTyp,kMixed, cBin, zBin, ftk1, ftk2);
                 } //inner loop mixing
             }//outer loop mixing

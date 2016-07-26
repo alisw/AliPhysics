@@ -55,7 +55,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event,  TClonesArray *mcArray);
   void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, TVector *tinfo, TVector *vinfo, Int_t charge);
-  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *event, TClonesArray *mcArray);
+  void FillElectronROOTObjects(AliAODTrack *trk, AliAODTrack *trkpid, Int_t convtype, Int_t mcetype, AliAODEvent *event, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
@@ -343,8 +343,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH2D *fHistoResponseXiPt; //!<! Response function Lambda pT <- True ept
 	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
 
+  TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Total;         //!<! Number of electrons from pi0
   THnSparse* fHistoElectronPi0Tag;         //!<! Number of electrons from pi0 and have partner
+  TH1F* fHistoEtaMCGen;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTotal;         //!<! Number of electrons from eta
   THnSparse* fHistoElectronEtaTag;         //!<! Number of electrons from eta and have partner
 
@@ -394,7 +396,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeCutVarsArray2; /// array of RDHF cut information
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,24); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,25); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

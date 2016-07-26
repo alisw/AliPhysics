@@ -97,7 +97,7 @@ public:
    * 
    * @param esd      FMD ESD structure 
    * @param event    MC event 
-   * @param vz       IP z-coordinate
+   * @param ip       IP coordinates
    * @param cent     Event centrality 
    * 
    * @return true 

@@ -24,6 +24,8 @@
 
 #include "AliKFVertex.h"
 #include "AliAODTrack.h"
+#include "AliAODv0.h"
+#include "AliAODEvent.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -387,10 +389,11 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   }
 
   // IsPhotonSelected
-  fHistoCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",11,-0.5,10.5);
+  fHistoCutIndex=new TH1F(Form("IsPhotonSelected %s",GetCutNumber().Data()),"IsPhotonSelected",12,-0.5,11.5);
   fHistoCutIndex->GetXaxis()->SetBinLabel(kPhotonIn+1,"in");
   fHistoCutIndex->GetXaxis()->SetBinLabel(kOnFly+1,"onfly");
   fHistoCutIndex->GetXaxis()->SetBinLabel(kNoTracks+1,"no tracks");
+  fHistoCutIndex->GetXaxis()->SetBinLabel(kNoV0+1,"miss. V0 in AOD");
   if (!fSwitchToKappa)fHistoCutIndex->GetXaxis()->SetBinLabel(kdEdxCuts+1,"PID");
   else fHistoCutIndex->GetXaxis()->SetBinLabel(kdEdxCuts+1,"Kappa+[TOF,ITS,TRD] PID");
   fHistoCutIndex->GetXaxis()->SetBinLabel(kTrackCuts+1,"Track cuts");
@@ -934,12 +937,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
       return kFALSE;
     }
   }
-  // else if(event->IsA()==AliAODEvent::Class()) {
-  //    if(!SelectV0Finder( ( ((AliAODEvent*)event)->GetV0(photon->GetV0Index())) ) ){
-  //       FillPhotonCutIndex(kOnFly);
-  //       return kFALSE;
-  //    }
-  // }
 
   // Get Tracks
   AliVTrack * negTrack = GetTrack(event, photon->GetTrackLabelNegative());
@@ -949,6 +946,29 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
     FillPhotonCutIndex(kNoTracks);
     return kFALSE;
   }
+
+  // check if V0 from AliAODGammaConversion.root is actually contained in AOD by checking if V0 exists with same tracks
+  if(event->IsA()==AliAODEvent::Class()) {
+    AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
+
+    Bool_t bFound = kFALSE;
+    Int_t v0PosID = posTrack->GetID();
+    Int_t v0NegID = negTrack->GetID();
+    AliAODv0* v0 = NULL;
+    for(Int_t iV=0; iV<aodEvent->GetNumberOfV0s(); iV++){
+      v0 = aodEvent->GetV0(iV);
+      if(!v0) continue;
+      if( (v0PosID == v0->GetPosID() && v0NegID == v0->GetNegID()) || (v0PosID == v0->GetNegID() && v0NegID == v0->GetPosID()) ){
+        bFound = kTRUE;
+        break;
+      }
+    }
+    if(!bFound){
+      FillPhotonCutIndex(kNoV0);
+      return kFALSE;
+    }
+  }
+
   photon->DeterminePhotonQuality(negTrack,posTrack);
   // Track Cuts
   if(!TracksAreSelected(negTrack, posTrack)){
@@ -1398,6 +1418,7 @@ AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
     return track;
 
   } else {
+    if(label == -999999) return NULL; // if AOD relabelling goes wrong, immediately return NULL
     AliVTrack * track = 0x0;
     if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
       if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));

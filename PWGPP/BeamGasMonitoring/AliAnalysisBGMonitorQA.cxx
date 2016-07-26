@@ -26,9 +26,14 @@
 #include "TArrayI.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
+#include "AliESD.h"
+#include "AliESDEvent.h"
+#include "AliESDfriend.h"
 #include "AliVEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliLog.h"
+#include "AliAnalysisFilter.h"
+#include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliTriggerAnalysis.h"
@@ -60,8 +65,8 @@ Int_t bunchinputarray[7] = {201};  // the output file which we interested in. 20
 //________________________________________________________________________
 AliAnalysisBGMonitorQA::AliAnalysisBGMonitorQA(const char *name) :
 AliAnalysisTaskSE(name),
-fEvent(0x0),
-fEventfriend(0x0),
+fESD(0x0),
+fESDfriend(0x0),
 fTreeTrack(0),
 fTreeTrack2(0),
 fList(0),
@@ -84,23 +89,26 @@ runNumber(0),fvertZ(0),fvertX(0),fvertY(0),fvertTPCZ(0),fvertTPCX(0),fvertTPCY(0
 //________________________________________________________________________
 void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
 {
+    
     TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
     if (!tree) {
         Printf("ERROR: Could not read chain from input slot 0");
     } else {
-        AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-
+        
+        AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+        
         if (esdH) {
-            fEvent = esdH->GetEvent();
-            if(fEvent) {
-                fEventfriend = fEvent->FindFriend();
-                if (!fEventfriend){
+	  fESD = (AliESDEvent*)esdH->GetEvent();
+            if(fESD) {
+                fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
+                if (!fESDfriend){
                     AliError("No friend found");
                 }
             }
         } else {
-            Printf("ERROR: Could not get InputHandler");
+            Printf("ERROR: Could not get ESDInputHandler");
         }
+        
     }
 }
 
@@ -108,7 +116,7 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
 void AliAnalysisBGMonitorQA::CreateOutputObjects()
 {
     // Called once
-    if(fUseTree==kTRUE){
+    
     fTreeTrack = new TTree("TreeTrack","Track Properties");
     
     fTreeTrack->Branch("ntr",&ntr,"ntr/s"); // number of trigger classes
@@ -295,7 +303,7 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
         for(int j=0; j<3; j++){
             for(int k=0; k<3; k++){
                 Int_t check000 = i*100+j*10+k;
-                for ( int l=0; l<7;l++){
+                for ( int l=0; l<8;l++){
                     if(check000==bunchinputarray[l]){
                         
                         hNumEffPurityBC[i][j][k] = new TH1F(Form("hNumEffPurityBC%d_V0%d_Flag%d",i,j,k),"; #V0flags in PF", 35, 0, 35);
@@ -433,22 +441,15 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisBGMonitorQA::ResetOutputData()
-{
-  //reset the output histograms, start over after sending output for merging
-  return kTRUE;
-}
-
-//________________________________________________________________________
 void AliAnalysisBGMonitorQA::Exec(Option_t *)
 {
     // Called for each event
     
-    if (!fEvent) {
-        Printf("ERROR: fEvent not available");
+    if (!fESD) {
+        Printf("ERROR: fESD not available");
         return;
     }
-
+    
     Int_t iEv= 0;
     iEv = fESD->GetEventNumberInFile();
     runNumber = fESD->GetRunNumber();
@@ -458,7 +459,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     
     UInt_t timeGDC=fESD->GetTimeStamp();
     ftime=timeGDC;
-    Int_t timeStampBX = fEvent->GetBunchCrossNumber();
+    Int_t timeStampBX = fESD->GetBunchCrossNumber();
     fbx=timeStampBX;
     ntr = 10;
     nbunch = 21;
@@ -503,9 +504,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     SPDHw2 = triggerAnalysis->SPDFiredChips(fESD,1,kFALSE,2);  //SPD Fired Chips in layer 2 (from hardware bit)
     t0PileUp = triggerAnalysis->EvaluateTrigger(fESD, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup)); //T0 pile-up
     
-    AliESDVZERO esdVZERO; AliVVZERO *vzero = &esdVZERO;
-    fEvent->GetVZEROData(esdVZERO);
-
+    AliVVZERO *vzero = fESD->GetVZEROData();
     V0A   = (vzero->GetV0ADecision()==AliVVZERO::kV0BB);
     V0ABG = (vzero->GetV0ADecision()==AliVVZERO::kV0BG);
     V0C   = (vzero->GetV0CDecision()==AliVVZERO::kV0BB);
@@ -523,26 +522,15 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     
     
     //CTP inputs
-    VBA = 0;
-    VBC = 0;
-    VGA = 0;
-    VGC = 0;
-    VTX = 0;
-    
-    if (fEvent->GetHeader())
-    {
-      VTX = fEvent->GetHeader()->IsTriggerInputFired("0TVX");
-      VGA = fEvent->GetHeader()->IsTriggerInputFired("0VGA");
-      VGC = fEvent->GetHeader()->IsTriggerInputFired("0VGC");
-      VBA = fEvent->GetHeader()->IsTriggerInputFired("0VBA");
-      VBC = fEvent->GetHeader()->IsTriggerInputFired("0VBC");
-      //triMask = fEvent->GetHeader()->GetTriggerMask();
-    }
+    VTX = fESD->GetHeader()->IsTriggerInputFired("0TVX");
+    VGA = fESD->GetHeader()->IsTriggerInputFired("0VGA");
+    VGC = fESD->GetHeader()->IsTriggerInputFired("0VGC");
+    VBA = fESD->GetHeader()->IsTriggerInputFired("0VBA");
+    VBC = fESD->GetHeader()->IsTriggerInputFired("0VBC");
+    triMask = fESD->GetHeader()->GetTriggerMask();
     
     //--- vertex
-    AliESDVertex spdVertex; AliESDVertex *vertSPD = &spdVertex;
-    fEvent->GetPrimaryVertexSPD(spdVertex);
-
+    const AliESDVertex *vertSPD=fESD->GetPrimaryVertexSPD();
     if(vertSPD->GetNContributors()>0){
         fvertZ=vertSPD->GetZ();
         fvertX=vertSPD->GetX();
@@ -554,9 +542,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
         fvertY=-99999;
     }
     
-    AliESDVertex tpcvertex; AliESDVertex *vertTPC = &tpcvertex;
-    fEvent->GetPrimaryVertexTracks(tpcvertex);
-
+    const AliESDVertex *vertTPC=fESD->GetPrimaryVertexTracks();
     if(vertTPC->GetNContributors()>0){
         fvertTPCZ=vertTPC->GetZ();
         fvertTPCX=vertTPC->GetX();
@@ -568,39 +554,21 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
         fvertTPCY=-99999;
     }
     
-    // additional value initialize (blim)
-    bgID = 0;
-    bgID2 = 0;
-    spdPileUp = 0;
-    spdPileUpOutOfBunch = 0;
+    //--- SPD cluster and tracklets
+    const AliMultiplicity* mult = fESD->GetMultiplicity();
     
     fSpdC1 = 0;
     fSpdC2 = 0;
-    //--- SPD cluster and tracklets
-    const AliVMultiplicity* mult = fEvent->GetMultiplicity();
-    if (mult)
-    {
-      //for(Int_t ilayer = 0; ilayer < 2; ilayer++){
-      //  fSpdC += mult->GetNumberOfITSClusters(ilayer);
-      //}
-      fSpdC1 = mult->GetNumberOfITSClusters(0);
-      fSpdC2 = mult->GetNumberOfITSClusters(1);
-
-      fSpdT = mult->GetNumberOfTracklets();
-      
-      //this we can only do if we have AliMultiplicity (not available online)
-      AliAnalysisUtils utils;
-      bgID = utils.IsSPDClusterVsTrackletBG(fEvent);
-
-      // modified slope cut. the function is in below of this source(blim)
-      bgID2 = IsItBGSPDClusterVsTracklet(fEvent);
-
-      spdPileUp = utils.IsPileUpSPD(fEvent);
-      spdPileUpOutOfBunch = utils.IsOutOfBunchPileUp(fEvent);
-    }
+    //for(Int_t ilayer = 0; ilayer < 2; ilayer++){
+    //  fSpdC += mult->GetNumberOfITSClusters(ilayer);
+    //}
+    fSpdC1 = mult->GetNumberOfITSClusters(0);
+    fSpdC2 = mult->GetNumberOfITSClusters(1);
+    
+    fSpdT = mult->GetNumberOfTracklets();
     
     //--- V0 data
-    //AliESDVZERO* vzero = fEvent->GetVZEROData();
+    //AliESDVZERO* vzero = fESD->GetVZEROData();
     fv0a = vzero->GetV0ATime();  //V0A time
     fv0c = vzero->GetV0CTime();  //V0C time
     fMulta = vzero->GetMTotV0A();  //V0A multiplicity
@@ -610,12 +578,9 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     
     
     //-- AD data
-    AliVAD* adzero = fEvent->GetADData();
-    if (adzero)
-    {
-      fad0a = adzero->GetADATime();
-      fad0c = adzero->GetADCTime();
-    }
+    AliESDAD* adzero = fESD->GetADData();
+    fad0a = adzero->GetADATime();
+    fad0c = adzero->GetADCTime();
     
     
     
@@ -716,11 +681,11 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     if(fESD->IsTriggerClassFired("C0VGC-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGC-AC-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGC-ABCE-NOPF-ALLNOTRD")) ftrigger[3] = 1;
     if(fESD->IsTriggerClassFired("CVGO-ABCE-NOPF-ALLNOTRD")) ftrigger[4] = 1;
     //Zero Bias
-    if(fEvent->IsTriggerClassFired("CBEAMB-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CTRUE-S-NOPF-ALLNOTRD")) ftrigger[5] = 1;
+    if(fESD->IsTriggerClassFired("CBEAMB-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CTRUE-S-NOPF-ALLNOTRD")) ftrigger[5] = 1;
     //T0 triggers
-    if(fEvent->IsTriggerClassFired("CINT8-S-NOPF-ALLNOTRD")) ftrigger[6] = 1;
+    if(fESD->IsTriggerClassFired("CINT8-S-NOPF-ALLNOTRD")) ftrigger[6] = 1;
     //Power trigger
-    if(fEvent->IsTriggerClassFired("CSPI7-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CSPI7-S-NOPF-ALLNOTRD")) ftrigger[7] = 1;
+    if(fESD->IsTriggerClassFired("CSPI7-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CSPI7-S-NOPF-ALLNOTRD")) ftrigger[7] = 1;
     //High-multiplicity triggers
     if(fESD->IsTriggerClassFired("CSHM8-S-NOPF-ALLNOTRD")) ftrigger[8] = 1;
     //    if(fESD->IsTriggerClassFired("CSHM8-ACE-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC11h
@@ -863,7 +828,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<7;l++){
+                        for ( int l=0; l<8;l++){
                             if(check000==bunchinputarray[l]){
                                 
                                 //cout<< "AD i  = " <<i<<", AD j   = "<<j<< ",   AD k  = " <<k<<endl;
@@ -958,7 +923,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<7;l++){
+                        for ( int l=0; l<8;l++){
                             if(check000==bunchinputarray[l]){
                                 if(SelGoodEvent[i][j][k]) {
                                     ((TH1F*)fList2->FindObject(Form("hDenomPurityBC_HM%d_V0%d_Flag%d",i,j,k)))->Fill(ii-1);
@@ -1033,7 +998,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
                 for(int j=0; j<3; j++){
                     for(int k=0; k<3; k++){
                         Int_t check000 = i*100+j*10+k;
-                        for ( int l=0; l<7;l++){
+                        for ( int l=0; l<8;l++){
                             if(check000==bunchinputarray[l]){
                                 
                                 //cout<< "AD i  = " <<i<<", AD j   = "<<j<< ",   AD k  = " <<k<<endl;

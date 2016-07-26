@@ -1,3 +1,13 @@
+/**
+ * @file   TrackletAODTrain.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:52:10 2016
+ * 
+ * @brief  Tracklet AOD train
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #include "TrainSetup.C"
 #ifndef __CINT__
 #include <AliESDInputHandlerRP.h>
@@ -29,6 +39,8 @@ class AliAnalysisTaskSE;
  *
  * If these classes lived in a compiled AliPhysics library (Say
  * libPWGUD.so), the we wouldn't need that PAR file.
+ *
+ * @ingroup pwglf_forward_tracklets
  */
 struct TrackletAODTrain : public TrainSetup
 {
@@ -58,6 +70,7 @@ struct TrackletAODTrain : public TrainSetup
    * AliMixInputEventHandler if requested.
    * 
    * @param type Type of analysis 
+   * @param needRec Whether we need rec-points (clusters)
    * 
    * @return The input handler 
    */

@@ -130,7 +130,7 @@ bool AliJEfficiency::Load(){
   //fEffDir[0] = (TDirectory*)fInputRoot->Get("EffRE");
   ///fEffDir[1] = (TDirectory*)fInputRoot->Get("EffMC");
   fEffDir[2] = (TDirectory*)fInputRoot->Get("Efficiency");
-  //iif( fEffDir[0] && fEffDir[1] && fEffDir[2] )
+  //if( fEffDir[0] && fEffDir[1] && fEffDir[2] )
   if( !fEffDir[2] )
   {
 	  cout<< "J_ERROR : Directory EFF is not exist"<<endl;

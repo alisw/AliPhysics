@@ -1,3 +1,13 @@
+/**
+ * @file   AliAODTracklet.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:49:06 2016
+ * 
+ * @brief  Tracklet AOD object
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALIAODTRACKLET_C
 #define ALIAODTRACKLET_C
 #include <TObject.h>
@@ -10,6 +20,7 @@
 /**
  * Single tracklet information 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliAODTracklet : public TObject
 {
@@ -21,7 +32,8 @@ public:
     kSecondary      = 0x04,
     kDistinct       = 0x08,
     kSimulated      = 0x10,
-    kGenerated      = 0x20
+    kGenerated      = 0x20,
+    kNeutral        = 0x40
   };
     
   /** Type of real values */
@@ -110,9 +122,13 @@ public:
    */
   void SetSimulated() { fFlags |= kSimulated; }
   /** 
-   * Flag "tracklet" as from a generated particle in simulated data 
+   * Flag "tracklet" as from a generated primary, particle in simulated data 
    */
   void SetGenerated() { fFlags |= kGenerated; }
+  /** 
+   * Flag "tracklet" as from a neutral primary, particle in simulated data 
+   */
+  void SetNeutral() { fFlags |= kNeutral; }
   /* @} */
   /** 
    * @{ 
@@ -206,6 +222,10 @@ public:
    * @return true if tracklet is a generated, primary, charged particle
    */
   Bool_t IsGenerated() const { return fFlags & kGenerated; }
+  /** 
+   * @return true if tracklet is a generated, primary, neutral particle
+   */
+  Bool_t IsNeutral() const { return fFlags & kNeutral; }
   /* @} */
   /** 
    * @{ 
@@ -222,7 +242,7 @@ public:
   /** 
    * Get parent particle type 
    * 
-   * @param first If true, second parent, otherwise first 
+   * @param second If true, second parent, otherwise first 
    * 
    * @return Here, we always return 0 
    */
@@ -243,7 +263,7 @@ protected:
   /** Tracklet flags */
   UChar_t fFlags;
 
-  ClassDef(AliAODTracklet,1); // Single tracklet
+  ClassDef(AliAODTracklet,2); // Single tracklet
 };
 //____________________________________________________________________
 AliAODTracklet::AliAODTracklet()
@@ -304,6 +324,7 @@ void AliAODTracklet::Print(Option_t* option) const
 /**
  * Single tracklet information 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliAODMCTracklet : public AliAODTracklet
 {
@@ -387,7 +408,7 @@ protected:
   /** Second parent pt */
   Short_t fPar2Pdg; 
   
-  ClassDef(AliAODMCTracklet,1); // Single tracklet information (sim)
+  ClassDef(AliAODMCTracklet,2); // Single tracklet information (sim)
 };
   
 //____________________________________________________________________

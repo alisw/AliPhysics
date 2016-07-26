@@ -1,3 +1,13 @@
+/**
+ * @file   TrackletAODdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:51:47 2016
+ * 
+ * @brief  A tracklet dNdeta train
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #include "TrainSetup.C"
 #ifndef __CINT__
 #include <AliESDInputHandlerRP.h>
@@ -29,6 +39,8 @@ class AliAnalysisTaskSE;
  *
  * If these classes lived in a compiled AliPhysics library (Say
  * libPWGUD.so), the we wouldn't need that PAR file.
+ *
+ * @ingroup pwglf_forward_tracklets
  */
 struct TrackletAODdNdeta : public TrainSetup
 {
@@ -99,8 +111,8 @@ struct TrackletAODdNdeta : public TrainSetup
   {
     Info("CreateTasks", "Loading code");
     fRailway->LoadSource("FixPaths.C");
-    fRailway->LoadSource("AliAODTracklet.C");
     fRailway->LoadSource("AliAODSimpleHeader.C");
+    fRailway->LoadSource("AliAODTracklet.C");
     fRailway->LoadSource("AliTrackletWeights.C");
     fRailway->LoadSource("AliTrackletAODUtils.C");
     fRailway->LoadSource("AliTrackletAODdNdeta.C");
@@ -109,7 +121,8 @@ struct TrackletAODdNdeta : public TrainSetup
     Bool_t   mc = fOptions.Has("mc");
     if (!mc) mc = fRailway->IsMC();     
     Long_t ret  =
-      gROOT->ProcessLine(Form("AliTrackletAODdNdeta::Create(%d)",mc));
+      gROOT->ProcessLine(Form("AliTrackletAODdNdeta::Create(%d,\"%s\")",mc,
+			      fOptions.AsString("reweight")));
     AliAnalysisTaskSE* task = reinterpret_cast<AliAnalysisTaskSE*>(ret);
     if (!task) return;
     
@@ -136,31 +149,31 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "ShiftedDPhiCut",	"shifted-dphi-cut",-1.);
     FromOption(task, "AbsMinCent",      "abs-min-cent",    -1.);
 
-    if (mc && fOptions.Has("reweight")) {
-      TUrl wurl(fOptions.AsString("reweight"));
-      TFile* wfile = TFile::Open(wurl.GetFile());
-      if (!wfile) {
-	Warning("CreateTasks", "Failed to open weights file: %s",
-		wurl.GetUrl());
-	return;
-      }
-      TString wnam(wurl.GetAnchor());
-      if (wnam.IsNull()) wnam = "weights";
-      TObject* wobj = wfile->Get(wnam);
-      if (!wobj) {
-	Warning("CreateTasks", "Failed to get weights %s from file %s",
-		wnam.Data(), wfile->GetName());
-	return;
-      }
-      if (!wobj->IsA()->InheritsFrom("AliTrackletWeights")) {
-	Warning("CreateTasks", "Object %s from file %s not an "
-		"AliTrackletWeights but a %s",
-		wnam.Data(), wfile->GetName(), wobj->ClassName());
-	return;
-      }
-      SetOnTaskGeneric(task, "Weights",
-		       Form("((AliTrackletWeights*)%p)", wobj));
-    }
+    // if (mc && we) {
+    //   TUrl wurl(fOptions.AsString("reweight"));
+    //   TFile* wfile = TFile::Open(wurl.GetFile());
+    //   if (!wfile) {
+    // 	Warning("CreateTasks", "Failed to open weights file: %s",
+    // 		wurl.GetUrl());
+    // 	return;
+    //   }
+    //   TString wnam(wurl.GetAnchor());
+    //   if (wnam.IsNull()) wnam = "weights";
+    //   TObject* wobj = wfile->Get(wnam);
+    //   if (!wobj) {
+    // 	Warning("CreateTasks", "Failed to get weights %s from file %s",
+    // 		wnam.Data(), wfile->GetName());
+    // 	return;
+    //   }
+    //   if (!wobj->IsA()->InheritsFrom("AliTrackletWeights")) {
+    // 	Warning("CreateTasks", "Object %s from file %s not an "
+    // 		"AliTrackletWeights but a %s",
+    // 		wnam.Data(), wfile->GetName(), wobj->ClassName());
+    // 	return;
+    //   }
+    //   SetOnTaskGeneric(task, "Weights",
+    // 		       Form("((AliTrackletWeights*)%p)", wobj));
+    // }
 	
     task->Print("");    
   }

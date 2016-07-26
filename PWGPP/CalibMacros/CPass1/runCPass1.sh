@@ -17,7 +17,15 @@
 
 #ALIEN setting
 # $1 = raw input filename
-runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
+tmpName=$(basename "$1")
+runNumF="${tmpName:2:9}"
+runNum=`echo "$runNumF" |  sed 's/^0*//'`
+
+#default alias for CPass1
+defAlias="kCalibBarrelMB"
+
+#optionallly skip Outer pass
+export skipOuter='1'
 
 # Exporting variable to define that we are in CPass1 to be used in reconstruction
 export CPass='1'
@@ -32,7 +40,7 @@ if [ $# -eq 1 ]; then
     nEvents=99999999
     ocdbPath="raw://"
     # use the value passed by LPM, or by default use the kCalibBarrel alias
-    triggerOptions=${ALIEN_JDL_TRIGGERALIAS-?Trigger=kCalibBarrel}
+    triggerOptions=${ALIEN_JDL_TRIGGERALIAS-?Trigger=$defAlias}
     #triggerOptions="?Trigger=kPhysicsAll"
 fi
 
@@ -41,7 +49,7 @@ if [ $# -ge 4 ]; then
     nEvents=$2
     runNum=$3
     ocdbPath=$4
-    triggerOptions="?Trigger=kCalibBarrel"
+    triggerOptions="?Trigger=$defAlias"
 fi
 
 if [ $# -eq 5 ]; then
@@ -61,7 +69,7 @@ export TPC_CPass1_GainCalibType=3
 
 # ===| TPC JDL overwrites |===================================================
 #
-export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPass1_GainCalibType-$TPC_CPass1_GainCalibType}
+export TPC_CPass1_GainCalibType=${ALIEN_JDL_TPC_CPASS1_GAINCALIBTYPE-$TPC_CPass1_GainCalibType}
 
 echo "TPC_CPass1_GainCalibType=${TPC_CPass1_GainCalibType}" | tee -a calib.log
 
@@ -95,6 +103,9 @@ echo "* triggerOptions: $triggerOptions"
 echo "* ************************"
 
 mkdir Barrel OuterDet
+if [ -n  "$skipOuter" ]; then
+    echo "Outer pass will be skept"
+fi
 
 if [ -f Run0_999999999_v3_s0.root ]; then
     echo "* TPC correction file found"
@@ -189,12 +200,22 @@ fi
 
 mv syswatch.log ../syswatch_calib.log
 
-
+if [ -f ResidualHistos.root ]; then
+    mv ResidualHistos.root ../ResidualTrees.root
+fi
+ 
 echo "*  Running filtering task for barrel *"
-echo AliESDs.root > esd.list
-aliroot -l -b -q "${ALICE_PHYSICS}/PWGPP/macros/runFilteringTask.C(\"esd.list\",10000,1000,\"${ocdbPath}\")" &> filtering.log
-
-
+filtMacro=$ALICE_PHYSICS/PWGPP/macros/runFilteringTask.C
+if [ -f $filtMacro ]; then
+    echo AliESDs.root > esd.list
+    aliroot -l -b -q "${filtMacro}(\"esd.list\",10000,1000,\"${ocdbPath}\")" &> filtering.log
+else
+    echo "no ${filtMacro} ..."
+fi
+if [ -f filtering.log ]; then
+    mv filtering.log ../filtering.log
+fi
+#
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 
@@ -238,15 +259,24 @@ fi
 mv AliESDs.root ../AliESDs_Barrel.root
 mv AliESDfriends.root ../AliESDfriends_Barrel.root
 
-for file in CalibObjects.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root; do
+for file in FilterEvents_Trees.root AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root CalibObjects.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
 done
 
+# cleanup of barrel
+cd ../
+mv EventStat_temp_barrel_grp0.root EventStat_temp_barrel.root
+rm EventStat_temp_*_grp*.root
+
+if [ -n  "$skipOuter" ]; then
+  exit 0
+fi
+
 ####################################   Outer   #######################################
 
-cd ../OuterDet
+cd OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
@@ -306,13 +336,9 @@ for file in QAresults_outer.root EventStat_temp_outer_grp*.root; do
     fi
 done
 
-################################## Final cleanup ###################################
-
+# cleanup of outer
 cd ..
-
-mv EventStat_temp_barrel_grp0.root EventStat_temp_barrel.root
 mv EventStat_temp_outer_grp0.root EventStat_temp_outer.root
-
 rm EventStat_temp_*_grp*.root
 
 exit 0

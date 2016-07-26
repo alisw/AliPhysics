@@ -1,3 +1,13 @@
+/**
+ * @file   AliTrackletdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:50:35 2016
+ * 
+ * @brief  Post processing
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALITRACKLETDNDETA_H
 #define ALITRACKLETDNDETA_H
 #include <AliTrackletAODUtils.C>
@@ -37,37 +47,33 @@ class TDirectory;
 #endif
 
 //====================================================================
+/**
+ * Post processing 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 struct AliTrackletdNdeta : public AliTrackletAODUtils
 {
   /**
-   * Processing options 
+   * Display options 
    * 
    */
   enum {
-    /** Use combinatorial background for real data */
-    kRealComb     = 0x00001,
-    /** Use combinatorial background for simulated data */
-    kSimComb      = 0x00002,
-    /** Draw dNch/deta */
-    kdNdetas      = 0x00004,
     /** Draw general information */
-    kGeneral      = 0x00008,
-    kWeights      = 0x00008,
+    kGeneral      = 0x00001,
     /** Draw parameters */
-    kParameters   = 0x00010,
+    kParameters   = 0x00002,
+    /** Draw weights */
+    kWeights      = 0x00004,    
+    /** Draw dNch/deta */
+    kdNdetas      = 0x00010,
     /** Draw delta information */   
     kDeltas       = 0x00020,
     /** Draw backgrounds */
     kBackgrounds  = 0x00040,
     /** Draw alphas */
     kAlphas       = 0x00080,
-    /** MC closure test */
-    kClosure      = 0x00100,
-    /** Fixed scaling */
-    kFixedScale   = 0x00200,
-    /** Dynamic cent scaling */
-    kDynCentScale = 0x00400,
-    /** Print to PDF */
+    /** Whether to make a PDF */
     kPDF          = 0x01000,
     /** Whether to pause after each plot */
     kPause        = 0x02000,
@@ -76,13 +82,32 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
     /** Alternative markers */
     kAltMarker    = 0x08000,
     /** Default options */
-    // kDefault      = 0x133ff
-    kDefault      = 0x30
+    kDefaultViz   = 0x30ff
   };
-  enum ECombinatoricsScaleMode {
-    kFixed,
-    kPerCent,
-    kPerEtaCent
+  /**
+   * Calculation options 
+   * 
+   */
+  enum {
+    /** Use combinatorial background for real data */
+    kRealComb     = 0x00001,
+    /** Use combinatorial background for simulated data */
+    kSimComb      = 0x00002,
+    /** Use Unit scaling (that is, no scaling) of backgrond */
+    kScaleNone    = 0x00010,
+    /** Use fixed scaling of background */
+    kScaleFix     = 0x00020,
+    /** Use average scaling of background */
+    kScaleAverage = 0x00040,
+    /** Use full scaling of background */
+    kScaleFull    = 0x00080,
+    kScaleEta     = 0x00100,
+    /** In case of average or full scale, should we do double fraction */
+    kScaleDouble  = 0x00200,    
+    /** MC closure test */
+    kClosure      = 0x01000,
+    /** Default processing options */
+    kDefaultProc  = 0x00083 
   };
   enum {
     kTopBackground = kAzure-8
@@ -94,12 +119,10 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   TPad*    fTop;
   /** Main body of plots */
   TPad*    fBody;
-  /** Whether we should be in landscape mode */
-  Bool_t   fLandscape;
-  /** If we should print to a PDF */
-  Bool_t   fPDF;
-  /** Whether we should pause */
-  Bool_t   fPause;
+  /** Vizualisation options */
+  UInt_t   fViz;
+  /** Processing options */
+  UInt_t   fProc;
   /** Cache of last title */
   TString  fLastTitle;
   /** Cache of centrality bin title */
@@ -114,8 +137,6 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   Double_t fMaxDelta;
   /** The scalar on combinatorial background for real data */
   Double_t fCombinatoricsScale;
-  /** Mode for scaling the combinatorics background */
-  ECombinatoricsScaleMode fCombinatoricsScaleMode;
   /** Least value of @f$\alpha@f$ */
   Double_t fAlphaMin;
   /** Largest value of @f$\alpha@f$ */
@@ -137,8 +158,6 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * Create our canvas 
    * 
    * @param outputName Output file name 
-   * @param landscape  Should it be landscape? 
-   * @param pdf        Should we store in PDF?
    */
   void CreateCanvas(const TString& outputName);
   /** 
@@ -242,6 +261,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * 
    * @param pars 
    * @param title 
+   * @param comb if true, write for combinatorial background 
    */
   void DrawParams(Container* pars, const char* title, Bool_t comb);
   /** 
@@ -250,8 +270,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @param realSums Real data 
    * @param simSums  simulated data 
    */
-  void DrawParams(Container* realSums, Bool_t realComb,
-		  Container* simSums,  Bool_t simComb);
+  void DrawParams(Container* realSums, Container* simSums);
   /* @} */
   //____________________________________________________________________
   /** 
@@ -305,6 +324,9 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @return Histogram or null 
    */
   TH1* FindDelta(Container* ress, const char* sub, Bool_t scaled=false);
+  TH1* FindDelta(Container*  realList,  Container*  simList, 
+		 const char* sub,   TH2*&       scaleH,
+		 Double_t&   scale, Double_t&   scaleE);
   /** 
    * utility function to find a sub-element 
    * 
@@ -323,12 +345,21 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    */
   void DrawDeltas(Container* realList, Container* simList);
   /** 
+   * Draw scalar @f$ k@f$ distributions for a single bin 
+   * 
+   * @param realList 
+   * @param simList 
+   */
+  void DrawScalars(Container* realList, Container* simList);
+  /** 
    * Draw background estimates in a single bin for a single estimate 
    * 
-   * @param c     Top pad 
-   * @param pad   Sub pad 
-   * @param ress  Results 
-   * @param name  Name of the results 
+   * @param c      Top pad 
+   * @param pad    Sub pad 
+   * @param ress   Results 
+   * @param name   Name of the results 
+   * @param which  Histogram names (null terminated)
+   * @param pretty Pretty container name
    *
    * @return Maximum of histograms
    */
@@ -336,6 +367,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
 			  Int_t        pad,
 			  Container*   ress,
 			  const char*  name,
+			  const char** which,
 			  const char*  pretty);
   /** 
    * Draw all background estimates for a centrality bin 
@@ -352,19 +384,6 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @return @a alpha
    */
   TH2* CutAlpha(TH2* alpha);
-  /** 
-   * Draw background estimates in a single bin for a single estimate 
-   * 
-   * @param c     Top pad 
-   * @param pad   Sub pad 
-   * @param ress  Results 
-   * @param name  Name of the results 
-   */
-  void DrawAlpha(TVirtualPad* c,
-		 Int_t        pad,
-		 Container*   ress,
-		 const char*  name,
-		 const char*  pretty);
   /** 
    * Draw all background estimates for a centrality bin 
    * 
@@ -395,20 +414,54 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    */
   Style_t MS(Int_t what, Bool_t sim, Bool_t alt) const;
 
+  /** 
+   * Get scaled combinatorial background 
+   * 
+   * @param h         The histogram to use as template 
+   * @param realList  Real data list 
+   * @param simList   Simlated data list 
+   * @param scale     On return the scalar histogram (if not given)
+   * 
+   * @return 
+   */
   TH2* GetScaledCombi(TH2*       h,
 		      Container* realList,
 		      Container* simList,
 		      TH1*&      scale);
-  TH2* GetRealBackground(Bool_t     realComb, 
-			 Container* realList,
+  /** 
+   * Get the real data background 
+   * 
+   * @param realList  Real data container 
+   * @param simList   Simulated data container 
+   * @param scale     On return, scalar histogram (if not given)
+   * 
+   * @return The signal distribution
+   */
+  TH2* GetRealBackground(Container* realList,
 			 Container* simList,
 			 TH1*&      scale);
-  TH2* GetRealSignal(Bool_t     realComb, 
-		     Container* realList,
+  /** 
+   * Get the real data signal 
+   * 
+   * @param realList  Real data container 
+   * @param simList   Simulated data container 
+   * @param scale     On return, scalar histogram (if not given)
+   * 
+   * @return The signal distribution
+   */
+  TH2* GetRealSignal(Container* realList,
 		     Container* simList,
 		     TH1*&      scale);
-  TH2* GetSim(Bool_t      simComb, 
-	      Container*  simList,
+  /** 
+   * Get simulation histogram 
+   * 
+   * @param simList Simulation list 
+   * @param name    Name of histogram  
+   * @param newName New name of histogram 
+   * 
+   * @return 
+   */
+  TH2* GetSim(Container*  simList,
 	      const char* name,
 	      const char* newName);
   /** 
@@ -464,7 +517,9 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * The same expression holds for the case when we use injected
    * clusters to estimate the background in real data.
    *
-   *  (1-\beta)M = (1-B/M)M = M-B
+   * @f[
+   (1-\beta)M = (1-B/M)M = M-B
+   @f]
    *
    * where @f$ B@f$ has the same meaning as @f$ B\prime@f$ except we use
    * real data. 
@@ -477,9 +532,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @f] 
    *
    * @param realList  List of real data histograms 
-   * @param realComb  Whether to use MC-labels for real data 
    * @param simList   List of simulated data histograms 
-   * @param simComb   Whether to use MC-labels for simulated data 
    * @param color     Color to use 
    * @param stack     Stack to add results to 
    * @param out       (optional) output directory 
@@ -488,9 +541,7 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * @return Fit to mid rapidity (@f$ |\eta|<0.5@f$)
    */
   TF1* DrawdNdeta(Container*  realList,
-		  Bool_t      realComb,
 		  Container*  simList,
-		  Bool_t      simComb,
 		  Color_t     color=kBlack,
 		  THStack*    stack=0,
 		  TDirectory* out=0,
@@ -499,16 +550,16 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   /** 
    * Process a single bin 
    * 
-   * @param what     Bit mask of processing options 
    * @param bin      Centrality bin number 
    * @param c1       Least centrality 
    * @param c2       Largest centrality 
    * @param realList Results from real data 
    * @param simList  Results from simulated data 
    * @param stack    Possible stack to add dN/deta to 
+   * @param out      Output directory 
    * @param mid      Histogram to fill with @f$|\eta|<0.5@f$ results
    */
-  void ProcessBin(UInt_t     what,     Int_t       bin,
+  void ProcessBin(Int_t      bin,
 		  Double_t   c1,       Double_t    c2,
 		  Container* realList, Container*  simList,
 		  THStack*   stack=0,  TDirectory* out=0,
@@ -517,15 +568,36 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
   /** 
    * Run it 
    * 
-   * @param dataName File from real data 
-   * @param simName  File from simulated data 
-   * @param what     Bit mask of processing options 
+   * @param proc     Process mask 
+   * @param viz      Visualisation mask
+   * @param maxBins  Maximum number of bins to look at 
+   * @param dataName Name of file from real data 
+   * @param simName  Name of file from simulated data 
+   * @param output   Output file name 
    */
-  void Run(UInt_t      what     = kDefault, 
+  void Run(UInt_t      proc     = kDefaultProc,
+	   UInt_t      viz      = kDefaultViz,
 	   UShort_t    maxBins  = 9,
 	   const char* dataName = "data.root",
 	   const char* simName  = "sim.root",
 	   const char* output   = 0);
+  /** 
+   * Run it 
+   * 
+   * @param proc     Process mask 
+   * @param viz      Visualisation mask
+   * @param dataName Name of file from real data 
+   * @param simName  Name of file from simulated data 
+   * @param output   Output file name 
+   * @param maxBins  Maximum number of bins to look at 
+   */
+  void Run(const char* proc,
+	   const char* viz, 
+	   const char* dataName = "data.root",
+	   const char* simName  = "sim.root",
+	   const char* output   = 0,
+	   UShort_t    maxBins  = 9);
+	   
 };
 
 
@@ -535,9 +607,8 @@ AliTrackletdNdeta::AliTrackletdNdeta()
     fCanvas(0),
     fTop(0),
     fBody(0),
-    fLandscape(false),
-    fPDF(false),
-    fPause(false),
+    fViz(0),
+    fProc(0),
     fLastTitle(""),
     fLastBin(""),
     fHeader(0),
@@ -545,7 +616,6 @@ AliTrackletdNdeta::AliTrackletdNdeta()
     fTailDelta(0),
     fMaxDelta(0),
     fCombinatoricsScale(1.3),
-    fCombinatoricsScaleMode(kPerEtaCent),
     fAlphaMin(0),
     fAlphaMax(2.5)    
 {}
@@ -596,7 +666,7 @@ void AliTrackletdNdeta::CreateCanvas(const TString& outputName)
   
   Int_t h    = 1000;
   Int_t w    = h / TMath::Sqrt(2);
-  if (fLandscape) {
+  if (fViz & kLandscape) {
     Int_t t = h;
     h       = w;
     w       = t;
@@ -607,10 +677,10 @@ void AliTrackletdNdeta::CreateCanvas(const TString& outputName)
   fCanvas->SetBorderSize(0);
   fCanvas->SetBorderMode(0);
 
-  if (fPDF) {
+  if (fViz & kPDF) {
     SuppressGuard g;    
     fCanvas->Print(Form("%s[", outputName.Data()),
-		   Form("pdf %s", fLandscape ? "Landscape" : ""));
+		   Form("pdf %s", (fViz & kLandscape) ? "Landscape" : ""));
   }
   fCanvas->SetLeftMargin  (0.10);
   fCanvas->SetRightMargin (0.05);
@@ -649,11 +719,11 @@ void AliTrackletdNdeta::CreateCanvas(const TString& outputName)
 //____________________________________________________________________
 void AliTrackletdNdeta::CloseCanvas()
 {
-  if (fPDF && fCanvas) {
+  if ((fViz & kPDF) && fCanvas) {
     SuppressGuard g;
     fCanvas->Print(Form("%s]", fCanvas->GetTitle()),
 		   Form("pdf %s Title:%s",
-			fLandscape ? "Landscape" : "",
+			(fViz & kLandscape) ? "Landscape" : "",
 			fLastTitle.Data()));
     Printf("PDF %s written", fCanvas->GetTitle());
   }
@@ -673,17 +743,16 @@ void AliTrackletdNdeta::PrintCanvas(const TString& title, Float_t size)
   fCanvas->Update();
   fCanvas->cd();
 
-  if (fPDF) {
+  if (fViz & kPDF) {
     TString tit;
-    tit.Form("pdf %s Title:%s",
-	     fLandscape ? "Landscape" : "",
+    tit.Form("pdf %s Title:%s", (fViz & kLandscape) ? "Landscape" : "",
 	     title.Data());
     // Suppress prints
     SuppressGuard g;
     fCanvas->Print(fCanvas->GetTitle(), tit);
   }
   fLastTitle = title;
-  if (fPause) fCanvas->WaitPrimitive();
+  if (fViz & kPause) fCanvas->WaitPrimitive();
 }
 //====================================================================
 TFile* AliTrackletdNdeta::OpenFile(const char* filename)
@@ -818,8 +887,7 @@ void AliTrackletdNdeta::DrawParams(Container*  pars,
   DrawParam("Background method",     y, comb ? "Combinatorics" : "Injected");
 }
 //____________________________________________________________________
-void AliTrackletdNdeta::DrawParams(Container* realSums, Bool_t realComb,
-				   Container* simSums,  Bool_t simComb)
+void AliTrackletdNdeta::DrawParams(Container* realSums, Container* simSums)
 {
   ClearCanvas();
   fBody->Divide(1,3,0,0);
@@ -838,20 +906,21 @@ void AliTrackletdNdeta::DrawParams(Container* realSums, Bool_t realComb,
   latex->SetNDC();
   latex->Draw();
   y -= 0.028/p1->GetHNDC();
-  DrawParam("Scaling of comb. bg.", y,
-	    (fCombinatoricsScaleMode == kFixed ?
-	     Form("%f", fCombinatoricsScale) :
-	     fCombinatoricsScaleMode == kPerCent ?
-	     "per centrality" :
-	     "per eta,centrality"));
+  TString scaleM("none");
+  if      (fProc & kScaleNone)    scaleM = "none";
+  else if (fProc & kScaleFix)     scaleM.Form("%4.2f", fCombinatoricsScale);
+  else if (fProc & kScaleAverage) scaleM = "average";
+  else if (fProc & kScaleFull)    scaleM = "full";
+  if      (fProc & kScaleDouble)  scaleM.Append(" (double)");  
+  DrawParam("Scaling of comb. bg.", y, scaleM);	     
   DrawParam("min#alpha", y, fAlphaMin);
   DrawParam("max#alpha", y, fAlphaMax);
   
   // From tasks 
   fBody->cd(2);
-  DrawParams(GetC(realSums, "parameters"), "Real data", realComb);
+  DrawParams(GetC(realSums, "parameters"), "Real data",    (fProc & kRealComb));
   fBody->cd(3);
-  DrawParams(GetC(simSums, "parameters"), "Simulated data", simComb);
+  DrawParams(GetC(simSums, "parameters"), "Simulated data",(fProc & kSimComb));
   PrintCanvas("Parameters");
 }
 //____________________________________________________________________
@@ -1055,45 +1124,125 @@ TH1* AliTrackletdNdeta::FindDelta(Container*  ress,
   Container* subCont = GetC(ress, sub);
   if (!subCont) return 0;
 
-  TH1* h = GetH1(subCont, Form("delta%s", scaled ? "Scaled" : ""));
+  TH1* h = CopyH1(subCont, scaled ? "scaledDelta" : "delta");
   if (!h) return 0;
 
   return h;
+}
+//____________________________________________________________________
+TH1* AliTrackletdNdeta::FindDelta(Container*  realList,
+				  Container*  simList, 
+				  const char* sub,
+				  TH2*&       scaleH,
+				  Double_t&   scale,
+				  Double_t&   scaleE)
+{
+  if (!realList || !simList) return 0;
+
+  Container* simSub  = GetC(simList,  sub);
+  if (!simSub) return 0;
+
+  TH3* h = GetH3(simSub, "etaDeltaIPz");
+  if (!h) return 0;
+  if (!scaleH) {
+    Info("", "Scaled histogram not found, making it");
+    Container* realSub = GetC(realList, sub);
+    if (!realSub) return 0;
+
+    Double_t realV  =  GetD(realSub, "deltaTail");
+    Double_t realE  =  GetD(realSub, "deltaTailError");
+    Double_t simV   =  GetD(simSub,  "deltaTail");
+    Double_t simE   =  GetD(simSub,  "deltaTailError");
+    scale           =  RatioE(realV,realE,simV,simE,scaleE);
+    Info("", "integrated scalar: %5.3f +/- %5.3f", scale, scaleE);
+    
+    scaleH = CopyH2(realSub, "etaIPzDeltaTail");
+    scaleH->SetDirectory(0);
+    scaleH->SetName("scale");
+    scaleH->SetZTitle("k_{I,#eta,IP_{#it{z}}}");
+    scaleH->SetTitle(Form("%5.3f#times#eta,IP_{#it{z}} scalar",scale));
+    scaleH->Divide(GetH2(simSub, "etaIPzDeltaTail"));
+  }
+  Printf("Scaling %s/%s by %s - %5.3f", h->GetName(), h->GetTitle(),
+	 scaleH->GetName(), scale);
+#if 0
+  TH3* scaled   = ScaleDelta(h, scaleH);
+  TH2* etaDelta = ProjectEtaDelta(scaled);
+  TH1* ret      = ProjectDelta(etaDelta);
+#else
+  TH1* ret      = CopyH1(simSub, "delta", "scaledDelta");
+  Scale(ret, scale, scaleE);
+#endif 
+  ret->SetName("scaledDelta");
+  ret->SetTitle(Form("%5.3f#times%s", scale, h->GetTitle()));
+  return ret;
 }
 //____________________________________________________________________
 void AliTrackletdNdeta::DrawDeltas(Container* realList, Container* simList)
 {
 
   ClearCanvas();
-  fBody->Divide(1,2,0,0);
+  fBody->Divide(1,3,0,0);
   fBody->GetPad(1)->SetRightMargin(0.01);
   fBody->GetPad(2)->SetRightMargin(0.01);
+  fBody->GetPad(3)->SetRightMargin(0.01);
       
 
   TH1* rm = 0;
   TH1* ri = 0;
   TH1* sm = 0;
   TH1* si = 0;
+  TH1* sc = 0;
+  TH1* sp = 0;
+  TH1* st = 0;  
   THStack* orig = new THStack("orig", "#Delta");
-  orig->Add(rm = FindDelta(realList, "measured", false));
-  orig->Add(ri = FindDelta(realList, "injected", false));
-  orig->Add(sm = FindDelta(simList,  "measured", false));
-  orig->Add(si = FindDelta(simList,  "injected", false));
-  if (rm) { rm->SetMarkerStyle(20); rm->SetFillStyle(0); }
-  if (ri) { ri->SetMarkerStyle(21); ri->SetFillStyle(0); }
-  if (sm) { sm->SetMarkerStyle(24); sm->SetFillStyle(0); }
-  if (si) { si->SetMarkerStyle(25); si->SetFillStyle(0); }
+  orig->Add(rm = FindDelta(realList, "measured",      false));
+  orig->Add(sm = FindDelta(simList,  "measured",      false));
+  orig->Add(ri = FindDelta(realList, "injected",      false));
+  orig->Add(si = FindDelta(simList,  "injected",      false));
+  orig->Add(sc = FindDelta(simList,  "combinatorics", false));
+  orig->Add(sp = FindDelta(simList,  "primaries",     false));
+  orig->Add(st = FindDelta(simList,  "secondaries",   false));
+  if (rm) { SetAttr(rm, kRed+2,     20, 1); }
+  if (ri) { SetAttr(ri, kOrange+2,  21, 1); } 
+  if (sm) { SetAttr(sm, kRed+2,     24, 1.3); }
+  if (si) { SetAttr(si, kOrange+2,  25, 1.3); }
+  if (sc) { SetAttr(sc, kGreen+2,   26); }
+  if (sp) { SetAttr(sp, kMagenta+2, 30); }
+  if (st) { SetAttr(st, kMagenta+2, 31); }
   
-  
+  Double_t scale = 0, scaleE = 0;
+  TH2*     scaleH = 0;
   THStack* scaled = new THStack("scaled", "#Delta (scaled)");
   scaled->Add(rm = FindDelta(realList, "measured", false));
+  scaled->Add(sm = FindDelta(realList,  simList, "measured",
+			     scaleH, scale, scaleE));
   scaled->Add(ri = FindDelta(realList, "injected", true));
-  scaled->Add(sm = FindDelta(simList,  "measured", false));
+#if 0
+  TH3* si3 =
+    ScaleDelta(GetH3(GetC(simList,"injected"),"scaledEtaDeltaIPz"), scaleH);
+  si3->SetTitle(Form("%5.3f#times%s",scale,si3->GetTitle()));
+  scaled->Add(si = ProjectDelta(ProjectEtaDelta(si3)));
+#else 
   scaled->Add(si = FindDelta(simList,  "injected", true));
-  if (rm) { rm->SetMarkerStyle(20); rm->SetFillStyle(0); }
-  if (ri) { ri->SetMarkerStyle(21); ri->SetFillStyle(0); }
-  if (sm) { sm->SetMarkerStyle(24); sm->SetFillStyle(0); }
-  if (si) { si->SetMarkerStyle(25); si->SetFillStyle(0); }
+  if (si) {
+    Scale(si, scale, scaleE);
+    si->SetTitle(Form("%5.3f#times%s",scale,si->GetTitle()));
+  }
+#endif
+  scaled->Add(sc = FindDelta(realList, simList, "combinatorics",
+			     scaleH, scale, scaleE));
+  scaled->Add(sp = FindDelta(realList, simList, "primaries",
+			     scaleH, scale, scaleE));
+  scaled->Add(st = FindDelta(realList, simList, "secondaries",
+			     scaleH, scale, scaleE));
+  if (rm) { SetAttr(rm, kRed+2,     20, 1); }
+  if (ri) { SetAttr(ri, kOrange+2,  21, 1); } 
+  if (sm) { SetAttr(sm, kRed+2,     24, 1.3); }
+  if (si) { SetAttr(si, kOrange+2,  25, 1.3); }
+  if (sc) { SetAttr(sc, kGreen+2,   26); }
+  if (sp) { SetAttr(sp, kMagenta+2, 30); }
+  if (st) { SetAttr(st, kMagenta+2, 31); }
 
   Double_t max   = /*5*/1.2*orig->GetMaximum("nostack");
   TH1*     templ = FindDelta(realList, "measured", false);
@@ -1133,47 +1282,201 @@ void AliTrackletdNdeta::DrawDeltas(Container* realList, Container* simList)
 	    fBody->GetPad(2)->GetBottomMargin(),
 	    .6, .45);
 
+  THStack* ratios = new THStack("ratios","");
+  TH1* jm = static_cast<TH1*>(sm->Clone("rm"));
+  jm->Divide(rm);
+  jm->SetDirectory(0);
+  jm->SetTitle(Form("%s / %s", sm->GetTitle(), rm->GetTitle()));
+  ratios->Add(jm);
+  TH1* ji = static_cast<TH1*>(si->Clone("sic"));
+  ji->Divide(sc);
+  ji->SetDirectory(0);
+  ji->SetTitle(Form("%s / %s", si->GetTitle(), sc->GetTitle()));
+  ratios->Add(ji);
+  TH1* ki = static_cast<TH1*>(ri->Clone("ric"));
+  ki->Divide(sc);
+  ki->SetDirectory(0);
+  ki->SetTitle(Form("%s / %s", ri->GetTitle(), sc->GetTitle()));
+  ratios->Add(ki);
+  l = DrawInPad(fBody, 3, ratios, "nostack logx grid leg");
+  ModLegend(fBody->GetPad(3), l,
+	    fBody->GetPad(3)->GetLeftMargin(),
+	    fBody->GetPad(3)->GetBottomMargin(),
+	    .6, .45);
+  
   PrintCanvas(Form("%s - #Delta", fLastBin.Data()));
+
+  if ((fProc & kScaleFull|kScaleAverage) == 0) return;
+
+  DrawScalars(realList, simList);
 }
+
+//____________________________________________________________________
+void AliTrackletdNdeta::DrawScalars(Container* realList, Container* simList)
+{
+
+  ClearCanvas();
+
+  Container* realInjected = GetC(realList,      "injected");
+  Container* simInjected  = GetC(simList,       "injected");
+  Container* realMeasured = GetC(realList,      "measured");
+  Container* simMeasured  = GetC(simList,       "measured");
+  TH1*       realIPz      = GetH1(realList,     "ipz");
+  TH1*       simIPz       = GetH1(simList,      "ipz");
+  TH2*       real2D       = GetH2(realMeasured, "etaDelta");
+  TH2*       sim2D        = GetH2(simMeasured,  "etaDelta");
+  TH1*       realD        = 0;
+  TH1*       simD         = 0;
+  TH1*       scale        = 0;
+  if (fProc & kScaleFull) {
+    TH2* realIE  = GetH2(realMeasured, "etaIPzDeltaTail");
+    TH2* simIE   = GetH2(simMeasured,  "etaIPzDeltaTail");
+    TH2* scaleIE = static_cast<TH2*>(realIE->Clone("scaleIE"));
+    scaleIE->Divide(simIE);
+    scaleIE->SetDirectory(0);
+    scale        = AverageOverIPz(scaleIE, "scale", 1, 0, 0);
+    realD        = realIE ->ProjectionX("realD");
+    simD         = simIE  ->ProjectionX("simD");
+    realD->SetDirectory(0);
+    simD ->SetDirectory(0);
+  }
+  else {
+    if (fProc & kScaleEta) {
+      if (!(fProc & kScaleDouble)) { 
+	realD = GetH1(realMeasured, "etaDeltaTail");
+	simD  = GetH1(simMeasured,  "etaDeltaTail");
+      }
+      else {
+	realD = GetH1(realInjected, "etaDeltaTailRatio");
+	simD  = GetH1(simInjected,  "etaDeltaTailRatio");
+      }
+    }
+    else {
+      Double_t realV = 1, realE = 0, simV = 1, simE = 0;    
+      if (fProc & kScaleAverage) { 
+	if (!(fProc & kScaleDouble)) { 
+	  realV  = GetD(realMeasured, "deltaTail");
+	  realE  = GetD(realMeasured, "deltaTailError");
+	  simV   = GetD(simMeasured,  "deltaTail");
+	  simE   = GetD(simMeasured,  "deltaTailError");
+	}
+	else {
+	  realV = GetD(realInjected, "deltaTailRatio");
+	  realE = GetD(realInjected, "deltaTailRatioError");
+	  simV  = GetD(simInjected,  "deltaTailRatio");
+	  simE  = GetD(simInjected,  "deltaTailRatioError");
+	}
+      }
+      else if (fProc & kScaleFix) 
+	realV  = fCombinatoricsScale;
+      
+      realD = Make1D(0, "realD", "Integral of tail", kBlack, 23,
+		     *real2D->GetXaxis());
+      simD  = Make1D(0, "simD",  "Integral of tail", kBlack, 23,
+		     *sim2D->GetXaxis());
+      for (Int_t i = 1; i <= realD->GetNbinsX(); i++) {
+	realD->SetBinContent(i, realV);
+	realD->SetBinError  (i, realE);
+	simD ->SetBinContent(i, simV);
+	simD ->SetBinError  (i, simE);
+      }
+    }
+    scale = static_cast<TH1*>(realD->Clone("scale"));
+    scale->Divide(simD);
+    scale->SetFillStyle(0);
+  }
+  if (!realD || !simD) {
+    Warning("DrawScalars",
+	    "Real (%p) or simulated (%p) distribution not found",
+	    realD, simD);
+    return;
+  }
+
+  fBody->Divide(1,2);
+  TVirtualPad* top = fBody->GetPad(1);
+  top->SetRightMargin(0.01);
+  top->SetTopMargin(0.01);
+  top->Divide(2,1,0,0);
+  DrawInPad(top, 1, real2D, "logy logz colz");
+  DrawInPad(top, 2, sim2D,  "logy logz colz");
+  
+  TVirtualPad* bot = fBody->GetPad(2);
+  bot->SetRightMargin(0.01);
+  bot->SetTopMargin(0.01);
+  bot->Divide(1,2,0,0);
+  bot->GetPad(1)->SetRightMargin(0.01);
+  bot->GetPad(2)->SetRightMargin(0.01);
+  THStack* ints = new THStack("ints","");
+  ints->Add(realD);
+  ints->Add(simD);
+  realD->SetMarkerStyle(20);
+  simD ->SetMarkerStyle(24);
+  realD->SetMarkerSize(1.5);
+  simD ->SetMarkerSize(1.8);
+  realD->SetMarkerColor(kRed+2);
+  simD ->SetMarkerColor(kGreen+2);
+  realD->SetLineColor(kRed+2);
+  simD ->SetLineColor(kGreen+2);
+  realD->SetFillStyle(0);
+  simD ->SetFillStyle(0);
+  // realD->SetTitle("#int d#Delta d#it{N}/d#Delta - Real");
+  // simD ->SetTitle("#int d#Delta d#it{N}/d#Delta - Sim.");
+  TLegend* l = DrawInPad(bot, 1, ints, "nostack grid leg");
+
+  TF1* ff = new TF1("ff", "pol0");
+  ff->SetLineColor(kBlue+2);
+  ff->SetLineStyle(2);
+  scale->Fit(ff, "Q0");
+  scale->SetTitle(Form("#LTk#GT = %5.2f #pm %5.2f",
+		       ff->GetParameter(0), ff->GetParError(0)));
+  // delete ff;
+  DrawInPad(bot,2,scale,"grid");
+  
+  ModLegend(bot->GetPad(1),l,.4,.1,.75,.4);
+
+  PrintCanvas(Form("%s - #it{k}", fLastBin.Data()));
+}
+
 //____________________________________________________________________
 Double_t AliTrackletdNdeta::DrawBackground(TVirtualPad* c,
 					   Int_t        pad,
 					   Container*   ress,
 					   const char*  name,
+					   const char** what, 
 					   const char*  pretty)
 {
   SuppressGuard g(kError);
   Container*   sc        = GetC(ress, name);
-  TH2*         obs       = CopyH2(sc,  "etaIPz",        "raw");
-  TH2*         bg        = CopyH2(sc,  "background");
-  TH2*         bgEta     = CopyH2(sc,  "backgroundEta");
-  TH2*         beta      = CopyH2(sc,  "beta"); 
-  TH2*         signal    = CopyH2(sc,  "signal");
-  TH2*         signalEta = CopyH2(sc,  "signalEta");
-  if (beta) {
-    beta->SetMinimum(0);
-    beta->SetMaximum(.7);
+  TObjArray*   hists     = new TObjArray(10);
+  Int_t        nHists    = 0;
+  const char** ptr       = what;
+  Double_t     max       = 0;
+  while (*ptr) { 
+    TH2* h = CopyH2(sc,  *ptr);
+    if (h) {
+      hists->AddAt(h, nHists);
+      h->SetMinimum(0);
+      TString nme(h->GetName());
+      if (nme.EqualTo("beta")) h->SetMaximum(.7);
+      if (nme.EqualTo("etaIPz") || nme.EqualTo("signal")) {
+	max = TMath::Max(h->GetMaximum(), max);      
+      }
+    }
+    nHists++;
+    ptr++;
   }
-  Double_t       max = TMath::Max(obs->GetMaximum(), signal->GetMaximum());
-  if (signalEta) max = TMath::Max(signalEta->GetMaximum(), max);
-  obs   ->SetMinimum(0);
-  signal->SetMinimum(0);
-  bg    ->SetMinimum(0);
-  obs   ->SetMaximum(max);
-  signal->SetMaximum(max);
-  if (signalEta) { signalEta->SetMinimum(0); signalEta->SetMaximum(max); }
-  if (bgEta)     { bgEta    ->SetMinimum(0); }
-  
   TVirtualPad* q     = c->cd(pad);
   q->SetRightMargin(0.10);
-  q->Divide(6,1,0,0);
-  DrawInPad(q,1,obs,        "colz");
-  DrawInPad(q,2,beta,       "colz");
-  DrawInPad(q,3,bg,         "colz");
-  DrawInPad(q,4,signal,     "colz");
-  DrawInPad(q,5,bgEta,      "colz");
-  DrawInPad(q,6,signalEta,  "colz");
-  TVirtualPad* r = q->GetPad(6);
+  q->Divide(nHists,1,0,0);
+  for (Int_t i = 0; i < nHists; i++) {
+    TH1* h = static_cast<TH1*>(hists->At(i));
+    if (!h) continue;
+    TString nme(h->GetName());
+    if (!nme.EqualTo("beta") && !nme.EqualTo("etaIPzScale"))
+      h->SetMaximum(max);
+    DrawInPad(q,i+1,h,"colz");
+  }
+  TVirtualPad* r = q->GetPad(nHists);
   r->SetRightMargin(0.12);
   r->SetPad(r->GetXlowNDC(), r->GetYlowNDC(),
 	    .99, r->GetYlowNDC()+r->GetHNDC());
@@ -1187,23 +1490,30 @@ Double_t AliTrackletdNdeta::DrawBackground(TVirtualPad* c,
   DrawInPad(q,1,ltx,"");
 
   return max;
-}
+}  
 //____________________________________________________________________
 void AliTrackletdNdeta::DrawBackground(Container* realList,
 				       Container* simList)
 {
   ClearCanvas();
 
+  const char* what[] = { "etaIPz",
+			 "etaIPzDeltaTail",
+			 "beta",
+			 "background",
+			 "signal",
+			 "etaIPzScale",
+			 0  };
   fBody->SetLeftMargin(0.2);
   fBody->SetTopMargin(0.10);
   fBody->Divide(1,3,0,0);
   Double_t max = 0;
   max = TMath::Max(max, DrawBackground(fBody, 1, realList,
-				       "injected", "Injected - Real"));
+				       "injected", what, "Injected - Real"));
   max = TMath::Max(max, DrawBackground(fBody, 2, simList,
-				       "injected", "Injected - Sim."));
+				       "injected", what, "Injected - Sim."));
   max = TMath::Max(max, DrawBackground(fBody, 3, simList,
-				       "combinatorics", "MC Labels"));
+				       "combinatorics", what, "MC Labels"));
   Int_t i = 0;
   for (i = 1; i <= 4; i++) {
     TVirtualPad* p = fBody->GetPad(i);
@@ -1221,23 +1531,24 @@ void AliTrackletdNdeta::DrawBackground(Container* realList,
       if (h) h->SetMaximum(max/5);      
     }
   }
-  const char* headings[] = { "Measured",
+  Int_t  nCol = 6;
+  const char* headings[] = { "#it{I}, #it{I}', #it{C}'",
+			     "#scale[0.7]{#int}#Delta",
 			     "#beta",
-			     "Background",
-			     "Signal",
-			     "Background (k_{#eta})",
-			     "Signal (k_{#eta})",
+			     "#it{B}",
+			     "#it{S}",
+			     "#it{k}",
 			     0 };
   const char** ptr = headings;
   i = 0;
   while (*ptr) {
     TLatex* head = new TLatex(fBody->GetRightMargin()+
-			      (1-fBody->GetRightMargin())/6*(i+.5),
+			      (1-fBody->GetRightMargin())/nCol*(i+.5),
 			      .99, *ptr);
     head->SetNDC();
     head->SetTextAlign(23);
     head->SetTextFont(62);
-    head->SetTextSize(0.025);
+    head->SetTextSize(0.02);
     DrawInPad(fBody, 0, head, "");
     ptr++;
     i++;
@@ -1282,65 +1593,45 @@ TH2* AliTrackletdNdeta::CutAlpha(TH2* h)
 }
 			       
 //____________________________________________________________________
-void AliTrackletdNdeta::DrawAlpha(TVirtualPad* c,
-				  Int_t        pad,
-				  Container*   ress,
-				  const char*  name,
-				  const char*  pretty)
-{
-  Container*   sc    = GetC(ress, name);
-  TH2*         al    = CopyH2(sc,  "alpha");
-  TH2*         als   = CopyH2(sc,  "alphaEta", "alphaEta", false);
-  if (al)  { al ->SetMinimum(fAlphaMin); al ->SetMaximum(fAlphaMax); }
-  if (als) { als->SetMinimum(fAlphaMin); als->SetMaximum(fAlphaMax); }
-    
-  TVirtualPad* q = c->cd(pad);
-  q->SetRightMargin(0.10);
-  q->Divide(2,1,0,0);
-
-  DrawInPad(q,1,al,  "colz");
-  DrawInPad(q,2,als, "colz");
-  TVirtualPad* r = q->GetPad(2);
-  r->SetRightMargin(0.12);
-  r->SetPad(r->GetXlowNDC(), r->GetYlowNDC(),
-	    .99, r->GetYlowNDC()+r->GetHNDC());
-
-  TLatex* ltx = new TLatex(.01,.5, pretty);
-  ltx->SetNDC();
-  ltx->SetTextFont(62);
-  ltx->SetTextAngle(90);
-  ltx->SetTextAlign(23);
-  ltx->SetTextSize(0.07);
-  DrawInPad(q,1,ltx,"");
-}
-//____________________________________________________________________
 void AliTrackletdNdeta::DrawAlpha(Container* realList, Container* simList)
 {
   ClearCanvas();
 
   fBody->SetLeftMargin(0.2);
-  fBody->SetTopMargin(0.10);
+  fBody->SetRightMargin(0.01);
+  fBody->SetTopMargin(0.01);
   fBody->Divide(1,2,0,0);
-  DrawAlpha(fBody, 1, simList,  "injected",      "Injected - Sim.");
-  DrawAlpha(fBody, 2, simList,  "combinatorics", "MC Labels");
-
-  const char* headings[] = { "#alpha",
-			     "#alpha - (k_{#eta})",
-			     0 };
-  const char** ptr = headings;
-  Int_t i = 0;
-  while (*ptr) {
-    TLatex* head = new TLatex(fBody->GetRightMargin()+
-			      (1-fBody->GetRightMargin())/2*(i+.5),
-			      .99, *ptr);
-    head->SetNDC();
-    head->SetTextAlign(23);
-    head->SetTextFont(62);
-    head->SetTextSize(0.025);
-    DrawInPad(fBody, 0, head, "");
-    ptr++;
-    i++;
+  TH2* alphaInj    = CopyH2(GetC(simList, "injected"),       "alpha");
+  TH2* alphaComb   = CopyH2(GetC(simList, "combinatorics"),  "alpha");
+  if (alphaInj) {
+    alphaInj ->SetMinimum(fAlphaMin);
+    alphaInj ->SetMaximum(fAlphaMax);
   }
+  if (alphaComb) {
+    alphaComb ->SetMinimum(fAlphaMin);
+    alphaComb ->SetMaximum(fAlphaMax);
+  }
+  fBody->GetPad(1)->SetRightMargin(0.15);
+  fBody->GetPad(2)->SetRightMargin(0.15);
+  DrawInPad(fBody, 1, alphaInj,  "colz");
+  DrawInPad(fBody, 2, alphaComb, "colz");
+
+  TLatex* ltx = new TLatex(.01,.5, "Injection");
+  ltx->SetNDC();
+  ltx->SetTextFont(62);
+  ltx->SetTextAngle(90);
+  ltx->SetTextAlign(23);
+  ltx->SetTextSize(0.07);
+  DrawInPad(fBody,1,ltx,"");
+
+  ltx = new TLatex(.01,.5, "Combinatorics");
+  ltx->SetNDC();
+  ltx->SetTextFont(62);
+  ltx->SetTextAngle(90);
+  ltx->SetTextAlign(23);
+  ltx->SetTextSize(0.07);
+  DrawInPad(fBody,2,ltx,"");
+  
   PrintCanvas(Form("%s - #alpha", fLastBin.Data()));
 }
 //____________________________________________________________________
@@ -1374,12 +1665,87 @@ TH2* AliTrackletdNdeta::GetScaledCombi(TH2*       h,
   if (!scale) {
     Container* realInjected = GetC(realList, "injected");
     Container* simInjected  = GetC(simList,  "injected");
-    if (fCombinatoricsScaleMode == kPerCent) {    
-      Double_t realRatio  = GetD(realInjected, "deltaTailRatio");
-      Double_t realRatioE = GetD(realInjected, "deltaTailRatioError");
-      Double_t simRatio   = GetD(simInjected,  "deltaTailRatio");
-      Double_t simRatioE  = GetD(simInjected,  "deltaTailRatioError");
-      Double_t sE, s      = RatioE(realRatio,realRatioE,simRatio,simRatioE,sE);
+    Container* realMeasured = GetC(realList, "measured");
+    Container* simMeasured  = GetC(simList,  "measured");
+    if (fProc & kScaleFull) {
+      TH2* realD = 0;
+      TH2* simD  = 0;
+      if (!(fProc & kScaleDouble)) {
+	realD = GetH2(realMeasured, "etaIPzDeltaTail");
+	simD  = GetH2(simMeasured,  "etaIPzDeltaTail");	
+      }
+      else {
+      }
+      if (!realD || !simD) {
+	Warning("GetCombiScale",
+		"Real (%p) or simulated (%p) distribution not found",
+		realD, simD);
+	return 0;
+      }
+      TH2* tmp2 = static_cast<TH2*>(realD->Clone("scale"));
+      tmp2->Divide(simD);
+      scale = tmp2;
+      TH1* tmp = AverageOverIPz(tmp2, "tmp", 1, 0, 0);
+      TF1* ff = new TF1("ff", "pol0");
+      tmp->Fit(ff, "QN0");
+      scale->SetTitle(Form("#LTk#GT = %5.2f #pm %5.2f",
+			   ff->GetParameter(0), ff->GetParError(0)));
+      delete ff;
+      delete tmp;      
+    }
+    else if (fProc & kScaleEta) {
+      TH1* realD = 0;
+      TH1* simD  = 0;
+      if (!(fProc & kScaleDouble)) { 
+	realD = GetH1(realMeasured, "etaDeltaTail");
+	simD  = GetH1(simMeasured,  "etaDeltaTail");
+      }
+      else {
+	realD = GetH1(realInjected, "etaDeltaTailRatio");
+	simD  = GetH1(simInjected,  "etaDeltaTailRatio");
+      }
+      if (!realD || !simD) {
+	Warning("GetCombiScale",
+		"Real (%p) or simulated (%p) distribution not found",
+		realD, simD);
+	return 0;
+      }
+      scale          = static_cast<TH1*>(realD->Clone("scale"));
+      scale->Divide(simD);
+      scale->SetFillStyle(0);
+      TF1* ff = new TF1("ff", "pol0");
+      scale->Fit(ff, "QN0");
+      scale->SetTitle(Form("#LTk#GT = %5.2f #pm %5.2f",
+			   ff->GetParameter(0), ff->GetParError(0)));
+      delete ff;
+	
+    }
+    else {
+      Double_t s = 1, sE = 0;
+      if (fProc & kScaleAverage) { 
+	Double_t realV, realE, simV, simE;    
+	if (!(fProc & kScaleDouble)) { 
+	  realV  = GetD(realMeasured, "deltaTail");
+	  realE  = GetD(realMeasured, "deltaTailError");
+	  simV   = GetD(simMeasured,  "deltaTail");
+	  simE   = GetD(simMeasured,  "deltaTailError");
+	}
+	else {
+	  realV = GetD(realInjected, "deltaTailRatio");
+	  realE = GetD(realInjected, "deltaTailRatioError");
+	  simV  = GetD(simInjected,  "deltaTailRatio");
+	  simE  = GetD(simInjected,  "deltaTailRatioError");
+	}
+	s = RatioE(realV,realE,simV,simE,sE);
+      }
+      else if (fProc & kScaleFix) {
+	s  = fCombinatoricsScale;
+	sE = 0;
+      }
+      else if (fProc & kScaleNone) {
+	s  = 1;
+	sE - 0;
+      }
       scale = Make1D(0, "scale",
 		     Form("k = %5.2f #pm %5.2f", s, sE),
 		     kBlack, 23, *h->GetXaxis());
@@ -1388,55 +1754,50 @@ TH2* AliTrackletdNdeta::GetScaledCombi(TH2*       h,
 	scale->SetBinError  (i, sE);
       }
     }
-    else {
-      TH1* realRatio = GetH1(realInjected, "etaDeltaTailRatio");
-      TH1* simRatio  = GetH1(simInjected,  "etaDeltaTailRatio");
-      scale          = static_cast<TH1*>(realRatio->Clone("scale"));
-      scale->Divide(simRatio);
-      scale->SetFillStyle(0);
-      TF1* ff = new TF1("ff", "pol0");
-      scale->Fit(ff, "QN0");
-      scale->SetTitle(Form("#LTk#GT = %5.2f #pm %5.2f",
-			   ff->GetParameter(0), ff->GetParError(0)));
-      delete ff;
-    }
     scale->SetDirectory(0);
   }
-  Scale(h, scale);
+  Info("GetScaledCombi",
+       "Scaling combinatorial background %s with %dD k %s",
+       h->GetTitle(), scale->GetDimension(), scale->GetTitle());
+  if (scale->GetDimension() == 2) 
+    h->Multiply(scale);  
+  else  
+    Scale(h, scale);  
   return h;
 }
 
 				       
 //____________________________________________________________________
-TH2* AliTrackletdNdeta::GetRealBackground(Bool_t     realComb,
-					  Container* realList,
+TH2* AliTrackletdNdeta::GetRealBackground(Container* realList,
 					  Container* simList,
 					  TH1*&      scale)
 {
-  if (!realComb) {
+  if (!(fProc & kRealComb)) {
     // Just return background from injection - possibly scaled by eta
     // dependent ratio of tails.
     Container* realInjected = GetC(realList, "injected");
-    return CopyH2(realInjected, fCombinatoricsScaleMode == kPerCent ?
-		  "background" : "backgroundEta", "realBg");
+    return CopyH2(realInjected,
+		  (fProc & kScaleAverage) ? 
+		  "background" : "backgroundEta",
+		  "realBg");
   }
   TH2* ret = CopyH2(GetC(simList, "combinatorics"), "background", "realBg");
   return GetScaledCombi(ret, realList, simList, scale);
 }
 //____________________________________________________________________
-TH2* AliTrackletdNdeta::GetRealSignal(Bool_t     realComb,
-				      Container* realList,
+TH2* AliTrackletdNdeta::GetRealSignal(Container* realList,
 				      Container* simList,
 				      TH1*&      scale)
 {
   Container* simInjected  = GetC(simList,  "injected");
   
-  if (!realComb) {
+  if (!(fProc & kRealComb)) {
     // Just return background from injection - possibly scaled by eta
     // dependent ratio of tails.
     Container* realInjected = GetC(realList, "injected");
-    return CopyH2(realInjected, fCombinatoricsScaleMode == kPerCent ?
-		  "signal" : "signalEta", "realSignal");
+    return CopyH2(realInjected,
+		  !(fProc & kScaleFull) ? "signal" : "signalEta",
+		  "realSignal");
   }
   Container* simComb = GetC(simList, "combinatorics");
   TH2* beta = CopyH2(simComb, "beta");
@@ -1456,14 +1817,15 @@ TH2* AliTrackletdNdeta::GetRealSignal(Bool_t     realComb,
   return realSig;
 }
 //____________________________________________________________________
-TH2* AliTrackletdNdeta::GetSim(Bool_t      simComb,
-			       Container*  simList,
+TH2* AliTrackletdNdeta::GetSim(Container*  simList,
 			       const char* name,
 			       const char* newName)
 {
-  Container* cont = GetC(simList, (simComb ? "combinatorics" : "injected"));
+  Bool_t simComb =  fProc & kSimComb;
+  Container* cont = GetC(simList,
+			 (simComb ? "combinatorics" : "injected"));
   TString    find;
-  if (simComb || fCombinatoricsScaleMode == kPerCent)
+  if (simComb || !(fProc & kScaleFull)) 
     find = name;
   else
     find.Format("%sEta", name);
@@ -1472,15 +1834,14 @@ TH2* AliTrackletdNdeta::GetSim(Bool_t      simComb,
 
 //____________________________________________________________________
 TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
-				   Bool_t      realComb,
 				   Container*  simList,
-				   Bool_t      simComb,
 				   Color_t     color,
 				   THStack*    stack,
 				   TDirectory* out,
 				   Bool_t      alt)
 {
-  Double_t   k        = (realList == simList ? 1 : fCombinatoricsScale);
+  Bool_t     realComb = fProc & kRealComb;
+  Bool_t     simComb  = fProc & kSimComb;
   Container* realData = GetC(realList, "measured");
   Container* simData  = GetC(simList,  "measured");
   Container* simCombC = GetC(simList, "combinatorics");
@@ -1491,8 +1852,8 @@ TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
   TH1*     scale    = 0;
   TH2*     realMeas = CopyH2(realData, "etaIPz",     "realMeas");
   TH1*     realIPz  = CopyH1(realList, "ipz",        "realIPz");
-  TH2*     realBg   = GetRealBackground(realComb, realList, simList, scale);
-  TH2*     realSig  = GetRealSignal    (realComb, realList, simList, scale);
+  TH2*     realBg   = GetRealBackground(realList, simList, scale);
+  TH2*     realSig  = GetRealSignal    (realList, simList, scale);
   if (!realMeas || !realSig || !realBg || !realIPz) {
     Warning("DrawdNdeta", "One or more real data histograms missing: "
 	    "meas=%p sig=%p bg=%p ipz=%p", realMeas, realSig, realBg, realIPz);
@@ -1505,9 +1866,9 @@ TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
 
   TH2* simMeas  = CopyH2(simData,  "etaIPz",      "simMeas");
   TH1* simIPz   = CopyH1(simList,  "ipz",         "simIPz");
-  TH2* simBg    = GetSim(simComb, simList, "background", "simBg");
-  TH2* simSig   = GetSim(simComb, simList, "signal",     "simSig");
-  TH2* alpha    = GetSim(simComb, simList, "alpha",      "alpha");
+  TH2* simBg    = GetSim(simList, "background", "simBg");
+  TH2* simSig   = GetSim(simList, "signal",     "simSig");
+  TH2* alpha    = GetSim(simList, "alpha",      "alpha");
   TH2* fiducial = CutAlpha(alpha);
   if (!simMeas || !simSig || !simBg || !simIPz || !alpha) {
     Warning("DrawdNdeta", "One or more simuluated data histograms missing: "
@@ -1592,7 +1953,14 @@ TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
   summary->Add(simAvgSig);
   summary->Add(realAvgBg);
   summary->Add(simAvgBg);
-  if (scale) summary->Add(scale);
+  if (scale) {
+    if (scale->GetDimension() == 1) summary->Add(scale);
+    else {
+      TH1* tmp = AverageOverIPz(static_cast<TH2*>(scale), "scale",1,0,result);
+      summary->Add(tmp);
+    }
+  }
+      
   
   ClearCanvas();
   fBody->SetLeftMargin(0.15);
@@ -1681,7 +2049,7 @@ TF1* AliTrackletdNdeta::DrawdNdeta(Container*  realList,
   return f;
 }
 //____________________________________________________________________
-void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
+void AliTrackletdNdeta::ProcessBin(Int_t      bin,
 				   Double_t   c1,       Double_t    c2,
 				   Container* realList, Container*  simList,
 				   THStack*   stack,    TDirectory* out,
@@ -1713,15 +2081,14 @@ void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
 			 kBlack };   // 10
   Color_t     color  = (bin <= 0 ? cc[10] : cc[(bin-1)%11]);
   TDirectory* binOut = 0;
-  Bool_t      alt    = (what & kAltMarker);
+  Bool_t      alt    = (fViz & kAltMarker);
   if (out) binOut = out->mkdir(name);
 
   TF1* f = 0;
-  if (what & kDeltas)      DrawDeltas    (realListBin, simListBin);
-  if (what & kBackgrounds) DrawBackground(realListBin, simListBin);
-  if (what & kAlphas)      DrawAlpha     (realListBin, simListBin);
-  if (what & kdNdetas)     f = DrawdNdeta(realListBin, what & kRealComb,
-					  simListBin,  what & kSimComb,
+  if (fViz & kDeltas)      DrawDeltas    (realListBin, simListBin);
+  if (fViz & kBackgrounds) DrawBackground(realListBin, simListBin);
+  if (fViz & kAlphas)      DrawAlpha     (realListBin, simListBin);
+  if (fViz & kdNdetas)     f = DrawdNdeta(realListBin, simListBin,  
 					  color, stack, binOut, alt);
   if (f && mid && bin > 0) {
     mid->SetBinContent(bin, f->GetParameter(0));
@@ -1730,19 +2097,48 @@ void AliTrackletdNdeta::ProcessBin(UInt_t     what,     Int_t       bin,
   printf(" done \n");
 }
 //====================================================================
-void AliTrackletdNdeta::Run(UInt_t      what, 
+void AliTrackletdNdeta::Run(const char* sproc,
+			    const char* sviz,
+			    const char* dataName,
+			    const char* simName,
+			    const char* outName,
+			    UShort_t    maxBins)
+{
+  UInt_t proc = 0;
+  UInt_t viz  = 0;
+  TString p(sproc);
+  TString v(sviz);
+  if (v.Contains("lan"))  viz  |= kLandscape;
+  if (v.Contains("pdf"))  viz  |= kPDF;
+  if (v.Contains("pau"))  viz  |= kPause;
+  if (v.Contains("gen"))  viz  |= kGeneral;
+  if (v.Contains("v.i"))  viz  |= kWeights;
+  if (v.Contains("par"))  viz  |= kParameters;
+  if (v.Contains("alt"))  viz  |= kAltMarker;
+  if (v.Contains("del"))  viz  |= kDeltas;
+  if (v.Contains("bak"))  viz  |= kBackgrounds;
+  if (v.Contains("alp"))  viz  |= kAlphas;
+  if (v.Contains("dnd"))  viz  |= kdNdetas;
+
+  if (p.Contains("non"))  proc |= kScaleNone;
+  if (p.Contains("fix"))  proc |= kScaleFix;
+  if (p.Contains("avg"))  proc |= kScaleAverage;
+  if (p.Contains("ful"))  proc |= kScaleFull;
+  if (p.Contains("dou"))  proc |= kScaleDouble;
+  if (p.Contains("clo"))  proc |= kClosure;
+  if (p.Contains("com"))  proc |= (kRealComb | kSimComb);
+
+  Run(proc, viz, maxBins, dataName, simName, outName);
+}
+void AliTrackletdNdeta::Run(UInt_t      proc,
+			    UInt_t      viz, 
 			    UShort_t    maxBins,
 			    const char* dataName,
 			    const char* simName,
 			    const char* outName)
 {
-  fLandscape = what & kLandscape;
-  fPause     = what & kPause;
-  fPDF       = what & kPDF;
-  if      (what & kFixedScale)   fCombinatoricsScaleMode = kFixed;
-  else if (what & kDynCentScale) fCombinatoricsScaleMode = kPerCent;
-  else                           fCombinatoricsScaleMode = kPerEtaCent;
-    
+  fProc = proc;
+  fViz  = viz;
   TFile* dataFile = 0;
   TFile* simFile  = 0;
   if (!(dataFile = OpenFile(dataName))) return;
@@ -1761,14 +2157,13 @@ void AliTrackletdNdeta::Run(UInt_t      what,
   fMaxDelta  = GetD(params, "MaxDelta");
 
   TString outBase(outName);
-  if (outBase.IsNull())          outBase.Form("MiddNdeta_0x%04x", what);
+  if (outBase.IsNull())          outBase.Form("MiddNdeta_0x%04x", fProc);
   if (outBase.EndsWith(".root")) outBase.ReplaceAll(".root", "");
   
   CreateCanvas(Form("%s.pdf", outBase.Data()));
-  if (what & kGeneral)    DrawGeneral(realRess, simRess);
-  if (what & kWeights)    DrawWeights(simRess);
-  if (what & kParameters) DrawParams(realSums, what & kRealComb,
-				     simSums,  what & kSimComb);
+  if (fViz & kGeneral)    DrawGeneral(realRess, simRess);
+  if (fViz & kWeights)    DrawWeights(simRess);
+  if (fViz & kParameters) DrawParams(realSums, simSums);
 
   TH1* realCent = CopyH1(realSums, "cent", "realCent");
   TH1* simCent  = CopyH1(simSums,  "cent", "simCent");
@@ -1783,11 +2178,11 @@ void AliTrackletdNdeta::Run(UInt_t      what,
     Warning("Post", "Centrality bins are incompatible, giving up");
     return;
   }
-  if (what & kClosure) realRess = simRess;
+  if (fProc & kClosure) realRess = simRess;
 
   THStack* stack = new THStack("all", ObsTitle());
   // Draw "min-bias" bin
-  ProcessBin(what, 0, 0, 100, realRess, simRess, stack);
+  ProcessBin(0, 0, 100, realRess, simRess, stack);
 
   TFile* out = TFile::Open(Form("%s.root", outBase.Data()), "RECREATE");
   TH1*   mid = Make1D(0,"mid",Form("%s|_{|#eta|<0.5}", ObsTitle()),
@@ -1801,7 +2196,7 @@ void AliTrackletdNdeta::Run(UInt_t      what,
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = realCent->GetXaxis()->GetBinUpEdge (i);
       
-    ProcessBin(what, i, c1, c2, realRess, simRess, stack, out, mid);
+    ProcessBin(i, c1, c2, realRess, simRess, stack, out, mid);
   }
   ClearCanvas();
   DrawInPad(fBody,0,mid,"E");

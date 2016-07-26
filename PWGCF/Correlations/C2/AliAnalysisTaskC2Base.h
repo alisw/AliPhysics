@@ -1,10 +1,11 @@
 #ifndef AliAnalysisTaskC2Base_cxx
 #define AliAnalysisTaskC2Base_cxx
 
-#include "TH1F.h"
-
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisC2Settings.h"
+
+class AliAODITSsaTrackCuts;
+class TH1;
 
 class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
  public:
@@ -18,20 +19,57 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
   Bool_t IsValidParticle(AliVParticle *particle);
 
  protected:
-  TList      *fOutputList;
+  // Load and set up things that need to be updated for each event
+  void SetupEventForBase();
+  // Evaluate asymmetry in V0; Taken from Leonardo / Katarina; TODO:Cross-check
+  Bool_t IsAsymmetricV0();
+  // Taken from Leonardo / Katarina; TODO:Cross-check
+  Bool_t IsOutOfBunchPileup();
+
+  TList *fOutputList;  //!
+  AliAODITSsaTrackCuts* fitssatrackcuts;  //!
+  TH1 *fDiscardedEvents;  //!
+  TH1 *fDiscardedTracks;  //!
   /// Possible reasons to discard an event as use in QA histogram
   struct cDiscardEventReasons {
-    enum type {invalidxVertex, zvtxPosition, noTracks,
-	       noTracksInPtRegion, nDiscardEventReasons}; };
+    enum type {
+      _eventIsValid,
+      badRun,
+      invalidxVertex,
+      isIncomplete,
+      isOutOfBunchPileup,
+      noMultSelectionObject,
+      noTracks,
+      noTracksInPtRegion,
+      noTrigger,
+      notV0AND,
+      spdFastOr,
+      spdPipeup,
+      spdVertexContributors,
+      tklClusterCut,
+      v0asymmetryCut,
+      zvtxPosition,
+      // not a reason, just the number of reasons
+      nDiscardEventReasons
+    };
+  };
 
   /// Possible reasons to discard a track as used in QA histogram
   struct cDiscardTrackReasons{
-    enum type {neutralCharge, etaAcceptance, notHybridGCG, notAODPrimary,
-	       notMCPrimary, dca, nDiscardTrackReasons};
+    enum type {
+      _trackIsValid,
+      dca,
+      etaAcceptance,
+      failedFilterBits,
+      failedITSCut,
+      neutralCharge,
+      notAODPrimary,
+      notHybridGCG,  // filter BIT(20)
+      notMCPrimary,
+      // not a reason, just the number of reasons
+      nDiscardTrackReasons
+    };
   };
-
-  TH1F *fDiscardedEvents;
-  TH1F *fDiscardedTracks;
 
   // Declaring these shuts up warnings from Weffc++
   AliAnalysisTaskC2Base(const AliAnalysisTaskC2Base&); // not implemented

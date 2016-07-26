@@ -182,9 +182,9 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   } else if (trainConfig == 15) {
     cuts.AddCut("00000113", "00200009297002008250400000", "0152506500000000"); //standard cut LHC11h pp 2.76TeV
   } else if (trainConfig == 16) {
-    cuts.AddCut("00000113", "00200009257002008250400000", "0152106500000000"); //standard cut pp 8 TeV
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV
   } else if (trainConfig == 17){
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis 8 TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 7 TeV
   } else if (trainConfig == 18){
     cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
   } else if (trainConfig == 19){

@@ -1385,6 +1385,7 @@ void AliDielectron::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) 
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(dieMC->GetMCEvent(), values); // get event informations
+  // @TODO: check if this Fill() is even needed. It might modify the fill map (fUsedVars).
 
   // fill the leg variables
   //  printf("leg:%d trk:%d part1:%p part2:%p \n",legClass,trkClass,part1,part2);
@@ -1415,7 +1416,8 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
   TString className,className2,className3;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars);
-  AliDielectronVarManager::Fill(ev, values); // get event informations
+  // not needed to get event information here, because done in FillVarVParticle() [and FillVarDielectronPair()].
+
   //loop over all added mc signals
   for(Int_t isig=0; isig<fSignalsMC->GetEntries(); isig++) {
 

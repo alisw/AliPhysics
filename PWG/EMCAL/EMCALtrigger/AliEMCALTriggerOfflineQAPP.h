@@ -64,10 +64,6 @@ public:
   void   AddOfflineBadChannel(Short_t absId)  { fOfflineBadChannels.insert(absId)   ; }
   void   ReadOfflineBadChannelFromFile(const char* fname);
   void   ReadOfflineBadChannelFromStream(std::istream& stream);
-  void   ReadFastORPedestalFromStream(std::istream& stream);
-  void   ReadFastORPedestalFromFile(const char* fname);
-  void   SetFastORPedestal(Short_t absId, Float_t ped);
-  void   ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   // Overloaded methods of AliEMCALTriggerQA
   void   Init();
@@ -83,7 +79,6 @@ protected:
 
   std::set<Short_t>          fOfflineBadChannels;          ///< Abs ID of offline bad channels
   std::set<Short_t>          fBadChannels;                 ///< Container of bad channels
-  TArrayF                    fFastORPedestal;              ///< FastOR pedestal
 
   Bool_t                     fDCalPlots;                   ///< Whether to add DCal QA plots
   Int_t                      fL0MinTime;                   ///< Minimum L0 time
@@ -93,8 +88,8 @@ protected:
   Int_t                      fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
   THistManager               fHistManager;                 ///< Histogram manager
 
-  const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[6][3];         //!<! EMCal max patch (will be reset each event)
-  const AliEMCALTriggerPatchInfo  *fMaxPatchDCal[6][3];          //!<! DCal max patch (will be reset each event)
+  const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];         //!<! EMCal max patch (will be reset each event)
+  const AliEMCALTriggerPatchInfo  *fMaxPatchDCal[fgkNTriggerTypes][fgkNPatchTypes];          //!<! DCal max patch (will be reset each event)
   Double_t                   fSumOfflineEMCal;             //!<! EMCal sum of all offline energy deposition (will be reset each event)
   Int_t                      fSumL0EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)
   Int_t                      fSumL1EMCal;                  //!<! EMCal sum of all online energy deposition (will be reset each event)

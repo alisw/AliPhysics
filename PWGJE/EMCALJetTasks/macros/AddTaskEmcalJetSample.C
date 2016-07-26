@@ -1,17 +1,8 @@
-// $Id$
-
 AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
-  const char *ntracks            = "Tracks",
-  const char *nclusters          = "CaloClusters",
-  const char *njets              = "Jets",
-  const char *nrho               = "Rho",
-  Int_t       nCentBins          = 1,
-  Double_t    jetradius          = 0.2,
-  Double_t    jetptcut           = 1,
-  Double_t    jetareacut         = 0.6,
-  const char *type               = "EMCAL",
-  Int_t       leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskEmcalJetSample"
+  const char *ntracks            = "usedefault",
+  const char *nclusters          = "usedefault",
+  const char* ncells             = "usedefault",
+  const char *suffix             = ""
 )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -20,92 +11,125 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   if (!mgr)
   {
     ::Error("AddTaskEmcalJetSample", "No analysis manager to connect to.");
-    return NULL;
+    return 0;
   }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
-  if (!mgr->GetInputEventHandler())
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
   {
     ::Error("AddTaskEmcalJetSample", "This task requires an input event handler");
-    return NULL;
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
   }
 
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
 
-  TString name(taskname);
-  if (strcmp(njets,"")) {
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+  TString cellName(ncells);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  if (cellName == "usedefault") {
+    if (dataType == kESD) {
+      cellName = "EMCALCells";
+    }
+    else if (dataType == kAOD) {
+      cellName = "emcalCells";
+    }
+    else {
+      cellName = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalJetSample");
+  if (!trackName.IsNull()) {
     name += "_";
-    name += njets;
+    name += trackName;
   }
-  if (strcmp(nrho,"")) {
+  if (!clusName.IsNull()) {
     name += "_";
-    name += nrho;
+    name += clusName;
   }
-  if (strcmp(type,"")) {
+  if (!cellName.IsNull()) {
     name += "_";
-    name += type;
+    name += cellName;
+  }
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
   }
 
-  Printf("name: %s",name.Data());
+  AliAnalysisTaskEmcalJetSample* sampleTask = new AliAnalysisTaskEmcalJetSample(name);
+  sampleTask->SetCaloCellsName(cellName);
+  sampleTask->SetVzRange(-10,10);
 
-  AliAnalysisTaskEmcalJetSample* jetTask = new AliAnalysisTaskEmcalJetSample(name);
-  jetTask->SetCentRange(0.,100.);
-  jetTask->SetNCentBins(nCentBins);
-
-  AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
-  if(trackCont) trackCont->SetClassName("AliVTrack");
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
-
-  TString strType(type);
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
-  if(jetCont) {
-    jetCont->SetRhoName(nrho);
-    jetCont->ConnectParticleContainer(trackCont);
-    jetCont->ConnectClusterContainer(clusterCont);
-    //jetCont->SetZLeadingCut(0.98,0.98);
-    jetCont->SetPercAreaCut(jetareacut);
-    jetCont->SetJetPtCut(jetptcut);
-    jetCont->SetLeadingHadronType(leadhadtype);
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = sampleTask->AddMCParticleContainer(trackName);
   }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = sampleTask->AddTrackContainer(trackName);
+  }
+  else if (!trackName.IsNull()) {
+    sampleTask->AddParticleContainer(trackName);
+  }
+  sampleTask->AddClusterContainer(clusName);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
 
-  mgr->AddTask(jetTask);
+  mgr->AddTask(sampleTask);
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
   TString contname(name);
   contname += "_histos";
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
-  mgr->ConnectInput  (jetTask, 0,  cinput1 );
-  mgr->ConnectOutput (jetTask, 1, coutput1 );
+      TList::Class(),AliAnalysisManager::kOutputContainer,
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (sampleTask, 0,  cinput1 );
+  mgr->ConnectOutput (sampleTask, 1, coutput1 );
 
-  return jetTask;
+  return sampleTask;
 }
-
-AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample( AliEmcalJetTask* jetFinderTask,
-  Int_t       nCentBins          = 1,
-  Double_t    jetareacut         = 0.6,
-  const char *type               = "EMCAL",
-  Int_t       leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskEmcalJetSample"
-)
-    {
-    const char* ntracks            = jetFinderTask->GetTracksName();
-    const char* nclusters          = jetFinderTask->GetClusName();
-    const char* njets              = jetFinderTask->GetJetsName();
-    const char* nrho               = jetFinderTask->GetRhoName();
-    Double_t    jetradius          = jetFinderTask->GetRadius();
-    Double_t    jetptcut           = jetFinderTask->GetMinJetPt();
-
-    AliAnalysisTaskEmcalJetSample* jetTask = AddTaskEmcalJetSample(ntracks , nclusters, njets, nrho, nCentBins, jetradius, jetptcut, jetareacut, type, leadhadtype, taskname);
-
-    return jetTask;
-    }

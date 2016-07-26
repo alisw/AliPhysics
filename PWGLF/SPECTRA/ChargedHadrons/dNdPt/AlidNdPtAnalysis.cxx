@@ -184,6 +184,7 @@ ClassImp(AlidNdPtAnalysis)
   fBinsZv(0),
 
   fIsInit(kFALSE),
+  triggerResult(kTRUE),
   
   fTRDTriggerRequiredHQU(kFALSE),
   fTRDTriggerRequiredHJT(kFALSE),
@@ -315,6 +316,7 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fBinsZv(0),
 
   fIsInit(kFALSE),
+  triggerResult(kTRUE),
   
   fTRDTriggerRequiredHQU(kFALSE),
   fTRDTriggerRequiredHJT(kFALSE),
@@ -436,6 +438,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if (fBinsPtCorr) delete[] fBinsPtCorr; fBinsPtCorr=0;
   if (fBinsEta) delete[] fBinsEta; fBinsEta=0;
   if (fBinsZv) delete[] fBinsMult; fBinsZv=0;
+  
 }
 
 //_____________________________________________________________________________
@@ -1320,6 +1323,20 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   }
   fSPDBGCount->Fill(0.5);
 
+  Bool_t IncompleteDAQ = esdEvent->IsIncompleteDAQ();
+  if(IsRequiredCompleteDAQ() && IncompleteDAQ){
+    return;
+  }
+  
+  // Check on the SDD issue (some events were recored with and without SDD)
+  if(!IsUseMCInfo()){
+    
+  TString firedTriggerClasses=esdEvent->GetFiredTriggerClasses();
+  if(!firedTriggerClasses.Contains(GetTriggerClass())){ return;}
+
+    
+  }
+
   
   // use MC information
   AliHeader* header = 0;
@@ -1438,11 +1455,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      // select events with at least 
      // one prompt track in acceptance
      // pT>0.5 GeV/c, |eta|<0.8 for the Cross Section studies
+    isEventSelected = AlidNdPtHelper::SelectEvent(esdEvent,esdTrackCuts);
 
-     isEventSelected = AlidNdPtHelper::SelectEvent(esdEvent,esdTrackCuts);
      //printf("isEventSelected %d \n", isEventSelected);
   }
-
+  
   TObjArray *allChargedTracks=0;
   //Int_t multAll=0, multAcc=0, multRec=0;
   Int_t multAll=0, multRec=0;

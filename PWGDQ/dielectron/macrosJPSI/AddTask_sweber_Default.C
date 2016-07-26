@@ -1,15 +1,7 @@
-Bool_t isAOD=kFALSE;
-Bool_t hasMC=kFALSE;
-Int_t iPeriod=-1;
-enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k10pp, k11a, k11d, k11h, k12h, k13b, k13c, k13d, k13e, k13f, k15f, k15h };
-
-
 AliAnalysisTask* AddTask_sweber_Default(
-  TString cfg = "ConfigJpsi_sw_pp",
+  TString cfg = "ConfigJpsi_sw_pp_13tev",
   Bool_t gridconf = kTRUE,
-  TString prod = "", 
-  Bool_t isMC = kFALSE,
-  Bool_t rejectPileup = kTRUE
+  TString suffix = ""
 )
 {
   // get the current analysis manager
@@ -20,60 +12,12 @@ AliAnalysisTask* AddTask_sweber_Default(
     return 0;
   }
 
-  // Do we have an MC handler?
-  hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
-  // AOD input?
-  isAOD = mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  if(isAOD) hasMC = isMC;
-
-  // Get the current train configuration
-  TString trainConfig = gSystem->Getenv("CONFIG_FILE");
-  TString list = gSystem->Getenv("LIST");
-  if( list.IsNull()) list=prod;
-
-  // selected period
-  if(      !prod.CompareTo("LHC10b") ) iPeriod = k10b;
-  else if( !prod.CompareTo("LHC10c") ) iPeriod = k10c;
-  else if( !prod.CompareTo("LHC10d") ) iPeriod = k10d;
-  else if( !prod.CompareTo("LHC10e") ) iPeriod = k10e;
-  else if( !prod.CompareTo("LHC10f") ) iPeriod = k10f;
-  else if( !prod.CompareTo("LHC10h") ) iPeriod = k10h;
-  else if( !prod.CompareTo("LHC11a") ) iPeriod = k11a;
-  else if( !prod.CompareTo("LHC11d") ) iPeriod = k11d;
-  else if( !prod.CompareTo("LHC11h") ) iPeriod = k11h;
-  else if( !prod.CompareTo("LHC12h") ) iPeriod = k12h;
-  else if( !prod.CompareTo("LHC13b") ) iPeriod = k13b;
-  else if( !prod.CompareTo("LHC13c") ) iPeriod = k13c;
-  else if( !prod.CompareTo("LHC13d") ) iPeriod = k13d;
-  else if( !prod.CompareTo("LHC13e") ) iPeriod = k13e;
-  else if( !prod.CompareTo("LHC13f") ) iPeriod = k13f;
-  else if( !prod.CompareTo("LHC15f") ) iPeriod = k15f;
-  else if( !prod.CompareTo("LHC15h") ) iPeriod = k15h;
-
-
+  
   // create task and add it to the manager
-  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("JpsiDefault");
-  if (!hasMC) task->UsePhysicsSelection();
-
-
-  
-  // add special triggers
-  switch(iPeriod) {
-    case k11d: task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);     break;
-    case k11h: task->SetTriggerMask(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral); break;
-    case k12h: task->SetTriggerMask(AliVEvent::kAnyINT); break;                                      
-    case k13b: task->SetTriggerMask(AliVEvent::kINT7); break;
-    case k13c: task->SetTriggerMask(AliVEvent::kINT7); break;
-    case k13d: task->SetTriggerMask(AliVEvent::kAnyINT); break;
-    case k13e: task->SetTriggerMask(AliVEvent::kAnyINT); break;
-    case k13f: task->SetTriggerMask(AliVEvent::kAnyINT); break;
-    case k15f: task->SetTriggerMask(AliVEvent::kINT7); break;
-    case k15h: task->SetTriggerMask(AliVEvent::kINT7); break;
-  }
+  AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron( Form("JpsiDefault%s",suffix.Data()) );
   mgr->AddTask(task);
-  
-  
+
+ 
   // set config file name
   TString configFile("");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
@@ -108,40 +52,36 @@ AliAnalysisTask* AddTask_sweber_Default(
   configFile+=".C";
   
   // load dielectron configuration file (only once)
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi")){
+ // if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi")){
     gROOT->LoadMacro(configFile.Data());
-  }
+  //}
 
   ConfigJpsi(task);
-  
-
-  //   task->SetTriggerOnV0AND();
-  if(rejectPileup) task->SetRejectPileup();
 
   // create output container
   AliAnalysisDataContainer *coutput1 =
-    mgr->CreateContainer("sweber_Default_tree",
+    mgr->CreateContainer( Form("sweber_Default_tree%s",suffix.Data()),
       TTree::Class(),
       AliAnalysisManager::kExchangeContainer,
-      "sweber_Default_default");
+      Form("sweber_Default_default%s",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist1 =
-    mgr->CreateContainer("sweber_Default_QA",
+    mgr->CreateContainer(Form("sweber_Default_QA%s",suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist2 =
-    mgr->CreateContainer("sweber_Default_CF",
+    mgr->CreateContainer(Form("sweber_Default_CF%s",suffix.Data()),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()));
 
   AliAnalysisDataContainer *cOutputHist3 =
-    mgr->CreateContainer("sweber_Default_EventStat",
+    mgr->CreateContainer(Form("sweber_Default_EventStat%s",suffix.Data()),
       TH1D::Class(),
       AliAnalysisManager::kOutputContainer,
-      "JPSI.root");
+      Form("JPSI%s.root",suffix.Data()));
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );

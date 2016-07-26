@@ -17,7 +17,7 @@
 #include <TFile.h>
 #include <TDirectoryFile.h>
 #include <TKey.h>
-#include <TList.h>
+#include <THashList.h>
 #include <iostream>
 #include <THn.h>
 #include <TProfile.h>
@@ -48,10 +48,13 @@ class AliQnCorrectionsManager : public TObject {
   void SetOutputHistogramsQnCorrectionsFile(TFile* file) {fOutputHistogramsQnCorrectionsFile=file;}
   void SetHistogramsQAFile(TFile* file)                  {fHistogramsQAFile=file;}
   void SetTreeQnVectorsFile(TFile* file)                 {fTreeQnVectorsFile=file;}
+  void AddRunLabel(TString label)                        {fRunList+=label+";";}
+  void SetFileRunLabels(TString path);
   //TODO add SetQAFile(), add fQAFile variable
 
-  Bool_t SetCalibrationFile(TFile* inputFile)         {if(inputFile) if(inputFile->GetListOfKeys()->GetEntries()>0) fListInputHistogramsQnCorrections = (TList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj()->Clone(); return (fListInputHistogramsQnCorrections ? kTRUE : kFALSE);} //TODO make "CalibrationHistograms" name customizable
-  //void SetCalibrationFile(TFile* inputFile)         {if(inputFile) fListInputHistogramsQnCorrections = (TList*) inputFile->Get("CalibrationHistograms");} //TODO make "CalibrationHistograms" name customizable
+  Bool_t SetCalibrationFile(TFile* inputFile)         {if(inputFile) if(inputFile->GetListOfKeys()->GetEntries()>0) fListInputHistogramsQnCorrections = (THashList*)((TKey*)inputFile->GetListOfKeys()->At(0))->ReadObj()->Clone(); return (fListInputHistogramsQnCorrections ? kTRUE : kFALSE);} //TODO make "CalibrationHistograms" name customizable
+  void SetListHistogramsQnCorrections(THashList* list)    {fListInputHistogramsQnCorrections = (THashList*) list->Clone();}
+  //void SetCalibrationFile(TFile* inputFile)         {if(inputFile) fListInputHistogramsQnCorrections = (THashList*) inputFile->Get("CalibrationHistograms");} //TODO make "CalibrationHistograms" name customizable
   //void SetCalibrationFile(TFile* inputFile)         { fListInputHistogramsQnCorrections = inputFile;} //TODO make "CalibrationHistograms" name customizable
   void SetCalibrationFileDirectoryName(TString label) {fLabel=label;};
   void SetFillTreeQnVectors(Bool_t b=kTRUE)             {fSetFillTreeQnVectors 	          = b;}
@@ -80,9 +83,9 @@ class AliQnCorrectionsManager : public TObject {
   TClonesArray* CorrectedQnVector(Int_t conf, Int_t step=-1){ return (step==-1 ? fCorrectedQvectors[conf][fLastStep[conf]] : fCorrectedQvectors[conf][step]); }
 
   TTree* GetTreeQnVectors()                 {return fTreeQnVectors;}    
-  TList* GetListQnVectors()                 {WriteQnVectorsToList();  return fListQnVectors;}
-  TList* GetListOutputHistogramsQnCorrections()     {return fListOutputHistogramsQnCorrections;}
-  TList* GetListHistogramsQA()              {return fListHistogramsQA;}
+  THashList* GetListQnVectors()                 {WriteQnVectorsToList();  return fListQnVectors;}
+  THashList* GetListOutputHistogramsQnCorrections()     {return fListOutputHistogramsQnCorrections;}
+  THashList* GetListHistogramsQA()              {return fListHistogramsQA;}
 
   Float_t* GetDataContainer() {return fDataContainer;}; //event and track/hit variables overwritten for each track/hit and event
 
@@ -108,7 +111,7 @@ class AliQnCorrectionsManager : public TObject {
 
  private:
 
-  //TList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (TList*) fListInputHistogramsQnCorrections->Get(label) : 0x0);}
+  //THashList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (THashList*) fListInputHistogramsQnCorrections->Get(label) : 0x0);}
 
   void FillHistograms();
   void FillHistogramsMeanQ(AliQnCorrectionsConfiguration* QnConf, Int_t step);
@@ -121,8 +124,8 @@ class AliQnCorrectionsManager : public TObject {
   void FillHistogramsQnAlignment(AliQnCorrectionsConfiguration* QnConf);
   void FillHistogramsQnAlignmentQA(AliQnCorrectionsConfiguration* QnConf);
 
-  TList* GetInputList()   {return fListInputHistogramsQnCorrections;}
-  TList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (TList*) fListInputHistogramsQnCorrections->FindObject(label) : 0x0);}
+  THashList* GetInputList()   {return fListInputHistogramsQnCorrections;}
+  THashList* GetInputListWithLabel(TString label)   {return (fListInputHistogramsQnCorrections ? (THashList*) fListInputHistogramsQnCorrections->FindObject(label) : 0x0);}
 
   void AddDetectorType(Int_t type)                     { if(fDetectorIdMap[type]==0) fDetectorIdMap[type] = ++fNdetectors;};
   void ApplyQnCorrections();
@@ -138,10 +141,9 @@ class AliQnCorrectionsManager : public TObject {
   void FillQnVectors();
   Bool_t CallStepEqualizeDataVectorWeights(AliQnCorrectionsConfiguration* QnConf);
   Bool_t CallStepRecenterQnVector(AliQnCorrectionsConfiguration* QnConf);
-  void CallStepRescaleQnVector(Int_t corpar);
+  //void CallStepRescaleQnVector(Int_t corpar);
   void CallStepTwistAndRescaleQnVector(AliQnCorrectionsConfiguration* QnConf);
-  void RotateQvec(AliQnCorrectionsConfiguration* QnConf);
-
+  void CallStepRotateQvector(AliQnCorrectionsConfiguration* QnConf);
 
   void WriteCalibrationHistogramsToList();
   void WriteQaHistogramsToList();
@@ -171,7 +173,7 @@ class AliQnCorrectionsManager : public TObject {
   Int_t fCorrectionStep;
   Int_t fPassesRequired;
   Bool_t fCalibrateByRun;
-  TList* fListInputHistogramsQnCorrections;          // List of input histograms for corrections
+  THashList* fListInputHistogramsQnCorrections;          // List of input histograms for corrections
   //TDirectoryFile* fListInputHistogramsQnCorrections;          //! List of input histograms for corrections
   Float_t fDataContainer[AliQnCorrectionsConstants::nDataContainerVariables];
   TString fLabel; // events can be characterised with a label, corrections are applied with events from this label (for example label=<run number>)
@@ -183,14 +185,16 @@ class AliQnCorrectionsManager : public TObject {
   Bool_t fSetFillHistogramsQA;                                                                              // whether to create, fill and write QA histograms to list
   Bool_t fSetFillHistogramsQnCorrections;                                                                   // whether to create, fill and write correction histograms to list
 
-  TList* fListQnVectors;                                                                                  // event list of Qn vectors (overwritten at each event)
+  THashList* fListQnVectors;                                                                                  // event list of Qn vectors (overwritten at each event)
   TTree* fTreeQnVectors;                                                                                  // event by event tree of corrected Qn vectors
-  TList* fListOutputHistogramsQnCorrections;                                                                // output list with Qn correction histograms
-  TList* fListHistogramsQA;                                                                               // output list with Qn QA histograms
+  THashList* fListOutputHistogramsQnCorrections;                                                                // output list with Qn correction histograms
+  THashList* fListHistogramsQA;                                                                               // output list with Qn QA histograms
 
   TFile* fOutputHistogramsQnCorrectionsFile;
   TFile* fHistogramsQAFile;
   TFile* fTreeQnVectorsFile;
+
+  TString fRunList; // list of run labels separated by a semi-colon
 
   ClassDef(AliQnCorrectionsManager, 1);
   

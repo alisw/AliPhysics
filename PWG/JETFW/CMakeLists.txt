@@ -30,10 +30,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources in alphabetical order
 set(SRCS
   AliAnalysisTaskEmcalJet.cxx
+  AliAnalysisTaskEmcalJetLight.cxx
   AliEmcalJet.cxx
   AliJetContainer.cxx
   AliLocalRhoParameter.cxx
   AliRhoParameter.cxx
+  AliEmcalJetShapeProperties.cxx
   )
 
 # Headers from sources

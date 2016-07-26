@@ -40,6 +40,7 @@ class AliJXtAnalysis : public AliAnalysisTaskSE{
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<std::endl;};
 		
 		void SetEfficiency( AliJEfficiency *effInput ){ fEfficiency = effInput; };
+		void SetEfficiencyIsolated( AliJEfficiency *effInput ){ fEfficiencyIsolated = effInput; };
 		void SetTrackFilterBit( int inputBit ){ fTrackFilterBit = inputBit; };
 		void SetEfficiencyFilterBit( int inputBit ) { fEffFilterBit = inputBit; };
 			
@@ -51,6 +52,7 @@ class AliJXtAnalysis : public AliAnalysisTaskSE{
 		
 		// Fill histogram
 		void FillEfficiencyCheckHistogram(double pT, double effCorr);
+		void FillIsolatedEfficiencyCheckHistogram(double pT, double effCorr);
 		void FillControlHistograms(double pT, double effCorr, int centBin);
 		void FillInclusiveHistograms(double pT, double xT, double eta, double phi, double effCorr, int centBin);
 		void FillIsolatedHistograms(double pT, double xT, double eta, double phi, double effCorr, int centBin);
@@ -86,10 +88,11 @@ class AliJXtAnalysis : public AliAnalysisTaskSE{
 		
 		double fMinIsolPt;    // minimum pT of the track to be accepted as an isolated one
 		
-		AliJEfficiency * fEfficiency;     // non-isolated efficiency
-		int		 fEffMode;        // efficiency: 0:NoEff 1:Period 2:RunNum 3:Auto
-		int 		 fTrackFilterBit; // track selection for efficiency 
-		int		 fEffFilterBit;	  // JEfficiency correspondance to track bit
+		AliJEfficiency * fEfficiency;         // non-isolated efficiency
+		AliJEfficiency * fEfficiencyIsolated; // isolated efficiency
+		int		 fEffMode;            // efficiency: 0:NoEff 1:Period 2:RunNum 3:Auto
+		int 		 fTrackFilterBit;     // track selection for efficiency 
+		int		 fEffFilterBit;	      // JEfficiency correspondance to track bit
 			
 		AliJHistManager * fHMG; // output histograms encapsulated here
 
@@ -100,6 +103,7 @@ class AliJXtAnalysis : public AliAnalysisTaskSE{
 		AliJTH1D fh_ntracks; // for number of tracks dist
 		
 		AliJTProfile fh_effCorr; // to check the efficiency correction	
+		AliJTProfile fh_effCorrIsolated; // to check the isolated efficiency correction
 		
 		// Following histograms have centrality binning
 		

@@ -203,7 +203,7 @@ install(FILES ${HDRS} DESTINATION include)
 if(ROOT_HASALIEN AND AliRoot_HASALIEN)
   add_executable(runTrain
                  trains/trainMain.cxx)
-  target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
+  target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint RIO)
   install(TARGETS runTrain
           RUNTIME DESTINATION bin)
 endif(ROOT_HASALIEN AND AliRoot_HASALIEN)
@@ -246,6 +246,12 @@ install ( DIRECTORY trains
 	  DESTINATION PWGLF/FORWARD 
 	  FILES_MATCHING PATTERN "*.C"
 	  PATTERN "*~"        EXCLUDE)
+install ( DIRECTORY trains 
+	  DESTINATION PWGLF/FORWARD 
+	  FILES_MATCHING PATTERN "*.sh"	  
+	  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_READ WORLD_EXECUTE
+	  PATTERN "*~"        EXCLUDE)
+
 # install dN/deta scripts 
 install ( DIRECTORY analysis2/dndeta
 	  DESTINATION PWGLF/FORWARD/analysis2 

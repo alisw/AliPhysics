@@ -79,8 +79,8 @@ namespace AliFemtoCutMonitorPionPion {
   protected:
 
     TH2F *fCentMult;
-    TH1F *_vertex_z;
-    TH2F *_vertex_xy;
+    TH1F *fVertexZ;
+    TH2F *fVertexXY;
 
     TH2I *_collection_size_pass;
     TH2I *_collection_size_fail;
@@ -135,6 +135,8 @@ namespace AliFemtoCutMonitorPionPion {
     TH1F *fMinv;
     TH1F *fKt;
     TH2F *fDetaDphi;
+    TH2F *fQinvDeta;
+    TH2F *fQinvDphiStar;
 
     TH2F *fMCTrue_minv;
     TH2F *fMCTrue_kstar;

@@ -1,5 +1,7 @@
 #ifndef ALIANALYSISTASKEMCALJET_H
 #define ALIANALYSISTASKEMCALJET_H
+/* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class TList;
@@ -13,6 +15,18 @@ class AliVParticle;
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 
+/**
+ * @class AliAnalysisTaskEmcalJet
+ * @brief Base task in the EMCAL jet framework
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ *
+ * This class is the base class for Analysis Tasks using the
+ * core EMCAL jet framework. User tasks should inherit from it.
+ * This class derives from AliAnalysisTaskEmcal and adds
+ * some additional features, useful for jet analysis. The key feature
+ * is the handling of the jet containers.
+ */
 class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
  public:
   typedef AliJetContainer::EJetType_t EJetType_t;
@@ -79,19 +93,21 @@ class AliAnalysisTaskEmcalJet : public AliAnalysisTaskEmcal {
   Int_t                       GetNJets(Int_t i=0)                                                      const;
   Double_t                    GetRhoVal(Int_t i=0)                                                     const;
 
-  TString                     fRhoName;                    /// rho name
-  TString                     fLocalRhoName;               /// name for local rho
-  TObjArray                   fJetCollArray;               /// jet collection array
+  TString                     fRhoName;                    ///<  rho name
+  TString                     fLocalRhoName;               ///<  name for local rho
+  TObjArray                   fJetCollArray;               ///<  jet collection array
 
-  TClonesArray               *fJets;                       //!<!jets
-  AliRhoParameter            *fRho;                        //!<!event rho
-  AliLocalRhoParameter       *fLocalRho;                   //!<!local event rho
-  Double_t                    fRhoVal;                     //!<!event rho value, same for local rho
+  TClonesArray               *fJets;                       //!<! jets
+  AliRhoParameter            *fRho;                        //!<! event rho
+  AliLocalRhoParameter       *fLocalRho;                   //!<! local event rho
+  Double_t                    fRhoVal;                     //!<! event rho value, same for local rho
 
  private:
   AliAnalysisTaskEmcalJet(const AliAnalysisTaskEmcalJet&);            // not implemented
   AliAnalysisTaskEmcalJet &operator=(const AliAnalysisTaskEmcalJet&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJet, 3) // EMCAL Jet base analysis task
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskEmcalJet, 3);
+  /// \endcond
 };
 #endif

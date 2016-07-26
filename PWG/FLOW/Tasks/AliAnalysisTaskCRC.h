@@ -187,6 +187,8 @@ public:
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
  void SetnCenBin(Int_t const n) {this->fnCenBin = n;};
  Int_t GetnCenBin() const {return this->fnCenBin;};
+  void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
+  Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
  void SetDataSet(TString const n) {this->fDataSet = n;};
@@ -285,6 +287,7 @@ private:
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
  Int_t fnCenBin;
+ Int_t fFlowQCCenBin;
  Double_t fCenBinWidth;
  TString fDataSet;
  TString fCorrWeight;
@@ -299,7 +302,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliAnalysisTaskCRC, 3);
+ ClassDef(AliAnalysisTaskCRC, 4);
 };
 
 //================================================================================================================

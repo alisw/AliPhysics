@@ -36,6 +36,7 @@
 AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
   fcard(cardIn),
   fhistos(histosIn),
+  fAcceptanceCorrection(0x0),
   fnReal(0),
   fnMix(0),
   fsumTriggerAndAssoc(0),
@@ -102,6 +103,7 @@ AliJCorrelations::AliJCorrelations( AliJCard *cardIn, AliJHistos *histosIn) :
 AliJCorrelations::AliJCorrelations() :
   fcard(0x0),
   fhistos(0x0),
+  fAcceptanceCorrection(0x0),
   fnReal(0),
   fnMix(0),
   fsumTriggerAndAssoc(0),
@@ -144,6 +146,7 @@ AliJCorrelations::AliJCorrelations() :
 AliJCorrelations::AliJCorrelations(const AliJCorrelations& in) :
   fcard(in.fcard),
   fhistos(in.fhistos),
+  fAcceptanceCorrection(in.fAcceptanceCorrection),
   fnReal(in.fnReal),
   fnMix(in.fnMix),
   fsumTriggerAndAssoc(in.fsumTriggerAndAssoc),
@@ -238,6 +241,7 @@ AliJCorrelations& AliJCorrelations::operator=(const AliJCorrelations& in){
   // AliJCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
   fcard = in.fcard;
   fhistos = in.fhistos;
+  fAcceptanceCorrection = in.fAcceptanceCorrection;
   
   fDPhiUERegion[0] = in.fDPhiUERegion[0];
   fDPhiUERegion[1] = in.fDPhiUERegion[1];
@@ -319,8 +323,8 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   
   //acceptance correction  triangle  or mixed fevent
   //  fGeometricAcceptanceCorrection = 1;
-  fGeometricAcceptanceCorrection = ( fsamplingMethod == 0 ) ? GetGeoAccCorrFlat(fDeltaEta) : GetGeoAccCorrIncl(fDeltaEta,fptaBin,2);
-  fGeometricAcceptanceCorrection3D = ( fsamplingMethod == 0 ) ? GetGeoAccCorrFlat(fDeltaEta) : GetGeoAccCorrIncl(fDeltaEta,fXlongBin,1);
+  fGeometricAcceptanceCorrection = ( fsamplingMethod == 0 ) ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,fptaBin,2);
+  fGeometricAcceptanceCorrection3D = ( fsamplingMethod == 0 ) ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,fXlongBin,1);
   
   if(fpttBin<0 || fptaBin<0 || fEtaGapBin<0 ){
     cout<<"Error in FillAzimuthHistos: some pT or eta out of bin. pttBin="<<fpttBin<<" pTaBin="<<fptaBin <<" etaGapBin="<< fEtaGapBin << endl;
@@ -343,6 +347,7 @@ void AliJCorrelations::FillAzimuthHistos(fillType fTyp, int CentBin, int ZBin, A
   if(fhistos->fhJT.Dimension()>0) FillJtHistograms(fTyp, ftk1, ftk2, fill2DBackgroundQualityControlHistograms);  // Fill the jT and pout histograms togerher with some background quality assurance histograms
   FillDeltaEtaHistograms(fTyp, ZBin);  // Fill all the delta eta histograms
   FillDeltaPhiHistograms(fTyp);  // Fill the azimuthal correlation functions
+  FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
   FillPtaHistograms(fTyp);  // Fill various pTa histograms
   if(fhistos->fhDRNearPtMoon.Dimension()>0) FillIAAAndMoonHistograms(fTyp, ZBin);  // Fill the I_AA and moon histograms
   
@@ -481,7 +486,7 @@ void AliJCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocType
   
   // Calculate jT, invariant mass and the correction factor for jT
   double jt = vAssoc->Perp(vTrigger->Vect());
-  double geometricAcceptanceCorrection = fsamplingMethod == 0  ? GetGeoAccCorrFlat(fDeltaEta) : GetGeoAccCorrIncl(fDeltaEta,iBin,assocType);
+  double geometricAcceptanceCorrection = fsamplingMethod == 0  ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(fDeltaEta) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(fDeltaEta,fCentralityBin,fpttBin,iBin,assocType);
   double weight = jt > 1e-3 ? geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
   double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
   
@@ -538,7 +543,7 @@ void AliJCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, TL
   
   // Find the acceptance correction for the pair
   double dEtaRndm = vTrigger->Eta() - vAssoc->Eta();
-  double geoAccCorrRndm = fsamplingMethod == 0  ? GetGeoAccCorrFlat(dEtaRndm) : GetGeoAccCorrIncl(dEtaRndm,iBin,assocType);
+  double geoAccCorrRndm = fsamplingMethod == 0  ? fAcceptanceCorrection->GetAcceptanceCorrectionTriangle(dEtaRndm) : fAcceptanceCorrection->GetAcceptanceCorrectionInclusive(dEtaRndm,fCentralityBin,fpttBin,iBin,assocType);
   
   // Find the phi difference in the interval ]-Pi,Pi]
   double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
@@ -548,7 +553,7 @@ void AliJCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, TL
     if(jt>1e-3) { //here we used and BgFidCut
       for(int iGap=0; iGap<=maxGap; iGap++){
         hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
-        if(fill2DBackground) hBackground2D[fCentralityBin][iGap][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, geoAccCorrRndm * fTrackPairEfficiency);
+        if(fill2DBackground) hBackground2D[fCentralityBin][iGap][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, fTrackPairEfficiency);
         hPtAssoc[fCentralityBin][iGap][fpttBin][iBin]->Fill(fpta, fTrackPairEfficiency);
         
         // Fill the background histogram for signed pairs
@@ -689,35 +694,35 @@ void AliJCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, AliJ
        */
       
       // Fill background histograms for klong binning, eta gap
-      FillJtBackgroundHistograms(0,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTKlongBg,fhistos->fhJTKlongBgLikeSign,fhistos->fhJTKlongBgUnlikeSign,fhistos->fhBgAssocKlong,fhistos->fhDphiDetaKlong,fill2DBackground);
+      FillJtBackgroundHistograms(0,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTKlongBg,fhistos->fhJTKlongBgLikeSign,fhistos->fhJTKlongBgUnlikeSign,fhistos->fhBgAssocKlongEta,fhistos->fhDphiDetaBgKlongEta,fill2DBackground);
       
       // Fill background histograms for klong binning, R gap
-      FillJtBackgroundHistograms(0,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTKlongBgR,fhistos->fhJTKlongBgRLikeSign,fhistos->fhJTKlongBgRUnlikeSign,fhistos->fhBgAssocKlongR,fhistos->fhDphiDetaKlongR,fill2DBackground);
+      FillJtBackgroundHistograms(0,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTKlongBgR,fhistos->fhJTKlongBgRLikeSign,fhistos->fhJTKlongBgRUnlikeSign,fhistos->fhBgAssocKlongR,fhistos->fhDphiDetaBgKlongR,fill2DBackground);
       
       // Fill background histograms for klong binning, phi gap
-      FillJtBackgroundHistograms(0,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTKlongBgPhi,fhistos->fhJTKlongBgPhiLikeSign,fhistos->fhJTKlongBgPhiUnlikeSign,fhistos->fhBgAssocKlongPhi,fhistos->fhDphiDetaKlongPhi,fill2DBackground);
+      FillJtBackgroundHistograms(0,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTKlongBgPhi,fhistos->fhJTKlongBgPhiLikeSign,fhistos->fhJTKlongBgPhiUnlikeSign,fhistos->fhBgAssocKlongPhi,fhistos->fhDphiDetaBgKlongPhi,fill2DBackground);
       
       // Fill background histograms for xlong binning, eta gap
-      FillJtBackgroundHistograms(1,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTBg,fhistos->fhJTBgLikeSign,fhistos->fhJTBgUnlikeSign,fhistos->fhBgAssocXe,fhistos->fhDphiDetaXe,fill2DBackground);
+      FillJtBackgroundHistograms(1,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTBg,fhistos->fhJTBgLikeSign,fhistos->fhJTBgUnlikeSign,fhistos->fhBgAssocXlongEta,fhistos->fhDphiDetaBgXlongEta,fill2DBackground);
       
       // Fill background histograms for xlong binning, R gap
-      FillJtBackgroundHistograms(1,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTBgR,fhistos->fhJTBgRLikeSign,fhistos->fhJTBgRUnlikeSign,fhistos->fhBgAssocXeR,fhistos->fhDphiDetaXeR,fill2DBackground);
+      FillJtBackgroundHistograms(1,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTBgR,fhistos->fhJTBgRLikeSign,fhistos->fhJTBgRUnlikeSign,fhistos->fhBgAssocXlongR,fhistos->fhDphiDetaBgXlongR,fill2DBackground);
       
       // Fill background histograms for xlong binning, phi gap
-      FillJtBackgroundHistograms(1,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTBgPhi,fhistos->fhJTBgPhiLikeSign,fhistos->fhJTBgPhiUnlikeSign,fhistos->fhBgAssocXePhi,fhistos->fhDphiDetaXePhi,fill2DBackground);
+      FillJtBackgroundHistograms(1,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTBgPhi,fhistos->fhJTBgPhiLikeSign,fhistos->fhJTBgPhiUnlikeSign,fhistos->fhBgAssocXlongPhi,fhistos->fhDphiDetaBgXlongPhi,fill2DBackground);
       
       
       // Only fill the pTa background histograms, if the original pair was in traditional near side. Note that the background histogram filler method also checks, that the newly generated pair is on the traditional near side.
       if(fNearSide){
         
         // Fill background histograms for pta binning, eta gap
-        FillJtBackgroundHistograms(2,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTPtaBg,fhistos->fhJTPtaBgLikeSign,fhistos->fhJTPtaBgUnlikeSign,fhistos->fhBgAssocPta,fhistos->fhDphiDetaPta,fill2DBackground);
+        FillJtBackgroundHistograms(2,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTPtaBg,fhistos->fhJTPtaBgLikeSign,fhistos->fhJTPtaBgUnlikeSign,fhistos->fhBgAssocPtaEta,fhistos->fhDphiDetaBgPtaEta,fill2DBackground);
         
         // Fill background histograms for pta binning, R gap
-        FillJtBackgroundHistograms(2,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTPtaBgR,fhistos->fhJTPtaBgRLikeSign,fhistos->fhJTPtaBgRUnlikeSign,fhistos->fhBgAssocPtaR,fhistos->fhDphiDetaPtaR,fill2DBackground);
+        FillJtBackgroundHistograms(2,1,&vThrustRndmRgap,&vAssocRndmRgap,fhistos->fhJTPtaBgR,fhistos->fhJTPtaBgRLikeSign,fhistos->fhJTPtaBgRUnlikeSign,fhistos->fhBgAssocPtaR,fhistos->fhDphiDetaBgPtaR,fill2DBackground);
         
         // Fill background histograms for pta binning, phi gap
-        FillJtBackgroundHistograms(2,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTPtaBgPhi,fhistos->fhJTPtaBgPhiLikeSign,fhistos->fhJTPtaBgPhiUnlikeSign,fhistos->fhBgAssocPtaPhi,fhistos->fhDphiDetaPtaPhi,fill2DBackground);
+        FillJtBackgroundHistograms(2,2,&vThrustRndmPhiGap,&vAssocRndmPhiGap,fhistos->fhJTPtaBgPhi,fhistos->fhJTPtaBgPhiLikeSign,fhistos->fhJTPtaBgPhiUnlikeSign,fhistos->fhBgAssocPtaPhi,fhistos->fhDphiDetaBgPtaPhi,fill2DBackground);
         
       } // Traditional near side check
       
@@ -739,6 +744,7 @@ void AliJCorrelations::FillDeltaEtaHistograms(fillType fTyp, int ZBin)
       fhistos->fhDEtaNear[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
     } else {
       fhistos->fhDEtaNearM[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection * fTrackPairEfficiency );
+      fhistos->fhDetaNearMixAcceptance[fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaEta, fTrackPairEfficiency);
     }
   } else {
     if(fPhiGapBinAway<=3) fhistos->fhDEtaFar[fTyp][fCentralityBin][fpttBin]->Fill( fDeltaEta, fGeometricAcceptanceCorrection * fTrackPairEfficiency );
@@ -749,7 +755,10 @@ void AliJCorrelations::FillDeltaEtaHistograms(fillType fTyp, int ZBin)
     if( fTyp == 0 ) {
       if(fPhiGapBinNear>=0 && fXlongBin >= 0) fhistos->fhDEtaNearXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection3D * fTrackPairEfficiency );
     } else {
-      if(fPhiGapBinNear>=0 && fXlongBin >= 0) fhistos->fhDEtaNearMXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection3D * fTrackPairEfficiency );
+      if(fPhiGapBinNear>=0 && fXlongBin >= 0){
+        fhistos->fhDEtaNearMXEbin[fCentralityBin][ZBin][fPhiGapBinNear][fpttBin][fXlongBin]->Fill( fDeltaEta , fGeometricAcceptanceCorrection3D * fTrackPairEfficiency );
+        fhistos->fhDeta3DNearMixAcceptance[fCentralityBin][fpttBin][fXlongBin]->Fill( fDeltaEta, fTrackPairEfficiency);
+      }
     }
   }
 }
@@ -765,6 +774,23 @@ void AliJCorrelations::FillDeltaPhiHistograms(fillType fTyp)
   if(fXlongBin>=0 && fNearSide3D) fhistos->fhDphiAssocXEbin[fTyp][fCentralityBin][fEtaGapBin][fpttBin][fXlongBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection3D * fTrackPairEfficiency);
   
   if(fIsIsolatedTrigger) fhistos->fhDphiAssocIsolTrigg[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill( fDeltaPhi/kJPi , fGeometricAcceptanceCorrection * fTrackPairEfficiency); //FK//
+}
+
+void AliJCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
+{
+  // This method fills the two dimensional DeltaEta,DeltaPhi histograms
+  // No acceptance correction here, since we want to see tha structure caused by acceptance effects
+  
+  // Fill the histogram in pTa bins
+  if(fNearSide){
+    fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+  }
+  
+  // Fill the histogram in xlong bins
+  if(fNearSide3D && fXlongBin >= 0){
+    fhistos->fhDphiDetaXlong[fTyp][fCentralityBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+  }
+  
 }
 
 void AliJCorrelations::FillPtaHistograms(fillType fTyp)
@@ -893,9 +919,10 @@ double AliJCorrelations::GetGeoAccCorrIncl(double deltaEta, int assocBin, int as
   
   if(assocBin < 0) return GetGeoAccCorrFlat(deltaEta);
   
+  // Define the acceptance histogram
   TH1D *acceptanceHistogram;
   
-  // Choose different acceptance histogram for xlong bins
+  // Choose different acceptance histogram for xlong bins and other bins
   if(assocType == 1){
     acceptanceHistogram = fhistos->fhDEta3DNearMixFromFile[fCentralityBin][fpttBin][assocBin];
   } else {

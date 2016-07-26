@@ -211,8 +211,8 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     cuts.AddCut("58900013", "00200009247602008250400000", "0152501500000000");    
   } else if (trainConfig == 31) { 
     cuts.AddCut("50800013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 32) { 
-    cuts.AddCut("52500013", "00200009247602008250400000", "0152501500000000");       
+  } else if (trainConfig == 32) {
+    cuts.AddCut("52500013", "00200009247602008250400000", "0152501500000000");
   } else if (trainConfig == 33) { 
     cuts.AddCut("53500013", "00200009247602008250400000", "0152501500000000");       
   } else if (trainConfig == 34) { 
@@ -225,6 +225,10 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     cuts.AddCut("52500013", "00700009247602008250400000", "0152501500000000");               
   } else if (trainConfig == 38) { 
     cuts.AddCut("52400013", "00700009247602008250400000", "0152501500000000");       
+  } else if (trainConfig == 39) { //latest std 11h cut
+    cuts.AddCut("52400013", "00200009247602008250404000", "0152501500000000");
+  } else if (trainConfig == 40) {
+    cuts.AddCut("52500013", "00200009247602008250404000", "0152501500000000");
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

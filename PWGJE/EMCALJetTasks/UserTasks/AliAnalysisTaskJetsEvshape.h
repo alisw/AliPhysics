@@ -47,6 +47,11 @@ public:
       kHistStat = 0,
       kHistJetPt,
       kHistMult,
+      kHistJetPtVsMult,
+      kHistJetPtMultEvshape,
+      kHistThrust,
+      kHistSphericityT,
+      kHistSphericityTVsMult,
       kHistLast
   };
 
@@ -65,6 +70,9 @@ protected:
   virtual Bool_t FillHistograms();
   virtual Bool_t Run();
 
+  Bool_t CalculateThrust();
+  Bool_t CalculateSphericityT();
+
   // task internal
   AliMCEvent  *fMCEvent; //!
   AliESDEvent *fESDEvent; //!
@@ -78,6 +86,14 @@ protected:
   AliJetContainer            *fJetsCont;                   //!Jets
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliClusterContainer        *fCaloClustersCont;           //!Clusters
+
+  // intermediate results
+  Float_t fThrust; //!
+  Float_t fSphericityT; //!
+
+  // task configuration
+  Bool_t fUseMC;
+  Float_t fEtaMaxForEvshape;
 
   // output objects
   TList *fOutputList;		//! list of output objects
@@ -104,8 +120,6 @@ protected:
   { ((TH2*) GetHistogram(hist, idx))->Fill(x, y, weight); }
   void    FillH3(Hist_t hist, Float_t x, Float_t y, Float_t z, Float_t weight = 1., Int_t idx = 0)
   { ((TH3*) GetHistogram(hist, idx))->Fill(x, y, z, weight); }
-
-  // task configuration
 
 private:
   // not implemented

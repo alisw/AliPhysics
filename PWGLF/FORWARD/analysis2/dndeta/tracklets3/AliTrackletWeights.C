@@ -1,3 +1,13 @@
+/**
+ * @file   AliTrackletWeights.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:50:58 2016
+ * 
+ * @brief  Encode simulation weights for 2nd pass 
+ * 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 #ifndef ALITRACKLETWEIGHTS_C
 #define ALITRACKLETWEIGHTS_C
 #include <TNamed.h>
@@ -22,6 +32,11 @@ class AliAODTracklet;
 class TCanvas; // Autoload 
 #endif
 
+/**
+ * Simulation weights
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 class AliTrackletWeights : public TNamed
 {
 public:
@@ -83,8 +98,9 @@ public:
   /** 
    * Add a histogram to weight particle abundances 
    * 
-   * @param pdg Particle species 
-   * @param h   Weight of particle specie as a function of centrality. 
+   * @param pdg  Particle species 
+   * @param h    Weight of particle specie as a function of centrality. 
+   * @param mode Mode of this weight (+1: up, 0: normal, -1: down)
    * 
    * @return true on success. 
    */
@@ -95,8 +111,9 @@ public:
   /** 
    * Add a histogram to weight strange particle abundances 
    * 
-   * @param pdg Particle species 
-   * @param h   Weight of particle specie as a function of centrality. 
+   * @param pdg  Particle species 
+   * @param h    Weight of particle specie as a function of centrality. 
+   * @param mode Mode of this weight (+1: up, 0: normal, -1: down)
    * 
    * @return true on success. 
    */
@@ -107,8 +124,9 @@ public:
   /** 
    * Set the weight histogram per transverse momentum and centrality 
    * 
-   * @param h histogram of (centrality vs pT) weights
-   * 
+   * @param h    histogram of (centrality vs pT) weights
+   * @param mode Mode of this weight (+1: up, 0: normal, -1: down)
+   *
    * @return true on success 
    */
   Bool_t SetPtWeight(const TH2D* h, UShort_t mode=0);
@@ -121,7 +139,8 @@ public:
    * - kDown:      The weight is adjusted down by the error of the weight 
    * 
    * @param pdg  Particle specie 
-   * @param mode Mode 
+   * @param mode Mode of this weight (+1: up, 0: normal, -1: down)
+   *
    */
   void SetAbundanceMode(Short_t pdg, UShort_t mode)
   {
@@ -204,9 +223,9 @@ protected:
   /** 
    * Get a PDG depedent weight. 
    *
-   * @param pdg  The absolute value of the PDG code 
-   * @param cent The event centrality 
    * @param m    Map to look up in 
+   * @param apdg The absolute value of the PDG code 
+   * @param cent The event centrality 
    *
    * @return the weight associated with the particle 
    */
@@ -216,9 +235,10 @@ protected:
   /** 
    * Add a weight histogram 
    * 
-   * @param map Map of weights 
-   * @param pdg Particle species 
-   * @param w   Weight histogram 
+   * @param map  Map of weights 
+   * @param pdg  Particle species 
+   * @param w    Weight histogram 
+   * @param mode Mode of this weight (+1: up, 0: normal, -1: down)
    * 
    * @return true on success 
    */
@@ -230,6 +250,7 @@ protected:
    * - kUp:        The weight is adjusted up by the error of the weight 
    * - kDown:      The weight is adjusted down by the error of the weight 
    * 
+   * @param map  Map 
    * @param pdg  Particle specie 
    * @param mode Mode 
    */

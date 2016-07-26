@@ -69,7 +69,7 @@ AliMultiplicitySelectionCPPWA::~AliMultiplicitySelectionCPPWA()
 	fTrackCutListPrim = 0;
 }
 //Member function
-void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut)
+void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_t ITSSACut, Bool_t IsRun2)
 {
 	//Important message for 7TeV analysis (LHC10b,c,d,e)
 	/*
@@ -87,40 +87,61 @@ void AliMultiplicitySelectionCPPWA::InitDefaultTrackCuts(Int_t clusterCut, Bool_
 	   ==================
 	   Default cut which is currently recommended: AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE/kFALSE, 0)
 	   In this period, a cut on 70 clusters should be okay, however, changing to a crossed rows cut and lowering the cut to 60 clusters should be included in the systematic error study.
-	 */
+	   */
 
 	//Will be used as standard trackcuts
-	if (ITSSACut == kFALSE) {//ITS+TPC
-		AliESDtrackCuts *fcutITSTPC_P = new AliESDtrackCuts;// = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0);
-		//fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-		fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
-		fcutITSTPC_P -> SetMinNCrossedRowsTPC(120);
-		fcutITSTPC_P -> SetMaxDCAToVertexZ(2);
-		fcutITSTPC_P -> SetEtaRange(-0.9,0.9);
-		fcutITSTPC_P -> SetMaxChi2PerClusterTPC(4);
-		fcutITSTPC_P -> SetRequireTPCRefit(kTRUE);
-		fcutITSTPC_P -> SetRequireITSRefit(kTRUE);
-		fcutITSTPC_P -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-		fcutITSTPC_P -> SetAcceptKinkDaughters(kFALSE);
-		fcutITSTPC_P -> SetMaxChi2PerClusterITS(36);
-		fcutITSTPC_P -> SetMaxChi2TPCConstrainedGlobal(36);
-		fcutITSTPC_P -> SetPtRange(0.15);
-		fcutITSTPC_P -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-		fcutITSTPC_P -> SetMaxFractionSharedTPCClusters(0.4);
-		fcutITSTPC_P->SetName("ITSTPC");
-		AddPrimaryTrackCut(fcutITSTPC_P);
-		AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
-		fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-		fcutITSSA_P->SetName("ITSSA");
-		AddPrimaryTrackCut(fcutITSSA_P);
+	if (IsRun2) {//Run2
+		if (ITSSACut == kFALSE) {//ITS+TPC
+			AliESDtrackCuts *fcutITSTPC_P = new AliESDtrackCuts;// = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0);
+			//fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSTPC_P -> SetMaxDCAToVertexXYPtDep("(0.0182+0.0350/pt^1.01)");
+			fcutITSTPC_P -> SetMinNCrossedRowsTPC(120);
+			fcutITSTPC_P -> SetMaxDCAToVertexZ(2);
+			fcutITSTPC_P -> SetEtaRange(-0.9,0.9);
+			fcutITSTPC_P -> SetMaxChi2PerClusterTPC(4);
+			fcutITSTPC_P -> SetRequireTPCRefit(kTRUE);
+			fcutITSTPC_P -> SetRequireITSRefit(kTRUE);
+			fcutITSTPC_P -> SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+			fcutITSTPC_P -> SetAcceptKinkDaughters(kFALSE);
+			fcutITSTPC_P -> SetMaxChi2PerClusterITS(36);
+			fcutITSTPC_P -> SetMaxChi2TPCConstrainedGlobal(36);
+			fcutITSTPC_P -> SetPtRange(0.15);
+			fcutITSTPC_P -> SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+			fcutITSTPC_P -> SetMaxFractionSharedTPCClusters(0.4);
+			fcutITSTPC_P->SetName("ITSTPC");
+			AddPrimaryTrackCut(fcutITSTPC_P);
+			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+			fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSSA_P->SetName("ITSSA");
+			AddPrimaryTrackCut(fcutITSSA_P);
+		}
+		else {//ITSSA
+			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+			fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSSA_P->SetName("ITSSA");
+			AddPrimaryTrackCut(fcutITSSA_P);
+		}
+		return;
 	}
-	else {//ITSSA
-		AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
-		fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-		fcutITSSA_P->SetName("ITSSA");
-		AddPrimaryTrackCut(fcutITSSA_P);
+	else {//Run1
+		if (ITSSACut == kFALSE) {//ITS+TPC
+			AliESDtrackCuts *fcutITSTPC_P = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, clusterCut);
+			fcutITSTPC_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSTPC_P->SetName("ITSTPC");
+			AddPrimaryTrackCut(fcutITSTPC_P);
+			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+			fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSSA_P->SetName("ITSSA");
+			AddPrimaryTrackCut(fcutITSSA_P);
+		}
+		else {//ITSSA
+			AliESDtrackCuts *fcutITSSA_P = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE, 0);
+			fcutITSSA_P->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+			fcutITSSA_P->SetName("ITSSA");
+			AddPrimaryTrackCut(fcutITSSA_P);
+		}
+		return;
 	}
-   return;
 }
 //Member function
 void AliMultiplicitySelectionCPPWA::AddPrimaryTrackCut(AliESDtrackCuts *cut)

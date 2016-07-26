@@ -16,7 +16,9 @@ enum eventCutSet { kEvtDefault=0,
 		   kDefaultVtx5, //=4                    
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
-		   kSpecial2 //=7
+		   kSpecial2, //=7
+		   kVOM, //=8
+		   kRM08 //=9
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -99,8 +101,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   //task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
   task->SelectCollisionCandidates(triggerMask); //AOD
 
-  if(isPP) task->UseMultiplicity("QUALITY");
-  else task->UseCentrality("V0M");
+  if(isPP){
+    if(evtCutSetID==kV0M) task->UseMultiplicity("AliMultSelection_V0M");
+    else if(evtCutSetID==kRM08) task->UseMultiplicity("AliMultSelection_RefMult08");
+    else task->UseMultiplicity("QUALITY");
+  }else task->UseCentrality("V0M");
 
   // set event mixing options
   task->UseContinuousMix();

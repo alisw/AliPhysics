@@ -181,7 +181,7 @@ AliFemtoManager* ConfigFemtoAnalysis(Int_t fAvgSep=0, Int_t fCosPAngle=0, Int_t 
 	      dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5 + 0.05*fMaxDCAV0);
 	      dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0 + 6.0*fDecayLength);
 	      dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993 + 0.09993*fCosPAngle);
-	      dtc2etaphitpc[aniter]->SetInvariantMassRejectK0s(minK0Cut - 0.1*minK0Cut*fInvariantMassK0s, 
+	      dtc1etaphitpc[aniter]->SetInvariantMassRejectK0s(minK0Cut - 0.1*minK0Cut*fInvariantMassK0s, 
 							       maxK0Cut + 0.1*maxK0Cut*fInvariantMassK0s);
 	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038 - 0.00038*fInvariantMass,LambdaMass+0.0043 + 
 	      						    0.00043*fInvariantMass);

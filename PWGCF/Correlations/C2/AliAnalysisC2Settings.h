@@ -7,9 +7,8 @@
 #ifndef AliAnalysisC2Settings_cxx
 #define AliAnalysisC2Settings_cxx
 
-#include "TMath.h"
 #include "TObject.h"
-#include <vector>
+#include "TString.h"
 
 typedef std::vector< Double_t > edgeContainer;
 
@@ -51,6 +50,8 @@ class AliAnalysisC2Settings : public TObject {
   Double_t fMaxDcaTang;
   // Max longitudinal distance of closest approach to primary vertex in order to be still valid
   Double_t fMaxDcaLong;
+  // Offline trigger
+  TString fOfflineTrigger;
 
  private:
   ClassDef(AliAnalysisC2Settings, 1);

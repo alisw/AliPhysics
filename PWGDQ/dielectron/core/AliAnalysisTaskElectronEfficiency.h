@@ -222,6 +222,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH2F*                           fPhiGen_PhiRec;
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
+  
+  TH2D*                           fOpeningAngleGen_OpeningAngleRecUS;
+  TH2D*                           fOpeningAngleGen_OpeningAngleRecLS;
+  TH2D*                           fOpeningAngleGen_OpeningAngleResolutionUS;
+  TH2D*                           fOpeningAngleGen_OpeningAngleResolutionLS;
+  
   AliAnalysisFilter*              fResolutionCuts;
   AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
   Double_t                        fPairCutMee;      // used for pair cuts in pair efficiency calculation.

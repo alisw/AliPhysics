@@ -135,7 +135,9 @@
 #include "AliCDBManager.h"
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
-
+#include "AliVZEROTriggerData.h"
+#include "AliITSOnlineCalibrationSPDhandler.h"
+#include "AliITSTriggerConditions.h"
 using std::cout;
 using std::endl;
 ClassImp(AliPhysicsSelection)
@@ -403,160 +405,160 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliVEvent* event){
     Int_t triggerLogic = 0; 
     UInt_t singleTriggerResult = CheckTriggerClass(event, triggerClass, triggerLogic);
     
-    if (singleTriggerResult)
-    {
+    if (singleTriggerResult) {
+      accept |= singleTriggerResult;
       triggerAnalysis->FillHistograms(event);
-      
-      Bool_t isBin0 = kFALSE;
-      if (fBin0CallBack != "") {
-        isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
-      } else if (fBin0CallBackPointer) {
-        isBin0 = (*fBin0CallBackPointer)(dynamic_cast<const AliESDEvent*>(event));
-      }
-      
-      // ---->
-      // FIXME: this stuff is still used to fill the stat
-      // tables. Decide wethere we are switching to a new stat table
-      // (with all AliTriggerAnalysis tokens? Only we the tokens
-      // actually used in the selection?) and clean up
-      
-      AliVVZERO *vzero = event->GetVZEROData();
-      if (!vzero) fSkipV0 = kTRUE;
-      
-      // hardware trigger
-      Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
-      //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
-      Bool_t v0AHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0A);// should replay hw trigger
-      Bool_t v0CHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0C);// should replay hw trigger
-      
-      // offline trigger
-      Int_t fastOROffline   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFO)); // SPD number of chips from clusters (!)
-      Int_t fastOROfflineL1 = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFOL1)); // SPD number of chips from clusters in second layer (!)
-      Bool_t v0A       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0A));
-      Bool_t v0C       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0C));
-      Bool_t v0ABG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0ABG));
-      Bool_t v0CBG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0CBG));
-      Bool_t v0BG = v0ABG || v0CBG;
-      Bool_t t0       = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
-      Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
-      Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
-      
-      // fmd
-      // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
-      // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
-      // Bool_t fmd  = fmdA || fmdC;
-      
-      // ZDC
-      // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCA);
-      // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCC);
-      Bool_t zdcA    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
-      Bool_t zdcC    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
-      Bool_t zdcTime = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
-      Bool_t znABG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
-      Bool_t znCBG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
-      
-      Bool_t laserCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
-      Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
-      
-      // Some "macros"
-      Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
-      Bool_t mb1prime = (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C) ) && (!v0BG);
-      
-      // Background rejection
-      Bool_t bgID = kFALSE;
-      bgID = triggerAnalysis->EvaluateTrigger(event,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
-      
-      /*Int_t ntrig = fastOROffline; // any 2 hits
-      if(v0A)              ntrig += 1;
-      if(v0C)              ntrig += 1; //v0C alone is enough
-      if(fmd)              ntrig += 1;
-      if(ssdClusters>1)    ntrig += 1;*/
-      
-      // <---
-      
-      TString triggerLogicOnline  = fPSOADB->GetHardwareTrigger(triggerLogic);
-      TString triggerLogicOffline = fPSOADB->GetOfflineTrigger(triggerLogic);
-      
-      AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliOADBPhysicsSelection::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
-      
-      // replay hardware trigger (should only remove events for MC)
-      Bool_t onlineTrigger  = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOnline, kFALSE);
-      // offline selection
-      Bool_t offlineTrigger = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOffline, kTRUE);
-      
-      // Printf("%s %s", triggerLogicOnline.Data(), triggerLogicOffline.Data());
-      // Printf("%d %d", onlineTrigger, offlineTrigger);
-      
-      
-      // Fill trigger pattern histo
-      Int_t tpatt = 0;
-      if (fastORHW>0) tpatt+=1;
-      if (v0AHW)      tpatt+=2;
-      if (v0CHW)      tpatt+=4;
-      fHistTriggerPattern->Fill( tpatt );
-      
-      // fill statistics and return decision
-      const Int_t nHistStat = 2;
-      for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
-        if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
-        
-        fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
-        if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
-        
-        // We fill the rest only if hw trigger is ok
-        if (!onlineTrigger) {
-          AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
-          continue;
-        } else {
-          fHistStatistics[iHistStat]->Fill(kStatHWTrig, i);
-        }
-        
-        if (v0ABG)               fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
-        if (v0CBG)               fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
-        if (t0)                  fHistStatistics[iHistStat]->Fill(kStatT0BB,     i);
-        if (t0BG)                fHistStatistics[iHistStat]->Fill(kStatT0BG,     i);
-        if (t0PileUp)            fHistStatistics[iHistStat]->Fill(kStatT0PileUp, i);
-        if (mb1)                 fHistStatistics[iHistStat]->Fill(kStatMB1, i);
-        if (mb1prime)            fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
-        if (laserCut)            fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
-        if (hvDipCut)            fHistStatistics[iHistStat]->Fill(kHVdipCut, i);
-        if (fastOROffline > 0)   fHistStatistics[iHistStat]->Fill(kStatFO1, i);
-        if (fastOROffline > 1)   fHistStatistics[iHistStat]->Fill(kStatFO2, i);
-        if (fastOROfflineL1 > 1) fHistStatistics[iHistStat]->Fill(kStatFO2L1, i);
-        if (v0A)                 fHistStatistics[iHistStat]->Fill(kStatV0A, i);
-        if (v0C)                 fHistStatistics[iHistStat]->Fill(kStatV0C, i);
-        if (zdcA)                fHistStatistics[iHistStat]->Fill(kStatZDCA, i);
-        if (zdcC)                fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
-        if (zdcA && zdcC)        fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
-        if (zdcTime)             fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
-        if (znABG)               fHistStatistics[iHistStat]->Fill(kStatZNABG, i);
-        if (znCBG)               fHistStatistics[iHistStat]->Fill(kStatZNCBG, i);
-        if (bgID && !v0BG)       fHistStatistics[iHistStat]->Fill(kStatBG, i);
-        if (v0A && v0C && !v0BG && (!bgID && fIsPP)) fHistStatistics[iHistStat]->Fill(kStatV0, i);
-        if (v0A && v0C && !v0BG && (!bgID && fIsPP) && !znABG && !znCBG) fHistStatistics[iHistStat]->Fill(kStatV0ZN, i);
-        
-        // FIXME: check lines below
-        if ( offlineTrigger ) {
-          if (!v0BG || fSkipV0) {
-            if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
-            AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
-            
-            fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
-            
-// TODO: adjust for AOD
-//            if (event->IsPileupFromSPD())
-//              fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
-            
-            // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
-            if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
-              accept |= singleTriggerResult; // only set for "all" (should not really matter)
-          }
-          else
-            AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
-        }
-        else
-          AliDebug(AliLog::kDebug, Form("Rejecting event because trigger logic %d is not fulfilled", triggerLogic));
-      }
+//      
+//      Bool_t isBin0 = kFALSE;
+//      if (fBin0CallBack != "") {
+//        isBin0 = ((AliAnalysisTaskSE*)mgr->GetTask(fBin0CallBack.Data()))->IsEventInBinZero();
+//      } else if (fBin0CallBackPointer) {
+//        isBin0 = (*fBin0CallBackPointer)(dynamic_cast<const AliESDEvent*>(event));
+//      }
+//      
+//      // ---->
+//      // FIXME: this stuff is still used to fill the stat
+//      // tables. Decide wethere we are switching to a new stat table
+//      // (with all AliTriggerAnalysis tokens? Only we the tokens
+//      // actually used in the selection?) and clean up
+//      
+//      AliVVZERO *vzero = event->GetVZEROData();
+//      if (!vzero) fSkipV0 = kTRUE;
+//      
+//      // hardware trigger
+//      Int_t fastORHW   = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
+//      //      Int_t fastORHWL1 = triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kSPDGFOL1); // SPD number of chips from trigger bits in second layer (!)
+//      Bool_t v0AHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0A);// should replay hw trigger
+//      Bool_t v0CHW     = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, AliTriggerAnalysis::kV0C);// should replay hw trigger
+//      
+//      // offline trigger
+//      Int_t fastOROffline   = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFO)); // SPD number of chips from clusters (!)
+//      Int_t fastOROfflineL1 = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kSPDGFOL1)); // SPD number of chips from clusters in second layer (!)
+//      Bool_t v0A       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0A));
+//      Bool_t v0C       = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0C));
+//      Bool_t v0ABG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0ABG));
+//      Bool_t v0CBG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0CBG));
+//      Bool_t v0BG = v0ABG || v0CBG;
+//      Bool_t t0       = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
+//      Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
+//      Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
+//      
+//      // fmd
+//      // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
+//      // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
+//      // Bool_t fmd  = fmdA || fmdC;
+//      
+//      // ZDC
+//      // Bool_t zdcA = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCA);
+//      // Bool_t zdcC = triggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kZDCC);
+//      Bool_t zdcA    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
+//      Bool_t zdcC    = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
+//      Bool_t zdcTime = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
+//      Bool_t znABG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNABG));
+//      Bool_t znCBG   = event->GetDataLayoutType() == AliVEvent::kAOD ? 0 : triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZNCBG));
+//      
+//      Bool_t laserCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
+//      Bool_t hvDipCut = triggerAnalysis->EvaluateTrigger(event, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCHVdip));
+//      
+//      // Some "macros"
+//      Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
+//      Bool_t mb1prime = (fastOROffline > 1 || (fastOROffline > 0 && (v0A || v0C)) || (v0A && v0C) ) && (!v0BG);
+//      
+//      // Background rejection
+//      Bool_t bgID = kFALSE;
+//      bgID = triggerAnalysis->EvaluateTrigger(event,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
+//      
+//      /*Int_t ntrig = fastOROffline; // any 2 hits
+//      if(v0A)              ntrig += 1;
+//      if(v0C)              ntrig += 1; //v0C alone is enough
+//      if(fmd)              ntrig += 1;
+//      if(ssdClusters>1)    ntrig += 1;*/
+//      
+//      // <---
+//      
+//      TString triggerLogicOnline  = fPSOADB->GetHardwareTrigger(triggerLogic);
+//      TString triggerLogicOffline = fPSOADB->GetOfflineTrigger(triggerLogic);
+//      
+//      AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliOADBPhysicsSelection::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
+//      
+//      // replay hardware trigger (should only remove events for MC)
+//      Bool_t onlineTrigger  = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOnline, kFALSE);
+//      // offline selection
+//      Bool_t offlineTrigger = EvaluateTriggerLogic(event, triggerAnalysis, triggerLogicOffline, kTRUE);
+//      
+//      // Printf("%s %s", triggerLogicOnline.Data(), triggerLogicOffline.Data());
+//      // Printf("%d %d", onlineTrigger, offlineTrigger);
+//      
+//      
+//      // Fill trigger pattern histo
+//      Int_t tpatt = 0;
+//      if (fastORHW>0) tpatt+=1;
+//      if (v0AHW)      tpatt+=2;
+//      if (v0CHW)      tpatt+=4;
+//      fHistTriggerPattern->Fill( tpatt );
+//      
+//      // fill statistics and return decision
+//      const Int_t nHistStat = 2;
+//      for(Int_t iHistStat = 0; iHistStat < nHistStat; iHistStat++){
+//        if (iHistStat == kStatIdxBin0 && !isBin0) continue; // skip the filling of bin0 stats if the event is not in the bin0
+//        
+//        fHistStatistics[iHistStat]->Fill(kStatTriggerClass, i);
+//        if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+//        
+//        // We fill the rest only if hw trigger is ok
+//        if (!onlineTrigger) {
+//          AliDebug(AliLog::kDebug, "Rejecting event because hardware trigger is not fired");
+//          continue;
+//        } else {
+//          fHistStatistics[iHistStat]->Fill(kStatHWTrig, i);
+//        }
+//        
+//        if (v0ABG)               fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
+//        if (v0CBG)               fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
+//        if (t0)                  fHistStatistics[iHistStat]->Fill(kStatT0BB,     i);
+//        if (t0BG)                fHistStatistics[iHistStat]->Fill(kStatT0BG,     i);
+//        if (t0PileUp)            fHistStatistics[iHistStat]->Fill(kStatT0PileUp, i);
+//        if (mb1)                 fHistStatistics[iHistStat]->Fill(kStatMB1, i);
+//        if (mb1prime)            fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
+//        if (laserCut)            fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
+//        if (hvDipCut)            fHistStatistics[iHistStat]->Fill(kHVdipCut, i);
+//        if (fastOROffline > 0)   fHistStatistics[iHistStat]->Fill(kStatFO1, i);
+//        if (fastOROffline > 1)   fHistStatistics[iHistStat]->Fill(kStatFO2, i);
+//        if (fastOROfflineL1 > 1) fHistStatistics[iHistStat]->Fill(kStatFO2L1, i);
+//        if (v0A)                 fHistStatistics[iHistStat]->Fill(kStatV0A, i);
+//        if (v0C)                 fHistStatistics[iHistStat]->Fill(kStatV0C, i);
+//        if (zdcA)                fHistStatistics[iHistStat]->Fill(kStatZDCA, i);
+//        if (zdcC)                fHistStatistics[iHistStat]->Fill(kStatZDCC, i);
+//        if (zdcA && zdcC)        fHistStatistics[iHistStat]->Fill(kStatZDCAC, i);
+//        if (zdcTime)             fHistStatistics[iHistStat]->Fill(kStatZDCTime, i);
+//        if (znABG)               fHistStatistics[iHistStat]->Fill(kStatZNABG, i);
+//        if (znCBG)               fHistStatistics[iHistStat]->Fill(kStatZNCBG, i);
+//        if (bgID && !v0BG)       fHistStatistics[iHistStat]->Fill(kStatBG, i);
+//        if (v0A && v0C && !v0BG && (!bgID && fIsPP)) fHistStatistics[iHistStat]->Fill(kStatV0, i);
+//        if (v0A && v0C && !v0BG && (!bgID && fIsPP) && !znABG && !znCBG) fHistStatistics[iHistStat]->Fill(kStatV0ZN, i);
+//        
+//        // FIXME: check lines below
+//        if ( offlineTrigger ) {
+//          if (!v0BG || fSkipV0) {
+//            if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
+//            AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
+//            
+//            fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
+//            
+//// TODO: adjust for AOD
+////            if (event->IsPileupFromSPD())
+////              fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
+//            
+//            // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(event->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
+//            if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
+//              accept |= singleTriggerResult; // only set for "all" (should not really matter)
+//          }
+//          else
+//            AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
+//        }
+//        else
+//          AliDebug(AliLog::kDebug, Form("Rejecting event because trigger logic %d is not fulfilled", triggerLogic));
+//      }
     }
   }
   
@@ -705,29 +707,81 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
     
     Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
     
-    for (Int_t i=0; i<count; i++)
+    if (fTriggerOADB->GetV0MOnThreshold()<0 ||
+        fTriggerOADB->GetVHMBBAflags()<0 ||
+        fTriggerOADB->GetVHMBBCflags()<0 ||
+        fTriggerOADB->GetVHMBGAflags()<0 ||
+        fTriggerOADB->GetVHMBGCflags()<0
+       ) 
     {
+      AliInfo("Setting V0 online thresholds from OCDB");
+      AliCDBManager* man = AliCDBManager::Instance();
+      man->SetRun(runNumber);
+      AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
+      AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
+      if (trigData) {
+        // names in trigData getters are misleading but actual meaning of parameters is ok 
+        if (fTriggerOADB->GetV0MOnThreshold()<0) {
+          Int_t val = trigData->GetCentralityV0AThrLow();
+          AliInfo(Form("  V0MOnThreshold set to %i",val));
+          fTriggerOADB->SetV0MOnThreshold(val);
+        }
+        if (fTriggerOADB->GetVHMBBAflags()<0) {
+          Int_t val = trigData->GetMultV0AThrLow();
+          AliInfo(Form("  VHMBBAflags set to %i",val));
+          fTriggerOADB->SetVHMBBAflags(val);
+        }
+        if (fTriggerOADB->GetVHMBGAflags()<0) {
+          Int_t val = trigData->GetMultV0AThrHigh();
+          AliInfo(Form("  VHMBGAflags set to %i",val));
+          fTriggerOADB->SetVHMBGAflags(val);
+        }
+        if (fTriggerOADB->GetVHMBBCflags()<0) {
+          Int_t val = trigData->GetMultV0CThrLow();
+          AliInfo(Form("  VHMBBCflags set to %i",val));
+          fTriggerOADB->SetVHMBBCflags(val);
+        }
+        if (fTriggerOADB->GetVHMBGCflags()<0) {
+          Int_t val = trigData->GetMultV0CThrHigh();
+          AliInfo(Form("  VHMBGCflags set to %i",val));
+          fTriggerOADB->SetVHMBGCflags(val);
+        }
+      } else AliError("Failed to set V0 online thresholds from OCDB");
+    }
+    
+    if (fTriggerOADB->GetSH1OuterThreshold()<0 ||
+        fTriggerOADB->GetSH2OuterThreshold()<0
+        ){
+      AliInfo("Setting FO online thresholds from OCDB");
+      AliITSOnlineCalibrationSPDhandler h;
+      h.ReadPITConditionsFromDB(runNumber,"raw://") ;
+      AliITSTriggerConditions* tri = h.GetTriggerConditions();
+      if (tri) {
+        Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
+        if (fTriggerOADB->GetSH1OuterThreshold()<0) {
+          Int_t val = tri->GetAlgoParamValueLI("0SH1",1);
+          AliInfo(Form("  SH1OuterThreshold set to %i",val));
+          fTriggerOADB->SetSH1OuterThreshold(val);
+        }
+        if (fTriggerOADB->GetSH2OuterThreshold()<0) {
+          Int_t val = tri->GetAlgoParamValueLI("0SH2",1);
+          AliInfo(Form("  SH2OuterThreshold set to %i",val));
+          fTriggerOADB->SetSH2OuterThreshold(val);
+        }
+      } else  AliError("Failed to set FO online thresholds from OCDB");
+    }
       
-      AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis;
+    for (Int_t i=0; i<count; i++) {
+      AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis(Form("TriggerAnalysis%i",i));
+      triggerAnalysis->SetParameters(fTriggerOADB);
       triggerAnalysis->SetAnalyzeMC(fMC);
       triggerAnalysis->EnableHistograms(fIsPP);
-      triggerAnalysis->SetSPDGFOThreshhold(1);
-      triggerAnalysis->SetDoFMD(kFALSE);
-      triggerAnalysis->SetCorrZDCCutParams(fTriggerOADB->GetZDCCutRefSumCorr(),
-          fTriggerOADB->GetZDCCutRefDeltaCorr(), 
-          fTriggerOADB->GetZDCCutSigmaSumCorr(),
-          fTriggerOADB->GetZDCCutSigmaDeltaCorr());
-      triggerAnalysis->SetZNCorrCutParams(fTriggerOADB->GetZDCCutZNATimeCorrMin(),fTriggerOADB->GetZDCCutZNATimeCorrMax(),
-          fTriggerOADB->GetZDCCutZNCTimeCorrMin(),fTriggerOADB->GetZDCCutZNCTimeCorrMax());
       fTriggerAnalysis.Add(triggerAnalysis);
     }
     
-    
     // TODO: shall I really delete this?
-    if (fHistStatistics[0])
-      delete fHistStatistics[0];
-    if (fHistStatistics[1])
-      delete fHistStatistics[1];
+    if (fHistStatistics[0]) delete fHistStatistics[0];
+    if (fHistStatistics[1]) delete fHistStatistics[1];
     
     fHistStatistics[kStatIdxBin0] = BookHistStatistics("_Bin0");
     fHistStatistics[kStatIdxAll]  = BookHistStatistics("");
@@ -757,23 +811,18 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
     fHistTriggerPattern->GetXaxis()->SetBinLabel(7,"v0A & v0C");
     fHistTriggerPattern->GetXaxis()->SetBinLabel(8,"FO & v0A & v0C");
     
-    
     n = 1;
     for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++) {
-      fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fCollTrigClasses.At(i))->String());
-      n++;
+      fHistBunchCrossing->GetYaxis()->SetBinLabel(n++, ((TObjString*) fCollTrigClasses.At(i))->String());
     }
     for (Int_t i=0; i < fBGTrigClasses.GetEntries(); i++) {
-      fHistBunchCrossing->GetYaxis()->SetBinLabel(n, ((TObjString*) fBGTrigClasses.At(i))->String());
-      n++;
+      fHistBunchCrossing->GetYaxis()->SetBinLabel(n++, ((TObjString*) fBGTrigClasses.At(i))->String());
     }
   }
   
   fCurrentRun = runNumber;
   
   TH1::AddDirectory(oldStatus);
-  
-  
   return kTRUE;
 }
 

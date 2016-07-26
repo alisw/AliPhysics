@@ -9,6 +9,7 @@
 #include "FJ_includes.h"
 #include "AliJetShape.h"
 
+
 class AliFJWrapper
 {
  public:
@@ -44,6 +45,8 @@ class AliFJWrapper
   virtual std::vector<double>             GetSubtractedJetsPts(Double_t median_pt = -1, Bool_t sorted = kFALSE);
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
   Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
+  Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0);
+  Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0);
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; }
@@ -52,6 +55,10 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetSigma2()      const {return fGenSubtractorInfoJetSigma2      ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetConstituent() const {return fGenSubtractorInfoJetConstituent ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetLeSub()       const {return fGenSubtractorInfoJetLeSub       ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet1subjettiness_kt()       const {return fGenSubtractorInfoJet1subjettiness_kt ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_kt()       const {return fGenSubtractorInfoJet2subjettiness_kt ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet3subjettiness_kt()       const {return fGenSubtractorInfoJet3subjettiness_kt ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_kt()       const {return fGenSubtractorInfoJetOpeningAngle_kt ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
   Int_t CreateConstituentSub();  // fastjet::contrib::ConstituentSubtractor
@@ -73,6 +80,10 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJetSigma2();
   virtual Int_t DoGenericSubtractionJetConstituent();
   virtual Int_t DoGenericSubtractionJetLeSub();
+  virtual Int_t DoGenericSubtractionJet1subjettiness_kt();
+  virtual Int_t DoGenericSubtractionJet2subjettiness_kt();
+  virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
+  virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
   virtual Int_t DoConstituentSubtraction();
 
   void SetName(const char* name)        { fName           = name;    }
@@ -99,6 +110,7 @@ class AliFJWrapper
   void SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
   void SetRMaxAndStep(Double_t rmax, Double_t dr) {fRMax = rmax; fDRStep = dr; }
   void SetRhoRhom (Double_t rho, Double_t rhom) { fUseExternalBkg = kTRUE; fRho = rho; fRhom = rhom;} // if using rho,rhom then fUseExternalBkg is true
+  void SetMinJetPt(Double_t MinPt) {fMinJetPt=MinPt;}
 
  protected:
   TString                                fName;               //!
@@ -130,6 +142,7 @@ class AliFJWrapper
   Double_t                               fGhostArea;	      //!
   Double_t                               fMaxRap;	      //!
   Double_t                               fR;                  //!
+  Double_t                               fMinJetPt;
   // no setters for the moment - used default values in the constructor
   Double_t                               fGridScatter;        //!
   Double_t                               fKtScatter;	      //!
@@ -152,6 +165,10 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetSigma2;      //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetConstituent; //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetLeSub;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet1subjettiness_kt;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_kt;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet3subjettiness_kt;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_kt;       //!
 #endif
   Bool_t                                   fDoFilterArea;         //!
   Bool_t                                   fLegacyMode;           //!
@@ -231,6 +248,10 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractorInfoJetSigma2()
   , fGenSubtractorInfoJetConstituent ( )
   , fGenSubtractorInfoJetLeSub ( )
+  , fGenSubtractorInfoJet1subjettiness_kt ( )
+  , fGenSubtractorInfoJet2subjettiness_kt ( )
+  , fGenSubtractorInfoJet3subjettiness_kt ( )
+  , fGenSubtractorInfoJetOpeningAngle_kt ( )
 #endif
   , fDoFilterArea      (false)
   , fLegacyMode        (false)
@@ -902,6 +923,90 @@ Int_t AliFJWrapper::DoGenericSubtractionJetLeSub() {
 }
 
 //_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet1subjettiness_kt() {
+  //Do generic subtraction for 1subjettiness
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+
+  // Define jet shape
+  AliJetShape1subjettiness_kt shape1subjettiness_kt;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJet1subjettiness_kt.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo info1subjettiness_kt;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(shape1subjettiness_kt, fInclusiveJets[i], info1subjettiness_kt);
+    fGenSubtractorInfoJet1subjettiness_kt.push_back(info1subjettiness_kt);
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet2subjettiness_kt() {
+  //Do generic subtraction for 2subjettiness
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+
+  // Define jet shape
+  AliJetShape2subjettiness_kt shape2subjettiness_kt;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJet2subjettiness_kt.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo info2subjettiness_kt;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(shape2subjettiness_kt, fInclusiveJets[i], info2subjettiness_kt);
+    fGenSubtractorInfoJet2subjettiness_kt.push_back(info2subjettiness_kt);
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJet3subjettiness_kt() {
+  //Do generic subtraction for 3subjettiness
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+
+  // Define jet shape
+  AliJetShape3subjettiness_kt shape3subjettiness_kt;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJet3subjettiness_kt.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo info3subjettiness_kt;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(shape3subjettiness_kt, fInclusiveJets[i], info3subjettiness_kt);
+    fGenSubtractorInfoJet3subjettiness_kt.push_back(info3subjettiness_kt);
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_kt() {
+  //Do generic subtraction for 2subjettiness axes opening angle
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+
+  // Define jet shape
+  AliJetShapeOpeningAngle_kt shapeOpeningAngle_kt;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJetOpeningAngle_kt.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo infoOpeningAngle_kt;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(shapeOpeningAngle_kt, fInclusiveJets[i], infoOpeningAngle_kt);
+    fGenSubtractorInfoJetOpeningAngle_kt.push_back(infoOpeningAngle_kt);
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
@@ -1030,4 +1135,204 @@ void AliFJWrapper::SetupStrategyfromOpt(const char *option)
   if (!opt.compare("NlnNCam"))         fStrategy = fj::NlnNCam;
   if (!opt.compare("plugin"))          fStrategy = fj::plugin_strategy;
 }
+
+Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option){
+
+
+  //Option 0=Nsubjettiness result, 1=opening angle between axes in Eta-Phi plane, 2=Distance between axes in Eta-Phi plane
+  
+  fJetDef = new fj::JetDefinition(fAlgor, fR*100, fScheme, fStrategy ); //the *2 is becasue of a handful of jets that end up missing a track for some reason.
+
+  try {
+    fClustSeqSA = new fastjet::ClusterSequence(fInputVectors, *fJetDef);
+    // ClustSeqSA = new fastjet::ClusterSequenceArea(fInputVectors, *fJetDef, *fAreaDef);
+  } catch (fj::Error) {
+    AliError(" [w] FJ Exception caught.");
+    return -1;
+  }
+  fFilteredJets.clear();
+  fFilteredJets = fClustSeqSA->inclusive_jets(fMinJetPt-0.1); //becasue this is < not <=
+  Double_t Result=-1;
+  std::vector<fastjet::PseudoJet> SubJet_Axes;
+  fj::PseudoJet SubJet1_Axis;
+  fj::PseudoJet SubJet2_Axis;
+  if (Algorithm==0){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==1) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==2){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==3) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==4) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==5){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==6){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==7){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==8){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==9){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==10){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
+    Result= nSub.result(fFilteredJets[0]);
+    SubJet_Axes=nSub.currentAxes();
+  }
+
+  SubJet1_Axis=SubJet_Axes[0];	
+  Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
+  Double_t SubJet2_Eta;
+  Double_t SubJet1_Phi=SubJet1_Axis.phi();
+  if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+  else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
+  Double_t SubJet2_Phi;
+  Double_t DeltaPhi=-5;
+  if (SubJet_Axes.size()>1){
+    SubJet2_Axis=SubJet_Axes[1];
+    SubJet2_Eta=SubJet2_Axis.pseudorapidity();
+    SubJet2_Phi=SubJet2_Axis.phi();
+    if(SubJet2_Phi < -1*TMath::Pi()) SubJet2_Phi += (2*TMath::Pi());
+    else if (SubJet2_Phi > TMath::Pi()) SubJet2_Phi -= (2*TMath::Pi());
+    DeltaPhi=SubJet1_Phi-SubJet2_Phi;
+    if(DeltaPhi < -1*TMath::Pi()) DeltaPhi += (2*TMath::Pi());
+    else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
+  }
+    
+  if (Option==0) return Result;
+  else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
+  else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
+  else return -2;
+}
+
+
+
+Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option){ //For derivative subtraction
+
+  Double_t Result=-1;
+  std::vector<fastjet::PseudoJet> SubJet_Axes;
+  fj::PseudoJet SubJet1_Axis;
+  fj::PseudoJet SubJet2_Axis;
+  if (Algorithm==0){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==1) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::CA_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==2){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==3) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==4) {
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==5){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==6){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==7){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==8){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==9){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+  else if (Algorithm==10){
+    fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,JetR));
+    Result= nSub.result(jet);
+    SubJet_Axes=nSub.currentAxes();
+  }
+
+  SubJet1_Axis=SubJet_Axes[0];	
+  Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
+  Double_t SubJet2_Eta;
+  Double_t SubJet1_Phi=SubJet1_Axis.phi();
+  if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
+  else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
+  Double_t SubJet2_Phi;
+  Double_t DeltaPhi=-5;
+  if (SubJet_Axes.size()>1){
+    SubJet2_Axis=SubJet_Axes[1];
+    SubJet2_Eta=SubJet2_Axis.pseudorapidity();
+    SubJet2_Phi=SubJet2_Axis.phi();
+    if(SubJet2_Phi < -1*TMath::Pi()) SubJet2_Phi += (2*TMath::Pi());
+    else if (SubJet2_Phi > TMath::Pi()) SubJet2_Phi -= (2*TMath::Pi());
+    DeltaPhi=SubJet1_Phi-SubJet2_Phi;
+    if(DeltaPhi < -1*TMath::Pi()) DeltaPhi += (2*TMath::Pi());
+    else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
+  }
+    
+  if (Option==0) return Result;
+  else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
+  else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
+  else return -2;
+
+}
+
+
+
+
+
+
+
+
+
 #endif

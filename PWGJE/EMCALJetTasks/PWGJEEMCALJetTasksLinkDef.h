@@ -83,7 +83,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalMissingEnergy+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerPatchJetMatch+;
-#pragma link C++ class AliAnalysisTaskSubJetFraction+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
@@ -130,6 +129,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaPatternObject+;
@@ -149,6 +149,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalTriggerEmulation+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
@@ -183,6 +185,7 @@
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
+#pragma link C++ class AliAnalysisTaskSubJetFraction+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;

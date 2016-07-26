@@ -112,6 +112,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fAODEntry(0)
   ,fCountEvents(-1)
   ,fEmbedMode(0)
+  ,fEPMode(0)
   ,fEvtSelecMode(0)
   ,fEvtSelMinJetPt(-1)
   ,fEvtSelMaxJetPt(-1)
@@ -172,6 +173,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fh1MCTrackN(0)
   ,fh1AODfile(0)
   ,fh2AODevent(0)       
+  ,fh2EP2(0)
+  ,fh2EP3(0)
 
 {
   // default constructor
@@ -229,6 +232,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fAODEntry(0)
 ,fCountEvents(-1)
 ,fEmbedMode(0)
+,fEPMode(0)
 ,fEvtSelecMode(0)
 ,fEvtSelMinJetPt(-1)
 ,fEvtSelMaxJetPt(-1)
@@ -289,6 +293,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fh1MCTrackN(0)
 ,fh1AODfile(0)
 ,fh2AODevent(0)         
+,fh2EP2(0)
+,fh2EP3(0)
 
 {
    // constructor
@@ -346,6 +352,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fAODEntry(copy.fAODEntry)
 ,fCountEvents(copy.fCountEvents)
 ,fEmbedMode(copy.fEmbedMode)
+,fEPMode(copy.fEPMode)
 ,fEvtSelecMode(copy.fEvtSelecMode)
 ,fEvtSelMinJetPt(copy.fEvtSelMinJetPt)
 ,fEvtSelMaxJetPt(copy.fEvtSelMaxJetPt)
@@ -407,6 +414,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
 ,fh1MCTrackN(copy.fh1MCTrackN)
 ,fh1AODfile(copy.fh1AODfile)
 ,fh2AODevent(copy.fh2AODevent)
+,fh2EP2(copy.fh2EP2)
+,fh2EP3(copy.fh2EP3)
 
 
 {
@@ -469,6 +478,7 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fAODEntry          = o.fAODEntry;
       fCountEvents       = o.fCountEvents;
       fEmbedMode         = o.fEmbedMode;
+      fEPMode            = o.fEPMode;
       fEvtSelecMode      = o.fEvtSelecMode;
       fEvtSelMinJetPt    = o.fEvtSelMinJetPt;
       fEvtSelMaxJetPt    = o.fEvtSelMaxJetPt;
@@ -529,8 +539,8 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       fh1MCTrackN        = o.fh1MCTrackN;
       fh1AODfile         = o.fh1AODfile;
       fh2AODevent        = o.fh2AODevent;
-  
- 
+      fh2EP2             = o.fh2EP2;
+      fh2EP3             = o.fh2EP3;
    }
 
    return *this;
@@ -714,7 +724,9 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fh1ALaPt        =  new TH1F("fh1ALaPt","pT of extra associated #bar{#Lamdba};p_{T};entries", 120, 0., 12.);
    fh2ALaEtaPhi    =  new TH2F("fh2ALaEtaPhi","eta-phi distribution of extra associated #bar{#Lamdba};#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
    //fh2ALaPtJetPtCone  =  new TH2F("fh2ALaPtJetPtCone","v0-pt jet pt distribution of extra associated #bar{#Lamdba};#it{p_{T}^{jet,ch}}};#it{p_{T}}", 20, 0., 100.,120, 0., 12.);
-
+   fh2EP2          = new TH2F("fh2EP2","2nd order harmonic event plane distribution ESD events",200,-2.,2.,200,-2.,2.);
+   fh2EP3          = new TH2F("fh2EP3","3rd order harmonic event plane distribution ESD events",200,-2.,2.,200,-2.,2.);
+  
    fHistList->Add(fh1TrackPt);
    fHistList->Add(fh2TrackEtaPhi);
    fHistList->Add(fh1TrackN);
@@ -729,7 +741,9 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
    fHistList->Add(fh1ALaPt);
    fHistList->Add(fh2ALaEtaPhi);
    //fHistList->Add(fh2ALaPtJetPtCone);
-  
+   if(fEPMode != 0){
+   fHistList->Add(fh2EP2);
+   fHistList->Add(fh2EP3);}
   
    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
       
@@ -1108,7 +1122,22 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
    fHistEvtSelection->Fill(0); // accepted events  
    // -- end event selection --
 
+   //Get event plane
+
+   Double_t qx2(0), qy2(0), qx3(0), qy3(0);
+  
+   // get the q-vectors from AliEventPlane
+   Double_t event_plane_2 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10, 2, qx2, qy2); // returns V0 2nd order EP (EP phi)
+   Double_t event_plane_3 = fESD->GetEventplane()->CalculateVZEROEventPlane(fESD, 10,  3, qx3, qy3);  // return V0 3rd order EP (EP phi)
+
+   if(fDebug>3) std::cout<<"2nd order harmonic EP - qx2: "<<qx2<<" , qy2: "<<qy2<<std::endl;
+   if(fDebug>3) std::cout<<"3rd order harmonic EP - qx3: "<<qx3<<" , qy3: "<<qy3<<std::endl;
+   if(fDebug>3) std::cout<<"event_plane_2: "<<event_plane_2<<" , event_plane_3: "<<event_plane_3<<std::endl;
+ 
    //std::cout<<"PbPb vertex z coordinate: "<<primVertex->GetZ()<<std::endl;
+
+   fh2EP2->Fill(qx2,qy2);
+   fh2EP3->Fill(qx3,qy3);
 
    // connect aod out
    TClonesArray *tracks = (TClonesArray*)(fAODout->FindListObject(fTrackBranch.Data()));
@@ -1424,86 +1453,136 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		    && (jet->Phi()>=fEvtSelMinJetPhi && jet->Eta()<=fEvtSelMaxJetPhi)
 		    && (jet->Pt()>=fEvtSelMinJetPt)//min jet pt cut
 		    && HasMinLConstPt(jet)){
-				  
+		
+		Double_t jetPhi = jet->Phi();
+		
 		fh1JetPt->Fill(jet->Pt());
-		fh2JetEtaPhi->Fill(jet->Eta(), jet->Phi());
-		nSelectedJets++;
-	
-	/*	Double_t radius = GetFFRadius();
-		Double_t sumPtK0s = 0;
-
-		if(fListK0s != 0){
-		GetTracksInCone(fListK0s, fListK0sCone, jet, radius, sumPtK0s);
-
-		if(fListK0sCone->GetSize() > 0){
-		  for(Int_t it=0; it<fListK0sCone->GetSize(); ++it){ // loop K0s in jet cone
-		    
-		    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0sCone->At(it));
-		    if(!v0) continue;                    
-		    
-		    fh2K0sPtJetPtCone->Fill(jet->Pt(), v0->Pt());
-		  }
-		}
+		fh2JetEtaPhi->Fill(jet->Eta(), jetPhi);
 		
-		if(fListK0sCone->GetSize() == 0){ 
-		  fh2K0sPtJetPtCone->Fill(-1., -1.);
+		
+		if(fEPMode != 0){  //do embedding event-plane-dependent
 		  
-		}
-		}
-		
-		Double_t sumPtLa = 0;
-		if(fListLa != 0){
-		GetTracksInCone(fListLa, fListLaCone, jet, radius, sumPtLa);
-
-		if(fListLaCone->GetSize() > 0){
-		  for(Int_t it=0; it<fListLaCone->GetSize(); ++it){ // loop La in jet cone
+		  Double_t jetPhiDelta = 0;
+		  
+		  if(fEPMode == 1){//rotate jet axis in-plane
 		    
-		    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListLaCone->At(it));
-		    if(!v0) continue;                    
+		    //new (in-plane-rotated) jet phi fulfills the following condition
+		    jetPhiDelta = jetPhi-event_plane_2;//absolute difference of event plane and PYTHIA jet phi
 		    
-		    fh2LaPtJetPtCone->Fill(jet->Pt(), v0->Pt());
-		  }}
-		
-		if(fListLaCone->GetSize() == 0){ 
-		  fh2LaPtJetPtCone->Fill(-1., -1.);
-		}
-		}
-
-		if(fListALa != 0){
-		Double_t sumPtALa = 0;
-		GetTracksInCone(fListALa, fListALaCone, jet, radius, sumPtALa);
-		
-		if(fListALaCone->GetSize() > 0){
-		  for(Int_t it=0; it<fListALaCone->GetSize(); ++it){ // loop ALa in jet cone
+		    if(fDebug>3)std::cout<<"In-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
 		    
-		    AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListALaCone->At(it));
-		    if(!v0) continue;                    
-		    
-		    fh2ALaPtJetPtCone->Fill(jet->Pt(), v0->Pt());
 		  }
+		  
+		  if(fEPMode == 2){//rotate jet axis out-of-plane
+		    //new (out-of-plane-rotated) jet phi fulfills the following condition
+		    jetPhiDelta = jetPhi-(event_plane_2+(TMath::Pi()*0.5));
+		    
+		    if(fDebug>3)std::cout<<"Out-of-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
+		    
+		    
+		  }
+		  
+		  Int_t nJetTracks = jet->GetRefTracks()->GetEntriesFast();
+		  
+		  for(Int_t it=0; it<nJetTracks; ++it){
+		    AliAODTrack *tmpTr = 0x0;
+		    tmpTr = dynamic_cast<AliAODTrack*>(jet->GetRefTracks()->At(it));
+		    if(!tmpTr) continue;
+		    Double_t trackphi = tmpTr->Phi(); 
+		    
+		    if(fDebug>3)std::cout<<"jet track phi before rotation: "<<trackphi<<std::endl;
+		    
+		    trackphi=trackphi+jetPhiDelta;//rotate jet constituent in-/out-of-plane
+		    tmpTr->SetPhi(trackphi);//save new phi angle of jet track
+		    
+		    if(fDebug>3)std::cout<<"jet track phi after rotation: "<<trackphi<<std::endl;
+		    
+		  }
+
+		}
+	      }
+	      
+	      nSelectedJets++;
+	      
+	      
+		
+	      
+	      /* Double_t radius = GetFFRadius();
+		 Double_t sumPtK0s = 0;
+		 
+		 if(fListK0s != 0){
+		 GetTracksInCone(fListK0s, fListK0sCone, jet, radius, sumPtK0s);
+		 
+		 if(fListK0sCone->GetSize() > 0){
+		 for(Int_t it=0; it<fListK0sCone->GetSize(); ++it){ // loop K0s in jet cone
+		 
+		 AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0sCone->At(it));
+		 if(!v0) continue;                    
+		 
+		 fh2K0sPtJetPtCone->Fill(jet->Pt(), v0->Pt());
+		 }
+		 }
+		 
+		 if(fListK0sCone->GetSize() == 0){ 
+		 fh2K0sPtJetPtCone->Fill(-1., -1.);
+		 
+		 }
+		 }
+		 
+		 Double_t sumPtLa = 0;
+		 if(fListLa != 0){
+		 GetTracksInCone(fListLa, fListLaCone, jet, radius, sumPtLa);
+		 
+		 if(fListLaCone->GetSize() > 0){
+		 for(Int_t it=0; it<fListLaCone->GetSize(); ++it){ // loop La in jet cone
+		 
+		 AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListLaCone->At(it));
+		 if(!v0) continue;                    
+		 
+		 fh2LaPtJetPtCone->Fill(jet->Pt(), v0->Pt());
+		 }}
+		 
+		 if(fListLaCone->GetSize() == 0){ 
+		 fh2LaPtJetPtCone->Fill(-1., -1.);
+		 }
+		 }
+		 
+		 if(fListALa != 0){
+		 Double_t sumPtALa = 0;
+		 GetTracksInCone(fListALa, fListALaCone, jet, radius, sumPtALa);
+		 
+		 if(fListALaCone->GetSize() > 0){
+		 for(Int_t it=0; it<fListALaCone->GetSize(); ++it){ // loop ALa in jet cone
+		 
+		 AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListALaCone->At(it));
+		 if(!v0) continue;                    
+		    
+		 fh2ALaPtJetPtCone->Fill(jet->Pt(), v0->Pt());
+		 }
 		}
 		
 		if(fListALaCone->GetSize() == 0){ 
-		  fh2ALaPtJetPtCone->Fill(-1., -1.);
+		fh2ALaPtJetPtCone->Fill(-1., -1.);
 		}
 		}*/
-		
-	      }
 	      
-	     /* if(fListK0sCone != 0){ 
-		fListK0sCone->Clear();
-	      }
 	      
-	      if(fListLaCone != 0){ 
-		fListLaCone->Clear();
-	      }
 	      
-	      if(fListALaCone != 0){ 
-		fListALaCone->Clear();
-	      }*/
-            }				   
-            fh1JetN->Fill(nSelectedJets);
-         }
+	      /* if(fListK0sCone != 0){ 
+		 fListK0sCone->Clear();
+		 }
+		 
+		 if(fListLaCone != 0){ 
+		 fListLaCone->Clear();
+		 }
+		 
+		 if(fListALaCone != 0){ 
+		 fListALaCone->Clear();
+		 }*/
+	      
+	      fh1JetN->Fill(nSelectedJets);
+	    }
+	 }
 	 
          if(fEmbedMode==kAODJetTracks){
 	   // look for leading jet within selection

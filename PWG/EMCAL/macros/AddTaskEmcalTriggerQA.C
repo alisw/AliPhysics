@@ -42,9 +42,6 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
   }
   AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, nCentBins, online);
   eTask->SetTriggerPatchesName(triggerPatchesName);
-  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kOnlinePatch);
-  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kOfflinePatch);
-  eTask->GetTriggerQA()->EnablePatchType(AliEMCALTriggerQA::kRecalcPatch);
   TString strTriggersName(triggersName);
   TString strCellsName(cellsName);
   if(strTriggersName.IsNull()) {

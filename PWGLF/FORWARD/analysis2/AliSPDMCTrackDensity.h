@@ -70,7 +70,7 @@ public:
    * and fill the @a output histogram
    * 
    * @param event    MC event 
-   * @param vz       IP z--coordinate
+   * @param ip       IP coordinates
    * @param output   Output of SPD hits
    * @param primary  Primary information, if available. 
    * 

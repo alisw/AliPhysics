@@ -454,7 +454,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
     else {
       task->SetWeightFunction(funcWeight);
       Printf("User-defined Weights will be used. The function being:");
-      task->GetWeightFunction(funcWeight)->Print();
+      task->GetWeightFunction()->Print();
     }
   }
 
@@ -464,11 +464,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   Printf("Dselection = %d",(Int_t)task->GetDselection());
   Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
   if (task->GetUseWeight()) {
-    Printf("User-defined Weight function:");
-    task->GetWeightFunction(funcWeight)->Print();
-  }
-  else {
-    Printf("FONLL will be used for the weights");
+      if(funcWeight) Printf("User-defined Weight function");
+      else Printf("FONLL will be used for the weights");
   }
   Printf("Sign = %d",(Int_t)task->GetSign());
   Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());

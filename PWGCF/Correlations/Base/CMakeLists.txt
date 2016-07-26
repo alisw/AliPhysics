@@ -35,6 +35,7 @@ set(SRCS
   AliUEHist.cxx
   AliAnalyseLeadingTrackUE.cxx
   AliCFParticle.cxx
+  AliCFTreeMapping.cxx
   AliAnalysisTaskCFTree.cxx
   AliTwoPlusOneContainer.cxx
   )

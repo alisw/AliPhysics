@@ -113,6 +113,33 @@ class AliJetShapeLeSub : public fastjet::FunctionOfPseudoJet<Double32_t>{
   }
 };
 
+//__________________________________________________________________________
+class AliJetShape1subjettiness_kt : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "1subJettiness kt exclusive";}
+  Double32_t result(const fastjet::PseudoJet &jet) const;
+};
+
+class AliJetShape2subjettiness_kt : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "2subJettiness kt exclusive";}
+  Double32_t result(const fastjet::PseudoJet &jet) const;
+};
+
+class AliJetShape3subjettiness_kt : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "3subJettiness kt exclusive";}
+  Double32_t result(const fastjet::PseudoJet &jet) const;
+};
+
+class AliJetShapeOpeningAngle_kt : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "Opening Angle of Subjet Axes kt exclusive";}
+  Double32_t result(const fastjet::PseudoJet &jet) const;
+};
+
+
+
 #endif
 #endif
 

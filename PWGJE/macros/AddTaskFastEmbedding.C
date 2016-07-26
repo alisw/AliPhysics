@@ -36,6 +36,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    // kEventsAll=0; kEventsJetPt
    task->SetEvtSelecMode(AliAnalysisTaskFastEmbedding::kEventsJetPt);
    task->SetQAMode(kTRUE);
+   task->SetEPMode(0);//in-plane embedding, 0: no EP, 1: in-plane, 2: out-of-plane
 
    // event selection
    task->SetOfflineTrgMask(AliVEvent::kMB);

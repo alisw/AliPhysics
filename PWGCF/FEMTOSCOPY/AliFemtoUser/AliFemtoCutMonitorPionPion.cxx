@@ -25,14 +25,14 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
                                          const bool is_mc_analysis,
                                          const bool suffix_output):
   AliFemtoCutMonitor()
-  , fCentMult(NULL)
-  , _vertex_z(NULL)
-  , _vertex_xy(NULL)
-  , _collection_size_pass(NULL)
-  , _collection_size_fail(NULL)
-  , _identical_collection_size_pass(NULL)
-  , _identical_collection_size_fail(NULL)
-  , _prev_ev(NULL)
+  , fCentMult(nullptr)
+  , fVertexZ(nullptr)
+  , fVertexXY(nullptr)
+  , _collection_size_pass(nullptr)
+  , _collection_size_fail(nullptr)
+  , _identical_collection_size_pass(nullptr)
+  , _identical_collection_size_fail(nullptr)
+  , _prev_ev(nullptr)
   , _prev_pion_coll_1_size(0)
   , _prev_pion_coll_2_size(0)
 {
@@ -49,14 +49,14 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   );
   fCentMult->Sumw2();
 
-  _vertex_z = new TH1F(
+  fVertexZ = new TH1F(
     "VertexZ" + pf,
     TString::Format("Vertex Z Distribution%s;z (cm);N_{ev}", title_suffix),
     128, -15.0f, 15.0f
   );
-  _vertex_z->Sumw2();
+  fVertexZ->Sumw2();
 
-  _vertex_xy = new TH2F(
+  fVertexXY = new TH2F(
     "VertexXY" + pf,
     TString::Format("Vertex XY Distribution%s;x (cm);y (cm); dN/(dx $\\cdot$ dy)", title_suffix),
     48, 0.05f, 0.08f,
@@ -64,7 +64,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
     // 48, 0.0f, 0.12f,
     // 48, 0.22f, 0.32f
   );
-  _vertex_xy->Sumw2();
+  fVertexXY->Sumw2();
 
   // only create _collection_size histograms if this is the passing event cut monitor
   if (passing) {
@@ -89,6 +89,7 @@ AliFemtoCutMonitorPionPion::Event::Event(const bool passing,
   }
 }
 
+
 TList*
 AliFemtoCutMonitorPionPion::Event::GetOutputList()
 {
@@ -96,8 +97,8 @@ AliFemtoCutMonitorPionPion::Event::GetOutputList()
   TCollection *output = olist;
 
   output->Add(fCentMult);
-  output->Add(_vertex_z);
-  output->Add(_vertex_xy);
+  output->Add(fVertexZ);
+  output->Add(fVertexXY);
 
   if (_collection_size_pass) {
      output->Add(_collection_size_pass);
@@ -110,6 +111,7 @@ AliFemtoCutMonitorPionPion::Event::GetOutputList()
   return olist;
 }
 
+
 void
 AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoEvent* ev)
 {
@@ -118,13 +120,13 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoEvent* ev)
   const AliFemtoThreeVector vertex = ev->PrimVertPos();
 
   fCentMult->Fill(centrality, multiplicty);
-  _vertex_z->Fill(vertex.z());
-  _vertex_xy->Fill(vertex.x(), vertex.y());
+  fVertexZ->Fill(vertex.z());
+  fVertexXY->Fill(vertex.x(), vertex.y());
 
   if (ev == _prev_ev) {
     if (_collection_size_pass) {
       _collection_size_pass->Fill(_prev_pion_coll_1_size, _prev_pion_coll_2_size);
-      _prev_ev = NULL;
+      _prev_ev = nullptr;
     } else if (_identical_collection_size_pass) {
       _identical_collection_size_pass->Fill(_prev_pion_coll_1_size);
     }
@@ -132,30 +134,34 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoEvent* ev)
 
 }
 
-void AliFemtoCutMonitorPionPion::Event::EventBegin(const AliFemtoEvent* ev)
+void
+AliFemtoCutMonitorPionPion::Event::EventBegin(const AliFemtoEvent* ev)
 {
-  if (_collection_size_pass == NULL && _identical_collection_size_pass == NULL) {
+  if (_collection_size_pass == nullptr && _identical_collection_size_pass == nullptr) {
     return;
   }
   _prev_ev = ev;
 }
 
-void AliFemtoCutMonitorPionPion::Event::EventEnd(const AliFemtoEvent* ev)
+
+void
+AliFemtoCutMonitorPionPion::Event::EventEnd(const AliFemtoEvent* ev)
 {
 
   // We were not called with the previous event - must have gone to failed
-  if (_prev_ev != NULL) {
+  if (_prev_ev != nullptr) {
 
     // this cut monitor does not monitor collection size
-    if (_collection_size_pass != NULL) {
+    if (_collection_size_pass != nullptr) {
       _collection_size_fail->Fill(_prev_pion_coll_1_size, _prev_pion_coll_2_size);
     } else if (_identical_collection_size_pass) {
       _identical_collection_size_fail->Fill(_prev_pion_coll_1_size);
     }
 
-    _prev_ev = NULL;
+    _prev_ev = nullptr;
   }
 }
+
 
 void
 AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoParticleCollection *coll_1,
@@ -165,17 +171,22 @@ AliFemtoCutMonitorPionPion::Event::Fill(const AliFemtoParticleCollection *coll_1
   _prev_pion_coll_1_size = coll_1->size();
 }
 
+
+//
+// Pion Cut Monitor
+//
+
 AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                                        const TString& typestr,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
-  , fYPt(NULL)
-  , fPtPhi(NULL)
-  , fEtaPhi(NULL)
-  , fChiTpcIts(NULL)
-  , fdEdX(NULL)
-  , fMinv(NULL)
+  , fYPt(nullptr)
+  , fPtPhi(nullptr)
+  , fEtaPhi(nullptr)
+  , fChiTpcIts(nullptr)
+  , fdEdX(nullptr)
+  , fMinv(nullptr)
 {
   // Build 'standard' format for histogram titles
   //  <ParticleType> <Title> <Pass/Fail>; <AxisInfo>
@@ -277,6 +288,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   return olist;
 };
 
+
 void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
 {
   const float pz = track->P().z(),
@@ -308,16 +320,19 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
 }
 
+
 AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
                                        const TString& typestr,
                                        const bool is_mc_analysis,
                                        const bool suffix_output):
   AliFemtoCutMonitor()
-  , fMinv(NULL)
-  , fKt(NULL)
-  , fDetaDphi(NULL)
-  , fMCTrue_minv(NULL)
-  , fMCTrue_kstar(NULL)
+  , fMinv(nullptr)
+  , fKt(nullptr)
+  , fDetaDphi(nullptr)
+  , fQinvDeta(nullptr)
+  , fQinvDphiStar(nullptr)
+  , fMCTrue_minv(nullptr)
+  , fMCTrue_kstar(nullptr)
 {
   const TString title_format = TString::Format("%s %%s %s; %%s",
                                                typestr.Data(),
@@ -343,10 +358,30 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
     TString::Format(title_format,
                     "#Delta #eta* vs #Delta #phi*",
                     "#Delta #eta*; #Delta #phi*"),
-    144, -0.002, 1.25,
-    144, -0.002, 1.25
+    145, -0.2, 0.2,
+    145, -0.2, 0.2
   );
   fDetaDphi->Sumw2();
+
+  fQinvDeta = new TH2F(
+    "QinvDeta" + pf,
+    TString::Format(title_format,
+                    "Q_{inv} vs #Delta #eta",
+                    "Q_{inv} (GeV); #Delta #eta"),
+    100, 0.0, 1.2,
+    75, -0.1, 0.1
+  );
+  fDetaDphi->Sumw2();
+
+  fQinvDphiStar = new TH2F(
+    "QinvDphiStar" + pf,
+    TString::Format(title_format,
+                    "Q_{inv} vs #Delta #phi*",
+                    "Q_{inv} (GeV); #Delta #phi*"),
+    100, 0.0, 1.2,
+    75, -0.1, 0.1
+  );
+  fQinvDphiStar->Sumw2();
 
   if (is_mc_analysis) {
     fMCTrue_minv = new TH2F(
@@ -375,7 +410,8 @@ void
 AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
 {
   const float minv = pair->MInv(),
-             kstar = pair->KStar();
+             kstar = pair->KStar(),
+              qinv = fabs(pair->QInv());
 
   fMinv->Fill(minv);
   fKt->Fill(pair->KT());
@@ -383,10 +419,12 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
   const AliFemtoThreeVector p1 = pair->Track1()->Track()->P(),
                             p2 = pair->Track2()->Track()->P();
 
-  fDetaDphi->Fill(
-    fabs(AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2)),
-    fabs(AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, p2, 0.8))
-  );
+  const float delta_eta = AliFemtoPairCutDetaDphi::CalculateDEta(p1, p2),
+         delta_phi_star = AliFemtoPairCutDetaDphi::CalculateDPhiStar(p1, p2, 1.6);
+
+  fDetaDphi->Fill(delta_eta, delta_phi_star);
+  fQinvDeta->Fill(qinv, delta_eta);
+  fQinvDphiStar->Fill(qinv, delta_phi_star);
 
   if (fMCTrue_minv) {
     const AliFemtoModelHiddenInfo *mc_1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
@@ -419,16 +457,14 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
       const float tQ = pow(m1 * m1 - m2 * m2, 2) / p_sum.m2(),
                   q2 = tQ - p_diff.m2(),
 
-                  mc_kstar = q2 > 0
-                           ? TMath::Sqrt(q2) / 2.0
-                           : 0.0;
+            mc_kstar = q2 > 0
+                     ? TMath::Sqrt(q2) / 2.0
+                     : 0.0;
 
       // kstar calculation
       fMCTrue_kstar->Fill(kstar, mc_kstar);
-
     }
   }
-
 }
 
 
@@ -440,6 +476,8 @@ TList* AliFemtoCutMonitorPionPion::Pair::GetOutputList()
   output->Add(fMinv);
   output->Add(fKt);
   output->Add(fDetaDphi);
+  output->Add(fQinvDeta);
+  output->Add(fQinvDphiStar);
 
   if (fMCTrue_kstar) {
     output->Add(fMCTrue_kstar);

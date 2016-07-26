@@ -1,7 +1,19 @@
+/**
+ * @file   AliTrackletAODdNdeta.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Wed Apr 27 16:46:04 2016
+ * 
+ * @brief  AOD tasks to do final dN/deta in midrapidity
+ * 
+ * @ingroup pwglf_forward_tracklets
+ * 
+ */
+
 #include <AliAnalysisTaskSE.h>
 #include <AliTrackletAODUtils.C>
+#include <AliAODTracklet.C>
 #ifndef __CINT__
-#include "AliAODTracklet.C"
+#include <cctype>
 #include "AliAODSimpleHeader.C"
 #include <AliVVertex.h>
 #include <AliVertex.h>
@@ -13,8 +25,10 @@
 #include <AliLog.h>
 #include <TClonesArray.h>
 #include "AliTrackletWeights.C"
+#include <TUrl.h>
+#include <TFile.h>
 #else
-class AliAODTracklet;
+// class AliAODTracklet;
 class AliTrackletWeights;
 class AliVEvent;
 class AliMultSelection;  // Auto-load 
@@ -25,11 +39,33 @@ class TClonesArray;
 /**
  * Task to analyse AOD tracklets for dNch/deta 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODdNdeta : public AliAnalysisTaskSE,
 			     public AliTrackletAODUtils
 {
 public:
+  /**
+   * Masks and vetos used by histogram sets 
+   */
+  enum {
+    kMeasuredMask     = 0x0,
+    kMeasuredVeto     = AliAODTracklet::kInjection|AliAODTracklet::kGenerated,
+    kInjectedMask     = AliAODTracklet::kInjection,
+    kInjectedVeto     = AliAODTracklet::kGenerated,
+    kCombinatoricMask = AliAODTracklet::kCombinatorics,
+    kCombinatoricVeto = 0x0,
+    kPrimaryMask      = 0x0,
+    kPrimaryVeto      = (AliAODTracklet::kInjection|
+			 AliAODTracklet::kCombinatorics|
+			 AliAODTracklet::kSecondary|
+			 AliAODTracklet::kGenerated),
+    kSecondaryMask    = AliAODTracklet::kSecondary,
+    kSecondaryVeto    = 0x0,
+    kGeneratedMask    = AliAODTracklet::kGenerated,
+    kGeneratedVeto    = AliAODTracklet::kNeutral
+  };
+    
   /** Type of containers */
   typedef TList Container;
   /** 
@@ -81,10 +117,12 @@ public:
    * @param mc      Whether this is for MC or not
    * @param sumFile (Optional) name of sum file 
    * @param resFile (Optional) name of result file 
+   * @param weights (Optional) name of weights file 
    * 
    * @return Newly allocated task or null
    */
   static AliTrackletAODdNdeta* Create(Bool_t      mc=false,
+				      const char* weights=0,
 				      const char* sumFile=0,
 				      const char* resFile=0);
   /* @} */
@@ -287,13 +325,13 @@ public:
      * Constructor 
      * 
      */
-    Sub(const char* name="") : fName(name), fContainer(0) {}
+    Sub(const char* name="") : fName(name), fContainer(0), fDebug(0) {}
     /** 
      * Copy constructor 
      * 
      * @param o Object to copy from 
      */
-    Sub(const Sub& o) : TObject(o), fName(o.fName), fContainer(0) {}
+    Sub(const Sub& o) : TObject(o), fName(o.fName), fContainer(0), fDebug(0) {}
     /**
      * Destructor 
      */
@@ -311,10 +349,10 @@ public:
     /** 
      * Initialize the bin 
      * 
-     * @param parent   Parent container 
-     * @param etaAxis  pseudorapidity axis to use 
-     * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param parent    Parent container 
+     * @param etaAxis   pseudorapidity axis to use 
+     * @param ipzAxis   Interaction point Z coordinate axis 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
@@ -341,7 +379,7 @@ public:
      */
     virtual Bool_t ProcessTracklet(AliAODTracklet* tracklet,
 				   Double_t        ipz,
-				   Bool_t          signal,
+				   UShort_t        signal,
 				   Double_t        weight) = 0;
     /** 
      * Initialize this sub-component at the time of finalizing the
@@ -357,6 +395,7 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Distribution of interaction point Z coordinate
      * @param tailCut Cut on tails 
      * 
      * @return 
@@ -364,11 +403,19 @@ public:
     virtual Bool_t MasterFinalize(Container* parent,
 				  TH1*       ipz,
 				  Double_t   tailCut) = 0;
+    /** 
+     * Set debug flag 
+     *
+     * @param lvl Debug level 
+     */
+    virtual void SetDebug(UShort_t lvl) { fDebug = lvl; }
   protected:
     /** The name of the sub-component */
     TString fName;
     /** The sum container of the sub-component */
     Container* fContainer;
+    /** Debug flag */
+    UShort_t fDebug;
     ClassDef(Sub,1); 
   };    
   
@@ -388,12 +435,16 @@ public:
      * Constructor 
      * 
      */
-    Histos(const char* name="", UChar_t mask=0, UChar_t veto=0)
+    Histos(const char* name="", Color_t color=kBlack, Style_t style=1,
+	   UChar_t mask=0, UChar_t veto=0)
       : Sub(name),
 	fMask(mask),
 	fVeto(veto),
 	fEtaIPz(0),
-	fEtaDelta(0)
+	fEtaDeltaIPz(0),
+	fEtaPdgIPz(0),
+	fColor(color),
+	fStyle(style)
     {}
     /** 
      * Copy constructor 
@@ -405,7 +456,10 @@ public:
 	fMask(o.fMask),
 	fVeto(o.fVeto),
 	fEtaIPz(0),
-	fEtaDelta(0)
+	fEtaDeltaIPz(0),
+	fEtaPdgIPz(0),
+	fColor(o.fColor),
+	fStyle(o.fStyle)
     {}
     /**
      * Destructor 
@@ -418,18 +472,68 @@ public:
      */
     Histos& operator=(const Histos&) { return *this; }
     /** 
+     * @return Selection corresponds to observed tracklets
+     */    
+    Bool_t IsMeasured() const
+    {
+      return fMask == kMeasuredMask && fVeto == kMeasuredVeto;
+    }
+    /** 
+     * @return Selection corresponds to tracklets from injection events
+     */
+    Bool_t IsInjected() const
+    {
+      return fMask == kInjectedMask && fVeto == kInjectedVeto;
+    }
+    /** 
+     * @return Selection corresponds to tracklets from two particles
+     */
+    Bool_t IsCombinatoric() const
+    {
+      return fMask == kCombinatoricMask && fVeto == kCombinatoricVeto;
+    }
+    /** 
+     * @return Selection corresponds to primaries particles 
+     */
+    Bool_t IsPrimary() const
+    {
+      return fMask == kPrimaryMask && fVeto == kPrimaryVeto;
+    }
+    /** 
+     * @return Selection corresponds to secondary particles 
+     */
+    Bool_t IsSecondary() const
+    {
+      return fMask == kSecondaryMask && fVeto == kSecondaryVeto;
+    }
+    /** 
+     * @return Selection corresponds to generated particles 
+     */
+    Bool_t IsGenerated() const
+    {
+      return fMask == kGeneratedMask && fVeto == kGeneratedVeto;
+    }
+    /** 
      * Initialize the bin 
      * 
-     * @param etaAxis  pseudorapidity axis to use 
-     * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param parent    Parent container 
+     * @param etaAxis   pseudorapidity axis to use 
+     * @param ipzAxis   Interaction point Z coordinate axis 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
     Bool_t WorkerInit(Container*   parent,
 		      const TAxis& etaAxis,
 		      const TAxis& ipzAxis,
-		      const TAxis& deltaAxis);   
+		      const TAxis& deltaAxis);
+    /** 
+     * Set Attributes on histograms 
+     * 
+     * @param c Marker/line/fill color 
+     * @param m Marker style 
+     */
+    void SetAttr(Color_t c, Style_t m);
     /** 
      * Process a single tracklet 
      * 
@@ -442,7 +546,7 @@ public:
      */
     Bool_t ProcessTracklet(AliAODTracklet* tracklet,
 			   Double_t        ipz,
-			   Bool_t          signal,
+			   UShort_t        signal,
 			   Double_t        weight);
     /** 
      * Initialize this sub-component at the time of finalizing the
@@ -458,9 +562,10 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Interaction point Z coordinate distribution
      * @param tailCut Cut on tails 
      * 
-     * @return 
+     * @return true on success
      */
     Bool_t MasterFinalize(Container* parent,
 			  TH1*       ipz,
@@ -475,10 +580,14 @@ public:
      */
     void Print(Option_t* option="") const;
   protected:
-    UChar_t fMask;
-    UChar_t fVeto;
-    TH2*    fEtaIPz;    //!
-    TH2*    fEtaDelta;  //! 
+    const UChar_t fMask;
+    const UChar_t fVeto;
+    TH2*          fEtaIPz;       //!
+    TH3*          fEtaDeltaIPz;  //!
+    TH3*          fEtaPdgIPz;    //! 
+  public:
+    Color_t fColor;
+    Style_t fStyle;
     
     ClassDef(Histos,1); 
   };    
@@ -519,8 +628,8 @@ public:
     /** 
      * User constructor 
      * 
-     * @param c1 Lower bound on centrality 
-     * @param c2 Upper bound on centrality
+     * @param c1  Lower bound on centrality 
+     * @param c2  Upper bound on centrality
      */
     CentBin(Double_t c1, Double_t c2);
     /** 
@@ -549,11 +658,28 @@ public:
      */
     CentBin& operator=(const CentBin&) { return *this; }
     /** 
+     * Create a histogram set 
+     * 
+     * @param name  Name of histogram set 
+     * @param color Color used by histograms 
+     * @param style Style used by histograms 
+     * @param mask  Tracklet selection mask  
+     * @param veto  Tracklet veto mask 
+     * 
+     * @return Newly allocated histogram set 
+     */
+    Histos* MakeHistos(const char* name,
+		       Color_t     color,
+		       Style_t     style,
+		       UShort_t    mask,
+		       UShort_t    veto);
+    /** 
      * Initialize the bin 
      * 
+     * @param parent   Parent container 
      * @param etaAxis  pseudorapidity axis to use 
      * @param ipzAxis  Interaction point Z coordinate axis 
-     * @param deltaMax Largest @f$\Delta@f$ to consider 
+     * @param deltaAxis @f$\Delta@f$ axis to use 
      * 
      * @return true on success 
      */
@@ -582,7 +708,7 @@ public:
      */
     Bool_t ProcessTracklet(AliAODTracklet* tracklet,
 			   Double_t        ipz,
-			   Bool_t          signal,
+			   UShort_t        signal,
 			   Double_t        weight);
     /** 
      * Initialize this sub-component at the time of finalizing the
@@ -598,6 +724,7 @@ public:
      * Called on master when terminating 
      * 
      * @param parent  Parent container 
+     * @param ipz     Z-coordinate of the IP
      * @param tailCut Cut on tails 
      * 
      * @return 
@@ -627,6 +754,12 @@ public:
      * @param option Ignored 
      */
     void Print(Option_t* option="") const;
+    /** 
+     * Set debug flag 
+     *
+     * @param lvl Debug level 
+     */
+    virtual void SetDebug(UShort_t lvl);
   protected:
     Container* fSubs;
     Double_t   fLow;
@@ -738,7 +871,9 @@ protected:
   /** 
    * Find the interaction point location 
    * 
-   * @param event Event 
+   * @param event         Event 
+   * @param maxDispersion Max uncertainty 
+   * @param maxZError     Max uncertainty in Z 
    * 
    * @return Pointer to vertex, or null in case of problems 
    */
@@ -805,9 +940,11 @@ protected:
    * 
    * @param tracklet Tracklet to inspect 
    * 
-   * @return true if tracklet @f$\Delta<\Delta_{\mathrm{cut}}@f$ 
+   * @return Bit mask of status 
+   * - 0x1 if tracklet @f$\Delta<\Delta_{\mathrm{cut}}@f$ 
+   * - 0x2 if tracklet @f$d\phi-\delta\phi <C@f$
    */
-  virtual Bool_t CheckTracklet(AliAODTracklet* tracklet);
+  virtual UShort_t CheckTracklet(AliAODTracklet* tracklet) const;
   /* @} */
 
   // -----------------------------------------------------------------
@@ -881,7 +1018,7 @@ protected:
   Double_t   fMaxDelta;
   /** Least value of @f$\Delta@f$ considered background tail */
   Double_t   fTailDelta;
-  /** Shift @f$\delta_{\phi}@$f of @f$\Delta\phi@f$ */
+  /** Shift @f$\delta_{\phi}@f$ of @f$\Delta\phi@f$ */
   Double_t   fDPhiShift;
   /** Signal cut on @f$\Delta\phi-\delta_{\phi}@f$ */
   Double_t   fShiftedDPhiCut;
@@ -896,6 +1033,7 @@ protected:
 /**
  * Task to analyse AOD tracklets for dNch/deta 
  * 
+ * @ingroup pwglf_forward_tracklets
  */
 class AliTrackletAODMCdNdeta : public AliTrackletAODdNdeta
 {
@@ -906,17 +1044,13 @@ public:
    * Default constructor - for ROOT I/O only 
    */
   AliTrackletAODMCdNdeta()
-    : AliTrackletAODdNdeta(),
-      fWeights(0),
-      fEtaWeight(0)
+    : AliTrackletAODdNdeta()
   {}
   /** 
    * Named - user - constructor
    */
   AliTrackletAODMCdNdeta(const char* name)
-    : AliTrackletAODdNdeta(name),
-      fWeights(0),
-      fEtaWeight(0)
+    : AliTrackletAODdNdeta(name)
   {}
   /**
    * Copy constructor 
@@ -924,41 +1058,12 @@ public:
    * @param o Object to copy from 
    */
   AliTrackletAODMCdNdeta(const AliTrackletAODdNdeta& o)
-    : AliTrackletAODdNdeta(o),
-      fWeights(0),
-      fEtaWeight(0)
+    : AliTrackletAODdNdeta(o)
   {}
   /**
    * Destructor 
    */
   virtual ~AliTrackletAODMCdNdeta() {}
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  AliTrackletAODMCdNdeta& operator=(const AliTrackletAODMCdNdeta& o);
-  /** 
-   * Print information to standard output 
-   * 
-   * @param option Ignored 
-   */
-  void Print(Option_t* option="") const;
-
-  // -----------------------------------------------------------------
-  /** 
-   * @{ 
-   * @name Set parameters on the task 
-   */
-  /** 
-   * Set the weights to use 
-   * 
-   * @param w 
-   */
-  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
-  /* @} */
   //__________________________________________________________________
   /**
    * A centrality bin.  Here, we need 
@@ -1054,6 +1159,78 @@ protected:
   virtual const char* GetBranchName() const { return "AliAODMCTracklets"; }
   /* @} */
 
+  ClassDef(AliTrackletAODMCdNdeta,1); 
+};
+//====================================================================
+/**
+ * Task to analyse AOD tracklets for dNch/deta 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
+class AliTrackletAODWeightedMCdNdeta : public AliTrackletAODMCdNdeta
+{
+public:
+  /** Type of containers */
+  typedef TList Container;
+  /** 
+   * Default constructor - for ROOT I/O only 
+   */
+  AliTrackletAODWeightedMCdNdeta()
+    : AliTrackletAODMCdNdeta(),
+      fWeights(0),
+      fEtaWeight(0)
+  {}
+  /** 
+   * Named - user - constructor
+   */
+  AliTrackletAODWeightedMCdNdeta(const char* name)
+    : AliTrackletAODMCdNdeta(name),
+      fWeights(0),
+      fEtaWeight(0)
+  {}
+  /**
+   * Copy constructor 
+   *
+   * @param o Object to copy from 
+   */
+  AliTrackletAODWeightedMCdNdeta(const AliTrackletAODWeightedMCdNdeta& o)
+    : AliTrackletAODMCdNdeta(o),
+      fWeights(0),
+      fEtaWeight(0)
+  {}
+  /**
+   * Destructor 
+   */
+  virtual ~AliTrackletAODWeightedMCdNdeta() {}
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object 
+   */
+  AliTrackletAODWeightedMCdNdeta&
+  operator=(const AliTrackletAODWeightedMCdNdeta& o);
+  /** 
+   * Print information to standard output 
+   * 
+   * @param option Ignored 
+   */
+  void Print(Option_t* option="") const;
+
+  // -----------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Set parameters on the task 
+   */
+  /** 
+   * Set the weights to use 
+   * 
+   * @param w 
+   */
+  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
+  /* @} */
+protected:
   // -----------------------------------------------------------------
   /** 
    * @{ 
@@ -1093,7 +1270,7 @@ protected:
   AliTrackletWeights* fWeights;
   TProfile2D*         fEtaWeight;
   
-  ClassDef(AliTrackletAODMCdNdeta,1); 
+  ClassDef(AliTrackletAODWeightedMCdNdeta,1); 
 };
 
 //____________________________________________________________________
@@ -1199,8 +1376,9 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   return *this;
 }
 //____________________________________________________________________
-AliTrackletAODMCdNdeta&
-AliTrackletAODMCdNdeta::operator=(const AliTrackletAODMCdNdeta& o)
+AliTrackletAODWeightedMCdNdeta&
+AliTrackletAODWeightedMCdNdeta::operator=(const AliTrackletAODWeightedMCdNdeta&
+					  o)
 {
   if (&o == this) return *this;
   AliTrackletAODdNdeta::operator=(o);
@@ -1284,9 +1462,9 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   }
 }
 //____________________________________________________________________
-void AliTrackletAODMCdNdeta::Print(Option_t* option) const
+void AliTrackletAODWeightedMCdNdeta::Print(Option_t* option) const
 {
-  AliTrackletAODdNdeta::Print(option);
+  AliTrackletAODMCdNdeta::Print(option);
   if (!fWeights) return;
   fWeights->Print(option);
 }
@@ -1306,6 +1484,17 @@ void AliTrackletAODdNdeta::CentBin::Print(Option_t* option) const
     h->Print(option);
   }
 }
+
+//____________________________________________________________________
+void AliTrackletAODdNdeta::CentBin::SetDebug(UShort_t lvl)
+{
+  Sub::SetDebug(lvl);
+  TIter next(fSubs);
+  Histos* h = 0;
+  while ((h = static_cast<Histos*>(next()))) {
+    h->SetDebug(lvl);
+  }
+}  
 namespace {
   void Bits2String(UChar_t m, char out[7])
   {
@@ -1327,7 +1516,7 @@ void AliTrackletAODdNdeta::Histos::Print(Option_t*) const
   Printf("  Histograms: %s", fName.Data());
   Printf("   Mask:         0x%02x (%s)", fMask, cMask);
   Printf("   Veto:         0x%02x (%s)", fVeto, cVeto);
-  Printf("   Delta:        %s", fEtaDelta ? "yes" : "no");
+  Printf("   Delta:        %s", fEtaDeltaIPz ? "yes" : "no");
 }
 
   
@@ -1411,16 +1600,18 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   return true;
 }
 //____________________________________________________________________
-Bool_t AliTrackletAODMCdNdeta::WorkerInit()
+Bool_t AliTrackletAODWeightedMCdNdeta::WorkerInit()
 {
-  if (!AliTrackletAODdNdeta::WorkerInit()) return false;
+  if (!AliTrackletAODMCdNdeta::WorkerInit()) return false;
   fEtaWeight = 0;
-  if (fWeights) {
-    AliWarning("Weights initialized!");
-    fEtaWeight = Make2P(fContainer, "etaWeight", "#LTw#GT", kYellow+2, 24,
-			fEtaAxis, fCentAxis);
-    fWeights->Store(fContainer);
+  if (!fWeights) {
+    AliFatal("No weights set!");
+    return false;
   }
+  
+  fEtaWeight = Make2P(fContainer, "etaWeight", "#LTw#GT", kYellow+2, 24,
+		      fEtaAxis, fCentAxis);
+  fWeights->Store(fContainer);
   return true;
 }
 //____________________________________________________________________
@@ -1450,6 +1641,7 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
     AliWarningF("Failed to initialize bin %s", bin->GetName());
     return false;
   }
+  bin->SetDebug(DebugLevel());
   fCentBins->AddAt(bin, 0);
 
   // Add other bins
@@ -1466,6 +1658,7 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
       AliWarningF("Failed to initialize %s", bin->GetName());
       return false;
     }
+    bin->SetDebug(DebugLevel());
     fCentBins->AddAt(bin, i);
   }
   return true;
@@ -1485,10 +1678,12 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   fName.Form("cent%03dd%02d_%03dd%02d",
 	     Int_t(fLow), Int_t(fLow*100)%100,
 	     Int_t(fHigh), Int_t(fHigh*100)%100);
-  fMeasured  = new Histos("measured", 0x00, // No requirements, just veto 
-			 AliAODTracklet::kInjection|AliAODTracklet::kGenerated);
-  fInjection = new Histos("injected",AliAODTracklet::kInjection,
-			 AliAODTracklet::kGenerated);
+  fMeasured  = MakeHistos("measured", kRed+2, 20,
+			  kMeasuredMask, // No requirements, just veto
+			  kMeasuredVeto);
+  fInjection = MakeHistos("injected", kOrange+2, 21,
+			  kInjectedMask,
+			  kInjectedVeto);
   fSubs = new Container;
   fSubs->SetOwner(true);
   fSubs->Add(fMeasured);
@@ -1507,19 +1702,35 @@ AliTrackletAODMCdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
   // Primaries all with simulated bit, but not secondary or
   // combinatorics bit.
   // Secondaries are all those with the secondary bit set 
-  fCombinatorics  = new Histos("combinatorics",
-			       AliAODTracklet::kCombinatorics, 0x00);
-  fPrimaries  = new Histos("primaries",
-			   AliAODTracklet::kSimulated
-			   AliAODTracklet::kCombinatorics|
-			   AliAODTracklet::kSecondary);
-  fSecondaries = new Histos("secondaries",
-			    AliAODTracklet::kSecondary, 0x00);
-  fGenerated = new Histos("generated",AliAODTracklet::kGenerated, 0x00);
+  fCombinatorics  = MakeHistos("combinatorics", kMagenta+2, 30,
+			       kCombinatoricMask,
+			       kCombinatoricVeto);
+  fPrimaries      = MakeHistos("primaries", kGreen+2, 26, 
+			       kPrimaryMask,
+			       kPrimaryVeto);
+  fSecondaries    = MakeHistos("secondaries", kBlue+2, 32, 
+			       kSecondaryMask,
+			       kSecondaryVeto);
+  fGenerated      = MakeHistos("generated", kGray+1, 28, 
+			       kGeneratedMask,
+			       kGeneratedVeto);
+  fMeasured->fStyle = 24;
+  fInjection->fStyle = 25;
   fSubs->Add(fCombinatorics);
   fSubs->Add(fPrimaries);
   fSubs->Add(fSecondaries);
   fSubs->AddAfter(fMeasured, fGenerated);
+}
+
+//____________________________________________________________________
+AliTrackletAODdNdeta::Histos*
+AliTrackletAODdNdeta::CentBin::MakeHistos(const char* name,
+					  Color_t     color,
+					  Style_t     style,
+					  UShort_t    mask,
+					  UShort_t    veto)
+{
+  return new Histos(name, color, style, mask, veto);
 }
 
 //____________________________________________________________________
@@ -1528,7 +1739,8 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
 						 const TAxis& ipzAxis,
 						 const TAxis& deltaAxis)
 {
-  Printf("Initializing centrality bin %s", fName.Data());
+  if (fDebug > 0)
+    Printf("Initializing centrality bin %s", fName.Data());
   if (!Sub::WorkerInit(parent, etaAxis, ipzAxis, deltaAxis)) return false;
   
   TAxis centAxis(20, fLow, fHigh);
@@ -1553,20 +1765,54 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
 						const TAxis& deltaAxis)
 {
   if (!Sub::WorkerInit(parent, etaAxis, ipzAxis, deltaAxis)) return false;
-
+  TString shrt(Form("%c", GetName()[0]));
+  shrt.ToUpper();
+  if (GetC(parent, "generated", false) != 0) shrt.Append("'");
+  
   // Do not make eta vs IPz for secondaries and primaries 
-  if (fMask != AliAODTracklet::kSecondary &&
-      (fMask != AliAODTracklet::kSimulated &&
-       fVeto != AliAODTracklet::kSecondary|AliAODTracklet::kCombinatorics))
-    fEtaIPz   = Make2D(fContainer, "etaIPz",
-		       Form("Tracklet density - %s",GetName()),
+  if (!IsPrimary() && !IsSecondary()) 
+    fEtaIPz   = Make2D(fContainer, "etaIPz", shrt.Data(),
 		       kRed+2, 20, etaAxis, ipzAxis);
-  // Always make eta vs Delta distribution 
-  fEtaDelta = Make2D(fContainer, "etaDelta",
-		     Form("Tracklet quality - %s",GetName()),
-		     kBlue+2, 21, etaAxis, deltaAxis);
+  // Always make eta vs Delta distribution, except for MC truth 
+  if (!IsGenerated()) 
+    fEtaDeltaIPz = Make3D(fContainer, "etaDeltaIPz",
+			  Form("#Delta_{%s}",shrt.Data()), 
+			  kBlue+2, 21, etaAxis, deltaAxis, ipzAxis);
+  if (!IsGenerated() &&
+      // !IsPrimary() &&
+      // !IsSecondary() &&
+      !IsInjected() &&
+      fStyle != 20) // Last condition to not make this for real data
+    fEtaPdgIPz = Make3D(fContainer, "etaPdgIPz",
+			Form("Parent particle type"),
+			kGreen+2, 22, etaAxis, PdgAxis(), ipzAxis);
+  
+  SetAttr(fColor, fStyle);
   return true;
 }
+//____________________________________________________________________
+void AliTrackletAODdNdeta::Histos::SetAttr(Color_t c, Style_t m)
+{
+  if (fEtaIPz) {
+    fEtaIPz->SetMarkerStyle(m);
+    fEtaIPz->SetMarkerColor(c);
+    fEtaIPz->SetLineColor(c);
+    fEtaIPz->SetFillColor(c);
+  }
+  if (fEtaDeltaIPz) {
+    fEtaDeltaIPz->SetMarkerStyle(m);
+    fEtaDeltaIPz->SetMarkerColor(c);
+    fEtaDeltaIPz->SetLineColor(c);
+    fEtaDeltaIPz->SetFillColor(c);
+  }
+  if (fEtaPdgIPz) {
+    fEtaPdgIPz->SetMarkerStyle(m);
+    fEtaPdgIPz->SetMarkerColor(c);
+    fEtaPdgIPz->SetLineColor(c);
+    fEtaPdgIPz->SetFillColor(c);
+  }    
+}
+
 //____________________________________________________________________
 void 
 AliTrackletAODdNdeta::UserExec(Option_t*)
@@ -1707,9 +1953,9 @@ const AliVVertex* AliTrackletAODdNdeta::FindRealIP(AliVEvent* event,
 }
 						   
 //____________________________________________________________________
-  const AliVVertex* AliTrackletAODdNdeta::FindSimpleIP(AliVEvent* event,
-						       Double_t maxDispersion,
-						       Double_t maxZError)   
+const AliVVertex* AliTrackletAODdNdeta::FindSimpleIP(AliVEvent* event,
+						     Double_t maxDispersion,
+						     Double_t maxZError)   
 {
   static AliVertex* ip;
   AliAODSimpleHeader* head =
@@ -1826,13 +2072,14 @@ Double_t AliTrackletAODdNdeta::LookupWeight(AliAODTracklet* tracklet,
   return 1;
 }
 //____________________________________________________________________
-Double_t AliTrackletAODMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
+Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
 					      Double_t        cent)
 {
-  if (!fWeights) {
-    // AliWarning("No weights defined");
-    return 1;
-  }
+  // We don't check for weights, as we must have them to come this far 
+  // if (!fWeights) {
+  // AliWarning("No weights defined");
+  // return 1;
+  // }
   Double_t w = fWeights->LookupWeight(tracklet, cent);
   fEtaWeight->Fill(tracklet->GetEta(), cent, w);
   // printf("Looking up weight of tracklet -> %f ", w);
@@ -1840,9 +2087,18 @@ Double_t AliTrackletAODMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
   return w;
 }
 //____________________________________________________________________
-Bool_t AliTrackletAODdNdeta::CheckTracklet(AliAODTracklet* tracklet)
+UShort_t AliTrackletAODdNdeta::CheckTracklet(AliAODTracklet* tracklet) const
 {
-  return (tracklet->GetDelta() < fDeltaCut);
+  Double_t dPhiS   = (tracklet->GetDPhi() -
+		      TMath::Sign(fDPhiShift,Double_t(tracklet->GetDPhi())));
+  UShort_t ret = 0;
+  ret |= ((tracklet->GetDelta() <= fDeltaCut) ? 0x1 : 0);
+  ret |= ((dPhiS < fShiftedDPhiCut) ? 0x2 : 0);  
+  // Printf("dPhiS=%f (%f) Delta=%f (%f) -> 0x%x",
+  // 	 dPhiS, fShiftedDPhiCut,
+  // 	 tracklet->GetDelta(), fDeltaCut,
+  // 	 ret);
+  return ret;  
 }
 
     
@@ -1868,7 +2124,7 @@ void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
   TIter           nextTracklet(tracklets);
   while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
     Double_t weight = LookupWeight(tracklet, cent);
-    Bool_t   signal = CheckTracklet(tracklet);
+    UShort_t signal = CheckTracklet(tracklet);
     if (signal) fEtaPhi->Fill(tracklet->GetEta(), tracklet->GetPhi());
     TIter nextBin(&toRun);
     while ((bin = static_cast<CentBin*>(nextBin()))) {
@@ -1889,11 +2145,12 @@ Bool_t AliTrackletAODdNdeta::CentBin::Accept(Double_t cent, Double_t ipz)
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::CentBin::ProcessTracklet(AliAODTracklet* tracklet,
 						      Double_t        ipZ,
-						      Bool_t          signal,
+						      UShort_t        signal,
 						      Double_t        weight)
 {
   TIter   next(fSubs);
   Histos* h = 0;
+  if (fDebug > 3) tracklet->Print();
   while ((h = static_cast<Histos*>(next()))) 
     h->ProcessTracklet(tracklet, ipZ, signal, weight);
   
@@ -1902,24 +2159,41 @@ Bool_t AliTrackletAODdNdeta::CentBin::ProcessTracklet(AliAODTracklet* tracklet,
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
 						     Double_t        ipZ,
-						     Bool_t          signal,
+						     UShort_t        signal,
 						     Double_t        weight)
 {
+  if (!fEtaIPz && !fEtaDeltaIPz) return true;
+  char m[7];
+  if (fDebug > 3) Bits2String(tracklet->GetFlags(), m);
   if (fMask != 0 && (tracklet->GetFlags() & fMask) == 0) {
-    // printf("%12s (0x%02x) rejecting ", GetName(), fMask);
-    // tracklet->Print();
+    if (fDebug > 3)
+      Printf("%14s (0x%02x,----) %6s %7s (0x%02x) ",
+	     GetName(), fMask, "reject", m, tracklet->GetFlags());
     return false;
   }
   if (fVeto != 0 && (tracklet->GetFlags() & fVeto) != 0) {
-    // printf("%12s (0x%02x) veto ", GetName(), fVeto);
-    // tracklet->Print();
+    if (fDebug > 3) 
+      Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
+	     GetName(), fVeto, "veto", m, tracklet->GetFlags());
     return false;
   }
-  // printf("%12s (0x%02x,0x%02x) signal ", GetName(), fMask, fVeto);
-  // tracklet->Print();
-  if (fEtaIPz && signal) fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
-  if (fEtaDelta)         fEtaDelta->Fill(tracklet->GetEta(),
-					 tracklet->GetDelta(), weight);
+  if (fDebug > 3)
+    Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
+	   GetName(), fMask, fVeto, "accept", m, tracklet->GetFlags());
+  if (fEtaIPz && (signal == 0x3)) // both reguirements 
+    fEtaIPz->Fill(tracklet->GetEta(), ipZ, weight);
+  if (fEtaDeltaIPz && (signal & 0x2)) // just check dPhi
+    fEtaDeltaIPz->Fill(tracklet->GetEta(), tracklet->GetDelta(), ipZ, weight);
+  if (fEtaPdgIPz) {
+    fEtaPdgIPz->Fill(tracklet->GetEta(),
+		     PdgBin(tracklet->GetParentPdg()),
+		     ipZ, weight);
+    if (tracklet->IsCombinatorics())
+      // Fill both particles 
+      fEtaPdgIPz->Fill(tracklet->GetEta(),
+		       PdgBin(tracklet->GetParentPdg(true)),
+		       ipZ, weight);
+  }
   return true;
 }
 
@@ -1971,8 +2245,16 @@ Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
 Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
 {
   fContainer   = GetC(parent, fName);
-  fEtaIPz      = GetH2(fContainer, "etaIPz", false); // No complaints
-  fEtaDelta    = GetH2(fContainer, "etaDelta", false); // No complaints
+  fEtaIPz      = GetH2(fContainer, "etaIPz",      false); // No complaints
+  fEtaDeltaIPz = GetH3(fContainer, "etaDeltaIPz", false);
+  fEtaPdgIPz   = GetH3(fContainer, "etaPdgIPz",   false);
+  if (GetName()[0] == 'm' && GetC(parent,"generated")) {
+    // Fix up titles 
+    if (fEtaIPz)
+      fEtaIPz->SetTitle(Form("%s'", fEtaIPz->GetTitle()));
+    if (fEtaDeltaIPz)
+      fEtaDeltaIPz->SetTitle(Form("#Delta_{%s}", fEtaIPz->GetTitle()));
+  }
   return (fContainer != 0); //  && fEtaIPz != 0); 
 }
 
@@ -2016,9 +2298,9 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   return true;
 }
 //____________________________________________________________________
-Bool_t AliTrackletAODMCdNdeta::MasterFinalize(Container* results)
+Bool_t AliTrackletAODWeightedMCdNdeta::MasterFinalize(Container* results)
 {
-  if (!AliTrackletAODdNdeta::MasterFinalize(results)) return false;
+  if (!AliTrackletAODMCdNdeta::MasterFinalize(results)) return false;
 
   TObject* o = fContainer->FindObject("etaWeight");
   if (o && o->IsA()->InheritsFrom(TH1::Class())) {
@@ -2027,7 +2309,7 @@ Bool_t AliTrackletAODMCdNdeta::MasterFinalize(Container* results)
     results->Add(etaWeight);
   }
   else {
-    AliWarningF("Object %p (etaWeight ) is not a TH1 or not found",o);
+    AliWarningF("Object %p (etaWeight) is not a TH1 or not found",o);
   }
   if (!fWeights) return true;
 
@@ -2100,50 +2382,155 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   // Scale each vertex range by number of events in that range
   TH2* etaIPz = 0;
   if (fEtaIPz) {
-    ScaleToIPz(fEtaIPz, ipz);
+    etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
+  TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
 
+  // If we have the PDG distributions, we project on eta,IPz, and then
+  // average over IPz to get dNpdg/deta.
+  if (fEtaPdgIPz) {
+    // Scale each vertex range by number of events in that range
+    TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
+    result->Add(etaPdgIPz);
+
+    // Loop over PDG types and create 2D and 1D distributions 
+    TAxis*     yaxis  = etaPdgIPz->GetYaxis();
+    Int_t      first  = yaxis->GetFirst();
+    Int_t      last   = yaxis->GetLast();
+    THStack*   pdgs   = new THStack("all","");
+    THStack*   ratios = new THStack("toPion", "");
+    TH1*       pion   = 0;
+    Container* pdgOut = new Container();
+    pdgOut->SetName("types");
+    result->Add(pdgOut);
+    pdgOut->Add(pdgs);
+    pdgOut->Add(ratios);
+    for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
+      yaxis->SetRange(i,i);
+
+      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+      TString nme;
+      Style_t sty;
+      Color_t col;
+      PdgAttr(pdg, nme, col, sty);
+      if (pdg < 0) pdg = 0;
+
+      TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
+      if (h2->GetEntries() <= 0) continue; // Do not store if empty
+      h2->SetDirectory(0);
+      h2->SetName(Form("etaIPz_%d", pdg));
+      h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
+      h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
+			 "(d#etadIP_{#it{z}})",
+			 nme.Data(), shn.Data()));
+      h2->SetFillColor(col);
+      h2->SetMarkerColor(col);
+      h2->SetLineColor(col);
+      pdgOut->Add(h2);
+
+      TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
+      h1->SetDirectory(0);
+      h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
+			 nme.Data(), shn.Data()));
+      h1->SetMarkerStyle(sty);
+      pdgs->Add(h1);
+
+      if (pdg == 211) pion = h1;
+    }
+    if (pdgs->GetHists()) {
+      TIter    next(pdgs->GetHists());
+      TH1*     tmp = 0;
+      while ((tmp = static_cast<TH1*>(next()))) {
+	if (tmp == pion) continue;
+	TH1* rat = static_cast<TH1*>(tmp->Clone());
+	rat->Divide(pion);
+	rat->SetDirectory(0);
+	ratios->Add(rat);
+      }
+    }
+    
+    yaxis->SetRange(first, last);    
+  }
   // If we do not have eta vs Delta, just return 
-  if (!fEtaDelta) return true;
+  if (!fEtaDeltaIPz) return true;
 
   // Normalize delta distribution to integral number of events
-  // TH2* etaDelta = ScaleToIPz(fEtaIPz, ipz);
-  // result->Add(etaDelta);
-  TH2* etaDelta = static_cast<TH2*>(CloneAndAdd(result, fEtaDelta));
-  etaDelta->Scale(1./nEvents);
-
-  // Make projection of delta 
-  TH1* delta = fEtaDelta->ProjectionY("delta");
-  delta->SetDirectory(0);
-  delta->SetTitle(Form("#Delta - %s", GetName()));
-  delta->Scale(1./nEvents);
-  result->Add(delta);
+  // static_cast<TH3*>(CloneAndAdd(result, fEtaDeltaIPz));
+  TH3* etaDeltaIPz = ScaleToIPz(fEtaDeltaIPz, ipz, false); 
+  // ipz->GetEntries()>1000);
+  result->Add(etaDeltaIPz);
   
-  // Integrate full tail
-  Double_t maxDelta = fEtaDelta->GetYaxis()->GetXmax();
-  Int_t    lowBin   = fEtaDelta->GetYaxis()->FindBin(tailDelta);
-  Int_t    highBin  = fEtaDelta->GetYaxis()->GetNbins();  
-  Double_t eintg;
-  Double_t intg     = fEtaDelta->IntegralAndError(1,fEtaDelta->GetNbinsX(),
-						  lowBin, highBin, eintg);      
-  result->Add(new TParameter<double>("deltaTailIntegral",      intg));
-  result->Add(new TParameter<double>("deltaTailIntegralError", eintg));
+  // Make 2D projection to eta,Delta
+  TH2* etaDelta = ProjectEtaDelta(etaDeltaIPz);
+  result->Add(etaDelta);
+  
+  // Make projection of delta 
+  TH1* delta = ProjectDelta(etaDelta);
+  result->Add(delta);
 
-  TH1* deltaIntg = etaDelta->ProjectionX("etaDeltaTailIntegral");
-  deltaIntg->SetDirectory(0);
-  deltaIntg->Reset();
-  deltaIntg->SetTitle(Form("Integral of #Delta tails - %s", GetName()));
-  deltaIntg->SetYTitle(Form("#int_{%3.1f}^{%4.1f}d#Delta",tailDelta,maxDelta));
-  for (Int_t i = 1; i <= deltaIntg->GetNbinsX(); i++) {
-    TH1* tmp = etaDelta->ProjectionY("tmp",i,i);
-    intg     = tmp->IntegralAndError(lowBin, highBin, eintg);
-    deltaIntg->SetBinContent(i, intg);
-    deltaIntg->SetBinError  (i, eintg);
-    delete tmp;
+  // PArameters of integrals
+  Double_t maxDelta = etaDeltaIPz->GetYaxis()->GetXmax();
+  Int_t    lowBin   = etaDeltaIPz->GetYaxis()->FindBin(tailDelta);
+  Int_t    highBin  = etaDeltaIPz->GetYaxis()->GetNbins();  
+
+  
+  TH1* etaDeltaTail    = etaDelta->ProjectionX("etaDeltaTail");
+  etaDeltaTail   ->SetDirectory(0);
+  etaDeltaTail   ->Reset();
+  etaDeltaTail   ->SetTitle(Form("#scale[.7]{#int}_{%3.1f}^{%4.1f}"
+				 "d%s d#it{N}/d%s",
+				 tailDelta,maxDelta,
+				 etaDeltaIPz->GetTitle(), 
+				 etaDeltaIPz->GetTitle()));
+  etaDeltaTail   ->SetYTitle("#scale[.7]{#int}_{tail}d#Delta d#it{N}/d#Delta");
+
+  TH2* etaIPzDeltaTail = static_cast<TH2*>(etaDeltaIPz->Project3D("zx e"));
+  etaIPzDeltaTail->SetName("etaIPzDeltaTail");
+  etaIPzDeltaTail->SetDirectory(0);
+  etaIPzDeltaTail->Reset();
+  etaIPzDeltaTail->SetTitle(etaDeltaTail->GetTitle());
+  etaIPzDeltaTail->SetZTitle(etaDelta->GetYaxis()->GetTitle());
+  // Loop over eta
+  Double_t intg = 0, eintg = 0;
+  for (Int_t i = 1; i <= etaDeltaTail->GetNbinsX(); i++) {
+    // Integrate over Delta 
+    intg        = etaDelta->IntegralAndError(i, i, lowBin, highBin, eintg);    
+    etaDeltaTail->SetBinContent(i, intg);
+    etaDeltaTail->SetBinError  (i, eintg);
+    // Loop over IPz
+    for (Int_t j = 1; j <= etaIPzDeltaTail->GetNbinsY(); j++) {
+      // Integrate over Delta 
+      intg = etaDeltaIPz->IntegralAndError(i,i,lowBin,highBin,j,j,eintg);
+      etaIPzDeltaTail->SetBinContent(i, j, intg);
+      etaIPzDeltaTail->SetBinError  (i, j, eintg);
+    }
   }
-  result->Add(deltaIntg);
+  result->Add(etaIPzDeltaTail);
+  result->Add(etaDeltaTail);
 
+  // Integrate full tail
+  intg = etaDeltaIPz->IntegralAndError(1,etaDeltaIPz->GetNbinsX(),
+				       lowBin, highBin,
+				       1,etaDeltaIPz->GetNbinsZ(),
+				       eintg);
+  result->Add(new TParameter<double>("deltaTail",      intg));
+  result->Add(new TParameter<double>("deltaTailError", eintg));
+
+  // Some consistency checks:
+  if (fDebug > 1) {
+    Printf("%10s: Integral over eta,IPz: %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+    intg = etaDelta->IntegralAndError(1,etaDeltaIPz->GetNbinsX(),
+				    lowBin, highBin,
+				    eintg);
+    Printf("%10s: Integral over eta:     %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+    intg = delta->IntegralAndError(lowBin, highBin, eintg);
+    Printf("%10s: Integral:              %9.4f +/- %9.4f",
+	   GetName(), intg, eintg);
+  }
+				    
   return true;
 }
 
@@ -2171,99 +2558,154 @@ Bool_t AliTrackletAODdNdeta::CentBin::EstimateBackground(Container* result,
     return false;
   }
   const char* sub = h->GetName();
+  TString shrt(Form("%c", sub[0]));
+  shrt.ToUpper();
+  if (genCont) shrt.Append("'");
   
   TH2* background    = 0;
-  TH2* backgroundEta = 0;
-  if (h->GetMask() == AliAODTracklet::kInjection)) {
-    // If we have the delta distribution, we can form the real
-    // background by scaling to the tail.  We can either scale the
-    // observed distribution by the ratios of the total integrals, or
-    // we can scale by the integral in eta slices.  Here, we do both
-    // and store them separately
-    Double_t measIntg = GetD(measCont, "deltaTailIntegral",      -1);
-    Double_t measIntE = GetD(measCont, "deltaTailIntegralError", -1);
-    Double_t bgIntg   = GetD(bgCont,   "deltaTailIntegral",      -1);
-    Double_t bgIntE   = GetD(bgCont,   "deltaTailIntegralError", -1);
-    if (measIntg <= 0 || bgIntg <= 0) return true;
-    Double_t scaleE   = 0;
-    Double_t scale    = RatioE(measIntg, measIntE, bgIntg, bgIntE, scaleE);
-    bgCont->Add(new TParameter<double>("deltaTailRatio",      scale));
-    bgCont->Add(new TParameter<double>("deltaTailRatioError", scaleE));
-
-    TH1* deltaScaled  = CopyH1(bgCont, "delta", "deltaScaled");
-    bgCont->Add(deltaScaled);
-    deltaScaled->SetLineStyle(7);
-    deltaScaled->SetTitle(Form("%s #times%6.3f",
-			       deltaScaled->GetTitle(), scale));
-    Scale(deltaScaled, scale, scaleE);
-
-    // Make background scaled by full tail 
-    background = CopyH2(bgCont,  "etaIPz", "background");
-    Scale(background, scale, scaleE);
+  TH2* etaIPzScale   = 0;
+  if (h->GetMask() == AliAODTracklet::kInjection) {
+    // Get the tail ratio per eta, ipZ
+    // We get the integral of the measured eta,IPz,Delta dist
+    // We get the integral of the injected eta,IPz,Delta dist
+    // Then we take the ratio 
+    etaIPzScale = CopyH2(measCont, "etaIPzDeltaTail",
+			 "etaIPzScale");
+    etaIPzScale->Divide(GetH2(bgCont, "etaIPzDeltaTail"));
+    etaIPzScale->SetZTitle("k_{#eta,IP_{#it{z}}}");
+    etaIPzScale->SetTitle(Form("k_{%s,#eta,IP_{#it{z}}}",shrt.Data()));
+    bgCont->Add(etaIPzScale);  
 
     // Get the tail ratio per eta
-    TH1* etaScale = CopyH1(measCont, "etaDeltaTailIntegral",
-			   "etaDeltaTailRatio");
-    etaScale->Divide(GetH1(bgCont, "etaDeltaTailIntegral"));
-    etaScale->SetYTitle(Form("%s/%s",measCont->GetName(),sub));
-    etaScale->SetTitle("Ratio of #Delta tails");
+    // We get the integral of the measured eta,Delta dist
+    // We get the integral of the injected eta,Detla dist
+    // Then we take the ratio  
+    TH1* etaScale = CopyH1(measCont, "etaDeltaTail",
+			   "etaScale");
+    etaScale->Divide(GetH1(bgCont, "etaDeltaTail"));
+    etaScale->SetYTitle("k_{#eta}");
+    etaScale->SetTitle(Form("k_{%s,#eta}", shrt.Data()));
     bgCont->Add(etaScale);
+
+    // Get the integrated tail ratio.
+    // We get the integrated tail of the measured delta dist
+    // We get the integrated tail of the ianjection delta dist
+    // We then get the ratio.   
+    Double_t measIntg = GetD(measCont, "deltaTail",      -1);
+    Double_t measIntE = GetD(measCont, "deltaTailError", -1);
+    Double_t bgIntg   = GetD(bgCont,   "deltaTail",      -1);
+    Double_t bgIntE   = GetD(bgCont,   "deltaTailError", -1);
+    Double_t scaleE   = 0;
+    Double_t scale    = RatioE(measIntg, measIntE, bgIntg, bgIntE, scaleE);
+    bgCont->Add(new TParameter<double>("scale",      scale));
+    bgCont->Add(new TParameter<double>("scaleError", scaleE));
+
+    // Get the fully differential Delta distribution and scale by the
+    // eta,IPz scalar.
+    TH3* scaledEtaDeltaIPz = ScaleDelta(CopyH3(bgCont, "etaDeltaIPz",
+					       "scaleEtaDeltaIPz"),
+					etaIPzScale);
+    scaledEtaDeltaIPz->SetTitle(Form("%5.3f#times%s",
+				     scale, scaledEtaDeltaIPz->GetTitle()));
+    scaledEtaDeltaIPz->SetDirectory(0);
+    scaledEtaDeltaIPz->SetYTitle("k#timesd^{3}#it{N}/"
+				 "(d#Deltad#etadIP_{#it{z}})");
+    bgCont->Add(scaledEtaDeltaIPz);
+#if 0
+    // scale by derived scalars, rather than by taking the scaled full
+    // distribution.
+    TH2* scaledEtaDelta = CopyH2(bgCont, "etaDelta", "scaledEtaDelta");
+    scaledEtaDelta->SetTitle(scaledEtaDeltaIPz->GetTitle());
+    scaledEtaDelta->SetZTitle("k#timesd^{2}#it{N}/(d#Deltad#eta)");
+    Scale(scaledEtaDelta, etaScale);
+    bgCont->Add(scaledEtaDelta);
     
+    TH1* scaledDelta = CopyH1(bgCont, "delta", "scaledDelta");
+    scaledDelta->SetTitle(scaledEtaDeltaIPz->GetTitle());
+    scaledDelta->SetYTitle("k#timesd#it{N}/d#Delta");
+    Scale(scaledDelta,scale,scaleE);
+    bgCont->Add(scaledDelta);
+#else 
+    // Make 2D projection to eta,Delta
+    TH2* scaledEtaDelta = ProjectEtaDelta(scaledEtaDeltaIPz);
+    scaledEtaDelta->SetName("scaledEtaDelta");
+    scaledEtaDelta->SetTitle(scaledEtaDeltaIPz->GetTitle());
+    scaledEtaDelta->SetYTitle("k#timesd^{2}#it{N}/(d#Deltad#eta)");
+    bgCont->Add(scaledEtaDelta);
+  
+    // Make projection of delta 
+    TH1* scaledDelta = ProjectDelta(scaledEtaDelta);
+    scaledDelta->SetName("scaledDelta");
+    scaledDelta->SetTitle(scaledEtaDeltaIPz->GetTitle());
+    scaledDelta->SetYTitle("k#timesd#it{N}/d#Delta");
+    bgCont->Add(scaledDelta);
+#endif
     // Make background scaled by full tail 
-    backgroundEta = CopyH2(bgCont,  "etaIPz", "backgroundEta");
-    Scale(backgroundEta, etaScale);
+    background = CopyH2(bgCont,  "etaIPz", "background");
+    if (!background) AliWarningF("Didn't get background in %s", sub);
+    else             background->Multiply(etaIPzScale);
+    // else             Scale(background, scale, scaleE);  
   }
   else {
-    // If we do not have the delta distribution, then that means we
-    // have a direct measurement of the background distribution in the
-    // observed distribution.  In htis case, we calculate beta as
-    // bg/meas.
+    // For non-injection sets (i.e., combinatorics) we cannot form the
+    // scaled background until we have the real data, so we calculate
+    // beta instead. 
     background = CopyH2(bgCont, "etaIPz", "background");       
     TH2* beta  = CopyH2(bgCont, "etaIPz", "beta");
-    beta->Divide(GetH1(measCont, "etaIPz"));
-    bgCont->Add(beta);
+    if (!background || !beta)
+      AliWarningF("Didn't get background or beta in %s", sub);
+    else {
+      beta->Divide(GetH1(measCont, "etaIPz"));
+      beta->SetTitle(Form("#beta_{%s}", shrt.Data()));
+      bgCont->Add(beta);
+    }
   }
-  TH2* signal = CopyH2(measCont, "etaIPz", "signal");
-  signal->SetTitle(Form("Signal - %s", sub));
-  signal->Add(background,-1);
-  CopyAttr(background, signal);
-  background->SetTitle(Form("Background - %s", sub));
+  if (!background) {
+    AliWarningF("Didn't get background in %s", sub);
+    return false;
+  }
+  background->SetTitle(Form("#it{B}_{%s}", shrt.Data()));
   bgCont->Add(background);
-  bgCont->Add(signal);
+
+  TH2* signal = CopyH2(measCont, "etaIPz", "signal");
+  if (!signal) {
+    AliWarningF("Didn't get signal in %s", sub);
+    return false;
+  }
+  else {
+    signal->SetTitle(Form("#it{S}_{%s}", shrt.Data()));
+    signal->Add(background,-1);
+    // Zero small bins 
+    for (Int_t i = 1; i <= signal->GetNbinsX(); i++) {
+      for (Int_t j = 1; j <= signal->GetNbinsX(); j++) {
+	if (signal->GetBinContent(i,j)<1e-6) {
+	  signal->SetBinContent(i,j,0);
+	  signal->SetBinError  (i,j,0);
+	}
+      }
+    }
+    CopyAttr(background, signal);
+    bgCont->Add(signal);
+  }
 
   TH1* alpha = 0;
   if (genCont) {
     alpha = CopyH2(genCont, "etaIPz", "alpha");
-    alpha->Divide(signal);
-    alpha->SetTitle(Form("#alpha - %s", sub));
-    CopyAttr(signal, alpha);
-    bgCont->Add(alpha);
+    if (alpha && signal) {
+      alpha->Divide(signal);
+      alpha->SetTitle(Form("#alpha_{%s}", shrt.Data()));
+      CopyAttr(signal, alpha);
+      bgCont->Add(alpha);
+    }
   }
-  
-  if (!backgroundEta) return true;
 
-  TH2* signalEta = CopyH2(measCont, "etaIPz", "signalEta");
-  signalEta->SetTitle(Form("%s (k_{#eta})", signal->GetTitle()));
-  signalEta->Add(backgroundEta,-1);
-  CopyAttr(backgroundEta, signalEta);
-  backgroundEta->SetTitle(Form("%s (k_{#eta})", background->GetTitle()));
-  bgCont->Add(backgroundEta);
-  bgCont->Add(signalEta);
-
-  if (genCont) {
-    TH1* alphaEta = CopyH2(genCont, "etaIPz", "alphaEta");    
-    alphaEta->Divide(signalEta);
-    alphaEta->SetTitle(Form("%s (k_{#eta})", alpha->GetTitle()));
-    CopyAttr(signalEta, alphaEta);
-    bgCont->Add(alphaEta);
-  }
-  
   return true;
 }
 
 //====================================================================
 AliTrackletAODdNdeta*
 AliTrackletAODdNdeta::Create(Bool_t      mc,
+			     const char* weights, 
 			     const char* sumFile,
 			     const char* resFile)
 {
@@ -2273,9 +2715,39 @@ AliTrackletAODdNdeta::Create(Bool_t      mc,
     return 0;
   }   
   AliTrackletAODdNdeta* ret = 0;
-  if (mc)               ret = new AliTrackletAODMCdNdeta("MidRapidityMC");
-  else                  ret = new AliTrackletAODdNdeta("MidRapidity");
-  if (ret)              ret->Connect();
+  if (mc)  {
+    if (weights && weights[0] != '\0') {
+      AliTrackletAODWeightedMCdNdeta* wret =
+	new AliTrackletAODWeightedMCdNdeta("MidRapidityMC");
+      TUrl   wurl(weights);
+      TFile* wfile = TFile::Open(wurl.GetFile());
+      if (!wfile) {
+	::Warning("Create", "Failed to open weights file: %s",
+		  wurl.GetUrl());
+	return 0;
+      }
+      TString wnam(wurl.GetAnchor());
+      if (wnam.IsNull()) wnam = "weights";
+      TObject* wobj = wfile->Get(wnam);
+      if (!wobj) {
+	::Warning("Create", "Failed to get weights %s from file %s",
+		  wnam.Data(), wfile->GetName());
+	return 0;
+      }
+      if (!wobj->IsA()->InheritsFrom(AliTrackletWeights::Class())) {
+	::Warning("Create", "Object %s from file %s not an "
+		  "AliTrackletWeights but a %s",
+		  wnam.Data(), wfile->GetName(), wobj->ClassName());
+	return 0;
+      }
+      wret->SetWeights(static_cast<AliTrackletWeights*>(wobj));
+      ret = wret;
+    }
+    else 
+      ret = new AliTrackletAODMCdNdeta("MidRapidityMC");
+  }
+  else           ret = new AliTrackletAODdNdeta("MidRapidity");
+  if (ret)       ret->Connect();
 
   return ret;  
 

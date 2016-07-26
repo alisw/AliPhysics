@@ -194,7 +194,7 @@ AliRsnMiniAnalysisTask * AddTaskMC
 
    // create the task and configure 
    TString taskName = Form("taskRsnMC");
-   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
+   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), kTRUE);
    task->UseESDTriggerMask(triggerMask); //ESD
    // task->SelectCollisionCandidates(triggerMask); //AOD
    
@@ -220,10 +220,8 @@ AliRsnMiniAnalysisTask * AddTaskMC
    AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
    cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA, vtxZcut);
    ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: Vertex cut as pA 2013 (max Vz = %4.2f cm): %s", vtxZcut, (useVtxCut2013pA?"ON":"OFF")));  
-   if (isMC) {
-     cutEventUtils->SetFilterNSDeventsDPMJETpA2013(selectDPMJETevtNSDpA);
-     ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: NSD selection in DPMJET pA: %s", (selectDPMJETevtNSDpA?"ON":"OFF")));  
-   }
+   cutEventUtils->SetFilterNSDeventsDPMJETpA2013(selectDPMJETevtNSDpA);
+   ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: NSD selection in DPMJET pA: %s", (selectDPMJETevtNSDpA?"ON":"OFF")));  
  
    if (useMVPileUpSelection){
      cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);

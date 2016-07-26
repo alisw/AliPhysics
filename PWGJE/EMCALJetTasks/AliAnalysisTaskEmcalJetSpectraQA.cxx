@@ -67,15 +67,18 @@ AliAnalysisTaskEmcalJetSpectraQA::AliEmcalJetInfo::AliEmcalJetInfo(const AliEmca
 // Definitions of class AliAnalysisTaskEmcalJetSpectraQA
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetSpectraQA)
+ClassImp(AliAnalysisTaskEmcalJetSpectraQA);
 /// \endcond
 
-/// Default constractor for ROOT I/O purposes
+/// Default constructor for ROOT I/O purposes
 AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
+  AliAnalysisTaskEmcalJetLight("AliAnalysisTaskEmcalJetSpectraQA", kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
   fAreaAxis(kTRUE),
+  fPtBinWidth(0.5),
+  fMaxPt(250),
+  fIsEmbedded(kFALSE),
   fHistManager()
 
 {
@@ -86,10 +89,13 @@ AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA() :
 ///
 /// \param name Name of the task
 AliAnalysisTaskEmcalJetSpectraQA::AliAnalysisTaskEmcalJetSpectraQA(const char *name) :
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+  AliAnalysisTaskEmcalJetLight(name, kTRUE),
   fHistoType(kTHnSparse),
   fJetEPaxis(kFALSE),
   fAreaAxis(kTRUE),
+  fPtBinWidth(0.5),
+  fMaxPt(250),
+  fIsEmbedded(kFALSE),
   fHistManager(name)
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -117,6 +123,8 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
   Double_t max[30] = {0.};
   Int_t dim = 0;
 
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+
   if (fForceBeamType != kpp) {
     title[dim] = "Centrality (%)";
     nbins[dim] = 20;
@@ -126,7 +134,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
 
     if (fJetEPaxis) {
       title[dim] = "#phi_{jet} - #psi_{EP}";
-      nbins[dim] = fNbins/5;
+      nbins[dim] = nPtBins/5;
       min[dim] = 0;
       max[dim] = TMath::Pi();
       dim++;
@@ -134,44 +142,44 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
   }
 
   title[dim] = "#eta_{jet}";
-  nbins[dim] = fNbins/10;
+  nbins[dim] = nPtBins/10;
   min[dim] = -1;
   max[dim] = 1;
   dim++;
 
   title[dim] = "#phi_{jet} (rad)";
-  nbins[dim] = fNbins/10*3;
+  nbins[dim] = nPtBins/10*3;
   min[dim] = 0;
   max[dim] = 2*TMath::Pi();
   dim++;
 
   title[dim] = "#it{p}_{T} (GeV/#it{c})";
-  nbins[dim] = fNbins;
-  min[dim] = fMinBinPt;
-  max[dim] = fMaxBinPt;
+  nbins[dim] = nPtBins;
+  min[dim] = 0;
+  max[dim] = fMaxPt;
   dim++;
 
   if (fIsEmbedded) {
     title[dim] = "#it{p}_{T}^{MC} (GeV/#it{c})";
-    nbins[dim] = fNbins;
-    min[dim] = fMinBinPt;
-    max[dim] = fMaxBinPt;
+    nbins[dim] = nPtBins;
+    min[dim] = 0;
+    max[dim] = fMaxPt;
     dim++;
   }
 
-  if (!GetRhoName().IsNull()) {
+  if (fForceBeamType != kpp) {
     title[dim] = "#it{p}_{T}^{corr} (GeV/#it{c})";
-    nbins[dim] = fNbins;
-    min[dim] = -fMaxBinPt/2;
-    max[dim] = fMaxBinPt/2;
+    nbins[dim] = nPtBins;
+    min[dim] = -fMaxPt/2;
+    max[dim] = fMaxPt/2;
     dim++;
   }
 
   if (fAreaAxis) {
     // area resolution is about 0.01 (w/ ghost area 0.005)
-    // for fNbins = 250 use bin width 0.01
+    // for nPtBins = 250 use bin width 0.01
     title[dim] = "#it{A}_{jet}";
-    nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * fNbins / 250);
+    nbins[dim] = TMath::CeilNint(2.0*jetRadius*jetRadius*TMath::Pi() / 0.01 * nPtBins / 250);
     min[dim] = 0;
     max[dim] = 2.0*jetRadius*jetRadius*TMath::Pi();
     dim++;
@@ -179,14 +187,14 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
 
   if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
     title[dim] = "NEF";
-    nbins[dim] = fNbins/5;
+    nbins[dim] = nPtBins/5;
     min[dim] = 0;
     max[dim] = 1.0;
     dim++;
   }
 
   title[dim] = "#it{z}_{leading}";
-  nbins[dim] = fNbins/5;
+  nbins[dim] = nPtBins/5;
   min[dim] = 0;
   max[dim] = 1.0;
   dim++;
@@ -207,7 +215,7 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(const AliJetContainer* 
   }
 
   title[dim] = "#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-  nbins[dim] = fNbins/10*3;
+  nbins[dim] = nPtBins/10*3;
   min[dim] = 0;
   max[dim] = 150;
   dim++;
@@ -227,71 +235,73 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(const AliJetContainer* jets)
   TString histname;
   TString title;
 
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+
   for (Int_t i = 0; i < fNcentBins; i++) {
     histname = TString::Format("%s/fHistJetPtEtaPhi_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#eta;#phi (rad)";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, -1, 1, 41, 0, 2*TMath::Pi()*41/40, fNbins, fMinBinPt, fMaxBinPt);
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, -1, 1, 41, 0, 2*TMath::Pi()*41/40, nPtBins, 0, fMaxPt);
 
     histname = TString::Format("%s/fHistJetPtArea_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#it{A}_{jet};counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 150, 0, 1.5);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 150, 0, 1.5);
 
     histname = TString::Format("%s/fHistJetPtEP_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#phi_{jet} - #psi_{EP};counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());;
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 100, 0, TMath::Pi());;
 
     histname = TString::Format("%s/fHistJetPtNEF_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});NEF;counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 102, 0, 1.02);
 
     histname = TString::Format("%s/fHistJetPtZ_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#it{z}_{leading};counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 102, 0, 1.02);
 
     histname = TString::Format("%s/fHistJetPtLeadingPartPt_%d", jets->GetArrayName().Data(), i);
     title = histname + ";#it{p}_{T} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c});counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 120, 0, 120);
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 120, 0, 120);
 
     if (!jets->GetRhoName().IsNull()) {
       histname = TString::Format("%s/fHistJetCorrPtEtaPhi_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});#eta;#phi (rad)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, -1, 1, 41, 0, 2*TMath::Pi()*201/200, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, -1, 1, 41, 0, 2*TMath::Pi()*201/200, nPtBins*2, -fMaxPt, fMaxPt);
 
       histname = TString::Format("%s/fHistJetCorrPtArea_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});#it{A}_{jet};counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 150, 0, 1.5);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 150, 0, 1.5);
 
       histname = TString::Format("%s/fHistJetCorrPtEP_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});#phi_{jet} - #psi_{EP};counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 100, 0, TMath::Pi());;
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 100, 0, TMath::Pi());;
 
       histname = TString::Format("%s/fHistJetCorrPtNEF_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});NEF;counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 102, 0, 1.02);
 
       histname = TString::Format("%s/fHistJetCorrPtZ_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});#it{z}_{leading};counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 102, 0, 1.02);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 102, 0, 1.02);
 
       histname = TString::Format("%s/fHistJetCorrPtLeadingPartPt_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T,corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, 120, 0, 120);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, 120, 0, 120);
 
       histname = TString::Format("%s/fHistJetPtCorrPt_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T} (GeV/#it{c});#it{p}_{T,corr} (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins*2, -fMaxPt, fMaxPt);
 
       if (fIsEmbedded) {
         histname = TString::Format("%s/fHistJetMCPtCorrPt_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,MC} (GeV/#it{c});#it{p}_{T,corr} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins*2, -fMaxBinPt, fMaxBinPt);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins*2, -fMaxPt, fMaxPt);
       }
     }
 
     if (fIsEmbedded) {
       histname = TString::Format("%s/fHistJetPtMCPt_%d", jets->GetArrayName().Data(), i);
       title = histname + ";#it{p}_{T} (GeV/#it{c});#it{p}_{T,MC} (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins, fMinBinPt, fMaxBinPt, fNbins, fMinBinPt, fMaxBinPt);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt);
     }
   }
 }
@@ -299,10 +309,12 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHX(const AliJetContainer* jets)
 /// Overloads base class method. Creates output objects
 void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 {
-  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  AliAnalysisTaskEmcalJetLight::UserCreateOutputObjects();
 
   Int_t constituentsNbins = 250;
   Double_t constituentsMax = 249.5;
+
+  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
 
   if (fForceBeamType == kpp) {
     constituentsNbins = 50;
@@ -335,29 +347,29 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
       if (jets->GetParticleContainer()) {
         histname = TString::Format("%s/fHistTracksJetPt_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,track} (GeV/#it{c});#it{p}_{T,jet} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins / 2, 0, fMaxPt / 2, nPtBins, 0, fMaxPt);
 
         histname = TString::Format("%s/fHistTracksPtDist_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,track} (GeV/#it{c});#it{d};counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins / 2, 0, fMaxPt / 2, 100, 0, 5);
 
         histname = TString::Format("%s/fHistTracksZJetPtJetConst_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{z}_{track} (GeV/#it{c});#it{d};No. of constituents";
-        fHistManager.CreateTH3(histname.Data(), title.Data(), 120, 0.0, 1.2, fNbins, fMinBinPt, fMaxBinPt, constituentsNbins, -0.5, constituentsMax);
+        fHistManager.CreateTH3(histname.Data(), title.Data(), 120, 0.0, 1.2, nPtBins, 0, fMaxPt, constituentsNbins, -0.5, constituentsMax);
       }
 
       if (jets->GetClusterContainer()) {
         histname = TString::Format("%s/fHistClustersJetPt_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,cluster} (GeV/#it{c});#it{p}_{T,jet} (GeV/#it{c});counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, fNbins, fMinBinPt, fMaxBinPt);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins / 2, 0, fMaxPt / 2, nPtBins, 0, fMaxPt);
 
         histname = TString::Format("%s/fHistClustersPtDist_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{p}_{T,cluster} (GeV/#it{c});#it{d};counts";
-        fHistManager.CreateTH2(histname.Data(), title.Data(), fNbins / 2, fMinBinPt, fMaxBinPt / 2, 100, 0, 5);
+        fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins / 2, 0, fMaxPt / 2, 100, 0, 5);
 
         histname = TString::Format("%s/fHistClustersZJetPtJetConst_%d", jets->GetArrayName().Data(), i);
         title = histname + ";#it{z}_{cluster} (GeV/#it{c});#it{p}_{T,jet} (GeV/#it{c});No. of constituents";
-        fHistManager.CreateTH3(histname.Data(), title.Data(), 120, 0.0, 1.2, fNbins, fMinBinPt, fMaxBinPt, constituentsNbins, -0.5, constituentsMax);
+        fHistManager.CreateTH3(histname.Data(), title.Data(), 120, 0.0, 1.2, nPtBins, 0, fMaxPt, constituentsNbins, -0.5, constituentsMax);
       }
 
       histname = TString::Format("%s/fHistRejectionReason_%d", jets->GetArrayName().Data(), i);
@@ -389,9 +401,11 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
+    Double_t rhoVal = 0;
     if (jets->GetRhoParameter()) {
+      rhoVal = jets->GetRhoVal();
       histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), fCent, jets->GetRhoVal());
+      fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
     }
 
     AliEmcalJet* jet = 0;
@@ -406,7 +420,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
       }
 
       Float_t ptLeading = jets->GetLeadingHadronPt(jet);
-      Float_t corrPt = jet->Pt() - fRhoVal * jet->Area();
+      Float_t corrPt = jet->Pt() - rhoVal * jet->Area();
 
       TLorentzVector leadPart;
 

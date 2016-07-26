@@ -19,7 +19,7 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: February 29, 2016.							          //
+//		version: April  26, 2016.							          //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -6362,16 +6362,17 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         {
             if(fPtE>=fPtBin[i] && fPtE<fPtBin[i+1])
             {
+                Double_t HadronWeight = GetHadronWCorrection(fPtH);
                 //Filling histograms
-                fCEtaPhi_Inc[i]->Fill(fDphi,fDeta);
-                if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta);
-                if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta);
-                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
-                if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-                if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+                fCEtaPhi_Inc[i]->Fill(fDphi,fDeta,HadronWeight);
+                if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta,HadronWeight);
+                if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta,HadronWeight);
+                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta,HadronWeight);
+                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta,HadronWeight);
+                if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*HadronWeight);
+                if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*HadronWeight);
+                if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS()*HadronWeight);
+                if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS()*HadronWeight);
                 
                 if(fIsMC)
                 {
@@ -6807,109 +6808,7 @@ Bool_t AliAnalysisTaskHFEpACorrelation::FindMother(Int_t mcIndex)
         }
     }
 }
-/*
- Bool_t AliAnalysisTaskHFEpACorrelation::ContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells)
- {
- // Check that in the cluster cells, there is no bad channel of those stored
- // in fEMCALBadChannelMap
- // adapted from AliCalorimeterUtils
-	
- //if (!fRemoveBadChannels) return kFALSE;
- //printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
-	if( !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
- 
- //Int_t icol = -1;
- //Int_t irow = -1;
- //Int_t imod = -1;
-	for(Int_t iCell = 0; iCell<nCells; iCell++){
- 
- //Get the column and row
- if(calorimeter == "EMCAL"){
- return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
- }
- else return kFALSE;
- 
-	}// cell cluster loop
-	
-	return kFALSE;
-	
- }
- */
-/*
- 
- //________________________________________________________________________________
- TArrayI AliAnalysisTaskHFEpACorrelation::GetTriggerPatches(Bool_t IsEventEMCALL0, Bool_t IsEventEMCALL1)
- {
-	// Select the patches that triggered
-	// Depend on L0 or L1
-	
-	// some variables
-	//Int_t  trigtimes[30], globCol, globRow,ntimes, i;
-	Int_t   globCol, globRow;
- 
-	Int_t  absId  = -1; //[100];
-	Int_t  nPatch = 0;
-	
-	TArrayI patches(0);
-	
- // get object pointer
-	AliVCaloTrigger *caloTrigger = InputEvent()->GetCaloTrigger( "EMCAL" );
-	
- // class is not empty
-	if( caloTrigger->GetEntries() > 0 )
-	{
- // must reset before usage, or the class will fail
- caloTrigger->Reset();
- 
- // go throuth the trigger channels
- while( caloTrigger->Next() )
- {
- // get position in global 2x2 tower coordinates
- caloTrigger->GetPosition( globCol, globRow );
- 
- //L0
- if(IsEventEMCALL0)
- {
- //not implemented
- }
- 
- 
- else if(IsEventEMCALL1) // L1
- {
- Int_t bit = 0;
- caloTrigger->GetTriggerBits(bit);
- 
- Bool_t isEGA = ((bit >> fBitEGA) & 0x1);
- //Bool_t isEJE = ((bit >> fBitEJE) & 0x1) && IsEventEMCALL1Jet  () ;
- 
- if(!isEGA) continue;
- 
- Int_t patchsize = -1;
- if(isEGA) patchsize =  2;
- //else if (isEJE) patchsize = 16;
- 
- // add 2x2 (EGA) or 16x16 (EJE) patches
- for(Int_t irow=0; irow < patchsize; irow++)
- {
- for(Int_t icol=0; icol < patchsize; icol++)
- {
- GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(globCol+icol,globRow+irow, absId);
- //printf("pass the time cut globCol %d, globRow %d absId %d\n",globCol,globRow, absIDTrig[nTrig]);
- patches.Set(nPatch+1); // Set size of this array to nPatch+1 ints.
- patches.AddAt(absId,nPatch++); //Add Int_t absId at position nPatch++
- }
- }
- 
- } // L1
- 
- } // trigger iterator
-	} // go thorough triggers
-	
-	printf("N patches %d, test %d,first %d, last %d\n",patches.GetSize(), nPatch, patches.At(0), patches.At(patches.GetSize()-1));
-	
-	return patches;
- }
- */
+
 Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeight(Int_t pdg_particle, Double_t x)
 {
     //weight for d3 based on MinJung parametrization //sent by Jan
@@ -7688,6 +7587,61 @@ Double_t AliAnalysisTaskHFEpACorrelation::SetEoverPCutPtDependentMC(Double_t pt)
     
     return fEoverPCutMin;
     return fEoverPCutMax;
+    
+}
+
+Double_t AliAnalysisTaskHFEpACorrelation::GetHadronWCorrection(Double_t pt)
+{
+    Double_t Bins[] = {0.5,0.6,0.7,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+    Int_t NumberofBins = 15;
+    //Compatibility with old analysis
+    Double_t HadronWeight = 1.0;
+    
+
+    
+    //"new Default" analysis
+    if (fDCAcutrHadron == 0.25)
+    {
+        if (fCentralityMin == 0)
+        {
+            Double_t HadronEfficiency[] = {0.8202776, 0.8292172, 0.8325606, 0.8336015, 0.8340769, 0.8343634, 0.8341395, 0.8338822, 0.8333004, 0.8319232,0.8291333, 0.8251111, 0.8183794,0.8098981, 0.8009887};
+            
+            for(Int_t i = 0; i <NumberofBins; i++)
+            {
+                if ( (pt > Bins[i]) && (pt<Bins[i+1]))
+                    HadronWeight = (1.0/HadronEfficiency[i]);
+            }
+            
+        }
+        if (fCentralityMin == 20)
+        {
+            Double_t HadronEfficiency[] = {0.8214875, 0.8302184, 0.8336327, 0.8348229, 0.8352569, 0.8350877, 0.8349991, 0.8346928, 0.8342593, 0.8326481, 0.8300479, 0.8258925, 0.8192205, 0.8104965, 0.8022359};
+            
+            for(Int_t i = 0; i <NumberofBins; i++)
+            {
+                if ( (pt > Bins[i]) && (pt<Bins[i+1]))
+                    HadronWeight = (1.0/HadronEfficiency[i]);
+            }
+            
+        }
+        
+        if (fCentralityMin == 60)
+        {
+            Double_t HadronEfficiency[] = {0.8230401,0.831619,0.8348156, 0.8356443, 0.8358399, 0.8360357, 0.8360404, 0.8354132, 0.8337131,0.8318167, 0.8296427, 0.8254036, 0.8188907, 0.8112107, 0.8027191};
+                for(Int_t i = 0; i <NumberofBins; i++)
+                {
+                    if ( (pt > Bins[i]) && (pt<Bins[i+1]))
+                        HadronWeight = (1.0/HadronEfficiency[i]);
+                }
+
+            
+        }
+
+    }
+    //printf("Using pt: %f HW: %f\n",pt, HadronWeight);
+    
+    return HadronWeight; //other configurations not implemeted yet - need the update in the Config file;
+    
     
 }
 

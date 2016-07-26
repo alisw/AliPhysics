@@ -118,8 +118,9 @@ TH2* GetH2(TSeqCollection* l, const char* name)
 /** 
  * Get a copy of 1 dimensional histogram from a collection
  * 
- * @param l     Collection
- * @param name  Name of histogram to look for 
+ * @param l       Collection
+ * @param name    Name of histogram to look for 
+ * @param newName Optional new name 
  * 
  * @return Found object or null
  */
@@ -133,8 +134,9 @@ TH1* CopyH1(TSeqCollection* l, const char* name, const char* newName=0)
 /** 
  * Get a copy of 2 dimensional histogram from a collection
  * 
- * @param l     Collection
- * @param name  Name of histogram to look for 
+ * @param l       Collection
+ * @param name    Name of histogram to look for 
+ * @param newName Optional new name 
  * 
  * @return Found object or null
  */
@@ -772,7 +774,7 @@ TH1* Avg(TH2*        h,
       n++;
     }
     if (k == 0 || n == 0) {
-      /// ::Warning("Average", "Eta bin # %3d has no data",etaBin);
+      // ::Warning("Average", "Eta bin # %3d has no data",etaBin);
       continue; // This eta bin empty!
     }
 
@@ -810,7 +812,6 @@ TH1* Avg(TH2*        h,
  * @param ipz   (optional) @f$\mathrm{IP}_z@f$ distribution 
  * @param mode  How to scale 
  * @param name  Name of output histogram 
- * @param other (optional) mask to apply to @f$ h@f$ 
  * 
  * @return @f$\langle h(\eta)\rangle@f$
  */
@@ -857,7 +858,8 @@ Double_t GetDeltaScale(TH1*      deltaRec,
 		       TH1*      deltaBg,
 		       Double_t& eR,
 		       Double_t  nEvRec=1,
-		       Double_t  nEvBg =1)
+		       Double_t  nEvBg =1,
+		       Double_t  lim==1e9)
 {
   if (!deltaRec || !deltaBg) {
     Error("GetDeltaScale", "Missing input histogram(s): %p %p",
@@ -866,7 +868,7 @@ Double_t GetDeltaScale(TH1*      deltaRec,
   }
   deltaRec->Scale(1./nEvRec);
   deltaBg ->Scale(1./nEvBg);
-  Double_t top      = deltaRec->GetXaxis()->GetXmax();
+  Double_t top      = TMath::Min(lim,deltaRec->GetXaxis()->GetXmax());
   Double_t eRec, eBg;
   Double_t iRec     = Integrate(deltaRec, 5, top, eRec);
   Double_t iBg      = Integrate(deltaBg,  5, top, eBg);
@@ -895,11 +897,12 @@ Double_t GetDeltaScale(TH1*      deltaRec,
 Double_t GetDeltaScale(TSeqCollection* list,
 		       Int_t           b,
 		       Double_t&       eR,
-		       Double_t        nEv=1)
+		       Double_t        nEv=1,
+		       Double_t        lim==1e9)
 {
   TH1*     deltaRec = CopyH1(list,Form("b%d_TrData_WDist", b));
   TH1*     deltaBg  = CopyH1(list,Form("b%d_TrInj_WDist", b));
-  Double_t scale    = GetDeltaScale(deltaRec, deltaBg, eR, nEv, nEv);
+  Double_t scale    = GetDeltaScale(deltaRec, deltaBg, eR, nEv, nEv,lim);
   delete deltaRec;
   delete deltaBg;
   return scale;
@@ -924,11 +927,12 @@ Double_t GetDeltaScale(TSeqCollection* realList,
 		       Int_t           b,
 		       Double_t&       eR,
 		       Double_t        nEvReal=1,
-		       Double_t        nEvSim=1)
+		       Double_t        nEvSim=1,
+		       Double_t        lim==1e9)
 {
   TH1*     deltaReal = CopyH1(realList,Form("b%d_TrData_WDist", b));
   TH1*     deltaSim  = CopyH1(simList, Form("b%d_TrData_WDist", b));
-  Double_t scale     = GetDeltaScale(deltaReal, deltaSim, eR, nEvReal, nEvSim);
+  Double_t scale     = GetDeltaScale(deltaReal,deltaSim,eR,nEvReal,nEvSim,lim);
   delete deltaReal;
   delete deltaSim;
   return scale;
@@ -950,10 +954,11 @@ Double_t GetDeltaScale(TSeqCollection* realList,
 TH1* GetDeltaDist(TH2*     deltaReal,
 		  TH2*     deltaSim,
 		  Double_t nEvReal,
-		  Double_t nEvSim)		  
+		  Double_t nEvSim,
+		  Double_t lim==1e9)		  
 {
   Double_t top       = deltaReal->GetYaxis()->GetXmax();
-  TH1*     ret       = deltaReal->ProjectionX("deltaInt");
+  TH1*     ret       = deltaReal->ProjectionX("scalar");
   ret->Reset();
   ret->SetTitle("Background scale (#it{k})");
   ret->SetYTitle("#delta scale");
@@ -962,7 +967,7 @@ TH1* GetDeltaDist(TH2*     deltaReal,
   for (Int_t i = 1; i <= ret->GetNbinsX(); i++) {
     TH1*     tmpReal = deltaReal->ProjectionY("tmpReal",i,i);
     TH1*     tmpSim  = deltaSim ->ProjectionY("tmpSim", i,i);
-    Double_t eR, r   = GetDeltaScale(tmpReal, tmpSim, eR, nEvReal, nEvSim);
+    Double_t eR, r   = GetDeltaScale(tmpReal, tmpSim, eR, nEvReal, nEvSim, lim);
     ret->SetBinContent(i, r);
     ret->SetBinError  (i, eR);
     delete tmpReal;
@@ -1010,11 +1015,12 @@ TH1* GetDeltaDist(TSeqCollection* realList,
 		  TSeqCollection* simList,
 		  Int_t           b,
 		  Double_t        nEvReal,
-		  Double_t        nEvSim)
+		  Double_t        nEvSim,
+		  Double_t        lim=1e9)
 {
   TH2*     deltaReal = CopyH2(realList,Form("b%d_TrData_WDvsEta", b));
   TH2*     deltaSim  = CopyH2(simList, Form("b%d_TrData_WDvsEta", b));
-  return GetDeltaDist(deltaReal, deltaSim, nEvReal, nEvSim);
+  return GetDeltaDist(deltaReal, deltaSim, nEvReal, nEvSim, lim);
 }
 /* @} */
 
@@ -1039,7 +1045,8 @@ TH1* GetDeltaDist(TSeqCollection* realList,
 TH2* GetBg(Bool_t          comb,
 	   TSeqCollection* list,
 	   Int_t           b,
-	   Double_t        nEv=1)
+	   Double_t        nEv=1,
+	   Double_t        lim==1e9)
 {
   Double_t eR = 0;
   TH2* in     = GetH2(list,Form("b%d_Tr%s_ZvEtaCutT",b,comb ? "Comb" : "Inj"));
@@ -1052,7 +1059,7 @@ TH2* GetBg(Bool_t          comb,
 #if 1
   // We should do the below, but that doesn't work as it creates
   // negative signals!
-  Double_t r     = GetDeltaScale(list, b, eR, nEv);
+  Double_t r     = GetDeltaScale(list, b, eR, nEv, lim);
   // Printf("Ratio of integrals:              %14.3f +/- %f14.3", r, eR);
   return Scale(ret, r, eR);
 #else
@@ -1113,19 +1120,19 @@ TH1* GetDelta(TSeqCollection* l,
 	      Int_t           b,
 	      Int_t           nEv, 
 	      Double_t        scale=0,
-	      Double_t        scaleE=0)
+	      Double_t        scaleE=0,
+	      Double_t        lim==1e9)
 {
   TH1* h = CopyH1(l, Form("b%d_Tr%s_WDist", b, which));
   h->Scale(1./nEv);
   h->SetYTitle("tracklets/event");
   h->SetXTitle("#Delta");
-  if (scale > 1e-6) Scale(h, scale, scaleE);
 
   Bool_t  isData = (scale < 1e-6);
   Color_t color  = (isData ? kGreen+2 : kBlue+2);
   TString w(which);
   if (w.EqualTo("Data")) SetAttr(h, color,      isData ? 21 : 25);
-  if (w.EqualTo("Inj"))  SetAttr(h, color,      isData ? 22 : 26);
+  if (w.EqualTo("Inj"))  SetAttr(h, color,      isData ? 23 : 32);
   if (w.EqualTo("Comb")) SetAttr(h, color,      26);
   if (w.EqualTo("Prim")) SetAttr(h, kMagenta+2, 28);
   if (w.EqualTo("Sec"))  SetAttr(h, kMagenta+2, 27);
@@ -1136,9 +1143,18 @@ TH1* GetDelta(TSeqCollection* l,
   if (w.EqualTo("Prim")) h->SetTitle("Primaries");
   if (w.EqualTo("Sec"))  h->SetTitle("Secondaries");
 
+  if (w.EqualTo("Inj")) {
+    Double_t eR, r = GetDeltaScale(l, b, eR, 1, lim);
+    Scale(h, r, eR);
+    h->SetTitle(Form("%5.3f#pm%5.3f #times %s",
+		     r, eR, h->GetTitle()));
+  }
   
-  if (scale > 1e-6) h->SetTitle(Form("%5.3f#pm%5.3f #times %s",
-				     scale, scaleE, h->GetTitle()));
+  if (scale > 1e-6) {
+    Scale(h, scale, scaleE);
+    h->SetTitle(Form("%5.3f#pm%5.3f #times %s",
+		     scale, scaleE, h->GetTitle()));
+  }
   return h;
 }
   
@@ -1197,7 +1213,9 @@ TH1* GetDelta(TSeqCollection* l,
  * The same expression holds for the case when we use injected
  * clusters to estimate the background in real data.
  *
- *  (1-\beta)M = (1-B/M)M = M-B
+ * @f[
+ (1-\beta)M = (1-B/M)M = M-B
+ @f]
  *
  * where @f$ B@f$ has the same meaning as @f$ B\prime@f$ except we use
  * real data. 
@@ -1222,6 +1240,7 @@ TH1* GetDelta(TSeqCollection* l,
  * @param showOne   
  * @param scaleMode Scaling mode (0: fixed, 1: per c, 2: per
  *                  @f$\eta@f$ and c)
+ * @param lim       Limit 
  */
 void CorrectOneBin(THStack*        stack,
 		   TDirectory*     dir,
@@ -1233,7 +1252,8 @@ void CorrectOneBin(THStack*        stack,
 		   Bool_t          preScale=false,
 		   Bool_t          full=false,
 		   Bool_t          showOne=false,
-		   UShort_t        scaleMode=2)
+		   UShort_t        scaleMode=2,
+		   Double_t        lim==1e9)
 {
   const Double_t k = (realList == simList ? 1 : 1.3);
   realList->SetName("realList");
@@ -1249,10 +1269,10 @@ void CorrectOneBin(THStack*        stack,
 			 GetH2(simList,  Form("b%d_zvEtaPrimMC",      b)));
   TH2* trueIPzC = Coerce(realIPzC, GetH2(simList,  "zvMCNoPS"));
   TH1* trueIPz  = simIPzC->ProjectionX("trueIPz", b+1,b+1, "e");
-  TH2* simBg    = Coerce(realMeas, GetBg(simComb,  simList, b));
+  TH2* simBg    = Coerce(realMeas, GetBg(simComb,  simList, b, 1, lim));
   TH2* realBg   = Coerce(realMeas, GetBg(realComb,
 					 (realComb ?simList : realList),
-					 b));
+					 b, 1, lim));
   Double_t scale  = 1;
   Double_t scaleE = 0;
   TH1*     histK  = 0;
@@ -1269,22 +1289,23 @@ void CorrectOneBin(THStack*        stack,
 #if 0
       Double_t simRe, realRe;
       Double_t realR  = GetDeltaScale(realList, b, realRe,
-				      realIPz->GetEntries());
+				      realIPz->GetEntries(), lim);
       Double_t simR   = GetDeltaScale(simList,  b, simRe,
-				      simIPz->GetEntries());
+				      simIPz->GetEntries(), lim);
       scale           = RatioE(realR, realRe, simR, simRe, scaleE);
 #else
       scale           = GetDeltaScale(realList, simList, b, scaleE, 
 				      realIPz->GetEntries(),
-				      simIPz->GetEntries());
+				      simIPz->GetEntries(),
+				      lim);
 #endif 
       Scale(realBg, scale, scaleE);
     }
     else if (scaleMode == 2) {
 #if 0
       // Eta dependent scale 
-      TH1* tmpReal = GetDeltaDist(realList, b, realIPz->GetEntries());
-      TH1* tmpSim  = GetDeltaDist(simList,  b, simIPz ->GetEntries());
+      TH1* tmpReal = GetDeltaDist(realList, b, realIPz->GetEntries(), lim);
+      TH1* tmpSim  = GetDeltaDist(simList,  b, simIPz ->GetEntries(), lim);
       tmpReal->Divide(tmpSim);
       tmpReal->SetName("k");
       tmpReal->SetTitle("Background scale");
@@ -1296,7 +1317,7 @@ void CorrectOneBin(THStack*        stack,
 #else
       histK = GetDeltaDist(realList, simList, b,
 			   realIPz->GetEntries(),
-			   simIPz ->GetEntries());
+			   simIPz ->GetEntries(), lim);
       TF1* kfit = new TF1("kfit", "pol0");
       histK->Fit(kfit, "Q0+");
       scale  = kfit->GetParameter(0);
@@ -1551,16 +1572,16 @@ void CorrectOneBin(THStack*        stack,
   fiducial ->Write();
   if (histK) histK->Write();
   THStack* deltas = new THStack("deltas", "#Delta distributions");
-  deltas->Add(GetDelta(realList, "Data", b, realNev));
-  deltas->Add(GetDelta(simList,  "Data", b, simNev, scale, scaleE));
-  if (!realComb) deltas->Add(GetDelta(realList,"Inj", b,realNev,scale,scaleE));
-  if (!simComb)  deltas->Add(GetDelta(simList, "Inj", b,simNev, scale,scaleE));
-  else           deltas->Add(GetDelta(simList, "Comb",b,simNev, scale,scaleE));
-  deltas->Add(GetDelta(simList, "Prim", b, trueNev, scale, scaleE));
-  deltas->Add(GetDelta(simList, "Sec",  b, trueNev, scale, scaleE));
-  TH1* sum = GetDelta(simList, "Prim",  b, trueNev);
-  sum->Add(GetDelta(simList, "Sec",  b, trueNev));
-  sum->Add(GetDelta(simList, "Comb",b,simNev));
+  deltas->Add(GetDelta(realList,"Data",b,realNev,0,    0,     lim));
+  deltas->Add(GetDelta(simList, "Data",b,simNev, scale,scaleE,lim));
+  deltas->Add(GetDelta(realList,"Inj", b,realNev,0,    0,     lim));
+  deltas->Add(GetDelta(simList, "Inj", b,simNev, scale,scaleE,lim));
+  deltas->Add(GetDelta(simList, "Comb",b,simNev, scale,scaleE,lim));
+  deltas->Add(GetDelta(simList, "Prim",b,trueNev,scale,scaleE,lim));
+  deltas->Add(GetDelta(simList, "Sec", b,trueNev,scale,scaleE,lim));
+  TH1* sum = GetDelta(simList, "Prim", b,trueNev,0,    0,     lim);
+  sum->Add(GetDelta(simList, "Sec",    b,trueNev,0,    0,     lim));
+  sum->Add(GetDelta(simList, "Comb",   b,simNev, 0,    0,     lim));
   sum->SetTitle(Form("%5.3f#pm%5.3f #times (Prim+Sec+Comb)",scale,scaleE));
   Scale(sum,scale,scaleE);
   SetAttr(sum, kPink+2, 30);
@@ -1590,7 +1611,9 @@ void CorrectOneBin(THStack*        stack,
 /** 
  * Print the stats stored in hStat histogram 
  * 
- * @param list List to get histogram from 
+ * @param list  List to get histogram from 
+ * @param title Title 
+ * @param path  Path to the file
  */
 void
 ShowStats(TList* list, const char* title, const char* path)
@@ -1630,8 +1653,12 @@ ShowStats(TList* list, const char* title, const char* path)
  * real and simulated data.  The files are expected to be in trdt.root
  * for real data and trmc.root for simulated data.
  * 
- * @param flags Flags for the processing 
- * @param nBins Number of bins to process 
+ * @param flags         Flags for the processing 
+ * @param scaleMode     Scaling mode 
+ * @param realFileName  Name of real input file 
+ * @param simFileName   Name of simulation input file 
+ * @param nBins         Number of bins to process 
+ * @param otherFileName Name of aux input file
  */
 void SimpleCorrect(UShort_t flags,
 		   UShort_t scaleMode, 
@@ -1667,7 +1694,8 @@ void SimpleCorrect(UShort_t flags,
     return;
   }
   
-  
+
+  Double_t deltaLim  = 1e9;
   Bool_t   realComb  = flags & 0x1;
   Bool_t   simComb   = flags & 0x2;
   Bool_t   preScale  = flags & 0x4;
@@ -1679,12 +1707,14 @@ void SimpleCorrect(UShort_t flags,
 	 "Pre-scale:            %s\n"
 	 "Full pre-scale:       %s\n"
 	 "Show each bin:        %s\n"
+	 "Delta upper limit:    %g\n"
 	 "Scaling mode:         %s",
 	 (realComb ? "comb" : "inj"),
 	 (simComb  ? "comb" : "inj"),
 	 (preScale ? "yes"  : "no"),
 	 (full     ? "yes"  : "no"),
 	 (showOne  ? "yes"  : "no"),
+	 deltaLim,
 	 (scaleMode==0 ?"fixed"  :
 	  scaleMode==1 ? "c"     :
 	  scaleMode==2 ? "eta-c" :
@@ -1712,7 +1742,7 @@ void SimpleCorrect(UShort_t flags,
 	      Int_t(c2), Int_t(c2*100)%100);
     TDirectory* dir = output->mkdir(name);
     CorrectOneBin(res,dir,b,realList,simList,realComb,simComb,preScale,full,
-		  showOne, scaleMode);
+		  showOne, scaleMode, deltaLim);
 
     if (otherList) {
       TH1* od = GetH1(otherList, Form("bin%d_DataCorrSignal_Bla",b));

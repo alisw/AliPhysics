@@ -1,5 +1,7 @@
-#ifndef AliJetContainer_H
-#define AliJetContainer_H
+#ifndef ALIJETCONTAINER_H
+#define ALIJETCONTAINER_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 class TClonesArray;
 class TString;
@@ -19,6 +21,16 @@ class AliLocalRhoParameter;
 #include "AliVEvent.h"
 #include "AliEmcalJet.h"
 
+typedef AliEmcalIterableContainerT<AliEmcalJet> AliJetIterableContainer;
+
+/**
+ * @class AliJetContainer
+ * @brief Container for jet within the EMCAL jet framework
+ * @author Marta Verweij
+ * @author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ *
+ * Container with name, TClonesArray and cuts for jets
+ */
 class AliJetContainer : public AliParticleContainer {
  public:
  
@@ -65,9 +77,9 @@ class AliJetContainer : public AliParticleContainer {
   AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
   virtual ~AliJetContainer() {;}
   
-  void LoadRho(AliVEvent *event);
-  void LoadLocalRho(AliVEvent *event);
-  void LoadRhoMass(AliVEvent *event);
+  void LoadRho(const AliVEvent *event);
+  void LoadLocalRho(const AliVEvent *event);
+  void LoadRhoMass(const AliVEvent *event);
 
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
   void                        PrintCuts();
@@ -104,14 +116,16 @@ class AliJetContainer : public AliParticleContainer {
   void                        SetLocalRhoName(const char *n)                       { fLocalRhoName   = n                ; }
   void                        SetRhoMassName(const char *n)                        { fRhoMassName    = n                ; }
     
+  void                        SetTpcHolePos(Double_t b)                                {fTpcHolePos       =   b     ;}
+  void                        SetTpcHoleWidth(Double_t b)                             {fTpcHoleWidth    =   b     ;} 
+
+
   void                        ConnectParticleContainer(AliParticleContainer *c)    { fParticleContainer = c             ; }
   void                        ConnectClusterContainer(AliClusterContainer *c)      { fClusterContainer  = c             ; }
 
   AliEmcalJet                *GetLeadingJet(const char* opt="")          ;
   AliEmcalJet                *GetJet(Int_t i)                       const;
   AliEmcalJet                *GetAcceptJet(Int_t i)                 const;
-  AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
-  AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)      const;
   AliEmcalJet                *GetNextAcceptJet()                         ;
   AliEmcalJet                *GetNextJet()                               ;
   Bool_t                      GetMomentumFromJet(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass) const;
@@ -125,13 +139,14 @@ class AliJetContainer : public AliParticleContainer {
   virtual Bool_t              AcceptJet(Int_t i, UInt_t &rejectionReason) const;
   virtual Bool_t              AcceptJet(const AliEmcalJet* jet, UInt_t &rejectionReason) const;
   virtual Bool_t              ApplyJetCuts(const AliEmcalJet* clus, UInt_t &rejectionReason) const;
+  virtual Bool_t              CheckTpcHolesOverlap(const AliEmcalJet* clus,UInt_t &rejectionReason) const;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Int_t                       GetNAcceptedJets()                         ;
 
   Double_t                    GetLeadingHadronPt(const AliEmcalJet* jet)  const;
   void                        GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmcalJet* jet)  const;
-  Double_t                    GetZ(const AliEmcalJet *jet, TLorentzVector mom) const;
+  Double_t                    GetZ(const AliEmcalJet *jet, const TLorentzVector& mom) const;
   Double_t                    GetZLeadingEmc(const AliEmcalJet *jet)      const;
   Double_t                    GetZLeadingCharged(const AliEmcalJet *jet)  const;
   AliRhoParameter            *GetRhoParameter()                              {return fRho;}
@@ -152,7 +167,7 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
-  void                        SetArray(AliVEvent *event);
+  void                        SetArray(const AliVEvent *event);
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
@@ -160,6 +175,19 @@ class AliJetContainer : public AliParticleContainer {
   const char*                 GetTitle() const;
 
   static TString              GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag);
+
+  const AliJetIterableContainer      all() const;
+  const AliJetIterableContainer      accepted() const;
+
+  AliJetIterableContainer::iterator  accept_begin()  const { return accepted().begin()   ; }
+  AliJetIterableContainer::iterator  accept_end()    const { return accepted().end()     ; }
+  AliJetIterableContainer::iterator  accept_rbegin() const { return accepted().rbegin()  ; }
+  AliJetIterableContainer::iterator  accept_rend()   const { return accepted().rend()    ; }
+
+  AliJetIterableContainer::iterator  begin()         const { return all().begin()        ; }
+  AliJetIterableContainer::iterator  end()           const { return all().end()          ; }
+  AliJetIterableContainer::iterator  rbegin()        const { return all().rbegin()       ; }
+  AliJetIterableContainer::iterator  rend()          const { return all().rend()         ; }
 
  protected:
   void SetEMCALGeometry();
@@ -193,7 +221,8 @@ class AliJetContainer : public AliParticleContainer {
   AliRhoParameter            *fRhoMass;              //!<! event rho mass for these jets
   AliEMCALGeometry           *fGeom;                 //!<! emcal geometry
   Int_t                       fRunNumber;            //!<! run number
-
+  Double_t                    fTpcHolePos;           ///   position(in radians) of the malfunctioning TPC sector
+  Double_t                    fTpcHoleWidth;         ///   width of the malfunctioning TPC area
  private:
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment

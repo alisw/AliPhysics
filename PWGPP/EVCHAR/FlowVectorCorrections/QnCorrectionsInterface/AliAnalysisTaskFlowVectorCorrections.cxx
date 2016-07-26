@@ -10,6 +10,7 @@ Instructions in AddTask_EPcorrectionsExample.C
 //#include "AliSysInfo.h"
 #include <iostream>
 
+#include <TGrid.h>
 #include <TROOT.h>
 #include <TTimeStamp.h>
 #include <TStopwatch.h>
@@ -26,6 +27,8 @@ Instructions in AddTask_EPcorrectionsExample.C
 #include "AliQnCorrectionsManager.h"
 //#include "QnCorrectionsHelper.h"
 #include "AliQnCorrectionsHistos.h"
+#include "TSystem.h"
+#include "TROOT.h"
 //#include "TObjectTable.h"
 //#include "QnCorrectionsReducedVarManager.h"
 //#include "AliReducedEvent.h"
@@ -62,7 +65,9 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections() :
     fOutputSlotHistQA(-1),
     fOutputSlotHistQn(-1),
     fOutputSlotQnVectorsList(-1),
-    fOutputSlotTree(-1)
+    fOutputSlotTree(-1),
+    fRunListPath(""),
+    fCalibrationFilePath("")
 {
   //
   // Default constructor
@@ -91,7 +96,9 @@ AliAnalysisTaskFlowVectorCorrections::AliAnalysisTaskFlowVectorCorrections(const
   fOutputSlotHistQA(-1),
   fOutputSlotHistQn(-1),
   fOutputSlotQnVectorsList(-1),
-  fOutputSlotTree(-1)
+  fOutputSlotTree(-1),
+  fRunListPath(""),
+  fCalibrationFilePath("")
 {
   //
   // Constructor
@@ -123,6 +130,17 @@ void AliAnalysisTaskFlowVectorCorrections::DefineInOutput(){
   if(fProvideQnVectorsList)                                    {DefineOutput(outputSlot, TList::Class()); fOutputSlotQnVectorsList=outputSlot++;}   // Calibrated qvector list
   if(fFillEventQA)                                             {DefineOutput(outputSlot, TList::Class()); fOutputSlotEventQA=outputSlot++;}   // Event QA histograms
 
+
+  TString paths(gROOT->GetMacroPath());
+  TObjArray* patharray = fRunListPath.Tokenize("/");
+  TString appendpath="";
+  for(Int_t i=0; i<patharray->GetEntries()-1; i++) appendpath=appendpath+patharray->At(i)->GetName()+"/";
+  paths.Append(appendpath);
+
+  gROOT->SetMacroPath(paths);
+  const char* runlistfile = gSystem->Which(gROOT->GetMacroPath(), fRunListPath.Data());
+  fEventPlaneManager->SetFileRunLabels(runlistfile);
+
 }
 
 
@@ -134,6 +152,16 @@ void AliAnalysisTaskFlowVectorCorrections::UserCreateOutputObjects()
   //
 
   fFillEvent->SetEventPlaneManager(fEventPlaneManager);
+
+  TFile* inputfile = 0x0;
+  if(!(fCalibrationFilePath.EqualTo(""))) {
+    if(fCalibrationFilePath.Contains("alien")) TGrid::Connect("alien://");
+    inputfile = TFile::Open(fCalibrationFilePath);
+  }
+  if(inputfile){
+    fEventPlaneManager->SetCalibrationFile(inputfile);
+    inputfile->Close();
+  }
 
   fEventPlaneManager->Initialize();
 
@@ -213,7 +241,6 @@ void AliAnalysisTaskFlowVectorCorrections::UserExec(Option_t *){
       THashList* list = (THashList*)hList->At(i);
       fEventQAList->Add(list);
     }
-
 
   }
 
