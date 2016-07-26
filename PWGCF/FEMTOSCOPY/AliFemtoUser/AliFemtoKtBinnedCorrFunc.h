@@ -72,7 +72,7 @@ public:
    * Given a pair, return the index of the matching correlation function in the
    * buffer.
    *
-   * If the pair's kt is outside of any of the stored ranges, return the NPos
+   * If the pair's kT is outside of any of the stored ranges, return the NPos
    * constant.
    */
   UInt_t FindKtBin(const AliFemtoPair *pair);
@@ -90,8 +90,11 @@ public:
   static const UInt_t NPos = static_cast<UInt_t>(-1);
 
 protected:
+  /// Name of the output TObjArray
   TString fName;
 
+  /// Prototype Correlation function which will be Clone()'d to create the
+  /// objects in each bin.
   AliFemtoCorrFctn *fPrototypeCF;
 
   /// The vector of correlation functions
@@ -101,6 +104,7 @@ protected:
   // std::vector<Float_t> fHigh;
   std::vector<UInt_t> fIndexMap;
 
+  /// Internal vector of ranges.
   std::vector<std::pair<Float_t, Float_t> > fRanges;
 
 private:
