@@ -348,7 +348,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
-  Double_t energy, eta, phi;
+  Double_t energy, et, eta, phi;
   for(TIter clustIter = TIter(clusterArray).Begin(); clustIter != TIter::End(); ++clustIter){
     AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
@@ -356,98 +356,99 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
 
     TLorentzVector posvec;
     energy = clust->GetNonLinCorrEnergy();
+    et = posvec.Et();
     clust->GetMomentum(posvec, vertexpos);
     eta = posvec.Eta();
     phi = posvec.Phi();
 
     // fill histograms allEta
     if(isMinBias){
-      FillClusterHistograms("MB", energy, posvec.Et(), eta, phi, nullptr);
+      FillClusterHistograms("MB", energy, et, eta, phi, nullptr);
     }
     if(isEMC7){
-      FillClusterHistograms("EMC7", energy, posvec.Et(), eta, phi, nullptr);
+      FillClusterHistograms("EMC7", energy, et, eta, phi, nullptr);
       // check for exclusive classes
       if(!isMinBias){
-        FillClusterHistograms("EMC7excl", energy, posvec.Et(), eta, phi, nullptr);
+        FillClusterHistograms("EMC7excl", energy, et, eta, phi, nullptr);
       }
     }
     if(isDMC7){
-      FillClusterHistograms("DMC7", energy, posvec.Et(), eta, phi, nullptr);
+      FillClusterHistograms("DMC7", energy, et, eta, phi, nullptr);
       // check for exclusive classes
       if(!isMinBias){
-        FillClusterHistograms("DMC7excl", energy, posvec.Et(), eta, phi, nullptr);
+        FillClusterHistograms("DMC7excl", energy, et, eta, phi, nullptr);
       }
     }
     if(isEJ2){
       TList ej2patches;
       FindPatchesForTrigger("EJ2", fTriggerPatches, ej2patches);
-      FillClusterHistograms("EJ2", energy, posvec.Et(), eta, phi, &ej2patches);
+      FillClusterHistograms("EJ2", energy, et, eta, phi, &ej2patches);
       // check for exclusive classes
       if(!(isMinBias || isEMC7)){
-        FillClusterHistograms("EJ2excl", energy, posvec.Et(), eta, phi, &ej2patches);
+        FillClusterHistograms("EJ2excl", energy, et, eta, phi, &ej2patches);
       }
     }
     if(isDJ2){
       TList dj2patches;
       FindPatchesForTrigger("DJ2", fTriggerPatches, dj2patches);
-      FillClusterHistograms("DJ2", energy, posvec.Et(), eta, phi, &dj2patches);
+      FillClusterHistograms("DJ2", energy, et, eta, phi, &dj2patches);
       // check for exclusive classes
       if(!(isMinBias || isDMC7)){
-        FillClusterHistograms("DJ2excl", energy, posvec.Et(), eta, phi, &dj2patches);
+        FillClusterHistograms("DJ2excl", energy, et, eta, phi, &dj2patches);
       }
     }
     if(isEJ1){
       TList ej1patches;
       FindPatchesForTrigger("EJ1", fTriggerPatches, ej1patches);
-      FillClusterHistograms("EJ1", energy, posvec.Et(), eta, phi, &ej1patches);
+      FillClusterHistograms("EJ1", energy, et, eta, phi, &ej1patches);
       // check for exclusive classes
       if(!(isMinBias || isEMC7 || isEJ2)){
-        FillClusterHistograms("EJ1excl", energy, posvec.Et(), eta, phi, &ej1patches);
+        FillClusterHistograms("EJ1excl", energy, et, eta, phi, &ej1patches);
       }
     }
     if(isDJ1){
       TList dj1patches;
       FindPatchesForTrigger("DJ1", fTriggerPatches, dj1patches);
-      FillClusterHistograms("DJ1", energy, posvec.Et(), eta, phi, &dj1patches);
+      FillClusterHistograms("DJ1", energy, et, eta, phi, &dj1patches);
       // check for exclusive classes
       if(!(isMinBias || isEMC7 || isDJ2)){
-        FillClusterHistograms("DJ1excl", energy, posvec.Et(), eta, phi, &dj1patches);
+        FillClusterHistograms("DJ1excl", energy, et, eta, phi, &dj1patches);
       }
     }
     if(isEG2){
       TList eg2patches;
       FindPatchesForTrigger("EG2", fTriggerPatches, eg2patches);
-      FillClusterHistograms("EG2", energy, posvec.Et(), eta, phi, &eg2patches);
+      FillClusterHistograms("EG2", energy, et, eta, phi, &eg2patches);
       // check for exclusive classes
       if(!(isMinBias || isEMC7)){
-        FillClusterHistograms("EG2excl", energy, posvec.Et(), eta, phi, &eg2patches);
+        FillClusterHistograms("EG2excl", energy, et, eta, phi, &eg2patches);
       }
     }
     if(isDG2){
       TList dg2patches;
       FindPatchesForTrigger("DG2", fTriggerPatches, dg2patches);
-      FillClusterHistograms("DG2", energy, posvec.Et(), eta, phi, &dg2patches);
+      FillClusterHistograms("DG2", energy, et, eta, phi, &dg2patches);
       // check for exclusive classes
       if(!(isMinBias || isDMC7)){
-        FillClusterHistograms("DG2excl", energy, posvec.Et(), eta, phi, &dg2patches);
+        FillClusterHistograms("DG2excl", energy, et, eta, phi, &dg2patches);
       }
     }
     if(isEG1){
       TList eg1patches;
       FindPatchesForTrigger("EG1", fTriggerPatches, eg1patches);
-      FillClusterHistograms("EG1", energy, posvec.Et(), eta, phi, &eg1patches);
+      FillClusterHistograms("EG1", energy, et, eta, phi, &eg1patches);
       // check for exclusive classes
       if(!(isMinBias || isDMC7 || isEG2)){
-        FillClusterHistograms("EG1excl", energy, posvec.Et(), eta, phi, &eg1patches);
+        FillClusterHistograms("EG1excl", energy, et, eta, phi, &eg1patches);
       }
     }
     if(isDG1){
       TList dg1patches;
       FindPatchesForTrigger("DG1", fTriggerPatches, dg1patches);
-      FillClusterHistograms("DG1", energy, posvec.Et(), eta, phi, &dg1patches);
+      FillClusterHistograms("DG1", energy, et, eta, phi, &dg1patches);
       // check for exclusive classes
       if(!(isMinBias || isDMC7 || isDG2)){
-        FillClusterHistograms("DG1excl", energy, posvec.Et(), eta, phi, &dg1patches);
+        FillClusterHistograms("DG1excl", energy, et, eta, phi, &dg1patches);
       }
     }
   }
