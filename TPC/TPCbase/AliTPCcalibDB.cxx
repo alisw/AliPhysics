@@ -2136,7 +2136,8 @@ void AliTPCcalibDB::UpdateChamberHighVoltageData()
       //    for some sectors. However they were active. So take care about this
       fChamberHVmedian[iROC]       = fParam->GetNominalVoltage(iROC);
       fChamberHVgoodFraction[iROC] = 1.;
-      AliWarning(Form("ROC %d detected without HV Splines and HV graph. Will set median HV to nominal voltage",iROC));
+      static bool showInfo = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+      if (showInfo) AliWarning(Form("ROC %d detected without HV Splines and HV graph. Will set median HV to nominal voltage",iROC));
     } else {
       AliError(Form("No Graph or graph without points found for HV sensor of ROC %d",iROC));
     }
