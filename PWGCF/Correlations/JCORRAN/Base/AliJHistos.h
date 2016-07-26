@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 
-// Short comment describing what this class does needed!
+// Container class for histograms needed in the analysis.
 
 //===========================================================
 // AliJHistos.h
@@ -66,6 +66,7 @@ public:
 
   bool Is2DHistosEnabled(){ return fenable2DHistos; }
   void Set2DHistoCreate(bool isenable) { fenable2DHistos = isenable; }
+  void SetAcceptanceCorrectionQA(bool isenable) { fEnableAcceptanceQAHistos = isenable; }
   
 public:
   AliJCard  *fCard;       // card
@@ -366,6 +367,11 @@ public:
   //TH1D *fhCglPt3PC[kMaxNoCentrBin],    *fhCglPtFlip3PC[kMaxNoCentrBin]; // comment me
   //TH1D *fhCglPt32PC[kMaxNoCentrBin],   *fhCglPtFlip32PC[kMaxNoCentrBin]; // comment me
 
+  // Histograms for checking the acceptance correction is done correctly
+  // Not needed in the analysis and should not be activated if not needed
+  AliJTH1D fhAcceptanceTraditional;
+  AliJTH2D fhAcceptanceTraditional2D;
+  AliJTH2D fhAcceptance3DNearSide;
 
   AliJTH1D fhTrackSelection; // checking bit convention
   
@@ -389,6 +395,7 @@ protected:
   double fUEBinsx[101], fUEBinsxFar[101];    // logarithmic bins for the underlaying event
   double fLowRange, fHighRange;              // lower and upper range for dphi histos
   bool fenable2DHistos;                      // enable the filling of two dimensional histograms
+  bool fEnableAcceptanceQAHistos;            // enable the filling of acceptance correction quality control histograms
   
 private:
   void NormalizeAcceptanceHistos(AliJTH1D &acceptanceHisto, corrType assocType);

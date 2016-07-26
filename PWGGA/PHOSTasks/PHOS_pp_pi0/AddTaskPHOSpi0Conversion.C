@@ -1,4 +1,4 @@
-void AddTaskPHOSpi0Conversion(const char* name = "PHOSconv")
+void AddTaskPHOSpi0Conversion(const char* name = "PHOSconv",Int_t trig=AliVEvent::kINT7)
 {
   //Add a task AliAnalysisTaskPi0Conversion to the analysis train
   //Author: Yulia Demchenko
@@ -17,7 +17,7 @@ void AddTaskPHOSpi0Conversion(const char* name = "PHOSconv")
   
   AliAnalysisTaskPi0Conversion * task = new AliAnalysisTaskPi0Conversion(Form("%s", name));
   
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(trig);
   
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

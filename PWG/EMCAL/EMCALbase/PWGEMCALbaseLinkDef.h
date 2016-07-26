@@ -8,7 +8,6 @@
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliClusterContainer+;
 #pragma link C++ class AliEmcalContainer+;
-#pragma link C++ class AliEmcalIterableContainer+;
 #pragma link C++ class AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class AliEmcalParticle+;
 #pragma link C++ class AliEmcalPhysicsSelection+;
@@ -20,5 +19,5 @@
 #pragma link C++ class AliPicoTrack+;
 #pragma link C++ class AliMCParticleContainer+;
 #pragma link C++ class AliTrackContainer+;
-
+#pragma link C++ class AliEmcalList+;
 #endif

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Comment describing what this class does needed!
+// Container class for histograms needed in the analysis.
 
 #include "AliJHistos.h"
 #include  "AliJCard.h"
@@ -236,6 +236,9 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fhNTracksInStringGroupFrom(),
   fhRapidity71From(),
   fhPt71From(),
+  fhAcceptanceTraditional(),
+  fhAcceptanceTraditional2D(),
+  fhAcceptance3DNearSide(),
   fhTrackSelection(),
   fNJacek(0),
   fPttJacek(0),
@@ -252,7 +255,8 @@ AliJHistos::AliJHistos(AliJCard* cardP) :
   fnUEfar(0),
   fLowRange(0),
   fHighRange(0),
-  fenable2DHistos(false)
+  fenable2DHistos(false),
+  fEnableAcceptanceQAHistos(false)
 {   // constructor
 
     fmaxEtaRange = fCard->Get("EtaRange");
@@ -537,6 +541,9 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fhNTracksInStringGroupFrom(obj.fhNTracksInStringGroupFrom),
   fhRapidity71From(obj.fhRapidity71From),
   fhPt71From(obj.fhPt71From),
+  fhAcceptanceTraditional(obj.fhAcceptanceTraditional),
+  fhAcceptanceTraditional2D(obj.fhAcceptanceTraditional2D),
+  fhAcceptance3DNearSide(obj.fhAcceptance3DNearSide),
   fhTrackSelection(obj.fhTrackSelection),
   fNJacek(obj.fNJacek),
   fPttJacek(obj.fPttJacek),
@@ -553,7 +560,8 @@ AliJHistos::AliJHistos(const AliJHistos& obj) :
   fnUEfar(obj.fnUEfar),
   fLowRange(obj.fLowRange),
   fHighRange(obj.fHighRange),
-  fenable2DHistos(obj.fenable2DHistos)
+  fenable2DHistos(obj.fenable2DHistos),
+  fEnableAcceptanceQAHistos(obj.fEnableAcceptanceQAHistos)
 {
     // copy constructor
     JUNUSED(obj);
@@ -861,7 +869,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
         <<  fCentBin << fPhiGapBin << fPTtBin << fXEBin  << "END";
 
     fhDphiDetaXlong
-        << TH2D( "hDphiDetaXlong", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 200, -kJPi, kJPi)
+        << TH2D( "hDphiDetaXlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
         <<  fTypBin <<  fCentBin << fPTtBin << fXEBin  << "END";
   
     if(fenable2DHistos){
@@ -1025,7 +1033,7 @@ void AliJHistos::CreateAzimuthCorrHistos()
         <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
     fhDphiDetaPta
-        << TH2D( "hDphiDetaPta", "",  100, -2*fmaxEtaRange, 2*fmaxEtaRange, 100, -kJPi/2, kJPi/2)
+        << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
         <<  fTypBin <<  fCentBin << fPTtBin << fPTaBin  << "END";
   
     if(fenable2DHistos){
@@ -1043,6 +1051,22 @@ void AliJHistos::CreateAzimuthCorrHistos()
           <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
       
     }
+  
+  // Histograms for checking the acceptance correction is done correctly
+  // Not needed in the analysis and should not be activated if not doing QA
+  if(fEnableAcceptanceQAHistos){
+    fhAcceptanceTraditional
+         << TH1D( "hAcceptanceTraditional", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange)
+         <<  fCentBin << fPTtBin << fPTaBin << "END";
+
+    fhAcceptanceTraditional2D
+         << TH2D( "hAcceptanceTraditional2D", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+         <<  fCentBin << fPTtBin << fPTaBin << "END";
+  
+    fhAcceptance3DNearSide
+         << TH2D( "hAcceptance3DNearSide", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
+         <<  fCentBin << fPTtBin << fXEBin << "END";
+  }
 }
 
 

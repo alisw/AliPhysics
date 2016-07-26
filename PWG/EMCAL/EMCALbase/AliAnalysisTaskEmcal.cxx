@@ -16,7 +16,7 @@
 #include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
-#include <TList.h>
+#include <AliEmcalList.h>
 #include <TObject.h>
 #include <TH1F.h>
 #include <TProfile.h>
@@ -103,6 +103,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -205,6 +210,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEMCalTriggerMode(kOverlapWithLowThreshold),
   fUseNewCentralityEstimation(kFALSE),
   fGeneratePythiaInfoObject(kFALSE),
+  fUsePtHardBinScaling(kFALSE),
+  fMCRejectFilter(kFALSE),
+  fPtHardAndJetPtFactor(0.),
+  fPtHardAndClusterPtFactor(0.),
+  fPtHardAndTrackPtFactor(0.),
   fAliAnalysisUtils(0x0),
   fIsEsd(kFALSE),
   fGeom(0),
@@ -252,7 +262,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterCollArray.SetOwner(kTRUE);
 
   if (fCreateHisto) {
-    DefineOutput(1, TList::Class()); 
+    DefineOutput(1, AliEmcalList::Class());
   }
 }
 
@@ -377,7 +387,8 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     return;
 
   OpenFile(1);
-  fOutput = new TList();
+  fOutput = new AliEmcalList();
+  fOutput->SetUseScaling(fUsePtHardBinScaling);
   fOutput->SetOwner();
 
   if (fForceBeamType == kpp)
@@ -806,6 +817,23 @@ void AliAnalysisTaskEmcal::ExecOnce()
 
   LoadPythiaInfo(InputEvent());
 
+  if (fIsPythia) {
+    if (MCEvent()) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if (!fPythiaHeader) {
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fPythiaHeader) break;
+          }
+        }
+      }
+    }
+  }
+
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
@@ -1207,6 +1235,79 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     return kFALSE;
   }
 
+  // Reject filter for MC data
+  if (!CheckMCOutliers()) return kFALSE;
+
+  return kTRUE;
+}
+
+/**
+ * Filter the mc tails in pt-hard distributions
+ * See https://twiki.cern.ch/twiki/bin/view/ALICE/JetMCProductionsCrossSections#How_to_reject_tails_in_the_pT_ha
+ * @return kTRUE if it is not a MC outlier
+ */
+Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
+{
+  if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+
+  // Condition 1: Pythia jet / pT-hard > factor
+  if (fPtHardAndJetPtFactor > 0.) {
+    AliTLorentzVector jet;
+
+    Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
+
+    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+
+    Float_t tmpjet[]={0,0,0,0};
+    for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
+      fPythiaHeader->TriggerJet(ijet, tmpjet);
+
+      jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+
+      //Compare jet pT and pt Hard
+      if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
+        AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), fPtHardAndJetPtFactor));
+        return kFALSE;
+      }
+    }
+  }
+  // end condition 1
+
+  // Condition 2 : Reconstructed EMCal cluster pT / pT-hard > factor
+  if (fPtHardAndClusterPtFactor > 0.) {
+    AliClusterContainer* mccluscont = GetClusterContainer(0);
+    if ((Bool_t)mccluscont) {
+      for (auto obj : mccluscont->all()) {// Not cuts applied ; use accept for cuts
+        AliVCluster* cluster = static_cast<AliVCluster*>(obj);
+        Float_t ecluster = cluster->E();
+
+        if (ecluster > (fPtHardAndClusterPtFactor * fPtHard)) {
+          AliInfo(Form("Reject : ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",ecluster,cluster->GetType(),fPtHardAndClusterPtFactor,fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 2
+
+  // condition 3 : Reconstructed track pT / pT-hard >factor
+  if (fPtHardAndTrackPtFactor > 0.) {
+    AliMCParticleContainer* mcpartcont = GetMCParticleContainer(0);
+    if ((Bool_t)mcpartcont) {
+      for (auto obj : mcpartcont->all()) {// Not cuts applied ; use accept for cuts
+        AliAODMCParticle* mctrack = static_cast<AliAODMCParticle*>(obj);
+        Float_t trackpt = mctrack->Pt();
+        if (trackpt > (fPtHardAndTrackPtFactor * fPtHard) ) {
+          AliInfo(Form("Reject : track %2.2f, factor %2.2f, ptHard %f", trackpt, fPtHardAndTrackPtFactor, fPtHard));
+          return kFALSE;
+        }
+      }
+    }
+  }
+  // end condition 3
+
   return kTRUE;
 }
 
@@ -1351,36 +1452,18 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     fCentBin = 0;
   }
 
-  if (fIsPythia) {
+  if (fPythiaHeader) {
+    fPtHard = fPythiaHeader->GetPtHard();
 
-    if (MCEvent()) {
-      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-      if (!fPythiaHeader) {
-        // Check if AOD
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-
-        if (aodMCH) {
-          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-            if (fPythiaHeader) break;
-          }
-        }
-      }
+    const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
+    const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
+    for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
+      if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
+        break;
     }
 
-    if (fPythiaHeader) {
-      fPtHard = fPythiaHeader->GetPtHard();
-
-      const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
-      const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
-      for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
-        if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
-          break;
-      }
-
-      fXsection = fPythiaHeader->GetXsection();
-      fNTrials = fPythiaHeader->Trials();
-    }
+    fXsection = fPythiaHeader->GetXsection();
+    fNTrials = fPythiaHeader->Trials();
   }
 
   fTriggers = GetTriggerList();

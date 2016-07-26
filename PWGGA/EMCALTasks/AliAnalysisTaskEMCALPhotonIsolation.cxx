@@ -365,7 +365,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     return;
   }
   else{
-    fOutput = new TList();
+    fOutput = new AliEmcalList(); // RH: Leak? fOutput already exists in base class
     fOutput->SetOwner();
       //Initialize the common Output histograms
     switch (fWho)

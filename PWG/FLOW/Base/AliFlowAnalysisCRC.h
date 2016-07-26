@@ -922,6 +922,11 @@ public:
   void SetFlowQCMetricCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCMetricCorProEG[eg] = TP;};
   TH1D* GetFlowQCMetricCorHistEG(Int_t const eg) const {return this->fFlowQCMetricCorHistEG[eg];};
   void SetFlowQCMetricCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCMetricCorHistEG[eg] = TP;};
+  
+  TProfile2D* GetFlowQCMetric2DProEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DProEG[eg][bng];};
+  void SetFlowQCMetric2DProEG(TProfile2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DProEG[eg][bng] = TP;};
+  TH2D* GetFlowQCMetric2DHistEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DHistEG[eg][bng];};
+  void SetFlowQCMetric2DHistEG(TH2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DHistEG[eg][bng] = TP;};
  
  void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
@@ -1422,7 +1427,8 @@ private:
  // temp
  TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
  TProfile *fTPCQHist[2];  //! Run-by-run TPCQvecHist
- TProfile *fZDCQHist[4];               //! Run-by-run ZDCQvecHist
+ TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
+  TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
  TH1D *fZDCESEMinHist[2]; //!
  TH1D *fZDCESEMaxHist[2]; //!
  TH1D *fZDCESEAvHist[2]; //!
@@ -1590,9 +1596,13 @@ private:
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCMetricCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCMetricCorHistEG[fFlowNHarm]; //!
+  TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm][4]; //!
+  TH2D *fFlowQCMetric2DHistEG[fFlowNHarm][4]; //!
  
  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
  TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
+ TH2F *fFlowQCMetricSpec; //!
+ TH2F *fFlowQCMetricCent; //!
  
  // Flow SP VZ
  TList *fFlowSPVZList;    //! SPVZ List
@@ -1646,7 +1656,7 @@ private:
  Int_t fMinMulZN;
  Float_t fMaxDevZN;
  
- ClassDef(AliFlowAnalysisCRC, 9);
+ ClassDef(AliFlowAnalysisCRC, 10);
  
 };
 

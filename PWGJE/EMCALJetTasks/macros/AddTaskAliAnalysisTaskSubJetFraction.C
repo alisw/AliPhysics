@@ -101,7 +101,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
       JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContTrue->SetPythiaInfoName("PythiaInfo");
     }
   }
 
@@ -128,7 +127,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContDet->SetPercAreaCut(0.6);
       JetContDet->SetJetRadius(R);
       JetContDet->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContDet->SetPythiaInfoName("PythiaInfo");
     }
 
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Particle Level MC
@@ -138,7 +136,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
       JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContTrue->SetPythiaInfoName("PythiaInfo");
     }
   }  
 
@@ -164,7 +161,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContHybridS->SetPercAreaCut(0.6);
       JetContHybridS->SetJetRadius(R);
       JetContHybridS->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContHybridS->SetPythiaInfoName("PythiaInfo");
       if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContHybridS->SetAreaEmcCut(-2); //??????????                                                             
     }
     if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){ //??????????????????????????                                                                                  
@@ -175,7 +171,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
         JetContHybridUs->SetPercAreaCut(0.6);
 	JetContHybridUs->SetJetRadius(R);
 	JetContHybridUs->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-        JetContHybridUs->SetPythiaInfoName("PythiaInfo");
       }
     }
     JetContDet = task->AddJetContainer(njetsDet,strType,R); //Pythia Detector Level                                                                                        
@@ -185,7 +180,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContDet->SetPercAreaCut(0.6);
       JetContDet->SetJetRadius(R);
       JetContDet->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContDet->SetPythiaInfoName("PythiaInfo");
     }
     JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Pyhthia Particle Level                                                                                
     if(JetContTrue) {
@@ -194,7 +188,6 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContTrue->SetPercAreaCut(0.6);
       JetContTrue->SetJetRadius(R);
       JetContTrue->SetJetAcceptanceType(AliJetContainer::kTPCfid);
-      JetContTrue->SetPythiaInfoName("PythiaInfo");
     }
   }
   

@@ -92,7 +92,9 @@ void AliPhysicsSelectionTask::FinishTaskOutput(){
 // This gets called at the end of the processing on the worker. It allows dumping
 // statistics printed by the physics selection object to the statistics message
 // handled by the analysis manager.
-   if (fPhysicsSelection) fPhysicsSelection->Print("STAT");
+   if (!fPhysicsSelection) return;
+   fPhysicsSelection->FillStatistics();
+//   fPhysicsSelection->Print("STAT");
 }
 
 void AliPhysicsSelectionTask::Terminate(Option_t *){

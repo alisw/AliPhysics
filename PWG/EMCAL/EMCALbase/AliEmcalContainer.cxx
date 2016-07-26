@@ -22,7 +22,7 @@
 #include "AliEmcalContainer.h"
 
 /// \cond CLASSIMP
-ClassImp(AliEmcalContainer)
+ClassImp(AliEmcalContainer);
 /// \endcond
 
 /**
@@ -278,7 +278,6 @@ const AliEmcalIterableContainer AliEmcalContainer::all() const {
 const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
 }
-
 
 /**
  * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.

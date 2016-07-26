@@ -223,6 +223,7 @@ set ( SRCS18
 set ( SRCS19 
 #  BeamGasMonitoring/AliAnalysisMBVeto.cxx temporarily commented:sjena
   BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
+  BeamGasMonitoring/AliAnalysisBGMonitorQAHLT.cxx
   )  
 
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
@@ -382,6 +383,7 @@ install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
 install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
               BeamGasMonitoring/macros/AddTaskBGMonitorQA.C
+              BeamGasMonitoring/macros/AddTaskBGMonitorQAHLT.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 
 message(STATUS "PWGPP enabled")

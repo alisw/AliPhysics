@@ -35,11 +35,12 @@ using namespace std;
 ClassImp(AliAnalysisTaskMaterialHistos)
 
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTaskSE(),
-	fV0Reader(NULL),
-    fV0ReaderName("V0ReaderV1"),
-	fConversionGammas(NULL),
-	fConversionCutArray(NULL),
-	fEventCutArray(NULL),
+  fV0Reader(NULL),
+  fV0ReaderName("V0ReaderV1"),
+  fConversionGammas(NULL),
+  fGammaCandidates(NULL),
+  fConversionCutArray(NULL),
+  fEventCutArray(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fTrueList(NULL),
@@ -130,10 +131,11 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 
 //________________________________________________________________________
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) : AliAnalysisTaskSE(name),
-	fV0Reader(NULL),
-    fV0ReaderName("V0ReaderV1"),
-	fConversionGammas(NULL),
-	fConversionCutArray(NULL),
+fV0Reader(NULL),
+fV0ReaderName("V0ReaderV1"),
+fConversionGammas(NULL),
+fGammaCandidates(NULL),
+fConversionCutArray(NULL),
 	fEventCutArray(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
@@ -159,9 +161,9 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
 	fIsMC(0),
 	fInputEvent(NULL),
 	fMCEvent(NULL),
-  fMCStack(NULL),
-	fnCuts(0),																																		 
-	fiCut(0),
+        fMCStack(NULL),
+  fnCuts(0),							
+  fiCut(0),
   hNEvents(NULL),
 	hNGoodESDTracks09(NULL),
 	hNGoodESDTracks14(NULL),
@@ -229,10 +231,10 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
 AliAnalysisTaskMaterialHistos::~AliAnalysisTaskMaterialHistos()
 {
 	// default deconstructor
-  // if(fGammaCandidates){
-  //   delete fGammaCandidates;
-  //   fGammaCandidates = 0x0;
-  // }
+  if(fGammaCandidates){
+    delete fGammaCandidates;
+    fGammaCandidates = 0x0;
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
@@ -250,7 +252,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
   // Array of current cut's gammas
 	
-	//	fGammaCandidates          = new TList();
+	fGammaCandidates          = new TList();
 	fCutFolder                = new TList*[fnCuts];
 	fESDList                  = new TList*[fnCuts];
 	fMCList                   = new TList*[fnCuts];
@@ -645,17 +647,17 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 
 		if(fIsMC > 0){
 			// Process MC Particle
-      if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection() != 0){
-        if(fInputEvent->IsA()==AliESDEvent::Class()){
-        ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetNotRejectedParticles(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection(),
-                                          ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader(),
-                                          fMCEvent);
-        }
-      }
-    }
+		  if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection() != 0){
+		    if(fInputEvent->IsA()==AliESDEvent::Class()){
+		      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetNotRejectedParticles(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetSignalRejection(),
+											     ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader(),
+											     fMCEvent);
+		    }
+		  }
+		}
 
 		if(fIsMC>0){
-			ProcessMCPhotons();
+		  ProcessMCPhotons();
 		}
 
 
@@ -680,6 +682,7 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 		//		fPrimVtxZ = fInputEvent->GetPrimaryVertex()->GetZ();
 
 		ProcessPhotons();
+		fGammaCandidates->Clear(); // delete this cuts good gammas
 	}
 	
 	//cout<<" done with the event"<<endl;
@@ -755,222 +758,245 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
 void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	
 	// Fill Histograms for QA and MC
-	for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
-		AliAODConversionPhoton *gamma= (AliAODConversionPhoton*)fConversionGammas->At(firstGammaIndex);
-	
-		if (gamma == NULL) continue;
-	
-		if(!((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelected(gamma,fInputEvent))continue;
-		fNESDtracksEta09 = CountTracks09();
-		fGammaPt = gamma->GetPhotonPt();
-		fGammaTheta = gamma->GetPhotonTheta();
-		fGammaChi2NDF = gamma->GetChi2perNDF();
+  TList *GammaCandidatesStepTwo = new TList();
 
-		
-		AliVTrack * negTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
-		AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+  //not needed here already calculated
+  //fNESDtracksEta09 = CountTracks09();
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
+    AliAODConversionPhoton *gamma= (AliAODConversionPhoton*)fConversionGammas->At(firstGammaIndex);
+    
+    if (gamma == NULL) continue;
+    
+    if(!((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelected(gamma,fInputEvent))continue;
+    
+    if( ! ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->UseToCloseV0sCut()){
+      fGammaCandidates->Add(gamma); // if no second loop is required add to events good gammas
+    }else if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->UseToCloseV0sCut()) { // shared electron is disabled, step one not needed -> step two
+      GammaCandidatesStepTwo->Add(gamma);
+    }
+  }
+  
+  if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->UseToCloseV0sCut()){
+    for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
+      AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) GammaCandidatesStepTwo->At(i);
+      if(!PhotonCandidate) continue;
+      if(!((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
+      fGammaCandidates->Add(PhotonCandidate); // Add gamma to current cut TList
+    }
+  }
+  
 
-		
+ 
+
+  for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+    AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+    if (gamma==NULL) continue;
+
+    fGammaPt = gamma->GetPhotonPt();
+    fGammaTheta = gamma->GetPhotonTheta();
+    fGammaChi2NDF = gamma->GetChi2perNDF();
+    
+  
+    AliVTrack * negTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
+    AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+    
+    
     Double_t asym=0.;
-
-		if(gamma->GetPhotonP()!=0){
-			asym=negTrack->P()/gamma->GetPhotonP();
-		}
-
-
+    if(gamma->GetPhotonP()!=0){
+      asym=negTrack->P()/gamma->GetPhotonP();
+    }
+    fKind = 9;	
+  
+    if(fIsMC>0){
+    // 			cout << "generating MC stack"<< endl;
+      AliStack *fMCStack = fMCEvent->Stack();
+      if (!fMCStack) continue;
+      
+      const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
+      Double_t mcProdVtxX 	= primVtxMC->GetX();
+      Double_t mcProdVtxY 	= primVtxMC->GetY();
+      Double_t mcProdVtxZ 	= primVtxMC->GetZ();
+      
+      TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
+      TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
+      // 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
 		
-		fKind = 9;	
-		
-		if(fIsMC>0){
-			// 			cout << "generating MC stack"<< endl;
-			AliStack *fMCStack = fMCEvent->Stack();
-			if (!fMCStack) continue;
-			
-			const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
-			Double_t mcProdVtxX 	= primVtxMC->GetX();
-			Double_t mcProdVtxY 	= primVtxMC->GetY();
-			Double_t mcProdVtxZ 	= primVtxMC->GetZ();
-			
-			TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCStack);
-			TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCStack);
-// 			cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
-		
-			if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-				Int_t isPosFromMBHeader
-				= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fInputEvent);
-				Int_t isNegFromMBHeader
-				= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fInputEvent);
-				if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
-			}
-				
-			if(posDaughter == NULL || negDaughter == NULL){ 
-				fKind = 9; // garbage
-// 				cout << "one of the daughters not available" << endl;
-			} else if(posDaughter->GetMother(0) != negDaughter->GetMother(0) || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)){ 
-				// Not Same Mother == Combinatorial Bck
-				fKind = 1;
-				// 				cout << "not the same mother" << endl;
-				Int_t pdgCodePos; 
-				if (posDaughter->GetPdgCode()) pdgCodePos = posDaughter->GetPdgCode(); else continue;
-				Int_t pdgCodeNeg; 
-				if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
-// 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
-				if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11)
-					fKind = 10; //Electron Combinatorial
-				if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11 && (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1))
-					fKind = 15; //direct Electron Combinatorial
-				
-				if(TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==211)
-					fKind = 11; //Pion Combinatorial
-				if((TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==2212) ||
-					(TMath::Abs(pdgCodePos)==2212 && TMath::Abs(pdgCodeNeg)==211))
-					fKind = 12; //Pion, Proton Combinatorics
-				if((TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==11) ||
-					(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==211))
-					fKind = 13; //Pion, Electron Combinatorics
-				if (TMath::Abs(pdgCodePos)==321 || TMath::Abs(pdgCodeNeg)==321)	
-					fKind = 14; //Kaon combinatorics
+      if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
+	Int_t isPosFromMBHeader
+	  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCStack, fInputEvent);
+	Int_t isNegFromMBHeader
+	  = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCStack, fInputEvent);
+	if( (isNegFromMBHeader < 1) || (isPosFromMBHeader < 1)) continue;
+      }
+      
+      if(posDaughter == NULL || negDaughter == NULL){ 
+	fKind = 9; // garbage
+	// 				cout << "one of the daughters not available" << endl;
+      } else if(posDaughter->GetMother(0) != negDaughter->GetMother(0) || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)){ 
+	// Not Same Mother == Combinatorial Bck
+	fKind = 1;
+	// 				cout << "not the same mother" << endl;
+	Int_t pdgCodePos; 
+	if (posDaughter->GetPdgCode()) pdgCodePos = posDaughter->GetPdgCode(); else continue;
+	Int_t pdgCodeNeg; 
+	if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
+	// 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
+	if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11)
+	  fKind = 10; //Electron Combinatorial
+	if(TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==11 && (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1))
+	  fKind = 15; //direct Electron Combinatorial
+	
+	if(TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==211)
+	  fKind = 11; //Pion Combinatorial
+	if((TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==2212) ||
+	   (TMath::Abs(pdgCodePos)==2212 && TMath::Abs(pdgCodeNeg)==211))
+	  fKind = 12; //Pion, Proton Combinatorics
+	if((TMath::Abs(pdgCodePos)==211 && TMath::Abs(pdgCodeNeg)==11) ||
+	   (TMath::Abs(pdgCodePos)==11 && TMath::Abs(pdgCodeNeg)==211))
+	  fKind = 13; //Pion, Electron Combinatorics
+	if (TMath::Abs(pdgCodePos)==321 || TMath::Abs(pdgCodeNeg)==321)	
+	  fKind = 14; //Kaon combinatorics
+	
+      } else {
+	// 				cout << "same mother" << endl;
+	Int_t pdgCodePos; 
+	if (posDaughter->GetPdgCode()) pdgCodePos = posDaughter->GetPdgCode(); else continue;
+	Int_t pdgCodeNeg; 
+	if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
+	// 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
+	Int_t pdgCode; 
+	if (gamma->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCStack)->GetPdgCode(); else continue;
+	// 				cout << "PDG code: " << pdgCode << endl;
+	if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
+	  fKind = 2; // combinatorics from hadronic decays
+	else if ( !(pdgCodeNeg==pdgCodePos)){
+	  TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
+	  Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
+	  Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+	  if(pdgCode == 111) 
+	    fKind = 3; // pi0 Dalitz
+	  else if (pdgCode == 221) 
+	    fKind = 4; // eta Dalitz
+	  else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
+	    if(pdgCode == 22 && gammaIsPrimary){
+	      fKind = 0; // primary photons
+	    } else if (pdgCode == 22){
+	      fKind = 5; //secondary photons
+	    }		
+	  } else 	fKind = 9; //garbage
+	} else fKind = 9; //garbage
+      }					
+    }
+    
+    
+    
+    
+    Double_t minPt=0.4;
+    Double_t maxPt=1.5;
+    
 
-			} else {
-// 				cout << "same mother" << endl;
-				Int_t pdgCodePos; 
-				if (posDaughter->GetPdgCode()) pdgCodePos = posDaughter->GetPdgCode(); else continue;
-				Int_t pdgCodeNeg; 
-				if (negDaughter->GetPdgCode()) pdgCodeNeg = negDaughter->GetPdgCode(); else continue;
-// 				cout << "PDG codes daughters: " << pdgCodePos << "\t" << pdgCodeNeg << endl;
-				Int_t pdgCode; 
-				if (gamma->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = gamma->GetMCParticle(fMCStack)->GetPdgCode(); else continue;
-// 				cout << "PDG code: " << pdgCode << endl;
-				if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
-					fKind = 2; // combinatorics from hadronic decays
-				else if ( !(pdgCodeNeg==pdgCodePos)){
-					TParticle *truePhotonCanditate = gamma->GetMCParticle(fMCStack);
-					Int_t motherLabelPhoton = truePhotonCanditate->GetMother(0);
-					Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-					if(pdgCode == 111) 
-						fKind = 3; // pi0 Dalitz
-					else if (pdgCode == 221) 
-						fKind = 4; // eta Dalitz
-					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
-						if(pdgCode == 22 && gammaIsPrimary){
-							fKind = 0; // primary photons
-						} else if (pdgCode == 22){
-							fKind = 5; //secondary photons
-						}		
-					} else 	fKind = 9; //garbage
-				} else fKind = 9; //garbage
-			}					
-		}
-		
-
-
-
-		Double_t minPt=0.4;
-		Double_t maxPt=1.5;
-
-		//		if(fDoHistosForMaterial){
-
-			hESDConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());  
-			hESDConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());  
-			hESDConversionEta[fiCut]->Fill(gamma->GetPhotonEta());              
-			hESDConversionPt[fiCut]->Fill(gamma->GetPhotonPt());
-		        if(gamma->GetConversionRadius()>5){
-			  hESDConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
-			}
-			hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());
-			hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
-
-			if(fInputEvent->IsA()==AliESDEvent::Class()){
-				AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
-				if(esdEvent){
-					AliESDv0 *v0 = esdEvent->GetV0(gamma->GetV0Index());
-					hESDConversionDCA[fiCut]->Fill(v0->GetDcaV0Daughters());
-					if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-						hESDConversionMidPtDCA[fiCut]->Fill(v0->GetDcaV0Daughters());         
-					}
-				}
-			}
-
-
-			hESDConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
-			hESDConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());    
-			hESDConversionMass[fiCut]->Fill(gamma->GetInvMassPair());     
-
-     
-			if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-				hESDConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());         
-				hESDConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());
-			}
-
-			Double_t convR = gamma->GetConversionRadius();
-			hESDConversionRInBins[fiCut]->Fill(fGammaPt,fNESDtracksEta09,convR);
-			hESDConversionPhiInBins[fiCut]->Fill(convR,fNESDtracksEta09,gamma->GetPhotonPhi());
-
-			if(fIsMC>0){
-				if(fKind==0 || fKind==5){
-					hMCTrueConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());       
-					hMCTrueConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());       
-					hMCTrueConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                  
-					hMCTrueConversionPt[fiCut]->Fill(gamma->GetPhotonPt()); 
-					if(gamma->GetConversionRadius()>5){
-					  hMCTrueConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
-					}
-					hMCTrueConversionR[fiCut]->Fill(gamma->GetConversionRadius());  
-					hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
-					hMCTrueConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
-					hMCTrueConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());    
-					hMCTrueConversionMass[fiCut]->Fill(gamma->GetInvMassPair());     
-					if(fInputEvent->IsA()==AliESDEvent::Class()){
-						AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
-						if(esdEvent){
-							AliESDv0 *v0 = esdEvent->GetV0(gamma->GetV0Index());
-							hMCTrueConversionDCA[fiCut]->Fill(v0->GetDcaV0Daughters());
-							if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-								hMCTrueConversionMidPtDCA[fiCut]->Fill(v0->GetDcaV0Daughters());         
-							}
-						}
-					}
-
-
-					if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-						hMCTrueConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
-						hMCTrueConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());          
-					}
-				}
-				
-				if(fKind==3){
-					hMCTruePi0DalConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                    
-					hMCTruePi0DalConversionPt[fiCut]->Fill(gamma->GetPhotonPt());               
-					hMCTruePi0DalConversionR[fiCut]->Fill(gamma->GetConversionRadius());      
-					if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-						hMCTruePi0DalConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());            
-						hMCTruePi0DalConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
-					}
-				}
-				if(fKind==4){
-					hMCTrueEtaDalConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                 
-					hMCTrueEtaDalConversionPt[fiCut]->Fill(gamma->GetPhotonPt());
-					hMCTrueEtaDalConversionR[fiCut]->Fill(gamma->GetConversionRadius());                     
-					if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-						hMCTrueEtaDalConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());              
-						hMCTrueEtaDalConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
-					}
-				}
-				 if(fKind==1 || fKind==10 || fKind==11 || fKind==12 || fKind==13 || fKind==14 || fKind==15){
-					 hMCTrueCombConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                 
-					 hMCTrueCombConversionPt[fiCut]->Fill(gamma->GetPhotonPt()); 
-					 hMCTrueCombConversionR[fiCut]->Fill(gamma->GetConversionRadius());                     
-				 	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
-				 		hMCTrueCombConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());                
-						hMCTrueCombConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
-				 	}
-				 }
-				
-				 //}
-
-		}
+    hESDConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());  
+    hESDConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());  
+    hESDConversionEta[fiCut]->Fill(gamma->GetPhotonEta());              
+    hESDConversionPt[fiCut]->Fill(gamma->GetPhotonPt());
+    if(gamma->GetConversionRadius()>5){
+      hESDConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
+    }
+    hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());
+    hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
+    
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+      if(esdEvent){
+	AliESDv0 *v0 = esdEvent->GetV0(gamma->GetV0Index());
+	hESDConversionDCA[fiCut]->Fill(v0->GetDcaV0Daughters());
+	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	  hESDConversionMidPtDCA[fiCut]->Fill(v0->GetDcaV0Daughters());         
+	}
+      }
+    }
+    
+    
+    hESDConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
+    hESDConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());    
+    hESDConversionMass[fiCut]->Fill(gamma->GetInvMassPair());     
+    
+    
+    if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+      hESDConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());         
+      hESDConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());
+    }
+    
+    Double_t convR = gamma->GetConversionRadius();
+    hESDConversionRInBins[fiCut]->Fill(fGammaPt,fNESDtracksEta09,convR);
+    hESDConversionPhiInBins[fiCut]->Fill(convR,fNESDtracksEta09,gamma->GetPhotonPhi());
+    
+    if(fIsMC>0){
+      if(fKind==0 || fKind==5){
+	hMCTrueConversionMappingRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());       
+	hMCTrueConversionMappingRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());       
+	hMCTrueConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                  
+	hMCTrueConversionPt[fiCut]->Fill(gamma->GetPhotonPt()); 
+	if(gamma->GetConversionRadius()>5){
+	  hMCTrueConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
+	}
+	hMCTrueConversionR[fiCut]->Fill(gamma->GetConversionRadius());  
+	hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
+	hMCTrueConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
+	hMCTrueConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());    
+	hMCTrueConversionMass[fiCut]->Fill(gamma->GetInvMassPair());     
+	if(fInputEvent->IsA()==AliESDEvent::Class()){
+	  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
+	  if(esdEvent){
+	  AliESDv0 *v0 = esdEvent->GetV0(gamma->GetV0Index());
+	  hMCTrueConversionDCA[fiCut]->Fill(v0->GetDcaV0Daughters());
+	  if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	    hMCTrueConversionMidPtDCA[fiCut]->Fill(v0->GetDcaV0Daughters());         
+	  }
+	  }
+	}
+	
+	
+	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	  hMCTrueConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
+	  hMCTrueConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());          
+	}
+      }
+      
+      if(fKind==3){
+	hMCTruePi0DalConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                    
+	hMCTruePi0DalConversionPt[fiCut]->Fill(gamma->GetPhotonPt());               
+	hMCTruePi0DalConversionR[fiCut]->Fill(gamma->GetConversionRadius());      
+	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	  hMCTruePi0DalConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());            
+	  hMCTruePi0DalConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
+	}
+      }
+      if(fKind==4){
+	hMCTrueEtaDalConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                 
+	hMCTrueEtaDalConversionPt[fiCut]->Fill(gamma->GetPhotonPt());
+	hMCTrueEtaDalConversionR[fiCut]->Fill(gamma->GetConversionRadius());                     
+	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	  hMCTrueEtaDalConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());              
+	  hMCTrueEtaDalConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
+	}
+      }
+      if(fKind==1 || fKind==10 || fKind==11 || fKind==12 || fKind==13 || fKind==14 || fKind==15){
+	hMCTrueCombConversionEta[fiCut]->Fill(gamma->GetPhotonEta());                 
+	hMCTrueCombConversionPt[fiCut]->Fill(gamma->GetPhotonPt()); 
+	hMCTrueCombConversionR[fiCut]->Fill(gamma->GetConversionRadius());                     
+	if(gamma->GetPhotonPt()>minPt && gamma->GetPhotonPt()<maxPt){
+	  hMCTrueCombConversionMidPtEta[fiCut]->Fill(gamma->GetPhotonEta());                
+	  hMCTrueCombConversionMidPtR[fiCut]->Fill(gamma->GetConversionRadius());      
+	}
+      }   
+    }
   }
 
+  delete GammaCandidatesStepTwo;
+  GammaCandidatesStepTwo = 0x0;
+  
+  
 }
 
 //________________________________________________________________________

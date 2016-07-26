@@ -38,14 +38,14 @@ AliAnalysisTaskEmcalJetPatchTriggerQA* AddTaskEmcalJetPatchTriggerQA(
 //  TString name(Form("Spectra_%s", nJets));
   TString name(Form("ChristineQA_%s_%s%s", nJets, nRhosChEm, tag));
   AliAnalysisTaskEmcalJetPatchTriggerQA *spectratask = new AliAnalysisTaskEmcalJetPatchTriggerQA(name);
-  spectratask->SetJetsName(nJets);
+  spectratask->AddJetContainer(nJets);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosChEm);
   spectratask->SetLocalRhoName(lrho);
   spectratask->SetJetPhi(minPhi,maxPhi);
   spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
-  spectratask->SetTracksName(nTracks);
+  spectratask->AddParticleContainer(nTracks);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

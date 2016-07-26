@@ -760,14 +760,19 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
   } else if (trainConfig == 115) { //kINT7
     cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000"); 
-    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000");  
-    cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); 
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); // double counting cut
+    cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); // dEdx 4 sigma below e
     cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000");
-  } else if (trainConfig == 116) {  // like trainconfig 101, with changes in conversion cuts
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000");
-    cuts.AddCut("00010113", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4
-    cuts.AddCut("00010113", "00200009227302009250400000", "0152103500000000"); //variation qT cut 0.03 2D
-    cuts.AddCut("00010113", "00200009227312008250400000", "0152103500000000"); //variation nSigma rejection cut
+  }  else if (trainConfig == 116) {  // like trainconfig 101, with changes in conversion cuts
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000");
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); //double counting
+    cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); //variation dE/dx e -2.5<sigma<4
+    cuts.AddCut("00010113", "00200009227312008250400000", "0152101500000000"); //variation nSigma rejection cut
+  } else if (trainConfig == 117) { //kINT7
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000");
+    cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000"); // dEdx 4 sigma below e
+    cuts.AddCut("00010113", "00200079227302008250404000", "0152101500000000"); // pT cut at 0
+    cuts.AddCut("00010113", "00200079327302008250404000", "0152101500000000");
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

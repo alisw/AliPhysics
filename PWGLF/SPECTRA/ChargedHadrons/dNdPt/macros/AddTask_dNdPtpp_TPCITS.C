@@ -19,7 +19,6 @@ CheckLoadLibrary("libPWG0selectors");
 */
 
   TString stParticleSelection(partMode);
-  cout<<"String: "<<stParticleSelection<<endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -62,8 +61,11 @@ CheckLoadLibrary("libPWG0selectors");
   // Create standard esd track cuts
   //
   
+  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+
+  
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/ChargedHadrons/dNdPt/macros/CreatedNdPtTrackCuts.C");
-  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode);
+  AliESDtrackCuts* esdTrackCuts = CreatedNdPtTrackCuts(cutMode,hasMC,1.0);
   if (!esdTrackCuts) {
     printf("ERROR: esdTrackCuts could not be created\n");
     return;
@@ -71,9 +73,7 @@ CheckLoadLibrary("libPWG0selectors");
     esdTrackCuts->SetHistogramsOn(kTRUE);
   }
 
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-
-  
+ 
   TString stContainerName = Form("dNdPtpp_%d",cutMode);
   stContainerName += stParticleSelection;
   TString stCombinedName(suffix);
@@ -103,7 +103,13 @@ CheckLoadLibrary("libPWG0selectors");
   fdNdPtAnalysis->SetTrackCuts(esdTrackCuts);
   fdNdPtAnalysis->SetAnalysisMode(AlidNdPtHelper::kTPCITS); 
   fdNdPtAnalysis->SetTriggerMask(AliVEvent::kINT7);
-
+  fdNdPtAnalysis->SetUsePileUpRejection(kTRUE);
+  fdNdPtAnalysis->SetUseSPDClusterVsTrackletRejection(kTRUE);
+  fdNdPtAnalysis->SetRequireCompleteDAQ(kTRUE);
+  fdNdPtAnalysis->SetUseTOFBunchCrossing(kFALSE);
+  fdNdPtAnalysis->SetTriggerClass("");
+  
+  
   //Particle Mode
   if(stParticleSelection.Contains("Pion")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCPion);}
   else if(stParticleSelection.Contains("Proton")){fdNdPtAnalysis->SetParticleMode(AlidNdPtHelper::kMCProton);}

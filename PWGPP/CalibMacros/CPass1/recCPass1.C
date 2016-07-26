@@ -1,5 +1,5 @@
 /*
-   rec.C to be used for pass0
+   rec.C to be used for pass1
    - reconstruction of raw data
    - QA information switched off
    - store all friends
@@ -9,7 +9,7 @@
    aliroot -b -q 'recCPass1.C("raw.root",100)'
 */
 
-void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrelMB")
+void recCPass1(const char *filename="raw.root", Int_t nevents=-1, const char *ocdb="raw://", const char* options="?Trigger=kCalibBarrelMB", TString additionalRecOptions="")
 {
   if (gSystem->Getenv("ALIROOT_FORCE_COREDUMP"))
   {
@@ -50,6 +50,24 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
   }
   else {
     rec.SetRunLocalReconstruction("ALL");
+  }
+
+  // Set additional reconstruction options.
+  // They are in the form "Detector:value;Detector2:value" in a single string.
+  // For instance: additionalRecOptions="TPC:useHLTorRAW"
+  {
+    TIter nexttok( additionalRecOptions.Tokenize(";") );
+    while (( os = (TObjString *)nexttok() )) {
+      TString detOpt = os->String();
+      Ssiz_t idx = detOpt.Index(":");
+      if (idx < 0) continue;
+      TString detOptKey = detOpt(0,idx);
+      TString detOptVal = detOpt(idx+1,999);
+      if (detOptKey.IsNull() || detOptVal.IsNull()) continue;
+      printf("Setting additional reconstruction option: %s --> %s\n", detOptKey.Data(),
+                                                                      detOptVal.Data());
+      rec.SetOption(detOptKey.Data(), detOptVal.Data());
+    }
   }
 
   // Upload CDB entries from the snapshot (local root file) if snapshot exist
