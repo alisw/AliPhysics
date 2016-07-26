@@ -209,7 +209,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
 
 }
 
-AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(const char *name)
+AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name)
     : AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
@@ -318,6 +318,10 @@ fCentrality(0),
     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
 
+    fkSaveEventTree    = lSaveEventTree;
+    fkSaveV0Tree       = lSaveV0Tree;
+    fkSaveCascadeTree  = lSaveCascadeTree;
+    
     //Standard output
     DefineOutput(1, TList::Class()); // Basic Histograms
     DefineOutput(2, TList::Class()); // V0 Histogram Output

@@ -48,7 +48,7 @@ class AliV0Result;
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskStrangenessVsMultiplicityRun2();
-    AliAnalysisTaskStrangenessVsMultiplicityRun2(const char *name);
+    AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name);
     virtual ~AliAnalysisTaskStrangenessVsMultiplicityRun2();
 
     virtual void   UserCreateOutputObjects();
