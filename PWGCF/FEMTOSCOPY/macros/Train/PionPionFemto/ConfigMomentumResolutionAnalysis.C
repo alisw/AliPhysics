@@ -202,10 +202,16 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_model_corrfctn) {
-        AliFemtoModelCorrFctnQinv *cf = new AliFemtoModelCorrFctnQinv("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
-        cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
+//         AliFemtoModelCorrFctnQinv *cf = new AliFemtoModelCorrFctnQinv("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+//         cf->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
+
+          AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctn("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+          AliFemtoModelManager *model_manager = new AliFemtoModelManager();
+          model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+          model_cf->ConnectToManager(model_manager);
+
         analysis->AddCorrFctn(
-          cf
+          model_cf
         );
       }
 
@@ -217,13 +223,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_kt_qinv) {
         // create base CF for all Kt-binned cf
         AliFemtoCorrFctn *kt_qinv_cf = macro_config.do_model_corrfctn
-                                     ? new AliFemtoModelCorrFctnQinv("MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL)
-                                     : new AliFemtoQinvCorrFctn("CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+                                     //  ? new AliFemtoModelCorrFctnQinv("MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL)
+                                     ? new AliFemtoModelCorrFctn("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL)
+                                     : new AliFemtoQinvCorrFctn("_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
 
         if (macro_config.do_model_corrfctn) {
           AliFemtoModelManager *model_manager = new AliFemtoModelManager();
           model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
-          ((AliFemtoModelCorrFctnQinv*)kt_qinv_cf)->ConnectToManager(model_manager);
+          ((AliFemtoModelCorrFctn*)kt_qinv_cf)->ConnectToManager(model_manager);
         }
 
         AliFemtoKtBinnedCorrFunc *binned = new AliFemtoKtBinnedCorrFunc("KT_Qinv", kt_qinv_cf);
@@ -241,9 +248,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_kt_q3d) {
         AliFemtoCorrFctn *kt_q3d_cf = (false && macro_config.do_model_corrfctn)
                                     ? NULL // new AliFemtoModelCorrFctnQinv("MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL)
-                                    : new AliFemtoCorrFctn3DLCMSSym(TString("q3D_") + pair_type_str, QINV_BIN_COUNT, 0.5);
+                                    : new AliFemtoCorrFctn3DLCMSSym(TString("_q3D") + pair_type_str, QINV_BIN_COUNT, 0.5);
 
-        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D", kt_q3d_cf);
+        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("_KT_Q3D", kt_q3d_cf);
         kt_q3d->AddKtRange(0.2, 0.3);
         kt_q3d->AddKtRange(0.3, 0.4);
         kt_q3d->AddKtRange(0.4, 0.5);

@@ -44,7 +44,7 @@ public:
    * KStar histograms use these parameters when constructing histograms. No
    * other memebers are set - user **MUST** set pair type and PDG codes.
    */
-  AliFemtoModelCorrFctnQinv(const char *name,
+  AliFemtoModelCorrFctnQinv(const char *suffix,
                             const Int_t aNbins,
                             const Float_t aQinvLo,
                             const Float_t aQinvHi);
@@ -55,6 +55,15 @@ public:
    * Copies pair type & PDG codes. Clones histograms.
    */
   AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctnQinv &);
+
+  /// Return a pointer to a clone of this correlation function.
+  ///
+  /// This copies the structure of the internal histograms, but clears
+  /// all stored data.
+  /// No pointers are shared between this object and the clone.
+  ///
+  virtual AliFemtoModelCorrFctnQinv* Clone() const;
+
 
   /// Destructor
   virtual ~AliFemtoModelCorrFctnQinv();
@@ -112,10 +121,10 @@ protected:
   Int_t fExpectedTrack2Code;
 
   /// KStar numerator of reconstructed pairs
-  TH1F *fResNum;
+  TH1F *fRecNum;
 
   /// KStar denominator of reconstructed pairs
-  TH1F *fResDen;
+  TH1F *fRecDen;
 
   /// Numerator of only true pairs
   TH2F *fTrueNum;
