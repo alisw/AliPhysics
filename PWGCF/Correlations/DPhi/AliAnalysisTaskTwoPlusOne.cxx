@@ -4,6 +4,7 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TTree.h>
+#include <TRandom3.h>
 //#include <TParameter.h>
 
 #include "AliAnalysisTaskTwoPlusOne.h"
@@ -74,6 +75,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fUseSmallerPtAssoc(0),
   fRunCorrelations(1),
   fRunIfPoolReady(0),
+  fRandomPosition(0),
   fSelectCentrality(1),
   fEfficiencyCorrection(0)
 {
@@ -118,7 +120,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(fHistos);
 
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
-  fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 101, 0, 101));
+  fListOfHistos->Add(new TH2F("eventStatCent", ";events;centrality", 4, -0.5, 3.5, 201, 0, 100.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
 
   PostData(1,fListOfHistos);
@@ -413,7 +415,15 @@ TObjArray* AliAnalysisTaskTwoPlusOne::CloneAndReduceTrackList(TObjArray* tracks)
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
-    AliCFParticle* copy = new AliCFParticle(particle->Pt(), particle->Eta(), particle->Phi(), particle->Charge(), 0);
+    Double_t part_eta = particle->Eta();
+    Double_t part_phi = particle->Phi();
+
+    if(fRandomPosition){
+      part_phi=gRandom->Uniform(0, TMath::TwoPi());
+      part_eta=gRandom->Uniform(-1*fTrackEtaCut, fTrackEtaCut);
+    }
+
+    AliCFParticle* copy = new AliCFParticle(particle->Pt(), part_eta, part_phi, particle->Charge(), 0);
     copy->SetUniqueID(particle->GetUniqueID());
     tracksClone->Add(copy);
   }

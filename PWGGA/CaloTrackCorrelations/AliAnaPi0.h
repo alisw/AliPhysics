@@ -130,7 +130,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillArmenterosThetaStarHisto()  { fFillArmenterosThetaStar = kTRUE  ; }
   void         SwitchOffFillArmenterosThetaStarHisto() { fFillArmenterosThetaStar = kFALSE ; }
-  
+
+  void         SwitchOnFillSecondaryCellTimeSel()      { fFillSecondaryCellTiming = kTRUE  ; }
+  void         SwitchOffFillSecondaryCellTimeSel()     { fFillSecondaryCellTiming = kFALSE ; }
   
   //-------------------------------------------
   // Pair 2 different inputs
@@ -198,6 +200,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOriginHisto;           ///<  Fill histograms depending on their origin
   Bool_t   fFillArmenterosThetaStar;   ///<  Fill armenteros histograms
   Bool_t   fFillOnlyMCAcceptanceHisto; ///<  Do analysis only of MC kinematics input
+  Bool_t   fFillSecondaryCellTiming;   ///<  Fill histograms depending of timing of secondary cells in clusters
   
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
   
@@ -330,7 +333,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH3F **  fhRePtMult ;                //![fNAsymCuts]
     
   TH2F *   fhReSS[3] ;                 //!<! Combine clusters with 3 different cuts on shower shape
-  
+    
   // Asymmetry vs pt, in pi0/eta regions
     
   TH2F *   fhRePtAsym    ;             //!<! REAL two-photon pt vs asymmetry
@@ -457,6 +460,12 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhEPairDiffTime;            //!<! E pair vs Pair of clusters time difference vs E
   
+  // Select clusters depending on cell time content
+  TH2F* fhReSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, same event
+  TH2F* fhMiSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, different events
+  TH2F* fhReSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, same event
+  TH2F* fhMiSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, different events
+  
   /// Copy constructor not implemented.
   AliAnaPi0(              const AliAnaPi0 & api0) ;
    
@@ -464,7 +473,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,31) ;
+  ClassDef(AliAnaPi0,32) ;
   /// \endcond
   
 } ;

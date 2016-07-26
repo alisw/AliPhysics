@@ -150,7 +150,7 @@ private:
     
     THnSparseF           *fHFENumeratorTRKCUTS_Filt;// ! EFFfor EHFE
     THnSparseF           *fHFENumeratorTRKCUTS_ITSTPC;// ! EFFfor EHFE
-    THnSparseF           *fHFENumeratorTRKCUTS_ITStrkCut;// ! EFFfor EHFE
+  //  THnSparseF           *fHFENumeratorTRKCUTS_ITStrkCut;// ! EFFfor EHFE
 
     
     THnSparseF           *fHFENumeratorTRKCUTS;// ! EFFfor EHFE

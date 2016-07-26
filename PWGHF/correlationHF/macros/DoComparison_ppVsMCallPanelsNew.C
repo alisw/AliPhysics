@@ -998,7 +998,7 @@ TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=
     if(hMC2)legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","l");
     if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia2011","l");   
     if(hMC4)legend->AddEntry(hMC4,"POWHEG+PYTHIA6","l");
-    if(hMC5)legend->AddEntry(hMC5,"PYTHIA8, Tune C","l");
+    if(hMC5)legend->AddEntry(hMC5,"PYTHIA8, Tune 4C","l");
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");
     //legend->AddEntry(hMC2,"PYTHIA6, Perugia2010","lep");

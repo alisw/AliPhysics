@@ -12,6 +12,7 @@
 
 #include "TObject.h"
 #include "THnSparse.h"
+#include "TF1.h"
 
 class TList;
 class AliHFCutVarFDsubCutSet;
@@ -23,6 +24,8 @@ protected:
   AliHFCutVarFDsubCutSet* fCutSet; //!>! Cut set for which the efficiency will be calculated
   TList* fAxes;                    //!>! List of axes present in the THnSparses
   UInt_t fTHnType;                 //
+  Bool_t fPtWeight;                // Flag to activate the pT reweights
+  TF1* fFuncWeights;               //!<! Pt reweights function
   Double_t fEfficiency;
   Double_t fEfficiencyError;
 
@@ -30,13 +33,13 @@ protected:
   AliHFCutVarFDsubEfficiency operator=(const AliHFCutVarFDsubEfficiency& eff); /// Assignment operator
 public:
   AliHFCutVarFDsubEfficiency(); /// Default constructor
-  AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THnSparseF* afterCuts, AliHFCutVarFDsubCutSet* cutSet, TList* axes); /// Constructor
+  AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THnSparseF* afterCuts, AliHFCutVarFDsubCutSet* cutSet, TList* axes, Bool_t ptWeight, TF1* funcWeights); /// Constructor
 
   Double_t GetEfficiency();
   Double_t GetEfficiencyError();
 
   /// \cond CLASSDEF
-  ClassDef(AliHFCutVarFDsubEfficiency, 1);
+  ClassDef(AliHFCutVarFDsubEfficiency, 2);
   /// \endcond
 };
 #endif //ALIHFCUTVARFDSUBEFFICIENCY_H

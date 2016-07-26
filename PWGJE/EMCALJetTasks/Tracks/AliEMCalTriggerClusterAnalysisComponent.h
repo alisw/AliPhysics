@@ -14,7 +14,6 @@
 
 #include "AliCutValueRange.h"
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliVCluster;

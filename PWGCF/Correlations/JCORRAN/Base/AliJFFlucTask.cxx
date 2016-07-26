@@ -67,7 +67,8 @@ AliJFFlucTask::AliJFFlucTask():
 	IsExcludeWeakDecay = kFALSE;
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
-	IsSCptdep = kFALSE; 
+	IsSCptdep = kFALSE;
+	IsSCwithQC= kFALSE; 
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
@@ -104,6 +105,7 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
 	IsSCptdep = kFALSE;
+	IsSCwithQC = kFALSE;
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
@@ -149,6 +151,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna->SetDebugLevel(fDebugLevel); 
 	fFFlucAna->SetIsPhiModule( IsPhiModule); 
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
+	fFFlucAna->SetSCwithQC( IsSCwithQC );
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
 			for(int icent=0; icent<7; icent++){
@@ -318,6 +321,11 @@ void AliJFFlucTask::ReadAODTracks( AliAODEvent *aod , TClonesArray *TrackList)
 								}
 								Int_t pdg = track->GetPdgCode();
 								Char_t ch = (Char_t) track->Charge();
+								// partile charge selection	
+								if( fPcharge != 0){ // fPcharge : 0 all particle
+									if( fPcharge==1 && ch<0 ) continue; // 1 for + charge
+									if( fPcharge==-1 && ch>0) continue; // -1 for - charge
+								}
 								Int_t label = track->GetLabel();
 								AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
 								itrack->SetLabel( label );
@@ -335,11 +343,15 @@ else if( IsMC == kFALSE){
 				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
 				if(track->TestFilterBit( fFilterBit )){ //
-						double Pt = track->Pt(); 
+						double Pt = track->Pt();
+						Char_t ch = (Char_t)track->Charge(); 
 						if( fPt_min > 0){
 								if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
 						}
-
+						if( fPcharge !=0){ // fPcharge 0 : all particle
+							if( fPcharge==1 && ch<0) continue; // 1 for + particle
+							if( fPcharge==-1 && ch>0) continue; // -1 for - particle 
+						}
 						//						double track_abs_eta = TMath::Abs( track->Eta() );
 						//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
 						AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack;

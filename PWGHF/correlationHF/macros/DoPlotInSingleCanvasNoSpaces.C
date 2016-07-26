@@ -744,7 +744,7 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	  tlAvD->SetTextSize(22);
 	  tlAvD->Draw();
 	  TLegend *leg=new TLegend(0.255,0.56,0.4,0.8);
-	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}}=7 TeV,|#it{y}^{D}_{cms}|<0.5","p");
+	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}}=7 TeV, |#it{y}^{D}|<0.5","p");
 	  leg->AddEntry(hpPb[0],"p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV,","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
 	  leg->AddEntry((TObject*)0,"-0.96<#it{y}^{D}_{cms}<0.04","");
 	  leg->SetFillStyle(0);
@@ -778,8 +778,8 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
       if(jD==0&&jass==0){
 	//	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.51);
 	//	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.43);
-	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.34);
-	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.43);
+	tlptD[padorderingPP[jD*3+jass]-1]->SetY(0.43);
+	tlptAssoc[padorderingPP[jD*3+jass]-1]->SetY(0.34);
 	tlscalepp[padorderingPP[jD*3+jass]-1]->SetY(0.12);
       }
       tlscalepp[padorderingPP[jD*3+jass]-1]->Draw();

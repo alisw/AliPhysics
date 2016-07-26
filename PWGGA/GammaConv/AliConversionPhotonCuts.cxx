@@ -143,6 +143,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fUseEtaMinCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
   fDoPhotonAsymmetryCut(kTRUE),
+  fDoPhotonPDependentAsymCut(kFALSE),
+  fFAsymmetryCut(0),
   fMinPPhotonAsymmetryCut(100.),
   fMinPhotonAsymmetry(0.),
   fUseCorrectedTPCClsInfo(kFALSE),
@@ -200,6 +202,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoArmenterosbefore(NULL),
   fHistoInvMassafter(NULL),
   fHistoArmenterosafter(NULL),
+  fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
@@ -266,6 +269,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fUseEtaMinCut(ref.fUseEtaMinCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
   fDoPhotonAsymmetryCut(ref.fDoPhotonAsymmetryCut),
+  fDoPhotonPDependentAsymCut(ref.fDoPhotonPDependentAsymCut),
+  fFAsymmetryCut(ref.fFAsymmetryCut),
   fMinPPhotonAsymmetryCut(ref.fMinPPhotonAsymmetryCut),
   fMinPhotonAsymmetry(ref.fMinPhotonAsymmetry),
   fUseCorrectedTPCClsInfo(ref.fUseCorrectedTPCClsInfo),
@@ -323,6 +328,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoArmenterosbefore(NULL),
   fHistoInvMassafter(NULL),
   fHistoArmenterosafter(NULL),
+  fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
@@ -351,6 +357,12 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     delete fElectronLabelArray;
     fElectronLabelArray = NULL;
   }
+  
+  if(fFAsymmetryCut != NULL){
+    delete fFAsymmetryCut;
+    fFAsymmetryCut = NULL;
+  }
+  
 }
 
 //________________________________________________________________________
@@ -426,7 +438,11 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(fHistoInvMassafter);
   fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
   fHistograms->Add(fHistoArmenterosafter);
-
+  if(fDoPhotonAsymmetryCut){
+    fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
+    fHistograms->Add(fHistoAsymmetryafter);
+  }
+  
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",11,-0.5,10.5,250,0,50);
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoAcceptanceCuts->GetXaxis()->SetBinLabel(2,"maxR");
@@ -519,6 +535,10 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   AxisAfter->Set(bins, newBins);
   AxisAfter = fHistoITSSigafter->GetXaxis();
   AxisAfter->Set(bins, newBins);
+  if(fDoPhotonAsymmetryCut){
+    AxisAfter = fHistoAsymmetryafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+  }
   if(preCut){
     AxisBeforedEdx->Set(bins, newBins);
     AxisBeforeTOF->Set(bins, newBins);
@@ -857,6 +877,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   if(fHistoArmenterosafter)fHistoArmenterosafter->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
   if(fHistoPsiPairDeltaPhiafter)fHistoPsiPairDeltaPhiafter->Fill(deltaPhi,photon->GetPsiPair());
   if(fHistoKappaafter)fHistoKappaafter->Fill(photon->GetPhotonPt(), GetKappaTPC(photon, event));
+  if(fHistoAsymmetryafter && photon->GetPhotonP()!=0)fHistoAsymmetryafter->Fill(photon->GetPhotonP(),electronCandidate->GetP()/photon->GetPhotonP());
   
   return kTRUE;
 
@@ -1332,14 +1353,26 @@ Bool_t AliConversionPhotonCuts::AsymmetryCut(AliConversionPhotonBase * photon,Al
 
     AliVTrack *track=GetTrack(event,photon->GetTrackLabel(ii));
 
-    if( track->P() > fMinPPhotonAsymmetryCut ){
+    if(fDoPhotonPDependentAsymCut){
       Double_t trackNegAsy=0;
       if (photon->GetPhotonP()!=0.){
-        trackNegAsy= track->P()/photon->GetPhotonP();
+          trackNegAsy= track->P()/photon->GetPhotonP();
       }
 
-      if( trackNegAsy<fMinPhotonAsymmetry ||trackNegAsy>(1.- fMinPhotonAsymmetry)){
+      if( trackNegAsy > fFAsymmetryCut->Eval(photon->GetPhotonP()) || trackNegAsy < 1.-fFAsymmetryCut->Eval(photon->GetPhotonP()) ){
         return kFALSE;
+      }
+    
+    } else {
+      if( track->P() > fMinPPhotonAsymmetryCut ){
+        Double_t trackNegAsy=0;
+        if (photon->GetPhotonP()!=0.){
+          trackNegAsy= track->P()/photon->GetPhotonP();
+        }
+
+        if( trackNegAsy<fMinPhotonAsymmetry ||trackNegAsy>(1.- fMinPhotonAsymmetry)){
+          return kFALSE;
+        }
       }
     }
 
@@ -1816,6 +1849,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
   if (fDoPhotonAsymmetryCut) printf("\t for p_{T,track} > %3.2f,  A_{gamma} < %3.2f \n", fMinPPhotonAsymmetryCut, fMinPhotonAsymmetry  );
+  if (fDoPhotonPDependentAsymCut && fDoPhotonAsymmetryCut) printf("\t p-dependent asymmetry cut \n");
   if (fUseCorrectedTPCClsInfo) printf("\t #cluster TPC/ #findable clusters TPC (corrected for radius) > %3.2f\n", fMinClsTPCToF );
   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
   printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
@@ -2753,6 +2787,16 @@ Bool_t AliConversionPhotonCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut
     fDoPhotonAsymmetryCut=1;
     fMinPPhotonAsymmetryCut=0.0;
     fMinPhotonAsymmetry=0.05;
+    break; 
+  case 4:
+    fDoPhotonAsymmetryCut=1;
+    fDoPhotonPDependentAsymCut=1;
+    fFAsymmetryCut = new TF1("fFAsymmetryCut","[0] + [1]*tanh(2*TMath::Power(x,[2]))",0.,100.);
+    fFAsymmetryCut->SetParameter(0,0.3);
+    fFAsymmetryCut->SetParameter(1,0.66);
+    fFAsymmetryCut->SetParameter(2,0.7);
+    fMinPPhotonAsymmetryCut=0.0;
+    fMinPhotonAsymmetry=0.;
     break; 
   default:
     AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));

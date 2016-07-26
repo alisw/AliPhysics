@@ -8,22 +8,22 @@
 #if !defined __CINT__ || defined __MAKECINT__
 #include <TString.h>
 #include "AliESDtrackCuts.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
-#include "AliEMCalPtTaskTrackSelectionAOD.h"
-#include "AliEMCalPtTaskTrackSelectionESD.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTrackSelectionAOD.h"
+#include "AliEmcalTrackSelectionESD.h"AliEmcalTrackSelection
 #include "AliEMCalTriggerExtraCuts.h"
 #include "AliReducedHighPtEventCreator.h"
 #endif
 
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeCrossRows(bool isAOD, int minCrossedRows);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD );
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeDCAZ(bool isAOD, Double_t dcaZ);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeDCAR(bool isAOD, TString model);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeGoldenCut(bool isAOD, Float_t chi2cut);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeChi2ITS(bool isAOD, Float_t chi2cut);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeChi2TPC(bool isAOD, Float_t chi2cut);
+AliEmcalTrackSelection *CreateHybridTrackCuts(bool isAOD);
+AliEmcalTrackSelection *CreateDefaultTrackCuts(bool isAOD);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeCrossRows(bool isAOD, int minCrossedRows);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD );
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeDCAZ(bool isAOD, Double_t dcaZ);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeDCAR(bool isAOD, TString model);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeGoldenCut(bool isAOD, Float_t chi2cut);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeChi2ITS(bool isAOD, Float_t chi2cut);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeChi2TPC(bool isAOD, Float_t chi2cut);
 
 /**
  * Initialize cut variations in the tree creator task. Selected sample is always a subset of the hybrid track sample -
@@ -32,7 +32,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  */
 void ReducedEventCutVariation(HighPtTracks::AliReducedHighPtEventCreator *task,  Bool_t isAOD){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts;
+  AliEmcalTrackSelection *trackcuts;
   if((trackcuts = CreateDefaultTrackCuts(isAOD))) task->AddVirtualTrackSelection(trackcuts, 0);
   if((trackcuts = CreateHybridTrackCuts(isAOD))) task->AddVirtualTrackSelection(trackcuts, 1);
   if((trackcuts = CreateDefaultTrackCutsChangeFiducialAreaCut(isAOD))) task->AddVirtualTrackSelection(trackcuts, 2);
@@ -59,11 +59,11 @@ void ReducedEventCutVariation(HighPtTracks::AliReducedHighPtEventCreator *task, 
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateHybridTrackCuts(bool isAOD){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     // Purely use filter bits
-    EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(256);
     aodsel->AddFilterBit(512);
     trackSelection = aodsel;
@@ -75,7 +75,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
     hybridTrackCuts->SetDCAToVertex2D(kTRUE);
     hybridTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
     hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(hybridTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(hybridTrackCuts);
   }
   return trackSelection;
 }
@@ -85,10 +85,10 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCuts(bool isAOD){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
-    EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
     EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(120);
@@ -99,7 +99,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
     standardTrackCuts->SetName("Standard Track cuts");
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -109,10 +109,10 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeCrossRows(bool isAOD, int minCrossedRows){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeCrossRows(bool isAOD, int minCrossedRows){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
-    EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
     EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(minCrossedRows);
@@ -123,7 +123,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetName("Standard Track cuts");
     standardTrackCuts->SetMinNCrossedRowsTPC(minCrossedRows);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -133,10 +133,10 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD ){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD ){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
-    EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+    AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
     EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(120);
@@ -148,7 +148,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetName("Standard Track cuts");
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
     EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCTrackLengthCut();
     trackSelection->AddTrackCuts(extraCuts);
@@ -161,8 +161,8 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeDCAZ(bool isAOD, Double_t dcaZ){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeDCAZ(bool isAOD, Double_t dcaZ){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     return NULL;
   } else {
@@ -171,7 +171,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexZ(dcaZ);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -181,8 +181,8 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeDCAR(bool isAOD, TString model){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeDCAR(bool isAOD, TString model){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     return NULL;
   } else {
@@ -190,7 +190,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetName("Standard Track cuts");
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep(model.Data());
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -200,8 +200,8 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeGoldenCut(bool isAOD, Float_t chi2cut){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeGoldenCut(bool isAOD, Float_t chi2cut){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     return NULL;
   } else {
@@ -210,7 +210,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     standardTrackCuts->SetMaxChi2TPCConstrainedGlobal(chi2cut);
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -220,8 +220,8 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeChi2ITS(bool isAOD, Float_t chi2cut){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeChi2ITS(bool isAOD, Float_t chi2cut){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     return NULL;
   } else {
@@ -230,7 +230,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     standardTrackCuts->SetMaxChi2PerClusterITS(chi2cut);
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }
@@ -240,8 +240,8 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
  * \param isAOD Flag for AOD
  * \return virtual track selection
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsChangeChi2TPC(bool isAOD, Float_t chi2cut){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCutsChangeChi2TPC(bool isAOD, Float_t chi2cut){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
     return NULL;
   } else {
@@ -250,7 +250,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCutsCha
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     standardTrackCuts->SetMaxChi2PerClusterTPC(chi2cut);
-    trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+    trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
   }
   return trackSelection;
 }

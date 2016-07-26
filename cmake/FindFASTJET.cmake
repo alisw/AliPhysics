@@ -29,6 +29,7 @@
 # - FASTJET_DEFINITIONS - fastjet definition flags
 # - FASTJET_CXXFLAGS - fastjet compilation flags
 # - FASTJET_LIBS - fastjet libraries (list)
+# - FASTJET_ROOTDICT_OPTS - fastjet options to generate ROOT 6+ dictionaries
 
 set(FASTJET_FOUND FALSE)
 
@@ -55,7 +56,7 @@ if(FASTJET)
         message(FATAL_ERROR "Error retrieving FastJet version: ${error}")
     endif(error)
 
-    # Extract major, minor, and patch versions from
+    # Extract major, minor, and patch versions
     string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" FASTJET_VERSION_MAJOR "${FASTJET_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+.*" "\\1" FASTJET_VERSION_MINOR "${FASTJET_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" FASTJET_VERSION_PATCH "${FASTJET_VERSION}")
@@ -63,7 +64,7 @@ if(FASTJET)
     if(FASTJET_VERSION_MAJOR LESS 3)
         message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} not suported: install at least >= 3.0.*")
     endif()
-    
+
     # Extracting compilation flags
     execute_process(COMMAND ${FASTJET_CONFIG} --cxxflags OUTPUT_VARIABLE FASTJET_CXXFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(error)
@@ -82,7 +83,10 @@ if(FASTJET)
     endif(FASTJET_CXXFLAGS)
 
     # Extracting libraries and linking options
-    execute_process(COMMAND ${FASTJET_CONFIG} --libs OUTPUT_VARIABLE FASTJET_CONFIGLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${FASTJET_CONFIG} --libs
+                    OUTPUT_VARIABLE FASTJET_CONFIGLIBS
+                    ERROR_VARIABLE error
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet libs: ${error}")
     endif(error)
@@ -119,8 +123,9 @@ if(FASTJET)
                     message(FATAL_ERROR "CGAL not installed: install it or specify a custom one with -DCGAL")
                 endif()
             endif(CGAL)
+            list(APPEND fjextralibs "CGAL")
         else()
-            message(WARNING "FastJet was compiled witouth CGAL")
+            message(STATUS "FastJet was compiled witouth CGAL")
         endif(fastjetcgal GREATER -1)
 
         # GMP for FastJet
@@ -142,8 +147,9 @@ if(FASTJET)
                     message(FATAL_ERROR "GMP not installed: install it or specify a custom one with -DGMP")
                 endif()
             endif(GMP)
+            list(APPEND fjextralibs "gmp")
         else()
-            message(WARNING "FastJet was compiled witouth GMP")
+            message(STATUS "FastJet was compiled witouth GMP")
         endif(fastjetgmp GREATER -1)
 
         # MPFR for FastJet
@@ -165,8 +171,9 @@ if(FASTJET)
                     message(FATAL_ERROR "MPFR not installed: install it or specify a custom one with -DMPFR")
                 endif()
             endif(MPFR)
+            list(APPEND fjextralibs "mpfr")
         else()
-            message(WARNING "FastJet was compiled witouth MPFR")
+            message(STATUS "FastJet was compiled witouth MPFR")
         endif(fastjetmpfr GREATER -1)
 
         # Extract library paths used by FastJet to find needed libs: (LIST)
@@ -177,10 +184,31 @@ if(FASTJET)
             list(APPEND FASTJET_LIBS_DIR ${fjlibdir})
         endforeach()
 
+        # Check if required FJ and FJContrib libs can be found
+        set(fjlibs "fastjetcontribfragile;fastjetplugins;siscone_spherical;siscone;fastjettools;fastjet")
+        foreach(fjlib ${fjlibs})
+            set(fjl fjl-NOTFOUND)
+            find_library(fjl NAMES ${fjlib}
+                             PATHS ${FASTJET_LIBS_DIR} NO_DEFAULT_PATH)
+            if(NOT fjl)
+                message(FATAL_ERROR "Required FastJet library ${fjlib} not found!")
+            endif()
+        endforeach()
+
     endif(FASTJET_CONFIGLIBS)
 
     set(FASTJET_FOUND TRUE)
     set(FASTJET_DEFINITIONS "-DHAVE_FASTJET")
+
+    # ROOT 6+: additional options required for dictionary generation.
+    if(ROOT_VERSION_MAJOR GREATER 5)
+        set(FASTJET_ROOTDICT_OPTS "-I${FASTJET_INCLUDE_DIR}")
+        foreach(fjl ${fjlibs};${fjextralibs})
+            set(FASTJET_ROOTDICT_OPTS "${FASTJET_ROOTDICT_OPTS} -rml lib${fjl}")
+        endforeach()
+    endif(ROOT_VERSION_MAJOR GREATER 5)
+
+    message(STATUS "FastJet options for ROOT dictionary generation: ${FASTJET_ROOTDICT_OPTS}")
     message(STATUS "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} installation found: ${FASTJET}")
 else()
     message(STATUS "FastJet not found: disabling dependencies")

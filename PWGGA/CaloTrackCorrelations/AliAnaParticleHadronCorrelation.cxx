@@ -102,13 +102,14 @@ fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0),
 fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0),
 fhUePart(0),
 fhXECharged(0),                 fhXECharged_Cone2(0),      fhXEUeCharged(0),
+fhXEUeChargedSmallCone(0),      fhXEUeChargedMediumCone(0), fhXEUeChargedLargeCone(0),
 fhXEPosCharged(0),              fhXENegCharged(0),
 fhPtHbpXECharged(0),            fhPtHbpXECharged_Cone2(0), fhPtHbpXEUeCharged(0),
 fhZTCharged(0),                 fhZTUeCharged(0),
 fhZTPosCharged(0),              fhZTNegCharged(0),
 fhPtHbpZTCharged(0),            fhPtHbpZTUeCharged(0),
 fhXEChargedMC(),                fhDeltaPhiChargedMC(),
-fhXEUeChargedRightMC(),         fhXEUeChargedLeftMC(),          
+fhXEUeChargedRightMC(),         fhXEUeChargedLeftMC(),
 fhDeltaPhiDeltaEtaChargedPtA3GeV(0),
 fhDeltaPhiChargedPtA3GeV(0),    fhDeltaEtaChargedPtA3GeV(0),
 // Pile-Up
@@ -872,6 +873,10 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
                     uexE,randomphi*TMath::RadToDeg(),TMath::Cos(randomphi),fDeltaPhiMinCut*TMath::RadToDeg(),fDeltaPhiMaxCut*TMath::RadToDeg()));
   
   fhXEUeCharged->Fill(ptTrig, uexE, GetEventWeight());
+  if(deltaPhi > TMath::DegToRad()*80 && deltaPhi < TMath::DegToRad()*100)fhXEUeChargedSmallCone->Fill(ptTrig, uexE, GetEventWeight());
+  if(deltaPhi > TMath::DegToRad()*70 && deltaPhi < TMath::DegToRad()*110)fhXEUeChargedMediumCone->Fill(ptTrig, uexE, GetEventWeight());
+  if(deltaPhi > TMath::DegToRad()*60 && deltaPhi < TMath::DegToRad()*120)fhXEUeChargedLargeCone->Fill(ptTrig, uexE, GetEventWeight());
+  
   if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig, TMath::Log(1/uexE), GetEventWeight());
   
   fhZTUeCharged->Fill(ptTrig, uezT, GetEventWeight());
@@ -1948,6 +1953,24 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   fhXEUeCharged->SetYTitle("#it{x}_{#it{E}}");
   fhXEUeCharged->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
   
+  fhXEUeChargedSmallCone  =
+  new TH2F(Form("hXEUeChargedSmallCone%s",right.Data()),"#it{x}_{#it{E}} for Underlying Event in a cone [80,100] deg",
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+  fhXEUeChargedSmallCone->SetYTitle("#it{x}_{#it{E}}");
+  fhXEUeChargedSmallCone->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+  
+  fhXEUeChargedMediumCone  =
+  new TH2F(Form("hXEUeChargedMediumCone%s",right.Data()),"#it{x}_{#it{E}} for Underlying Event in a cone [70,110] deg",
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+  fhXEUeChargedMediumCone->SetYTitle("#it{x}_{#it{E}}");
+  fhXEUeChargedMediumCone->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+  
+  fhXEUeChargedLargeCone  =
+  new TH2F(Form("hXEUeChargedLargeCone%s",right.Data()),"#it{x}_{#it{E}} for Underlying Event in a cone [60,120] deg",
+           nptbins,ptmin,ptmax,nxeztbins,xeztmin,xeztmax);
+  fhXEUeChargedLargeCone->SetYTitle("#it{x}_{#it{E}}");
+  fhXEUeChargedLargeCone->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
+  
   fhPtHbpXEUeCharged  =
   new TH2F(Form("hHbpXEUeCharged%s",right.Data()),"#xi = ln(1/#it{x}_{#it{E}}) for Underlying Event",
            nptbins,ptmin,ptmax,nhbpbins,hbpmin,hbpmax);
@@ -1969,6 +1992,9 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   outputContainer->Add(fhUePart);
   outputContainer->Add(fhDeltaPhiUeChargedPt) ;
   outputContainer->Add(fhXEUeCharged) ;
+  outputContainer->Add(fhXEUeChargedSmallCone) ;
+  outputContainer->Add(fhXEUeChargedMediumCone) ;
+  outputContainer->Add(fhXEUeChargedLargeCone) ;
   outputContainer->Add(fhPtHbpXEUeCharged) ;
   outputContainer->Add(fhZTUeCharged) ;
   outputContainer->Add(fhPtHbpZTUeCharged) ;
@@ -3735,7 +3761,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       Float_t pTSumTrackInCone     = 0;
       Float_t pTLeadClusterInCone  = 0;
       Float_t pTSumClusterInCone   = 0;
-            
+      
       pTLeadTrackInCone   = particle->GetChargedLeadPtInCone();
       pTLeadClusterInCone = particle->GetNeutralLeadPtInCone();
       

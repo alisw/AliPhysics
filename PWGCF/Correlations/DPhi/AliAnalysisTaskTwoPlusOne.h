@@ -77,6 +77,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetUseSmallerPtAssoc(Bool_t flag) { fUseSmallerPtAssoc = flag; }
   void   SetRunCorrelations(Bool_t flag) { fRunCorrelations = flag; }
   void   SetRunIfPoolReady(Bool_t flag) { fRunIfPoolReady = flag; }
+  void   SetRandomPosition(Bool_t flag) { fRandomPosition = flag; }
   void   SetSelectCentrality(Bool_t flag) { fSelectCentrality = flag; }
 
   void SetEfficiencyCorrection(THnF* hist) { fEfficiencyCorrection = hist; }
@@ -142,6 +143,7 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Bool_t fUseSmallerPtAssoc;                  //uses only pT which is smaller than the trigger pT
     Bool_t fRunCorrelations;                    //run correlation analysis, otherwise only the particle distribution is analyzed
     Bool_t fRunIfPoolReady;                    //run whole analysis only if the pool exists and it is ready
+    Bool_t fRandomPosition;                    //use randomized position of the particles in the eveng
     Bool_t fSelectCentrality;                  //sort out centralities 7.5% - 30% and >50% because they are not used for the analysis anyway
     
     THnF* fEfficiencyCorrection;     // if non-0 this efficiency correction is applied on the fly to the filling for all particles. The factor is multiplicative, i.e. should contain 1/efficiency. Axes: eta, pT, centrality, z-vtx

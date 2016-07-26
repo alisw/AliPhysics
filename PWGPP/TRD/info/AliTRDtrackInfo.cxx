@@ -625,16 +625,23 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t x0, Int_t chg, TGeoHMat
   else yc=chg<0?ycn:ycp; 
   xc= a-yc*tgp;
   // find position on the circle for the anode wire
-  Double_t w      = loc_tr1[0] - AliTRDgeometry::AnodePos(),
-           wp     = w*(trk_tr1[0] - trk_tr0[0])/dx,
-           trk_trAn[3] = {trk_tr1[0] - wp, 
-                          0., 
-                          trk_tr1[2]-wp*(trk_tr1[2] - trk_tr0[2])/(trk_tr1[0] - trk_tr0[0])},
-           dxAnTrk= trk_trAn[0] - xc,
-           dyAnTrk= TMath::Sqrt(R*R - dxAnTrk*dxAnTrk),
-           yAnTrk0= yc-dyAnTrk, 
-           yAnTrk1= yc+dyAnTrk;
-  trk_trAn[1]=TMath::Abs(yAnTrk0-trk_tr1[1])<TMath::Abs(yAnTrk1-trk_tr1[1])?yAnTrk0:yAnTrk1;         
+  Double_t w = loc_tr1[0] - AliTRDgeometry::AnodePos(),
+	      wp = w*(trk_tr1[0] - trk_tr0[0])/dx,
+	      trk_trAn[3] = {trk_tr1[0] - wp, 
+			     0., 
+			     trk_tr1[2]-wp*(trk_tr1[2] - trk_tr0[2])/(trk_tr1[0] - trk_tr0[0])},
+	      dxAnTrk= trk_trAn[0] - xc,
+	      dyAnTrk= 0,
+	      yAnTrk0= yc,
+	      yAnTrk1= yc;
+	      dyAnTrk = R*R - dxAnTrk*dxAnTrk; 
+	      if (dyAnTrk>1e-16) {
+		dyAnTrk = TMath::Sqrt(dyAnTrk);
+		yAnTrk0 -= dyAnTrk; 
+		yAnTrk1 += dyAnTrk;
+	      }
+	      else dyAnTrk = 0.;
+	      trk_trAn[1]=TMath::Abs(yAnTrk0-trk_tr1[1])<TMath::Abs(yAnTrk1-trk_tr1[1])?yAnTrk0:yAnTrk1;         
   // go back to local coordinates
   matrix->MasterToLocal(trk_trAn, loc_tr1);
   Double_t dxTRD  = AliTRDgeometry::AnodePos() - loc_tr1[0];

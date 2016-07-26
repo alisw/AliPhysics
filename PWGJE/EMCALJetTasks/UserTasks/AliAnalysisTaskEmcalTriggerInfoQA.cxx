@@ -1,3 +1,4 @@
+#include "AliEmcalTriggerSetupInfo.h"
 #include "AliAnalysisTaskEmcalTriggerInfoQA.h"
 
 #include <Riostream.h>
@@ -29,7 +30,6 @@
 #include "AliEMCALGeometry.h"
 
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalTriggerSetupInfo.h"
 
 ClassImp(AliAnalysisTaskEmcalTriggerInfoQA)
 

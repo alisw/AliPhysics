@@ -34,7 +34,9 @@
 
 class AliESDEvent;
 class AliVTrack;
+class AliPID;
 class AliPIDResponse;
+class AliPIDCombined;
 class AliPhysicsSelection;
 class AliESDtrackCuts;
 
@@ -96,6 +98,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kMBAND_AD, //ADA && ADC
 			kMBOR_Global, //V0A || V0C || ADA || ADC || SPD
 			kMBAND_Global, //(V0A || ADA) && (V0C || ADC)
+			kDGV0,//!V0A && !V0C
+			kDGAD,//!ADA && !ADC
 			kDGV0SPD, //!V0A && !V0C && SPD
 			kDGADSPD, //!ADA && !ADC && SPD
 			kDGV0ADSPD,
@@ -104,6 +108,17 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			k2Tracks,
 			k4Tracks,
 			kAll
+		};
+		enum {
+			kTri_CINT5 = 0,
+			kTri_CINT7,
+			kTri_CINT10,
+			kTri_CADAND,
+			kTri_C0SMB,
+			kTri_CDG6,
+			kTri_CDG6_SPD2,
+			kTri_CDG7_SPD2,
+			kTriAll
 		};
 
 		AliAnalysisTaskCDPWA(const AliAnalysisTaskCDPWA  &p);
@@ -138,6 +153,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		// event information
 		//------------------
 		AliPIDResponse *fPIDResponse; //! PID Response object
+		AliPIDCombined *fPIDCombined; //! PID Combined object
 		AliESDEvent *fESDEvent; // esd event object
 		AliPhysicsSelection *fPhysicsSelection; // physics selection object
 		AliESDtrackCuts *fTrackCuts;
@@ -161,9 +177,24 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fCheckFourPion; //! Check that this event has 4 tracks
 		Bool_t fCheckTwoPion_ITSSA;//! Check that this event has 2 ITSSA_track events
 
-		Double_t fTwoPionTrack[2][10]; //! Two track Momentum, Energy and Sign
-		Double_t fTwoPionTrack_ITSSA[2][10]; //! Two track(ITSSA) Momentum, Energy and Sign
-		Double_t fFourPionTrack[4][10]; //! Four track Momentum, Energy and Sign
+		Double_t fTwoPionTrack[2][9]; //! Two track Momentum, Energy and Sign
+		Double_t fTwoPionTPCSigma[2][9]; //! Two track TPC sigma for PID
+		Double_t fTwoPionTOFSigma[2][9]; //! Two track TOF sigma for PID
+		Double_t fTwoPionITSSigma[2][9]; //! Two track ITS sigma for PID
+		UInt_t fTwoPionMask[2]; //! Two track mask
+		Bool_t fTwoPionDetMask[2][9]; //! Two track detector mask
+		Double_t fTwoPionBayesProb[2][5]; //!Bayesian probabilities
+		Double_t fTwoPionTrack_ITSSA[2][9]; //! Two track(ITSSA) Momentum, Energy and Sign
+
+		Double_t fFourPionTrack[4][9]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTPCSigma[4][9]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionTOFSigma[4][9]; //! Four track Momentum, Energy and Sign
+		Double_t fFourPionITSSigma[4][9]; //! Four track Momentum, Energy and Sign
+		UInt_t fFourPionMask[4]; //! Two track mask
+		Bool_t fFourPionDetMask[4][9]; //! Two track detector mask
+		Double_t fFourPionBayesProb[4][5]; //!Bayesian probabilities
+		Double_t fFourPionTrack_ITSSA[4][9];//!
+
 		Double_t fMCGenProtonTrack[2][5]; //! Info of generated Proton 1 after scattering
 		Double_t fMCGenPionTrack[2][5]; //! Info of generated Pion 1 after scattering
 		Double_t fVertex[3];//! Vertex information
@@ -171,6 +202,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		// Double gap tree variables------------------------------------------
 		Bool_t fDGV0SPD;//! V0+SPD gap info
 		Bool_t fDGADSPD;//! AD+SPD gap info
+		Bool_t fSPDFired;//!
 		Bool_t fV0Gap;//!
 		Bool_t fADGap;//!
 		Bool_t fFMDGap;//!
@@ -179,6 +211,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Int_t fRunNumber;//!
 
 		TH1D *fHistEvent; //Histogram for number of event
+		TH1D *fHistTrigger;
 		TH1D *fHistEventProcesses; //Histogram for number of event(MC)
 		TH1D *fHistPrimVtxX; //Histogram for position of primary vertex X
 		TH1D *fHistPrimVtxY; //Histogram for position of primary vertex X
@@ -195,6 +228,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fRunVsMBAND_AD;
 		TH1D *fRunVsMBOR_Global;
 		TH1D *fRunVsMBAND_Global;
+		TH1D *fRunVsDG_V0;
+		TH1D *fRunVsDG_AD;
 		TH1D *fRunVsDG_V0SPD;
 		TH1D *fRunVsDG_ADSPD;
 		TH1D *fRunVsDG_V0ADSPD;

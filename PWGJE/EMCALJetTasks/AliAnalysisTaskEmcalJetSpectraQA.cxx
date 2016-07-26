@@ -141,18 +141,16 @@ void AliAnalysisTaskEmcalJetSpectraQA::AllocateTHnSparse(AliJetContainer* jets)
 
   if (fForceBeamType != kpp) {
     title[dim] = "No. of constituents";
-    nbins[dim] = fNbins/2;
-    Double_t binWidth = 250. / nbins[dim];
-    min[dim] = 0 - binWidth/2;
-    max[dim] = 250. - binWidth/2;
+    nbins[dim] = 125;
+    min[dim] = 0;
+    max[dim] = 250;
     dim++;
   }
   else {
     title[dim] = "No. of constituents";
-    nbins[dim] = fNbins/10;
-    Double_t binWidth = 50. / nbins[dim];
-    min[dim] = 0 - binWidth/2;
-    max[dim] = 50. - binWidth/2;
+    nbins[dim] = 50;
+    min[dim] = -0.5;
+    max[dim] = 49.5;
     dim++;
   }
 
@@ -308,12 +306,15 @@ void AliAnalysisTaskEmcalJetSpectraQA::UserCreateOutputObjects()
 
       histname = TString::Format("%s/fHistRejectionReason_%d", jets->GetArrayName().Data(), i);
       title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 100, 0, 250);
+      TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 100, 0, 250);
+      SetRejectionReasonLabels(hist->GetXaxis());
     }
 
-    histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
+    if (!jets->GetRhoName().IsNull()) {
+      histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
+    }
   }
 
   fOutput->Add(fHistManager.GetListOfHistograms());
@@ -331,8 +332,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectraQA::FillHistograms()
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
   while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
-    fHistManager.FillTH2(histname.Data(), fCent, jets->GetRhoVal());
+    if (jets->GetRhoParameter()) {
+      histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
+      fHistManager.FillTH2(histname.Data(), fCent, jets->GetRhoVal());
+    }
 
     AliEmcalJet* jet = 0;
     jets->ResetCurrentID();

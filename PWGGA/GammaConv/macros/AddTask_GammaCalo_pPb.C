@@ -444,7 +444,7 @@ void AddTask_GammaCalo_pPb(
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
-    analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();

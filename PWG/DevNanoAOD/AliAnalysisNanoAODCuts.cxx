@@ -31,22 +31,53 @@ Bool_t AliAnalysisNanoAODTrackCuts::IsSelected(TObject* obj)
 }
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
-  AliAnalysisCuts(),  fVertexRange(10)
+  AliAnalysisCuts(), 
+  fVertexRange(-1),
+  fTrackCut(0),
+  fMinMultiplicity(-1),
+  fMaxMultiplicity(-1)
 {
   // default ctor   
 }
 
 Bool_t AliAnalysisNanoAODEventCuts::IsSelected(TObject* obj)
 {
-  // Returns true if the object is a primary vertex
+  // Returns true if object accepted on the event level
+  
   AliAODEvent * evt = dynamic_cast<AliAODEvent*>(obj);
   
-  AliAODVertex * vertex = evt->GetPrimaryVertex();
-  if (!vertex) return kFALSE;
-  if (TMath::Abs(vertex->GetZ()) > fVertexRange) return kFALSE;
+  if (fVertexRange > 0)
+  {
+    AliAODVertex * vertex = evt->GetPrimaryVertex();
+    if (!vertex) 
+      return kFALSE;
+    
+    if (vertex->GetNContributors() < 1) 
+    {
+      // SPD vertex cut
+      vertex = evt->GetPrimaryVertexSPD();    
+      if (!vertex || vertex->GetNContributors() < 1) 
+        return kFALSE;
+    }    
+    
+    if (TMath::Abs(vertex->GetZ()) > fVertexRange) 
+      return kFALSE;
+  }
   
+  if (fTrackCut != 0)
+  {
+    Int_t trackCount = 0;
+    for (Int_t j=0; j<evt->GetNumberOfTracks(); j++)
+      if (fTrackCut->IsSelected(evt->GetTrack(j)))
+        trackCount++;
+      
+    if (fMinMultiplicity > 0 && trackCount < fMinMultiplicity)
+      return kFALSE;
+    if (fMaxMultiplicity > 0 && trackCount > fMaxMultiplicity)
+      return kFALSE;
+  }
+      
   return kTRUE;
-  
 }
 
 

@@ -38,11 +38,13 @@ makeEnvHera(){
 }
 
 
+
 submitTiming(){
     #
     # 1.) Submit query  to get  time dependent info
     #
-    alilog_info "BEGIN: 1.) Submit query  to get  time dependent info"
+    alilog_info "AliTPCcalibAlignInterpolation.sh/submitTiming/BEGIN: 1.) Submit query  to get  time dependent info" 2>&1 | tee -a submitTiming.log
+    gitInfo -2 2>&1 | tee -a submitTiming.log
     wdir=`pwd` 
     for arun in `cat run.list`; do
         [ -d $wdir/000$arun ]  &&  	cd $wdir/000$arun;   
@@ -51,6 +53,7 @@ submitTiming(){
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 	echo source  $balice >  submitTime.sh
+	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitTime.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(5,$run\\\) >> submitTime.sh
 	chmod a+x submitTime.sh  
 	rm -f submitTime.log
@@ -64,9 +67,10 @@ submitTiming(){
 	     alilog_info "END:Processing run $arun on batch"
 	fi;
 	cd $wdir
-    done    2>&1 | tee  submitScript2.log
+    done    2>&1 | tee -a submitTiming.log
+    gitInfo -2 2>&1 | tee -a submitTiming.log
     ls $wdir/*/residualInfo.root > timeInfo.list
-    alilog_info "END: 1.) Submit query  to get  time dependent info"
+    alilog_info "AliTPCcalibAlignInterpolation.sh/submitTiming/END: 1.) Submit query  to get  time dependent info" | tee -a submitTiming.log
 }
 
 
@@ -74,7 +78,8 @@ submitDrift(){
     #
     # 1.) Submit query  to get  time dependent info
     #
-    alilog_info "BEGIN: 1.) submitDrift -  Submit query  to calibrate drift velocity"
+    alilog_info "AliTPCcalibAlignInterpolation.sh/submitDrift/BEGIN: 1.) submitDrift -  Submit query  to calibrate drift velocity"  2>&1 | tee -a submitDrift.log
+    gitInfo -2 2>&1 | tee -a submitDrift.log
     wdir=`pwd` 
     for arun in `cat run.list`; do
         [ -d $wdir/000$arun ]  &&  	cd $wdir/000$arun;   
@@ -83,6 +88,9 @@ submitDrift(){
         run=`echo $arun| sed s_000__`
 	cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 	echo export runNumber=$arun  >  submitDrift.sh
+	echo export driftDeltaT=$driftDeltaT >> submitDrift.sh 
+        echo export driftSigmaT=$driftSigmaT  >> submitDrift.sh 
+	echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitDrift.sh
 	echo source  $balice >>  submitDrift.sh
 	echo aliroot -b -q $incScript  AliTPCcalibAlignInterpolationMacro.C+\\\(6,$run\\\) >> submitDrift.sh
 	chmod a+x submitDrift.sh  
@@ -97,9 +105,10 @@ submitDrift(){
 	     alilog_info "END:Processing run $arun on batch"
 	fi;
 	cd $wdir
-    done    2>&1 | tee  submitScript2.log
+    done    2>&1 | tee -a submitDrift.log
+    gitInfo -2 2>&1 | tee -a submitDrift.log
     ls $wdir/*/residualInfo.root > timeInfo.list
-    alilog_info "END: 1.) submitDrift -  Submit query  to calibrate drift velocity"
+    alilog_info "AliTPCcalibAlignInterpolation.sh/submitDrift/END: 1.) submitDrift -  Submit query  to calibrate drift velocity" | tee -a submitDrift.log
 }
 
 
@@ -109,7 +118,8 @@ submitHistogramming(){
     #
     # 2.) Submit hitogramming and filling jobs
     #
-    alilog_info "BEGIN: 2.) Submit hitogramming and filling jobs"
+    alilog_info "AliTPCcalibAlignInterpolationGSI.sh/submitHistogramming/BEGIN: 2.) Submit hitogramming and filling jobs" | tee -a submitHistogramming.log
+    gitInfo -2 2>&1 | tee -a submitHistogramming.log
     wdir=`pwd` 
     export gDumpHistoFraction=0.01;
     
@@ -142,6 +152,7 @@ submitHistogramming(){
                 ln -sf $wdirRun/fitDrift.root .
 		cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
 		echo export mapStartTime=$itime > submitHisto$ihis.sh
+		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> submitHisto$ihis.sh
 		echo export mapStopTime=$(($itime+$timeDeltaRun)) >> submitHisto$ihis.sh
 		echo export runNumber=$arun    >> submitHisto$ihis.sh  
 		echo source  $balice >>submitHisto$ihis.sh
@@ -163,8 +174,10 @@ submitHistogramming(){
 	done;
 	alilog_info "END:Processing run $arun"
 	cd $wdir;
-    done  2>&1 | tee  submitScriptHisto.log
+    done  2>&1 | tee  -a submitHistogramming.log
+    gitInfo -2 2>&1 | tee -a submitHistogramming.log
     find $wdir -iname "ResidualMapFull*" > map.list
+    alilog_info "AliTPCcalibAlignInterpolationGSI.sh/submitHistogramming END: 2.) Submit hitogramming and filling jobs" | tee -a submitHistogramming.log
     # nohup bash -c "source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationGSI.sh; submitHistogramming" &
 }
 
@@ -173,7 +186,8 @@ submitNDLocal(){
     #
     # 3.) Submit NDlocalregrression jobs
     #
-    alilog_info "BEGIN: 3.) Submit NDlocalregrression jobs"
+    alilog_info "AliTPCcalibAlignInterpolationGSI.sh/submitNDLocal/BEGIN: 3.) Submit NDlocalregrression jobs" | tee -a submitNDLocal.log 
+    gitInfo -2 2>&1 | tee -a submitNDLocal.log 
     wdir=`pwd` 
     secStep=18;
     treeNames=( 'deltaRPhiTPCITS' 'deltaRPhiTPCITSTRDDist'  'deltaRPhiTPCITSTOFDist'  'deltaZTPCITSDist'  'deltaZTPCITSTRDDist' 'deltaZTPCITSTOFDist' );
@@ -193,6 +207,7 @@ submitNDLocal(){
 		submitScript=submit_${ctype}_${side}_${sec0}
 		rm -f $submitScript.*
 		echo export inputFile=$inputFile >  ${submitScript}
+		echo "( source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;  gitInfo 2;)" >> ${submitScript}
 		echo export inputTree=${treeNames[$ctype]} >> ${submitScript}
 		echo export varTheta0=$theta0       >> ${submitScript}
 		echo export varTheta1=$theta1       >> ${submitScript}
@@ -208,12 +223,49 @@ submitNDLocal(){
 		alilog_info "BEGIN:Processing ND fits at directory $mapDir, file $inputFile, type $ctype side $side sec = $sec"
 		$batchCommand  -o ${submitScript}.log -e ${submitScript}.err  `pwd`/${submitScript}.sh              
 	    done;
-	done;
+	done  
+	gitInfo -2 2>&1 | tee -a submitNDLocal.log 
 	alilog_info "END: Processing ND fits at directory $mapDir, file $inputFile, type $ctype "
 	cd $wdir
     done;
+    alilog_info "AliTPCcalibAlignInterpolationGSI.sh/submitNDLocal END: 2.) Submit hitogramming and filling jobs" | tee -a submitNDLocal.log
 }    
 
+submitJobAllTimeBins(){
+    #
+    #
+    #
+    alilog_info "BEGIN: 5.) Submit hitogramming and filling jobs"
+    wdir=`pwd`     
+    for arun in `cat run.list`; do
+	wdirRun=$wdir/$arun
+	cd $wdirRun
+	wdirTime=$wdirRun/TimeAll;
+        nfiles=`ls Time1*/his1/ResidualHistogram*.root | grep -c .root`
+	if [ $nfiles -lt 3 ]; then
+	    echo skipping short run $arun 
+	    continue;
+        fi;
+	echo processing run $arun 
+	mkdir -p $wdirTime
+	#for ihis in  0 1 2 3 4 5 ; do    #histo time loop
+	for ihis in  1 4  ; do    #histo time loop
+	    mkdir -p $wdirTime/his$ihis;
+	    cd   $wdirTime/his$ihis
+	    rm submitMap.*
+	    cp $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationMacro.C AliTPCcalibAlignInterpolationMacro.C
+	    echo export mapStartTime=0  >submitMap.sh
+	    echo rm ResidualHistograms_His${ihis}.root >> submitMap.sh
+	    echo hadd -k ResidualHistograms_His${ihis}.root ../../Time1*/his${ihis}/ResidualHistogram*.root >> submitMap.sh
+	    echo aliroot -b -q  $incScript AliTPCcalibAlignInterpolationMacro.C+\\\(2,$ihis,0\\\) >> submitMap.sh 
+	    chmod a+x submitMap.sh
+	    $batchCommand  -o submitMap.log -e submitMap.err submitMap.sh
+	done;
+	cd $wdirTime/
+    done;
+    cd $wdir;
+
+}
 
 
 submitTimeDependentGSI(){
@@ -226,13 +278,22 @@ submitTimeDependentGSI(){
     # we assume that the run.list and residual list is     
     # Parameters now hardwired
     # assuming run.list and residual.list ascii file exist in working directory
+    
+    source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationGSI.sh
+    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh      
+    #
+    # Set parameters:
+    #
     export timeDelta=1200 ;     # time interval for the map creation
     export nTracks=100000000;   # limit the number of tracks per time interval - needed in test mode t speed up test
     export driftDeltaT=120;     # make drift update every 120 seconds
     export driftSigmaT=600;     # smoothing  sigma for drift calibration
+    export AliTPCcalibAlignInterpolation_MakeNDFit_KeepCovariance=0;  # do not keep covariance matrix
+    export AliTPCcalibAlignInterpolation_MakeNDFit_DumpFitTree=0;     # do not store the tree dump of ND local
+    export treeCacheSize=200000000; # 200MBy for the tree cache
 
-    source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolationGSI.sh
-    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+    gitInfo 1 > gitInfo.log
     #
     # Set parameters of $ALICE_ROOT and batch farm
     # makeEnvLocal;  
@@ -241,6 +302,7 @@ submitTimeDependentGSI(){
     # 
     #
     alilog_info "BEGIN: 0.) make directory structure"
+    gitInfo 2 > gitInfoMakeDirectory.log
     wdir=`pwd`
     for arun in `cat  run.list`; do
        mkdir $wdir/$arun;
@@ -248,11 +310,15 @@ submitTimeDependentGSI(){
     done; 
     alilog_info "END: 0.) make directory structure"
 
-
+    #
     submitTiming;
+    #
     submitDrift;
+    #
     submitHistogramming;
+    #
     submitNDLocal;
+    #
 }
 
 
@@ -312,5 +378,17 @@ runCallgrind(){
 #	cd   /hera/alice/miranov/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/alice/data/2015/LHC15o30012015.callgrind/000245231/Time1448613598/his1/calgrindMap
 	nohup /usr/bin/valgrind --tool=callgrind --log-file=cpu.txt   --num-callers=40 -v  --trace-children=yes aliroot  -b -q AliTPCcalibAlignInterpolationMacro.C+\(2,1,2\) &>  calgrindMap.log & 
 	
+}
+
+
+summarizeVDriftLog(){
+    #
+    #
+    #
+    # dump failed fitDrift jobs
+    alilog_info "failed JOBS "
+    egrep "fitDrift FAILED"  */submitDrift*log
+    #
+
 }
 

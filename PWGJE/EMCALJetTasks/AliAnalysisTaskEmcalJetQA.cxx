@@ -24,6 +24,7 @@
 
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliTrackContainer.h"
 #include "AliCentrality.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
@@ -136,6 +137,11 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
     if (fParticleLevel) nlabels = 1;
 
     for (Int_t i = 0; i < fNcentBins; i++) {
+      histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";Rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";
+      TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
+      SetRejectionReasonLabels(hist->GetXaxis());
+
       for (Int_t j = 0; j < nlabels; j++) {
         histname = TString::Format("%s/fHistTrPhiEtaPt_%d_%d", cont->GetArrayName().Data(), i, j);
         title = histname + ";#eta;#phi;#it{p}_{T} (GeV/#it{c})";
@@ -188,6 +194,11 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
     fHistManager.CreateHistoGroup(cont->GetArrayName());
     for (Int_t i = 0; i < fNcentBins; i++) {
+      histname = TString::Format("%s/fHistRejectionReason_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";Rejection reason;#it{E}_{cluster} (GeV);counts";
+      TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 40, 0, 100);
+      SetRejectionReasonLabels(hist->GetXaxis());
+
       histname = TString::Format("%s/fHistClusPosition_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{x} (cm);#it{y} (cm);#it{z} (cm)";
       fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -500, 500, 50, -500, 500, 50, -500, 500);
@@ -699,7 +710,7 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
     // Cluster loop
     AliVCluster* cluster = 0;
     clusters->ResetCurrentID();
-    while ((cluster = clusters->GetNextAcceptCluster())) {
+    while ((cluster = clusters->GetNextCluster())) {
       AliTLorentzVector nPart;
       Double_t energy = 0;
 
@@ -713,6 +724,12 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
       }
 
       if (energy <= 0) continue;
+
+      if (!clusters->AcceptCluster(clusters->GetCurrentID())) {
+        histname = TString::Format("%s/fHistRejectionReason_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(), energy);
+        continue;
+      }
 
       Float_t pos[3]={0};
       cluster->GetPosition(pos);
@@ -783,33 +800,39 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
 
   TString histname;
 
-  AliParticleContainer* tracks = 0;
+  AliParticleContainer* particles = 0;
   TIter nextPartColl(&fParticleCollArray);
-  while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
-    tracks->ResetCurrentID();
+  while ((particles = static_cast<AliParticleContainer*>(nextPartColl()))) {
+    particles->ResetCurrentID();
     AliVParticle* track = 0;
     AliTLorentzVector mom;
-    while ((track = tracks->GetNextAcceptParticle())) {
-      tracks->GetMomentum(mom, tracks->GetCurrentID());
+    while ((track = particles->GetNextParticle())) {
+      particles->GetMomentum(mom, particles->GetCurrentID());
+
+      if (!particles->AcceptParticle(particles->GetCurrentID())) {
+        histname = TString::Format("%s/fHistRejectionReason_%d", particles->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, particles->GetRejectionReasonBitPosition(), mom.Pt());
+        continue;
+      }
 
       fNTotTracks++;
 
       if (fLeadingTrack.Pt() < mom.Pt()) fLeadingTrack = mom;
 
       if (fParticleLevel) {
-        histname = TString::Format("%s/fHistTrPhiEtaPt_%d", tracks->GetArrayName().Data(), fCentBin);
+        histname = TString::Format("%s/fHistTrPhiEtaPt_%d", particles->GetArrayName().Data(), fCentBin);
         fHistManager.FillTH2(histname, mom.Eta(), mom.Phi_0_2pi(), mom.Pt());
       }
       else {
         if (track->GetLabel() == 0) {
           zero++;
-          histname = TString::Format("%s/fHistTrPhiEtaZeroLab_%d", tracks->GetArrayName().Data(), fCentBin);
+          histname = TString::Format("%s/fHistTrPhiEtaZeroLab_%d", particles->GetArrayName().Data(), fCentBin);
           if (fHistManager.FindObject(histname)) {
 
             fHistManager.FillTH2(histname, mom.Eta(), mom.Phi_0_2pi());
 
           }
-          histname = TString::Format("%s/fHistTrPtZeroLab_%d", tracks->GetArrayName().Data(), fCentBin);
+          histname = TString::Format("%s/fHistTrPtZeroLab_%d", particles->GetArrayName().Data(), fCentBin);
           if (fHistManager.FindObject(histname)) {
             fHistManager.FillTH1(histname, mom.Pt());
           }
@@ -818,54 +841,52 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
         if (track->GetLabel() < 0) neg++;
 
         Int_t type = 0;
-        AliVTrack* vtrack = dynamic_cast<AliVTrack*>(track);
+        AliTrackContainer* tracks = dynamic_cast<AliTrackContainer*>(particles);
 
-        if (vtrack) {
+        if (tracks) {
           // Track type (hybrid)
-          if (tracks->GetLoadedClass()->InheritsFrom("AliPicoTrack")) {
-            type = static_cast<AliPicoTrack*>(track)->GetTrackType();
-          }
-          else if (tracks->GetTrackFilterType() == AliEmcalTrackSelection::kHybridTracks) {
+          if (tracks->GetTrackFilterType() == AliEmcalTrackSelection::kHybridTracks) {
             type = tracks->GetTrackType(tracks->GetCurrentID());
           }
 
           // Track propagation to EMCal surface
+          AliVTrack* vtrack = static_cast<AliVTrack*>(track);
 
           if (vtrack->GetTrackEtaOnEMCal() == -999 || vtrack->GetTrackPhiOnEMCal() == -999) {
-            histname = TString::Format("%s/fHistTrPhiEtaNonProp_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistTrPhiEtaNonProp_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname)) {
               fHistManager.FillTH2(histname, mom.Eta(), mom.Phi_0_2pi());
             }
-            histname = TString::Format("%s/fHistTrPtNonProp_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistTrPtNonProp_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname)) {
               fHistManager.FillTH1(histname, mom.Pt());
             }
           }
           else {
-            histname = TString::Format("%s/fHistTrEmcPhiEta_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistTrEmcPhiEta_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname))
               fHistManager.FillTH2(histname, vtrack->GetTrackEtaOnEMCal(), vtrack->GetTrackPhiOnEMCal());
 
-            histname = TString::Format("%s/fHistTrEmcPt_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistTrEmcPt_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname))
               fHistManager.FillTH1(histname, vtrack->GetTrackPtOnEMCal());
 
-            histname = TString::Format("%s/fHistDeltaEtaPt_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistDeltaEtaPt_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname))
               fHistManager.FillTH2(histname, mom.Pt(), mom.Eta() - vtrack->GetTrackEtaOnEMCal());
 
-            histname = TString::Format("%s/fHistDeltaPhiPt_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistDeltaPhiPt_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname))
               fHistManager.FillTH2(histname, mom.Pt(), mom.Phi_0_2pi() - vtrack->GetTrackPhiOnEMCal());
 
-            histname = TString::Format("%s/fHistDeltaPtvsPt_%d", tracks->GetArrayName().Data(), fCentBin);
+            histname = TString::Format("%s/fHistDeltaPtvsPt_%d", particles->GetArrayName().Data(), fCentBin);
             if (fHistManager.FindObject(histname))
               fHistManager.FillTH2(histname, mom.Pt(), mom.Pt() - vtrack->GetTrackPtOnEMCal());
           }
         }
 
         if (type >= 0 && type <= 3) {
-          histname = TString::Format("%s/fHistTrPhiEtaPt_%d_%d", tracks->GetArrayName().Data(), fCentBin, type);
+          histname = TString::Format("%s/fHistTrPhiEtaPt_%d_%d", particles->GetArrayName().Data(), fCentBin, type);
           fHistManager.FillTH3(histname, mom.Eta(), mom.Phi_0_2pi(), mom.Pt());
         }
         else {
@@ -874,11 +895,11 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
       }
     }
 
-    histname = TString::Format("%s/fHistTrNegativeLabels_%d", tracks->GetArrayName().Data(), fCentBin);
+    histname = TString::Format("%s/fHistTrNegativeLabels_%d", particles->GetArrayName().Data(), fCentBin);
     if (fHistManager.FindObject(histname))
       fHistManager.FillTH1(histname, 1. * neg / fNTotTracks);
 
-    histname = TString::Format("%s/fHistTrZeroLabels_%d", tracks->GetArrayName().Data(), fCentBin);
+    histname = TString::Format("%s/fHistTrZeroLabels_%d", particles->GetArrayName().Data(), fCentBin);
     if (fHistManager.FindObject(histname))
       fHistManager.FillTH1(histname, 1. * zero / fNTotTracks);
   }

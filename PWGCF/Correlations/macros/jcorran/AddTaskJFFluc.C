@@ -38,7 +38,8 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	FFtask->SetPtRange( pt_min, pt_max);
 	FFtask->SetEffConfig( effMode, FilterBit); 
 	FFtask->SetIsPhiModule( IsPhiModule );
-	FFtask->SetInFileName( InFileNameNUE ); 
+	FFtask->SetInFileName( InFileNameNUE );
+	FFtask->SetParticleCharge( 0 );  
     //int CollisionCandidates = AliVEvent::kCentral;
 	//FFtask->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ; 
 	//FFTask->SelectCollisionCandidates( CollisionCandidates );

@@ -150,7 +150,7 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
 
  
   for (Int_t i=0; i<kNPMT0; i++) {
-    if(time[i]<99999 &&std::abs(time[i])>1e-8 && amplitude[i]<99999&&std::abs(amplitude[i])>1e-8 )
+    if(time[i]<99999  )
       {
 	if(amplitude[i]<50){
 	  fTimeVSAmplitude[i]->Fill(amplitude[i],time[i]);

@@ -18,12 +18,14 @@
 
 #include <TAxis.h>
 #include <TClonesArray.h>
+#include <THistManager.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TString.h>
 
 #include "AliAODMCParticle.h"
 #include "AliLog.h"
+#include "AliEmcalTrackSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliMCEvent.h"
 #include "AliPicoTrack.h"
@@ -36,7 +38,6 @@
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerKineCuts.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliEMCalTriggerRecTrackAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 

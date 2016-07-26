@@ -6,16 +6,15 @@
 #include "AliAnalysisTaskSE.h"
 
 class TArrayD;
+class THistManager;
 class TString;
 class AliAnalysisUtils;
-class AliAODTrack;
+class AliEmcalTrackSelection;
 class AliEMCALGeometry;
-class AliESDtrackCuts;
-class AliESDtrack;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
+class AliEmcalTriggerOfflineSelection;
 
 /**
  * \class AliAnalysisTaskChargedParticlesRef
@@ -32,14 +31,6 @@ public:
     kpPb = 1,
     kPbp = -1
   };
-  enum EmcalTriggerClass{
-    kCPREL0 = 0,
-    kCPREG1,
-    kCPREG2,
-    kCPREJ1,
-    kCPREJ2,
-    kCPRntrig
-  };
   AliAnalysisTaskChargedParticlesRef();
   AliAnalysisTaskChargedParticlesRef(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRef();
@@ -52,13 +43,12 @@ public:
   void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
   void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
-  void                        SwitchoffSPDCut() { fSwitchoffSPDcut = true; }
-  void                        SwitchoffITSCut() { fSwitchoffITScut = true; }
-
+  void SetTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
+  void InitializeTrackCuts(TString cutname, bool isAOD);
+  void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
+  void SetAnalysisUtil(AliAnalysisUtils *util) { fAnalysisUtil = util; }
   void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
-
-  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
@@ -67,27 +57,19 @@ protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected);
   void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
-  Bool_t TrackSelectionESD(AliESDtrack *track);
-  Bool_t TrackSelectionAOD(AliAODTrack *track);
-
-  AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
-  AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+  AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
+  THistManager                    *fHistos;                   ///< Histogram manager
   AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
 
-  Bool_t                          fSwitchoffSPDcut;           ///< Switch off SPD cut
-  Bool_t                          fSwitchoffITScut;           ///< Switch off ITS cut completely (no refit, no cluster requirement)
-
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
-
-  Double_t                        fOfflineEnergyThreshold[kCPRntrig];    ///< Threhold applied on offline patches
 
 private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);

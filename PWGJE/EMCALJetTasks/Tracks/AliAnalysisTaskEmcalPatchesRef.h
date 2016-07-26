@@ -6,26 +6,16 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisUtils;
+class THistManager;
 class TArrayD;
 class TString;
 
 namespace EMCalTriggerPtAnalysis {
 
+class AliEmcalTriggerOfflineSelection;
+
 class AliAnalysisTaskEmcalPatchesRef : public AliAnalysisTaskSE {
 public:
-  enum EmcalTriggerClass{
-    kEPREL0 = 0,
-    kEPREG1,
-    kEPREG2,
-    kEPREJ1,
-    kEPREJ2,
-    kEPRDL0,
-    kEPRDG1,
-    kEPRDG2,
-    kEPRDJ1,
-    kEPRDJ2,
-    kEPRntrig
-  };
   AliAnalysisTaskEmcalPatchesRef();
   AliAnalysisTaskEmcalPatchesRef(const char *name);
   virtual ~AliAnalysisTaskEmcalPatchesRef();
@@ -34,8 +24,8 @@ public:
   void UserExec(Option_t *);
   void Terminate(Option_t *) {}
 
+  void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
-  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
   void SetRequestAnalysisUtil(bool doUse) { fRequestAnalysisUtil = doUse; }
 
 protected:
@@ -51,14 +41,13 @@ protected:
   void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
-  AliEMCalHistoContainer              *fHistos;
+  AliEmcalTriggerOfflineSelection     *fTriggerSelection;
+  THistManager                        *fHistos;
 
   Bool_t                              fRequestAnalysisUtil;
   Bool_t                              fTriggerStringFromPatches;
-  Double_t                            fOfflineEnergyThreshold[kEPRntrig];
 
 private:
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);

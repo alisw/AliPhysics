@@ -257,14 +257,14 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
-    analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisClusterMergedCuts[i] = new AliCaloPhotonCuts();
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
     ClusterMergedCutList->Add(analysisClusterMergedCuts[i]);
-    analysisClusterMergedCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterMergedCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterMergedCuts[i]->SetFillCutHistograms("");
 
     

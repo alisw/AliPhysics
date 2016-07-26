@@ -767,6 +767,8 @@ struct Trend : public SummaryDrawer
 			  UShort_t      lowC, 
 			  UShort_t      highC)
   {
+    return 0;
+#if 0
     // --- Set the macro pathand load other data script --------------
     // Always recompile 
     if (!gROOT->GetClass("RefData")) {
@@ -794,6 +796,7 @@ struct Trend : public SummaryDrawer
     // Info("", "Got graph %s/%s", other->GetName(), other->GetTitle());
 
     return other;
+#endif 
   }
 
   //__________________________________________________________________

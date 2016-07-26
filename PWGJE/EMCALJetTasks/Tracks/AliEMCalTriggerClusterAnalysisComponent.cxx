@@ -18,6 +18,7 @@
 
 #include <TAxis.h>
 #include <TClonesArray.h>
+#include <THistManager.h>
 #include <TLorentzVector.h>
 
 #include "AliLog.h"

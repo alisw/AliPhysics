@@ -123,6 +123,7 @@ void AddTaskPHOSPCMgg(         const char* name = "PHOSPCMgg",
   //================================================
   AliAnalysisTaskPHOSPCMgg *task = new AliAnalysisTaskPHOSPCMgg(Form("PHOSPCMgg"));
   mgr->AddTask(task) ;
+  task->SelectCollisionCandidates(offlineTriggerMask);
  
   task->SetIsHeavyIon(isHeavyIon);
   //task->SetIsMC(isMC);

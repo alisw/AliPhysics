@@ -166,7 +166,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TH2F          *fHistoRecMCGammaMultiPtvsEta;  // histogram with all at least double counted photons vs Pt vs Eta
     TH1F          *fHistoRecMCGammaMultiR;        // histogram with all at least double counted photons vs R (eta < 0.9)
     TH1F          *fHistoRecMCGammaMultiPhi;      // histogram with all at least double counted photons vs Phi (eta < 0.9)
-    TH1F          *fHistoPosTrackImpactParamZ;
+    TH1F          *fHistoPosTrackImpactParamZ;    //impact parameter z of positive track of V0
     TH1F          *fHistoPosTrackImpactParamY;
     TH1F          *fHistoPosTrackImpactParamX;
     TH2F          *fHistoPosTrackImpactParamZvsPt;
@@ -178,16 +178,19 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TH2F          *fHistoNegTrackImpactParamZvsPt;
     TH2F          *fHistoNegTrackImpactParamYvsPt;
     TH2F          *fHistoNegTrackImpactParamXvsPt;
-    TH2F          *fHistoImpactParamZvsR;         // Impact Parameter z vs conversion radius
+    TH2F          *fHistoImpactParamZvsR;         // conversion point z vs conversion radius
     TH2F          *fHistoImpactParamZvsR2;        // after cuts
     TH1F          *fHistoPt;
     TH1F          *fHistoPt2;                     // Pt after Impact parameter and causality cuts
     TH1F          *fHistoDCAzPhoton;
-    TH1F          *fHistoDCAzPhoton2;
+    TH1F          *fHistoDCAzPhoton2;             // photon dca after impact parameter and causality cuts
     TH1F          *fHistoR;                       // conversion radius
-    TH1F          *fHistoRrecalc;
-    TH1F          *fHistoRdiff;                   //difference in R between conflict cluster and conversion radius
+    TH1F          *fHistoRrecalc;                 // recalculated conversion radius
+    TH1F          *fHistoRviaAlpha;                       // conversion radius
+    TH1F          *fHistoRviaAlphaRecalc;                 // recalculated conversion radius
+    TH1F          *fHistoRdiff;                   // difference in R between conflict cluster and conversion radius
     TH1F          *fHistoImpactParameterStudy;    // info about which cut rejected how many V0s
+    TTree         *fImpactParamTree;               // tree with y, pt and conversion radius 
    
     vector<Int_t>  fVectorFoundGammas;            // vector with found MC labels of gammas
 
@@ -195,7 +198,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 10)
+    ClassDef(AliV0ReaderV1, 11)
 
 };
 

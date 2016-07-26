@@ -61,6 +61,8 @@ class AliFJWrapper
   virtual std::vector<double>                                GetGRNumeratorSub()                  const { return fGRNumeratorSub                 ; }
   virtual std::vector<double>                                GetGRDenominatorSub()                const { return fGRDenominatorSub               ; }
 
+  virtual void RemoveLastInputVector();
+
   virtual Int_t Run();
   virtual Int_t Filter();
   virtual Int_t DoGenericSubtractionJetMass();
@@ -314,6 +316,14 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
 }
 
 //_________________________________________________________________________________________________
+void AliFJWrapper::RemoveLastInputVector()
+{
+  // Remove last input vector
+
+  fInputVectors.pop_back();
+}
+
+//_________________________________________________________________________________________________
 void AliFJWrapper::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index)
 {
   // Make the input pseudojet.
@@ -338,11 +348,12 @@ void AliFJWrapper::AddInputVector(const fj::PseudoJet& vec, Int_t index)
 
   fj::PseudoJet inVec = vec;
 
-  if (index > -99999) {
-    inVec.set_user_index(index);
-  } else {
-    inVec.set_user_index(fInputVectors.size());
-  }
+  // Salvatore Aiola: not sure why this was done...
+  ///if (index > -99999) {
+  inVec.set_user_index(index);
+  //} else {
+  //inVec.set_user_index(fInputVectors.size());
+  //}
 
   // add to the fj container of input vectors
   fInputVectors.push_back(inVec);

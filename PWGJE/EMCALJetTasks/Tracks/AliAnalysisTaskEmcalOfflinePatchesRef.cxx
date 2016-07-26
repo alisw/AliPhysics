@@ -14,12 +14,12 @@
  **************************************************************************/
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
@@ -66,7 +66,7 @@ AliAnalysisTaskEmcalOfflinePatchesRef::~AliAnalysisTaskEmcalOfflinePatchesRef() 
 void AliAnalysisTaskEmcalOfflinePatchesRef::UserCreateOutputObjects(){
   fAnalysisUtil = new AliAnalysisUtils;
 
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
   TString triggername;
   // Plots at global level:
   // Energy vs. supermodule

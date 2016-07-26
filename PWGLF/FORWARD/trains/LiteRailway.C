@@ -141,6 +141,30 @@ struct LiteRailway : public ProofRailway
     return ProofRailway::PostSetup();
   }
   /** 
+   * Load extra sources.  Since we're on a single host, we might as
+   * well load it directly from the working directory rather than by
+   * uploading to the slaves cache.
+   * 
+   */
+  virtual Bool_t LoadExtraSrcs()
+  {
+    TString    tmp2 = fExtraSrcs.Strip(TString::kBoth, ':');
+    TObjArray* srcs = tmp2.Tokenize(":");
+    TIter      next2(srcs);
+    TObject*   obj = 0;
+    while ((obj = next2())) {
+      TString full = gSystem->ConcatFileName(gSystem->WorkingDirectory(),
+					     obj->GetName());
+      Info("LoadExtraSrcs", "Will load %s", full.Data());
+      Int_t ret = gProof->Load(Form("%s+g", full.Data()), true,true);
+      if (ret < 0) { 
+	Error("ProofRailway::PostSetup", "Failed to compile %s",obj->GetName());
+	return false;
+      }
+    }
+    return true;
+  }    
+  /** 
    * Start the analysis 
    * 
    * @param nEvents Number of events to analyse 

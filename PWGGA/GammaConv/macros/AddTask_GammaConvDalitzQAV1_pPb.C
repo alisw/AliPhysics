@@ -138,6 +138,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
     //ElecCuts = "900054000000020000";
     if( ElecCuts!=""){
       fElecCuts= new AliDalitzElectronCuts(ElecCuts.Data(),ElecCuts.Data());
+      fElecCuts->SetUseCrossedRows(kTRUE);
       if(fElecCuts->InitializeCutsFromCutString(ElecCuts.Data())){
         fElectronSelector->SetDalitzElectronCuts(fElecCuts);
         fElecCuts->SetFillCutHistograms("",kTRUE);

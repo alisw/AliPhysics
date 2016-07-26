@@ -495,8 +495,8 @@ Bool_t AliAnalysisTaskEmcalJetv2QA::Run() // this part loops over each event
 
   if(fJetsCont)
     {
-    
-      AliEmcalJet *jettest = fJetsCont->GetNextAcceptJet(0);
+      fJetsCont->ResetCurrentID();
+      AliEmcalJet *jettest = fJetsCont->GetNextAcceptJet();
       while(jettest) {
       
 	fHistJetsPtArea->Fill(jettest->Pt(), jettest->Area());
@@ -560,7 +560,8 @@ Bool_t AliAnalysisTaskEmcalJetv2QA::Run() // this part loops over each event
     }
   hEventData->Fill("good event",1);
 
-  AliEmcalJet *dijet = fJetsCont->GetNextAcceptJet(0); // check for dijet events
+  fJetsCont->ResetCurrentID();
+  AliEmcalJet *dijet = fJetsCont->GetNextAcceptJet(); // check for dijet events
   while(dijet)
     {
       if(dijet->Pt() > jetPt*2./3. && fabs(jetPhi-dijet->Phi()-TMath::Pi()) < 0.4) // loop over jets with pT>50 and exclude leading jet and check that angular separation is < 0.4
@@ -570,7 +571,8 @@ Bool_t AliAnalysisTaskEmcalJetv2QA::Run() // this part loops over each event
 
   if (fCaloClustersCont)
     {
-      AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
+      fCaloClustersCont->ResetCurrentID();
+      AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster();
       while(cluster) {
 	TLorentzVector nPart;
 	cluster->GetMomentum(nPart, fVertex);
@@ -582,7 +584,8 @@ Bool_t AliAnalysisTaskEmcalJetv2QA::Run() // this part loops over each event
   fHistLeadingJetPt->Fill(jetPt);
   fHistLeadingJetPtCorr->Fill(jetPt-fJetsCont->GetRhoVal()*jetArea);
 
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+  fTracksCont->ResetCurrentID();
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
   while(track)
     { // loop over all particles (including jet tracks)
       trackPt = track->Pt();

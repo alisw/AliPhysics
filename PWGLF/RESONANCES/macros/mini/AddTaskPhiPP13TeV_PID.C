@@ -47,7 +47,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask=AliVEvent::kMB;
+  UInt_t      triggerMask=AliVEvent::kINT7;
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
 
@@ -55,6 +55,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
+
+  if(!isPP || isMC) rejectPileUp=kFALSE;
 
   //-------------------------------------------
   //pair cuts
@@ -111,8 +113,13 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 3rd argument --> minimum required number of contributors to vtx
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
   AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+  cutVertex->SetCheckZResolutionSPD();
+  cutVertex->SetCheckDispersionSPD();
+  cutVertex->SetCheckZDifferenceSPDTrack();
 
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+  if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();
+  cutEventUtils->SetCheckSPDClusterVsTrackletBG();
 
   if(isPP && (!isMC)){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  

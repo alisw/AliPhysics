@@ -93,7 +93,7 @@ AliAnalysisTaskPHOSPCMgg::AliAnalysisTaskPHOSPCMgg(const char *name)
   fCutFolder(0x0)
 {
   // Constructor
-  for(Int_t i=0;i<1;i++){
+  for(Int_t i=0;i<10;i++){
     for(Int_t j=0;j<10;j++)
       for(Int_t k=0;k<11;k++){
 	fPHOSEvents[i][j][k]=0 ;
@@ -195,17 +195,18 @@ void AliAnalysisTaskPHOSPCMgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hTofM3","TOF in M3" ,100,0.,20.,400,-4.e-6,4.e-6));
   
   //Single photon and pi0 spectrum
-  Int_t nQ=50 ;
-  Double_t qMax=0.2 ;
+  Int_t nQ=120 ;
+  Double_t qMax=0.3 ;
   
-  char kTbins[5][20] ;
+  char kTbins[6][20] ;
   sprintf(kTbins[0],"Kt00-02") ;
-  sprintf(kTbins[1],"Kt02-05") ;
-  sprintf(kTbins[2],"Kt05-10") ;
-  sprintf(kTbins[3],"Kt10-15") ;
-  sprintf(kTbins[4],"Kt15-99") ;
+  sprintf(kTbins[1],"Kt02-04") ;
+  sprintf(kTbins[2],"Kt04-07") ;
+  sprintf(kTbins[3],"Kt07-10") ;
+  sprintf(kTbins[4],"Kt10-13") ;
+  sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=7 ;
+  const Int_t nCuts=4 ;
   char cut[7][20] ;
   sprintf(cut[0],"All") ;
   sprintf(cut[1],"Disp") ;
@@ -216,16 +217,16 @@ void AliAnalysisTaskPHOSPCMgg::UserCreateOutputObjects()
   sprintf(cut[6],"Dist3") ;
   
   for(Int_t iCut=0; iCut<nCuts; iCut++){
-    for(Int_t ikT=0; ikT<5; ikT++){ 
-      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+    for(Int_t ikT=0; ikT<6; ikT++){ 
+//      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
     
     }        
 
@@ -235,19 +236,26 @@ void AliAnalysisTaskPHOSPCMgg::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s",cut[iCut]),"Qinv distribution",200,0.,0.5,100,0.,10.));
   }
 
-  fOutputContainer->Add(new TH3F("hConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hConvPi0Angle","Angle",200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCConvPi0True","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hMCConvPi0Angle","Angle",200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH3F("hMCChConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH1F("hMCChConvPi0Angle","Angle",200,0.,TMath::Pi()));
+  for(Int_t ikT=0; ikT<6; ikT++){ 
+     fOutputContainer->Add(new TH2F(Form("hSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+     fOutputContainer->Add(new TH2F(Form("hMiSLfine_%s",kTbins[ikT]),"Out-Side",1000,-0.5,0.5,1000,-0.5,0.5));
+  }
   
-  fOutputContainer->Add(new TH2F("hVtxR","Vertex dR",200,-100.,100.,500,0.,500.));
-  fOutputContainer->Add(new TH2F("hVtxRPhi","Vertex dR",200,-100.,100.,100,-TMath::Pi(),TMath::Pi()));
-  fOutputContainer->Add(new TH2F("hVtxRTheta","Vertex dR",200,-100.,100.,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F("hVtxPhi","Vertex dPhi",100,-TMath::Pi(),TMath::Pi(),100,0.,TMath::Pi()));
-  fOutputContainer->Add(new TH2F("hVtxTheta","Vertex dTheta",100,-0.5,0.5,100,-0.5,0.5));
+  
+  
+//   fOutputContainer->Add(new TH3F("hConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCConvPi0True","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hMCConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH3F("hMCChConvPi0","Converted pions",100,0.,10.,100,0.,10.,200,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH1F("hMCChConvPi0Angle","Angle",200,0.,TMath::Pi()));
+//   
+//   fOutputContainer->Add(new TH2F("hVtxR","Vertex dR",200,-100.,100.,500,0.,500.));
+//   fOutputContainer->Add(new TH2F("hVtxRPhi","Vertex dR",200,-100.,100.,100,-TMath::Pi(),TMath::Pi()));
+//   fOutputContainer->Add(new TH2F("hVtxRTheta","Vertex dR",200,-100.,100.,100,-0.5,0.5));
+//   fOutputContainer->Add(new TH2F("hVtxPhi","Vertex dPhi",100,-TMath::Pi(),TMath::Pi(),100,0.,TMath::Pi()));
+//   fOutputContainer->Add(new TH2F("hVtxTheta","Vertex dTheta",100,-0.5,0.5,100,-0.5,0.5));
   
 		 //PHOS calibration QA
 /*
@@ -380,7 +388,7 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
   
   
   FillHistogram("hZvertex",esdVertex5->GetZ(),fRunNumber-0.5);
-  if (TMath::Abs(esdVertex5->GetZ()) > 20. ){
+  if (TMath::Abs(esdVertex5->GetZ()) > 10. ){
     PostData(1, fOutputContainer);
     return;
   }
@@ -397,14 +405,12 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
   FillHistogram("hTotSelEvents",3.5) ;  
   
   
-  /*
+  
   //Vtx class z-bin
   Int_t zvtx = (Int_t)((vtx5[2]+10.)/2.) ;
   if(zvtx<0)zvtx=0 ;
   if(zvtx>9)zvtx=9 ;
-  */
-  //No dependence on zVtx observed, save memory
-  Int_t zvtx=0 ;
+  
 
   AliCentrality *centrality = fEvent->GetCentrality(); 
   fCentrality=centrality->GetCentralityPercentile("V0M");
@@ -605,12 +611,9 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
     AliFemtoParticle part1(&track1,kgMass) ;
     
     for (Int_t i2=0; i2<inPCM; i2++) {
-      AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fPCMEvent->At(i2) ;
+      AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i2) ;
       //Cut on pair
      
-//      if(!SecondaryPi0Cut(ph1,ph2))
-//        continue ;
-
       AliFemtoTrack track2;
       AliFemtoThreeVector mom2;
       mom2.SetX(ph2->Px()) ;
@@ -630,13 +633,15 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
       AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
-      TString kTbin="15" ;
-      if(kT<0.2) kTbin="Kt00-02";
-      else if(kT<0.5) kTbin="Kt02-05";
-      else if(kT<1.) kTbin="Kt05-10";
-      else if(kT<1.5) kTbin="Kt10-15";
-      else  kTbin="Kt15-99";
-      
+        TString kTbin="15" ;
+        if(kT<0.2) kTbin="Kt00-02";
+        else if(kT<0.4) kTbin="Kt02-04";
+        else if(kT<0.7) kTbin="Kt04-07";
+        else if(kT<1.) kTbin="Kt07-10";
+        else if(kT<1.3) kTbin="Kt10-13";
+        else if(kT<2.0) kTbin="Kt13-20";
+        else  continue;
+     
 
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
@@ -655,19 +660,23 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
    	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
      
+          if(iCut==3){//Both	
+            FillHistogram(Form("hSLfine_%s",kTbin.Data()),qspf,qlpf) ;
+	  }
+
 	FillHistogram(Form("hQinv_%s",cut[iCut]),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
 	  FillHistogram(Form("hQinvCut_%s",cut[iCut]),qinv,kT) ;
 
         // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
         // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
         FillHistogram(Form("hOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
 
-        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
       
-        FillHistogram(Form("hYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//        FillHistogram(Form("hYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
         
       }          
     } // end of loop i2
@@ -712,10 +721,12 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
         Double_t kT = pair.KT() ;
         TString kTbin="15" ;
         if(kT<0.2) kTbin="Kt00-02";
-        else if(kT<0.5) kTbin="Kt02-05";
-        else if(kT<1.) kTbin="Kt05-10";
-        else if(kT<1.5) kTbin="Kt10-15";
-        else  kTbin="Kt15-99";
+        else if(kT<0.4) kTbin="Kt02-04";
+        else if(kT<0.7) kTbin="Kt04-07";
+        else if(kT<1.) kTbin="Kt07-10";
+        else if(kT<1.3) kTbin="Kt10-13";
+        else if(kT<2.0) kTbin="Kt13-20";
+        else  continue;
       
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
@@ -729,23 +740,27 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
       // longitudinal comoving frame
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<7; iCut++){
+	for(Int_t iCut=0; iCut<4; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-           FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
+          if(iCut==3){//Both	
+            FillHistogram(Form("hMiSLfine_%s",kTbin.Data()),qspf,qlpf) ;
+	  }
+
+	  FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
 	   if(TMath::Abs(qo) < 0.05)
 	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
 
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
           FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
 
-          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
       
-          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
 	}
 	
       } // end of loop i2
@@ -755,7 +770,7 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
   
   
   for (Int_t i1=0; i1<inPCM; i1++) {
-    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fPCMEvent->At(i1) ;
+    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;
     AliFemtoTrack track1;
     AliFemtoThreeVector mom1;
     mom1.SetX(ph1->Px()) ;
@@ -792,11 +807,13 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
         Double_t kT = pair.KT() ;
         TString kTbin="15" ;
         if(kT<0.2) kTbin="Kt00-02";
-        else if(kT<0.5) kTbin="Kt02-05";
-        else if(kT<1.) kTbin="Kt05-10";
-        else if(kT<1.5) kTbin="Kt10-15";
-        else  kTbin="Kt15-99";
-      
+        else if(kT<0.4) kTbin="Kt02-04";
+        else if(kT<0.7) kTbin="Kt04-07";
+        else if(kT<1.) kTbin="Kt07-10";
+        else if(kT<1.3) kTbin="Kt10-13";
+        else if(kT<2.0) kTbin="Kt13-20";
+        else  continue;
+    
       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
@@ -809,23 +826,28 @@ void AliAnalysisTaskPHOSPCMgg::UserExec(Option_t *)
       // longitudinal comoving frame
         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<7; iCut++){
+	for(Int_t iCut=0; iCut<4; iCut++){
    	  if(!PairCut(ph2,ph1,iCut))
 	    continue ;
 	
-           FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
+
+          if(iCut==3){//Both	
+            FillHistogram(Form("hMiSLfine_%s",kTbin.Data()),qspf,qlpf) ;
+	  }
+	  
+	   FillHistogram(Form("hMiQinv_%s",cut[iCut]),qinv,kT) ;
 	   if(TMath::Abs(qo) < 0.05)
 	     FillHistogram(Form("hMiQinvCut_%s",cut[iCut]),qinv,kT) ;
 
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
           FillHistogram(Form("hMiOSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql) ;
 
-          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
       
-          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
 	}
 	
       } // end of loop i2
@@ -1275,6 +1297,7 @@ void AliAnalysisTaskPHOSPCMgg::ProcessPCMPhotonCandidates()
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fRP)) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
            !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
+	  
             new((*fGammaCandidates)[iPCM])AliAODConversionPhoton(PhotonCandidate); // if no second loop is required add to events good gammas
 	    iPCM++ ;
             

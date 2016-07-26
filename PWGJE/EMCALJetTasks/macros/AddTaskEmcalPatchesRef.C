@@ -12,11 +12,9 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef()
   // EG2:  8 GeV
   // EJ1:  22 GeV
   // EJ2:  12 GeV
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef::kEPREL0, 5);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef::kEPREG1, 14);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef::kEPREG2, 8);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef::kEPREJ1, 22);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef::kEPREJ2, 12);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
 
   mgr->AddTask(task);
 

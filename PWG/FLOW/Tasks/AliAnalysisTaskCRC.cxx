@@ -92,6 +92,8 @@ fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCME(kFALSE),
 fCalculateCRC2(kFALSE),
+fCalculateCRCVZ(kFALSE),
+fCalculateCRCZDC(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlow(kFALSE),
 fUseVZERO(kFALSE),
@@ -154,9 +156,14 @@ fMaxDevZN(5.)
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
- for(Int_t c=0; c<10; c++) {
-  fPtWeightsHist[c] = NULL;
- }
+  for(Int_t c=0; c<10; c++) {
+    fPtWeightsHist[c] = NULL;
+    for(Int_t b=0; b<21; b++) {
+      for(Int_t k=0; k<2; k++) {
+        fEtaWeightsHist[c][b][k] = NULL;
+      }
+    }
+  }
  
 }
 
@@ -209,6 +216,8 @@ fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
 fCalculateCME(kFALSE),
 fCalculateCRC2(kFALSE),
+fCalculateCRCVZ(kFALSE),
+fCalculateCRCZDC(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlow(kFALSE),
 fUseVZERO(kFALSE),
@@ -260,9 +269,14 @@ fMaxDevZN(5.)
  fMinValueOfQvectorTerms[3] = -30.;
  fMaxValueOfQvectorTerms[3] = 80.;
  
- for(Int_t c=0; c<10; c++) {
-  fPtWeightsHist[c] = NULL;
- }
+  for(Int_t c=0; c<10; c++) {
+    fPtWeightsHist[c] = NULL;
+    for(Int_t b=0; b<21; b++) {
+      for(Int_t k=0; k<2; k++) {
+        fEtaWeightsHist[c][b][k] = NULL;
+      }
+    }
+  }
  
 }
 
@@ -301,6 +315,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetCalculateCME(fCalculateCME);
  fQC->SetCalculateCRC2(fCalculateCRC2);
+  fQC->SetCalculateCRCVZ(fCalculateCRCVZ);
+  fQC->SetCalculateCRCZDC(fCalculateCRCZDC);
  fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
  fQC->SetCalculateFlowQC(fCalculateFlow);
  fQC->SetCalculateFlowZDC(fCalculateFlow);
@@ -317,6 +333,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
  fQC->SetUsePtWeights(fUsePtWeights);
+ fQC->SetUseEtaWeights(fUseEtaWeights);
  if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
  else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
  if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
@@ -346,10 +363,22 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  if(fUseCRCRecenter || fRecenterZDC) {
   if(fQVecList) fQC->SetCRCQVecWeightsList(fQVecList);
  }
- if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
- for(Int_t c=0; c<10; c++) {
-  if(fPtWeightsHist[c]) fQC->SetPtWeightsHist(fPtWeightsHist[c],c);
- }
+  if(fCenWeightsHist) fQC->SetCenWeightsHist(fCenWeightsHist);
+  if(fUsePtWeights){
+    for(Int_t c=0; c<10; c++) {
+      if(fPtWeightsHist[c]) fQC->SetPtWeightsHist(fPtWeightsHist[c],c);
+    }
+  }
+  if(fUseEtaWeights){
+    for(Int_t h=0; h<10; h++) {
+      for(Int_t b=0; b<21; b++) {
+        for(Int_t c=0; c<2; c++) {
+          if(fEtaWeightsHist[h][b][c]) fQC->SetEtaWeightsHist(fEtaWeightsHist[h][b][c],h,b,c);
+        }
+      }
+    }
+  }
+  
  fQC->SetMultiplicityIs(fMultiplicityIs);
  fQC->SetnBinsForCorrelations(fnBinsForCorrelations);
  fQC->SetUse2DHistograms(fUse2DHistograms);

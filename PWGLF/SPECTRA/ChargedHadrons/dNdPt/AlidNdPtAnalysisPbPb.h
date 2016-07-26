@@ -62,12 +62,12 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
   
   // Set binning for Histograms (if not set default binning is used)
-  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
-  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
-  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
-  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
-  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv= CloneArray(nbins+1,edges); }
-  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(nbins+1,edges); }
+  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(fMultNedges = nbins+1,edges); }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(fPtNedges = nbins+1,edges); }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(fPtCorrNedges = nbins+1,edges); }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(fEtaNedges = nbins+1,edges); }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv= CloneArray(fZvNedges =nbins+1,edges); }
+  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(fCentralityNedges = nbins+1,edges); }
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
@@ -196,7 +196,7 @@ private:
   THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi:centrality
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis object;
-  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
+  TString fCentralityEstimator;         // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
   
   //binning for THNsparse
   Int_t	fMultNbins;
@@ -205,12 +205,21 @@ private:
   Int_t fEtaNbins;
   Int_t fZvNbins;
   Int_t fCentralityNbins;
-  Double_t* fBinsMult;
-  Double_t* fBinsPt;
-  Double_t* fBinsPtCorr;
-  Double_t* fBinsEta;
-  Double_t* fBinsZv;
-  Double_t* fBinsCentrality;
+  
+  
+  Int_t fMultNedges;        // fMultNbins+1 uses for streaming dynamic array
+  Int_t fPtNedges;          // fPtNbins+1 uses for streaming dynamic array  
+  Int_t fPtCorrNedges;      // fPtCorrNbins+1 uses for streaming dynamic array  
+  Int_t fEtaNedges;         // fEtaNbins+1 uses for streaming dynamic array
+  Int_t fZvNedges;          // fZvNbins+1 uses for streaming dynamic array  
+  Int_t fCentralityNedges;  // fCentralityNbins+1 uses for streaming dynamic array  
+  
+  Double_t* fBinsMult;      //[fMultNedges]
+  Double_t* fBinsPt;        //[fPtNedges]
+  Double_t* fBinsPtCorr;    //[fPtCorrNedges]
+  Double_t* fBinsEta;       //[fEtaNedges]
+  Double_t* fBinsZv;        //[fZvNedges]
+  Double_t* fBinsCentrality;//[fCentralityNedges]
   
   Bool_t fIsInit;
   
@@ -218,7 +227,7 @@ private:
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
   AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented  
 
-  ClassDef(AlidNdPtAnalysisPbPb,6);
+  ClassDef(AlidNdPtAnalysisPbPb,8);
 };
 
 #endif

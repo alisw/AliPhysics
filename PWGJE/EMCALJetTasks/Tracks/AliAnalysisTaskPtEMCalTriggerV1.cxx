@@ -27,7 +27,6 @@
 #include "AliEMCalTriggerEventData.h"
 #include "AliEMCalTriggerTaskGroup.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskPtEMCalTriggerV1.h"
 
 /// \cond CLASSIMP

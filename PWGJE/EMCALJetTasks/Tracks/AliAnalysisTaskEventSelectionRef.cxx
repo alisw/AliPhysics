@@ -15,6 +15,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TString.h>
@@ -24,8 +25,8 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliInputEventHandler.h"
@@ -48,6 +49,7 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
   AliAnalysisTaskSE(),
   fClusterContainerName(""),
   fAnalysisUtils(nullptr),
+  fTriggerSelection(nullptr),
   fHistos(nullptr),
   fTrackCuts(nullptr),
   fGeometry(nullptr),
@@ -55,15 +57,13 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
   fClusterContainer(nullptr),
   fTrackContainer(nullptr)
 {
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
 }
 
 AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *name):
   AliAnalysisTaskSE(name),
   fClusterContainerName(""),
   fAnalysisUtils(nullptr),
+  fTriggerSelection(nullptr),
   fHistos(nullptr),
   fTrackCuts(nullptr),
   fGeometry(nullptr),
@@ -71,14 +71,12 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *n
   fClusterContainer(nullptr),
   fTrackContainer(nullptr)
 {
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
   DefineOutput(1, TList::Class());
 }
 
 AliAnalysisTaskEventSelectionRef::~AliAnalysisTaskEventSelectionRef() {
   if(fAnalysisUtils) delete fAnalysisUtils;
+  if(fTriggerSelection) delete fTriggerSelection;
   if(fTrackCuts) delete fTrackCuts;
   if(fTrackContainer) delete fTrackContainer;
 }
@@ -91,7 +89,7 @@ void AliAnalysisTaskEventSelectionRef::UserCreateOutputObjects(){
   fTrackCuts->SetMinNCrossedRowsTPC(120);
   fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
 
   TArrayD ptbinning, energybinning;
   CreatePtBinning(ptbinning);
@@ -180,19 +178,19 @@ void AliAnalysisTaskEventSelectionRef::UserExec(Option_t *){
     FillEventCounterHists("MB", vtx->GetZ(), isSelected, true);
   }
   if(isEMC7){
-    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREL0, fTriggerPatchContainer));
+    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchContainer));
   }
   if(isEJ2){
-    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREJ2, fTriggerPatchContainer));
+    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchContainer));
   }
   if(isEJ1){
-    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREJ1, fTriggerPatchContainer));
+    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchContainer));
   }
   if(isEG2){
-    FillEventCounterHists("EG2", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREG2, fTriggerPatchContainer));
+    FillEventCounterHists("EG2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchContainer));
   }
   if(isEG1){
-    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREG1, fTriggerPatchContainer));
+    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchContainer));
   }
 
   PostData(1, fHistos->GetListOfHistograms());
@@ -295,24 +293,6 @@ void AliAnalysisTaskEventSelectionRef::ProcessOfflinePatch(
         fHistos->FillTH1(Form("hPatchEnergyRejected%s", triggerclass), patch->GetPatchE());
     }
   }
-}
-
-Bool_t AliAnalysisTaskEventSelectionRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
-  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
-  int nfound = 0;
-  AliEMCALTriggerPatchInfo *patch = NULL;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!patch->IsGammaLowSimple()) continue;
-    } else {
-      if(!patch->IsJetLowSimple()) continue;
-    }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
-  }
-  return nfound > 0;
 }
 
 /**

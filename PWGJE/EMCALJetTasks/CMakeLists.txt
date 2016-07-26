@@ -25,8 +25,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                    )
@@ -63,12 +63,10 @@ set(SRCS
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
-    Tracks/AliEMCalHistoContainer.cxx
-    Tracks/AliEMCalPtTaskTrackSelectionAOD.cxx
-    Tracks/AliEMCalPtTaskTrackSelectionESD.cxx
-    Tracks/AliEMCalPtTaskVTrackSelection.cxx
+    Tracks/AliEmcalTriggerOfflineSelection.cxx
     Tracks/AliEMCalTriggerExtraCuts.cxx
     Tracks/AliEMCalTriggerAnaTriggerDecision.cxx
+    Tracks/AliEMCalTriggerAnaTriggerDecisionConfig.cxx
     Tracks/AliEMCalTriggerBinningComponent.cxx
     Tracks/AliEMCalTriggerBinningFactory.cxx
     Tracks/AliEMCalTriggerClusterAnalysisComponent.cxx
@@ -87,6 +85,7 @@ set(SRCS
     Tracks/AliEMCalTriggerAnaTriggerClass.cxx
     Tracks/AliEMCalTriggerAnaClassManager.cxx
     Tracks/AliParticleMap.cxx
+    Tracks/AliReducedHighPtEventCreator.cxx
     Tracks/AliReducedEmcalCluster.cxx
     Tracks/AliReducedPatchInfo.cxx
     Tracks/AliReducedPatchContainer.cxx
@@ -94,8 +93,13 @@ set(SRCS
     Tracks/AliReducedGeneratedParticle.cxx
     Tracks/AliReducedReconstructedTrack.cxx
     Tracks/AliReducedHighPtEvent.cxx
-    Tracks/AliReducedHighPtEventCreator.cxx
+    Tracks/AliReducedJetEvent.cxx
+    Tracks/AliReducedJetInfo.cxx
+    Tracks/AliReducedJetParticle.cxx
+    Tracks/AliReducedJetConstituent.cxx
+    Tracks/AliReducedMatchedTrack.cxx
     Tracks/AliAnalysisTaskTrackDCA.cxx
+    Tracks/AliEmcalAnalysisFactory.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
@@ -106,12 +110,15 @@ set(SRCS
     Tracks/AliAnalysisTaskEMCALDCALTrigger2015.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
+    Tracks/AliAnalysisTaskParticleInJet.cxx
+    Tracks/AliAnalysisTaskTrackDensity.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
     UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
     UserTasks/AliAnalysisTaskDijetHadron.cxx
+    UserTasks/AliAnalysisTaskParticleRandomizer.cxx
     UserTasks/AliAnalysisTaskEmcalBadCells.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetAna.cxx
     UserTasks/AliAnalysisTaskEmcalDiJetBase.cxx
@@ -160,8 +167,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
     UserTasks/AliAnalysisTaskGammaHadron.cxx   
-    UserTasks/AliAnalysisTaskPi0Hadron.cxx
-   )
+    UserTasks/AliAnalysisTaskPi0Hadron.cxx)
 
 if(FASTJET_FOUND)
     set(SRCS ${SRCS}
@@ -175,6 +181,7 @@ if(FASTJET_FOUND)
 	AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
+        UserTasks/AliAnalysisTaskEmcalJetExtractor.cxx
         UserTasks/AliAnalysisTaskFullpAJets.cxx
         UserTasks/AliAnalysisTaskFullpAJets_Eli_Mod.cxx
         UserTasks/AliAnalysisTaskFullppJet.cxx
@@ -182,43 +189,26 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
-        Tracks/AliReducedJetEvent.cxx
-        Tracks/AliReducedJetInfo.cxx
-        Tracks/AliReducedJetParticle.cxx
-        Tracks/AliReducedJetConstituent.cxx
-        Tracks/AliReducedMatchedTrack.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
-       )
-
-    include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
-                        ${AliPhysics_SOURCE_DIR}/JETAN/JETAN
-                       )
+        )
+    include_directories(${AliPhysics_SOURCE_DIR}/JETAN/JETAN)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
 endif(FASTJET_FOUND)
-
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
-if(FASTJET_FOUND)
-  list(APPEND HDRS FJ_includes.h)
-  if(ROOT_VERSION_MAJOR EQUAL 6)
-    set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
-    if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
-      set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
-    endif()
-  endif(ROOT_VERSION_MAJOR EQUAL 6)
-endif(FASTJET_FOUND)
+set(HDRS ${HDRS} Tracks/AliEMCalTriggerAnaHelper.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCAL PWGJETFW)
+set(ALIROOT_DEPENDENCIES ANALYSIS PWGEMCALbase PWGEMCALtrigger PWGJETFW)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)

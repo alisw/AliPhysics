@@ -33,7 +33,7 @@ AliConversionAODBGHandlerRP::AliConversionAODBGHandlerRP(Bool_t IsHeavyIon,Bool_
   fNEvents(NEvents),
   fBGEventCounter(NULL),
   fNBGEvents(NULL),
-  fNBinsRP(6),
+  fNBinsRP(8),
   fNBinsZ(7),
   fNBinsMultiplicity(5+Int_t(fUseChargedTrackMult)),
   fBinLimitsArrayRP(NULL),
@@ -46,7 +46,7 @@ AliConversionAODBGHandlerRP::AliConversionAODBGHandlerRP(Bool_t IsHeavyIon,Bool_
   // RP angle Binning  
   fBinLimitsArrayRP = new Double_t[fNBinsRP+1];
   for(Int_t i=0; i < fNBinsRP+1; i++){
-    fBinLimitsArrayRP[i] = (i*TMath::Pi()/3)-TMath::Pi();  //i*TMath::Pi()/Double_t(fNBinsRP);
+    fBinLimitsArrayRP[i] = i*TMath::Pi()/Double_t(fNBinsRP);
   }
 
   // Vertex Z Binning

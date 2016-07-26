@@ -89,8 +89,9 @@ AliAnalysisNuclMult::~AliAnalysisNuclMult()
 void AliAnalysisNuclMult::UserCreateOutputObjects()
 {
 
-  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
-
+  //Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
+  stdFlagPid[0]=1; stdFlagPid[1]=2; stdFlagPid[2]=4; stdFlagPid[3]=8; stdFlagPid[4]=16; stdFlagPid[5]=32; stdFlagPid[6]=64; stdFlagPid[7]=128; stdFlagPid[8]=256; 
+  
   Char_t nameSpec[18][30];
   snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
   snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");

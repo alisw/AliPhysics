@@ -12,7 +12,7 @@
 */
 
 // function to set TPC OCDB parameters
-void ConfigOCDB();
+int ConfigOCDB();
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
@@ -49,7 +49,10 @@ AliAnalysisTask  *AddTaskTPCCalib(const char* options="ALL")
   }  
 
   // set TPC OCDB parameters
-  ConfigOCDB();
+  if (ConfigOCDB())
+  {
+    return(NULL);
+  }
 
   AliTPCAnalysisTaskcalib *task=NULL;
   
@@ -364,7 +367,7 @@ void SetupCalibTaskTrainCluster(TObject* task, const char* options="ALL"){
 }
 
 //_____________________________________________________________________________
-void ConfigOCDB(){
+int ConfigOCDB(){
   //
   // Configure TPC OCDB
   //
@@ -389,18 +392,25 @@ void ConfigOCDB(){
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
   if (!entry){
     ::Error("AddTaskTPCCalib","TPC reco param not available");
-    return;
+    return(1);
   }
   TObjArray * array = (TObjArray*)entry->GetObject();
   if (!array){
     ::Error("AddTaskTPCCalib","TPC reco param not available");
-    return;
+    return(1);
   }
   
   //get the beam type from OCDB to decide which type of reco param we need -
   //high or low flux
   entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());  // new GRP entry
+  
+  if ((grpData->GetDetectorMask() & AliDAQ::kTPC) == 0)
+  {
+    ::Error("AddTaskTPCCalib", "TPC not in list of active detectors for this run");
+    return(1);
+  }
+
   TString beamType = grpData->GetBeamType();
   if (beamType==AliGRPObject::GetInvalidString()) {
     ::Error("AddTaskTPCCalib","GRP/GRP/Data entry:  missing value for the beam type ! Using UNKNOWN");
@@ -434,4 +444,6 @@ void ConfigOCDB(){
   tpcRecoParam->SetUseComposedCorrection(kTRUE);
   //
   tpcRecoParam->SetCorrectionHVandPTMode(1);
+  
+  return(0);
 }

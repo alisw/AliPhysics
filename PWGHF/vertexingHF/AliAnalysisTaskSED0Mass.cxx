@@ -35,7 +35,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TDatabasePDG.h>
-
+#include <THnSparse.h>
+#include "AliVertexingHFUtils.h"
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include "AliAnalysisManager.h"
@@ -63,12 +64,15 @@ ClassImp(AliAnalysisTaskSED0Mass);
 
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
-AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(),
   fOutputMass(0),
   fOutputMassPt(0),
   fOutputMassY(0),
   fDistr(0),
   fNentries(0), 
+  fMCAccPrompt(0),
+  fMCAccBFeed(0),
+  fStepMCAcc(kTRUE),
   fCuts(0),
   fArray(0),
   fReadMC(0),
@@ -92,6 +96,10 @@ AliAnalysisTaskSE(),
   fCandidateVariables(),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
+  fUseQuarkTagInKine(kTRUE),
+  fhStudyImpParSingleTrackSign(0), 
+  fhStudyImpParSingleTrackCand(0), 
+  fhStudyImpParSingleTrackFd(0), 
   fDetSignal(0)
 {
   /// Default constructor
@@ -107,6 +115,9 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fOutputMassY(0),
   fDistr(0),
   fNentries(0),
+  fMCAccPrompt(0),
+  fMCAccBFeed(0),
+  fStepMCAcc(kTRUE),
   fCuts(0),
   fArray(0),
   fReadMC(0),
@@ -130,6 +141,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fCandidateVariables(),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
+  fUseQuarkTagInKine(kTRUE),
+  fhStudyImpParSingleTrackSign(0),
+  fhStudyImpParSingleTrackCand(0),
+  fhStudyImpParSingleTrackFd(0),
   fDetSignal(0)
 {
   /// Default constructor
@@ -201,6 +216,11 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fDetSignal;
     fDetSignal = 0;
   }
+  delete fMCAccPrompt;
+  delete fMCAccBFeed;
+  delete fhStudyImpParSingleTrackSign;
+  delete fhStudyImpParSingleTrackCand;
+  delete fhStudyImpParSingleTrackFd;
  
 }  
 
@@ -375,7 +395,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	namedistr+=i;
 	TH1F *hcosthetapointxyS = new TH1F(namedistr.Data(), "cos#theta_{Point} XYdistribution;cos#theta_{Point}",300,0.,1.);
 
-	TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,1.5648,2.1648); //range (MD0-300MeV, mD0 + 300MeV)
+	TH1F* tmpMS = new TH1F(nameMassNocutsS.Data(),"D^{0} invariant mass; M [GeV]; Entries",600,1.6248,2.2248); //range (MD0-300MeV, mD0 + 300MeV)
 	tmpMS->Sumw2();
 
 	fDistr->Add(hNclsD0vsptS);
@@ -513,7 +533,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       namedistr+=i;
       TH1F *hcosthetapointxyB = new TH1F(namedistr.Data(), "cos#theta_{Point} XY distribution;cos#theta_{Point} XY",300,0.,1.);
 
-      TH1F* tmpMB = new TH1F(nameMassNocutsB.Data(),"D^{0} invariant mass; M [GeV]; Entries",300,1.5648,2.1648); //range (MD0-300MeV, mD0 + 300MeV)
+      TH1F* tmpMB = new TH1F(nameMassNocutsB.Data(),"D^{0} invariant mass; M [GeV]; Entries",600,1.6248,2.2248); //range (MD0-300MeV, mD0 + 300MeV)
       tmpMB->Sumw2();
 
 
@@ -638,16 +658,16 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries",600,1.6248,2.2248);
 
       TH1F *tmpSl=(TH1F*)tmpSt->Clone();
       tmpSt->Sumw2();
       tmpSl->Sumw2();
 
       //Reflection: histo filled with D0Mass which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-      TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
+      TH1F* tmpRt = new TH1F(nameRfl.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries",600,1.6248,2.2248);
       //TH1F *tmpRl=(TH1F*)tmpRt->Clone();
-      TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",600,1.5648,2.1648);
+      TH1F* tmpBt = new TH1F(nameBkg.Data(), "Background invariant mass - MC; M [GeV]; Entries",600,1.6248,2.2248);
       //TH1F *tmpBl=(TH1F*)tmpBt->Clone();
       tmpBt->Sumw2();
       //tmpBl->Sumw2();
@@ -661,7 +681,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     }
 
     //mass
-    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",600,1.5648,2.1648);
+    TH1F* tmpMt = new TH1F(nameMass.Data(),"D^{0} invariant mass; M [GeV]; Entries",600,1.6248,2.2248);
     //TH1F *tmpMl=(TH1F*)tmpMt->Clone();
     tmpMt->Sumw2();
     //tmpMl->Sumw2();
@@ -717,7 +737,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	  fDistr->Add(hcosthpointd0d0S);
 
 	  //to compare with AliAnalysisTaskCharmFraction
-	  TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",600,1.5648,2.1648);
+	  TH1F* tmpS27t = new TH1F(nameSgn27.Data(),"D^{0} invariant mass in M(D^{0}) +/- 27 MeV - MC; M [GeV]; Entries",600,1.6248,2.2248);
 	  TH1F *tmpS27l=(TH1F*)tmpS27t->Clone();
 	  tmpS27t->Sumw2();
 	  tmpS27l->Sumw2();
@@ -800,6 +820,33 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     } //end pp histo
   }
+  //create THnSparse for impact parameter analysis in DATA sample.
+  //pt, normImpParTrk1, normImpParTrk2,    decLXY, normDecLXY, massd0, cut, pid, D0D0bar
+  Int_t nbinsImpParStudy[9]=      {36, 40, 40, 20, 15, 600,  3,4,2};
+  Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
+  Double_t limitUpImpParStudy[9]= {36., 5,  5, 0.2,15,2.2248,4,4,2};
+  TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
+  fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+  for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
+  fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  if(fReadMC){
+    //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
+    Int_t nbinsImpParStudy[8]=      {36,36,40, 40, 20,  15,  3, 4};
+    Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
+    Double_t limitUpImpParStudy[8]= {36.,36., 5, 5,  0.2, 15,  3.,4.};
+
+    fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+    TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
+    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+    fOutputMass->Add(fhStudyImpParSingleTrackSign);
+
+
+    fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+    fOutputMass->Add(fhStudyImpParSingleTrackFd);
+  
+    if(fStepMCAcc) CreateMCAcceptanceHistos();
+  }
 
 
   //for Like sign analysis
@@ -824,14 +871,14 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH2F* tmpStPt = new TH2F(nameSgnPt.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.16484,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpStPt = new TH2F(nameSgnPt.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.6248,2.2248,nbins2dPt,binInPt,binFinPt);
       TH2F *tmpSlPt=(TH2F*)tmpStPt->Clone();
       tmpStPt->Sumw2();
       tmpSlPt->Sumw2();
       
       //Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-      TH2F* tmpRtPt = new TH2F(nameRflPt.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
-      TH2F* tmpBtPt = new TH2F(nameBkgPt.Data(), "Background invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpRtPt = new TH2F(nameRflPt.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.6248,2.2248,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpBtPt = new TH2F(nameBkgPt.Data(), "Background invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",600,1.6248,2.2248,nbins2dPt,binInPt,binFinPt);
       tmpBtPt->Sumw2();
       tmpRtPt->Sumw2();
       
@@ -845,7 +892,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       //       cout<<"***************************************"<<endl<<endl;
     }
 
-    TH2F* tmpMtPt = new TH2F(nameMassPt.Data(),"D^{0} invariant mass; M [GeV]; Entries; Pt[GeV/c]",600,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+    TH2F* tmpMtPt = new TH2F(nameMassPt.Data(),"D^{0} invariant mass; M [GeV]; Entries; Pt[GeV/c]",600,1.6248,2.2248,nbins2dPt,binInPt,binFinPt);
     tmpMtPt->Sumw2();      
 
     fOutputMassPt->Add(tmpMtPt);
@@ -867,11 +914,11 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
       nameRflY+=i;
       //MC signal
       if(fReadMC){
-	TH2F* tmpStY = new TH2F(nameSgnY.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.16484,nbins2dY,binInY,binFinY);
+	TH2F* tmpStY = new TH2F(nameSgnY.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; y",600,1.6248,2.2248,nbins2dY,binInY,binFinY);
 	tmpStY->Sumw2();
 	//Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
-	TH2F* tmpRtY = new TH2F(nameRflY.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
-	TH2F* tmpBtY = new TH2F(nameBkgY.Data(), "Background invariant mass - MC; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
+	TH2F* tmpRtY = new TH2F(nameRflY.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; y",600,1.6248,2.2248,nbins2dY,binInY,binFinY);
+	TH2F* tmpBtY = new TH2F(nameBkgY.Data(), "Background invariant mass - MC; M [GeV]; Entries; y",600,1.6248,2.2248,nbins2dY,binInY,binFinY);
 	tmpBtY->Sumw2();
 	tmpRtY->Sumw2();
       
@@ -879,7 +926,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 	fOutputMassY->Add(tmpRtY);
 	fOutputMassY->Add(tmpBtY);
       }
-      TH2F* tmpMtY = new TH2F(nameMassY.Data(),"D^{0} invariant mass; M [GeV]; Entries; y",600,1.5648,2.1648,nbins2dY,binInY,binFinY);
+      TH2F* tmpMtY = new TH2F(nameMassY.Data(),"D^{0} invariant mass; M [GeV]; Entries; y",600,1.6248,2.2248,nbins2dY,binInY,binFinY);
       tmpMtY->Sumw2();      
       fOutputMassY->Add(tmpMtY);
     }
@@ -888,7 +935,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 19,-0.5,18.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 21,-0.5,20.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -914,6 +961,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(17,"SDD-Cls Rej");
   fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
   fNentries->GetXaxis()->SetBinLabel(19,"D0 failed to be filled");
+  fNentries->GetXaxis()->SetBinLabel(20,"fisFilled is 0");
+  fNentries->GetXaxis()->SetBinLabel(21,"fisFilled is 1");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -946,6 +995,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
   }
 
+
   //
   // Output slot 8 : List for detector response histograms
   //
@@ -977,6 +1027,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
+
 {
   /// Execute analysis for current event:
   /// heavy flavor candidates association to MC truth
@@ -1030,7 +1081,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
-
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
@@ -1049,17 +1099,18 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       return;
     }
   }
-  
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fCuts,fReadMC); 
   //fCounter->StoreEvent(aod,fReadMC); 
-
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
+  if(fReadMC && fStepMCAcc){
+    FillMCAcceptanceHistos(mcArray, mcHeader);
+  }
 
   if(!fCuts->IsEventSelected(aod)) {
     if(fCuts->GetWhyRejection()==1) // rejected for pileup
@@ -1068,7 +1119,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if(fCuts->GetWhyRejection()==7) fNentries->Fill(17);
     return;
   }
-
   // Check the Nb of SDD clusters
   if (fIsRejectSDDClusters) { 
     Bool_t skipEvent = kFALSE;
@@ -1119,7 +1169,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	fNentries->Fill(2);
 	continue; //skip the D0 from Dstar
       }
-
+    if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
+    if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
     if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
       fNentries->Fill(18); //monitor how often this fails 
       continue;
@@ -1152,8 +1203,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       if (fDrawDetSignal) {
 	DrawDetSignal(d, fDetSignal);
       }
-
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
+      NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
 	Int_t isSelectedPIDfill = 3;
 	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
@@ -1639,7 +1690,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       }
       
       
-      } //end mass cut
+    } //end mass cut
     
   } else{ //Background or LS
     //if(!fReadMC){
@@ -1695,8 +1746,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     }
 
 
-      //apply cut on invariant mass on the pair
-      if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
+    //apply cut on invariant mass on the pair
+    if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
       if(fSys==0){
 	ptProng[0]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt(); ptProng[1]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
 	cosThetaStarD0 = part->CosThetaStarD0();
@@ -1768,9 +1819,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	}
 
 
-         }
+      }
 
-        if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
+      if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
  	for(Int_t it=0; it<2; it++){
 	  fillthis="hptD0barB_";
 	  fillthis+=ptbin;
@@ -2082,7 +2133,8 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	Int_t pdgD0 = partD0->GetPdgCode();
 	//	cout<<"pdg = "<<pdgD0<<endl;
 
-	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+	// old function	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+        if(AliVertexingHFUtils::CheckOrigin(arrMC,partD0,fUseQuarkTagInKine)==5) isPrimary=kFALSE;
 	if(!isPrimary)
 	  trueImpParXY=GetTrueImpactParameter(mcHeader,arrMC,partD0)*10000.;
 	arrayForSparseTrue[0]=invmassD0; arrayForSparseTrue[2]=trueImpParXY;
@@ -2198,7 +2250,8 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	Int_t pdgD0 = partD0->GetPdgCode();
 	//	cout<<" pdg = "<<pdgD0<<endl;
 
-	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+        //old function	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+        if(AliVertexingHFUtils::CheckOrigin(arrMC,partD0,fUseQuarkTagInKine)==5) isPrimary=kFALSE;
 	if(!isPrimary)
 	  trueImpParXY=GetTrueImpactParameter(mcHeader,arrMC,partD0)*10000.;
 	arrayForSparseTrue[0]=invmassD0bar; arrayForSparseTrue[2]=trueImpParXY;
@@ -2554,7 +2607,7 @@ Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader
 
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSED0Mass::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
-  //
+  //  obsolete method
   /// checking whether the mother of the particles come from a charm or a bottom quark
   //
   printf(" AliAnalysisTaskSED0Mass V1::CheckOrigin() \n");
@@ -2585,4 +2638,168 @@ Int_t AliAnalysisTaskSED0Mass::CheckOrigin(TClonesArray* arrayMC, AliAODMCPartic
   
   if(isFromB) return 5;
   else return 4;
+}
+//_______________________________________
+void AliAnalysisTaskSED0Mass::CreateMCAcceptanceHistos(){
+  /// Histos for MC Acceptance histos 
+
+  const Int_t nVarPrompt = 2;
+  const Int_t nVarFD = 3;
+
+  Int_t nbinsPrompt[nVarPrompt]={200,100};
+  Int_t nbinsFD[nVarFD]={200,100,200};
+
+  Double_t xminPrompt[nVarPrompt] = {0.,-1.};
+  Double_t xmaxPrompt[nVarPrompt] = {40.,1.};
+
+  Double_t xminFD[nVarFD] = {0.,-1.,0.};
+  Double_t xmaxFD[nVarFD] = {40.,1.,40.};
+
+  //pt, y
+  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
+  fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+  fMCAccPrompt->GetAxis(1)->SetTitle("y");
+
+  //pt,y,ptB
+  fMCAccBFeed = new THnSparseF("hMCAccBFeed","kStepMCAcceptance pt vs. y vs. ptB - DfromB",nVarFD,nbinsFD,xminFD,xmaxFD);
+  fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+  fMCAccBFeed->GetAxis(1)->SetTitle("y");
+  fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
+
+  fOutputMass->Add(fMCAccPrompt);
+  fOutputMass->Add(fMCAccBFeed);
+}
+//___________________________________________________________________________________________________
+void AliAnalysisTaskSED0Mass::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader){
+  /// Fill MC acceptance histos for cuts study
+  const Int_t nProng = 2;
+  Double_t zMCVertex = mcHeader->GetVtxZ(); //vertex MC
+
+  for(Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++){
+    AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
+    if (TMath::Abs(mcPart->GetPdgCode()) == 421){
+
+      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,fUseQuarkTagInKine);//Prompt = 4, FeedDown = 5
+
+      Int_t deca = 0;
+      Bool_t isGoodDecay=kFALSE;
+      Int_t labDau[4]={-1,-1,-1,-1};
+      Bool_t isInAcc = kFALSE;
+      Bool_t isFidAcc = kFALSE;
+
+      deca=AliVertexingHFUtils::CheckD0Decay(arrayMC,mcPart,labDau);
+      if(deca > 0) isGoodDecay=kTRUE;
+
+      if(labDau[0]==-1){
+        continue; //protection against unfilled array of labels
+      }
+
+      isFidAcc=fCuts->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y());
+      isInAcc=CheckAcc(arrayMC,nProng,labDau);
+
+      if(isGoodDecay && TMath::Abs(zMCVertex) < fCuts->GetMaxVtxZ() && isFidAcc && isInAcc) {
+        //for prompt            
+        if(orig == 4){
+          //fill histo for prompt
+          Double_t arrayMCprompt[2] = {mcPart->Pt(),mcPart->Y()};
+          fMCAccPrompt->Fill(arrayMCprompt);
+        }
+        //for FD
+        else if(orig == 5){
+          Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
+          //fill histo for FD
+          Double_t arrayMCFD[3] = {mcPart->Pt(),mcPart->Y(),ptB};
+          fMCAccBFeed->Fill(arrayMCFD);
+        }
+        else
+          continue;
+      }
+    }
+  }
+}
+//______________________________________________________________________
+Bool_t AliAnalysisTaskSED0Mass::CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
+  /// check if the decay products are in the good eta and pt range
+  for (Int_t iProng = 0; iProng<nProng; iProng++){
+    AliAODMCParticle* mcPartDaughter=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDau[iProng]));
+    if(!mcPartDaughter) return kFALSE;
+    Double_t eta = mcPartDaughter->Eta();
+    Double_t pt = mcPartDaughter->Pt();
+    if (TMath::Abs(eta) > 0.9 || pt < 0.1) return kFALSE;
+  }
+  return kTRUE;
+}
+//________________________________________
+void AliAnalysisTaskSED0Mass::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC){
+  Double_t normIP[2];
+  Double_t pointD0[9];
+  Double_t pointD0bar[9];
+  Double_t pointD0MC[9];
+  Float_t ptB;
+  Int_t signalType=0;//background
+
+  //fill  variables
+  Double_t diffIP[2], errdiffIP[2];
+  part->Getd0MeasMinusExpProng(0,aod->GetMagneticField(),diffIP[0],errdiffIP[0]);
+  part->Getd0MeasMinusExpProng(1,aod->GetMagneticField(),diffIP[1],errdiffIP[1]);
+  normIP[0]=diffIP[0]/errdiffIP[0];
+  normIP[1]=diffIP[1]/errdiffIP[1];
+
+  AliAODVertex* secvtx=part->GetSecondaryVtx();
+  AliAODVertex *primvtx=part->GetPrimaryVtx();
+  Double_t err2decaylength=secvtx->Error2DistanceXYToVertex(primvtx);
+  Double_t lxy=part->AliAODRecoDecay::DecayLengthXY(primvtx);
+  Bool_t ispid=fCuts->GetIsUsePID();
+
+  if(fReadMC){
+    // MC THnSparse
+     Int_t pdgDgD0toKpi[2]={321,211};
+    Int_t lab=-9999;
+    lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+    if(lab>=0){
+      signalType=1;//signal
+      AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(lab);
+      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partD0,fUseQuarkTagInKine);
+      if(orig==4)signalType=1;//prompt
+      else if(orig==5)signalType=2;//feed down
+      //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
+      if(ispid)fCuts->SetUsePID(kFALSE);// if PID on, switch it off 
+      Int_t isCuts=fCuts->IsSelected(part,AliRDHFCuts::kAll,aod);
+      if(ispid)fCuts->SetUsePID(kTRUE);//if PID was on, switch it on
+      if(!isCuts) return;
+      Int_t isPid= fCuts->IsSelectedPID(part);
+      ptB=AliVertexingHFUtils::GetBeautyMotherPt(arrMC,partD0);
+      Double_t arrayMC[8]={part->Pt(), ptB,normIP[0], normIP[1], lxy, lxy/TMath::Sqrt(err2decaylength),(Double_t)isCuts, (Double_t)isPid};
+
+      //fill pointD0MC
+      for(Int_t i=0; i<8; i++){
+	pointD0MC[i]=arrayMC[i];
+      }
+      if(signalType==1)fhStudyImpParSingleTrackSign->Fill(pointD0MC);
+      if(signalType==2){
+	fhStudyImpParSingleTrackFd->Fill(pointD0MC);
+      }
+    }
+  }else{
+     // data
+    if(ispid)fCuts->SetUsePID(kFALSE);// if PID on, switch it off 
+    Int_t IsSelectedPIDoff=fCuts->IsSelected(part,AliRDHFCuts::kAll,aod);
+    if(ispid)fCuts->SetUsePID(kTRUE);//if PID was on, switch it on
+    if(!IsSelectedPIDoff) return;
+    Int_t pid=fCuts->IsSelectedPID(part);
+    if((IsSelectedPIDoff==1 || IsSelectedPIDoff==3) && fFillOnlyD0D0bar<2){
+      Double_t array[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0(),(Double_t)IsSelectedPIDoff,(Double_t)pid,0.};
+      for(Int_t i=0;i<9;i++){
+	pointD0[i]=array[i];
+      }
+      fhStudyImpParSingleTrackCand->Fill(pointD0);
+    }
+    if (IsSelectedPIDoff>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
+      Double_t arrayD0bar[9]={part->Pt(),normIP[0],normIP[1],lxy,lxy/TMath::Sqrt(err2decaylength),part->InvMassD0bar(),(Double_t)IsSelectedPIDoff,(Double_t)pid,1.};
+      for(Int_t i=0;i<9;i++){
+	pointD0bar[i]=arrayD0bar[i];
+      }
+      fhStudyImpParSingleTrackCand->Fill(pointD0bar);
+    }
+  }
 }

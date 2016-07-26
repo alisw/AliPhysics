@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisHelperJetTasks.cxx 
+  AliBasicParticle.cxx 
   AliTHn.cxx 
   AliPWGHistoTools.cxx
   AliPWGFunc.cxx

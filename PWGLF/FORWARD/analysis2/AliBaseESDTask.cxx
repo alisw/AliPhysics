@@ -47,7 +47,7 @@ AliBaseESDTask::AliBaseESDTask(const char* name, const char* title,
   //   AliFatal("Must pass in a valid correction manager object!");
   fBranchNames = 
     "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
-    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
+    "AliESDFMD.,SPDVertex.,TPCVertex.,PrimaryVertex.";
 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());

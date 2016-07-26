@@ -532,7 +532,8 @@ Bool_t AliAnalysisTaskDijetHadron::FillHistograms()
 
   //Track histogram
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
     while(track) {
       if(track->GetLabel()==0){
       fTrackPt_PbPb[fCentBin]->Fill(track->Pt()); 
@@ -546,7 +547,8 @@ Bool_t AliAnalysisTaskDijetHadron::FillHistograms()
 
   // Jet and Jet-HadronHistgram
   if (fJetsCont) {
-    AliEmcalJet *Jet = fJetsCont->GetNextAcceptJet(0);
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *Jet = fJetsCont->GetNextAcceptJet();
     while(Jet) {
 
       //leading track cut
@@ -629,7 +631,8 @@ for(int m=0;m<3;m++){//leading track cut
 	c_subleading_jet = subleading_jet_count0[m];
 	if(c_subleading_jet > 0){//if find sub leading
 
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     while(track) {
       if(track->GetLabel()==0){
 
@@ -717,7 +720,8 @@ if(pt_switch[pt_cut]){
 
   //Track histogram
   if (fMCTracksCont) {
-    AliVTrack *MCtrack = static_cast<AliVTrack*>(fMCTracksCont->GetNextAcceptParticle(0)); 
+    fMCTracksCont->ResetCurrentID();
+    AliVTrack *MCtrack = static_cast<AliVTrack*>(fMCTracksCont->GetNextAcceptParticle()); 
     while(MCtrack) {
       if(MCtrack->GetLabel()!=0){
       fTrackPt_MC[fCentBin]->Fill(MCtrack->Pt()); 
@@ -731,7 +735,8 @@ if(pt_switch[pt_cut]){
 
   // Jet and Jet-HadronHistgram
   if (fMCJetsCont) {
-    AliEmcalJet *MCJet = fMCJetsCont->GetNextAcceptJet(0);
+    fMCJetsCont->ResetCurrentID();
+    AliEmcalJet *MCJet = fMCJetsCont->GetNextAcceptJet();
     while(MCJet) {
 
       //leading track cut
@@ -810,7 +815,8 @@ for(int m=0;m<3;m++){
 	c_subleading_jet = subleading_jet_count1[m];
 	if(c_subleading_jet > 0){//if find sub leading
 
-    AliVTrack *MCtrack = static_cast<AliVTrack*>(fMCTracksCont->GetNextAcceptParticle(0));
+    fMCTracksCont->ResetCurrentID();
+    AliVTrack *MCtrack = static_cast<AliVTrack*>(fMCTracksCont->GetNextAcceptParticle());
     while(MCtrack) {
       if(MCtrack->GetLabel()!=0){
 
@@ -898,7 +904,8 @@ if(pt_switch[pt_cut]){
 
   //Track histogram
   if (fEmbTracksCont) {
-    AliVTrack *EMBtrack = static_cast<AliVTrack*>(fEmbTracksCont->GetNextAcceptParticle(0)); 
+    fEmbTracksCont->ResetCurrentID();
+    AliVTrack *EMBtrack = static_cast<AliVTrack*>(fEmbTracksCont->GetNextAcceptParticle()); 
     while(EMBtrack) {
       fTrackPt_EMB[fCentBin]->Fill(EMBtrack->Pt()); 
       fTrackPhi_EMB[fCentBin]->Fill(EMBtrack->Phi()); 
@@ -1001,7 +1008,8 @@ for(int m=0;m<3;m++){
 	c_subleading_jet = subleading_jet_count2[m];
 	if(c_subleading_jet > 0){//if find sub leading
 
-    AliVTrack *EMBtrack = static_cast<AliVTrack*>(fEmbTracksCont->GetNextAcceptParticle(0));
+    fEmbTracksCont->ResetCurrentID();
+    AliVTrack *EMBtrack = static_cast<AliVTrack*>(fEmbTracksCont->GetNextAcceptParticle());
     while(EMBtrack) {
 
       Double_t pt,phi,dphi,dep;
@@ -1095,9 +1103,10 @@ AliEmcalJet* AliAnalysisTaskDijetHadron::NextEmbeddedJet(Bool_t reset)
 {
   // Get the next accepted embedded jet.
 
-  Int_t i = reset ? 0 : -1;
+  if(reset)
+    fEmbJetsCont->ResetCurrentID();
       
-  AliEmcalJet* jet = fEmbJetsCont->GetNextAcceptJet(i);
+  AliEmcalJet* jet = fEmbJetsCont->GetNextAcceptJet();
   while (jet && jet->MCPt() < fMCJetPtThreshold) jet = fEmbJetsCont->GetNextAcceptJet();
 
   return jet;

@@ -53,8 +53,7 @@ AliAnalysisTaskChargedJetsHadronCF* AddTaskChargedJetsHadronCF(
   jetTask->SetVzRange(-10.,10.);
   jetTask->SetOffTrigger(physSel);
 
-  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackArray);
-  trackCont->SetFilterHybridTracks(kTRUE);
+  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackArray);
   trackCont->SetParticlePtCut(minTrackPt);
 
   AliJetContainer *jetCont = jetTask->AddJetContainer(jetArray,6,jetRadius);

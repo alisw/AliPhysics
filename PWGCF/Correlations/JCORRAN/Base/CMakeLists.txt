@@ -24,7 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/OADB
   )
 

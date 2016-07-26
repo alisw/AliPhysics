@@ -389,6 +389,12 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     case kTRDeleEff2D:
       selected = IsSelectedTRDeleEff(part,icut,AliTRDPIDResponse::kLQ2D);
       break;
+    case kTRDeleEff3D:
+      selected = IsSelectedTRDeleEff(part,icut,AliTRDPIDResponse::kLQ3D);
+      break;
+    case kTRDeleEff7D:
+      selected = IsSelectedTRDeleEff(part,icut,AliTRDPIDResponse::kLQ7D);
+      break;
     case kTOF:
       selected = IsSelectedTOF(part,icut);
       break;

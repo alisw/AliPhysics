@@ -6,12 +6,11 @@
 #include "AliAnalysisTaskSE.h"
 
 class TArray;
+class THistManager;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 
 namespace EMCalTriggerPtAnalysis {
-
-class AliEMCalHistoContainer;
 
 /**
  * \class AliAnalysisTaskTrackDCA
@@ -49,7 +48,7 @@ private:
 
   AliAnalysisUtils                    *fAnalysisUtils;            ///< Analysis utils (helper)
   AliESDtrackCuts                     *fStandardCuts;             ///< Standard track cuts
-  AliEMCalHistoContainer              *fHistos;                   ///< Histogram container
+  THistManager                        *fHistos;                   ///< Histogram container
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskTrackDCA, 1)

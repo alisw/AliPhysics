@@ -572,9 +572,10 @@ AliEmcalJet* AliAnalysisTaskDeltaPt::NextEmbeddedJet(Bool_t reset)
 {
   // Get the next accepted embedded jet.
 
-  Int_t i = reset ? 0 : -1;
+  if(reset)
+    fEmbJetsCont->ResetCurrentID();
 
-  AliEmcalJet* jet = fEmbJetsCont->GetNextAcceptJet(i);
+  AliEmcalJet* jet = fEmbJetsCont->GetNextAcceptJet();
   while (jet && jet->MCPt() < fMCJetPtThreshold) jet = fEmbJetsCont->GetNextAcceptJet();
 
   return jet;
@@ -642,7 +643,8 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
   }
 
   if (clusters) {
-    AliVCluster* cluster = clusters->GetNextAcceptCluster(0);
+    clusters->ResetCurrentID();
+    AliVCluster* cluster = clusters->GetNextAcceptCluster();
     while (cluster) {     
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
@@ -664,7 +666,8 @@ void AliAnalysisTaskDeltaPt::GetRandomCone(Float_t &pt, Float_t &eta, Float_t &p
   }
 
   if (tracks) {
-    AliVParticle* track = tracks->GetNextAcceptParticle(0); 
+    tracks->ResetCurrentID();
+    AliVParticle* track = tracks->GetNextAcceptParticle(); 
     while(track) { 
       Float_t tracketa = track->Eta();
       Float_t trackphi = track->Phi();

@@ -250,54 +250,76 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ; 
 
 	fh_eta
-		<< TH1D("h_eta", "h_eta", 300, -15, 15 )
+		<< TH1D("h_eta", "h_eta", 100, -15, 15 )
 		<< fHistCentBin
 		<< "END" ;
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 300, -10, 10)
+		<< TH1D("h_phi", "h_phi", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
 	fh_Qvector
-		<< TH1D("h_QVector", "h_QVector", 300, -10, 10)
+		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
 		<< fBin_h 
 		<< "END" ;
 
 
 	fh_ntracks 
-		<< TH1D("h_tracks", "h_tracks", 1000, 0, 30000)
+		<< TH1D("h_tracks", "h_tracks", 100, 0, 30000)
 		<< fHistCentBin
 		<< "END" ;  
 	
 	fh_vn 
- 		<< TH1D("hvn","hvn", 5096, -0.5, 0.5) 
+ 		<< TH1D("hvn","hvn", 1024, -1.5, 1.5) 
  		<< fBin_h << fBin_k 
  		<< fHistCentBin
  		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent] 
 	fh_vn_vn
-	  	<< TH1D("hvn_vn", "hvn_vn", 5096, -0.1, 0.1)
+	  	<< TH1D("hvn_vn", "hvn_vn", 1024, -1.5, 1.5)
   		<< fBin_h << fBin_k 
  	 	<< fBin_hh << fBin_kk
  	 	<< fHistCentBin
  	 	<< "END";  // histo of < vn * vn > for [ih][ik][ihh][ikk][iCent] 
 	fh_correlator 
-		<< TH1D("h_corr", "h_corr", 5096, -1, 1)
+		<< TH1D("h_corr", "h_corr", 1024, -1.5, 1.5)
 		<< fCorrBin
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_SC_ptdep_4corr
-		<< TH1D("hvnvm_SC","hvnvm_SC", 5096, -0.1, 0.1)
+		<< TH1D("hvnvm_SC","hvnvm_SC", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
 		<< fBin_hh << fBin_kk
 		<< fHistCentBin << fBin_Nptbins
 		<< "END" ;
 	fh_SC_ptdep_2corr
-		<< TH1D("hvn_SC","hvn_SC", 5096, -0.5, 0.5)
+		<< TH1D("hvn_SC","hvn_SC", 1024, -1.5, 1.5)
 		<< fBin_h << fBin_k
 		<< fHistCentBin << fBin_Nptbins
 		<< "END" ; 
 
+	fh_SC_with_QC_4corr 
+		<< TH1D("hQC_SC4p", "hQC_SC4p", 1024, -1.5, 1.5)
+		<< fBin_h << fBin_hh 
+		<< fHistCentBin 
+		<< "END" ;
+	fh_SC_with_QC_2corr
+		<< TH1D("hQC_SC2p", "hQC_SC2p", 1024, -1.5, 1.5)
+		<< fBin_h 
+		<< fHistCentBin 
+		<< "END" ; 
+
+	fh_QvectorQC
+		<< TH2D("hQvecQC", "hQvecQC", 1024, -1.1 , 1.1, 1024, -1.1, 1.1 ) 
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_QvectorQCphi
+		<< TH1D("hQbecQCphi", "hQbecQCphi", 1024, -3.2 , 3.2 )
+		<< fBin_h
+		<< fHistCentBin
+		<< "END" ;
 
 	//AliJTH1D set done.
 	
@@ -350,12 +372,10 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	enum{kSubA, kSubB, kNSub};
 	enum{kReal, kImg, kNPhase};
 	double Eta_config[kNSub][2];
-	Eta_config[kSubA][0] = fEta_min;
-	Eta_config[kSubA][1] = fEta_max;
-	Eta_config[kSubB][0] = -1*fEta_max;
-	Eta_config[kSubB][1] = -1*fEta_min; 
-	
-
+	Eta_config[kSubA][0] = fEta_min;  // 0.4 min for SubA 
+	Eta_config[kSubA][1] = fEta_max;  // 0.8 max for SubA
+	Eta_config[kSubB][0] = -1*fEta_max; // -0.8  min for SubB
+	Eta_config[kSubB][1] = -1*fEta_min; // -0.4  max for SubB
 
 	// use complex variable instead of doulbe Qn // 
 	TComplex QnA[kNH];
@@ -504,7 +524,6 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 
 	if(IsSCptdep == kTRUE){
-		cout << "additional pt loop.... " << endl;
 		const int SCNH =6; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
 		double ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
@@ -571,6 +590,29 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	}//pt dep done
 
+	if(IsSCwithQC==kTRUE){
+		// (a) calculate QC q-vecotr 
+		// (b) calculate 4p correaltion
+		// (c) calculate 2p correaltion
+
+		CalculateQvectorsQC(); // (a) 
+		for(int ih=2; ih<=5; ih++){
+			for(int ihh=2; ihh<ih; ihh++){
+				TComplex four = Four( ih, ihh, -1*ih, -1*ihh ) / Four(0,0,0,0).Re() ;
+				fh_SC_with_QC_4corr[ih][ihh][fCBin]->Fill( four.Re() );
+			};
+		}; // (b) 
+		for(int ih=2; ih<=5; ih++){
+			// Finally we want 2p corr as like
+			// 1/( M*(M-1) ) * [ QQ* - M ] 			
+			// two(2,2) = Q2 Q2* - Q0 = Q2Q2* - M
+			// two(0,0) = Q0 Q0* - Q0 = M^2 - M  
+			TComplex two = Two(ih, -1*ih) / Two(0,0).Re() ;
+			fh_SC_with_QC_2corr[ih][fCBin]->Fill( two.Re() );
+		} // (c) 	
+	} // QC method done.
+
+	// all job in 1 evt is done...
 	AnaEntry++;
 }
 
@@ -773,7 +815,6 @@ double AliJFFlucAnalysis::Get_Qn_Real_pt(double eta1, double eta2, int harmonics
 		return Qn_real; 
 }
 //________________________________________________________________________
-//________________________________________________________________________
 double AliJFFlucAnalysis::Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ptbin, double pt_min, double pt_max)
 {
 		int nh = harmonics;
@@ -807,4 +848,63 @@ double AliJFFlucAnalysis::Get_Qn_Img_pt(double eta1, double eta2, int harmonics,
 		return Qn_img; 
 }
 ///________________________________________________________________________
+/* new Function for QC method
+	Please see Generic Framwork from Ante 
+	use Standalone method  */
+//________________________________________________________________________
+void AliJFFlucAnalysis::CalculateQvectorsQC(){
+	// calcualte Q-vector for QC method
+	//init
+	for(int ih=0; ih<kNH; ih++){
+		for(int ik=0; ik<nKL; ik++){
+			QvectorQC[ih][ik] = TComplex(0, 0);		
+		} // for max power
+	} // for max harmonics
+	//Calculate Q-vector with particle loop
+	Long64_t ntracks = fInputList->GetEntriesFast();
+	for( Long64_t it=0; it<ntracks; it++){
+		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
+		double phi = itrack->Phi();
+		double eta = itrack->Eta(); 
+		// track Eta cut Note! pt cuts already applied in AliJFFlucTask.cxx 
+		if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue;
+		for(int ih=0; ih<kNH; ih++){
+			for(int ik=0; ik<nKL; ik++){
+				QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
+			}
+		}
+	 } // track loop done.
+	// Q-vector[ih][ik] calculated doen. //(need ik??)
 
+	// Save QA plot
+	for(int ih=0; ih<kNH; ih++){
+		fh_QvectorQC[ih][fCBin]->Fill( QvectorQC[ih][1].Re()/QvectorQC[0][1].Re() , QvectorQC[ih][1].Im()/QvectorQC[0][1].Re() ); // fill normalized Q vector
+		fh_QvectorQCphi[ih][fCBin]->Fill( QvectorQC[ih][1].Theta() );
+	}
+	// Q-vector calculated
+}
+//________________________________________________________________________
+TComplex AliJFFlucAnalysis::Q(int n, int p){
+	// Retrun QvectorQC 
+	// Q{-n, p} = Q{n, p}*
+	if(n>=0){ return QvectorQC[n][p]; }
+	return TComplex::Conjugate( QvectorQC[-n][p] );
+}
+//________________________________________________________________________
+TComplex AliJFFlucAnalysis::Two(int n1, int n2 ){
+	// two-particle correlation <exp[i(n1*phi1 + n2*phi2)]>
+	//	cout << "TWO FUNCTION " << Q(n1,1) << "*" << Q(n2,1) << " - " << Q(n1+n2 , 2) << endl;
+	TComplex two = Q(n1, 1) * Q(n2, 1) - Q( n1+n2, 2);
+	return two;
+}
+//________________________________________________________________________
+TComplex AliJFFlucAnalysis::Four( int n1, int n2, int n3, int n4){
+
+	TComplex four = 
+			Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
+               - Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
+               + Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
+               + 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
+               + 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
+	 return four;
+}

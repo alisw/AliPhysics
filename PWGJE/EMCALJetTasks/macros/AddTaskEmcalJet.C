@@ -1,18 +1,16 @@
 AliEmcalJetTask* AddTaskEmcalJet(
   const char *nTracks                        = "usedefault",
   const char *nClusters                      = "usedefault",
-  const Int_t algo                           = 1,                // 1 = AKT, 0 = KT
+  const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
   const Double_t radius                      = 0.4,
   const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
   const Double_t minTrPt                     = 0.15,
   const Double_t minClPt                     = 0.30,
   const Double_t ghostArea                   = 0.005,
-  const AliJetContainer::ERecoScheme_t recoSch = AliJetContainer::pt_scheme,
+  const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme,
   const char *tag                            = "Jet",
   const Double_t minJetPt                    = 0.,
-  const Bool_t selectPhysPrim                = kFALSE,
   const Bool_t lockTask                      = kTRUE,
-  const Int_t useExchangeCont                = 0,
   const Bool_t bFillGhosts                   = kFALSE
 )
 {  
@@ -81,11 +79,20 @@ AliEmcalJetTask* AddTaskEmcalJet(
   }
 
   AliParticleContainer* partCont = 0;
-  if (!trackName.IsNull()) {
-    partCont = new AliParticleContainer(trackName);
-    partCont->SelectPhysicalPrimaries(selectPhysPrim);
-    partCont->SetParticlePtCut(minTrPt);
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+    partCont = mcpartCont;
   }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    trackCont->SetFilterHybridTracks(kTRUE);
+    partCont = trackCont;
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+  if (partCont) partCont->SetParticlePtCut(minTrPt);
 
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
@@ -96,30 +103,20 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
-  AliJetContainer::EJetAlgo_t jetAlgo;
-  if (algo == 0) {
-    jetAlgo = AliJetContainer::kt_algorithm;
-  }
-  else {
-    jetAlgo = AliJetContainer::antikt_algorithm;
-  }
-
-  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, recoSch, radius, partCont, clusCont, tag);
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
 
   Printf("Jet task name: %s", name.Data());
  
   AliEmcalJetTask* mgrTask = mgr->GetTask(name.Data());
   if (mgrTask) return mgrTask;  
 
-  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name, useExchangeCont);
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
   jetTask->SetJetType(jetType);
   jetTask->SetJetAlgo(jetAlgo);
-  jetTask->SetRecombScheme(recoSch);
+  jetTask->SetRecombScheme(reco);
   jetTask->SetRadius(radius);
   if (partCont) jetTask->AdoptParticleContainer(partCont);
   if (clusCont) jetTask->AdoptClusterContainer(clusCont);
-  jetTask->SetTracksName(trackName);
-  jetTask->SetClusName(clusName);
   jetTask->SetJetsName(tag);
   jetTask->SetMinJetPt(minJetPt);
   jetTask->SetGhostArea(ghostArea);
@@ -138,30 +135,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
   mgr->ConnectInput(jetTask, 0, cinput);
 
   TObjArray* cnt = mgr->GetContainers();
-
-  if (useExchangeCont > 0) {
-    if (!trackName.IsNull()) {
-      AliAnalysisDataContainer* trackCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(trackName));
-      if (trackCont) {
-        mgr->ConnectInput(jetTask, 1, trackCont);
-      }
-      else {
-        ::Error("AddTaskEmcalJet", "Could not find input container '%s'!", nTracks);
-      }
-    }
-  }
-
-  if (useExchangeCont > 1) {
-    if (!clusName.IsNull()) {
-      AliAnalysisDataContainer* clusCont = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(clusName));
-      if (clusCont) {
-        mgr->ConnectInput(jetTask, 2, clusCont);
-      }
-      else {
-        ::Error("AddTaskEmcalJet", "Could not find input container '%s'!", nClusters);
-      }
-    }
-  }
 
   return jetTask;
 }

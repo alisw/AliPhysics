@@ -69,7 +69,7 @@ class AliConversionAODBGHandlerRP: public TObject{
     Bool_t                      fUseChargedTrackMult;             // flag for multiplicity switch
     Int_t                       fNEvents;                         // number of events
     Int_t**                     fBGEventCounter;                  //! bg counter
-    Int_t**                     fNBGEvents;                       //n BG events
+    Int_t**                     fNBGEvents;                       //! n BG events
     Int_t                       fNBinsRP;                         //n RP bins
     Int_t                       fNBinsZ;                          //n z bins
     Int_t                       fNBinsMultiplicity;               //n bins multiplicity

@@ -483,17 +483,23 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111065032230000","0163103100000050"); //
     cuts.AddCut("00000113","1111111066032230000","0163103100000050"); //
 
+  } else if (trainConfig == 108){ // EMCAL clusters pp 8 TeV, Different DistanceToBadChannels
+    cuts.AddCut("00000113","1111111063032230000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111163032230000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111263032230000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111363032230000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111563032230000","0163103100000050"); //
+    cuts.AddCut("00000113","1111111663032230000","0163103100000050"); //
   } else if (trainConfig == 109){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00000113","1111100063032230000","0163103100000050"); // NonLinearity none
     cuts.AddCut("00000113","1111101063032230000","0163103100000050"); // NonLinearity kSDMv5
     cuts.AddCut("00000113","1111113063032230000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 ConvCalo
     cuts.AddCut("00000113","1111114063032230000","0163103100000050"); // NonLinearity kTestBeamv2 + LHC12 Calo
   } else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
-    cuts.AddCut("00000113","1111100063032230000","0163103100000050"); // NonLinearity none
     cuts.AddCut("00000113","1111111063032230000","0163103100000050"); // NonLinearity LHC12 ConvCalo
     cuts.AddCut("00000113","1111112063032230000","0163103100000050"); // NonLinearity LHC12 Calo
     cuts.AddCut("00000113","1111121063032230000","0163103100000050"); // NonLinearity LHC12 ConvCalo MassRatioFits
     cuts.AddCut("00000113","1111122063032230000","0163103100000050"); // NonLinearity LHC12 Calo MassRatioFits
+    cuts.AddCut("00000113","1111100063032230000","0163103100000050"); // NonLinearity none
 
    // LHC12fa-i and MC
     // default with three cuts
@@ -579,7 +585,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("02303113","1111121053032220000","0163103100000050"); // 5 -10
     cuts.AddCut("03403113","1111121053032220000","0163103100000050"); // 10 -30
     cuts.AddCut("04503113","1111121053032220000","0163103100000050"); // 30 -100
-  } else if (trainConfig == 199){  - with multiplicity bins
+  } else if (trainConfig == 199){ // - with multiplicity bins
     cuts.AddCut("00100113","1111121063032220000","0163103100000050"); // 0 -2
     cuts.AddCut("01200113","1111121063032220000","0163103100000050"); // 2 -5
     cuts.AddCut("02300113","1111121063032220000","0163103100000050"); // 5 -10
@@ -727,7 +733,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
-    analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
+    analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();

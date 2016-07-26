@@ -8,6 +8,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TKey.h>
 #include <TList.h>
 #include <TMath.h>
@@ -19,7 +20,6 @@
 #include "AliAnalysisUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliLog.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
@@ -63,7 +63,7 @@ void AliAnalysisTaskEtaPhiEfficiency::UserCreateOutputObjects(){
   fTrackCuts->SetMinNCrossedRowsTPC(120);
   fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-  fHistos = new AliEMCalHistoContainer("EfficiencyMaps");
+  fHistos = new THistManager("EfficiencyMaps");
   fHistos->CreateTH1("hNtrials", "Number of trials", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSection", "Cross section", 1, 0.5, 1.5);
 

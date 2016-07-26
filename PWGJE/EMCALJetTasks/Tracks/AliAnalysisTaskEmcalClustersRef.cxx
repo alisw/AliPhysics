@@ -21,6 +21,7 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TString.h>
@@ -28,7 +29,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
-#include "AliEMCalHistoContainer.h"
+#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -47,15 +48,13 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     AliAnalysisTaskSE(),
     fAnalysisUtil(NULL),
+    fTriggerSelection(NULL),
     fHistos(NULL),
     fGeometry(NULL),
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
-  for(int itrg = 0; itrg < kECRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
 }
 
 /**
@@ -65,15 +64,13 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *name) :
     AliAnalysisTaskSE(name),
     fAnalysisUtil(),
+    fTriggerSelection(NULL),
     fHistos(NULL),
     fGeometry(NULL),
     fClusterContainer(""),
     fRequestAnalysisUtil(kTRUE),
     fTriggerStringFromPatches(kFALSE)
 {
-  for(int itrg = 0; itrg < kECRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1;
-  }
   DefineOutput(1, TList::Class());
 }
 
@@ -81,6 +78,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
  * Destructor
  */
 AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
+  if(fTriggerSelection) delete fTriggerSelection;
 }
 
 /**
@@ -93,7 +91,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   CreateEnergyBinning(energybinning);
   TArrayD smbinning(14); CreateLinearBinning(smbinning, 21, -0.5, 20.5);
   TArrayD etabinning; CreateLinearBinning(etabinning, 100, -0.7, 0.7);
-  fHistos = new AliEMCalHistoContainer("Ref");
+  fHistos = new THistManager("Ref");
   TString triggers[18] = {
       "MB", "EMC7", "DMC7",
       "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
@@ -160,16 +158,23 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   triggerdebug << "Offline bits: " << std::bitset<sizeof(UInt_t) * 8>(selectionstatus);
   AliDebug(2, triggerdebug.str().c_str());
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kECREJ1, triggerpatches),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kECREG1, triggerpatches),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kECREG2, triggerpatches),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7") && IsOfflineSelected(kECREL0, triggerpatches),
-      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1") && IsOfflineSelected(kECREJ1, triggerpatches),
-      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
-      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1") && IsOfflineSelected(kECREG1, triggerpatches),
-      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2") && IsOfflineSelected(kECREG2, triggerpatches),
-      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7") && IsOfflineSelected(kECREL0, triggerpatches);
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7"),
+      isDJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1"),
+      isDJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2"),
+      isDG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1"),
+      isDG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2"),
+      isDMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("DMC7");
+  if(triggerpatches && fTriggerSelection){
+      isEJ1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, triggerpatches);
+      isEJ2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, triggerpatches);
+      isEG1 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, triggerpatches);
+      isEG2 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, triggerpatches);
+      isEMC7 &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, triggerpatches);
+  }
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2 || isDMC7 || isDG1 || isDG2 || isDJ1 || isDJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -490,68 +495,32 @@ Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Do
 void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundtriggers) const {
   foundtriggers.Clear();
   if(!triggerpatches) return;
-  EmcalTriggerClass myclass = kECREL0;
-  if(triggerclass == "EG1") myclass = kECREG1;
-  if(triggerclass == "EG2") myclass = kECREG2;
-  if(triggerclass == "EJ1") myclass = kECREJ1;
-  if(triggerclass == "EJ2") myclass = kECREJ2;
-  if(triggerclass == "DMC7") myclass = kECRDL0;
-  if(triggerclass == "DG1") myclass = kECRDG1;
-  if(triggerclass == "DG2") myclass = kECRDG2;
-  if(triggerclass == "DJ1") myclass = kECRDJ1;
-  if(triggerclass == "DJ2") myclass = kECRDJ2;
-  bool isSingleShower = (
-      (myclass == kECREG1) || (triggerclass == kECREG2) || (myclass == kECREL0)
-      || (myclass == kECRDG1) || (triggerclass == kECRDG2) || (myclass == kECRDL0)
-  ),
-      isDCAL = ((myclass == kECRDL0) || (myclass == kECRDG1) || (myclass == kECRDG2) || (myclass == kECRDJ1) || (myclass == kECRDJ2));
+  AliEmcalTriggerOfflineSelection::EmcalTriggerClass myclass = AliEmcalTriggerOfflineSelection::kTrgEL0;
+  if(triggerclass == "EG1") myclass = AliEmcalTriggerOfflineSelection::kTrgEG1;
+  if(triggerclass == "EG2") myclass = AliEmcalTriggerOfflineSelection::kTrgEG2;
+  if(triggerclass == "EJ1") myclass = AliEmcalTriggerOfflineSelection::kTrgEJ1;
+  if(triggerclass == "EJ2") myclass = AliEmcalTriggerOfflineSelection::kTrgEJ2;
+  if(triggerclass == "DMC7") myclass = AliEmcalTriggerOfflineSelection::kTrgDL0;
+  if(triggerclass == "DG1") myclass = AliEmcalTriggerOfflineSelection::kTrgDG1;
+  if(triggerclass == "DG2") myclass = AliEmcalTriggerOfflineSelection::kTrgDG2;
+  if(triggerclass == "DJ1") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ1;
+  if(triggerclass == "DJ2") myclass = AliEmcalTriggerOfflineSelection::kTrgDJ2;
   AliEMCALTriggerPatchInfo *mypatch = NULL;
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
     if(!IsOfflineSimplePatch(*patchiter)) continue;
-    if(isDCAL){
+    if(AliEmcalTriggerOfflineSelection::IsDCAL(myclass)){
       if(!SelectDCALPatch(*patchiter)) continue;
     } else {
       if(SelectDCALPatch(*patchiter)) continue;
     }
-    if(isSingleShower){
+    if(AliEmcalTriggerOfflineSelection::IsSingleShower(myclass)){
       if(!SelectSingleShowerPatch(*patchiter)) continue;
     } else {
       if(!SelectJetPatch(*patchiter)) continue;
     }
-    if(GetPatchEnergy(*patchiter) > fOfflineEnergyThreshold[myclass]) foundtriggers.Add(mypatch);
+    double threshold = fTriggerSelection ? fTriggerSelection->GetThresholdForTrigger(myclass) : -1;
+    if(GetPatchEnergy(*patchiter) > threshold) foundtriggers.Add(mypatch);
   }
-}
-
-/**
- * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param trgcls Trigger class for which to apply additional offline patch selection
- * @param triggerpatches Array of trigger patches
- * @return True if at least on patch above threshold is found or no cut is applied
- */
-Bool_t AliAnalysisTaskEmcalClustersRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
-  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kECREL0) || (trgcls == kECREG1) || (trgcls == kECREG2) ||
-      (trgcls == kECRDL0) || (trgcls == kECRDG1) || (trgcls == kECRDG2)),
-      isDCAL = ((trgcls == kECRDL0) || (trgcls == kECRDG1) || (trgcls == kECRDG2) || (trgcls == kECRDJ1) || (trgcls == kECRDJ2));
-  int nfound = 0;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    bool isDCALpatch = SelectDCALPatch(*patchIter);
-    if(isDCAL){
-      if(!isDCALpatch) continue;
-    } else {
-      if(isDCALpatch) continue;
-    }
-    if(!IsOfflineSimplePatch(*patchIter)) continue;
-    if(isSingleShower){
-      if(!SelectSingleShowerPatch(*patchIter)) continue;
-    } else{
-      if(!SelectJetPatch(*patchIter)) continue;
-    }
-    if(GetPatchEnergy(*patchIter) > fOfflineEnergyThreshold[trgcls]) nfound++;
-  }
-  return nfound > 0;
 }
 
 /**

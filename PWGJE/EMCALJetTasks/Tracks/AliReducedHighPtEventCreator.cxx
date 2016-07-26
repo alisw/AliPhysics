@@ -32,6 +32,7 @@
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliEmcalTrackSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -42,7 +43,6 @@
 #include "AliVVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
-#include "AliEMCalPtTaskVTrackSelection.h"
 #include "AliReducedEmcalCluster.h"
 #include "AliReducedGeneratedParticle.h"
 #include "AliReducedHighPtEvent.h"
@@ -309,8 +309,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
  * \param sel The track selection
  * \param cutindex The index of the track selection
  */
-void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
-    EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection* sel, int cutindex) {
+void AliReducedHighPtEventCreator::AddVirtualTrackSelection(AliEmcalTrackSelection* sel, int cutindex) {
   fTrackSelections->Add(new AliReducedTrackSelectionContainer(cutindex, sel));
 }
 
@@ -491,8 +490,7 @@ AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer():
  * \param index Cut index
  * \param sel Track selection object
  */
-AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer(
-    Int_t index, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection* sel):
+AliReducedTrackSelectionContainer::AliReducedTrackSelectionContainer(Int_t index, AliEmcalTrackSelection* sel):
   fIndex(index),
   fTrackSelection(sel)
 {

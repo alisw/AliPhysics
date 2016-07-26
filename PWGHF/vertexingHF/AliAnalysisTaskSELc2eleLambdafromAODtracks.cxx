@@ -262,6 +262,11 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoLambdaMassvsPt(0),
   fHistoLambdaMassvsPtMCS(0),
   fHistoLambdaMassvsPtMCGen(0),
+  fHistoLambdaPtvsEta(0),
+  fHistoLambdaPtvsEtaMCS(0),
+  fHistoLambdaPtvsEtaMCGen(0),
+  fHistoLambdaArmenteros(0),
+  fHistoLambdaArmenterosMCS(0),
   fHistoLambdaPtvsDl(0),
   fHistoLambdaPtvsDlSide(0),
   fHistoLambdaPtvsDlMCS(0),
@@ -698,6 +703,11 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoLambdaMassvsPt(0),
   fHistoLambdaMassvsPtMCS(0),
   fHistoLambdaMassvsPtMCGen(0),
+  fHistoLambdaPtvsEta(0),
+  fHistoLambdaPtvsEtaMCS(0),
+  fHistoLambdaPtvsEtaMCGen(0),
+  fHistoLambdaArmenteros(0),
+  fHistoLambdaArmenterosMCS(0),
   fHistoLambdaPtvsDl(0),
   fHistoLambdaPtvsDlSide(0),
   fHistoLambdaPtvsDlMCS(0),
@@ -1487,7 +1497,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 75;
+  Int_t nVar = 92;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1568,8 +1578,28 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 	fCandidateVariableNames[71]= "IsV0PeakRegion";
 	fCandidateVariableNames[72]= "mcpdgv0";
 
-  fCandidateVariableNames[73]="EvNumber";
-  fCandidateVariableNames[74]="RunNumber";
+	fCandidateVariableNames[73]= "mcv0pospx";
+	fCandidateVariableNames[74]= "mcv0pospy";
+	fCandidateVariableNames[75]= "mcv0pospz";
+	fCandidateVariableNames[76]= "mcpdgv0pos";
+	fCandidateVariableNames[77]= "mcv0negpx";
+	fCandidateVariableNames[78]= "mcv0negpy";
+	fCandidateVariableNames[79]= "mcv0negpz";
+	fCandidateVariableNames[80]= "mcpdgv0neg";
+
+	fCandidateVariableNames[81]= "ProtonPxPV";
+	fCandidateVariableNames[82]= "ProtonPyPV";
+	fCandidateVariableNames[83]= "ProtonPzPV";
+	fCandidateVariableNames[84]= "PiPxPV";
+	fCandidateVariableNames[85]= "PiPyPV";
+	fCandidateVariableNames[86]= "PiPzPV";
+
+	fCandidateVariableNames[87]= "mcv0vertx";
+	fCandidateVariableNames[88]= "mcv0verty";
+	fCandidateVariableNames[89]= "mcv0vertz";
+
+  fCandidateVariableNames[90]="EvNumber";
+  fCandidateVariableNames[91]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1588,7 +1618,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(!trkpid) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<75;i++){
+	for(Int_t i=0;i<92;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -1682,19 +1712,19 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
   fCandidateVariables[21] = trk->Charge();
 
 	if(anti_lambda_flag){
-		fCandidateVariables[22] = cntrack->Px();
-		fCandidateVariables[23] = cntrack->Py();
-		fCandidateVariables[24] = cntrack->Pz();
-		fCandidateVariables[25] = cptrack->Px();
-		fCandidateVariables[26] = cptrack->Py();
-		fCandidateVariables[27] = cptrack->Pz();
+		fCandidateVariables[22] = v0->MomNegX(); //cntrack->Px();
+		fCandidateVariables[23] = v0->MomNegY(); //cntrack->Py();
+		fCandidateVariables[24] = v0->MomNegZ(); //cntrack->Pz();
+		fCandidateVariables[25] = v0->MomPosX(); //cptrack->Px();
+		fCandidateVariables[26] = v0->MomPosY(); //cptrack->Py();
+		fCandidateVariables[27] = v0->MomPosZ(); //cptrack->Pz();
 	}else{
-		fCandidateVariables[22] = cptrack->Px();
-		fCandidateVariables[23] = cptrack->Py();
-		fCandidateVariables[24] = cptrack->Pz();
-		fCandidateVariables[25] = cntrack->Px();
-		fCandidateVariables[26] = cntrack->Py();
-		fCandidateVariables[27] = cntrack->Pz();
+		fCandidateVariables[22] =  v0->MomPosX(); //cptrack->Px();
+		fCandidateVariables[23] =  v0->MomPosY(); //cptrack->Py();
+		fCandidateVariables[24] =  v0->MomPosZ(); //cptrack->Pz();
+		fCandidateVariables[25] =  v0->MomNegX(); //cntrack->Px();
+		fCandidateVariables[26] =  v0->MomNegY(); //cntrack->Py();
+		fCandidateVariables[27] =  v0->MomNegZ(); //cntrack->Pz();
 	}
 
   AliAODMCParticle *mclc = 0;
@@ -1709,31 +1739,65 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	Int_t mcngen_v0=-9999;
 
 	if(fUseMCInfo && mcArray){
+    mclablc =  MatchToMC(elobj,mcArray,mcpdgele_array, mcpdgv0_array,mclabelele_array,mclabelv0_array,mcngen_ele,mcngen_v0);
+    if(mclabelele_array[0]>=0){
+      mcele = (AliAODMCParticle*) mcArray->At(mclabelele_array[0]);
+			if(mcele){
+				fCandidateVariables[46] = mcele->Px();
+				fCandidateVariables[47] = mcele->Py();
+				fCandidateVariables[48] = mcele->Pz();
+			}
+    }
+    if(mclabelv0_array[0]>=0){
+      mcv0 = (AliAODMCParticle*) mcArray->At(mclabelv0_array[0]);
+			if(mcv0){
+				fCandidateVariables[49] = mcv0->Px();
+				fCandidateVariables[50] = mcv0->Py();
+				fCandidateVariables[51] = mcv0->Pz();
+				fCandidateVariables[72] = mcv0->GetPdgCode();
+			}
+    }else{
+      Int_t pdgdgv0[2]={211,211};
+      Int_t labV0 = v0->MatchToMC(310,mcArray,2,pdgdgv0); // the V0
+      if(labV0>=0){
+        mcv0 = (AliAODMCParticle*) mcArray->At(labV0);
+        if(mcv0){
+          fCandidateVariables[49] = mcv0->Px();
+          fCandidateVariables[50] = mcv0->Py();
+          fCandidateVariables[51] = mcv0->Pz();
+          fCandidateVariables[72] = mcv0->GetPdgCode();
+        }
+      }
+    }
 
-		mclablc =  MatchToMC(elobj,mcArray,mcpdgele_array, mcpdgv0_array,mclabelele_array,mclabelv0_array,mcngen_ele,mcngen_v0);
+    Int_t labPos = cptrack->GetLabel();
+    if(labPos>=0){
+      AliAODMCParticle *mcv0pos = (AliAODMCParticle*)mcArray->At(labPos);
+      fCandidateVariables[73] = mcv0pos->Px();
+      fCandidateVariables[74] = mcv0pos->Py();
+      fCandidateVariables[75] = mcv0pos->Pz();
+      fCandidateVariables[76] = mcv0pos->GetPdgCode();
+      fCandidateVariables[87] = mcv0pos->Xv();
+      fCandidateVariables[88] = mcv0pos->Yv();
+      fCandidateVariables[89] = mcv0pos->Zv();
+    }
+    Int_t labNeg = cntrack->GetLabel();
+    if(labNeg>=0){
+      AliAODMCParticle *mcv0neg = (AliAODMCParticle*)mcArray->At(labNeg);
+      fCandidateVariables[77] = mcv0neg->Px();
+      fCandidateVariables[78] = mcv0neg->Py();
+      fCandidateVariables[79] = mcv0neg->Pz();
+      fCandidateVariables[80] = mcv0neg->GetPdgCode();
+    }
 
     if(mclablc>-1){
       mclc = (AliAODMCParticle*) mcArray->At(mclablc);
-			if(mclabelele_array[0]>=0)
-				mcele = (AliAODMCParticle*) mcArray->At(mclabelele_array[0]);
-			if(mclabelv0_array[0]>=0)
-				mcv0 = (AliAODMCParticle*) mcArray->At(mclabelv0_array[0]);
 			if(mclc){
 				fCandidateVariables[28] = mclc->GetPdgCode();
 				fCandidateVariables[29] = mclc->Label();
 				fCandidateVariables[43] = mclc->Px();
 				fCandidateVariables[44] = mclc->Py();
 				fCandidateVariables[45] = mclc->Pz();
-			}
-			if(mcele){
-				fCandidateVariables[46] = mcele->Px();
-				fCandidateVariables[47] = mcele->Py();
-				fCandidateVariables[48] = mcele->Pz();
-			}
-			if(mcv0){
-				fCandidateVariables[49] = mcv0->Px();
-				fCandidateVariables[50] = mcv0->Py();
-				fCandidateVariables[51] = mcv0->Pz();
 			}
 		}
 		fCandidateVariables[30] = mcpdgele_array[1];
@@ -1792,9 +1856,25 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(cntrack) fCandidateVariables[70] = cntrack->GetITSClusterMap();
 
   fCandidateVariables[71] = fAnalCuts->IsPeakRegion(v0);
-	fCandidateVariables[72] = mcpdgv0_array[0];
-  fCandidateVariables[73] = fEvNumberCounter;
-  fCandidateVariables[74] = fRunNumber;
+
+  if(!anti_lambda_flag){
+    fCandidateVariables[81] = cptrack->Px();
+    fCandidateVariables[82] = cptrack->Py();
+    fCandidateVariables[83] = cptrack->Pz();
+    fCandidateVariables[84] = cntrack->Px();
+    fCandidateVariables[85] = cntrack->Py();
+    fCandidateVariables[86] = cntrack->Pz();
+  }else{
+    fCandidateVariables[81] = cntrack->Px();
+    fCandidateVariables[82] = cntrack->Py();
+    fCandidateVariables[83] = cntrack->Pz();
+    fCandidateVariables[84] = cptrack->Px();
+    fCandidateVariables[85] = cptrack->Py();
+    fCandidateVariables[86] = cptrack->Pz();
+  }
+
+  fCandidateVariables[90] = fEvNumberCounter;
+  fCandidateVariables[91] = fRunNumber;
 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
@@ -2472,7 +2552,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 	if(!trke) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<75;i++){
+	for(Int_t i=0;i<92;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -2542,8 +2622,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCandidateVariables[56] = fVtx1->GetZ();
   fCandidateVariables[64] = v0info[0];
 
-  fCandidateVariables[73] = fEvNumberCounter;
-  fCandidateVariables[74] = fRunNumber;
+  fCandidateVariables[90] = fEvNumberCounter;
+  fCandidateVariables[91] = fRunNumber;
 
 
   if(fWriteVariableTree)
@@ -2827,6 +2907,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 		mcelepy = mcetrk->Py();
 		mcelepz = mcetrk->Pz();
 	}
+  //test propagation
+//  cout<<"B: "<<fBzkG<<endl;
+//  cout<<"trk: "<<trk->Charge()<<" "<<trk->Px()<<" "<<trk->Py()<<" "<<trk->Pz()<<endl;
+//  AliExternalTrackParam etp;
+//  etp.CopyFromVTrack(trk);
+//  Double_t xyz_test[3]={-9999.,-9999.,-9999.};  
+//  etp.GetXYZ(xyz_test);
+//  cout<<"Before: "<<xyz_test[0]<<" "<<xyz_test[1]<<" "<<xyz_test[2]<<endl;
+//  etp.PropagateTo(80.,(Float_t)fBzkG);
+//  etp.GetXYZ(xyz_test); // GetXYZ returns global coordinates
+//  cout<<"After: "<<xyz_test[0]<<" "<<xyz_test[1]<<" "<<xyz_test[2]<<endl;
 
 	if(!fWriteEachVariableTree) return;
 
@@ -2953,12 +3044,29 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 		cptrack =  (AliAODTrack*)(v0->GetDaughter(1));
 		cntrack =  (AliAODTrack*)(v0->GetDaughter(0));
 	}
+  //test propagation
+//  cout<<"B: "<<fBzkG<<endl;
+//  cout<<"trk: "<<cptrack->Charge()<<" "<<v0->MomPosX()<<" "<<v0->MomPosY()<<" "<<v0->MomPosZ()<<endl;
+//  cout<<"vert: "<<v0->DecayVertexV0X()<<" "<<v0->DecayVertexV0Y()<<" "<<v0->DecayVertexV0Z()<<endl;
+//  AliExternalTrackParam etp;
+//  etp.CopyFromVTrack(cptrack);
+//  Double_t xyz_test[3]={-9999.,-9999.,-9999.};  
+//  etp.PropagateTo(10.,(Float_t)fBzkG);
+//  etp.GetXYZ(xyz_test); // GetXYZ returns global coordinates
+//  cout<<"10: "<<xyz_test[0]<<" "<<xyz_test[1]<<" "<<xyz_test[2]<<endl;
+//  etp.PropagateTo(120.,(Float_t)fBzkG);
+//  etp.GetXYZ(xyz_test); // GetXYZ returns global coordinates
+//  cout<<"120: "<<xyz_test[0]<<" "<<xyz_test[1]<<" "<<xyz_test[2]<<endl;
 
   Double_t mlamPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t posVtx[3] = {0.,0.,0.};
   fVtx1->GetXYZ(posVtx);
   Double_t ptotlam = TMath::Sqrt(pow(v0->Px(),2)+pow(v0->Py(),2)+pow(v0->Pz(),2));
   Double_t v0propdl = v0->DecayLengthV0(posVtx)*mlamPDG/ptotlam;
+  Double_t cont_arm[3];
+  cont_arm[0] = v0->Pt();
+  cont_arm[1] = v0->PtArmV0();
+  cont_arm[2] = v0->AlphaV0();
 
 	if(TMath::Abs(v0->MassLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambdaRough()){
 		fHistoLambdaMassvsPt->Fill(v0->MassLambda(),v0->Pt());
@@ -2970,6 +3078,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 
 	if(fAnalCuts->IsPeakRegion(v0)){
 		fHistoLambdaPtvsDl->Fill(v0->Pt(),v0propdl);
+		fHistoLambdaPtvsEta->Fill(v0->Pt(),v0->Eta());
+		fHistoLambdaArmenteros->Fill(cont_arm);
 	}
 	if(fAnalCuts->IsSideBand(v0)){
 		fHistoLambdaPtvsDlSide->Fill(v0->Pt(),v0propdl);
@@ -2997,6 +3107,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 			if(TMath::Abs(v0->MassAntiLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambdaRough()){
 				fHistoLambdaMassvsPtMCS->Fill(v0->MassAntiLambda(),v0->Pt());
 			}
+      if(fAnalCuts->IsPeakRegion(v0)){
+        fHistoLambdaPtvsEtaMCS->Fill(v0->Pt(),v0->Eta());
+        fHistoLambdaArmenterosMCS->Fill(cont_arm);
+      }
 		}
 		if(labV0<0) return;
 		AliAODMCParticle *mcv0trk = (AliAODMCParticle*)mcArray->At(labV0);
@@ -3087,19 +3201,19 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 	if(fabs(v0->MassAntiLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambdaRough()) isparticle=kFALSE;
 
 	if(isparticle){
-		fCandidateV0Variables[ 5] = cptrack->Px();
-		fCandidateV0Variables[ 6] = cptrack->Py();
-		fCandidateV0Variables[ 7] = cptrack->Pz();
-		fCandidateV0Variables[ 8] = cntrack->Px();
-		fCandidateV0Variables[ 9] = cntrack->Py();
-		fCandidateV0Variables[10] = cntrack->Pz();
+		fCandidateV0Variables[ 5] = v0->MomPosX(); //cptrack->Px();
+		fCandidateV0Variables[ 6] = v0->MomPosY(); //cptrack->Py();
+		fCandidateV0Variables[ 7] = v0->MomPosZ(); //cptrack->Pz();
+		fCandidateV0Variables[ 8] = v0->MomNegX(); //cntrack->Px();
+		fCandidateV0Variables[ 9] = v0->MomNegY(); //cntrack->Py();
+		fCandidateV0Variables[10] = v0->MomNegZ(); //cntrack->Pz();
 	}else{
-		fCandidateV0Variables[ 5] = cntrack->Px();
-		fCandidateV0Variables[ 6] = cntrack->Py();
-		fCandidateV0Variables[ 7] = cntrack->Pz();
-		fCandidateV0Variables[ 8] = cptrack->Px();
-		fCandidateV0Variables[ 9] = cptrack->Py();
-		fCandidateV0Variables[10] = cptrack->Pz();
+		fCandidateV0Variables[ 5] =  v0->MomNegX(); //cntrack->Px();
+		fCandidateV0Variables[ 6] =  v0->MomNegY(); //cntrack->Py();
+		fCandidateV0Variables[ 7] =  v0->MomNegZ(); //cntrack->Pz();
+		fCandidateV0Variables[ 8] =  v0->MomPosX(); //cptrack->Px();
+		fCandidateV0Variables[ 9] =  v0->MomPosY(); //cptrack->Py();
+		fCandidateV0Variables[10] =  v0->MomPosZ(); //cptrack->Pz();
 	}
 
   Double_t lPosV0[3];
@@ -3848,6 +3962,12 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLambdaMassvsPtMCS);
   fHistoLambdaMassvsPtMCGen=new TH2F("fHistoLambdaMassvsPtMCGen","Lambda mass",100,1.116-0.05,1.116+0.05,20,0.,10.);
   fOutputAll->Add(fHistoLambdaMassvsPtMCGen);
+  fHistoLambdaPtvsEta=new TH2F("fHistoLambdaPtvsEta","Lambda mass",20,0.,10.,20,-1.,1.);
+  fOutputAll->Add(fHistoLambdaPtvsEta);
+  fHistoLambdaPtvsEtaMCS=new TH2F("fHistoLambdaPtvsEtaMCS","Lambda mass",20,0.,10.,20,-1.,1.);
+  fOutputAll->Add(fHistoLambdaPtvsEtaMCS);
+  fHistoLambdaPtvsEtaMCGen=new TH2F("fHistoLambdaPtvsEtaMCGen","Lambda mass",20,0.,10.,20,-1.,1.);
+  fOutputAll->Add(fHistoLambdaPtvsEtaMCGen);
   fHistoK0sMassvsPt=new TH2F("fHistoK0sMassvsPt","K0s mass",100,0.497-0.05,0.497+0.05,20,0.,10.);
   fOutputAll->Add(fHistoK0sMassvsPt);
   fHistoLambdaPtvsDl=new TH2F("fHistoLambdaPtvsDl","Lambda pt vs dl",20,0.,10.,20,0.,40.);
@@ -3862,6 +3982,14 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLambdaPtvsDlFeeddownXiMinusMCS);
   fHistoLambdaPtvsDlFeeddownOmegaMCS=new TH2F("fHistoLambdaPtvsDlFeeddownOmegaMCS","Lambda pt vs dl",20,0.,10.,20,0.,40.);
   fOutputAll->Add(fHistoLambdaPtvsDlFeeddownOmegaMCS);
+
+  Int_t bins_armenteros[3]=	{20 ,100	,200};
+  Double_t xmin_armenteros[3]={0.,0.	,-1.};
+  Double_t xmax_armenteros[3]={20.,1.	,1.};
+  fHistoLambdaArmenteros = new THnSparseF("fHistoLambdaArmenteros","",3,bins_armenteros,xmin_armenteros,xmax_armenteros);
+  fOutputAll->Add(fHistoLambdaArmenteros);
+  fHistoLambdaArmenterosMCS = new THnSparseF("fHistoLambdaArmenterosMCS","",3,bins_armenteros,xmin_armenteros,xmax_armenteros);
+  fOutputAll->Add(fHistoLambdaArmenterosMCS);
 
   fHistoElectronTPCPID=new TH2F("fHistoElectronTPCPID","",50,0.,5.,50,-20.,20.);
   fOutputAll->Add(fHistoElectronTPCPID);
@@ -5246,6 +5374,7 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 
 			if((fabs(mcpart->Y())<rapmax) && (fabs(mcpart->Eta())<etamax)){
 				fHistoLambdaMassvsPtMCGen->Fill(1.115683, mcpart->Pt());
+				fHistoLambdaPtvsEtaMCGen->Fill(mcpart->Pt(),mcpart->Eta());
 			}
 			FillMCV0ROOTObjects(mcpart, mcArray);
 		}

@@ -12,7 +12,6 @@
 
 
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 /**
  * \namespace EMCalTriggerPtAnalysis

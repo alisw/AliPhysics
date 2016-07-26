@@ -24,6 +24,12 @@ AliHFCutVarFDsubMassFitter::AliHFCutVarFDsubMassFitter()
   , fSigErr(-1.)
   , fBkg(-1.)
   , fBkgErr(-1.)
+  , fSigma(-1.)
+  , fSigmaErr(-1.)
+  , fMean(-1.)
+  , fMeanErr(-1.)
+  , fChiSquare(-1.)
+  , fRedChiSquare(-1.)
 {
   // Default constructor
 }
@@ -40,6 +46,12 @@ AliHFCutVarFDsubMassFitter::AliHFCutVarFDsubMassFitter(THnSparseF* thn, TList* a
   , fSigErr(-1.)
   , fBkg(-1.)
   , fBkgErr(-1.)
+  , fSigma(-1.)
+  , fSigmaErr(-1.)
+  , fMean(-1.)
+  , fMeanErr(-1.)
+  , fChiSquare(-1.)
+  , fRedChiSquare(-1.)
 {
   // Constructor
   ObtainMassHistogram();
@@ -91,6 +103,12 @@ void AliHFCutVarFDsubMassFitter::FitMassHistogram() {
   if (fFitter->MassFitter(kFALSE)) {
     fSig    = fFitter->GetRawYield();
     fSigErr = fFitter->GetRawYieldError();
+    fSigma = fFitter->GetSigma();
+    fSigmaErr = fFitter->GetSigmaUncertainty();
+    fMean = fFitter->GetMean();
+    fMeanErr = fFitter->GetMeanUncertainty();
+    fChiSquare = fFitter->GetChiSquare();
+    fRedChiSquare = fFitter->GetReducedChiSquare();
     fFitter->Background(3,fBkg,fBkgErr);
   }
 }
@@ -107,6 +125,11 @@ AliHFCutVarFDsubMassFitter::AliHFCutVarFDsubMassFitter(const AliHFCutVarFDsubMas
   , fSigErr(mf.fSigErr)
   , fBkg(mf.fBkg)
   , fBkgErr(mf.fBkgErr)
+  , fSigma(mf.fSigma)
+  , fSigmaErr(mf.fSigmaErr)
+  , fMean(mf.fMean)
+  , fMeanErr(mf.fMeanErr)
+  , fChiSquare(mf.fChiSquare)
 {
   /// Copy constructor
 }
@@ -125,6 +148,11 @@ AliHFCutVarFDsubMassFitter AliHFCutVarFDsubMassFitter::operator=(const AliHFCutV
     fSigErr = mf.fSigErr;
     fSig = mf.fSig;
     fBkgErr = mf.fBkgErr;
+    fSigma = mf.fSigma;
+    fSigmaErr = mf.fSigmaErr;
+    fMean = mf.fMean;
+    fMeanErr = mf.fMeanErr;
+    fChiSquare = mf.fChiSquare;
   }
   return *this;
 }

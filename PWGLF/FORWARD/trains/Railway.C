@@ -230,14 +230,15 @@ struct Railway
    */
   virtual Bool_t LoadSource(const TString& name, bool copy=false)
   {
-    if (!AuxFile(name, copy)) {
+    TString local = name;
+    if (!AuxFile(local, copy)) {
       Warning("LoadSource", "Failed to add aux source file %s", name.Data());
       return false;
     }
-    TString base(gSystem->BaseName(name));
-    Info("LoadSource", "Building %s", base.Data());
+    // TString base(gSystem->BaseName(name));
+    Info("LoadSource", "Building %s", local.Data());
     // gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"a\");");
-    gROOT->LoadMacro(Form("%s++g", base.Data()));
+    gROOT->LoadMacro(Form("%s+g", local.Data()));
     // gROOT->ProcessLine("gSystem->RedirectOutput(0);");
     Info("LoadSource", "End of loading source");
     return true;
@@ -253,7 +254,8 @@ struct Railway
    */
   virtual Bool_t LoadAux(const TString& name, Bool_t copy=false)
   {
-    if (!AuxFile(name, copy)) return false;
+    TString local = name;
+    if (!AuxFile(local, copy)) return false;
     return true;
   }
 
@@ -519,17 +521,33 @@ protected:
    *
    * @return true on success
    */
-  virtual Bool_t AuxFile(const TString& name, bool copy=false)
+  virtual Bool_t AuxFile(TString& name, bool copy=false)
   {
     TString path(gSystem->ExpandPathName(name.Data()));
+    TString search(gSystem->GetIncludePath());
+    search.ReplaceAll("-I", ":");
+    search.ReplaceAll(" ", "");
+    search.Append(":");
+    search.Append(gROOT->GetMacroPath());    
     // If not absolute, prepend up-one
-    if (!path.BeginsWith("/")) path.Prepend("../");
-    if (gSystem->AccessPathName(path.Data())) { 
+    if (!path.BeginsWith("/")) search.Prepend("../:");
+    
+    // Remove any trailing AcLic instructions 
+    if (path.EndsWith("+") || path.EndsWith("+g")) {
+      do {
+	char c = path[path.Length()-1];
+	if (c != '+' && c != 'g') break;
+	path.Remove(path.Length()-1);
+      } while (path.Length());
+    }
+    TString query = gSystem->Which(search, path);
+    if (gSystem->AccessPathName(query.Data())) { 
       // File not accessible
       Warning("Railway::AuxFile", "File %s not accessible", path.Data());
       return false;
     }
-    TString base(gSystem->BaseName(path.Data()));
+    TString base(gSystem->BaseName(query.Data()));
+    name = base;
     if (gSystem->AccessPathName(base.Data()) == 0) { 
       // File or link exists - remove it 
       if (gSystem->Unlink(base) != 0) { 
@@ -540,7 +558,7 @@ protected:
     if (copy) 
       TFile::Cp(path, base);
     else 
-      gSystem->Exec(Form("ln -s %s .", path.Data()));
+      gSystem->Exec(Form("ln -s %s .", query.Data()));
     return true;
   }
   /* @} */

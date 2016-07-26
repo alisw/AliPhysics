@@ -6,7 +6,9 @@
 //###########################################################
 //#                                                         #
 //#             Single Electron Efficiency Task             #
-//#        and  Pair-Prefilter Efficiency Task              #
+//#        also, mainly for cross-checks:                   #
+//#             Pair Efficiency Task                        #
+//#             Pair-Prefilter Efficiency Task              #
 //#                                                         #
 //#  Authors:                                               #
 //#   Patrick Reichelt, Uni Ffm / Patrick.Reichelt@cern.ch  #
@@ -36,9 +38,11 @@
 #include "AliAnalysisFilter.h"
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
-#include "TObjArray.h"
 #include "TTreeStream.h"//why?
 
+class TString;
+class TObject;
+class TObjArray;
 class AliPIDResponse;
 class TH1F;
 class TH2F;
@@ -70,6 +74,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetDoPairing(Bool_t b=kTRUE)                  {fDoPairing=b;}
   void          SetCalcResolution(Bool_t b=kTRUE)             {fCalcResolution=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)    {fResolutionCuts=cuts;}
+  void          SetKineTrackCuts(AliAnalysisFilter *cuts)     {fKineTrackCuts=cuts;}
+  //void        SetPairCuts(AliAnalysisFilter *cuts)          {fPairCuts=cuts;}
   void          UsePhysicsSelection(Bool_t phy=kTRUE)         {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
   void          SetTriggerMask(ULong64_t mask)                {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter){fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
@@ -84,10 +90,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
   
   void          AddSignalMC(AliDielectronSignalMC* signal);   // use the functionality from AliDielectronSignalMC & AliDielectronMC to choose electron sources.
-  void          SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void          SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void          SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void          SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetCentroidCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetWidthCorrFunction(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetCentroidCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetWidthCorrFunctionITS(TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   
   void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins, Int_t Nmeebins=0, Double_t *Meebins=0x0, Int_t Npteebins=0, Double_t *Pteebins=0x0) {
     /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;   fMeeBins=Meebins; fPteeBins=Pteebins;
@@ -100,6 +106,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          AttachRejCutMee(Double_t rejcut)              { fvRejCutMee.push_back(rejcut); }
   void          AttachRejCutTheta(Double_t rejcut)            { fvRejCutTheta.push_back(rejcut); }
   void          AttachRejCutPhiV(Double_t rejcut)             { fvRejCutPhiV.push_back(rejcut); }
+  void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
+  void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
+  void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
+  
   
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
@@ -198,7 +208,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec;
   THnF*                           fEtaGen_EtaRec_PhiGen_PhiRec_poslabel;
   AliAnalysisFilter*              fResolutionCuts;
-
+  AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
+  Double_t                        fPairCutMee;      // used for pair cuts in pair efficiency calculation.
+  Double_t                        fPairCutTheta;    // ''
+  Double_t                        fPairCutPhiV;     // ''
+  //AliAnalysisFilter*            fPairCuts;        // would be nicer, but cannot get AliDielectronPair working on MC :-(
+  
   TList*                          fOutputList; // ! output data container
   TList*                          fOutputListSupportHistos; // ! output data container   
   TH1D*                           fEventStat;               // ! Histogram with event statistics
@@ -261,7 +276,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
   
-  ClassDef(AliAnalysisTaskElectronEfficiency, 4);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 5);
 };
 
 #endif

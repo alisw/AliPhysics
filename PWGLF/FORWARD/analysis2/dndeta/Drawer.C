@@ -43,6 +43,7 @@ class TString;
 /**
  * Utility class 
  * 
+ * @deprecated Use new GSE based drawing 
  */
 struct Drawer {
   static const char* PlotPrefix() { return "plots"; }
@@ -50,7 +51,8 @@ struct Drawer {
    * Make sure we have loaded the RefData class 
    * 
    */
-  static void LoadOther() { 
+  static void LoadOther() {
+#if 0
     if (gROOT->GetClass("RefData")) return;
     const char* fwd = 0;
     if (gSystem->Getenv("FWD"))
@@ -64,6 +66,7 @@ struct Drawer {
     gROOT->SetMacroPath(path);
     // }
     gROOT->LoadMacro("OtherData.C+");
+#endif 
   }
   /** 
    * Get other data 
@@ -80,6 +83,8 @@ struct Drawer {
 			       UShort_t       exps=0xf,
 			       Int_t          verbose=3)
   {
+    return 0;
+#if 0
     UShort_t c1  = 0;
     UShort_t c2  = 0;
     switch (trg) {
@@ -109,7 +114,7 @@ struct Drawer {
     TMultiGraph* mg = reinterpret_cast<TMultiGraph*>(ret);  
 
     return mg;
-
+#endif
   }
   /** 
    * Get Work-in-Progress data from other PWGs

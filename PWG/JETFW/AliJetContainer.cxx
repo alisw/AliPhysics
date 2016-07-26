@@ -5,13 +5,13 @@
 
 #include <TClonesArray.h>
 
-#include "AliEmcalJet.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliLocalRhoParameter.h"
+#include "AliTLorentzVector.h"
 
 #include "AliJetContainer.h"
 
@@ -19,25 +19,18 @@ ClassImp(AliJetContainer)
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer():
-  AliEmcalContainer(),
+  AliParticleContainer(),
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
   fFlavourSelection(0),
-  fPtBiasJetTrack(0),
-  fPtBiasJetClus(0),
-  fJetPtCut(0.),
-  fJetPtCutMax(999.),
   fJetAreaCut(-1),
   fAreaEmcCut(-1),
-  fJetMinEta(-0.9),
-  fJetMaxEta(0.9),
-  fJetMinPhi(0.),
-  fJetMaxPhi(0.),
-  fPhiOffset(0.),
+  fMinClusterPt(-1),
   fMaxClusterPt(1000),
+  fMinTrackPt(-1),
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
   fZLeadingChCut(10.),
@@ -63,25 +56,18 @@ AliJetContainer::AliJetContainer():
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer(const char *name):
-  AliEmcalContainer(name),
+  AliParticleContainer(name),
   fJetAcceptanceType(kUser),
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
   fFlavourSelection(0),
-  fPtBiasJetTrack(0),
-  fPtBiasJetClus(0),
-  fJetPtCut(1.),
-  fJetPtCutMax(999.),
   fJetAreaCut(-1),
   fAreaEmcCut(-1),
-  fJetMinEta(-0.9),
-  fJetMaxEta(0.9),
-  fJetMinPhi(0.),
-  fJetMaxPhi(0.),
-  fPhiOffset(0.),
+  fMinClusterPt(-1),
   fMaxClusterPt(1000),
+  fMinTrackPt(-1),
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
   fZLeadingChCut(10.),
@@ -103,30 +89,24 @@ AliJetContainer::AliJetContainer(const char *name):
   // Standard constructor.
 
   fClassName = "AliEmcalJet";
+  SetMinPt(1);
 }
 
 //________________________________________________________________________
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
-  AliEmcalContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
   fJetAcceptanceType(kUser),
   fJetRadius(radius),
   fRhoName(),
   fLocalRhoName(),
   fRhoMassName(),
   fFlavourSelection(0),
-  fPtBiasJetTrack(0),
-  fPtBiasJetClus(0),
-  fJetPtCut(1.),
-  fJetPtCutMax(999.),
   fJetAreaCut(-1),
   fAreaEmcCut(-1),
-  fJetMinEta(-0.9),
-  fJetMaxEta(0.9),
-  fJetMinPhi(0.),
-  fJetMaxPhi(0.),
-  fPhiOffset(0.),
+  fMinClusterPt(-1),
   fMaxClusterPt(1000),
+  fMinTrackPt(-1),
   fMaxTrackPt(100),
   fZLeadingEmcCut(10.),
   fZLeadingChCut(10.),
@@ -148,6 +128,7 @@ AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoSc
   // Constructor.
 
   fClassName = "AliEmcalJet";
+  SetMinPt(1);
 }
 
 //________________________________________________________________________
@@ -156,6 +137,14 @@ void AliJetContainer::SetArray(AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
+
+  SetAcceptanceCuts();
+}
+
+//________________________________________________________________________
+void AliJetContainer::SetAcceptanceCuts()
+{
+  // Set acceptance
 
   switch (fJetAcceptanceType) {
   case kTPC:
@@ -195,16 +184,6 @@ void AliJetContainer::SetEMCALGeometry()
     AliError(Form("%s: Can not create geometry", GetName()));
     return;
   }
-}
-
-//________________________________________________________________________
-void AliJetContainer::SetJetPhiLimits(Float_t min, Float_t max, Float_t offset)
-{
-  fJetMinPhi = TVector2::Phi_0_2pi(min);
-  fJetMaxPhi = TVector2::Phi_0_2pi(max);
-  fPhiOffset = offset;
-
-  AliInfo(Form("Setting phi limits = (%.3f, %.3f)", fJetMinPhi, fJetMaxPhi));
 }
 
 //________________________________________________________________________
@@ -258,8 +237,9 @@ AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)
   option.ToLower();
 
   Int_t tempID = fCurrentID;
+  ResetCurrentID();
 
-  AliEmcalJet *jetMax = GetNextAcceptJet(0);
+  AliEmcalJet *jetMax = GetNextAcceptJet();
   AliEmcalJet *jet = 0;
 
   if (option.Contains("rho")) {
@@ -320,11 +300,9 @@ AliEmcalJet* AliJetContainer::GetAcceptJetWithLabel(Int_t lab) {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
+AliEmcalJet* AliJetContainer::GetNextAcceptJet() {
 
-  //Get next accepted jet; if i >= 0 (re)start counter from i; return 0 if no accepted jet could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next accepted jet;
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
@@ -338,11 +316,9 @@ AliEmcalJet* AliJetContainer::GetNextAcceptJet(Int_t i) {
 }
 
 //________________________________________________________________________
-AliEmcalJet* AliJetContainer::GetNextJet(Int_t i) {
+AliEmcalJet* AliJetContainer::GetNextJet() {
 
-  //Get next jet; if i >= 0 (re)start counter from i; return 0 if no jet could be found
-
-  if (i>=0) fCurrentID = i;
+  //Get next jet;
 
   const Int_t njets = GetNEntries();
   AliEmcalJet *jet = 0;
@@ -371,89 +347,101 @@ Double_t AliJetContainer::GetJetPtCorrLocal(Int_t i) const {
 }
 
 //________________________________________________________________________
-Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass)
 {
-  //Get momentum of the i^th particle in array
+  Double_t p = jet->P();
+  Double_t e = TMath::Sqrt(mass*mass + p*p);
 
-  AliEmcalJet *jet = GetJet(i);
-  if (jet) {
-    jet->GetMomentum(mom);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom, Int_t i)
-{
-  //Get momentum of the i^th particle in array
-
-  AliEmcalJet *jet = GetNextJet(i);
-  if (jet) {
-    jet->GetMom(mom);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
-{
-  //Get momentum of the i^th particle in array
-
-  AliEmcalJet *jet = GetAcceptJet(i);
-  if (jet) {
-    jet->GetMom(mom);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom, Int_t i)
-{
-  //Get momentum of the i^th particle in array
-
-  AliEmcalJet *jet = GetNextAcceptJet(i);
-  if (jet) {
-    jet->GetMom(mom);
-    return kTRUE;
-  }
-  else {
-    mom.SetPtEtaPhiM(0, 0, 0, 0.139);
-    return kFALSE;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliJetContainer::AcceptBiasJet(const AliEmcalJet *jet)
-{ 
-  // Accept jet with a bias.
-
-  if (fLeadingHadronType == 0) {
-    if (jet->MaxTrackPt() < fPtBiasJetTrack) return kFALSE;
-  }
-  else if (fLeadingHadronType == 1) {
-    if (jet->MaxClusterPt() < fPtBiasJetClus) return kFALSE;
-  }
-  else {
-    if (jet->MaxTrackPt() < fPtBiasJetTrack && jet->MaxClusterPt() < fPtBiasJetClus) return kFALSE;
-  }
+  mom.SetPtEtaPhiE(jet->Pt(), jet->Eta(), jet->Phi(), e);
 
   return kTRUE;
 }
 
 //________________________________________________________________________
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet)
+{
+  if (jet) {
+    if (fMassHypothesis >= 0) {
+      GetMomentum(mom, jet, fMassHypothesis);
+    }
+    else {
+      jet->GetMomentum(mom);
+    }
+    return kTRUE;
+  }
+  else {
+    mom.SetPtEtaPhiM(0, 0, 0, 0);
+    return kFALSE;
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th particle in array
+
+  AliEmcalJet *jet = GetJet(i);
+  return GetMomentum(mom, jet);
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetNextMomentum(TLorentzVector &mom)
+{
+  //Get momentum of the next jet in array
+
+  AliEmcalJet *jet = GetNextJet();
+  return GetMomentum(mom, jet);
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i)
+{
+  //Get momentum of the i^th jet in array
+
+  AliEmcalJet *jet = GetAcceptJet(i);
+  return GetMomentum(mom, jet);
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
+{
+  //Get momentum of the next accepted jet in array
+
+  AliEmcalJet *jet = GetNextAcceptJet();
+  return GetMomentum(mom, jet);
+}
+
+//________________________________________________________________________
 Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
+{
+  // Return true if jet is accepted.
+
+  Bool_t r = ApplyJetCuts(jet);
+  if (!r) return kFALSE;
+
+  AliTLorentzVector mom;
+  GetMomentum(mom, jet);
+
+  return ApplyKinematicCuts(mom);
+}
+
+//________________________________________________________________________
+Bool_t AliJetContainer::AcceptJet(Int_t i)
+{
+  // Return true if jet is accepted.
+
+  Bool_t r = ApplyJetCuts(GetJet(i));
+  if (!r) return kFALSE;
+
+  AliTLorentzVector mom;
+  GetMomentum(mom, i);
+
+  return ApplyKinematicCuts(mom);
+}
+
+
+//________________________________________________________________________
+Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet)
 {   
   // Return true if jet is accepted.
 
@@ -462,29 +450,6 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   if (!jet) {
     AliDebug(11,"No jet found");
     fRejectionReason |= kNullObject;
-    return kFALSE;
-  }
-
-  if ( (jet->Pt() <= fJetPtCut) || (jet->Pt() > fJetPtCutMax) ) {
-    AliDebug(11,Form("Cut rejecting jet: JetPtCut %.1f , JetPtCutMax %.1f",fJetPtCut,fJetPtCutMax));
-    fRejectionReason |= kPtCut;
-    return kFALSE;
-  }
-
-  Double_t jetEta = jet->Eta();
-  Double_t jetPhi = TVector2::Phi_0_2pi(jet->Phi() + fPhiOffset);
-
-  if (fJetMinEta < fJetMaxEta && (jetEta < fJetMinEta || jetEta > fJetMaxEta)) {
-    AliDebug(11,"Cut rejecting jet: Eta Acceptance");
-
-    fRejectionReason |= kAcceptanceCut;
-    return kFALSE;
-  }
-
-  if (fJetMinPhi < fJetMaxPhi && (jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi)) {
-    AliDebug(11,"Cut rejecting jet: Phi Acceptance");
-
-    fRejectionReason |= kAcceptanceCut;
     return kFALSE;
   }
 
@@ -524,16 +489,32 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     return kFALSE;
   }
 
-  if (!AcceptBiasJet(jet)) {
-    AliDebug(11,"Cut rejecting jet: Bias");
-    fRejectionReason |= kMinLeadPtCut;
-    return kFALSE;
-  }
-
   if(fMinNConstituents>0 && jet->GetNumberOfConstituents()<fMinNConstituents) {
     AliDebug(11,"Cut rejecting jet: minimum number of constituents");
     fRejectionReason |= kMinNConstituents;
     return kFALSE;
+  }
+
+  if (fLeadingHadronType == 0) {
+    if (jet->MaxTrackPt() < fMinTrackPt) {
+      AliDebug(11,"Cut rejecting jet: Bias");
+      fRejectionReason |= kMinLeadPtCut;
+      return kFALSE;
+    }
+  }
+  else if (fLeadingHadronType == 1) {
+    if (jet->MaxClusterPt() < fMinClusterPt) {
+      AliDebug(11,"Cut rejecting jet: Bias");
+      fRejectionReason |= kMinLeadPtCut;
+      return kFALSE;
+    }
+  }
+  else {
+    if (jet->MaxTrackPt() < fMinTrackPt && jet->MaxClusterPt() < fMinClusterPt) {
+      AliDebug(11,"Cut rejecting jet: Bias");
+      fRejectionReason |= kMinLeadPtCut;
+      return kFALSE;
+    }
   }
 
   if (jet->MaxTrackPt() > fMaxTrackPt) {
@@ -555,7 +536,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     return kFALSE;
   }
 
-  if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
+  if (fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus) {
     AliDebug(11,"Cut rejecting jet: tag status");
     fRejectionReason |= kTagStatus;
     return kFALSE;
@@ -658,13 +639,19 @@ Double_t AliJetContainer::GetZ(const AliEmcalJet *jet, TLorentzVector mom) const
 {
   Double_t pJetSq = jet->Px()*jet->Px() + jet->Py()*jet->Py() + jet->Pz()*jet->Pz();
 
-  if(pJetSq>1e-6)
-    return (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz())/pJetSq;
-  else {
-    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %f",GetName(), pJetSq));
-    return -1;
+  if (pJetSq < 1e-6) {
+    AliWarning(Form("%s: strange, pjet*pjet seems to be zero pJetSq: %.3f",GetName(), pJetSq));
+    return 0;
   }
 
+  Double_t z = (mom.Px()*jet->Px() + mom.Py()*jet->Py() + mom.Pz()*jet->Pz()) / pJetSq;
+
+  if (z < 0) {
+    AliWarning(Form("%s: z  = %.3ff < 0, returning 0...",GetName(), z));
+    z = 0;
+  }
+
+  return z;
 }
 
 //________________________________________________________________________
@@ -674,19 +661,19 @@ void AliJetContainer::SetJetEtaPhiEMCAL(Double_t r)
 
   if (!fGeom) SetEMCALGeometry();
   if (fGeom) {
-    SetJetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
+    SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
 
     if(fRunNumber>=177295 && fRunNumber<=197470) {//small SM masked in 2012 and 2013
-      SetJetPhiLimits(1.405 + r,3.135 - r);
+      SetPhiLimits(1.405 + r,3.135 - r);
     }
     else {
-      SetJetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r);
+      SetPhiLimits(fGeom->GetArm1PhiMin() * TMath::DegToRad() + r, fGeom->GetEMCALPhiMax() * TMath::DegToRad() - r);
     }
   }
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for EMCAL year 2011!!");
-    SetJetEtaLimits(-0.7 + r, 0.7 - r);
-    SetJetPhiLimits(1.405 + r, 3.135 - r);
+    SetEtaLimits(-0.7 + r, 0.7 - r);
+    SetPhiLimits(1.405 + r, 3.135 - r);
   }
 }
 
@@ -697,13 +684,13 @@ void AliJetContainer::SetJetEtaPhiDCAL(Double_t r)
 
   if (!fGeom) SetEMCALGeometry();
   if (fGeom) {
-    SetJetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
-    SetJetPhiLimits(fGeom->GetDCALPhiMin() * TMath::DegToRad() + r, fGeom->GetDCALPhiMax() * TMath::DegToRad() - r);
+    SetEtaLimits(fGeom->GetArm1EtaMin() + r, fGeom->GetArm1EtaMax() - r);
+    SetPhiLimits(fGeom->GetDCALPhiMin() * TMath::DegToRad() + r, fGeom->GetDCALPhiMax() * TMath::DegToRad() - r);
   }
   else {
     AliWarning("Could not get instance of AliEMCALGeometry. Using manual settings for DCAL year 2015!!");
-    SetJetEtaLimits(-0.7 + r, 0.7 - r);
-    SetJetPhiLimits(4.538 + r, 5.727 - r);
+    SetEtaLimits(-0.7 + r, 0.7 - r);
+    SetPhiLimits(4.538 + r, 5.727 - r);
   }
 }
 
@@ -712,8 +699,8 @@ void AliJetContainer::SetJetEtaPhiTPC(Double_t r)
 {
   //Set default cuts for charged jets
 
-  SetJetEtaLimits(-0.9 + r, 0.9 - r);
-  SetJetPhiLimits(0, 0);  // No cut on phi
+  SetEtaLimits(-0.9 + r, 0.9 - r);
+  SetPhiLimits(0, 0);  // No cut on phi
 }
 
 //________________________________________________________________________
@@ -722,16 +709,16 @@ void AliJetContainer::PrintCuts()
   // Reset cuts to default values
   TString arrName = GetArrayName();
   Printf("Print jet cuts for %s",arrName.Data());
-  Printf("PtBiasJetTrack: %f",fPtBiasJetTrack);
-  Printf("PtBiasJetClus: %f",fPtBiasJetClus);
-  Printf("JetPtCut: %f", fJetPtCut);
-  Printf("JetPtCutMax: %f", fJetPtCutMax);
+  Printf("PtBiasJetTrack: %f",fMinTrackPt);
+  Printf("PtBiasJetClus: %f",fMinClusterPt);
+  Printf("JetPtCut: %f", fMinPt);
+  Printf("JetPtCutMax: %f", fMaxPt);
   Printf("JetAreaCut: %f",fJetAreaCut);
   Printf("AreaEmcCut: %f",fAreaEmcCut);
-  Printf("JetMinEta: %f", fJetMinEta);
-  Printf("JetMaxEta: %f", fJetMaxEta);
-  Printf("JetMinPhi: %f", fJetMinPhi);
-  Printf("JetMaxPhi: %f", fJetMaxPhi);
+  Printf("JetMinEta: %f", fMinEta);
+  Printf("JetMaxEta: %f", fMaxEta);
+  Printf("JetMinPhi: %f", fMinPhi);
+  Printf("JetMaxPhi: %f", fMaxPhi);
   Printf("MaxClusterPt: %f",fMaxClusterPt);
   Printf("MaxTrackPt: %f",fMaxTrackPt);
   Printf("LeadingHadronType: %d",fLeadingHadronType);
@@ -745,15 +732,15 @@ void AliJetContainer::ResetCuts()
 {
   // Reset cuts to default values
 
-  fPtBiasJetTrack = 0;
-  fPtBiasJetClus  = 0;
-  fJetPtCut       = 0;
+  fMinTrackPt     = 0;
+  fMinClusterPt   = 0;
+  fMinPt          = 0;
   fJetAreaCut     = -1;
   fAreaEmcCut     = -1;
-  fJetMinEta      = -0.9;
-  fJetMaxEta      = 0.9;
-  fJetMinPhi      = 0;
-  fJetMaxPhi      = 10;
+  fMinEta         = -0.9;
+  fMaxEta         = 0.9;
+  fMinPhi         = 0;
+  fMaxPhi         = 10;
   fMaxClusterPt   = 1000;
   fMaxTrackPt     = 100;
   fLeadingHadronType = 0;
@@ -767,10 +754,16 @@ Int_t AliJetContainer::GetNAcceptedJets()
   // Get number of accepted jets
 
   Int_t nJet = 0;
-  AliEmcalJet *jet = GetNextAcceptJet(0);
+  Int_t tempID = fCurrentID;
+  ResetCurrentID();
+
+  AliEmcalJet *jet = GetNextAcceptJet();
   if(jet) nJet = 1;
   while (GetNextAcceptJet())
     nJet++;
+
+  fCurrentID = tempID;
+
   return nJet;
 }
 
@@ -844,6 +837,7 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
     algoString = "AKT";
     break;
   default:
+    ::Warning("AliJetContainer::GenerateJetName", "Unknown jet finding algorithm '%d'!", jetAlgo);
     algoString = "";
   }
 
@@ -913,14 +907,14 @@ const char* AliJetContainer::GetTitle() const
 {
   static TString jetString;
 
-  if (GetJetPtCut() == 0) {
+  if (GetMinPt() == 0) {
     jetString = TString::Format("_%s_pT0000", GetArrayName().Data());
   }
-  else if (GetJetPtCut() < 1.0) {
-    jetString = TString::Format("_%s_pT0%3.0f", GetArrayName().Data(), GetJetPtCut()*1000.0);
+  else if (GetMinPt() < 1.0) {
+    jetString = TString::Format("_%s_pT0%3.0f", GetArrayName().Data(), GetMinPt()*1000.0);
   }
   else {
-    jetString = TString::Format("_%s_pT%4.0f", GetArrayName().Data(), GetJetPtCut()*1000.0);
+    jetString = TString::Format("_%s_pT%4.0f", GetArrayName().Data(), GetMinPt()*1000.0);
   }
 
   return jetString.Data();

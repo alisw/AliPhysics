@@ -335,9 +335,9 @@ void AlidNdPtCutAnalysis::Init(){
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
   */
   // set pt bins
-  const Int_t ptNbins = 50;
-  const Double_t ptMin = 1.e-2, ptMax = 50.;
-  Double_t *binsPt = CreateLogAxis(ptNbins,ptMin,ptMax);
+  const Int_t ptNbins = 100;
+  const Double_t ptMin = 0, ptMax = 10.;
+  Double_t *binsPt = CreateLogAxis(ptNbins,ptMin+0.001,ptMax);
 
   //
   Int_t binsEventCount[2]={2,2};
@@ -407,7 +407,7 @@ void AlidNdPtCutAnalysis::Init(){
 
  //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:isWeakDecay:isFromMaterial:isPrim:charge
   Int_t binsRecMCTrackHist[13]=  { 160,  10,  20,  20, 50,  50,   20,  90,             ptNbins, 2,  2,  2,  3  };
-  Double_t minRecMCTrackHist[13]={ 0.,   0.,  0.,  0., -0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1. };
+  Double_t minRecMCTrackHist[13]={ 0.,   0.,  0.,  0., -0.5,-0.5,-1.0, 0.,             ptMin+0.001,   0., 0., 0.,-1. };
   Double_t maxRecMCTrackHist[13]={ 160., 10., 1.,  1., 0.5, 0.5,  1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2. };
 
   fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:isWeakDecay:isFromMaterial:isPrim:charge",13,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
@@ -939,16 +939,17 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
                 fDCAyEtaPhiMCSecDecaysLambda->Fill(b[0],eta,phi);
                 fDCAzEtaPhiMCSecDecaysLambda->Fill(b[1],eta,phi);
             }
-        } else {
+      }
+      if(isFromMaterial) {
             fDCAyEtaPtMCSecMaterial->Fill(b[0],eta,pt);
             fDCAzEtaPtMCSecMaterial->Fill(b[1],eta,pt);
             fDCAyPhiPtMCSecMaterial->Fill(b[0],phi,pt);
             fDCAzPhiPtMCSecMaterial->Fill(b[1],phi,pt);
             fDCAyEtaPhiMCSecMaterial->Fill(b[0],eta,phi);
             fDCAzEtaPhiMCSecMaterial->Fill(b[1],eta,phi);
-        }
       }
     }
+  }
 }
 
 //_____________________________________________________________________________
@@ -983,8 +984,8 @@ Long64_t AlidNdPtCutAnalysis::Merge(TCollection* const list)
 
     fRecEventXYZ->Add(fRecEventXYZ);
     fRecEventXYMult->Add(fRecEventXYMult);
-    fRecEventXZMult->Add(fRecEventYZMult);
-    fRecEventYZMult->Add(fRecEventZResZMult);
+    fRecEventXZMult->Add(fRecEventXZMult);
+    fRecEventYZMult->Add(fRecEventYZMult);
     fRecEventZResZMult->Add(fRecEventZResZMult);
 
     fMCEventXYZ->Add(fMCEventXYZ);

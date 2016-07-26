@@ -273,7 +273,7 @@ private:
   
   ///  in case of study of decay triggers, select the decay bit
   UInt_t       fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ;
-
+  
   Int_t        fNBkgBin;                                 ///<  Number of bins on pt content in cone.
   Float_t      fBkgBinLimit[20];                         ///<  Pt bin limits on pt content in the cone.
   
@@ -385,6 +385,9 @@ private:
   TH2F *       fhXECharged  ;                            //!<! Trigger particle -charged hadron momentum imbalance histogram.
   TH2F *       fhXECharged_Cone2  ;                      //!<! Trigger particle -charged hadron momentum imbalance histogram in cone2 (5pi/6-7pi/6).
   TH2F *       fhXEUeCharged  ;                          //!<! Trigger particle -underlying charged hadron momentum imbalance histogram.
+  TH2F *       fhXEUeChargedSmallCone  ;                 //!<! Trigger particle -underlying charged hadron momentum imbalance histogram for small cone [80,100].
+  TH2F *       fhXEUeChargedMediumCone  ;                //!<! Trigger particle -underlying charged hadron momentum imbalance histogram for medium cone [70,110].
+  TH2F *       fhXEUeChargedLargeCone  ;                 //!<! Trigger particle -underlying charged hadron momentum imbalance histogram for large cone [60,120].
   TH2F *       fhXEPosCharged  ;                         //!<! Trigger particle -positive charged hadron momentum imbalance histogram.
   TH2F *       fhXENegCharged  ;                         //!<! Trigger particle -negative charged hadron momentum imbalance histogram.
   TH2F *       fhPtHbpXECharged  ;                       //!<! Trigger particle -charged hadron momentum HBP histogram.

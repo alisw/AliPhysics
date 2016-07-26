@@ -21,8 +21,10 @@
 #include <TFile.h>
 #include <THashList.h>
 #include <TH1.h>
+#include <THistManager.h>
 #include <TKey.h>
 #include <TList.h>
+#include <TPDGCode.h>
 #include <TProfile.h>
 #include <TMath.h>
 #include <TString.h>
@@ -32,12 +34,15 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODMCHeader.h"
+#include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
+#include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalTrackSelection.h"
+#include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliGenPythiaEventHeader.h"
@@ -45,7 +50,6 @@
 #include "AliMCEvent.h"
 #include "AliVVertex.h"
 
-#include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
 
 /// \cond CLASSIMP
@@ -61,14 +65,13 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         AliAnalysisTaskSE(),
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
+        fTriggerSelection(NULL),
         fHistos(NULL),
         fGeometry(NULL),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
         fXsection(0),
-        fSwitchoffSPDcut(kFALSE),
-        fSwitchoffITScut(kFALSE),
         fYshift(0.465),
         fEtaSign(1),
         fFracPtHard(-1)
@@ -78,9 +81,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1.;
-  }
 }
 
 /**
@@ -91,14 +91,13 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         AliAnalysisTaskSE(name),
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
+        fTriggerSelection(NULL),
         fHistos(NULL),
         fGeometry(NULL),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
         fXsection(0),
-        fSwitchoffSPDcut(kFALSE),
-        fSwitchoffITScut(kFALSE),
         fYshift(0.465),
         fEtaSign(1),
         fFracPtHard(-1)
@@ -108,9 +107,6 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
-  for(int itrg = 0; itrg < kCPRntrig; itrg++){
-    fOfflineEnergyThreshold[itrg] = -1.;
-  }
   DefineOutput(1, TList::Class());
 }
 
@@ -120,32 +116,22 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
 AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
   //if(fTrackCuts) delete fTrackCuts;
   if(fAnalysisUtil) delete fAnalysisUtil;
+  if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
 }
 /**
  * Create the output histograms
  */
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
-  fAnalysisUtil = new AliAnalysisUtils;
+  if(!fAnalysisUtil) fAnalysisUtil = new AliAnalysisUtils;
+  fHistos = new THistManager("Ref");
 
-  fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
-  fTrackCuts->DefineHistograms(kRed);
-  fTrackCuts->SetName("Standard Track cuts");
-  fTrackCuts->SetMinNCrossedRowsTPC(120);
-  fTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-  if(fSwitchoffSPDcut || fSwitchoffITScut){
-    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
-  }
-  if(fSwitchoffITScut){
-    fTrackCuts->SetRequireITSRefit(kFALSE);           // Allows also TPC-only tracks
-    fTrackCuts->SetMinNClustersITS(0);
-  }
+  if(!fTrackCuts) InitializeTrackCuts("standard",fInputHandler->IsA() == AliAODInputHandler::Class());
 
   TArrayD oldbinning, newbinning;
   CreateOldPtBinning(oldbinning);
   CreateNewPtBinning(newbinning);
 
-  fHistos = new AliEMCalHistoContainer("Ref");
   fHistos->CreateTH1("hNtrials", "Number of trials", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSection", "PYTHIA cross section", 1, 0.5, 1.5);
   fHistos->CreateTH1("hNtrialsNoSelect", "Number of trials (without event selection)", 1, 0.5, 1.5);
@@ -158,6 +144,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
   TString triggers[16] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
+  TString species[6] = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
@@ -178,6 +165,24 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta old binning trigger %s", trg->Data()), oldbinning);
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution all eta new binning trigger %s", trg->Data()), newbinning);
     fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta new binning trigger %s", trg->Data()), newbinning);
+    for(TString *piditer = species; piditer < species + sizeof(species)/sizeof(TString); ++piditer){
+      fHistos->CreateTH1(Form("hPtEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta old binning trigger %s", piditer->Data(), trg->Data()), oldbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta new binning trigger %s", piditer->Data(), trg->Data()), newbinning);
+    }
     for(int ipt = 0; ipt < 5; ipt++){
       fHistos->CreateTH1(
           Form("hEtaLabDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
@@ -244,7 +249,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
           );
     }
   }
-  fHistos->GetListOfHistograms()->Add(fTrackCuts);
+  //fHistos->GetListOfHistograms()->Add(fTrackCuts);
   PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -264,16 +269,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     }
     FillTriggerJetHistograms(kTRUE, pyheader);
   }
-  TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  if(!fTriggerPatches) return;
 
   //TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEMC7 = isMinBias && IsOfflineSelected(kCPREL0, fTriggerPatches), // triggerstring.Contains("EMC7"),
-      isEJ1 = isMinBias && IsOfflineSelected(kCPREJ1, fTriggerPatches), // triggerstring.Contains("EJ1"),
-      isEJ2 = isMinBias && IsOfflineSelected(kCPREJ2, fTriggerPatches), // triggerstring.Contains("EJ2"),
-      isEG1 = isMinBias && IsOfflineSelected(kCPREG1, fTriggerPatches), // triggerstring.Contains("EG1"),
-      isEG2 = isMinBias && IsOfflineSelected(kCPREG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
+      isEMC7 = kFALSE, isEJ1 = kFALSE, isEJ2 = kFALSE, isEG1 = kFALSE, isEG2 = kFALSE;
+  TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+  if(fTriggerPatches && fTriggerSelection){
+      isEMC7 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatches); // triggerstring.Contains("EMC7"),
+      isEJ1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatches); // triggerstring.Contains("EJ1"),
+      isEJ2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatches); // triggerstring.Contains("EJ2"),
+      isEG1 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatches); // triggerstring.Contains("EG1"),
+      isEG2 = isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
+
+  }
   if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -393,8 +401,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
 
     Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
 
+    // Get PID
+    TString pid = "";
+    switch(TMath::Abs(truepart->PdgCode())){
+    case kPiPlus: pid = "Pi"; break;
+    case kMuonMinus: pid = "Mu"; break;
+    case kElectron: pid = "El"; break;
+    case kKPlus: pid = "Ka"; break;
+    case kProton: pid = "Pr"; break;
+    default: pid = "Ot"; break;
+    };
+
     // Particle selected (do not filter TRD sectors for MC truth)
-    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE);
+    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL, kFALSE, pid);
   }
 
   // Loop over tracks, fill select particles
@@ -438,16 +457,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
 
-    // Distinguish track selection for ESD and AOD tracks
-    AliESDtrack *esdtrack(NULL);
-    AliAODTrack *aodtrack(NULL);
-    if((esdtrack = dynamic_cast<AliESDtrack *>(checktrack))){
-      if(!TrackSelectionESD(esdtrack)) continue;
-    } else if((aodtrack = dynamic_cast<AliAODTrack *>(checktrack))){
-      if(!TrackSelectionAOD(aodtrack)) continue;
-    } else {
-      continue;
-    }
+    if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
     ptparticle = TMath::Abs(assocMC->Pt());
     etaparticle = assocMC->Eta();
@@ -460,51 +470,62 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
 
     Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
 
+    // Get PID
+    TString assocpid = "";
+    switch(TMath::Abs(assocMC->PdgCode())){
+    case kPiPlus: assocpid = "Pi"; break;
+    case kMuonMinus: assocpid = "Mu"; break;
+    case kElectron: assocpid = "El"; break;
+    case kKPlus: assocpid = "Ka"; break;
+    case kProton: assocpid = "Pr"; break;
+    default: assocpid = "Ot"; break;
+    };
+
     // Go through the trigger classes and fill histograms
     if(isMinBias){
-      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // Check for exclusive classes
       if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEMC7){
-      FillTrackHistos("EMC7", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EMC7", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
     }
     if(isEJ1){
-      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       if(isEG1 || isEG2) {
-        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       } else {
-        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEJ2){
-      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // check for exclusive classes
       if(!isEJ1){
-        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
       if(isEG1 || isEG2) {
-        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       } else {
-        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEG1){
-      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
     if(isEG2){
-      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       // check for exclusive classes
       if(!isEG1){
-        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
       if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
+        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD, assocpid);
       }
     }
   }
@@ -530,20 +551,29 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
     Double_t phi,
     Bool_t etacut,
     Bool_t inEmcal,
-    Bool_t hasTRD
+    Bool_t hasTRD,
+    const char *pid
     )
 {
   fHistos->FillTH1(Form("hPtEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
   fHistos->FillTH1(Form("hPtEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+  fHistos->FillTH1(Form("hPtEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+  fHistos->FillTH1(Form("hPtEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
   if(inEmcal){
     fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
     fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEMCALEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEMCALEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     if(hasTRD){
       fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALWithTRDEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     } else {
       fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALNoTRDEtaAllOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     }
   }
 
@@ -563,15 +593,23 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
   if(etacut){
     fHistos->FillTH1(Form("hPtEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
     fHistos->FillTH1(Form("hPtEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+    fHistos->FillTH1(Form("hPtEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
     if(inEmcal){
       fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
       fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+      fHistos->FillTH1(Form("hPtEMCALEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       if(hasTRD){
         fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
         fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALWithTRDEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       } else {
         fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s", eventclass), TMath::Abs(pt));
         fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s", eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentNewBinning%s%s", pid, eventclass), TMath::Abs(pt));
+        fHistos->FillTH1(Form("hPtEMCALNoTRDEtaCentOldBinning%s%s", pid, eventclass), TMath::Abs(pt));
       }
     }
     for(int icut = 0; icut < 5; icut++){
@@ -749,6 +787,15 @@ AliGenPythiaEventHeader *AliAnalysisTaskChargedParticlesRefMC::GetPythiaHeader()
 }
 
 /**
+ * Set the track selection
+ * @param cutname Name of the track cuts
+ * @param isAOD check whether we run on ESDs or AODs
+ */
+void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, bool isAOD){
+  SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
+}
+
+/**
  * Create old pt binning
  * @param binning
  */
@@ -806,52 +853,6 @@ void AliAnalysisTaskChargedParticlesRefMC::CreateNewPtBinning(TArrayD& binning) 
   int ib = 0;
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
-}
-
-/**
- * Run track selection for ESD tracks
- * @param track The track to check
- * @return True if the track is selected, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::TrackSelectionESD(AliESDtrack* track) {
-  return fTrackCuts->AcceptTrack(track);
-}
-
-/**
- * Run track selection for AOD tracks
- * @param track The track to check
- * @return True if the track is selected, false otherwise
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::TrackSelectionAOD(AliAODTrack* track) {
-  if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
-  if(track->GetTPCNCrossedRows() < 120) return false;
-  return true;
-}
-
-/**
- * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param trgcls Trigger class for which to apply additional offline patch selection
- * @param triggerpatches Array of trigger patches
- * @return True if at least on patch above threshold is found or no cut is applied
- */
-Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
-  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
-  int nfound = 0;
-  AliEMCALTriggerPatchInfo *patch = NULL;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
-    if(!patch->IsOfflineSimple()) continue;
-    if(isSingleShower){
-     if(!patch->IsGammaLowSimple()) continue;
-    } else {
-      if(!patch->IsJetLowSimple()) continue;
-    }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
-  }
-  return nfound > 0;
 }
 
 /**

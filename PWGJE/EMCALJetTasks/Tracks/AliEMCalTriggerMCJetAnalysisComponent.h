@@ -14,7 +14,6 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliVParticle;

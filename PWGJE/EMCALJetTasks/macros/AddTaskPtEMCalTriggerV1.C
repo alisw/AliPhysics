@@ -41,17 +41,17 @@
 #endif
 
 void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, bool isMC, bool isSwapEta);
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliEmcalTrackSelection *trackcuts, bool isMC, bool isSwapEta);
 void AddMCParticleComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
 void AddEventCounterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group);
 void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, double minJetPt);
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliEmcalTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta);
 void CreateJetPtBinning(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task);
 void CreateTriggerClassespPb2013(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC);
 void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *task, bool isMC);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD);
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
+AliEmcalTrackSelection *CreateDefaultTrackCuts(bool isAOD);
+AliEmcalTrackSelection *CreateHybridTrackCuts(bool isAOD);
+AliEmcalTrackSelection *TrackCutsFactory(const char *trackCutsName, bool isAOD);
 
 /**
  * \brief Configuring the analysis of high-p_{t} tracks in triggered events and adds it to the analysis train
@@ -292,7 +292,7 @@ void AddClusterComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group
  * \param isMC True if MC information is available.
  * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
  */
-void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackcuts, bool isMC, bool isSwapEta){
+void AddTrackComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliEmcalTrackSelection * trackcuts, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent *trackanalysis = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent("trackAnalysisStandard");
   group->AddAnalysisComponent(trackanalysis);
   // Create charged hadrons pPb standard track cuts
@@ -354,7 +354,7 @@ void AddMCJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, 
  * \param isMC True if MC information is available.
  * \param isSwapEta True if the \f$ \eta \f$ sign is swapped
  */
-void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
+void AddRecJetComponent(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *group, AliEmcalTrackSelection *trackcuts, double minJetPt, bool isMC, bool isSwapEta){
   EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent *jetana = new EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent(Form("RecJetAna%f", minJetPt));
   jetana->SetMinimumJetPt(minJetPt);
   jetana->SetSingleTrackCuts(trackcuts);
@@ -496,10 +496,10 @@ void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTr
  * \param isAOD True in case the analysis is performed on AOD tracks
  * \return A virtual track selection using the hybrid track selection cuts
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bool isAOD){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateDefaultTrackCuts(bool isAOD){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
-	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+	  AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
 	  aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
 	  EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
 	  extraCuts->SetMinTPCCrossedRows(120);
@@ -511,7 +511,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
 	  standardTrackCuts->SetName("Standard Track cuts");
 	  standardTrackCuts->SetMinNCrossedRowsTPC(120);
 	  standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(standardTrackCuts);
+	  trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
 	  //EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
 	  //extraCuts->SetMinTPCTrackLengthCut();
 	  //trackSelection->AddTrackCuts(extraCuts);
@@ -530,11 +530,11 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateDefaultTrackCuts(bo
  * \param isAOD True in case the analysis is performed on AOD tracks
  * \return A virtual track selection using the hybrid track selection cuts
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(bool isAOD){
-  EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection * trackSelection(NULL);
+AliEmcalTrackSelection *CreateHybridTrackCuts(bool isAOD){
+  AliEmcalTrackSelection * trackSelection(NULL);
   if(isAOD){
 	  // Purely use filter bits
-	  EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD *aodsel = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionAOD();
+	  AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD;
 	  aodsel->AddFilterBit(256);
 	  aodsel->AddFilterBit(512);
 	  trackSelection = aodsel;
@@ -546,7 +546,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
 	  hybridTrackCuts->SetDCAToVertex2D(kTRUE);
 	  hybridTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 	  hybridTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-	  trackSelection = new EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD(hybridTrackCuts);
+	  trackSelection = new AliEmcalTrackSelectionESD(hybridTrackCuts);
   }
   return trackSelection;
 }
@@ -564,7 +564,7 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *CreateHybridTrackCuts(boo
  * \param isAOD True in case the analysis is performed on AOD tracks
  * \return A virtual track selection object (NULL for invalid track cut names)
  */
-EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const char* trackCutsName, bool isAOD) {
+AliEmcalTrackSelection *TrackCutsFactory(const char* trackCutsName, bool isAOD) {
   if(!strcmp(trackCutsName, "standard")) return CreateDefaultTrackCuts(isAOD);
   else if(!strcmp(trackCutsName, "hybrid")) return CreateHybridTrackCuts(isAOD);
   return NULL;

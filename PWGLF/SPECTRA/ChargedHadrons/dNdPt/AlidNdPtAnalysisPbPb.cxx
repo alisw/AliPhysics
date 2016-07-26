@@ -26,6 +26,7 @@
 //
 // Author: J.Otwinowski 04/11/2008 
 // last change: 2011-04-04 by M.Knichel
+// last change: 2016-02-12 by J.Gronefeld & E.Perez-Lezama
 //------------------------------------------------------------------------------
 
 #include "TH1.h"
@@ -55,10 +56,7 @@
 #include "AliPWG0Helper.h"
 #include "AlidNdPtHelper.h"
 #include "AlidNdPtAnalysisPbPb.h"
-//#include "AliMultEstimator.h"
 #include "AliMultSelection.h"
-//#include "/lustre/nyx/alice/users/eperezl/alicesw/aliphysics/master/src/OADB/COMMON/MULTIPLICITY/AliMultSelection.h"
-//#include "$ALICE_PHYSICS/include/AliMultSelection.h"
 
 using namespace std;
 
@@ -108,7 +106,7 @@ ClassImp(AlidNdPtAnalysisPbPb)
   // rec. pt and eta resolution w.r.t MC
   fRecMCTrackHist1(0),
 
-  //multple reconstructed tracks
+  //multiple reconstructed tracks
   fMCMultRecTrackHist1(0), 
 
   // rec. track control histograms
@@ -124,6 +122,12 @@ ClassImp(AlidNdPtAnalysisPbPb)
   fEtaNbins(0),
   fZvNbins(0),
   fCentralityNbins(0),
+  fMultNedges(0),
+  fPtNedges(0),
+  fPtCorrNedges(0),
+  fEtaNedges(0),
+  fZvNedges(0),
+  fCentralityNedges(0),
   fBinsMult(0),
   fBinsPt(0),
   fBinsPtCorr(0),
@@ -210,6 +214,12 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
   fEtaNbins(0),
   fZvNbins(0),
   fCentralityNbins(0),
+  fMultNedges(0),
+  fPtNedges(0),
+  fPtCorrNedges(0),
+  fEtaNedges(0),
+  fZvNedges(0),
+  fCentralityNedges(0),
   fBinsMult(0),
   fBinsPt(0),
   fBinsPtCorr(0),
@@ -727,10 +737,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   //
   // Process real and/or simulated events
   //
-  if(!esdEvent) {
-    AliDebug(AliLog::kError, "esdEvent not available");
-    return;
-  }
+  if(!esdEvent) {AliDebug(AliLog::kError, "esdEvent not available"); return;}
   
   // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
@@ -738,10 +745,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   AlidNdPtAcceptanceCuts *recCuts = GetRecAcceptanceCuts();   
   AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
 
-  if(!evtCuts || !accCuts  || !esdTrackCuts) {
-    AliDebug(AliLog::kError, "cuts not available");
-    return;
-  }
+  if(!evtCuts || !accCuts  || !esdTrackCuts) { AliDebug(AliLog::kError, "cuts not available");  return; }
   if (0 == recCuts) { recCuts = accCuts;}
 
   // trigger selection
@@ -751,21 +755,14 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if (!inputHandler)
-  {
-    Printf("ERROR: Could not receive input handler");
-    return;
-  }
+  if (!inputHandler) {Printf("ERROR: Could not receive input handler"); return;}
 
-  if(evtCuts->IsTriggerRequired())  
-  {
+  if(evtCuts->IsTriggerRequired()){
     // always MB
-    //isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
     isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
-    //SetPhysicsTriggerSelection(physicsSelection);
 
     if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
       // set trigger (V0AND)
@@ -778,18 +775,12 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // centrality determination
   Float_t centralityF = -1.;
-  //AliCentrality *esdCentrality = esdEvent->GetCentrality();
-  //centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data()); 
-
-  // New Centrality implementation
-  //Float_t lPercentile;
   AliMultSelection *MultSelection = (AliMultSelection*) esdEvent->FindListObject("MultSelection");
   
   if ( MultSelection ){
-    centralityF = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  }else{
-    AliInfo("Didn't find MultSelection!");
+    centralityF = MultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(),kFALSE);
   }
+  else{Printf("ERROR: Could not receive mult selection"); AliInfo("Didn't find MultSelection!"); }
   
   
 
@@ -803,29 +794,18 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   if(IsUseMCInfo())
   {
     //
-    if(!mcEvent) {
-      AliDebug(AliLog::kError, "mcEvent not available");
-      return;
-    }
+    if(!mcEvent) {AliDebug(AliLog::kError, "mcEvent not available"); return; }
     // get MC event header
     header = mcEvent->Header();
-    if (!header) {
-      AliDebug(AliLog::kError, "Header not available");
-      return;
-    }
+    if (!header) {AliDebug(AliLog::kError, "Header not available"); return; }
     // MC particle stack
     stack = mcEvent->Stack();
-    if (!stack) {
-      AliDebug(AliLog::kError, "Stack not available");
-      return;
-    }
+    if (!stack) { AliDebug(AliLog::kError, "Stack not available");  return; }
 
     // get MC vertex
     genHeader = header->GenEventHeader();
-    if (!genHeader) {
-      AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");
-      return;
-    }
+    if (!genHeader) {AliDebug(AliLog::kError, "Could not retrieve genHeader from Header");  return; }
+    
     genHeader->PrimaryVertex(vtxMC);
 
     Double_t vMCEventHist1[4]={vtxMC[0],vtxMC[1],vtxMC[2],centralityF};
@@ -852,8 +832,6 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
-  //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
-  //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
 
   // vertex contributors
   Int_t multMBTracks = 0; 
@@ -863,16 +841,13 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
          multMBTracks = vtxESD->GetNContributors();
      }
   } 
-  else {
-    AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode()));
-    return; 
-  }
+  else { AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode())); return;}
   
   TObjArray *allChargedTracks=0;
-  //Int_t multAll=0, multAcc=0, multRec=0;
   Int_t multAll=0, multRec=0;
   Int_t *labelsAll=0, *labelsAcc=0, *labelsRec=0;
 
+  
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
@@ -895,12 +870,17 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
 
       // only postive charged 
-      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 
-        continue;
+      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0){ continue;}
       
       // only negative charged 
-      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
-        continue;
+      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0){continue;}
+      
+      if(IsUseTOFBunchCrossing()){
+	if( abs(track->GetTOFsignalDz())>10){ continue;}
+	if( track->GetTOFsignalToT()<0){    continue;}
+	if( track->GetTOFsignalToT()>25){   continue;}
+      }
+      
 
       //
       Double_t values[4] = {vtxESD->GetZ(),track->Pt(),track->Eta(), centralityF};	  
@@ -954,22 +934,19 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
        continue;
 
        // only charged particles
-       if(!particle->GetPDG()) continue;
+       if(!particle->GetPDG()) { continue; }
        Double_t charge = particle->GetPDG()->Charge()/3.;
-       if ( TMath::Abs(charge) < 0.001 )
-        continue;
-
+       if ( TMath::Abs(charge) < 0.001 ){ continue;}
+       
        // only postive charged 
-       if(GetParticleMode() == AlidNdPtHelper::kPlus && charge < 0.) 
-        continue;
+       if(GetParticleMode() == AlidNdPtHelper::kPlus && charge < 0.) {continue;}
        
        // only negative charged 
-       if(GetParticleMode() == AlidNdPtHelper::kMinus && charge > 0.) 
-       continue;
+       if(GetParticleMode() == AlidNdPtHelper::kMinus && charge > 0.) {continue;}
       
        // physical primary
        Bool_t prim = stack->IsPhysicalPrimary(iMc);
-       if(!prim) continue;
+       if(!prim) {continue;}
 
        // checked accepted
        if(accCuts->AcceptTrack(particle)) 
@@ -1008,24 +985,20 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
        for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
        {
          TParticle* particle = stack->Particle(iMc);
-         if (!particle)
-         continue;
+         if (!particle){continue;}
 
          Double_t vTrackMatrix[4] = {vtxMC[2],particle->Pt(),particle->Eta(),centralityF}; 
 
          // only charged particles
-         if(!particle->GetPDG()) continue;
+         if(!particle->GetPDG()) {continue;}
          Double_t charge = particle->GetPDG()->Charge()/3.;
-         if (TMath::Abs(charge) < 0.001)
-         continue;
+         if (TMath::Abs(charge) < 0.001){continue;}
 
          // only postive charged 
-         if(GetParticleMode() == AlidNdPtHelper::kPlus && charge < 0.) 
-	 continue;
+         if(GetParticleMode() == AlidNdPtHelper::kPlus && charge < 0.){ continue;}
        
          // only negative charged 
-         if(GetParticleMode() == AlidNdPtHelper::kMinus && charge > 0.) 
-	 continue;
+         if(GetParticleMode() == AlidNdPtHelper::kMinus && charge > 0.) {continue;}
       
          // physical primary
          Bool_t prim = stack->IsPhysicalPrimary(iMc);
@@ -1038,8 +1011,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 	     fGenPrimTrackMatrix->Fill(vTrackMatrix);
 
 	   // fill control histograms
-           if(fHistogramsOn) 
-	     FillHistograms(stack,iMc,AlidNdPtHelper::kAccTracks, centralityF); 
+           if(fHistogramsOn){FillHistograms(stack,iMc,AlidNdPtHelper::kAccTracks, centralityF); }
 
            // check multiple found tracks
 	   Int_t multCount = 0;

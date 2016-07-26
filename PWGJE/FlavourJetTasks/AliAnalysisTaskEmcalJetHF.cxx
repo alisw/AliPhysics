@@ -62,10 +62,9 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliVVZERO.h"
 #include "AliAnalysisTaskEmcal.h"
-#include "AliEmcalTriggerSetupInfo.h"
-// event handler (and pico's) includes                                                                                                      
 #include <AliInputEventHandler.h>
 #include <AliVEventHandler.h>
+#include "AliEmcalTriggerSetupInfo.h"
 #include "AliAODHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliPicoTrack.h"
@@ -476,13 +475,15 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   
   event++;
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     while(track) {
     track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster();
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
@@ -742,7 +743,8 @@ void AliAnalysisTaskEmcalJetHF::CheckClusTrackMatchingQA()
   Double_t deta = 999;
   Double_t dphi = 999;
   //Get closest cluster to track
-  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+  fTracksCont->ResetCurrentID();
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
   while(track) {
     //if(!track) continue;
     if(!useAOD){

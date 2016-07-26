@@ -16,6 +16,8 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TF1;
+class AliADCalibData;
+class AliAnalysisUtils;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -55,11 +57,17 @@ private:
   TList		*fList_VBA_VBC;
   TList		*fList_TVX;
   TList		*fList_UBA_UBC;
+  
+  Int_t        fRun;
+  Int_t        fOldRun;
+  void	       SetCalibData();
+  AliADCalibData* fCalibData;      // calibration data
+  AliAnalysisUtils* fAnalysisUtils;
    
   AliAnalysisTaskADVVQA(const AliAnalysisTaskADVVQA&);            // not implemented
   AliAnalysisTaskADVVQA& operator=(const AliAnalysisTaskADVVQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADVVQA, 3);
+  ClassDef(AliAnalysisTaskADVVQA, 5);
 };
 
 #endif

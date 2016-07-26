@@ -5,6 +5,7 @@
 #include <string>
 #include "TH1.h"
 #include "TH2.h"
+#include "TVector3.h"
 using namespace std;
 
 class AliReconstructedV0  // Reconstructed V0s
@@ -13,8 +14,8 @@ class AliReconstructedV0  // Reconstructed V0s
   AliReconstructedV0();
   ~AliReconstructedV0();
   enum MCV0Origin_t {kUnassigned, kFake, kFakeLambda, kPrimaryLambda, kPrimarySigmaZero, kExcitedSigma, kPrimaryCascadeZero, kPrimaryCascadeMinus, kPrimaryOmega, kOtherOriginLambda, kFakeAntiLambda, kPrimaryAntiLambda, kPrimaryAntiSigmaZero, kExcitedAntiSigma, kPrimaryAntiCascadeZero, kPrimaryAntiCascadePlus, kPrimaryAntiOmega, kOtherOriginAntiLambda, kKZeroShort, kOriginTypeMax = kKZeroShort};
-  double v0Momentum[3]; // reconstructed momentum
-  double v0MomentumTruth[3]; //true momentum, used in momentum smearing analysis
+  TVector3 v0Momentum; // reconstructed momentum
+  TVector3 v0MomentumTruth; //true momentum, used in momentum smearing analysis
   double v0Pt;
   double v0Eta;
   double v0Phi;
@@ -28,7 +29,6 @@ class AliReconstructedV0  // Reconstructed V0s
   short daughter1ID;
   short daughter2ID;
   double v0DCA;
-  double decayVertexPosition[3]; //position of the V0 decay vertex
   double cosPointing;
   bool hasProtonDaughter;
   bool hasAntiProtonDaughter;
@@ -41,8 +41,8 @@ class AliReconstructedV0  // Reconstructed V0s
   bool hasPassedCut[10][10];
   bool isPassingAllReconstructionCuts;
   MCV0Origin_t mcOriginType;
-  double daughterPosMomentum[3]; //momentum of the positive daughter
-  double daughterNegMomentum[3]; //momentum of the negative daughter
+  TVector3 daughterPosMomentum; //momentum of the positive daughter
+  TVector3 daughterNegMomentum; //momentum of the negative daughter
   /* double daughterPosMomentumTruth[3]; //used in momentum smearing analysis */
   /* double doughterNegMomentumTruth[3]; */
   double daughterPosProtonE;     //energy of the positive daughter
@@ -58,17 +58,23 @@ class AliReconstructedV0  // Reconstructed V0s
   double daughterNegMomentumDCA[3]; //momentum of the negative daughter at DCA to primary
   double daughterPosCovariance[21]; //covariance matrix of the positive daughter
   double daughterNegCovariance[21]; //covariance matrix of the negative daughter
-  Float_t daughterPosGlobalPositions[9][3];
-  Float_t daughterNegGlobalPositions[9][3];
-  Float_t daughterPosCorrectedGlobalPositions[9][3];
-  Float_t daughterNegCorrectedGlobalPositions[9][3];
+  vector<TVector3> daughterPosGlobalPositions;
+  vector<TVector3> daughterNegGlobalPositions;
+  vector<TVector3> daughterPosCorrectedGlobalPositions;
+  vector<TVector3> daughterNegCorrectedGlobalPositions;
+  /* TVector3 emissionPoint; */
 };
 
 class AliAnalysisV0LamEvent
 {
  public:
-  int fNumberCandidateV0;
-  double fPrimaryVertex[3]; //Location of the primary vertex
+  AliAnalysisV0LamEvent();
+  AliAnalysisV0LamEvent(const AliAnalysisV0LamEvent &event);
+  ~AliAnalysisV0LamEvent();
+  AliAnalysisV0LamEvent& operator=(const AliAnalysisV0LamEvent &event);
+  Int_t fMaxV0Mult;
+  Int_t fNumberCandidateV0;
+  TVector3 fPrimaryVertex; //Location of the primary vertex
   AliReconstructedV0 *fReconstructedV0;
 };
 
@@ -78,11 +84,14 @@ class AliAnalysisV0LamEventCollection
   AliAnalysisV0LamEventCollection();
   AliAnalysisV0LamEventCollection(short eventBuffSize,int maxV0Mult);
   ~AliAnalysisV0LamEventCollection();
+  AliAnalysisV0LamEventCollection(const AliAnalysisV0LamEventCollection &eventCollection);
+  AliAnalysisV0LamEventCollection& operator=(const AliAnalysisV0LamEventCollection& eventCollection);
   void FifoShift();
+  short GetFifoSize() const {return fFifoSize;};
   AliAnalysisV0LamEvent *fEvt;
  private:
-  short fifo; //Size of the Event Storage buffer
-  void SetBuffSize(short eventBuffSize){fifo = eventBuffSize;}
+  short fFifoSize; //Size of the Event Storage buffer
+  void SetBuffSize(short eventBuffSize){fFifoSize = eventBuffSize;}
 };
 #endif
 

@@ -107,7 +107,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency(const char *name)
 ,fHFEDenominator(0)
 ,fHFENumeratorTRKCUTS_Filt(0)
 ,fHFENumeratorTRKCUTS_ITSTPC(0)
-,fHFENumeratorTRKCUTS_ITStrkCut(0)
+//,fHFENumeratorTRKCUTS_ITStrkCut(0)
 ,fHFENumeratorTRKCUTS(0)
 ,fHFENumeratorTOF(0)
 ,fHFENumeratorITS(0)
@@ -214,7 +214,7 @@ AliAnalysisTaskHFEEfficiency::AliAnalysisTaskHFEEfficiency()
 ,fHFEDenominator(0)
 ,fHFENumeratorTRKCUTS_Filt(0)
 ,fHFENumeratorTRKCUTS_ITSTPC(0)
-,fHFENumeratorTRKCUTS_ITStrkCut(0)
+//,fHFENumeratorTRKCUTS_ITStrkCut(0)
 ,fHFENumeratorTRKCUTS(0)
 ,fHFENumeratorTOF(0)
 ,fHFENumeratorITS(0)
@@ -565,9 +565,9 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
           
           
           // Fill Here after HFE track cuts
-          Double_t ForHFEeffRecoITStrkCut[4];
-          Bool_t canIfilltrkITStrkCut = FillNumerator(mcArray,track,ForHFEeffRecoITStrkCut);
-          if(canIfilltrkITStrkCut){fHFENumeratorTRKCUTS_ITStrkCut->Fill(ForHFEeffRecoITStrkCut);}
+//          Double_t ForHFEeffRecoITStrkCut[4];
+//          Bool_t canIfilltrkITStrkCut = FillNumerator(mcArray,track,ForHFEeffRecoITStrkCut);
+//          if(canIfilltrkITStrkCut){fHFENumeratorTRKCUTS_ITStrkCut->Fill(ForHFEeffRecoITStrkCut);}
   
           
         // HFE cuts: TPC PID cleanup
@@ -692,7 +692,8 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         AliAODMCParticle *MCMotherAll = (AliAODMCParticle*)mcArray->At(fMCmomAll);
 
 	
-        if(MCMotherAll->GetPdgCode()==22 || MCMotherAll->GetPdgCode()==111 || MCMotherAll->GetPdgCode()==221) {
+      if(MCMotherAll->GetPdgCode()==22 || MCMotherAll->GetPdgCode()==111 || MCMotherAll->GetPdgCode()==221)
+      {
 	  fFlagMCPhotonicElec = kTRUE;
 	  fElecNos->Fill(3);
 	  fMCtagPhotoElecPtAll->Fill(track->Pt());
@@ -725,13 +726,11 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
     if(WeightsForEnhanced){//accept only Enhanced event using HIJING weights for MC closure test
         if(!fcocktail){
             if(MChijingAll) continue;
-        }
-    
-    if(WeightsForEnhanced){  //accept only hijing event using cocktail weights
+          }
         if(fcocktail){
             if(!MChijingAll) continue;
-        }
-    }
+          }
+        
 	  // Weights
 	  Double_t weightsRaphaelle = -1.;
 	  Double_t ptmotherw = -1.;
@@ -741,20 +740,20 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
         if(!fcocktail)weightsRaphaelle = GetMCweightPi0HIJING(ptmotherw);
 	    fIncl->Fill(incls,weightsRaphaelle);
 	    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-        SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+       // SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
 	  }
 	  if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
 	      if(fcocktail) weightsRaphaelle = GetMCweightEta(ptmotherw);
           if(!fcocktail) weightsRaphaelle = GetMCweightEtaHIJING(ptmotherw);
 	    fIncl->Fill(incls,weightsRaphaelle);
 	    SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-        SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+      //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
 	  }
         
     }//with whatever weights (or HIJING +Enh with cocktail weight or Enhanced only with HIJING weights)
             
     if(!WeightsForEnhanced){
-     //   if(!MChijingAll) continue;
+        if(!MChijingAll) continue;
         // Weights == 1
         Double_t weightsRaphaelle = -1.;
         Double_t ptmotherw = -1.;
@@ -763,13 +762,13 @@ void AliAnalysisTaskHFEEfficiency::UserExec(Option_t *)
             weightsRaphaelle = 1;
             fIncl->Fill(incls,weightsRaphaelle);
             SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-            SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+          //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
         }
         if((electronsource==kEtaNoFeedDown) || (electronsource==kGEtaNoFeedDown)) {
             weightsRaphaelle = 1;
             fIncl->Fill(incls,weightsRaphaelle);
             SelectPhotonicElectronR(iTracks, track, incls[1], weightsRaphaelle, fMCmomAll, MCPhotoEleAll->GetPdgCode(), incls[2]);
-            SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
+          //  SelectPhotonicElectronR_ULSLS(iTracks, track, incls[1], weightsRaphaelle, MCPhotoEleAll->GetPdgCode(), incls[2]);
         }
     
     }
@@ -1016,10 +1015,12 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fPi0EtaSpectra->Sumw2();
     fOutputList->Add(fPi0EtaSpectra);
     
-    const Int_t BinsPtDefaultHF = 28;
-    Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
+//    const Int_t BinsPtDefaultHF = 28;
+//    Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
     
-    
+    const Int_t BinsPtDefaultHF = 12;
+    Double_t binLimPtDefaultHF[BinsPtDefaultHF+1] = {0, 0.25, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2, 2.5, 3, 4, 5};
+
     
     Int_t nBinsPhi = 200;
     Double_t minPhi = 0;
@@ -1056,14 +1057,14 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fOutputList->Add(fHFENumeratorTRKCUTS_ITSTPC);
     
     
-    fHFENumeratorTRKCUTS_ITStrkCut = new THnSparseF("fHFENumeratorTRKCUTS_ITStrkCut","fHFENumeratorTRKCUTS_ITStrkCut;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
-    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(0,binLimPtDefaultHF);
-    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(1,binLimg);
-    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(2,binLimg);
-    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(3,binLimPhi);
-    fHFENumeratorTRKCUTS_ITStrkCut->Sumw2();
-    fOutputList->Add(fHFENumeratorTRKCUTS_ITStrkCut);
-   
+//    fHFENumeratorTRKCUTS_ITStrkCut = new THnSparseF("fHFENumeratorTRKCUTS_ITStrkCut","fHFENumeratorTRKCUTS_ITStrkCut;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
+//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(0,binLimPtDefaultHF);
+//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(1,binLimg);
+//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(2,binLimg);
+//    fHFENumeratorTRKCUTS_ITStrkCut->SetBinEdges(3,binLimPhi);
+//    fHFENumeratorTRKCUTS_ITStrkCut->Sumw2();
+//    fOutputList->Add(fHFENumeratorTRKCUTS_ITStrkCut);
+//   
     
     fHFENumeratorTRKCUTS = new THnSparseF("fHFENumeratorTRKCUTS","fHFENumeratorTRKCUTS;pt;hijing_Enh;beauty_or_Charm;",nDima3,nBina3);
     fHFENumeratorTRKCUTS->SetBinEdges(0,binLimPtDefaultHF);
@@ -1113,8 +1114,11 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     Double_t binLimSource[nBinsSource+1];
     for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
 
-    const Int_t kBinsPtDefault = 28;
-    Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
+//    const Int_t kBinsPtDefault = 28;
+//    Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.25, 0.5, 0.75, 1., 1.25, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.25, 3.5, 3.75, 4., 4.25, 4.5, 4.75, 5., 6., 8., 10., 12., 14., 16., 18., 20.};
+    
+    const Int_t kBinsPtDefault = 12;
+    Double_t binLimPtDefault[kBinsPtDefault+1] = {0, 0.25, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2, 2.5, 3, 4, 5};
 
     const Int_t nDimb=3;
     Int_t nBinb[nDimb] = {kBinsPtDefault,nBinsg,nBinsSource};
@@ -1135,8 +1139,6 @@ void AliAnalysisTaskHFEEfficiency::UserCreateOutputObjects()
     fInvMULS->SetBinEdges(3,binLimInvMass);
     fInvMULS->Sumw2();
     fOutputList->Add(fInvMULS);
-
-    
     
     fULS = new THnSparseF("fULS","fULS",nDimc,nBinc);
     fULS->SetBinEdges(0,binLimPtDefault);

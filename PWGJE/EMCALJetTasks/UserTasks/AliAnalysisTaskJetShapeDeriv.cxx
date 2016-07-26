@@ -442,9 +442,13 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       fh3MTruePtTrueLeadPt[fCentBin]->Fill(var2,ptJetR,jet1->MaxTrackPt());
       fh3PtTrueDeltaMLeadPt[fCentBin]->Fill(ptJetR,var-var2,jet1->MaxTrackPt());
       if(var2>0.) fh3PtTrueDeltaMRelLeadPt[fCentBin]->Fill(ptJetR,(var-var2)/var2,jet1->MaxTrackPt());
-      Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
-      fhnMassResponse[fCentBin]->Fill(varsp);
-      
+      if(fFromTree){
+      	 Double_t varsp[6] = {var,var2,ptjet1,ptJetR, fVecD->M(), fVecD->Pt()};
+      	 fhnMassResponse[fCentBin]->Fill(varsp);
+      } else {
+      	 Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
+      	 fhnMassResponse[fCentBin]->Fill(varsp);
+      }
       Double_t varsp1[6];
       varsp1[0] = var-var2;
       varsp1[1] = ptjet1-ptJetR;

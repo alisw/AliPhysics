@@ -257,6 +257,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fUseEtaMinCut;                        // flag
     Bool_t            fUseOnFlyV0Finder;                    // flag
     Bool_t            fDoPhotonAsymmetryCut;                // flag to use the PhotonAsymetryCut
+    Bool_t            fDoPhotonPDependentAsymCut;           // flag to use the PhotonAsymetryCut with P dependent cut
+    TF1 *             fFAsymmetryCut;                       //
     Double_t          fMinPPhotonAsymmetryCut;              // Min Momentum for Asymmetry Cut
     Double_t          fMinPhotonAsymmetry;                  // Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              // flag to use corrected tpc cl info
@@ -316,6 +318,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoArmenterosbefore;               // armenteros podolanski plot before cuts
     TH1F*             fHistoInvMassafter;                   // e+e- inv mass distribution after cuts
     TH2F*             fHistoArmenterosafter;                // armenteros podolanski plot after cuts
+    TH2F*             fHistoAsymmetryafter;                 // asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 // bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
     TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
@@ -323,7 +326,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,6)
+    ClassDef(AliConversionPhotonCuts,7)
 };
 
 #endif

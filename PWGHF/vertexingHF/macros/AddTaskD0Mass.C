@@ -5,7 +5,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 				       TString finDirname="Loose",
 				       TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
 				       Bool_t FillMassPt=false, Bool_t FillImpPar=false,
-				       Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false)
+				       Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false, Bool_t FillMCAcc=true)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -238,6 +238,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetFillYHistos(FillMassY);
   massD0Task->SetDrawDetSignal(DrawDetSignal);
   massD0Task->SetPIDCheck(PIDCheck);
+  massD0Task->SetDoMCAcceptanceHistos(FillMCAcc);
   //  massD0Task->SetRejectSDDClusters(kTRUE);
 
   //   massD0Task->SetWriteVariableTree(kTRUE);

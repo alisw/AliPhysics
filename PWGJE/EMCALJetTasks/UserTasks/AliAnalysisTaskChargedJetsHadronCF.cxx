@@ -153,7 +153,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::FillHistograms()
   {
     FillHistogram("hTrackCount", fTracksCont->GetNAcceptedParticles(), fCent); 
     fTracksCont->ResetCurrentID();
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
 
     // All tracks plots
     while(track) {
@@ -184,7 +184,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::FillHistograms()
   {
     FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
     Int_t count = 0;
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(); 
     // All jets
     while(jet) {
       count++;
@@ -313,7 +314,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
     // ##################
     // Create correlation-like objects and save them in a TClonesArray
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
     Int_t count = 0;
     while(jet) {
 
@@ -364,7 +366,9 @@ AliEmcalJet* AliAnalysisTaskChargedJetsHadronCF::GetSubleadingJet(const char* op
 
   AliEmcalJet *jetLeading = fJetsCont->GetLeadingJet(opt);
   AliEmcalJet *jetSubLeading = 0;
-  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
+
+  fJetsCont->ResetCurrentID();
+  AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
   Double_t     tmpPt = 0;
 
   if (option.Contains("rho")) {

@@ -18,8 +18,7 @@
 #include <vector>
 #include <string>
 #include <TNamed.h>
-#include "AliEMCalHistoContainer.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include <THistManager.h>
 
 /**
  * \namespace EMCalTriggerPtAnalysis
@@ -143,7 +142,7 @@ protected:
   void GetAllTriggerNamesAndTitles(std::map<std::string, std::string> &triggers) const;
   void PrintTriggerNames(const std::vector<std::string> &, const std::string &componentName) const;
 
-  AliEMCalHistoContainer                      *fHistos;                   ///< Histogram container of the analysis component
+  THistManager                                *fHistos;                   ///< Histogram container of the analysis component
   const AliEMCalTriggerAnaClassManager        *fTriggerClassManager;      ///< Global trigger class manager
   const AliEMCalTriggerBinningComponent       *fBinning;                  ///< Global binning handler
   const AliEMCalTriggerKineCuts               *fKineCuts;                 ///< Kinematical cuts for tracks and particle selection

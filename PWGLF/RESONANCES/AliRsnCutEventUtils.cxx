@@ -2,7 +2,7 @@
 // Class AliRsnCutEventUtils
 //
 // This cut implementation checks the quality of event primary vertex.
-// It currently works only with ESD events (not AOD).
+// Some functions currently work only with ESD events (not AOD).
 //
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
@@ -28,11 +28,17 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fUseVertexSelection2013pAspectra(kFALSE),
   fMaxVtxZ(10.0),
   fFilterNSDeventsDPMJETpA2013(kFALSE),
+  fCheckIncompleteDAQ(kFALSE),
+  fCheckPastFuture(kFALSE),
+  fPastFutureFirstBit(79),
+  fPastFutureNBits(11),
+  fCheckSPDClusterVsTrackletBG(kFALSE),
+  fASPDCvsTCut(-9999.0),
+  fBSPDCvsTCut(-9999.0),
   fUtils(0x0)
 {
   //
   // Main constructor.
-  //This class is mainly used for pPb 2013 
   //If the rmFirstEvInChunck flag is kTRUE, it removed the first event in chunk
   //
   //If the checkPileUp flag is kTRUE, it removes the events from pile-up
@@ -53,6 +59,13 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fUseVertexSelection2013pAspectra(copy.fUseVertexSelection2013pAspectra),
   fMaxVtxZ(copy.fMaxVtxZ),
   fFilterNSDeventsDPMJETpA2013(copy.fFilterNSDeventsDPMJETpA2013),
+  fCheckIncompleteDAQ(copy.fCheckIncompleteDAQ),
+  fCheckPastFuture(copy.fCheckPastFuture),
+  fPastFutureFirstBit(copy.fPastFutureFirstBit),
+  fPastFutureNBits(copy.fPastFutureNBits),
+  fCheckSPDClusterVsTrackletBG(copy.fCheckSPDClusterVsTrackletBG),
+  fASPDCvsTCut(copy.fASPDCvsTCut),
+  fBSPDCvsTCut(copy.fBSPDCvsTCut),
   fUtils(copy.fUtils)
 {
   //
@@ -80,9 +93,16 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fUseVertexSelection2013pAspectra=copy.fUseVertexSelection2013pAspectra;
   fMaxVtxZ=copy.fMaxVtxZ;
   fFilterNSDeventsDPMJETpA2013=copy.fFilterNSDeventsDPMJETpA2013;
+  fCheckIncompleteDAQ=copy.fCheckIncompleteDAQ;
+  fCheckPastFuture=copy.fCheckPastFuture;
+  fPastFutureFirstBit=copy.fPastFutureFirstBit;
+  fPastFutureNBits=copy.fPastFutureNBits;
+  fCheckSPDClusterVsTrackletBG=copy.fCheckSPDClusterVsTrackletBG;
+  fASPDCvsTCut=copy.fASPDCvsTCut;
+  fBSPDCvsTCut=copy.fBSPDCvsTCut;
   fUtils=copy.fUtils;
 	
-    return (*this);
+  return (*this);
 }
 //_________________________________________________________________________________________________
 Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
@@ -102,6 +122,8 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    fUtils->SetMinPlpContribMV(fMinPlpContribMV);
    fUtils->SetMinPlpContribSPD(fMinPlpContribSPD);
    fUtils->SetMaxVtxZ(fMaxVtxZ);
+   if(fASPDCvsTCut>-9990.0) fUtils->SetASPDCvsTCut(fASPDCvsTCut);
+   if(fBSPDCvsTCut>-9990.0) fUtils->SetBSPDCvsTCut(fBSPDCvsTCut);
 
    Bool_t accept = kTRUE;
    //remove first event in chunk 
@@ -115,6 +137,15 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
      
    // pile-up check
    if ((fCheckPileUppA2013) && (fUtils->IsPileUpEvent(vevt))) accept = kFALSE;
+
+   //check if DAQ is incomplete
+   if(fCheckIncompleteDAQ && IsIncompleteDAQ()) return kFALSE;
+
+   //past/future protection
+   if(fCheckPastFuture && FailsPastFuture()) return kFALSE;
+
+   //check correlation between number of SPD clusters and number of tracklets
+   if(fCheckSPDClusterVsTrackletBG && IsSPDClusterVsTrackletBG(vevt)) return kFALSE;
    
    //apply filter for NSD events in DPMJET MC for pA
    if (fFilterNSDeventsDPMJETpA2013){
@@ -206,4 +237,43 @@ Bool_t AliRsnCutEventUtils::IsVertexSelected2013pAIDspectra(AliVEvent *event)
   Float_t zvtx = vertex->GetZ();
   if (TMath::Abs(zvtx) > fMaxVtxZ) accept = kFALSE;
   return accept; 
+}
+
+
+Bool_t AliRsnCutEventUtils::IsIncompleteDAQ(){
+  if(!fEvent) return kFALSE;
+  AliAODEvent* aodEvt=0;
+  Bool_t isAOD=fEvent->IsAOD();
+  if(isAOD) aodEvt=dynamic_cast<AliAODEvent *>(fEvent->GetRef());
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+
+  if(isAOD && aodEvt && aodEvt->IsIncompleteDAQ()) return kTRUE;
+  else if(isESD && esdEvt && esdEvt->IsIncompleteDAQ()) return kTRUE;
+  return kFALSE;
+}
+
+
+Bool_t AliRsnCutEventUtils::FailsPastFuture(){
+  if(!fEvent) return kFALSE;//this function has not been tested
+
+  AliESDEvent* esdEvt=0;
+  Bool_t isESD=fEvent->IsESD();
+  if(isESD) esdEvt=(AliESDEvent*)(fEvent->GetRef());
+  else return kFALSE;
+  if(!esdEvt) return kFALSE;
+
+  TBits b=esdEvt->GetHeader()->GetIRInt1InteractionMap();
+  for(Int_t i=fPastFutureFirstBit;i<fPastFutureFirstBit+fPastFutureNBits;i++) if(b.TestBitNumber(i)) return kTRUE;
+  return kFALSE;
+}
+
+
+Bool_t AliRsnCutEventUtils::IsSPDClusterVsTrackletBG(AliVEvent* vevt){
+  if(!fEvent || !fUtils) return kFALSE;
+  if(!vevt) vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());
+  if(!vevt) return kFALSE;
+  return fUtils->IsSPDClusterVsTrackletBG(vevt);
 }

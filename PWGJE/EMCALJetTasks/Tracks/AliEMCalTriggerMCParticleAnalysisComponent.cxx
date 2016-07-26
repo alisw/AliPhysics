@@ -20,6 +20,7 @@
  */
 #include <TAxis.h>
 #include <TMath.h>
+#include <THistManager.h>
 
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"

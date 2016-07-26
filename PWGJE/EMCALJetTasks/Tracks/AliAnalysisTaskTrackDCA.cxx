@@ -18,6 +18,7 @@
 
 #include <TArrayD.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TList.h>
 #include <TMath.h>
 
@@ -27,7 +28,6 @@
 #include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskTrackDCA.h"
-#include "AliEMCalHistoContainer.h"
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA)
@@ -81,7 +81,7 @@ void AliAnalysisTaskTrackDCA::UserCreateOutputObjects(){
   CreatePtBinning(ptbinning);
   CreateLinearBinning(dcarbinning, 200, -0.1, 0.1);
   CreateLinearBinning(dcazbinning, 500, -5, 5);
-  fHistos = new AliEMCalHistoContainer("trackDCA");
+  fHistos = new THistManager("trackDCA");
   for(std::string *trgiter = triggerclasses; trgiter < triggerclasses + sizeof(triggerclasses)/sizeof(std::string); trgiter++){
     fHistos->CreateTH1(Form("hEvents%s", trgiter->c_str()), Form("Event counter for trigger class %s", trgiter->c_str()), 1, 0.5, 1.5);
     fHistos->CreateTH2(Form("hDCAr%s", trgiter->c_str()), Form("DCA distribution vs. p_{t} for trigger class %s", trgiter->c_str()), ptbinning, dcarbinning);

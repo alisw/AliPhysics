@@ -61,7 +61,7 @@ fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),
 fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          
 fFillArmenterosThetaStar(0), fFillOnlyMCAcceptanceHisto(0),
-fCheckAccInSector(0),
+fFillSecondaryCellTiming(0), fCheckAccInSector(0),
 fPairWithOtherDetector(0),   fOtherDetectorInputName(""),
 fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
 fProdVertex(),
@@ -115,7 +115,10 @@ fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
 fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
 fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0),
 fhCosThStarPrimPi0(0),       fhCosThStarPrimEta(0),
-fhEPairDiffTime(0)
+fhEPairDiffTime(0),  
+fhReSecondaryCellInTimeWindow(0),  fhMiSecondaryCellInTimeWindow(0),           
+fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)             
+
 {
   InitParameters();
   
@@ -656,7 +659,38 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  if(fCheckConversion)
+  if ( fFillSecondaryCellTiming )
+  {
+    fhReSecondaryCellInTimeWindow = new TH2F("hReSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                             nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReSecondaryCellInTimeWindow) ;
+    
+    fhReSecondaryCellOutTimeWindow = new TH2F("hReSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                              nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhReSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhReSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+    outputContainer->Add(fhReSecondaryCellOutTimeWindow) ;
+    
+    if ( DoOwnMix() )
+    {
+      fhMiSecondaryCellInTimeWindow = new TH2F("hMiSecondaryCellInTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                               nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiSecondaryCellInTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiSecondaryCellInTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiSecondaryCellInTimeWindow) ;
+      
+      fhMiSecondaryCellOutTimeWindow = new TH2F("hMiSecondaryCellOutTimeWindow","Real Pair, it{t}_{cell} < 50 ns, w_{cell} > 0",
+                                                nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhMiSecondaryCellOutTimeWindow->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiSecondaryCellOutTimeWindow->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+      outputContainer->Add(fhMiSecondaryCellOutTimeWindow) ;
+      
+    }
+  }
+  
+  if ( fCheckConversion )
   {
     fhReConv = new TH2F("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
     fhReConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -668,7 +702,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhReConv2->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
     outputContainer->Add(fhReConv2) ;
     
-    if(DoOwnMix())
+    if ( DoOwnMix() )
     {
       fhMiConv = new TH2F("hMiConv","Mixed Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
       fhMiConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2248,7 +2282,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   for(Int_t i1 = 0; i1 < nPhot-last; i1++)
   {
     AliAODPWG4Particle * p1 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i1)) ;
-    
+
     // Select photons within a pT range
     if ( p1->Pt() < GetMinPt() || p1->Pt()  > GetMaxPt() ) continue ;
     
@@ -2559,6 +2593,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt, a, GetEventWeight());
       }
       
+      // Check cell time content in cluster
+      if ( fFillSecondaryCellTiming)
+      {
+        if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
+          fhReSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight());
+        
+        else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
+          fhReSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
+      }
+      
       //---------
       // MC data
       //---------
@@ -2866,6 +2910,17 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
             fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
           }
+
+          // Check cell time content in cluster
+          if ( fFillSecondaryCellTiming)
+          {
+            if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
+              fhMiSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight());
+            
+            else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
+              fhMiSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
+          }
+          
         }// second cluster loop
       }//first cluster loop
     }//loop on mixed events

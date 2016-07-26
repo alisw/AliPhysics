@@ -55,10 +55,10 @@ main()
   #run in proper mode depending on the selection
   for scr in "${sourceUtilities[@]}"; do
     if [[ -e $scr ]]; then
-      echo "Sourcing $scr from current directory"
+      echo "Sourcing $scr from current directory" 1>&2
       source $scr false
     else
-      echo "Sourcing $scr from AliPhysics"
+      echo "Sourcing $scr from AliPhysics" 1>&2
       source $ALICE_PHYSICS/PWGPP/scripts/$scr false
     fi
   done
@@ -622,15 +622,14 @@ goMergeCPass()
   ocdbStorage=$2
   configFile=$3
   export runNumber=$4
-  calibrationFilesToMerge=$5
-  shift 5
+  shift 4
 
-  # MergeCPass1 and 2 take two more arguments.
-  if [[ $cpass -ge 1 ]]; then
-    qaFilesToMerge=$1
-    filteredFilesToMerge=$2
-    shift 2
-  fi
+  #some defaults to avoid empty strings
+  calibrationFilesToMerge="dummy"
+  qaFilesToMerge="dummy"
+  filteredFilesToMerge="dummy"
+  syslogsRecToMerge="dummy"
+  syslogsCalibToMerge="dummy"
 
   parseConfig configFile=$configFile "$@" || return 1
 
@@ -663,7 +662,10 @@ goMergeCPass()
 
   if [[ "$qaFilesToMerge" != '' ]]; then
     qaFilesToMerge=local.${qaFilesToMerge##*/}
-    tmp=$(cat $qaFilesToMerge); echo ${tmp%/*} > ${qaFilesToMerge}.lastMergingStage.txt.list
+    #strip filenames as QA merging requires list of directories
+    # Important to have the string "Stage.txt" in the filename to trigger the merging.
+    # It has to be a list of directories containing the files.
+    sed -e 's|/[^\/]*$||g' "$qaFilesToMerge" > ${qaFilesToMerge}.lastMergingStage.txt.list
     qaFilesToMerge=${qaFilesToMerge}.lastMergingStage.txt.list
   fi
 
@@ -710,10 +712,7 @@ goMergeCPass()
 
   mergingScript="mergeMakeOCDB.byComponent.sh"
 
-  if [[ $cpass == 1 ]]; then
-    qaOutputFileName='QAresults*.root'
-    # Important to have the string "Stage.txt" in the filename to trigger the merging.
-    # It has to be a list of directories containing the files.
+  if [[ $cpass -ge 1 ]]; then
     qaMergedOutputFileName="QAresults_merged.root"
   fi
 
@@ -730,6 +729,8 @@ goMergeCPass()
   # Copy files in case they are not already there.
   case $cpass in
     0) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
+                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/mergeMakeOCDB.byComponent.sh"
@@ -741,6 +742,8 @@ goMergeCPass()
     1) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
                          "${batchWorkingDirectory}/${filteredFilesToMerge}"
+                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
@@ -757,6 +760,8 @@ goMergeCPass()
     2) filesMergeCPass=( "${batchWorkingDirectory}/${calibrationFilesToMerge}"
                          "${batchWorkingDirectory}/${qaFilesToMerge}"
                          "${batchWorkingDirectory}/${filteredFilesToMerge}"
+                         "${batchWorkingDirectory}/${syslogsRecToMerge}"
+                         "${batchWorkingDirectory}/${syslogsCalibToMerge}"
                          "${batchWorkingDirectory}/OCDB.root"
                          "${batchWorkingDirectory}/localOCDBaccessConfig.C"
                          "${batchWorkingDirectory}/QAtrain_duo.C"
@@ -801,7 +806,7 @@ goMergeCPass()
 
       if [[ -n ${pretend} ]]; then
         sleep $pretendDelay
-        for file in CalibObjects.root ocdb.log merge.log dcsTime.root; do
+        for file in CalibObjects.root ocdb.log merge.log dcsTime.root syswatch.log; do
           touch $file
         done
         mkdir -p OCDB/TPC/Calib/{TimeGain,TimeDrift}
@@ -867,13 +872,14 @@ goMergeCPass()
     2)
       if [[ -n ${pretend} ]]; then
         sleep ${pretendDelay}
-        for file in ${qaMergedOutputFileName} \
-                    mergeQA.log; do
+        for file in "${qaMergedOutputFileName}" \
+                    mergeQA.log syswatch.log; do
           touch $file
         done
       else
         printExec aliroot -b -q "QAtrain_duo.C(\"\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
       fi
+    ;;
   esac
   
   # Create tarball with OCDB, store on the shared directory, create signal file on batch directory
@@ -884,12 +890,19 @@ goMergeCPass()
   listDir "$batchWorkingDirectory" "after tarball creation in MergeCPass${cpass}"
 
   #merge the syslogs
-  [[ -f $syslogsRecToMerge ]] && mergeSysLogs syswatch.rec.tree @${syslogsRecToMerge}
-  [[ -f $syslogsCalibToMerge ]] && mergeSysLogs syswatch.calib.tree @${syslogsCalibToMerge}
+  echo "trying to merge syslogs $syslogsRecToMerge $syslogsCalibToMerge"
+  echo "in dir $PWD"
+  if [[ -f "$syslogsRecToMerge" ]]; then
+    echo "mergeSysLogs syswatch.rec.cpass${cpass}.tree @${syslogsRecToMerge}"
+    mergeSysLogs syswatch.rec.cpass${cpass}.tree @${syslogsRecToMerge}
+  fi
+  if [[ -f "$syslogsCalibToMerge" ]]; then
+    echo "mergeSysLogs syswatch.calib.cpass${cpass}.tree @${syslogsCalibToMerge}"
+    mergeSysLogs syswatch.calib.cpass${cpass}.tree @${syslogsCalibToMerge}
+  fi
 
   # CPass has completed. Copy all created files to the destination (which might be remote).
   # Note: stdout is not copied, this will happen at the very end.
-  printExec rm -f ./$chunkName
   filesToCopy=()
   while read cpdir; do
     filesToCopy+=($cpdir/!(stdout))
@@ -921,8 +934,8 @@ goMergeCPass()
       && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> $doneFileTmp
   fi
   echo "dir $outputDir" >> $doneFileTmp
-  reportDoneFile syswatchRec syswatch.rec.tree ${outputDir} >> $doneFileTmp
-  reportDoneFile syswatchCalib syswatch.calib.tree ${outputDir} >> $doneFileTmp
+  reportDoneFile syswatchRec syswatch.rec.cpass${cpass}.tree ${outputDir} >> $doneFileTmp
+  reportDoneFile syswatchCalib syswatch.calib.${cpass}.tree ${outputDir} >> $doneFileTmp
 
   # Copy stdout to destination.
   if [[ -z "$dontRedirectStdOutToLog" ]]; then
@@ -1169,7 +1182,7 @@ goGenerateMakeflow()
     #arr_cpass0_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
     arr_cpass0_merged[${runNumber}]="merge.cpass0.run${runNumber}.done"
     echo "${arr_cpass0_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${arr_cpass0_rec_syswatch_list[${runNumber}]} ${arr_cpass0_calib_syswatch_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} syslogsRecToMerge=${arr_cpass0_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass0_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"" "
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass0 \$OUTPATH/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${arr_cpass0_calib_list[${runNumber}]} syslogsRecToMerge=${arr_cpass0_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass0_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"" "
     echo ; echo
 
     #######################CPass1############################
@@ -1216,7 +1229,7 @@ goGenerateMakeflow()
     arr_cpass1_merged[${runNumber}]="merge.cpass1.run${runNumber}.done"
     echo "### Merges CPass1 files ###"
     echo "${arr_cpass1_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_files_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass1_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass1_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass1 \$OUTPATH/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${arr_cpass1_calib_list[${runNumber}]} qaFilesToMerge=${arr_cpass1_QA_files_list[${runNumber}]} filteredFilesToMerge=${arr_cpass1_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass1_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass1_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
     #######################CPass2############################
@@ -1262,8 +1275,8 @@ goGenerateMakeflow()
     #arr_cpass2_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass2.run${runNumber}.done"
     arr_cpass2_merged[${runNumber}]="merge.cpass2.run${runNumber}.done"
     echo "### Merges CPass2 files ###"
-    echo "${arr_cpass2_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_filtered_list[${runNumber}]} ${copyFiles[@]}"
-    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass2 \$OUTPATH/000${runNumber}/cpass2 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass2_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass2_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
+    echo "${arr_cpass2_merged[${runNumber}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${arr_cpass2_calib_list[${runNumber}]} ${arr_cpass2_QA_files_list[${runNumber}]} ${arr_cpass2_filtered_list[${runNumber}]} ${arr_cpass2_calib_syswatch_list[${runNumber}]} ${arr_cpass2_rec_syswatch_list[${runNumber}]} ${copyFiles[@]}"
+    echo -e "\t${alirootEnv} ./benchmark.sh MergeCPass2 \$OUTPATH/000${runNumber}/cpass2 ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${arr_cpass2_calib_list[${runNumber}]} qaFilesToMerge=${arr_cpass2_QA_files_list[${runNumber}]} filteredFilesToMerge=${arr_cpass2_filtered_list[${runNumber}]} syslogsRecToMerge=${arr_cpass2_rec_syswatch_list[${runNumber}]} syslogsCalibToMerge=${arr_cpass2_calib_syswatch_list[${runNumber}]} ${extraOpts[@]}"
     echo ; echo
 
   ############################# DEBUG/profiling ##################################
@@ -1880,7 +1893,7 @@ goSubmitBatch()
       # lastJobID is set in 'submit'
       if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
-      submit ${JOBID2} 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
+      submit ${JOBID2} 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass0 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${commonOutputPath}/meta/cpass0.calib.run${runNumber}.list "${extraOpts[@]}"
       # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB=${JOBID2}
       # treat the slurm case which uses the id number not the name
@@ -2021,7 +2034,7 @@ goSubmitBatch()
       # lastJobID is set in 'submit'
       if [ -n "$lastJobID" ]; then LASTJOB=$lastJobID; fi
 
-      submit "${JOBID5}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass1 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} ${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list ${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list ${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list "${extraOpts[@]}"
+      submit "${JOBID5}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" MergeCPass1 ${targetDirectory} ${currentDefaultOCDB} ${configFile} ${runNumber} calibrationFilesToMerge=${commonOutputPath}/meta/cpass1.calib.run${runNumber}.list qaFilesToMerge=${commonOutputPath}/meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list filteredFilesToMerge=${commonOutputPath}/meta/cpass1.filtered.run${runNumber}.list "${extraOpts[@]}"
       # ---| set last job id used to submit dependency jobs |-------------------
       LASTJOB=${JOBID5}
       # treat the slurm case which uses the id number not the name
@@ -2248,6 +2261,8 @@ goMakeSummary()
   # json header: open array of objects
   echo '[' > "$jsonLogTmp"
 
+  goSummarizeMetaFiles "$metadir"
+
   echo "total numbers for the production:"
   echo
   awk 'BEGIN {nFiles=0;nCore=0;} 
@@ -2462,8 +2477,15 @@ EOF
 
   listDir "$PWD" "after making summary tree"
 
-  goCreateQAplots "${PWD}/cpass1.qa.list" "${productionID}" "QAplots_CPass1" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass1.filtering.list" &>createQAplots.log
-  goCreateQAplots "${PWD}/cpass2.qa.list" "${productionID}" "QAplots_CPass2" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass2.filtering.list" &>createQAplots.cpass2.log
+  if [[ -z "$pretend" ]]; then
+    goCreateQAplots "${PWD}/cpass1.qa.list" "${productionID}" "QAplots_CPass1" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass1.filtering.list" &>createQAplots.cpass1.log
+    goCreateQAplots "${PWD}/cpass2.qa.list" "${productionID}" "QAplots_CPass2" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/cpass2.filtering.list" &>createQAplots.cpass2.log
+  else
+    mkdir QAplots_CPass2
+    touch QAplots_CPass2/log
+    mkdir QAplots_CPass1
+    touch QAplots_CPass1/log
+  fi
 
   listDir "$PWD" "after creation of QA plots"
 
@@ -2490,6 +2512,145 @@ EOF
   alilog_info "[END] goMakeSummary() with following parameters $*"
   return 0
 )
+
+goSummarizeMetaFiles()
+{
+  #summarize the meta files in current dir (unless specified differently)
+  find ${1-"."} -name "*.done" -exec echo donefile {} \; -exec cat {} \; | \
+  gawk '
+    BEGIN {
+    }
+
+    /^donefile /  {
+      donefile=$2
+      sub(/^.*\//,"",donefile)
+      match($2,/.pass[0-9]?/,tmparr)
+      pass=tmparr[0]
+      match($2,/run([0-9]*)/,tmparr)
+      runNumber=tmparr[1]
+    }
+
+    #logfiles
+    /OK/ || /BAD/ {
+      logFile=$1
+      sub(/^.*\//,"",logFile)
+
+      if (donefile ~ /merge\./) {
+        mergeLogs[runNumber][pass][logFile]++
+        if ($0 ~ /OK/) mergeLogsOK[runNumber][pass][logFile]++
+        else if ($0 ~ /BAD/) {
+          mergeLogsBAD[runNumber][pass][logFile]++
+          listOfBadLogs[nBadLogs++]=$1
+        }
+      }
+      
+      if (donefile ~ /\.job/) {
+        jobLogs[runNumber][pass][logFile]++
+        if ($0 ~ /OK/) jobLogsOK[runNumber][pass][logFile]++
+        else if ($0 ~ /BAD/) {
+          jobLogsBAD[runNumber][pass][logFile]++
+          listOfBadLogs[nBadLogs++]=$1
+        }
+      }
+      
+      next
+    }
+
+    #output files
+    {
+      fileType=$1
+      file=$2
+      if (donefile ~ /merge\./) {
+        outputFilesMerge[runNumber][pass][fileType]++
+      }
+      if (donefile ~ /\.job/) {
+        outputFilesJobs[runNumber][pass][fileType]++
+      }
+      if (fileType == "core") coreFiles[nCoreFiles++]=file
+    }
+
+    END {
+      print "===== error summary: ================================================================="
+      for (run in jobLogs ) {
+        for (pass in jobLogs[run] ) {
+          
+          for (logFile in jobLogs[run][pass]) {
+            if (jobLogsBAD[run][pass][logFile]>0) {
+              print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run][pass][logFile]" failures )"
+            }
+          }
+          
+          for (logFile in mergeLogs[run][pass]) {
+            if (mergeLogsBAD[run][pass][logFile]>0) {
+              print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run][pass][logFile]" failures )"
+            }
+          }
+
+          if (outputFilesJobs[run][pass]["core"]>0) {
+            print "CORE       : run "run" "pass" ( "outputFilesJobs[run][pass]["core"]" core files! )"
+          }
+          if (outputFilesMerge[run][pass]["core"]>0) {
+            print "CORE       : run "run" merge "pass" ( "outputFilesMerge[run][pass]["core"]" core files! )"
+          }
+
+        }
+      }
+
+      print ""
+      print "===== detailed summary: ================================================================="
+      for (run in jobLogs ) {
+        print"________________________________________"
+        print "run "run
+
+        for (pass in jobLogs[run] ) {
+          print "  "pass
+
+          filesToPrint["esd"]=0
+          filesToPrint["qafile"]=0
+          filesToPrint["ocdbTarball"]=0
+          filesToPrint["aod"]=0
+          filesToPrint["core"]=0
+          for (outputFile in filesToPrint) {
+            if (outputFilesJobs[run][pass][outputFile])  print "      "outputFilesJobs[run][pass][outputFile]" X "outputFile
+          }
+          print "    merge:"
+          for (outputFile in filesToPrint) {
+            if (outputFilesMerge[run][pass][outputFile])  print "      "outputFilesMerge[run][pass][outputFile]" X "outputFile
+          }
+
+          for (logFile in jobLogs[run][pass]) {
+            if (jobLogsBAD[run][pass][logFile]>0) {
+              print "    ERROR: "logFile" OK:"jobLogsOK[run][pass][logFile]" BAD:"jobLogsBAD[run][pass][logFile]
+            }
+          }
+          
+          for (logFile in mergeLogs[run][pass]) {
+            if (mergeLogsBAD[run][pass][logFile]>0) {
+              print "    ERROR merge: "logFile" OK:"mergeLogsOK[run][pass][logFile]" BAD:"mergeLogsBAD[run][pass][logFile]
+            }
+          }
+
+        }
+      }
+     
+      if (nBadLogs)
+      {
+        print ""
+        print "===== list of bad logs: ================================================================="
+        for (i in listOfBadLogs) {
+          print listOfBadLogs[i]
+        }
+      }
+      if (nCoreFiles)
+      {
+        print ""
+        print "===== list of core files: ================================================================="
+        for (i in coreFiles) {
+          print coreFiles[i]
+        }
+      }
+    }'
+}
 
 goMakeSummaryTree()
 (

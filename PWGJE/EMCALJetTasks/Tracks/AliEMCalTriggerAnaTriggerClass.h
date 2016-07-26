@@ -20,7 +20,7 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 #include <TString.h>
-#include "AliEMCalTriggerAnaTriggerDecision.h"
+#include "AliEMCalTriggerAnaHelper.h"
 
 /**
  * \namespace EMCalTriggerPtAnalysis
@@ -30,6 +30,9 @@
  * triggered events.
  */
 namespace EMCalTriggerPtAnalysis {
+
+class AliEMCalTriggerAnaTriggerDecision;
+class AliEMCalTriggerEventData;
 
 /**
  * \class AliEMCalTriggerAnaPatternObject

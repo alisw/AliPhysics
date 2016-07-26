@@ -16,6 +16,7 @@
 
 #include <TAxis.h>
 #include <TClass.h>
+#include <THistManager.h>
 
 #include "AliEMCalTriggerAnaClassManager.h"
 #include "AliEMCalTriggerAnaTriggerClass.h"
@@ -70,7 +71,7 @@ AliEMCalTriggerTracksAnalysisComponent::AliEMCalTriggerTracksAnalysisComponent(c
  * this and add the histograms of their choise.
  */
 void AliEMCalTriggerTracksAnalysisComponent::CreateHistos() {
-  fHistos = new AliEMCalHistoContainer(Form("Histos%s", GetName()));
+  fHistos = new THistManager(Form("Histos%s", GetName()));
   fHistos->ReleaseOwner();
 }
 

@@ -1317,9 +1317,7 @@ void AliJetResponseMaker::DoJetLoop()
 //________________________________________________________________________
 void AliJetResponseMaker::GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const
 {
-  Double_t deta = jet2->Eta() - jet1->Eta();
-  Double_t dphi = jet2->Phi() - jet1->Phi();
-  d = TMath::Sqrt(deta * deta + dphi * dphi);
+  d = jet1->DeltaR(jet2);
 }
 
 //________________________________________________________________________

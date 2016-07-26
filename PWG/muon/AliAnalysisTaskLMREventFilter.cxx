@@ -237,7 +237,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   fAliLMREvent->SetMultiplicity("RefMult08",Multiplicity_RefMult08);
   fAliLMREvent->SetTriggerString(triggerWord);
 
-  if (nmu>1)
+  if (nmu>0)
     {
       Int_t ntotTr = fAOD->GetNumberOfTracks(); 
       AliLMRMuon *trk = NULL;

@@ -88,11 +88,12 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   TH1F           *fhEtaPart;              //!<! Eta particle corresponding to embedded from tree
   TH1F           *fhPhiPart;              //!<! Phi particle corresponding to embedded from tree
   TH1F           *fhTreeEntriesUsed;      //!<! Entries of the TTree used
+  Long64_t        fNTreeEntries;           ///< Tree entry number
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliJetEmbeddingTask, 11) /// Jet embedding task
+  ClassDef(AliJetEmbeddingTask, 12) /// Jet embedding task
   /// \endcond
 };
 #endif

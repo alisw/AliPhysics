@@ -60,13 +60,29 @@ struct MakeTrackletTrain : public TrainSetup
     fOptions.Add("sig-dphi-s",    "X",     "Cut on dPhi-phiBent",       -1.);
     fOptions.Add("sig-n-std",     "X",     "Cut on weighted distance",  1.5);
     fOptions.Add("mc-v0-scale",   "X",     "Scaling of MC V0",          1.);
-    fOptions.Add("eta-min",       "ETA",   "Least eta",                 -1.8);
-    fOptions.Add("eta-max",       "ETA",   "Largest eta",               +1.8);
-    fOptions.Add("ipz-min",       "CM",    "Least IPz",                 -10);
-    fOptions.Add("ipz-max",       "CM",    "Largest IPz",               +10);
+    fOptions.Add("eta-min",       "ETA",   "Least eta",                 -2);
+    fOptions.Add("eta-max",       "ETA",   "Largest eta",               +2);
+    fOptions.Add("deta",          "WIDTH", "Eta bin width",             0.25);
+    fOptions.Add("ipz-min",       "CM",    "Least IPz",                 -15);
+    fOptions.Add("ipz-max",       "CM",    "Largest IPz",               +15);
     fOptions.Add("fill-reco",              "Fill with new reco",        true);
     fOptions.Add("create-inj",             "Create injection BG",       true);
     fOptions.Add("create-rot",             "Create rotation BG",        false);
+    fOptions.Add("reweight",      "OPTIONS","','-seperates list",       "");
+    fOptions.SetDescription("Run tracklet analysis on ESD data files to "
+			    "extract dNch/deta. The train should be run on "
+			    "both real data and simulated data. When "
+			    "processing simulated data, it is possible to "
+			    "reweigh the particles according to predefined "
+			    "histograms in pT.  These histograms should "
+			    "be stored in separate files. The option to "
+			    "select reweighting is 'reweight', which is "
+			    "a comma separated list of options:\n"
+			    "- pt, pid, str: Reweigh according to pT, PID or "
+			    "weak decays\n"
+			    "- up, down: Vary reweight up or down\n"
+			    "- pi, K, p: For PID reweigh of particular specie");
+    
   }
   /** 
    * Create the input handler.  This is overwritten from the base
@@ -77,14 +93,17 @@ struct MakeTrackletTrain : public TrainSetup
    * 
    * @return The input handler 
    */
-  AliVEventHandler* CreateInputHandler(UShort_t type)
+  AliVEventHandler* CreateInputHandler(UShort_t type, Bool_t needRec=false)
   {
     
     Bool_t   fill_reco       = fOptions.AsBool("fill-reco");;
     Bool_t   create_inj      = fOptions.AsBool("create-inj");;
     Bool_t   create_rot      = fOptions.AsBool("create-rot");;
-    bool     needRec = fill_reco || create_inj || create_rot;
+    needRec = fill_reco || create_inj || create_rot || needRec;
 
+    Info("CreateInputHandler",
+	 "fill_reco=%d create_inj=%d create_rot=%d needRec=%d",
+	 fill_reco, create_inj, create_rot, needRec);
     return TrainSetup::CreateInputHandler(type, needRec);
   }
   /** 
@@ -114,6 +133,116 @@ struct MakeTrackletTrain : public TrainSetup
     return 0;
   }
   /** 
+   * Analyse the reweighting option string and set options on task
+   * appropriately.  The string is a comma or space separated list of
+   * what to reweigh and how to do it. 
+   *
+   * What to reweigh can be specfied using one or more of the strings 
+   *
+   * - pt  Reweight in pT 
+   * - pid Reweight particle abundance of pi, K, proton 
+   * - str Reweight particles from strange weak decays 
+   *
+   * How to reweigh can be specifed as 
+   *
+   * - + or up   Increase weights (for pt < 0.05 by +30%)
+   * - - or down Decrease weights (for pt < 0.05 by -30%)
+   * - If none of these are given, then the weights are used as is. 
+   * 
+   * If pid rewighting is done and one of up or down are given, then
+   * one can specify which particle type to reweigh
+   *
+   * - pi or pion    Reweight (up or down) pions 
+   * - K  or kaon    Reweight (up or down) kaons
+   * - p  or proton  Reweight (up or down) protons 
+   *
+   * Note, if PID, with explicit selection of pions, and strangeness
+   * reweighting are specified, then the up/down flag applies to both
+   * PID reweighting and the strangeness reweighting
+   * 
+   * @param task The task to modify 
+   */
+  void SetupReweighting(AliAnalysisTaskSE* task)
+  {
+    TString sel = fOptions.AsString("reweight");
+    sel.ToLower();
+    if (sel.IsNull() || sel.BeginsWith("no"))
+      return;
+
+    TList       files;
+    Int_t       what = 0;
+    Int_t       opt  = 0;
+    TObjArray*  tokens = sel.Tokenize(", ");
+    TIter       next(tokens);
+    TObjString* ostr;
+    // First find what should be done 
+    while ((ostr = static_cast<TObjString*>(next()))) {
+      const TString& token = ostr->String();
+      
+      if      (token.EqualTo("pt"))   {
+	what |= 0x1;
+	files.Add(new TObjString("REWEIGHTpt.root"));
+	Printf("Will reweigh in pT");
+      }
+      else if (token.EqualTo("pid")) {
+	what |= 0x2;
+	Printf("Will reweigh particle species");
+      }
+      else if (token.EqualTo("str"))  {
+	what |= 0x4;
+	Printf("Will reweight particles from strange weak decays");
+      }
+    }
+    if (what == 0x0) return;
+    
+    // Now figure out how to do it 
+    next.Reset();
+    TString part;
+    while ((ostr = static_cast<TObjString*>(next()))) {
+      const TString& token = ostr->String();
+      Int_t aOpt = TMath::Abs(opt);
+      if      (token.EqualTo("up")   || token.EqualTo("+")) 
+	opt = (aOpt==0 ? +1 : +aOpt); 
+      else if (token.EqualTo("down") || token.EqualTo("-"))
+	opt = (aOpt==0 ? -1 : -aOpt);
+      else if (token.EqualTo("pi")   || token.EqualTo("pion")){
+	  opt = 1; part = "pi";
+      }
+      else if (token.EqualTo("k")    || token.EqualTo("kaon")) {
+	opt = 2; part = "ka";
+      }
+      else if (token.EqualTo("p")    || token.EqualTo("proton")) {	  
+	opt = 3; part = "pr";
+      }
+    }
+    if (opt != 0)
+      Printf("Will reweigh %s (%c30%% for pT<0.05)",
+	     opt < 0 ? "down" : "up", opt < 0 ? '-' : '+');
+    if (what & 0x2) {
+      if (!part.IsNull()) {
+	Printf("Will reweight %s in particular", part.Data());
+	part.Prepend("_");
+	part.Append(opt < 0 ? "-" : "+");
+      }
+      files.Add(new TObjString(Form("REWEIGHTpid%s.root", part.Data())));
+    }
+    if (what & 0x4)
+      files.Add(new TObjString(Form("REWEIGHTstr%s.root",
+				    opt == -1 ? "-" :
+				    opt == +1 ? "+" : "")));
+    delete tokens;
+
+    Printf("Setting reweighing flag=0x%x with option=%d", what, opt);
+    SetOnTask(task, "ReweightStack", what);
+    SetOnTask(task, "ReweightFlag",  opt);
+
+    TIter nextF(&files);
+    while ((ostr = static_cast<TObjString*>(nextF()))) {
+      Printf("Loading reweighting file %s", ostr->GetName());
+      fRailway->LoadAux(ostr->GetName());
+    }
+  }
+  /** 
    * Create our task, and return it.  This uses the interpreter to
    * make the object.  
    * 
@@ -134,9 +263,10 @@ struct MakeTrackletTrain : public TrainSetup
     // gROOT->GetMacroPath()));
     // gSystem->AddIncludePath("-I$ALICE_PHYSICS/PWGUD/multVScentPbPb");
     Info("CreateTasks", "Loading code");
-    fRailway->LoadAux("AliITSMultRecBg.h");
+    fRailway->LoadSource("FixPaths.C");
+    // fRailway->LoadAux("AliITSMultRecBg.h");
     fRailway->LoadAux("AliTrackletTaskMulti.h");
-    fRailway->LoadSource("AliITSMultRecBg.cxx");
+    // fRailway->LoadSource("AliITSMultRecBg.cxx");
     fRailway->LoadSource("AliTrackletTaskMulti.cxx");
 
     // --- Create the task using interpreter -------------------------
@@ -184,13 +314,15 @@ struct MakeTrackletTrain : public TrainSetup
     FromOption(task, "DPhiSCut",		"sig-dphi-s",	-1.);
     FromOption(task, "NStdCut",			"sig-n-std",	1.5);
     FromOption(task, "ScaleMCV0",		"mc-v0-scale",	1.);
-    FromOption(task, "EtaMin",			"eta-min",	-.5);
-    FromOption(task, "EtaMax",			"eta-max",	+.5);
-    FromOption(task, "ZVertexMin",		"ipz-min",	-7.);
-    FromOption(task, "ZVertexMax",		"ipz-max",	+7.);
+    FromOption(task, "EtaMin",			"eta-min",	-2.);
+    FromOption(task, "EtaMax",			"eta-max",	+2.);
+    FromOption(task, "EtaBinWidth",		"deta",		+2.5);
+    FromOption(task, "ZVertexMin",		"ipz-min",	-15.);
+    FromOption(task, "ZVertexMax",		"ipz-max",	+15.);
     FromOption(task, "DoNormalReco",		"fill-reco",	false);
     FromOption(task, "DoInjection",		"create-inj",	false);
     FromOption(task, "DoRotation",		"create-rot",	false);
+    SetupReweighting(task);
 
     // --- Set centrality bins ---------------------------------------
     TString centBins = fOptions.AsString("cent-bins");

@@ -98,6 +98,7 @@ public:
     virtual     void    SetVertexZMin(double v)             { _vertexZMin           = v; }
     virtual     void    SetVertexZMax(double v)             { _vertexZMax           = v; }
     virtual     void    SetVertexZWidth(double v)           { _vertexZWidth         = v; }
+    virtual     void    SetEtaWidth(double v)               { _etaWidth             = v; }
     virtual     void    SetVertexXYMin(double v)            { _vertexXYMin          = v; }
     virtual     void    SetVertexXYMax(double v)            { _vertexXYMax          = v; }
     virtual     void    SetCentralityMethod(int v)          { _centralityMethod     = v; }
@@ -129,13 +130,17 @@ public:
     virtual     void    SetTrackFilterBit(int v)        { _trackFilterBit    = v; }
     virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
     virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
-
+    
     AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
     //AliHelperPID* helperpid;
  
     void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
 
     void SetParticleSpecies( int species ){ particleSpecies = species; }
+
+    void SetAnalysisType( const char* analysisType ) { fAnalysisType = analysisType; }
+    void SetResonancesCut( Bool_t NoResonances )     { fExcludeResonancesInMC = NoResonances; }
+    void SetElectronCut( Bool_t NoElectron )         { fExcludeElectronsInMC = NoElectron; }
     
 protected:
     
@@ -168,6 +173,7 @@ protected:
     double   _vertexZMin;
     double   _vertexZMax;
     double   _vertexZWidth;
+    double   _etaWidth;
     double   _vertexXYMin;
     double   _vertexXYMax;
     int      _centralityMethod;
@@ -184,6 +190,11 @@ protected:
     int      _nClusterMin;
     int      _trackFilterBit;
     Double_t particleSpecies;
+
+    TString      fAnalysisType;
+
+    Bool_t fExcludeResonancesInMC;
+    Bool_t fExcludeElectronsInMC;
     
     int _tpcnclus;
     double _chi2ndf;
@@ -326,22 +337,19 @@ protected:
     TH1F * _nsigmaTOFkaon_1d;
     
     TH1F * _etadis_POI_AliHelperPID;
-    TH1F * _ydis_POI_AliHelperPID;
-    TH1F * _etadis_without_PID;
-    TH1F * _ydis_without_PID;
     TH1F * _etadis_before_any_cuts;
-    TH1F * _ydis_before_any_cuts;
 
-    TH3F * _vZ_y_Pt_before_any_cuts;
-    TH3F * _vZ_y_Pt_without_PID;
+    TH1F * _ydis_POI_AliHelperPID;
+    
     TH3F * _vZ_y_Pt_POI_AliHelperPID;
-
-    TH3F * _vZ_y_eta_before_any_cuts;
-    TH3F * _vZ_y_eta_without_PID;
     TH3F * _vZ_y_eta_POI_AliHelperPID;
+
+    TH2F * _y_Pt_AllCh_MCAODTruth;
+    TH2F * _y_Pt_Pion_MCAODTruth;
+    TH2F * _y_Pt_Kaon_MCAODTruth;
+    TH2F * _y_Pt_Proton_MCAODTruth;
     
     TH1F * _phidis_POI_AliHelperPID;
-    TH1F * _phidis_without_PID;
     TH1F * _phidis_before_any_cuts;
     
     TH1F * _dcaz;

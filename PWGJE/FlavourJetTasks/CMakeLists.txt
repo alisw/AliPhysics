@@ -23,16 +23,17 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/FlavourJetTasks)
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                    )
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnalysisTaskDmesonJetCorrelations.cxx
     AliAnalysisTaskEmcalJetFlavourTagExample.cxx
     AliAnalysisTaskEmcalJetHF.cxx
     AliAnalysisTaskEmcalJetV0CF.cxx
@@ -42,6 +43,8 @@ set(SRCS
     AliAnalysisTaskSEPicoV0Filter.cxx
     AliAnalysisTaskSEPicoV0Maker.cxx
     AliAnalysisTaskSEPicoV0MakerMC.cxx
+    AliHFAODMCParticleContainer.cxx
+    AliHFTrackContainer.cxx
     AliMCHFParticleSelector.cxx
     AliPicoHeaderCJ.cxx
     AliPicoJet.cxx
@@ -55,13 +58,8 @@ if(FASTJET_FOUND)
   include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
   link_directories(${FASTJET_LIBS_DIR})
   add_definitions(${FASTJET_DEFINITIONS})
-
-  if(ROOT_VERSION_MAJOR EQUAL 6)
-    set(EXTRADEFINITIONS "-I${FASTJET_INCLUDE_DIR} -rml libfastjetcontribfragile.so -rml libfastjetplugins.so -rml libsiscone_spherical.so -rml libsiscone.so -rml libfastjettools -rml libfastjet")
-    if (";${FASTJET_LIBS};" MATCHES ";CGAL;")
-      set(EXTRADEFINITIONS "${EXTRADEFINITIONS} -rml libCGAL")
-    endif()
-  endif(ROOT_VERSION_MAJOR EQUAL 6)
+  set(SRCS ${SRCS}
+           AliAnalysisTaskDmesonJets.cxx)
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -70,10 +68,10 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${EXTRADEFINITIONS}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core Geom)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCAL PWGJETFW PWGCaloTrackCorrBase PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies

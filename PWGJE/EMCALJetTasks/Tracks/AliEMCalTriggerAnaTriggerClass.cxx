@@ -15,6 +15,7 @@
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliEMCalTriggerAnaTriggerClass.h"
+#include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 
 /// \cond CLASSIMP

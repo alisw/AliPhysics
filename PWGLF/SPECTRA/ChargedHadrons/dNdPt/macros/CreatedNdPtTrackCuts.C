@@ -1392,6 +1392,51 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS";
   }
 
+// Default track cuts (2015) for 5TeV data
+  if (cutMode == 223)
+  {
+
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8;
+    Float_t maxFractionSharedTPCCluster = 0.4;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=2.0;
+
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+
+
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetMaxChi2PerClusterITS(36.);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+
+    // tpcc cut
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
+
+    // Geometrical-Length Cut
+    esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+    
+    TString tag = "Default track cuts (2015) for 5TeV data";
+  }
+
 
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 4-sigma
@@ -1948,79 +1993,71 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "for cut/efficiency studies (version 3)";
   }
 
-  if ((cutMode >= 4000) && (cutMode <= 4400))
+
+   if ((cutMode >= 5000) && (cutMode <= 5400))
   {
+    //According to 223 for study of systematic uncertanties. Change to fit the default cuts for 5TeV analysis 
+    //Just like the 4000 but now with intiger increasing numbers. 
+    //Easier to use. 
     //
     // TPC
     //
-    esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetMinNCrossedRowsTPC(120);
-    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    esdTrackCuts->SetRequireTPCRefit(kTRUE); 
+    //esdTrackCuts->SetMinNCrossedRowsTPC(120); 
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    esdTrackCuts->SetMaxDCAToVertexXY(3.0);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4); 
+    esdTrackCuts->SetMaxDCAToVertexXY(3.0); 
     //
     // ITS
     //
-    esdTrackCuts->SetRequireITSRefit(kTRUE);
-    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetRequireITSRefit(kTRUE); 
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
     esdTrackCuts->SetMaxChi2PerClusterITS(36.);
     //
     // primary selection
     //
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
+    esdTrackCuts->SetMaxDCAToVertexZ(2.0); 
     // 7*(0.0026+0.0050/pt^1.01)
-    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); 
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); 
+    
+    // Geometrical-Length Cut
+    esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); 
+    
     //
     // Swich Low/High for study of systematics
     //
-    if(cutMode==4010){esdTrackCuts->SetMaxChi2PerClusterITS(25.);}						//	Low		1
-    if(cutMode==4011){esdTrackCuts->SetMaxChi2PerClusterITS(49.);}						//	High		2
-    if(cutMode==4020){esdTrackCuts->SetMaxChi2PerClusterTPC(3); }						//	Low		3
-    if(cutMode==4021){esdTrackCuts->SetMaxChi2PerClusterTPC(5); }						//	High		4
-    if(cutMode==4030){esdTrackCuts->SetMinNCrossedRowsTPC(100);}						//	Low		5
-    if(cutMode==4031){esdTrackCuts->SetMinNCrossedRowsTPC(130);}						//	High		6
-    if(cutMode==4040){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}			//	Low 		7
-    if(cutMode==4041){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}			//	High		8
-    if(cutMode==4050){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}					//	Low		9
-    if(cutMode==4051){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}					//	High		10
-    if(cutMode==4060){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.); }					//	LoW		11
-    if(cutMode==4061){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.); }					//	High		12
-    if(cutMode==4070){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}			//	Low		13
-    if(cutMode==4071){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}			//	High		14
-    if(cutMode==4080){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }						//	Low		15
-    if(cutMode==4081){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }						//	High		16
-    if(cutMode==4090){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }//	17
+    if(cutMode==5001){esdTrackCuts->SetMaxChi2PerClusterITS(25.);}						//	Low		1
+    if(cutMode==5002){esdTrackCuts->SetMaxChi2PerClusterITS(49.);}						//	High		2
+    if(cutMode==5003){esdTrackCuts->SetMaxChi2PerClusterTPC(3); }						//	Low		3
+    if(cutMode==5004){esdTrackCuts->SetMaxChi2PerClusterTPC(5); }						//	High		4
+    if(cutMode==5005){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}			//	Low 		7
+    if(cutMode==5006){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}			//	High		8
+    if(cutMode==5007){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}					//	Low		9
+    if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}					//	High		10
+    if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.); }					//	LoW		11
+    if(cutMode==5010){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.); }					//	High		12
+    if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}				//	Low		13
+    if(cutMode==5012){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}				//	High		14
+    if(cutMode==5013){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }							//	Low		15
+    if(cutMode==5014){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }							//	High		16
+    if(cutMode==5015){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }	//			17
 
-    TString tag = "Study of systematic uncertanties JGronef";
+    if(cutMode==5016){esdTrackCuts->SetCutGeoNcrNcl(3,120,1.5,0.85,0.7);}	
+    if(cutMode==5017){esdTrackCuts->SetCutGeoNcrNcl(3,140,1.5,0.85,0.7);}	
 
-}
+    if(cutMode==5018){esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);}	//Make a varaition of cut on the width of the dead zone
+    if(cutMode==5019){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
+    
+    if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
+    if(cutMode==5021){esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.9,0.75);}   //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
 
-if (cutMode == 5000)
-  {
-    //
-    // TPC
-    //
-    esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetMinNCrossedRowsTPC(120);
-    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-    //
-    // primary selection
-    //
-    esdTrackCuts->SetDCAToVertex2D(kFALSE);
-    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMaxDCAToVertexZ(2.0);
-    esdTrackCuts->SetMaxDCAToVertexXY(3.0);
-
-    TString tag = "TPC + ITS cuts with relaxed ITS consditions";
-
+ 
+    TString tag = "Study of systematic uncertanties + Geomtrical cut";
 }
 
 
@@ -2046,41 +2083,90 @@ if (cutMode == 5000)
 
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
 
-    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    //esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
     esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
 
     esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
-    TString tag = "Calculate matching efficiency: TPC only";
-     
+    
+    if (cutMode==2100){      
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+      TString tag = "Calculate matching efficiency: TPC only with Crossed Rows";
+    }
+    
     if (cutMode==2101){
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
-      TString tag = "Calculate matching efficiency: TPC + ITS";
+      TString tag = "Calculate matching efficiency: TPC + ITS with Crossed Rows";
     }
     
     if (cutMode==2102){
+      esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
       esdTrackCuts->SetRequireITSRefit(kTRUE); 
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); 
-      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit";
+      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit with Crossed Rows";
     }
     
     if (cutMode==2103){
-      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
     }
     
-   if (cutMode==2104){
-      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+    if (cutMode==2104){
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
       TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
     }
 
+    if (cutMode==2105){
+      esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS without SPD hit";
+    }
+
+    if (cutMode==2106){
+      esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC only";
+    }
+    
+    if (cutMode==2107){
+      esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC + ITS";
+    }
+
+    if (cutMode==2108){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC only";
+    }
+    
+    if (cutMode==2109){
+      esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC + ITS";
+    }
    
-  } 
+    if (cutMode==2110){
+      esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC only";
+    }
+    
+    if (cutMode==2111){
+      esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC + ITS";
+    }
+  
+  
+  }
 
 
   Printf("Created track cuts for: %s", tag.Data());

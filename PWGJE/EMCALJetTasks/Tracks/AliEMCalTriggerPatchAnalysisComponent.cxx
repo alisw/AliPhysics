@@ -18,6 +18,7 @@
 #include <sstream>
 #include <vector>
 #include <TClonesArray.h>
+#include <THistManager.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalTriggerBinningComponent.h"

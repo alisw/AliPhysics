@@ -30,10 +30,11 @@ namespace dNdeta {
      */  
     static TH1D* CreatedNdeta()
     {
-      Double_t maxEta = 5; // 10;
-      Double_t dEta   = 10./200 * 5;
-      TH1D* eta = new TH1D("dNdeta", "Charged particle pseudo-rapidity density",
-			   Int_t(2*maxEta/dEta+.5), -maxEta, +maxEta);
+      Double_t maxEta = 9; // 10;
+      Int_t    nEta   = Int_t(200 * maxEta/5+.5);
+      TH1D*    eta    = new TH1D("dNdeta",
+				 "Charged particle pseudo-rapidity density",
+				 nEta, -maxEta, +maxEta);
       eta->Sumw2();
       eta->SetXTitle("#it{#eta}");
       eta->SetYTitle("1/N d#it{N}_{ch}/d#it{#eta}");
@@ -419,7 +420,8 @@ struct dNdetaMaker : public FastAnalysis::Maker
 	    w.BeginsWith("V0M") ||
 	    w.BeginsWith("V0A") ||
 	    w.BeginsWith("V0C") ||
-	    w.BeginsWith("B"))) {
+	    w.BeginsWith("B")   ||
+	    w.IsNull())) {
 	Printf("Warning: dNdetaMaker::Make: Unknown estimator: %s",
 	       w.Data());
 	return 0;

@@ -13,10 +13,10 @@ class AliESDtrackCuts;
 class AliGenPythiaEventHeader;
 class AliMCEvent;
 class AliVParticle;
+class THistManager;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
 
 /**
  * @class AliAnalysisTaskTracksInJet
@@ -77,7 +77,7 @@ protected:
   Double_t                  fFracPtHard;
 
   // Histos for MC
-  AliEMCalHistoContainer    *fHistosMC;
+  THistManager    *fHistosMC;
 
 private:
 

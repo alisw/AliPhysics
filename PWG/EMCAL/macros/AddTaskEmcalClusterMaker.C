@@ -1,6 +1,6 @@
 AliEmcalClusterMaker* AddTaskEmcalClusterMaker(const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
                                                const Bool_t remExClus     = kTRUE,
-                                               const char *nClusters      = 0,
+                                               const char *nClusters      = "usedefault",
                                                const char *outClusName    = "EmcCaloClusters",
                                                const Double_t emin        = 0.3,
                                                const Bool_t   histo       = kFALSE,
@@ -30,7 +30,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(const UInt_t nonLinFunct   = AliE
   if (inputDataType == "ESD")
     nCells = "EMCALCells";
 
-  if (nClusters==0) {
+  if (nClusters==0 || strcmp(nClusters,"usedefault")==0) {
     if (inputDataType != "ESD")
       nClusters = "caloClusters";
     else 

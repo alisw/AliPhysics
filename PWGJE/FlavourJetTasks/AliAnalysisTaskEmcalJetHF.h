@@ -1,5 +1,6 @@
 #ifndef AliAnalysisTaskEmcalJetHF_h
 #define AliAnalysisTaskEmcalJetHF_h
+
 //ROOT
 class TClonesArray;
 class TH1;

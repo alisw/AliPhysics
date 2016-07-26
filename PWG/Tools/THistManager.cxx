@@ -12,21 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/*
- * Container class for histogram objects. Currenly can handle
- *   TH1
- *   TH2
- *   TH3
- *   THnSparse
- * Histograms can be stored in groups. For this the parent group is 
- * included inside the histogram name, i.e. /base/inheriting/histogram.
- * In case just the histogram name is given, it is assumed that the
- * histogram is stored at the top level.
- *
- *   Author: Markus Fasel
- */
-
 #include <cstring>
 #include <string>
 #include <vector>
@@ -39,80 +24,79 @@
 #include <THashList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TProfile.h>
 #include <TString.h>
 
 #include "THistManager.h"
 
+/// \cond CLASSIMP
 ClassImp(THistManager)
+/// \endcond
 
-//______________________________________________________________________________
+/**
+ * Default constructor, only initialising pointers with 0
+ */
 THistManager::THistManager():
 		TNamed(),
 		fHistos(NULL),
 		fIsOwner(true)
 {
-	/*
-	 * Default constructor, only initialising pointers with 0
-	 */
 }
 
-//______________________________________________________________________________
+/**
+ * Main constructor, creating also a list for the histograms
+ *
+ * @param name Name of the object (list named accordingly)
+ */
 THistManager::THistManager(const char *name):
 		TNamed(name, Form("Histogram container %s", name)),
 		fHistos(NULL),
 		fIsOwner(true)
 {
-	/*
-	 * Main constructor, creating also a list for the histograms
-	 *
-	 * @param name: Name of the object (list named accordingly)
-	 */
 	fHistos = new THashList();
 	fHistos->SetName(Form("histos%s", name));
 	fHistos->SetOwner();
 }
 
-//______________________________________________________________________________
+/**
+ * Destructor, deletes the list of histograms if it is the owner
+ */
 THistManager::~THistManager(){
-	/*
-	 * Destructor, deletes the list of histograms if it is the owner
-	 */
 	if(fHistos && fIsOwner) delete fHistos;
 }
 
-//______________________________________________________________________________
-void THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
-	/*
-	 * Create a new group of histograms within a parent group. Groups are represented as list. The default parent is
-	 * always the top list. List name structure accouding to unix paths (i.e. top list /, hirarchies separated by /).
-	 *
-	 * @param groupname: Name of the new group
-	 * @param parent (@default "/"): Name of the parent group
-	 * @throw HistManagerException
-	 */
+/**
+ * Create a new group of histograms within a parent group. Groups are represented as list. The default parent is
+ * always the top list. List name structure accouding to unix paths (i.e. top list /, hirarchies separated by /).
+ *
+ * \param groupname Name of the new group
+ * \param parent (default "/") Name of the parent group
+ * \throw HistoContainerContentException
+ */
+THashList* THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
 	THashList *parentgroup = FindGroup(parent);
 	if(!parentgroup){
 		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parent);
-		return;
+		return 0;
 	}
 	THashList *childgroup = new THashList();
 	childgroup->SetName(groupname);
 	parentgroup->Add(childgroup);
+	return childgroup;
 }
 
-//______________________________________________________________________________
-TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax){
-	/*
-	 * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param nbins: number of bins
-	 * @param xmin: min. value of the range
-	 * @param xmax: max. value of the range
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param nbins number of bins
+ * \param xmin min. value of the range
+ * \param xmax max. value of the range
+ * \param opt Additonal options (s for sumw2)
+ */
+TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -124,22 +108,25 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, dou
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, nbins, xmin, xmax);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, const double *xbins){
-	/*
-	 * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param nbins: number of bins
-	 * @param xbins: array of bin limits
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param nbins number of bins
+ * \param xbins array of bin limits
+ * \param opt Additonal options (s for sumw2)
+ */
+TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
 	if(!parent){
@@ -151,21 +138,24 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, con
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, nbins, xbins);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD &xbins){
-	/*
-	 * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param xbins: array of bin limits (contains also number of bins)
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param xbins array of bin limits (contains also number of bins)
+ * \param opt Additonal options (s for sumw2)
+ */
+TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
 	if(!parent){
@@ -177,26 +167,28 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD 
 		return 0;
 	}
 	TH1* h = new TH1D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray());
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax){
-	/*
-	 * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param nbinsx: number of bins in x-direction
-	 * @param xmin: min. value of the range in x-direction
-	 * @param xmax: max. value of the range in x-direction
-	 * @param nbinsy: number of bins in y-direction
-	 * @param ymin: min. value of the range in y-direction
-	 * @param ymax: max. value of the range in y-direction
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param nbinsx number of bins in x-direction
+ * \param xmin min. value of the range in x-direction
+ * \param xmax max. value of the range in x-direction
+ * \param nbinsy number of bins in y-direction
+ * \param ymin min. value of the range in y-direction
+ * \param ymax max. value of the range in y-direction
+ */
+TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -208,24 +200,26 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, do
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins){
-	/*
-	 * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param nbinsx: number of bins in x-direction
-	 * @param xbins: array of bin limits in x-direction
-	 * @param nbinsy: number of bins in y-direction
-	 * @param ybins: array of bin limits in y-direction
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param nbinsx number of bins in x-direction
+ * \param xbins array of bin limits in x-direction
+ * \param nbinsy number of bins in y-direction
+ * \param ybins array of bin limits in y-direction
+ */
+TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -237,22 +231,24 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, co
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins){
-	/*
-	 * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param xbins: array of bin limits in x-direction (contains also the number of bins)
-	 * @param ybins: array of bin limits in y-direction (contains also the number of bins)
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH2 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param xbins array of bin limits in x-direction (contains also the number of bins)
+ * \param ybins array of bin limits in y-direction (contains also the number of bins)
+ */
+TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -264,27 +260,29 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD 
 		return 0;
 	}
 	TH2* h = new TH2D(hname.Data(), title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray());
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax) {
-	/*
-	 * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param nbinsx: number of bins in x-direction
-	 * @param xmin: min. value of the range in x-direction
-	 * @param xmax: max. value of the range in x-direction
-	 * @param nbinsy: number of bins in y-direction
-	 * @param ymin: min. value of the range in y-direction
-	 * @param ymax: max. value of the range in y-direction
-	 * @param nbinsz: number of bins in z-direction
-	 * @param zmin: min. value of the range in z-direction
-	 * @param zmax: max. value of the range in z-direction
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param nbinsx number of bins in x-direction
+ * \param xmin min. value of the range in x-direction
+ * \param xmax max. value of the range in x-direction
+ * \param nbinsy number of bins in y-direction
+ * \param ymin min. value of the range in y-direction
+ * \param ymax max. value of the range in y-direction
+ * \param nbinsz number of bins in z-direction
+ * \param zmin min. value of the range in z-direction
+ * \param zmax max. value of the range in z-direction
+ */
+TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -296,26 +294,28 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, do
 		return 0;
 	}
 	TH3* h = new TH3D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, const double* ybins, int nbinsz, const double* zbins) {
-	/*
-	 * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param nbinsx: number of bins in x-direction
-	 * @param xbins: array of bin limits in x-direction
-	 * @param nbinsy: number of bins in y-direction
-	 * @param ybins: array of bin limits in y-direction
-	 * @param nbinsz: number of bins in z-direction
-	 * @param zbins: array of bin limits in z-direction
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param nbinsx number of bins in x-direction
+ * \param xbins array of bin limits in x-direction
+ * \param nbinsy number of bins in y-direction
+ * \param ybins array of bin limits in y-direction
+ * \param nbinsz number of bins in z-direction
+ * \param zbins array of bin limits in z-direction
+ */
+TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, const double* ybins, int nbinsz, const double* zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -327,23 +327,25 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, co
 		return 0;
   }
 	TH3* h = new TH3D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD& xbins, const TArrayD& ybins, const TArrayD& zbins) {
-	/*
-	 * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param xbins: array of bin limits in x-direction (contains also the number of bins)
-	 * @param ybins: array of bin limits in y-direction (contains also the number of bins)
-	 * @param zbins: array of bin limits in z-direction (contains also the number of bins)
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new TH3 within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param xbins array of bin limits in x-direction (contains also the number of bins)
+ * \param ybins array of bin limits in y-direction (contains also the number of bins)
+ * \param zbins array of bin limits in z-direction (contains also the number of bins)
+ */
+TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD& xbins, const TArrayD& ybins, const TArrayD& zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -355,24 +357,26 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD&
 		return 0;
 	}
 	TH3* h = new TH3D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray());
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max) {
-	/*
-	 * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param ndim: Number of dimensions
-	 * @param nbins: Number of bins per dimension
-	 * @param min: min. value of the range for each dimension
-	 * @param max: max. value of the range for each dimension
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param ndim Number of dimensions
+ * \param nbins Number of bins per dimension
+ * \param min min. value of the range for each dimension
+ * \param max max. value of the range for each dimension
+ */
+THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -384,22 +388,24 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 		return 0;
 	}
 	THnSparse* h = new THnSparseD(hname.Data(), title, ndim, nbins, min, max);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    h->Sumw2();
 	parent->Add(h);
 	return h;
 }
 
-//______________________________________________________________________________
-THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes) {
-	/*
-	 * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param title: Title of the histogram
-	 * @param ndim: Number of dimensions
-	 * @param axes: Array of pointers to TAxis for containing the axis definition for each dimension
-	 * Raises fatals in case the parent group does not exist or the object is attempted to be duplicated within the group
-	 */
+/**
+ * Create a new THnSparse within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param title Title of the histogram
+ * \param ndim Number of dimensions
+ * \param axes Array of pointers to TAxis for containing the axis definition for each dimension
+ */
+THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -421,19 +427,84 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 	THnSparseD *hsparse = new THnSparseD(hname.Data(), title, ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
 	for(int id = 0; id < ndim; ++id)
 		*(hsparse->GetAxis(id)) = *(axes[id]);
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if(optionstring.Contains("s"))
+    hsparse->Sumw2();
 	parent->Add(hsparse);
 	return hsparse;
 }
 
-//______________________________________________________________________________
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmin min. value in x-direction
+ * \param xmax max. value in x-direction
+ * \param opt Further options
+ */
+void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, double xmin, double xmax, Option_t *opt) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+		Fatal("THistManager::CreateTProfile", "Parent %s does not exist", dirname.Data());
+  if(parent->FindObject(hname.Data()))
+		Fatal("THistManager::CreateTProfile", "Object %s already exists in group %s", hname.Data(), dirname.Data());
+  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xmin, xmax, opt);
+  parent->Add(hist);
+}
+
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmbins binning in x-direction
+ * \param opt Further options
+ */
+void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, const double* xbins, Option_t *opt) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
+  if(parent->FindObject(hname.Data()))
+		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
+  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xbins, opt);
+  parent->Add(hist);
+}
+
+/**
+ * Create a new TProfile within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param title Title of the profile histogram
+ * \param nbinsX Number of bins in x-direction
+ * \param xmbins binning in x-direction
+ * \param opt Further options
+ */
+void THistManager::CreateTProfile(const char* name, const char* title, const TArrayD& xbins, Option_t *opt){
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname));
+  if(!parent)
+		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
+  if(parent->FindObject(hname.Data()))
+		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
+  TProfile *hist = new TProfile(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), opt);
+  parent->Add(hist);
+}
+
+/**
+ * Set a new group into the container into the parent group
+ *
+ * \param o the object ot be included
+ */
 void THistManager::SetObject(TObject * const o, const char *group) {
-	/*
-	 * Set a new group into the container into the parent group
-	 *
-	 * @param o: the object ot be included
-	 * Raises fatals in case the parent group is not found, the object is attempted to be duplicated in the group, or the type of
-	 * the object is not a histogram type
-	 */
 	THashList *parent(FindGroup(group));
 	if(!parent){
 		Fatal("THistManager::SetObject", "Parent %s does not exist", strcmp(group, "/") ? group : "");
@@ -450,17 +521,15 @@ void THistManager::SetObject(TObject * const o, const char *group) {
 	fHistos->Add(o);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill a 1D histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param x x-coordinate
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTH1(const char *name, double x, double weight) {
-	/*
-	 * Fill a 1D histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param x: x-coordinate
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -475,18 +544,31 @@ void THistManager::FillTH1(const char *name, double x, double weight) {
 	hist->Fill(x, weight);
 }
 
-//______________________________________________________________________________
+void THistManager::FillTH1(const char *name, const char *label, double weight) {
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname.Data()));
+  if(!parent){
+    Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
+    return;
+  }
+  TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname.Data()));
+  if(!hist){
+    Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+    return;
+  }
+  hist->Fill(label, weight);
+}
+
+/**
+ * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param x x-coordinate
+ * \param y y-coordinate
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTH2(const char *name, double x, double y, double weight) {
-	/*
-	 * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param x: x-coordinate
-	 * @param y: y-coordinate
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -501,17 +583,15 @@ void THistManager::FillTH2(const char *name, double x, double y, double weight) 
 	hist->Fill(x, y, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param point coordinates of the data
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTH2(const char *name, double *point, double weight) {
-	/*
-	 * Fill a 2D histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param point: coordinates of the data
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -526,19 +606,17 @@ void THistManager::FillTH2(const char *name, double *point, double weight) {
 	hist->Fill(point[0], point[1], weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param x x-coordinate
+ * \param y y-coordinate
+ * \param z z-coordinate
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTH3(const char* name, double x, double y, double z, double weight) {
-	/*
-	 * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param x: x-coordinate
-	 * @param y: y-coordinate
-	 * @param z: z-coordinate
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -553,17 +631,15 @@ void THistManager::FillTH3(const char* name, double x, double y, double z, doubl
 	hist->Fill(x, y, z, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param point 3D-coordinate (x,y,z) of the point to be filled
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTH3(const char* name, const double* point, double weight) {
-	/*
-	 * Fill a 3D histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param point: 3D-coordinate of the point
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -578,18 +654,15 @@ void THistManager::FillTH3(const char* name, const double* point, double weight)
 	hist->Fill(point[0], point[1], point[2], weight);
 }
 
-
-//______________________________________________________________________________
+/**
+ * Fill a  nD histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the histogram
+ * \param x coordinates of the data
+ * \param weight optional weight of the entry (default 1)
+ */
 void THistManager::FillTHnSparse(const char *name, const double *x, double weight) {
-	/*
-	 * Fill a  nD histogram within the container. The histogram name also contains the parent group(s) according to the common
-	 * group notation.
-	 *
-	 * @param name: Name of the histogram
-	 * @param x: coordinates of the data
-	 * @param weight (@default 1): optional weight of the entry
-	 * Raises fatals in case the parent group is not found or the histogram is not found in the parent group
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent){
@@ -604,44 +677,61 @@ void THistManager::FillTHnSparse(const char *name, const double *x, double weigh
 	hist->Fill(x, weight);
 }
 
-//______________________________________________________________________________
+/**
+ * Fill a profile histogram within the container. The histogram name also contains the parent group(s) according to the common
+ * group notation.
+ *
+ * \param name Name of the profile histogram
+ * \param x x-coordinate
+ * \param y y-coordinate
+ * \param weight optional weight of the entry (default 1)
+ */
+void THistManager::FillProfile(const char* name, double x, double y, double weight){
+  TString dirname(basename(name)), hname(histname(name));
+  THashList *parent(FindGroup(dirname.Data()));
+  if(!parent)
+		Fatal("THistManager::FillTProfile", "Parent group %s does not exist", dirname.Data());
+  TProfile *hist = dynamic_cast<TProfile *>(parent->FindObject(hname.Data()));
+  if(!hist)
+		Fatal("THistManager::FillTProfile", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
+  hist->Fill(x, y, weight);
+}
+
+/**
+ * Find an object inside the container. The object can also be within a
+ * histogram group. For this the name has to follow the common notation
+ *
+ * \param name Name of the object to find inside the container
+ * \return pointer to the object (NULL if not found)
+ */
 TObject *THistManager::FindObject(const char *name) const {
-	/*
-	 * Find an object inside the container. The object can also be within a
-	 * histogram group. For this the name has to follow the common notation
-	 *
-	 * @param name: Name of the object to find inside the container
-	 * @return: pointer to the object (NULL if not found)
-	 */
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent) return NULL;
 	return parent->FindObject(hname);
 }
 
-//______________________________________________________________________________
+/**
+ * Find and object inside the container. The object name is expected to contain the
+ * full path of the histogram object, including parent groups
+ *
+ * \param obj the object to find
+ * \return pointer to the object (NULL if not found)
+ */
 TObject* THistManager::FindObject(const TObject* obj) const {
-	/*
-	 * Find and object inside the container. The object name is expected to contain the
-	 * full path of the histogram object, including parent groups
-	 *
-	 * @param obj: the object to find
-	 * @return: pointer to the object (NULL if not found)
-	 */
 	TString dirname(basename(obj->GetName())), hname(histname(obj->GetName()));
 	THashList *parent(FindGroup(dirname.Data()));
 	if(!parent) return NULL;
 	return parent->FindObject(hname);
 }
 
-//______________________________________________________________________________
+/**
+ * Find histogram group. Name is using common notation
+ *
+ * \param dirname Path of the group (treat empty path as top node
+ * \return TList of objects (NULL if group does not exist)
+ */
 THashList *THistManager::FindGroup(const char *dirname) const {
-	/*
-	 * Find histogram group. Name is using common notation
-	 *
-	 * @param dirname: Path of the group (treat empty path as top node
-	 * @return: TList of objects (NULL if group does not exist)
-	 */
 	if(!strlen(dirname) || !strcmp(dirname, "/")) return fHistos;
 	std::vector<std::string> tokens;
 	TokenizeFilename(dirname, "/", tokens);
@@ -653,15 +743,14 @@ THashList *THistManager::FindGroup(const char *dirname) const {
 	return currentdir;
 }
 
-//______________________________________________________________________________
+/**
+ * Tokenizes a string. Results are stored inside the vector listoftokens
+ *
+ * \param name string to be tokenised
+ * \param delim delimiter string
+ * \param listoftokens list of tokens (C++ strings)
+ */
 void THistManager::TokenizeFilename(const char *name, const char *delim, std::vector<std::string> &listoftokens) const {
-	/*
-	 * Tokenizes a string. Results are stored inside the vector listoftokens
-	 *
-	 * @ param name: string to be tokenised
-	 * @ param delim: delimiter string
-	 * @ param listoftokens: list of tokens (C++ strings)
-	 */
 	TString s(name);
 	TObjArray *arr = s.Tokenize(delim);
 	TObjString *ostr(NULL);
@@ -672,28 +761,26 @@ void THistManager::TokenizeFilename(const char *name, const char *delim, std::ve
 	delete arr;
 }
 
-//______________________________________________________________________________
+/**
+ * Helper function extracting the basename from a given histogram path.
+ *
+ * \param path histogram path
+ * \return basename extracted
+ */
 TString THistManager::basename(const char *path) const {
-	/*
-	 * Helper function extracting the basename from a given histogram path.
-	 *
-	 * @param path: histogram path
-	 * @return: basename extracted
-	 */
 	TString s(path);
 	int index = s.Last('/');
 	if(index < 0) return "";  // no directory structure
 	return TString(s(0, index)).Data();
 }
 
-//______________________________________________________________________________
+/**
+ * Helper function extracting the histogram name from a given histogram path.
+ *
+ * \param path histogram path
+ * \return basename extracted
+ */
 TString THistManager::histname(const char *path) const {
-	/*
-	 * Helper function extracting the histogram name from a given histogram path.
-	 *
-	 * @param path: histogram path
-	 * @return: basename extracted
-	 */
 	TString s(path);
 	int index = s.Last('/');
 	if(index < 0) return path;    // no directory structure

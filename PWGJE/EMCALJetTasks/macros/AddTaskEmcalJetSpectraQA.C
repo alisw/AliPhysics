@@ -82,19 +82,33 @@ AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  AliParticleContainer *trackCont = jetTask->AddParticleContainer(trackName);
-  trackCont->SetParticlePtCut(trackPtCut);
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+  }
+  else if (!trackName.IsNull()) {
+    jetTask->AddParticleContainer(trackName);
+  }
+
+  AliParticleContainer *partCont = jetTask->GetParticleContainer(0);
+  if (partCont) {
+    partCont->SetParticlePtCut(trackPtCut);
+  }
 
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
-  clusterCont->SetClusECut(0.);
-  clusterCont->SetClusPtCut(0.);
-  clusterCont->SetClusHadCorrEnergyCut(clusECut);
-  clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  if (clusterCont) {
+    clusterCont->SetClusECut(0.);
+    clusterCont->SetClusPtCut(0.);
+    clusterCont->SetClusHadCorrEnergyCut(clusECut);
+    clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
-  
   mgr->AddTask(jetTask);
   
   // Create containers for input/output
@@ -106,6 +120,6 @@ AliAnalysisTaskEmcalJetSpectraQA* AddTaskEmcalJetSpectraQA(
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (jetTask, 0,  cinput1 );
   mgr->ConnectOutput (jetTask, 1, coutput1 );
-  
+
   return jetTask;
 }

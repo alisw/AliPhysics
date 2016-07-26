@@ -31,6 +31,7 @@
 #include <TDatabasePDG.h>
 #include <TString.h>
 #include <TList.h>
+#include <TProcessID.h>
 #include "AliLog.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
@@ -1934,6 +1935,10 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   /// Make the cascade as a 2Prong decay and check if it passes Dstar
   /// reconstruction cuts
   //AliCodeTimerAuto("",0);
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
 
   okDstar = kFALSE;
 
@@ -2002,7 +2007,11 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   /// Make the cascade as a 2Prong decay and check if it passes
   /// cascades reconstruction cuts
   //AliCodeTimerAuto("",0);
-  
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
+
   //  AliDebug(2,Form("         building the cascade"));
   okCascades= kFALSE; 
   Bool_t dummy1,dummy2,dummy3;
@@ -2071,6 +2080,11 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   // G.E.Bruno (J/psi), A.Dainese (D0->Kpi)
   // AliCodeTimerAuto("",0);
   okD0=kFALSE; okJPSI=kFALSE; okD0fromDstar=kFALSE;
+
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
 
   Double_t px[2],py[2],pz[2],d0[2],d0err[2];
   AliESDtrack *postrack = (AliESDtrack*)twoTrackArray->UncheckedAt(0);
@@ -2182,6 +2196,12 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   /// reconstruction cuts
   // E.Bruna, F.Prino
   // AliCodeTimerAuto("",0);
+
+  
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
 
   ok3Prong=kFALSE;
   if(!secVert || !vertexp1n1 || !vertexp2n1) return 0x0; 
@@ -2307,6 +2327,11 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // and the info is stored 
   // AliCodeTimerAuto("",0);
 
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
+
   Double_t px[3],py[3],pz[3],d0[3],d0err[3];
   Double_t momentum[3];
 
@@ -2390,6 +2415,11 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   /// reconstruction cuts
   // G.E.Bruno, R.Romita
   // AliCodeTimerAuto("",0);
+
+  UInt_t ntref=TProcessID::GetObjectCount();
+  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+    AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
+  }
 
   ok4Prong=kFALSE;
   if(!secVert || !vertexp1n1 || !vertexp1n1p2) return 0x0; 
@@ -3110,7 +3140,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
     cent=((AliAODEvent*)event)->GetCentrality();
   }
-  Float_t centperc=99;
+  Float_t centperc=0.1;
   if(event->GetRunNumber()<244824){
     centperc=cent->GetCentralityPercentile("V0M");
   }else{
@@ -3118,7 +3148,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     if(multSelection){
       centperc=multSelection->GetMultiplicityPercentile("V0M"); 
       Int_t qual = multSelection->GetEvSelCode();
-      if(qual == 199 ) centperc=99.;
+      if(qual == 199 ) centperc=0.1; // use central cuts as default
     }
   }
   Bool_t okDisplaced=kFALSE,okSoftPi=kFALSE,okFor3Prong=kFALSE;

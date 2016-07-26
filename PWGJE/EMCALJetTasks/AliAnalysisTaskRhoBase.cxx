@@ -5,11 +5,13 @@
 //
 // Author: S.Aiola
 
+#include <TFile.h>
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TClonesArray.h>
+#include <TGrid.h>
 
 #include "AliLog.h"
 #include "AliRhoParameter.h"
@@ -456,4 +458,39 @@ Double_t AliAnalysisTaskRhoBase::GetScaleFactor(Double_t cent)
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
   return scale;
+}
+
+//________________________________________________________________________
+TF1* AliAnalysisTaskRhoBase::LoadRhoFunction(const char* path, const char* name)
+{
+  // Load the scale function from a file.
+
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+
+  TFile* file = TFile::Open(path);
+
+  if (!file || file->IsZombie()) {
+    ::Error("AddTaskRho", "Could not open scale function file");
+    return 0;
+  }
+
+  TF1* sfunc = dynamic_cast<TF1*>(file->Get(name));
+
+  if (sfunc) {
+    ::Info("AliAnalysisTaskRhoBase::LoadRhoFunction", "Scale function %s loaded from file %s.", name, path);
+  }
+  else {
+    ::Error("AliAnalysisTaskRhoBase::LoadRhoFunction", "Scale function %s not found in file %s.", name, path);
+    return 0;
+  }
+
+  fScaleFunction = static_cast<TF1*>(sfunc->Clone());
+
+  file->Close();
+  delete file;
+
+  return fScaleFunction;
 }

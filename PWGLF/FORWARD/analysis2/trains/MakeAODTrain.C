@@ -73,10 +73,10 @@ protected:
     // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
+    UInt_t mask = AliVEvent::kAny;
     // --- Add TPC eventplane task
     if (fOptions.Has("tpc-ep")) CoupleSECar("AddTaskEventplane.C","", mask);
 
-    UInt_t mask = AliVEvent::kAny;
     // --- Task to copy header information ---------------------------
     TString cpy = fOptions.Get("copy");
     Info("", "What to copy: %s", cpy.Data());

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // $Id$
 
-AliAnalysisTaskADChargeMonitoring* AddTaskADChargeMonitoring() {  
+AliAnalysisTaskADChargeMonitoring* AddTaskADChargeMonitoring(Bool_t fillTTree=kFALSE) {  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_ADChargeMonitoring", "No analysis manager found.");
@@ -14,12 +14,13 @@ AliAnalysisTaskADChargeMonitoring* AddTaskADChargeMonitoring() {
   }
       
   AliAnalysisTaskADChargeMonitoring *task = new AliAnalysisTaskADChargeMonitoring();
+  task->SetFillTTree(fillTTree);
   mgr->AddTask(task);
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("TE",
-							   TTree::Class(),
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer("TL",
+							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
 							   AliAnalysisManager::GetCommonFileName());
 

@@ -176,7 +176,8 @@ Bool_t AliJJetTask::FillHistograms()
 
 
 	for (int i=0; i<fNJetFinder; i++){
-		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet(0);
+		fJetsCont[i]->ResetCurrentID();
+		AliEmcalJet *jet = fJetsCont[i]->GetNextAcceptJet();
 		int iJet =0; 
 
 		//fills fJJets[icontainer][ijet] and histograms        

@@ -7,6 +7,7 @@
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 class TObjArray;
 class TString;
 
@@ -21,18 +22,10 @@ class AliVTrack;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
+class AliEmcalTriggerOfflineSelection;
 
 class AliAnalysisTaskEventSelectionRef : public AliAnalysisTaskSE {
 public:
-  enum EmcalTriggerClass{
-    kCPREL0 = 0,
-    kCPREG1,
-    kCPREG2,
-    kCPREJ1,
-    kCPREJ2,
-    kCPRntrig
-  };
   AliAnalysisTaskEventSelectionRef();
   AliAnalysisTaskEventSelectionRef(const char *name);
   virtual ~AliAnalysisTaskEventSelectionRef();
@@ -40,12 +33,11 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
 
-  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
   void SetClusterContainer(TString name) { fClusterContainerName = name; }
 
 protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected, bool isOfflineSelected);
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   void ProcessTrack(const char *triggerclass, const AliVTrack * track, bool isOfflineSelected);
   void ProcessCluster(const char *triggerclass, const AliVCluster *clust, bool isOfflineSelected);
@@ -59,13 +51,18 @@ protected:
 
   TString                       fClusterContainerName;
   AliAnalysisUtils              *fAnalysisUtils;
+  AliEmcalTriggerOfflineSelection *fTriggerSelection;
   AliESDtrackCuts               *fTrackCuts;
-  AliEMCalHistoContainer        *fHistos;                   //!
+  THistManager                  *fHistos;                   //!
   AliEMCALGeometry              *fGeometry;                 //!
   TClonesArray                  *fTriggerPatchContainer;    //!
   TClonesArray                  *fClusterContainer;         //!
   TObjArray                     *fTrackContainer;           //!
-  Double_t                      fOfflineEnergyThreshold[kCPRntrig];
+
+private:
+
+  AliAnalysisTaskEventSelectionRef(const AliAnalysisTaskEventSelectionRef &);
+  AliAnalysisTaskEventSelectionRef &operator=(const AliAnalysisTaskEventSelectionRef &);
 
   ClassDef(AliAnalysisTaskEventSelectionRef, 1);
 };

@@ -518,10 +518,16 @@ struct CENTAdder : public SysErrorAdder
     else {
       fTrig = "CENT";
       fLookup = new TH1D("lookup", "Centrality error lookup", 100, 0, 100);
-      Double_t min = 0.004, max = 0.062; // 0.02
+      Double_t min = 0.004, max = 0.062, top = 100; // 0.02
+      if (sNN == 5023) {
+	min = 0.005;
+	max = 0.075;
+	top = 80;
+	// max = (7.5-min)/TMath::Power(80,2) * TMath::Power(100,2) + min;
+      }
       for (Int_t i = 1; i <= 100; i++) {
 	Double_t c = fLookup->GetXaxis()->GetBinCenter(i);
-	Double_t e = max * TMath::Power(c/100,2)+min;
+	Double_t e = max * TMath::Power(c/top,2)+min;
 	fLookup->SetBinContent(i, e);
       }
     }

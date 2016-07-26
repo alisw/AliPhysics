@@ -25,6 +25,8 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  
+  void SelectPbPb(Bool_t isPbPb=kFALSE){fIsPbPb=isPbPb;} 
+  
 private:
   AliAnalysisTaskgg(const AliAnalysisTaskgg&); // not implemented
   AliAnalysisTaskgg& operator=(const AliAnalysisTaskgg&); // not implemented
@@ -44,7 +46,7 @@ private:
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;        //!
 //  TClonesArray * fStack ;  
-  TList *       fPHOSEvents[1][10][11] ; //Containers for events with PHOS photons
+  TList *       fPHOSEvents[10][10][11] ; //Containers for events with PHOS photons
   TClonesArray* fPHOSEvent ;      //PHOS photons in current event
  
   //Reaction plain for v2
@@ -58,6 +60,7 @@ private:
 
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
+  Bool_t fIsPbPb ;             // Switch to PbPb or pp/pPb mode
 
   ClassDef(AliAnalysisTaskgg, 1); // PHOS analysis task
 };

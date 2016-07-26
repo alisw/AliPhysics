@@ -5418,8 +5418,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	TList* jettrackList = new TList();//gen. jets track list
 	Double_t sumPt      = 0.;
 	Bool_t isBadJet     = kFALSE;
-	
 
+	TList* jettrackListMatch = new TList();//matched jets track list
+	Double_t sumPtMatch      = 0.;
+	Bool_t isBadJetMatch     = kFALSE;
+
+	//gen. jet tracks:
 	if(GetFFRadius()<=0){
 	  GetJetTracksTrackrefs(jettrackList, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);
 
@@ -5433,6 +5437,28 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  if(fDebug >2)std::cout<<" Generated jet loop: jettrackList is empty! "<<std::endl;
 	  
 	  delete jettrackList;
+	  continue; 
+	}
+	
+
+	jettrackListMatch->Clear();
+	
+	if(matchedJet){
+	  //matched jets tracks:
+	  if(GetFFRadius()<=0){
+	    GetJetTracksTrackrefs(jettrackListMatch, matchedJet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);
+	    
+	  }
+	  else GetJetTracksPointing(fTracksRecCuts, jettrackListMatch, matchedJet, GetFFRadius(), sumPtMatch, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetMatch);}
+	
+	
+	if(GetFFMinNTracks()>0 && jettrackListMatch->GetSize()<=GetFFMinNTracks()){isBadJetMatch = kTRUE;}
+	
+	if(jettrackListMatch->GetEntries() == 0){
+	  
+	  if(fDebug >2)std::cout<<" Generated jet loop: jettrackListMatch is empty! "<<std::endl;
+	  
+	  delete jettrackListMatch;
 	  continue; 
 	}
 	
@@ -5450,11 +5476,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(embeddedJet){ 
 
-	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //no!
+	  fh2FractionPtVsEmbeddedJetPtMC->Fill(embeddedJet->Pt(),ptFractionEmbeddedMC); //yes!
 	  
 	  if(ptFractionEmbeddedMC>=fCutFractionPtEmbedded){    
 	    
-	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //no!
+	    fh1DeltaREmbeddedMC->Fill(deltaREmbeddedMC); //yes!
 	  }
 	}
 	
@@ -5464,7 +5490,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	  Double_t embJetPt = embeddedJet->Pt();//jet pt detector level (matched to generator level PYTHIA jets)
 	  
-	  fh1JetPtEmbGenAfterMatch->Fill(embJetPt);  //no!
+	  fh1JetPtEmbGenAfterMatch->Fill(embJetPt);  //no! but maybe only a matter of statistics..
 	  
 	  if(fDebug > 2)std::cout<<" After MatchMode 2 matching cuts - embJetPt: "<<embJetPt<<std::endl; 
 
@@ -5489,7 +5515,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    if (ij==0) fFFHistosGen->FillFF(trackPt, jetPt, incrementJetPt);
 
-	    fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);//can be either PYTHIA particle level jet pT, or smeared with matched jet pT
+	    //fFFHistosGenInc->FillFF(trackPt, jetPt, incrementJetPt);//can be either PYTHIA particle level jet pT, or smeared with matched jet pT
 	   
 	    
 	    delete trackV;
@@ -5498,7 +5524,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  //V0 analyse with 'gen. PYTHIA - rec. extra jets' - matching ###################################################
 	  
-	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa, jettrackList);//fill all V0 embedding histos for match mode 2
+	  FillEmbeddedHistos(embeddedJet, matchedJet, nK0s, nLa, nALa, jettrackListMatch);//fill all V0 embedding histos for match mode 2
 
 	  //Fill gen. jet V0s:
 	  
@@ -5616,6 +5642,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	
 	delete jettrackList;
+	delete jettrackListMatch;
     }
   }
   
@@ -7352,7 +7379,12 @@ void AliAnalysisTaskJetChem::FillEmbeddedHistos(const AliAODJet* embeddedJet, co
   
   //for extraonly branch the embedded jet is empty and 'jet' is detector level PYTHIA jet
    
+  if(!Jettracklist){std::cout<<"FillEmbeddedHistos(): Jettracklist does not exist!"<<std::endl;}
+  if(Jettracklist->GetEntries() == 0)std::cout<<"FillEmbeddedHistos(): Jettracklist() is empty!!"<<std::endl;
+
   Double_t jetPt = 0;
+
+  if(jet) jetPt = jet->Pt();//getting matched jet pt
 
   if((fUseExtraTracks == 1)&&(fUseEmbeddedJetPt == kTRUE)){
   if(jet) jetPt = embeddedJet->Pt();//getting matched jet pt

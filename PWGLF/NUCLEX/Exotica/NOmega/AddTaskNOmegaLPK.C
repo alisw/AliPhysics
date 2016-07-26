@@ -13,6 +13,10 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
 						 Bool_t additionalChecks=kFALSE,
 						 TString suffix = ""){
 
+	//------------------------------------------------------------------------------------------
+	// version 2.20 (2016/02/19)
+	//------------------------------------------------------------------------------------------
+
   Bool_t stdcuts=kFALSE;
   TFile* filecuts;
   if( finname.EqualTo("") ) {
@@ -45,7 +49,7 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
   
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if(type.Contains("AOD")){
-    ::Error("AddTaskHypertriton3", "This task requires to run on ESD");
+    ::Error("AddTaskNOmegaLPK", "This task requires to run on ESD");
     return NULL;
   }
 
@@ -74,9 +78,9 @@ AliAnalysisTaskNOmegaLPK *AddTaskNOmegaLPK(TString finname="",
   
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("Vertex_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("CutPar_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectOutput(task, 1, coutput1);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("VertexSelf_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("Vertex_%s",combinedName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 //  coutput2->SetSpecialOutput();
   mgr->ConnectOutput(task, 2, coutput2);
 

@@ -14,10 +14,10 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliEMCalTriggerTracksAnalysisComponent.h"
-#include "AliEMCalTriggerAnaTriggerDecision.h"
 
 class TString;
 class AliEmcalJet;
+class AliEmcalTrackSelection;
 class AliMCEvnet;
 class AliVParticle;
 
@@ -30,7 +30,6 @@ class AliVParticle;
  */
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalPtTaskVTrackSelection;
 class AliEMCalTriggerEventData;
 
 /**
@@ -60,7 +59,7 @@ public:
    * Set quality cuts used to select reconstructed tracks.
    * \param trackcuts Track selection cuts used in this analysis component.
    */
-  void SetSingleTrackCuts(AliEMCalPtTaskVTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
+  void SetSingleTrackCuts(AliEmcalTrackSelection * trackcuts) { fTrackSelection = trackcuts; }
 
   /**
    * Defines whether we swap the sign of \f$ eta\f$.
@@ -73,7 +72,7 @@ protected:
   void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
   void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent, double weight);
-  AliEMCalPtTaskVTrackSelection     *fTrackSelection;         ///< Track selection cuts used in the analysis
+  AliEmcalTrackSelection            *fTrackSelection;         ///< Track selection cuts used in the analysis
   Double_t                          fMinimumJetPt;            ///< Minimum jet \f$ p_{t} \f$
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fSwapEta;                 ///< Swap eta sign on request

@@ -13,11 +13,13 @@ AliBalancePsi *GetBalanceFunctionObject(const char* analysisLevel = "MCAOD",   /
 					Double_t fQCutMin = 0.0,
 					TString fArgEventClass = "EventPlane",
 					Double_t deltaEtaMax = 2.0,
-					Bool_t bVertexBinning = kFALSE) {
+					Bool_t bVertexBinning = kFALSE,
+					Bool_t bMomentumOrdering = kTRUE) {
   //Function to setup the AliBalance object and return it
   AliBalancePsi *gBalance = new AliBalancePsi();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
+  gBalance->UseMomentumOrdering(bMomentumOrdering);
   if(bResonancesCut) gBalance->UseResonancesCut();
   if(bHBTCut) gBalance->UseHBTCut(HBTCutValue);
   if(bConversionCut) gBalance->UseConversionCut(invMassForConversionCut);
@@ -90,11 +92,13 @@ AliBalanceEbyE *GetBalanceFunctionEbyEObject(
 					     Double_t invMassForConversionCut = 0.04,
 					     Bool_t bMomentumDifferenceCut = kFALSE,
 					     Double_t fQCutMin = 0.0,
-					     Double_t deltaEtaMax = 2.0
+					     Double_t deltaEtaMax = 2.0,
+					     Bool_t bMomentumOrdering = kTRUE
 					     ) {
 
   //Function to setup the AliBalance object and return it
   AliBalanceEbyE *gBalance = new AliBalanceEbyE();
+  gBalance->UseMomentumOrdering(bMomentumOrdering);
   if(bResonancesCut) gBalance->UseResonancesCut();
   if(bHBTCut) gBalance->UseHBTCut(HBTCutValue);
   if(bConversionCut) gBalance->UseConversionCut(invMassForConversionCut);

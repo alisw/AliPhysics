@@ -154,6 +154,10 @@ public:
  Bool_t GetCalculateCME() const {return this->fCalculateCME;};
  void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
  Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
+  void SetCalculateCRCVZ(Bool_t const cCRC) {this->fCalculateCRCVZ = cCRC;};
+  Bool_t GetCalculateCRCVZ() const {return this->fCalculateCRCVZ;};
+  void SetCalculateCRCZDC(Bool_t const cCRC) {this->fCalculateCRCZDC = cCRC;};
+  Bool_t GetCalculateCRCZDC() const {return this->fCalculateCRCZDC;};
  void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
  Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
  void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
@@ -189,6 +193,8 @@ public:
  TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
  void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
  TH1D* GetPtWeightsHist(Int_t c) const {return this->fPtWeightsHist[c];};
+ void SetEtaWeightsHist(TH1D* const n, Int_t h, Int_t b, Int_t c) {this->fEtaWeightsHist[h][b][c] = n;};
+ TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
  void SetQAZDCCuts(Bool_t const cCRC) {this->fQAZDCCuts = cCRC;};
  Bool_t GetQAZDCCuts() const {return this->fQAZDCCuts;};
  void SetMinMulZN(Int_t weights) {this->fMinMulZN = weights;};
@@ -258,6 +264,8 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCME;
  Bool_t fCalculateCRC2;
+  Bool_t fCalculateCRCVZ;
+  Bool_t fCalculateCRCZDC;
  Int_t fCRC2nEtaBins; // CRC2 n eta bins
  Bool_t fCalculateFlow;
  Bool_t fUseVZERO;
@@ -277,6 +285,7 @@ private:
  TList *fQVecList;       // list with weights
  TH1D* fCenWeightsHist;
  TH1D* fPtWeightsHist[10];
+ TH1D* fEtaWeightsHist[10][21][2];
  Bool_t fQAZDCCuts;
  Int_t fMinMulZN;
  Float_t fMaxDevZN;

@@ -86,6 +86,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetRightSignReg_LowPt(Double_t rightlow) {fSignRight_LowPt=rightlow;}
   void SetLeftSignReg_HighPt(Double_t lefthigh) {fSignLeft_HighPt=lefthigh;}
   void SetRightSignReg_HighPt(Double_t righthigh) {fSignRight_HighPt=righthigh;}
+  void SetPtAssocLim(Double_t pTlim) {fPtAssocLimit=pTlim;}
   
   void PrintBinsAndLimits();
   Int_t PtBinCorr(Double_t pt) const;
@@ -115,7 +116,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
   Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
   
-  Int_t             fNPtBinsCorr;        // number of pt bins per correlations
+  Int_t             	 fNPtBinsCorr;        // number of pt bins per correlations
   std::vector<Double_t>  fBinLimsCorr;        // limits of pt bins per correlations
   std::vector<Double_t>  fPtThreshLow;        // pT threshold of hadrons - low
   std::vector<Double_t>  fPtThreshUp;         // pT threshold of hadrons - up
@@ -158,13 +159,12 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fSignRight_HighPt;		// Right bound of "signal region" range - from 8 GeV/c
   Int_t     fPoolNum;			// Number of the pool for the analyzed event
   Bool_t    fSpeed;			// Speed up the execution removing bins and histos
-  Bool_t    fMergePools;	// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
-  Bool_t 	fUseDeff;		// Use D meson efficiency as weight
-  Bool_t 	fUseTrackeff;   // Use track efficiency as weight
-  
+  Bool_t    fMergePools;		// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
+  Bool_t    fUseDeff;			// Use D meson efficiency as weight
+  Bool_t    fUseTrackeff;   		// Use track efficiency as weight
+  Double_t  fPtAssocLimit;   		// Maximum value for associated pT
 
-
-  ClassDef(AliAnalysisTaskSED0Correlations,8); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,9); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

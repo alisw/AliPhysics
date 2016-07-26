@@ -106,7 +106,17 @@ AliAnalysisTaskEmcalJetQA* AddTaskEmcalJetQA(
   qaTask->SetCaloCellsName(cellName);
   qaTask->SetVzRange(-10,10);
 
-  qaTask->AddParticleContainer(trackName);
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = qaTask->AddMCParticleContainer(trackName);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = qaTask->AddTrackContainer(trackName);
+    trackCont->SetFilterHybridTracks(kTRUE);
+  }
+  else if (!trackName.IsNull()) {
+    qaTask->AddParticleContainer(trackName);
+  }
   qaTask->AddClusterContainer(clusName);
 
   //-------------------------------------------------------

@@ -95,6 +95,7 @@ AliAnalysisTaskEmcalHFeJetCorrel::AliAnalysisTaskEmcalHFeJetCorrel() :
 //Variables
   fdebug(-1),
   fNentries(0x0),
+  fNRejected(0x0),
   fcandEleTPC(0x0),
   fLastEleTPC(0),
   fCutsHFjets(0x0),
@@ -167,6 +168,7 @@ AliAnalysisTaskEmcalHFeJetCorrel::AliAnalysisTaskEmcalHFeJetCorrel(const char *n
 //Variables
   fdebug(-1),
   fNentries(0x0),
+  fNRejected(0x0),
   fcandEleTPC(0x0),
   fLastEleTPC(0),
   fCutsHFjets(0x0),
@@ -223,6 +225,7 @@ AliAnalysisTaskEmcalHFeJetCorrel::~AliAnalysisTaskEmcalHFeJetCorrel()
   if(fTracksCont) delete fTracksCont;
   if(fCaloClustersCont) delete fCaloClustersCont;
   if(fNentries) delete fNentries;
+  if(fNRejected) delete fNRejected;
   if(fcandEleTPC) delete fcandEleTPC;
 
   if(fhTrackRejection) delete fhTrackRejection;
@@ -281,6 +284,20 @@ void AliAnalysisTaskEmcalHFeJetCorrel::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(8,"nJetsTagged");
   fNentries->GetXaxis()->SetBinLabel(9,"nUnexpError");
   fOutput->Add(fNentries);
+//=====================================================================================================================
+
+//=====================================================================================================================
+//Event Selection Rejection Histogram
+fNRejected=new TH1F("SelectionRejection", "Analyzed Rejection Reasons", 9,-0.5,8.5);
+fNRejected->GetXaxis()->SetBinLabel(1,"NoCentrality");
+fNRejected->GetXaxis()->SetBinLabel(2,"PileUp");
+fNRejected->GetXaxis()->SetBinLabel(3,"Centrality1");
+fNRejected->GetXaxis()->SetBinLabel(4,"Centrality2");
+fNRejected->GetXaxis()->SetBinLabel(5,"Centrality3");
+fNRejected->GetXaxis()->SetBinLabel(6,"TriggerClass");
+fNRejected->GetXaxis()->SetBinLabel(7,"Vertex");
+fNRejected->GetXaxis()->SetBinLabel(8,"PhysicsSelection");
+fOutput->Add(fNRejected);
 //=====================================================================================================================
 
 //=====================================================================================================================
@@ -467,7 +484,8 @@ void AliAnalysisTaskEmcalHFeJetCorrel::CheckClusTrackMatching()
   Double_t dphi = 999;
 
   //Get closest cluster to track
-  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle(0));
+  fTracksCont->ResetCurrentID();
+  AliPicoTrack* PicoTrack = static_cast<AliPicoTrack*>(fTracksCont->GetNextAcceptParticle());
   while(PicoTrack)
   {
 	AliVTrack* track = PicoTrack->GetTrack();
@@ -489,7 +507,8 @@ void AliAnalysisTaskEmcalHFeJetCorrel::CheckClusTrackMatching()
   }
 
   //Get closest track to cluster
-  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  fCaloClustersCont->ResetCurrentID();
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
   while(cluster)
   {
     TLorentzVector nPart;
@@ -582,6 +601,9 @@ if(fdebug>1) cout<<"DDG Run 4"<<endl;
 //=========================================================================================
 
 bool IsSelected = fCutsHFjets->IsEventSelected(fVevent);
+int kRejected = fCutsHFjets->GetWhyRejection();
+if(!IsSelected) fNRejected->Fill(kRejected);
+
   if(!IsSelected) //SelectedDDG )
   {
     AliWarning("Rejecting event ");

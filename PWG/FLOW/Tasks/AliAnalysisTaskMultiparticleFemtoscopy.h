@@ -22,6 +22,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
+#include "AliAODMCParticle.h"
 #include "TExMap.h"
 #include "TProfile.h"
 #include "TH1F.h"
@@ -66,27 +67,31 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void EstimateBackground(AliVEvent *ave);
   virtual void FillControlHistogramsEvent(AliVEvent *ave);
   virtual void FillControlHistogramsParticle(AliVEvent *ave);
-  virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *gtrack); // TBI shall I also pass atrack?
+  virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *atrack);
+  virtual void FillControlHistogramsNonIdentifiedParticles(AliAODMCParticle *amcparticle);
   virtual void FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack);
+  virtual void FillControlHistogramsIdentifiedParticles(AliAODMCParticle *amcparticle);
   virtual void V0s(AliVEvent *ave);
-
-
   Bool_t Pion(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Kaon(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t Proton(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t PassesCommonEventCuts(AliVEvent *ave);
   Bool_t PassesMixedEventCuts(AliVEvent *ave);
-  Bool_t PassesCommonGlobalTrackCuts(AliAODTrack *gtrack); // common cuts for global tracks
-  Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only)
+  Bool_t PassesCommonGlobalTrackCuts(AliAODTrack *gtrack); // common cuts for global tracks TBI make it uniform with MC
+  Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only) TBI make it uniform with MC
+  Bool_t PassesCommonTrackCuts(AliAODMCParticle *amcparticle); // common cuts for analysis specific tracks TBI see above two lines
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
   Double_t RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
+  Double_t RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2);
 
   virtual void ResetEBEObjects();
   Bool_t SpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period);
   Int_t CurrentEventNumber();
   virtual void DoSomeDebugging(AliVEvent *ave);
   virtual void CalculateCorrelationFunctions(AliAODEvent *aAOD);
+  virtual void CalculateCorrelationFunctions(AliMCEvent *aMC);
   virtual void CalculateBackground(TClonesArray *ca1, TClonesArray *ca2);
+  virtual void CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC); // TBI unify with the previous function
   // 3.) Methods called in Terminate(Option_t *):
   virtual void GetOutputHistograms(TList *histList);
    // TBI implement the rest as well
@@ -193,12 +198,19 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fControlHistogramsEventList;        // list to hold all 'control histograms' for events TBI
   TProfile *fControlHistogramsEventFlagsPro; // profile to hold all flags for control histograms for events TBI
   Bool_t fFillControlHistogramsEvent;        // fill or not control histograms for global event observables
-  TH1I *fGetNumberOfTracksHist;              // aAOD->GetNumberOfTracks()
+  TH1I *fGetNumberOfTracksHist;              // a{AOD,MC}->GetNumberOfTracks()
+  TH1I *fGetNumberOfGlobalTracksHist;        // fGlobalTracksAOD[0]->GetSize() this is then my multiplicity...
   TH1I *fGetNumberOfV0sHist;                 // aAOD->GetNumberOfV0s()
+  TH1I *fGetNumberOfCascadesHist;            // aAOD->GetNumberOfCascades()
+  TH1D *fGetMagneticFieldHist;               // aAOD->GetMagneticField()
+  TH1I *fGetEventTypeHist;                   // aAOD->GetEventType()
+  TH1D *fGetCentralityHist;                  // aAOD->GetCentrality()
+
   TH1F *fVertexXYZ[3];                       //! [avtx->GetX(),avtx->GetY(),avtx->GetZ()]
   TH1I *fGetNContributorsHist;               // avtx->GetNContributors()
   TH1F *fGetChi2perNDFHist;                  // avtx->GetChi2perNDF();
   TH1I *fGetNDaughtersHist;                  // avtx->GetNDaughters();
+
   // ...
   // 1b) Non-identified particles (for AOD these are "normal global" tracks):
   TList *fControlHistogramsNonIdentifiedParticlesList;        // list to hold all 'control histograms' for non-identified particles
@@ -214,6 +226,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *fPhiHist;                                             // atrack->Phi()
   TH1F *fMassHist;                                            // atrack->M()
   TH1I *fGetFilterMap;                                        // atrack->GetFilterMap()
+  TH1I *fGetPdgCode;                                          // atrack->GetPdgCode()
 
   // 1c) Identified particles:
   TList *fControlHistogramsIdentifiedParticlesList;        // list to hold all 'control histograms' for identified particles
@@ -263,7 +276,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fCorrelationFunctionsFlagsPro; // profile to hold all flags for correlation functions
   Bool_t fFillCorrelationFunctions;        // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;   // normalize correlation functions woth the background
-  TH1F *fCorrelationFunctions[10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
+  TExMap *fCorrelationFunctionsIndices;    // associates pdg code to index of correlation function
+  TH1F *fCorrelationFunctions[10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
 
   // 4.) Background:
   TList *fBackgroundList;        // list to hold all correlation functions for primary particle
@@ -287,7 +301,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,4);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,6);
 
 };
 

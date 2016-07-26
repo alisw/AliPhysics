@@ -480,7 +480,6 @@ void AliSpectraBothPID::SetoldT0()
 Float_t AliSpectraBothPID::GetMissMatchNsigma(AliVTrack* track,AliPID::EParticleType type)
 {
 	AliESDtrack* trackESD=dynamic_cast<AliESDtrack*>(track);
-	
 	Float_t timeexp=-1e8;
 	if(trackESD)
 	{
@@ -490,7 +489,7 @@ Float_t AliSpectraBothPID::GetMissMatchNsigma(AliVTrack* track,AliPID::EParticle
 			Float_t c = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
 		Float_t c_1 = 1. / c;
 		Int_t det[5];
-	  	Float_t length, timeexp, pos[3];
+	  	Float_t length, pos[3];
   
  			 /* compute length and expected time */
 	 	tofGeo.GetVolumeIndices(index, det);

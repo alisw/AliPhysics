@@ -23,7 +23,7 @@ include_directories(
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-  ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+  ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
   ${AliPhysics_SOURCE_DIR}/PWG/Tools
   )
 
@@ -45,7 +45,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES PWGEMCAL)
+set(ALIROOT_DEPENDENCIES PWGEMCALbase)
 
 # Generate the ROOT map
 # Dependecies

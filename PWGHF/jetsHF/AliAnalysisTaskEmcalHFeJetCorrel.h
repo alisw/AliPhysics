@@ -105,6 +105,7 @@ private:
 
   int				fdebug;						 //Debugging variable
   TH1F 				*fNentries;                  //! histo for event counting and checks
+  TH1F              *fNRejected;                 //Event Selection Reasons
   TArrayI 			*fcandEleTPC;                //! array with electron candidates from TPC
   Int_t				fLastEleTPC;                 // number of electron candidates from TPC
   AliRDHFJetsCuts 	*fCutsHFjets;        		 // specific algo jet cut object (incude the above?)
@@ -147,6 +148,6 @@ private:
   AliAnalysisTaskEmcalHFeJetCorrel(const AliAnalysisTaskEmcalHFeJetCorrel&);				// copy constructo not implemented yet
   AliAnalysisTaskEmcalHFeJetCorrel& operator=(const AliAnalysisTaskEmcalHFeJetCorrel&); 	// assignment operator not implemented yet
 
-  ClassDef(AliAnalysisTaskEmcalHFeJetCorrel, 1) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalHFeJetCorrel, 2) // jet sample analysis task
 };
 #endif

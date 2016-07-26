@@ -77,7 +77,7 @@ private:
   AliPIDResponse   *fPIDResponse;     // ! PID response object
   Float_t fshiftTPC; // shift of the nsigma TPC
  Float_t fshiftTOF; // shift of the nsigma TPC
-  Float_t* foldT0; // old TOF Response 
+  Float_t* foldT0; //! old TOF Response 
   Int_t fNoldT0bins; // N bins for T0 array 	
 
   AliSpectraBothPID(const AliSpectraBothPID&);

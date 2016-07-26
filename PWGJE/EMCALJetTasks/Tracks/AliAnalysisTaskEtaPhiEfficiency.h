@@ -16,8 +16,6 @@ class AliESDtrackCuts;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliEMCalHistoContainer;
-
 class AliAnalysisTaskEtaPhiEfficiency : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskEtaPhiEfficiency();
@@ -33,7 +31,7 @@ private:
   Bool_t FindPtBin(Double_t ptin, Int_t &ptmin, Int_t &ptmax) const;
 
   AliAnalysisUtils        *fAnalysisUtil;
-  AliEMCalHistoContainer            *fHistos;
+  THistManager            *fHistos;
   AliESDtrackCuts         *fTrackCuts;
 
   AliAnalysisTaskEtaPhiEfficiency(const AliAnalysisTaskEtaPhiEfficiency &);

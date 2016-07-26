@@ -237,7 +237,7 @@ struct ProofRailway : public Railway
    * 
    * @return true on success
    */
-  virtual Bool_t LoadSource(const TString& name, bool copy=false)
+  virtual Bool_t LoadSource(const TString& name, bool copy=true)
   {
     if (!Railway::LoadSource(name, copy)) return false;
     fExtraSrcs.Append(Form(":%s", gSystem->BaseName(name.Data())));
@@ -315,7 +315,7 @@ struct ProofRailway : public Railway
    *
    * - ALIROOT_MODE=[default,aliroot,rec,sim,train]
    *   - default: Load base analysis libraries 
-   *   - aliroot: Load $ALICE_ROOT/macros/loadlibs.C
+   *   - aliroot: Load $ALICE_ROOT/macros/loadralibs.C
    *   - rec:     Load $ALICE_ROOT/macros/loadlibsrec.C
    *   - sim:     Load $ALICE_ROOT/macros/loadlibssim.C
    * - ALIROOT_EXTRA_LIBS Colon separated list of additional (Ali)ROOT
@@ -816,18 +816,23 @@ struct ProofRailway : public Railway
     }
     
     // --- Load extra sources ----------------------------------------
+    return LoadExtraSrcs();
+  }
+  virtual Bool_t LoadExtraSrcs()
+  {
     TString    tmp2 = fExtraSrcs.Strip(TString::kBoth, ':');
     TObjArray* srcs = tmp2.Tokenize(":");
     TIter      next2(srcs);
+    TObject*   obj = 0;
     while ((obj = next2())) { 
-      Int_t ret = gProof->Load(Form("%s++g", obj->GetName()), true);
+      Int_t ret = gProof->Load(Form("%s+g", obj->GetName()), true);
       if (ret < 0) { 
 	Error("ProofRailway::PostSetup", "Failed to compile %s",obj->GetName());
 	return false;
       }
     }
     return true;
-  }
+  }    
   /** 
    * Get the data-set name 
    * 
@@ -958,12 +963,14 @@ struct ProofRailway : public Railway
    *
    * @return true on success
    */
-  virtual Bool_t AuxFile(const TString& name, bool copy=false)
+  virtual Bool_t AuxFile(TString& name, bool copy=false)
   {
-    Bool_t ret = Railway::AuxFile(name, copy);
+    TString local = name;
+    Bool_t ret = Railway::AuxFile(local, copy);
     if (!name.BeginsWith("/")) {
-      fAuxFiles.Add(new TObjString(name));
+      fAuxFiles.Add(new TObjString(local));
     }
+    name = local;
 #if 0
     if (ret && name.EndsWith(".root")) { 
       TFile* file = TFile::Open(name, "READ");

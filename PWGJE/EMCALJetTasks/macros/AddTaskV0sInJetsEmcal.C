@@ -35,7 +35,7 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   // Configure task
   mytask->SetMCAnalysis(bIsMC);
 
-  AliParticleContainer* trackCont = mytask->AddParticleContainer(tracksName);
+  AliParticleContainer* trackCont = mytask->AddTrackContainer(tracksName);
   AliClusterContainer* clusterCont = mytask->AddClusterContainer(clustersCorrName);
 
   AliJetContainer* jetCont = mytask->AddJetContainer(jetBranchName, sType, dRadius);

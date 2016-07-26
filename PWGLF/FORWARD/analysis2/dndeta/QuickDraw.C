@@ -260,5 +260,6 @@ void QuickDraw(const char** args)
   c->Modified();
   c->Update();
   c->cd();
-
+  c->SaveAs("QuickDraw.png");
+  gPad = c;
 }

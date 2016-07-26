@@ -24,6 +24,8 @@ AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency()
   , fAfterCuts(0x0)
   , fCutSet(0x0)
   , fAxes(0x0)
+  , fPtWeight(kFALSE)
+  , fFuncWeights(0x0)
   , fEfficiency(-1.)
   , fEfficiencyError(-1.)
 {
@@ -31,12 +33,14 @@ AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency()
 }
 
 
-AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THnSparseF* afterCuts, AliHFCutVarFDsubCutSet* cutSet, TList* axes)
+AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THnSparseF* afterCuts, AliHFCutVarFDsubCutSet* cutSet, TList* axes, Bool_t ptWeight, TF1* funcWeights)
   : TObject()
   , fGenLevel(genLevel)
   , fAfterCuts(afterCuts)
   , fCutSet(cutSet)
   , fAxes(axes)
+  , fPtWeight(ptWeight)
+  , fFuncWeights(funcWeights)
   , fEfficiency(-1.)
   , fEfficiencyError(-1.)
 {
@@ -77,6 +81,11 @@ AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THn
     UInt_t axisNo = axis->GetAxisNo(thnTypes[iTHn]);
     if (axisNo<(UInt_t)-1) {
       TH1F* t = (TH1F*)thns[iTHn]->Projection(axisNo);
+      if(fPtWeight) {
+        for(Int_t iBin=0; iBin<t->GetNbinsX(); iBin++) {
+          t->SetBinContent(iBin+1,t->GetBinContent(iBin+1)*fFuncWeights->Eval(t->GetBinCenter(iBin+1)));
+        }
+      }
       Int_t binMin = t->FindBin(cut->fLow*1.0001);
       Int_t binMax = t->FindBin(cut->fHigh*0.9999);
       counts[iTHn] = t->Integral(binMin, binMax);
@@ -96,7 +105,7 @@ AliHFCutVarFDsubEfficiency::AliHFCutVarFDsubEfficiency(THnSparseF* genLevel, THn
   TH1F *hTempDeNum=new TH1F("hTempDeNum","hTempDeNum",1,0,1);
   hTempDeNum->SetBinContent(1,counts[0]);
   hTempDeNum->SetBinError(1,TMath::Sqrt(counts[0]));
-
+  
   TH1F *hTempEff=(TH1F*)hTempNum->Clone("hTempEff");
   hTempEff->Divide(hTempNum,hTempDeNum,1.,1.,"B");
 

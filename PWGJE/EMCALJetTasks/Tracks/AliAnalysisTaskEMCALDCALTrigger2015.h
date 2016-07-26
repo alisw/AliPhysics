@@ -7,13 +7,12 @@
 
 class TArrayD;
 class TClonesArray;
+class THistManager;
 
 class AliEMCALTriggerPatchInfo;
 class AliVCluster;
 
 namespace EMCalTriggerPtAnalysis {
-
-class AliEMCalHistoContainer;
 
 class AliAnalysisTaskEMCALDCALTrigger2015 : public AliAnalysisTaskSE {
 public:
@@ -36,7 +35,7 @@ protected:
   static const TString fgkBeamDirs[4];
 
   TString                       fClusterContainerName;        //
-  AliEMCalHistoContainer        *fHistos;                     //!<!
+  THistManager                  *fHistos;                     //!<!
   AliEMCALGeometry              *fGeometry;                   //!<!
   TClonesArray                  *fClusterContainer;           //!<!
   TClonesArray                  *fPatchContainer;             //!<!

@@ -921,7 +921,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
     //AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
-    AliVTrack *track = dynamic_cast<AliVTrack*>(partCont->GetNextAcceptParticle(0));
+    partCont->ResetCurrentID();
+    AliVTrack *track = dynamic_cast<AliVTrack*>(partCont->GetNextAcceptParticle());
     //if(!track) cout<<"No tracks... "<<endl;
     while(track) {
       Double_t trkphi = track->Phi()*TMath::RadToDeg();

@@ -5,16 +5,15 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString EvTrigger="MB",
-                             Bool_t bCalculateCRC=kTRUE,
                              Bool_t bCalculateCRC2=kFALSE,
                              Int_t CRC2nEtaBins=6,
-                             Bool_t bUseCRCRecentering=kFALSE,
                              TString QVecWeightsFileName,
                              Bool_t bUsePhiEtaWeights,
                              TString PhiEtaWeightsFileName,
                              Bool_t bUseVZERO=kFALSE,
+                             Bool_t bCalculateCRCVZ=kFALSE,
                              Bool_t bUseZDC=kFALSE,
-                             Bool_t bRecenterZDC=kFALSE,
+                             Bool_t bCalculateCRCZDC=kFALSE,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bZDCMCCen=kTRUE,
                              Float_t ZDCGainAlpha=0.395,
@@ -22,7 +21,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              TString Label="",
                              TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
-                             Bool_t bRejectPileUp=kTRUE,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
@@ -30,6 +28,8 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
                              Bool_t bCalculateFlow=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
+                             Bool_t bUseEtaWeights=kFALSE,
+                             TString EtaWeightsFileName="",
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              Float_t MaxDevZN=9.,
@@ -112,7 +112,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
  taskFE->SetCentralityEstimator("V0M");
- taskFE->SetRejectPileUp(bRejectPileUp);
+ taskFE->SetRejectPileUp(kTRUE);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
  taskFE->SetDataSet(sDataSet);
@@ -214,6 +214,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cutsRP->SetMinimalTPCdedx(-999999999);
    cutsRP->SetPtRange(ptMin,ptMax);
    cutsRP->SetEtaRange(etaMin,etaMax);
+   cutsRP->SetAcceptKinkDaughters(kFALSE);
    cutsRP->SetQA(bCutsQA);
   }
   // Track cuts for POIs
@@ -225,6 +226,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
+  cutsPOI->SetAcceptKinkDaughters(kFALSE);
   cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {
@@ -298,21 +300,22 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  taskQC->SetBookOnlyBasicCCH(kTRUE); // book only basic common control histograms
  //  CRC settings
  taskQC->SetStoreVarious(kTRUE);
- taskQC->SetCalculateCRC(bCalculateCRC);
+ taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRC2(bCalculateCRC2);
+ taskQC->SetCalculateCRCVZ(bCalculateCRCVZ);
+ taskQC->SetCalculateCRCZDC(bCalculateCRCZDC);
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlow(bCalculateFlow);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
- taskQC->SetRecenterZDC(bRecenterZDC);
+ taskQC->SetRecenterZDC(bUseZDC);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
- taskQC->SetUseCRCRecenter(bUseCRCRecentering);
+ taskQC->SetUseCRCRecenter(kFALSE);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bUseZDC);
  taskQC->SetCorrWeight(sCorrWeight);
- taskQC->SetUsePtWeights(bUsePtWeights);
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
@@ -336,6 +339,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
  } // end of if(bCenFlattening)
  
  if(bUsePtWeights) {
+  taskQC->SetUsePtWeights(bUsePtWeights);
   TFile* PtWeightsFile = TFile::Open(PtWeightsFileName,"READ");
   if(!PtWeightsFile) {
    cout << "ERROR: PtWeightsFile not found!" << endl;
@@ -353,8 +357,32 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    }
   }
  } // end of if(bUsePtWeights)
+  
+  if(bUseEtaWeights) {
+    taskQC->SetUseEtaWeights(bUseEtaWeights);
+    TFile* EtaWeightsFile = TFile::Open(EtaWeightsFileName,"READ");
+    if(!EtaWeightsFile) {
+      cout << "ERROR: EtaWeightsFile not found!" << endl;
+      exit(1);
+    }
+    for(Int_t c=0; c<10; c++) {
+      for(Int_t b=0; b<21; b++) {
+        for(Int_t k=0; k<2; k++) {
+          TH1D* EtaWeightsHist = dynamic_cast<TH1D*>(EtaWeightsFile->Get(Form("Eta_Weights_cen%d_ptbin%d_ch%d",c,b+1,k)));
+          if(EtaWeightsHist) {
+            taskQC->SetEtaWeightsHist(EtaWeightsHist,c,b,k);
+            printf("Eta_Weights_cen%d_ptbin%d_ch%d set (from %s)\n",c,b+1,k,EtaWeightsFileName.Data());
+          }
+          else {
+            printf("ERROR: Eta_Weights_cen%d_ptbin%d_ch%d not found! \n",c,b+1,k);
+            exit(1);
+          }
+        }
+      }
+    }
+  } // end of if(bUseEtaWeights)
  
- if(bUseCRCRecentering || bRecenterZDC) {
+ if(bUseZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
    cout << "ERROR: QVecWeightsFile not found!" << endl;
@@ -369,7 +397,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nCenBin,
    cout << "ERROR: QVecWeightsList not found!" << endl;
    exit(1);
   }
- } // end of if(bUseCRCRecentering)
+ } // end of if(bUseZDC)
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
   TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");

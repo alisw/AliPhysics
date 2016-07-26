@@ -2,6 +2,7 @@
 #include <math.h>
 #include "TChain.h"
 #include "TFile.h"
+#include "TCollection.h"
 #include "TKey.h"
 #include "TObject.h"
 #include "TObjString.h"
@@ -13,11 +14,9 @@
 #include "TH3D.h"
 #include "TCanvas.h"
 #include "TRandom3.h"
+#include "TROOT.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDtrackCuts.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
@@ -26,7 +25,6 @@
 #include "AliAnalysisV0Lam.h"
 #include "AliAODMCHeader.h"
 #include "AliGenHijingEventHeader.h"
-#define PI 3.1415927
 
 // Analysis task for studying lambda-lambda femtoscopic correlations
 // Author: Jai Salzwedel, jai.salzwedel@cern.ch
@@ -39,19 +37,254 @@ AliAnalysisV0Lam::AliAnalysisV0Lam():
 AliAnalysisTaskSE(),
   fAOD(0),
   fOutputList(0),
-  fpidAOD(0)
+  fpidAOD(0),
+  fDefaultCutType(0),
+  fNominalCutIndex(0),
+  fEventCount(0),
+  fPDGLambda(1.115683),
+  fPDGProton(.938272),
+  fPDGPion(.1395702),
+  fEtaDaughter(0.8),
+  fMassWindowLam(0.00568),
+  fTOFLow(0.8),
+  fSigmaCutTPCProton(3.0),
+  fSigmaCutTPCPion(3.0),
+  fSigmaCutTOFProton(4.0),
+  fSigmaCutTOFPion(4.0),
+  fIsUsingVariableAvgSepCut(kFALSE),
+  fMaxV0Mult(700),
+  fNumberVariableAvgSepCuts(12),
+  fCutProcessor(NULL),
+  fNumberOfVariableCutValues(1),
+  fNumberOfCfVariableCutValues(1),
+  fTotalLambda(0),
+  fTotalAntiLambda(0),
+  fV0Candidates(0),
+  fIsMCEvent(kFALSE),
+  fFlattenCent(kTRUE),
+  fEC(NULL),
+  fEvt(NULL),
+  fTPCVsPPosLam(NULL), fTPCVsPNegLam(NULL),
+  fTPCVsPPosALam(NULL), fTPCVsPNegALam(NULL),
+  fMultDistRough(NULL),
+  fMultDistLambda(NULL), fMultDistAntiLambda(NULL),
+  fMultCentLambda(NULL), fMultCentAntiLambda(NULL),
+  fCentrality(NULL),
+  fRemainingFromBeginningToV0Finder(NULL),
+  fRemainingFromBeginningToRecon(NULL),
+  fRemainingFromV0FinderToRecon(NULL),
+  fMCTruthOfOriginalParticles(NULL),
+  fMCTruthOfV0FinderParticles(NULL),
+  fMCTruthOfReconstructedParticles(NULL),
+  fMCFakeParticleIdentity(NULL),
+  fMCOtherV0Identity(NULL),
+// fDataCompeted(NULL), fDataCulled(NULL),
+// fRemainingV0s(NULL), fRemainingFrac(NULL),
+  fHistPsmearingKreconMinusKtruthLL(NULL),
+  fHistPsmearingKreconVsKtruthLL(NULL),
+  fHistPsmearingKreconMinusKtruthAA(NULL),
+  fHistPsmearingKreconVsKtruthAA(NULL),
+  fHistPsmearingKreconMinusKtruthLA(NULL),
+  fHistPsmearingKreconVsKtruthLA(NULL),
+// fHistsSignalMomResTruthLL(0),
+// fHistsSignalMomResRecLL(0),
+// fHistsBkgMomResTruthLL(0),
+// fHistsBkgMomResRecLL(0),
+// fHistsSignalMomResTruthAA(0),
+// fHistsSignalMomResRecAA(0),
+// fHistsBkgMomResTruthAA(0),
+// fHistsBkgMomResRecAA(0),
+// fHistsSignalMomResTruthLA(0),
+// fHistsSignalMomResRecLA(0),
+// fHistsBkgMomResTruthLA(0),
+// fHistsBkgMomResRecLA(0),
+// fLednickyWeightsLA(0),
+// fLednickyWeightsLL(0),
+// fSignalMomResTruthUnweightedLL(NULL),
+// fSignalMomResTruthUnweightedAA(NULL),
+// fSignalMomResTruthUnweightedLA(NULL),
+// fBkgMomResTruthUnweightedLL(NULL),
+// fBkgMomResTruthUnweightedAA(NULL),
+// fBkgMomResTruthUnweightedLA(NULL),
+// fSignalMomResTruthVsPtLL(NULL),
+// fSignalMomResTruthVsPtAA(NULL),
+// fSignalMomResTruthVsPtLA(NULL),
+// fBkgMomResTruthVsPtLL(NULL),
+// fBkgMomResTruthVsPtAA(NULL),
+// fBkgMomResTruthVsPtLA(NULL),
+  fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
+  fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
+  fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
+  fKtLamLamSig(NULL), fKtALamALamSig(NULL),
+  fKtLamALamSig(NULL), fKtLamLamBkg(NULL),
+  fKtALamALamBkg(NULL), fKtLamALamBkg(NULL),
+  fSignalLamLam(NULL), fBkgLamLam(NULL),
+  fSignalALamALam(NULL), fBkgALamALam(NULL),
+  fSignalLamALam(NULL), fBkgLamALam(NULL),
+  fSignalLamLamProtSep(NULL), fSignalLamLamPiMinusSep(NULL),
+  fSignalALamALamAntiProtSep(NULL), fSignalALamALamPiPlusSep(NULL),
+  fSignalLamALamProtPiPlusSep(NULL), fSignalLamALamAntiProtPiMinusSep(NULL),
+  fBkgLamLamProtSep(NULL), fBkgLamLamPiMinusSep(NULL),
+  fBkgALamALamAntiProtSep(NULL), fBkgALamALamPiPlusSep(NULL),
+  fBkgLamALamProtPiPlusSep(NULL), fBkgLamALamAntiProtPiMinusSep(NULL),
+  fSignalLamLamPlusMinusSep(NULL), fSignalALamALamPlusMinusSep(NULL),
+  fSignalLamALamProtSep(NULL), fSignalLamALamPionSep(NULL),
+  fBkgLamLamPlusMinusSep(NULL), fBkgALamALamPlusMinusSep(NULL),
+  fBkgLamALamProtSep(NULL), fBkgLamALamPionSep(NULL)
 {
+
+  // //Load in the lednicky weight histograms
+  // TFile lednickyLL("LedWeightsLL.root","read");
+  // TIter nextLL(lednickyLL.GetListOfKeys());
+  // TKey *key;
+  // while ((key = (TKey*)nextLL())) {
+  //   TClass *cl = gROOT->GetClass(key->GetClassName());
+  //   if (!cl->InheritsFrom("TH1D")) continue;
+  //   TH1D *h = (TH1D*)key->ReadObj();
+  //   h->SetDirectory(0);
+  //   fLednickyWeightsLL.push_back(h);
+  // }
+  // lednickyLL.Close();
+
+  // TFile lednickyLA("LedWeightsLA.root","read");
+  // TIter nextLA(lednickyLL.GetListOfKeys());
+  // while ((key = (TKey*)nextLA())) {
+  //   TClass *cl = gROOT->GetClass(key->GetClassName());
+  //   if (!cl->InheritsFrom("TH1D")) continue;
+  //   TH1D *h = (TH1D*)key->ReadObj();
+  //   h->SetDirectory(0);
+  //   fLednickyWeightsLA.push_back(h);
+  // }
+  // lednickyLA.Close();
 }
 //________________________________________________________________________
-AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name) 
-: AliAnalysisTaskSE(name), 
+
+AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, Int_t varCutType, Int_t nominalCutIndex, Bool_t flattenCent):
+  AliAnalysisTaskSE(name), 
   fAOD(0), 
   fOutputList(0),
-  fpidAOD(0)
+  fpidAOD(0),
+  fDefaultCutType(varCutType),
+  fNominalCutIndex(nominalCutIndex),
+  fEventCount(0),
+  fPDGLambda(1.115683),
+  fPDGProton(.938272),
+  fPDGPion(.1395702),
+  fEtaDaughter(0.8),
+  fMassWindowLam(0.00568),
+  fTOFLow(0.8),
+  fSigmaCutTPCProton(3.0),
+  fSigmaCutTPCPion(3.0),
+  fSigmaCutTOFProton(4.0),
+  fSigmaCutTOFPion(4.0),
+  fIsUsingVariableAvgSepCut(kFALSE),
+  fMaxV0Mult(700),
+  fNumberVariableAvgSepCuts(12),
+  fCutProcessor(NULL),
+  fNumberOfVariableCutValues(1),
+  fNumberOfCfVariableCutValues(1),
+  fTotalLambda(0),
+  fTotalAntiLambda(0),
+  fV0Candidates(0), 
+  fIsMCEvent(kFALSE),
+  fFlattenCent(flattenCent),
+  fEC(NULL),
+  fEvt(NULL),
+  fTPCVsPPosLam(NULL), fTPCVsPNegLam(NULL),
+  fTPCVsPPosALam(NULL), fTPCVsPNegALam(NULL),
+  fMultDistRough(NULL),
+  fMultDistLambda(NULL), fMultDistAntiLambda(NULL),
+  fMultCentLambda(NULL), fMultCentAntiLambda(NULL),
+  fCentrality(NULL),
+  fRemainingFromBeginningToV0Finder(NULL),
+  fRemainingFromBeginningToRecon(NULL),
+  fRemainingFromV0FinderToRecon(NULL),
+  fMCTruthOfOriginalParticles(NULL),
+  fMCTruthOfV0FinderParticles(NULL),
+  fMCTruthOfReconstructedParticles(NULL),
+  fMCFakeParticleIdentity(NULL),
+  fMCOtherV0Identity(NULL),
+  // fDataCompeted(NULL), fDataCulled(NULL),
+  // fRemainingV0s(NULL), fRemainingFrac(NULL),
+  fHistPsmearingKreconMinusKtruthLL(NULL),
+  fHistPsmearingKreconVsKtruthLL(NULL),
+  fHistPsmearingKreconMinusKtruthAA(NULL),
+  fHistPsmearingKreconVsKtruthAA(NULL),
+  fHistPsmearingKreconMinusKtruthLA(NULL),
+  fHistPsmearingKreconVsKtruthLA(NULL),
+  // fHistsSignalMomResTruthLL(0),
+  // fHistsSignalMomResRecLL(0),
+  // fHistsBkgMomResTruthLL(0),
+  // fHistsBkgMomResRecLL(0),
+  // fHistsSignalMomResTruthAA(0),
+  // fHistsSignalMomResRecAA(0),
+  // fHistsBkgMomResTruthAA(0),
+  // fHistsBkgMomResRecAA(0),
+  // fHistsSignalMomResTruthLA(0),
+  // fHistsSignalMomResRecLA(0),
+  // fHistsBkgMomResTruthLA(0),
+  // fHistsBkgMomResRecLA(0),
+  // fLednickyWeightsLA(0),
+  // fLednickyWeightsLL(0),
+  // fSignalMomResTruthUnweightedLL(NULL),
+  // fSignalMomResTruthUnweightedAA(NULL),
+  // fSignalMomResTruthUnweightedLA(NULL),
+  // fBkgMomResTruthUnweightedLL(NULL),
+  // fBkgMomResTruthUnweightedAA(NULL),
+  // fBkgMomResTruthUnweightedLA(NULL),
+  // fSignalMomResTruthVsPtLL(NULL),
+  // fSignalMomResTruthVsPtAA(NULL),
+  // fSignalMomResTruthVsPtLA(NULL),
+  // fBkgMomResTruthVsPtLL(NULL),
+  // fBkgMomResTruthVsPtAA(NULL),
+  // fBkgMomResTruthVsPtLA(NULL),
+  fMCTruthPtLam(NULL), fMCTruthPtALam(NULL),
+  fMCTruthPhiLam(NULL), fMCTruthPhiALam(NULL),
+  fMCTruthEtaLam(NULL), fMCTruthEtaALam(NULL),
+  fKtLamLamSig(NULL), fKtALamALamSig(NULL),
+  fKtLamALamSig(NULL), fKtLamLamBkg(NULL),
+  fKtALamALamBkg(NULL), fKtLamALamBkg(NULL),
+  fSignalLamLam(NULL), fBkgLamLam(NULL),
+  fSignalALamALam(NULL), fBkgALamALam(NULL),
+  fSignalLamALam(NULL), fBkgLamALam(NULL),
+  fSignalLamLamProtSep(NULL), fSignalLamLamPiMinusSep(NULL),
+  fSignalALamALamAntiProtSep(NULL), fSignalALamALamPiPlusSep(NULL),
+  fSignalLamALamProtPiPlusSep(NULL), fSignalLamALamAntiProtPiMinusSep(NULL),
+  fBkgLamLamProtSep(NULL), fBkgLamLamPiMinusSep(NULL),
+  fBkgALamALamAntiProtSep(NULL), fBkgALamALamPiPlusSep(NULL),
+  fBkgLamALamProtPiPlusSep(NULL), fBkgLamALamAntiProtPiMinusSep(NULL),
+  fSignalLamLamPlusMinusSep(NULL), fSignalALamALamPlusMinusSep(NULL),
+  fSignalLamALamProtSep(NULL), fSignalLamALamPionSep(NULL),
+  fBkgLamLamPlusMinusSep(NULL), fBkgALamALamPlusMinusSep(NULL),
+  fBkgLamALamProtSep(NULL), fBkgLamALamPionSep(NULL)
 {
   // Define output slots here 
   // Output slot #1
   DefineOutput(1, TList::Class());
+
+  //   //Load in the lednicky weight histograms
+  // TFile lednickyLL("LedWeightsLL.root","read");
+  // TIter nextLL(lednickyLL.GetListOfKeys());
+  // TKey *key;
+  // while ((key = (TKey*)nextLL())) {
+  //   TClass *cl = gROOT->GetClass(key->GetClassName());
+  //   if (!cl->InheritsFrom("TH1D")) continue;
+  //   TH1D *h = (TH1D*)key->ReadObj();
+  //   h->SetDirectory(0);
+  //   fLednickyWeightsLL.push_back(h);
+  // }
+  // lednickyLL.Close();
+
+  // TFile lednickyLA("LedWeightsLA.root","read");
+  // TIter nextLA(lednickyLA.GetListOfKeys());
+  // while ((key = (TKey*)nextLA())) {
+  //   TClass *cl = gROOT->GetClass(key->GetClassName());
+  //   if (!cl->InheritsFrom("TH1D")) continue;
+  //   TH1D *h = (TH1D*)key->ReadObj();
+  //   h->SetDirectory(0);
+  //   fLednickyWeightsLA.push_back(h);
+  // }
+  // lednickyLA.Close();
 }
 //________________________________________________________________________
 AliAnalysisV0Lam::~AliAnalysisV0Lam()
@@ -69,40 +302,28 @@ AliAnalysisV0Lam::~AliAnalysisV0Lam()
   delete[] fEC;
   delete fCutProcessor;
   if(fOutputList) delete fOutputList; //This cleans up all output hists
-}
+  // for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++){
+  //   delete fLednickyWeightsLL[i];
+  //   fLednickyWeightsLL[i] = NULL;
+  // }
+  // for(UInt_t i = 0; i < fLednickyWeightsLA.size(); i++){
+  //   delete fLednickyWeightsLA[i];
+  //   fLednickyWeightsLA[i] = NULL;
+  // }
+
+  
+} 
 //________________________________________________________________________
 void AliAnalysisV0Lam::MyInit()
 {
-  // Set global variables
-  fEventCount=           0;
-  fPDGLambda =    1.115683;
-  fPDGK0     =     .497614;
-  fPDGProton =     .938272;
-  fPDGPion   =    .1395702;
-  fEtaDaughter =       0.8;    //max eta of daughter particles - default 0.8
-  fMassWindowK0 =    0.018;    //accept .480-.514
-  fMassWindowLam = 0.00568;    //accept 1.11003-1.121363
-  fTOFLow =            0.8;    // Lower |P| limit
-  fSigmaCutTPCProton = 3.0;    // max Nsigma allowed 
-  fSigmaCutTPCPion   = 3.0;
-  fSigmaCutTOFProton = 4.0;
-  fSigmaCutTOFPion   = 4.0;
-  fIsUsingVariableAvgSepCut = kFALSE; //Relevant for two-track cuts in DoPairStudies().
-  fMaxV0Mult = 700; 
-  int numberVariableAvgSepCuts = 12;
-  
-
   // Setup V0 cut processor
-  fCutProcessor = new AliAnalysisV0LamCutProcessing(fOutputList);
+  fCutProcessor = new AliAnalysisV0LamCutProcessing(fOutputList, fDefaultCutType);
   fNumberOfVariableCutValues = fCutProcessor->GetNumberOfVariableCutValues();
-  fDefaultVariableCutIndex = fCutProcessor->GetVariableCutIndex();
   if(fIsUsingVariableAvgSepCut){
-    fNumberOfCfVariableCutValues = numberVariableAvgSepCuts;
+    fNumberOfCfVariableCutValues = fNumberVariableAvgSepCuts;
   }
   else fNumberOfCfVariableCutValues = fNumberOfVariableCutValues;
-  cout<<"Number of variable cf cut values: "<<fNumberOfCfVariableCutValues<<endl;
-  fTotalLambda = 	 0; //tabulates number of v0s found for locally run jobs
-  fTotalAntiLambda =     0;
+  // cout<<"Number of variable cf cut values: "<<fNumberOfCfVariableCutValues<<endl;
 
   //setup event collection for event mixing
   fEC = new AliAnalysisV0LamEventCollection **[zVertexBins];
@@ -124,7 +345,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   // Histograms are added to fOutputList
   // When fOutputList is deleted, it automatically cleans up all
   // associated histograms
-  
+  // cout<<"Create histograms"<<endl;
   fOutputList = new TList();
   fOutputList->SetOwner(); 
   MyInit();// Initialize my settings
@@ -134,34 +355,34 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fMultDistRough->GetYaxis()->SetTitle("# of events");
   fOutputList->Add(fMultDistRough);
 
-  fCentrality = new TH1F("fCentrality", "Centrality Percentage of Event", 100, 0., 100.);
+  fCentrality = new TH1F("fCentrality", "Centrality Percentage of Event;Centrality %;# of Events", 100, 0., 100.);
   fOutputList->Add(fCentrality);
 
   //TPC signal vs track momentum
-  fTPCVsPPosLam = new TH2F("fTPCVsPPosLam","",50,0.,2.,250,0.,500.);
+  fTPCVsPPosLam = new TH2F("fTPCVsPPosLam","TPC dE/dx Lambda Protons;p (GeV/c);TPC Signal",50,0.,2.,250,0.,500.);
   fOutputList->Add(fTPCVsPPosLam);
     //TPC signal vs track momentum
-  fTPCVsPNegLam = new TH2F("fTPCVsPNegLam","",50,0.,2.,250,0.,500.);
+  fTPCVsPNegLam = new TH2F("fTPCVsPNegLam","TPC dE/dx Lambda Pions;p (GeV/c);TPC Signal",50,0.,2.,250,0.,500.);
   fOutputList->Add(fTPCVsPNegLam);
     //TPC signal vs track momentum
-  fTPCVsPPosALam = new TH2F("fTPCVsPPosALam","",50,0.,2.,250,0.,500.);
+  fTPCVsPPosALam = new TH2F("fTPCVsPPosALam","TPC dE/dx Antilambda Pions;p (GeV/c);TPC Signal",50,0.,2.,250,0.,500.);
   fOutputList->Add(fTPCVsPPosALam);
     //TPC signal vs track momentum
-  fTPCVsPNegALam = new TH2F("fTPCVsPNegALam","",50,0.,2.,250,0.,500.);
+  fTPCVsPNegALam = new TH2F("fTPCVsPNegALam","TPC dE/dx Antilambda Protons;p (GeV/c);TPC Signal",50,0.,2.,250,0.,500.);
   fOutputList->Add(fTPCVsPNegALam);
 
   //V0 Shared daughter culling statistics
-  fDataCompeted = new TH1F("fDataCompeted","",26, -0.5, 25.5);
-  fOutputList->Add(fDataCompeted);
+  // fDataCompeted = new TH1F("fDataCompeted","Thunderdome Particles Competing;Particles Competing;# of Events",26, -0.5, 25.5);
+  // fOutputList->Add(fDataCompeted);
 
-  fDataCulled = new TH1F("fDataCulled","",26, -0.5, 25.5);
-  fOutputList->Add(fDataCulled);
+  // fDataCulled = new TH1F("fDataCulled","Thunderdome Particles Removed;Particles Removed;# of Events",26, -0.5, 25.5);
+  // fOutputList->Add(fDataCulled);
 
-  fRemainingV0s = new TH1F("fRemainingV0s","",26, -0.5, 25.5);
-  fOutputList->Add(fRemainingV0s);
+  // // fRemainingV0s = new TH1F("fRemainingV0s","",26, -0.5, 25.5);
+  // fOutputList->Add(fRemainingV0s);
 
-  fRemainingFrac = new TH1F("fRemainingFrac","",101, -.005, 1.005);
-  fOutputList->Add(fRemainingFrac);
+  // fRemainingFrac = new TH1F("fRemainingFrac","",101, -.005, 1.005);
+  // fOutputList->Add(fRemainingFrac);
 
   fRemainingFromBeginningToV0Finder = new TH2F("fRemainingFromBeginningToV0Finder","Fraction Remaining At V0Finder Stage", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
   fOutputList->Add(fRemainingFromBeginningToV0Finder);
@@ -179,25 +400,26 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fRemainingFromBeginningToRecon = new TH3F("fRemainingFromBeginningToRecon", "Fraction Remaining After Reconstruction", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
   fRemainingFromV0FinderToRecon = new TH3F("fRemainingFromV0FinderToRecon", "Fraction From V0Finder That Remain After Reconstruction Stage", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, 21, -0.025, 1.025);
   fMCTruthOfReconstructedParticles = new TH2F("fMCTruthOfReconstructedParticles", "MC Truth of Reconstructed Particles in Event", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5);
-
-  // Particle multiplicities
-  fMultDistLambda = new TH2F("fMultDistLambda", "Lambda multiplicity", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
-  fMultDistAntiLambda = new TH2F("fMultDistAntiLambda", "AntiLambda multiplicity", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
-  fMultCentLambda = new TH3F("fMultCentLambda", "Lambda multiplicity vs centrality", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
-  fMultCentAntiLambda =  new TH3F("fMultCentAntiLambda", "AntiLambda multiplicity vs centrality", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
   SetBinsOnOriginHists(fRemainingFromBeginningToRecon);
   SetBinsOnOriginHists(fRemainingFromV0FinderToRecon);
   SetBinsOnOriginHists(fMCTruthOfReconstructedParticles);
-  fMultDistLambda->GetXaxis()->SetTitle("Var Bin");
-  fMultDistLambda->GetYaxis()->SetTitle("Event Multiplicity (Lambdas)");
-  fMultDistAntiLambda->GetXaxis()->SetTitle("Var Bin");
-  fMultDistAntiLambda->GetXaxis()->SetTitle("Event Multiplicity (AntiLambdas)");
-  fMultCentLambda->GetXaxis()->SetTitle("Var Bin");
-  fMultCentLambda->GetYaxis()->SetTitle("Centrality");
-  fMultCentLambda->GetZaxis()->SetTitle("Event Multiplicity (Lambdas)");
-  fMultCentAntiLambda->GetXaxis()->SetTitle("Var Bin");
-  fMultCentAntiLambda->GetYaxis()->SetTitle("Centrality");
-  fMultCentAntiLambda->GetZaxis()->SetTitle("Event Multiplicity (AntiLambdas)");
+
+  // Particle multiplicities
+  fMultDistLambda = new TH2F("fMultDistLambda", "Lambda multiplicity;Cut Bin;Lambda Found;# of Events", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
+  fMultDistAntiLambda = new TH2F("fMultDistAntiLambda", "AntiLambda multiplicity;Cut Bin;Antilambda Found;# of Events", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  21, -0.5, 21-0.5);
+  fMultCentLambda = new TH3F("fMultCentLambda", "Lambda multiplicity vs centrality;Cut Bin; Centrality Bin;Lambdas Found", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
+  fMultCentAntiLambda =  new TH3F("fMultCentAntiLambda", "AntiLambda multiplicity vs centrality;Cut Bin; Centrality Bin;Antilambdas Found", fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5,  nCentBins, .5, nCentBins+.5, 21, -0.5, 21-0.5);
+
+  // fMultDistLambda->GetXaxis()->SetTitle("Var Bin");
+  // fMultDistLambda->GetYaxis()->SetTitle("Event Multiplicity (Lambdas)");
+  // fMultDistAntiLambda->GetXaxis()->SetTitle("Var Bin");
+  // fMultDistAntiLambda->GetXaxis()->SetTitle("Event Multiplicity (AntiLambdas)");
+  // fMultCentLambda->GetXaxis()->SetTitle("Var Bin");
+  // fMultCentLambda->GetYaxis()->SetTitle("Centrality");
+  // fMultCentLambda->GetZaxis()->SetTitle("Event Multiplicity (Lambdas)");
+  // fMultCentAntiLambda->GetXaxis()->SetTitle("Var Bin");
+  // fMultCentAntiLambda->GetYaxis()->SetTitle("Centrality");
+  // fMultCentAntiLambda->GetZaxis()->SetTitle("Event Multiplicity (AntiLambdas)");
   fOutputList->Add(fRemainingFromBeginningToRecon);
   fOutputList->Add(fRemainingFromV0FinderToRecon);
   fOutputList->Add(fMCTruthOfReconstructedParticles);
@@ -219,195 +441,289 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fMCOtherV0Identity->GetXaxis()->SetBinLabel(2,"Fake AntiLambda");
   fMCOtherV0Identity->GetXaxis()->SetBinLabel(3,"Fake K0Short");
   int kTBins = 200;
-  int maxKtBin = 10.;
+  double maxKtBin = 10.;
   int kStarBins = 800;
-  int maxKStar = 2.;
+  double maxKStar = 2.;
   //Pair kT Tracking: Centrality bins, kT bins, k* bins
-  fKtLamLamSig = new TH3F("fKtLamLamSig", "LamLam Pair Kt Same Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+  fKtLamLamSig = new TH3F("fKtLamLamSig", "LamLam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtLamLamSig);
-  fKtALamALamSig = new TH3F("fKtALamALamSig", "ALamALam Pair Kt Same Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+  fKtALamALamSig = new TH3F("fKtALamALamSig", "ALamALam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtALamALamSig);
-  fKtLamALamSig = new TH3F("fKtLamALamSig", "LamALam Pair Kt Same Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+  fKtLamALamSig = new TH3F("fKtLamALamSig", "LamALam Pair Kt Same Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtLamALamSig);
-    fKtLamLamBkg = new TH3F("fKtLamLamBkg", "LamLam Pair Kt Mixed Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+    fKtLamLamBkg = new TH3F("fKtLamLamBkg", "LamLam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtLamLamBkg);
-  fKtALamALamBkg = new TH3F("fKtALamALamBkg", "ALamALam Pair Kt Mixed Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+  fKtALamALamBkg = new TH3F("fKtALamALamBkg", "ALamALam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtALamALamBkg);
-  fKtLamALamBkg = new TH3F("fKtLamALamBkg", "LamALam Pair Kt Mixed Event", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
+  fKtLamALamBkg = new TH3F("fKtLamALamBkg", "LamALam Pair Kt Mixed Event;CentBin;kT;k*", nCentBins, .5, nCentBins +.5, kTBins, 0., maxKtBin, kStarBins, 0., maxKStar);
   fOutputList->Add(fKtLamALamBkg);
 
   //Momentum resolution (pre-)correction analysis
-  fHistPsmearingKreconVsKtruthLL = new TH2F ("fHistPsmearingKreconVsKtruthLL","Relative momentum resolution, recon vs truth LL", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fHistPsmearingKreconVsKtruthLL = new TH2F ("fHistPsmearingKreconVsKtruthLL","Relative momentum resolution, recon vs truth LL;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
   fOutputList->Add(fHistPsmearingKreconVsKtruthLL);
-  fHistPsmearingKreconMinusKtruthLL = new TH1F ("fHistPsmearingKreconMinusKtruthLL","Relative momentum resolution, recon - truth LL", kStarBins, -0.5, 0.5);
+  fHistPsmearingKreconMinusKtruthLL = new TH1F ("fHistPsmearingKreconMinusKtruthLL","Relative momentum resolution, recon - truth LL;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
   fOutputList->Add(fHistPsmearingKreconMinusKtruthLL);
 
-    fHistPsmearingKreconVsKtruthAA = new TH2F ("fHistPsmearingKreconVsKtruthAA","Relative momentum resolution, recon vs truth AA", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fHistPsmearingKreconVsKtruthAA = new TH2F ("fHistPsmearingKreconVsKtruthAA","Relative momentum resolution, recon vs truth AA;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
   fOutputList->Add(fHistPsmearingKreconVsKtruthAA);
-  fHistPsmearingKreconMinusKtruthAA = new TH1F ("fHistPsmearingKreconMinusKtruthAA","Relative momentum resolution, recon - truth AA", kStarBins, -0.5, 0.5);
+  fHistPsmearingKreconMinusKtruthAA = new TH1F ("fHistPsmearingKreconMinusKtruthAA","Relative momentum resolution, recon - truth AA;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
   fOutputList->Add(fHistPsmearingKreconMinusKtruthAA);
 
-    fHistPsmearingKreconVsKtruthLA = new TH2F ("fHistPsmearingKreconVsKtruthLA","Relative momentum resolution, recon vs truth LA", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
+  fHistPsmearingKreconVsKtruthLA = new TH2F ("fHistPsmearingKreconVsKtruthLA","Relative momentum resolution, recon vs truth LA;k*_{Recon};k*_{Truth}", kStarBins, 0., maxKStar, kStarBins, 0., maxKStar);
   fOutputList->Add(fHistPsmearingKreconVsKtruthLA);
-  fHistPsmearingKreconMinusKtruthLA = new TH1F ("fHistPsmearingKreconMinusKtruthLA","Relative momentum resolution, recon - truth LA", kStarBins, -0.5, 0.5);
+  fHistPsmearingKreconMinusKtruthLA = new TH1F ("fHistPsmearingKreconMinusKtruthLA","Relative momentum resolution, recon - truth LA;k*_{Recon};k*_{Truth}", kStarBins, -0.5, 0.5);
   fOutputList->Add(fHistPsmearingKreconMinusKtruthLA);
   
   /////////Signal Distributions///////////////////
   //First bin is variable cut value, second bin is centrality, third bin is Kstar
-  fSignalLamLam = new TH3F("fSignalLamLam","Same Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fSignalLamLam = new TH3F("fSignalLamLam","Same Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fSignalLamLam);
 
-  fBkgLamLam = new TH3F("fBkgLamLam","Mixed Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fBkgLamLam = new TH3F("fBkgLamLam","Mixed Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fBkgLamLam);
 
-  fSignalALamALam = new TH3F("fSignalALamALam","Same Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fSignalALamALam = new TH3F("fSignalALamALam","Same Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fSignalALamALam);
 
-  fBkgALamALam = new TH3F("fBkgALamALam","Mixed Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fBkgALamALam = new TH3F("fBkgALamALam","Mixed Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fBkgALamALam);
 
-  fSignalLamALam = new TH3F("fSignalLamALam","Same Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fSignalLamALam = new TH3F("fSignalLamALam","Same Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fSignalLamALam);
 
-  fBkgLamALam = new TH3F("fBkgLamALam","Mixed Event Pair Distribution", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
+  fBkgLamALam = new TH3F("fBkgLamALam","Mixed Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fBkgLamALam);
 
   // Daughter pair separation distributions
-  // Binned according to (average separation, qinv)
-  int avgSepBins = 200;
-  double avgSepMaxValue = 20.;
-  fSignalLamLamProtSep = new TH2F ("fSignalLamLamProtSep","Proton pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamProtSep);
+  // Binned according to (average separation, pT1, pT2)
+  TObjArray *sepDirNew = new TObjArray();
+  sepDirNew->SetName("AvgSepNew");
+  fOutputList->Add(sepDirNew);
 
-  fSignalLamLamPiMinusSep = new TH2F ("fSignalLamLamPiMinusSep","PiMinus pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamPiMinusSep);
-
-  fSignalALamALamAntiProtSep = new TH2F ("fSignalALamALamAntiProtSep","AntiProton pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamAntiProtSep);
-
-  fSignalALamALamPiPlusSep = new TH2F ("fSignalALamALamPiPlusSep","PiPlus pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamPiPlusSep);
-
-  fSignalLamALamAntiProtPiMinusSep = new TH2F ("fSignalLamALamAntiProtPiMinusSep","Neg particle pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamAntiProtPiMinusSep);
-
-  fSignalLamALamProtPiPlusSep = new TH2F ("fSignalLamALamProtPiPlusSep","Pos pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamProtPiPlusSep);
   
-  fBkgLamLamProtSep = new TH2F ("fBkgLamLamProtSep","Proton pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamProtSep);
+  Int_t avgSepBins = 400;
+  Double_t avgSepMaxValue = 40.;
+  Int_t ptBins = 30;
+  Double_t ptMax = 3.;
+  fSignalLamLamProtSep = new TH3F ("fSignalLamLamProtSep","Proton pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamLamProtSep);
 
-  fBkgLamLamPiMinusSep = new TH2F ("fBkgLamLamPiMinusSep","PiMinus pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamPiMinusSep);
+  fSignalLamLamPiMinusSep = new TH3F ("fSignalLamLamPiMinusSep","PiMinus pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamLamPiMinusSep);
 
-  fBkgALamALamAntiProtSep = new TH2F ("fBkgALamALamAntiProtSep","AntiProton pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamAntiProtSep);
+  fSignalALamALamAntiProtSep = new TH3F ("fSignalALamALamAntiProtSep","AntiProton pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalALamALamAntiProtSep);
 
-  fBkgALamALamPiPlusSep = new TH2F ("fBkgALamALamPiPlusSep","PiPlus pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamPiPlusSep);
+  fSignalALamALamPiPlusSep = new TH3F ("fSignalALamALamPiPlusSep","PiPlus pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalALamALamPiPlusSep);
 
-  fBkgLamALamAntiProtPiMinusSep = new TH2F ("fBkgLamALamAntiProtPiMinusSep","Neg particle pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamAntiProtPiMinusSep);
+  fSignalLamALamAntiProtPiMinusSep = new TH3F ("fSignalLamALamAntiProtPiMinusSep","Neg particle pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamALamAntiProtPiMinusSep);
 
-  fBkgLamALamProtPiPlusSep = new TH2F ("fBkgLamALamProtPiPlusSep","Pos pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamProtPiPlusSep);
+  fSignalLamALamProtPiPlusSep = new TH3F ("fSignalLamALamProtPiPlusSep","Pos pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamALamProtPiPlusSep);
+  
+  fBkgLamLamProtSep = new TH3F ("fBkgLamLamProtSep","Proton pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamLamProtSep);
+
+  fBkgLamLamPiMinusSep = new TH3F ("fBkgLamLamPiMinusSep","PiMinus pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamLamPiMinusSep);
+
+  fBkgALamALamAntiProtSep = new TH3F ("fBkgALamALamAntiProtSep","AntiProton pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgALamALamAntiProtSep);
+
+  fBkgALamALamPiPlusSep = new TH3F ("fBkgALamALamPiPlusSep","PiPlus pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgALamALamPiPlusSep);
+
+  fBkgLamALamAntiProtPiMinusSep = new TH3F ("fBkgLamALamAntiProtPiMinusSep","Neg particle pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamALamAntiProtPiMinusSep);
+
+  fBkgLamALamProtPiPlusSep = new TH3F ("fBkgLamALamProtPiPlusSep","Pos pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamALamProtPiPlusSep);
 
 
 
   //opposite charged pair separation
-  fSignalLamLamPlusMinusSep = new TH2F ("fSignalLamLamPlusMinusSep","Proton Pion pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamPlusMinusSep);
+  fSignalLamLamPlusMinusSep = new TH3F ("fSignalLamLamPlusMinusSep","Proton Pion pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamLamPlusMinusSep);
 
-  fSignalALamALamPlusMinusSep = new TH2F ("fSignalALamALamPlusMinusSep","Proton Pion pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamPlusMinusSep);
+  fSignalALamALamPlusMinusSep = new TH3F ("fSignalALamALamPlusMinusSep","Proton Pion pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalALamALamPlusMinusSep);
 
-  fSignalLamALamProtSep = new TH2F ("fSignalLamALamProtSep","Proton pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamProtSep);
+  fSignalLamALamProtSep = new TH3F ("fSignalLamALamProtSep","Proton pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamALamProtSep);
 
-  fSignalLamALamPionSep = new TH2F ("fSignalLamALamPionSep","Pion pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamPionSep);
-
-
-  fBkgLamLamPlusMinusSep = new TH2F ("fBkgLamLamPlusMinusSep","Proton Pion pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamPlusMinusSep);
-
-  fBkgALamALamPlusMinusSep = new TH2F ("fBkgALamALamPlusMinusSep","Proton Pion pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamPlusMinusSep);
-
-  fBkgLamALamProtSep = new TH2F ("fBkgLamALamProtSep","Proton pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamProtSep);
-
-  fBkgLamALamPionSep = new TH2F ("fBkgLamALamPionSep","Pion pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamPionSep);
+  fSignalLamALamPionSep = new TH3F ("fSignalLamALamPionSep","Pion pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fSignalLamALamPionSep);
 
 
+  fBkgLamLamPlusMinusSep = new TH3F ("fBkgLamLamPlusMinusSep","Proton Pion pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamLamPlusMinusSep);
+
+  fBkgALamALamPlusMinusSep = new TH3F ("fBkgALamALamPlusMinusSep","Proton Pion pair sep for ALam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgALamALamPlusMinusSep);
+
+  fBkgLamALamProtSep = new TH3F ("fBkgLamALamProtSep","Proton pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamALamProtSep);
+
+  fBkgLamALamPionSep = new TH3F ("fBkgLamALamPionSep","Pion pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  sepDirNew->Add(fBkgLamALamPionSep);
+
+  
+  // Directory for MC Truth info
+  TObjArray *arrMC = new TObjArray();
+  arrMC->SetName("MCTruthInfo");
+  fOutputList->Add(arrMC);
+
+  fMCTruthPtLam = new TH1F("fMCTruthPtLam","p_{T} Lambda;p_{T};counts", 500, 0., 10.);
+  arrMC->Add(fMCTruthPtLam);
+  fMCTruthPtALam = new TH1F("fMCTruthPtALam","p_{T} AntiLambda;p_{T};counts", 500, 0., 10.);
+  arrMC->Add(fMCTruthPtALam);
+
+  fMCTruthPhiLam = new TH1F("fMCTruthPhiLam","Phi Lambda;Phi;counts", 200, -1.*TMath::Pi(), TMath::Pi());
+  arrMC->Add(fMCTruthPhiLam);
+  fMCTruthPhiALam = new TH1F("fMCTruthPhiALam","Phi AntiLambda;Phi;counts",  200, -1.*TMath::Pi(), TMath::Pi());
+  arrMC->Add(fMCTruthPhiLam);
+
+  fMCTruthEtaLam = new TH1F("fMCTruthEtaLam","Eta Lambda;Eta;counts", 200, -1., 1.);
+  arrMC->Add(fMCTruthEtaLam);
+  fMCTruthEtaALam = new TH1F("fMCTruthEtaALam","Eta AntiLambda;Eta;counts", 200, -1., 1.);
+  arrMC->Add(fMCTruthEtaALam);
+
+  // // Directory for momentum resolution correction histograms
+  // TObjArray *resArrLL = new TObjArray();
+  // resArrLL->SetName("ResolutionLL");
+  // fOutputList->Add(resArrLL);
+  // // Make some unweighted histograms for comparison
+  // TString histNameSignalMomResTruthUnweighted = "fSignalMomResTruthUnweighted";
+  // fSignalMomResTruthUnweightedLL = new TH2F(histNameSignalMomResTruthUnweighted + "LL", histNameSignalMomResTruthUnweighted + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrLL->Add(fSignalMomResTruthUnweightedLL);
+  // TString histNameBkgMomResTruthUnweighted = "fBkgMomResTruthUnweighted";
+  // fBkgMomResTruthUnweightedLL = new TH2F(histNameBkgMomResTruthUnweighted + "LL", histNameBkgMomResTruthUnweighted + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrLL->Add(fBkgMomResTruthUnweightedLL);
 
 
-  //primary-vertex corrected pair separation
+  // TString histNameSignalMomResTruthVsPt = "fSignalMomResTruthVsPt";
+  // fSignalMomResTruthVsPtLL = new TH3F(histNameSignalMomResTruthVsPt + "LL", histNameSignalMomResTruthVsPt + "LL;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrLL->Add(fSignalMomResTruthVsPtLL);
+  // TString histNameBkgMomResTruthVsPt = "fBkgMomResTruthVsPt";
+  // fBkgMomResTruthVsPtLL = new TH3F(histNameBkgMomResTruthVsPt + "LL", histNameBkgMomResTruthVsPt + "LL;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrLL->Add(fBkgMomResTruthVsPtLL);
+  
+  // // Momentum resolution corrections. One for each weighting scheme
+  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLL.size(); iHist++)
+  // {
+  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
+  //   histNameSignalMomResTruth += iHist;
+  //   TH2F *hSignalMomResTruthLL = new TH2F(histNameSignalMomResTruth + "LL", histNameSignalMomResTruth + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLL->Add(hSignalMomResTruthLL);
+  //   fHistsSignalMomResTruthLL.push_back(hSignalMomResTruthLL);
 
-  fSignalLamLamProtSepCorrected = new TH2F ("fSignalLamLamProtSepCorrected","Proton pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamProtSepCorrected);
+  //   TString histNameSignalMomResRec = "hSignalMomResRec";
+  //   histNameSignalMomResRec += iHist;
+  //   TH2F *hSignalMomResRecLL = new TH2F(histNameSignalMomResRec + "LL", histNameSignalMomResRec + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLL->Add(hSignalMomResRecLL);
+  //   fHistsSignalMomResRecLL.push_back(hSignalMomResRecLL);
+    
+  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
+  //   histNameBkgMomResTruth += iHist;
+  //   TH2F *hBkgMomResTruthLL = new TH2F(histNameBkgMomResTruth + "LL", histNameBkgMomResTruth + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLL->Add(hBkgMomResTruthLL);
+  //   fHistsBkgMomResTruthLL.push_back(hBkgMomResTruthLL);
 
-  fSignalLamLamPiMinusSepCorrected = new TH2F ("fSignalLamLamPiMinusSepCorrected","PiMinus pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamPiMinusSepCorrected);
-
-  fSignalALamALamAntiProtSepCorrected = new TH2F ("fSignalALamALamAntiProtSepCorrected","AntiProton pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamAntiProtSepCorrected);
-
-  fSignalALamALamPiPlusSepCorrected = new TH2F ("fSignalALamALamPiPlusSepCorrected","PiPlus pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamPiPlusSepCorrected);
-
-  fSignalLamALamAntiProtPiMinusSepCorrected = new TH2F ("fSignalLamALamAntiProtPiMinusSepCorrected","Neg particle pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamAntiProtPiMinusSepCorrected);
-
-  fSignalLamALamProtPiPlusSepCorrected = new TH2F ("fSignalLamALamProtPiPlusSepCorrected","Pos pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamProtPiPlusSepCorrected);
-
-  fBkgLamLamProtSepCorrected = new TH2F ("fBkgLamLamProtSepCorrected","Proton pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamProtSepCorrected);
-
-  fBkgLamLamPiMinusSepCorrected = new TH2F ("fBkgLamLamPiMinusSepCorrected","PiMinus pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamPiMinusSepCorrected);
-
-  fBkgALamALamAntiProtSepCorrected = new TH2F ("fBkgALamALamAntiProtSepCorrected","AntiProton pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamAntiProtSepCorrected);
-
-  fBkgALamALamPiPlusSepCorrected = new TH2F ("fBkgALamALamPiPlusSepCorrected","PiPlus pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamPiPlusSepCorrected);
-
-  fBkgLamALamAntiProtPiMinusSepCorrected = new TH2F ("fBkgLamALamAntiProtPiMinusSepCorrected","Neg particle pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamAntiProtPiMinusSepCorrected);
-
-  fBkgLamALamProtPiPlusSepCorrected = new TH2F ("fBkgLamALamProtPiPlusSepCorrected","Pos pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamProtPiPlusSepCorrected);
-
-  //opposite charged pair separation corrected for primary vertex
-  fSignalLamLamPlusMinusSepCorrected = new TH2F ("fSignalLamLamPlusMinusSepCorrected","Proton Pion pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamLamPlusMinusSepCorrected);
-
-  fSignalALamALamPlusMinusSepCorrected = new TH2F ("fSignalALamALamPlusMinusSepCorrected","Proton Pion pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalALamALamPlusMinusSepCorrected);
-
-  fSignalLamALamProtSepCorrected = new TH2F ("fSignalLamALamProtSepCorrected","Proton pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamProtSepCorrected);
-
-  fSignalLamALamPionSepCorrected = new TH2F ("fSignalLamALamPionSepCorrected","Pion pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fSignalLamALamPionSepCorrected);
+  //   TString histNameBkgMomResRec = "hBkgMomResRec";
+  //   histNameBkgMomResRec += iHist;
+  //   TH2F *hBkgMomResRecLL = new TH2F(histNameBkgMomResRec + "LL", histNameBkgMomResRec + "LL;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLL->Add(hBkgMomResRecLL);
+  //   fHistsBkgMomResRecLL.push_back(hBkgMomResRecLL);
+  // }
 
 
-  fBkgLamLamPlusMinusSepCorrected = new TH2F ("fBkgLamLamPlusMinusSepCorrected","Proton Pion pair sep for Lam-Lam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamLamPlusMinusSepCorrected);
+  // TObjArray *resArrAA = new TObjArray();
+  // resArrAA->SetName("ResolutionAA");
+  // fOutputList->Add(resArrAA);
+  // fSignalMomResTruthUnweightedAA = new TH2F(histNameSignalMomResTruthUnweighted + "AA", histNameSignalMomResTruthUnweighted + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrAA->Add(fSignalMomResTruthUnweightedAA);
+  // fBkgMomResTruthUnweightedAA = new TH2F(histNameBkgMomResTruthUnweighted + "AA", histNameBkgMomResTruthUnweighted + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrAA->Add(fBkgMomResTruthUnweightedAA);
 
-  fBkgALamALamPlusMinusSepCorrected = new TH2F ("fBkgALamALamPlusMinusSepCorrected","Proton Pion pair sep for ALam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgALamALamPlusMinusSepCorrected);
+  // fSignalMomResTruthVsPtAA = new TH3F(histNameSignalMomResTruthVsPt + "AA", histNameSignalMomResTruthVsPt + "AA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrAA->Add(fSignalMomResTruthVsPtAA);
+  // fBkgMomResTruthVsPtAA = new TH3F(histNameBkgMomResTruthVsPt + "AA", histNameBkgMomResTruthVsPt + "AA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrAA->Add(fBkgMomResTruthVsPtAA);
 
-  fBkgLamALamProtSepCorrected = new TH2F ("fBkgLamALamProtSepCorrected","Proton pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamProtSepCorrected);
+  // // Momentum resolution corrections. One for each weighting scheme
+  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLL.size(); iHist++)
+  //   // for(UInt_t iHist = 0; iHist < 2; iHist++)
+  // {
+  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
+  //   histNameSignalMomResTruth += iHist;
+  //   TH2F *hSignalMomResTruthAA = new TH2F(histNameSignalMomResTruth + "AA", histNameSignalMomResTruth + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrAA->Add(hSignalMomResTruthAA);
+  //   fHistsSignalMomResTruthAA.push_back(hSignalMomResTruthAA);
 
-  fBkgLamALamPionSepCorrected = new TH2F ("fBkgLamALamPionSepCorrected","Pion pair sep for Lam-ALam", avgSepBins, 0., avgSepMaxValue, kStarBins, 0., maxKStar);
-  fOutputList->Add(fBkgLamALamPionSepCorrected);
+  //   TString histNameSignalMomResRec = "hSignalMomResRec";
+  //   histNameSignalMomResRec += iHist;
+  //   TH2F *hSignalMomResRecAA = new TH2F(histNameSignalMomResRec + "AA", histNameSignalMomResRec + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrAA->Add(hSignalMomResRecAA);
+  //   fHistsSignalMomResRecAA.push_back(hSignalMomResRecAA);
+
+  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
+  //   histNameBkgMomResTruth += iHist;
+  //   TH2F *hBkgMomResTruthAA = new TH2F(histNameBkgMomResTruth + "AA", histNameBkgMomResTruth + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrAA->Add(hBkgMomResTruthAA);
+  //   fHistsBkgMomResTruthAA.push_back(hBkgMomResTruthAA);
+
+  //   TString histNameBkgMomResRec = "hBkgMomResRec";
+  //   histNameBkgMomResRec += iHist;
+  //   TH2F *hBkgMomResRecAA = new TH2F(histNameBkgMomResRec + "AA", histNameBkgMomResRec + "AA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrAA->Add(hBkgMomResRecAA);
+  //   fHistsBkgMomResRecAA.push_back(hBkgMomResRecAA);
+  // }
 
 
+
+  // TObjArray *resArrLA = new TObjArray();
+  // resArrLA->SetName("ResolutionLA");
+  // fOutputList->Add(resArrLA);
+
+  // fSignalMomResTruthUnweightedLA = new TH2F(histNameSignalMomResTruthUnweighted + "LA", histNameSignalMomResTruthUnweighted + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrLA->Add(fSignalMomResTruthUnweightedLA);
+  // fBkgMomResTruthUnweightedLA = new TH2F(histNameBkgMomResTruthUnweighted + "LA", histNameBkgMomResTruthUnweighted + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  // resArrLA->Add(fBkgMomResTruthUnweightedLA);
+
+  // fSignalMomResTruthVsPtLA = new TH3F(histNameSignalMomResTruthVsPt + "LA", histNameSignalMomResTruthVsPt + "LA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrLA->Add(fSignalMomResTruthVsPtLA);
+  // fBkgMomResTruthVsPtLA = new TH3F(histNameBkgMomResTruthVsPt + "LA", histNameBkgMomResTruthVsPt + "LA;k*;pT1;pT2", kStarBins/4, 0., maxKStar, ptBins, 0., ptMax, ptBins, 0., ptMax);
+  // resArrLA->Add(fBkgMomResTruthVsPtLA);
+  
+  // for(UInt_t iHist = 0; iHist < fLednickyWeightsLA.size(); iHist++)
+  //   // for(UInt_t iHist = 0; iHist < 2; iHist++)
+  // {
+  //   TString histNameSignalMomResTruth = "hSignalMomResTruth";
+  //   histNameSignalMomResTruth += iHist;
+  //   TH2F *hSignalMomResTruthLA = new TH2F(histNameSignalMomResTruth + "LA", histNameSignalMomResTruth + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLA->Add(hSignalMomResTruthLA);
+  //   fHistsSignalMomResTruthLA.push_back(hSignalMomResTruthLA);
+
+  //   TString histNameSignalMomResRec = "hSignalMomResRec";
+  //   histNameSignalMomResRec += iHist;
+  //   TH2F *hSignalMomResRecLA = new TH2F(histNameSignalMomResRec + "LA", histNameSignalMomResRec + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLA->Add(hSignalMomResRecLA);
+  //   fHistsSignalMomResRecLA.push_back(hSignalMomResRecLA);
+
+  //   TString histNameBkgMomResTruth = "hBkgMomResTruth";
+  //   histNameBkgMomResTruth += iHist;
+  //   TH2F *hBkgMomResTruthLA = new TH2F(histNameBkgMomResTruth + "LA", histNameBkgMomResTruth + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLA->Add(hBkgMomResTruthLA);
+  //   fHistsBkgMomResTruthLA.push_back(hBkgMomResTruthLA);
+
+  //   TString histNameBkgMomResRec = "hBkgMomResRec";
+  //   histNameBkgMomResRec += iHist;
+  //   TH2F *hBkgMomResRecLA = new TH2F(histNameBkgMomResRec + "LA", histNameBkgMomResRec + "LA;CentBin;k*", nCentBins, .5, nCentBins+.5, kStarBins/4, 0., maxKStar);
+  //   resArrLA->Add(hBkgMomResRecLA);
+  //   fHistsBkgMomResRecLA.push_back(hBkgMomResRecLA);
+  // }
   PostData(1, fOutputList);
 }
 
@@ -416,17 +732,14 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
-
+  // cout<<"Exec"<<endl;
   //Make sure we are using the correct event triggers
   if(!IsCorrectEventTrigger()) return;
   //  cout<<"===========  Event # "<<fEventCount+1<<"  ==========="<<endl;
   fEventCount++;
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
-  AliAODVertex *primaryVertexAOD;
-  double vertex[3]={0};
-  int zBin=0;
-  double zStep=2*10/double(zVertexBins), zStart=-10.;
+
   //Get Monte Carlo data if available
   TClonesArray *mcArray = 0x0;
   mcArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
@@ -455,6 +768,15 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   //Centrality selection
   AliCentrality *centrality = fAOD->GetCentrality();
   float centralityPercentile = centrality->GetCentralityPercentile("V0M");
+
+
+  // flatten centrality dist.
+  if(fFlattenCent && centralityPercentile < 9){
+    if(RejectEventCentFlat(fAOD->GetMagneticField(),centralityPercentile)) {
+      // cout<<"\t\t\tSkipping Event: Centrality flattening\n\n";
+      return;}
+  }
+  
   int centralityBin=0;
   //Printf("Centrality percent = %f", centralityPercentile);
   fCentrality->Fill(centralityPercentile);
@@ -468,38 +790,53 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     //Printf("No centrality info");
     return;}
   // Centrality info is good.  Now find the correct 5% centrality bin
-  else if(centralityPercentile <= 5.) centralityBin=19;
-  else if(centralityPercentile <= 10.) centralityBin=18;
-  else if(centralityPercentile <= 15.) centralityBin=17;
-  else if(centralityPercentile <= 20.) centralityBin=16;
-  else if(centralityPercentile <= 25.) centralityBin=15;
-  else if(centralityPercentile <= 30.) centralityBin=14;
-  else if(centralityPercentile <= 35.) centralityBin=13;
-  else if(centralityPercentile <= 40.) centralityBin=12;
-  else if(centralityPercentile <= 45.) centralityBin=11;
-  else if(centralityPercentile <= 50.) centralityBin=10;
-  else if(centralityPercentile <= 55.) centralityBin=9;
-  else if(centralityPercentile <= 60.) centralityBin=8;
-  else if(centralityPercentile <= 65.) centralityBin=7;
-  else if(centralityPercentile <= 70.) centralityBin=6;
-  else if(centralityPercentile <= 75.) centralityBin=5;
-  else if(centralityPercentile <= 80.) centralityBin=4;
-  else if(centralityPercentile <= 85.) centralityBin=3;
-  else if(centralityPercentile <= 90.) centralityBin=2;
-  else if(centralityPercentile <= 95.) centralityBin=1;
-  else if(centralityPercentile <= 100.) centralityBin=0;
-  else {Printf("Skipping Peripheral Event"); return;}
+  else if(centralityPercentile <= 5.) centralityBin=0;
+  else if(centralityPercentile <= 10.) centralityBin=1;
+  else if(centralityPercentile <= 15.) centralityBin=2;
+  else if(centralityPercentile <= 20.) centralityBin=3;
+  else if(centralityPercentile <= 25.) centralityBin=4;
+  else if(centralityPercentile <= 30.) centralityBin=5;
+  else if(centralityPercentile <= 35.) centralityBin=6;
+  else if(centralityPercentile <= 40.) centralityBin=7;
+  else if(centralityPercentile <= 45.) centralityBin=8;
+  else if(centralityPercentile <= 50.) centralityBin=9;
+  else if(centralityPercentile <= 55.) centralityBin=10;
+  else if(centralityPercentile <= 60.) centralityBin=11;
+  else if(centralityPercentile <= 65.) centralityBin=12;
+  else if(centralityPercentile <= 70.) centralityBin=13;
+  else if(centralityPercentile <= 75.) centralityBin=14;
+  else if(centralityPercentile <= 80.) centralityBin=15;
+  else if(centralityPercentile <= 85.) centralityBin=16;
+  else if(centralityPercentile <= 90.) centralityBin=17;
+  else if(centralityPercentile <= 95.) centralityBin=18;
+  else if(centralityPercentile <= 100.) centralityBin=19;
+  else {/*Printf("Skipping Peripheral Event");*/ return;}
    
   //Vertexing
-  primaryVertexAOD = fAOD->GetPrimaryVertex();
-  vertex[0]=primaryVertexAOD->GetX(); 
-  vertex[1]=primaryVertexAOD->GetY(); 
-  vertex[2]=primaryVertexAOD->GetZ();
-  if(vertex[0]<10e-5 && vertex[1]<10e-5 &&  vertex[2]<10e-5) return;
-  if(fabs(vertex[2]) > 10) return; // Z-Vertex Cut
+  AliAODVertex *primaryVertexAOD = fAOD->GetPrimaryVertex();
+  TVector3 vertex(primaryVertexAOD->GetX(),
+		  primaryVertexAOD->GetY(),
+		  primaryVertexAOD->GetZ());
+
+  double zStep=20./double(zVertexBins), zStart=-10.;
+  if(vertex.x()<10e-5 && vertex.y()<10e-5 &&  vertex.z()<10e-5) {
+    // cout<<"\t\t\tSkipping Event: Vertex at 0,0,0\n\n";
+    return;
+  }
+  if(fabs(vertex.z()) > fabs(zStart)) {
+    // cout<<"\t\t\tSkipping Event: Outside ZVertex range\n\n";
+    return; // Z-Vertex Cut
+  }
+
+  if(!primaryVertexAOD || primaryVertexAOD->GetNContributors() < 1){
+    // cout<<"\t\t\tSkipping Event: No vertex\n\n";
+   return;
+  }
+
+  int zBin=0;
   for(int i=0; i<zVertexBins; i++)
   {
-    if((vertex[2] > zStart+i*zStep) && (vertex[2] < zStart+(i+1)*zStep))
+    if((vertex.z() > zStart+i*zStep) && (vertex.z() < zStart+(i+1)*zStep))
     {
       zBin=i;
       break;
@@ -512,6 +849,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   //Add Event to buffer - this is for event mixing
   fEC[zBin][centralityBin]->FifoShift();
   fEvt = fEC[zBin][centralityBin]->fEvt;
+  fEvt->fPrimaryVertex = vertex;
   fCutProcessor->SetCentralityBin(centralityBin+1);
 //////////////////////////////////////////////////////////////////  
   //v0 tester
@@ -520,12 +858,13 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   int v0Count = 0;
   vector<int> lambdaCount(fNumberOfVariableCutValues,0);
   vector<int> antiLambdaCount(fNumberOfVariableCutValues,0);
-  TH1F *mcTruthOriginHist = nullptr;
+  TH1F *mcTruthOriginHist = NULL;
   if(fIsMCEvent) mcTruthOriginHist = CreateLambdaOriginHist(mcArray,numberOfLastHijingLabel); //Find MC truths of all the MC particles (before detector effects)
   TH1F *v0OriginHist = new TH1F("v0OriginHist", "Lambda Origins", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1);
   TH2F *v0PassedCutsOriginHist = new TH2F("v0PassedCutsOriginHist", "Lambda Origins", AliReconstructedV0::kOriginTypeMax+1, 0, AliReconstructedV0::kOriginTypeMax+1, fNumberOfVariableCutValues, -0.5, fNumberOfVariableCutValues -0.5);
   for(int i = 0; i < fAOD->GetNumberOfV0s(); i++)
   {
+    // cout<<"Testing v0s"<<endl;
     //Loop over all the V0 candidates to look for (anti)Lambdas
     bool hasPiPlusDaughter     = kFALSE;
     bool hasPiMinusDaughter    = kFALSE;
@@ -538,12 +877,17 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     if(v0->GetNProngs() > 2)                             continue;
     if(v0->GetCharge() != 0)                             continue;
     if(v0->ChargeProng(0) == v0->ChargeProng(1))         continue;
-    if(v0->GetOnFlyStatus())				 continue;
+    if(v0->CosPointingAngle(primaryVertexAOD) < 0.998) continue;
     //Now look at daughter tracks
     AliAODTrack* daughterTrackPos = (AliAODTrack*)v0->GetDaughter(0);
     AliAODTrack* daughterTrackNeg = (AliAODTrack*)v0->GetDaughter(1);
     if(!daughterTrackPos) continue; //Daughter tracks must exist
     if(!daughterTrackNeg) continue;
+
+    // The V0 has passed the most basic track cuts.
+    fV0Candidates++;
+    if(v0->GetOnFlyStatus())				 continue;
+
     daughterTrackPos->SetAODEvent(fAOD); //Need to set this for PID purposes
     daughterTrackNeg->SetAODEvent(fAOD);
     //Need to manually apply ITS refit cut for hybrid tracks in AOD115
@@ -567,7 +911,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     
     //Now we'll get particle origin and momentum truth for MC particles
     AliReconstructedV0::MCV0Origin_t mcV0Origin = AliReconstructedV0::kUnassigned;
-    double v0MomentumTruth[3] = {0.,0.,0.};
+    TVector3 v0MomentumTruth(0., 0., 0.);
     if(fIsMCEvent){
       //first reject injected particles
       if(IsInjectedParticle(v0,mcArray,numberOfLastHijingLabel)) continue; 
@@ -581,7 +925,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 	 < fSigmaCutTPCProton)   hasProtonDaughter = kTRUE;	
     }
     if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackPos,AliPID::kPion)) < fSigmaCutTPCPion)  hasPiPlusDaughter = kTRUE;
-    if (daughterTrackNeg->Pt() > 0.3){
+    if (daughterTrackNeg->Pt() > 0.5){
       if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackNeg,AliPID::kProton)) 
 	 < fSigmaCutTPCProton) hasAntiProtonDaughter = kTRUE;
     }
@@ -622,73 +966,84 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     if(!((hasProtonDaughter && hasPiMinusDaughter) || (hasAntiProtonDaughter && hasPiPlusDaughter))) continue;
 
     //Save V0 information
-    fEvt->fReconstructedV0[v0Count].v0Momentum[0]  = v0->Px();
-    fEvt->fReconstructedV0[v0Count].v0Momentum[1]  = v0->Py();
-    fEvt->fReconstructedV0[v0Count].v0Momentum[2]  = v0->Pz();
-    for(int pIndex = 0; pIndex <3; pIndex++)
-    {
-      fEvt->fReconstructedV0[v0Count].v0MomentumTruth[pIndex]  = v0MomentumTruth[pIndex];
-    }
-    fEvt->fReconstructedV0[v0Count].v0Pt     = v0->Pt();
-    fEvt->fReconstructedV0[v0Count].v0Eta    = v0->Eta();
-    fEvt->fReconstructedV0[v0Count].v0Phi    = v0->Phi();
-    fEvt->fReconstructedV0[v0Count].massLam  = v0->MassLambda();
-    fEvt->fReconstructedV0[v0Count].massALam = v0->MassAntiLambda();
-    fEvt->fReconstructedV0[v0Count].massLamDifference  = fabs(v0->MassLambda() - fPDGLambda);
-    fEvt->fReconstructedV0[v0Count].massALamDifference = fabs(v0->MassAntiLambda() - fPDGLambda);
-    fEvt->fReconstructedV0[v0Count].massK0  = v0->MassK0Short();
-    fEvt->fReconstructedV0[v0Count].lorentzGammaLam = v0->ELambda()/fPDGLambda;
-    fEvt->fReconstructedV0[v0Count].v0DCA   = v0->DcaV0ToPrimVertex();
-    fEvt->fReconstructedV0[v0Count].decayLength = v0->DecayLength(primaryVertexAOD);
-    fEvt->fReconstructedV0[v0Count].decayVertexPosition[0] = v0->DecayVertexV0X();
-    fEvt->fReconstructedV0[v0Count].decayVertexPosition[1] = v0->DecayVertexV0Y();
-    fEvt->fReconstructedV0[v0Count].decayVertexPosition[2] = v0->DecayVertexV0Z();
-    fEvt->fReconstructedV0[v0Count].cosPointing = v0->CosPointingAngle(primaryVertexAOD);
-    fEvt->fReconstructedV0[v0Count].hasProtonDaughter     = hasProtonDaughter;
-    fEvt->fReconstructedV0[v0Count].hasAntiProtonDaughter = hasAntiProtonDaughter;
-    fEvt->fReconstructedV0[v0Count].hasPiPlusDaughter     = hasPiPlusDaughter;
-    fEvt->fReconstructedV0[v0Count].hasPiMinusDaughter    = hasPiMinusDaughter;
-    fEvt->fReconstructedV0[v0Count].mcOriginType = mcV0Origin;
+    AliReconstructedV0 &thisV0 = fEvt->fReconstructedV0[v0Count];
+    
+    thisV0.v0Momentum.SetXYZ(v0->Px(), v0->Py(), v0->Pz());
+    thisV0.v0MomentumTruth = v0MomentumTruth;
+    thisV0.v0Pt     = v0->Pt();
+    thisV0.v0Eta    = v0->Eta();
+    thisV0.v0Phi    = v0->Phi();
+    thisV0.massLam  = v0->MassLambda();
+    thisV0.massALam = v0->MassAntiLambda();
+    thisV0.massLamDifference  = fabs(v0->MassLambda() - fPDGLambda);
+    thisV0.massALamDifference = fabs(v0->MassAntiLambda() - fPDGLambda);
+    thisV0.massK0  = v0->MassK0Short();
+    thisV0.lorentzGammaLam = v0->ELambda()/fPDGLambda;
+    thisV0.v0DCA   = v0->DcaV0ToPrimVertex();
+    thisV0.decayLength = v0->DecayLength(primaryVertexAOD);
+    // thisV0.decayVertexPosition[0] = v0->DecayVertexV0X();
+    // thisV0.decayVertexPosition[1] = v0->DecayVertexV0Y();
+    // thisV0.decayVertexPosition[2] = v0->DecayVertexV0Z();
+    thisV0.cosPointing = v0->CosPointingAngle(primaryVertexAOD);
+    thisV0.hasProtonDaughter     = hasProtonDaughter;
+    thisV0.hasAntiProtonDaughter = hasAntiProtonDaughter;
+    thisV0.hasPiPlusDaughter     = hasPiPlusDaughter;
+    thisV0.hasPiMinusDaughter    = hasPiMinusDaughter;
+    thisV0.mcOriginType = mcV0Origin;
     //Save Daughter information
-    fEvt->fReconstructedV0[v0Count].daughter1ID = v0->GetNegID();
-    fEvt->fReconstructedV0[v0Count].daughter2ID = v0->GetPosID();
-    fEvt->fReconstructedV0[v0Count].daughterPosMomentum[0] = v0->MomPosX();
-    fEvt->fReconstructedV0[v0Count].daughterPosMomentum[1] = v0->MomPosY();
-    fEvt->fReconstructedV0[v0Count].daughterPosMomentum[2] = v0->MomPosZ();
-    fEvt->fReconstructedV0[v0Count].daughterPosProtonE = v0->EPosProton();
-    fEvt->fReconstructedV0[v0Count].daughterPosPionE = v0->EPosPion();
-    fEvt->fReconstructedV0[v0Count].daughterNegMomentum[0] = v0->MomNegX();
-    fEvt->fReconstructedV0[v0Count].daughterNegMomentum[1] = v0->MomNegY();
-    fEvt->fReconstructedV0[v0Count].daughterNegMomentum[2] = v0->MomNegZ();
-    fEvt->fReconstructedV0[v0Count].daughterNegProtonE = v0->ENegProton();
-    fEvt->fReconstructedV0[v0Count].daughterNegPionE = v0->ENegPion();
-    fEvt->fReconstructedV0[v0Count].daughtersDCA = v0->DcaV0Daughters();
-    fEvt->fReconstructedV0[v0Count].daughterPosDCAPrimaryVertex = v0->DcaPosToPrimVertex();
-    fEvt->fReconstructedV0[v0Count].daughterNegDCAPrimaryVertex = v0->DcaNegToPrimVertex();
-    GetGlobalPositionAtGlobalRadiiThroughTPC(daughterTrackPos, bfield, fEvt->fReconstructedV0[v0Count].daughterPosGlobalPositions);// used for merging cuts later
-    GetGlobalPositionAtGlobalRadiiThroughTPC(daughterTrackNeg, bfield, fEvt->fReconstructedV0[v0Count].daughterNegGlobalPositions);
-    daughterTrackPos->GetXYZ(fEvt->fReconstructedV0[v0Count].daughterPosPositionDCA);
-    daughterTrackNeg->GetXYZ(fEvt->fReconstructedV0[v0Count].daughterNegPositionDCA);
-    daughterTrackPos->GetPxPyPz(fEvt->fReconstructedV0[v0Count].daughterPosMomentumDCA);
-    daughterTrackNeg->GetPxPyPz(fEvt->fReconstructedV0[v0Count].daughterNegMomentumDCA);
-    daughterTrackPos->GetCovarianceXYZPxPyPz(fEvt->fReconstructedV0[v0Count].daughterPosCovariance);
-    daughterTrackNeg->GetCovarianceXYZPxPyPz(fEvt->fReconstructedV0[v0Count].daughterNegCovariance);
-    for(int coord = 0; coord <3; coord++){
-      fEvt->fPrimaryVertex[coord] = vertex[coord];
-      for(int location = 0; location <9; location++) {
-	//find the track locations relative to the primary vertex location.
-	fEvt->fReconstructedV0[v0Count].daughterPosCorrectedGlobalPositions[location][coord] = fEvt->fReconstructedV0[v0Count].daughterPosGlobalPositions[location][coord] - vertex[coord];
-	fEvt->fReconstructedV0[v0Count].daughterNegCorrectedGlobalPositions[location][coord] = fEvt->fReconstructedV0[v0Count].daughterNegGlobalPositions[location][coord] - vertex[coord];
-      }
+    thisV0.daughter1ID = v0->GetNegID();
+    thisV0.daughter2ID = v0->GetPosID();
+    thisV0.daughterPosMomentum = TVector3(v0->MomPosX(), v0->MomPosY(), v0->MomPosZ());
+    thisV0.daughterPosProtonE = v0->EPosProton();
+    thisV0.daughterPosPionE = v0->EPosPion();
+    thisV0.daughterNegMomentum = TVector3(v0->MomNegX(), v0->MomNegY(), v0->MomNegZ());
+    thisV0.daughterNegProtonE = v0->ENegProton();
+    thisV0.daughterNegPionE = v0->ENegPion();
+    thisV0.daughtersDCA = v0->DcaV0Daughters();
+    thisV0.daughterPosDCAPrimaryVertex = v0->DcaPosToPrimVertex();
+    thisV0.daughterNegDCAPrimaryVertex = v0->DcaNegToPrimVertex();
+    thisV0.daughterPosGlobalPositions = GetGlobalPositionAtGlobalRadiiThroughTPC(daughterTrackPos, bfield);// used for merging cuts later
+    thisV0.daughterNegGlobalPositions = GetGlobalPositionAtGlobalRadiiThroughTPC(daughterTrackNeg, bfield);
+    daughterTrackPos->GetXYZ(thisV0.daughterPosPositionDCA);
+    daughterTrackNeg->GetXYZ(thisV0.daughterNegPositionDCA);
+    daughterTrackPos->GetPxPyPz(thisV0.daughterPosMomentumDCA);
+    daughterTrackNeg->GetPxPyPz(thisV0.daughterNegMomentumDCA);
+    daughterTrackPos->GetCovarianceXYZPxPyPz(thisV0.daughterPosCovariance);
+    daughterTrackNeg->GetCovarianceXYZPxPyPz(thisV0.daughterNegCovariance);
+
+    vector<TVector3> posCorrectedVector;
+    vector<TVector3> negCorrectedVector;
+    for(int iRad = 0; iRad <9; iRad++) {
+      //find the track positions relative to the primary vertex position at different radii.
+      TVector3 posCorrected = thisV0.daughterPosGlobalPositions[iRad] - vertex;
+      TVector3 negCorrected = thisV0.daughterNegGlobalPositions[iRad] - vertex;
+      posCorrectedVector.push_back(posCorrected);
+      negCorrectedVector.push_back(negCorrected);      
     }
+    thisV0.daughterPosCorrectedGlobalPositions = posCorrectedVector;
+    thisV0.daughterNegCorrectedGlobalPositions = negCorrectedVector;
 
     //Now analyze and histogram the V0
-    fCutProcessor->CheckIfV0PassesCuts(& fEvt->fReconstructedV0[v0Count]);
-    fCutProcessor->DoV0Histogramming(& fEvt->fReconstructedV0[v0Count]);
-    FillReconstructedV0MCOrigin(& fEvt->fReconstructedV0[v0Count], v0PassedCutsOriginHist);
-    AddV0ToMultiplicityCounts(& fEvt->fReconstructedV0[v0Count], lambdaCount, antiLambdaCount);
-    FillTPCSignalHists(& fEvt->fReconstructedV0[v0Count], daughterTrackPos->P(), daughterTrackPos->GetTPCsignal(), daughterTrackNeg->P(), daughterTrackNeg->GetTPCsignal());
-    if(fIsMCEvent) CheckForFakeV0s(& fEvt->fReconstructedV0[v0Count], fMCFakeParticleIdentity, fMCOtherV0Identity, mcV0Origin);
+    fCutProcessor->CheckIfV0PassesCuts(& thisV0);
+    fCutProcessor->DoV0Histogramming(& thisV0);
+    FillReconstructedV0MCOrigin(& thisV0, v0PassedCutsOriginHist);
+    AddV0ToMultiplicityCounts(& thisV0, lambdaCount, antiLambdaCount);
+    FillTPCSignalHists(& thisV0, daughterTrackPos->P(), daughterTrackPos->GetTPCsignal(), daughterTrackNeg->P(), daughterTrackNeg->GetTPCsignal());
+    if(fIsMCEvent) CheckForFakeV0s(& thisV0, fMCFakeParticleIdentity, fMCOtherV0Identity, mcV0Origin);
+    
+    if(fIsMCEvent) {
+      // Fill some MC information for lambdas, fill for antilambdas
+      if(thisV0.isLamCenter[fNominalCutIndex]) {
+      	fMCTruthPtLam->Fill(thisV0.v0MomentumTruth.Pt());
+      	fMCTruthPhiLam->Fill(thisV0.v0MomentumTruth.Phi());
+    	fMCTruthEtaLam->Fill(thisV0.v0MomentumTruth.Eta());
+      }
+      if(thisV0.isALamCenter[fNominalCutIndex]) {
+      	fMCTruthPtALam->Fill(thisV0.v0MomentumTruth.Phi());
+    	fMCTruthPhiALam->Fill(thisV0.v0MomentumTruth.Phi());
+    	fMCTruthEtaALam->Fill(thisV0.v0MomentumTruth.Eta());
+      }
+    }
     
     //Increment V0 count and check that we don't exceed size of V0 array
     v0Count++;
@@ -705,24 +1060,24 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   //The following histograms don't get used again, so clean them up
   if(mcTruthOriginHist){
     delete mcTruthOriginHist;
-    mcTruthOriginHist = nullptr;
+    mcTruthOriginHist = NULL;
   }
   if(v0OriginHist){
     delete v0OriginHist;
-    v0OriginHist = nullptr;
+    v0OriginHist = NULL;
   }
   if(v0PassedCutsOriginHist){
     delete v0PassedCutsOriginHist;
-    v0PassedCutsOriginHist = nullptr;
+    v0PassedCutsOriginHist = NULL;
   }
 
   
   DoV0JudgmentCuts(fEvt, v0Count);
   HistogramEventMultiplicities(lambdaCount, antiLambdaCount, centralityBin);
-  fTotalLambda += lambdaCount[fDefaultVariableCutIndex];
-  fTotalAntiLambda += antiLambdaCount[fDefaultVariableCutIndex];
+  fTotalLambda += lambdaCount[fNominalCutIndex];
+  fTotalAntiLambda += antiLambdaCount[fNominalCutIndex];
   //Printf("Reconstruction Finished. Starting pair studies.");
-
+  
   //Now look at pairs for correlation function binning
   DoPairStudies(fEvt, centralityBin);
   //cout<<"Pair studies completed.  Event finished"<<endl;
@@ -734,9 +1089,10 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 void AliAnalysisV0Lam::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  cout<<"Total Lambdas found:\t"<<fTotalLambda<<"."<<endl
-      <<"Total AntiLambdas found:\t"<<fTotalAntiLambda<<"."<<endl
-      <<"Done"<<endl;
+  // cout<<"Total Lambdas found:\t"<<fTotalLambda<<"."<<endl
+  //     <<"Total AntiLambdas found:\t"<<fTotalAntiLambda<<"."<<endl
+  //     <<"Total V0 Candidates found:\t"<<fV0Candidates<<"."<<endl
+  //     <<"Done"<<endl;
 }
 
 
@@ -745,83 +1101,68 @@ void AliAnalysisV0Lam::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisV0Lam::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield, Float_t globalPositionsAtRadii[9][3])
+vector<TVector3> AliAnalysisV0Lam::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield)
 {
   // Gets the global position of the track at nine different radii in the TPC
   // track is the track you want to propagate
   // bfield is the magnetic field of your event
-  //globalPositionsAtRadii is the array of global positions in the radii and xyz
-  // Initialize the array to something indicating there was no propagation
-  for(Int_t i=0;i<9;i++){
-    for(Int_t j=0;j<3;j++){
-      globalPositionsAtRadii[i][j]=-9999.;
-    }
-  }
-  // Make a copy of the track to not change parameters of the track
-  AliExternalTrackParam etp; 
-  etp.CopyFromVTrack(track);
-  //printf("\nAfter CopyFromVTrack\n");
-  //etp.Print();
-  // The global position of the the track
-  Double_t xyz[3]={-9999.,-9999.,-9999.}; 
-  // Counter for which radius we want
-  Int_t iR=0;
+  // cout<<"Getting global position"<<endl;
+
+
   // The radii at which we get the global positions
   // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
   Float_t Rwanted[9]={85.,105.,125.,145.,165.,185.,205.,225.,245.};
-  // The global radius we are at
-  Float_t globalRadius=0;
-  // Propagation is done in local x of the track
-  for (Float_t x = etp.GetX();x<247.;x+=1.){ // GetX returns local coordinates
-    // Starts at the tracks fX and goes outwards. x = 245 is the outer radial
-    // limit of the TPC when the track is straight, i.e. has inifinite pt
-    // and doesn't get bent. If the track's momentum is smaller than infinite,
-    // it will develop a y-component, which adds to the global radius
-    // Stop if the propagation was not succesful. This can happen for low pt
-    // tracks that don't reach outer radii
-    if(!etp.PropagateTo(x,bfield))break;
-    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
-    globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
-    // Roughly reached the radius we want
-    if(globalRadius > Rwanted[iR]){
-      // Bigger loop has bad precision, we're nearly one centimeter too far, go back in small steps.
-      while (globalRadius>Rwanted[iR]){
-        x-=.1;
-        //      printf("propagating to x %5.2f\n",x);
-        if(!etp.PropagateTo(x,bfield))break;
-        etp.GetXYZ(xyz); // GetXYZ returns global coordinates
-        globalRadius = TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]); //Idea to speed up: compare squared radii
-      }
-      //printf("At Radius:%05.2f (local x %5.2f). Setting position to x %4.1f y %4.1f z %4.1f\n",globalRadius,x,xyz[0],xyz[1],xyz[2]);
-      globalPositionsAtRadii[iR][0]=xyz[0];
-      globalPositionsAtRadii[iR][1]=xyz[1];
-      globalPositionsAtRadii[iR][2]=xyz[2];
-      // Indicate we want the next radius   
-      iR+=1;
-    }
-    if(iR>=8){
-      // TPC edge reached
-      return;
-    }
+
+  // Calculate positions with with GetXYZatR
+  vector<TVector3> positions;
+  // Make a copy of the track to not change parameters of the track
+  AliExternalTrackParam myEtp;
+  myEtp.CopyFromVTrack(track);
+  for(Int_t iRad = 0; iRad < 9; iRad++) {
+    Double_t thisPosition[3] = {0., 0., 0.};
+    myEtp.GetXYZatR(Rwanted[iRad], bfield, thisPosition, NULL);
+    TVector3 posVec(thisPosition);
+    positions.push_back(posVec);
   }
+
+  return positions;
 }
 
 
 
 //________________________________________________________________________
-double AliAnalysisV0Lam::GetAverageSeparation(Float_t globalPositions1st[9][3], Float_t globalPositions2nd[9][3])
+Double_t AliAnalysisV0Lam::GetAverageSeparation(vector<TVector3> &globalPositions1st, vector<TVector3> &globalPositions2nd)
 {
+  // cout<<"Calculating avg sep"<<endl;
   //Compute the separation of two daughter tracks, averaged over 9 different positions
-  double avgSeparation = 0;
-  for(int RadiusNumber = 0; RadiusNumber <9; RadiusNumber++){
-    double sumsquare=0;
-    for(int Component = 0; Component <3; Component++){
-      sumsquare+= pow(globalPositions1st[RadiusNumber][Component]-globalPositions2nd[RadiusNumber][Component],2);
+  Double_t radii[9]={85.,105.,125.,145.,165.,185.,205.,225.,245.};
+
+
+  
+  double avgSeparation = 0.;
+  double pointsUsed = 0.;
+  for(int iRad = 0; iRad < 9; iRad++) {
+    Bool_t pointIsBad = kFALSE;
+    if(fabs(globalPositions1st[iRad].Perp() - radii[iRad]) > 0.5) {
+      pointIsBad = kTRUE;
+      continue;
     }
-    avgSeparation+=sqrt(sumsquare);
+    if(fabs(globalPositions2nd[iRad].Perp() - radii[iRad]) > 0.5) {
+      pointIsBad = kTRUE;
+      continue;
+    }
+    
+    if(pointIsBad) continue;
+    TVector3 diff = globalPositions1st[iRad] - globalPositions2nd[iRad];
+    avgSeparation += diff.Mag();
+    pointsUsed++;
   }
-  return avgSeparation/9.; 
+  
+  if(pointsUsed < 1) return 0.;
+
+  return avgSeparation/pointsUsed; 
 }
+
 
 //________________________________________________________________________
 void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const event, const int totalV0s)
@@ -1066,14 +1407,13 @@ AliReconstructedV0::MCV0Origin_t AliAnalysisV0Lam::DetermineV0Origin(AliAODv0 *v
 }
 
 //________________________________________________________________________
-void AliAnalysisV0Lam::GetMCParticleMomentumTruth(double *v0Momentum, AliAODv0 *v0, TClonesArray *mcArray)
+void AliAnalysisV0Lam::GetMCParticleMomentumTruth(TVector3 &pTruth, AliAODv0 *v0, TClonesArray *mcArray)
 {
-  // Get the MC truth of the 3D momentum of a V0.  That info is copied into
-  // v0Momentum
+  // Get the MC truth of the 3D momentum of a V0.
   int v0Id = GetV0MCParticleID(v0,mcArray);
   if (v0Id > 0){
     AliAODMCParticle* mcV0 = (AliAODMCParticle*)mcArray->At(v0Id);
-    if(!mcV0->PxPyPz(v0Momentum)) cout<<"Err copying momentum truth"<<endl;
+    pTruth.SetXYZ(mcV0->Px(), mcV0->Py(), mcV0->Pz());
   }
 }
 
@@ -1272,7 +1612,7 @@ bool AliAnalysisV0Lam::IsInjectedParticle(AliAODv0 *v0, TClonesArray *mcArray, I
   return isInjected;
 }
 
-//________________________________________________________________________
+//________________________________________________________________________s
 bool AliAnalysisV0Lam::IsCorrectEventTrigger()
 {
   //Pick out Central, SemiCentral, and MinBias events.  False if not using one of those event triggers.
@@ -1311,12 +1651,12 @@ void AliAnalysisV0Lam::HistogramEventMultiplicities(vector<int> & lambdaCount, v
 void AliAnalysisV0Lam::FillTPCSignalHists(const AliReconstructedV0 *v0, const double posDaughterP, const double posDaughterTPCSignal, const double negDaughterP, const double negDaughterTPCSignal)
 {
   //Histogram P vs TPCsignal for V0 daughters
-  if(v0->isLamCenter[fDefaultVariableCutIndex])
+  if(v0->isLamCenter[fNominalCutIndex])
   {
     fTPCVsPPosLam->Fill(posDaughterP,posDaughterTPCSignal);
     fTPCVsPNegLam->Fill(negDaughterP,negDaughterTPCSignal);
   }
-  if(v0->isALamCenter[fDefaultVariableCutIndex])
+  if(v0->isALamCenter[fNominalCutIndex])
   {
     fTPCVsPPosALam->Fill(posDaughterP,posDaughterTPCSignal);
     fTPCVsPNegALam->Fill(negDaughterP,negDaughterTPCSignal);
@@ -1329,67 +1669,48 @@ void AliAnalysisV0Lam::CheckForFakeV0s(const AliReconstructedV0 *v0, TH1F *mcFak
   // Used in MC studies to determine how many reconstructed Lambdas and
   // Antilambdas are actually fake.  For simplicity, this is only done for
   // the default value of the variable reconstruction cut.
-  if(v0->isLamCenter[fDefaultVariableCutIndex] 
-     || v0->isALamCenter[fDefaultVariableCutIndex])
+  if(v0->isLamCenter[fNominalCutIndex] 
+     || v0->isALamCenter[fNominalCutIndex])
   {
     if(AliReconstructedV0::kFake == mcV0Origin){
       //These V0s are fake
-      if(v0->isLamCenter[fDefaultVariableCutIndex]) mcFakeParticleIdentity->Fill(0);
-      if(v0->isALamCenter[fDefaultVariableCutIndex]) mcFakeParticleIdentity->Fill(1);
+      if(v0->isLamCenter[fNominalCutIndex]) mcFakeParticleIdentity->Fill(0);
+      if(v0->isALamCenter[fNominalCutIndex]) mcFakeParticleIdentity->Fill(1);
     }
     if(AliReconstructedV0::kUnassigned == mcV0Origin){
       // These V0s correspond to actual MC particles, but they aren't
       // Lambdas, Antilambdas, or K0s.
-      if(v0->isLamCenter[fDefaultVariableCutIndex]) mcOtherV0Identity->Fill(0);
-      if(v0->isALamCenter[fDefaultVariableCutIndex]) mcOtherV0Identity->Fill(1);
+      if(v0->isLamCenter[fNominalCutIndex]) mcOtherV0Identity->Fill(0);
+      if(v0->isALamCenter[fNominalCutIndex]) mcOtherV0Identity->Fill(1);
     }
   }
 }
 
 //________________________________________________________________________
-double AliAnalysisV0Lam::CalculateKstar(double momentum1[3], double momentum2[3], double mass1, double mass2)
+double AliAnalysisV0Lam::CalculateKstar(TVector3 p1, TVector3 p2, double mass1, double mass2)
 {
-  // Calculate k* for any pair of particles, regardless of whether the
-  // particles have the same mass.
-  double kstar = 0.;
-  double e1 = 0.;
-  double e2 = 0.;
-  for(int i = 0; i < 3; i++){
-    kstar -= pow(momentum1[i]-momentum2[i],2);
-    e1 += pow(momentum1[i],2);
-    e2 += pow(momentum2[i],2);
-  }
-  e1 += pow(mass1,2);
-  e1 = sqrt(e1);
-  e2 += pow(mass2,2);
-  e2 = sqrt(e2);
+  Double_t e1 = sqrt(pow(mass1, 2) + p1.Mag2());
+  Double_t e2 = sqrt(pow(mass2, 2) + p2.Mag2());
   
-  kstar += pow(e1-e2,2);
+  TLorentzVector vec1(p1, e1);
+  TLorentzVector vec2(p2, e2);
 
-  double totalMomentumSquared = 0;
-  for(int i = 0; i < 3; i++){
-    totalMomentumSquared -= pow(momentum1[i]+momentum2[i],2);
-  }
-  totalMomentumSquared += pow(e1+e2,2);
-  kstar -= pow((pow(mass1,2)-pow(mass2,2)),2)/totalMomentumSquared;
+  TLorentzVector pDiff = vec1-vec2;
+  TLorentzVector pSum = vec1+vec2;
+  TLorentzVector kstarVec = 0.5*(pDiff - (pDiff * pSum/pSum.Mag2())*pSum);
 
-  kstar *= -1.;
-  kstar = sqrt(kstar); //At this point, we've actually calculated Qinv
-  kstar *= 0.5; // kstar is 0.5*Qinv
-  return kstar;
+  return -1.*kstarVec.Mag();
 }
 
 //________________________________________________________________________
-void AliAnalysisV0Lam::BinMomentumSmearing(double *v01MomentumRecon, double *v01MomentumTruth, double *v02MomentumRecon, double *v02MomentumTruth, int pairType)
+void AliAnalysisV0Lam::BinMomentumSmearing(TVector3 v01MomentumRecon, TVector3 v01MomentumTruth, TVector3 v02MomentumRecon, TVector3 v02MomentumTruth, int pairType)
 {
   // Used in MC studies to determine the amount of pair-wise relative-
   // momentum smearing.  For a given pair of V0s, fills output histograms
   // with reconstructed k* vs true k*.  Separate histograms are filled
   // for each pair type
-  double v01PMag = sqrt( pow(v01MomentumTruth[0],2) + pow(v01MomentumTruth[1],2) + pow(v01MomentumTruth[2],2) );
-  if(v01PMag < 0.0001) return;  //Not a real V0
-  double v02PMag = sqrt( pow(v02MomentumTruth[0],2) + pow(v02MomentumTruth[1],2) + pow(v02MomentumTruth[2],2) );
-  if(v02PMag < 0.0001) return;  //Not a real V0
+  if(v01MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
+  if(v02MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
   double reconKstar = CalculateKstar(v01MomentumRecon,v02MomentumRecon, fPDGLambda, fPDGLambda);
   double truthKstar = CalculateKstar(v01MomentumTruth,v02MomentumTruth, fPDGLambda, fPDGLambda);
   if(0 == pairType){ //Lambda-Lambda
@@ -1405,6 +1726,17 @@ void AliAnalysisV0Lam::BinMomentumSmearing(double *v01MomentumRecon, double *v01
     fHistPsmearingKreconMinusKtruthLA->Fill(reconKstar-truthKstar);
   }
 }
+
+TVector3 AliAnalysisV0Lam::GetEmissionPoint(const AliAODMCParticle * const track, TVector3 primVertex)
+{
+  // Get a TVector3 for the emission point of an MC particle
+
+  // Store global position into a TVector3
+  TVector3 emisV(track->Xv(), track->Yv(), track->Zv());
+  // Subtract away the primary vertex to get the emission point
+  emisV -= primVertex;
+  return emisV;
+}
   
 //________________________________________________________________________
 void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const int centralityBin)
@@ -1413,13 +1745,17 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
   //numerators and denominators.
 
   //Default cut values used for the average separation cuts
-  double avgSepIdenticalProtonCut = 3.; // used for same-charge prot avg sep
-  double avgSepIdenticalPionCut = 4.; // used for same-charge pi-pi
-  double avgSepNonIdenticalCut = 3.5; //used for same-charge pion-proton avg sep
+  double avgSepIdenticalProtonCut = 12.; // used for same-charge prot avg sep
+  double avgSepIdenticalPionCut   = 10.; // used for same-charge pi-pi
+  // double avgSepNonIdenticalCut    = 3.5; //used for same-charge pion-proton avg sep
+  double avgSepProtonPionSame     = 10.; // used for same-sign proton-pion charge combinations
+  double avgSepProtonPionDiff     = 15.; // used for diff-sign proton-pion charge combinations
+  double avgSepProtonAntiproton   = 10.; // used for proton-antiproton
+  double avgSepPiPlusPiMinus      = 25.; // used for piplus-piminus
   double &variableAvgSepValue = avgSepIdenticalPionCut; //the identical
   //pion cut will be the variable cut in this run.  This needs to be changed
   //by hand if one wants to study a different cut
-  
+
   // These values are used for the average separation cuts of the
   // daughter tracks. When the average separation cut is being studied,
   // we can loop over many different cut values to see how those different
@@ -1442,12 +1778,15 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
   { // Start looping over all variable cut values
     for(int i=0; i < event->fNumberCandidateV0; i++) 
     { //Start looping over reconstructed V0s in this event
-      bool center1Lam  = event->fReconstructedV0[i].isLamCenter[cutIndex];
-      bool center1ALam = event->fReconstructedV0[i].isALamCenter[cutIndex];
+      AliReconstructedV0 &v01 = event->fReconstructedV0[i];
+      
+      bool center1Lam  = v01.isLamCenter[cutIndex];
+      bool center1ALam = v01.isALamCenter[cutIndex];
       // Disregard V0 if it wasn't reconstructed as a center (anti)Lambda
       if(!(center1Lam || center1ALam)) continue;
       // Disregard V0 if it was removed via the judgment cuts
-      if(event->fReconstructedV0[i].isDeemedUnworthy[cutIndex]) continue;
+      if(v01.isDeemedUnworthy[cutIndex]) continue;
+     
       for(int eventNumber=0; eventNumber<nEventsToMix+1; eventNumber++)
       { // Event buffer loop: eventNumber=0 is the current event, all other eventNumbers are past events
 	int startBin=0;
@@ -1456,36 +1795,35 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
 	if(eventNumber==0) startBin=i+1;
 	for(int j=startBin; j<(event+eventNumber)->fNumberCandidateV0; j++) 
 	{ // Second V0 loop (from past or current event)
+	  AliReconstructedV0 &v02 = (event+eventNumber)->fReconstructedV0[j];
 	  if(eventNumber==0)  
 	  { // Don't make pairs of V0s if they shared daughter tracks.
 	    // This is redundant if the judgment cut is already employed
-	    if(event->fReconstructedV0[i].daughter1ID 
-	       == (event+eventNumber)->fReconstructedV0[j].daughter1ID) continue;
-	    if(event->fReconstructedV0[i].daughter1ID 
-	       == (event+eventNumber)->fReconstructedV0[j].daughter2ID) continue;
-	    if(event->fReconstructedV0[i].daughter2ID 
-	       == (event+eventNumber)->fReconstructedV0[j].daughter1ID) continue;
-	    if(event->fReconstructedV0[i].daughter2ID 
-	       == (event+eventNumber)->fReconstructedV0[j].daughter2ID) continue;
+	    if(v01.daughter1ID 
+	       == v02.daughter1ID) continue;
+	    if(v01.daughter1ID 
+	       == v02.daughter2ID) continue;
+	    if(v01.daughter2ID 
+	       == v02.daughter1ID) continue;
+	    if(v01.daughter2ID 
+	       == v02.daughter2ID) continue;
 	  }
 	  //Disregard second V0 if it was removed via judgment cuts
-	  if((event+eventNumber)->fReconstructedV0[j].isDeemedUnworthy[cutIndex]) continue;
+	  if(v02.isDeemedUnworthy[cutIndex]) continue;
 	  // A central V0 has a mass that falls within the accepted inv
 	  // mass range.  Only make pairs with central V0s
-	  bool center2Lam  = (event+eventNumber)->fReconstructedV0[j].isLamCenter[cutIndex];
-	  bool center2ALam = (event+eventNumber)->fReconstructedV0[j].isALamCenter[cutIndex];
+	  bool center2Lam  = v02.isLamCenter[cutIndex];
+	  bool center2ALam = v02.isALamCenter[cutIndex];
 	  if(!(center2Lam || center2ALam)) continue;
 	  // Now we calculate a bunch of values that are used later during
-	  // histogramming.
-	  double pairKt = pow(event->fReconstructedV0[i].v0Momentum[0] + (event+eventNumber)->fReconstructedV0[j].v0Momentum[0],2.);
-	  pairKt+= pow(event->fReconstructedV0[i].v0Momentum[1] + (event+eventNumber)->fReconstructedV0[j].v0Momentum[1],2.);
-	  pairKt = sqrt(pairKt)/2.;
+	  // histogramming
+	  double pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
 	  //Calculate k* for V0s and daughters using different mass assumptions
-	  double pairKstarLam = CalculateKstar(event->fReconstructedV0[i].v0Momentum, (event+eventNumber)->fReconstructedV0[j].v0Momentum, fPDGLambda,fPDGLambda);
-	  double pairKstarProtPlus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGProton,fPDGProton);
-	  double pairKstarProtMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGProton,fPDGProton);
-	  double pairKstarPiPlus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGPion,fPDGPion);
-	  double pairKstarPiMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGPion,fPDGPion);
+	  double pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
+	  double pairKstarProtPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGProton,fPDGProton);
+	  double pairKstarProtMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGProton,fPDGProton);
+	  double pairKstarPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGPion,fPDGPion);
+	  double pairKstarPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGPion,fPDGPion);
 	  //used for lambda-antilambda daughter kstar
 	  double pairKstarProtPlusPiPlus = 0; 
 	  double pairKstarProtMinusPiMinus = 0;
@@ -1495,123 +1833,140 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
 	  // Need to be careful when calculating the k* of daughter tracks
 	  // of non-identical V0s
 	  if(center1Lam && center2ALam){
-	    pairKstarProtPlusPiPlus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGProton,fPDGPion);
-	    pairKstarProtMinusPiMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGPion,fPDGProton);
-	    pairKstarProtPlusProtMinus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGProton,fPDGProton); 
-	    pairKstarPiPlusPiMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGPion,fPDGPion); 
+	    pairKstarProtPlusPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGProton,fPDGPion);
+	    pairKstarProtMinusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGPion,fPDGProton);
+	    pairKstarProtPlusProtMinus = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGProton,fPDGProton); 
+	    pairKstarPiPlusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGPion,fPDGPion); 
 	  }
 	  else if(center1ALam && center2Lam){
-	    pairKstarProtPlusPiPlus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGPion,fPDGProton);
-	    pairKstarProtMinusPiMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGProton,fPDGPion);
-	    pairKstarProtPlusProtMinus = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGProton,fPDGProton);
-	    pairKstarPiPlusPiMinus = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGPion,fPDGPion);
+	    pairKstarProtPlusPiPlus = CalculateKstar(v01.daughterPosMomentum,v02.daughterPosMomentum, fPDGPion,fPDGProton);
+	    pairKstarProtMinusPiMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterNegMomentum, fPDGProton,fPDGPion);
+	    pairKstarProtPlusProtMinus = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGProton,fPDGProton);
+	    pairKstarPiPlusPiMinus = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGPion,fPDGPion);
 	  }
-	  double pairKstarProtPlusPiMinus1 = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGProton,fPDGPion); // only relevant for LamLam
-	  double pairKstarProtPlusPiMinus2 = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGPion,fPDGProton); // only relevant for LamLam
+	  double pairKstarProtPlusPiMinus1 = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGProton,fPDGPion); // only relevant for LamLam
+	  double pairKstarProtPlusPiMinus2 = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGPion,fPDGProton); // only relevant for LamLam
 
-	  double pairKstarProtMinusPiPlus1 = CalculateKstar(event->fReconstructedV0[i].daughterNegMomentum,(event+eventNumber)->fReconstructedV0[j].daughterPosMomentum, fPDGProton,fPDGPion); // only relevant for ALamALam
-	  double pairKstarProtMinusPiPlus2 = CalculateKstar(event->fReconstructedV0[i].daughterPosMomentum,(event+eventNumber)->fReconstructedV0[j].daughterNegMomentum, fPDGPion, fPDGProton); // only relevant for ALamALam
+	  double pairKstarProtMinusPiPlus1 = CalculateKstar(v01.daughterNegMomentum,v02.daughterPosMomentum, fPDGProton,fPDGPion); // only relevant for ALamALam
+	  double pairKstarProtMinusPiPlus2 = CalculateKstar(v01.daughterPosMomentum,v02.daughterNegMomentum, fPDGPion, fPDGProton); // only relevant for ALamALam
 	  //Now find the average separation distance between daughter pairs.  Used to make a merging/splitting cut.
-	  double avgSepPos = GetAverageSeparation(event->fReconstructedV0[i].daughterPosGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterPosGlobalPositions);
-	  double avgSepNeg = GetAverageSeparation(event->fReconstructedV0[i].daughterNegGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterNegGlobalPositions);
-	  double avgSepNegPos = GetAverageSeparation(event->fReconstructedV0[i].daughterNegGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterPosGlobalPositions);
-	  double avgSepPosNeg = GetAverageSeparation(event->fReconstructedV0[i].daughterPosGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterNegGlobalPositions);
-	  double correctedAvgSepPos = GetAverageSeparation(event->fReconstructedV0[i].daughterPosCorrectedGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterPosCorrectedGlobalPositions);
-	  double correctedAvgSepNeg = GetAverageSeparation(event->fReconstructedV0[i].daughterNegCorrectedGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterNegCorrectedGlobalPositions);
-	  double correctedAvgSepNegPos = GetAverageSeparation(event->fReconstructedV0[i].daughterNegCorrectedGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterPosCorrectedGlobalPositions);
-	  double correctedAvgSepPosNeg = GetAverageSeparation(event->fReconstructedV0[i].daughterPosCorrectedGlobalPositions, (event+eventNumber)->fReconstructedV0[j].daughterNegCorrectedGlobalPositions);
+	  Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+	  Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
+	  Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
+	  Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
 
-	  //Now we get to the actual pair histogramming
+	  Double_t dau1PosPt = v01.daughterPosMomentum.Pt();
+	  Double_t dau1NegPt = v01.daughterNegMomentum.Pt();
+	  Double_t dau2PosPt = v02.daughterPosMomentum.Pt();
+	  Double_t dau2NegPt = v02.daughterNegMomentum.Pt();
+	  
+	  //****** Now we get to the actual pair histogramming ******
+
+	  // // Momentum smearing study
+	  // if(fIsMCEvent) {
+	  //   if(center1Lam && center2Lam) {
+	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 0);
+	  //   }
+	  //   if(center1ALam && center2ALam) {
+	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 1);
+	  //   }
+	  //   if((center1Lam && center2ALam)  || (center1ALam && center2Lam)) {
+	  //     DoMomResCorrelationWeighting(v01, v02, eventNumber, centralityBin, 2);
+	  //   }
+	  // }
+
+
+
+
+
+	  //Normal correlation functions
 	  if(eventNumber==0) //Same event pair histogramming
 	  {
 	    //We do separate binning for each pair type
 	    if(center1Lam && center2Lam){
 	      // Some histograms we only fill when default variable cut
 	      // values have been used
-	      if(cutIndex == fDefaultVariableCutIndex){
+	      if(cutIndex == fNominalCutIndex){
 		//same sign tracks
-		fSignalLamLamProtSep->Fill(avgSepPos, pairKstarProtPlus);
-		fSignalLamLamPiMinusSep->Fill(avgSepNeg, pairKstarPiMinus);
-		fSignalLamLamProtSepCorrected->Fill(correctedAvgSepPos, pairKstarProtPlus);
-		fSignalLamLamPiMinusSepCorrected->Fill(correctedAvgSepNeg, pairKstarPiMinus);
+		fSignalLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+		fSignalLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
 		//opposite sign tracks
-		fSignalLamLamPlusMinusSep->Fill(avgSepPosNeg,pairKstarProtPlusPiMinus1);
-		fSignalLamLamPlusMinusSep->Fill(avgSepNegPos,pairKstarProtPlusPiMinus2);
-		fSignalLamLamPlusMinusSepCorrected->Fill(correctedAvgSepPosNeg,pairKstarProtPlusPiMinus1);
-		fSignalLamLamPlusMinusSepCorrected->Fill(correctedAvgSepNegPos,pairKstarProtPlusPiMinus2);
+		fSignalLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		fSignalLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){ //looping over different avg sep cut values (if applicable)
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepIdenticalProtonCut < correctedAvgSepPos)
-		   && (avgSepIdenticalPionCut < correctedAvgSepNeg))
+		if(   (avgSepIdenticalProtonCut < avgSepPos)
+		   && (avgSepIdenticalPionCut   < avgSepNeg)
+		   && (avgSepProtonPionDiff     < avgSepPosNeg)
+		   && (avgSepProtonPionDiff     < avgSepNegPos))
 		{
-		  fSignalLamLam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		    //This implementation doesn't work properly
+		  fSignalLamLam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+		  if(cutIndex == fNominalCutIndex){
 		    fKtLamLamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
 		  }
 		}
 	      }
 	    }
 	    if(center1ALam && center2ALam){
-	      if(cutIndex == fDefaultVariableCutIndex){
+	      if(cutIndex == fNominalCutIndex){
 		//same sign tracks
-		fSignalALamALamAntiProtSep->Fill(avgSepNeg, pairKstarProtMinus);
-		fSignalALamALamPiPlusSep->Fill(avgSepPos, pairKstarPiPlus);
-		fSignalALamALamAntiProtSepCorrected->Fill(correctedAvgSepNeg, pairKstarProtMinus);
-		fSignalALamALamPiPlusSepCorrected->Fill(correctedAvgSepPos, pairKstarPiPlus);
-
+		fSignalALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+		fSignalALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
 		//opposite sign tracks
-		fSignalALamALamPlusMinusSep->Fill(avgSepPosNeg,pairKstarProtMinusPiPlus1);
-		fSignalALamALamPlusMinusSep->Fill(avgSepNegPos,pairKstarProtMinusPiPlus2);
-		fSignalALamALamPlusMinusSepCorrected->Fill(correctedAvgSepPosNeg,pairKstarProtMinusPiPlus1);
-		fSignalALamALamPlusMinusSepCorrected->Fill(correctedAvgSepNegPos,pairKstarProtMinusPiPlus2);
+		fSignalALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		fSignalALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepIdenticalPionCut < correctedAvgSepPos)
-		   && (avgSepIdenticalProtonCut < correctedAvgSepNeg))
+		if(   (avgSepIdenticalPionCut   < avgSepPos)
+		   && (avgSepIdenticalProtonCut < avgSepNeg)
+		   && (avgSepProtonPionDiff     < avgSepPosNeg)
+		   && (avgSepProtonPionDiff     < avgSepNegPos))
 		{
-		  fSignalALamALam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		    //This implementation doesn't work properly
+		  fSignalALamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+		  if(cutIndex == fNominalCutIndex){
 		    fKtALamALamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
 		  }
 		}
 	      }
 	    }
 	    if((center1Lam && center2ALam) || (center1ALam && center2Lam)){
-	      if(cutIndex == fDefaultVariableCutIndex){
-		fSignalLamALamProtPiPlusSep->Fill(avgSepPos, pairKstarProtPlusPiPlus);
-		fSignalLamALamAntiProtPiMinusSep->Fill(avgSepNeg, pairKstarProtMinusPiMinus);
-		fSignalLamALamProtPiPlusSepCorrected->Fill(correctedAvgSepPos, pairKstarProtPlusPiPlus);
-		fSignalLamALamAntiProtPiMinusSepCorrected->Fill(correctedAvgSepNeg, pairKstarProtMinusPiMinus);
+	      if(cutIndex == fNominalCutIndex){
+		fSignalLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+		fSignalLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
 		//opposite charge tracks
 		if(center1Lam)
 		{
-		  fSignalLamALamProtSep->Fill(avgSepPosNeg, pairKstarProtPlusProtMinus);
-		  fSignalLamALamPionSep->Fill(avgSepNegPos, pairKstarPiPlusPiMinus);
-		  fSignalLamALamProtSepCorrected->Fill(correctedAvgSepPosNeg, pairKstarProtPlusProtMinus);
-		  fSignalLamALamPionSepCorrected->Fill(correctedAvgSepNegPos, pairKstarPiPlusPiMinus);
+		  fSignalLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		  fSignalLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 		}
 		else
 		{
-		  fSignalLamALamProtSep->Fill(avgSepNegPos, pairKstarProtPlusProtMinus);
-		  fSignalLamALamPionSep->Fill(avgSepPosNeg, pairKstarPiPlusPiMinus);
-		  fSignalLamALamProtSepCorrected->Fill(correctedAvgSepNegPos, pairKstarProtPlusProtMinus);
-		  fSignalLamALamPionSepCorrected->Fill(correctedAvgSepPosNeg, pairKstarPiPlusPiMinus);
+		  fSignalLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+		  fSignalLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
 		}
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepNonIdenticalCut < correctedAvgSepPos)
-		   && (avgSepNonIdenticalCut < correctedAvgSepNeg))
-		{
-		  fSignalLamALam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		   //This implementation doesn't work properly
-		    fKtLamALamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
+		if(center1Lam &&
+		   (   !(avgSepProtonPionSame   < avgSepPos)
+		    || !(avgSepProtonPionSame   < avgSepNeg)
+		    || !(avgSepProtonAntiproton < avgSepPosNeg)
+		    || !(avgSepPiPlusPiMinus    < avgSepNegPos))) {
+		  continue;
+		} else if(center1ALam &&
+		   (   !(avgSepProtonPionSame   < avgSepPos)
+		    || !(avgSepProtonPionSame   < avgSepNeg)
+		    || !(avgSepPiPlusPiMinus    < avgSepPosNeg)
+		    || !(avgSepProtonAntiproton < avgSepNegPos))) {
+		  continue;
+		}
+
+		fSignalLamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+
+		if(cutIndex == fNominalCutIndex){
+		  fKtLamALamSig->Fill(centralityBin+1,pairKt,pairKstarLam);
 		}
 	      }
 	    }
@@ -1619,102 +1974,96 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
 	  else //Mixed event pair histogramming
 	  {
 	    if(center1Lam && center2Lam){
-	      if(cutIndex == fDefaultVariableCutIndex){
-		fBkgLamLamProtSep->Fill(avgSepPos, pairKstarProtPlus);
-		fBkgLamLamPiMinusSep->Fill(avgSepNeg, pairKstarPiMinus);
-		fBkgLamLamProtSepCorrected->Fill(correctedAvgSepPos, pairKstarProtPlus);
-		fBkgLamLamPiMinusSepCorrected->Fill(correctedAvgSepNeg, pairKstarPiMinus);
+	      if(cutIndex == fNominalCutIndex){
+		fBkgLamLamProtSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+		fBkgLamLamPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
 		//opposite sign tracks
-		fBkgLamLamPlusMinusSep->Fill(avgSepPosNeg,pairKstarProtPlusPiMinus1);
-		fBkgLamLamPlusMinusSep->Fill(avgSepNegPos,pairKstarProtPlusPiMinus2);
-		fBkgLamLamPlusMinusSepCorrected->Fill(correctedAvgSepPosNeg,pairKstarProtPlusPiMinus1);
-		fBkgLamLamPlusMinusSepCorrected->Fill(correctedAvgSepNegPos,pairKstarProtPlusPiMinus2);
+		fBkgLamLamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		fBkgLamLamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 		if(fIsMCEvent)
 		{ //collect momentum smearing information
 		  int pairType = 0;
-		  BinMomentumSmearing(event->fReconstructedV0[i].v0Momentum, event->fReconstructedV0[i].v0MomentumTruth, (event+eventNumber)->fReconstructedV0[j].v0Momentum, (event+eventNumber)->fReconstructedV0[j].v0MomentumTruth,pairType);
+		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
 		}
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepIdenticalProtonCut < correctedAvgSepPos)
-		   && (avgSepIdenticalPionCut < correctedAvgSepNeg))
+		if(   (avgSepIdenticalProtonCut < avgSepPos)
+		   && (avgSepIdenticalPionCut   < avgSepNeg)
+		   && (avgSepProtonPionDiff     < avgSepPosNeg)
+		   && (avgSepProtonPionDiff     < avgSepNegPos))
 		{
-		  fBkgLamLam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		    //This implementation doesn't work properly
+		  fBkgLamLam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+		  if(cutIndex == fNominalCutIndex){
 		    fKtLamLamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
 		  }
 		}
 	      }
 	    }
 	    if(center1ALam && center2ALam){
-	      if(cutIndex == fDefaultVariableCutIndex){
-		fBkgALamALamAntiProtSep->Fill(avgSepNeg, pairKstarProtMinus);
-		fBkgALamALamPiPlusSep->Fill(avgSepPos, pairKstarPiPlus);
-		fBkgALamALamAntiProtSepCorrected->Fill(correctedAvgSepNeg, pairKstarProtMinus);
-		fBkgALamALamPiPlusSepCorrected->Fill(correctedAvgSepPos, pairKstarPiPlus);
+	      if(cutIndex == fNominalCutIndex){
+		fBkgALamALamAntiProtSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
+		fBkgALamALamPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt );
 		//opposite sign tracks
-		fBkgALamALamPlusMinusSep->Fill(avgSepPosNeg,pairKstarProtMinusPiPlus1);
-		fBkgALamALamPlusMinusSep->Fill(avgSepNegPos,pairKstarProtMinusPiPlus2);
-		fBkgALamALamPlusMinusSepCorrected->Fill(correctedAvgSepPosNeg,pairKstarProtMinusPiPlus1);
-		fBkgALamALamPlusMinusSepCorrected->Fill(correctedAvgSepNegPos,pairKstarProtMinusPiPlus2);
+		fBkgALamALamPlusMinusSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		fBkgALamALamPlusMinusSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 		if(fIsMCEvent)
 		{ //collect momentum smearing information
 		  int pairType = 1;
-		  BinMomentumSmearing(event->fReconstructedV0[i].v0Momentum, event->fReconstructedV0[i].v0MomentumTruth, (event+eventNumber)->fReconstructedV0[j].v0Momentum, (event+eventNumber)->fReconstructedV0[j].v0MomentumTruth,pairType);
+		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
 		}
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepIdenticalPionCut < correctedAvgSepPos)
-		   && (avgSepIdenticalProtonCut < correctedAvgSepNeg))
+		if(   (avgSepIdenticalPionCut   < avgSepPos)
+		   && (avgSepIdenticalProtonCut < avgSepNeg)
+		   && (avgSepProtonPionDiff     < avgSepPosNeg)
+		   && (avgSepProtonPionDiff     < avgSepNegPos))
 		{
-		  fBkgALamALam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		    //This implementation doesn't work properly
-		    fKtALamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
+		  fBkgALamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+		  fKtALamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
 		}
 	      }
 	    }
 	    if((center1Lam && center2ALam) || (center1ALam && center2Lam)){
-	      if(cutIndex == fDefaultVariableCutIndex){
-		fBkgLamALamProtPiPlusSep->Fill(avgSepPos, pairKstarProtPlusPiPlus);
-		fBkgLamALamAntiProtPiMinusSep->Fill(avgSepNeg, pairKstarProtMinusPiMinus);
-		fBkgLamALamProtPiPlusSepCorrected->Fill(correctedAvgSepPos, pairKstarProtPlusPiPlus);
-		fBkgLamALamAntiProtPiMinusSepCorrected->Fill(correctedAvgSepNeg, pairKstarProtMinusPiMinus);
+	      if(cutIndex == fNominalCutIndex){
+		fBkgLamALamProtPiPlusSep->Fill(avgSepPos, dau1PosPt, dau2PosPt);
+		fBkgLamALamAntiProtPiMinusSep->Fill(avgSepNeg, dau1NegPt, dau2NegPt);
 		//opposite charge tracks
 		if(center1Lam)
 		{
-		  fBkgLamALamProtSep->Fill(avgSepPosNeg, pairKstarProtPlusProtMinus);
-		  fBkgLamALamPionSep->Fill(avgSepNegPos, pairKstarPiPlusPiMinus);
-		  fBkgLamALamProtSepCorrected->Fill(correctedAvgSepPosNeg, pairKstarProtPlusProtMinus);
-		  fBkgLamALamPionSepCorrected->Fill(correctedAvgSepNegPos, pairKstarPiPlusPiMinus);
+		  fBkgLamALamProtSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
+		  fBkgLamALamPionSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
 		}
 		else
 		{
-		  fBkgLamALamProtSep->Fill(avgSepNegPos, pairKstarProtPlusProtMinus);
-		  fBkgLamALamPionSep->Fill(avgSepPosNeg, pairKstarPiPlusPiMinus);
-		  fBkgLamALamProtSepCorrected->Fill(correctedAvgSepNegPos, pairKstarProtPlusProtMinus);
-		  fBkgLamALamPionSepCorrected->Fill(correctedAvgSepPosNeg, pairKstarPiPlusPiMinus);
+		  fBkgLamALamProtSep->Fill(avgSepNegPos, dau1NegPt, dau2PosPt);
+		  fBkgLamALamPionSep->Fill(avgSepPosNeg, dau1PosPt, dau2NegPt);
 		}
 		if(fIsMCEvent)
 		{ //collect momentum smearing information
 		  int pairType = 2;
-		  BinMomentumSmearing(event->fReconstructedV0[i].v0Momentum, event->fReconstructedV0[i].v0MomentumTruth, (event+eventNumber)->fReconstructedV0[j].v0Momentum, (event+eventNumber)->fReconstructedV0[j].v0MomentumTruth,pairType);
+		  BinMomentumSmearing(v01.v0Momentum, v01.v0MomentumTruth, v02.v0Momentum, v02.v0MomentumTruth,pairType);
 		}
 	      }
 	      for(int sepCutIndex = 0; sepCutIndex < numberOfAvgSepCutIndices; sepCutIndex++){
 		if(fIsUsingVariableAvgSepCut) variableAvgSepValue = avgSepCutArray[sepCutIndex];
-		if((avgSepNonIdenticalCut < correctedAvgSepPos)
-		   && (avgSepNonIdenticalCut < correctedAvgSepNeg))
-		{
-		  fBkgLamALam->Fill(sepCutIndex, centralityBin+1, pairKstarLam);
-		  if(defaultVariableAvgSepCutIndex == sepCutIndex){
-		    //This implementation doesn't work properly
-		    fKtLamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
-		  }
+		if(center1Lam &&
+		   (   !(avgSepProtonPionSame   < avgSepPos)
+		    || !(avgSepProtonPionSame   < avgSepNeg)
+		    || !(avgSepProtonAntiproton < avgSepPosNeg)
+		    || !(avgSepPiPlusPiMinus    < avgSepNegPos))) {
+		  continue;
+		} else if(center1ALam &&
+		   (   !(avgSepProtonPionSame   < avgSepPos)
+		    || !(avgSepProtonPionSame   < avgSepNeg)
+		    || !(avgSepPiPlusPiMinus    < avgSepPosNeg)
+		    || !(avgSepProtonAntiproton < avgSepNegPos))) {
+		  continue;
+		}
+		fBkgLamALam->Fill(cutIndex, centralityBin+1, pairKstarLam);
+		if(cutIndex == fNominalCutIndex){
+		  fKtLamALamBkg->Fill(centralityBin+1,pairKt,pairKstarLam);
 		}
 	      }//end loop over sepCutIndex
 	    }//end Lam-ALam pair binning
@@ -1726,3 +2075,119 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
 }//end DoPairStudies()
 
 
+
+
+// void AliAnalysisV0Lam::DoMomResCorrelationWeighting(const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent, Int_t centBin, Int_t pairType)
+// {
+//   // Description...
+  
+//   Double_t kstarRec = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda, fPDGLambda);
+//   Double_t kstarTruth = CalculateKstar(v01.v0MomentumTruth, v02.v0MomentumTruth, fPDGLambda, fPDGLambda);
+//   Double_t pt1 = v01.v0MomentumTruth.Pt();
+//   Double_t pt2 = v02.v0MomentumTruth.Pt();
+//   if(0 == pairType) {
+//     if(!isMixedEvent) {
+//       fSignalMomResTruthUnweightedLL->Fill(centBin, kstarTruth);
+//       fSignalMomResTruthVsPtLL->Fill(kstarTruth, pt1, pt2);
+//     }
+//     else {
+//       fBkgMomResTruthUnweightedLL->Fill(centBin, kstarTruth);
+//       fBkgMomResTruthVsPtLL->Fill(kstarTruth, pt1, pt2);
+//     }
+//     for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++)
+//     {
+//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
+//       if(!isMixedEvent) {
+// 	fHistsSignalMomResTruthLL[i]->Fill(centBin, kstarTruth, weight);
+// 	fHistsSignalMomResRecLL[i]->Fill(centBin, kstarRec, weight);
+//       }
+//       else {
+// 	fHistsBkgMomResTruthLL[i]->Fill(centBin, kstarTruth);
+// 	fHistsBkgMomResRecLL[i]->Fill(centBin, kstarRec);
+//       }
+//     }
+//   }
+//   if(1 == pairType) {
+//     if(!isMixedEvent) {
+//       fSignalMomResTruthUnweightedAA->Fill(centBin, kstarTruth);
+//       fSignalMomResTruthVsPtAA->Fill(kstarTruth, pt1, pt2);
+//     }
+//     else {
+//       fBkgMomResTruthUnweightedAA->Fill(centBin, kstarTruth);
+//       fBkgMomResTruthVsPtAA->Fill(kstarTruth, pt1, pt2);
+//     }
+//     for(UInt_t i = 0; i < fLednickyWeightsLL.size(); i++)
+//     {
+//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
+//       if(!isMixedEvent) {
+//       fHistsSignalMomResTruthAA[i]->Fill(centBin, kstarTruth, weight);
+//       fHistsSignalMomResRecAA[i]->Fill(centBin, kstarRec, weight);
+//       }
+//       else {
+// 	fHistsBkgMomResTruthAA[i]->Fill(centBin, kstarTruth);
+// 	fHistsBkgMomResRecAA[i]->Fill(centBin, kstarRec);
+//       }
+//     }
+//   } // end LL or AA pairs
+
+//   if(2 == pairType) {
+//     if(!isMixedEvent) {
+//       fSignalMomResTruthUnweightedLA->Fill(centBin, kstarTruth);
+//       fSignalMomResTruthVsPtLA->Fill(kstarTruth, pt1, pt2);
+//     }
+//     else {
+//       fBkgMomResTruthUnweightedLA->Fill(centBin, kstarTruth);
+//       fBkgMomResTruthVsPtLA->Fill(kstarTruth, pt1, pt2);
+//     }
+//     for(UInt_t i = 0; i < fLednickyWeightsLA.size(); i++)
+//     {
+//       Double_t weight = GetLednickyWeight(i, kstarTruth, pairType);
+
+//       if(!isMixedEvent) {
+// 	fHistsSignalMomResTruthLA[i]->Fill(centBin, kstarTruth, weight);
+// 	fHistsSignalMomResRecLA[i]->Fill(centBin, kstarRec, weight);
+//       }
+//       else {
+// 	fHistsBkgMomResTruthLA[i]->Fill(centBin, kstarTruth);
+// 	fHistsBkgMomResRecLA[i]->Fill(centBin, kstarRec);
+//       }
+//     }
+//   } // end LA pairs
+// }
+
+// Double_t AliAnalysisV0Lam::GetLednickyWeight(UInt_t histIndex, Double_t kstar, Int_t pairType)
+// {
+//   // Get the lednicky weight for a given kstar bin from a particular
+//   // Lednicky Weight histogram
+  
+//   TH1D *hist;
+//   if(2 == pairType) hist = fLednickyWeightsLA[histIndex];
+//   else hist = fLednickyWeightsLL[histIndex];
+//   Double_t bin = hist->FindBin(kstar);
+//   return hist->GetBinContent(bin);
+// }
+
+
+
+
+
+
+
+
+
+bool AliAnalysisV0Lam::RejectEventCentFlat(float MagField, float CentPercent)
+{ // to flatten centrality distribution
+  bool RejectEvent = kFALSE;
+  int weightBinSign;
+  TRandom3* fRandomNumber = new TRandom3();  //for 3D, random sign switching
+  fRandomNumber->SetSeed(0);
+
+  if(MagField > 0) weightBinSign = 0;
+  else weightBinSign = 1;
+  float kCentWeight[2][9] = {{.878,.876,.860,.859,.859,.88,.873,.879,.894},
+                             {.828,.793,.776,.772,.775,.796,.788,.804,.839}};
+  int weightBinCent = (int) CentPercent;
+  if(fRandomNumber->Rndm() > kCentWeight[weightBinSign][weightBinCent]) RejectEvent = kTRUE;
+  delete fRandomNumber;
+  return RejectEvent;
+}

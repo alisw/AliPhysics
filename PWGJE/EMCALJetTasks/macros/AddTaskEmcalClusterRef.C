@@ -14,11 +14,9 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(
   // EG2:  8 GeV
   // EJ1:  22 GeV
   // EJ2:  12 GeV
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef::kECREL0, 5);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef::kECREG1, 14);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef::kECREG2, 8);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef::kECREJ1, 22);
-  task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef::kECREJ2, 12);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
 
   TString outfile(mgr->GetCommonFileName());
   outfile += ":ClusterQA";

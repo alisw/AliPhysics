@@ -72,7 +72,10 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(const char *nTracks  
 
   TString name(Form("ClusTrackMatcher_%s_%s", trackName.Data(), clusName.Data()));
   AliEmcalClusTrackMatcherTask* matcher = new AliEmcalClusTrackMatcherTask(name, createHisto);
-  matcher->AddParticleContainer(trackName);
+  AliTrackContainer* trackCont = matcher->AddTrackContainer(trackName);
+  if (trackCont) {
+    if (trackName == "Tracks" || trackName == "tracks") trackCont->SetFilterHybridTracks(kTRUE);
+  }
   matcher->AddClusterContainer(clusName);
   matcher->SetMaxDistance(maxDist);
   matcher->SetUpdateClusters(updateClusters);

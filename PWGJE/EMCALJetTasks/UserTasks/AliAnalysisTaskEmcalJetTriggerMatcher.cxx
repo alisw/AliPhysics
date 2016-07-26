@@ -405,7 +405,8 @@ Bool_t AliAnalysisTaskEmcalJetTriggerMatcher::Run()
     //cout<<"Event #: "<<event<<"  Number of Clusters: "<<fCaloClustersCont->GetNClusters()<<"  Number of Tracks: "<<fTracksCont->GetNParticles()<<"  Number Of Jets: "<< Njets <<endl;
     
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0);
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster();
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);

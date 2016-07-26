@@ -16,8 +16,8 @@ class AliHFEextraCuts;
 
 AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                           TString uniqueID = "",
-                                                          Float_t centrMin ,
-                                                          Float_t centrMax ,
+                                                          Float_t centrMin,
+                                                          Float_t centrMax,
                                                           Bool_t Weights = kTRUE,
                                                           Bool_t CocktailWeights = kTRUE,
                                                           Bool_t SetSTACK = kFALSE,
@@ -40,14 +40,14 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
                                                           Double_t pTminAssoTrack = 0.0,
                                                           //const char *Cent = "V0M",
                                                           Bool_t shrinkSP = kTRUE,
-                                                          Bool_t debug = kFALSE,
+                                                          Bool_t debug = kFALSE
                                                           )
 
 {
     
     
     
-    if(debug) cout << " === Adding Task ElectFlow === " << endl;
+    if(debug) cout << " === Adding Task ElectronEfficiency === " << endl;
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":ElectroID_";
     fileName += uniqueID;
@@ -63,9 +63,9 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
     }
     
     //create a task
-    AliAnalysisTaskHFEEfficiency *taskHFE = ConfigHFEemcalMod(kTRUE, minTPCCluster, pixel);    //kTRUE if MC
+    AliAnalysisTaskHFEEfficiency *taskHFE = ConfigHFEEff(kTRUE, minTPCCluster, pixel);    //kTRUE if MC
     
-    if(debug) cout << " === AliAnalysisElectronFlow === " << taskHFE << endl;
+    if(debug) cout << " === AliAnalysisTaskHFEEfficiency === " << taskHFE << endl;
     if(!taskHFE) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
@@ -86,8 +86,8 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
 
 
     //set RP cuts for flow package analysis
-    TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,foutputName.Data());
+   // TString foutputName = "PbPbPhotonicElecEfficiency010ITSTOFTPCWeights.root";
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(Form("ccontainer0_%s",uniqueID.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,fileName);
     
     mgr->ConnectInput(taskHFE,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskHFE,1,coutput3);
@@ -104,14 +104,14 @@ AliAnalysisTaskHFEEfficiency*  AddTaskHFEEfficiency(
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskHFEEfficiency* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
+AliAnalysisTaskHFEEfficiency* ConfigHFEEff(Bool_t useMC,Int_t minTPCCulster,AliHFEextraCuts::ITSPixel_t pixel){
     //
     // HFE standard task configuration
     //
     
     Bool_t kAnalyseTaggedTracks = kTRUE;
     
-    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsITSTOFTPC","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
+    AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEffITSTOFTPC","HFE Standard Cuts");  //TODO....change the cuts values to PbPb
     //  hfecuts->CreateStandardCuts();
     hfecuts->SetMinNClustersTPC(minTPCCulster);
     hfecuts->SetMinNClustersITS(5);
@@ -133,7 +133,7 @@ AliAnalysisTaskHFEEfficiency* ConfigHFEemcalMod(Bool_t useMC,Int_t minTPCCulster
     //  hfecuts->SetQAOn();
     hfecuts->SetPtRange(0, 30);
     
-    AliAnalysisTaskHFEEfficiency *task = new AliAnalysisTaskHFEEfficiency("HFE_Flow_TPCEMCal");
+    AliAnalysisTaskHFEEfficiency *task = new AliAnalysisTaskHFEEfficiency("HFE_Eff");
     printf("task ------------------------ %p\n ", task);
     
     

@@ -146,7 +146,11 @@ Int_t AliAODMuonReplicator::GetNewLabel(Int_t i)
   /// Gets the label from the new created Map
   /// Call CreatLabelMap before
   /// otherwise only 0 returned
-  return fLabelMap.GetValue(TMath::Abs(i));
+  if ( i < 0 ) {
+    AliError(Form("Searching for new label of particle with invalid label %i",i));
+    return i;
+  }
+  return fLabelMap.GetValue(i);
 }
 
 //_____________________________________________________________________________
@@ -322,7 +326,7 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
     
     while ( ( t = static_cast<AliAODTrack*>(nextTrack()) ) )
     {
-      t->SetLabel(GetNewLabel(t->GetLabel()));
+      if ( t->GetLabel() >= 0 ) t->SetLabel(GetNewLabel(t->GetLabel()));
     }
     
   }

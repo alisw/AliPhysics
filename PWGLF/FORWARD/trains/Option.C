@@ -270,14 +270,14 @@ struct OptionList
   /** 
    * Constructor 
    */
-  OptionList() : fList(0) { }
+  OptionList() : fList(0), fDesc("") { }
   /** 
    * Copy constructor 
    *
    * @param other Object to copy from 
    */
   OptionList(const OptionList& other) 
-    : fList(0)
+    : fList(0), fDesc(other.fDesc)
   { 
     // fList.SetOwner(); 
     // TIter next(&other.fList);
@@ -321,6 +321,12 @@ struct OptionList
     
     return *this; 
   }
+  /** 
+   * Set the description 
+   * 
+   * @param d Description
+   */
+  void SetDescription(const TString& d) { fDesc = d; }
   /** 
    * Copy list from other object
    * 
@@ -826,6 +832,36 @@ struct OptionList
     // while ((opt = static_cast<Option*>(next()))) {
     // }
   }
+  void HelpDesc(std::ostream& o,
+		const TString& prefix="",
+		const Int_t max=70) const
+  {
+    if (fDesc.IsNull()) return;
+    Int_t       indent= prefix.Length();
+    Int_t       cur   = indent;
+    TObjArray*  words = fDesc.Tokenize(" ");
+    TObjString* word  = 0;
+    TIter       next(words);
+    o << std::endl << prefix;
+    while ((word = static_cast<TObjString*>(next()))) {
+      TString w = word->String();
+      if (w.Contains("\n")) {
+	Int_t idx = w.Index("\n");
+	w.ReplaceAll("\n",Form("%s\n",prefix.Data()));
+	o << w;
+	cur = indent + (w.Length()-idx-1);
+	w = "";
+      }
+      if (cur + w.Length() > max) {
+	o << std::endl << prefix;
+	cur = indent;
+      }
+      o << w << " ";
+      cur += w.Length() + 1;
+    }
+    if (cur != indent) o << std::endl;
+  }
+    
   /** 
    * Display option help
    * 
@@ -845,6 +881,8 @@ struct OptionList
       opt->Help(o, nWidth);
       cur = cur->fNext;
     }
+    TString pre(prefix); // pre.ReplaceAll("-", " ");
+    HelpDesc(o);
   }
   /** 
    * Show the values of options 
@@ -897,7 +935,8 @@ struct OptionList
   }
   // Our linked list
   Link* fList;
-
+  TString fDesc;
+  
   static void Test(const char* opts="")
   {
     OptionList l;

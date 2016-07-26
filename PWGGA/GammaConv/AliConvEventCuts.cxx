@@ -118,6 +118,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
   hVertexZ(NULL),
+  hEventPlaneAngle(NULL),
+  fEventPlaneAngle(0),
   hTriggerClass(NULL),
   hTriggerClassSelected(NULL),
   hTriggerClassesCorrelated(NULL),
@@ -216,6 +218,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
   hVertexZ(ref.hVertexZ),
+  hEventPlaneAngle(ref.hEventPlaneAngle),
+  fEventPlaneAngle(ref.fEventPlaneAngle),
   hTriggerClass(NULL),
   hTriggerClassSelected(NULL),
   hTriggerClassesCorrelated(NULL),
@@ -348,6 +352,12 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
   fHistograms->Add(hVertexZ);
+
+  if(fIsHeavyIon == 1){
+    hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
+    fHistograms->Add(hEventPlaneAngle);
+  }
+
 
   // Event Cuts and Info
   if(preCut){
@@ -584,7 +594,12 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   //      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
   //                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
   //                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-
+  
+  if(fIsHeavyIon == 1){
+    AliEventplane *EventPlane = fInputEvent->GetEventplane();
+    fEventPlaneAngle = EventPlane->GetEventplane("V0",fInputEvent,2);
+    if(hEventPlaneAngle)hEventPlaneAngle->Fill(TMath::Abs(fEventPlaneAngle));
+  }
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   fEventQuality = 0;
@@ -3021,7 +3036,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 //    hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
 //                        ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
 //                        ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-
+  
+  if(fIsHeavyIon == 1){
+    AliEventplane *EventPlane = InputEvent->GetEventplane();
+    fEventPlaneAngle = EventPlane->GetEventplane("V0",InputEvent,2);
+    if(hEventPlaneAngle)hEventPlaneAngle->Fill(TMath::Abs(fEventPlaneAngle));
+  }
   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   return 0;

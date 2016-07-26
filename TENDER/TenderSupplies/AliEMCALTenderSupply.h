@@ -4,15 +4,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-////////////////////////////////////////////////////////////////////////
-//                                                                    //
-//  EMCAL tender, apply corrections to EMCAl clusters                 //
-//  and do track matching.                                            //
-//  Author: Deepa Thomas (Utrecht University)                         //
-//  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)           //
-//  S. Aiola, C. Loizides : Make it work for AODs                     //
-//                                                                    //
-////////////////////////////////////////////////////////////////////////
+///
+/// \class AliEMCALTenderSupply       
+/// \brief EMCal corrections tender
+///  
+/// EMCAL tender, apply corrections to EMCAL clusters (calibrations, bad map)
+/// and do track matching.
+///                                                                           
+/// \author Deepa Thomas (Utrecht University)                                 
+/// \author Jiri Kral (University of Jyvaskyla), mods/rewrite
+/// \author Salvatore Aiola, make it work for AODs
+/// \author C. Loizides, make it work for AODs                           
+/// \author Gustavo Conesa, LPSC-Grenoble, several mods. 
+///
 
 #include "AliTenderSupply.h"
 
@@ -170,6 +174,10 @@ public:
   void     SwitchOnUseClusterMCLabelForCell(Int_t opt = 2) { fSetCellMCLabelFromCluster = opt ; }
   void     SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = 0   ; }
 
+  void     SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE ;  
+                                                            fSetCellMCLabelFromCluster  = 0     ; }
+  void     SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE; }
+
   // Switch on/off the automatic setting of different calibrations, only experts
   void     SwitchOnUseAutomaticRecalibParam()              { fUseAutomaticRecalib       = kTRUE  ; }
   void     SwitchOnUseAutomaticRunDepRecalibParam()        { fUseAutomaticRunDepRecalib = kTRUE  ; }
@@ -256,12 +264,16 @@ private:
   // MC labels
   static const Int_t     fgkTotalCellNumber = 17664 ; // Maximum number of cells in EMCAL/DCAL: (48*24)*(10+4/3.+6*2/3.)
   
-  Int_t                  fOrgClusterCellId[fgkTotalCellNumber]; // Array ID of cluster to wich the cell belongs in unmodified clusters. This is only needed for Run1 old passes where cell MC label info was not available.
- 
+  Int_t                  fOrgClusterCellId[fgkTotalCellNumber]; // Array ID of cluster to wich the cell belongs in unmodified clusters. 
+  Int_t                  fCellLabels      [fgkTotalCellNumber]; // Array with MC label/map 
+  
   Int_t                  fSetCellMCLabelFromCluster; // Use cluster MC label as cell label:
                                                      // 0 - get the MC label stored in cells
                                                      // 1 - assign to the cell the MC lable of the cluster
                                                      // 2 - get the original clusters id, add all the MC labels
+  Bool_t                 fSetCellMCLabelFromEdepFrac;// For MC generated with aliroot > v5-07-21, check the EDep information 
+                                                     // stored in ESDs/AODs to set the cell MC labels
+
   TClonesArray *         fTempClusterArr      ;      //! Temporal clusters array to recover the MC of original cluster if fSetCellMCLabelFromCluster=2
   Bool_t                 fRemapMCLabelForAODs ;      // Remap AOD cells MC label
   
@@ -274,6 +286,6 @@ private:
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 18); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 19); // EMCAL tender task
 };
 #endif

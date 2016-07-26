@@ -270,6 +270,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
 	fHistoLambdaPtvsDlMCS(0),
+	fHistoLambdaPtvsDR(0),
+	fHistoLambdaPtvsDRSide(0),
+	fHistoLambdaPtvsDRMCS(0),
 	fHistoEleXiPtvsRapidityRS(0),
 	fHistoEleXiPtvsRapidityWS(0),
 	fHistoEleXiPtvsRapidityMCS(0),
@@ -512,6 +515,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoLambdaPtvsDl(0),
 	fHistoLambdaPtvsDlSide(0),
 	fHistoLambdaPtvsDlMCS(0),
+	fHistoLambdaPtvsDR(0),
+	fHistoLambdaPtvsDRSide(0),
+	fHistoLambdaPtvsDRMCS(0),
 	fHistoEleXiPtvsRapidityRS(0),
 	fHistoEleXiPtvsRapidityWS(0),
 	fHistoEleXiPtvsRapidityMCS(0),
@@ -2350,12 +2356,15 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   Double_t posVtx[3] = {0.,0.,0.};
   fVtx1->GetXYZ(posVtx);
   Double_t ptotlam = TMath::Sqrt(pow(casc->Px(),2)+pow(casc->Py(),2)+pow(casc->Pz(),2));
-  Double_t v0propdl = sqrt(pow(casc->DecayVertexV0X()-posVtx[0],2)+pow(casc->DecayVertexV0Y()-posVtx[1],2)+pow(casc->DecayVertexV0Z()-posVtx[2],2))*mlamPDG/ptotlam;
+  Double_t dl = sqrt(pow(casc->DecayVertexV0X()-posVtx[0],2)+pow(casc->DecayVertexV0Y()-posVtx[1],2)+pow(casc->DecayVertexV0Z()-posVtx[2],2));
+  Double_t v0propdl = dl*mlamPDG/ptotlam;
 	if(fAnalCuts->IsPeakRegion(casc)){
 		fHistoLambdaPtvsDl->Fill(casc->Pt(),v0propdl);
+		fHistoLambdaPtvsDR->Fill(casc->Pt(),dl);
 	}
 	if(fAnalCuts->IsSideBand(casc)){
 		fHistoLambdaPtvsDlSide->Fill(casc->Pt(),v0propdl);
+		fHistoLambdaPtvsDRSide->Fill(casc->Pt(),dl);
 	}
 
 	Int_t xipdgcode = -9999;
@@ -2376,6 +2385,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 		if(!mccasctrk) return;
 
 		fHistoLambdaPtvsDlMCS->Fill(casc->Pt(),v0propdl);
+		fHistoLambdaPtvsDRMCS->Fill(casc->Pt(),dl);
 
 		Bool_t hfxi_flag = kFALSE;
 		xipdgcode = mccasctrk->GetPdgCode();
@@ -3178,6 +3188,13 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoLambdaPtvsDlSide);
   fHistoLambdaPtvsDlMCS=new TH2F("fHistoLambdaPtvsDlMCS","Lambda pt vs dl",20,0.,10.,20,0.,40.);
   fOutputAll->Add(fHistoLambdaPtvsDlMCS);
+  fHistoLambdaPtvsDR=new TH2F("fHistoLambdaPtvsDR","Lambda pt vs dl",20,0.,10.,80,0.,160.);
+  fOutputAll->Add(fHistoLambdaPtvsDR);
+  fHistoLambdaPtvsDRSide=new TH2F("fHistoLambdaPtvsDRSide","Lambda pt vs dl",20,0.,10.,80,0.,160.);
+  fOutputAll->Add(fHistoLambdaPtvsDRSide);
+  fHistoLambdaPtvsDRMCS=new TH2F("fHistoLambdaPtvsDRMCS","Lambda pt vs dl",20,0.,10.,80,0.,160.);
+  fOutputAll->Add(fHistoLambdaPtvsDRMCS);
+
   fHistoEleXiPtvsRapidityRS=new TH2F("fHistoEleXiPtvsRapidityRS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);
   fOutputAll->Add(fHistoEleXiPtvsRapidityRS);
   fHistoEleXiPtvsRapidityWS=new TH2F("fHistoEleXiPtvsRapidityWS","EleXi pt vs rap",20,0.,20.,40,-2.,2.);

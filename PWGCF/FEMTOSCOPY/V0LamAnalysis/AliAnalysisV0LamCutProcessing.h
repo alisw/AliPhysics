@@ -10,35 +10,51 @@
 class AliAnalysisV0LamCut
 {
  public:
-  AliAnalysisV0LamCut(std::vector<double> variableCutValues, bool isUpperBound);
+  AliAnalysisV0LamCut();
+  AliAnalysisV0LamCut(std::vector<Double_t> variableCutValues, bool isUpperBound);
   ~AliAnalysisV0LamCut();
   int fNumberOfCutValues;
   bool fIsAnUpperLimit; //if this is false, the cut is a lower limit
-  std::vector<double> fCutValues;
+  std::vector<Double_t> fCutValues;
 };
 
 class AliAnalysisV0LamCutProcessing
 {
   //created and used in AliAnalysisV0Lam::init
 public:
-  AliAnalysisV0LamCutProcessing(TList *const outputList);
+  enum CutType_t {kNoCut = 0,
+		  kDCAProton = 1,
+		  kDCAPion = 2,
+		  kDCADaughter = 3,
+		  kProperDecayLength = 4,
+		  kEta = 5,
+		  kCosPointing = 6,
+		  kDCAV0 = 7,
+		  kPt = 8,
+		  kMassLam = 9,
+		  kMassALam = 10};
+  
+  AliAnalysisV0LamCutProcessing(TList *const outputList, Int_t varCutIndex);
   ~AliAnalysisV0LamCutProcessing();
+  void SetCentralityBin(int centBin) {fCurrentCentralityBin = centBin;}
   void CheckIfV0PassesCuts(AliReconstructedV0 *v0);
   void DoV0Histogramming(AliReconstructedV0 *v0);
   int GetNumberOfVariableCutValues() const {return fNumberOfVariableCutValues;}
-  void SetCentralityBin(int centBin) {fCurrentCentralityBin = centBin;}
-  int GetVariableCutIndex() {return fDefaultVariableCutIndex;}
-private:
+  
+ private:
+  AliAnalysisV0LamCutProcessing(const AliAnalysisV0LamCutProcessing &processor); // Not implemented
+  AliAnalysisV0LamCutProcessing operator=(const AliAnalysisV0LamCutProcessing &processor); // Not implemented
   void InitHistograms();
   void SortAndFillCutHistograms(AliReconstructedV0 *v0, bool isLambda);
   void ProcessCut(AliReconstructedV0 *v0, int index, bool isLambdaCandidate);
   void DetermineIfTrueV0(AliReconstructedV0 *v0, bool isLambda);
   void FillHist(AliReconstructedV0 *v0, int cutTypeIndex, int variableCutIndex, bool isLambda);
-  AliAnalysisV0LamCut* fCuts[10];
+
+  std::vector<AliAnalysisV0LamCut> fCuts;
   int fNumberOfCutTypes;
   int fNumberOfVariableCutValues;
   int fCurrentCentralityBin;
-  int fDefaultVariableCutIndex;
+  int fDefaultVariableCutType;
   TList *fOutputList; //! Compact output list where histograms are written
   //These hists are filled during the V0 reconstruction process
   TH2F *fHistDaughterPosDcaToPrimLam;

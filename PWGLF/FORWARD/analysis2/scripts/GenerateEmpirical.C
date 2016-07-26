@@ -251,7 +251,9 @@ struct EmpiricalMaker {
    * Load reference data as compiled script
    * 
    */
-  void LoadReferences() {
+  void LoadReferences()
+  {
+#if 0
     if (fRefLoaded) return;
     // --- Set the macro pathand load other data script --------------
     TString savPath(gROOT->GetMacroPath());
@@ -262,6 +264,7 @@ struct EmpiricalMaker {
       gROOT->LoadMacro("OtherData.C+");
     gROOT->SetMacroPath(savPath);
     fRefLoaded = true;
+#endif 
   }
   /** 
    * Get reference dN/deta in some centrality range
@@ -271,7 +274,11 @@ struct EmpiricalMaker {
    * 
    * @return Reference data, or null
    */
-  TMultiGraph* GetReference(UShort_t c1, UShort_t c2) { 
+  TMultiGraph* GetReference(UShort_t c1, UShort_t c2)
+  {
+    return 0;
+#if 0
+     
     if (!fRefLoaded) LoadReferences();
 
     TMultiGraph* other = 0;
@@ -290,6 +297,7 @@ struct EmpiricalMaker {
 
     other = reinterpret_cast<TMultiGraph*>(ret);    
     return other;
+#endif 
   }
   /** 
    * Run the full thing 
@@ -398,6 +406,7 @@ struct EmpiricalMaker {
   void ProcessCent(UShort_t c1, UShort_t c2, TCollection* c, 
 		   const TString& name, THStack* s, TDirectory* d) 
   {
+    // @todo reimplement to get from GSE's 
     TMultiGraph* others = GetReference(c1, c2);
     if (!others) return;
 

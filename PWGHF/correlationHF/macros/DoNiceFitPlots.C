@@ -68,22 +68,27 @@ TCanvas* ExtractPad(TCanvas *c, Int_t padnum) {
 void ModStyle(TCanvas *c, Int_t system) {
 c->ls();
   TF1 *fun = (TF1*)c->FindObject("fGausASper");
-  fun->SetLineWidth(3);
+  fun->SetLineWidth(4);
   fun->SetLineColor(kGreen+3);
+  fun->SetLineStyle(10);
 
   TF1 *fun2 = (TF1*)c->FindObject("fGausNSper");
-  fun2->SetLineWidth(3);
+  fun2->SetLineWidth(4);
+  fun2->SetLineStyle(9);
 
   TF1 *fun3 = (TF1*)c->FindObject("fPed");
-  fun3->SetLineWidth(3);
+  fun3->SetLineWidth(4);
+  fun3->SetLineStyle(2);
 
   TH1D *h = (TH1D*)c->FindObject("fHist");
   h->GetYaxis()->SetTitleOffset(h->GetYaxis()->GetTitleOffset()+0.3);
+  h->GetYaxis()->CenterTitle(kTRUE);
   h->GetYaxis()->SetTitleSize(0.045);
   h->GetYaxis()->SetLabelSize(0.04);
   h->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
   h->GetYaxis()->SetTitleOffset(1.5);
   h->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+  h->GetXaxis()->CenterTitle(kTRUE);
   h->GetXaxis()->SetTitleSize(0.045);
   h->GetXaxis()->SetLabelSize(0.04);
   h->GetXaxis()->SetTitleOffset(1.12);
@@ -94,7 +99,7 @@ c->ls();
   }
 
   TF1 *funfit = (TF1*)(h->GetListOfFunctions()->FindObject("TwoGausPeriodicity"));
-  funfit->SetLineWidth(3); 
+  funfit->SetLineWidth(4); 
   funfit->SetLineColor(kRed+2); 
 
   Double_t max = h->GetBinContent(h->GetMaximumBin());
@@ -153,49 +158,49 @@ c->ls();
 
   pad->cd();
 
-  TLatex *tl1=new TLatex(0.215,0.81,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+  TLatex *tl1=new TLatex(0.215,0.79,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
   tl1->SetNDC();
-  tl1->SetTextSize(0.035);
+  tl1->SetTextSize(0.045);
   tl1->Draw("same");
 
   if(system==0) {
-    TLatex *tl2=new TLatex(0.215,0.88,Form("#bf{pp, #sqrt{#it{s}}=7 TeV}"));
+    TLatex *tl2=new TLatex(0.215,0.875,Form("#bf{pp, #sqrt{#it{s}}=7 TeV}"));
     tl2->SetNDC();
-    tl2->SetTextSize(0.035);
+    tl2->SetTextSize(0.045);
     tl2->Draw("same");
   } else {
-    TLatex *tl2=new TLatex(0.215,0.88,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV}"));
+    TLatex *tl2=new TLatex(0.215,0.875,Form("#bf{p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV}"));
     tl2->SetNDC();
-    tl2->SetTextSize(0.035);
+    tl2->SetTextSize(0.045);
     tl2->Draw("same");
   }
 
-  TLatex *tl2b=new TLatex(0.81,0.878,Form("#bf{ALICE}"));
+  TLatex *tl2b=new TLatex(0.79,0.875,Form("#bf{ALICE}"));
   tl2b->SetNDC();
-  tl2b->SetTextSize(0.040);
+  tl2b->SetTextSize(0.045);
   tl2b->Draw("same");
 
   if(system==0) {
-    TLatex *tl3=new TLatex(0.215,0.74,Form("#bf{|#it{y}^{D}|<0.5, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.70,Form("#bf{|#it{y}^{D}|<0.5, |#Delta#eta|<1.0}"));
     tl3->SetNDC();
-    tl3->SetTextSize(0.035);
+    tl3->SetTextSize(0.045);
     tl3->Draw("same");
   } else {
-    TLatex *tl3=new TLatex(0.215,0.74,Form("#bf{-0.96<#it{y}^{D}_{cms}<0.04, |#Delta#eta|<1.0}"));
+    TLatex *tl3=new TLatex(0.215,0.70,Form("#bf{-0.96<#it{y}^{D}_{cms}<0.04, |#Delta#eta|<1.0}"));
     tl3->SetNDC();
-    tl3->SetTextSize(0.035);
+    tl3->SetTextSize(0.045);
     tl3->Draw("same");
   }
 
   if(system==0) {
-    TLatex *tl4=new TLatex(0.215,0.67,Form("#bf{5<#it{p}_{T}^{D}<8 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.61,Form("#bf{5<#it{p}_{T}^{D}<8 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
     tl4->SetNDC();
-    tl4->SetTextSize(0.035);
+    tl4->SetTextSize(0.045);
     tl4->Draw("same");
   } else {
-    TLatex *tl4=new TLatex(0.215,0.67,Form("#bf{8<#it{p}_{T}^{D}<16 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
+    TLatex *tl4=new TLatex(0.215,0.61,Form("#bf{8<#it{p}_{T}^{D}<16 GeV/#it{c}, #it{p}_{T}^{assoc}>1 GeV/#it{c}}"));
     tl4->SetNDC();
-    tl4->SetTextSize(0.035);
+    tl4->SetTextSize(0.045);
     tl4->Draw("same");
   }
 /*
@@ -205,14 +210,14 @@ c->ls();
   tlAlice->SetTextSize(0.038);
 */
   if(system==0) {
-    TLatex *tlUnc=new TLatex(0.20,0.60,Form("#bf{{}^{+13%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.50,Form("#bf{{}^{+13%}_{-10%} scale uncertainty}"));
     tlUnc->SetNDC();
-    tlUnc->SetTextSize(0.0375);
+    tlUnc->SetTextSize(0.045);
     tlUnc->Draw("same");
   } else {
-    TLatex *tlUnc=new TLatex(0.20,0.60,Form("#bf{{}^{+10%}_{-10%} scale uncertainty}"));
+    TLatex *tlUnc=new TLatex(0.35,0.50,Form("#bf{{}^{+10%}_{-10%} scale uncertainty}"));
     tlUnc->SetNDC();
-    tlUnc->SetTextSize(0.0375);
+    tlUnc->SetTextSize(0.045);
     tlUnc->Draw("same");
   }
 

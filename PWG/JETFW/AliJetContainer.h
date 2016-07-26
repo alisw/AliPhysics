@@ -14,11 +14,12 @@ class AliLocalRhoParameter;
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include "AliRhoParameter.h"
-#include "AliEmcalContainer.h"
+#include "AliParticleContainer.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
+#include "AliEmcalJet.h"
 
-class AliJetContainer : public AliEmcalContainer {
+class AliJetContainer : public AliParticleContainer {
  public:
  
   enum EJetType_t {
@@ -28,10 +29,14 @@ class AliJetContainer : public AliEmcalContainer {
   };
 
   enum EJetAlgo_t {
-    kt_algorithm            = 0,
-    cambridge_algorithm     = 1,
-    antikt_algorithm        = 2,
-    undefined_jet_algorithm = 999
+    kt_algorithm                    = 0,
+    antikt_algorithm                = 1,
+    cambridge_algorithm             = 2,
+    genkt_algorithm                 = 3,
+    cambridge_for_passive_algorithm = 11,
+    genkt_for_passive_algorithm     = 13,
+    plugin_algorithm                = 99,
+    undefined_jet_algorithm         = 999
   };
 
   enum ERecoScheme_t {
@@ -67,14 +72,14 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetAcceptanceType(JetAcceptanceType type)         { fJetAcceptanceType          = type ; }
   void                        PrintCuts();
   void                        ResetCuts();
+  void                        SetJetEtaLimits(Float_t min, Float_t max)            { SetEtaLimits(min, max)             ; }
+  void                        SetJetPhiLimits(Float_t min, Float_t max)            { SetPhiLimits(min, max)             ; }
+  void                        SetJetPtCut(Float_t cut)                             { SetMinPt(cut)                      ; }
+  void                        SetJetPtCutMax(Float_t cut)                          { SetMaxPt(cut)                      ; }
   void                        SetJetEtaPhiEMCAL(Double_t r=0.) ;
   void                        SetJetEtaPhiDCAL(Double_t r=0.)  ;
   void                        SetJetEtaPhiTPC(Double_t r=0.)   ;
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
-  void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
-  void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.);
-  void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
-  void                        SetJetPtCutMax(Float_t cut)                          { fJetPtCutMax    = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
@@ -83,12 +88,14 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetZLeadingCut(Float_t zemc, Float_t zch)            { fZLeadingEmcCut = zemc; fZLeadingChCut = zch ; }
   void                        SetNEFCut(Float_t min = 0., Float_t max = 1.)        { fNEFMinCut = min; fNEFMaxCut = max;  }
   void                        SetFlavourCut(Int_t myflavour)                       { fFlavourSelection = myflavour;}
+  void                        SetMinClusterPt(Float_t b)                           { fMinClusterPt   = b                ; }
   void                        SetMaxClusterPt(Float_t b)                           { fMaxClusterPt   = b                ; }
+  void                        SetMinTrackPt(Float_t b)                             { fMinTrackPt     = b                ; }
   void                        SetMaxTrackPt(Float_t b)                             { fMaxTrackPt     = b                ; }
-  void                        SetPtBiasJetClus(Float_t b)                          { fPtBiasJetClus  = b                ; }
+  void                        SetPtBiasJetClus(Float_t b)                          { SetMinClusterPt(b)                 ; }
   void                        SetNLeadingJets(Int_t t)                             { fNLeadingJets   = t                ; }
   void                        SetMinNConstituents(Int_t n)                         { fMinNConstituents = n              ; }
-  void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
+  void                        SetPtBiasJetTrack(Float_t b)                         { SetMinTrackPt(b)                   ; }
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
   void                        SetTagStatus(Int_t i)                                { fTagStatus      = i                ; }
@@ -105,14 +112,19 @@ class AliJetContainer : public AliEmcalContainer {
   AliEmcalJet                *GetAcceptJet(Int_t i)                      ;
   AliEmcalJet                *GetJetWithLabel(Int_t lab)            const;
   AliEmcalJet                *GetAcceptJetWithLabel(Int_t lab)           ;
-  AliEmcalJet                *GetNextAcceptJet(Int_t i=-1)               ;
-  AliEmcalJet                *GetNextJet(Int_t i=-1)                     ;
+  AliEmcalJet                *GetNextAcceptJet()                         ;
+  AliEmcalJet                *GetNextJet()                               ;
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet, Double_t mass);
+  Bool_t                      GetMomentum(TLorentzVector &mom, const AliEmcalJet* jet);
   Bool_t                      GetMomentum(TLorentzVector &mom, Int_t i);
   Bool_t                      GetAcceptMomentum(TLorentzVector &mom, Int_t i);
-  Bool_t                      GetNextMomentum(TLorentzVector &mom, Int_t i=-1);
-  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom, Int_t i=-1);
-  Bool_t                      AcceptJet(const AliEmcalJet* jet)          ;
-  Bool_t                      AcceptBiasJet(const AliEmcalJet* jet)      ;
+  Bool_t                      GetNextMomentum(TLorentzVector &mom);
+  Bool_t                      GetNextAcceptMomentum(TLorentzVector &mom);
+  virtual Bool_t              AcceptObject(Int_t i)              { return AcceptJet(i);}
+  virtual Bool_t              AcceptObject(const TObject* obj)   { return AcceptJet(dynamic_cast<const AliEmcalJet*>(obj));}
+  virtual Bool_t              AcceptJet(Int_t i)                         ;
+  virtual Bool_t              AcceptJet(const AliEmcalJet* jet)          ;
+  virtual Bool_t              ApplyJetCuts(const AliEmcalJet* clus)      ;
   Int_t                       GetFlavourCut()                       const    {return fFlavourSelection;}
   Int_t                       GetNJets()                            const    {return GetNEntries();}
   Int_t                       GetNAcceptedJets()                         ;
@@ -132,13 +144,13 @@ class AliJetContainer : public AliEmcalContainer {
   const TString&              GetRhoMassName()                      const    {return fRhoMassName;}
   Double_t                    GetJetPtCorr(Int_t i)                 const;
   Double_t                    GetJetPtCorrLocal(Int_t i)            const;
-  Float_t                     GetJetRadius()                        const    {return fJetRadius;}
-  Float_t                     GetJetEtaMin()                        const    {return fJetMinEta;}
-  Float_t                     GetJetEtaMax()                        const    {return fJetMaxEta;}
-  Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
-  Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
-  Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
-  Float_t                     GetJetPtCutMax()                      const    {return fJetPtCutMax;}
+  Float_t                     GetJetRadius()                        const    {return fJetRadius ; }
+  Double_t                    GetJetEtaMin()                        const    {return GetMinEta(); }
+  Double_t                    GetJetEtaMax()                        const    {return GetMaxEta(); }
+  Double_t                    GetJetPhiMin()                        const    {return GetMinPhi(); }
+  Double_t                    GetJetPhiMax()                        const    {return GetMaxPhi(); }
+  Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
+  Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
@@ -152,6 +164,7 @@ class AliJetContainer : public AliEmcalContainer {
 
  protected:
   void SetEMCALGeometry();
+  void SetAcceptanceCuts();
   
   JetAcceptanceType           fJetAcceptanceType;    //  acceptance type
   Float_t                     fJetRadius;            //  jet radius
@@ -159,18 +172,11 @@ class AliJetContainer : public AliEmcalContainer {
   TString                     fLocalRhoName;         //  Name of local rho object
   TString                     fRhoMassName;          //  Name of rho mass object
   Int_t                       fFlavourSelection;     //  selection on jet flavour
-  Float_t                     fPtBiasJetTrack;       //  select jets with a minimum pt track
-  Float_t                     fPtBiasJetClus;        //  select jets with a minimum pt cluster
-  Float_t                     fJetPtCut;             //  cut on jet pt
-  Float_t                     fJetPtCutMax;          //  cut on jet pt - MAX
   Float_t                     fJetAreaCut;           //  cut on jet area
   Float_t                     fAreaEmcCut;           //  minimum cut on jet emcal area
-  Float_t                     fJetMinEta;            //  minimum eta jet acceptance
-  Float_t                     fJetMaxEta;            //  maximum eta jet acceptance
-  Float_t                     fJetMinPhi;            //  minimum phi jet acceptance
-  Float_t                     fJetMaxPhi;            //  maximum phi jet acceptance  
-  Float_t                     fPhiOffset;            //  offset to allow cutting
+  Float_t                     fMinClusterPt;         //  maximum cluster constituent pt to accept the jet
   Float_t                     fMaxClusterPt;         //  maximum cluster constituent pt to accept the jet
+  Float_t                     fMinTrackPt;           //  maximum track constituent pt to accept the jet
   Float_t                     fMaxTrackPt;           //  maximum track constituent pt to accept the jet
   Float_t                     fZLeadingEmcCut;       //  maximum z,leading neutral
   Float_t                     fZLeadingChCut;        //  maximum z,leading charged
@@ -193,7 +199,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,14);
+  ClassDef(AliJetContainer,15);
 };
 
 #endif

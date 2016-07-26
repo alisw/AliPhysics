@@ -86,6 +86,10 @@ void AliTPCcalibAlignInterpolationMacro(Int_t action,Int_t param0=0, Int_t param
   if (action==6){  //fit drift velocity
     Int_t deltaT=TString(gSystem->Getenv("driftDeltaT" )).Atoi();
     Int_t sigmaT=TString(gSystem->Getenv("driftSigmaT" )).Atoi();
+    if (deltaT<=0 || sigmaT<=0){
+      ::Error("AliTPCcalibAlignInterpolation::FitDrift FAILED ","Invalid parameter value for the deltaT %d and sigmaT", deltaT, sigmaT);
+      return;
+    }
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","Begin");
     AliTPCcalibAlignInterpolation::FitDrift(deltaT, sigmaT);
     ::Info("AliTPCcalibAlignInterpolation::FitDrift","End");
@@ -505,3 +509,4 @@ Bool_t LTMHisto(TH1 *his, TVectorD &params , Float_t fraction){
   params[3]=rms/TMath::Sqrt(fraction*all);
   return kTRUE;
 }
+

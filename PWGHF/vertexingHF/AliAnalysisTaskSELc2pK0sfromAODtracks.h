@@ -54,7 +54,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODEvent *aod, TClonesArray *mcarray);
+  void FillROOTObjects(AliAODRecoCascadeHF *lcobj, AliAODv0 *v0, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aod, TClonesArray *mcarray);
   void FillMixROOTObjects(TLorentzVector *pt, TLorentzVector *ev, TVector *tinfo, TVector *vinfo);
   Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
@@ -76,8 +76,11 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
-  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
+  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODTrack *trkpid, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
+
+  void StoreGlobalTrackReference(AliAODTrack *track, Int_t);
+  void ResetGlobalTrackReference();
 
   /// mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
@@ -198,6 +201,15 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
   TH1F* fHistoMassTagV0Min; //!<! electron-any mass
   TH1F* fHistoMassTagV0SameSignMin; //!<! electron-any mass
 
+	TH2D *fHistoResponseLcPt; //!<! Response function Lc pT
+	TH2D *fHistoResponseLcPt1; //!<! Response function Lc pT
+	TH2D *fHistoResponseLcPt2; //!<! Response function Lc pT
+
+  // Store pointers to global tracks for pid and dca
+  AliAODTrack **fGTI;                //! Array of pointers, just nicely sorted according to the id
+  Int_t *fGTIndex;                //! Array of integers to keep the index of tpc only track
+  const UShort_t  fTrackBuffSize;          //! Size of the above array, ~12000 for PbPb
+
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
@@ -217,7 +229,7 @@ class AliAnalysisTaskSELc2pK0sfromAODtracks : public AliAnalysisTaskSE
 
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,4); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2pK0sfromAODtracks,5); /// class for Lc->p K0
   /// \endcond
 };
 #endif

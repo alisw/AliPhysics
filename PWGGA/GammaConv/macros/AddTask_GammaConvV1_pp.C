@@ -138,8 +138,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
     if(trainConfig == 101){
       fV0ReaderV1->SetProduceImpactParamHistograms(kTRUE);
-      fV0ReaderV1->SetEventCuts("00010113"); 
-      fV0ReaderV1->SetConversionCuts("00200009227302008250400000");
+      cutnumberPhoton="00200009227302008250400400";
+      cutnumberEvent ="00010113";
     }
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
@@ -575,6 +575,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009327302008250400000", "0152103500000000"); // kappa 0-2.0
     cuts.AddCut("00000113", "00200009427302008250400000", "0152103500000000"); // kappa 0-1.5
     cuts.AddCut("00000113", "00200009527302008250400000", "0152103500000000"); // kappa 0-1.0
+  } else if (trainConfig == 77) { //pp 8TeV cuts with pT dependend alpha cut
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); // 0.65, 1.8
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152102500000000"); // 0.80, 1.2
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152109500000000"); // 0.65, 1.2
     //---------systematic studies July 2015--------------------------//
   } else if (trainConfig == 80) {
     cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta: alpha pT dependent
@@ -743,7 +747,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
     cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG2
     cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
-    
+  } else if (trainConfig == 115) { //kINT7
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000"); 
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000");  
+    cuts.AddCut("00010113", "00200009327302008250400000", "0152101500000000"); 
+    cuts.AddCut("00010113", "00200009327302008250404000", "0152101500000000");
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

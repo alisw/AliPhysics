@@ -275,7 +275,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
   // Fill histograms.
 
   if (fTracksCont) {
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+    fTracksCont->ResetCurrentID();
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt());
       fHistTracksEtaPhi[fCentBin]->Fill(track->Eta(),track->Phi());
@@ -284,7 +285,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
   }
   
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    fCaloClustersCont->ResetCurrentID();
+    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(); 
     while(cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
@@ -296,7 +298,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
 
     int N1 = 0;
   if (fJetsCont) {
-    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0); 
+    fJetsCont->ResetCurrentID();
+    AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(); 
     while(jet) {
         Float_t NEFpT = jet->Pt()*jet->NEF();
         N1++;
@@ -319,7 +322,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
    
     int N2 = 0;
     if(fJetsCont2){
-        AliEmcalJet *jet = fJetsCont2->GetNextAcceptJet(0);
+        fJetsCont2->ResetCurrentID();
+        AliEmcalJet *jet = fJetsCont2->GetNextAcceptJet();
         while(jet){
             Float_t NEFpT = jet->Pt()*jet->NEF();
             N2++;
@@ -331,8 +335,10 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
     int N1N2 = 0;
     int N1N2m = 0;
     if (fJetsCont&&fJetsCont2) {
-        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet(0);
-        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet(0);
+        fJetsCont->ResetCurrentID();
+        fJetsCont2->ResetCurrentID();
+        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet();
+        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet();
         while(jet1){
             bool ismatched = false;
             Float_t NEFpT1 = jet1->Pt()*jet1->NEF();
@@ -357,14 +363,17 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
             else
                 fHistJet1nm->Fill(jetarray1);
             jet1 = fJetsCont->GetNextAcceptJet();
-            jet2 = fJetsCont2->GetNextAcceptJet(0);
+            fJetsCont2->ResetCurrentID();
+            jet2 = fJetsCont2->GetNextAcceptJet();
         }
     }
 
     
     if (fJetsCont&&fJetsCont3) {
-        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet(0);
-        AliEmcalJet *jet3 = fJetsCont3->GetNextAcceptJet(0);
+        fJetsCont->ResetCurrentID();
+        AliEmcalJet *jet1 = fJetsCont->GetNextAcceptJet();
+        fJetsCont3->ResetCurrentID();
+        AliEmcalJet *jet3 = fJetsCont3->GetNextAcceptJet();
         while(jet1){
             while(jet3){
                 Double_t deta = jet1->Eta()-jet3->Eta();
@@ -378,7 +387,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
                     fHistDiJet1->Fill(jetarray);
                     //we have a dijet, lets see if there is also a matched trigger
                     if (fJetsCont2) {
-                        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet(0);
+                        fJetsCont2->ResetCurrentID();
+                        AliEmcalJet *jet2 = fJetsCont2->GetNextAcceptJet();
                         while(jet2){
                             Double_t tdeta = jet1->Eta()-jet2->Eta();
                             Double_t tdphi = RelativePhi(jet1->Phi(),jet2->Phi());
@@ -398,7 +408,8 @@ Bool_t AliAnalysisTaskDcalDijetPerf::FillHistograms()
                 jet3 = fJetsCont3->GetNextAcceptJet();
             }//while jet 3
             jet1 = fJetsCont->GetNextAcceptJet();
-            jet3 = fJetsCont3->GetNextAcceptJet(0);
+            fJetsCont3->ResetCurrentID();
+            jet3 = fJetsCont3->GetNextAcceptJet();
         }//while jet 1
     } //if jet cont 1 and 3
 

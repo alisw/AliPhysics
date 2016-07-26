@@ -23,7 +23,6 @@ class TProfile;
 class TClonesArray;
 class TArrayI;
 class AliEMCALTriggerPatchInfo;
-class AliEMCalTriggerAnaTriggerDecision;
 
 #include <TRef.h>
 #include <TBits.h>

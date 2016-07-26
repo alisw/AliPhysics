@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  EMCAL tender, apply corrections to EMCAL clusters and do track matching. //
-//                                                                           //
-//  Author: Deepa Thomas (Utrecht University)                                // 
-//  Later mods/rewrite: Jiri Kral (University of Jyvaskyla)                  //
-//  S. Aiola, C. Loizides : Make it work for AODs                            //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
@@ -108,6 +98,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
   ,fSetCellMCLabelFromCluster(0)
+  ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
@@ -117,8 +108,9 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 {
   // Default constructor.
 
-  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) 
+  { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
 //_____________________________________________________
@@ -175,6 +167,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
   ,fSetCellMCLabelFromCluster(0)
+  ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
@@ -184,8 +177,9 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
 {
   // Named constructor
   
-  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) 
+  { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
 //_____________________________________________________
@@ -242,6 +236,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fExoticCellDiffTime(-1)
   ,fExoticCellMinAmplitude(-1)
   ,fSetCellMCLabelFromCluster(0)
+  ,fSetCellMCLabelFromEdepFrac(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
   ,fUseAutomaticRecalib(1)
@@ -251,8 +246,9 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
 {
   // Named constructor.
   
-  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i]      = 0 ;
-  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) fOrgClusterCellId[j] = -1;
+  for(Int_t i = 0; i < AliEMCALGeoParams::fgkEMCALModules; i++) fEMCALMatrix[i] = 0 ;
+  for(Int_t j = 0; j < fgkTotalCellNumber;                 j++) 
+  { fOrgClusterCellId[j] =-1; fCellLabels[j] =-1 ; }
 }
 
 //_____________________________________________________
@@ -1508,12 +1504,11 @@ void AliEMCALTenderSupply::FillDigitsArray()
   // In case of MC productions done before aliroot tag v5-02-Rev09
   // assing the cluster label to all the cells belonging to this cluster
   // very rough
-  Int_t cellLabels[fgkTotalCellNumber];
-  if (fSetCellMCLabelFromCluster)
+  if (fSetCellMCLabelFromCluster || fSetCellMCLabelFromEdepFrac)
   {
     for (Int_t i = 0; i < fgkTotalCellNumber; i++)
     {
-      cellLabels       [i] = 0 ;
+      fCellLabels      [i] =-1 ;
       fOrgClusterCellId[i] =-1 ;
     }
     
@@ -1531,9 +1526,11 @@ void AliEMCALTenderSupply::FillDigitsArray()
       
       for(Int_t icell=0; icell < clus->GetNCells(); icell++)
       {
-        cellLabels       [index[icell]] = label;
+        if(!fSetCellMCLabelFromEdepFrac) 
+          fCellLabels[index[icell]] = label;
+        
         fOrgClusterCellId[index[icell]] = i ; // index of the original cluster
-      }
+      } // cell in cluster loop
     }// cluster loop
   }
 
@@ -1557,14 +1554,71 @@ void AliEMCALTenderSupply::FillDigitsArray()
    if (fEMCALRecoUtils->IsExoticCell(cellNumber,cells,event->GetBunchCrossNumber())) 
       continue;
     
-    if      (fSetCellMCLabelFromCluster) mcLabel = cellLabels[cellNumber];
-    else if (fRemapMCLabelForAODs     ) RemapMCLabelForAODs(mcLabel);
+    if(!fSetCellMCLabelFromEdepFrac)
+    {
+      if      (fSetCellMCLabelFromCluster) mcLabel = fCellLabels[cellNumber];
+      else if (fRemapMCLabelForAODs      ) RemapMCLabelForAODs(mcLabel);
+    }
     
     if (mcLabel > 0 && efrac < 1e-6) efrac = 1;
     
-    new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
-                                             (Float_t)cellAmplitude, (Float_t)cellTime,
-                                             AliEMCALDigit::kHG,idigit, 0, 0, efrac*cellAmplitude);
+    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(mcLabel, mcLabel, cellNumber,
+                                                                    (Float_t)cellAmplitude, (Float_t)cellTime,
+                                                                    AliEMCALDigit::kHG,idigit, 0, 0, efrac*cellAmplitude);
+    
+    
+    // New way to set the cell MC labels, 
+    // valid only for MC productions with aliroot > v5-07-21
+    if(fSetCellMCLabelFromEdepFrac && fOrgClusterCellId[cellNumber] >= 0) // index can be negative if noisy cell that did not form cluster 
+    {
+      
+      fCellLabels[cellNumber] = idigit;
+      
+      AliVCluster *clus = 0;
+      Int_t iclus = fOrgClusterCellId[cellNumber];
+      
+      if(iclus < 0)
+      {
+        AliInfo("Negative original cluster index, skip \n");
+        continue;
+      }
+      
+      clus = event->GetCaloCluster(iclus);
+      
+      for(Int_t icluscell=0; icluscell < clus->GetNCells(); icluscell++ )
+      {
+        if(cellNumber != clus->GetCellAbsId(icluscell)) continue ;
+        
+        // Get the energy deposition fraction.
+        Float_t eDepFrac[4];
+        clus->GetCellMCEdepFractionArray(icluscell,eDepFrac);
+        
+        // Select the MC label contributing, only if enough energy deposition
+        TArrayI labeArr(0);
+        TArrayF eDepArr(0);
+        Int_t nLabels = 0;
+        for(Int_t imc = 0; imc < 4; imc++)
+        {
+          if(eDepFrac[imc] > 0 && clus->GetNLabels() > imc)
+          {
+            nLabels++;
+            
+            labeArr.Set(nLabels);
+            labeArr.AddAt(clus->GetLabelAt(imc), nLabels-1);
+            
+            eDepArr.Set(nLabels);
+            eDepArr.AddAt(eDepFrac[imc]*cellAmplitude, nLabels-1);
+            // use as deposited energy a fraction of the simulated energy (smeared and with noise)
+          }
+        }
+        
+        if(nLabels > 0)
+        {
+          digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
+        }
+      }
+    }
+    
     idigit++;
   }
 }
@@ -1638,7 +1692,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     const Int_t ncells = recpoint->GetMultiplicity();
     UShort_t   absIds[ncells];  
     Double32_t ratios[ncells];
-    Int_t *dlist = recpoint->GetDigitsList();
+    Int_t   *dlist = recpoint->GetDigitsList();
     Float_t *elist = recpoint->GetEnergiesList();
     for (Int_t c = 0; c < ncells; ++c) 
     {
@@ -1680,11 +1734,75 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     c->SetCellsAbsId(absIds);
     c->SetCellsAmplitudeFraction(ratios);
 
-    //MC labels
-    Int_t  parentMult = 0;
-    Int_t *parentList = recpoint->GetParents(parentMult);
-    if (parentMult > 0) c->SetLabel(parentList, parentMult);
+    //
+    // MC labels
+    //
+    Int_t    parentMult   = 0;
+    Int_t   *parentList   = recpoint->GetParents(parentMult);
+    Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
 
+    if (parentMult > 0)
+    {
+      c->SetLabel(parentList, parentMult);
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    }
+    
+    //
+    // Set the cell energy deposition fraction map:
+    //
+    if( parentMult > 0 && fSetCellMCLabelFromEdepFrac )
+    {
+      UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
+      
+      // Get the digit that originated this cell cluster
+      AliVCaloCells* cells = event->GetEMCALCells();
+      
+      for(Int_t icell = 0; icell < ncellsTrue ; icell++) 
+      {
+        Int_t   idigit  = fCellLabels[absIds[icell]];
+        
+        const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
+        
+        // Find the 4 MC labels that contributed to the cluster and their 
+        // deposited energy in the current digit
+        
+        mcEdepFracPerCell[icell] = 0; // init
+        
+        Int_t  nparents   = dig->GetNiparent();
+        if ( nparents > 0 ) 
+        {
+          Int_t   digLabel   =-1 ; 
+          Float_t edep       = 0 ;
+          Float_t edepTot    = 0 ;
+          Float_t mcEDepFrac[4] = {0,0,0,0};
+          
+          // all parents in digit
+          for ( Int_t jndex = 0 ; jndex < nparents ; jndex++ ) 
+          { 
+            digLabel = dig->GetIparent (jndex+1);
+            edep     = dig->GetDEParent(jndex+1);
+            edepTot += edep;
+            
+            if       ( digLabel == parentList[0] ) mcEDepFrac[0] = edep; 
+            else  if ( digLabel == parentList[1] ) mcEDepFrac[1] = edep;
+            else  if ( digLabel == parentList[2] ) mcEDepFrac[2] = edep;
+            else  if ( digLabel == parentList[3] ) mcEDepFrac[3] = edep;
+          } // all prarents in digit
+          
+          // Divide energy deposit by total deposited energy
+          // Do this only when deposited energy is significant, use 10 MeV although 50 MeV should be expected
+          if(edepTot > 0.01) 
+          {
+            mcEdepFracPerCell[icell] = c->PackMCEdepFraction(mcEDepFrac);
+          }
+        } // at least one parent label in digit
+      } // cell in cluster loop
+      
+      c->SetCellsMCEdepFractionMap(mcEdepFracPerCell);
+      
+      delete [] mcEdepFracPerCell;
+      
+    } // at least one parent in cluster, do the cell primary packing
   }
 }
 

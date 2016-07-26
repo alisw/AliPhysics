@@ -4,11 +4,11 @@
 #include <TArrayD.h>
 #include <TClonesArray.h>
 #include <THashList.h>
+#include <THistManager.h>
 #include <TLorentzVector.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCalHistoContainer.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
@@ -57,7 +57,7 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserCreateOutputObjects(){
   CreateLinearBinning(etabinning, 100, -1, 1);
   CreateLinearBinning(supermodulebinning, 20, -0.5, 19.5);
 
-  fHistos = new AliEMCalHistoContainer("histos");
+  fHistos = new THistManager("histos");
   for(const TString *trgit = fgkTriggerClasses; trgit < fgkTriggerClasses + sizeof(fgkTriggerClasses)/sizeof(const TString); ++trgit){
     for(const TString *beamit = fgkBeamDirs; beamit < fgkBeamDirs + sizeof(fgkBeamDirs)/sizeof(const TString); ++beamit){
       fHistos->CreateTH1(Form("hEventCount%s%s", trgit->Data(), beamit->Data()), Form("Event counter for trigger class %s-%s", trgit->Data(), beamit->Data()), 1, 0.5, 1.5);

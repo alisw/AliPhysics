@@ -30,7 +30,7 @@
 #include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
-#include "AliEMCalPtTaskVTrackSelection.h"
+#include "AliEmcalTrackSelection.h"
 
 #include "AliAnalysisTaskPtEfficiencyJets.h"
 

@@ -31,11 +31,17 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliADCalibData.h"
+
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDAD.h"
 #include "AliESDADfriend.h"
 #include "AliESDVZERO.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisTaskADVVQA.h"
 
@@ -43,13 +49,15 @@ ClassImp(AliAnalysisTaskADVVQA)
 
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA() 
-  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
+  : AliAnalysisTaskSE(),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
+  fRun(0),fOldRun(0),fCalibData(0),fAnalysisUtils(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
 AliAnalysisTaskADVVQA::AliAnalysisTaskADVVQA(const char *name) 
-  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0)
+  : AliAnalysisTaskSE(name),fListHist(0),fList_NoVBA_NoVBC(0),fList_VBA_NoVBC(0),fList_NoVBA_VBC(0),fList_VBA_VBC(0),fList_TVX(0),fList_UBA_UBC(0),
+  fRun(0),fOldRun(0),fCalibData(0),fAnalysisUtils(new AliAnalysisUtils)
 {
   // Constructor
   // Output slot #1 writes into a TList container
@@ -122,7 +130,6 @@ void AliAnalysisTaskADVVQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
 {
-
 
   // Create histograms
   // Called once
@@ -393,11 +400,31 @@ void AliAnalysisTaskADVVQA::InitHistos(TList *list,const char* TriggerName)
   fHistMaxChargeValueInt1_Name += TriggerName;
   TH2F *fHistMaxChargeValueInt1 = CreateHist2D(fHistMaxChargeValueInt1_Name.Data(),"Maximum charge value per PM Int1",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"PM number","ADC counts");
   list->Add(fHistMaxChargeValueInt1);//39
-
-
+  
+  TString fHistMeanChargeADAPerFlag_Name = "fHistMeanChargeADAPerFlag_";
+  fHistMeanChargeADAPerFlag_Name += TriggerName;
+  TH2F *fHistMeanChargeADAPerFlag = CreateHist2D(fHistMeanChargeADAPerFlag_Name.Data(),"Mean charge ADA per flag",9,-0.5,8.5,kNChargeSideBins,kChargeSideMin,kChargeSideMax,"Number of BB coincidences","Charge","Entries");
+  list->Add(fHistMeanChargeADAPerFlag);//40
+  
+  TString fHistMeanChargeADCPerFlag_Name = "fHistMeanChargeADCPerFlag_";
+  fHistMeanChargeADCPerFlag_Name += TriggerName;
+  TH2F *fHistMeanChargeADCPerFlag = CreateHist2D(fHistMeanChargeADCPerFlag_Name.Data(),"Mean charge ADC per flag",9,-0.5,8.5,kNChargeSideBins,kChargeSideMin,kChargeSideMax,"Number of BB coincidences","Charge","Entries");
+  list->Add(fHistMeanChargeADCPerFlag);//41
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskADVVQA::SetCalibData()
+{
+ 
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+    man->SetRun(fRun);
+
+    AliCDBEntry *ent = man->Get("AD/Calib/Data");
+    fCalibData = (AliADCalibData*)ent->GetObject();
+    
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskADVVQA::FillHistos(TList *list) 
@@ -423,6 +450,13 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
   AliESDfriend *fESDfriend = fESD->FindFriend();  
   AliESDADfriend* esdADfriend = 0x0;
   if(fESDfriend) esdADfriend = fESDfriend->GetADfriend();
+  
+  fRun=fEvent->GetRunNumber();
+  
+  if (fRun!=fOldRun){
+    SetCalibData();
+    fOldRun=fRun;
+  }
   
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
@@ -477,8 +511,9 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 		
 		Bool_t localPF = kTRUE;
 		for(Int_t iClock=0; iClock<10; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
-		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,11);
-		if(esdADfriend->GetBBFlag(i,11))fCharges[i] = esdADfriend->GetPedestal(i,11);
+		for(Int_t iClock=11; iClock<21; iClock++) if(esdADfriend->GetBBFlag(i,iClock) || esdADfriend->GetBGFlag(i,iClock)){globalPF = kFALSE; localPF = kFALSE;}
+		Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,10);
+		if(esdAD->GetBBFlag(i)) fCharges[i] = esdADfriend->GetPedestal(i,10) - fCalibData->GetPedestal(k);
 		((TH2F*)(list->At(32)))->Fill(i,fCharges[i]);
 		if(localPF)((TH2F*)(list->At(33)))->Fill(i,fCharges[i]);
 		
@@ -512,6 +547,9 @@ void AliAnalysisTaskADVVQA::FillHistos(TList *list)
 	
   ((TH1F*)(list->At(0)))->Fill(totChargeADA);
   ((TH1F*)(list->At(1)))->Fill(totChargeADC);
+  
+  ((TH1F*)(list->At(40)))->Fill(nBBflagsADA,totChargeADA);
+  ((TH1F*)(list->At(41)))->Fill(nBBflagsADC,totChargeADC);
   
   ((TH2F*)(list->At(16)))->Fill(nBBflagsADA,nBBflagsADC);
   ((TH2F*)(list->At(17)))->Fill(nBGflagsADA,nBGflagsADC);
@@ -554,6 +592,9 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
     Printf("ERROR: ESD not available");
     return;
   }
+  
+  if(fAnalysisUtils->IsPileUpEvent(fESD)) return;
+  if(fAnalysisUtils->IsSPDClusterVsTrackletBG(fESD)) return;
   
   if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_NoVBC);
   if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
