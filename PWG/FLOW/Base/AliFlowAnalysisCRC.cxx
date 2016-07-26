@@ -836,8 +836,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           
           if(fCalculateCME) {
             Double_t SpecWeig = 1.;
-            if(fUseZDCESESpecWeights && fZDCESESpecWeightsHist[fZDCESEclEbE]) {
-              SpecWeig = 1./fZDCESESpecWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESESpecWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,dPt));
+            if(fUseZDCESESpecWeights && fZDCESESpecWeightsHist[fZDCESEclEbE] && dPt>0.2 && dPt<20.) {
+              Double_t weraw = fZDCESESpecWeightsHist[fZDCESEclEbE]->GetBinContent(fZDCESESpecWeightsHist[fZDCESEclEbE]->FindBin(fCentralityEBE,dPt));
+              if(isfinite(1./weraw)) SpecWeig = 1./weraw;
             }
             fCMEQRe[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Cos((h+1.)*dPhi));
             fCMEQIm[cw][h]->Fill(dEta,SpecWeig*wPhiEta*TMath::Sin((h+1.)*dPhi));
