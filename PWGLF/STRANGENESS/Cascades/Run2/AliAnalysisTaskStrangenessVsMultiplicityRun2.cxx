@@ -131,7 +131,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
         fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
-        fkRunVertexers    ( kTRUE  ),
+        fkRunVertexers    ( kFALSE ),
 
 //---> Flag controlling trigger selection
         fTrigType(AliVEvent::kMB),
@@ -226,7 +226,7 @@ fkDownScaleCascade      ( kTRUE  ),
 fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
-fkRunVertexers    ( kTRUE  ),
+fkRunVertexers    ( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),

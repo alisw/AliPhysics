@@ -1,4 +1,4 @@
-AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRun2( Bool_t lSaveEventTree = lTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, const TString lMasterJobSessionFlag = "")
+AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRun2( Bool_t lSaveEventTree = kTRUE, Bool_t lSaveV0 = kTRUE, Bool_t lSaveCascade = kTRUE, const TString lMasterJobSessionFlag = "")
 {
     // Creates, configures and attaches to the train a cascades check task.
     // Get the pointer to the existing analysis manager via the static access method.
